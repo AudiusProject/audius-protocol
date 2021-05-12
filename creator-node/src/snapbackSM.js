@@ -89,6 +89,7 @@ class SnapbackSM {
 
     // Initialize stateMachineQueue job processor
     // - Re-adds job to queue after processing current job, with a fixed delay
+    const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
     this.stateMachineQueue.process(
       async (job, done) => {
         try {
@@ -97,9 +98,6 @@ class SnapbackSM {
           this.log(`StateMachineQueue error processing ${e}`)
         }
 
-        const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
-
-        this.log(`StateMachineQueue (snapbackDevModeEnabled = ${this.snapbackDevModeEnabled}) || Triggering next job in ${stateMachineJobInterval}`)
         await utils.timeout(stateMachineJobInterval)
 
         await this.stateMachineQueue.add({ starttime: Date.now() })
@@ -138,11 +136,16 @@ class SnapbackSM {
 
     // Enqueue first state machine operation (the processor internally re-enqueues job on recurring interval)
     await this.stateMachineQueue.add({ startTime: Date.now() })
+
+    this.log(`SnapbackSM initialized in ${this.snapbackDevModeEnabled ? 'dev' : 'production'} mode. Added initial stateMachineQueue job; next job in ${stateMachineJobInterval}ms`)
   }
 
-  // Class level log output
   log (msg) {
     logger.info(`SnapbackSM: ${msg}`)
+  }
+
+  logError (msg) {
+    logger.error(`SnapbackSM ERROR: ${msg}`)
   }
 
   // Initialize queue object with provided name and unix timestamp
@@ -189,11 +192,12 @@ class SnapbackSM {
    *  - Makes single request to discovery node to retrieve all users
    *
    * @notice This function depends on a new discprov route and cannot be consumed until every discprov exposes that route
+   *    It will throw if the route doesn't exist
    *
    * @returns {Array} array of objects
    *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
    */
-  async getNodeUsers () {
+  async getAllNodeUsers (decisionTree) {
     // Fetch discovery node currently connected to libs as this can change
     const discoveryProviderEndpoint = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
     if (!discoveryProviderEndpoint) {
@@ -209,9 +213,18 @@ class SnapbackSM {
         creator_node_endpoint: this.endpoint
       }
     }
-    const resp = await axios(requestParams)
 
-    return resp.data.data
+    // Will throw error on non-200 response
+    const resp = await axios(requestParams)
+    const allNodeUsers = resp.data.data
+
+    decisionTree.push({
+      stage: '2.A/ getNodeUsers():getAllNodeUsers() Success',
+      vals: { requestParams, numAllNodeUsers: allNodeUsers.length },
+      time: Date.now()
+    })
+
+    return allNodeUsers
   }
 
   /**
@@ -221,14 +234,14 @@ class SnapbackSM {
    * @returns {Array} array of objects
    *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
    */
-  async getNodePrimaryUsers () {
+  async getNodePrimaryUsers (decisionTree) {
     // Fetch discovery node currently connected to libs as this can change
     const currentlySelectedDiscProv = this.audiusLibs.discoveryProvider.discoveryProviderEndpoint
     if (!currentlySelectedDiscProv) {
       throw new Error('No discovery provider currently selected, exiting')
     }
 
-    let requestParams = {
+    const requestParams = {
       method: 'get',
       baseURL: currentlySelectedDiscProv,
       url: `users/creator_node`,
@@ -236,9 +249,48 @@ class SnapbackSM {
         creator_node_endpoint: this.endpoint
       }
     }
-    const resp = await axios(requestParams)
 
-    return resp.data.data
+    // Will throw error on non-200 response
+    const resp = await axios(requestParams)
+    const nodePrimaryUsers = resp.data.data
+
+    decisionTree.push({
+      stage: '2.A/ getNodeUsers():getAllNodeUsers() Failure; fallback getNodePrimaryUsers() Success',
+      vals: { requestParams, numNodePrimaryUsers: nodePrimaryUsers.length },
+      time: Date.now()
+    })
+
+    return nodePrimaryUsers
+  }
+
+  /**
+   * Wrapper function to handle backwards compatibility of getAllNodeUsers() and getNodePrimaryUsers()
+   * This only works if both functions have a consistent return format
+   */
+  async getNodeUsers (decisionTree) {
+    let nodeUsers
+
+    // Use new function to retrieve all node users
+    try {
+      nodeUsers = await this.getAllNodeUsers(decisionTree)
+
+      // On failure, fallback to old function to retrieve all node primary users
+    } catch (e) {
+      nodeUsers = await this.getNodePrimaryUsers()
+
+      // Ensure every object in response array contains all required fields
+    } finally {
+      nodeUsers.forEach(nodeUser => {
+        const requiredFields = ['user_id', 'wallet', 'primary', 'secondary1', 'secondary2']
+        const responseFields = Object.keys(nodeUser)
+        const allRequiredFieldsPresent = requiredFields.every(requiredField => responseFields.includes(requiredField))
+        if (!allRequiredFieldsPresent) {
+          throw new Error('Unexpected response format during getAllNodeUsers() or getNodePrimaryUsers() call')
+        }
+      })
+    }
+
+    return nodeUsers
   }
 
   /**
@@ -319,35 +371,443 @@ class SnapbackSM {
    * @param {Array} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
    * @returns {Set} Set of content node endpoint strings
    */
-  async computeContentNodePeerSet (nodeUserInfoList) {
+  computeContentNodePeerSet (nodeUserInfoList) {
+    // Aggregate all nodes from user replica sets
     let peerList = (
       nodeUserInfoList.map(userInfo => userInfo.primary)
         .concat(nodeUserInfoList.map(userInfo => userInfo.secondary1))
         .concat(nodeUserInfoList.map(userInfo => userInfo.secondary2))
     )
 
-    peerList = peerList.filter(Boolean) // filter out falsey values
+    peerList = peerList.filter(Boolean) // filter out false-y values to account for incomplete replica sets
 
     peerList = peerList.filter(peer => (peer !== this.endpoint)) // remove self from peerList
 
-    let peerSet = new Set(peerList) // convert to Set to get uniques
+    const peerSet = new Set(peerList) // convert to Set to get uniques
 
     return peerSet
   }
 
   /**
-   * Main state machine processing function
+   * Determines if a peer node is sufficiently healthy and able to process syncRequests
    *
-   * Determines which users need to be processed and enqueues syncs to secondaries
+   * Peer health criteria:
+   * - verbose health check returns 200 within timeout
+   *
+   * TODO - consider moving this pure function to libs
+   *
+   * @param {string} endpoint
+   * @returns {Boolean}
+   */
+  async determinePeerHealth (endpoint) {
+    let healthy = true
+
+    try {
+      // Axios request will throw on timeout or non-200 response
+      await axios({
+        baseURL: endpoint,
+        url: '/health_check/verbose',
+        method: 'get',
+        timeout: 2000 // TODO config var
+      })
+    } catch (e) {
+      healthy = false
+    }
+
+    return healthy
+  }
+
+  /**
+   * Submit POA:UserReplicaSetFactory.updateReplicaSet() transaction to move user off unhealthy node
+   *
+   * @dev TODO use libs for CreatorNodeSelection logic + relayed chain call
+   * @dev One issue - since it doesn't actually rectify broken replica sets, this will log every time it is processed
+   */
+  async issueUpdateReplicaSetOp (userId, wallet, primary, secondary1, secondary2, unhealthyReplica) {
+    // await libs.userReplicaSetManagerClient._updateReplicaSet(userId, primary, [new secondaries], primary, [old secondaries])
+
+    this.log(`Updating Replica Set for userID ${userId} & wallet ${wallet} from old replicaSet [${primary},${secondary1},${secondary2}] due to unhealthy replica ${unhealthyReplica}`)
+  }
+
+  /**
+   * Converts provided array of SyncRequests to issue to a map(secondaryNode => userWallets[]) for easier access
+   *
+   * @param {Array} potentialSyncRequests array of objects with schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
+   * @returns {Object} map of secondary endpoint strings to array of wallet strings of users with that node as secondary
+   */
+  buildSecondaryNodesToUserWalletsMap (potentialSyncRequests) {
+    const secondaryNodesToUserWalletsMap = {}
+
+    potentialSyncRequests.forEach(userInfo => {
+      const { wallet, endpoint: secondary } = userInfo
+
+      if (!secondaryNodesToUserWalletsMap[secondary]) {
+        secondaryNodesToUserWalletsMap[secondary] = []
+      }
+
+      secondaryNodesToUserWalletsMap[secondary].push(wallet)
+    })
+
+    return secondaryNodesToUserWalletsMap
+  }
+
+  /**
+   * Given map(secondaryNode => userWallets[]), retrieves clock values for every (secondaryNode, userWallet) pair
+   *
+   * @returns {Object} map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+   */
+  async retrieveClockStatusesForSecondaryUsersFromNodes (secondaryNodesToUserWalletsMap) {
+    const secondaryNodesToUserClockValuesMap = {}
+
+    const secondaryNodes = Object.keys(secondaryNodesToUserWalletsMap)
+
+    // TODO change to batched parallel requests
+    await Promise.all(secondaryNodes.map(async (secondaryNode) => {
+      secondaryNodesToUserClockValuesMap[secondaryNode] = {}
+
+      const secondaryNodeUserWallets = secondaryNodesToUserWalletsMap[secondaryNode]
+
+      const axiosReqParams = {
+        baseURL: secondaryNode,
+        url: '/users/batch_clock_status',
+        method: 'post',
+        data: { 'walletPublicKeys': secondaryNodeUserWallets }
+      }
+
+      // TODO convert to axios-retry, wrap in try-catch
+      const userClockValuesResp = (await axios(axiosReqParams)).data.data.users
+
+      userClockValuesResp.forEach(userClockValueResp => {
+        const { walletPublicKey, clock } = userClockValueResp
+        try {
+          secondaryNodesToUserClockValuesMap[secondaryNode][walletPublicKey] = clock
+        } catch (e) {
+          this.log(`Error updating secondaryNodesToUserClockValuesMap for wallet ${walletPublicKey} to clock ${clock}`)
+          throw e
+        }
+      })
+    }))
+
+    return secondaryNodesToUserClockValuesMap
+  }
+
+  /**
+   * Issues SyncRequests for every (user, secondary) pair if needed
+   * Only issues requests if primary clock value is greater than secondary clock value
+   *
+   * @param {Array} userReplicaSets array of objects of schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
+   *      `endpoint` field indicates secondary on which to issue SyncRequest
+   * @param {Object} secondaryNodesToUserClockStatusesMap map(secondaryNode => map(userWallet => secondaryClockValue))
+   * @returns {Number} number of sync requests issued
+   * @returns {Array} array of all SyncRequest errors
+   */
+  async issueSyncRequests (userReplicaSets, secondaryNodesToUserClockStatusesMap) {
+    // TODO ensure all syncRequests are for users with primary == self
+
+    // Retrieve clock values for all users on this node, which is their primary
+    const userWallets = userReplicaSets.map(user => user.wallet)
+    const userPrimaryClockValues = await this.getUserPrimaryClockValues(userWallets)
+
+    let numSyncRequestsRequired = 0
+    let numSyncRequestsIssued = 0
+    let syncRequestErrors = []
+
+    // TODO change to chunked parallel
+    await Promise.all(userReplicaSets.map(async (user) => {
+      try {
+        const { wallet, endpoint: secondary } = user
+
+        // TODO - throw on null wallet (is this needed?)
+
+        // Determine if secondary requires a sync by comparing clock values against primary (this node)
+        const userPrimaryClockVal = userPrimaryClockValues[wallet]
+        const userSecondaryClockVal = secondaryNodesToUserClockStatusesMap[secondary][wallet]
+        const syncRequired = !userSecondaryClockVal || (userPrimaryClockVal > userSecondaryClockVal)
+
+        if (syncRequired) {
+          numSyncRequestsRequired += 1
+
+          await this.enqueueSync({
+            userWallet: wallet,
+            secondaryEndpoint: secondary,
+            primaryEndpoint: this.endpoint,
+            syncType: SyncType.Recurring
+          })
+
+          numSyncRequestsIssued += 1
+        }
+      } catch (e) {
+        syncRequestErrors.push(`issueSyncRequest() Error for user ${JSON.stringify(user)} - ${e.message}`)
+      }
+    }))
+
+    return { numSyncRequestsRequired, numSyncRequestsIssued, syncRequestErrors }
+  }
+
+  /**
+   * Main state machine processing function
+   * - Processes all users in chunks
+   * - For every user on an unhealthy replica, issues an updateReplicaSet op to cycle them off
+   * - For every (primary) user on a healthy secondary replica, issues SyncRequest op to secondary
    */
   async processStateMachineOperation () {
+    // Record all stages of this function along with associated information for use in logging
+    let decisionTree = [{
+      stage: '1/ BEGIN processStateMachineOperation()',
+      vals: {
+        currentModuloSlice: this.currentModuloSlice
+      },
+      time: Date.now()
+    }]
+
+    try {
+      /**
+       * Retrieve list of all users which have this node as replica (primary or secondary) from discovery node
+       * Or retrieve primary users only if connected to old discprov
+       */
+      let nodeUsers
+      try {
+        nodeUsers = await this.getNodeUsers(decisionTree)
+        decisionTree.push({ stage: '2/ getNodeUsers() Success', vals: { nodeUsersLength: nodeUsers.length }, time: Date.now() })
+      } catch (e) {
+        decisionTree.push({ stage: '2/ getNodeUsers() Error', vals: e.message, time: Date.now() })
+        throw new Error('processStateMachineOperation():getAllNodeUsers() Error')
+      }
+
+      /**
+       * Select chunk of users to process in this run
+       *  - User is selected if (user_id % ModuloBase = currentModuloSlice)
+       *  - nodeUsers = array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+       */
+      nodeUsers = nodeUsers.filter(
+        nodeUser => (nodeUser.user_id % ModuloBase === this.currentModuloSlice)
+      )
+      decisionTree.push({
+        stage: '3/ select nodeUsers modulo slice',
+        vals: { nodeUsersSubsetLength: nodeUsers.length, moduloBase: ModuloBase, currentModuloSlice: this.currentModuloSlice },
+        time: Date.now()
+      })
+
+      // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
+      let peerSet = []
+      try {
+        peerSet = this.computeContentNodePeerSet(nodeUsers)
+
+        decisionTree.push({
+          stage: '4/ computeContentNodePeerSet() Success',
+          vals: { peerSetLength: peerSet.size },
+          time: Date.now()
+        })
+      } catch (e) {
+        decisionTree.push({ stage: '4/ computeContentNodePeerSet() Error', vals: e.message, time: Date.now() })
+        throw new Error('processStateMachineOperation():computeContentNodePeerSet() Error')
+      }
+
+      /**
+       * Determine health for every peer & build list of unhealthy peers
+       * TODO change from sequential to chunked parallel
+       */
+      const unhealthyPeers = new Set()
+      try {
+        for await (const peer of peerSet) {
+          const peerIsHealthy = await this.determinePeerHealth(peer)
+          if (!peerIsHealthy) {
+            unhealthyPeers.add(peer)
+          }
+        }
+
+        decisionTree.push({
+          stage: '5/ determinePeerHealth() Success',
+          vals: {
+            unhealthyPeerSetLength: unhealthyPeers.size,
+            healthyPeerSetLength: peerSet.size - unhealthyPeers.size,
+            unhealthyPeers: Array.from(unhealthyPeers)
+          },
+          time: Date.now()
+        })
+      } catch (e) {
+        decisionTree.push({ stage: '5/ determinePeerHealth() Error', vals: e.message, time: Date.now() })
+        throw new Error('processStateMachineOperation():determinePeerHealth() Error')
+      }
+
+      // Lists to aggregate all required ReplicaSetUpdate ops and potential SyncRequest ops
+      const requiredUpdateReplicaSetOps = []
+      const potentialSyncRequests = []
+
+      /**
+       * For every node user, record sync requests to issue to secondaries if this node is primary
+       *    and record replica set updates to issue for any unhealthy replicas
+       *
+       * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
+       * TODO make this more readable -> maybe two separate loops? need to ensure mutual exclusivity
+       */
+      for (const nodeUser of nodeUsers) {
+        const { primary, secondary1, secondary2 } = nodeUser
+
+        if (primary === this.endpoint) {
+          // filter out false-y values to account for incomplete replica sets
+          const secondaries = ([secondary1, secondary2]).filter(Boolean)
+
+          for (const secondary of secondaries) {
+            if (unhealthyPeers.has(secondary)) {
+              requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: secondary })
+            } else {
+              potentialSyncRequests.push({ ...nodeUser, endpoint: secondary })
+            }
+          }
+        } else {
+          // filter out false-y values to account for incomplete replica sets
+          let replicas = ([primary, secondary1, secondary2]).filter(Boolean)
+          // filter out this endpoint
+          replicas = replicas.filter(replica => replica !== this.endpoint)
+
+          for (const replica of replicas) {
+            if (unhealthyPeers.has(replica)) {
+              requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: replica })
+            }
+          }
+        }
+      }
+      decisionTree.push({
+        stage: '6/ Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays',
+        vals: {
+          requiredUpdateReplicaSetOpsLength: requiredUpdateReplicaSetOps.length,
+          potentialSyncRequestsLength: potentialSyncRequests.length
+        },
+        time: Date.now()
+      })
+
+      // Build map of secondary node to secondary user wallets array
+      const secondaryNodesToUserWalletsMap = this.buildSecondaryNodesToUserWalletsMap(potentialSyncRequests)
+      decisionTree.push({
+        stage: '7/ buildSecondaryNodesToUserWalletsMap() Success',
+        vals: { numSecondaryNodes: Object.keys(secondaryNodesToUserWalletsMap).length },
+        time: Date.now()
+      })
+
+      // Retrieve clock statuses for all secondary users from secondary nodes
+      let secondaryNodesToUserClockStatusesMap
+      try {
+        secondaryNodesToUserClockStatusesMap = await this.retrieveClockStatusesForSecondaryUsersFromNodes(
+          secondaryNodesToUserWalletsMap
+        )
+        decisionTree.push({
+          stage: '8/ retrieveClockStatusesForSecondaryUsersFromNodes() Success',
+          vals: { },
+          time: Date.now()
+        })
+      } catch (e) {
+        decisionTree.push({
+          stage: '8/ retrieveClockStatusesForSecondaryUsersFromNodes() Error',
+          vals: e.message,
+          time: Date.now()
+        })
+        throw new Error('processStateMachineOperation():retrieveClockStatusesForSecondaryUsersFromNodes() Error')
+      }
+
+      // Issue all required sync requests
+      let numSyncRequestsRequired, numSyncRequestsIssued, syncRequestErrors
+      try {
+        const resp = await this.issueSyncRequests(potentialSyncRequests, secondaryNodesToUserClockStatusesMap)
+        numSyncRequestsRequired = resp.numSyncRequestsRequired
+        numSyncRequestsIssued = resp.numSyncRequestsIssued
+        syncRequestErrors = resp.syncRequestErrors
+
+        if (syncRequestErrors.length > numSyncRequestsIssued) {
+          throw new Error()
+        }
+
+        decisionTree.push({
+          stage: '9/ issueSyncRequests() Success',
+          vals: {
+            numSyncRequestsRequired,
+            numSyncRequestsIssued,
+            numSyncRequestErrors: syncRequestErrors.length,
+            syncRequestErrors
+          },
+          time: Date.now()
+        })
+      } catch (e) {
+        decisionTree.push({
+          stage: '9/ issueSyncRequests() Error',
+          vals: {
+            numSyncRequestsRequired,
+            numSyncRequestsIssued,
+            numSyncRequestErrors: (syncRequestErrors ? syncRequestErrors.length : null),
+            syncRequestErrors
+          },
+          time: Date.now()
+        })
+        throw new Error('processStateMachineOperation():issueSyncRequests() Error')
+      }
+
+      /**
+       * Issue all required replica set updates
+       * TODO move to chunked parallel (maybe?) + wrap each in try-catch to not halt on single error
+       */
+      let numUpdateReplicaOpsIssued
+      try {
+        for await (const userInfo of requiredUpdateReplicaSetOps) {
+          await this.issueUpdateReplicaSetOp(
+            userInfo.user_id, userInfo.wallet, userInfo.primary, userInfo.secondary1, userInfo.secondary2, userInfo.unhealthyReplica
+          )
+        }
+        numUpdateReplicaOpsIssued = requiredUpdateReplicaSetOps.length
+        decisionTree.push({
+          stage: '10/ issueUpdateReplicaSetOp() Success',
+          vals: { numUpdateReplicaOpsIssued },
+          time: Date.now()
+        })
+      } catch (e) {
+        decisionTree.push({
+          stage: '10/ issueUpdateReplicaSetOp() Error',
+          vals: e.message,
+          time: Date.now()
+        })
+        throw new Error('processStateMachineOperation():issueUpdateReplicaSetOp() Error')
+      }
+
+      // Increment and adjust current slice by ModuloBase
+      const previousModuloSlice = this.currentModuloSlice
+      this.currentModuloSlice += 1
+      this.currentModuloSlice = this.currentModuloSlice % ModuloBase
+
+      decisionTree.push({
+        stage: '11/ END processStateMachineOperation()',
+        vals: {
+          currentModuloSlice: previousModuloSlice,
+          nextModuloSlice: this.currentModuloSlice,
+          moduloBase: ModuloBase,
+          numSyncRequestsIssued,
+          numUpdateReplicaOpsIssued
+        },
+        time: Date.now()
+      })
+
+      // Log error without throwing - next run will attempt to rectify
+    } catch (e) {
+      decisionTree.push({ stage: 'processStateMachineOperation Error', vals: e.message, time: Date.now() })
+    } finally {
+      // Log decision tree
+      try {
+        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree)}`)
+      } catch (e) {
+        this.logError(`Error printing processStateMachineOperation Decision Tree ${decisionTree}`)
+      }
+    }
+  }
+
+  /**
+   * DEPRECATED replaced by this.processStateMachineOperation()
+   */
+  async processStateMachineOperationOld () {
     this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
 
     // Retrieve list of all users that have this node as primary
     let nodePrimaryUsers
     try {
       // Returns all users that have this node in their replica set via discprov route `/users/content_node/all`
-      const nodeUsers = await this.getNodeUsers()
+      const nodeUsers = await this.getAllNodeUsers()
 
       // Filter to subset of users that have this node as their primary
       nodePrimaryUsers = nodeUsers.filter(nodeUser => nodeUser.primary === this.endpoint)
@@ -355,7 +815,7 @@ class SnapbackSM {
       this.log(`processStateMachineOperation(): Retrieved nodePrimaryUsers via new discprov route`)
 
       /**
-       * If getNodeUsers() call fails, CN is connected to old discprov that doesn't have the `/users/content_node/all` route
+       * If getAllNodeUsers() call fails, CN is connected to old discprov that doesn't have the `/users/content_node/all` route
        * Fallback to getNodePrimaryUsers(), which calls old discprov route `/users/creator_node`
        * This route returns only users with this node as their primary
        */
@@ -370,7 +830,7 @@ class SnapbackSM {
         const responseFields = Object.keys(nodePrimaryUser)
         const allRequiredFieldsPresent = requiredFields.every(requiredField => responseFields.includes(requiredField))
         if (!allRequiredFieldsPresent) {
-          throw new Error('Unexpected response format during getNodeUsers() or getNodePrimaryUsers() call')
+          throw new Error('Unexpected response format during getAllNodeUsers() or getNodePrimaryUsers() call')
         }
       })
     }
@@ -678,6 +1138,8 @@ class SnapbackSM {
  *
  * @dev We maintain this map to maximize query performance; Bull does not provide any api for querying
  *    jobs by property and would require a linear iteration over the full job list
+ *
+ * TODO - move to separate file
  */
 class SyncDeDuplicator {
   constructor () {
