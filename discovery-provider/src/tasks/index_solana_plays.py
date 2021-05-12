@@ -42,7 +42,13 @@ def parse_instruction_data(data):
 
     user_id_length = int.from_bytes(decoded[0:4], "little")
     user_id_start, user_id_end = 4, 4 + user_id_length
-    user_id = int(decoded[user_id_start:user_id_end])
+
+    # Client send a GUID for anonymous user ID listens, which will be recorded as None
+    user_id = None
+    try:
+        user_id = int(decoded[user_id_start:user_id_end])
+    except ValueError as e:
+        logger.error(f"Failed to parse user_id from {decoded[user_id_start:user_id_end]}")
 
     track_id_length = int.from_bytes(decoded[user_id_end:user_id_end + 4],
                                      "little")
