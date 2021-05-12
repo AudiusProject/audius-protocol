@@ -87,6 +87,7 @@ module.exports = function (app) {
   })
 
   // Route that handles the resumable upload HEAD and PATCH requests.
+  app.all(resumableUploadRoute, authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, async function (req, res, next) {
     try {
     const urlArr = req.originalUrl.split('/')
     const fileDir = (urlArr.slice(0, urlArr.length - 1)).join('/')
