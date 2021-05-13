@@ -65,7 +65,7 @@ async function trackListenCountsTest({
     executeOne,
 }) {
     let start = Date.now()
-    let numTracks = 350
+    let numTracks = 10
     let randomTrackIds = Array.from({ length: numTracks }, () => Math.floor(Math.random() * 10000000));
 
     for (trackId of randomTrackIds) {
