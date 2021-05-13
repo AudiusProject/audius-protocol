@@ -463,7 +463,7 @@ function getFileExtension (fileName) {
 
 /**
  * Checks the file type. Throws an error if not accepted.
- * @param {Object} req express request object
+ * @param {Object} logger the logger instance from the express request object
  * @param {Object} param
  * @param {string} param.fileName the file name
  * @param {string} param.fileMimeType the file type

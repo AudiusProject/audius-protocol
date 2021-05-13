@@ -45,11 +45,17 @@ const DiskManager = require('../diskManager')
 
 const readFile = promisify(fs.readFile)
 const tmpTrackArtifactsPath = DiskManager.getTmpTrackUploadArtifactsPath()
+// This is the path used for resumable track content uploads.
+// It must be the same as the path of where the track file is uploaded.
+// In our case, the route must be able to accept file path patterns like
+//    <tmp artifacts path>/<random uuid 1>/<random uuid 2>.<file extension>
+// hence the /*/* part of the route
+// Reference: https://github.com/tus/tus-node-server#use-tus-node-server-as-express-middleware
 const resumableUploadRoute = path.join(tmpTrackArtifactsPath, '*', '*')
 
 // Structure: <uuid>.<file_extension>. e.g. 1234-1234-1234-1234.mp3
 const getFileName = (req) => {
-  return req.randomFolderName + '/' + req.randomFileName + getFileExtension(req.headers.filename)
+  return req.storedFolderName + '/' + req.storedFileName + getFileExtension(req.headers.filename)
 }
 
 const server = new tus.Server()
@@ -66,16 +72,12 @@ async function handleResumableUpload (req, res, next) {
     // Grab the file details off of the url
     const urlArr = req.originalUrl.split('/')
     const fileDir = (urlArr.slice(0, urlArr.length - 1)).join('/')
-    const randomFolderName = (urlArr.slice(urlArr.length - 2))[0]
-    const randomFileName = (urlArr.slice(urlArr.length - 1))[0]
-
-    req.randomFileName = randomFileName
-    req.randomFolderName = randomFolderName
+    const storedFileName = (urlArr.slice(urlArr.length - 1))[0]
 
     const resp = await server.handle.bind(server)(req, res, next)
     if (resp.statusCode > 299 || resp.statusCode < 200) {
       // TODO: add resp details
-      throw new Error(`Unsuccessful upload creation. fileDir=${fileDir} fileName=${randomFileName}`)
+      throw new Error(`Unsuccessful upload creation. fileDir=${fileDir} fileName=${storedFileName}`)
     }
 
     // If the entire upload is done, add a transcode task to the worker queue
@@ -84,7 +86,7 @@ async function handleResumableUpload (req, res, next) {
         {
           logContext: req.logContext,
           req: {
-            fileName: randomFileName,
+            fileName: storedFileName,
             fileDir,
             fileDestination: fileDir,
             session: {
@@ -111,8 +113,10 @@ module.exports = function (app) {
     // Save file under randomly named folders to avoid collisions
     const randomFileName = uuid()
     const randomFolderName = uuid()
-    req.randomFileName = randomFileName
-    req.randomFolderName = randomFolderName
+    // The new, random file name for the uploaded track
+    req.storedFileName = randomFileName
+    // The new, random folder name that holds the uploaded track
+    req.storedFolderName = randomFolderName
 
     const fileDir = path.join(tmpTrackArtifactsPath, randomFolderName)
 
