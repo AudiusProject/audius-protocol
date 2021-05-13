@@ -377,10 +377,10 @@ class CreatorNode {
   }
 
   async pollProcessingStatus (taskType, uuid) {
-    const route = this.creatorNodeEndpoint + '/task_status'
+    const route = this.creatorNodeEndpoint + '/track_content_status'
     const start = Date.now()
     while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
-      const { status, resp } = await this.getProcessingStatus(taskType, uuid)
+      const { status, resp } = await this.getTrackContentProcessingStatus(uuid)
       // Should have a body structure of:
       //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
       if (status && status === 'DONE') return resp
@@ -395,15 +395,13 @@ class CreatorNode {
 
   /**
    * Gets the task progress given the task type and uuid associated with the task
-   * @param {string} taskType
-   * @param {string} uuid
+   * @param {string} uuid the uuid of the track transcoding task
    * @returns the status, and the success or failed response if the task is complete
    */
-  async getProcessingStatus (taskType, uuid) {
+  async getTrackContentProcessingStatus (uuid) {
     const { data: body } = await this._makeRequest({
-      url: '/task_status',
+      url: '/track_content_status',
       params: {
-        taskType,
         uuid
       },
       method: 'get'
