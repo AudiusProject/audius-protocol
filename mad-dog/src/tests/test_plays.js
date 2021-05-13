@@ -15,10 +15,10 @@ function randomNumber(min, max) {
 }
 
 async function getTotalPlays() {
-        return (await axios({
-            method: 'get',
-            url: `http://localhost:5000/v1/metrics/plays?bucket_size=century`
-        })).data.data[0].count
+    return (await axios({
+        method: 'get',
+        url: `http://localhost:5000/v1/metrics/plays?bucket_size=century`
+    })).data.data[0].count
 }
 
 async function submitTrackListen(executeOne, trackId, userId) {
@@ -50,9 +50,8 @@ async function submitTrackListen(executeOne, trackId, userId) {
                 throw new Error(`Failed to find play for userId=${userId}, trackId=${trackId} in ${MaxPollDurationMs}ms`)
             }
         }
-
-        if (resp + 1 === totalPlays) {
-            console.log(`Found play in discovery node after ${Date.now() - pollStart}ms | ${JSON.stringify(discoveryResp)}`)
+        if (resp === totalPlays + 1) {
+            console.log(`Found play in discovery node after ${Date.now() - pollStart}ms`)
         }
     }
 }
@@ -69,19 +68,19 @@ async function trackListenCountsTest({
     let randomTrackIds = Array.from({ length: numTracks }, () => Math.floor(Math.random() * 10000000));
 
     for (trackId of randomTrackIds) {
-            let numListens = randomNumber(2, 5)
-            let randomUserId = Math.floor(Math.random() * 10000000)
-            console.log(`Logging ${numListens} listens for trackId=${trackId}, userId=${randomUserId}`)
-            while (numListens > 0) {
-                await submitTrackListen(
-                    executeOne,
-                    trackId,
-                    randomUserId
-                )
-                numListens--
-            }
+        // Record between 1 and 5 listens for each track
+        let numListens = randomNumber(2, 5)
+        let randomUserId = Math.floor(Math.random() * 10000000)
+        console.log(`Logging ${numListens} listens for trackId=${trackId}, userId=${randomUserId}`)
+        while (numListens > 0) {
+            await submitTrackListen(
+                executeOne,
+                trackId,
+                randomUserId
+            )
+            numListens--
+        }
     }
-
     let end = Date.now()
     let duration = end - start
     console.log(`Processed ${numSuccessfullyProcessed} listens in ${duration}ms`)
