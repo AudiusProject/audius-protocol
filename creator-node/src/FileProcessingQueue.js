@@ -42,7 +42,7 @@ class FileProcessingQueue {
         done(null, { response })
       } catch (e) {
         this.logError(transcodeParams.logContext, `Could not process taskType=${PROCESS_NAMES.transcode} uuid=${transcodeParams.logContext.requestID}: ${e.toString()}`)
-        done(e.message)
+        done(e.toString())
       }
     })
   }

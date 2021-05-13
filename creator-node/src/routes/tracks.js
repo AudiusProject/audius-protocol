@@ -49,8 +49,13 @@ const resumableUploadRoute = path.join(tmpTrackArtifactsPath, '*', '*')
 
 // Structure: <uuid>.<file_extension>. e.g. 1234-1234-1234-1234.mp3
 const getFileName = (req) => {
-  return req.headers.randomfilename + getFileExtension(req.headers.filename)
+  return req.randomFolderName + '/' + req.randomFileName + getFileExtension(req.headers.filename)
 }
+
+server.datastore = new tus.FileStore({
+  path: tmpTrackArtifactsPath, // has to be a path that exists
+  namingFunction: getFileName
+})
 
 const SaveFileToIPFSConcurrencyLimit = 10
 
@@ -59,27 +64,26 @@ module.exports = function (app) {
     // Use the tus-node-server package to handle track upload
 
     // Save file under randomly named folders to avoid collisions
-    const fileDir = path.join(tmpTrackArtifactsPath, req.headers.randomfilename)
+    const randomFileName = uuid()
+    const randomFolderName = uuid()
+    req.randomFileName = randomFileName
+    req.randomFolderName = randomFolderName
+
+    const fileDir = path.join(tmpTrackArtifactsPath, randomFolderName)
 
     try {
     // Create directories for original file and segments
-      fs.mkdirSync(fileDir, { recursive: true })
-      fs.mkdirSync(fileDir + '/segments')
+      DiskManager.ensureDirPathExists(fileDir)
+      DiskManager.ensureDirPathExists(fileDir + '/segments')
 
-      req.logger.info(`Created track disk storage: ${fileDir}, ${req.headers.randomfilename}`)
+      req.logger.info(`Created track disk storage: ${fileDir}, ${randomFileName}`)
 
-      server.datastore = new tus.FileStore({
-        path: fileDir,
-        // Custom file naming
-        namingFunction: getFileName
-      })
-
-      // Initialze resumable upload flow
+      // Initialize resumable upload flow
       const resp = await server.handle.bind(server)(req, res, next)
 
       if (resp.statusCode > 299 || resp.statusCode < 200) {
         // TODO: add resp details
-        throw new Error(`Unsuccessful upload creation. fileDir=${fileDir} fileName=${req.headers.randomfilename}`)
+        throw new Error(`Unsuccessful upload creation. fileDir=${fileDir} fileName=${randomFileName}`)
       }
     } catch (e) {
       return sendResponse(req, res, errorResponseServerError(e.toString()))
@@ -91,26 +95,24 @@ module.exports = function (app) {
     try {
     const urlArr = req.originalUrl.split('/')
     const fileDir = (urlArr.slice(0, urlArr.length - 1)).join('/')
+      const randomFolderName = (urlArr.slice(urlArr.length - 2))[0]
+      const randomFileName = (urlArr.slice(urlArr.length - 1))[0]
 
-    server.datastore = new tus.FileStore({
-      path: fileDir,
-      namingFunction: getFileName
-    })
+      req.randomFileName = randomFileName
+      req.randomFolderName = randomFolderName
 
     const resp = await server.handle.bind(server)(req, res, next)
       if (resp.statusCode > 299 || resp.statusCode < 200) {
         // TODO: add resp details
-        throw new Error(`Unsuccessful upload creation. fileDir=${fileDir} fileName=${req.headers.randomfilename}`)
+        throw new Error(`Unsuccessful upload creation. fileDir=${fileDir} fileName=${randomFileName}`)
       }
 
     if (parseInt(req.headers.filesize) === resp.getHeaders()['upload-offset']) {
-      const fileName = (urlArr.slice(urlArr.length - 1)).join('/')
-
       await FileProcessingQueue.addTranscodeTask(
         {
           logContext: req.logContext,
           req: {
-            fileName,
+              fileName: randomFileName,
             fileDir,
             fileDestination: fileDir,
             session: {

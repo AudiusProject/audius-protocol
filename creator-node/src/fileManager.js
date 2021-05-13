@@ -468,12 +468,12 @@ function getFileExtension (fileName) {
  * @param {string} param.fileName the file name
  * @param {string} param.fileMimeType the file type
  */
-function checkFileType (req, { fileName, fileMimeType }) {
+function checkFileType (logger, { fileName, fileMimeType }) {
   const fileExtension = getFileExtension(fileName).slice(1)
   // the function should call `cb` with a boolean to indicate if the file should be accepted
   if (ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(fileExtension) && AUDIO_MIME_TYPE_REGEX.test(fileMimeType)) {
-    req.logger.info(`Filetype: ${fileExtension}`)
-    req.logger.info(`Mimetype: ${fileMimeType}`)
+    logger.info(`Filetype: ${fileExtension}`)
+    logger.info(`Mimetype: ${fileMimeType}`)
   } else {
     throw new Error(`File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}] with mime type matching ${AUDIO_MIME_TYPE_REGEX}, got file ${fileExtension} with mime ${fileMimeType}`)
   }
@@ -490,18 +490,21 @@ function checkFileSize (fileSize) {
 }
 
 /**
- * Wrapper fn
+ * The middleware fn that checks file data existence, and calls `checkFileType` and `checkFileSize`.
  * @param {Object} req express request object
- * @param {Object} param
- * @param {string} param.fileName the file name
- * @param {string} param.fileMimeType the file type
- * @param {number} param.fileSize file size in bytes
+ * @param {string} req.filename the file name
+ * @param {string} req.filemimetype the file type
+ * @param {number} req.filesize file size in bytes
+ * @param {Object} res express response object
+ * @param {function} next callback to proceed to the next handler
  */
-
 function checkFileMiddleware (req, res, next) {
   const { filename: fileName, filetype: fileMimeType, filesize: fileSize } = req.headers
   try {
-    checkFileType(req, { fileName, fileMimeType })
+    if (!fileName || !fileMimeType || !fileSize) {
+      throw new Error(`Some/all file data not present: fileName=${fileName} fileType=${fileMimeType} fileSize=${fileSize}`)
+    }
+    checkFileType(req.logger, { fileName, fileMimeType })
     checkFileSize(fileSize)
   } catch (e) {
     return sendResponse(req, res, errorResponseBadRequest(e.message))
@@ -509,6 +512,7 @@ function checkFileMiddleware (req, res, next) {
 
   return next()
 }
+
 /**
  * Checks if the Content Node storage has reached the `maxStorageUsedPercent` defined in the config. `storagePathSize`
  * and `storagePathUsed` are values taken off of the Content Node monitoring system.
