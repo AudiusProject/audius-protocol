@@ -3,6 +3,7 @@ const { Buffer } = require('ipfs-http-client')
 const { promisify } = require('util')
 const path = require('path')
 const tus = require('tus-node-server')
+const uuid = require('uuid/v4')
 
 const config = require('../config.js')
 const models = require('../models')
@@ -42,7 +43,6 @@ const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const DiskManager = require('../diskManager')
 
-const server = new tus.Server()
 const readFile = promisify(fs.readFile)
 const tmpTrackArtifactsPath = DiskManager.getTmpTrackUploadArtifactsPath()
 const resumableUploadRoute = path.join(tmpTrackArtifactsPath, '*', '*')
@@ -52,14 +52,59 @@ const getFileName = (req) => {
   return req.randomFolderName + '/' + req.randomFileName + getFileExtension(req.headers.filename)
 }
 
+const server = new tus.Server()
 server.datastore = new tus.FileStore({
   path: tmpTrackArtifactsPath, // has to be a path that exists
   namingFunction: getFileName
 })
 
+/**
+ * The helper method to do the resumable upload and chunking
+ */
+async function handleResumableUpload (req, res, next) {
+  try {
+    // Grab the file details off of the url
+    const urlArr = req.originalUrl.split('/')
+    const fileDir = (urlArr.slice(0, urlArr.length - 1)).join('/')
+    const randomFolderName = (urlArr.slice(urlArr.length - 2))[0]
+    const randomFileName = (urlArr.slice(urlArr.length - 1))[0]
+
+    req.randomFileName = randomFileName
+    req.randomFolderName = randomFolderName
+
+    const resp = await server.handle.bind(server)(req, res, next)
+    if (resp.statusCode > 299 || resp.statusCode < 200) {
+      // TODO: add resp details
+      throw new Error(`Unsuccessful upload creation. fileDir=${fileDir} fileName=${randomFileName}`)
+    }
+
+    // If the entire upload is done, add a transcode task to the worker queue
+    if (parseInt(req.headers.filesize) === resp.getHeaders()['upload-offset']) {
+      await FileProcessingQueue.addTranscodeTask(
+        {
+          logContext: req.logContext,
+          req: {
+            fileName: randomFileName,
+            fileDir,
+            fileDestination: fileDir,
+            session: {
+              cnodeUserUUID: req.session.cnodeUserUUID
+            }
+          }
+        }
+      )
+    }
+  } catch (e) {
+    return sendResponse(req, res, errorResponseServerError(e.toString()))
+  }
+}
+
 const SaveFileToIPFSConcurrencyLimit = 10
 
 module.exports = function (app) {
+  /**
+   * Initiate an upload using resumable and chunking logic for a track
+   */
   app.post('/track_content_upload', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, checkFileMiddleware, async function (req, res, next) {
     // Use the tus-node-server package to handle track upload
 
@@ -72,60 +117,24 @@ module.exports = function (app) {
     const fileDir = path.join(tmpTrackArtifactsPath, randomFolderName)
 
     try {
-    // Create directories for original file and segments
+      // Create directories for original file and segments
       DiskManager.ensureDirPathExists(fileDir)
       DiskManager.ensureDirPathExists(fileDir + '/segments')
 
       req.logger.info(`Created track disk storage: ${fileDir}, ${randomFileName}`)
-
-      // Initialize resumable upload flow
-      const resp = await server.handle.bind(server)(req, res, next)
-
-      if (resp.statusCode > 299 || resp.statusCode < 200) {
-        // TODO: add resp details
-        throw new Error(`Unsuccessful upload creation. fileDir=${fileDir} fileName=${randomFileName}`)
-      }
     } catch (e) {
       return sendResponse(req, res, errorResponseServerError(e.toString()))
     }
+
+    // Initialize resumable upload flow; handles responding with errors if they arise
+    await server.handle.bind(server)(req, res, next)
   })
 
-  // Route that handles the resumable upload HEAD and PATCH requests.
-  app.all(resumableUploadRoute, authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, async function (req, res, next) {
-    try {
-    const urlArr = req.originalUrl.split('/')
-    const fileDir = (urlArr.slice(0, urlArr.length - 1)).join('/')
-      const randomFolderName = (urlArr.slice(urlArr.length - 2))[0]
-      const randomFileName = (urlArr.slice(urlArr.length - 1))[0]
-
-      req.randomFileName = randomFileName
-      req.randomFolderName = randomFolderName
-
-    const resp = await server.handle.bind(server)(req, res, next)
-      if (resp.statusCode > 299 || resp.statusCode < 200) {
-        // TODO: add resp details
-        throw new Error(`Unsuccessful upload creation. fileDir=${fileDir} fileName=${randomFileName}`)
-      }
-
-    if (parseInt(req.headers.filesize) === resp.getHeaders()['upload-offset']) {
-      await FileProcessingQueue.addTranscodeTask(
-        {
-          logContext: req.logContext,
-          req: {
-              fileName: randomFileName,
-            fileDir,
-            fileDestination: fileDir,
-            session: {
-              cnodeUserUUID: req.session.cnodeUserUUID
-            }
-          }
-        }
-      )
-    }
-    } catch (e) {
-      return sendResponse(req, res, errorResponseServerError(e.toString()))
-    }
-  })
+  // Routes that handle the resumable upload HEAD and PATCH requests.
+  // Note: due to package limitations, we must set the route to the directory of where the track is uploaded.
+  // Consider forking off this repo and making the HEAD/PATCH URLs configurable in the future
+  app.head(resumableUploadRoute, authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleResumableUpload)
+  app.patch(resumableUploadRoute, authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleResumableUpload)
 
   /**
    * Add a track transcode task into the worker queue. If the track file is uploaded properly (not transcoded), return successResponse
