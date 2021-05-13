@@ -4,7 +4,6 @@ const tus = require('tus-js-client')
 
 const { wait } = require('../../utils')
 const uuid = require('../../utils/uuid')
-const getUuid = require('uuid/v4')
 const SchemaValidator = require('../schemaValidator')
 
 const CHUNK_SIZE = 2000000 // 2MB
@@ -128,6 +127,7 @@ class CreatorNode {
     this.monitoringCallbacks = monitoringCallbacks
 
     this.useTrackContentPolling = useTrackContentPolling
+    // Supported browsers https://github.com/tus/tus-js-client/blob/master/docs/installation.md#browser-support
     this.useResumableTrackUpload = useResumableTrackUpload && tus.isSupported
   }
 
@@ -355,10 +355,10 @@ class CreatorNode {
     if (this.useTrackContentPolling) {
       // multer + worker queue + polling
       return this.handleAsyncAndNotResumableTrackUpload(file, onProgress)
-    } else {
-      // multer + direct response from /track_content
-      return this.handleSynchronousAndNotResumableTrackUpload(file, onProgress)
     }
+
+    // multer + direct response from /track_content
+    return this.handleSynchronousAndNotResumableTrackUpload(file, onProgress)
   }
 
   async handleAsyncAndResumableTrackUpload (file, onProgress) {
@@ -716,7 +716,7 @@ class CreatorNode {
     }
     headers['X-Session-ID'] = this.authToken
 
-    const requestId = getUuid()
+    const requestId = uuid()
     headers['X-Request-ID'] = requestId
     return { headers, formData }
   }
@@ -805,8 +805,13 @@ class CreatorNode {
           ...headers,
           filesize: file.size,
           filetype: file.type,
+          filename: file.name
+        },
+        metadata: {
+          filesize: file.size,
+          filetype: file.type,
           filename: file.name,
-          randomfilename: randomFileName // does not have extension
+          userId: this.userStateManager.getCurrentUser().user_id
         },
         // An optional integer representing the size of the file in bytes
         uploadSize: file.size,
