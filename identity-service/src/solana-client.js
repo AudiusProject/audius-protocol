@@ -179,7 +179,8 @@ async function createAndVerifyMessage (
     transaction,
     [feePayerAccount],
     {
-      commitment: 'confirmed'
+      commitment: 'processed',
+      preflightCommitment: 'processed'
     }
   )
 
