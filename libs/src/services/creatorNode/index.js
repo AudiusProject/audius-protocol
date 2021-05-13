@@ -793,7 +793,6 @@ class CreatorNode {
 
   // https://github.com/tus/tus-js-client/blob/master/docs/api.md
   async startResumableUpload (file, url, headers, onProgress) {
-    const randomFileName = uuid()
     return new Promise((resolve, reject) => {
       const upload = new tus.Upload(file, {
         // Endpoint is the upload creation URL from your tus server
