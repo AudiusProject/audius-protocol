@@ -133,6 +133,8 @@ class BlacklistManager {
     const tracks = await models.Track.findAll({ where: { blockchainId: trackIds } })
 
     let segmentCIDs = new Set()
+
+    // retrieve CID's from the track metadata
     for (const track of tracks) {
       if (!track.metadataJSON || !track.metadataJSON.track_segments) continue
 
@@ -140,6 +142,14 @@ class BlacklistManager {
         if (segment.multihash) {
           segmentCIDs.add(segment.multihash)
         }
+      }
+    }
+
+    // also retrieves the CID's directly from the files table so we get copy320
+    const files = await models.File.findAll({ where: { trackBlockchainId: trackIds } })
+    for (const file of files) {
+      if (file.type === 'track' || file.type === 'copy320') {
+        segmentCIDs.add(file.multihash)
       }
     }
 
