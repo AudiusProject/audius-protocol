@@ -146,7 +146,7 @@ class BlacklistManager {
     }
 
     // also retrieves the CID's directly from the files table so we get copy320
-    const files = await models.Files.findAll({ where: { trackBlockchainId: trackIds } })
+    const files = await models.File.findAll({ where: { trackBlockchainId: trackIds } })
     for (const file of files) {
       if (file.type === 'track' || file.type === 'copy320') {
         segmentCIDs.add(file.multihash)
