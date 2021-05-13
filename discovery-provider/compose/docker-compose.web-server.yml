@@ -1,0 +1,25 @@
+# Compose file to run the discovery flask server on its own
+#
+# The server is pointed at whatever database is set in .env
+# and runs no workers, but does need redis and IPFS to be available
+version: '3'
+services:
+  web-server:
+    build: ../.
+    restart: always
+    command: sh -c '/wait && ls && exec ./scripts/dev-server.sh'
+    ports:
+      - '5000:5000'
+    env_file:
+      - .env
+    environment:
+      - WAIT_HOSTS=redis-server:6379,ipfs-node:5001
+      - audius_db_run_migrations=false
+    volumes:
+      - '../.:/audius-discovery-provider'
+    networks:
+      - audius_dev
+
+networks:
+  audius_dev:
+    external: true

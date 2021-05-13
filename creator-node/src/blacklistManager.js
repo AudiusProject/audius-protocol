@@ -9,10 +9,15 @@ const REDIS_SET_BLACKLIST_SEGMENTCID_KEY = 'SET.BLACKLIST.SEGMENTCID'
 const types = models.ContentBlacklist.Types
 
 class BlacklistManager {
+  constructor () {
+    this.initialized = false
+  }
+
   static async init () {
     try {
       const contentToBlacklist = await this.getTrackAndUserIdsToBlacklist()
       await this.fetchCIDsAndAddToRedis(contentToBlacklist)
+      this.initialized = true
     } catch (e) {
       throw new Error(`BLACKLIST ERROR ${e}`)
     }

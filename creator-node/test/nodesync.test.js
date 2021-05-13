@@ -4,6 +4,7 @@ const path = require('path')
 const assert = require('assert')
 const _ = require('lodash')
 const nock = require('nock')
+const sinon = require('sinon')
 
 const config = require('../src/config')
 const models = require('../src/models')
@@ -17,13 +18,14 @@ const ipfsImport = require('../src/ipfsClient')
 const ipfsClient = ipfsImport.ipfs
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
+const { uploadTrack } = require('./lib/helpers')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const sampleExportPath = path.resolve(__dirname, 'syncAssets/sampleExport.json')
 const sampleExportFromClock2Path = path.resolve(__dirname, 'syncAssets/sampleExportFromClock2.json')
 
 describe('test nodesync', async function () {
-  let server, app
+  let server, app, mockServiceRegistry
 
   const originalMaxExportClockValueRange = config.get('maxExportClockValueRange')
   let maxExportClockValueRange = originalMaxExportClockValueRange
@@ -32,6 +34,7 @@ describe('test nodesync', async function () {
     const appInfo = await getApp(ipfsClient, libsMock, BlacklistManager)
     server = appInfo.server
     app = appInfo.app
+    mockServiceRegistry = appInfo.mockServiceRegistry
   }
 
   beforeEach(async function () {
@@ -47,6 +50,7 @@ describe('test nodesync', async function () {
    * Wipe DB, server, and redis state
    */
   afterEach(async function () {
+    await sinon.restore()
     await server.close()
   })
 
@@ -88,18 +92,17 @@ describe('test nodesync', async function () {
 
       /** Upload a track */
 
-      const file = fs.readFileSync(testAudioFilePath)
+      const trackUploadResponse = await uploadTrack(
+        testAudioFilePath,
+        cnodeUserUUID,
+        mockServiceRegistry.ipfs,
+        mockServiceRegistry.blacklistManager
+      )
 
-      // Upload track content
-      const { body: { data: trackContentRespBody } } = await request(app)
-        .post('/track_content')
-        .attach('file', file, { filename: 'fname.mp3' })
-        .set('Content-Type', 'multipart/form-data')
-        .set('X-Session-ID', sessionToken)
-      transcodedTrackCID = trackContentRespBody.transcodedTrackCID
-      transcodedTrackUUID = trackContentRespBody.transcodedTrackUUID
-      trackSegments = trackContentRespBody.track_segments
-      sourceFile = trackContentRespBody.source_file
+      transcodedTrackUUID = trackUploadResponse.transcodedTrackUUID
+      trackSegments = trackUploadResponse.track_segments
+      sourceFile = trackUploadResponse.source_file
+      transcodedTrackCID = trackUploadResponse.transcodedTrackCID
 
       // Upload track metadata
       const trackMetadata = {
@@ -243,8 +246,8 @@ describe('test nodesync', async function () {
 
         // compare exported data
         const exportedUserData = exportBody.data.cnodeUsers
-        assert.deepStrictEqual(exportedUserData, expectedData)
         assert.deepStrictEqual(clockRecords.length, cnodeUserClock)
+        assert.deepStrictEqual(exportedUserData, expectedData)
       })
     })
 

@@ -1,8 +1,11 @@
 const axios = require('axios')
 const FormData = require('form-data')
+const { wait } = require('../../utils')
 const uuid = require('../../utils/uuid')
-
 const SchemaValidator = require('../schemaValidator')
+
+const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
+const POLL_STATUS_INTERVAL = 3000 // 3s
 
 // Currently only supports a single logged-in audius user
 class CreatorNode {
@@ -225,7 +228,7 @@ class CreatorNode {
    * @param {object} metadata the metadata for the track
    * @param {function?} onProgress an optional on progerss callback
    */
-  async uploadTrackContent (trackFile, coverArtFile, metadata, onProgress = () => {}) {
+  async uploadTrackContent (trackFile, coverArtFile, metadata, onProgress = () => {}, useTrackContentPolling) {
     let loadedImageBytes = 0
     let loadedTrackBytes = 0
     let totalImageBytes = 0
@@ -246,7 +249,11 @@ class CreatorNode {
     }
 
     let uploadPromises = []
-    uploadPromises.push(this.uploadTrackAudio(trackFile, onTrackProgress))
+    if (useTrackContentPolling) {
+      uploadPromises.push(this.uploadTrackAudioPolling(trackFile, onTrackProgress))
+    } else {
+      uploadPromises.push(this.uploadTrackAudio(trackFile, onTrackProgress))
+    }
     if (coverArtFile) uploadPromises.push(this.uploadImage(coverArtFile, true, onImageProgress))
 
     const [trackContentResp, coverArtResp] = await Promise.all(uploadPromises)
@@ -336,6 +343,58 @@ class CreatorNode {
    */
   async uploadTrackAudio (file, onProgress) {
     const { data: body } = await this._uploadFile(file, '/track_content', onProgress)
+    return body
+  }
+
+  /**
+   * Track upload flow with polling.
+   * @param {File} file track to upload
+   * @param {function?} onProgress called with loaded bytes and total bytes
+   * @return {Object} response body
+   *
+   * @note Rename this function to `uploadTrackAudio` and update the actual route when
+   * we want to fully use polling for track content, and remove the existing method
+   */
+  async uploadTrackAudioPolling (file, onProgress) {
+    let route = `${this.creatorNodeEndpoint}/track_content_async`
+    let uuid
+    try {
+      ({ data: { uuid } } = await this._uploadFile(file, '/track_content_async', onProgress))
+    } catch (e) {
+      await this._handleErrorHelper(e, route)
+    }
+
+    const start = Date.now()
+    while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
+      const { status, resp } = await this.getProcessingStatus('transcode', uuid)
+      // Should have a body structure of:
+      //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
+      if (status && status === 'DONE') return resp
+      if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`Transcode failed: uuid=${uuid}, error=${resp}`), route, uuid)
+
+      // Check the transcode status every 3s
+      await wait(POLL_STATUS_INTERVAL)
+    }
+
+    await this._handleErrorHelper(new Error(`Transcode took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), route, uuid)
+  }
+
+  /**
+   * Gets the task progress given the task type and uuid associated with the task
+   * @param {string} taskType
+   * @param {string} uuid
+   * @returns the status, and the success or failed response if the task is complete
+   */
+  async getProcessingStatus (taskType, uuid) {
+    const { data: body } = await this._makeRequest({
+      url: '/track_content_status',
+      params: {
+        taskType,
+        uuid
+      },
+      method: 'get'
+    })
+
     return body
   }
 

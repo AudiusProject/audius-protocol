@@ -8,6 +8,7 @@ const promiseAny = require('promise.any')
 const config = require('./config')
 const Utils = require('./utils')
 const DiskManager = require('./diskManager')
+const { logger: genericLogger } = require('./logging')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -41,16 +42,16 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
  *
  * @dev - only call this function when file is already stored to disk, else use saveFileFromBufferToIPFSAndDisk()
  */
-async function saveFileToIPFSFromFS (req, srcPath) {
+async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipfs) {
+  const logger = genericLogger.child(logContext)
+
   // make sure user has authenticated before saving file
-  if (!req.session.cnodeUserUUID) {
+  if (!cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
   }
 
-  const ipfs = req.app.get('ipfsAPI')
-
   // Add to IPFS without pinning and retrieve multihash
-  const multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
+  let multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
 
   // store file copy by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
@@ -61,8 +62,8 @@ async function saveFileToIPFSFromFS (req, srcPath) {
     // if we see a ENOSPC error, log out the disk space and inode details from the system
     if (e.message.includes('ENOSPC')) {
       await Promise.all([
-        Utils.runShellCommand(`df`, ['-h'], req.logger),
-        Utils.runShellCommand(`df`, ['-ih'], req.logger)
+        Utils.runShellCommand(`df`, ['-h'], logger),
+        Utils.runShellCommand(`df`, ['-ih'], logger)
       ])
     }
     throw e
@@ -332,9 +333,10 @@ const _printDecisionTreeObj = (decisionTree, logger) => {
  * (4) Remove 'fileDir/segments' and fileDir
  * @dev - Eventually this function execution should be moved off of main server process
  */
-async function removeTrackFolder (req, fileDir) {
+async function removeTrackFolder ({ logContext }, fileDir) {
+  const logger = genericLogger.child(logContext)
   try {
-    req.logger.info(`Removing track folder at fileDir ${fileDir}...`)
+    logger.info(`Removing track folder at fileDir ${fileDir}...`)
     if (!fileDir) {
       throw new Error('Cannot remove null fileDir')
     }
@@ -373,17 +375,17 @@ async function removeTrackFolder (req, fileDir) {
         await fs.rmdir(curPath)
       } else {
         // Delete file inside /fileDir/
-        req.logger.info(`Removing ${curPath}`)
+        logger.info(`Removing ${curPath}`)
         await fs.unlink(curPath)
       }
     }
 
     // Delete fileDir after all its contents have been deleted
     await fs.rmdir(fileDir)
-    req.logger.info(`Removed track folder at fileDir ${fileDir}`)
+    logger.info(`Removed track folder at fileDir ${fileDir}`)
     return null
   } catch (err) {
-    req.logger.error(`Error removing ${fileDir}. ${err}`)
+    logger.error(`Error removing ${fileDir}. ${err}`)
     return err
   }
 }

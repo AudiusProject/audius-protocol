@@ -602,6 +602,23 @@ function LibsWrapper (walletIndex = 0) {
     return this.libsInstance.discoveryProvider.getURSMContentNodes(ownerWallet)
   }
 
+  // Record a single track listen
+  this.logTrackListen = (
+    trackId,
+    userId,
+    listenerAddress,
+    signatureData,
+    solanaListen
+  ) => {
+    return this.libsInstance.identityService.logTrackListen(
+      trackId,
+      userId,
+      listenerAddress,
+      signatureData,
+      solanaListen
+    )
+  }
+
   /**
   * Wait for the discovery node to catch up to the latest block on chain up to a max
   * indexing timeout of default 10000ms. Used to check regular block indexing.

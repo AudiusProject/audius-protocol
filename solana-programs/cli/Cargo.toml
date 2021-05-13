@@ -1,0 +1,27 @@
+[package]
+name = "audius-cli"
+version = "0.1.0"
+authors = [""]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = "2.33.3"
+serde_json = "1.0.61"
+solana-account-decoder = "1.6.4"
+solana-clap-utils = "1.6.4"
+solana-cli-config = "1.6.4"
+solana-client = "1.6.4"
+solana-logger = "1.6.4"
+solana-sdk = "1.5.14"
+solana-program = "1.5.14"
+hex = "0.4.2"
+libsecp256k1 = "0.3.5"
+sha3 = "0.9.1"
+borsh = "0.8.2"
+audius_eth_registry = { path="../audius_eth_registry", features = [ "no-entrypoint" ] }
+
+[[bin]]
+name = "audius"
+path = "src/main.rs"

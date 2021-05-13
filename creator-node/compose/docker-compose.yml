@@ -35,7 +35,7 @@ services:
     ports:
       - '${CREATOR_NODE_HOST_PORT}:${CREATOR_NODE_HOST_PORT}'
     volumes:
-      - file_storage:/file_storage
+      - ../file_storage:/file_storage
       - ..:/usr/src/app
       # Prevent hiding node_modules on container with host volume
       # From https://github.com/barrysteyn/node-scrypt/issues/148

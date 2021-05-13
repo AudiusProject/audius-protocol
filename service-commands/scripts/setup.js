@@ -3,6 +3,8 @@ const { program } = require('commander')
 const {
   allUp,
   discoveryNodeUp,
+  discoveryNodeWebServerUp,
+  identityServiceUp,
   Service,
   SetupCommand,
   runSetupCommand
@@ -60,11 +62,6 @@ program
     const numCnodes = parseInt(opts.numCnodes)
     await allUp({ numCreatorNodes: numCnodes })
   })
-
-program
-  .command('discovery-node-stack up')
-  .description('Bring up relevant services for discovery node')
-  .action(async () => await discoveryNodeUp())
 
 program
   .command('down')
@@ -126,5 +123,22 @@ program
       throw e
     }
   })
+
+program
+  .command('discovery-node-stack up')
+  .description('Bring up relevant services for discovery node')
+  .action(async () => await discoveryNodeUp())
+
+program
+  .command('discovery-node-web-server-stack up')
+  .description(
+    'Bring up relevant services for discovery node with only the web server running'
+  )
+  .action(async () => await discoveryNodeWebServerUp())
+
+program
+  .command('identity-service-stack up')
+  .description('Bring up relevant services for identity service')
+  .action(async () => await identityServiceUp())
 
 program.parse(process.argv)

@@ -21,8 +21,11 @@ const TRACK_REQUIRED_PROPS = [
 ]
 
 class Track extends Base {
-  constructor (...args) {
+  constructor (useTrackContentPolling, ...args) {
     super(...args)
+
+    this.useTrackContentPolling = useTrackContentPolling
+
     this.getTracks = this.getTracks.bind(this)
     this.getTracksIncludingUnlisted = this.getTracksIncludingUnlisted.bind(this)
     this.getUnlistedTracks = this.getUnlistedTracks.bind(this)
@@ -334,7 +337,8 @@ class Track extends Base {
         trackFile,
         coverArtFile,
         metadata,
-        onProgress
+        onProgress,
+        this.useTrackContentPolling
       )
 
       phase = phases.ADDING_TRACK
@@ -356,7 +360,7 @@ class Track extends Base {
         txReceipt.blockNumber,
         transcodedTrackUUID
       )
-      return { trackId, error: false }
+      return { blockHash: txReceipt.blockHash, blockNumber: txReceipt.blockNumber, trackId, error: false }
     } catch (e) {
       return {
         error: e.message,
@@ -516,7 +520,7 @@ class Track extends Base {
     )
     // Re-associate the track id with the new metadata
     await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
-    return trackId
+    return { blockHash: txReceipt.blockHash, blockNumber: txReceipt.blockNumber, trackId }
   }
 
   /**
@@ -524,12 +528,18 @@ class Track extends Base {
    * @param {string} unauthUuid account for those not logged in
    * @param {number} trackId listened to
    */
-  async logTrackListen (trackId, unauthUuid) {
+  async logTrackListen (trackId, unauthUuid, solanaListen = false) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const accountId = this.userStateManager.getCurrentUserId()
 
     const userId = accountId || unauthUuid
-    return this.identityService.logTrackListen(trackId, userId)
+    return this.identityService.logTrackListen(
+      trackId,
+      userId,
+      null,
+      null,
+      solanaListen
+    )
   }
 
   /** Adds a repost for a given user and track

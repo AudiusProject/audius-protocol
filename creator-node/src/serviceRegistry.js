@@ -59,6 +59,25 @@ class ServiceRegistry {
   }
 
   /**
+  * Initializes the blacklistManager if it is not already initialized, and then returns it
+  * @returns initialized blacklistManager instance
+  */
+  async getBlacklistManager () {
+    if (!this.blacklistManager.initialized) {
+      await this.blacklistManager.init()
+    }
+
+    return this.blacklistManager
+  }
+
+  /**
+   * Returns the ipfs instance
+   */
+  getIPFS () {
+    return this.ipfs
+  }
+
+  /**
    * Some services require the node server to be running in order to initialize. Run those here.
    * Specifically:
    *  - recover node L1 identity (requires node health check from server to return success)
