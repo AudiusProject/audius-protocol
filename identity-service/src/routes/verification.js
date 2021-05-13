@@ -5,9 +5,10 @@ const { sign } = require('../utils/cognitoSignature')
 
 module.exports = (app) => {
   app.get('/cognito_signature', authMiddleware, handleResponse(async (req, res) => {
-    const { handle } = req.user
+    const { walletAddress } = req.user
+    logger.info(`cognito_signature | Creating signature for ${walletAddress}`)
     try {
-      const signature = sign(handle)
+      const signature = sign(walletAddress)
       return successResponse({ signature })
     } catch (e) {
       logger.error(e)
