@@ -17,7 +17,8 @@ function randomNumber(min, max) {
 async function getTotalPlays() {
     return (await axios({
         method: 'get',
-        url: `http://localhost:5000/v1/metrics/plays?bucket_size=century`
+        // use nonce to bypass cache
+        url: `http://localhost:5000/v1/metrics/plays?bucket_size=century&nonce=${randomNumber(1, 10000)}`
     })).data.data[0].count
 }
 
