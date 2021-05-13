@@ -433,7 +433,7 @@ const trackFileUpload = multer({
   limits: { fileSize: MAX_AUDIO_FILE_SIZE },
   fileFilter: function (req, file, cb) {
     try {
-      checkFileType(req, { fileName: file.originalname, fileMimeType: file.mimetype })
+      checkFileType(req.logger, { fileName: file.originalname, fileMimeType: file.mimetype })
       cb(null, true)
     } catch (e) {
       req.fileFilterError = e.message
