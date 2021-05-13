@@ -540,6 +540,12 @@ const config = convict({
     default: '',
     env: 'solanaSignerPrivateKey'
   },
+  solanaTxCommitmentLevel: {
+    doc: 'solanaTxCommitmentLevel',
+    format: String,
+    default: 'processed',
+    env: 'solanaTxCommitmentLevel'
+  },
   sentryDSN: {
     doc: 'Sentry DSN key',
     format: String,
