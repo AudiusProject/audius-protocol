@@ -360,7 +360,7 @@ class Track extends Base {
         txReceipt.blockNumber,
         transcodedTrackUUID
       )
-      return { trackId, error: false }
+      return { blockHash: txReceipt.blockHash, blockNumber: txReceipt.blockNumber, trackId, error: false }
     } catch (e) {
       return {
         error: e.message,
@@ -520,7 +520,7 @@ class Track extends Base {
     )
     // Re-associate the track id with the new metadata
     await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
-    return trackId
+    return { blockHash: txReceipt.blockHash, blockNumber: txReceipt.blockNumber, trackId }
   }
 
   /**

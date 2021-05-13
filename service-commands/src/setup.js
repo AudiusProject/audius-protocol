@@ -92,7 +92,7 @@ const execShellCommands = async (commands, service, { verbose }) => {
     }
   } catch (e) {
     console.error(e)
-    process.exit(1);
+    process.exit(1)
   }
 }
 
@@ -380,6 +380,48 @@ const discoveryNodeWebServerUp = async () => {
 }
 
 /**
+ * Brings up all services relevant to the identity service
+ * @returns {Promise<void>}
+ */
+const identityServiceUp = async () => {
+  console.log(
+    "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
+      .error
+  )
+
+  const options = { verbose: true }
+
+  const inParallel = [
+    [Service.CONTRACTS, SetupCommand.UP, options],
+    [Service.ETH_CONTRACTS, SetupCommand.UP, options],
+    [Service.SOLANA_PROGRAMS, SetupCommand.UP, options]
+  ]
+
+  const sequential = [
+    [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
+    [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
+    [Service.IDENTITY_SERVICE, SetupCommand.UP],
+    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK]
+  ]
+
+  const start = Date.now()
+
+  // Start up the docker network `audius_dev`
+  await runSetupCommand(Service.NETWORK, SetupCommand.UP)
+
+  // Run parallel ops
+  await Promise.all(inParallel.map(s => runSetupCommand(...s)))
+
+  // Run sequential ops
+  for (const s of sequential) {
+    await runSetupCommand(...s)
+  }
+
+  const durationSeconds = Math.abs((Date.now() - start) / 1000)
+  console.log(`Services brought up in ${durationSeconds}s`.info)
+}
+
+/**
  * Brings up an entire Audius Protocol stack.
  * @param {*} config. currently supports up to 4 Creator Nodes.
  */
@@ -473,6 +515,7 @@ module.exports = {
   allUp,
   discoveryNodeUp,
   discoveryNodeWebServerUp,
+  identityServiceUp,
   SetupCommand,
   Service
 }
