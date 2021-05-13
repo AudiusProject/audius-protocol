@@ -3,7 +3,6 @@ const fs = require('fs-extra')
 const multer = require('multer')
 const getUuid = require('uuid/v4')
 const axios = require('axios')
-const promiseAny = require('promise.any')
 
 const config = require('./config')
 const Utils = require('./utils')
@@ -168,50 +167,29 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     if (gatewayUrlsMapped.length > 0) {
       try {
         let response
+        // ..replace(/\/$/, "") removes trailing slashes
         logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
+
         decisionTree.push({ stage: 'About to race requests via gateways', vals: gatewayUrlsMapped, time: Date.now() })
-
-        const GatewayRetrievalConcurrencyLimit = 5
-
-        for (let i = 0; i < gatewayUrlsMapped.length; i += GatewayRetrievalConcurrencyLimit) {
-          const gatewayUrlsSlice = gatewayUrlsMapped.slice(i, i + GatewayRetrievalConcurrencyLimit)
-          decisionTree.push({ stage: 'Fetching from gateways', vals: gatewayUrlsSlice, time: Date.now() })
-
-          /**
-           * promiseAny(promises) resolves to the first promise that resolves, or rejects if all reject
-           * Each internal request must reject after a timeout to ensure this does not wait forever
-           */
+        // Note - Requests are intentionally not parallel to minimize additional load on gateways
+        for (let index = 0; index < gatewayUrlsMapped.length; index++) {
+          const url = gatewayUrlsMapped[index]
+          decisionTree.push({ stage: 'Fetching from gateway', vals: url, time: Date.now() })
           try {
-            const resp = await promiseAny(gatewayUrlsSlice.map(
-              async url => {
-                const gatewayResp = await axios({
-                  method: 'get',
-                  url,
-                  responseType: 'stream',
-                  timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
-                })
-
-                if (gatewayResp.data) {
-                  decisionTree.push({ stage: 'Retrieved file from gateway', vals: url, time: Date.now() })
-                  return gatewayResp
-                }
-              }
-            ))
-
-            // promiseAny resolution means file was successfully retrieved -> short-circuit loop
+            const resp = await axios({
+              method: 'get',
+              url,
+              responseType: 'stream',
+              timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
+            })
             if (resp.data) {
               response = resp
+              decisionTree.push({ stage: 'Retrieved file from gateway', vals: url, time: Date.now() })
               break
             }
-
-            /**
-             * Log promiseAny rejection and continue to next loop iteration
-             * This just means that file retrieval failed from current gatewayUrlsSlice
-             */
           } catch (e) {
-            logger.error(`Error fetching file from gateways ${gatewayUrlsSlice}`)
-            decisionTree.push({ stage: 'Could not retrieve file from gateways', vals: gatewayUrlsSlice, time: Date.now() })
-
+            logger.error(`Error fetching file from other cnode ${url} ${e.message}`)
+            decisionTree.push({ stage: 'Could not retrieve file from gateway', vals: url, time: Date.now() })
             continue
           }
         }
