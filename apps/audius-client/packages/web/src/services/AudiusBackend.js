@@ -410,6 +410,9 @@ class AudiusBackend {
         isServer: false,
         useTrackContentPolling: getFeatureEnabled(
           FeatureFlags.USE_TRACK_CONTENT_POLLING
+        ),
+        useResumableTrackUload: getFeatureEnabled(
+          FeatureFlags.USE_RESUMABLE_TRACK_UPLOAD
         )
       })
       await audiusLibs.init()
