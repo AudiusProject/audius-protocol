@@ -854,13 +854,12 @@ class AudiusBackend {
   // Uploads a single track
   // Returns { trackId, error, phase }
   static async uploadTrack(trackFile, coverArtFile, metadata, onProgress) {
-    const uploadTrackResponse = await audiusLibs.Track.uploadTrack(
+    return await audiusLibs.Track.uploadTrack(
       trackFile,
       coverArtFile,
       metadata,
       onProgress
     )
-    return uploadTrackResponse
   }
 
   // Used to upload multiple tracks as part of an album/playlist
@@ -899,8 +898,7 @@ class AudiusBackend {
       const resp = await audiusLibs.File.uploadImage(metadata.artwork.file)
       cleanedMetadata.cover_art_sizes = resp.dirCID
     }
-    const update = await audiusLibs.Track.updateTrack(cleanedMetadata)
-    return update
+    return await audiusLibs.Track.updateTrack(cleanedMetadata)
   }
 
   static async getCreators(ids) {
@@ -1009,11 +1007,12 @@ class AudiusBackend {
 
       newMetadata = schemas.newUserMetadata(newMetadata, true)
 
-      const idVal = await audiusLibs.User.updateCreator(
-        newMetadata.user_id,
-        newMetadata
-      )
-      return idVal
+      const {
+        blockHash,
+        blockNumber,
+        userId
+      } = await audiusLibs.User.updateCreator(newMetadata.user_id, newMetadata)
+      return { blockHash, blockNumber, userId }
     } catch (err) {
       console.error(err.message)
       return false
@@ -1061,11 +1060,14 @@ class AudiusBackend {
 
       newMetadata = schemas.newUserMetadata(newMetadata, true)
 
-      await audiusLibs.User.updateUser(id, newMetadata)
-      return true
+      const { blockHash, blockNumber } = await audiusLibs.User.updateUser(
+        id,
+        newMetadata
+      )
+      return { blockHash, blockNumber }
     } catch (err) {
       console.error(err.message)
-      return false
+      throw err
     }
   }
 
@@ -1081,7 +1083,7 @@ class AudiusBackend {
 
   static async followUser(followeeUserId) {
     try {
-      await audiusLibs.User.addUserFollow(followeeUserId)
+      return await audiusLibs.User.addUserFollow(followeeUserId)
     } catch (err) {
       console.error(err.message)
       throw err
@@ -1090,7 +1092,7 @@ class AudiusBackend {
 
   static async unfollowUser(followeeUserId) {
     try {
-      await audiusLibs.User.deleteUserFollow(followeeUserId)
+      return await audiusLibs.User.deleteUserFollow(followeeUserId)
     } catch (err) {
       console.error(err.message)
       throw err
@@ -1152,32 +1154,51 @@ class AudiusBackend {
     if (isAlbum) isPrivate = false
 
     try {
-      const { playlistId, error } = await audiusLibs.Playlist.createPlaylist(
+      const response = await audiusLibs.Playlist.createPlaylist(
         userId,
         playlistName,
         isPrivate,
         isAlbum,
         trackIds
       )
+      let { blockHash, blockNumber, playlistId, error } = response
 
       if (error) return { playlistId, error }
 
+      const updatePromises = []
+
       // If this playlist is being created from an existing cover art, use it.
       if (metadata.cover_art_sizes) {
-        await audiusLibs.contracts.PlaylistFactoryClient.updatePlaylistCoverPhoto(
-          playlistId,
-          Utils.formatOptionalMultihash(metadata.cover_art_sizes)
+        updatePromises.push(
+          audiusLibs.contracts.PlaylistFactoryClient.updatePlaylistCoverPhoto(
+            playlistId,
+            Utils.formatOptionalMultihash(metadata.cover_art_sizes)
+          )
         )
       } else if (coverArt) {
-        await audiusLibs.Playlist.updatePlaylistCoverPhoto(playlistId, coverArt)
-      }
-      if (description) {
-        await audiusLibs.Playlist.updatePlaylistDescription(
-          playlistId,
-          description
+        updatePromises.push(
+          audiusLibs.Playlist.updatePlaylistCoverPhoto(playlistId, coverArt)
         )
       }
-      return { playlistId, error: false }
+      if (description) {
+        updatePromises.push(
+          audiusLibs.Playlist.updatePlaylistDescription(playlistId, description)
+        )
+      }
+
+      /**
+       * find the latest transaction i.e. latest block number among the return transaction receipts
+       * and return that block number along with its corresponding block hash
+       */
+      if (updatePromises.length > 0) {
+        const latestReceipt = this.getLatestTxReceipt(
+          await Promise.all(updatePromises)
+        )
+        blockHash = latestReceipt.blockHash
+        blockNumber = latestReceipt.blockNumber
+      }
+
+      return { blockHash, blockNumber, playlistId }
     } catch (err) {
       // This code path should never execute
       console.error(err.message)
@@ -1191,22 +1212,37 @@ class AudiusBackend {
     const description = metadata.description
 
     try {
+      let blockHash, blockNumber
+      const promises = []
       if (playlistName) {
-        await audiusLibs.Playlist.updatePlaylistName(playlistId, playlistName)
+        promises.push(
+          audiusLibs.Playlist.updatePlaylistName(playlistId, playlistName)
+        )
       }
       if (coverPhoto) {
-        await audiusLibs.Playlist.updatePlaylistCoverPhoto(
-          playlistId,
-          coverPhoto
+        promises.push(
+          audiusLibs.Playlist.updatePlaylistCoverPhoto(playlistId, coverPhoto)
         )
       }
       if (description) {
-        await audiusLibs.Playlist.updatePlaylistDescription(
-          playlistId,
-          description
+        promises.push(
+          audiusLibs.Playlist.updatePlaylistDescription(playlistId, description)
         )
       }
-      return { error: false }
+
+      /**
+       * find the latest transaction i.e. latest block number among the return transaction receipts
+       * and return that block number along with its corresponding block hash
+       */
+      if (promises.length > 0) {
+        const latestReceipt = this.getLatestTxReceipt(
+          await Promise.all(promises)
+        )
+        blockHash = latestReceipt.blockHash
+        blockNumber = latestReceipt.blockNumber
+      }
+
+      return { blockHash, blockNumber }
     } catch (error) {
       console.error(error.message)
       return { error }
@@ -1215,12 +1251,15 @@ class AudiusBackend {
 
   static async orderPlaylist(playlistId, trackIds, retries) {
     try {
-      await audiusLibs.Playlist.orderPlaylistTracks(
+      const {
+        blockHash,
+        blockNumber
+      } = await audiusLibs.Playlist.orderPlaylistTracks(
         playlistId,
         trackIds,
         retries
       )
-      return { error: false }
+      return { blockHash, blockNumber }
     } catch (error) {
       console.error(error.message)
       return { error }
@@ -1229,8 +1268,11 @@ class AudiusBackend {
 
   static async publishPlaylist(playlistId) {
     try {
-      await audiusLibs.Playlist.updatePlaylistPrivacy(playlistId, false)
-      return { error: false }
+      const {
+        blockHash,
+        blockNumber
+      } = await audiusLibs.Playlist.updatePlaylistPrivacy(playlistId, false)
+      return { blockHash, blockNumber }
     } catch (error) {
       console.error(error.message)
       return { error }
@@ -1239,8 +1281,11 @@ class AudiusBackend {
 
   static async addPlaylistTrack(playlistId, trackId) {
     try {
-      await audiusLibs.Playlist.addPlaylistTrack(playlistId, trackId)
-      return { error: false }
+      const {
+        blockHash,
+        blockNumber
+      } = await audiusLibs.Playlist.addPlaylistTrack(playlistId, trackId)
+      return { blockHash, blockNumber }
     } catch (error) {
       console.error(error.message)
       return { error }
@@ -1249,13 +1294,16 @@ class AudiusBackend {
 
   static async deletePlaylistTrack(playlistId, trackId, timestamp, retries) {
     try {
-      await audiusLibs.Playlist.deletePlaylistTrack(
+      const {
+        blockHash,
+        blockNumber
+      } = await audiusLibs.Playlist.deletePlaylistTrack(
         playlistId,
         trackId,
         timestamp,
         retries
       )
-      return { error: false }
+      return { blockHash, blockNumber }
     } catch (error) {
       console.error(error.message)
       return { error }
@@ -1293,8 +1341,11 @@ class AudiusBackend {
 
   static async deletePlaylist(playlistId) {
     try {
-      await audiusLibs.Playlist.deletePlaylist(playlistId)
-      return { error: false }
+      const { txReceipt } = await audiusLibs.Playlist.deletePlaylist(playlistId)
+      return {
+        blockHash: txReceipt.blockHash,
+        blockNumber: txReceipt.blockNumber
+      }
     } catch (error) {
       console.error(error.message)
       return { error }
@@ -1314,8 +1365,16 @@ class AudiusBackend {
       const playlistDeletionPromise = audiusLibs.Playlist.deletePlaylist(
         playlistId
       )
-      await Promise.all(trackDeletionPromises.concat(playlistDeletionPromise))
-      return { error: false }
+      const results = await Promise.all(
+        trackDeletionPromises.concat(playlistDeletionPromise)
+      )
+      const deleteTrackReceipts = results.slice(0, -1).map(r => r.txReceipt)
+      const deletePlaylistReceipt = results.slice(-1)[0].txReceipt
+
+      const { blockHash, blockNumber } = this.getLatestTxReceipt(
+        deleteTrackReceipts.concat(deletePlaylistReceipt)
+      )
+      return { blockHash, blockNumber }
     } catch (error) {
       console.error(error.message)
       return { error }
@@ -1384,10 +1443,14 @@ class AudiusBackend {
 
   static async deleteTrack(trackId) {
     try {
-      return await audiusLibs.Track.deleteTrack(trackId)
+      const { txReceipt } = await audiusLibs.Track.deleteTrack(trackId)
+      return {
+        blockHash: txReceipt.blockHash,
+        blockNumber: txReceipt.blockNumber
+      }
     } catch (err) {
       console.error(err.message)
-      return false
+      throw err
     }
   }
 
@@ -2295,6 +2358,18 @@ class AudiusBackend {
   static async getSignature(data) {
     await waitForLibsInit()
     return audiusLibs.web3Manager.sign(data)
+  }
+
+  /**
+   * Get latest transaction receipt based on block number
+   * Used by confirmer
+   */
+
+  static getLatestTxReceipt(receipts) {
+    if (!receipts.length) return {}
+    return receipts.sort((receipt1, receipt2) =>
+      receipt1.blockNumber < receipt2.blockNumber ? 1 : -1
+    )[0]
   }
 }
 

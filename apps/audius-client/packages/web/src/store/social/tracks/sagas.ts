@@ -9,13 +9,13 @@ import { getUserId, getUserHandle } from 'store/account/selectors'
 import { getTrack, getTracks } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { pollTrack } from 'store/confirmer/sagas'
+import { confirmTransaction } from 'store/confirmer/sagas'
 import AudiusBackend from 'services/AudiusBackend'
 import TrackDownload from 'services/audius-backend/TrackDownload'
 import * as signOnActions from 'containers/sign-on/store/actions'
 import { adjustUserField } from 'store/cache/users/sagas'
 import { makeKindId } from 'utils/uid'
-import { formatUrlName, formatShareText } from 'utils/formatUtil'
+import { formatShareText } from 'utils/formatUtil'
 import watchTrackErrors from './errorSagas'
 import { ID } from 'models/common/Identifiers'
 import User from 'models/User'
@@ -137,17 +137,16 @@ export function* confirmRepostTrack(trackId: ID, user: User) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        yield call(AudiusBackend.repostTrack, trackId)
-        const fetchedTrack = yield select(getTrack, { id: trackId })
-        const user = yield select(getUser, { id: fetchedTrack.owner_id })
-        const handle = user.handle
-        return yield call(
-          pollTrack,
-          trackId,
-          formatUrlName(fetchedTrack.title),
-          handle,
-          (track: Track) => track.has_current_user_reposted
+        const { blockHash, blockNumber } = yield call(
+          AudiusBackend.repostTrack,
+          trackId
         )
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm repost track for track id ${trackId}`
+          )
+        }
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
@@ -242,17 +241,16 @@ export function* confirmUndoRepostTrack(trackId: ID, user: User) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        yield call(AudiusBackend.undoRepostTrack, trackId)
-        const fetchedTrack = yield select(getTrack, { id: trackId })
-        const user = yield select(getUser, { id: fetchedTrack.owner_id })
-        const handle = user.handle
-        return yield call(
-          pollTrack,
-          trackId,
-          formatUrlName(fetchedTrack.title),
-          handle,
-          (track: Track) => !track.has_current_user_reposted
+        const { blockHash, blockNumber } = yield call(
+          AudiusBackend.undoRepostTrack,
+          trackId
         )
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm undo repost track for track id ${trackId}`
+          )
+        }
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
@@ -371,17 +369,16 @@ export function* confirmSaveTrack(trackId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        yield call(AudiusBackend.saveTrack, trackId)
-        const fetchedTrack = yield select(getTrack, { id: trackId })
-        const user = yield select(getUser, { id: fetchedTrack.owner_id })
-        const handle = user.handle
-        return yield call(
-          pollTrack,
-          trackId,
-          formatUrlName(fetchedTrack.title),
-          handle,
-          (track: Track) => track.has_current_user_saved
+        const { blockHash, blockNumber } = yield call(
+          AudiusBackend.saveTrack,
+          trackId
         )
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm save track for track id ${trackId}`
+          )
+        }
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
@@ -466,17 +463,16 @@ export function* confirmUnsaveTrack(trackId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        yield call(AudiusBackend.unsaveTrack, trackId)
-        const fetchedTrack = yield select(getTrack, { id: trackId })
-        const user = yield select(getUser, { id: fetchedTrack.owner_id })
-        const handle = user.handle
-        return yield call(
-          pollTrack,
-          trackId,
-          formatUrlName(fetchedTrack.title),
-          handle,
-          (track: Track) => track.has_current_user_saved
+        const { blockHash, blockNumber } = yield call(
+          AudiusBackend.unsaveTrack,
+          trackId
         )
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm unsave track for track id ${trackId}`
+          )
+        }
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed

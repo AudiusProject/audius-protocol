@@ -18,7 +18,11 @@ import * as confirmerActions from 'store/confirmer/actions'
 import * as cacheActions from 'store/cache/actions'
 import * as tracksActions from 'store/cache/tracks/actions'
 import * as accountActions from 'store/account/reducer'
-import { getAccountUser, getUserHandle } from 'store/account/selectors'
+import {
+  getAccountUser,
+  getUserHandle,
+  getUserId
+} from 'store/account/selectors'
 import {
   getSelectedServices,
   getStatus
@@ -27,7 +31,7 @@ import { getUser } from 'store/cache/users/selectors'
 import AudiusBackend from 'services/AudiusBackend'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import UploadType from 'containers/upload-page/components/uploadType'
-import { pollTrack, pollPlaylist } from 'store/confirmer/sagas'
+import { confirmTransaction } from 'store/confirmer/sagas'
 import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'
 import { Kind, Status } from 'store/types'
 import { makeUid } from 'utils/uid'
@@ -43,6 +47,8 @@ import { getStems } from 'containers/upload-page/store/selectors'
 import { updateAndFlattenStems } from 'containers/upload-page/store/utils/stems'
 import { trackNewRemixEvent } from 'store/cache/tracks/sagas'
 import { reportSuccessAndFailureEvents } from './utils/sagaHelpers'
+
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 
 const MAX_CONCURRENT_UPLOADS = 4
 const MAX_CONCURRENT_REGISTRATIONS = 4
@@ -181,7 +187,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
       console.debug(
         `Beginning non-collection upload for track: ${metadata.title}`
       )
-      const { trackId, error, phase } = yield call(
+      const { blockHash, blockNumber, trackId, error, phase } = yield call(
         AudiusBackend.uploadTrack,
         track.file,
         artwork,
@@ -206,8 +212,13 @@ function* uploadWorker(requestChan, respChan, progressChan) {
       }
 
       console.debug(`Got new ID ${trackId} for track ${metadata.title}}`)
-      const handle = yield select(getUserHandle)
-      yield call(pollTrack, trackId, formatUrlName(metadata.title), handle)
+
+      const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+      if (!confirmed) {
+        throw new Error(
+          `Could not confirm track upload for track id ${trackId}`
+        )
+      }
       return trackId
     }
   }
@@ -681,7 +692,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
         console.debug('Creating playlist')
         // Uploaded collections are always public
         const isPrivate = false
-        const { playlistId, error } = yield call(
+        const { blockHash, blockNumber, playlistId, error } = yield call(
           AudiusBackend.createPlaylist,
           userId,
           collectionMetadata,
@@ -699,20 +710,21 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
             // created the playlist but adding tracks to it failed. So we must delete the playlist
             yield call(AudiusBackend.deletePlaylist, playlistId)
             console.debug('Playlist deleted successfully')
+          } else {
+            // I think this is what we want
+            yield put(uploadActions.createPlaylistErrorNoId(error))
           }
-
-          yield put(uploadActions.createPlaylistErrorIDExists())
           // Throw to trigger the fail callback
           throw new Error('Playlist creation error')
         }
-        return yield call(
-          pollPlaylist,
-          playlistId,
-          userId,
-          playlist =>
-            playlist &&
-            (!collectionMetadata.artwork || playlist.cover_art_sizes)
-        )
+
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm playlist creation for playlist id ${playlistId}`
+          )
+        }
+        return (yield call(AudiusBackend.getPlaylists, userId, [playlistId]))[0]
       },
       function* (confirmedPlaylist) {
         yield put(
@@ -785,8 +797,12 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
             trackIds
           )}`
         )
-        yield all(trackIds.map(id => AudiusBackend.deleteTrack(id)))
-        console.debug('Deleted tracks.')
+        try {
+          yield all(trackIds.map(id => AudiusBackend.deleteTrack(id)))
+          console.debug('Deleted tracks.')
+        } catch (err) {
+          console.debug(`Could not delete all tracks: ${err}`)
+        }
         yield put(pushRoute(ERROR_PAGE))
       }
     )
@@ -823,7 +839,7 @@ function* uploadSingleTrack(track) {
     confirmerActions.requestConfirmation(
       `${track.metadata.title}`,
       function* () {
-        const { trackId, error, phase } = yield call(
+        const { blockHash, blockNumber, trackId, error, phase } = yield call(
           AudiusBackend.uploadTrack,
           track.file,
           track.metadata.artwork.file,
@@ -847,13 +863,21 @@ function* uploadSingleTrack(track) {
           throw new Error(error)
         }
 
+        const userId = yield select(getUserId)
         const handle = yield select(getUserHandle)
-        return yield call(
-          pollTrack,
-          trackId,
-          formatUrlName(track.metadata.title),
-          handle
-        )
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(`Could not confirm upload single track ${trackId}`)
+        }
+
+        return yield apiClient.getTrack({
+          id: trackId,
+          currentUserId: userId,
+          unlistedArgs: {
+            urlTitle: formatUrlName(track.metadata.title),
+            handle
+          }
+        })
       },
       function* (confirmedTrack) {
         yield call(responseChan.put, { confirmedTrack })

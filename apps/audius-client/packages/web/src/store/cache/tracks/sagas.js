@@ -7,7 +7,6 @@ import {
   takeEvery,
   takeLatest
 } from 'redux-saga/effects'
-import { pick, some } from 'lodash'
 import { Kind } from 'store/types'
 
 import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
@@ -21,7 +20,6 @@ import {
   getUserHandle
 } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { pollTrack } from 'store/confirmer/sagas'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 
 import * as cacheActions from 'store/cache/actions'
@@ -38,6 +36,8 @@ import { getTrack } from 'store/cache/tracks/selectors'
 import { waitForValue } from 'utils/sagaHelpers'
 import { makeKindId } from 'utils/uid'
 import { setColor } from 'store/application/ui/average-color/slice'
+import { confirmTransaction } from 'store/confirmer/sagas'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -200,39 +200,34 @@ function* confirmEditTrack(
         if (!wasDownloadable && isNowDownloadable) {
           yield put(trackActions.checkIsDownloadable(trackId))
         }
-        yield call(AudiusBackend.updateTrack, trackId, { ...formFields })
-        const toConfirm = pick(formFields, [
-          'title',
-          'genre',
-          'isrc',
-          'iswc',
-          'license',
-          'mood',
-          'release_date',
-          'tags',
-          'download',
-          'description',
-          'is_unlisted',
-          'field_visibility'
-        ])
-        let check
-        // If the user is trying to upload a new album artwork, check for a new CID in confirmation.
-        if (formFields.artwork && formFields.artwork.file) {
-          check = track =>
-            some([track], toConfirm) &&
-            track.cover_art_sizes !== formFields.cover_art_sizes
-        } else {
-          check = track => some([track], toConfirm)
+
+        const { blockHash, blockNumber } = yield call(
+          AudiusBackend.updateTrack,
+          trackId,
+          { ...formFields }
+        )
+
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm edit track for track id ${trackId}`
+          )
         }
 
         // Need to poll with the new track name in case it changed
+        const userId = yield select(getUserId)
         const handle = yield select(getUserHandle)
-        return yield call(
-          pollTrack,
-          trackId,
-          formatUrlName(formFields.title),
-          handle,
-          check
+
+        return yield apiClient.getTrack(
+          {
+            id: trackId,
+            currentUserId: userId,
+            unlistedArgs: {
+              urlTitle: formatUrlName(formFields.title),
+              handle
+            }
+          },
+          /* retry */ false
         )
       },
       function* (confirmedTrack) {
@@ -317,15 +312,32 @@ function* confirmDeleteTrack(trackId) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        yield call(AudiusBackend.deleteTrack, trackId)
+        const { blockHash, blockNumber } = yield call(
+          AudiusBackend.deleteTrack,
+          trackId
+        )
+
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm delete track for track id ${trackId}`
+          )
+        }
+
         const track = yield select(getTrack, { id: trackId })
         const handle = yield select(getUserHandle)
-        return yield call(
-          pollTrack,
-          trackId,
-          formatUrlName(track.title),
-          handle,
-          track => track.is_delete
+        const userId = yield select(getUserId)
+
+        return yield apiClient.getTrack(
+          {
+            id: trackId,
+            currentUserId: userId,
+            unlistedArgs: {
+              urlTitle: formatUrlName(track.title),
+              handle
+            }
+          },
+          /* retry */ false
         )
       },
       function* (deletedTrack) {

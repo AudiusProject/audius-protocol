@@ -1,41 +1,37 @@
 import {
-  call,
-  put,
   all,
+  call,
+  fork,
+  put,
   select,
-  takeLatest,
   takeEvery,
-  fork
+  takeLatest
 } from 'redux-saga/effects'
-import { pick, some } from 'lodash'
 
 import * as collectionActions from 'store/cache/collections/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import * as cacheActions from 'store/cache/actions'
 import * as accountActions from 'store/account/reducer'
-import {
-  getUserId,
-  getUserHandle,
-  getAccountUser
-} from 'store/account/selectors'
+import { getAccountUser, getUserId } from 'store/account/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import { getCollection } from 'store/cache/collections/selectors'
-import { getTrack, getTracks } from 'store/cache/tracks/selectors'
+import { getTrack } from 'store/cache/tracks/selectors'
 import AudiusBackend from 'services/AudiusBackend'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { pollPlaylist, pollTrack } from 'store/confirmer/sagas'
+import { confirmTransaction } from 'store/confirmer/sagas'
 import { Kind } from 'store/types'
-import { makeUid, makeKindId } from 'utils/uid'
+import { makeKindId, makeUid } from 'utils/uid'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { fetchUsers } from 'store/cache/users/sagas'
 import * as signOnActions from 'containers/sign-on/store/actions'
 import { DefaultSizes } from 'models/common/ImageSizes'
-import { squashNewLines, formatUrlName } from 'utils/formatUtil'
+import { squashNewLines } from 'utils/formatUtil'
 import { make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 import watchTrackErrors from './errorSagas'
 import { retrieveCollections } from './utils/retrieveCollections'
 import { reformat } from './utils'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 
 /** Counts instances of trackId in a playlist. */
 const countTrackIds = (playlistContents, trackId) => {
@@ -141,28 +137,26 @@ function* confirmCreatePlaylist(uid, userId, formFields, source) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, uid),
       function* () {
-        const { playlistId, error } = yield call(
+        const { blockHash, blockNumber, playlistId, error } = yield call(
           AudiusBackend.createPlaylist,
           userId,
           formFields
         )
+
         if (error || !playlistId) throw new Error('Unable to create playlist')
-        const toConfirm = pick(formFields, ['playlist_name', 'description'])
-        let check
-        // If the user is trying to upload artwork, check that an artwork gets set.
-        if (formFields.artwork && formFields.artwork.file) {
-          check = playlist =>
-            some([playlist], toConfirm) &&
-            playlist.playlist_image_sizes_multihash
-        } else {
-          check = playlist => some([playlist], toConfirm)
+
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm playlist creation for playlist id ${playlistId}`
+          )
         }
-        const confirmedPlaylist = yield call(
-          pollPlaylist,
-          playlistId,
+
+        const confirmedPlaylist = (yield call(
+          AudiusBackend.getPlaylists,
           userId,
-          check
-        )
+          [playlistId]
+        ))[0]
 
         // Immediately after confirming the playlist,
         // create a new playlist reference and mark the temporary one as moved.
@@ -308,27 +302,26 @@ function* confirmEditPlaylist(playlistId, userId, formFields) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId) {
-        const { error } = yield call(
+        const { blockHash, blockNumber, error } = yield call(
           AudiusBackend.updatePlaylist,
           confirmedPlaylistId,
-          { ...formFields }
-        )
-        if (error) throw error
-        const toConfirm = pick(formFields, ['playlist_name', 'description'])
-        let check
-        // If the user is trying to upload a new album artwork, check for a new CID in confirmation.
-        if (formFields.artwork.file) {
-          check = playlist => {
-            return (
-              some([playlist], toConfirm) &&
-              playlist.playlist_image_sizes_multihash !==
-                formFields.cover_art_sizes
-            )
+          {
+            ...formFields
           }
-        } else {
-          check = playlist => some([playlist], toConfirm)
+        )
+
+        if (error) throw error
+
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm playlist edition for playlist id ${playlistId}`
+          )
         }
-        return yield call(pollPlaylist, confirmedPlaylistId, userId, check)
+
+        return (yield call(AudiusBackend.getPlaylists, userId, [
+          confirmedPlaylistId
+        ]))[0]
       },
       function* (confirmedPlaylist) {
         // Update the cached collection so it no longer contains image upload artifacts
@@ -429,19 +422,23 @@ function* confirmAddTrackToPlaylist(userId, playlistId, trackId, count) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId) {
-        const { error } = yield call(
+        const { blockHash, blockNumber, error } = yield call(
           AudiusBackend.addPlaylistTrack,
           confirmedPlaylistId,
           trackId
         )
         if (error) throw error
-        return yield call(
-          pollPlaylist,
-          confirmedPlaylistId,
-          userId,
-          playlist =>
-            countTrackIds(playlist.playlist_contents, trackId) >= count
-        )
+
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm add playlist track for playlist id ${playlistId} and track id ${trackId}`
+          )
+        }
+
+        return (yield call(AudiusBackend.getPlaylists, userId, [
+          confirmedPlaylistId
+        ]))[0]
       },
       function* (confirmedPlaylist) {
         yield put(
@@ -536,16 +533,13 @@ function* fixInvalidTracksInPlaylist(playlistId, userId, invalidTrackIds) {
     trackIds
   )
   if (error) throw error
-  const updatedPlaylist = yield call(
-    pollPlaylist,
+
+  const currentUserId = yield select(getUserId)
+  const playlists = yield apiClient.getPlaylist({
     playlistId,
-    userId,
-    playlist =>
-      playlist.playlist_contents.track_ids
-        .map(t => t.track)
-        .every((e, i) => e === trackIds[i])
-  )
-  return updatedPlaylist
+    currentUserId
+  })
+  return playlists[0]
 }
 
 function* confirmRemoveTrackFromPlaylist(
@@ -561,7 +555,7 @@ function* confirmRemoveTrackFromPlaylist(
       function* (confirmedPlaylistId) {
         // NOTE: In an attempt to fix playlists in a corrupted state, only attempt the delete playlist track once,
         // if it fails, check if the playlist is in a corrupted state and if so fix it before re-attempting to delete track from playlist
-        const { error } = yield call(
+        let { blockHash, blockNumber, error } = yield call(
           AudiusBackend.deletePlaylistTrack,
           confirmedPlaylistId,
           trackId,
@@ -589,22 +583,28 @@ function* confirmRemoveTrackFromPlaylist(
               countTrackIds(updatedPlaylist.playlist_contents, trackId) <= count
             if (isTrackRemoved) return updatedPlaylist
           }
-          const { error: deletePlaylistError } = yield call(
+          const response = yield call(
             AudiusBackend.deletePlaylistTrack,
             confirmedPlaylistId,
             trackId,
             timestamp
           )
-          if (deletePlaylistError) throw deletePlaylistError
+          if (response.error) throw response.error
+
+          blockHash = response.blockHash
+          blockNumber = response.blockNumber
         }
 
-        return yield call(
-          pollPlaylist,
-          confirmedPlaylistId,
-          userId,
-          playlist =>
-            countTrackIds(playlist.playlist_contents, trackId) <= count
-        )
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm remove playlist track for playlist id ${playlistId} and track id ${trackId}`
+          )
+        }
+
+        return (yield call(AudiusBackend.getPlaylists, userId, [
+          confirmedPlaylistId
+        ]))[0]
       },
       function* (confirmedPlaylist) {
         yield put(
@@ -677,7 +677,7 @@ function* confirmOrderPlaylist(userId, playlistId, trackIds) {
       function* (confirmedPlaylistId) {
         // NOTE: In an attempt to fix playlists in a corrupted state, only attempt the order playlist tracks once,
         // if it fails, check if the playlist is in a corrupted state and if so fix it before re-attempting to order playlist
-        const { error } = yield call(
+        let { blockHash, blockNumber, error } = yield call(
           AudiusBackend.orderPlaylist,
           confirmedPlaylistId,
           trackIds,
@@ -699,18 +699,27 @@ function* confirmOrderPlaylist(userId, playlistId, trackIds) {
             const invalidIds = new Set(invalidTrackIds)
             trackIds = trackIds.filter(id => !invalidIds.has(id))
           }
-          const { error: orderPlaylistError } = yield call(
+          const response = yield call(
             AudiusBackend.orderPlaylist,
             confirmedPlaylistId,
             trackIds
           )
-          if (orderPlaylistError) throw orderPlaylistError
+          if (response.error) throw response.error
+
+          blockHash = response.blockHash
+          blockNumber = response.blockNumber
         }
-        return yield call(pollPlaylist, confirmedPlaylistId, userId, playlist =>
-          playlist.playlist_contents.track_ids
-            .map(t => t.track)
-            .every((e, i) => e === trackIds[i])
-        )
+
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm order playlist for playlist id ${playlistId}`
+          )
+        }
+
+        return (yield call(AudiusBackend.getPlaylists, userId, [
+          confirmedPlaylistId
+        ]))[0]
       },
       function* (confirmedPlaylist) {
         yield put(
@@ -773,17 +782,21 @@ function* confirmPublishPlaylist(userId, playlistId) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId) {
-        const { error } = yield call(
+        const { blockHash, blockNumber, error } = yield call(
           AudiusBackend.publishPlaylist,
           confirmedPlaylistId
         )
         if (error) throw error
-        return yield call(
-          pollPlaylist,
-          confirmedPlaylistId,
-          userId,
-          playlist => !playlist.is_private
-        )
+
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm publish playlist for playlist id ${playlistId}`
+          )
+        }
+        return (yield call(AudiusBackend.getPlaylists, userId, [
+          confirmedPlaylistId
+        ]))[0]
       },
       function* (confirmedPlaylist) {
         confirmedPlaylist.is_private = false
@@ -908,37 +921,17 @@ function* confirmDeleteAlbum(playlistId, trackIds, userId) {
           )
         ])
 
-        const { error } = yield call(
+        const { blockHash, blockNumber, error } = yield call(
           AudiusBackend.deleteAlbum,
           playlistId,
           trackIds
         )
         if (error) throw error
-        const ids = trackIds.map(t => t.track)
-        const tracks = yield select(getTracks, { ids })
-        // We need to poll until both playlist and all tracks are deleted
-        console.debug(`Polling for album ${playlistId}`)
-        const handle = yield select(getUserHandle)
-        return yield all(
-          ids
-            .map(id =>
-              call(
-                pollTrack,
-                id,
-                formatUrlName(tracks[id].title),
-                handle,
-                t => t.is_delete
-              )
-            )
-            .concat(
-              call(
-                pollPlaylist,
-                playlistId,
-                userId,
-                playlist => playlist.is_delete
-              )
-            )
-        )
+
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(`Could not confirm delete album for id ${playlistId}`)
+        }
       },
       function* () {
         console.debug(`Successfully deleted album ${playlistId}`)
@@ -1010,17 +1003,18 @@ function* confirmDeletePlaylist(userId, playlistId) {
           )
         ])
 
-        const { error } = yield call(
+        const { blockHash, blockNumber, error } = yield call(
           AudiusBackend.deletePlaylist,
           confirmedPlaylistId
         )
         if (error) throw error
-        return yield call(
-          pollPlaylist,
-          confirmedPlaylistId,
-          userId,
-          playlist => playlist.is_delete
-        )
+
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm delete playlist track for playlist id ${playlistId}`
+          )
+        }
       },
       function* () {
         console.debug(`Successfully deleted playlist ${playlistId}`)
