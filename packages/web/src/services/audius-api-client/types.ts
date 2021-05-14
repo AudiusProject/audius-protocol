@@ -214,6 +214,11 @@ export type APISearchAutocomplete = {
   saved_albums?: APISearchPlaylist[]
 }
 
+export type APIBlockConfirmation = {
+  block_found: boolean
+  block_passed: boolean
+}
+
 export type APIResponse<T> = {
   data: T
 }

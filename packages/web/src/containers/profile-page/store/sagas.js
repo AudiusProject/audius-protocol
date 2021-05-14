@@ -8,7 +8,6 @@ import {
   takeEvery,
   takeLatest
 } from 'redux-saga/effects'
-import { pick, some } from 'lodash'
 
 import * as profileActions from './actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
@@ -16,7 +15,7 @@ import * as cacheActions from 'store/cache/actions'
 import { Kind } from 'store/types'
 import * as confirmerActions from 'store/confirmer/actions'
 import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
-import { pollUser } from 'store/confirmer/sagas'
+import { confirmTransaction } from 'store/confirmer/sagas'
 import { getUserId } from 'store/account/selectors'
 import {
   getProfileUserId,
@@ -353,28 +352,26 @@ function* confirmUpdateProfile(userId, metadata) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
+        let response
         if (metadata.creator_node_endpoint) {
-          yield call(AudiusBackend.updateCreator, metadata, userId)
+          response = yield call(AudiusBackend.updateCreator, metadata, userId)
         } else {
-          yield call(AudiusBackend.updateUser, metadata, userId)
+          response = yield call(AudiusBackend.updateUser, metadata, userId)
         }
-        const toConfirm = pick(metadata, ['name', 'bio', 'location'])
-        // If the user is trying to upload a new profile picture or cover photo, check that it gets changed
-        let coverPhotoCheck = user => user
-        let profilePictureCheck = user => user
-        if (metadata.updatedCoverPhoto) {
-          coverPhotoCheck = user =>
-            user.cover_photo_sizes !== metadata.cover_photo_sizes
+        const { blockHash, blockNumber } = response
+
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm update profile for user id ${userId}`
+          )
         }
-        if (metadata.updatedProfilePicture) {
-          profilePictureCheck = user =>
-            user.profile_picture_sizes !== metadata.profile_picture_sizes
-        }
-        const checks = user =>
-          some([user], toConfirm) &&
-          coverPhotoCheck(user) &&
-          profilePictureCheck(user)
-        return yield call(pollUser, userId, checks)
+        const currentUserId = yield select(getUserId)
+        const users = yield apiClient.getUser({
+          userId,
+          currentUserId
+        })
+        return users[0]
       },
       function* (confirmedUser) {
         // Store the update in local storage so it is correct upon reload

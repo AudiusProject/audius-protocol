@@ -3,14 +3,15 @@ import { Nullable, removeNullable } from 'utils/typeUtils'
 import { ID } from 'models/common/Identifiers'
 import {
   APIActivity,
-  APIResponse,
-  APITrack,
+  APIBlockConfirmation,
   APIPlaylist,
-  APIUser,
-  OpaqueID,
-  APIStem,
+  APIResponse,
   APISearch,
-  APISearchAutocomplete
+  APISearchAutocomplete,
+  APIStem,
+  APITrack,
+  APIUser,
+  OpaqueID
 } from './types'
 import * as adapter from './ResponseAdapter'
 import AudiusBackend from 'services/AudiusBackend'
@@ -18,7 +19,7 @@ import {
   getEagerDiscprov,
   waitForLibsInit
 } from 'services/audius-backend/eagerLoadUtils'
-import { encodeHashId, decodeHashId } from 'utils/route/hashIds'
+import { decodeHashId, encodeHashId } from 'utils/route/hashIds'
 import { StemTrackMetadata } from 'models/Track'
 import { SearchKind } from 'containers/search-page/store/types'
 import { processSearchResults } from './helper'
@@ -28,6 +29,17 @@ declare global {
   interface Window {
     audiusLibs: any
   }
+}
+
+enum PathType {
+  RootPath = '',
+  VersionPath = '/v1',
+  VersionFullPath = '/v1/full'
+}
+
+const ROOT_ENDPOINT_MAP = {
+  healthCheck: '/health_check',
+  blockConfirmation: '/block_confirmation'
 }
 
 const FULL_ENDPOINT_MAP = {
@@ -43,6 +55,7 @@ const FULL_ENDPOINT_MAP = {
     `/playlists/${playlistId}/reposts`,
   playlistFavoriteUsers: (playlistId: OpaqueID) =>
     `/playlists/${playlistId}/favorites`,
+  getUser: (userId: OpaqueID) => `/users/${userId}`,
   userByHandle: (handle: OpaqueID) => `/users/handle/${handle}`,
   userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
   userFavoritedTracks: (userId: OpaqueID) =>
@@ -144,6 +157,11 @@ type GetPlaylistFavoriteUsersArgs = {
   currentUserId: Nullable<ID>
   limit?: number
   offset?: number
+}
+
+type GetUserArgs = {
+  userId: ID
+  currentUserId: Nullable<ID>
 }
 
 type GetUserByHandleArgs = {
@@ -679,6 +697,25 @@ class AudiusAPIClient {
     return tracks
   }
 
+  async getUser({ userId, currentUserId }: GetUserArgs) {
+    const encodedUserId = this._encodeOrThrow(userId)
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    this._assertInitialized()
+    const params = {
+      user_id: encodedCurrentUserId || undefined
+    }
+
+    const response: Nullable<APIResponse<APIUser[]>> = await this._getResponse(
+      FULL_ENDPOINT_MAP.getUser(encodedUserId),
+      params
+    )
+
+    if (!response) return []
+
+    const adapted = response.data.map(adapter.makeUser).filter(removeNullable)
+    return adapted
+  }
+
   async getUserByHandle({ handle, currentUserId }: GetUserByHandleArgs) {
     const encodedCurrentUserId = encodeHashId(currentUserId)
     this._assertInitialized()
@@ -915,7 +952,7 @@ class AudiusAPIClient {
       ENDPOINT_MAP.associatedWallets,
       params,
       true,
-      false
+      PathType.VersionPath
     )
 
     if (!associatedWallets) return null
@@ -932,12 +969,25 @@ class AudiusAPIClient {
       ENDPOINT_MAP.associatedWalletUserId,
       params,
       true,
-      false
+      PathType.VersionPath
     )
 
     if (!userID) return null
     const encodedUserId = userID.data.user_id
     return encodedUserId ? decodeHashId(encodedUserId.toString()) : null
+  }
+
+  async getBlockConfirmation(blockhash: string, blocknumber: number) {
+    const response: Nullable<APIResponse<
+      APIBlockConfirmation
+    >> = await this._getResponse(
+      ROOT_ENDPOINT_MAP.blockConfirmation,
+      { blockhash, blocknumber },
+      true,
+      PathType.RootPath
+    )
+    if (!response) return {}
+    return response.data
   }
 
   init() {
@@ -980,10 +1030,12 @@ class AudiusAPIClient {
     console.debug('APIClient: Initialized')
   }
 
-  makeUrl = (path: string, queryParams: QueryParams = {}, useFull = false) => {
-    const formattedPath = useFull
-      ? this._formatFullPath(path)
-      : this._formatPath(path)
+  makeUrl = (
+    path: string,
+    queryParams: QueryParams = {},
+    pathType: PathType = PathType.VersionPath
+  ) => {
+    const formattedPath = this._formatPath(pathType, path)
     return this._constructUrl(formattedPath, queryParams)
   }
 
@@ -998,7 +1050,7 @@ class AudiusAPIClient {
     path: string,
     params: QueryParams = {},
     retry = true,
-    useFull = true
+    pathType: PathType = PathType.VersionFullPath
   ): Promise<Nullable<T>> {
     if (this.initializationState.state !== 'initialized')
       throw new Error('_constructURL called uninitialized')
@@ -1010,9 +1062,7 @@ class AudiusAPIClient {
       return { ...acc, [cur]: val }
     }, {})
 
-    const formattedPath = useFull
-      ? this._formatFullPath(path)
-      : this._formatPath(path)
+    const formattedPath = this._formatPath(pathType, path)
     if (this.initializationState.type === 'libs' && window.audiusLibs) {
       const data = await window.audiusLibs.discoveryProvider._makeRequest(
         {
@@ -1041,16 +1091,12 @@ class AudiusAPIClient {
       if (this.initializationState.type === 'manual') {
         await waitForLibsInit()
       }
-      return this._getResponse(path, sanitizedParams, retry, useFull)
+      return this._getResponse(path, sanitizedParams, retry, pathType)
     }
   }
 
-  _formatPath(path: string) {
-    return `/v1${path}`
-  }
-
-  _formatFullPath(path: string) {
-    return `/v1/full${path}`
+  _formatPath(pathType: PathType, path: string) {
+    return `${pathType}${path}`
   }
 
   _encodeOrThrow(id: ID): OpaqueID {
