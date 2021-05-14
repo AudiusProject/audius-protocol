@@ -55,7 +55,7 @@
     "react-native-markdown-display": "^7.0.0-alpha.2",
     "react-native-music-control": "git://github.com/AudiusProject/react-native-music-control.git",
     "react-native-permissions": "^3.0.0",
-    "react-native-push-notification": "^3.1.9",
+    "react-native-push-notification": "^7.3.1",
     "react-native-static-server": "^0.5.0",
     "react-native-svg": "^12.1.0",
     "react-native-svg-transformer": "^0.14.3",
