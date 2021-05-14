@@ -57,7 +57,7 @@ const formatIFrame = (url: string, size: Size) => {
       extras = 'width="100%" height="120"'
       break
     case Size.TINY:
-      extras = 'width="100%" height="20" allowTransparency="true"'
+      extras = 'width="100%" height="24" allowTransparency="true"'
       break
   }
   return `<iframe src=${url} ${extras} allow="encrypted-media" style="border: none;"></iframe>`

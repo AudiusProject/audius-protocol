@@ -65,6 +65,7 @@ import {
   PROFILE_PAGE_PLAYLISTS,
   PROFILE_PAGE_REPOSTS,
   TRENDING_UNDERGROUND_PAGE,
+  CHECK_PAGE,
   getPathname,
   TRENDING_PLAYLISTS_PAGE_LEGACY
 } from 'utils/route'
@@ -161,6 +162,7 @@ import EnablePushNotificationsDrawer from './enable-push-notifications-drawer/En
 import { ThemeChangeMessage } from 'services/native-mobile-interface/theme'
 import TrendingPlaylistsPage from 'containers/trending-playlists/TrendingPlaylistPage'
 import TrendingUndergroundPage from 'containers/trending-underground/TrendingUndergroundPage'
+import CheckPage from 'containers/check-page/CheckPage'
 
 const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
 
@@ -736,6 +738,7 @@ class App extends Component {
                 isMobile={isMobileClient}
                 component={SettingsPage}
               />
+              <Route exact path={CHECK_PAGE} component={CheckPage} />
               <MobileRoute
                 exact
                 path={ACCOUNT_SETTINGS_PAGE}

@@ -41,6 +41,7 @@ export type UserMetadata = {
   twitter_handle?: string
   instagram_handle?: string
   website?: string
+  wallet?: string
   donation?: string
   twitterVerified?: boolean
   instagramVerified?: boolean
