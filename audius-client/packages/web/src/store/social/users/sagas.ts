@@ -6,7 +6,7 @@ import { Kind } from 'store/types'
 import * as confirmerActions from 'store/confirmer/actions'
 import { getUsers, getUser } from 'store/cache/users/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { pollUser } from 'store/confirmer/sagas'
+import { confirmTransaction } from 'store/confirmer/sagas'
 import AudiusBackend from 'services/AudiusBackend'
 import { getUserId } from 'store/account/selectors'
 import * as signOnActions from 'containers/sign-on/store/actions'
@@ -14,7 +14,6 @@ import { adjustUserField } from 'store/cache/users/sagas'
 import { makeKindId } from 'utils/uid'
 import errorSagas from './errorSagas'
 import { ID } from 'models/common/Identifiers'
-import User from 'models/User'
 import { profilePage } from 'utils/route'
 import { make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
@@ -75,12 +74,16 @@ export function* confirmFollowUser(userId: ID, accountId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
-        yield call(AudiusBackend.followUser, userId)
-        return yield call(
-          pollUser,
-          userId,
-          (user: User) => user.does_current_user_follow
+        const { blockHash, blockNumber } = yield call(
+          AudiusBackend.followUser,
+          userId
         )
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm follow user for user id ${userId} and account id ${accountId}`
+          )
+        }
       },
       // @ts-ignore: remove when confirmer is typed
       function* () {
@@ -174,12 +177,16 @@ export function* confirmUnfollowUser(userId: ID, accountId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
       function* () {
-        yield call(AudiusBackend.unfollowUser, userId)
-        return yield call(
-          pollUser,
-          userId,
-          (user: User) => !user.does_current_user_follow
+        const { blockHash, blockNumber } = yield call(
+          AudiusBackend.unfollowUser,
+          userId
         )
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm unfollow user for user id ${userId} and account id ${accountId}`
+          )
+        }
       },
       // @ts-ignore: remove when confirmer is typed
       function* () {

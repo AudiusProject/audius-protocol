@@ -12,7 +12,7 @@ import {
   getCollection
 } from 'store/cache/collections/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { pollPlaylist } from 'store/confirmer/sagas'
+import { confirmTransaction } from 'store/confirmer/sagas'
 import AudiusBackend from 'services/AudiusBackend'
 import { makeUid, makeKindId } from 'utils/uid'
 import * as signOnActions from 'containers/sign-on/store/actions'
@@ -20,7 +20,6 @@ import { adjustUserField } from 'store/cache/users/sagas'
 import watchCollectionErrors from './errorSagas'
 import { ID } from 'models/common/Identifiers'
 import User from 'models/User'
-import Collection from 'models/Collection'
 import { albumPage, playlistPage } from 'utils/route'
 import { share } from 'utils/share'
 import { formatShareText } from 'utils/formatUtil'
@@ -93,13 +92,16 @@ export function* confirmRepostCollection(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        yield call(AudiusBackend.repostCollection, collectionId)
-        return yield call(
-          pollPlaylist,
-          collectionId,
-          ownerId,
-          (playlist: Collection) => playlist.has_current_user_reposted
+        const { blockHash, blockNumber } = yield call(
+          AudiusBackend.repostCollection,
+          collectionId
         )
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm repost collection for collection id ${collectionId}`
+          )
+        }
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
@@ -185,13 +187,16 @@ export function* confirmUndoRepostCollection(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        yield call(AudiusBackend.undoRepostCollection, collectionId)
-        return yield call(
-          pollPlaylist,
-          collectionId,
-          ownerId,
-          (playlist: Collection) => !playlist.has_current_user_reposted
+        const { blockHash, blockNumber } = yield call(
+          AudiusBackend.undoRepostCollection,
+          collectionId
         )
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm undo repost collection for collection id ${collectionId}`
+          )
+        }
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
@@ -327,13 +332,16 @@ export function* confirmSaveCollection(ownerId: ID, collectionId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        yield call(AudiusBackend.saveCollection, collectionId)
-        return yield call(
-          pollPlaylist,
-          collectionId,
-          ownerId,
-          (playlist: Collection) => playlist.has_current_user_saved
+        const { blockHash, blockNumber } = yield call(
+          AudiusBackend.saveCollection,
+          collectionId
         )
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm save collection for collection id ${collectionId}`
+          )
+        }
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
@@ -429,13 +437,16 @@ export function* confirmUnsaveCollection(ownerId: ID, collectionId: ID) {
     confirmerActions.requestConfirmation(
       makeKindId(Kind.COLLECTIONS, collectionId),
       function* () {
-        yield call(AudiusBackend.unsaveCollection, collectionId)
-        return yield call(
-          pollPlaylist,
-          collectionId,
-          ownerId,
-          (playlist: Collection) => !playlist.has_current_user_saved
+        const { blockHash, blockNumber } = yield call(
+          AudiusBackend.unsaveCollection,
+          collectionId
         )
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(
+            `Could not confirm unsave collection for collection id ${collectionId}`
+          )
+        }
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed

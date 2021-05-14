@@ -1,4 +1,3 @@
-import { delay } from 'redux-saga'
 import { select } from 'redux-saga-test-plan/matchers'
 import { all, call, put, race, take, takeLatest } from 'redux-saga/effects'
 import {
@@ -54,6 +53,7 @@ import { Kind } from 'store/types'
 import { BooleanKeys, getRemoteVar } from 'services/remote-config'
 import { fetchServices } from 'containers/service-selection/store/slice'
 import { WalletLinkProvider } from 'walletlink'
+import { confirmTransaction } from 'store/confirmer/sagas'
 
 const CONNECT_WALLET_CONFIRMATION_UID = 'CONNECT_WALLET'
 
@@ -128,29 +128,6 @@ function* getAccountMetadataCID(): Generator<any, Nullable<string>, any> {
   const users: any[] = yield call(AudiusBackend.getCreators, [accountUserId])
   if (users.length !== 1) return null
   return users[0].metadata_multihash
-}
-
-// The confirmer's polling interval
-const POLLING_FREQUENCY_MILLIS = 2000
-
-/**
- * Compare the user's updated associated wallets against the wallets returned from discovery service
- * @param {number} userID The user ID to fetch associated wallets for from discovery service
- * @param {Object} currrentWallets A map of wallet addresses to signature
- * @returns boolean
- */
-function* compareIndexedWallets(
-  userID: ID,
-  currrentWallets: Record<string, any> = {}
-): Generator<any, boolean, any> {
-  const associatedWallets: AssociatedWalletsResponse = yield apiClient.getAssociatedWallets(
-    { userID }
-  )
-  const indexedWallets = associatedWallets.wallets
-  return (
-    indexedWallets.length === Object.keys(currrentWallets).length &&
-    indexedWallets.every(wallet => wallet in currrentWallets)
-  )
 }
 
 function* disconnectWeb3(web3Instance: any) {
@@ -289,25 +266,28 @@ function* connectWallet() {
       [connectingWallet]: { signature }
     }
 
-    yield call(AudiusBackend.updateCreator, updatedMetadata, accountUserId)
     yield put(
       requestConfirmation(
         CONNECT_WALLET_CONFIRMATION_UID,
         function* () {
-          const updatedWallets = updatedMetadata.associated_wallets
-          let equivalentIndexedWallets: boolean = yield call(
-            compareIndexedWallets,
-            accountUserId!,
-            updatedWallets
+          const { blockHash, blockNumber } = yield call(
+            AudiusBackend.updateCreator,
+            updatedMetadata,
+            accountUserId
           )
-          while (!equivalentIndexedWallets) {
-            yield delay(POLLING_FREQUENCY_MILLIS)
-            equivalentIndexedWallets = yield call(
-              compareIndexedWallets,
-              accountUserId!,
-              updatedWallets
+
+          const confirmed = yield call(
+            confirmTransaction,
+            blockHash,
+            blockNumber
+          )
+          if (!confirmed) {
+            throw new Error(
+              `Could not confirm connect wallet for account user id ${accountUserId}`
             )
           }
+
+          const updatedWallets = updatedMetadata.associated_wallets
           return Object.keys(updatedWallets)
         },
         // @ts-ignore: remove when confirmer is typed
@@ -379,23 +359,24 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
 
     delete updatedMetadata.associated_wallets[removeWallet]
 
-    yield call(AudiusBackend.updateCreator, updatedMetadata, accountUserId)
     yield put(
       requestConfirmation(
         CONNECT_WALLET_CONFIRMATION_UID,
         function* () {
-          const updatedWallets = updatedMetadata.associated_wallets
-          let equivalentIndexedWallets: boolean = yield call(
-            compareIndexedWallets,
-            accountUserId!,
-            updatedWallets
+          const { blockHash, blockNumber } = yield call(
+            AudiusBackend.updateCreator,
+            updatedMetadata,
+            accountUserId
           )
-          while (!equivalentIndexedWallets) {
-            yield delay(POLLING_FREQUENCY_MILLIS)
-            equivalentIndexedWallets = yield call(
-              compareIndexedWallets,
-              accountUserId!,
-              updatedWallets
+
+          const confirmed = yield call(
+            confirmTransaction,
+            blockHash,
+            blockNumber
+          )
+          if (!confirmed) {
+            throw new Error(
+              `Could not confirm remove wallet for account user id ${accountUserId}`
             )
           }
         },

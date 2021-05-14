@@ -1,16 +1,16 @@
 /* globals fetch */
 import { delay } from 'redux-saga'
 import {
+  all,
   call,
   put,
+  race,
   select,
-  takeLatest,
-  takeEvery,
-  all,
   take,
-  race
+  takeEvery,
+  takeLatest
 } from 'redux-saga/effects'
-import { pollUser } from 'store/confirmer/sagas'
+import { confirmTransaction } from 'store/confirmer/sagas'
 
 import * as signOnActions from './actions'
 import * as confirmerActions from 'store/confirmer/actions'
@@ -24,18 +24,18 @@ import { getCityAndRegion } from 'services/Location'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { fetchUsers } from 'store/cache/users/sagas'
 import { processAndCacheUsers } from 'store/cache/users/utils'
-import { getSignOn, getRouteOnCompletion } from './selectors'
+import { getRouteOnCompletion, getSignOn } from './selectors'
 import { push as pushRoute } from 'connected-react-router'
-import { SIGN_IN_PAGE, SIGN_UP_PAGE, FEED_PAGE } from 'utils/route'
+import { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { fetchAccountAsync } from 'store/account/sagas'
 import { restrictedHandles } from 'utils/restrictedHandles'
 import { isValidEmailString } from 'utils/email'
 import { watchSignOnError } from './errorSagas'
 import { identify, make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
-import { Pages, FollowArtistsCategory } from './types'
+import { FollowArtistsCategory, Pages } from './types'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
-import { Genre, ELECTRONIC_SUBGENRES } from 'utils/genres'
+import { ELECTRONIC_SUBGENRES, Genre } from 'utils/genres'
 import { getIGUserUrl } from 'components/general/InstagramAuth'
 import { getRemoteVar, IntKeys, StringKeys } from 'services/remote-config'
 import { checkHandle } from './verifiedChecker'
@@ -216,7 +216,7 @@ function* signUp(action) {
     confirmerActions.requestConfirmation(
       handle,
       function* () {
-        const { userId, error, phase } = yield call(
+        const { blockHash, blockNumber, userId, error, phase } = yield call(
           AudiusBackend.signUp,
           email,
           password,
@@ -267,7 +267,13 @@ function* signUp(action) {
 
         // Set the has request browser permission to true as the signon provider will open it
         setHasRequestedBrowserPermission()
-        return yield call(pollUser, userId)
+
+        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
+        if (!confirmed) {
+          throw new Error(`Could not confirm sign up for user id ${userId}`)
+        }
+        // todo do we actually need the next line
+        return yield call(AudiusBackend.getCreators, [userId])[0]
       },
       function* () {
         yield put(signOnActions.signUpSucceeded())

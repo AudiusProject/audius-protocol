@@ -1,7 +1,6 @@
 import { delay } from 'redux-saga'
 import { call, put, race, select, takeEvery } from 'redux-saga/effects'
 
-import AudiusBackend from 'services/AudiusBackend'
 import { waitForValue } from 'utils/sagaHelpers'
 import * as confirmerActions from 'store/confirmer/actions'
 import {
@@ -12,89 +11,42 @@ import {
   getIsDone
 } from 'store/confirmer/selectors'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { getUserId } from 'store/account/selectors'
+
+const BlockConfirmation = Object.freeze({
+  CONFIRMED: 'CONFIRMED',
+  DENIED: 'DENIED',
+  UNKNOWN: 'UNKNOWN'
+})
 
 const POLLING_FREQUENCY_MILLIS = 2000
 
 /* Exported  */
 
-/**
- * Polls a playlist in discprov and checks for existence as well as whether a custom check
- * on the playlist is fulfilled.
- * @param {number} playlistId
- * @param {?number} userId playlist owner id. Can be null ONLY if the playlist is PUBLIC.
- * @param {function} check single argument function that takes a playlist and returns a boolean.
- */
-export function* pollPlaylist(
-  playlistId,
-  userId,
-  check = playlist => playlist
-) {
-  let playlists = yield call(AudiusBackend.getPlaylists, userId, [playlistId])
-  while (playlists.length === 0 || !check(playlists[0])) {
-    yield delay(POLLING_FREQUENCY_MILLIS)
-    playlists = yield call(AudiusBackend.getPlaylists, userId, [playlistId])
-  }
-  return playlists[0]
-}
+export function* confirmTransaction(blockHash, blockNumber) {
+  /**
+   * Assume confirmation when there is nothing to confirm
+   */
+  if (!blockHash || !blockNumber) return true
 
-/**
- * Polls a track in discprov and checks for existence as well as whether a custom check
- * on the track is fulfilled.
- * @param {number} trackId
- * @param {function} check single argument function that takes a track and returns a boolean.
- */
-export function* pollTrack(
-  trackId,
-  trackTitle,
-  handle,
-  check = track => track
-) {
-  const userId = yield select(getUserId)
-
-  function* fetchTrack() {
-    return yield call(
-      args => {
-        try {
-          return apiClient.getTrack(args, /* retry */ false)
-        } catch (e) {
-          // TODO: for now we treat all errors from DP
-          // here as cause to retry, we should just
-          // retry for 404s
-          return null
-        }
-      },
-      {
-        id: trackId,
-        currentUserId: userId,
-        unlistedArgs: {
-          urlTitle: trackTitle,
-          handle
-        }
-      }
+  function* confirmBlock() {
+    const { block_found, block_passed } = yield apiClient.getBlockConfirmation(
+      blockHash,
+      blockNumber
     )
-  }
-  let track = yield call(fetchTrack)
-  while (!(track && check(track))) {
-    yield delay(POLLING_FREQUENCY_MILLIS)
-    track = yield call(fetchTrack)
-  }
-  return track
-}
 
-/**
- * Polls a user in discprov and checks for existence as well as whether a custom check
- * on the user is fulfilled.
- * @param {number} userId
- * @param {function} check single argument function that takes a user and returns a boolean.
- */
-export function* pollUser(userId, check = user => user) {
-  let users = yield call(AudiusBackend.getCreators, [userId])
-  while (users.length === 0 || !check(users[0])) {
-    yield delay(POLLING_FREQUENCY_MILLIS)
-    users = yield call(AudiusBackend.getCreators, [userId])
+    return block_found
+      ? BlockConfirmation.CONFIRMED
+      : block_passed
+      ? BlockConfirmation.DENIED
+      : BlockConfirmation.UNKNOWN
   }
-  return users[0]
+
+  let confirmation = yield call(confirmBlock)
+  while (confirmation === BlockConfirmation.UNKNOWN) {
+    yield delay(POLLING_FREQUENCY_MILLIS)
+    confirmation = yield call(confirmBlock)
+  }
+  return confirmation === BlockConfirmation.CONFIRMED
 }
 
 /* Private */
