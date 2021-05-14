@@ -60,7 +60,12 @@ const getFileName = (req) => {
 
 const server = new tus.Server()
 server.datastore = new tus.FileStore({
-  path: tmpTrackArtifactsPath, // has to be a path that exists
+  // Has to be a path that exists
+  path: tmpTrackArtifactsPath,
+  // In the tus-node-server example, they set the file path using the 'path' key. However, in their package,
+  // doing so strips off any forward slashes. The 'directory' key overrides any 'path' specified, so use
+  // this key instead.
+  directory: tmpTrackArtifactsPath,
   namingFunction: getFileName
 })
 
