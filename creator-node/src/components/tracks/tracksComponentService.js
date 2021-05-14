@@ -36,8 +36,8 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs, black
     codeBlockTimeStart = Date.now()
 
     const transcode = await Promise.all([
-      TranscodingQueue.segment(requestProps.fileDir, requestProps.fileName, { logContext }),
-      TranscodingQueue.transcode320(requestProps.fileDir, requestProps.fileName, { logContext })
+      TranscodingQueue.segment(requestProps.fileDir, requestProps.fileName, { logContext, useLibFdk: requestProps.useLibFdk }),
+      TranscodingQueue.transcode320(requestProps.fileDir, requestProps.fileName, { logContext, useLibFdk: requestProps.useLibFdk })
     ])
     segmentFilePaths = transcode[0].filePaths
     transcodedFilePath = transcode[1].filePath

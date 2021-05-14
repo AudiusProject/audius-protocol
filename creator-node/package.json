@@ -38,6 +38,7 @@
     "exif-parser": "^0.1.12",
     "express": "^4.16.3",
     "express-rate-limit": "^3.5.0",
+    "ffmpeg-for-homebridge": "0.0.9",
     "ffmpeg-static": "^2.4.0",
     "ffprobe-static": "^3.0.0",
     "form-data": "^3.0.0",

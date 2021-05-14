@@ -37,7 +37,7 @@ class TranscodingQueue {
     // See https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queueprocess
     this.queue.process(PROCESS_NAMES.segment, MAX_CONCURRENCY, async (job, done) => {
       const start = Date.now()
-      const { fileDir, fileName, logContext } = job.data
+      const { fileDir, fileName, logContext, useLibFdk } = job.data
 
       try {
         this.logStatus(logContext, `segmenting ${fileDir} ${fileName}`)
@@ -45,7 +45,7 @@ class TranscodingQueue {
         const filePaths = await ffmpeg.segmentFile(
           fileDir,
           fileName,
-          { logContext }
+          { logContext, useLibFdk }
         )
         this.logStatus(logContext, `Successfully completed segment job ${fileDir} ${fileName} in duration ${Date.now() - start}ms`)
         done(null, { filePaths })
@@ -57,7 +57,7 @@ class TranscodingQueue {
 
     this.queue.process(PROCESS_NAMES.transcode320, /* inherited */ 0, async (job, done) => {
       const start = Date.now()
-      const { fileDir, fileName, logContext } = job.data
+      const { fileDir, fileName, logContext, useLibFdk } = job.data
 
       try {
         this.logStatus(logContext, `transcoding to 320kbps ${fileDir} ${fileName}`)
@@ -65,7 +65,7 @@ class TranscodingQueue {
         const filePath = await ffmpeg.transcodeFileTo320(
           fileDir,
           fileName,
-          { logContext }
+          { logContext, useLibFdk }
         )
         this.logStatus(logContext, `Successfully completed Transcode320 job ${fileDir} ${fileName} in duration ${Date.now() - start}ms`)
         done(null, { filePath })
@@ -97,10 +97,10 @@ class TranscodingQueue {
    * @param {string} fileName
    * @param {object} logContext to create a logger.child(logContext) from
    */
-  async segment (fileDir, fileName, { logContext }) {
+  async segment (fileDir, fileName, { logContext, useLibFdk }) {
     const job = await this.queue.add(
       PROCESS_NAMES.segment,
-      { fileDir, fileName, logContext }
+      { fileDir, fileName, logContext, useLibFdk }
     )
     const result = await job.finished()
     return result
@@ -112,10 +112,10 @@ class TranscodingQueue {
    * @param {string} fileName
    * @param {object} logContext to create a logger.child(logContext) from
    */
-  async transcode320 (fileDir, fileName, { logContext }) {
+  async transcode320 (fileDir, fileName, { logContext, useLibFdk }) {
     const job = await this.queue.add(
       PROCESS_NAMES.transcode320,
-      { fileDir, fileName, logContext }
+      { fileDir, fileName, logContext, useLibFdk }
     )
     const result = await job.finished()
     return result

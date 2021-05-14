@@ -78,6 +78,7 @@ async function handleResumableUpload (req, res, next) {
     const urlArr = req.originalUrl.split('/')
     const fileDir = (urlArr.slice(0, urlArr.length - 1)).join('/')
     const storedFileName = (urlArr.slice(urlArr.length - 1))[0]
+    const useLibFdk = req.query.useLibFdk || false
 
     const resp = await server.handle.bind(server)(req, res, next)
     if (resp.statusCode > 299 || resp.statusCode < 200) {
@@ -94,6 +95,7 @@ async function handleResumableUpload (req, res, next) {
             fileName: storedFileName,
             fileDir,
             fileDestination: fileDir,
+            useLibFdk,
             session: {
               cnodeUserUUID: req.session.cnodeUserUUID
             }
@@ -154,6 +156,7 @@ module.exports = function (app) {
       removeTrackFolder({ logContext: req.logContext }, req.fileDir)
       return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
     }
+    const useLibFdk = req.query.useLibFdk || false
 
     await FileProcessingQueue.addTranscodeTask(
       {
@@ -162,6 +165,7 @@ module.exports = function (app) {
           fileName: req.fileName,
           fileDir: req.fileDir,
           fileDestination: req.file.destination,
+          useLibFdk,
           session: {
             cnodeUserUUID: req.session.cnodeUserUUID
           }
@@ -192,6 +196,7 @@ module.exports = function (app) {
     const routeTimeStart = Date.now()
     let codeBlockTimeStart
     const cnodeUserUUID = req.session.cnodeUserUUID
+    const useLibFdk = req.query.useLibFdk || false
 
     // Create track transcode and segments, and save all to disk
     let transcodedFilePath
@@ -200,8 +205,8 @@ module.exports = function (app) {
       codeBlockTimeStart = Date.now()
 
       const transcode = await Promise.all([
-        TranscodingQueue.segment(req.fileDir, req.fileName, { logContext: req.logContext }),
-        TranscodingQueue.transcode320(req.fileDir, req.fileName, { logContext: req.logContext })
+        TranscodingQueue.segment(req.fileDir, req.fileName, { logContext: req.logContext, useLibFdk }),
+        TranscodingQueue.transcode320(req.fileDir, req.fileName, { logContext: req.logContext, useLibFdk })
       ])
       segmentFilePaths = transcode[0].filePaths
       transcodedFilePath = transcode[1].filePath

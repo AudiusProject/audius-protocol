@@ -2,13 +2,15 @@ const config = require('./config')
 const fs = require('fs')
 const path = require('path')
 const ffmpeg = require('ffmpeg-static').path
+const ffmpegLibFdk = require('ffmpeg-for-homebridge')
+
 const spawn = require('child_process').spawn
 const { logger: genericLogger } = require('./logging')
 
 /** Segments file into equal size chunks without re-encoding
  *  Try to segment as mp3 and error on failure
  */
-function segmentFile (fileDir, fileName, { logContext }) {
+function segmentFile (fileDir, fileName, { logContext, useLibFdk }) {
   const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
     logger.info(`Segmenting file ${fileName}...`)
@@ -27,9 +29,17 @@ function segmentFile (fileDir, fileName, { logContext }) {
       // "-vn" flag required to allow track uploading with album art
       // https://stackoverflow.com/questions/20193065/how-to-remove-id3-audio-tag-image-or-metadata-from-mp3-with-ffmpeg
       '-vn',
-      path.resolve(fileDir, fileName.split('.')[0] + '.m3u8')
     ]
-    const proc = spawn(ffmpeg, args)
+    let ffmpegChoice
+    if (useLibFdk) {
+      args.push('-c:a', 'libfdk_aac')
+      ffmpegChoice = ffmpegLibFdk
+    } else {
+      ffmpegChoice = ffmpeg
+    }
+
+    args.push(path.resolve(fileDir, fileName.split('.')[0] + '.m3u8'))
+    const proc = spawn(ffmpegChoice, args)
 
     // capture output
     let stdout = ''
@@ -51,7 +61,7 @@ function segmentFile (fileDir, fileName, { logContext }) {
 }
 
 /** Transcode file into 320kbps mp3 and store in same directory. */
-function transcodeFileTo320 (fileDir, fileName, { logContext }) {
+function transcodeFileTo320 (fileDir, fileName, { logContext, useLibFdk }) {
   const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
     logger.info(`Transcoding file ${fileName}...`)
@@ -74,7 +84,8 @@ function transcodeFileTo320 (fileDir, fileName, { logContext }) {
       '-vn',
       targetPath
     ]
-    const proc = spawn(ffmpeg, args)
+    const ffmpegChoice = useLibFdk ? ffmpegLibFdk : ffmpeg
+    const proc = spawn(ffmpegChoice, args)
 
     // capture output
     let stdout = ''
