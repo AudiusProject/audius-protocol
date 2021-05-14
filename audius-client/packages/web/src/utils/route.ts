@@ -54,6 +54,7 @@ export const SIGN_UP_PAGE = '/signup'
 export const ERROR_PAGE = '/error'
 export const NOTIFICATION_PAGE = '/notifications'
 export const APP_REDIRECT = '/app-redirect'
+export const CHECK_PAGE = '/check'
 
 // Param routes.
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
