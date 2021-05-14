@@ -10,7 +10,6 @@ const {
   userReplicaSetManagerTest,
   IpldBlacklistTest,
   userReplicaSetBlockSaturationTest,
-  solanaTrackListenCountsTest,
   trackListenCountsTest,
 } = require('./tests/')
 
@@ -227,23 +226,13 @@ async function main () {
         await testRunner([test])
         break
       }
-      case 'test-sol-listencount': {
-        const test = makeTest(
-          'solanaTrackListenCountsTest',
-          solanaTrackListenCountsTest,
-          {
-            numUsers: 1
-          }
-        )
-        await testRunner([test])
-        break
-      }
       case 'test-listencount': {
         const test = makeTest(
           'trackListenCountsTest',
           trackListenCountsTest,
           {
-            numUsers: 1
+            numSolanaTrackListens: 100,
+            numBaseTrackListens: 10, // must be done synchronously so we use a lower number.
           }
         )
         await testRunner([test])
@@ -283,19 +272,12 @@ async function main () {
             numUsers: 1
           })
 
-        const solTrackListenCountTest = makeTest(
-          'solanaTrackListenCountsTest',
-          solanaTrackListenCountsTest,
-          {
-            numUsers: 1
-          }
-        )
-
         const trackListenCountTest = makeTest(
           'trackListenCountsTest',
           trackListenCountsTest,
           {
-            numUsers: 1
+            numSolanaTrackListens: 100,
+            numBaseTrackListens: 10, // must be done synchronously so we use a lower number.
           }
         )
 
