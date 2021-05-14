@@ -288,8 +288,7 @@ async function main () {
           ...blacklistTests,
           ursmTest,
           ursmBlockSaturationTest,
-          solTrackListenCountTest,
-          trackListenCountTest 
+          trackListenCountTest
         ]
 
         await testRunner(tests)
