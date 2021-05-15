@@ -231,8 +231,7 @@ async function main () {
           'trackListenCountsTest',
           trackListenCountsTest,
           {
-            numSolanaTrackListens: 100,
-            numBaseTrackListens: 10, // must be done synchronously so we use a lower number.
+            numUsers: 1
           }
         )
         await testRunner([test])
@@ -276,8 +275,7 @@ async function main () {
           'trackListenCountsTest',
           trackListenCountsTest,
           {
-            numSolanaTrackListens: 100,
-            numBaseTrackListens: 10, // must be done synchronously so we use a lower number.
+            numUsers: 1
           }
         )
 
@@ -288,7 +286,7 @@ async function main () {
           ...blacklistTests,
           ursmTest,
           ursmBlockSaturationTest,
-          trackListenCountTest
+          trackListenCountsTest
         ]
 
         await testRunner(tests)

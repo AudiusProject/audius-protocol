@@ -3,6 +3,17 @@ const { delay } = require('../helpers.js')
 
 const MaxPollDurationMs = 240000
 
+async function logTrackListen(trackId, userId, solanaListen) {
+  return (await axios({
+    method: 'post',
+    url: `http://localhost:7000/tracks/${trackId}/listen`,
+    data: {
+      userId,
+      solanaListen,
+    }
+  })).data
+}
+
 async function getSolPlay (signature) {
   return (await axios({
     method: 'get',
@@ -11,11 +22,11 @@ async function getSolPlay (signature) {
 }
 
 async function getTotalPlays () {
-  return (await axios({
+  return ((await axios({
     method: 'get',
     // use nonce to bypass cache
     url: `http://localhost:5000/v1/metrics/plays?bucket_size=century&nonce=${Math.random()}`
-  })).data.data[0].count
+  })).data.data[0] || {}).count || 0
 }
 
 async function submitTrackListen (executeOne, trackId, userId, solanaListen) {
@@ -25,8 +36,8 @@ async function submitTrackListen (executeOne, trackId, userId, solanaListen) {
   try {
     await executeOne(0, async (libs) => {
       const start = Date.now()
-      const identityResponse = await libs.logTrackListen(trackId, userId, null, null, solanaListen)
-      signture = identityResponse.signature
+      const identityResponse = await logTrackListen(trackId, userId, solanaListen)
+      signature = identityResponse.solTxSignature
       console.log(`Logged track listen (trackId=${trackId}, userId=${userId}, solanaListen=${solanaListen}) | Processed in ${Date.now() - start}ms`)
     })
   } catch (err) {
@@ -57,14 +68,17 @@ async function submitTrackListen (executeOne, trackId, userId, solanaListen) {
     }
   }
 
+  console.log(`Found track listen (trackId=${trackId}, userId=${userId}, solanaListen=${solanaListen}) in discovery-provider`)
+
   return true
 }
 
-async function trackListenCountsTest ({
-  numBaseTrackListens,
-  numSolanaTrackListens,
-  executeOne
-}) {
+async function trackListenCountsTest ({ executeOne }) {
+  const numBaseTrackListens = 10
+  const numAnonBaseTrackListens = 10
+  const numSolanaTrackListens = 10
+  const numAnonSolanaTrackListens = 10
+
   const start = Date.now()
 
   const numSuccessfulSolanaTrackListens = (await Promise.all(
@@ -72,6 +86,20 @@ async function trackListenCountsTest ({
       const numListens = Math.floor(Math.random() * 5) + 1
       const trackId = Math.floor(Math.random() * 10000000)
       const userId = Math.floor(Math.random() * 10000000)
+
+      return (await Promise.all(
+        Array.from({ length: numListens }, () =>
+          submitTrackListen(executeOne, trackId, userId, true)
+        )
+      )).reduce((a, b) => a + b, 0)
+    })
+  )).reduce((a, b) => a + b, 0)
+
+  const numSuccessfulAnonSolanaTrackListens = (await Promise.all(
+    Array.from({ length: numAnonSolanaTrackListens }, async () => {
+      const numListens = Math.floor(Math.random() * 5) + 1
+      const trackId = Math.floor(Math.random() * 10000000)
+      const userId = `anon-${Math.floor(Math.random() * 10000000)}`
 
       return (await Promise.all(
         Array.from({ length: numListens }, () =>
@@ -94,7 +122,34 @@ async function trackListenCountsTest ({
     }
   }
 
-  const totalSuccessfullyProcessed = numSuccessfulSolanaTrackListens + numSuccessfulBaseTrackListens
+  let numSuccessfulAnonBaseTrackListens = 0
+  for (let i = 0; i < numAnonBaseTrackListens; i++) {
+    const numListens = Math.floor(Math.random() * 5) + 1
+    const trackId = Math.floor(Math.random() * 10000000)
+    const userId = `anon-${Math.floor(Math.random() * 10000000)}`
 
-  console.log(`Processed ${totalSuccessfullyProcessed} (solana: ${numSuccessfulSolanaTrackListens}, base: ${numSuccessfulBaseTrackListens}) in ${Date.now() - start}ms`)
+    for (let j = 0; j < numListens; j++) {
+      if (await submitTrackListen(executeOne, trackId, userId, false)) {
+        numSuccessfulAnonBaseTrackListens += 1
+      }
+    }
+  }
+
+  const totalSuccessfullyProcessed = numSuccessfulSolanaTrackListens +
+    numSuccessfulAnonSolanaTrackListens +
+    numSuccessfulBaseTrackListens +
+    numSuccessfulAnonBaseTrackListens
+
+  console.log(
+    `Processed ${totalSuccessfullyProcessed} (` +
+    `solana: ${numSuccessfulSolanaTrackListens}, ` +
+    `solana anon: ${numSuccessfulAnonSolanaTrackListens}, ` +
+    `base: ${numSuccessfulBaseTrackListens}, ` +
+    `base anon: ${numSuccessfulAnonBaseTrackListens}` +
+    `) in ${Date.now() - start}ms`
+  )
+}
+
+module.exports = {
+  trackListenCountsTest 
 }
