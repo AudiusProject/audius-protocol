@@ -2,7 +2,7 @@ const config = require('./config')
 const fs = require('fs')
 const path = require('path')
 const ffmpeg = require('ffmpeg-static').path
-const ffmpegLibFdk = require('ffmpeg-for-homebridge')
+const ffmpegFFMPEG4 = require('ffmpeg-static-4')
 
 const spawn = require('child_process').spawn
 const { logger: genericLogger } = require('./logging')
@@ -10,7 +10,7 @@ const { logger: genericLogger } = require('./logging')
 /** Segments file into equal size chunks without re-encoding
  *  Try to segment as mp3 and error on failure
  */
-function segmentFile (fileDir, fileName, { logContext, useLibFdk }) {
+function segmentFile (fileDir, fileName, { logContext, useFFMPEG4 }) {
   const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
     logger.info(`Segmenting file ${fileName}...`)
@@ -31,9 +31,9 @@ function segmentFile (fileDir, fileName, { logContext, useLibFdk }) {
       '-vn'
     ]
     let ffmpegChoice
-    if (useLibFdk) {
-      args.push('-c:a', 'libfdk_aac')
-      ffmpegChoice = ffmpegLibFdk
+    if (useFFMPEG4) {
+      args.push('-c:a', 'FFMPEG4_aac')
+      ffmpegChoice = ffmpegFFMPEG4
     } else {
       ffmpegChoice = ffmpeg
     }
@@ -61,7 +61,7 @@ function segmentFile (fileDir, fileName, { logContext, useLibFdk }) {
 }
 
 /** Transcode file into 320kbps mp3 and store in same directory. */
-function transcodeFileTo320 (fileDir, fileName, { logContext, useLibFdk }) {
+function transcodeFileTo320 (fileDir, fileName, { logContext, useFFMPEG4 }) {
   const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
     logger.info(`Transcoding file ${fileName}...`)
@@ -84,7 +84,7 @@ function transcodeFileTo320 (fileDir, fileName, { logContext, useLibFdk }) {
       '-vn',
       targetPath
     ]
-    const ffmpegChoice = useLibFdk ? ffmpegLibFdk : ffmpeg
+    const ffmpegChoice = useFFMPEG4 ? ffmpegFFMPEG4 : ffmpeg
     const proc = spawn(ffmpegChoice, args)
 
     // capture output
