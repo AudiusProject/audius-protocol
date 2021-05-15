@@ -3,8 +3,9 @@ const fs = require('fs')
 const path = require('path')
 const assert = require('assert')
 const sinon = require('sinon')
+const uuid = require('uuid/v4')
+const proxyquire = require('proxyquire')
 
-const config = require('../src/config')
 const defaultConfig = require('../default-config.json')
 const ipfsClient = require('../src/ipfsClient')
 const BlacklistManager = require('../src/blacklistManager')
@@ -17,24 +18,40 @@ const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
+const { saveFileToStorage } = require('./lib/helpers')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
+
 const testAudiusFileNumSegments = 32
+const TRACK_CONTENT_POLLING_ROUTE = '/track_content_async'
+
+const logContext = {
+  logContext: {
+    requestID: uuid(),
+    requestMethod: 'POST',
+    requestHostname: '127.0.0.1',
+    requestUrl: TRACK_CONTENT_POLLING_ROUTE
+  }
+}
 
 describe('test Tracks with mocked IPFS', function () {
-  let app, server, session, ipfsMock, libsMock
+  let app, server, session, ipfsMock, libsMock, handleTrackContentRoute, mockServiceRegistry
 
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
+    libsMock.useTrackContentPolling = true
 
     const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
     await BlacklistManager.init()
 
     app = appInfo.app
     server = appInfo.server
+    mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser()
+
+    handleTrackContentRoute = require('../src/components/tracks/tracksComponentService').handleTrackContentRoute
   })
 
   afterEach(async () => {
@@ -42,17 +59,19 @@ describe('test Tracks with mocked IPFS', function () {
     await server.close()
   })
 
+  // Testing middleware -- leave as /track_content_async
   it('fails to upload when format is not accepted', async function () {
     const file = fs.readFileSync(testAudioFileWrongFormatPath)
 
-    const res = await request(app)
-      .post('/track_content')
+    await request(app)
+      .post(TRACK_CONTENT_POLLING_ROUTE)
       .attach('file', file, { filename: 'fname.jpg' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
-    assert.notStrictEqual(res.error, undefined)
+      .expect(400)
   })
 
+  // Testing middleware -- leave as /track_content_async
   it('fails to upload when maxAudioFileSizeBytes exceeded', async function () {
     // Configure extremely small file size
     process.env.maxAudioFileSizeBytes = 10
@@ -61,7 +80,7 @@ describe('test Tracks with mocked IPFS', function () {
     await server.close()
 
     ipfsMock = getIPFSMock()
-    const appInfo = await getApp(ipfsMock)
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser()
@@ -72,15 +91,14 @@ describe('test Tracks with mocked IPFS', function () {
     // Confirm max audio file size is respected by multer
     let file = fs.readFileSync(testAudioFilePath)
     await request(app)
-      .post('/track_content')
+      .post(TRACK_CONTENT_POLLING_ROUTE)
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
-      .expect(500)
+      .expect(400)
 
     // Reset max file limits
     process.env.maxAudioFileSizeBytes = defaultConfig['maxAudioFileSizeBytes']
-    await server.close()
   })
 
   it('fails to upload when maxMemoryFileSizeBytes exceeded', async function () {
@@ -90,7 +108,7 @@ describe('test Tracks with mocked IPFS', function () {
     // Reset app
     await server.close()
     ipfsMock = getIPFSMock()
-    const appInfo = await getApp(ipfsMock)
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser()
@@ -109,81 +127,83 @@ describe('test Tracks with mocked IPFS', function () {
 
     // Reset max file limits
     process.env.maxMemoryFileSizeBytes = defaultConfig['maxMemoryFileSizeBytes']
-    await server.close()
   })
 
-  it('uploads /track_content', async function () {
-    const file = fs.readFileSync(testAudioFilePath)
-
+  it('uploads /track_content_async', async function () {
     ipfsMock.addFromFs.exactly(33)
     ipfsMock.pin.add.exactly(33)
 
-    const trackContentResp = await request(app)
-      .post('/track_content')
-      .attach('file', file, { filename: 'fname.mp3' })
-      .set('Content-Type', 'multipart/form-data')
-      .set('X-Session-ID', session.sessionToken)
-      .expect(200)
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)
-    assert.deepStrictEqual(trackContentResp.body.data.transcodedTrackCID, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(typeof trackContentResp.body.data.transcodedTrackUUID, 'string')
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    let resp = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
+    )
+
+    const { track_segments: trackSegments, source_file: sourceFile, transcodedTrackCID, transcodedTrackUUID } = resp
+
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
+    assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
+    assert.deepStrictEqual(transcodedTrackCID, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(typeof transcodedTrackUUID, 'string')
   })
 
-  // depends on "uploads /track_content"
-  it('creates Audius track', async function () {
-    const file = fs.readFileSync(testAudioFilePath)
-
+  // depends on "uploads /track_content_async"; if that test fails, this test will fail to due to similarity
+  it('creates Audius track using application logic for /track_content_async', async function () {
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
-    const trackContentResp = await request(app)
-      .post('/track_content')
-      .attach('file', file, { filename: 'fname.mp3' })
-      .set('Content-Type', 'multipart/form-data')
-      .set('X-Session-ID', session.sessionToken)
-      .expect(200)
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const resp = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
+    )
 
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)
+    const { track_segments: trackSegments, source_file: sourceFile } = resp
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
+    assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
     // creates Audius track
     const metadata = {
       test: 'field1',
       owner_id: 1,
-      track_segments: trackContentResp.body.data.track_segments
+      track_segments: trackSegments
     }
 
     const trackMetadataResp = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
-      .send({ metadata, sourceFile: trackContentResp.body.data.source_file })
+      .send({ metadata, sourceFile })
       .expect(200)
 
     assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
   })
 
-  // depends on "uploads /track_content"
+  // depends on "uploads /track_content_async"
   it('fails to create Audius track when segments not provided', async function () {
-    const file = fs.readFileSync(testAudioFilePath)
-
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
-    const resp1 = await request(app)
-      .post('/track_content')
-      .attach('file', file, { filename: 'fname.mp3' })
-      .set('Content-Type', 'multipart/form-data')
-      .set('X-Session-ID', session.sessionToken)
-      .expect(200)
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const resp = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
+    )
 
-    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(resp1.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(resp1.body.data.source_file.includes('.mp3'), true)
+    const { track_segments: trackSegments, source_file: sourceFile } = resp
+
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
+    assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
     // creates Audius track
     const metadata = {
@@ -194,28 +214,29 @@ describe('test Tracks with mocked IPFS', function () {
     await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
-      .send({ metadata, sourceFile: resp1.body.data.source_file })
+      .send({ metadata, sourceFile })
       .expect(400)
   })
 
-  // depends on "uploads /track_content"
+  // depends on "uploads /track_content_async"
   it('fails to create Audius track when invalid segment multihashes are provided', async function () {
-    const file = fs.readFileSync(testAudioFilePath)
-
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
-    const resp1 = await request(app)
-      .post('/track_content')
-      .attach('file', file, { filename: 'fname.mp3' })
-      .set('Content-Type', 'multipart/form-data')
-      .set('X-Session-ID', session.sessionToken)
-      .expect(200)
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const resp = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
+    )
 
-    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(resp1.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(resp1.body.data.source_file.includes('.mp3'), true)
+    const { track_segments: trackSegments, source_file: sourceFile } = resp
+
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
+    assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
     // creates Audius track
     const metadata = {
@@ -227,28 +248,25 @@ describe('test Tracks with mocked IPFS', function () {
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
-      .send({ metadata, sourceFile: resp1.body.data.source_file })
+      .send({ metadata, sourceFile })
       .expect(400)
   })
 
-  // depends on "uploads /track_content"
+  // depends on "uploads /track_content_async"
   it('fails to create Audius track when owner_id is not provided', async function () {
-    const file = fs.readFileSync(testAudioFilePath)
-
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
-    const resp1 = await request(app)
-      .post('/track_content')
-      .attach('file', file, { filename: 'fname.mp3' })
-      .set('Content-Type', 'multipart/form-data')
-      .set('X-Session-ID', session.sessionToken)
-      .expect(200)
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const resp = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
+    )
 
-    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(resp1.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(resp1.body.data.source_file.includes('.mp3'), true)
+    const { source_file: sourceFile } = resp
 
     // creates Audius track
     const metadata = {
@@ -259,39 +277,35 @@ describe('test Tracks with mocked IPFS', function () {
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
-      .send({ metadata, sourceFile: resp1.body.data.source_file })
+      .send({ metadata, sourceFile })
       .expect(400)
   })
 
-  // depends on "uploads /track_content" and "creates Audius track" tests
+  // depends on "uploads /track_content_async" and "creates Audius track" tests
   it('completes Audius track creation', async function () {
-    const file = fs.readFileSync(testAudioFilePath)
-
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(4)
 
-    const trackContentResp = await request(app)
-      .post('/track_content')
-      .attach('file', file, { filename: 'fname.mp3' })
-      .set('Content-Type', 'multipart/form-data')
-      .set('X-Session-ID', session.sessionToken)
-      .expect(200)
-
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const resp = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
+    )
+    const { track_segments: trackSegments, source_file: sourceFile } = resp
 
     const metadata = {
       test: 'field1',
-      track_segments: trackContentResp.body.data.track_segments,
+      track_segments: trackSegments,
       owner_id: 1
     }
 
     const trackMetadataResp = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
-      .send({ metadata, sourceFile: trackContentResp.body.data.source_file })
+      .send({ metadata, sourceFile })
       .expect(200)
 
     if (trackMetadataResp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
@@ -305,23 +319,23 @@ describe('test Tracks with mocked IPFS', function () {
       .expect(200)
   })
 
-  // depends on "uploads /track_content"
+  // depends on "uploads /track_content_async"
   it('fails to create downloadable track with no track_id and no source_id present', async function () {
-    const file = fs.readFileSync(testAudioFilePath)
-
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
-    const resp1 = await request(app)
-      .post('/track_content')
-      .attach('file', file, { filename: 'fname.mp3' })
-      .set('Content-Type', 'multipart/form-data')
-      .set('X-Session-ID', session.sessionToken)
-      .expect(200)
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const resp = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
+    )
 
-    assert.deepStrictEqual(resp1.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(resp1.body.data.track_segments.length, 32)
+    const { track_segments: trackSegments } = resp
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
 
     // creates a downloadable Audius track with no track_id and no source_file
     const metadata = {
@@ -341,29 +355,30 @@ describe('test Tracks with mocked IPFS', function () {
       .expect(400)
   })
 
-  // depends on "uploads /track_content" and "creates Audius track" tests
+  // depends on "uploads /track_content_async" and "creates Audius track" tests
   it('creates a downloadable track', async function () {
-    const file = fs.readFileSync(testAudioFilePath)
-
     ipfsMock.addFromFs.exactly(34)
     ipfsMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(4)
 
-    const trackContentResp = await request(app)
-      .post('/track_content')
-      .attach('file', file, { filename: 'fname.mp3' })
-      .set('Content-Type', 'multipart/form-data')
-      .set('X-Session-ID', session.sessionToken)
-      .expect(200)
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const resp = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
+    )
 
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
-    assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
-    assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)
+    const { track_segments: trackSegments, source_file: sourceFile } = resp
+
+    assert.deepStrictEqual(trackSegments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackSegments.length, 32)
+    assert.deepStrictEqual(sourceFile.includes('.mp3'), true)
 
     // needs debugging as to why this 'cid' key is needed for test to work
     const metadata = {
       test: 'field1',
-      track_segments: trackContentResp.body.data.track_segments,
+      track_segments: trackSegments,
       owner_id: 1,
       download: {
         'is_downloadable': true,
@@ -375,7 +390,7 @@ describe('test Tracks with mocked IPFS', function () {
     const trackMetadataResp = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
-      .send({ metadata, sourceFile: trackContentResp.body.data.source_file })
+      .send({ metadata, sourceFile })
       .expect(200)
 
     if (trackMetadataResp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
@@ -391,17 +406,7 @@ describe('test Tracks with mocked IPFS', function () {
 })
 
 describe('test Tracks with real IPFS', function () {
-  let app, server, session, libsMock, ipfs
-
-  // Will need a '.' in front of storagePath to look at current dir
-  // a '/' will search the root dir
-  before(async () => {
-    let storagePath = config.get('storagePath')
-    if (storagePath.startsWith('/')) {
-      storagePath = '.' + storagePath
-      config.set('storagePath', storagePath)
-    }
-  })
+  let app2, server, session, libsMock, ipfs, handleTrackContentRoute, mockServiceRegistry
 
   /** Inits ipfs client, libs mock, web server app, blacklist manager, and creates starter CNodeUser */
   beforeEach(async () => {
@@ -411,9 +416,12 @@ describe('test Tracks with real IPFS', function () {
     const appInfo = await getApp(ipfs, libsMock, BlacklistManager)
     await BlacklistManager.init()
 
-    app = appInfo.app
+    app2 = appInfo.app
     server = appInfo.server
+    mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser()
+
+    handleTrackContentRoute = require('../src/components/tracks/tracksComponentService').handleTrackContentRoute
   })
 
   afterEach(async () => {
@@ -421,29 +429,43 @@ describe('test Tracks with real IPFS', function () {
     await server.close()
   })
 
-  // ~~~~~~~~~~~~~~~~~~~~~~~~~ /track_content TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~ /track_content_async TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   it('sends server error response if segmenting fails', async function () {
-    const file = fs.readFileSync(testAudioFilePath)
-    sinon.stub(TranscodingQueue, 'segment').rejects(new Error('failed to segment'))
+    const { handleTrackContentRoute } = proxyquire('../src/components/tracks/tracksComponentService.js', {
+      '../../TranscodingQueue': { segment: sinon.stub(TranscodingQueue, 'segment').rejects(new Error('failed to segment')) }
+    })
 
-    const res = await request(app)
-      .post('/track_content')
-      .attach('file', file, { filename: 'fname.mp3' })
-      .set('Content-Type', 'multipart/form-data')
-      .set('X-Session-ID', session.sessionToken)
-    assert.notStrictEqual(res.error, undefined)
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    try {
+      await handleTrackContentRoute(
+        logContext,
+        getReqObj(fileUUID, fileDir, session),
+        mockServiceRegistry.ipfs,
+        mockServiceRegistry.blacklistManager
+      )
+      assert.fail('Should have thrown error if segmenting failed')
+    } catch (e) {
+      assert.ok(e.message.includes('failed to segment'))
+    }
   })
 
   it('sends server error response if transcoding fails', async function () {
-    const file = fs.readFileSync(testAudioFilePath)
-    sinon.stub(TranscodingQueue, 'transcode320').rejects(new Error('failed to transcode'))
+    const { handleTrackContentRoute } = proxyquire('../src/components/tracks/tracksComponentService.js', {
+      '../../TranscodingQueue': { transcode320: sinon.stub(TranscodingQueue, 'transcode320').rejects(new Error('failed to transcode')) }
+    })
 
-    const res = await request(app)
-      .post('/track_content')
-      .attach('file', file, { filename: 'fname.mp3' })
-      .set('Content-Type', 'multipart/form-data')
-      .set('X-Session-ID', session.sessionToken)
-    assert.notStrictEqual(res.error, undefined)
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    try {
+      await handleTrackContentRoute(
+        logContext,
+        getReqObj(fileUUID, fileDir, session),
+        mockServiceRegistry.ipfs,
+        mockServiceRegistry.blacklistManager
+      )
+      assert.fail('Should have thrown error if transcoding failed')
+    } catch (e) {
+      assert.ok(e.message.includes('failed to transcode'))
+    }
   })
 
   // Note: if hashing logic from ipfs ever changes, this test will fail
@@ -460,33 +482,38 @@ describe('test Tracks with real IPFS', function () {
     await BlacklistManager.addToRedis(BlacklistManager.getRedisSegmentCIDKey(), testTrackCIDs)
 
     // Attempt to associate track content and get forbidden error
-    const file = fs.readFileSync(testAudioFilePath)
-    const res = await request(app)
-      .post('/track_content')
-      .attach('file', file, { filename: 'fname.mp3' })
-      .set('Content-Type', 'multipart/form-data')
-      .set('X-Session-ID', session.sessionToken)
-    assert.notStrictEqual(res.error, undefined)
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    try {
+      await handleTrackContentRoute(
+        logContext,
+        getReqObj(fileUUID, fileDir, session),
+        mockServiceRegistry.ipfs,
+        mockServiceRegistry.blacklistManager
+      )
+      assert.fail('Should have thrown error if segment in blacklist')
+    } catch (e) {
+      assert.ok(e.message.includes('blacklisted'))
+    }
 
     // Clear redis of segment CIDs
     await BlacklistManager.removeFromRedis(BlacklistManager.getRedisSegmentCIDKey(), testTrackCIDs)
   })
 
   it('should successfully upload track + transcode and prune upload artifacts', async function () {
-    const file = fs.readFileSync(testAudioFilePath)
+    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
+    const resp = await handleTrackContentRoute(
+      logContext,
+      getReqObj(fileUUID, fileDir, session),
+      mockServiceRegistry.ipfs,
+      mockServiceRegistry.blacklistManager
+    )
 
-    // Make /track_content call with test file + expect success
-    const resp = await request(app)
-      .post('/track_content')
-      .attach('file', file, { filename: 'fname.mp3' })
-      .set('Content-Type', 'multipart/form-data')
-      .set('X-Session-ID', session.sessionToken)
-      .expect(200)
+    const { track_segments: trackSegments, transcodedTrackCID } = resp
 
     // check that the generated transcoded track is the same as the transcoded track in /tests
     const transcodedTrackAssetPath = path.join(__dirname, 'testTranscoded320Track.mp3')
     const transcodedTrackAssetBuf = fs.readFileSync(transcodedTrackAssetPath)
-    const transcodedTrackPath = DiskManager.computeFilePath(resp.body.data.transcodedTrackCID)
+    const transcodedTrackPath = DiskManager.computeFilePath(transcodedTrackCID)
     const transcodedTrackTestBuf = fs.readFileSync(transcodedTrackPath)
     assert.deepStrictEqual(transcodedTrackAssetBuf.compare(transcodedTrackTestBuf), 0)
 
@@ -494,9 +521,8 @@ describe('test Tracks with real IPFS', function () {
     //    and each segment disk file is exactly as expected
     // Note - The exact output of track segmentation is deterministic only for a given environment/ffmpeg version
     //    This test may break in the future but at that point we should re-generate the reference segment files.
-    const segmentCIDs = resp.body.data.track_segments
-    assert.deepStrictEqual(segmentCIDs.length, testAudiusFileNumSegments)
-    segmentCIDs.map(function (cid, index) {
+    assert.deepStrictEqual(trackSegments.length, testAudiusFileNumSegments)
+    trackSegments.map(function (cid, index) {
       const cidPath = DiskManager.computeFilePath(cid.multihash)
 
       // Ensure file exists
@@ -512,7 +538,7 @@ describe('test Tracks with real IPFS', function () {
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ /tracks/metadata TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
   it('should throw an error if no metadata is passed', async function () {
-    const resp = await request(app)
+    const resp = await request(app2)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .send({})
@@ -529,7 +555,7 @@ describe('test Tracks with real IPFS', function () {
       owner_id: 1
     }
 
-    const resp = await request(app)
+    const resp = await request(app2)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .send({ metadata })
@@ -546,7 +572,7 @@ describe('test Tracks with real IPFS', function () {
       owner_id: 1
     }
 
-    const resp = await request(app)
+    const resp = await request(app2)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .send({ metadata })
@@ -562,7 +588,7 @@ describe('test Tracks with real IPFS', function () {
       owner_id: 1
     })
 
-    const resp = await request(app)
+    const resp = await request(app2)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .send({ metadata })
@@ -610,6 +636,18 @@ describe('test Tracks with real IPFS', function () {
 
   it.skip('TODO - parallel track upload', async function () {})
 })
+
+// Create the req context for handleTrackContentRoute
+function getReqObj (fileUUID, fileDir, session) {
+  return {
+    fileName: `${fileUUID}.mp3`,
+    fileDir,
+    fileDestination: fileDir,
+    session: {
+      cnodeUserUUID: session.cnodeUserUUID
+    }
+  }
+}
 
 /**
  * Given index of segment, returns filepath of expected segment file in /test/test-segments/ dir
