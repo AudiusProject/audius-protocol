@@ -37,7 +37,7 @@ const req = {
 // TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
 // consts used for testing saveFileToIpfsFromFs()
 const segmentsDirPath = 'test/test-segments'
-const sourceFile = 'segment001.ts'
+const sourceFile = 'segment00001.ts'
 const srcPath = path.join(segmentsDirPath, sourceFile)
 
 // consts used for testing saveFileFromBufferToIPFSAndDisk()
