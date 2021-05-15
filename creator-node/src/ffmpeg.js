@@ -32,7 +32,7 @@ function segmentFile (fileDir, fileName, { logContext, useFFMPEG4 }) {
     ]
     let ffmpegChoice
     if (useFFMPEG4) {
-      args.push('-c:a', 'FFMPEG4_aac')
+      // args.push('-c:a', 'FFMPEG4_aac')
       ffmpegChoice = ffmpegFFMPEG4
     } else {
       ffmpegChoice = ffmpeg
