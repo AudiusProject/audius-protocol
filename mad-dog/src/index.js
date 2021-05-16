@@ -279,14 +279,13 @@ async function main () {
           }
         )
 
-
         const tests = [
           coreIntegrationTests,
           snapbackTest,
           ...blacklistTests,
           ursmTest,
           ursmBlockSaturationTest,
-          trackListenCountsTest
+          trackListenCountTest
         ]
 
         await testRunner(tests)
