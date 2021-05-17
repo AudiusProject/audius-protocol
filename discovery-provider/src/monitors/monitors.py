@@ -4,7 +4,9 @@ from src.monitors.database import \
     get_database_connection_info, \
     get_database_connections, \
     get_database_liveness, \
-    get_database_size
+    get_database_size, \
+    get_database_index_count, \
+    get_database_index_info
 from src.monitors.memory import \
     get_total_memory, \
     get_used_memory
@@ -58,6 +60,19 @@ DATABASE_CONNECTION_INFO = {
     monitor_names.func: get_database_connection_info,
     monitor_names.type: 'json'
 }
+
+DATABASE_INDEX_COUNT = {
+    monitor_names.name: monitor_names.database_index_count,
+    monitor_names.func: get_database_index_count,
+    monitor_names.type: 'int'
+}
+
+DATABASE_INDEX_INFO = {
+    monitor_names.name: monitor_names.database_index_info,
+    monitor_names.func: get_database_index_info,
+    monitor_names.type: 'json'
+}
+
 
 TOTAL_MEMORY = {
     monitor_names.name: monitor_names.total_memory,

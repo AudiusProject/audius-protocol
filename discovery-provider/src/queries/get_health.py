@@ -3,7 +3,7 @@ import os
 import time
 
 from src.models import Block, IPLDBlacklistBlock
-from src.monitors import monitors, monitor_names
+from src.monitors import DATABASE_CONNECTION_INFO, monitor_names
 from src.utils import helpers, redis_connection, web3_provider, db_session
 from src.utils.config import shared_config
 from src.utils.redis_constants import latest_block_redis_key, \
@@ -42,7 +42,8 @@ def _get_db_block_state():
 def _get_db_conn_state():
     conn_state = monitors.get_monitors([
         MONITORS[monitor_names.database_connections],
-        MONITORS[monitor_names.database_connection_info]
+        MONITORS[monitor_names.database_connection_info],
+        MONITORS[monitor_names.database_index_info]
     ])
 
     return conn_state, False
