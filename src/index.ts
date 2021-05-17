@@ -71,6 +71,12 @@ router.get('/error', (
   }
 )
 
+router.get('/check', (
+  req: express.Request,
+  res: express.Response) => {
+    getMetaTagsResponse(MetaTagFormat.Default, req, res)
+})
+
 router.get([
   '/:handle',
   '/:handle/tracks',
