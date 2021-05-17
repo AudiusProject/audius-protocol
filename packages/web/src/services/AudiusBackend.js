@@ -1194,7 +1194,7 @@ class AudiusBackend {
        * and return that block number along with its corresponding block hash
        */
       if (updatePromises.length > 0) {
-        const latestReceipt = this.getLatestTxReceipt(
+        const latestReceipt = AudiusBackend.getLatestTxReceipt(
           await Promise.all(updatePromises)
         )
         blockHash = latestReceipt.blockHash
@@ -1238,7 +1238,7 @@ class AudiusBackend {
        * and return that block number along with its corresponding block hash
        */
       if (promises.length > 0) {
-        const latestReceipt = this.getLatestTxReceipt(
+        const latestReceipt = AudiusBackend.getLatestTxReceipt(
           await Promise.all(promises)
         )
         blockHash = latestReceipt.blockHash
@@ -1374,7 +1374,7 @@ class AudiusBackend {
       const deleteTrackReceipts = results.slice(0, -1).map(r => r.txReceipt)
       const deletePlaylistReceipt = results.slice(-1)[0].txReceipt
 
-      const { blockHash, blockNumber } = this.getLatestTxReceipt(
+      const { blockHash, blockNumber } = AudiusBackend.getLatestTxReceipt(
         deleteTrackReceipts.concat(deletePlaylistReceipt)
       )
       return { blockHash, blockNumber }
