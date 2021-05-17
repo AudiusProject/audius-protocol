@@ -136,6 +136,8 @@ MONITORS = {
     monitor_names.database_size: DATABASE_SIZE,
     monitor_names.database_connections: DATABASE_CONNECTIONS,
     monitor_names.database_connection_info: DATABASE_CONNECTION_INFO,
+    monitor_names.database_index_count: DATABASE_INDEX_COUNT,
+    monitor_names.database_index_info: DATABASE_INDEX_INFO,
     monitor_names.total_memory: TOTAL_MEMORY,
     monitor_names.used_memory: USED_MEMORY,
     monitor_names.filesystem_size: FILESYSTEM_SIZE,
