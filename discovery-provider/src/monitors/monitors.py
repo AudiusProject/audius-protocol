@@ -64,12 +64,14 @@ DATABASE_CONNECTION_INFO = {
 DATABASE_INDEX_COUNT = {
     monitor_names.name: monitor_names.database_index_count,
     monitor_names.func: get_database_index_count,
+    monitor_names.ttl: 60 * 60 * 6, # six hours
     monitor_names.type: 'int'
 }
 
 DATABASE_INDEX_INFO = {
     monitor_names.name: monitor_names.database_index_info,
     monitor_names.func: get_database_index_info,
+    monitor_names.ttl: 60 * 60 * 6, # six hours
     monitor_names.type: 'json'
 }
 
