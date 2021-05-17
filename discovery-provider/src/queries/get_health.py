@@ -42,7 +42,9 @@ def _get_db_block_state():
 def _get_db_conn_state():
     conn_state = monitors.get_monitors([
         MONITORS[monitor_names.database_connections],
-        MONITORS[monitor_names.database_connection_info]
+        MONITORS[monitor_names.database_connection_info],
+        MONITORS[monitor_names.database_index_count],
+        MONITORS[monitor_names.database_index_info]
     ])
 
     return conn_state, False
