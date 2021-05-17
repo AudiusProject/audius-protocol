@@ -104,7 +104,8 @@ def get_database_index_info(**kwargs):
     db = kwargs['db']
     with db.scoped_session() as session:
         q = sqlalchemy.text(
-            f"SELECT tablename, indexname, indexdef FROM pg_indexes WHERE schemaname = 'public' ORDER BY tablename, indexname"
+            f"SELECT tablename, indexname, indexdef FROM pg_indexes WHERE schemaname = 'public'" +
+            f"ORDER BY tablename, indexname"
         )
         result = session.execute(q).fetchall()
         connection_info = [dict(row) for row in result]
