@@ -23,7 +23,7 @@ function segmentFile (fileDir, fileName, { logContext }) {
       '-hls_segment_type', config.get('hlsSegmentType'), // `fmp4` for MPEG-DASH - hls 7+ only
       '-hls_list_size', 0, // write all segments to one m3u8 file
       '-hls_base_url', 'segments/', // path hack - adds `segments` dir to m3u8 file entries
-      '-hls_segment_filename', path.resolve(fileDir, 'segments', 'segment%05d.ts'),
+      '-hls_segment_filename', path.resolve(fileDir, 'segments', 'segment%03d.ts'),
       // "-vn" flag required to allow track uploading with album art
       // https://stackoverflow.com/questions/20193065/how-to-remove-id3-audio-tag-image-or-metadata-from-mp3-with-ffmpeg
       '-vn',

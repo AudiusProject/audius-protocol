@@ -616,7 +616,7 @@ describe('test Tracks with real IPFS', function () {
  * TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
 */
 function _getTestSegmentFilePathAtIndex (index) {
-  let suffix = '000'
+  let suffix = '0'
 
   if (index >= 0 && index < 10) suffix += `0${index}`
   else if (index >= 10 && index < 32) suffix += `${index}`

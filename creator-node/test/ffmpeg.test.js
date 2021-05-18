@@ -77,7 +77,7 @@ describe('test segmentFile()', () => {
       const allSegmentsSet = new Set(files)
       files.map((file, i) => {
         // check that the segment follows naming convention
-        const indexSuffix = ('00000' + i).slice(-5)
+        const indexSuffix = ('000' + i).slice(-3)
         assert.deepStrictEqual(file, `segment${indexSuffix}.ts`)
 
         // check that the segment is proper by comparing its buffer to test assets
