@@ -170,6 +170,8 @@ def parse_playlist_event(
             )
             playlist_record.playlist_contents = {"track_ids": new_playlist_content_array}
             playlist_record.timestamp = block_datetime
+            # what's the above line for?
+            playlist_record.last_added_to = block_datetime
 
     if event_type == playlist_event_types_lookup["playlist_track_deleted"]:
         if getattr(playlist_record, 'playlist_contents') is not None:

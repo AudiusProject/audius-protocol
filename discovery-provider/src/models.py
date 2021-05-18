@@ -302,6 +302,7 @@ class Playlist(Base):
     upc = Column(String)
     is_current = Column(Boolean, nullable=False)
     is_delete = Column(Boolean, nullable=False)
+    last_added_to = Column(DateTime, nullable=True)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
 
