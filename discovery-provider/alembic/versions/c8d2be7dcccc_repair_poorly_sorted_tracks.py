@@ -37,7 +37,7 @@ def compile_jsonb_array_length(element, compiler, **kw):
 logger = logging.getLogger(__name__)
 
 Session = sessionmaker()
-CUTOFF_DATE = datetime.fromtimestamp(1621297887)
+CUTOFF_DATE = datetime.fromtimestamp(1621371670)
 FMT = "segment%03d.ts"
 
 def fix_segments(segments):
