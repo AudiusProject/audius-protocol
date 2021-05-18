@@ -659,8 +659,8 @@ workflows:
       - docker-build-and-push:
           name: build-creator-node
           repo: creator-node
-          requires:
-            - test-creator-node
+          # requires:
+          #   - test-creator-node
 
       - test-discovery-provider
       - docker-build-and-push:
