@@ -411,7 +411,7 @@ class AudiusBackend {
         useTrackContentPolling: getFeatureEnabled(
           FeatureFlags.USE_TRACK_CONTENT_POLLING
         ),
-        useResumableTrackUload: getFeatureEnabled(
+        useResumableTrackUpload: getFeatureEnabled(
           FeatureFlags.USE_RESUMABLE_TRACK_UPLOAD
         )
       })
