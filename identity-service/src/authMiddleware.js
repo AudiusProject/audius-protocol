@@ -56,11 +56,12 @@ async function authMiddleware (req, res, next) {
     let walletAddress = recoverPersonalSignature({ data: encodedDataMessage, sig: signature })
     const user = await models.User.findOne({
       where: { walletAddress },
-      attributes: ['id', 'blockchainUserId', 'walletAddress', 'createdAt']
+      attributes: ['id', 'blockchainUserId', 'walletAddress', 'createdAt'],
+      raw: true
     })
     if (!user) throw new Error(`[Error]: no user found for wallet address ${walletAddress}`)
 
-    if (user && user.blockchainUserId) {
+    if (user.blockchainUserId) {
       req.user = user
       next()
     } else {
