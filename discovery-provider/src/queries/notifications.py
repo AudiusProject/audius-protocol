@@ -746,6 +746,7 @@ def notifications():
         playlist_update_query = playlist_update_query.filter(
             Playlist.is_current == True,
             Playlist.is_delete == False,
+            Playlist.last_added_to >= thirty_days_ago_time,
             Playlist.blocknumber > min_block_number,
             Playlist.blocknumber <= max_block_number)
 
@@ -755,8 +756,6 @@ def notifications():
         playlist_update_notifications = []
         playlist_update_notifs_by_playlist_id = {}
         for entry in playlist_update_results:
-            if entry.last_added_to < thirty_days_ago_time:
-                continue
             playlist_update_notifs_by_playlist_id[entry.playlist_id] = {
                 const.notification_type:
                 const.notification_type_playlist_update,
@@ -770,6 +769,9 @@ def notifications():
                 }
             }
 
+        # dictionary of playlist id => users that favorited said playlist
+        # e.g. { playlist1: [user1, user2, ...], ... }
+        # we need this dictionary to know which users need to be notified of a playlist update
         users_that_favorited_playlists_dict = ft.reduce(
             lambda accumulator, current: accumulator.update({
                 current.save_item_id: accumulator[current.save_item_id] + [current.user_id] \
