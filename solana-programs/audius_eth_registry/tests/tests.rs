@@ -16,7 +16,7 @@ use solana_sdk::{
 };
 
 pub fn program_test() -> ProgramTest {
-    ProgramTest::new("audius", id(), processor!(processor::Processor::process))
+    ProgramTest::new("audius_eth_registry", id(), processor!(processor::Processor::process))
 }
 
 async fn setup() -> (BanksClient, Keypair, Hash, Keypair, Keypair) {
@@ -85,7 +85,11 @@ async fn process_tx_init_signer_group(
     banks_client: &mut BanksClient,
 ) -> Result<(), TransportError> {
     let mut transaction = Transaction::new_with_payer(
-        &[instruction::init_signer_group(&id(), signer_group, group_owner).unwrap()],
+        &[instruction::init_signer_group(
+            &id(),
+            signer_group,
+            group_owner
+        ).unwrap()],
         Some(&payer.pubkey()),
     );
     transaction.sign(&[payer], recent_blockhash);
