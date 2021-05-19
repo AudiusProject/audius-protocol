@@ -5,8 +5,6 @@
  *
  * @dev We maintain this map to maximize query performance; Bull does not provide any api for querying
  *    jobs by property and would require a linear iteration over the full job list
- *
- * TODO - move to separate file
  */
 class SyncDeDuplicator {
   constructor () {

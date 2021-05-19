@@ -31,6 +31,7 @@ const SyncType = Object.freeze({
 /*
   SnapbackSM aka Snapback StateMachine
   Ensures file availability through recurring sync operations
+  Pending: User replica set management
 */
 class SnapbackSM {
   constructor (nodeConfig, audiusLibs) {
