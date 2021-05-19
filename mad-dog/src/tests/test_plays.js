@@ -74,15 +74,15 @@ async function submitTrackListen (executeOne, trackId, userId, solanaListen) {
 }
 
 async function trackListenCountsTest ({ executeOne }) {
-  const numBaseTrackListens = 10
-  const numAnonBaseTrackListens = 10
-  const numSolanaTrackListens = 10
-  const numAnonSolanaTrackListens = 10
+  const numBaseTracks = 10
+  const numAnonBaseTracks = 10
+  const numSolanaTracks = 300
+  const numAnonSolanaTracks = 50
 
   const start = Date.now()
 
   const numSuccessfulSolanaTrackListens = (await Promise.all(
-    Array.from({ length: numSolanaTrackListens }, async () => {
+    Array.from({ length: numSolanaTracks }, async () => {
       const numListens = Math.floor(Math.random() * 5) + 1
       const trackId = Math.floor(Math.random() * 10000000)
       const userId = Math.floor(Math.random() * 10000000)
@@ -96,7 +96,7 @@ async function trackListenCountsTest ({ executeOne }) {
   )).reduce((a, b) => a + b, 0)
 
   const numSuccessfulAnonSolanaTrackListens = (await Promise.all(
-    Array.from({ length: numAnonSolanaTrackListens }, async () => {
+    Array.from({ length: numAnonSolanaTracks }, async () => {
       const numListens = Math.floor(Math.random() * 5) + 1
       const trackId = Math.floor(Math.random() * 10000000)
       const userId = `anon-${Math.floor(Math.random() * 10000000)}`
@@ -110,7 +110,7 @@ async function trackListenCountsTest ({ executeOne }) {
   )).reduce((a, b) => a + b, 0)
 
   let numSuccessfulBaseTrackListens = 0
-  for (let i = 0; i < numBaseTrackListens; i++) {
+  for (let i = 0; i < numBaseTracks; i++) {
     const numListens = Math.floor(Math.random() * 5) + 1
     const trackId = Math.floor(Math.random() * 10000000)
     const userId = Math.floor(Math.random() * 10000000)
@@ -123,7 +123,7 @@ async function trackListenCountsTest ({ executeOne }) {
   }
 
   let numSuccessfulAnonBaseTrackListens = 0
-  for (let i = 0; i < numAnonBaseTrackListens; i++) {
+  for (let i = 0; i < numAnonBaseTracks; i++) {
     const numListens = Math.floor(Math.random() * 5) + 1
     const trackId = Math.floor(Math.random() * 10000000)
     const userId = `anon-${Math.floor(Math.random() * 10000000)}`
