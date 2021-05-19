@@ -1,6 +1,6 @@
 """repair_poorly_sorted_tracks
 
-Tracks on audius created before <X> date contain improperly sorted segments.
+Tracks on audius created before datetime(2021, 5, 19, 15, 27, 45) contain improperly sorted segments.
 See https://github.com/AudiusProject/audius-protocol/commit/27576f58c4cdfa8e18e3f90f2c427d1e4a7eb51c
 for the forward looking fix.
 
@@ -37,7 +37,7 @@ def compile_jsonb_array_length(element, compiler, **kw):
 logger = logging.getLogger(__name__)
 
 Session = sessionmaker()
-CUTOFF_DATE = datetime.fromtimestamp(1621371670)
+CUTOFF_DATE = datetime.fromtimestamp(1621456065)
 FMT = "segment%03d.ts"
 
 def fix_segments(segments):
