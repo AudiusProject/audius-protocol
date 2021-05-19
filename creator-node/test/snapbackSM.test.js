@@ -1,7 +1,7 @@
 const nock = require('nock')
 const assert = require('assert')
 
-const { SnapbackSM, SyncType } = require('../src/SnapbackStateMachine/snapbackSM')
+const { SnapbackSM, SyncType } = require('../src/snapbackSM/snapbackSM')
 const models = require('../src/models')
 const { getLibsMock } = require('./lib/libsMock')
 const utils = require('../src/utils')
