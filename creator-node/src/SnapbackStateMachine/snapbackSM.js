@@ -1,12 +1,14 @@
 const Bull = require('bull')
 const axios = require('axios')
 
-const utils = require('./utils')
-const models = require('./models')
-const { logger } = require('./logging')
+const utils = require('../utils')
+const models = require('../models')
+const { logger } = require('../logging')
+
+const SyncDeDuplicator = require('./snapbackDeDuplicator')
 
 // Maximum number of time to wait for a sync operation, 6 minutes by default
-const MaxSyncMonitoringDurationInMs = 360000
+const MaxSyncMonitoringDurationInMs = 360000 // ms
 
 // Retry delay between requests during monitoring
 const SyncMonitoringRetryDelayMs = 15000
@@ -18,7 +20,7 @@ const ModuloBase = 24
 const DevDelayInMS = 3000
 
 // Delay 1 hour between production state machine jobs
-const ProductionJobDelayInMs = 3600000
+const ProductionJobDelayInMs = 3600000 // ms
 
 // Describes the type of sync operation
 const SyncType = Object.freeze({
@@ -29,7 +31,6 @@ const SyncType = Object.freeze({
 /*
   SnapbackSM aka Snapback StateMachine
   Ensures file availability through recurring sync operations
-  Pending: User replica set management
 */
 class SnapbackSM {
   constructor (nodeConfig, audiusLibs) {
@@ -52,6 +53,9 @@ class SnapbackSM {
     }
 
     // State machine queue processes all user operations
+    // make sures everything is up to date by syncing secondaries
+    // 1 thing
+
     this.stateMachineQueue = this.createBullQueue('state-machine')
 
     // Sync queues handle issuing sync request from primary -> secondary
@@ -705,6 +709,8 @@ class SnapbackSM {
         throw new Error('processStateMachineOperation():retrieveClockStatusesForSecondaryUsersFromNodes() Error')
       }
 
+      // IUJFOEAWUF9A0OWeFUJ9EOWAUFJEWOA9FJEWAOIFJEWAIOFJEWIOAJFWAOIFJEWAOIFJWEOF STOP HERE
+
       // Issue all required sync requests
       let numSyncRequestsRequired, numSyncRequestsIssued, syncRequestErrors
       try {
@@ -795,188 +801,6 @@ class SnapbackSM {
         this.logError(`Error printing processStateMachineOperation Decision Tree ${decisionTree}`)
       }
     }
-  }
-
-  /**
-   * DEPRECATED replaced by this.processStateMachineOperation()
-   */
-  async processStateMachineOperationOld () {
-    this.log(`------------------Process SnapbackSM Operation, slice ${this.currentModuloSlice}------------------`)
-
-    // Retrieve list of all users that have this node as primary
-    let nodePrimaryUsers
-    try {
-      // Returns all users that have this node in their replica set via discprov route `/users/content_node/all`
-      const nodeUsers = await this.getAllNodeUsers()
-
-      // Filter to subset of users that have this node as their primary
-      nodePrimaryUsers = nodeUsers.filter(nodeUser => nodeUser.primary === this.endpoint)
-
-      this.log(`processStateMachineOperation(): Retrieved nodePrimaryUsers via new discprov route`)
-
-      /**
-       * If getAllNodeUsers() call fails, CN is connected to old discprov that doesn't have the `/users/content_node/all` route
-       * Fallback to getNodePrimaryUsers(), which calls old discprov route `/users/creator_node`
-       * This route returns only users with this node as their primary
-       */
-    } catch (e) {
-      nodePrimaryUsers = await this.getNodePrimaryUsers()
-      this.log(`processStateMachineOperation(): Retrieved nodePrimaryUsers via legacy discprov route`)
-
-      // Ensure every object in response array contains required fields
-    } finally {
-      nodePrimaryUsers.forEach(nodePrimaryUser => {
-        const requiredFields = ['user_id', 'wallet', 'primary', 'secondary1', 'secondary2']
-        const responseFields = Object.keys(nodePrimaryUser)
-        const allRequiredFieldsPresent = requiredFields.every(requiredField => responseFields.includes(requiredField))
-        if (!allRequiredFieldsPresent) {
-          throw new Error('Unexpected response format during getAllNodeUsers() or getNodePrimaryUsers() call')
-        }
-      })
-    }
-
-    /**
-     * Build map of content node to list of all users that need to be processed
-     * Determines user list by checking if user_id % moduloBase = currentModuloSlice
-     */
-
-    // Generate list of wallets by node to query clock number
-    // Structured as { nodeEndpoint: [wallet1, wallet2, ...] }
-    let nodeVectorClockQueryList = {}
-
-    // Users actually selected to process
-    let usersToProcess = []
-
-    // Wallets being processed in this state machine operation
-    let wallets = []
-
-    nodePrimaryUsers.forEach(
-      (user) => {
-        // determine if user should be processed by checking if user_id % moduloBase = currentModuloSlice
-        const userId = user.user_id
-        const modResult = userId % ModuloBase
-        const shouldProcess = (modResult === this.currentModuloSlice)
-        if (!shouldProcess) {
-          return
-        }
-
-        // Add to list of currently processing users
-        usersToProcess.push(user)
-        const userWallet = user.wallet
-        wallets.push(userWallet)
-
-        // Conditionally asign secondary if present
-        const secondary1 = (user.secondary1) ? user.secondary1 : null
-        const secondary2 = (user.secondary2) ? user.secondary2 : null
-
-        // Initialize empty array for node in node-wallet map if needed
-        if (!nodeVectorClockQueryList[secondary1] && secondary1 != null) { nodeVectorClockQueryList[secondary1] = [] }
-        if (!nodeVectorClockQueryList[secondary2] && secondary2 != null) { nodeVectorClockQueryList[secondary2] = [] }
-
-        // Push wallet if necessary onto secondary wallet list
-        if (secondary1 != null) nodeVectorClockQueryList[secondary1].push(userWallet)
-        if (secondary2 != null) nodeVectorClockQueryList[secondary2].push(userWallet)
-      }
-    )
-
-    this.log(`Processing ${usersToProcess.length} users`)
-    // Cached primary clock values for currently processing user set
-    let primaryClockValues = await this.getUserPrimaryClockValues(wallets)
-    // Process nodeVectorClockQueryList and cache user clock values on each node
-    let secondaryNodesToProcess = Object.keys(nodeVectorClockQueryList)
-    let secondaryNodeUserClockStatus = {}
-    await Promise.all(
-      secondaryNodesToProcess.map(
-        async (node) => {
-          secondaryNodeUserClockStatus[node] = {}
-          let walletsToQuery = nodeVectorClockQueryList[node]
-          let requestParams = {
-            baseURL: node,
-            method: 'post',
-            url: '/users/batch_clock_status',
-            data: {
-              'walletPublicKeys': walletsToQuery
-            }
-          }
-          this.log(`Requesting ${walletsToQuery.length} users from ${node}`)
-          let { data: body } = await axios(requestParams)
-          let userClockStatusList = body.data.users
-          // Process returned clock values from this secondary node
-          userClockStatusList.map(
-            (entry) => {
-              try {
-                secondaryNodeUserClockStatus[node][entry.walletPublicKey] = entry.clock
-              } catch (e) {
-                this.log(`ERROR updating secondaryNodeUserClockStatus for ${entry.walletPublicKey} with ${entry.clock}`)
-                this.log(JSON.stringify(secondaryNodeUserClockStatus))
-                throw e
-              }
-            }
-          )
-        }
-      )
-    )
-    this.log(`Finished node user clock status querying, moving to sync calculation. Modulo slice ${this.currentModuloSlice}`)
-
-    // Issue syncs if necessary
-    // For each user in the initially returned nodePrimaryUsers,
-    //  compare local primary clock value to value from secondary retrieved in bulk above
-    let numSyncsIssued = 0
-    await Promise.all(
-      usersToProcess.map(
-        async (user) => {
-          try {
-            let userWallet = null
-            let secondary1 = null
-            let secondary2 = null
-
-            if (user.wallet) userWallet = user.wallet
-            if (user.secondary1) secondary1 = user.secondary1
-            if (user.secondary2) secondary2 = user.secondary2
-
-            let primaryClockValue = primaryClockValues[userWallet]
-            let secondary1ClockValue = secondary1 != null ? secondaryNodeUserClockStatus[secondary1][userWallet] : undefined
-            let secondary2ClockValue = secondary2 != null ? secondaryNodeUserClockStatus[secondary2][userWallet] : undefined
-            let secondary1SyncRequired = (secondary1ClockValue === undefined) ? true : (primaryClockValue > secondary1ClockValue)
-            let secondary2SyncRequired = (secondary2ClockValue === undefined) ? true : (primaryClockValue > secondary2ClockValue)
-            this.log(`${userWallet} primaryClock=${primaryClockValue}, (secondary1=${secondary1}, clock=${secondary1ClockValue} syncRequired=${secondary1SyncRequired}), (secondary2=${secondary2}, clock=${secondary2ClockValue}, syncRequired=${secondary2SyncRequired})`)
-
-            // Enqueue sync for secondary1 if required
-            if (secondary1SyncRequired && secondary1 != null) {
-              await this.enqueueSync({
-                userWallet,
-                secondaryEndpoint: secondary1,
-                primaryEndpoint: this.endpoint,
-                syncType: SyncType.Recurring
-              })
-
-              numSyncsIssued += 1
-            }
-
-            // Enqueue sync for secondary2 if required
-            if (secondary2SyncRequired && secondary2 != null) {
-              await this.enqueueSync({
-                userWallet,
-                secondaryEndpoint: secondary2,
-                primaryEndpoint: this.endpoint,
-                syncType: SyncType.Recurring
-              })
-
-              numSyncsIssued += 1
-            }
-          } catch (e) {
-            this.log(`Caught error for user ${user.wallet}, ${JSON.stringify(user)}, ${e.message}`)
-          }
-        }
-      )
-    )
-
-    // Increment and adjust current slice by ModuloBase
-    const previousModuloSlice = this.currentModuloSlice
-    this.currentModuloSlice += 1
-    this.currentModuloSlice = this.currentModuloSlice % ModuloBase
-
-    this.log(`------------------END Process SnapbackSM Operation || Issued ${numSyncsIssued} SyncRequest ops in slice ${previousModuloSlice} of ${ModuloBase}. Moving to slice ${this.currentModuloSlice} ------------------`)
   }
 
   /**
@@ -1128,49 +952,6 @@ class SnapbackSM {
       recurringWaiting,
       recurringActive
     }
-  }
-}
-
-/**
- * Ensure a sync for (syncType, userWallet, secondaryEndpoint) can only be enqueued once
- * This is used to ensure multiple concurrent sync tasks are not being redundantly used on a single user
- * Implemented with an in-memory map of string(syncType, userWallet, secondaryEndpoint) -> object(syncJobInfo)
- *
- * @dev We maintain this map to maximize query performance; Bull does not provide any api for querying
- *    jobs by property and would require a linear iteration over the full job list
- *
- * TODO - move to separate file
- */
-class SyncDeDuplicator {
-  constructor () {
-    this.waitingSyncsByUserWalletMap = {}
-  }
-
-  /** Stringify properties to enable storage with a flat map */
-  _getSyncKey (syncType, userWallet, secondaryEndpoint) {
-    return `${syncType}::${userWallet}::${secondaryEndpoint}`
-  }
-
-  /** Return job info of sync with given properties if present else null */
-  getDuplicateSyncJobInfo (syncType, userWallet, secondaryEndpoint) {
-    const syncKey = this._getSyncKey(syncType, userWallet, secondaryEndpoint)
-
-    const duplicateSyncJobInfo = this.waitingSyncsByUserWalletMap[syncKey]
-    return duplicateSyncJobInfo || null
-  }
-
-  /** Record job info for sync with given properties */
-  recordSync (syncType, userWallet, secondaryEndpoint, jobInfo) {
-    const syncKey = this._getSyncKey(syncType, userWallet, secondaryEndpoint)
-
-    this.waitingSyncsByUserWalletMap[syncKey] = jobInfo
-  }
-
-  /** Remove sync with given properties */
-  removeSync (syncType, userWallet, secondaryEndpoint) {
-    const syncKey = this._getSyncKey(syncType, userWallet, secondaryEndpoint)
-
-    delete this.waitingSyncsByUserWalletMap[syncKey]
   }
 }
 

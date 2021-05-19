@@ -6,7 +6,7 @@ const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { serviceRegistry } = require('./serviceRegistry')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
-const { SyncType } = require('./snapbackSM.js')
+const { SyncType } = require('./SnapbackStateMachine/snapbackSM')
 
 /** Ensure valid cnodeUser and session exist for provided session token. */
 async function authMiddleware (req, res, next) {
