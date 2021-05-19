@@ -100,10 +100,15 @@ def add_user_artwork(user):
         user["cover_photo"] = cover
     return user
 
-def extend_user(user):
+def extend_user(user, current_user_id):
     user_id = encode_int_id(user["user_id"])
     user["id"] = user_id
     user = add_user_artwork(user)
+    # Do not surface playlist library in user response unless we are
+    # that user specifically
+    if not current_user_id or current_user_id != user["user_id"]:
+        del user["playlist_library"]
+
     return user
 
 def extend_repost(repost):

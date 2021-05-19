@@ -43,6 +43,9 @@
                 },
                 "collectibles": {
                     "$ref": "#/definitions/Collectibles"
+                },
+                "playlist_library": {
+                    "$ref": "#/definitions/PlaylistLibrary"
                 }
             },
             "required": [
@@ -108,6 +111,86 @@
             "required": [
                 "order"
             ]
+        },
+        "PlaylistIdentifier": {
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "playlist"
+                },
+                "playlist_id": {
+                    "type": "integer"
+                }
+            }
+
+        },
+        "ExplorePlaylistIdentifier": {
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "explore_playlist"
+                },
+                "playlist_id": {
+                    "type": "string",
+                    "pattern": "^[a-z/]"
+                }
+            }
+        },
+        "PlaylistLibraryIdentifier": {
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/PlaylistIdentifier"
+                },
+                {
+                    "$ref": "#/definitions/ExplorePlaylistIdentifier"
+                }
+            ]
+        },
+        "PlaylistLibraryFolder": {
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "const": "folder"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "contents": {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/definitions/PlaylistLibraryFolder"
+                            },
+                            {
+                                "$ref": "#/definitions/PlaylistLibraryIdentifier"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "PlaylistLibrary": {
+            "type": ["object", "null"],
+            "default": null,
+            "additionalProperties": {
+                "$ref": "#/definitions/Collectible"
+            },
+            "properties": {
+                "contents": {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            {
+                                "$ref": "#/definitions/PlaylistLibraryFolder"
+                            },
+                            {
+                                "$ref": "#/definitions/PlaylistLibraryPlaylist"
+                            }
+                        ]
+                    }
+                }
+            }
         }
     }
 }
