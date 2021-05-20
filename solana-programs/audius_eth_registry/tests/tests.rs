@@ -247,9 +247,22 @@ async fn disable_signer_group_owner() {
         .unwrap()],
         Some(&payer.pubkey()),
     );
-    transaction.sign(&[&payer, &group_owner], recent_blockhash);
+    transaction.sign(&[&payer, &group_owner], banks_client.get_recent_blockhash().await.unwrap());
     let transaction_error = banks_client.process_transaction(transaction).await;
     assert!(transaction_error.is_err());
+
+    // Confirm signer group cannot be re-initialized
+    let mut transaction_2 = Transaction::new_with_payer(
+        &[instruction::init_signer_group(
+            &id(),
+            &signer_group.pubkey(),
+            &group_owner.pubkey()
+        ).unwrap()],
+        Some(&payer.pubkey()),
+    );
+    transaction_2.sign(&[&payer], banks_client.get_recent_blockhash().await.unwrap());
+    let tx_error_2 = banks_client.process_transaction(transaction_2).await;
+    assert!(tx_error_2.is_err());
 }
 
 #[tokio::test]
