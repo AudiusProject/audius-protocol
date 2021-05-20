@@ -408,7 +408,7 @@ class SnapbackSM {
   async processStateMachineOperation () {
     // Record all stages of this function along with associated information for use in logging
     let decisionTree = [{
-      stage: '1/ BEGIN processStateMachineOperation()',
+      stage: 'BEGIN processStateMachineOperation()',
       vals: {
         currentModuloSlice: this.currentModuloSlice
       },
@@ -458,7 +458,7 @@ class SnapbackSM {
         }
       }
       decisionTree.push({
-        stage: '6/ Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays',
+        stage: 'Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays',
         vals: {
           requiredUpdateReplicaSetOpsLength: requiredUpdateReplicaSetOps.length,
           potentialSyncRequestsLength: potentialSyncRequests.length
@@ -469,7 +469,7 @@ class SnapbackSM {
       // Build map of secondary node to secondary user wallets array
       const secondaryNodesToUserWalletsMap = this.buildSecondaryNodesToUserWalletsMap(potentialSyncRequests)
       decisionTree.push({
-        stage: '7/ buildSecondaryNodesToUserWalletsMap() Success',
+        stage: 'buildSecondaryNodesToUserWalletsMap() Success',
         vals: { numSecondaryNodes: Object.keys(secondaryNodesToUserWalletsMap).length },
         time: Date.now()
       })
@@ -481,13 +481,13 @@ class SnapbackSM {
           secondaryNodesToUserWalletsMap
         )
         decisionTree.push({
-          stage: '8/ retrieveClockStatusesForSecondaryUsersFromNodes() Success',
+          stage: 'retrieveClockStatusesForSecondaryUsersFromNodes() Success',
           vals: { },
           time: Date.now()
         })
       } catch (e) {
         decisionTree.push({
-          stage: '8/ retrieveClockStatusesForSecondaryUsersFromNodes() Error',
+          stage: 'retrieveClockStatusesForSecondaryUsersFromNodes() Error',
           vals: e.message,
           time: Date.now()
         })
@@ -507,7 +507,7 @@ class SnapbackSM {
         }
 
         decisionTree.push({
-          stage: '9/ issueSyncRequests() Success',
+          stage: 'issueSyncRequests() Success',
           vals: {
             numSyncRequestsRequired,
             numSyncRequestsIssued,
@@ -518,7 +518,7 @@ class SnapbackSM {
         })
       } catch (e) {
         decisionTree.push({
-          stage: '9/ issueSyncRequests() Error',
+          stage: 'issueSyncRequests() Error',
           vals: {
             numSyncRequestsRequired,
             numSyncRequestsIssued,
@@ -543,13 +543,13 @@ class SnapbackSM {
         }
         numUpdateReplicaOpsIssued = requiredUpdateReplicaSetOps.length
         decisionTree.push({
-          stage: '10/ issueUpdateReplicaSetOp() Success',
+          stage: 'issueUpdateReplicaSetOp() Success',
           vals: { numUpdateReplicaOpsIssued },
           time: Date.now()
         })
       } catch (e) {
         decisionTree.push({
-          stage: '10/ issueUpdateReplicaSetOp() Error',
+          stage: 'issueUpdateReplicaSetOp() Error',
           vals: e.message,
           time: Date.now()
         })
@@ -563,7 +563,7 @@ class SnapbackSM {
       this.peerSetManager.setCurrentModuloSlice(this.currentModuloSlice)
 
       decisionTree.push({
-        stage: '11/ END processStateMachineOperation()',
+        stage: 'END processStateMachineOperation()',
         vals: {
           currentModuloSlice: previousModuloSlice,
           nextModuloSlice: this.currentModuloSlice,
