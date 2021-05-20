@@ -153,7 +153,6 @@ fn construct_eth_address(
 }
 
 #[tokio::test]
-#[ignore]
 async fn init_signer_group() {
     let (mut banks_client, payer, recent_blockhash, signer_group, group_owner) = setup().await;
 
@@ -266,7 +265,6 @@ async fn disable_signer_group_owner() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn init_valid_signer() {
     let (mut banks_client, payer, recent_blockhash, signer_group, group_owner) = setup().await;
 
@@ -319,7 +317,6 @@ async fn init_valid_signer() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn clear_valid_signer() {
     let (mut banks_client, payer, recent_blockhash, signer_group, group_owner) = setup().await;
 
@@ -380,7 +377,6 @@ async fn clear_valid_signer() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn validate_signature() {
     let mut rng = thread_rng();
     let key: [u8; 32] = rng.gen();
@@ -469,7 +465,6 @@ async fn validate_signature() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn validate_signature_with_wrong_data() {
     let mut rng = thread_rng();
     let key: [u8; 32] = rng.gen();
