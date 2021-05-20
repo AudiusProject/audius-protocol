@@ -415,8 +415,26 @@ class SnapbackSM {
       time: Date.now()
     }]
 
-    const nodeUsers = await this.peerSetManager.getNodeUsersSlice(decisionTree)
-    const unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers, decisionTree)
+    let nodeUsers
+    try {
+      nodeUsers = await this.peerSetManager.getNodeUsers()
+      nodeUsers = this.peerSetManager.sliceUsers(nodeUsers)
+
+      decisionTree.push({ stage: 'getNodeUsers() and sliceUsers() Success', vals: { nodeUsersLength: nodeUsers.length }, time: Date.now() })
+    } catch (e) {
+      decisionTree.push({ stage: 'getNodeUsers() and sliceUsers() Error', vals: e.message, time: Date.now() })
+      throw new Error('processStateMachineOperation():getNodeUsers()/sliceUsers() Error')
+    }
+
+    let unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
+    decisionTree.push({
+      stage: 'getUnhealthyPeers() Success',
+      vals: {
+        unhealthyPeerSetLength: unhealthyPeers.size,
+        unhealthyPeers: Array.from(unhealthyPeers)
+      },
+      time: Date.now()
+    })
 
     try {
       // Lists to aggregate all required ReplicaSetUpdate ops and potential SyncRequest ops

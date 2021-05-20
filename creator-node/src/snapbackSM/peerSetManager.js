@@ -25,104 +25,71 @@ class PeerSetManager {
    * Retrieves node users, paritions it into a slice, computes the peer set of the node users,
    * and performs a health check on the peer set.
    * @param {Object[]} nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
-   * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
    * @returns the unhealthy peers in a Set
+   *
+   * @note consider returning healthy set?
    */
-  async getUnhealthyPeers (nodeUsers, decisionTree) {
+  async getUnhealthyPeers (nodeUsers) {
     // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
-    let peerSet = []
-    try {
-      peerSet = this.computeContentNodePeerSet(nodeUsers, decisionTree)
-    } catch (e) {
-      decisionTree.push({ stage: '4/ computeContentNodePeerSet() Error', vals: e.message, time: Date.now() })
-      throw new Error('getUnhealthyPeers():computeContentNodePeerSet() Error')
-    }
+    let peerSet = this.computeContentNodePeerSet(nodeUsers)
 
     /**
      * Determine health for every peer & build list of unhealthy peers
      * TODO: change from sequential to chunked parallel
      */
     const unhealthyPeers = new Set()
-    try {
-      for await (const peer of peerSet) {
-        const peerIsHealthy = await this.determinePeerHealth(peer)
-        if (!peerIsHealthy) {
-          unhealthyPeers.add(peer)
-        }
-      }
 
-      decisionTree.push({
-        stage: '5/ determinePeerHealth() Success',
-        vals: {
-          unhealthyPeerSetLength: unhealthyPeers.size,
-          healthyPeerSetLength: peerSet.size - unhealthyPeers.size,
-          unhealthyPeers: Array.from(unhealthyPeers)
-        },
-        time: Date.now()
-      })
-    } catch (e) {
-      decisionTree.push({ stage: '5/ determinePeerHealth() Error', vals: e.message, time: Date.now() })
-      throw new Error('getUnhealthyPeers():determinePeerHealth() Error')
+    for await (const peer of peerSet) {
+      try {
+        // TODO: consider using the response
+        await this.determinePeerHealth(peer)
+      } catch (e) {
+        unhealthyPeers.add(peer)
+        this.logError(`getUnhealthyPeers() peer=${peer} is unhealthy: ${e.toString()}`)
+      }
     }
 
     return unhealthyPeers
   }
 
   /**
-   * Wrapper method for retrieving all users on current node and slicing up a partition of it
-   * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
-   * @returns a partition of the users that have this node as part of their replica sets
-   */
-  async getNodeUsersSlice (decisionTree) {
-    let nodeUsers = await this.getNodeUsers(decisionTree)
-    nodeUsers = this.sliceUsers(nodeUsers, decisionTree)
-
-    return nodeUsers
-  }
-
-  /**
    * Retrieve list of all users which have this node as replica (primary or secondary) from discovery node
    * Or retrieve primary users only if connected to old discprov
-   * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
-   */
-  async getNodeUsers (decisionTree) {
-    let nodeUsers
-    try {
-      nodeUsers = await this._getNodeUsers(decisionTree)
-      decisionTree.push({ stage: '2/ getNodeUsers() Success', vals: { nodeUsersLength: nodeUsers.length }, time: Date.now() })
-    } catch (e) {
-      decisionTree.push({ stage: '2/ getNodeUsers() Error', vals: e.message, time: Date.now() })
-      throw new Error('getUnhealthyPeers():getNodeUsers() Error')
-    }
-
-    return nodeUsers
-  }
-
-  /**
-   * Wrapper function to handle backwards compatibility of getAllNodeUsers() and getNodePrimaryUsers()
+   *
+   * Also handles backwards compatibility of getAllNodeUsers() and getNodePrimaryUsers()
    * This only works if both functions have a consistent return format
-   * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
    */
-  async _getNodeUsers (decisionTree) {
+  async getNodeUsers () {
+    let fetchUsersSuccess = false
     let nodeUsers
 
+    let firstFetchError = null
     try {
-      // Use new function to retrieve all node users
-      nodeUsers = await this.getAllNodeUsers(decisionTree)
+      // Retrieves users from route `v1/full/users/content_node/all`
+      nodeUsers = await this.getAllNodeUsers()
+      fetchUsersSuccess = true
     } catch (e) {
-      // On failure, fallback to old function to retrieve all node primary users
-      nodeUsers = await this.getNodePrimaryUsers()
-    } finally {
-      // Ensure every object in response array contains all required fields
-      nodeUsers.forEach(nodeUser => {
-        const requiredFields = ['user_id', 'wallet', 'primary', 'secondary1', 'secondary2']
-        const responseFields = Object.keys(nodeUser)
-        const allRequiredFieldsPresent = requiredFields.every(requiredField => responseFields.includes(requiredField))
-        if (!allRequiredFieldsPresent) {
-          throw new Error('Unexpected response format during getAllNodeUsers() or getNodePrimaryUsers() call')
-        }
-      })
+      firstFetchError = e
     }
+
+    if (!fetchUsersSuccess) {
+      try {
+        // Retrieves users from route `users/creator_node`
+        nodeUsers = await this.getNodePrimaryUsers()
+      } catch (secondFetchError) {
+        throw new Error(`getAllNodeUsers() Error: ${firstFetchError.toString()}\n\ngetNodePrimaryUsers() Error: ${secondFetchError.toString()}`)
+      }
+    }
+
+    // Ensure every object in response array contains all required fields
+    nodeUsers.forEach(nodeUser => {
+      const requiredFields = ['user_id', 'wallet', 'primary', 'secondary1', 'secondary2']
+      const responseFields = Object.keys(nodeUser)
+      const allRequiredFieldsPresent = requiredFields.every(requiredField => responseFields.includes(requiredField))
+      if (!allRequiredFieldsPresent) {
+        throw new Error('getNodeUsers() Error: Unexpected response format during getAllNodeUsers() or getNodePrimaryUsers() call')
+      }
+    })
 
     return nodeUsers
   }
@@ -133,11 +100,10 @@ class PeerSetManager {
    *
    * @notice This function depends on a new discprov route and cannot be consumed until every discprov exposes that route
    *    It will throw if the route doesn't exist
-   * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
    * @returns {Object[]} array of objects
    *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
    */
-  async getAllNodeUsers (decisionTree) {
+  async getAllNodeUsers () {
     // Fetch discovery node currently connected to libs as this can change
     if (!this.discoveryProviderEndpoint) {
       throw new Error('No discovery provider currently selected, exiting')
@@ -154,14 +120,13 @@ class PeerSetManager {
     }
 
     // Will throw error on non-200 response
-    const resp = await axios(requestParams)
-    const allNodeUsers = resp.data.data
-
-    decisionTree.push({
-      stage: '2.A/ getNodeUsers():getAllNodeUsers() Success',
-      vals: { requestParams, numAllNodeUsers: allNodeUsers.length },
-      time: Date.now()
-    })
+    let allNodeUsers
+    try {
+      const resp = await axios(requestParams)
+      allNodeUsers = resp.data.data
+    } catch (e) {
+      throw new Error(`getAllNodeUsers() Error: ${e.toString()}`)
+    }
 
     return allNodeUsers
   }
@@ -169,11 +134,10 @@ class PeerSetManager {
   /**
    * Retrieve users with this node as primary
    * Leaving this function in until all discovery providers update to new version and expose new `/users/content_node/all` route
-    * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
    * @returns {Object[]} array of objects
    *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
    */
-  async getNodePrimaryUsers (decisionTree) {
+  async getNodePrimaryUsers () {
     // Fetch discovery node currently connected to libs as this can change
     if (!this.discoveryProviderEndpoint) {
       throw new Error('No discovery provider currently selected, exiting')
@@ -189,14 +153,13 @@ class PeerSetManager {
     }
 
     // Will throw error on non-200 response
-    const resp = await axios(requestParams)
-    const nodePrimaryUsers = resp.data.data
-
-    decisionTree.push({
-      stage: '2.A/ getNodeUsers():getAllNodeUsers() Failure; fallback getNodePrimaryUsers() Success',
-      vals: { requestParams, numNodePrimaryUsers: nodePrimaryUsers.length },
-      time: Date.now()
-    })
+    let nodePrimaryUsers
+    try {
+      const resp = await axios(requestParams)
+      nodePrimaryUsers = resp.data.data
+    } catch (e) {
+      throw new Error(`getNodePrimaryUsers() Error: ${e.toString()}`)
+    }
 
     return nodePrimaryUsers
   }
@@ -205,28 +168,18 @@ class PeerSetManager {
    * Select chunk of users to process in this run
    *  - User is selected if (user_id % this.moduloBase = currentModuloSlice)
    * @param {Object[]} nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
-   * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
    */
-  sliceUsers (nodeUsers, decisionTree) {
-    const filteredNodeUsers = nodeUsers.filter(nodeUser =>
+  sliceUsers (nodeUsers) {
+    return nodeUsers.filter(nodeUser =>
       nodeUser.user_id % this.moduloBase === this.currentModuloSlice
     )
-
-    decisionTree.push({
-      stage: `3/ select nodeUsers modulo slice ${this.currentModuloSlice}`,
-      vals: { nodeUsersSubsetLength: nodeUsers.length, moduloBase: this.moduloBase, currentModuloSlice: this.currentModuloSlice },
-      time: Date.now()
-    })
-
-    return filteredNodeUsers
   }
 
   /**
    * @param {Object[]} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
-   * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
    * @returns {Set} Set of content node endpoint strings
    */
-  computeContentNodePeerSet (nodeUserInfoList, decisionTree) {
+  computeContentNodePeerSet (nodeUserInfoList) {
     // Aggregate all nodes from user replica sets
     let peerList = (
       nodeUserInfoList.map(userInfo => userInfo.primary)
@@ -238,12 +191,6 @@ class PeerSetManager {
       .filter(peer => peer !== this.creatorNodeEndpoint) // remove self from peerList
 
     const peerSet = new Set(peerList) // convert to Set to get uniques
-
-    decisionTree.push({
-      stage: '4/ computeContentNodePeerSet() Success',
-      vals: { peerSetLength: peerSet.size },
-      time: Date.now()
-    })
 
     return peerSet
   }
@@ -260,21 +207,13 @@ class PeerSetManager {
    * @returns {Boolean}
    */
   async determinePeerHealth (endpoint) {
-    let healthy = true
-
-    try {
-      // Axios request will throw on timeout or non-200 response
-      await axios({
-        baseURL: endpoint,
-        url: '/health_check/verbose',
-        method: 'get',
-        timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT
-      })
-    } catch (e) {
-      healthy = false
-    }
-
-    return healthy
+    // Axios request will throw on timeout or non-200 response
+    return axios({
+      baseURL: endpoint,
+      url: '/health_check/verbose',
+      method: 'get',
+      timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT
+    })
   }
 
   /**
