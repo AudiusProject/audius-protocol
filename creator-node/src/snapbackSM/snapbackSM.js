@@ -623,10 +623,10 @@ class SnapbackSM {
       this.log(`processStateMachineOperation(): Retrieved nodePrimaryUsers via new discprov route`)
 
       /**
-         * If getAllNodeUsers() call fails, CN is connected to old discprov that doesn't have the `/users/content_node/all` route
-         * Fallback to getNodePrimaryUsers(), which calls old discprov route `/users/creator_node`
-         * This route returns only users with this node as their primary
-         */
+       * If getAllNodeUsers() call fails, CN is connected to old discprov that doesn't have the `/users/content_node/all` route
+       * Fallback to getNodePrimaryUsers(), which calls old discprov route `/users/creator_node`
+       * This route returns only users with this node as their primary
+       */
     } catch (e) {
       nodePrimaryUsers = await this.getNodePrimaryUsers()
       this.log(`processStateMachineOperation(): Retrieved nodePrimaryUsers via legacy discprov route`)
@@ -644,9 +644,9 @@ class SnapbackSM {
     }
 
     /**
-       * Build map of content node to list of all users that need to be processed
-       * Determines user list by checking if user_id % moduloBase = currentModuloSlice
-       */
+     * Build map of content node to list of all users that need to be processed
+     * Determines user list by checking if user_id % moduloBase = currentModuloSlice
+     */
 
     // Generate list of wallets by node to query clock number
     // Structured as { nodeEndpoint: [wallet1, wallet2, ...] }
