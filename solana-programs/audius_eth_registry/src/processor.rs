@@ -44,8 +44,39 @@ impl Processor {
         }
 
         signer_group.version = Self::SIGNER_GROUP_VERSION;
+
         signer_group.owner = *group_owner_info.key;
 
+        signer_group.owner_enabled = true;
+
+        signer_group
+            .serialize(&mut *signer_group_info.data.borrow_mut())
+            .map_err(|e| e.into())
+    }
+
+    /// Process [DisableSignerGroupOwner]().
+    pub fn process_disable_signer_group_owner(accounts: &[AccountInfo]) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        // signer group account
+        let signer_group_info = next_account_info(account_info_iter)?;
+        // signer group owner account
+        let group_owner_info = next_account_info(account_info_iter)?;
+
+        // Verify owner submission
+        if !group_owner_info.is_signer {
+            return Err(AudiusError::SignatureMissing.into());
+        }
+
+        let mut signer_group = Box::new(SignerGroup::try_from_slice(
+            &signer_group_info.data.borrow(),
+        )?);
+
+        if !signer_group.is_initialized() {
+            return Err(AudiusError::SignerGroupOwnerDisabled.into());
+        }
+        signer_group.version = Self::SIGNER_GROUP_VERSION;
+
+        signer_group.owner_enabled = false;
         signer_group
             .serialize(&mut *signer_group_info.data.borrow_mut())
             .map_err(|e| e.into())
@@ -64,12 +95,22 @@ impl Processor {
         // signer group's owner
         let signer_groups_owner_info = next_account_info(account_info_iter)?;
 
+        // Verify owner submission
+        if !signer_groups_owner_info.is_signer {
+            return Err(AudiusError::SignatureMissing.into());
+        }
+
         let signer_group = Box::new(SignerGroup::try_from_slice(
             &signer_group_info.data.borrow(),
         )?);
 
         if !signer_group.is_initialized() {
             return Err(AudiusError::UninitializedSignerGroup.into());
+        }
+
+        // Reject if owner has been disabled
+        if !signer_group.owner_enabled {
+            return Err(AudiusError::SignerGroupOwnerDisabled.into());
         }
 
         let mut valid_signer = Box::new(ValidSigner::try_from_slice(
@@ -103,12 +144,22 @@ impl Processor {
         // signer group's owner
         let signer_groups_owner_info = next_account_info(account_info_iter)?;
 
+        // Verify owner submission
+        if !signer_groups_owner_info.is_signer {
+            return Err(AudiusError::SignatureMissing.into());
+        }
+
         let signer_group = Box::new(SignerGroup::try_from_slice(
             &signer_group_info.data.borrow(),
         )?);
 
         if !signer_group.is_initialized() {
             return Err(AudiusError::UninitializedSignerGroup.into());
+        }
+
+        // Reject if owner has been disabled
+        if !signer_group.owner_enabled {
+            return Err(AudiusError::SignerGroupOwnerDisabled.into());
         }
 
         let mut valid_signer = Box::new(ValidSigner::try_from_slice(
@@ -246,6 +297,10 @@ impl Processor {
                 msg!("Instruction: ValidateSignature");
                 Self::process_validate_signature(accounts, signature)
             }
+            AudiusInstruction::DisableSignerGroupOwner => {
+                msg!("Instruction: DisableSignerGroupOwner");
+                Self::process_disable_signer_group_owner(accounts)
+            }
         }
     }
 }
@@ -266,6 +321,7 @@ impl PrintProgramError for AudiusError {
             AudiusError::SignatureMissing => msg!("Signature missing"),
             AudiusError::SignatureVerificationFailed => msg!("Signature verification failed"),
             AudiusError::Secp256InstructionLosing => msg!("Secp256 instruction losing"),
+            AudiusError::SignerGroupOwnerDisabled => msg!("Signer group owner disabled"),
         }
     }
 }

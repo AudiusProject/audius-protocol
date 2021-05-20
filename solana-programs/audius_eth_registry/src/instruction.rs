@@ -47,6 +47,10 @@ pub enum AudiusInstruction {
     ///   0. `[]` Initialized valid signer
     ///   1. `[]` Signer group signer belongs to
     ValidateSignature(SignatureData),
+    ///
+    ///   0. `[w]` SignerGroup to disable
+    ///   1. `[]` SignerGroup's owner
+    DisableSignerGroupOwner,
 }
 
 /// Creates `InitSignerGroup` instruction
@@ -150,5 +154,22 @@ pub fn validate_signature_with_sysvar(
         program_id: *program_id,
         accounts,
         data,
+    })
+}
+
+/// Creates `DisableSignerGroupOwner` instruction
+pub fn disable_signer_group_owner(
+    program_id: &Pubkey,
+    signer_group: &Pubkey,
+    owner: &Pubkey,
+) -> Result<Instruction, ProgramError> {
+    let accounts = vec![
+        AccountMeta::new(*signer_group, false),
+        AccountMeta::new_readonly(*owner, true),
+    ];
+    Ok(Instruction {
+        program_id: *program_id,
+        accounts,
+        data: AudiusInstruction::DisableSignerGroupOwner.try_to_vec()?,
     })
 }
