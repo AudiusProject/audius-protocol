@@ -422,7 +422,7 @@ class SnapbackSM {
 
       decisionTree.push({ stage: 'getNodeUsers() and sliceUsers() Success', vals: { nodeUsersLength: nodeUsers.length }, time: Date.now() })
     } catch (e) {
-      decisionTree.push({ stage: 'getNodeUsers() and sliceUsers() Error', vals: e.message, time: Date.now() })
+      decisionTree.push({ stage: 'getNodeUsers() or sliceUsers() Error', vals: e.message, time: Date.now() })
       throw new Error('processStateMachineOperation():getNodeUsers()/sliceUsers() Error')
     }
 
