@@ -39,7 +39,6 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
       id: userIds,
       walletAddress: { [models.Sequelize.Op.ne]: null }
     },
-    raw: true,
     transaction: tx
   })
   const userWallets = []
@@ -58,7 +57,6 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
     where: {
       walletAddress: userWallets
     },
-    raw: true,
     transaction: tx
   })
   const userWalletToPlaylistUpdatesMap = userWalletsAndPlaylistUpdates.reduce((accumulator, current) => {

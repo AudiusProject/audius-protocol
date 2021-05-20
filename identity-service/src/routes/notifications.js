@@ -385,26 +385,24 @@ module.exports = function (app) {
       let playlistUpdates = []
       const user = await models.User.findOne({
         attributes: ['walletAddress'],
-        where: { id: userId },
-        raw: true
+        where: { id: userId }
       })
-      const walletAddress = user && user.walletAddress
+      const walletAddress = user && user.dataValues.walletAddress
       if (walletAddress) {
-        let result = await models.UserEvents.findOne({
+        const result = await models.UserEvents.findOne({
           attributes: ['playlistUpdates'],
-          where: { walletAddress },
-          raw: true
+          where: { walletAddress }
         })
-        result = result && result.playlistUpdates
-        if (result) {
+        const playlistUpdatesResult = result && result.dataValues.playlistUpdates
+        if (playlistUpdatesResult) {
           const thirtyDaysAgo = moment().utc().subtract(30, 'days').valueOf()
-          playlistUpdates = Object.keys(result)
+          playlistUpdates = Object.keys(playlistUpdatesResult)
             .filter(playlistId =>
-              result[playlistId].userLastViewed >= thirtyDaysAgo &&
-              result[playlistId].lastUpdated >= thirtyDaysAgo &&
-              result[playlistId].userLastViewed < result[playlistId].lastUpdated
+              playlistUpdatesResult[playlistId].userLastViewed >= thirtyDaysAgo &&
+              playlistUpdatesResult[playlistId].lastUpdated >= thirtyDaysAgo &&
+              playlistUpdatesResult[playlistId].userLastViewed < playlistUpdatesResult[playlistId].lastUpdated
             )
-            .map(parseInt)
+            .map(id => parseInt(id))
             .filter(Boolean)
         }
       }

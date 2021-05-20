@@ -4,9 +4,8 @@ const models = require('../models')
 const authMiddleware = require('../authMiddleware')
 
 module.exports = function (app) {
-  // maybe we don't need this endpoint
   /**
-   * Updates the lastPlaylistViews field for the user in the UserEvents table
+   * Returns the playlistUpdates dictionary for given user
    * @param {string} walletAddress   user wallet address
    */
   app.get('/user_playlist_updates', handleResponse(async (req) => {
@@ -18,12 +17,11 @@ module.exports = function (app) {
     try {
       const userEvents = await models.UserEvents.findOne({
         attributes: ['playlistUpdates'],
-        where: { walletAddress },
-        raw: true
+        where: { walletAddress }
       })
       if (!userEvents) throw new Error(`UserEvents for ${walletAddress} not found`)
 
-      return successResponse(userEvents.playlistUpdates)
+      return successResponse(userEvents.dataValues.playlistUpdates)
     } catch (e) {
       req.logger.error(e)
       // no-op. No user events.
@@ -35,11 +33,11 @@ module.exports = function (app) {
 
   /**
    * Updates the lastPlaylistViews field for the user in the UserEvents table
-   * @param {string} walletAddress            user wallet address
    * @param {boolean} playlistLibraryItemId   id of playlist or folder to update
    */
   app.post('/user_playlist_updates', authMiddleware, handleResponse(async (req) => {
-    const { walletAddress, playlistLibraryItemId } = req.query
+    const { playlistLibraryItemId } = req.query
+    const { walletAddress } = req.user
     if (!walletAddress || !playlistLibraryItemId) {
       return errorResponseBadRequest(
         'Please provide a wallet address and a playlist library item id'
@@ -47,14 +45,13 @@ module.exports = function (app) {
     }
 
     try {
-      let playlistUpdatesResult = await models.UserEvents.findOne({
+      const result = await models.UserEvents.findOne({
         attributes: ['playlistUpdates'],
-        where: { walletAddress },
-        raw: true
+        where: { walletAddress }
       })
-      if (!playlistUpdatesResult) throw new Error(`Playlist updates for ${walletAddress} not found`)
+      if (!result) throw new Error(`Playlist updates for ${walletAddress} not found`)
 
-      playlistUpdatesResult = playlistUpdatesResult.playlistUpdates
+      const playlistUpdatesResult = result.dataValues.playlistUpdates
 
       const now = moment().utc().valueOf()
       let playlistUpdates = {}
