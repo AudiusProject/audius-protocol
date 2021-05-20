@@ -416,7 +416,7 @@ class SnapbackSM {
     }]
 
     const nodeUsers = await this.peerSetManager.getNodeUsersSlice(decisionTree)
-    const unhealthyPeers = this.peerSetManager.getUnhealthyPeers(nodeUsers, decisionTree)
+    const unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers, decisionTree)
 
     try {
       // Lists to aggregate all required ReplicaSetUpdate ops and potential SyncRequest ops
