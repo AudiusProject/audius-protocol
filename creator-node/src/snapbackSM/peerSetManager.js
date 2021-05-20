@@ -24,8 +24,7 @@ class PeerSetManager {
   /**
    * Retrieves node users, paritions it into a slice, computes the peer set of the node users,
    * and performs a health check on the peer set.
-   * @param {Object[]} nodeUsers array of user info for those who have the current node as part of replica set.
-   * The structure is the discovery node response from route `v1/full/users/content_node/all`
+   * @param {Object[]} nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
    * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
    * @returns the unhealthy peers in a Set
    */
@@ -84,6 +83,7 @@ class PeerSetManager {
   /**
    * Retrieve list of all users which have this node as replica (primary or secondary) from discovery node
    * Or retrieve primary users only if connected to old discprov
+   * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
    */
   async getNodeUsers (decisionTree) {
     let nodeUsers
@@ -101,6 +101,7 @@ class PeerSetManager {
   /**
    * Wrapper function to handle backwards compatibility of getAllNodeUsers() and getNodePrimaryUsers()
    * This only works if both functions have a consistent return format
+   * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
    */
   async _getNodeUsers (decisionTree) {
     let nodeUsers
@@ -132,8 +133,8 @@ class PeerSetManager {
    *
    * @notice This function depends on a new discprov route and cannot be consumed until every discprov exposes that route
    *    It will throw if the route doesn't exist
-   *
-   * @returns {Array} array of objects
+   * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
+   * @returns {Object[]} array of objects
    *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
    */
   async getAllNodeUsers (decisionTree) {
@@ -168,8 +169,8 @@ class PeerSetManager {
   /**
    * Retrieve users with this node as primary
    * Leaving this function in until all discovery providers update to new version and expose new `/users/content_node/all` route
-   *
-   * @returns {Array} array of objects
+    * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
+   * @returns {Object[]} array of objects
    *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
    */
   async getNodePrimaryUsers (decisionTree) {
@@ -203,7 +204,8 @@ class PeerSetManager {
   /**
    * Select chunk of users to process in this run
    *  - User is selected if (user_id % this.moduloBase = currentModuloSlice)
-   *  - nodeUsers = array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+   * @param {Object[]} nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+   * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
    */
   sliceUsers (nodeUsers, decisionTree) {
     const filteredNodeUsers = nodeUsers.filter(nodeUser =>
@@ -220,7 +222,8 @@ class PeerSetManager {
   }
 
   /**
-   * @param {Array} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+   * @param {Object[]} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+   * @param {Object[]} decisionTree the decisions metadata in the form of an Object array
    * @returns {Set} Set of content node endpoint strings
    */
   computeContentNodePeerSet (nodeUserInfoList, decisionTree) {
@@ -251,7 +254,7 @@ class PeerSetManager {
    * Peer health criteria:
    * - verbose health check returns 200 within timeout
    *
-   * TODO - consider moving this pure function to libs
+   * TODO: - consider moving this pure function to libs
    *
    * @param {string} endpoint
    * @returns {Boolean}
@@ -274,6 +277,10 @@ class PeerSetManager {
     return healthy
   }
 
+  /**
+   * Setter method for `this.currentModuloSlice`
+   * @param {number} index new modulo slice
+   */
   setCurrentModuloSlice (index) {
     this.currentModuloSlice = index
   }
