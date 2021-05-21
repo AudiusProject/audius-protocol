@@ -61,20 +61,21 @@ const AccountSettingsPage = ({
   )
   const record = useRecord()
   const onClickRecover = useCallback(
-    debounce(
-      async () => {
-        try {
-          await AudiusBackend.sendRecoveryEmail()
-          toast(messages.emailSent)
-          record(make(Name.SETTINGS_RESEND_ACCOUNT_RECOVERY, {}))
-        } catch (e) {
-          toast(messages.emailNotSent)
-        }
-      },
-      2000,
-      { leading: true, trailing: false }
-    ),
-    [toast]
+    () =>
+      debounce(
+        async () => {
+          try {
+            await AudiusBackend.sendRecoveryEmail()
+            toast(messages.emailSent)
+            record(make(Name.SETTINGS_RESEND_ACCOUNT_RECOVERY, {}))
+          } catch (e) {
+            toast(messages.emailNotSent)
+          }
+        },
+        2000,
+        { leading: true, trailing: false }
+      )(),
+    [toast, record]
   )
 
   const goToVerificationPage = useCallback(() => {

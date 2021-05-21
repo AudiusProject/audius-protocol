@@ -73,11 +73,11 @@ function* trackLocation() {
 
 function* handleHardwareBack() {
   yield takeEvery(MessageType.GO_BACK, function* () {
-    const pathname = yield select(getLocationPathname)
+    const pathname: string = yield select(getLocationPathname)
     const homeRoute = FEED_PAGE
     // Bottom Bar routes excluding the home route
     const bottomBarRoutes = [TRENDING_PAGE, EXPLORE_PAGE, FAVORITES_PAGE]
-    const handle = yield select(getUserHandle)
+    const handle: string = yield select(getUserHandle)
     if (handle) bottomBarRoutes.push(profilePage(handle))
     if (pathname === homeRoute) {
     } else if (bottomBarRoutes.includes(pathname)) {

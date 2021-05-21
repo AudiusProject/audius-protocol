@@ -103,7 +103,7 @@ const pagesAfterFollow = new Set([
 
 const animatedStyle = {
   base: {
-    position: 'absolute' as 'absolute',
+    position: 'absolute' as const,
     top: 0,
     left: 0
   },

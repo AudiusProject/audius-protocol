@@ -233,7 +233,7 @@ const ProfileHeader = ({
       record(
         make(Name.LINK_CLICKING, {
           url: event.target.href,
-          source: 'profile page' as 'profile page'
+          source: 'profile page' as const
         })
       )
     },
