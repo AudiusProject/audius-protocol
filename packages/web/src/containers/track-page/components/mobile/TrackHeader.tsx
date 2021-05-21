@@ -164,7 +164,7 @@ const TrackHeader = ({
       record(
         make(Name.LINK_CLICKING, {
           url: event.target.href,
-          source: 'track page' as 'track page'
+          source: 'track page' as const
         })
       )
     },

@@ -5,8 +5,8 @@ import {
 } from './types'
 import { ID } from 'models/common/Identifiers'
 
-export const OPEN = 'OPEN' as 'OPEN'
-export const CLOSE = 'CLOSE' as 'CLOSE'
+export const OPEN = 'OPEN' as const
+export const CLOSE = 'CLOSE' as const
 
 export const open = (
   source: OverflowSource,

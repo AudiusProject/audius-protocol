@@ -10,7 +10,7 @@ import React, {
 } from 'react'
 import { animated, useTransition, useSpring } from 'react-spring'
 import cn from 'classnames'
-import { throttle } from 'lodash'
+import { Cancelable, throttle } from 'lodash'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 
 import styles from './TabStyles.module.css'
@@ -262,7 +262,7 @@ const TabBar = memo(
 )
 
 const elementContainerStyle = {
-  position: 'absolute' as 'absolute',
+  position: 'absolute' as const,
   width: '100%'
 }
 
@@ -432,8 +432,8 @@ const GestureSupportingBodyContainer = memo(
 
     // Throttle the callbacks to set the tab accent for performance.
     const throttledSetTabBarOffset = useCallback(
-      throttle(setTabBarFractionalOffset, 150),
-      []
+      (offset: number) => throttle(setTabBarFractionalOffset, 150)(offset),
+      [setTabBarFractionalOffset]
     )
 
     const onFrame = useCallback(
@@ -549,6 +549,7 @@ const GestureSupportingBodyContainer = memo(
 
         if (last) {
           // Reset state
+          // @ts-ignore: cancelable but the hook swallows that type
           throttledSetTabBarOffset.cancel()
           setTabBarFractionalOffset(0)
 

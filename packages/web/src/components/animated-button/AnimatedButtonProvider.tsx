@@ -87,7 +87,7 @@ const AnimatedButton = ({
 
   const eventListeners = [
     {
-      eventName: 'complete' as 'complete',
+      eventName: 'complete' as const,
       callback: () => {
         setIsPaused(true)
       }
