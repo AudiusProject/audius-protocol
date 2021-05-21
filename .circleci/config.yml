@@ -575,6 +575,49 @@ jobs:
             export isCIBuild=true
             npm run test
 
+  test-solana-programs:
+    docker:
+      # specify the version you desire here
+      - image: cimg/rust:1.52.1
+    parameters:
+      force:
+        type: boolean
+        default: false
+    steps:
+      - checkout
+      - unless:
+          condition: << parameters.force >>
+          steps:
+            - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
+
+      - restore_cache:
+          keys:
+            - audius-eth-registry-deps-{{ checksum "solana-programs/audius_eth_registry/Cargo.toml" }}
+            - audius-eth-registry-deps-
+      - run:
+          name: run audius eth registry tests
+          command: |
+            cd solana-programs/audius_eth_registry
+            cargo test-bpf
+      - save_cache:
+          paths:
+            - solana-programs/audius_eth_registry/target
+          key: audius-eth-registry-deps-{{ checksum "solana-programs/audius_eth_registry/Cargo.toml" }}
+
+      - restore_cache:
+          keys:
+            - track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
+            - track-listen-count-deps-
+      - run:
+          name: run track listen count tests
+          command: |
+            cd solana-programs/track_listen_count
+            cargo test-bpf
+      - save_cache:
+          paths:
+            - solana-programs/track_listen_count/target
+          key: track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
+
   docker-build-and-push:
     docker:
       - image: circleci/buildpack-deps:stretch
@@ -623,6 +666,8 @@ workflows:
       - test-discovery-provider:
           force: true
       - test-identity-service:
+          force: true
+      - test-solana-programs:
           force: true
     triggers:
       - schedule:
@@ -676,8 +721,11 @@ workflows:
           requires:
             - test-identity-service
 
+      - test-solana-programs
       - docker-build-and-push:
           name: build-solana-programs
           repo: solana-programs
+          # requires:
+          #   - test-solana-programs
 
       - test-mad-dog-e2e
