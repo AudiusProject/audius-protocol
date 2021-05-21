@@ -590,6 +590,11 @@ jobs:
           steps:
             - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
 
+      - run:
+          name: Setup solana
+          command: |
+            curl -L 'https://github.com/solana-labs/solana/releases/download/v1.6.9/solana-release-x86_64-unknown-linux-gnu.tar.bz2' | tar jxf -
+
       - restore_cache:
           keys:
             - audius-eth-registry-deps-{{ checksum "solana-programs/audius_eth_registry/Cargo.toml" }}
@@ -597,6 +602,7 @@ jobs:
       - run:
           name: run audius eth registry tests
           command: |
+            export PATH=$PWD/solana-release/bin:$PATH
             cd solana-programs/audius_eth_registry
             cargo build-bpf
             cargo test-bpf
@@ -612,6 +618,7 @@ jobs:
       - run:
           name: run track listen count tests
           command: |
+            export PATH=$PWD/solana-release/bin:$PATH
             cd solana-programs/track_listen_count
             cargo build-bpf
             cargo test-bpf
