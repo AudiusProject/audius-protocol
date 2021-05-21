@@ -28,10 +28,7 @@ impl Processor {
     pub const VALID_SIGNER_UNINITIALIZED_VERSION: u8 = 0;
 
     /// Process [InitSignerGroup]().
-    pub fn process_init_signer_group(
-        accounts: &[AccountInfo],
-        eth_address: [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
-    ) -> ProgramResult {
+    pub fn process_init_signer_group(accounts: &[AccountInfo]) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
         // signer group account
         let signer_group_info = next_account_info(account_info_iter)?;
@@ -41,27 +38,12 @@ impl Processor {
         let mut signer_group = Box::new(SignerGroup::try_from_slice(
             &signer_group_info.data.borrow(),
         )?);
-
         if signer_group.is_initialized() {
             return Err(AudiusError::SignerGroupAlreadyInitialized.into());
         }
 
         signer_group.version = Self::SIGNER_GROUP_VERSION;
         signer_group.owner = *group_owner_info.key;
-
-        let mut valid_signer = Box::new(ValidSigner::try_from_slice(
-            &group_owner_info.data.borrow(),
-        )?);
-
-        if valid_signer.is_initialized() {
-            return Err(AudiusError::SignerAlreadyInitialized.into());
-        }
-
-        // TODO: check if ethereum public key is valid
-        valid_signer.version = Self::VALID_SIGNER_VERSION;
-        valid_signer.signer_group = *signer_group_info.key;
-        valid_signer.eth_address = eth_address;
-
         signer_group
             .serialize(&mut *signer_group_info.data.borrow_mut())
             .map_err(|e| e.into())
@@ -69,6 +51,53 @@ impl Processor {
 
     /// Process [InitValidSigner]().
     pub fn process_init_valid_signer(
+        accounts: &[AccountInfo],
+        eth_address: [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        // uninitialized valid signer account
+        let valid_signer_info = next_account_info(account_info_iter)?;
+        // signer group account
+        let signer_group_info = next_account_info(account_info_iter)?;
+        // initialized valid signer account
+        let existing_valid_signer_info = next_account_info(account_info_iter)?;
+
+        let existing_valid_signer = Box::new(ValidSigner::try_from_slice(
+            &existing_valid_signer_info.data.borrow(),
+        )?);
+
+        if !existing_valid_signer.is_initialized() {
+            return Err(AudiusError::ValidSignerNotInitialized.into());
+        }
+
+        let mut valid_signer = Box::new(ValidSigner::try_from_slice(
+            &valid_signer_info.data.borrow(),
+        )?);
+
+        if valid_signer.is_initialized() {
+            return Err(AudiusError::SignerAlreadyInitialized.into());
+        }
+
+        if existing_valid_signer.signer_group != *signer_group_info.key {
+            return Err(AudiusError::WrongSignerGroup.into());
+        }
+
+        if !existing_valid_signer_info.is_signer {
+            return Err(AudiusError::SignatureMissing.into());
+        }
+
+        // TODO: check if ethereum public key is valid
+
+        valid_signer.version = Self::VALID_SIGNER_VERSION;
+        valid_signer.signer_group = *signer_group_info.key;
+        valid_signer.eth_address = eth_address;
+
+        valid_signer
+            .serialize(&mut *valid_signer_info.data.borrow_mut())
+            .map_err(|e| e.into())
+    }
+
+    pub fn process_init_valid_signer_from_signer(
         accounts: &[AccountInfo],
         eth_address: [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
     ) -> ProgramResult {
