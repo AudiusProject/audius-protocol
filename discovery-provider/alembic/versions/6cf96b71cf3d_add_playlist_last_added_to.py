@@ -1,7 +1,7 @@
 """add-playlist-last-added-to
 
 Revision ID: 6cf96b71cf3d
-Revises: d9992d2d598c
+Revises: c8d2be7dcccc
 Create Date: 2021-05-14 01:30:20.006813
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '6cf96b71cf3d'
-down_revision = 'd9992d2d598c'
+down_revision = 'c8d2be7dcccc'
 branch_labels = None
 depends_on = None
 
