@@ -453,6 +453,12 @@ const config = convict({
     env: 'pinAddCIDs',
     default: ''
   },
+  cidWhitelist: {
+    doc: 'Array of comma separated CIDs to whitelist',
+    format: String,
+    env: 'cidWhitelist',
+    default: 'QmWXhUToTQX623nroEPUsBPjrpEWFUCb158FPYLDcgDZLL'
+  },
   enableRehydrate: {
     doc: 'Flag to enable or disable rehydrate',
     format: Boolean,

@@ -1,6 +1,11 @@
 const { logger } = require('./logging')
 const models = require('./models')
 const redis = require('./redis')
+const config = require('./config')
+
+const CID_WHITELIST = new Set(config.get('cidWhitelist').split(','))
+
+console.log("CID_WHITELIST", CID_WHITELIST)
 
 const REDIS_SET_BLACKLIST_TRACKID_KEY = 'SET.BLACKLIST.TRACKID'
 const REDIS_SET_BLACKLIST_USERID_KEY = 'SET.BLACKLIST.USERID'
@@ -95,6 +100,9 @@ class BlacklistManager {
     // Retrieves CIDs from deduped trackIds
     const segmentsFromTrackIds = await this.getCIDsFromTrackIds([...trackIds])
     const segmentCIDsToBlacklist = segmentsFromTrackIds.concat(segmentsToBlacklist)
+
+    // Filter out whitelisted CID's from the segments to remove
+    ;[...CID_WHITELIST].forEach(cid => segmentCIDsToBlacklist.remove(cid))
 
     try {
       await this.addToRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToBlacklist)
