@@ -140,6 +140,34 @@ pub fn validate_signature(
     })
 }
 
+/// Creates `ValidateSignature` instruction
+pub fn validate_multiple_signatures(
+    program_id: &Pubkey,
+    valid_signer_1: &Pubkey,
+    valid_signer_2: &Pubkey,
+    signer_group: &Pubkey,
+    signature_data_1: SignatureData,
+    signature_data_2: SignatureData,
+) -> Result<Instruction, ProgramError> {
+    let args = AudiusInstruction::ValidateMultipleSignatures(
+        signature_data_1,
+        signature_data_2
+    );
+    let data = args.try_to_vec()?;
+
+    let accounts = vec![
+        AccountMeta::new_readonly(*valid_signer_1, false),
+        AccountMeta::new_readonly(*valid_signer_2, false),
+        AccountMeta::new_readonly(*signer_group, false),
+        AccountMeta::new_readonly(sysvar::instructions::id(), false),
+    ];
+    Ok(Instruction {
+        program_id: *program_id,
+        accounts,
+        data,
+    })
+}
+
 /// Creates `ValidateSignatureWithSysvar` instruction
 pub fn validate_signature_with_sysvar(
     program_id: &Pubkey,

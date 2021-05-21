@@ -5,7 +5,13 @@ use borsh::BorshDeserialize;
 use rand::{thread_rng, Rng};
 use secp256k1::{PublicKey, SecretKey};
 use sha3::Digest;
-use solana_program::{hash::Hash, pubkey::Pubkey, system_instruction};
+use solana_program::{
+    hash::Hash,
+    pubkey::Pubkey,
+    instruction::Instruction,
+    system_instruction
+};
+
 use solana_program_test::*;
 use solana_sdk::{
     account::Account,
@@ -150,6 +156,40 @@ fn construct_eth_address(
     addr.copy_from_slice(&sha3::Keccak256::digest(&pubkey.serialize()[1..])[12..]);
     assert_eq!(addr.len(), state::SecpSignatureOffsets::ETH_ADDRESS_SIZE);
     addr
+}
+
+fn construct_signature_data(
+    priv_key_raw: &[u8; 32],
+    message: &[u8; 30],
+) -> (instruction::SignatureData, Instruction) {
+    let priv_key = SecretKey::parse(priv_key_raw).unwrap();
+
+    let secp256_program_instruction =
+        secp256k1_instruction::new_secp256k1_instruction(&priv_key, message);
+
+    let start = 1;
+    let end = start + state::SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
+
+    let offsets =
+        state::SecpSignatureOffsets::try_from_slice(&secp256_program_instruction.data[start..end])
+            .unwrap();
+
+    let sig_start = offsets.signature_offset as usize;
+    let sig_end = sig_start + state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE;
+
+    let mut signature: [u8; state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE] =
+        [0u8; state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE];
+    signature.copy_from_slice(&secp256_program_instruction.data[sig_start..sig_end]);
+
+    let recovery_id = secp256_program_instruction.data[sig_end];
+
+    let signature_data = instruction::SignatureData {
+        signature,
+        recovery_id,
+        message: message.to_vec()
+    };
+
+    return (signature_data, secp256_program_instruction)
 }
 
 #[tokio::test]
@@ -383,34 +423,9 @@ async fn validate_signature() {
     let priv_key = SecretKey::parse(&key).unwrap();
     let secp_pubkey = PublicKey::from_secret_key(&priv_key);
     let eth_address = construct_eth_address(&secp_pubkey);
-
     let message = [8u8; 30];
 
-    let secp256_program_instruction =
-        secp256k1_instruction::new_secp256k1_instruction(&priv_key, &message);
-
-    let start = 1;
-    let end = start + state::SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
-
-    let offsets =
-        state::SecpSignatureOffsets::try_from_slice(&secp256_program_instruction.data[start..end])
-            .unwrap();
-
-    let sig_start = offsets.signature_offset as usize;
-    let sig_end = sig_start + state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE;
-
-    let mut signature: [u8; state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE] =
-        [0u8; state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE];
-    signature.copy_from_slice(&secp256_program_instruction.data[sig_start..sig_end]);
-
-    let recovery_id = secp256_program_instruction.data[sig_end];
-
-    let signature_data = instruction::SignatureData {
-        signature,
-        recovery_id,
-        message: message.to_vec(),
-    };
-
+    let (signature_data, secp256_program_instruction) = construct_signature_data(&key, &message);
     let (mut banks_client, payer, recent_blockhash, signer_group, group_owner) = setup().await;
 
     process_tx_init_signer_group(
@@ -551,4 +566,106 @@ async fn validate_signature_with_wrong_data() {
     let transaction_error = banks_client.process_transaction(transaction).await;
 
     assert!(transaction_error.is_err());
+}
+
+#[tokio::test]
+async fn validate_2_signatures() {
+    let mut rng = thread_rng();
+    // Create the first eth key for ValidSigner1
+    let key_1: [u8; 32] = rng.gen();
+    let priv_key_1 = SecretKey::parse(&key_1).unwrap();
+    let secp_pubkey_1 = PublicKey::from_secret_key(&priv_key_1);
+    let eth_address_1 = construct_eth_address(&secp_pubkey_1);
+
+    // Create the second eth key for ValidSigner2
+    let key_2: [u8; 32] = rng.gen();
+    let priv_key_2 = SecretKey::parse(&key_2).unwrap();
+    let secp_pubkey_2 = PublicKey::from_secret_key(&priv_key_2);
+    let eth_address_2 = construct_eth_address(&secp_pubkey_2);
+
+    // Shared message
+    let message = [8u8; 30];
+
+    let (signature_data_1, secp256_program_instruction_1) = construct_signature_data(&key_1, &message);
+    let (signature_data_2, secp256_program_instruction_2) = construct_signature_data(&key_2, &message);
+    let (mut banks_client, payer, recent_blockhash, signer_group, group_owner) = setup().await;
+
+    let valid_signer_1 = Keypair::new();
+    let valid_signer_2 = Keypair::new();
+
+    process_tx_init_signer_group(
+        &signer_group.pubkey(),
+        &group_owner.pubkey(),
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+    )
+    .await
+    .unwrap();
+
+    // Initialize accounts
+    create_account(
+        &mut banks_client,
+        &payer,
+        &recent_blockhash,
+        &valid_signer_1,
+        state::ValidSigner::LEN,
+    )
+    .await
+    .unwrap();
+
+    create_account(
+        &mut banks_client,
+        &payer,
+        &recent_blockhash,
+        &valid_signer_2,
+        state::ValidSigner::LEN,
+    )
+    .await
+    .unwrap();
+
+    // Initialize both signers
+    process_tx_init_valid_signer(
+        &valid_signer_1.pubkey(),
+        &signer_group.pubkey(),
+        &group_owner,
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+        eth_address_1,
+    )
+    .await
+    .unwrap();
+
+    process_tx_init_valid_signer(
+        &valid_signer_2.pubkey(),
+        &signer_group.pubkey(),
+        &group_owner,
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+        eth_address_2,
+    )
+    .await
+    .unwrap();
+
+    // Execute multiple transactions
+    let mut transaction = Transaction::new_with_payer(
+        &[
+            secp256_program_instruction_1,
+            secp256_program_instruction_2,
+            instruction::validate_multiple_signatures(
+                &id(),
+                &valid_signer_1.pubkey(),
+                &valid_signer_2.pubkey(),
+                &signer_group.pubkey(),
+                signature_data_1.clone(),
+                signature_data_2.clone(),
+            )
+            .unwrap(),
+        ],
+        Some(&payer.pubkey()),
+    );
+    transaction.sign(&[&payer], recent_blockhash);
+    banks_client.process_transaction(transaction).await.unwrap();
 }

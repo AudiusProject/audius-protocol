@@ -257,14 +257,14 @@ impl Processor {
 
         // Instruction data of 1st Secp256 program call
         let secp_instruction_1 = sysvar::instructions::load_instruction_at(
-            (index - 1) as usize,
+            (index - 2) as usize,
             &instruction_info.data.borrow(),
         )
         .unwrap();
 
         // Instruction data of 2nd Secp256 program call
         let secp_instruction_2 = sysvar::instructions::load_instruction_at(
-            (index - 2) as usize,
+            (index - 1) as usize,
             &instruction_info.data.borrow(),
         )
         .unwrap();
@@ -289,7 +289,7 @@ impl Processor {
         }
 
         if valid_signer_1.signer_group != *signer_group_info.key ||
-           valid_signer_1.signer_group != *signer_group_info.key
+           valid_signer_2.signer_group != *signer_group_info.key
         {
             return Err(AudiusError::WrongSignerGroup.into());
         }
