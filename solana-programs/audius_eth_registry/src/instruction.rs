@@ -72,7 +72,8 @@ pub fn init_valid_signer(
     program_id: &Pubkey,
     valid_signer_account: &Pubkey,
     signer_group: &Pubkey,
-    group_owner: &Pubkey,
+    groups_owner: &Pubkey,
+    eth_pubkey: [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
 ) -> Result<Instruction, ProgramError> {
     let args = AudiusInstruction::InitValidSigner(eth_pubkey);
     let data = args.try_to_vec()?;
@@ -80,7 +81,7 @@ pub fn init_valid_signer(
     let accounts = vec![
         AccountMeta::new(*valid_signer_account, false),
         AccountMeta::new_readonly(*signer_group, false),
-        AccountMeta::new_readonly(*group_owner, true),
+        AccountMeta::new_readonly(*groups_owner, true),
     ];
     Ok(Instruction {
         program_id: *program_id,
