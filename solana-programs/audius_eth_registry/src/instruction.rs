@@ -56,7 +56,7 @@ pub enum AudiusInstruction {
     ///   0. `[]` Initialized valid signer 1
     ///   1. `[]` Initialized valid signer 2
     ///   2. `[]` Signer group signer belongs to
-    ValidateMultipleSignatures(SignatureData, SignatureData),
+    ValidateMultipleSignatures(SignatureData, SignatureData, SignatureData),
     ///   0. `[]`  Initialized valid signer 1
     ///   1. `[]`  Initialized valid signer 2
     ///   2. `[]`  Signer group signer belongs to
@@ -64,7 +64,8 @@ pub enum AudiusInstruction {
     ValidateMultipleSignaturesAddSigner(
         SignatureData,
         SignatureData,
-        [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE]
+        SignatureData,
+        [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
     ),
 }
 
@@ -154,21 +155,25 @@ pub fn validate_multiple_signatures_add_signer(
     program_id: &Pubkey,
     valid_signer_1: &Pubkey,
     valid_signer_2: &Pubkey,
+    valid_signer_3: &Pubkey,
     signer_group: &Pubkey,
     new_valid_signer: &Pubkey,
     signature_data_1: SignatureData,
     signature_data_2: SignatureData,
+    signature_data_3: SignatureData,
     eth_pubkey: [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
 ) -> Result<Instruction, ProgramError> {
     let args = AudiusInstruction::ValidateMultipleSignaturesAddSigner(
         signature_data_1,
         signature_data_2,
-        eth_pubkey
+        signature_data_3,
+        eth_pubkey,
     );
     let data = args.try_to_vec()?;
     let accounts = vec![
         AccountMeta::new_readonly(*valid_signer_1, false),
         AccountMeta::new_readonly(*valid_signer_2, false),
+        AccountMeta::new_readonly(*valid_signer_3, false),
         AccountMeta::new_readonly(*signer_group, false),
         AccountMeta::new(*new_valid_signer, false),
         AccountMeta::new_readonly(sysvar::instructions::id(), false),
@@ -185,19 +190,23 @@ pub fn validate_multiple_signatures(
     program_id: &Pubkey,
     valid_signer_1: &Pubkey,
     valid_signer_2: &Pubkey,
+    valid_signer_3: &Pubkey,
     signer_group: &Pubkey,
     signature_data_1: SignatureData,
     signature_data_2: SignatureData,
+    signature_data_3: SignatureData,
 ) -> Result<Instruction, ProgramError> {
     let args = AudiusInstruction::ValidateMultipleSignatures(
         signature_data_1,
-        signature_data_2
+        signature_data_2,
+        signature_data_3,
     );
     let data = args.try_to_vec()?;
 
     let accounts = vec![
         AccountMeta::new_readonly(*valid_signer_1, false),
         AccountMeta::new_readonly(*valid_signer_2, false),
+        AccountMeta::new_readonly(*valid_signer_3, false),
         AccountMeta::new_readonly(*signer_group, false),
         AccountMeta::new_readonly(sysvar::instructions::id(), false),
     ];

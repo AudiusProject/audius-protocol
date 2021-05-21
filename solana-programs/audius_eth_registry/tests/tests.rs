@@ -5,12 +5,7 @@ use borsh::BorshDeserialize;
 use rand::{thread_rng, Rng};
 use secp256k1::{PublicKey, SecretKey};
 use sha3::Digest;
-use solana_program::{
-    hash::Hash,
-    pubkey::Pubkey,
-    instruction::Instruction,
-    system_instruction
-};
+use solana_program::{hash::Hash, instruction::Instruction, pubkey::Pubkey, system_instruction};
 
 use solana_program_test::*;
 use solana_sdk::{
@@ -23,7 +18,11 @@ use solana_sdk::{
 
 pub fn program_test() -> ProgramTest {
     println!("audius_eth_registry id = {:?}", id());
-    ProgramTest::new("audius_eth_registry", id(), processor!(processor::Processor::process))
+    ProgramTest::new(
+        "audius_eth_registry",
+        id(),
+        processor!(processor::Processor::process),
+    )
 }
 
 async fn setup() -> (BanksClient, Keypair, Hash, Keypair, Keypair) {
@@ -92,11 +91,7 @@ async fn process_tx_init_signer_group(
     banks_client: &mut BanksClient,
 ) -> Result<(), TransportError> {
     let mut transaction = Transaction::new_with_payer(
-        &[instruction::init_signer_group(
-            &id(),
-            signer_group,
-            group_owner
-        ).unwrap()],
+        &[instruction::init_signer_group(&id(), signer_group, group_owner).unwrap()],
         Some(&payer.pubkey()),
     );
     transaction.sign(&[payer], recent_blockhash);
@@ -112,11 +107,10 @@ async fn process_tx_init_disable_signer_group_owner(
     banks_client: &mut BanksClient,
 ) -> Result<(), TransportError> {
     let mut transaction = Transaction::new_with_payer(
-        &[instruction::disable_signer_group_owner(
-            &id(),
-            signer_group,
-            &group_owner.pubkey()
-        ).unwrap()],
+        &[
+            instruction::disable_signer_group_owner(&id(), signer_group, &group_owner.pubkey())
+                .unwrap(),
+        ],
         Some(&payer.pubkey()),
     );
     transaction.sign(&[payer, group_owner], recent_blockhash);
@@ -186,10 +180,10 @@ fn construct_signature_data(
     let signature_data = instruction::SignatureData {
         signature,
         recovery_id,
-        message: message.to_vec()
+        message: message.to_vec(),
     };
 
-    return (signature_data, secp256_program_instruction)
+    return (signature_data, secp256_program_instruction);
 }
 
 #[tokio::test]
@@ -255,7 +249,8 @@ async fn disable_signer_group_owner() {
     .unwrap();
 
     // Confirm owner has been disabled
-    let disabled_signer_group_account = get_account(&mut banks_client, &signer_group.pubkey()).await;
+    let disabled_signer_group_account =
+        get_account(&mut banks_client, &signer_group.pubkey()).await;
     let disabled_signer_group_data =
         state::SignerGroup::try_from_slice(&disabled_signer_group_account.data.as_slice()).unwrap();
     assert!(disabled_signer_group_data.is_initialized());
@@ -286,20 +281,25 @@ async fn disable_signer_group_owner() {
         .unwrap()],
         Some(&payer.pubkey()),
     );
-    transaction.sign(&[&payer, &group_owner], banks_client.get_recent_blockhash().await.unwrap());
+    transaction.sign(
+        &[&payer, &group_owner],
+        banks_client.get_recent_blockhash().await.unwrap(),
+    );
     let transaction_error = banks_client.process_transaction(transaction).await;
     assert!(transaction_error.is_err());
 
     // Confirm signer group cannot be re-initialized
     let mut transaction_2 = Transaction::new_with_payer(
-        &[instruction::init_signer_group(
-            &id(),
-            &signer_group.pubkey(),
-            &group_owner.pubkey()
-        ).unwrap()],
+        &[
+            instruction::init_signer_group(&id(), &signer_group.pubkey(), &group_owner.pubkey())
+                .unwrap(),
+        ],
         Some(&payer.pubkey()),
     );
-    transaction_2.sign(&[&payer], banks_client.get_recent_blockhash().await.unwrap());
+    transaction_2.sign(
+        &[&payer],
+        banks_client.get_recent_blockhash().await.unwrap(),
+    );
     let tx_error_2 = banks_client.process_transaction(transaction_2).await;
     assert!(tx_error_2.is_err());
 }
@@ -569,7 +569,7 @@ async fn validate_signature_with_wrong_data() {
 }
 
 #[tokio::test]
-async fn validate_2_signatures() {
+async fn validate_3_signatures() {
     let mut rng = thread_rng();
     // Create the first eth key for ValidSigner1
     let key_1: [u8; 32] = rng.gen();
@@ -583,15 +583,26 @@ async fn validate_2_signatures() {
     let secp_pubkey_2 = PublicKey::from_secret_key(&priv_key_2);
     let eth_address_2 = construct_eth_address(&secp_pubkey_2);
 
+    // Create the second eth key for ValidSigner2
+    let key_3: [u8; 32] = rng.gen();
+    let priv_key_3 = SecretKey::parse(&key_3).unwrap();
+    let secp_pubkey_3 = PublicKey::from_secret_key(&priv_key_3);
+    let eth_address_3 = construct_eth_address(&secp_pubkey_3);
+
     // Shared message
     let message = [8u8; 30];
 
-    let (signature_data_1, secp256_program_instruction_1) = construct_signature_data(&key_1, &message);
-    let (signature_data_2, secp256_program_instruction_2) = construct_signature_data(&key_2, &message);
+    let (signature_data_1, secp256_program_instruction_1) =
+        construct_signature_data(&key_1, &message);
+    let (signature_data_2, secp256_program_instruction_2) =
+        construct_signature_data(&key_2, &message);
+    let (signature_data_3, secp256_program_instruction_3) =
+        construct_signature_data(&key_3, &message);
     let (mut banks_client, payer, recent_blockhash, signer_group, group_owner) = setup().await;
 
     let valid_signer_1 = Keypair::new();
     let valid_signer_2 = Keypair::new();
+    let valid_signer_3 = Keypair::new();
 
     process_tx_init_signer_group(
         &signer_group.pubkey(),
@@ -619,6 +630,16 @@ async fn validate_2_signatures() {
         &payer,
         &recent_blockhash,
         &valid_signer_2,
+        state::ValidSigner::LEN,
+    )
+    .await
+    .unwrap();
+
+    create_account(
+        &mut banks_client,
+        &payer,
+        &recent_blockhash,
+        &valid_signer_3,
         state::ValidSigner::LEN,
     )
     .await
@@ -649,18 +670,33 @@ async fn validate_2_signatures() {
     .await
     .unwrap();
 
+    process_tx_init_valid_signer(
+        &valid_signer_3.pubkey(),
+        &signer_group.pubkey(),
+        &group_owner,
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+        eth_address_3,
+    )
+    .await
+    .unwrap();
+
     // Execute multiple transactions
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction_1,
             secp256_program_instruction_2,
+            secp256_program_instruction_3,
             instruction::validate_multiple_signatures(
                 &id(),
                 &valid_signer_1.pubkey(),
                 &valid_signer_2.pubkey(),
+                &valid_signer_3.pubkey(),
                 &signer_group.pubkey(),
                 signature_data_1.clone(),
                 signature_data_2.clone(),
+                signature_data_3.clone(),
             )
             .unwrap(),
         ],
@@ -670,9 +706,8 @@ async fn validate_2_signatures() {
     banks_client.process_transaction(transaction).await.unwrap();
 }
 
-
 #[tokio::test]
-async fn validate_2_signatures_add_new_valid_signer() {
+async fn validate_3_signatures_add_new_valid_signer() {
     let mut rng = thread_rng();
     // Create the first eth key for ValidSigner1
     let key_1: [u8; 32] = rng.gen();
@@ -686,15 +721,26 @@ async fn validate_2_signatures_add_new_valid_signer() {
     let secp_pubkey_2 = PublicKey::from_secret_key(&priv_key_2);
     let eth_address_2 = construct_eth_address(&secp_pubkey_2);
 
+    // Create the second eth key for ValidSigner2
+    let key_3: [u8; 32] = rng.gen();
+    let priv_key_3 = SecretKey::parse(&key_3).unwrap();
+    let secp_pubkey_3 = PublicKey::from_secret_key(&priv_key_3);
+    let eth_address_3 = construct_eth_address(&secp_pubkey_3);
+
     // Shared message
     let message = [8u8; 30];
 
-    let (signature_data_1, secp256_program_instruction_1) = construct_signature_data(&key_1, &message);
-    let (signature_data_2, secp256_program_instruction_2) = construct_signature_data(&key_2, &message);
+    let (signature_data_1, secp256_program_instruction_1) =
+        construct_signature_data(&key_1, &message);
+    let (signature_data_2, secp256_program_instruction_2) =
+        construct_signature_data(&key_2, &message);
+    let (signature_data_3, secp256_program_instruction_3) =
+        construct_signature_data(&key_3, &message);
     let (mut banks_client, payer, recent_blockhash, signer_group, group_owner) = setup().await;
 
     let valid_signer_1 = Keypair::new();
     let valid_signer_2 = Keypair::new();
+    let valid_signer_3 = Keypair::new();
 
     process_tx_init_signer_group(
         &signer_group.pubkey(),
@@ -722,6 +768,16 @@ async fn validate_2_signatures_add_new_valid_signer() {
         &payer,
         &recent_blockhash,
         &valid_signer_2,
+        state::ValidSigner::LEN,
+    )
+    .await
+    .unwrap();
+
+    create_account(
+        &mut banks_client,
+        &payer,
+        &recent_blockhash,
+        &valid_signer_3,
         state::ValidSigner::LEN,
     )
     .await
@@ -753,38 +809,54 @@ async fn validate_2_signatures_add_new_valid_signer() {
     .await
     .unwrap();
 
+    // Initialize ValidSigner 3 through SignerGroupOwner
+    process_tx_init_valid_signer(
+        &valid_signer_3.pubkey(),
+        &signer_group.pubkey(),
+        &group_owner,
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+        eth_address_3,
+    )
+    .await
+    .unwrap();
+
     // Initialize incoming valid signer3 data
-    let valid_signer_3 = Keypair::new();
+    let new_valid_signer = Keypair::new();
     create_account(
         &mut banks_client,
         &payer,
         &recent_blockhash,
-        &valid_signer_3,
+        &new_valid_signer,
         state::ValidSigner::LEN,
     )
     .await
     .unwrap();
 
     // Initialize ValidSigner3 ethereum address information
-    let key_3: [u8; 32] = rng.gen();
-    let priv_key_3 = SecretKey::parse(&key_3).unwrap();
-    let secp_pubkey_3 = PublicKey::from_secret_key(&priv_key_3);
-    let eth_address_3 = construct_eth_address(&secp_pubkey_3);
+    let new_key: [u8; 32] = rng.gen();
+    let new_priv_key = SecretKey::parse(&new_key).unwrap();
+    let new_secp_pubkey = PublicKey::from_secret_key(&new_priv_key);
+    let new_eth_address = construct_eth_address(&new_secp_pubkey);
 
     // Execute multiple transactions
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction_1,
             secp256_program_instruction_2,
+            secp256_program_instruction_3,
             instruction::validate_multiple_signatures_add_signer(
                 &id(),
                 &valid_signer_1.pubkey(),
                 &valid_signer_2.pubkey(),
+                &valid_signer_3.pubkey(),
                 &signer_group.pubkey(),
                 &valid_signer_3.pubkey(),
                 signature_data_1.clone(),
                 signature_data_2.clone(),
-                eth_address_3
+                signature_data_3.clone(),
+                new_eth_address,
             )
             .unwrap(),
         ],
@@ -793,10 +865,10 @@ async fn validate_2_signatures_add_new_valid_signer() {
     transaction.sign(&[&payer], recent_blockhash);
     banks_client.process_transaction(transaction).await.unwrap();
 
-    let new_valid_signer_acct = get_account(&mut banks_client, &valid_signer_3.pubkey()).await;
+    let new_valid_signer_acct = get_account(&mut banks_client, &new_valid_signer.pubkey()).await;
     let new_valid_signer_data =
         state::ValidSigner::try_from_slice(&new_valid_signer_acct.data.as_slice()).unwrap();
     assert!(new_valid_signer_data.is_initialized());
-    assert_eq!(new_valid_signer_data.eth_address, eth_address_3);
+    assert_eq!(new_valid_signer_data.eth_address, new_eth_address);
     assert_eq!(new_valid_signer_data.signer_group, signer_group.pubkey());
 }
