@@ -598,6 +598,7 @@ jobs:
           name: run audius eth registry tests
           command: |
             cd solana-programs/audius_eth_registry
+            cargo build-bpf
             cargo test-bpf
       - save_cache:
           paths:
@@ -612,6 +613,7 @@ jobs:
           name: run track listen count tests
           command: |
             cd solana-programs/track_listen_count
+            cargo build-bpf
             cargo test-bpf
       - save_cache:
           paths:
