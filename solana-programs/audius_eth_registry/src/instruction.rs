@@ -36,6 +36,7 @@ pub enum AudiusInstruction {
     ///   1. `[]` Group for Valid Signer to join with
     ///   2. `[s]` SignerGroup's owner
     InitValidSigner([u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE]),
+    InitValidSignerFromSigner([u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE]),
     ///   Remove valid signer from the group
     ///
     ///   0. `[w]` Initialized valid signer to remove
@@ -91,6 +92,28 @@ pub fn init_valid_signer(
         AccountMeta::new(*valid_signer_account, false),
         AccountMeta::new_readonly(*signer_group, false),
         AccountMeta::new_readonly(*groups_owner, true),
+    ];
+    Ok(Instruction {
+        program_id: *program_id,
+        accounts,
+        data,
+    })
+}
+
+pub fn init_valid_signer_from_signer(
+    program_id: &Pubkey,
+    valid_signer_account: &Pubkey,
+    signer_group: &Pubkey,
+    existing_valid_signer_account: &Pubkey,
+    eth_pubkey: [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
+) -> Result<Instruction, ProgramError> {
+    let args = AudiusInstruction::InitValidSignerFromSigner(eth_pubkey);
+    let data = args.try_to_vec()?;
+
+    let accounts = vec![
+        AccountMeta::new(*valid_signer_account, false),
+        AccountMeta::new_readonly(*signer_group, false),
+        AccountMeta::new_readonly(*existing_valid_signer_account, true),
     ];
     Ok(Instruction {
         program_id: *program_id,

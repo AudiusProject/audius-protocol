@@ -123,6 +123,43 @@ impl Processor {
         }
 
         signer_group.check_owner(&signer_groups_owner_info)?;
+    }
+
+    pub fn process_init_valid_signer_from_signer(
+        accounts: &[AccountInfo],
+        eth_address: [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        // uninitialized valid signer account
+        let valid_signer_info = next_account_info(account_info_iter)?;
+        // signer group account
+        let signer_group_info = next_account_info(account_info_iter)?;
+        // initialized valid signer account
+        let existing_valid_signer_info = next_account_info(account_info_iter)?;
+
+        let existing_valid_signer = Box::new(ValidSigner::try_from_slice(
+            &existing_valid_signer_info.data.borrow(),
+        )?);
+
+        if !existing_valid_signer.is_initialized() {
+            return Err(AudiusError::ValidSignerNotInitialized.into());
+        }
+
+        let mut valid_signer = Box::new(ValidSigner::try_from_slice(
+            &valid_signer_info.data.borrow(),
+        )?);
+
+        if valid_signer.is_initialized() {
+            return Err(AudiusError::SignerAlreadyInitialized.into());
+        }
+
+        if existing_valid_signer.signer_group != *signer_group_info.key {
+            return Err(AudiusError::WrongSignerGroup.into());
+        }
+
+        if !existing_valid_signer_info.is_signer {
+            return Err(AudiusError::SignatureMissing.into());
+        }
 
         // TODO: check if ethereum public key is valid
 
@@ -385,6 +422,10 @@ impl Processor {
             AudiusInstruction::InitValidSigner(eth_pubkey) => {
                 msg!("Instruction: InitValidSigner");
                 Self::process_init_valid_signer(accounts, eth_pubkey)
+            }
+            AudiusInstruction::InitValidSignerFromSigner(eth_pubkey) => {
+                msg!("Instruction: InitValidSignerFromSigner");
+                Self::process_init_valid_signer_from_signer(accounts, eth_pubkey)
             }
             AudiusInstruction::ClearValidSigner => {
                 msg!("Instruction: ClearValidSigner");
