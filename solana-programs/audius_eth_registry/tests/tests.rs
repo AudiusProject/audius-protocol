@@ -669,3 +669,134 @@ async fn validate_2_signatures() {
     transaction.sign(&[&payer], recent_blockhash);
     banks_client.process_transaction(transaction).await.unwrap();
 }
+
+
+#[tokio::test]
+async fn validate_2_signatures_add_new_valid_signer() {
+    let mut rng = thread_rng();
+    // Create the first eth key for ValidSigner1
+    let key_1: [u8; 32] = rng.gen();
+    let priv_key_1 = SecretKey::parse(&key_1).unwrap();
+    let secp_pubkey_1 = PublicKey::from_secret_key(&priv_key_1);
+    let eth_address_1 = construct_eth_address(&secp_pubkey_1);
+
+    // Create the second eth key for ValidSigner2
+    let key_2: [u8; 32] = rng.gen();
+    let priv_key_2 = SecretKey::parse(&key_2).unwrap();
+    let secp_pubkey_2 = PublicKey::from_secret_key(&priv_key_2);
+    let eth_address_2 = construct_eth_address(&secp_pubkey_2);
+
+    // Shared message
+    let message = [8u8; 30];
+
+    let (signature_data_1, secp256_program_instruction_1) = construct_signature_data(&key_1, &message);
+    let (signature_data_2, secp256_program_instruction_2) = construct_signature_data(&key_2, &message);
+    let (mut banks_client, payer, recent_blockhash, signer_group, group_owner) = setup().await;
+
+    let valid_signer_1 = Keypair::new();
+    let valid_signer_2 = Keypair::new();
+
+    process_tx_init_signer_group(
+        &signer_group.pubkey(),
+        &group_owner.pubkey(),
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+    )
+    .await
+    .unwrap();
+
+    // Initialize accounts
+    create_account(
+        &mut banks_client,
+        &payer,
+        &recent_blockhash,
+        &valid_signer_1,
+        state::ValidSigner::LEN,
+    )
+    .await
+    .unwrap();
+
+    create_account(
+        &mut banks_client,
+        &payer,
+        &recent_blockhash,
+        &valid_signer_2,
+        state::ValidSigner::LEN,
+    )
+    .await
+    .unwrap();
+
+    // Initialize ValidSigner 1 through SignerGroupOwner
+    process_tx_init_valid_signer(
+        &valid_signer_1.pubkey(),
+        &signer_group.pubkey(),
+        &group_owner,
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+        eth_address_1,
+    )
+    .await
+    .unwrap();
+
+    // Initialize ValidSigner 2 through SignerGroupOwner
+    process_tx_init_valid_signer(
+        &valid_signer_2.pubkey(),
+        &signer_group.pubkey(),
+        &group_owner,
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+        eth_address_2,
+    )
+    .await
+    .unwrap();
+
+    // Initialize incoming valid signer3 data
+    let valid_signer_3 = Keypair::new();
+    create_account(
+        &mut banks_client,
+        &payer,
+        &recent_blockhash,
+        &valid_signer_3,
+        state::ValidSigner::LEN,
+    )
+    .await
+    .unwrap();
+
+    // Initialize ValidSigner3 ethereum address information
+    let key_3: [u8; 32] = rng.gen();
+    let priv_key_3 = SecretKey::parse(&key_3).unwrap();
+    let secp_pubkey_3 = PublicKey::from_secret_key(&priv_key_3);
+    let eth_address_3 = construct_eth_address(&secp_pubkey_3);
+
+    // Execute multiple transactions
+    let mut transaction = Transaction::new_with_payer(
+        &[
+            secp256_program_instruction_1,
+            secp256_program_instruction_2,
+            instruction::validate_multiple_signatures_add_signer(
+                &id(),
+                &valid_signer_1.pubkey(),
+                &valid_signer_2.pubkey(),
+                &signer_group.pubkey(),
+                &valid_signer_3.pubkey(),
+                signature_data_1.clone(),
+                signature_data_2.clone(),
+                eth_address_3
+            )
+            .unwrap(),
+        ],
+        Some(&payer.pubkey()),
+    );
+    transaction.sign(&[&payer], recent_blockhash);
+    banks_client.process_transaction(transaction).await.unwrap();
+
+    let new_valid_signer_acct = get_account(&mut banks_client, &valid_signer_3.pubkey()).await;
+    let new_valid_signer_data =
+        state::ValidSigner::try_from_slice(&new_valid_signer_acct.data.as_slice()).unwrap();
+    assert!(new_valid_signer_data.is_initialized());
+    assert_eq!(new_valid_signer_data.eth_address, eth_address_3);
+    assert_eq!(new_valid_signer_data.signer_group, signer_group.pubkey());
+}
