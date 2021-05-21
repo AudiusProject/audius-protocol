@@ -51,6 +51,12 @@ pub enum AudiusInstruction {
     ///   0. `[w]` SignerGroup to disable
     ///   1. `[]` SignerGroup's owner
     DisableSignerGroupOwner,
+    ///   Validate multiple signatures issued by valid signers
+    ///
+    ///   0. `[]` Initialized valid signer 1
+    ///   1. `[]` Initialized valid signer 2
+    ///   2. `[]` Signer group signer belongs to
+    ValidateMultipleSignatures(SignatureData, SignatureData),
 }
 
 /// Creates `InitSignerGroup` instruction

@@ -27,6 +27,7 @@ impl Processor {
     /// ValidSigner version indicating signer uninitialization
     pub const VALID_SIGNER_UNINITIALIZED_VERSION: u8 = 0;
 
+
     /// Process [InitSignerGroup]().
     pub fn process_init_signer_group(accounts: &[AccountInfo]) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
@@ -183,6 +184,137 @@ impl Processor {
             .map_err(|e| e.into())
     }
 
+    /// Process [recover instruction data]().
+    pub fn recover_instruction_data(
+        signature_data: &SignatureData,
+        valid_signer: &ValidSigner
+    ) -> Vec<u8> {
+        let mut instruction_data = vec![];
+        let data_start = 1 + SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
+        instruction_data.resize(
+            data_start
+                + SecpSignatureOffsets::ETH_ADDRESS_SIZE
+                + SecpSignatureOffsets::SECP_SIGNATURE_SIZE
+                + signature_data.message.len()
+                + 1,
+            0,
+        );
+        let eth_address_offset = data_start;
+        instruction_data
+            [eth_address_offset..eth_address_offset + SecpSignatureOffsets::ETH_ADDRESS_SIZE]
+            .copy_from_slice(&valid_signer.eth_address);
+
+        let signature_offset = data_start + SecpSignatureOffsets::ETH_ADDRESS_SIZE;
+        instruction_data
+            [signature_offset..signature_offset + SecpSignatureOffsets::SECP_SIGNATURE_SIZE]
+            .copy_from_slice(&signature_data.signature);
+
+        instruction_data[signature_offset + SecpSignatureOffsets::SECP_SIGNATURE_SIZE] =
+            signature_data.recovery_id;
+
+        let message_data_offset = signature_offset + SecpSignatureOffsets::SECP_SIGNATURE_SIZE + 1;
+        instruction_data[message_data_offset..].copy_from_slice(&signature_data.message);
+
+        let num_signatures = 1;
+        instruction_data[0] = num_signatures;
+        let offsets = SecpSignatureOffsets {
+            signature_offset: signature_offset as u16,
+            signature_instruction_index: 0,
+            eth_address_offset: eth_address_offset as u16,
+            eth_address_instruction_index: 0,
+            message_data_offset: message_data_offset as u16,
+            message_data_size: signature_data.message.len() as u16,
+            message_instruction_index: 0,
+        };
+
+        let packed_offsets = offsets.try_to_vec();
+        instruction_data[1..data_start].copy_from_slice(&packed_offsets.unwrap());
+
+        return instruction_data;
+    }
+
+    /// Process [ValidateMultipleSignatures]().
+    pub fn process_multiple_signatures(
+        accounts: &[AccountInfo],
+        signature_data_1: SignatureData,
+        signature_data_2: SignatureData,
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        // initialized valid signer account 1
+        let valid_signer_1_info = next_account_info(account_info_iter)?;
+        // initialized valid signer account 2
+        let valid_signer_2_info = next_account_info(account_info_iter)?;
+        // signer group account
+        let signer_group_info = next_account_info(account_info_iter)?;
+        // Sysvar Instruction account info
+        let instruction_info = next_account_info(account_info_iter)?;
+        // Index of current instruction in tx
+        let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
+
+        if index == 0 {
+            return Err(AudiusError::Secp256InstructionLosing.into());
+        }
+
+        // Instruction data of 1st Secp256 program call
+        let secp_instruction_1 = sysvar::instructions::load_instruction_at(
+            (index - 1) as usize,
+            &instruction_info.data.borrow(),
+        )
+        .unwrap();
+
+        // Instruction data of 2nd Secp256 program call
+        let secp_instruction_2 = sysvar::instructions::load_instruction_at(
+            (index - 2) as usize,
+            &instruction_info.data.borrow(),
+        )
+        .unwrap();
+
+        let signer_group = Box::new(SignerGroup::try_from_slice(
+            &signer_group_info.data.borrow(),
+        )?);
+
+        if !signer_group.is_initialized() {
+            return Err(AudiusError::UninitializedSignerGroup.into());
+        }
+
+        let valid_signer_1 = Box::new(ValidSigner::try_from_slice(
+            &valid_signer_1_info.data.borrow(),
+        )?);
+        let valid_signer_2 = Box::new(ValidSigner::try_from_slice(
+            &valid_signer_2_info.data.borrow(),
+        )?);
+
+        if !valid_signer_1.is_initialized() || !valid_signer_2.is_initialized() {
+            return Err(AudiusError::ValidSignerNotInitialized.into());
+        }
+
+        if valid_signer_1.signer_group != *signer_group_info.key ||
+           valid_signer_1.signer_group != *signer_group_info.key
+        {
+            return Err(AudiusError::WrongSignerGroup.into());
+        }
+
+        let instruction_data_1 = Self::recover_instruction_data(
+            &signature_data_1,
+            &valid_signer_1
+        );
+
+        let instruction_data_2 = Self::recover_instruction_data(
+            &signature_data_2,
+            &valid_signer_2
+        );
+
+        if instruction_data_1 != secp_instruction_1.data {
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
+
+        if instruction_data_2 != secp_instruction_2.data {
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
+
+        Ok(())
+    }
+
     /// Process [ValidateSignature]().
     pub fn process_validate_signature(
         accounts: &[AccountInfo],
@@ -229,45 +361,10 @@ impl Processor {
             return Err(AudiusError::WrongSignerGroup.into());
         }
 
-        let mut instruction_data = vec![];
-        let data_start = 1 + SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
-        instruction_data.resize(
-            data_start
-                + SecpSignatureOffsets::ETH_ADDRESS_SIZE
-                + SecpSignatureOffsets::SECP_SIGNATURE_SIZE
-                + signature_data.message.len()
-                + 1,
-            0,
+        let instruction_data = Self::recover_instruction_data(
+            &signature_data,
+            &valid_signer
         );
-        let eth_address_offset = data_start;
-        instruction_data
-            [eth_address_offset..eth_address_offset + SecpSignatureOffsets::ETH_ADDRESS_SIZE]
-            .copy_from_slice(&valid_signer.eth_address);
-
-        let signature_offset = data_start + SecpSignatureOffsets::ETH_ADDRESS_SIZE;
-        instruction_data
-            [signature_offset..signature_offset + SecpSignatureOffsets::SECP_SIGNATURE_SIZE]
-            .copy_from_slice(&signature_data.signature);
-
-        instruction_data[signature_offset + SecpSignatureOffsets::SECP_SIGNATURE_SIZE] =
-            signature_data.recovery_id;
-
-        let message_data_offset = signature_offset + SecpSignatureOffsets::SECP_SIGNATURE_SIZE + 1;
-        instruction_data[message_data_offset..].copy_from_slice(&signature_data.message);
-
-        let num_signatures = 1;
-        instruction_data[0] = num_signatures;
-        let offsets = SecpSignatureOffsets {
-            signature_offset: signature_offset as u16,
-            signature_instruction_index: 0,
-            eth_address_offset: eth_address_offset as u16,
-            eth_address_instruction_index: 0,
-            message_data_offset: message_data_offset as u16,
-            message_data_size: signature_data.message.len() as u16,
-            message_instruction_index: 0,
-        };
-        let packed_offsets = offsets.try_to_vec()?;
-        instruction_data[1..data_start].copy_from_slice(packed_offsets.as_slice());
 
         if instruction_data != secp_instruction.data {
             return Err(AudiusError::SignatureVerificationFailed.into());
@@ -300,6 +397,17 @@ impl Processor {
             AudiusInstruction::DisableSignerGroupOwner => {
                 msg!("Instruction: DisableSignerGroupOwner");
                 Self::process_disable_signer_group_owner(accounts)
+            }
+            AudiusInstruction::ValidateMultipleSignatures(
+                signature_1,
+                signature_2
+            ) => {
+                msg!("Instruction: ValidateMultipleSignatures");
+                Self::process_multiple_signatures(
+                    accounts,
+                    signature_1,
+                    signature_2
+                )
             }
         }
     }
