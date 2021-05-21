@@ -99,10 +99,14 @@ class BlacklistManager {
 
     // Retrieves CIDs from deduped trackIds
     const segmentsFromTrackIds = await this.getCIDsFromTrackIds([...trackIds])
-    const segmentCIDsToBlacklist = segmentsFromTrackIds.concat(segmentsToBlacklist)
-
+    let segmentCIDsToBlacklist = segmentsFromTrackIds.concat(segmentsToBlacklist)
+    let segmentCIDsToBlacklistSet = new Set(segmentCIDsToBlacklist)
+    logger.error("segmentCIDsToBlacklistSet before", segmentCIDsToBlacklistSet)
     // Filter out whitelisted CID's from the segments to remove
-    ;[...CID_WHITELIST].forEach(cid => segmentCIDsToBlacklist.remove(cid))
+    ;[...CID_WHITELIST].forEach(cid => segmentCIDsToBlacklistSet.delete(cid))
+
+    segmentsToBlacklist = [...segmentCIDsToBlacklistSet]
+    logger.error("segmentCIDsToBlacklistSet after ", segmentCIDsToBlacklistSet)
 
     try {
       await this.addToRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToBlacklist)
