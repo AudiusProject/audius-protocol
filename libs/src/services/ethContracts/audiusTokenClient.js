@@ -106,6 +106,19 @@ class AudiusTokenClient {
     }
     return { txReceipt: tx }
   }
+
+  async approveProxyTokens (owner, spender, value, relayer) {
+    const method = this.AudiusTokenContract.methods.approve(spender, value)
+    const tx = await this.ethWeb3Manager.relayTransaction(
+      method,
+      this.contractAddress,
+      owner,
+      relayer,
+      /* retries */ 0
+    )
+    return { txReceipt: tx }
+  }
+
 }
 
 module.exports = AudiusTokenClient

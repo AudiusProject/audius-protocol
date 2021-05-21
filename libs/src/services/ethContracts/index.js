@@ -10,6 +10,7 @@ const StakingProxyClient = require('./stakingProxyClient')
 const DelegateManagerClient = require('./delegateManagerClient')
 const ClaimsManagerClient = require('./claimsManagerClient')
 const ClaimDistributionClient = require('./claimDistributionClient')
+const WormholeClient = require('./wormholeClient')
 const Utils = require('../../utils')
 
 const AudiusTokenABI = Utils.importEthContractABI('AudiusToken.json').abi
@@ -21,6 +22,7 @@ const StakingABI = Utils.importEthContractABI('Staking.json').abi
 const DelegateManagerABI = Utils.importEthContractABI('DelegateManager.json').abi
 const ClaimsManagerABI = Utils.importEthContractABI('ClaimsManager.json').abi
 const ClaimDistributionABI = Utils.importEthContractABI('AudiusClaimDistributor.json').abi
+const WormholeABI = Utils.importEthContractABI('Wormhole.json').abi
 
 const GovernanceRegistryKey = 'Governance'
 const ServiceTypeManagerProxyKey = 'ServiceTypeManagerProxy'
@@ -123,6 +125,13 @@ class EthContracts {
         this.claimDistributionContractAddress
       )
     }
+
+    this.WormholeClient = new WormholeClient(
+      this.ethWeb3Manager,
+      WormholeABI,
+      '0xf92cD566Ea4864356C5491c177A430C222d7e678', // contractAddress
+      this.AudiusTokenClient
+    )
 
     this.contractClients = [
       this.ServiceTypeManagerClient,

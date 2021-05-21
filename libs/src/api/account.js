@@ -24,6 +24,7 @@ class Account extends Base {
     this.searchFull = this.searchFull.bind(this)
     this.searchAutocomplete = this.searchAutocomplete.bind(this)
     this.searchTags = this.searchTags.bind(this)
+    this.permitAndSendTokensViaWormhole = this.permitAndSendTokensViaWormhole.bind(this)
   }
 
   /**
@@ -360,6 +361,21 @@ class Account extends Base {
     await this.sendTokens(myWalletAddress, recipientAddress, selectedEthWallet, amount)
   }
 
+  /**
+   * Sends `amount` tokens to `recipientAddress` by way of `relayerAddress`
+   */
+  async permitAndSendTokensViaWormhole(amount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    const myWalletAddress = this.web3Manager.getWalletAddress()
+    console.log({ myWalletAddress })
+    const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
+    const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
+    console.log({ selectedEthWallet })
+    const res = await this.permitProxySendTokens(myWalletAddress, wormholeAddress, amount, selectedEthWallet)
+    console.log({ res })
+    return res
+  }
+  
   /**
    * Permits `relayerAddress` to send `amount` on behalf of the current user, `owner`
    */
