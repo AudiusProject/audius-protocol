@@ -267,13 +267,17 @@ impl Processor {
         let instruction = AudiusInstruction::try_from_slice(input)?;
 
         match instruction {
-            AudiusInstruction::InitSignerGroup(eth_pubkey) => {
+            AudiusInstruction::InitSignerGroup => {
                 msg!("Instruction: InitSignerGroup");
-                Self::process_init_signer_group(accounts, eth_pubkey)
+                Self::process_init_signer_group(accounts)
             }
             AudiusInstruction::InitValidSigner(eth_pubkey) => {
                 msg!("Instruction: InitValidSigner");
                 Self::process_init_valid_signer(accounts, eth_pubkey)
+            }
+            AudiusInstruction::InitValidSignerFromSigner(eth_pubkey) => {
+                msg!("Instruction: InitValidSignerFromSigner");
+                Self::process_init_valid_signer_from_signer(accounts, eth_pubkey)
             }
             AudiusInstruction::ClearValidSigner => {
                 msg!("Instruction: ClearValidSigner");
