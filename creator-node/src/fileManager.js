@@ -8,6 +8,7 @@ const config = require('./config')
 const Utils = require('./utils')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
+const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -409,15 +410,12 @@ const trackFileUpload = multer({
   storage: trackDiskStorage,
   limits: { fileSize: MAX_AUDIO_FILE_SIZE },
   fileFilter: function (req, file, cb) {
-    const fileExtension = getFileExtension(file.originalname).slice(1)
-    // the function should call `cb` with a boolean to indicate if the file should be accepted
-    if (ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(fileExtension) && AUDIO_MIME_TYPE_REGEX.test(file.mimetype)) {
-      req.logger.info(`Filetype: ${fileExtension}`)
-      req.logger.info(`Mimetype: ${file.mimetype}`)
+    try {
+      checkFileType(req.logger, { fileName: file.originalname, fileMimeType: file.mimetype })
       cb(null, true)
-    } else {
-      req.fileFilterError = `File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}] with mime type matching ${AUDIO_MIME_TYPE_REGEX}, got file ${fileExtension} with mime ${file.mimetype}`
-      cb(new Error(req.fileFilterError))
+    } catch (e) {
+      req.fileFilterError = e.message
+      cb(e)
     }
   }
 })
@@ -439,6 +437,58 @@ const handleTrackContentUpload = (req, res, next) => {
 
 function getFileExtension (fileName) {
   return (fileName.lastIndexOf('.') >= 0) ? fileName.substr(fileName.lastIndexOf('.')).toLowerCase() : ''
+}
+
+/**
+ * Checks the file type. Throws an error if not accepted.
+ * @param {Object} logger the logger instance from the express request object
+ * @param {Object} param
+ * @param {string} param.fileName the file name
+ * @param {string} param.fileMimeType the file type
+ */
+function checkFileType (logger, { fileName, fileMimeType }) {
+  const fileExtension = getFileExtension(fileName).slice(1)
+  // the function should call `cb` with a boolean to indicate if the file should be accepted
+  if (ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(fileExtension) && AUDIO_MIME_TYPE_REGEX.test(fileMimeType)) {
+    logger.info(`Filetype: ${fileExtension}`)
+    logger.info(`Mimetype: ${fileMimeType}`)
+  } else {
+    throw new Error(`File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}] with mime type matching ${AUDIO_MIME_TYPE_REGEX}, got file ${fileExtension} with mime ${fileMimeType}`)
+  }
+}
+
+/**
+ * Checks the file size. Throws an error if file is too big.
+ * @param {number} fileSize file size in bytes
+ */
+function checkFileSize (fileSize) {
+  if (fileSize > MAX_AUDIO_FILE_SIZE) {
+    throw new Error(`File exceeded maximum size (${MAX_AUDIO_FILE_SIZE}): fileSize=${fileSize}`)
+  }
+}
+
+/**
+ * The middleware fn that checks file data existence, and calls `checkFileType` and `checkFileSize`.
+ * @param {Object} req express request object
+ * @param {string} req.filename the file name
+ * @param {string} req.filemimetype the file type
+ * @param {number} req.filesize file size in bytes
+ * @param {Object} res express response object
+ * @param {function} next callback to proceed to the next handler
+ */
+function checkFileMiddleware (req, res, next) {
+  const { filename: fileName, filetype: fileMimeType, filesize: fileSize } = req.headers
+  try {
+    if (!fileName || !fileMimeType || !fileSize) {
+      throw new Error(`Some/all file data not present: fileName=${fileName} fileType=${fileMimeType} fileSize=${fileSize}`)
+    }
+    checkFileType(req.logger, { fileName, fileMimeType })
+    checkFileSize(fileSize)
+  } catch (e) {
+    return sendResponse(req, res, errorResponseBadRequest(e.message))
+  }
+
+  return next()
 }
 
 /**
@@ -471,5 +521,7 @@ module.exports = {
   uploadTempDiskStorage,
   trackFileUpload,
   handleTrackContentUpload,
-  hasEnoughStorageSpace
+  hasEnoughStorageSpace,
+  getFileExtension,
+  checkFileMiddleware
 }
