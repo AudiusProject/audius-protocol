@@ -91,17 +91,11 @@ jobs:
           name: test
           command: npm test
 
-      # Build Storybook
-      # - run:
-      #     name: build-storybook
-      #     command: npm run build:storybook
-
       # Persist the build directory to a workspace
       - persist_to_workspace:
           root: ./
           paths:
             - node_modules
-            - storybook-static
 
   build-demo:
     working_directory: ~/audius-client
@@ -567,20 +561,6 @@ jobs:
               -H "Content-Type: application/json" \
               --data '{"type":"TXT","name":"'"$DNS_NAME"'","content":"\"dnslink=/ipfs/'"$CID"'\"","ttl":1,"proxied":false}'
 
-  deploy-storybook:
-    working_directory: ~/audius-client
-    docker:
-      - image: circleci/python:2.7-jessie
-    steps:
-      - run:
-          name: install-awscli
-          command: sudo pip install awscli
-      - attach_workspace:
-          at: ./
-      - run:
-          name: Deploy to S3
-          command: aws s3 sync storybook-static s3://storybook.audius.co --delete
-
   dist-mac-staging:
     working_directory: ~/audius-client
     macos: # Run on osx so dmg can be created and signed.
@@ -694,14 +674,6 @@ workflows:
           filters:
             branches:
               ignore: /^master$/
-
-      # Deploy storybook
-      # - deploy-storybook:
-      #     requires:
-      #       - init
-      #     filters:
-      #       branches:
-      #         only: /^master$/
 
       # Build
       - build-staging:

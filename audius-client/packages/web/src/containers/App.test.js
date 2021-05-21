@@ -17,7 +17,8 @@ jest.mock('react-spring/renderprops', () => ({
 jest.mock('store/backend/sagas', () => ({
   __esModule: true,
   default: () => [],
-  setupBackend: function* () {}
+  setupBackend: function* () {},
+  waitForBackendSetup: () => true
 }))
 
 describe('smoke test', () => {

@@ -517,19 +517,19 @@ function mapDispatchToProps(dispatch: Dispatch) {
     replaceRoute: (route: string) => dispatch(replaceRoute(route)),
     recordSignInClick: () => {
       const trackEvent: TrackEvent = make(Name.SIGN_IN_OPEN, {
-        source: 'sign up page' as 'sign up page'
+        source: 'sign up page' as const
       })
       dispatch(trackEvent)
     },
     recordSignUpClick: () => {
       const trackEvent: TrackEvent = make(Name.CREATE_ACCOUNT_OPEN, {
-        source: 'sign in page' as 'sign in page'
+        source: 'sign in page' as const
       })
       dispatch(trackEvent)
     },
     recordGoToUpload: () => {
       const trackEvent: TrackEvent = make(Name.TRACK_UPLOAD_OPEN, {
-        source: 'signup' as 'signup'
+        source: 'signup' as const
       })
       dispatch(trackEvent)
     },

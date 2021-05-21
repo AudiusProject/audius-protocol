@@ -102,7 +102,7 @@ const slice = createSlice({
       }: PayloadAction<{ amount: StringWei; wallet: WalletAddress }>
     ) => {
       const newState: ModalState = {
-        stage: 'SEND' as 'SEND',
+        stage: 'SEND' as const,
         flowState: {
           stage: 'AWAITING_CONFIRMATION',
           amount,

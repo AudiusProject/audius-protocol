@@ -596,14 +596,14 @@ function mapDispatchToProps(dispatch: Dispatch) {
     onExternalLinkClick: (event: any) => {
       const trackEvent: TrackEvent = make(Name.LINK_CLICKING, {
         url: event.target.href,
-        source: 'track page' as 'track page'
+        source: 'track page' as const
       })
       dispatch(trackEvent)
     },
     recordTagClick: (tag: string) => {
       const trackEvent: TrackEvent = make(Name.TAG_CLICKING, {
         tag,
-        source: 'track page' as 'track page'
+        source: 'track page' as const
       })
       dispatch(trackEvent)
     },

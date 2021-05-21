@@ -1,5 +1,6 @@
 /* global Event */
 import AudioStream from 'audio/AudioStream'
+import Hls from 'hls.js'
 
 jest.mock('hls.js', () => {
   const hls = jest.fn().mockImplementation(() => ({
@@ -12,7 +13,10 @@ jest.mock('hls.js', () => {
   }
   hls.isSupported = jest.fn().mockReturnValue(true)
   hls.Events = { ERROR: jest.fn() }
-  return hls
+  return {
+    __esModule: true,
+    default: hls
+  }
 })
 
 beforeAll(() => {
@@ -71,8 +75,7 @@ describe('load native hls', () => {
   let segments
   let audioStream
   beforeEach(() => {
-    const hls = require('hls.js')
-    hls.isSupported = jest.fn().mockReturnValue(false)
+    Hls.isSupported = jest.fn().mockReturnValue(false)
 
     segments = [
       {

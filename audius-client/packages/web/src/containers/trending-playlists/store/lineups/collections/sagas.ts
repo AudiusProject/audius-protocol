@@ -13,7 +13,7 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   yield call(waitForRemoteConfig)
   const TF = new Set(getRemoteVar(StringKeys.TPF)?.split(',') ?? [])
 
-  const time = 'week' as 'week'
+  const time = 'week' as const
   const currentUserId: ReturnType<typeof getUserId> = yield select(getUserId)
   let playlists: UserCollectionMetadata[] = yield call(
     args => apiClient.getTrendingPlaylists(args),

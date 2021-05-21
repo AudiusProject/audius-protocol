@@ -85,21 +85,21 @@ const rewardsMap = {
     icon: <i className='emoji large chart-increasing' />,
     description: 'Winners are selected every Friday at Noon PT!',
     buttonText: 'See More',
-    id: 'trending-playlist' as 'trending-playlist'
+    id: 'trending-playlist' as const
   },
   'trending-track': {
     title: 'Top 5 Trending Tracks',
     icon: <i className='emoji large chart-increasing' />,
     description: 'Winners are selected every Friday at Noon PT!',
     buttonText: 'See More',
-    id: 'trending-track' as 'trending-track'
+    id: 'trending-track' as const
   },
   'top-api': {
     title: 'Top 10 API Apps',
     icon: <i className='emoji large nerd-face' />,
     description: 'The top 10 Audius API apps each month win',
     buttonText: 'More Info',
-    id: 'top-api' as 'top-api'
+    id: 'top-api' as const
   },
   'verified-upload': {
     title: 'First Upload With Your Verified Account',
@@ -107,14 +107,14 @@ const rewardsMap = {
     description:
       'Verified on Twitter/Instagram? Upload your first track, post it on social media, & tag us',
     buttonText: 'More Info',
-    id: 'verified-upload' as 'verified-upload'
+    id: 'verified-upload' as const
   },
   'trending-underground': {
     title: 'Top 5 Underground Trending',
     icon: <i className='emoji large chart-increasing' />,
     description: 'Winners are selected every Friday at Noon PT!',
     buttonText: 'See More',
-    id: 'trending-underground' as 'trending-underground'
+    id: 'trending-underground' as const
   }
 }
 

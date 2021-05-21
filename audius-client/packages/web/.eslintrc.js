@@ -8,8 +8,8 @@ module.exports = {
     'plugin:@typescript-eslint/recommended',
     'plugin:jest/recommended',
     'plugin:react/recommended',
-    'prettier/react',
-    'prettier-standard/prettier-file',
+    'prettier',
+    'prettier-standard/prettier-file'
   ],
   globals: {
     Atomics: 'readonly',
@@ -23,12 +23,7 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module'
   },
-  plugins: [
-    'react',
-    'react-hooks',
-    '@typescript-eslint',
-    'jest',
-  ],
+  plugins: ['react', 'react-hooks', '@typescript-eslint', 'jest'],
   rules: {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
@@ -36,18 +31,21 @@ module.exports = {
     '@typescript-eslint/no-empty-interface': 'off',
     '@typescript-eslint/camelcase': 'off',
     '@typescript-eslint/ban-ts-ignore': 'off',
+    '@typescript-eslint/ban-ts-comment': 'off',
+    '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-use-before-define': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', { 'args': 'none' }], // We should turn this one on soon
+    '@typescript-eslint/no-unused-vars': 'off', // We should turn this one on soon
     '@typescript-eslint/no-this-alias': 'off',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
 
     'no-use-before-define': 'off',
-    'camelcase': 'off',
+    camelcase: 'off',
     'no-unused-vars': 'off',
     'func-call-spacing': 'off',
-    'semi': ['error', 'never'],
+    semi: ['error', 'never'],
     'no-undef': 'off',
     'no-empty': 'off',
     'arrow-parens': 'off',
