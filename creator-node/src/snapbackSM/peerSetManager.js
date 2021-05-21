@@ -6,11 +6,9 @@ const { logger } = require('../logging')
 const PEER_HEALTH_CHECK_REQUEST_TIMEOUT = 2000
 
 class PeerSetManager {
-  constructor (discoveryProviderEndpoint, currentModuloSlice, creatorNodeEndpoint, moduloBase) {
-    this.currentModuloSlice = currentModuloSlice
+  constructor ({ discoveryProviderEndpoint, creatorNodeEndpoint }) {
     this.discoveryProviderEndpoint = discoveryProviderEndpoint
     this.creatorNodeEndpoint = creatorNodeEndpoint
-    this.moduloBase = moduloBase
   }
 
   log (msg) {
@@ -166,12 +164,15 @@ class PeerSetManager {
 
   /**
    * Select chunk of users to process in this run
-   *  - User is selected if (user_id % this.moduloBase = currentModuloSlice)
-   * @param {Object[]} nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+   *  - User is selected if (user_id % moduloBase = currentModuloSlice)
+   * @param {Object} param
+   * @param {Object[]} param.nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+   * @param {number} param.moduluoBase
+   * @param {number} param.currentModuloSlice
    */
-  sliceUsers (nodeUsers) {
+  sliceUsers ({ nodeUsers, moduloBase, currentModuloSlice }) {
     return nodeUsers.filter(nodeUser =>
-      nodeUser.user_id % this.moduloBase === this.currentModuloSlice
+      nodeUser.user_id % moduloBase === currentModuloSlice
     )
   }
 
@@ -214,14 +215,6 @@ class PeerSetManager {
       method: 'get',
       timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT
     })
-  }
-
-  /**
-   * Setter method for `this.currentModuloSlice`
-   * @param {number} index new modulo slice
-   */
-  setCurrentModuloSlice (index) {
-    this.currentModuloSlice = index
   }
 }
 

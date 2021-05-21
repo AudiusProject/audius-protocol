@@ -65,12 +65,10 @@ class SnapbackSM {
     this.currentModuloSlice = this.randomStartingSlice()
 
     // PeerSetManager instance to determine the peer set and its health state
-    this.peerSetManager = new PeerSetManager(
-      audiusLibs.discoveryProvider.discoveryProviderEndpoint,
-      this.currentModuloSlice,
-      this.endpoint,
-      ModuloBase
-    )
+    this.peerSetManager = new PeerSetManager({
+      discoveryProviderEndpoint: audiusLibs.discoveryProvider.discoveryProviderEndpoint,
+      creatorNodeEndpoint: this.endpoint
+    })
   }
 
   /**
@@ -418,12 +416,12 @@ class SnapbackSM {
     let nodeUsers
     try {
       nodeUsers = await this.peerSetManager.getNodeUsers()
-      nodeUsers = this.peerSetManager.sliceUsers(nodeUsers)
+      nodeUsers = this.peerSetManager.sliceUsers({ nodeUsers, moduloBase: ModuloBase, currentModuloSlice: this.currentModuloSlice })
 
       decisionTree.push({ stage: 'getNodeUsers() and sliceUsers() Success', vals: { nodeUsersLength: nodeUsers.length }, time: Date.now() })
     } catch (e) {
       decisionTree.push({ stage: 'getNodeUsers() or sliceUsers() Error', vals: e.message, time: Date.now() })
-      throw new Error('processStateMachineOperation():getNodeUsers()/sliceUsers() Error')
+      throw new Error(`processStateMachineOperation():getNodeUsers()/sliceUsers() Error: ${e.toString()}`)
     }
 
     let unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
@@ -578,7 +576,6 @@ class SnapbackSM {
       const previousModuloSlice = this.currentModuloSlice
       this.currentModuloSlice += 1
       this.currentModuloSlice = this.currentModuloSlice % ModuloBase
-      this.peerSetManager.setCurrentModuloSlice(this.currentModuloSlice)
 
       decisionTree.push({
         stage: 'END processStateMachineOperation()',
