@@ -66,20 +66,19 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
     }
   }, {})
 
-  const now = moment().utc().valueOf()
-
   const newPlaylistUpdatePromises = userIds.map(userId => {
     const walletAddress = userIdToWalletsMap[userId]
     if (!walletAddress) return Promise.resolve()
 
     const dbPlaylistUpdates = userWalletToPlaylistUpdatesMap[walletAddress] || {}
     const fetchedPlaylistUpdates = userPlaylistUpdatesMap[userId]
-    Object.keys(fetchedPlaylistUpdates).forEach(playlistLibraryItemId => {
-      const fetchedLastUpdated = moment(fetchedPlaylistUpdates[playlistLibraryItemId]).utc().valueOf()
-      dbPlaylistUpdates[playlistLibraryItemId] = {
-        userLastViewed: now, // will this work for auto-favorited playlists e.g. on signup?
-        ...dbPlaylistUpdates[playlistLibraryItemId],
-        lastUpdated: fetchedLastUpdated
+    Object.keys(fetchedPlaylistUpdates).forEach(playlistId => {
+      const fetchedLastUpdated = moment(fetchedPlaylistUpdates[playlistId]).utc()
+      dbPlaylistUpdates[playlistId] = {
+        // in case user favorited this track before and has no UserEvent record of it
+        userLastViewed: fetchedLastUpdated.subtract(1, 'seconds').valueOf(),
+        ...dbPlaylistUpdates[playlistId],
+        lastUpdated: fetchedLastUpdated.valueOf()
       }
     })
 

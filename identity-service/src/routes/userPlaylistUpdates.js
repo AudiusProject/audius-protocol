@@ -33,12 +33,12 @@ module.exports = function (app) {
 
   /**
    * Updates the lastPlaylistViews field for the user in the UserEvents table
-   * @param {boolean} playlistLibraryItemId   id of playlist or folder to update
+   * @param {boolean} playlistId   id of playlist or folder to update
    */
   app.post('/user_playlist_updates', authMiddleware, handleResponse(async (req) => {
-    const { playlistLibraryItemId } = req.query
+    const { playlistId } = req.query
     const { walletAddress } = req.user
-    if (!walletAddress || !playlistLibraryItemId) {
+    if (!walletAddress || !playlistId) {
       return errorResponseBadRequest(
         'Please provide a wallet address and a playlist library item id'
       )
@@ -56,16 +56,16 @@ module.exports = function (app) {
       const now = moment().utc().valueOf()
       let playlistUpdates = {}
       if (!playlistUpdatesResult) {
-        playlistUpdates[playlistLibraryItemId] = {
+        playlistUpdates[playlistId] = {
           lastUpdated: now,
           userLastViewed: now
         }
       } else {
         playlistUpdates = {
           ...playlistUpdatesResult,
-          [playlistLibraryItemId]: {
+          [playlistId]: {
             lastUpdated: now,
-            ...playlistUpdatesResult[playlistLibraryItemId],
+            ...playlistUpdatesResult[playlistId],
             userLastViewed: now
           }
         }
@@ -80,7 +80,7 @@ module.exports = function (app) {
       req.logger.error(e)
       console.log(e)
       return errorResponseServerError(
-        `Unable to update user last playlist views for ${walletAddress} for playlist library item id ${playlistLibraryItemId}`
+        `Unable to update user last playlist views for ${walletAddress} for playlist library item id ${playlistId}`
       )
     }
   }))
