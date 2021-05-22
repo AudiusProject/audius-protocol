@@ -270,7 +270,6 @@ def notifications():
         notifications_unsorted.extend(follow_notifications)
 
         # Query relevant favorite information
-        # Favorite results are also used for playlist update notifications
         favorites_query = session.query(Save)
         favorites_query = favorites_query.filter(
             Save.is_current == True,
@@ -769,6 +768,16 @@ def notifications():
                 }
             }
 
+        # get all favorited playlists
+        # playlists may have been favorited outside the blocknumber bounds
+        # e.g. before the min_block_number
+        playlist_favorites_query = session.query(Save)
+        playlist_favorites_query = playlist_favorites_query.filter(
+            Save.is_current == True,
+            Save.is_delete == False,
+            Save.save_type == SaveType.playlist)
+        playlist_favorites_results = playlist_favorites_query.all()
+
         # dictionary of playlist id => users that favorited said playlist
         # e.g. { playlist1: [user1, user2, ...], ... }
         # we need this dictionary to know which users need to be notified of a playlist update
@@ -777,7 +786,7 @@ def notifications():
                 current.save_item_id: accumulator[current.save_item_id] + [current.user_id] \
                     if current.save_item_id in accumulator else [current.user_id]
             }) or accumulator,
-            filter(lambda result: result.save_type == SaveType.playlist, favorite_results),
+            playlist_favorites_results,
             {}
         )
 
