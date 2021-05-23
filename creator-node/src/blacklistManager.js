@@ -5,7 +5,7 @@ const config = require('./config')
 
 const CID_WHITELIST = new Set(config.get('cidWhitelist').split(','))
 
-console.log("CID_WHITELIST", CID_WHITELIST)
+console.log('CID_WHITELIST', CID_WHITELIST)
 
 const REDIS_SET_BLACKLIST_TRACKID_KEY = 'SET.BLACKLIST.TRACKID'
 const REDIS_SET_BLACKLIST_USERID_KEY = 'SET.BLACKLIST.USERID'
@@ -101,12 +101,12 @@ class BlacklistManager {
     const segmentsFromTrackIds = await this.getCIDsFromTrackIds([...trackIds])
     let segmentCIDsToBlacklist = segmentsFromTrackIds.concat(segmentsToBlacklist)
     let segmentCIDsToBlacklistSet = new Set(segmentCIDsToBlacklist)
-    logger.error("segmentCIDsToBlacklistSet before", segmentCIDsToBlacklistSet)
+    logger.error('segmentCIDsToBlacklistSet before', segmentCIDsToBlacklistSet)
     // Filter out whitelisted CID's from the segments to remove
     ;[...CID_WHITELIST].forEach(cid => segmentCIDsToBlacklistSet.delete(cid))
 
     segmentsToBlacklist = [...segmentCIDsToBlacklistSet]
-    logger.error("segmentCIDsToBlacklistSet after ", segmentCIDsToBlacklistSet)
+    logger.error('segmentCIDsToBlacklistSet after ', segmentCIDsToBlacklistSet)
 
     try {
       await this.addToRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToBlacklist)
