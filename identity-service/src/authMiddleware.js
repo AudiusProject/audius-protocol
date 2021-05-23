@@ -54,13 +54,12 @@ async function authMiddleware (req, res, next) {
     if (!signature) throw new Error('[Error]: Encoded data signature missing')
 
     const walletAddress = recoverPersonalSignature({ data: encodedDataMessage, sig: signature })
-    let user = await models.User.findOne({
+    const user = await models.User.findOne({
       where: { walletAddress },
       attributes: ['id', 'blockchainUserId', 'walletAddress', 'createdAt']
     })
     if (!user) throw new Error(`[Error]: no user found for wallet address ${walletAddress}`)
 
-    user = user.dataValues
     if (!user.blockchainUserId) {
       const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
       await user.update({ blockchainUserId: discprovUser.user_id })

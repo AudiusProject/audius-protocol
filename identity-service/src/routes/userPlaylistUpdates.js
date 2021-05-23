@@ -21,7 +21,7 @@ module.exports = function (app) {
       })
       if (!userEvents) throw new Error(`UserEvents for ${walletAddress} not found`)
 
-      return successResponse(userEvents.dataValues.playlistUpdates)
+      return successResponse({ playlistUpdates: userEvents.playlistUpdates })
     } catch (e) {
       req.logger.error(e)
       // no-op. No user events.
@@ -51,8 +51,7 @@ module.exports = function (app) {
       })
       if (!result) throw new Error(`Playlist updates for ${walletAddress} not found`)
 
-      const playlistUpdatesResult = result.dataValues.playlistUpdates
-
+      const playlistUpdatesResult = result.playlistUpdates
       const now = moment().utc().valueOf()
       let playlistUpdates = {}
       if (!playlistUpdatesResult) {

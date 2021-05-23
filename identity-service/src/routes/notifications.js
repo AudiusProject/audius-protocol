@@ -387,13 +387,13 @@ module.exports = function (app) {
         attributes: ['walletAddress'],
         where: { id: userId }
       })
-      const walletAddress = user && user.dataValues.walletAddress
+      const walletAddress = user && user.walletAddress
       if (walletAddress) {
         const result = await models.UserEvents.findOne({
           attributes: ['playlistUpdates'],
           where: { walletAddress }
         })
-        const playlistUpdatesResult = result && result.dataValues.playlistUpdates
+        const playlistUpdatesResult = result && result.playlistUpdates
         if (playlistUpdatesResult) {
           const thirtyDaysAgo = moment().utc().subtract(30, 'days').valueOf()
           playlistUpdates = Object.keys(playlistUpdatesResult)
