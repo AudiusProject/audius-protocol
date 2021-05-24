@@ -583,6 +583,12 @@ async fn validate_2_signatures() {
     let secp_pubkey_2 = PublicKey::from_secret_key(&priv_key_2);
     let eth_address_2 = construct_eth_address(&secp_pubkey_2);
 
+    // Create the second eth key for ValidSigner2
+    let key_3: [u8; 32] = rng.gen();
+    let priv_key_3 = SecretKey::parse(&key_3).unwrap();
+    let secp_pubkey_3 = PublicKey::from_secret_key(&priv_key_3);
+    let eth_address_3 = construct_eth_address(&secp_pubkey_3);
+
     // Shared message
     let message = [8u8; 30];
 
@@ -590,10 +596,13 @@ async fn validate_2_signatures() {
         construct_signature_data(&key_1, &message);
     let (signature_data_2, secp256_program_instruction_2) =
         construct_signature_data(&key_2, &message);
+    let (signature_data_3, secp256_program_instruction_3) =
+        construct_signature_data(&key_3, &message);
     let (mut banks_client, payer, recent_blockhash, signer_group, group_owner) = setup().await;
 
     let valid_signer_1 = Keypair::new();
     let valid_signer_2 = Keypair::new();
+    let valid_signer_3 = Keypair::new();
 
     process_tx_init_signer_group(
         &signer_group.pubkey(),
@@ -626,7 +635,17 @@ async fn validate_2_signatures() {
     .await
     .unwrap();
 
-    // Initialize both signers
+    create_account(
+        &mut banks_client,
+        &payer,
+        &recent_blockhash,
+        &valid_signer_3,
+        state::ValidSigner::LEN,
+    )
+    .await
+    .unwrap();
+
+    // Initialize all 3 signers
     process_tx_init_valid_signer(
         &valid_signer_1.pubkey(),
         &signer_group.pubkey(),
@@ -651,18 +670,33 @@ async fn validate_2_signatures() {
     .await
     .unwrap();
 
+    process_tx_init_valid_signer(
+        &valid_signer_3.pubkey(),
+        &signer_group.pubkey(),
+        &group_owner,
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+        eth_address_3,
+    )
+    .await
+    .unwrap();
+
     // Execute multiple transactions
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction_1,
             secp256_program_instruction_2,
+            secp256_program_instruction_3,
             instruction::validate_multiple_signatures(
                 &id(),
                 &valid_signer_1.pubkey(),
                 &valid_signer_2.pubkey(),
+                &valid_signer_3.pubkey(),
                 &signer_group.pubkey(),
                 signature_data_1.clone(),
                 signature_data_2.clone(),
+                signature_data_3.clone(),
             )
             .unwrap(),
         ],

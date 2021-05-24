@@ -355,12 +355,15 @@ impl Processor {
         accounts: &[AccountInfo],
         signature_data_1: SignatureData,
         signature_data_2: SignatureData,
+        signature_data_3: SignatureData,
     ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
         // initialized valid signer account 1
         let valid_signer_1_info = next_account_info(account_info_iter)?;
         // initialized valid signer account 2
         let valid_signer_2_info = next_account_info(account_info_iter)?;
+        // initialized valid signer account 3
+        let valid_signer_3_info = next_account_info(account_info_iter)?;
         // signer group account
         let signer_group_info = next_account_info(account_info_iter)?;
         // Sysvar Instruction account info
@@ -374,13 +377,20 @@ impl Processor {
 
         // Instruction data of 1st Secp256 program call
         let secp_instruction_1 = sysvar::instructions::load_instruction_at(
-            (index - 2) as usize,
+            (index - 3) as usize,
             &instruction_info.data.borrow(),
         )
         .unwrap();
 
         // Instruction data of 2nd Secp256 program call
         let secp_instruction_2 = sysvar::instructions::load_instruction_at(
+            (index - 2) as usize,
+            &instruction_info.data.borrow(),
+        )
+        .unwrap();
+
+        // Instruction data of 3nd Secp256 program call
+        let secp_instruction_3 = sysvar::instructions::load_instruction_at(
             (index - 1) as usize,
             &instruction_info.data.borrow(),
         )
@@ -400,13 +410,20 @@ impl Processor {
         let valid_signer_2 = Box::new(ValidSigner::try_from_slice(
             &valid_signer_2_info.data.borrow(),
         )?);
+        let valid_signer_3 = Box::new(ValidSigner::try_from_slice(
+            &valid_signer_3_info.data.borrow(),
+        )?);
 
-        if !valid_signer_1.is_initialized() || !valid_signer_2.is_initialized() {
+        if !valid_signer_1.is_initialized()
+            || !valid_signer_2.is_initialized()
+            || !valid_signer_3.is_initialized()
+        {
             return Err(AudiusError::ValidSignerNotInitialized.into());
         }
 
         if valid_signer_1.signer_group != *signer_group_info.key
             || valid_signer_2.signer_group != *signer_group_info.key
+            || valid_signer_3.signer_group != *signer_group_info.key
         {
             return Err(AudiusError::WrongSignerGroup.into());
         }
@@ -415,11 +432,17 @@ impl Processor {
 
         let instruction_data_2 = Self::recover_instruction_data(&signature_data_2, &valid_signer_2);
 
+        let instruction_data_3 = Self::recover_instruction_data(&signature_data_3, &valid_signer_3);
+
         if instruction_data_1 != secp_instruction_1.data {
             return Err(AudiusError::SignatureVerificationFailed.into());
         }
 
         if instruction_data_2 != secp_instruction_2.data {
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
+
+        if instruction_data_3 != secp_instruction_3.data {
             return Err(AudiusError::SignatureVerificationFailed.into());
         }
 
@@ -506,9 +529,13 @@ impl Processor {
                 msg!("Instruction: DisableSignerGroupOwner");
                 Self::process_disable_signer_group_owner(accounts)
             }
-            AudiusInstruction::ValidateMultipleSignatures(signature_1, signature_2) => {
+            AudiusInstruction::ValidateMultipleSignatures(
+                signature_1,
+                signature_2,
+                signature_3,
+            ) => {
                 msg!("Instruction: ValidateMultipleSignatures");
-                Self::process_multiple_signatures(accounts, signature_1, signature_2)
+                Self::process_multiple_signatures(accounts, signature_1, signature_2, signature_3)
             }
             AudiusInstruction::ValidateMultipleSignaturesAddSigner(
                 signature_1,
