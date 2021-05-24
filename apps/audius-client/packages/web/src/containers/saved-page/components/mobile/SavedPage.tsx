@@ -249,7 +249,9 @@ const PlaylistCardLineup = ({
   filterText,
   goToRoute,
   getFilteredPlaylists,
-  formatCardSecondaryText
+  formatCardSecondaryText,
+  playlistUpdates,
+  updatePlaylistLastViewedAt
 }: {
   playlists: SavedPageCollection[]
   goToTrending: () => void
@@ -260,6 +262,8 @@ const PlaylistCardLineup = ({
     playlists: SavedPageCollection[]
   ) => SavedPageCollection[]
   goToRoute: (route: string) => void
+  playlistUpdates: number[]
+  updatePlaylistLastViewedAt: (playlistId: number) => void
 }) => {
   const filteredPlaylists = getFilteredPlaylists(playlists || [])
   const playlistCards = filteredPlaylists.map(playlist => {
@@ -274,7 +278,9 @@ const PlaylistCardLineup = ({
           playlist.save_count,
           playlist.playlist_contents.track_ids.length
         )}
-        onClick={() =>
+        onClick={() => {
+          updatePlaylistLastViewedAt(playlist.playlist_id)
+
           goToRoute(
             playlistPage(
               playlist.ownerHandle,
@@ -282,7 +288,8 @@ const PlaylistCardLineup = ({
               playlist.playlist_id
             )
           )
-        }
+        }}
+        updateDot={playlistUpdates.includes(playlist.playlist_id)}
       />
     )
   })
@@ -390,6 +397,8 @@ export type SavedPageProps = {
   unsaveTrack: (trackId: ID) => void
   onClickRemove: any
   onReorderTracks: any
+  playlistUpdates: number[]
+  updatePlaylistLastViewedAt: (playlistId: number) => void
 }
 
 const SavedPage = ({
@@ -408,7 +417,9 @@ const SavedPage = ({
   onFilterChange,
   filterText,
   formatCardSecondaryText,
-  onSave
+  onSave,
+  playlistUpdates,
+  updatePlaylistLastViewedAt
 }: SavedPageProps) => {
   useMainPageHeader()
 
@@ -447,6 +458,8 @@ const SavedPage = ({
       filterText={filterText}
       goToRoute={goToRoute}
       formatCardSecondaryText={formatCardSecondaryText}
+      playlistUpdates={playlistUpdates}
+      updatePlaylistLastViewedAt={updatePlaylistLastViewedAt}
     />
   ]
   const { tabs, body } = useTabs({

@@ -21,10 +21,14 @@ import {
   EXPLORE_PAGE
 } from 'utils/route'
 
-import { toggleNotificationPanel } from 'containers/notification/store/actions'
+import {
+  toggleNotificationPanel,
+  updatePlaylistLastViewedAt
+} from 'containers/notification/store/actions'
 import {
   getNotificationPanelIsOpen,
-  getNotificationUnreadCount
+  getNotificationUnreadCount,
+  getPlaylistUpdates
 } from 'containers/notification/store/selectors'
 import { resetState as resetUploadState } from 'containers/upload-page/store/actions'
 import {
@@ -66,6 +70,7 @@ import { Name, CreatePlaylistSource } from 'services/analytics'
 import { Variant } from 'models/Collection'
 import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
 import UserBadges from 'containers/user-badges/UserBadges'
+import UpdateDot from 'components/general/UpdateDot'
 
 const NavColumn = ({
   account,
@@ -87,6 +92,8 @@ const NavColumn = ({
   upload,
   accountStatus,
   playlists = [],
+  playlistUpdates = [],
+  updatePlaylistLastViewedAt,
   resetUploadState,
   goToRoute,
   goToSignUp: routeToSignup,
@@ -148,14 +155,16 @@ const NavColumn = ({
   ])
 
   const onClickNavLinkWithAccount = useCallback(
-    e => {
+    (e, id) => {
       if (!account) {
         e.preventDefault()
         goToSignUp('restricted page')
         showActionRequiresAccount()
+      } else if (id) {
+        updatePlaylistLastViewedAt(id)
       }
     },
-    [account, goToSignUp, showActionRequiresAccount]
+    [account, goToSignUp, showActionRequiresAccount, updatePlaylistLastViewedAt]
   )
 
   /** @param {bool} full whether or not to get the full page link */
@@ -365,6 +374,7 @@ const NavColumn = ({
                 {account &&
                   playlists.map(playlist => {
                     if (playlist.variant === Variant.SMART) {
+                      const id = playlist.playlist_id
                       const name = playlist.playlist_name
                       const url = playlist.link
                       return (
@@ -373,12 +383,33 @@ const NavColumn = ({
                           to={url}
                           isActive={() => url === getPathname()}
                           activeClassName='active'
-                          onClick={onClickNavLinkWithAccount}
+                          onClick={e => onClickNavLinkWithAccount(e, id)}
                           className={cn(styles.link, {
-                            [styles.disabledLink]: !account || dragging
+                            [styles.disabledLink]: !account || dragging,
+                            [styles.playlistUpdate]: playlistUpdates.includes(
+                              id
+                            )
                           })}
                         >
-                          {name}
+                          {playlistUpdates.includes(id) ? (
+                            <div className={styles.updateDotContainer}>
+                              <Tooltip
+                                className={styles.updateDotTooltip}
+                                shouldWrapContent={true}
+                                shouldDismissOnClick={false}
+                                mount={null}
+                                mouseEnterDelay={0.1}
+                                text='Recently Updated'
+                              >
+                                <div>
+                                  <UpdateDot />
+                                </div>
+                              </Tooltip>
+                              <span>{name}</span>
+                            </div>
+                          ) : (
+                            <span>{name}</span>
+                          )}
                         </NavLink>
                       )
                     }
@@ -410,11 +441,32 @@ const NavColumn = ({
                             [styles.disabledLink]:
                               dragging &&
                               ((kind !== 'track' && kind !== 'playlist') ||
-                                !isOwner)
+                                !isOwner),
+                            [styles.playlistUpdate]: playlistUpdates.includes(
+                              id
+                            )
                           })}
-                          onClick={onClickNavLinkWithAccount}
+                          onClick={e => onClickNavLinkWithAccount(e, id)}
                         >
-                          {name}
+                          {playlistUpdates.includes(id) ? (
+                            <div className={styles.updateDotContainer}>
+                              <Tooltip
+                                className={styles.updateDotTooltip}
+                                shouldWrapContent={true}
+                                shouldDismissOnClick={false}
+                                mount={null}
+                                mouseEnterDelay={0.1}
+                                text='Recently Updated'
+                              >
+                                <div>
+                                  <UpdateDot />
+                                </div>
+                              </Tooltip>
+                              <span>{name}</span>
+                            </div>
+                          ) : (
+                            <span>{name}</span>
+                          )}
                         </NavLink>
                       </Droppable>
                     )
@@ -476,7 +528,8 @@ const makeMapStateToProps = () => {
       showCreatePlaylistModal: getIsOpen(state),
       averageRGBColor: getAverageColorByTrack(state, {
         track: currentQueueItem.track
-      })
+      }),
+      playlistUpdates: getPlaylistUpdates(state)
     }
   }
   return mapStateToProps
@@ -496,6 +549,8 @@ const mapDispatchToProps = dispatch => ({
   toggleNotificationPanel: () => dispatch(toggleNotificationPanel()),
   openCreatePlaylistModal: () => dispatch(createPlaylistModalActions.open()),
   closeCreatePlaylistModal: () => dispatch(createPlaylistModalActions.close()),
+  updatePlaylistLastViewedAt: playlistId =>
+    dispatch(updatePlaylistLastViewedAt(playlistId)),
   goToUpload: () => dispatch(pushRoute(UPLOAD_PAGE)),
   goToDashboard: () => dispatch(pushRoute(DASHBOARD_PAGE)),
   goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false)),
