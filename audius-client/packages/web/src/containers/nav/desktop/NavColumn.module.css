@@ -380,3 +380,18 @@ svg.logo path {
   display: flex;
   justify-content: center;
 }
+
+.playlistUpdate {
+  height: 18px;
+}
+
+.updateDotContainer {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 30px;
+}
+
+.updateDotTooltip :global(.ant-tooltip-arrow) {
+  left: 33px;
+}

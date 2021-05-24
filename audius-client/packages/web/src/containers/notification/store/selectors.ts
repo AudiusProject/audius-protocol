@@ -56,6 +56,9 @@ export const getModalNotification = (state: AppState) =>
       ] || null
     : null
 
+export const getPlaylistUpdates = (state: AppState) =>
+  state.notification.playlistUpdates
+
 export const makeGetAllNotifications = () => {
   return createSelector(
     [getModalNotificationIds, getAllNotifications],

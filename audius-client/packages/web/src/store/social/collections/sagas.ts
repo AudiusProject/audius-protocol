@@ -5,6 +5,7 @@ import { Kind } from 'store/types'
 import * as cacheActions from 'store/cache/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import * as accountActions from 'store/account/reducer'
+import * as notificationActions from 'containers/notification/store/actions'
 import { getUserId, getUserPlaylistOrder } from 'store/account/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import {
@@ -293,6 +294,12 @@ export function* saveCollectionAsync(
     collection.playlist_owner_id,
     action.collectionId
   )
+
+  if (!collection.is_album) {
+    yield put(
+      notificationActions.updatePlaylistLastViewedAt(action.collectionId)
+    )
+  }
 
   const subscribedUid = makeUid(
     Kind.COLLECTIONS,

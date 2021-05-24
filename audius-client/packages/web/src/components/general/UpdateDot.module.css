@@ -1,0 +1,19 @@
+.updateDot {
+  margin-right: 4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 100%;
+  background: var(--secondary);
+}
+
+.mobileUpdateDot {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--white);
+  border-radius: 100%;
+  background: var(--secondary);
+  z-index: 100;
+}

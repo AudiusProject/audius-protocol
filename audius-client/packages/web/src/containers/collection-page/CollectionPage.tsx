@@ -17,7 +17,7 @@ type OwnProps = {
 const isMobileClient = isMobile()
 
 type CollectionPageProps = ReturnType<typeof mapStateToProps> & OwnProps
-const SignOn = ({ type, smartCollection }: CollectionPageProps) => {
+const CollectionPage = ({ type, smartCollection }: CollectionPageProps) => {
   const content = isMobileClient ? MobileCollectionPage : DesktopCollectionPage
 
   return (
@@ -35,4 +35,4 @@ function mapStateToProps(state: AppState) {
   return {}
 }
 
-export default connect(mapStateToProps)(SignOn)
+export default connect(mapStateToProps)(CollectionPage)
