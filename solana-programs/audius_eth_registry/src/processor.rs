@@ -13,7 +13,11 @@ use solana_program::{
     msg,
     pubkey::Pubkey,
     sysvar,
+    sysvar::clock::Clock,
+    sysvar::Sysvar
 };
+
+const MAX_TIME_DIFF: i64 = 2000000; // this is about 3 minutes
 
 /// Program state handler
 pub struct Processor {}
@@ -74,6 +78,36 @@ impl Processor {
         instruction_data[1..data_start].copy_from_slice(&packed_offsets.unwrap());
 
         return instruction_data;
+    }
+
+    /// Process [validate timestamp messages] ()
+    pub fn validate_timestamp_messages (
+        clock: &sysvar::clock::Clock,
+        message_1: &Vec<u8>,
+        message_2: &Vec<u8>,
+        message_3: &Vec<u8>,
+    ) -> Result<(), AudiusError> {
+        let mut timestamp_1_arr = [0u8; 8];
+        timestamp_1_arr[0..8].copy_from_slice(message_1);
+
+        let mut timestamp_2_arr = [0u8; 8];
+        timestamp_2_arr[0..8].copy_from_slice(message_2);
+
+        let mut timestamp_3_arr = [0u8; 8];
+        timestamp_3_arr[0..8].copy_from_slice(message_3);
+
+        let timestamp_1 : i64 = i64::from_le_bytes(timestamp_1_arr);
+        let timestamp_2 : i64 = i64::from_le_bytes(timestamp_2_arr);
+        let timestamp_3 : i64 = i64::from_le_bytes(timestamp_3_arr);
+
+        if (clock.unix_timestamp - timestamp_1).abs() > MAX_TIME_DIFF
+        || (clock.unix_timestamp - timestamp_2).abs() > MAX_TIME_DIFF
+        || (clock.unix_timestamp - timestamp_3).abs() > MAX_TIME_DIFF
+        {
+            return Err(AudiusError::InvalidInstruction.into());
+        }
+
+        return std::result::Result::Ok(());
     }
 
     /// Process [InitSignerGroup]().
@@ -378,6 +412,11 @@ impl Processor {
         // Confirm both signatures are valid
         // Sysvar Instruction account info
         let instruction_info = next_account_info(account_info_iter)?;
+
+        // clock sysvar account
+        let clock_account_info = next_account_info(account_info_iter)?;
+        let clock = Clock::from_account_info(&clock_account_info)?;
+
         // Index of current instruction in tx
         let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
 
@@ -462,6 +501,19 @@ impl Processor {
         }
 
         if instruction_data_3 != secp_instruction_3.data {
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
+
+        // Each signature data message is expected to be a recent unix timestamp
+        // If messages do not adhere to this format, the operation will fail
+        let timestamp_result = Self::validate_timestamp_messages(
+            &clock,
+            &signature_data_1.message,
+            &signature_data_2.message,
+            &signature_data_3.message,
+        );
+
+        if timestamp_result.is_err() {
             return Err(AudiusError::SignatureVerificationFailed.into());
         }
 

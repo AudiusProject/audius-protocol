@@ -179,6 +179,7 @@ pub fn validate_multiple_signatures_add_signer(
         AccountMeta::new_readonly(*signer_group, false),
         AccountMeta::new(*new_valid_signer, false),
         AccountMeta::new_readonly(sysvar::instructions::id(), false),
+        AccountMeta::new_readonly(sysvar::clock::id(), false),
     ];
     Ok(Instruction {
         program_id: *program_id,
