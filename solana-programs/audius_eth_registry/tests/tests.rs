@@ -16,6 +16,9 @@ use solana_sdk::{
     transport::TransportError,
 };
 
+use chrono::Utc;
+use chrono::prelude::*;
+
 pub fn program_test() -> ProgramTest {
     println!("audius_eth_registry id = {:?}", id());
     ProgramTest::new(
@@ -154,7 +157,7 @@ fn construct_eth_address(
 
 fn construct_signature_data(
     priv_key_raw: &[u8; 32],
-    message: &[u8; 30],
+    message: &[u8],
 ) -> (instruction::SignatureData, Instruction) {
     let priv_key = SecretKey::parse(priv_key_raw).unwrap();
 
@@ -569,7 +572,7 @@ async fn validate_signature_with_wrong_data() {
 }
 
 #[tokio::test]
-async fn validate_2_signatures() {
+async fn validate_3_signatures() {
     let mut rng = thread_rng();
     // Create the first eth key for ValidSigner1
     let key_1: [u8; 32] = rng.gen();
@@ -728,8 +731,11 @@ async fn validate_3_signatures_add_new_valid_signer() {
     let eth_address_3 = construct_eth_address(&secp_pubkey_3);
 
     // Shared message
-    let message = [8u8; 30];
+    let message_timestamp = Utc::now().timestamp();
+    // let message_timestamp = (Utc.ymd(2014, 7, 8).and_hms(9, 10, 11)).timestamp(); // `2014-07-08T09:10:11Z`
 
+    let message = message_timestamp.to_le_bytes();
+    // Old timestamp for testing
     let (signature_data_1, secp256_program_instruction_1) =
         construct_signature_data(&key_1, &message);
     let (signature_data_2, secp256_program_instruction_2) =
