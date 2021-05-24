@@ -454,7 +454,7 @@ const config = convict({
     default: ''
   },
   cidWhitelist: {
-    doc: 'Array of comma separated CIDs to whitelist',
+    doc: 'Array of comma separated CIDs to whitelist. Takes precedent over blacklist',
     format: String,
     env: 'cidWhitelist',
     default: 'QmWXhUToTQX623nroEPUsBPjrpEWFUCb158FPYLDcgDZLL'
