@@ -132,7 +132,7 @@
                 },
                 "playlist_id": {
                     "type": "string",
-                    "pattern": "^[a-z/- ]"
+                    "pattern": "^[a-zA-Z \/-]+$"
                 }
             }
         },
@@ -185,7 +185,7 @@
                                 "$ref": "#/definitions/PlaylistLibraryFolder"
                             },
                             {
-                                "$ref": "#/definitions/PlaylistLibraryPlaylist"
+                                "$ref": "#/definitions/PlaylistLibraryIdentifier"
                             }
                         ]
                     }

@@ -56,7 +56,7 @@ user_model_full = ns.clone("user_full", user_model, {
     "profile_picture_legacy": fields.String,
     "metadata_multihash": fields.String,
     "has_collectibles": fields.Boolean(required=True),
-    "playlist_library": fields.Nested(playlist_library)
+    "playlist_library": fields.Nested(playlist_library, allow_null=True)
 })
 
 user_replica_set = ns.model("user_replica_set", {

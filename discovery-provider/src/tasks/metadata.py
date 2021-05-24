@@ -36,5 +36,6 @@ user_metadata_format = {
     "location": None,
     "handle": None,
     "associated_wallets": None,
-    "collectibles": None
+    "collectibles": None,
+    "playlist_library": None,
 }
