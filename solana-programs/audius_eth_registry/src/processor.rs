@@ -232,6 +232,129 @@ impl Processor {
             .map_err(|e| e.into())
     }
 
+    /// Process [ClearValidSigner]().
+    pub fn process_mutliple_signatures_clear_valid_signer(
+        accounts: &[AccountInfo],
+        signature_data_1: SignatureData,
+        signature_data_2: SignatureData,
+        signature_data_3: SignatureData,
+    ) -> ProgramResult {
+        let account_info_iter = &mut accounts.iter();
+        // initialized valid signer account 1
+        let valid_signer_1_info = next_account_info(account_info_iter)?;
+        // initialized valid signer account 2
+        let valid_signer_2_info = next_account_info(account_info_iter)?;
+        // initialized valid signer account 3
+        let valid_signer_3_info = next_account_info(account_info_iter)?;
+        // signer group account
+        let signer_group_info = next_account_info(account_info_iter)?;
+        // incoming valid signer account
+        let old_valid_signer_info = next_account_info(account_info_iter)?;
+
+        // Confirm both signatures are valid
+        // Sysvar Instruction account info
+        let instruction_info = next_account_info(account_info_iter)?;
+        // Index of current instruction in tx
+        let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
+
+        if index == 0 {
+            return Err(AudiusError::Secp256InstructionLosing.into());
+        }
+
+        // Instruction data of 1st Secp256 program call
+        let secp_instruction_1 = sysvar::instructions::load_instruction_at(
+            (index - 3) as usize,
+            &instruction_info.data.borrow(),
+        )
+        .unwrap();
+
+        // Instruction data of 2nd Secp256 program call
+        let secp_instruction_2 = sysvar::instructions::load_instruction_at(
+            (index - 2) as usize,
+            &instruction_info.data.borrow(),
+        )
+        .unwrap();
+
+        // Instruction data of 3nd Secp256 program call
+        let secp_instruction_3 = sysvar::instructions::load_instruction_at(
+            (index - 1) as usize,
+            &instruction_info.data.borrow(),
+        )
+        .unwrap();
+
+        let valid_signer_1 = Box::new(ValidSigner::try_from_slice(
+            &valid_signer_1_info.data.borrow(),
+        )?);
+        let valid_signer_2 = Box::new(ValidSigner::try_from_slice(
+            &valid_signer_2_info.data.borrow(),
+        )?);
+        let valid_signer_3 = Box::new(ValidSigner::try_from_slice(
+            &valid_signer_3_info.data.borrow(),
+        )?);
+
+        if !valid_signer_1.is_initialized()
+            || !valid_signer_2.is_initialized()
+            || !valid_signer_3.is_initialized()
+        {
+            return Err(AudiusError::ValidSignerNotInitialized.into());
+        }
+
+        if valid_signer_1.signer_group != *signer_group_info.key
+            || valid_signer_2.signer_group != *signer_group_info.key
+            || valid_signer_3.signer_group != *signer_group_info.key
+        {
+            return Err(AudiusError::WrongSignerGroup.into());
+        }
+
+        let instruction_data_1 = Self::recover_instruction_data(&signature_data_1, &valid_signer_1);
+
+        let instruction_data_2 = Self::recover_instruction_data(&signature_data_2, &valid_signer_2);
+
+        let instruction_data_3 = Self::recover_instruction_data(&signature_data_3, &valid_signer_3);
+
+        if instruction_data_1 != secp_instruction_1.data {
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
+
+        if instruction_data_2 != secp_instruction_2.data {
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
+
+        if instruction_data_3 != secp_instruction_3.data {
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
+
+        let signer_group = Box::new(SignerGroup::try_from_slice(
+            &signer_group_info.data.borrow(),
+        )?);
+
+        if !signer_group.is_initialized() {
+            return Err(AudiusError::UninitializedSignerGroup.into());
+        }
+
+        // Reject if owner has been disabled
+        if !signer_group.owner_enabled {
+            return Err(AudiusError::SignerGroupOwnerDisabled.into());
+        }
+
+        let mut old_valid_signer = Box::new(ValidSigner::try_from_slice(
+            &old_valid_signer_info.data.borrow(),
+        )?);
+
+        if !old_valid_signer.is_initialized() {
+            return Err(AudiusError::ValidSignerNotInitialized.into());
+        }
+
+        if old_valid_signer.signer_group != *signer_group_info.key {
+            return Err(AudiusError::WrongSignerGroup.into());
+        }
+
+        old_valid_signer.version = Self::VALID_SIGNER_UNINITIALIZED_VERSION;
+        old_valid_signer
+            .serialize(&mut *old_valid_signer_info.data.borrow_mut())
+            .map_err(|e| e.into())
+    }
+
     /// Process [ValidateMultipleSignaturesAddSigner]()
     pub fn process_multiple_signatures_add_signer(
         accounts: &[AccountInfo],
