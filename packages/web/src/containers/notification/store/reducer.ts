@@ -18,7 +18,8 @@ const initialState: NotificationState = {
     userIds: [],
     status: undefined,
     limit: 0
-  }
+  },
+  playlistUpdates: []
 }
 
 const actionsMap: any = {
@@ -180,6 +181,26 @@ const actionsMap: any = {
   },
   [actions.TOGGLE_NOTIFICATION_PANEL](state: NotificationState) {
     return { ...state, panelIsOpen: !state.panelIsOpen }
+  },
+  [actions.SET_PLAYLIST_UPDATES](
+    state: NotificationState,
+    action: actions.SetPlaylistUpdates
+  ) {
+    return {
+      ...state,
+      playlistUpdates: action.playlistUpdates || []
+    }
+  },
+  [actions.UPDATE_PLAYLIST_VIEW](
+    state: NotificationState,
+    action: actions.UpdatePlaylistLastViewedAt
+  ) {
+    return {
+      ...state,
+      playlistUpdates: state.playlistUpdates.filter(
+        id => id !== action.playlistId
+      )
+    }
   }
 }
 

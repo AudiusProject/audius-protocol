@@ -81,6 +81,8 @@ import { SmartCollection } from 'models/Collection'
 import DeletedPage from 'containers/deleted-page/DeletedPage'
 import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
 import { getLocationPathname } from 'store/routing/selectors'
+import { getPlaylistUpdates } from 'containers/notification/store/selectors'
+import { updatePlaylistLastViewedAt } from 'containers/notification/store/actions'
 
 type OwnProps = {
   type: CollectionsPageType
@@ -147,8 +149,19 @@ class CollectionPage extends Component<
       smartCollection,
       tracks,
       pathname,
-      fetchCollectionSucceeded
+      fetchCollectionSucceeded,
+      type,
+      playlistUpdates,
+      updatePlaylistLastViewedAt
     } = this.props
+
+    if (
+      type === 'playlist' &&
+      this.state.playlistId &&
+      playlistUpdates.includes(this.state.playlistId)
+    ) {
+      updatePlaylistLastViewedAt(this.state.playlistId)
+    }
 
     if (!prevProps.smartCollection && smartCollection) {
       this.fetchCollection(pathname)
@@ -769,7 +782,8 @@ function makeMapStateToProps() {
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       buffering: getBuffering(state),
-      pathname: getLocationPathname(state)
+      pathname: getLocationPathname(state),
+      playlistUpdates: getPlaylistUpdates(state)
     }
   }
   return mapStateToProps
@@ -919,7 +933,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     setModalVisibility: () => dispatch(setVisibility(true)),
     onEditCollection: (playlistId: ID) =>
-      dispatch(openEditCollectionModal(playlistId))
+      dispatch(openEditCollectionModal(playlistId)),
+    updatePlaylistLastViewedAt: (playlistId: ID) =>
+      dispatch(updatePlaylistLastViewedAt(playlistId))
   }
 }
 

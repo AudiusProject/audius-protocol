@@ -184,6 +184,7 @@ export default interface NotificationState {
   status?: Status
   hasMore: boolean
   hasLoaded: boolean
+  playlistUpdates: number[]
 }
 
 export type ConnectedNotification = Notification & {
