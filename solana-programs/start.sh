@@ -8,11 +8,11 @@
     solana-keygen new -s --no-bip39-passphrase
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json
 
-    while test $(solana balance feepayer.json | sed 's/\(\.\| \).*//') -lt 1; do
+    while test $(solana balance feepayer.json | sed 's/\(\.\| \).*//') -lt 2; do
         solana airdrop 0.5 feepayer.json
     done
 
-    while test $(solana balance | sed 's/\(\.\| \).*//') -lt 3; do
+    while test $(solana balance | sed 's/\(\.\| \).*//') -lt 6; do
         solana airdrop 0.5
     done
 
@@ -27,7 +27,7 @@
     fi
     sed -i "s/$cur_address/$new_address/g" src/lib.rs
 
-    while test $(solana balance | sed 's/\(\.\| \).*//') -lt 3; do
+    while test $(solana balance | sed 's/\(\.\| \).*//') -lt 6; do
         solana airdrop 0.5
     done
 
