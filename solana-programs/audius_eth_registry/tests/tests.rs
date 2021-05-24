@@ -834,6 +834,24 @@ async fn validate_3_signatures_add_new_valid_signer() {
     .await
     .unwrap();
 
+    // Disable SignerGroup owner
+    process_tx_init_disable_signer_group_owner(
+        &signer_group.pubkey(),
+        &group_owner,
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+    )
+    .await
+    .unwrap();
+
+    // Confirm owner has been disabled
+    let disabled_signer_group_account = get_account(&mut banks_client, &signer_group.pubkey()).await;
+    let disabled_signer_group_data =
+        state::SignerGroup::try_from_slice(&disabled_signer_group_account.data.as_slice()).unwrap();
+    assert!(disabled_signer_group_data.is_initialized());
+    assert!(!disabled_signer_group_data.owner_enabled);
+
     // Initialize ValidSigner ethereum address information
     let new_key: [u8; 32] = rng.gen();
     let new_priv_key = SecretKey::parse(&new_key).unwrap();
