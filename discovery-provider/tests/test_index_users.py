@@ -127,14 +127,14 @@ ipfs_client = IPFSClient({
                     "type": "folder",
                     "name": "my favorite playlists",
                     "contents": [
-                        { "type": "playlist", "playlist_id": 500 },
-                        { "type": "explore_playlist", "playlist_id": "heavy-rotation" }
+                        {"type": "playlist", "playlist_id": 500},
+                        {"type": "explore_playlist", "playlist_id": "heavy-rotation"}
                     ]
                 },
-                { "type": "playlist", "playlist_id": 501 },
-                { "type": "playlist", "playlist_id": 502 },
-                { "type": "explore_playlist", "playlist_id": "feeling-lucky" },
-                { "type": "playlist", "playlist_id": 503 },
+                {"type": "playlist", "playlist_id": 501},
+                {"type": "playlist", "playlist_id": 502},
+                {"type": "explore_playlist", "playlist_id": "feeling-lucky"},
+                {"type": "playlist", "playlist_id": 503},
             ]
         },
         "user_id": 1
