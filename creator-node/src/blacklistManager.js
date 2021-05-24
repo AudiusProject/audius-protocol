@@ -5,8 +5,6 @@ const config = require('./config')
 
 const CID_WHITELIST = new Set(config.get('cidWhitelist').split(','))
 
-console.log('CID_WHITELIST', CID_WHITELIST)
-
 const REDIS_SET_BLACKLIST_TRACKID_KEY = 'SET.BLACKLIST.TRACKID'
 const REDIS_SET_BLACKLIST_USERID_KEY = 'SET.BLACKLIST.USERID'
 const REDIS_SET_BLACKLIST_SEGMENTCID_KEY = 'SET.BLACKLIST.SEGMENTCID'
