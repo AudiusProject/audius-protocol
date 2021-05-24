@@ -110,6 +110,44 @@ fn command_create_signer_group(config: &Config) -> CommandResult {
     Ok(Some(transaction))
 }
 
+fn command_query_eth_registry(
+    config: &Config
+) -> CommandResult {
+    println!(
+        "Querying program details at {}",
+        &audius_eth_registry::id()
+    );
+
+    // Query all accounts owned by this program
+    let owned_accounts = config.rpc_client.get_program_accounts(&audius_eth_registry::id())?;
+    for (address, account) in owned_accounts{
+
+        // Attempt tor ecover data
+        let signer_group_data =
+            SignerGroup::try_from_slice(&account.data.as_slice());
+
+        if !signer_group_data.is_err() {
+            let parsed_data = signer_group_data.unwrap();
+            println!("SignerGroup: {:?}", address);
+            println!("{:?}", parsed_data);
+            continue;
+        }
+
+        let valid_signer_data =
+            ValidSigner::try_from_slice(&account.data.as_slice());
+        if !valid_signer_data.is_err() {
+            let parsed_data = valid_signer_data.unwrap();
+            println!("ValidSigner: {:?}", address);
+            println!("{:?}", parsed_data);
+        }
+    }
+    // TODO: Make this not an error
+    Err(format!(
+        "Query complete",
+    )
+    .into())
+}
+
 fn command_query_signer_group(
     config: &Config,
     signer_group: &Pubkey,
@@ -414,6 +452,10 @@ fn main() {
                 )
         )
         .subcommand(
+            SubCommand::with_name("query-eth-registry")
+                .about("Describes all accounts associated with the audius eth registry")
+        )
+        .subcommand(
             SubCommand::with_name("clear-valid-signer")
                 .about("Remove valid signer from the signer group")
                 .arg(
@@ -502,6 +544,7 @@ fn main() {
 
     let _ = match matches.subcommand() {
         ("create-signer-group", Some(_)) => command_create_signer_group(&config),
+        ("query-eth-registry", Some(_)) => command_query_eth_registry(&config),
         ("query-signer-group", Some(arg_matches)) => {
             let signer_group: Pubkey = pubkey_of(arg_matches, "signer_group").unwrap();
             command_query_signer_group(&config, &signer_group)
