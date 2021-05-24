@@ -382,10 +382,36 @@ module.exports = function (app) {
         announcementsAfterFilter
       )
 
+      let playlistUpdates = []
+      const user = await models.User.findOne({
+        attributes: ['walletAddress'],
+        where: { id: userId }
+      })
+      const walletAddress = user && user.walletAddress
+      if (walletAddress) {
+        const result = await models.UserEvents.findOne({
+          attributes: ['playlistUpdates'],
+          where: { walletAddress }
+        })
+        const playlistUpdatesResult = result && result.playlistUpdates
+        if (playlistUpdatesResult) {
+          const thirtyDaysAgo = moment().utc().subtract(30, 'days').valueOf()
+          playlistUpdates = Object.keys(playlistUpdatesResult)
+            .filter(playlistId =>
+              playlistUpdatesResult[playlistId].userLastViewed >= thirtyDaysAgo &&
+              playlistUpdatesResult[playlistId].lastUpdated >= thirtyDaysAgo &&
+              playlistUpdatesResult[playlistId].userLastViewed < playlistUpdatesResult[playlistId].lastUpdated
+            )
+            .map(id => parseInt(id))
+            .filter(Boolean)
+        }
+      }
+
       return successResponse({
         message: 'success',
         notifications: userNotifications.slice(0, limit),
-        totalUnread: unreadAnnouncementCount + unViewedCount
+        totalUnread: unreadAnnouncementCount + unViewedCount,
+        playlistUpdates
       })
     } catch (err) {
       return errorResponseBadRequest({
