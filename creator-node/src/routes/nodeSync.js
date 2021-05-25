@@ -182,7 +182,7 @@ module.exports = function (app) {
     }
 
     if (immediate) {
-      let errorObj = await _nodesync(serviceRegistry, req.logger, walletPublicKeys, creatorNodeEndpoint, req.body.blockNumber)
+      let errorObj = await _nodesync(serviceRegistry, req.logger, walletPublicKeys, creatorNodeEndpoint, req.body.blockNumber, req.logContext)
       if (errorObj) {
         await SyncHistoryAggregator.recordSyncFail(req.logContext)
         return errorResponseServerError(errorObj)
@@ -201,7 +201,7 @@ module.exports = function (app) {
       }
       syncQueue[wallet] = setTimeout(
         async function () {
-          return _nodesync(serviceRegistry, req.logger, [wallet], creatorNodeEndpoint, req.body.blockNumber)
+          return _nodesync(serviceRegistry, req.logger, [wallet], creatorNodeEndpoint, req.body.blockNumber, req.logContext)
         },
         debounceTime
       )
@@ -250,7 +250,7 @@ module.exports = function (app) {
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
  */
-async function _nodesync (serviceRegistry, logger, walletPublicKeys, creatorNodeEndpoint, blockNumber) {
+async function _nodesync (serviceRegistry, logger, walletPublicKeys, creatorNodeEndpoint, blockNumber, logContext) {
   const { redis } = serviceRegistry
 
   const start = Date.now()
@@ -566,9 +566,11 @@ async function _nodesync (serviceRegistry, logger, walletPublicKeys, creatorNode
         throw new Error(e)
       }
     }
+    await SyncHistoryAggregator.recordSyncSuccess(logContext)
   } catch (e) {
     logger.error(redisKey, 'Sync Error for wallets ', walletPublicKeys, `|| from endpoint ${creatorNodeEndpoint} ||`, e)
     errorObj = e
+    await SyncHistoryAggregator.recordSyncFail(logContext)
   } finally {
     // Release all redis locks
     for (let wallet of walletPublicKeys) {
