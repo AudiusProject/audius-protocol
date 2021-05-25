@@ -1,6 +1,11 @@
 use audius_eth_registry::{
     instruction::{
-        clear_valid_signer, init_signer_group, init_valid_signer, validate_signature, SignatureData,
+        clear_valid_signer,
+        init_signer_group,
+        init_valid_signer,
+        validate_signature,
+        disable_signer_group_owner,
+        SignatureData,
     },
     state::{SecpSignatureOffsets, SignerGroup, ValidSigner},
 };
@@ -100,6 +105,97 @@ fn command_create_signer_group(config: &Config) -> CommandResult {
 
     transaction.sign(
         &[config.fee_payer.as_ref(), &signer_group],
+        recent_blockhash,
+    );
+    Ok(Some(transaction))
+}
+
+fn command_query_eth_registry(
+    config: &Config
+) -> CommandResult {
+    println!(
+        "Querying program details at {}",
+        &audius_eth_registry::id()
+    );
+
+    // Query all accounts owned by this program
+    let owned_accounts = config.rpc_client.get_program_accounts(&audius_eth_registry::id())?;
+    for (address, account) in owned_accounts{
+
+        // Attempt tor ecover data
+        let signer_group_data =
+            SignerGroup::try_from_slice(&account.data.as_slice());
+
+        if !signer_group_data.is_err() {
+            let parsed_data = signer_group_data.unwrap();
+            println!("SignerGroup: {:?}", address);
+            println!("{:?}", parsed_data);
+            continue;
+        }
+
+        let valid_signer_data =
+            ValidSigner::try_from_slice(&account.data.as_slice());
+        if !valid_signer_data.is_err() {
+            let parsed_data = valid_signer_data.unwrap();
+            println!("ValidSigner: {:?}", address);
+            println!("{:?}", parsed_data);
+        }
+    }
+    // TODO: Make this not an error
+    Err(format!(
+        "Query complete",
+    )
+    .into())
+}
+
+fn command_query_signer_group(
+    config: &Config,
+    signer_group: &Pubkey,
+) -> CommandResult {
+    println!(
+        "Querying signer group account {}",
+        signer_group
+    );
+
+    let signer_acc = config.rpc_client.get_account_data(signer_group)?;
+    let signer_group_data =
+        SignerGroup::try_from_slice(&signer_acc.as_slice()).unwrap();
+
+    println!(
+        "SignerGroup@{}, {:?}",
+        signer_group,
+        signer_group_data
+    );
+
+    // TODO: Make this not an error
+    Err(format!(
+        "Query complete",
+    )
+    .into())
+}
+
+fn command_disable_signer_group_owner(
+    config: &Config,
+    signer_group: &Pubkey
+) -> CommandResult {
+    let mut transaction = Transaction::new_with_payer(
+        &[disable_signer_group_owner(
+            &audius_eth_registry::id(),
+            signer_group,
+            &config.owner.pubkey(),
+        )
+        .unwrap()],
+        Some(&config.fee_payer.pubkey()),
+    );
+
+    let (recent_blockhash, fee_calculator) = config.rpc_client.get_recent_blockhash()?;
+    check_fee_payer_balance(config, fee_calculator.calculate_fee(&transaction.message()))?;
+
+    transaction.sign(
+        &[
+            config.fee_payer.as_ref(),
+            config.owner.as_ref() // signer group owner key
+        ],
         recent_blockhash,
     );
     Ok(Some(transaction))
@@ -330,6 +426,36 @@ fn main() {
                 ),
         )
         .subcommand(
+            SubCommand::with_name("query-signer-group")
+                .about("query details about a deployed signer_group")
+                .arg(
+                    Arg::with_name("signer_group")
+                        .index(1)
+                        .validator(is_pubkey)
+                        .value_name("ADDRESS")
+                        .takes_value(true)
+                        .required(true)
+                        .help("Signer group to query"),
+                )
+        )
+        .subcommand(
+            SubCommand::with_name("disable-signer-group-owner")
+                .about("issue disable command")
+                .arg(
+                    Arg::with_name("signer_group")
+                        .index(1)
+                        .validator(is_pubkey)
+                        .value_name("ADDRESS")
+                        .takes_value(true)
+                        .required(true)
+                        .help("Signer group which will have the owner key disabled"),
+                )
+        )
+        .subcommand(
+            SubCommand::with_name("query-eth-registry")
+                .about("Describes all accounts associated with the audius eth registry")
+        )
+        .subcommand(
             SubCommand::with_name("clear-valid-signer")
                 .about("Remove valid signer from the signer group")
                 .arg(
@@ -418,6 +544,15 @@ fn main() {
 
     let _ = match matches.subcommand() {
         ("create-signer-group", Some(_)) => command_create_signer_group(&config),
+        ("query-eth-registry", Some(_)) => command_query_eth_registry(&config),
+        ("query-signer-group", Some(arg_matches)) => {
+            let signer_group: Pubkey = pubkey_of(arg_matches, "signer_group").unwrap();
+            command_query_signer_group(&config, &signer_group)
+        }
+        ("disable-signer-group-owner", Some(arg_matches)) => {
+            let signer_group: Pubkey = pubkey_of(arg_matches, "signer_group").unwrap();
+            command_disable_signer_group_owner(&config, &signer_group)
+        }
         ("create-valid-signer", Some(arg_matches)) => {
             let signer_group: Pubkey = pubkey_of(arg_matches, "signer_group").unwrap();
             let eth_address: String = value_t_or_exit!(arg_matches, "eth_address", String);
