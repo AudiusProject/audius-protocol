@@ -249,7 +249,10 @@ def process_solana_plays(solana_client):
     try:
         base58.b58decode(TRACK_LISTEN_PROGRAM)
     except ValueError:
-        logger.info(f"index_solana_plays.py | Invalid TrackListenCount program ({TRACK_LISTEN_PROGRAM}) configured, exiting.")
+        logger.info(
+            f"index_solana_plays.py"
+            f"Invalid TrackListenCount program ({TRACK_LISTEN_PROGRAM}) configured, exiting."
+        )
         return
 
     db = index_solana_plays.db
