@@ -14,7 +14,7 @@ use solana_program::{
     pubkey::Pubkey,
     sysvar,
     sysvar::clock::Clock,
-    sysvar::Sysvar
+    sysvar::Sysvar,
 };
 
 const MAX_TIME_DIFF: i64 = 2000000; // this is about 3 minutes
@@ -81,7 +81,7 @@ impl Processor {
     }
 
     /// Process [validate timestamp messages] ()
-    pub fn validate_timestamp_messages (
+    pub fn validate_timestamp_messages(
         clock: &sysvar::clock::Clock,
         message_1: &Vec<u8>,
         message_2: &Vec<u8>,
@@ -96,13 +96,13 @@ impl Processor {
         let mut timestamp_3_arr = [0u8; 8];
         timestamp_3_arr[0..8].copy_from_slice(message_3);
 
-        let timestamp_1 : i64 = i64::from_le_bytes(timestamp_1_arr);
-        let timestamp_2 : i64 = i64::from_le_bytes(timestamp_2_arr);
-        let timestamp_3 : i64 = i64::from_le_bytes(timestamp_3_arr);
+        let timestamp_1: i64 = i64::from_le_bytes(timestamp_1_arr);
+        let timestamp_2: i64 = i64::from_le_bytes(timestamp_2_arr);
+        let timestamp_3: i64 = i64::from_le_bytes(timestamp_3_arr);
 
         if (clock.unix_timestamp - timestamp_1).abs() > MAX_TIME_DIFF
-        || (clock.unix_timestamp - timestamp_2).abs() > MAX_TIME_DIFF
-        || (clock.unix_timestamp - timestamp_3).abs() > MAX_TIME_DIFF
+            || (clock.unix_timestamp - timestamp_2).abs() > MAX_TIME_DIFF
+            || (clock.unix_timestamp - timestamp_3).abs() > MAX_TIME_DIFF
         {
             return Err(AudiusError::InvalidInstruction.into());
         }
@@ -266,8 +266,8 @@ impl Processor {
             .map_err(|e| e.into())
     }
 
-    /// Process [ClearValidSigner]().
-    pub fn process_mutliple_signatures_clear_valid_signer(
+    /// Process [ValidateMultipleSignaturesClearValidSigner]().
+    pub fn process_multiple_signatures_clear_valid_signer(
         accounts: &[AccountInfo],
         signature_data_1: SignatureData,
         signature_data_2: SignatureData,
@@ -695,6 +695,19 @@ impl Processor {
             AudiusInstruction::ClearValidSigner => {
                 msg!("Instruction: ClearValidSigner");
                 Self::process_clear_valid_signer(accounts)
+            }
+            AudiusInstruction::ValidateMultipleSignaturesClearValidSigner(
+                signature_1,
+                signature_2,
+                signature_3,
+            ) => {
+                msg!("Instruction: ValidateMultipleSignaturesClearValidSigner");
+                Self::process_multiple_signatures_clear_valid_signer(
+                    accounts,
+                    signature_1,
+                    signature_2,
+                    signature_3,
+                )
             }
             AudiusInstruction::ValidateSignature(signature) => {
                 msg!("Instruction: ValidateSignature");
