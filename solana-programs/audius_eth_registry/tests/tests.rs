@@ -517,8 +517,9 @@ async fn validate_3_signatures_clear_valid_signer() {
     )
     .await;
 
-    // Shared message
-    let message = [8u8; 30];
+    // Shared timestamp message
+    let message_timestamp = Utc::now().timestamp();
+    let message = message_timestamp.to_le_bytes();
 
     let (signature_data_1, secp256_program_instruction_1) =
         construct_signature_data(&key_1, &message);

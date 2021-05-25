@@ -288,6 +288,11 @@ impl Processor {
         // Confirm both signatures are valid
         // Sysvar Instruction account info
         let instruction_info = next_account_info(account_info_iter)?;
+
+        // clock sysvar account
+        let clock_account_info = next_account_info(account_info_iter)?;
+        let clock = Clock::from_account_info(&clock_account_info)?;
+
         // Index of current instruction in tx
         let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
 
@@ -366,9 +371,17 @@ impl Processor {
             return Err(AudiusError::UninitializedSignerGroup.into());
         }
 
-        // Reject if owner has been disabled
-        if !signer_group.owner_enabled {
-            return Err(AudiusError::SignerGroupOwnerDisabled.into());
+        // Each signature data message is expected to be a recent unix timestamp
+        // If messages do not adhere to this format, the operation will fail
+        let timestamp_result = Self::validate_timestamp_messages(
+            &clock,
+            &signature_data_1.message,
+            &signature_data_2.message,
+            &signature_data_3.message,
+        );
+
+        if timestamp_result.is_err() {
+            return Err(AudiusError::SignatureVerificationFailed.into());
         }
 
         let mut old_valid_signer = Box::new(ValidSigner::try_from_slice(
