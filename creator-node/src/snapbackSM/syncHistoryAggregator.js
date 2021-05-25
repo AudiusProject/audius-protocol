@@ -1,6 +1,10 @@
+const moment = require('moment')
+
 const redisClient = require('../redis')
 const { logger: genericLogger } = require('../logging')
-const { keys } = require('../redis')
+const config = require('../config')
+
+const CREATOR_NODE_ENDPOINT = config.get('creatorNodeEndpoint')
 
 const SYNC_STATES = Object.freeze({
   triggered: 'triggered',
@@ -21,31 +25,30 @@ const EXPIRATION = 7 /* days */ * 24 /* hr */ * 60 /* min */ * 60 /* s */
 // successfully or unsuccessfully take the primary's exported data, and update its own state
 
 class SyncHistoryAggregator {
-  static async recordSyncSuccess (creatorNodeEndpoint, logContext) {
+  static async recordSyncSuccess (logContext) {
     await SyncHistoryAggregator.recordSyncData({
-      creatorNodeEndpoint,
       state: SYNC_STATES.success,
-      timeOfEvent: Date.now(),
+      timeOfEvent: moment().format('MM-DD-YYYYTHH:MM:SS:sss'),
       logContext
     })
   }
 
-  static async recordSyncFail (creatorNodeEndpoint, logContext) {
+  static async recordSyncFail (logContext) {
     await SyncHistoryAggregator.recordSyncData({
-      creatorNodeEndpoint,
       state: SYNC_STATES.fail,
-      timeOfEvent: Date.now(),
+      timeOfEvent: moment().format('MM-DD-YYYYTHH:MM:SS:sss'),
       logContext
     })
   }
 
-  static async recordSyncData ({ creatorNodeEndpoint, state, timeOfEvent, logContext }) {
+  static async recordSyncData ({ state, timeOfEvent, logContext }) {
     const logger = genericLogger.child(logContext)
 
     try {
       // Update aggregate sync data
-      const aggregateSyncKey = SyncHistoryAggregator.getAggregateSyncKey(creatorNodeEndpoint)
-      if (!redisClient.get(aggregateSyncKey)) {
+      const aggregateSyncKey = SyncHistoryAggregator.getAggregateSyncKey(CREATOR_NODE_ENDPOINT)
+      const existingAggregateSyncEntry = await redisClient.get(aggregateSyncKey)
+      if (!existingAggregateSyncEntry) {
       // Init aggregate sync data
         await redisClient.set(aggregateSyncKey,
           JSON.stringify({
@@ -64,7 +67,7 @@ class SyncHistoryAggregator {
       currentAggregateData[SYNC_STATES.triggered] += 1
 
       // Get the existing TTL and update the key with it
-      let aggregateSyncKeyTTL = SyncHistoryAggregator.getKeyTTL(aggregateSyncKey)
+      let aggregateSyncKeyTTL = await SyncHistoryAggregator.getKeyTTL(aggregateSyncKey)
       await redisClient.set(aggregateSyncKey,
         JSON.stringify(currentAggregateData),
         'EX',
@@ -72,8 +75,9 @@ class SyncHistoryAggregator {
       )
 
       // Update latest sync data
-      const latestSyncKey = SyncHistoryAggregator.getLatestSyncKey(creatorNodeEndpoint)
-      if (!redisClient.get(latestSyncKey)) {
+      const latestSyncKey = SyncHistoryAggregator.getLatestSyncKey(CREATOR_NODE_ENDPOINT)
+      const existingLatestSyncEntry = await redisClient.get(latestSyncKey)
+      if (!existingLatestSyncEntry) {
         // Init latest sync data
         await redisClient.set(latestSyncKey,
           JSON.stringify({
@@ -87,51 +91,42 @@ class SyncHistoryAggregator {
 
       let currentLatestSyncData = await redisClient.get(latestSyncKey)
       currentLatestSyncData = JSON.parse(currentLatestSyncData)
-      currentLatestSyncData[state] = Date.now().format('MM-DD-YYYYTHH:MM:SS:ssss') // or some format
+      currentLatestSyncData[state] = timeOfEvent
 
       // Get the existing TTL and update the key with it
-      let latestSyncKeyTTL = SyncHistoryAggregator.getKeyTTL(latestSyncKey)
+      let latestSyncKeyTTL = await SyncHistoryAggregator.getKeyTTL(latestSyncKey)
       await redisClient.set(latestSyncKey,
         JSON.stringify(currentLatestSyncData),
         'EX',
         latestSyncKeyTTL
       )
 
-      logger.info(`Successfully tracked ${state} sync at ${timeOfEvent} from ${creatorNodeEndpoint}`)
+      logger.info(`SyncHistoryAggregator - Successfully tracked ${state} sync at ${timeOfEvent} from ${CREATOR_NODE_ENDPOINT}`)
     } catch (e) {
       // Only log error to not block any main thread
-      logger.error(`Failed to track ${state} sync at ${timeOfEvent} from ${creatorNodeEndpoint}: ${e.toString()}`)
+      logger.error(`SyncHistoryAggregator - Failed to track ${state} sync at ${timeOfEvent} from ${CREATOR_NODE_ENDPOINT}: ${e.toString()}`)
     }
   }
 
-  static getKeyTTL (key) {
-    redisClient.ttl(key, (err, ttl) => {
-      if (err) {
-        // If there is an error, use the existing default expiration
-        return EXPIRATION
-      } else {
-        // Else, use the retrieved value
-        return ttl
-      }
-    })
+  static async getKeyTTL (key) {
+    const ttl = await redisClient.ttl(key)
+    return ttl || EXPIRATION
   }
 
-  // ------------------- below methods can be used in determing peer health -------------------
-
-  static getAggregateSyncData (creatorNodeEndpoint) {
-    const aggregateSyncKey = SyncHistoryAggregator.getAggregateSyncKey(creatorNodeEndpoint)
-    const currentAggregateData = redisClient.get(aggregateSyncKey)
+  static async getAggregateSyncData () {
+    const aggregateSyncKey = SyncHistoryAggregator.getAggregateSyncKey(CREATOR_NODE_ENDPOINT)
+    const currentAggregateData = await redisClient.get(aggregateSyncKey)
 
     // Structure: {triggered: <number>, success: <number>, fail: <number>}
-    return currentAggregateData
+    return currentAggregateData ? JSON.parse(currentAggregateData) : {}
   }
 
-  static getLatestSyncData (creatorNodeEndpoint) {
-    const latestSyncKey = SyncHistoryAggregator.getLatestSyncKey(creatorNodeEndpoint)
-    const currentLatestSyncData = redisClient.get(latestSyncKey)
+  static async getLatestSyncData () {
+    const latestSyncKey = SyncHistoryAggregator.getLatestSyncKey(CREATOR_NODE_ENDPOINT)
+    const currentLatestSyncData = await redisClient.get(latestSyncKey)
 
     // Structure: {success: <latest date>, fail: <latest date>}
-    return currentLatestSyncData
+    return currentLatestSyncData ? JSON.parse(currentLatestSyncData) : {}
   }
 
   static getAggregateSyncKey (creatorNodeEndpoint) {

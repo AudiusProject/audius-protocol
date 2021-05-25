@@ -167,12 +167,11 @@ module.exports = function (app) {
 
     // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
 
-    const url = '' // TODO: get url in structure of protocol + host + port (if exists)
     if (walletPublicKeys.length === 0) {
-      await SyncHistoryAggregator.recordSyncFail(url, req.logContext)
+      await SyncHistoryAggregator.recordSyncFail(req.logContext)
       return errorResponseBadRequest(`Must provide one wallet param`)
     } else if (walletPublicKeys.length > 1) {
-      await SyncHistoryAggregator.recordSyncFail(url, req.logContext)
+      await SyncHistoryAggregator.recordSyncFail(req.logContext)
       return errorResponseBadRequest(`Multi wallet syncs are temporarily disabled`)
     }
 
@@ -185,10 +184,10 @@ module.exports = function (app) {
     if (immediate) {
       let errorObj = await _nodesync(serviceRegistry, req.logger, walletPublicKeys, creatorNodeEndpoint, req.body.blockNumber)
       if (errorObj) {
-        await SyncHistoryAggregator.recordSyncFail(url, req.logContext)
+        await SyncHistoryAggregator.recordSyncFail(req.logContext)
         return errorResponseServerError(errorObj)
       } else {
-        await SyncHistoryAggregator.recordSyncSuccess(url, req.logContext)
+        await SyncHistoryAggregator.recordSyncSuccess(req.logContext)
         return successResponse()
       }
     }
@@ -209,13 +208,13 @@ module.exports = function (app) {
       req.logger.info('set timeout for', wallet, 'time', Date.now())
     }
 
-    await SyncHistoryAggregator.recordSyncSuccess(url, req.logContext)
+    await SyncHistoryAggregator.recordSyncSuccess(req.logContext)
     return successResponse()
   }))
 
-  app.get('/sync_data', handleResponse(async (req, res) => {
-    const aggregateSyncData = SyncHistoryAggregator.getAggregateSyncData(req.originalUrl)
-    const latestSyncData = SyncHistoryAggregator.getLatestSyncData(req.originalUrl)
+  app.get('/sync_history', handleResponse(async (req, res) => {
+    const aggregateSyncData = await SyncHistoryAggregator.getAggregateSyncData()
+    const latestSyncData = await SyncHistoryAggregator.getLatestSyncData()
 
     return successResponse({ aggregateSyncData, latestSyncData })
   }))
