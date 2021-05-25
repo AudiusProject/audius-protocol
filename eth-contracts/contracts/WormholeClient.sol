@@ -64,7 +64,7 @@ contract WormholeClient is InitializableV2 {
      * @param _recipient - foreign chain address of recipient
      * @param _targetChain -  id of the chain to transfer to
      * @param _nonce - nonce
-     * @param _refundDust
+     * @param _refundDust - bool to refund dust
      */
     function lockAssets(
         address _asset,
