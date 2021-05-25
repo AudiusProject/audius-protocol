@@ -168,10 +168,8 @@ module.exports = function (app) {
     // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
 
     if (walletPublicKeys.length === 0) {
-      await SyncHistoryAggregator.recordSyncFail(req.logContext)
       return errorResponseBadRequest(`Must provide one wallet param`)
     } else if (walletPublicKeys.length > 1) {
-      await SyncHistoryAggregator.recordSyncFail(req.logContext)
       return errorResponseBadRequest(`Multi wallet syncs are temporarily disabled`)
     }
 
@@ -184,10 +182,8 @@ module.exports = function (app) {
     if (immediate) {
       let errorObj = await _nodesync(serviceRegistry, req.logger, walletPublicKeys, creatorNodeEndpoint, req.body.blockNumber, req.logContext)
       if (errorObj) {
-        await SyncHistoryAggregator.recordSyncFail(req.logContext)
         return errorResponseServerError(errorObj)
       } else {
-        await SyncHistoryAggregator.recordSyncSuccess(req.logContext)
         return successResponse()
       }
     }
@@ -208,7 +204,6 @@ module.exports = function (app) {
       req.logger.info('set timeout for', wallet, 'time', Date.now())
     }
 
-    await SyncHistoryAggregator.recordSyncSuccess(req.logContext)
     return successResponse()
   }))
 
