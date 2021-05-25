@@ -860,3 +860,22 @@ playlist_id={self.playlist_id},\
 is_album={self.is_album},\
 repost_count={self.repost_count},\
 save_count={self.save_count}>"
+
+class SkippedTransaction(Base):
+    __tablename__ = "skipped_transactions"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    blocknumber = Column(Integer, nullable=False)
+    blockhash = Column(String, nullable=False)
+    transactionhash = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<SkippedTransaction(\
+id={self.id},\
+blocknumber={self.blocknumber},\
+blockhash={self.blockhash},\
+transactionhash={self.transactionhash},\
+created_at={self.created_at},\
+updated_at={self.updated_at})>"
