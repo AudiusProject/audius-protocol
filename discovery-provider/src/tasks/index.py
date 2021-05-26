@@ -431,8 +431,7 @@ def revert_blocks(self, db, revert_blocks_list):
                 session.query(AssociatedWallet).filter(AssociatedWallet.blockhash == revert_hash).all()
             )
 
-            # revert all of above transactions
-
+            # Revert all of above transactions
             for save_to_revert in revert_save_entries:
                 save_item_id = save_to_revert.save_item_id
                 save_user_id = save_to_revert.user_id
