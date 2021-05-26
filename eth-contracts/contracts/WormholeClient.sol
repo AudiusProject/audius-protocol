@@ -14,7 +14,7 @@ interface Wormhole {
         uint8 target_chain,
         uint32 nonce,
         bool refund_dust
-    ) public;
+    ) external;
 }
 
 contract WormholeClient is InitializableV2 {
@@ -76,7 +76,7 @@ contract WormholeClient is InitializableV2 {
     ) public {
         transferToken.safeTransferFrom(msg.sender, address(this), _amount);
 
-        Wormhole.lockAssets(
+        wormhole.lockAssets(
             _asset,
             _amount,
             _recipient,
