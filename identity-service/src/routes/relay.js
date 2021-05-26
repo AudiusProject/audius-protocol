@@ -6,6 +6,7 @@ module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
   // method sig has come from sender address as well
   app.post('/relay', handleResponse(async (req, res, next) => {
+    return errorResponseBadRequest({ message: 'temporarily disabling relay txns' })
     let body = req.body
     const redis = req.app.get('redis')
 
