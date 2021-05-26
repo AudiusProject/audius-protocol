@@ -46,60 +46,23 @@ class SyncHistoryAggregator {
 
     try {
       // Update aggregate sync data
-      const aggregateSyncKey = SyncHistoryAggregator.getAggregateSyncKey(CREATOR_NODE_ENDPOINT)
-      const existingAggregateSyncEntry = await redisClient.get(aggregateSyncKey)
-      if (!existingAggregateSyncEntry) {
-      // Init aggregate sync data
-        await redisClient.set(aggregateSyncKey,
-          JSON.stringify({
-            triggered: 0,
-            success: 0,
-            fail: 0
-          }),
-          'EX', // seconds -- Set the specified expire time, in seconds.
-          EXPIRATION
-        )
-      }
+      const aggregateSyncKeys = SyncHistoryAggregator.getAggregateSyncKeys(CREATOR_NODE_ENDPOINT)
 
-      let currentAggregateData = await redisClient.get(aggregateSyncKey)
-      currentAggregateData = JSON.parse(currentAggregateData)
-      currentAggregateData[state] += 1
-      currentAggregateData[SYNC_STATES.triggered] += 1
+      // Get the TTL if the key exists for the number of triggered syncs, and update the value by 1
+      const aggregateSyncKeyTriggeredTTL = await this.getKeyTTL(aggregateSyncKeys.triggered)
+      await redisClient.incr(aggregateSyncKeys.triggered)
+      await redisClient.expire(aggregateSyncKeys.triggered, aggregateSyncKeyTriggeredTTL)
 
-      // Get the existing TTL and update the key with it
-      let aggregateSyncKeyTTL = await SyncHistoryAggregator.getKeyTTL(aggregateSyncKey)
-      await redisClient.set(aggregateSyncKey,
-        JSON.stringify(currentAggregateData),
-        'EX',
-        aggregateSyncKeyTTL
-      )
+      // Get the TTL if the key exists for the number of `state` syncs, and update the value by 1
+      const aggregateSyncKeyStateTTL = await this.getKeyTTL(aggregateSyncKeys[state])
+      await redisClient.incr(aggregateSyncKeys[state])
+      await redisClient.expire(aggregateSyncKeys[state], aggregateSyncKeyStateTTL)
 
       // Update latest sync data
-      const latestSyncKey = SyncHistoryAggregator.getLatestSyncKey(CREATOR_NODE_ENDPOINT)
-      const existingLatestSyncEntry = await redisClient.get(latestSyncKey)
-      if (!existingLatestSyncEntry) {
-        // Init latest sync data
-        await redisClient.set(latestSyncKey,
-          JSON.stringify({
-            success: null,
-            fail: null
-          }),
-          'EX',
-          EXPIRATION
-        )
-      }
+      const latestSyncKeys = SyncHistoryAggregator.getLatestSyncKeys(CREATOR_NODE_ENDPOINT)
 
-      let currentLatestSyncData = await redisClient.get(latestSyncKey)
-      currentLatestSyncData = JSON.parse(currentLatestSyncData)
-      currentLatestSyncData[state] = timeOfEvent
-
-      // Get the existing TTL and update the key with it
-      let latestSyncKeyTTL = await SyncHistoryAggregator.getKeyTTL(latestSyncKey)
-      await redisClient.set(latestSyncKey,
-        JSON.stringify(currentLatestSyncData),
-        'EX',
-        latestSyncKeyTTL
-      )
+      const latestSyncKeyTTL = await this.getKeyTTL(latestSyncKeys[state])
+      await redisClient.set(latestSyncKeys[state], timeOfEvent, 'EX', latestSyncKeyTTL)
 
       logger.info(`SyncHistoryAggregator - Successfully tracked ${state} sync at ${timeOfEvent} from ${CREATOR_NODE_ENDPOINT}`)
     } catch (e) {
@@ -110,33 +73,60 @@ class SyncHistoryAggregator {
 
   static async getKeyTTL (key) {
     const ttl = await redisClient.ttl(key)
-    return ttl || EXPIRATION
+    return ttl && ttl > 0 ? ttl : EXPIRATION
   }
 
   static async getAggregateSyncData () {
-    const aggregateSyncKey = SyncHistoryAggregator.getAggregateSyncKey(CREATOR_NODE_ENDPOINT)
-    const currentAggregateData = await redisClient.get(aggregateSyncKey)
+    const { success, fail, triggered } = SyncHistoryAggregator.getAggregateSyncKeys(CREATOR_NODE_ENDPOINT)
+
+    const successCount = await redisClient.get(success)
+    const failCount = await redisClient.get(fail)
+    const triggeredCount = await redisClient.get(triggered)
+
+    const currentAggregateData = {
+      success: successCount ? parseInt(successCount) : 0,
+      fail: failCount ? parseInt(failCount) : 0,
+      triggered: triggeredCount ? parseInt(triggeredCount) : 0
+    }
 
     // Structure: {triggered: <number>, success: <number>, fail: <number>}
-    return currentAggregateData ? JSON.parse(currentAggregateData) : {}
+    return currentAggregateData
   }
 
   static async getLatestSyncData () {
-    const latestSyncKey = SyncHistoryAggregator.getLatestSyncKey(CREATOR_NODE_ENDPOINT)
-    const currentLatestSyncData = await redisClient.get(latestSyncKey)
+    const { success, fail } = SyncHistoryAggregator.getLatestSyncKeys(CREATOR_NODE_ENDPOINT)
+
+    const successDate = await redisClient.get(success)
+    const failDate = await redisClient.get(fail)
+
+    const currentLatestSyncData = {
+      success: successDate,
+      fail: failDate
+    }
 
     // Structure: {success: <latest date>, fail: <latest date>}
-    return currentLatestSyncData ? JSON.parse(currentLatestSyncData) : {}
+    return currentLatestSyncData
   }
 
-  static getAggregateSyncKey (creatorNodeEndpoint) {
-    // ex: creatornode.audius.co:::aggregateSync:::05212021
-    return `${creatorNodeEndpoint}:::aggregateSync:::${new Date().toISOString().split('T')[0]}`
+  static getAggregateSyncKeys (creatorNodeEndpoint) {
+    // ex: creatornode.audius.co:::aggregateSync:::05212021:::success
+    const prefix = `${creatorNodeEndpoint}:::aggregateSync:::${new Date().toISOString().split('T')[0]}`
+
+    return {
+      triggered: `${prefix}:::${SYNC_STATES.triggered}`,
+      success: `${prefix}:::${SYNC_STATES.success}`,
+      fail: `${prefix}:::${SYNC_STATES.fail}`
+    }
   }
 
-  static getLatestSyncKey (creatorNodeEndpoint) {
-    // ex: creatornode.audius.co:::latestSync:::05212021
-    return `${creatorNodeEndpoint}:::latestSync:::${new Date().toISOString().split('T')[0]}`
+  static getLatestSyncKeys (creatorNodeEndpoint) {
+    // ex: creatornode.audius.co:::latestSync:::05212021:::success
+    const prefix = `${creatorNodeEndpoint}:::latestSync:::${new Date().toISOString().split('T')[0]}`
+
+    return {
+      success: `${prefix}:::${SYNC_STATES.success}`,
+      fail: `${prefix}:::${SYNC_STATES.fail}`
+    }
   }
 }
 
