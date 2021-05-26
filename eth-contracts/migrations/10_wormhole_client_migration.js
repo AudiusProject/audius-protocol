@@ -5,7 +5,7 @@ const Governance = artifacts.require('Governance')
 
 const wormholeClientProxyKey = web3.utils.utf8ToHex('wormholeClientProxy')
 
-module.exports = function (deployer) {
+module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
     const config = contractConfig[network]
     const proxyAdminAddress = config.proxyAdminAddress || accounts[10]
