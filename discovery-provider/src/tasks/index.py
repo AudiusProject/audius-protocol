@@ -636,6 +636,14 @@ def update_task(self):
                     # present in Blocks table
                     block_intersection_found = parent_block_query.count() > 0
 
+                    ############ CODE TO RESOLVE 5/24/21 POA HARD FORK ############
+                    # If the parent hash we have found is the parent hash of the first *new* fork block,
+                    # set that we have found an intersection. This change allows us to gather all the
+                    # things that we need to index, rather than never finding a start-point.
+                    if parent_hash == '0xc6b30cc98267994c02a64de4cfef1adf2a0a46ca2b0fe1903175c052057ff646':
+                        block_intersection_found = True
+                    ############ CODE TO RESOLVE 5/24/21 POA HARD FORK ############
+
                     num_blocks = len(index_blocks_list)
                     if num_blocks % 50 == 0:
                         logger.info(
@@ -683,6 +691,15 @@ def update_task(self):
                 # Add blocks to 'block remove' list from here as we traverse to the
                 # valid intersect block
                 while traverse_block.blockhash != intersect_block_hash:
+                    ############ CODE TO RESOLVE 5/24/21 POA HARD FORK ############
+                    # If the traverse blockhash is equivalent to the last block in the *old* fork,
+                    # do not revert anything and simply make progress to continue. This change allows us to
+                    # ignore what the indexer will think is worth reverting since the intersection isn't
+                    # truly in the database.
+                    if traverse_block.blockhash == '0xc53ccb32c32a24e22b5b651ea57944da5c5627fd7ac14b7cb5014c4b368ffba1':
+                        break
+                    ############ CODE TO RESOLVE 5/24/21 POA HARD FORK ############
+
                     revert_blocks_list.append(traverse_block)
                     parent_query = session.query(Block).filter(
                         Block.blockhash == traverse_block.parenthash
