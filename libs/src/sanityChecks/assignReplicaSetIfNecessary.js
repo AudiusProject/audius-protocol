@@ -12,7 +12,7 @@ const assignReplicaSetIfNecessary = async (libs) => {
     const { primary, secondaries } = await libs.ServiceProvider.autoSelectCreatorNodes({})
     const contentNodeEndpoint = CreatorNode.buildEndpoint(primary, secondaries)
     const currentEndpoint = libs.userStateManager.getCurrentUser().creator_node_endpoint
-    await libs.User.upgradeToCreator(currentEndpoint, contentNodeEndpoint)
+    await libs.User.upgradeToCreator(currentEndpoint, contentNodeEndpoint, false)
   } catch (e) {
     // If for some reason this fails, log error and allow user to continue
     console.error(`assignReplicaSetIfNecessary error - ${e.toString()}`)
