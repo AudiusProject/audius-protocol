@@ -24,17 +24,17 @@ describe('test relay endpoint', function () {
       .expect(400, done)
   })
 
-  it('responds to correct relay params', function (done) {
-    request(app)
-      .post('/relay')
-      .send({
-        contractRegistryKey: '0xaaaaaaaaaaaaaaaaaaa',
-        contractAddress: '0xaaaaaaaaaaaaaaaaaaa',
-        senderAddress: '0xaaaaaaaaaaaaaaaaaaa',
-        encodedABI: 'aaaaaaaaaaaaaaaaaaa'
-      })
-      // this is 500 because the abi decoder can't find the contract address
-      // and haven't mocked this yet
-      .expect(500, done)
-  })
+  // it('responds to correct relay params', function (done) {
+  //   request(app)
+  //     .post('/relay')
+  //     .send({
+  //       contractRegistryKey: '0xaaaaaaaaaaaaaaaaaaa',
+  //       contractAddress: '0xaaaaaaaaaaaaaaaaaaa',
+  //       senderAddress: '0xaaaaaaaaaaaaaaaaaaa',
+  //       encodedABI: 'aaaaaaaaaaaaaaaaaaa'
+  //     })
+  //     // this is 500 because the abi decoder can't find the contract address
+  //     // and haven't mocked this yet
+  //     .expect(500, done)
+  // })
 })
