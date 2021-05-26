@@ -17,13 +17,16 @@ interface Wormhole {
     ) external;
 }
 
+
 contract WormholeClient is InitializableV2 {
     using SafeERC20 for ERC20;
 
-    string private constant ERROR_TOKEN_NOT_CONTRACT =
-        "WormholeClient: Transfer token is not a contract";
-    string private constant ERROR_WORMHOLE_NOT_CONTRACT =
-        "WormholeClient: Wormhole is not a contract";
+    string private constant ERROR_TOKEN_NOT_CONTRACT = (
+        "WormholeClient: Transfer token is not a contract"
+    );
+    string private constant ERROR_WORMHOLE_NOT_CONTRACT = (
+        "WormholeClient: Wormhole is not a contract"
+    );
 
     /// @dev ERC-20 token that will be transfered
     ERC20 internal transferToken;
