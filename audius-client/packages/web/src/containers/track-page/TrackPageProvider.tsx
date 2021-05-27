@@ -116,12 +116,13 @@ class TrackPageProvider extends Component<
 
   componentDidMount() {
     const params = parseTrackRoute(this.props.pathname)
-    if (params) {
-      this.fetchTracks(params)
-    } else {
-      // Go to 404 if the track id isn't parsed correctly
+    // Go to 404 if the track id isn't parsed correctly or if should redirect
+    if (!params || shouldRedirectTrack(params.trackId)) {
       this.props.goToRoute(NOT_FOUND_PAGE)
+      return
     }
+
+    this.fetchTracks(params)
   }
 
   componentDidUpdate(prevProps: TrackPageProviderProps) {
@@ -476,6 +477,10 @@ class TrackPageProvider extends Component<
     )
   }
 }
+
+const REDIRECT_TRACK_ID_RANGE = [416972, 418372]
+const shouldRedirectTrack = (trackId: ID) =>
+  trackId >= REDIRECT_TRACK_ID_RANGE[0] && trackId <= REDIRECT_TRACK_ID_RANGE[1]
 
 function makeMapStateToProps() {
   const getMoreByArtistLineup = makeGetLineupMetadatas(getLineup)
