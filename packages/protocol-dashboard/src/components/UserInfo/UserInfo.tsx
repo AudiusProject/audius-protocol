@@ -25,6 +25,7 @@ import mobileStyles from './UserInfoMobile.module.css'
 import { createStyles } from 'utils/mobile'
 import UserImage from 'components/UserImage'
 import Bounds from 'components/Bounds'
+import Tooltip, { Position } from 'components/Tooltip'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -32,7 +33,8 @@ const messages = {
   delegate: 'DELEGATE',
   undelegate: 'UNDELEGATE',
   claim: 'CLAIM',
-  makeClaim: 'Make Claim'
+  makeClaim: 'Make Claim',
+  claimOutOfBounds: 'Total stake out of bounds'
 }
 
 type UserInfoProps = {
@@ -124,6 +126,9 @@ const UserInfo = ({
     isLoggedIn && !isOwner && isDoneLoading && !hasClaim && !delegates.isZero()
   const showClaim =
     isLoggedIn && !isOwner && claimStatus === Status.Success && hasClaim
+
+  const isClaimDisabled = !isValidBounds
+
   return (
     <>
       {showDelegate && (
@@ -161,20 +166,28 @@ const UserInfo = ({
       )}
       {showClaim && (
         <div className={styles.buttonContainer}>
-          <Button
-            text={messages.claim}
-            type={ButtonType.PRIMARY}
-            onClick={onClick}
-          />
-          <ConfirmTransactionModal
-            isOpen={isOpen}
-            withArrow={false}
-            topBox={makeClaimBox}
-            status={makeClaimStatus}
-            error={makeClaimError}
-            onConfirm={onConfirmClaim}
-            onClose={onClose}
-          />
+          <Tooltip
+            position={Position.TOP}
+            text={messages.claimOutOfBounds}
+            isDisabled={!isClaimDisabled}
+            className={styles.claimDisabledTooltip}
+          >
+            <Button
+              text={messages.claim}
+              type={ButtonType.PRIMARY}
+              onClick={onClick}
+              isDisabled={isClaimDisabled}
+            />
+            <ConfirmTransactionModal
+              isOpen={isOpen}
+              withArrow={false}
+              topBox={makeClaimBox}
+              status={makeClaimStatus}
+              error={makeClaimError}
+              onConfirm={onConfirmClaim}
+              onClose={onClose}
+            />
+          </Tooltip>
         </div>
       )}
       {rank && (

@@ -1,5 +1,5 @@
 import BN from 'bn.js'
-import { User, ServiceType, Operator } from 'types'
+import { User, ServiceType, Operator, ServiceProvider } from 'types'
 import Audius from 'services/Audius'
 import { FullUser } from './types'
 
@@ -38,16 +38,15 @@ export const formatUser = async (
   if (user.services.length === 0 && user.stakeAmount === '0')
     return formattedUser
 
+  // Note: We must make a contract call to check "validBounds" because that value is not
+  // updated with the graph
+  const serviceProvider: ServiceProvider = await aud.ServiceProviderClient.getServiceProviderDetails(
+    userWallet
+  )
+
   return {
     ...formattedUser,
-    serviceProvider: {
-      deployerCut: parseInt(user.deployerCut),
-      deployerStake: new BN(user.stakeAmount),
-      maxAccountStake: new BN(user?.maxAccountStake ?? 0),
-      minAccountStake: new BN(user?.minAccountStake ?? 0),
-      numberOfEndpoints: user.services?.length ?? 0,
-      validBounds: user.validBounds
-    },
+    serviceProvider,
     delegators:
       user.delegateFrom?.map((delegate, i) => ({
         wallet: aud.toChecksumAddress(delegate.fromUser.id),

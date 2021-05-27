@@ -146,3 +146,20 @@
 .btnContainer .isDisabled svg {
   opacity: .5;
 }
+
+.btnContainer .isDisabled,
+.btnContainer .isDisabled:hover,
+.btnContainer .isDisabled:active {
+  cursor: default;
+  transform: scale3d(1, 1, 1) !important;
+}
+
+.btnContainer .isDisabled,
+.btnContainer .isDisabled:hover,
+.btnContainer .isDisabled:active {
+  background: #696D88 !important;
+}
+
+.btnContainer .isDisabled .isTextDisabled {
+  color: var(--static-white);
+}

@@ -50,7 +50,7 @@ const Tooltip: React.FC<TooltipProps> = ({
   children,
   text,
   onClick = () => {},
-  isDisabled = true,
+  isDisabled = false,
   position = Position.TOP
 }) => {
   const containerRef = useRef(null)
@@ -93,7 +93,7 @@ const Tooltip: React.FC<TooltipProps> = ({
     return () => window.removeEventListener('scroll', hideOnScroll)
   }, [isHover])
 
-  if (!isDisabled) {
+  if (isDisabled) {
     return <> {children} </>
   }
 
