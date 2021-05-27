@@ -69,6 +69,9 @@ class Users extends Base {
     this._updateUserOperations = this._updateUserOperations.bind(this)
     this._validateUserMetadata = this._validateUserMetadata.bind(this)
     this._cleanUserMetadata = this._cleanUserMetadata.bind(this)
+
+    // For adding a creator_node_endpoint for a user if null
+    this.assignReplicaSetIfNecessary = this.assignReplicaSetIfNecessary.bind(this)
   }
 
   /* ----------- GETTERS ---------- */
@@ -598,6 +601,32 @@ class Users extends Base {
     } catch (e) {
       // TODO: think about handling the update metadata on chain and associating..
       throw new Error(`updateAndUploadMetadata() Error -- Phase ${phase}: ${e}`)
+    }
+  }
+
+  /**
+   * If a user's creator_node_endpoint is null:
+   * 1. Generate a replica set
+   * 2. Use the `upgradeToCreator` method to
+   *    - Update the replica set
+   *    - Sync user data over from UM if any
+   * Used during the sanity check and in uploadImage() in files.js
+   */
+  async assignReplicaSetIfNecessary () {
+    const user = this.userStateManager.getCurrentUser()
+
+    // If no user is logged in, or a creator node endpoint is already assigned,
+    // skip this call
+    if (!user || user.creator_node_endpoint) return
+
+    // Generate a replica set and assign to user
+    try {
+      const { primary, secondaries } = await this.ServiceProvider.autoSelectCreatorNodes({})
+      const contentNodeEndpoint = CreatorNode.buildEndpoint(primary, secondaries)
+      const currentEndpoint = this.userStateManager.getCurrentUser().creator_node_endpoint
+      await this.upgradeToCreator(currentEndpoint, contentNodeEndpoint, false)
+    } catch (e) {
+      throw new Error(`assignReplicaSetIfNecessary error - ${e.toString()}`)
     }
   }
 

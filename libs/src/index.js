@@ -342,7 +342,7 @@ class AudiusLibs {
     this.Account = new Account(this.User, ...services)
     this.Track = new Track(...services)
     this.Playlist = new Playlist(...services)
-    this.File = new File(...services)
+    this.File = new File(this.User, ...services)
   }
 }
 

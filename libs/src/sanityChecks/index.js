@@ -26,10 +26,6 @@ class SanityChecks {
     await recoveryEmail(this.libs)
     await assignReplicaSetIfNecessary(this.libs)
   }
-
-  async assignReplicaSet (libs) {
-    await assignReplicaSetIfNecessary(libs)
-  }
 }
 
 module.exports = SanityChecks
