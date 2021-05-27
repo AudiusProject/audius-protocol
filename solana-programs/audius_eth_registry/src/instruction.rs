@@ -152,9 +152,9 @@ pub fn validate_multiple_signatures_clear_valid_signer(
     );
     let data = args.try_to_vec()?;
     let accounts = vec![
-        AccountMeta::new(*valid_signer_1, false),
-        AccountMeta::new(*valid_signer_2, false),
-        AccountMeta::new(*valid_signer_3, false),
+        AccountMeta::new_readonly(*valid_signer_1, false),
+        AccountMeta::new_readonly(*valid_signer_2, false),
+        AccountMeta::new_readonly(*valid_signer_3, false),
         AccountMeta::new_readonly(*signer_group, false),
         AccountMeta::new(*old_valid_signer, false),
         AccountMeta::new_readonly(sysvar::instructions::id(), false),
