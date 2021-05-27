@@ -113,7 +113,7 @@ impl Processor {
 
 
     /// Process [Recover SECP Instructions]().
-    pub fn recover_secp_instructions (
+    pub fn recover_secp_instructions(
         instruction_info: &AccountInfo
     ) -> Result<Vec<Instruction>, AudiusError> {
         let mut v: Vec<Instruction> = Vec::new();
