@@ -17,8 +17,14 @@ const UniqueUsersChart: React.FC<UniqueUsersChartProps> = () => {
     labels = []
     data = []
   } else {
-    labels = apiCalls?.map(a => new Date(a.timestamp).getTime() / 1000) ?? null
-    data = apiCalls?.map(a => a.summed_unique_count) ?? null
+    labels =
+      apiCalls
+        ?.filter(a => a.timestamp !== '2021-05-26')
+        .map(a => new Date(a.timestamp).getTime() / 1000) ?? null
+    data =
+      apiCalls
+        ?.filter(a => a.timestamp !== '2021-05-26')
+        .map(a => a.summed_unique_count) ?? null
   }
   return (
     <LineChart
