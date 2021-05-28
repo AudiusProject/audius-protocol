@@ -4,6 +4,7 @@ use crate::{
     error::TrackListenCountError,
     instruction::{InstructionArgs, TemplateInstruction},
 };
+use solana_program::clock::UnixTimestamp;
 use audius_eth_registry::instruction::SignatureData;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
@@ -38,7 +39,7 @@ impl Processor {
         let clock_account_info = next_account_info(account_info_iter)?;
         let clock = Clock::from_account_info(&clock_account_info)?;
 
-        if (clock.unix_timestamp - instruction_data.track_data.timestamp).abs() > MAX_TIME_DIFF {
+        if (clock.unix_timestamp - instruction_data.track_data.timestamp).abs() > MAX_TIME_DIFF_SECONDS {
             return Err(TrackListenCountError::InvalidTimestamp.into());
         }
 
