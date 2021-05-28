@@ -1,5 +1,3 @@
-const moment = require('moment')
-
 const redisClient = require('../redis')
 const { logger: genericLogger } = require('../logging')
 
@@ -12,35 +10,56 @@ const SYNC_STATES = Object.freeze({
 const EXPIRATION = 7 /* days */ * 24 /* hr */ * 60 /* min */ * 60 /* s */
 
 /**
- * Class intended to:
+ * A static class intended to:
  * - Record the number of the current day's successful and failed sync attempts
  * - Record the timestamp of the most recent successful and failed sync
+ *
+ * Note: A sync 'success' or 'fail' is a reflection of a secondary's ability to take the exported
+ * data from the primary and update its own state. This code is only run on secondaries.
+ *
+ * TODO: Will be useful to pass along more data about syncs on top of `logContext`
+ * e.g. user info
  */
-
-// Note: When recording a sync 'success' or 'fail', it implies that the secondary was able to respectfully
-// successfully or unsuccessfully take the primary's exported data, and update its own state
-
 class SyncHistoryAggregator {
+  /**
+   * Records a sync success
+   * @param {Object} logContext the log context taken off of the Express req object
+   */
   static async recordSyncSuccess (logContext) {
     await SyncHistoryAggregator.recordSyncData({
       state: SYNC_STATES.success,
-      timeOfEvent: moment().format('MM-DD-YYYYTHH:MM:SS:sss'),
+      timeOfEvent: new Date().toISOString(), // ex: "2021-05-28T01:05:20.294Z"
       logContext
     })
   }
 
+  /**
+   * Records a sync fail
+   * @param {Object} logContext the log context taken off of the Express req object
+   */
   static async recordSyncFail (logContext) {
     await SyncHistoryAggregator.recordSyncData({
       state: SYNC_STATES.fail,
-      timeOfEvent: moment().format('MM-DD-YYYYTHH:MM:SS:sss'),
+      timeOfEvent: new Date().toISOString(), // ex: "2021-05-28T01:05:20.294Z"
       logContext
     })
   }
 
+  /**
+   * The underlying function that increments the `success` and `fail` sync count, and
+   * also records the latest `success` and `fail`sync
+   * @param {Object} param
+   * @param {enum} state SYNC_STATUS.success or SYNC_STATUS.fail
+   * @param {String} timeOfEvent date in structure MM-DD-YYYYTHH:MM:SS:sssZ
+   */
   static async recordSyncData ({ state, timeOfEvent, logContext }) {
     const logger = genericLogger.child(logContext)
 
     try {
+      if (!SYNC_STATES.hasOwnProperty(state)) {
+        throw new Error(`Invalid state='${state}'. Must either be '${SYNC_STATES.success}' or '${SYNC_STATES.fail}'`)
+      }
+
       // Update aggregate sync data
       const aggregateSyncKeys = SyncHistoryAggregator.getAggregateSyncKeys()
 
@@ -62,45 +81,89 @@ class SyncHistoryAggregator {
     }
   }
 
+  /**
+   * Retrieves the current key's ttl. If the key doesn't exist or is indefinite,
+   * return the default expiration time of 7 days.
+   * @param {String} key key to retrieve from redis
+   * @returns expiration time in seconds
+   */
   static async getKeyTTL (key) {
-    const ttl = await redisClient.ttl(key)
-    return ttl && ttl > 0 ? ttl : EXPIRATION
+    try {
+      const ttl = await redisClient.ttl(key)
+      return ttl && ttl > 0 ? ttl : EXPIRATION
+    } catch (e) {
+      return EXPIRATION
+    }
   }
 
-  static async getAggregateSyncData () {
-    const { success, fail } = SyncHistoryAggregator.getAggregateSyncKeys()
+  /**
+   * Returns the aggregate sync data of the current day's number of successful, failed,
+   * and triggered syncs
+   * @param {Object} logContext the log context off of the Express req object
+   * @returns an object of the current day's aggregate sync count like
+   *    {triggered: <number>, success: <number>, fail: <number>}
+   */
+  static async getAggregateSyncData (logContext) {
+    const logger = genericLogger.child(logContext)
+    let currentAggregateData = {
+      success: 0,
+      fail: 0,
+      triggered: 0
+    }
 
-    let successCount = await redisClient.get(success)
-    let failCount = await redisClient.get(fail)
+    try {
+      const { success, fail } = SyncHistoryAggregator.getAggregateSyncKeys()
 
-    successCount = successCount ? parseInt(successCount) : 0
-    failCount = failCount ? parseInt(failCount) : 0
+      let successfulSyncsCount = await redisClient.get(success)
+      let failedSyncsCount = await redisClient.get(fail)
 
-    const currentAggregateData = {
-      success: successCount,
-      fail: failCount,
-      triggered: successCount + failCount
+      successfulSyncsCount = successfulSyncsCount ? parseInt(successfulSyncsCount) : 0
+      failedSyncsCount = failedSyncsCount ? parseInt(failedSyncsCount) : 0
+
+      currentAggregateData.success = successfulSyncsCount
+      currentAggregateData.fail = failedSyncsCount
+      currentAggregateData.triggered = successfulSyncsCount + failedSyncsCount
+    } catch (e) {
+      logger.error(`syncHistoryAggregator - getAggregateSyncData() error - ${e.toString()}`)
     }
 
     // Structure: {triggered: <number>, success: <number>, fail: <number>}
     return currentAggregateData
   }
 
-  static async getLatestSyncData () {
-    const { success, fail } = SyncHistoryAggregator.getLatestSyncKeys()
-
-    const successDate = await redisClient.get(success)
-    const failDate = await redisClient.get(fail)
-
-    const currentLatestSyncData = {
-      success: successDate,
-      fail: failDate
+  /**
+   * Returns the date of the latest successful and failed sync. Will be `null` if a sync with those
+   * states have not been triggered.
+   * @param {Object} logContext the log context off of the Express req object
+   * @returns an object of the current day's aggregate sync count like
+   *     {success: <MM:DD:YYYYTHH:MM:SS:sssZ>, fail: <MM:DD:YYYYTHH:MM:SS:sssZ>}
+   */
+  static async getLatestSyncData (logContext) {
+    const logger = genericLogger.child(logContext)
+    let currentLatestSyncData = {
+      success: null,
+      fail: null
     }
 
-    // Structure: {success: <latest date>, fail: <latest date>}
+    try {
+      const { success, fail } = SyncHistoryAggregator.getLatestSyncKeys()
+
+      const latestSyncSuccessTimestamp = await redisClient.get(success)
+      const latestSyncFailTimestamp = await redisClient.get(fail)
+
+      currentLatestSyncData.success = latestSyncSuccessTimestamp
+      currentLatestSyncData.fail = latestSyncFailTimestamp
+    } catch (e) {
+      logger.error(`syncHistoryAggregator - getLatestSyncData() error - ${e.toString()}`)
+    }
+    // Structure: {success: <MM:DD:YYYYTHH:MM:SS:sssZ>, fail: <MM:DD:YYYYTHH:MM:SS:sssZ>}
     return currentLatestSyncData
   }
 
+  /**
+   * Retrieves the redis keys used for storing aggregate sync counts
+   * @returns an object of the `success` and `fail` redis keys for the aggregate sync count
+   */
   static getAggregateSyncKeys () {
     // ex: aggregateSync:::05212021:::success
     const prefix = `aggregateSync:::${new Date().toISOString().split('T')[0]}`
@@ -111,7 +174,11 @@ class SyncHistoryAggregator {
     }
   }
 
-  static getLatestSyncKeys (creatorNodeEndpoint) {
+  /**
+   * Retreives the redis keys used for storing latest sync dates
+   * @returns an object of the `succes` and `fail` redis keys for the latest sync dates
+   */
+  static getLatestSyncKeys () {
     // ex: latestSync:::05212021:::success
     const prefix = `latestSync:::${new Date().toISOString().split('T')[0]}`
 

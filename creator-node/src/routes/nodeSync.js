@@ -207,9 +207,18 @@ module.exports = function (app) {
     return successResponse()
   }))
 
+  /**
+   * Returns sync history.
+   * `aggregateSyncData` - the number of succesful, failed, and triggered syncs for the current day
+   * `latestSyncData` - the date of the most recent successful and failed sync. will be `null` if no sync occurred with that state
+   *
+   * Structure:
+   *  aggregateSyncData = {triggered: <number>, success: <number>, fail: <number>}
+   *  latestSyncData = {success: <MM:DD:YYYYTHH:MM:SS:ssss>, fail: <MM:DD:YYYYTHH:MM:SS:ssss>}
+   */
   app.get('/sync_history', handleResponse(async (req, res) => {
-    const aggregateSyncData = await SyncHistoryAggregator.getAggregateSyncData()
-    const latestSyncData = await SyncHistoryAggregator.getLatestSyncData()
+    const aggregateSyncData = await SyncHistoryAggregator.getAggregateSyncData(req.logContext)
+    const latestSyncData = await SyncHistoryAggregator.getLatestSyncData(req.logContext)
 
     return successResponse({ aggregateSyncData, latestSyncData })
   }))
