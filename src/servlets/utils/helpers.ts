@@ -75,3 +75,8 @@ export const shuffle = (a: any[]) => {
   }
   return a
 }
+
+// Optionally redirect certain tracks to 404
+const REDIRECT_TRACK_ID_RANGE = [416972, 418372]
+export const shouldRedirectTrack = (trackId: number) =>
+  trackId >= REDIRECT_TRACK_ID_RANGE[0] && trackId <= REDIRECT_TRACK_ID_RANGE[1]

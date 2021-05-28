@@ -1,6 +1,6 @@
 import express from 'express'
 
-import { getCollection, getTrack, getTracks, getUser, getUsers } from '../utils/helpers'
+import { getCollection, getTrack, getTracks, getUser, getUsers, shouldRedirectTrack } from '../utils/helpers'
 import { getCollectionPath, getCoverArt, getTrackPath } from './helpers'
 import { BedtimeFormat, GetCollectionResponse, GetTracksResponse, TrackResponse } from './types'
 
@@ -9,6 +9,7 @@ const DELETED_MESSAGE = 'DELETED'
 
 const getTrackMetadata = async (trackId: number, ownerId: number): Promise<GetTracksResponse> => {
   try {
+    if (shouldRedirectTrack(trackId)) return Promise.reject(new Error(DELETED_MESSAGE))
     const track = await getTrack(trackId)
     if (track.is_delete) return Promise.reject(new Error(DELETED_MESSAGE))
     if (track.owner_id !== ownerId) return Promise.reject(new Error('OwnerIds do not match'))

@@ -12,7 +12,8 @@ import {
   getImageUrl,
   getTrack,
   getUser,
-  getUserByHandle
+  getUserByHandle,
+  shouldRedirectTrack
 } from '../utils/helpers'
 import { Context, MetaTagFormat, Playable } from './types'
 
@@ -34,6 +35,7 @@ const template = handlebars.compile(
 
 const getTrackContext = async (id: number, canEmbed: boolean): Promise<Context> => {
   if (!id) return getDefaultContext()
+  if (shouldRedirectTrack(id)) return getDefaultContext()
   try {
     const track = await getTrack(id)
     const user = await getUser(track.owner_id)
