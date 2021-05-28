@@ -5,6 +5,7 @@ use crate::instruction::{AudiusInstruction, SignatureData};
 use crate::state::{SecpSignatureOffsets, SignerGroup, ValidSigner};
 use borsh::{BorshDeserialize, BorshSerialize};
 use num_traits::FromPrimitive;
+use solana_program::instruction::Instruction;
 use solana_program::decode_error::DecodeError;
 use solana_program::program_error::PrintProgramError;
 use solana_program::{
@@ -80,6 +81,15 @@ impl Processor {
         return instruction_data;
     }
 
+    /// Process [Convert i64 from Vec<u8>] ()
+    pub fn int_from_vec(
+        message: &Vec<u8>
+    ) -> i64 {
+        let mut intermediate_array = [0u8; 8];
+        intermediate_array[0..8].copy_from_slice(message);
+        return i64::from_le_bytes(intermediate_array);
+    }
+
     /// Process [validate timestamp messages] ()
     pub fn validate_timestamp_messages(
         clock: &sysvar::clock::Clock,
@@ -87,18 +97,9 @@ impl Processor {
         message_2: &Vec<u8>,
         message_3: &Vec<u8>,
     ) -> Result<(), AudiusError> {
-        let mut timestamp_1_arr = [0u8; 8];
-        timestamp_1_arr[0..8].copy_from_slice(message_1);
-
-        let mut timestamp_2_arr = [0u8; 8];
-        timestamp_2_arr[0..8].copy_from_slice(message_2);
-
-        let mut timestamp_3_arr = [0u8; 8];
-        timestamp_3_arr[0..8].copy_from_slice(message_3);
-
-        let timestamp_1: i64 = i64::from_le_bytes(timestamp_1_arr);
-        let timestamp_2: i64 = i64::from_le_bytes(timestamp_2_arr);
-        let timestamp_3: i64 = i64::from_le_bytes(timestamp_3_arr);
+        let timestamp_1: i64 = Self::int_from_vec(message_1);
+        let timestamp_2: i64 = Self::int_from_vec(message_2);
+        let timestamp_3: i64 = Self::int_from_vec(message_3);
 
         if (clock.unix_timestamp - timestamp_1).abs() > MAX_TIME_DIFF
             || (clock.unix_timestamp - timestamp_2).abs() > MAX_TIME_DIFF
@@ -110,13 +111,47 @@ impl Processor {
         return std::result::Result::Ok(());
     }
 
+
+    /// Process [Recover SECP Instructions]().
+    pub fn recover_secp_instructions(
+        instruction_info: &AccountInfo
+    ) -> Result<Vec<Instruction>, AudiusError> {
+        let mut v: Vec<Instruction> = Vec::new();
+        // Index of current instruction in tx
+        let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
+        // Indicates no instructions present
+        if index == 0 {
+            return Err(AudiusError::Secp256InstructionLosing.into());
+        }
+        // Iterate over all instructions and recover SECP instruction
+        let mut iterator = 0;
+        while iterator < index {
+            let secp_instruction = sysvar::instructions::load_instruction_at(
+                iterator as usize,
+                &instruction_info.data.borrow(),
+            )
+            .unwrap();
+            v.push(secp_instruction);
+            iterator+=1;
+        }
+        return std::result::Result::Ok(v);
+    }
+
     /// Process [InitSignerGroup]().
-    pub fn process_init_signer_group(accounts: &[AccountInfo]) -> ProgramResult {
+    pub fn process_init_signer_group(
+        _program_id: &Pubkey,
+        accounts: &[AccountInfo]
+    ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
         // signer group account
         let signer_group_info = next_account_info(account_info_iter)?;
         // signer group owner account
         let group_owner_info = next_account_info(account_info_iter)?;
+
+        // Confirm program ownership of SignerGroup Account
+        if signer_group_info.owner != _program_id {
+            return Err(AudiusError::InvalidInstruction.into());
+        }
 
         let mut signer_group = Box::new(SignerGroup::try_from_slice(
             &signer_group_info.data.borrow(),
@@ -138,12 +173,20 @@ impl Processor {
     }
 
     /// Process [DisableSignerGroupOwner]().
-    pub fn process_disable_signer_group_owner(accounts: &[AccountInfo]) -> ProgramResult {
+    pub fn process_disable_signer_group_owner(
+        _program_id: &Pubkey,
+        accounts: &[AccountInfo]
+    ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
         // signer group account
         let signer_group_info = next_account_info(account_info_iter)?;
         // signer group owner account
         let group_owner_info = next_account_info(account_info_iter)?;
+
+        // Confirm program ownership of SignerGroup and ValidSigner
+        if signer_group_info.owner != _program_id {
+            return Err(AudiusError::InvalidInstruction.into());
+        }
 
         // Verify owner submission
         if !group_owner_info.is_signer {
@@ -167,6 +210,7 @@ impl Processor {
 
     /// Process [InitValidSigner]().
     pub fn process_init_valid_signer(
+        _program_id: &Pubkey,
         accounts: &[AccountInfo],
         eth_address: [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
     ) -> ProgramResult {
@@ -178,7 +222,13 @@ impl Processor {
         // signer group's owner
         let signer_groups_owner_info = next_account_info(account_info_iter)?;
 
-        // Verify owner submission
+        // Confirm program ownership of SignerGroup and ValidSigner
+        if valid_signer_info.owner != _program_id
+            || signer_group_info.owner != _program_id {
+            return Err(AudiusError::InvalidInstruction.into());
+        }
+
+        // Verify SignerGroupOwner submission of this transaction
         if !signer_groups_owner_info.is_signer {
             return Err(AudiusError::SignatureMissing.into());
         }
@@ -218,7 +268,10 @@ impl Processor {
     }
 
     /// Process [ClearValidSigner]().
-    pub fn process_clear_valid_signer(accounts: &[AccountInfo]) -> ProgramResult {
+    pub fn process_clear_valid_signer(
+        _program_id: &Pubkey,
+        accounts: &[AccountInfo]
+    ) -> ProgramResult {
         let account_info_iter = &mut accounts.iter();
         // initialized valid signer account
         let valid_signer_info = next_account_info(account_info_iter)?;
@@ -226,6 +279,12 @@ impl Processor {
         let signer_group_info = next_account_info(account_info_iter)?;
         // signer group's owner
         let signer_groups_owner_info = next_account_info(account_info_iter)?;
+
+        // Confirm program ownership of SignerGroup and ValidSigner
+        if valid_signer_info.owner != _program_id
+            || signer_group_info.owner != _program_id {
+            return Err(AudiusError::InvalidInstruction.into());
+        }
 
         // Verify owner submission
         if !signer_groups_owner_info.is_signer {
@@ -268,6 +327,7 @@ impl Processor {
 
     /// Process [ValidateMultipleSignaturesClearValidSigner]().
     pub fn process_multiple_signatures_clear_valid_signer(
+        _program_id: &Pubkey,
         accounts: &[AccountInfo],
         signature_data_1: SignatureData,
         signature_data_2: SignatureData,
@@ -284,42 +344,36 @@ impl Processor {
         let signer_group_info = next_account_info(account_info_iter)?;
         // incoming valid signer account
         let old_valid_signer_info = next_account_info(account_info_iter)?;
-
-        // Confirm both signatures are valid
         // Sysvar Instruction account info
         let instruction_info = next_account_info(account_info_iter)?;
+
+        // Confirm program ownership of SignerGroup and ValidSigners
+        if valid_signer_1_info.owner != _program_id
+            || valid_signer_2_info.owner != _program_id
+            || valid_signer_3_info.owner != _program_id
+            || old_valid_signer_info.owner != _program_id
+            || signer_group_info.owner != _program_id {
+            return Err(AudiusError::InvalidInstruction.into());
+        }
 
         // clock sysvar account
         let clock_account_info = next_account_info(account_info_iter)?;
         let clock = Clock::from_account_info(&clock_account_info)?;
 
-        // Index of current instruction in tx
-        let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
-
-        if index == 0 {
+        // Recover all secp instructions present in this tx
+        let instruction_recovery = Self::recover_secp_instructions(&instruction_info);
+        if instruction_recovery.is_err() {
             return Err(AudiusError::Secp256InstructionLosing.into());
         }
 
-        // Instruction data of 1st Secp256 program call
-        let secp_instruction_1 = sysvar::instructions::load_instruction_at(
-            (index - 3) as usize,
-            &instruction_info.data.borrow(),
-        )
-        .unwrap();
+        let recovered_instructions = instruction_recovery.unwrap();
+        if recovered_instructions.len() < 3 {
+            return Err(AudiusError::Secp256InstructionLosing.into());
+        }
 
-        // Instruction data of 2nd Secp256 program call
-        let secp_instruction_2 = sysvar::instructions::load_instruction_at(
-            (index - 2) as usize,
-            &instruction_info.data.borrow(),
-        )
-        .unwrap();
-
-        // Instruction data of 3nd Secp256 program call
-        let secp_instruction_3 = sysvar::instructions::load_instruction_at(
-            (index - 1) as usize,
-            &instruction_info.data.borrow(),
-        )
-        .unwrap();
+        let secp_instruction_1 = &recovered_instructions[0];
+        let secp_instruction_2 = &recovered_instructions[1];
+        let secp_instruction_3 = &recovered_instructions[2];
 
         let valid_signer_1 = Box::new(ValidSigner::try_from_slice(
             &valid_signer_1_info.data.borrow(),
@@ -346,9 +400,7 @@ impl Processor {
         }
 
         let instruction_data_1 = Self::recover_instruction_data(&signature_data_1, &valid_signer_1);
-
         let instruction_data_2 = Self::recover_instruction_data(&signature_data_2, &valid_signer_2);
-
         let instruction_data_3 = Self::recover_instruction_data(&signature_data_3, &valid_signer_3);
 
         if instruction_data_1 != secp_instruction_1.data {
@@ -404,6 +456,7 @@ impl Processor {
 
     /// Process [ValidateMultipleSignaturesAddSigner]()
     pub fn process_multiple_signatures_add_signer(
+        _program_id: &Pubkey,
         accounts: &[AccountInfo],
         signature_data_1: SignatureData,
         signature_data_2: SignatureData,
@@ -421,42 +474,36 @@ impl Processor {
         let signer_group_info = next_account_info(account_info_iter)?;
         // incoming valid signer account
         let new_valid_signer_info = next_account_info(account_info_iter)?;
-
-        // Confirm both signatures are valid
         // Sysvar Instruction account info
         let instruction_info = next_account_info(account_info_iter)?;
+
+        // Confirm program ownership of SignerGroup and ValidSigners
+        if valid_signer_1_info.owner != _program_id
+            || valid_signer_2_info.owner != _program_id
+            || valid_signer_3_info.owner != _program_id
+            || new_valid_signer_info.owner != _program_id
+            || signer_group_info.owner != _program_id {
+            return Err(AudiusError::InvalidInstruction.into());
+        }
 
         // clock sysvar account
         let clock_account_info = next_account_info(account_info_iter)?;
         let clock = Clock::from_account_info(&clock_account_info)?;
 
-        // Index of current instruction in tx
-        let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
-
-        if index == 0 {
+        // Recover all secp instructions present in this tx
+        let instruction_recovery = Self::recover_secp_instructions(&instruction_info);
+        if instruction_recovery.is_err() {
             return Err(AudiusError::Secp256InstructionLosing.into());
         }
 
-        // Instruction data of 1st Secp256 program call
-        let secp_instruction_1 = sysvar::instructions::load_instruction_at(
-            (index - 3) as usize,
-            &instruction_info.data.borrow(),
-        )
-        .unwrap();
+        let recovered_instructions = instruction_recovery.unwrap();
+        if recovered_instructions.len() < 3 {
+            return Err(AudiusError::Secp256InstructionLosing.into());
+        }
 
-        // Instruction data of 2nd Secp256 program call
-        let secp_instruction_2 = sysvar::instructions::load_instruction_at(
-            (index - 2) as usize,
-            &instruction_info.data.borrow(),
-        )
-        .unwrap();
-
-        // Instruction data of 3nd Secp256 program call
-        let secp_instruction_3 = sysvar::instructions::load_instruction_at(
-            (index - 1) as usize,
-            &instruction_info.data.borrow(),
-        )
-        .unwrap();
+        let secp_instruction_1 = &recovered_instructions[0];
+        let secp_instruction_2 = &recovered_instructions[1];
+        let secp_instruction_3 = &recovered_instructions[2];
 
         let signer_group = Box::new(SignerGroup::try_from_slice(
             &signer_group_info.data.borrow(),
@@ -500,9 +547,7 @@ impl Processor {
         }
 
         let instruction_data_1 = Self::recover_instruction_data(&signature_data_1, &valid_signer_1);
-
         let instruction_data_2 = Self::recover_instruction_data(&signature_data_2, &valid_signer_2);
-
         let instruction_data_3 = Self::recover_instruction_data(&signature_data_3, &valid_signer_3);
 
         if instruction_data_1 != secp_instruction_1.data {
@@ -540,6 +585,7 @@ impl Processor {
 
     /// Process [ValidateSignature]().
     pub fn process_validate_signature(
+        _program_id: &Pubkey,
         accounts: &[AccountInfo],
         signature_data: SignatureData,
     ) -> ProgramResult {
@@ -550,19 +596,25 @@ impl Processor {
         let signer_group_info = next_account_info(account_info_iter)?;
         // Sysvar Instruction account info
         let instruction_info = next_account_info(account_info_iter)?;
-        // Index of current instruction in tx
-        let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
 
-        if index == 0 {
+        // Confirm program ownership of SignerGroup and ValidSigner
+        if valid_signer_info.owner != _program_id
+            || signer_group_info.owner != _program_id {
+            return Err(AudiusError::InvalidInstruction.into());
+        }
+
+        // Recover all secp instructions present in this tx
+        let instruction_recovery = Self::recover_secp_instructions(&instruction_info);
+        if instruction_recovery.is_err() {
             return Err(AudiusError::Secp256InstructionLosing.into());
         }
 
-        // Instruction data of Secp256 program call
-        let secp_instruction = sysvar::instructions::load_instruction_at(
-            (index - 1) as usize,
-            &instruction_info.data.borrow(),
-        )
-        .unwrap();
+        let recovered_instructions = instruction_recovery.unwrap();
+        if recovered_instructions.len() < 1 {
+            return Err(AudiusError::Secp256InstructionLosing.into());
+        }
+
+        let secp_instruction = &recovered_instructions[0];
 
         let signer_group = Box::new(SignerGroup::try_from_slice(
             &signer_group_info.data.borrow(),
@@ -600,15 +652,22 @@ impl Processor {
         match instruction {
             AudiusInstruction::InitSignerGroup => {
                 msg!("Instruction: InitSignerGroup");
-                Self::process_init_signer_group(accounts)
+                Self::process_init_signer_group(_program_id, accounts)
             }
             AudiusInstruction::InitValidSigner(eth_pubkey) => {
                 msg!("Instruction: InitValidSigner");
-                Self::process_init_valid_signer(accounts, eth_pubkey)
+                Self::process_init_valid_signer(
+                    _program_id,
+                    accounts,
+                    eth_pubkey
+                )
             }
             AudiusInstruction::ClearValidSigner => {
                 msg!("Instruction: ClearValidSigner");
-                Self::process_clear_valid_signer(accounts)
+                Self::process_clear_valid_signer(
+                    _program_id,
+                    accounts
+                )
             }
             AudiusInstruction::ValidateMultipleSignaturesClearValidSigner(
                 signature_1,
@@ -617,6 +676,7 @@ impl Processor {
             ) => {
                 msg!("Instruction: ValidateMultipleSignaturesClearValidSigner");
                 Self::process_multiple_signatures_clear_valid_signer(
+                    _program_id,
                     accounts,
                     signature_1,
                     signature_2,
@@ -625,11 +685,15 @@ impl Processor {
             }
             AudiusInstruction::ValidateSignature(signature) => {
                 msg!("Instruction: ValidateSignature");
-                Self::process_validate_signature(accounts, signature)
+                Self::process_validate_signature(
+                    _program_id,
+                    accounts,
+                    signature
+                )
             }
             AudiusInstruction::DisableSignerGroupOwner => {
                 msg!("Instruction: DisableSignerGroupOwner");
-                Self::process_disable_signer_group_owner(accounts)
+                Self::process_disable_signer_group_owner(_program_id, accounts)
             }
             AudiusInstruction::ValidateMultipleSignaturesAddSigner(
                 signature_1,
@@ -639,6 +703,7 @@ impl Processor {
             ) => {
                 msg!("Instruction: ValidateMultipleSignaturesAddSigner");
                 Self::process_multiple_signatures_add_signer(
+                    _program_id,
                     accounts,
                     signature_1,
                     signature_2,
