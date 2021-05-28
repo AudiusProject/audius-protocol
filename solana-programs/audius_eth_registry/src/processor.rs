@@ -7,6 +7,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use num_traits::FromPrimitive;
 use solana_program::instruction::Instruction;
 use solana_program::decode_error::DecodeError;
+use solana_program::clock::UnixTimestamp;
 use solana_program::program_error::PrintProgramError;
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -18,7 +19,10 @@ use solana_program::{
     sysvar::Sysvar,
 };
 
-const MAX_TIME_DIFF: i64 = 2000000; // this is about 3 minutes
+// Maximum time between multiple signer submission for adding additional
+// signers.
+// 10 minutes
+const MAX_TIME_DIFF_SECONDS: UnixTimestamp = 600;
 
 /// Program state handler
 pub struct Processor {}
@@ -101,9 +105,9 @@ impl Processor {
         let timestamp_2: i64 = Self::int_from_vec(message_2);
         let timestamp_3: i64 = Self::int_from_vec(message_3);
 
-        if (clock.unix_timestamp - timestamp_1).abs() > MAX_TIME_DIFF
-            || (clock.unix_timestamp - timestamp_2).abs() > MAX_TIME_DIFF
-            || (clock.unix_timestamp - timestamp_3).abs() > MAX_TIME_DIFF
+        if (clock.unix_timestamp - timestamp_1).abs() > MAX_TIME_DIFF_SECONDS
+            || (clock.unix_timestamp - timestamp_2).abs() > MAX_TIME_DIFF_SECONDS
+            || (clock.unix_timestamp - timestamp_3).abs() > MAX_TIME_DIFF_SECONDS
         {
             return Err(AudiusError::InvalidInstruction.into());
         }
