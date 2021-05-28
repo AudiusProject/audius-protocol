@@ -413,28 +413,28 @@ class SnapbackSM {
       time: Date.now()
     }]
 
-    let nodeUsers
     try {
-      nodeUsers = await this.peerSetManager.getNodeUsers()
-      nodeUsers = this.peerSetManager.sliceUsers({ nodeUsers, moduloBase: ModuloBase, currentModuloSlice: this.currentModuloSlice })
+      let nodeUsers
+      try {
+        nodeUsers = await this.peerSetManager.getNodeUsers()
+        nodeUsers = this.peerSetManager.sliceUsers({ nodeUsers, moduloBase: ModuloBase, currentModuloSlice: this.currentModuloSlice })
 
-      decisionTree.push({ stage: 'getNodeUsers() and sliceUsers() Success', vals: { nodeUsersLength: nodeUsers.length }, time: Date.now() })
-    } catch (e) {
-      decisionTree.push({ stage: 'getNodeUsers() or sliceUsers() Error', vals: e.message, time: Date.now() })
-      throw new Error(`processStateMachineOperation():getNodeUsers()/sliceUsers() Error: ${e.toString()}`)
-    }
+        decisionTree.push({ stage: 'getNodeUsers() and sliceUsers() Success', vals: { nodeUsersLength: nodeUsers.length }, time: Date.now() })
+      } catch (e) {
+        decisionTree.push({ stage: 'getNodeUsers() or sliceUsers() Error', vals: e.message, time: Date.now() })
+        throw new Error(`processStateMachineOperation():getNodeUsers()/sliceUsers() Error: ${e.toString()}`)
+      }
 
-    let unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
-    decisionTree.push({
-      stage: 'getUnhealthyPeers() Success',
-      vals: {
-        unhealthyPeerSetLength: unhealthyPeers.size,
-        unhealthyPeers: Array.from(unhealthyPeers)
-      },
-      time: Date.now()
-    })
+      let unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
+      decisionTree.push({
+        stage: 'getUnhealthyPeers() Success',
+        vals: {
+          unhealthyPeerSetLength: unhealthyPeers.size,
+          unhealthyPeers: Array.from(unhealthyPeers)
+        },
+        time: Date.now()
+      })
 
-    try {
       // Lists to aggregate all required ReplicaSetUpdate ops and potential SyncRequest ops
       const requiredUpdateReplicaSetOps = []
       const potentialSyncRequests = []

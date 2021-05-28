@@ -205,7 +205,7 @@ class PeerSetManager {
    * TODO: - consider moving this pure function to libs
    *
    * @param {string} endpoint
-   * @returns {Boolean}
+   * @returns {Object} the /health_check/verbose response
    */
   async determinePeerHealth (endpoint) {
     // Axios request will throw on timeout or non-200 response
