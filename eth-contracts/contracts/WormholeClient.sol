@@ -33,6 +33,16 @@ contract WormholeClient is InitializableV2 {
     Wormhole internal wormhole;
 
     /**
+     * @notice Get the token used by the contract for transfer
+     * @return The token used by the contract for transfer
+     */
+    function token() external view returns (address) {
+        _requireIsInitialized();
+
+        return address(transferToken);
+    }
+
+    /**
      * @notice Function to initialize the contract
      * @param _tokenAddress - address of ERC20 token that will be transfered
      * @param _wormholeAddress - address for Wormhole proxy contract
@@ -52,16 +62,6 @@ contract WormholeClient is InitializableV2 {
     }
 
     /**
-     * @notice Get the token used by the contract for transfer
-     * @return The token used by the contract for transfer
-     */
-    function token() external view returns (address) {
-        _requireIsInitialized();
-
-        return address(transferToken);
-    }
-
-    /**
      * @notice transfer `_amount` of tokens from sender to target account
      * @param _amount - amount of token to transfer
      * @param _recipient - foreign chain address of recipient
@@ -70,7 +70,6 @@ contract WormholeClient is InitializableV2 {
      * @param _refundDust - bool to refund dust
      */
     function lockAssets(
-        address _asset,
         uint256 _amount,
         bytes32 _recipient,
         uint8 _targetChain,
@@ -80,7 +79,7 @@ contract WormholeClient is InitializableV2 {
         transferToken.safeTransferFrom(msg.sender, address(this), _amount);
 
         wormhole.lockAssets(
-            _asset,
+            address(transferToken),
             _amount,
             _recipient,
             _targetChain,
