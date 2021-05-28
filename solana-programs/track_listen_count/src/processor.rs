@@ -11,7 +11,10 @@ use solana_program::{
     program::invoke, pubkey::Pubkey, sysvar::clock::Clock, sysvar::Sysvar,
 };
 
-const MAX_TIME_DIFF: i64 = 2000000; // this is about 3 minutes
+// Maximum time between multiple signer submission for adding additional
+// signers.
+// 10 minutes
+const MAX_TIME_DIFF_SECONDS: UnixTimestamp = 600;
 
 /// Program state handler.
 pub struct Processor {}
