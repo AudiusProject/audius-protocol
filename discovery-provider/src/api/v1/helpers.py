@@ -100,7 +100,7 @@ def add_user_artwork(user):
         user["cover_photo"] = cover
     return user
 
-def extend_user(user, current_user_id):
+def extend_user(user, current_user_id = None):
     user_id = encode_int_id(user["user_id"])
     user["id"] = user_id
     user = add_user_artwork(user)
