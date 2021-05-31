@@ -693,16 +693,16 @@ workflows:
 
       - deploy-staging-s3:
           context: Audius Client
-          requires:
-            - test-staging
+          # requires:
+          #   - test-staging
           filters:
             branches:
               only: /^master$/
 
       - deploy-staging-cloudflare:
           context: Audius Client
-          requires:
-            - test-staging
+          # requires:
+          #   - test-staging
           filters:
             branches:
               only: /^master$/
@@ -711,7 +711,7 @@ workflows:
           context: Audius Client
           requires:
             - init
-            - test-staging
+            # - test-staging
             - build-production
           filters:
             branches:
