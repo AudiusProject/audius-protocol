@@ -17,6 +17,7 @@ use solana_program::{
     sysvar,
     sysvar::clock::Clock,
     sysvar::Sysvar,
+    secp256k1_program
 };
 
 // Maximum time between multiple signer submission for adding additional
@@ -370,7 +371,7 @@ impl Processor {
             return Err(AudiusError::Secp256InstructionLosing.into());
         }
 
-        let recovered_instructions = instruction_recovery.unwrap();
+        let recovered_instructions = instruction_recovery?;
         if recovered_instructions.len() < 3 {
             return Err(AudiusError::Secp256InstructionLosing.into());
         }
@@ -378,6 +379,12 @@ impl Processor {
         let secp_instruction_1 = &recovered_instructions[0];
         let secp_instruction_2 = &recovered_instructions[1];
         let secp_instruction_3 = &recovered_instructions[2];
+
+        if secp_instruction_1.program_id != secp256k1_program::id()
+            || secp_instruction_2.program_id != secp256k1_program::id()
+            || secp_instruction_3.program_id != secp256k1_program::id() {
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
 
         let valid_signer_1 = Box::new(ValidSigner::try_from_slice(
             &valid_signer_1_info.data.borrow(),
@@ -509,6 +516,12 @@ impl Processor {
         let secp_instruction_2 = &recovered_instructions[1];
         let secp_instruction_3 = &recovered_instructions[2];
 
+        if secp_instruction_1.program_id != secp256k1_program::id()
+            || secp_instruction_2.program_id != secp256k1_program::id()
+            || secp_instruction_3.program_id != secp256k1_program::id() {
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
+
         let signer_group = Box::new(SignerGroup::try_from_slice(
             &signer_group_info.data.borrow(),
         )?);
@@ -619,6 +632,9 @@ impl Processor {
         }
 
         let secp_instruction = &recovered_instructions[0];
+        if secp_instruction.program_id != secp256k1_program::id() {
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
 
         let signer_group = Box::new(SignerGroup::try_from_slice(
             &signer_group_info.data.borrow(),
