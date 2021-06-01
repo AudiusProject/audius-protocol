@@ -18,7 +18,7 @@ depends_on = None
 
 def upgrade():
     op.create_table('skipped_transactions',
-        sa.Column('id', sa.Integer(), primary_key=True, nullable=False),
+        sa.Column('id', sa.Integer(), primary_key=True, nullable=False, autoincrement=True),
         sa.Column('blocknumber', sa.Integer(), nullable=False),
         sa.Column('blockhash', sa.String(), nullable=False),
         sa.Column('transactionhash', sa.String(), nullable=False),
