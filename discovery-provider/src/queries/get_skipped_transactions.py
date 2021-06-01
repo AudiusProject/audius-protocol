@@ -1,12 +1,15 @@
 import redis
+import logging
 from src.models import SkippedTransaction, Block
 from src.utils import helpers, db_session
 from src.utils.config import shared_config
+from src.utils.redis_cache import get_pickled_key, pickle_and_set
 
 REDIS_URL = shared_config["redis"]["url"]
 REDIS = redis.Redis.from_url(url=REDIS_URL)
 
-indexing_error_key = 'indexing:error'
+INDEXING_ERROR_KEY = 'indexing:error'
+logger = logging.getLogger(__name__)
 
 # returns the recorded skipped transactions in the db during indexing
 # filters by blocknumber, blockhash, or transaction hash if they are not null
@@ -39,7 +42,8 @@ def get_skipped_transactions(blocknumber, blockhash, transactionhash):
 # and whether the entry matches the given params
 # otherwise checks the database
 def get_transaction_status(blocknumber, blockhash, transactionhash):
-    indexing_error = REDIS.get(indexing_error_key)
+    indexing_error = getIndexingError(REDIS)
+
     # separating the conditions to reduce number of booleans in single condition (linting)
     if indexing_error:
         keys_exist = 'blocknumber' in indexing_error and \
@@ -82,3 +86,33 @@ def get_transaction_status(blocknumber, blockhash, transactionhash):
             return 'PASSED'
 
         return 'NOT_FOUND'
+
+
+def getIndexingError(redis):
+    indexing_error = get_pickled_key(redis, INDEXING_ERROR_KEY)
+    return indexing_error
+
+def setIndexingError(redis, blocknumber, blockhash, transactionhash, message, has_majority=False):
+    indexing_error = get_pickled_key(redis, INDEXING_ERROR_KEY)
+
+    if indexing_error is None or (
+        indexing_error['blocknumber'] != blocknumber and
+        indexing_error['blockhash'] != blockhash and
+        indexing_error['transactionhash'] != transactionhash
+    ):
+        indexing_error = {
+            'count': 1,
+            'blocknumber': blocknumber,
+            'blockhash': blockhash,
+            'transactionhash': transactionhash,
+            'message': message,
+            'has_majority': has_majority
+        }
+        pickle_and_set(redis, INDEXING_ERROR_KEY, indexing_error)
+    else:
+        indexing_error['count'] +=1
+        indexing_error['has_majority'] = has_majority
+        pickle_and_set(redis, INDEXING_ERROR_KEY, indexing_error)
+
+def clearIndexingError(redis):
+    redis.delete(INDEXING_ERROR_KEY)

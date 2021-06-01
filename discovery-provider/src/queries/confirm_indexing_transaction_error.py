@@ -1,6 +1,7 @@
 import logging
 import requests
 from src.tasks.index_metrics import get_all_other_nodes
+from src.queries.get_skipped_transactions import setIndexingError
 
 logger = logging.getLogger(__name__)
 
@@ -9,7 +10,7 @@ Confirms that a transaction is causing an error indexing across the discovery no
 Gets all other discovery nodes and makes an api call to check the status of a transaction
 given a blocknumber, blockhash, and transactionhash
 '''
-def confirm_indexing_transaction_error(blocknumber, blockhash, transactionhash):
+def confirm_indexing_transaction_error(redis, blocknumber, blockhash, transactionhash, message):
     all_other_nodes = get_all_other_nodes()
     num_other_nodes = len(all_other_nodes)
     num_transaction_failures = 0
@@ -26,4 +27,7 @@ def confirm_indexing_transaction_error(blocknumber, blockhash, transactionhash):
                 num_transaction_failures += 1
         except Exception as e:
             logger.error(e)
-    return {'num_failed': num_transaction_failures, 'total': num_other_nodes}
+
+    # Mark the redis indexing error w/ has_majority = true so that it skips this transaction
+    if num_other_nodes < (num_transaction_failures * 2):
+        setIndexingError(redis, blocknumber, blockhash, transactionhash, message, True)
