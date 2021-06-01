@@ -165,9 +165,9 @@ class SyncHistoryAggregator {
    * @returns an object of the `success` and `fail` redis keys for the aggregate sync count
    */
   static getAggregateSyncKeys () {
-    // ex: aggregateSync:::05212021:::success
     const prefix = `aggregateSync:::${new Date().toISOString().split('T')[0]}`
 
+    // ex: aggregateSync:::2021-06-01:::success
     return {
       success: `${prefix}:::${SYNC_STATES.success}`,
       fail: `${prefix}:::${SYNC_STATES.fail}`
@@ -179,9 +179,9 @@ class SyncHistoryAggregator {
    * @returns an object of the `succes` and `fail` redis keys for the latest sync dates
    */
   static getLatestSyncKeys () {
-    // ex: latestSync:::05212021:::success
     const prefix = `latestSync:::${new Date().toISOString().split('T')[0]}`
 
+    // ex: latestSync:::2021-06-01:::success
     return {
       success: `${prefix}:::${SYNC_STATES.success}`,
       fail: `${prefix}:::${SYNC_STATES.fail}`
