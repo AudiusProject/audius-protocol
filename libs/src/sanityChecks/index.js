@@ -21,10 +21,10 @@ class SanityChecks {
     await isCreator(this.libs)
     await sanitizeNodes(this.libs)
     await addSecondaries(this.libs)
+    await assignReplicaSetIfNecessary(this.libs)
     await syncNodes(this.libs)
     if (!this.options.skipRollover) await rolloverNodes(this.libs, creatorNodeWhitelist)
     await recoveryEmail(this.libs)
-    await assignReplicaSetIfNecessary(this.libs)
   }
 }
 
