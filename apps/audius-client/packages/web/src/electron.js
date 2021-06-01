@@ -118,7 +118,12 @@ const createWindow = () => {
     titleBarStyle: 'hidden',
     nativeWindowOpen: true,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      // TODO: Look into a way to turn on contextIsolation (it is safer),
+      // but window.require('electron').ipcRenderer will not work from the client
+      // as is. This was changed to `true` default in electron v12.
+      // https://github.com/electron/electron/issues/9920
+      contextIsolation: false
     }
   }
 
