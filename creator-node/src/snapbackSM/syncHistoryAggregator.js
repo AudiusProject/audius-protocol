@@ -101,7 +101,7 @@ class SyncHistoryAggregator {
    * and triggered syncs
    * @param {Object} logContext the log context off of the Express req object
    * @returns an object of the current day's aggregate sync count like
-   *    {triggered: <number>, success: <number>, fail: <number>}
+   *    {triggered: <natural number>, success: <natural number>, fail: <natural number>}
    */
   static async getAggregateSyncData (logContext) {
     const logger = genericLogger.child(logContext)
@@ -127,7 +127,7 @@ class SyncHistoryAggregator {
       logger.error(`syncHistoryAggregator - getAggregateSyncData() error - ${e.toString()}`)
     }
 
-    // Structure: {triggered: <number>, success: <number>, fail: <number>}
+    // Structure: {triggered: <natural number>, success: <natural number>, fail: <natural number>}
     return currentAggregateData
   }
 
@@ -136,7 +136,7 @@ class SyncHistoryAggregator {
    * states have not been triggered.
    * @param {Object} logContext the log context off of the Express req object
    * @returns an object of the current day's aggregate sync count like
-   *     {success: <MM:DD:YYYYTHH:MM:SS:sssZ>, fail: <MM:DD:YYYYTHH:MM:SS:sssZ>}
+   *     {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
    */
   static async getLatestSyncData (logContext) {
     const logger = genericLogger.child(logContext)
@@ -156,7 +156,7 @@ class SyncHistoryAggregator {
     } catch (e) {
       logger.error(`syncHistoryAggregator - getLatestSyncData() error - ${e.toString()}`)
     }
-    // Structure: {success: <MM:DD:YYYYTHH:MM:SS:sssZ>, fail: <MM:DD:YYYYTHH:MM:SS:sssZ>}
+    // Structure: {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
     return currentLatestSyncData
   }
 
