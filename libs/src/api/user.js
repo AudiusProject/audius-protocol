@@ -605,11 +605,7 @@ class Users extends Base {
   }
 
   /**
-   * If a user's creator_node_endpoint is null:
-   * 1. Generate a replica set
-   * 2. Use the `upgradeToCreator` method to
-   *    - Update the replica set
-   *    - Sync user data over from UM if any
+   * If a user's creator_node_endpoint is null, assign a replica set.
    * Used during the sanity check and in uploadImage() in files.js
    */
   async assignReplicaSetIfNecessary () {
@@ -621,10 +617,7 @@ class Users extends Base {
 
     // Generate a replica set and assign to user
     try {
-      const { primary, secondaries } = await this.ServiceProvider.autoSelectCreatorNodes({})
-      const contentNodeEndpoint = CreatorNode.buildEndpoint(primary, secondaries)
-      const currentEndpoint = this.userStateManager.getCurrentUser().creator_node_endpoint
-      await this.upgradeToCreator(currentEndpoint, contentNodeEndpoint, false)
+      await this.assignReplicaSet({ userId: user.user_id })
     } catch (e) {
       throw new Error(`assignReplicaSetIfNecessary error - ${e.toString()}`)
     }
