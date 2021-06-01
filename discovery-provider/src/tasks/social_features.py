@@ -2,12 +2,19 @@ import logging
 from datetime import datetime
 from src.app import contract_addresses
 from src.models import Repost, RepostType, Follow, Playlist
+from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
 
 
 def social_feature_state_update(
-        self, update_task, session, social_feature_factory_txs, block_number, block_timestamp
+    self,
+    update_task,
+    session,
+    social_feature_factory_txs,
+    block_number,
+    block_timestamp,
+    block_hash
 ):
     """Return int representing number of social feature related state changes in this transaction"""
 
@@ -31,66 +38,72 @@ def social_feature_state_update(
     follow_state_changes = {}
 
     for tx_receipt in social_feature_factory_txs:
-        add_track_repost(
-            self,
-            social_feature_factory_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            track_repost_state_changes,
-        )
-        delete_track_repost(
-            self,
-            social_feature_factory_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            track_repost_state_changes,
-        )
-        add_playlist_repost(
-            self,
-            social_feature_factory_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            playlist_repost_state_changes,
-        )
-        delete_playlist_repost(
-            self,
-            social_feature_factory_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            playlist_repost_state_changes,
-        )
-        add_follow(
-            self,
-            social_feature_factory_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            follow_state_changes,
-        )
-        delete_follow(
-            self,
-            social_feature_factory_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            follow_state_changes,
-        )
+        try:
+            add_track_repost(
+                self,
+                social_feature_factory_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                track_repost_state_changes,
+            )
+            delete_track_repost(
+                self,
+                social_feature_factory_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                track_repost_state_changes,
+            )
+            add_playlist_repost(
+                self,
+                social_feature_factory_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                playlist_repost_state_changes,
+            )
+            delete_playlist_repost(
+                self,
+                social_feature_factory_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                playlist_repost_state_changes,
+            )
+            add_follow(
+                self,
+                social_feature_factory_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                follow_state_changes,
+            )
+            delete_follow(
+                self,
+                social_feature_factory_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                follow_state_changes,
+            )
+        except Exception as e:
+            logger.info(f"Error in parse track transaction")
+            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+            blockhash = update_task.web3.toHex(block_hash)
+            raise IndexingError('social_feature', block_number, blockhash, txhash, str(e))
 
     # bulk process all repost and follow changes
 

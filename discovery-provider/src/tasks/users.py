@@ -9,11 +9,11 @@ from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.metadata import user_metadata_format
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
 from src.queries.get_balances import enqueue_balance_refresh
-
+from src.utils.indexing_errors import IndexingError
 logger = logging.getLogger(__name__)
 
 
-def user_state_update(self, update_task, session, user_factory_txs, block_number, block_timestamp):
+def user_state_update(self, update_task, session, user_factory_txs, block_number, block_timestamp, block_hash):
     """Return int representing number of User model state changes found in transaction."""
 
     num_total_changes = 0
@@ -42,34 +42,40 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
             processedEntries = 0 # if record does not get added, do not count towards num_total_changes
             for entry in user_events_tx:
                 user_id = entry["args"]._userId
-                user_ids.add(user_id)
+                try:
+                    user_id = entry["args"]._userId
+                    user_ids.add(user_id)
 
-                # if the user id is not in the lookup object, it hasn't been initialized yet
-                # first, get the user object from the db(if exists or create a new one)
-                # then set the lookup object for user_id with the appropriate props
-                if user_id not in user_events_lookup:
-                    ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp, txhash)
-                    user_events_lookup[user_id] = {"user": ret_user, "events": []}
+                    # if the user id is not in the lookup object, it hasn't been initialized yet
+                    # first, get the user object from the db(if exists or create a new one)
+                    # then set the lookup object for user_id with the appropriate props
+                    if user_id not in user_events_lookup:
+                        ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp, txhash)
+                        user_events_lookup[user_id] = {"user": ret_user, "events": []}
 
-                # Add or update the value of the user record for this block in user_events_lookup,
-                # ensuring that multiple events for a single user result in only 1 row insert operation
-                # (even if multiple operations are present)
-                user_record = parse_user_event(
-                    self,
-                    user_contract,
-                    update_task,
-                    session,
-                    tx_receipt,
-                    block_number,
-                    entry,
-                    event_type,
-                    user_events_lookup[user_id]["user"],
-                    block_timestamp
-                )
-                if user_record is not None:
-                    user_events_lookup[user_id]["events"].append(event_type)
-                    user_events_lookup[user_id]["user"] = user_record
-                    processedEntries += 1
+                    # Add or update the value of the user record for this block in user_events_lookup,
+                    # ensuring that multiple events for a single user result in only 1 row insert operation
+                    # (even if multiple operations are present)
+                    user_record = parse_user_event(
+                        self,
+                        user_contract,
+                        update_task,
+                        session,
+                        tx_receipt,
+                        block_number,
+                        entry,
+                        event_type,
+                        user_events_lookup[user_id]["user"],
+                        block_timestamp
+                    )
+                    if user_record is not None:
+                        user_events_lookup[user_id]["events"].append(event_type)
+                        user_events_lookup[user_id]["user"] = user_record
+                        processedEntries += 1
+                except Exception as e:
+                    logger.error(f"Error in parse user transaction")
+                    event_blockhash = update_task.web3.toHex(block_hash)
+                    raise IndexingError('user', block_number, event_blockhash, txhash, str(e))
 
             num_total_changes += processedEntries
 
