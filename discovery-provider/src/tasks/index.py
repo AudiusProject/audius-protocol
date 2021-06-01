@@ -371,13 +371,19 @@ def revert_blocks(self, db, revert_blocks_list):
     if num_revert_blocks == 0:
         return
 
-    if num_revert_blocks > 500:
-        logger.error(f"index.py | {self.request.id} | Revert blocks list > 500:")
-        logger.error(revert_blocks_list)
-        raise Exception('Unexpected revert, >0 blocks')
+    logger.info(f"index.py | {self.request.id} | num_revert_blocks:{num_revert_blocks}")
 
-    logger.error(f"index.py | {self.request.id} | Reverting {num_revert_blocks} blocks")
-    logger.error(revert_blocks_list)
+    if num_revert_blocks > 10000:
+        raise Exception('Unexpected revert, >10,0000 blocks')
+
+    if num_revert_blocks > 500:
+        logger.error(f"index.py | {self.request.id} | Revert blocks list > 500")
+        logger.error(revert_blocks_list)
+        revert_blocks_list = revert_blocks_list[:500]
+        logger.error(f"index.py | {self.request.id} | Sliced revert blocks list {revert_blocks_list}")
+
+    logger.info(f"index.py | {self.request.id} | Reverting {num_revert_blocks} blocks")
+    logger.info(revert_blocks_list)
 
     with db.scoped_session() as session:
 
@@ -430,8 +436,7 @@ def revert_blocks(self, db, revert_blocks_list):
                 session.query(AssociatedWallet).filter(AssociatedWallet.blockhash == revert_hash).all()
             )
 
-            # revert all of above transactions
-
+            # Revert all of above transactions
             for save_to_revert in revert_save_entries:
                 save_item_id = save_to_revert.save_item_id
                 save_user_id = save_to_revert.user_id
