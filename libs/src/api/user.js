@@ -19,7 +19,8 @@ const USER_PROPS = [
   'location',
   'creator_node_endpoint',
   'associated_wallets',
-  'collectibles'
+  'collectibles',
+  'playlist_library'
 ]
 // User metadata fields that are required on the metadata object and only can have
 // non-null values
