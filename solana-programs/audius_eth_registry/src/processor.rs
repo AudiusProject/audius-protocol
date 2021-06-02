@@ -134,8 +134,7 @@ impl Processor {
             let secp_instruction = sysvar::instructions::load_instruction_at(
                 iterator as usize,
                 &instruction_info.data.borrow(),
-            )
-            .unwrap();
+            ).map_err(|_| AudiusError::SignatureMissing)?;
             v.push(secp_instruction);
             iterator+=1;
         }
@@ -507,7 +506,7 @@ impl Processor {
             return Err(AudiusError::Secp256InstructionLosing.into());
         }
 
-        let recovered_instructions = instruction_recovery.unwrap();
+        let recovered_instructions = instruction_recovery?;
         if recovered_instructions.len() < 3 {
             return Err(AudiusError::Secp256InstructionLosing.into());
         }
@@ -626,7 +625,7 @@ impl Processor {
             return Err(AudiusError::Secp256InstructionLosing.into());
         }
 
-        let recovered_instructions = instruction_recovery.unwrap();
+        let recovered_instructions = instruction_recovery?;
         if recovered_instructions.len() < 1 {
             return Err(AudiusError::Secp256InstructionLosing.into());
         }
