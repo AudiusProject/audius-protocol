@@ -1,7 +1,7 @@
 """user_playlist_library
 
 Revision ID: 05e2eeb2bd03
-Revises: c8d2be7dcccc
+Revises: 6cf96b71cf3d
 Create Date: 2021-05-18 19:12:33.451567
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = '05e2eeb2bd03'
-down_revision = 'c8d2be7dcccc'
+down_revision = '6cf96b71cf3d'
 branch_labels = None
 depends_on = None
 
