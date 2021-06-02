@@ -1,5 +1,4 @@
-import { useQuery } from '@apollo/client'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 import { Status, User, Operator } from 'types'
@@ -8,6 +7,7 @@ import { AppState } from 'store/types'
 import { setLoading, setUsers } from '../slice'
 import { useEffect, useState } from 'react'
 import { FullUser, UsersData, UsersVars, UserData, UserVars } from './types'
+import { getGraphAPI, useGraphQuery as useQuery } from 'store/api/hooks'
 import { formatUser } from './formatter'
 import { GET_USERS, GET_USER } from './queries'
 
@@ -44,6 +44,8 @@ function populateUsers(
 
 // -------------------------------- Hooks  --------------------------------
 export const useUsers = (status: Status | undefined) => {
+  const { hasBackupClient, didError } = useSelector(getGraphAPI)
+
   const { error: gqlError, data: gqlData } = useQuery<UsersData, UsersVars>(
     GET_USERS,
     {
@@ -60,6 +62,13 @@ export const useUsers = (status: Status | undefined) => {
     }
   }, [gqlData, dispatch, status])
 
+  console.log({ hasBackupClient, gqlError, didError })
+
+  // If there is a fallback, do not return error until the fallback also errors
+  if (hasBackupClient && gqlError && !didError) {
+    return { error: null }
+  }
+
   return {
     error: gqlError
   }
@@ -71,6 +80,8 @@ export const useUser = (
   hasUser: boolean
 ) => {
   const [didFetch, setDidFetch] = useState(false)
+  const { hasBackupClient, didError } = useSelector(getGraphAPI)
+
   const { error: gqlError, data: gqlData } = useQuery<UserData, UserVars>(
     GET_USER,
     {
@@ -88,6 +99,11 @@ export const useUser = (
       dispatch(populateUsers([gqlData.user], setStatus))
     }
   }, [hasUser, gqlData, dispatch, setStatus, didFetch, setDidFetch])
+
+  // If there is a fallback, do not return error until the fallback also errors
+  if (hasBackupClient && gqlError && !didError) {
+    return { error: null }
+  }
 
   return {
     error: gqlError

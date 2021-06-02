@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 
 export const GET_USERS = gql`
   query users($where: User_filter!, $orderBy: User_orderBy!) {
-    users(where: $where, orderBy: $orderBy, orderDirection: desc) {
+    users(where: $where, orderBy: $orderBy, orderDirection: desc, first: 200) {
       id
       balance
       totalClaimableAmount
@@ -22,6 +22,7 @@ export const GET_USERS = gql`
         orderBy: claimableAmount
         orderDirection: desc
         where: { amount_gt: 0 }
+        first: 200
       ) {
         claimableAmount
         amount
@@ -35,6 +36,7 @@ export const GET_USERS = gql`
         orderBy: claimableAmount
         orderDirection: desc
         where: { amount_gt: 0 }
+        first: 200
       ) {
         claimableAmount
         amount
@@ -115,6 +117,7 @@ export const GET_USER = gql`
         orderBy: claimableAmount
         orderDirection: desc
         where: { amount_gt: 0 }
+        first: 200
       ) {
         claimableAmount
         amount
@@ -128,6 +131,7 @@ export const GET_USER = gql`
         orderBy: claimableAmount
         orderDirection: desc
         where: { amount_gt: 0 }
+        first: 200
       ) {
         claimableAmount
         amount
