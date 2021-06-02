@@ -12,13 +12,13 @@ logger = logging.getLogger(__name__)
 
 
 def playlist_state_update(
-    self,
-    update_task,
-    session,
-    playlist_factory_txs,
-    block_number,
-    block_timestamp,
-    block_hash
+        self,
+        update_task,
+        session,
+        playlist_factory_txs,
+        block_number,
+        block_timestamp,
+        block_hash
 ):
     """Return int representing number of Playlist model state changes found in transaction."""
     num_total_changes = 0

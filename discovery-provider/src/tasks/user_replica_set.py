@@ -10,7 +10,6 @@ from src.utils.user_event_constants import (
     user_replica_set_manager_event_types_lookup
 )
 from src.utils.redis_cache import get_pickled_key, get_sp_id_key
-from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
 
@@ -51,73 +50,68 @@ def user_replica_set_state_update(
         for event_type in user_replica_set_manager_event_types_arr:
             user_events_tx = getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
             for entry in user_events_tx:
-                try:
-                    args = entry["args"]
-                    # Check if _userId is present
-                    # If user id is found in the event args, update the local lookup object
-                    user_id = args._userId if "_userId" in args else None
-                    if user_id:
-                        user_ids.add(user_id)
+                args = entry["args"]
+                # Check if _userId is present
+                # If user id is found in the event args, update the local lookup object
+                user_id = args._userId if "_userId" in args else None
+                if user_id:
+                    user_ids.add(user_id)
 
-                    # Check if cnodeId is present
-                    # If cnode id is found in event args, update local lookup object
-                    cnode_sp_id = args._cnodeSpId if "_cnodeSpId" in args else None
+                # Check if cnodeId is present
+                # If cnode id is found in event args, update local lookup object
+                cnode_sp_id = args._cnodeSpId if "_cnodeSpId" in args else None
 
-                    # if the user id is not in the lookup object, it hasn't been initialized yet
-                    # first, get the user object from the db(if exists or create a new one)
-                    # then set the lookup object for user_id with the appropriate props
-                    if user_id and (user_id not in user_replica_set_events_lookup):
-                        ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp, txhash)
-                        user_replica_set_events_lookup[user_id] = {"user": ret_user, "events": []}
+                # if the user id is not in the lookup object, it hasn't been initialized yet
+                # first, get the user object from the db(if exists or create a new one)
+                # then set the lookup object for user_id with the appropriate props
+                if user_id and (user_id not in user_replica_set_events_lookup):
+                    ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp, txhash)
+                    user_replica_set_events_lookup[user_id] = {"user": ret_user, "events": []}
 
-                    if cnode_sp_id and (cnode_sp_id not in cnode_events_lookup):
-                        ret_cnode = lookup_ursm_cnode(
-                            update_task,
-                            session,
-                            entry,
-                            block_number,
-                            block_timestamp,
-                            txhash
-                        )
-                        cnode_events_lookup[cnode_sp_id] = {"content_node": ret_cnode, "events": []}
+                if cnode_sp_id and (cnode_sp_id not in cnode_events_lookup):
+                    ret_cnode = lookup_ursm_cnode(
+                        update_task,
+                        session,
+                        entry,
+                        block_number,
+                        block_timestamp,
+                        txhash
+                    )
+                    cnode_events_lookup[cnode_sp_id] = {"content_node": ret_cnode, "events": []}
 
-                    # Add or update the value of the user record for this block in user_replica_set_events_lookup,
-                    # ensuring that multiple events for a single user result in only 1 row insert operation
-                    # (even if multiple operations are present)
-                    if event_type == user_replica_set_manager_event_types_lookup['update_replica_set']:
-                        primary = args._primaryId
-                        secondaries = args._secondaryIds
-                        signer = args._signer
-                        user_record = user_replica_set_events_lookup[user_id]["user"]
-                        user_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
-                        user_record.primary_id = primary
-                        user_record.secondary_ids = secondaries
-                        user_record.replica_set_update_signer = signer
+                # Add or update the value of the user record for this block in user_replica_set_events_lookup,
+                # ensuring that multiple events for a single user result in only 1 row insert operation
+                # (even if multiple operations are present)
+                if event_type == user_replica_set_manager_event_types_lookup['update_replica_set']:
+                    primary = args._primaryId
+                    secondaries = args._secondaryIds
+                    signer = args._signer
+                    user_record = user_replica_set_events_lookup[user_id]["user"]
+                    user_record.updated_at = datetime.utcfromtimestamp(block_timestamp)
+                    user_record.primary_id = primary
+                    user_record.secondary_ids = secondaries
+                    user_record.replica_set_update_signer = signer
 
-                        # Update cnode endpoint string reconstructed from sp ID
-                        creator_node_endpoint_str = get_endpoint_string_from_sp_ids(
-                            update_task,
-                            primary,
-                            secondaries,
-                            redis
-                        )
-                        user_record.creator_node_endpoint = creator_node_endpoint_str
-                        user_replica_set_events_lookup[user_id]["user"] = user_record
-                        user_replica_set_events_lookup[user_id]["events"].append(event_type)
-                    # Process L2 Content Node operations
-                    elif event_type == user_replica_set_manager_event_types_lookup['add_or_update_content_node']:
-                        cnode_record = parse_ursm_cnode_record(
-                            update_task,
-                            entry,
-                            cnode_events_lookup[cnode_sp_id]["content_node"]
-                        )
-                        if cnode_record is not None:
-                            cnode_events_lookup[cnode_sp_id]["content_node"] = cnode_record
-                            cnode_events_lookup[cnode_sp_id]["events"].append(event_type)
-                except Exception as e:
-                    logger.info(f"Error in parse user replica set transaction")
-                    event_blockhash = update_task.web3.toHex(block_hash)
-                    raise IndexingError('user_replica_set', block_number, event_blockhash, txhash, str(e))
+                    # Update cnode endpoint string reconstructed from sp ID
+                    creator_node_endpoint_str = get_endpoint_string_from_sp_ids(
+                        update_task,
+                        primary,
+                        secondaries,
+                        redis
+                    )
+                    user_record.creator_node_endpoint = creator_node_endpoint_str
+                    user_replica_set_events_lookup[user_id]["user"] = user_record
+                    user_replica_set_events_lookup[user_id]["events"].append(event_type)
+                # Process L2 Content Node operations
+                elif event_type == user_replica_set_manager_event_types_lookup['add_or_update_content_node']:
+                    cnode_record = parse_ursm_cnode_record(
+                        update_task,
+                        entry,
+                        cnode_events_lookup[cnode_sp_id]["content_node"]
+                    )
+                    if cnode_record is not None:
+                        cnode_events_lookup[cnode_sp_id]["content_node"] = cnode_record
+                        cnode_events_lookup[cnode_sp_id]["events"].append(event_type)
             num_user_replica_set_changes += len(user_events_tx)
     # for each record in user_replica_set_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx

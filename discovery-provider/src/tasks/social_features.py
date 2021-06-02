@@ -8,13 +8,13 @@ logger = logging.getLogger(__name__)
 
 
 def social_feature_state_update(
-    self,
-    update_task,
-    session,
-    social_feature_factory_txs,
-    block_number,
-    block_timestamp,
-    block_hash
+        self,
+        update_task,
+        session,
+        social_feature_factory_txs,
+        block_number,
+        block_timestamp,
+        block_hash
 ):
     """Return int representing number of social feature related state changes in this transaction"""
 

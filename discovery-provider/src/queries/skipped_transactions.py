@@ -7,13 +7,13 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint("indexing", __name__)
 
-'''
-Returns skipped transactions during indexing
-Takes query params 'blocknumber', 'blockhash', and 'transactionhash'
-Filters by query params if they are not null
-'''
 @bp.route("/indexing/skipped_transactions", methods=["GET"])
 def check_skipped_transactions():
+    """
+    Returns skipped transactions during indexing
+    Takes query params 'blocknumber', 'blockhash', and 'transactionhash'
+    Filters by query params if they are not null
+    """
     blocknumber = request.args.get("blocknumber", type=int)
     blockhash = request.args.get("blockhash")
     transactionhash = request.args.get("transactionhash")
@@ -22,12 +22,12 @@ def check_skipped_transactions():
     )
     return success_response(skipped_transactions)
 
-'''
-Returns whether a transaction 'PASSED' | 'FAILED' | 'NOT_FOUND'
-based on all 3 query params 'blocknumber', 'blockhash', and 'transactionhash'
-'''
 @bp.route("/indexing/transaction_status", methods=["GET"])
 def check_transaction_status():
+    """
+    Returns whether a transaction 'PASSED' | 'FAILED' | 'NOT_FOUND'
+    based on all 3 query params 'blocknumber', 'blockhash', and 'transactionhash'
+    """
     blocknumber = request.args.get("blocknumber", type=int)
     blockhash = request.args.get("blockhash")
     transactionhash = request.args.get("transactionhash")

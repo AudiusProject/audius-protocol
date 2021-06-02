@@ -1,5 +1,5 @@
-import redis
 import logging
+import redis
 from src.models import SkippedTransaction, Block
 from src.utils import helpers, db_session
 from src.utils.config import shared_config
@@ -88,17 +88,17 @@ def get_transaction_status(blocknumber, blockhash, transactionhash):
         return 'NOT_FOUND'
 
 
-def getIndexingError(redis):
-    indexing_error = get_pickled_key(redis, INDEXING_ERROR_KEY)
+def getIndexingError(redis_instance):
+    indexing_error = get_pickled_key(redis_instance, INDEXING_ERROR_KEY)
     return indexing_error
 
-def setIndexingError(redis, blocknumber, blockhash, transactionhash, message, has_majority=False):
-    indexing_error = get_pickled_key(redis, INDEXING_ERROR_KEY)
+def setIndexingError(redis_instance, blocknumber, blockhash, transactionhash, message, has_majority=False):
+    indexing_error = get_pickled_key(redis_instance, INDEXING_ERROR_KEY)
 
     if indexing_error is None or (
-        indexing_error['blocknumber'] != blocknumber and
-        indexing_error['blockhash'] != blockhash and
-        indexing_error['transactionhash'] != transactionhash
+            indexing_error['blocknumber'] != blocknumber and
+            indexing_error['blockhash'] != blockhash and
+            indexing_error['transactionhash'] != transactionhash
     ):
         indexing_error = {
             'count': 1,
@@ -108,11 +108,11 @@ def setIndexingError(redis, blocknumber, blockhash, transactionhash, message, ha
             'message': message,
             'has_majority': has_majority
         }
-        pickle_and_set(redis, INDEXING_ERROR_KEY, indexing_error)
+        pickle_and_set(redis_instance, INDEXING_ERROR_KEY, indexing_error)
     else:
-        indexing_error['count'] +=1
+        indexing_error['count'] += 1
         indexing_error['has_majority'] = has_majority
-        pickle_and_set(redis, INDEXING_ERROR_KEY, indexing_error)
+        pickle_and_set(redis_instance, INDEXING_ERROR_KEY, indexing_error)
 
-def clearIndexingError(redis):
-    redis.delete(INDEXING_ERROR_KEY)
+def clearIndexingError(redis_instance):
+    redis_instance.delete(INDEXING_ERROR_KEY)

@@ -1,8 +1,4 @@
-class Error(Exception):
-    """Base class for exceptions in this module."""
-    pass
-
-class IndexingError(Error):
+class IndexingError(Exception):
     """Exception raised for errors in the indexing flow.
 
     Attributes:
@@ -14,6 +10,7 @@ class IndexingError(Error):
     """
 
     def __init__(self, type, blocknumber, blockhash, transactionhash, message):
+        super(IndexingError, self).__init__(message)
         self.type = type
         self.blocknumber = blocknumber
         self.blockhash = blockhash

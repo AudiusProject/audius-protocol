@@ -15,8 +15,7 @@ from src.utils.redis_constants import latest_block_redis_key, \
     latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, \
     most_recent_indexed_block_redis_key
 from src.utils.redis_cache import remove_cached_user_ids, \
-    remove_cached_track_ids, remove_cached_playlist_ids, \
-    get_pickled_key
+    remove_cached_track_ids, remove_cached_playlist_ids
 from src.queries.get_skipped_transactions import getIndexingError, \
     setIndexingError, clearIndexingError
 from src.queries.confirm_indexing_transaction_error import confirm_indexing_transaction_error
@@ -319,7 +318,8 @@ def index_blocks(self, db, blocks_list):
 
                 social_feature_state_changed = ( # pylint: disable=W0612
                     social_feature_state_update(
-                        self, update_task, session, social_feature_factory_txs, block_number, block_timestamp, block_hash
+                        self, update_task, session, social_feature_factory_txs, block_number,
+                        block_timestamp, block_hash
                     )
                     > 0
                 )
@@ -384,9 +384,13 @@ def index_blocks(self, db, blocks_list):
                         remove_cached_playlist_ids(redis, playlist_ids)
                 logger.info(f"index.py | redis cache clean operations complete for block=${block_number}")
             except IndexingError as err:
-                logger.info(f"index.py | Error in the indexing task at block={err.blocknumber} and hash={err.transactionhash}")
+                logger.info(
+                    f"index.py | Error in the indexing task at"
+                    f" block={err.blocknumber} and hash={err.transactionhash}"
+                )
                 setIndexingError(redis, err.blocknumber, err.blockhash, err.transactionhash, err.message)
-                confirm_indexing_transaction_error(redis, err.blocknumber, err.blockhash, err.transactionhash, err.message)
+                confirm_indexing_transaction_error(
+                    redis, err.blocknumber, err.blockhash, err.transactionhash, err.message)
                 raise
         # add the block number of the most recently processed block to redis
         redis.set(most_recent_indexed_block_redis_key, block.number)

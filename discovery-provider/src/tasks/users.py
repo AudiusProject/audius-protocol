@@ -50,7 +50,8 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
                     # first, get the user object from the db(if exists or create a new one)
                     # then set the lookup object for user_id with the appropriate props
                     if user_id not in user_events_lookup:
-                        ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp, txhash)
+                        ret_user = lookup_user_record(
+                            update_task, session, entry, block_number, block_timestamp, txhash)
                         user_events_lookup[user_id] = {"user": ret_user, "events": []}
 
                     # Add or update the value of the user record for this block in user_events_lookup,
