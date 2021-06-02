@@ -112,7 +112,7 @@ def upgrade():
         # Something is wrong here, we should not have this many. Back out.
         return
 
-    logger.warn(f"Fixing {len(target_tracks)} target tracks")
+    logger.warning(f"Fixing {len(target_tracks)} target tracks")
     for track in target_tracks:
         track.track_segments = fix_segments(track.track_segments)
     session.commit()
@@ -135,7 +135,7 @@ def downgrade():
         # Something is wrong here, we should not have this many. Back out.
         return
 
-    logger.warn(f"Un-fixing {len(target_tracks)} target tracks")
+    logger.warning(f"Un-fixing {len(target_tracks)} target tracks")
     for track in target_tracks:
         track.track_segments = unfix_segments(track.track_segments)
     session.commit()

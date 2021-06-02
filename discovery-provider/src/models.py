@@ -166,6 +166,7 @@ class User(Base):
     secondary_ids = Column(postgresql.ARRAY(Integer), nullable=True)
     replica_set_update_signer = Column(String, nullable=True)
     has_collectibles = Column(Boolean, nullable=False, default=False, server_default='false')
+    playlist_library = Column(JSONB, nullable=True)
 
     PrimaryKeyConstraint(is_current, user_id, blockhash, txhash)
 
