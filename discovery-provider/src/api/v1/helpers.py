@@ -106,7 +106,7 @@ def extend_user(user, current_user_id = None):
     user = add_user_artwork(user)
     # Do not surface playlist library in user response unless we are
     # that user specifically
-    if not current_user_id or current_user_id != user["user_id"]:
+    if "playlist_library" in user and not current_user_id or current_user_id != user["user_id"]:
         del user["playlist_library"]
 
     return user
