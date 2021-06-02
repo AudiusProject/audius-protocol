@@ -6,8 +6,8 @@ const SYNC_STATES = Object.freeze({
   fail: 'fail'
 })
 
-// Make key expire in 7 days in seconds
-const EXPIRATION = 7 /* days */ * 24 /* hr */ * 60 /* min */ * 60 /* s */
+// Make key expire in 90 days in seconds
+const EXPIRATION = 90 /* days */ * 24 /* hr */ * 60 /* min */ * 60 /* s */
 
 /**
  * A static class intended to:
