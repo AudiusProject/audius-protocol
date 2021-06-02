@@ -132,6 +132,7 @@ jobs:
       - run:
           name: mad-dog repo init
           command: |
+            source ~/.bash_profile
             cd mad-dog/
             nvm install v10.16
             npm install
