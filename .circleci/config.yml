@@ -171,6 +171,7 @@ jobs:
             nvm use 10.16
             cd /home/circleci/project/service-commands/scripts/
             cd /home/circleci/project/libs/
+            npm rebuild
             npm link
             cd /home/circleci/project/service-commands/
             npm link
