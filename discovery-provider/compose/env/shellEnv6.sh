@@ -1,0 +1,5 @@
+export COMPOSE_PROJECT_NAME="dp6"
+export audius_server_port="5005"
+export audius_db_port="6436"
+export audius_ipfs_external_port="6066"
+export audius_redis_port="5386"
