@@ -133,6 +133,7 @@ jobs:
           name: mad-dog repo init
           command: |
             cd mad-dog/
+            nvm install v10.16
             npm install
       - save_cache:
           name: Save mad-dog cache
