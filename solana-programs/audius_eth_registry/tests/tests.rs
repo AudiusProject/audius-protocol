@@ -623,7 +623,7 @@ async fn validate_signature() {
 }
 
 #[tokio::test]
-async fn validate_signature_with_wrong_data() {
+async fn validate_signature_with_wrong_signer() {
     let mut rng = thread_rng();
     let key: [u8; 32] = rng.gen();
     let priv_key = SecretKey::parse(&key).unwrap();
@@ -632,8 +632,8 @@ async fn validate_signature_with_wrong_data() {
 
     let message = [1u8; 29];
 
-    let priv_key_2 = SecretKey::parse(&key).unwrap();
     // Sign with an incorrect private key not matching the public eth address for this ValidSigner
+    let priv_key_2 = SecretKey::parse(&rng.gen()).unwrap();
     let secp256_program_instruction =
         secp256k1_instruction::new_secp256k1_instruction(&priv_key_2, &message);
 
