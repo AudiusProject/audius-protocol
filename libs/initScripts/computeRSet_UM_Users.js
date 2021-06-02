@@ -139,7 +139,12 @@ async function getSPsAndDoHealthCheck (audiusLibs, UMSpId) {
   // Exclude https://creatornode.audius4.prod-us-west-2.staked.cloud
   // Excluded https://content-a.mainnet.audius.radar.tech, 24
   // Excluded https://creatornode.audius6.prod-us-west-2.staked.cloud, 19
-  const audiusInfraSpIds = new Set([UMSpId, 1, 2, 3, 17, 15, 12, 18, 19, 24]) // when UM is registered, exclude it as secondary
+  // Excluded https://creatornode.audius.prod-us-west-2.staked.cloud, 7
+  // Excluded https://creatornode.audius5.prod-us-west-2.staked.cloud, 16
+  // Excluded https://audius-content-3.figment.io, 9
+  const audiusInfraSpIds = new Set([
+    UMSpId, 1, 2, 3, 17, 15, 16, 12, 18, 19, 24, 7, 9
+  ]) // when UM is registered, exclude it as secondary
   let spIdToEndpointAndCount = {}
 
   const sps = await audiusLibs.ethContracts.getServiceProviderList(CONTENT_NODE_TYPE)
@@ -351,7 +356,7 @@ const setReplicaSet = async ({
   )
   await audiusLibs.User.waitForCreatorNodeEndpointIndexing(userId, newCreatorNodeEndpoint)
 
-  console.log(`userId=${userId} | Successful contract write, ${primary.spId}, secondaries=${secondary1.spId},${secondary2.spId}`)
+  console.log(`userId=${userId} | Successful contract write | primaryId=${primary.spId}, secondaries=${secondary1.spId},${secondary2.spId}`)
 }
 
 const updateSingleUser = async (
@@ -395,8 +400,8 @@ const run = async () => {
   let userIdsFail = []
 
   // const numUsersToProcess = numOfUsers
-  const numUsersToProcess = 5000
-  for (offset = 4000; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  const numUsersToProcess = 190000
+  for (offset = 160000; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
     console.log('------------------------------------------------------')
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
@@ -433,7 +438,7 @@ const run = async () => {
       // Randomly select two secondaries from spIds
       let replicaSet = []
       let secondary1Index = Math.floor(Math.random() * spIds.length)
-      console.log(`user=${id} - Found secondary1Index as ${secondary1Index}`)
+      // console.log(`user=${id} - Found secondary1Index as ${secondary1Index}`)
       let secondary2Index = -1
       while (secondary2Index === -1 || secondary1Index === secondary2Index) {
         secondary2Index = Math.floor(Math.random() * spIds.length)
