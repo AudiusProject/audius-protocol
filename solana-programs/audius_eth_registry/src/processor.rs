@@ -37,6 +37,31 @@ impl Processor {
     /// ValidSigner version indicating signer uninitialization
     pub const VALID_SIGNER_UNINITIALIZED_VERSION: u8 = 0;
 
+    fn validate_eth_signature(
+        expected_signer: [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
+        message: &[u8],
+        secp_instruction_data: Vec<u8>,
+    ) -> Result<(), AudiusError> {
+        msg!("validate_eth_signature");
+        let eth_address_offset = 12;
+        let instruction_signer = secp_instruction_data
+            [eth_address_offset..eth_address_offset + SecpSignatureOffsets::ETH_ADDRESS_SIZE]
+            .to_vec();
+        if instruction_signer != expected_signer {
+            msg!("INVALID ERROR");
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
+
+        let message_data_offset = 97; // meta (12) + address (20) + signature (65) = 97
+        let instruction_message = secp_instruction_data[message_data_offset..].to_vec();
+        if instruction_message != message {
+            msg!("INVALID MESSAGE");
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
+        msg!("Validated successfully");
+        Ok(())
+    }
+
     /// Process [recover instruction data]().
     pub fn recover_instruction_data(
         signature_data: &SignatureData,
@@ -654,12 +679,26 @@ impl Processor {
         if valid_signer.signer_group != *signer_group_info.key {
             return Err(AudiusError::WrongSignerGroup.into());
         }
+        /*
 
-        let instruction_data = Self::recover_instruction_data(&signature_data, &valid_signer);
+            fn validate_eth_signature(
+        expected_signer: [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
+        message: &[u8],
+        secp_instruction_data: Vec<u8>,
+    ) -> Result<(), AudiusError> {
+        */
 
-        if instruction_data != secp_instruction.data {
-            return Err(AudiusError::SignatureVerificationFailed.into());
-        }
+        Self::validate_eth_signature(
+            valid_signer.eth_address,
+            &signature_data.message,
+            secp_instruction.data.clone()
+        )?;
+
+        // let instruction_data = Self::recover_instruction_data(&signature_data, &valid_signer);
+
+        // if instruction_data != secp_instruction.data {
+        //     return Err(AudiusError::SignatureVerificationFailed.into());
+        // }
 
         Ok(())
     }

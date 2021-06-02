@@ -632,8 +632,10 @@ async fn validate_signature_with_wrong_data() {
 
     let message = [1u8; 29];
 
+    let priv_key_2 = SecretKey::parse(&key).unwrap();
+    // Sign with an incorrect private key not matching the public eth address for this ValidSigner
     let secp256_program_instruction =
-        secp256k1_instruction::new_secp256k1_instruction(&priv_key, &message);
+        secp256k1_instruction::new_secp256k1_instruction(&priv_key_2, &message);
 
     let start = 1;
     let end = start + state::SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
