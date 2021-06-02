@@ -42,7 +42,7 @@ def get_skipped_transactions(blocknumber, blockhash, transactionhash):
 # and whether the entry matches the given params
 # otherwise checks the database
 def get_transaction_status(blocknumber, blockhash, transactionhash):
-    indexing_error = getIndexingError(REDIS)
+    indexing_error = get_indexing_error(REDIS)
 
     # separating the conditions to reduce number of booleans in single condition (linting)
     if indexing_error:
@@ -88,7 +88,7 @@ def get_transaction_status(blocknumber, blockhash, transactionhash):
         return 'NOT_FOUND'
 
 
-def getIndexingError(redis_instance):
+def get_indexing_error(redis_instance):
     indexing_error = get_pickled_key(redis_instance, INDEXING_ERROR_KEY)
     return indexing_error
 

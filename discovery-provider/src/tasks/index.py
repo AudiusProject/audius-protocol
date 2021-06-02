@@ -16,7 +16,7 @@ from src.utils.redis_constants import latest_block_redis_key, \
     most_recent_indexed_block_redis_key
 from src.utils.redis_cache import remove_cached_user_ids, \
     remove_cached_track_ids, remove_cached_playlist_ids
-from src.queries.get_skipped_transactions import getIndexingError, \
+from src.queries.get_skipped_transactions import get_indexing_error, \
     setIndexingError, clearIndexingError
 from src.queries.confirm_indexing_transaction_error import confirm_indexing_transaction_error
 from src.utils.indexing_errors import IndexingError
@@ -171,7 +171,7 @@ def update_ursm_address(self):
 def get_skip_tx_hash(session, redis):
     """Fetch if there is a tx_hash to be skipped because of continuous errors
     """
-    indexing_error = getIndexingError(redis)
+    indexing_error = get_indexing_error(redis)
     if isinstance(indexing_error, dict) and 'has_majority' in indexing_error and indexing_error['has_majority']:
         skipped_tx = SkippedTransaction(
             blocknumber=indexing_error['blocknumber'],
