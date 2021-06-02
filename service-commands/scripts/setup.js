@@ -11,6 +11,7 @@ const {
 } = ServiceCommands
 
 const NUM_CREATOR_NODES = 4
+const NUM_DISCOVERY_PROVIDERS = 1
 const SERVICE_INSTANCE_NUMBER = 1
 
 const printOptions = () => {
@@ -58,9 +59,15 @@ program
     'number of creator nodes',
     NUM_CREATOR_NODES.toString()
   )
+  .option(
+    '-nd, --num-dp <number>',
+    'number of discovery providers',
+    NUM_DISCOVERY_PROVIDERS.toString()
+  )
   .action(async opts => {
-    const numCnodes = parseInt(opts.numCnodes)
-    await allUp({ numCreatorNodes: numCnodes })
+    const numCreatorNodes = parseInt(opts.numCnodes)
+    const numDiscoveryProviders = parseInt(opts.numDp)
+    await allUp({ numCreatorNodes, numDiscoveryProviders })
   })
 
 program
@@ -81,11 +88,17 @@ program
     'number of creator nodes',
     NUM_CREATOR_NODES.toString()
   )
+  .option(
+    '-nd, --num-dp <number>',
+    'number of discovery providers',
+    NUM_DISCOVERY_PROVIDERS.toString()
+  )
   .action(async opts => {
     console.log('Restarting services...')
-    const numCnodes = parseInt(opts.numCnodes)
+    const numCreatorNodes = parseInt(opts.numCnodes)
+    const numDiscoveryProviders = parseInt(opts.numDp)
     await runSetupCommand(Service.ALL, SetupCommand.DOWN)
-    await allUp({ numCreatorNodes: numCnodes })
+    await allUp({ numCreatorNodes, numDiscoveryProviders })
   })
 
 program
@@ -106,7 +119,7 @@ program
       const serviceName = findService(service)
       const setupCommand = findCommand(command)
 
-      if (serviceName === Service.CREATOR_NODE) {
+      if (serviceName === Service.CREATOR_NODE ||  serviceName === Service.DISCOVERY_PROVIDER) {
         const serviceNumber = parseInt(opts.instanceNum)
         if (serviceNumber < 1) {
           throw new Error(
