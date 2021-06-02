@@ -417,7 +417,7 @@ class SnapbackSM {
       let nodeUsers
       try {
         nodeUsers = await this.peerSetManager.getNodeUsers()
-        nodeUsers = this.peerSetManager.sliceUsers({ nodeUsers, moduloBase: ModuloBase, currentModuloSlice: this.currentModuloSlice })
+        nodeUsers = this.sliceUsers(nodeUsers)
 
         decisionTree.push({ stage: 'getNodeUsers() and sliceUsers() Success', vals: { nodeUsersLength: nodeUsers.length }, time: Date.now() })
       } catch (e) {
@@ -425,15 +425,22 @@ class SnapbackSM {
         throw new Error(`processStateMachineOperation():getNodeUsers()/sliceUsers() Error: ${e.toString()}`)
       }
 
-      let unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
-      decisionTree.push({
-        stage: 'getUnhealthyPeers() Success',
-        vals: {
-          unhealthyPeerSetLength: unhealthyPeers.size,
-          unhealthyPeers: Array.from(unhealthyPeers)
-        },
-        time: Date.now()
-      })
+      let unhealthyPeers
+
+      try {
+        unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
+        decisionTree.push({
+          stage: 'getUnhealthyPeers() Success',
+          vals: {
+            unhealthyPeerSetLength: unhealthyPeers.size,
+            unhealthyPeers: Array.from(unhealthyPeers)
+          },
+          time: Date.now()
+        })
+      } catch (e) {
+        decisionTree.push({ stage: 'processStateMachineOperation():getUnhealthyPeers() Error', vals: e.message, time: Date.now() })
+        throw new Error(`processStateMachineOperation():getUnhealthyPeers() Error: ${e.toString()}`)
+      }
 
       // Lists to aggregate all required ReplicaSetUpdate ops and potential SyncRequest ops
       const requiredUpdateReplicaSetOps = []
@@ -933,6 +940,17 @@ class SnapbackSM {
       recurringWaiting,
       recurringActive
     }
+  }
+
+  /**
+   * Select chunk of users to process in this run
+   *  - User is selected if (user_id % moduloBase = currentModuloSlice)
+   * @param {Object[]} nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+   */
+  sliceUsers (nodeUsers) {
+    return nodeUsers.filter(nodeUser =>
+      nodeUser.user_id % ModuloBase === this.currentModuloSlice
+    )
   }
 }
 

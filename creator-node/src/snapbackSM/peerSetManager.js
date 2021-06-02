@@ -163,20 +163,6 @@ class PeerSetManager {
   }
 
   /**
-   * Select chunk of users to process in this run
-   *  - User is selected if (user_id % moduloBase = currentModuloSlice)
-   * @param {Object} param
-   * @param {Object[]} param.nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
-   * @param {number} param.moduluoBase
-   * @param {number} param.currentModuloSlice
-   */
-  sliceUsers ({ nodeUsers, moduloBase, currentModuloSlice }) {
-    return nodeUsers.filter(nodeUser =>
-      nodeUser.user_id % moduloBase === currentModuloSlice
-    )
-  }
-
-  /**
    * @param {Object[]} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
    * @returns {Set} Set of content node endpoint strings
    */
