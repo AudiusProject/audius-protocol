@@ -419,11 +419,8 @@ class Users extends Base {
    * This creates a record for that user on the connected creator node.
    * @param {string} existingEndpoint
    * @param {string} newCreatorNodeEndpoint comma delineated
-   * @param {boolean} setIsCreatorFlag flag to set is_current to true.
-   *  This is for users who are on UM to to get assigned a replica set without updating their
-   *  status to being a creator
    */
-  async upgradeToCreator (existingEndpoint, newCreatorNodeEndpoint, setIsCreatorFlag = true) {
+  async upgradeToCreator (existingEndpoint, newCreatorNodeEndpoint) {
     this.REQUIRES(Services.CREATOR_NODE)
 
     // Error if libs instance does not already have existing user state
@@ -445,9 +442,7 @@ class Users extends Base {
 
     // Populate metadata with required fields - wallet, is_creator, creator_node_endpoint
     newMetadata.wallet = this.web3Manager.getWalletAddress()
-    if (setIsCreatorFlag) {
-      newMetadata.is_creator = true
-    }
+    newMetadata.is_creator = true
 
     let updateEndpointTxBlockNumber = null
 
