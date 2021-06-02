@@ -173,9 +173,6 @@
         "PlaylistLibrary": {
             "type": ["object", "null"],
             "default": null,
-            "additionalProperties": {
-                "$ref": "#/definitions/Collectible"
-            },
             "properties": {
                 "contents": {
                     "type": "array",
