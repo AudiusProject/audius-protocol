@@ -17,7 +17,7 @@ from src.utils.redis_constants import latest_block_redis_key, \
 from src.utils.redis_cache import remove_cached_user_ids, \
     remove_cached_track_ids, remove_cached_playlist_ids
 from src.queries.get_skipped_transactions import get_indexing_error, \
-    setIndexingError, clearIndexingError
+    set_indexing_error, clear_indexing_error
 from src.queries.confirm_indexing_transaction_error import confirm_indexing_transaction_error
 from src.utils.indexing_errors import IndexingError
 
@@ -369,7 +369,7 @@ def index_blocks(self, db, blocks_list):
                 session.commit()
                 logger.info(f"index.py | session commmited to db for block=${block_number}")
                 if skip_tx_hash:
-                    clearIndexingError(redis)
+                    clear_indexing_error(redis)
                 if user_state_changed:
                     if user_ids:
                         remove_cached_user_ids(redis, user_ids)
@@ -388,7 +388,7 @@ def index_blocks(self, db, blocks_list):
                     f"index.py | Error in the indexing task at"
                     f" block={err.blocknumber} and hash={err.transactionhash}"
                 )
-                setIndexingError(redis, err.blocknumber, err.blockhash, err.transactionhash, err.message)
+                set_indexing_error(redis, err.blocknumber, err.blockhash, err.transactionhash, err.message)
                 confirm_indexing_transaction_error(
                     redis, err.blocknumber, err.blockhash, err.transactionhash, err.message)
                 raise

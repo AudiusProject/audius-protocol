@@ -1,7 +1,7 @@
 import logging
 import requests
 from src.tasks.index_metrics import get_all_other_nodes
-from src.queries.get_skipped_transactions import setIndexingError
+from src.queries.get_skipped_transactions import set_indexing_error
 
 logger = logging.getLogger(__name__)
 
@@ -30,4 +30,4 @@ def confirm_indexing_transaction_error(redis, blocknumber, blockhash, transactio
 
     # Mark the redis indexing error w/ has_majority = true so that it skips this transaction
     if num_other_nodes < (num_transaction_failures * 2):
-        setIndexingError(redis, blocknumber, blockhash, transactionhash, message, True)
+        set_indexing_error(redis, blocknumber, blockhash, transactionhash, message, True)

@@ -92,7 +92,7 @@ def get_indexing_error(redis_instance):
     indexing_error = get_pickled_key(redis_instance, INDEXING_ERROR_KEY)
     return indexing_error
 
-def setIndexingError(redis_instance, blocknumber, blockhash, transactionhash, message, has_majority=False):
+def set_indexing_error(redis_instance, blocknumber, blockhash, transactionhash, message, has_majority=False):
     indexing_error = get_pickled_key(redis_instance, INDEXING_ERROR_KEY)
 
     if indexing_error is None or (
@@ -114,5 +114,5 @@ def setIndexingError(redis_instance, blocknumber, blockhash, transactionhash, me
         indexing_error['has_majority'] = has_majority
         pickle_and_set(redis_instance, INDEXING_ERROR_KEY, indexing_error)
 
-def clearIndexingError(redis_instance):
+def clear_indexing_error(redis_instance):
     redis_instance.delete(INDEXING_ERROR_KEY)
