@@ -1,12 +1,20 @@
-const path = require('path')
 const fs = require('fs')
 const { Buffer } = require('ipfs-http-client')
 const { promisify } = require('util')
+const path = require('path')
+const tus = require('tus-node-server')
+const uuid = require('uuid/v4')
 
 const config = require('../config.js')
-const { getSegmentsDuration } = require('../segmentDuration')
 const models = require('../models')
-const { saveFileFromBufferToIPFSAndDisk, saveFileToIPFSFromFS, removeTrackFolder, handleTrackContentUpload } = require('../fileManager')
+const {
+  saveFileFromBufferToIPFSAndDisk,
+  saveFileToIPFSFromFS,
+  removeTrackFolder,
+  handleTrackContentUpload,
+  getFileExtension,
+  checkFileMiddleware
+} = require('../fileManager')
 const {
   handleResponse,
   handleResponseWithHeartbeat,
@@ -25,17 +33,144 @@ const {
   ensureStorageMiddleware
 } = require('../middlewares')
 const TranscodingQueue = require('../TranscodingQueue')
+const { getSegmentsDuration } = require('../segmentDuration')
+
 const { getCID } = require('./files')
 const { decode } = require('../hashids.js')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
+const { FileProcessingQueue } = require('../FileProcessingQueue')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
+const DiskManager = require('../diskManager')
 
 const readFile = promisify(fs.readFile)
+const tmpTrackArtifactsPath = DiskManager.getTmpTrackUploadArtifactsPath()
+// This is the path used for resumable track content uploads.
+// It must be the same as the path of where the track file is uploaded.
+// In our case, the route must be able to accept file path patterns like
+//    <tmp artifacts path>/<random uuid 1>/<random uuid 2>.<file extension>
+// hence the /*/* part of the route
+// Reference: https://github.com/tus/tus-node-server#use-tus-node-server-as-express-middleware
+const resumableUploadRoute = path.join(tmpTrackArtifactsPath, '*', '*')
+
+// Structure: <uuid>.<file_extension>. e.g. 1234-1234-1234-1234.mp3
+const getFileName = (req) => {
+  return req.storedFolderName + '/' + req.storedFileName + getFileExtension(req.headers.filename)
+}
+
+const server = new tus.Server()
+server.datastore = new tus.FileStore({
+  // Has to be a path that exists
+  path: tmpTrackArtifactsPath,
+  // In the tus-node-server example, they set the file path using the 'path' key. However, in their package,
+  // doing so strips off any forward slashes. The 'directory' key overrides any 'path' specified, so use
+  // this key instead.
+  directory: tmpTrackArtifactsPath,
+  namingFunction: getFileName
+})
+
+/**
+ * The helper method to do the resumable upload and chunking
+ */
+async function handleResumableUpload (req, res, next) {
+  try {
+    // Grab the file details off of the url
+    const urlArr = req.originalUrl.split('/')
+    const fileDir = (urlArr.slice(0, urlArr.length - 1)).join('/')
+    const storedFileName = (urlArr.slice(urlArr.length - 1))[0]
+
+    const resp = await server.handle.bind(server)(req, res, next)
+    if (resp.statusCode > 299 || resp.statusCode < 200) {
+      // TODO: add resp details
+      throw new Error(`Unsuccessful upload creation. fileDir=${fileDir} fileName=${storedFileName}`)
+    }
+
+    // If the entire upload is done, add a transcode task to the worker queue
+    if (parseInt(req.headers.filesize) === resp.getHeaders()['upload-offset']) {
+      await FileProcessingQueue.addTranscodeTask(
+        {
+          logContext: req.logContext,
+          req: {
+            fileName: storedFileName,
+            fileDir,
+            fileDestination: fileDir,
+            session: {
+              cnodeUserUUID: req.session.cnodeUserUUID
+            }
+          }
+        }
+      )
+    }
+  } catch (e) {
+    return sendResponse(req, res, errorResponseServerError(e.toString()))
+  }
+}
 
 const SaveFileToIPFSConcurrencyLimit = 10
 
 module.exports = function (app) {
+  /**
+   * Initiate an upload using resumable and chunking logic for a track
+   */
+  app.post('/track_content_upload', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, checkFileMiddleware, async function (req, res, next) {
+    // Use the tus-node-server package to handle track upload
+
+    // Save file under randomly named folders to avoid collisions
+    const randomFileName = uuid()
+    const randomFolderName = uuid()
+    // The new, random file name for the uploaded track
+    req.storedFileName = randomFileName
+    // The new, random folder name that holds the uploaded track
+    req.storedFolderName = randomFolderName
+
+    const fileDir = path.join(tmpTrackArtifactsPath, randomFolderName)
+
+    try {
+      // Create directories for original file and segments
+      DiskManager.ensureDirPathExists(fileDir)
+      DiskManager.ensureDirPathExists(fileDir + '/segments')
+
+      req.logger.info(`Created track disk storage: ${fileDir}, ${randomFileName}`)
+    } catch (e) {
+      return sendResponse(req, res, errorResponseServerError(e.toString()))
+    }
+
+    // Initialize resumable upload flow; handles responding with errors if they arise
+    await server.handle.bind(server)(req, res, next)
+  })
+
+  // Routes that handle the resumable upload HEAD and PATCH requests.
+  // Note: due to package limitations, we must set the route to the directory of where the track is uploaded.
+  // Consider forking off this repo and making the HEAD/PATCH URLs configurable in the future
+  app.head(resumableUploadRoute, authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleResumableUpload)
+  app.patch(resumableUploadRoute, authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleResumableUpload)
+
+  /**
+   * Add a track transcode task into the worker queue. If the track file is uploaded properly (not transcoded), return successResponse
+   * @note this track content route is used in conjunction with the polling.
+   */
+  app.post('/track_content_async', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
+    if (req.fileSizeError || req.fileFilterError) {
+      removeTrackFolder({ logContext: req.logContext }, req.fileDir)
+      return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
+    }
+
+    await FileProcessingQueue.addTranscodeTask(
+      {
+        logContext: req.logContext,
+        req: {
+          fileName: req.fileName,
+          fileDir: req.fileDir,
+          fileDestination: req.file.destination,
+          session: {
+            cnodeUserUUID: req.session.cnodeUserUUID
+          }
+        }
+      }
+    )
+    return successResponse({ uuid: req.logContext.requestID })
+  }))
+
   /**
    * upload track segment files and make avail - will later be associated with Audius track
    * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
@@ -81,7 +216,7 @@ module.exports = function (app) {
 
     // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
     codeBlockTimeStart = Date.now()
-    const transcodeFileIPFSResp = await saveFileToIPFSFromFS(req, transcodedFilePath)
+    const transcodeFileIPFSResp = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, transcodedFilePath, req.app.get('ipfsAPI'))
 
     let segmentFileIPFSResps = []
     for (let i = 0; i < segmentFilePaths.length; i += SaveFileToIPFSConcurrencyLimit) {
@@ -89,7 +224,7 @@ module.exports = function (app) {
 
       const sliceResps = await Promise.all(segmentFilePathsSlice.map(async (segmentFilePath) => {
         const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
-        const { multihash, dstPath } = await saveFileToIPFSFromFS(req, segmentAbsolutePath)
+        const { multihash, dstPath } = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, segmentAbsolutePath, req.app.get('ipfsAPI'))
         return { multihash, srcPath: segmentFilePath, dstPath }
       }))
 

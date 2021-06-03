@@ -4,7 +4,9 @@ from src.monitors.database import \
     get_database_connection_info, \
     get_database_connections, \
     get_database_liveness, \
-    get_database_size
+    get_database_size, \
+    get_database_index_count, \
+    get_database_index_info
 from src.monitors.memory import \
     get_total_memory, \
     get_used_memory
@@ -58,6 +60,21 @@ DATABASE_CONNECTION_INFO = {
     monitor_names.func: get_database_connection_info,
     monitor_names.type: 'json'
 }
+
+DATABASE_INDEX_COUNT = {
+    monitor_names.name: monitor_names.database_index_count,
+    monitor_names.func: get_database_index_count,
+    monitor_names.ttl: 60 * 60 * 6, # six hours
+    monitor_names.type: 'int'
+}
+
+DATABASE_INDEX_INFO = {
+    monitor_names.name: monitor_names.database_index_info,
+    monitor_names.func: get_database_index_info,
+    monitor_names.ttl: 60 * 60 * 6, # six hours
+    monitor_names.type: 'json'
+}
+
 
 TOTAL_MEMORY = {
     monitor_names.name: monitor_names.total_memory,
@@ -121,6 +138,8 @@ MONITORS = {
     monitor_names.database_size: DATABASE_SIZE,
     monitor_names.database_connections: DATABASE_CONNECTIONS,
     monitor_names.database_connection_info: DATABASE_CONNECTION_INFO,
+    monitor_names.database_index_count: DATABASE_INDEX_COUNT,
+    monitor_names.database_index_info: DATABASE_INDEX_INFO,
     monitor_names.total_memory: TOTAL_MEMORY,
     monitor_names.used_memory: USED_MEMORY,
     monitor_names.filesystem_size: FILESYSTEM_SIZE,

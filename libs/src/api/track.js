@@ -356,7 +356,7 @@ class Track extends Base {
         txReceipt.blockNumber,
         transcodedTrackUUID
       )
-      return { trackId, error: false }
+      return { blockHash: txReceipt.blockHash, blockNumber: txReceipt.blockNumber, trackId, error: false }
     } catch (e) {
       return {
         error: e.message,
@@ -398,7 +398,8 @@ class Track extends Base {
         trackFile,
         coverArtFile,
         metadata,
-        onProgress)
+        onProgress
+      )
     }, {
     // Retry function 3x
     // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
@@ -516,7 +517,7 @@ class Track extends Base {
     )
     // Re-associate the track id with the new metadata
     await this.creatorNode.associateTrack(trackId, metadataFileUUID, txReceipt.blockNumber)
-    return trackId
+    return { blockHash: txReceipt.blockHash, blockNumber: txReceipt.blockNumber, trackId }
   }
 
   /**

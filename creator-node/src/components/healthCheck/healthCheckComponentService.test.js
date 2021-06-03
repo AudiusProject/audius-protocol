@@ -30,6 +30,8 @@ const getMonitorsMock = async (monitors) => {
         return 6237151232
       case MONITORS.USED_MEMORY.name:
         return 5969739776
+      case MONITORS.USED_TCP_MEMORY.name:
+        return 922
       case MONITORS.STORAGE_PATH_SIZE.name:
         return 62725623808
       case MONITORS.STORAGE_PATH_USED.name:
@@ -116,6 +118,7 @@ describe('Test Health Check Verbose', function () {
       databaseSize: 1102901,
       totalMemory: 6237151232,
       usedMemory: 5969739776,
+      usedTCPMemory: 922,
       storagePathSize: 62725623808,
       storagePathUsed: 54063878144,
       maxFileDescriptors: 524288,

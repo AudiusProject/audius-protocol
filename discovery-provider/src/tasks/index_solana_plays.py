@@ -42,7 +42,13 @@ def parse_instruction_data(data):
 
     user_id_length = int.from_bytes(decoded[0:4], "little")
     user_id_start, user_id_end = 4, 4 + user_id_length
-    user_id = int(decoded[user_id_start:user_id_end])
+
+    # Clients send a GUID for anonymous user ID listens, which will be recorded as userId=None
+    user_id = None
+    try:
+        user_id = int(decoded[user_id_start:user_id_end])
+    except ValueError:
+        logger.error(f"Failed to parse user_id from {decoded[user_id_start:user_id_end]}", exc_info=True)
 
     track_id_length = int.from_bytes(decoded[user_id_end:user_id_end + 4],
                                      "little")
@@ -52,7 +58,13 @@ def parse_instruction_data(data):
     source_length = int.from_bytes(decoded[track_id_end:track_id_end + 4],
                                    "little")
     source_start, source_end = track_id_end + 4, track_id_end + 4 + source_length
-    source = str(decoded[source_start:source_end], 'utf-8')
+
+    # Source is not expected to be null, but may be
+    source = None
+    try:
+        source = str(decoded[source_start:source_end], 'utf-8')
+    except ValueError:
+        logger.error(f"Failed to parse source from {decoded[source_start:source_end]}", exc_info=True)
 
     timestamp = int.from_bytes(decoded[source_end:source_end + 8], "little")
 
@@ -226,8 +238,10 @@ This is performed by simply slicing the tx_batches array and discarding the newe
 is found - these limiting parameters are defined as TX_SIGNATURES_MAX_BATCHES, TX_SIGNATURES_RESIZE_LENGTH
 '''
 def process_solana_plays(solana_client):
-    if not TRACK_LISTEN_PROGRAM:
-        logger.info("index_solana_plays.py | No program configured, exiting")
+    try:
+        base58.b58decode(TRACK_LISTEN_PROGRAM)
+    except ValueError:
+        logger.info("index_solana_plays.py | Invalid program configured, exiting")
         return
 
     db = index_solana_plays.db

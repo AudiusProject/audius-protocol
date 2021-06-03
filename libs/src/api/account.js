@@ -112,7 +112,7 @@ class Account extends Base {
       ADD_USER: 'ADD_USER'
     }
     let phase = ''
-    let userId
+    let userId, blockHash, blockNumber
 
     try {
       this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
@@ -133,7 +133,10 @@ class Account extends Base {
 
       // Add user to chain
       phase = phases.ADD_USER
-      userId = await this.User.addUser(metadata)
+      const response = await this.User.addUser(metadata)
+      userId = response.userId
+      blockHash = response.blockHash
+      blockNumber = response.blockNumber
 
       // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in this order)
       phase = phases.ADD_REPLICA_SET
@@ -145,8 +148,7 @@ class Account extends Base {
     } catch (e) {
       return { error: e.message, phase }
     }
-
-    return { userId, error: false }
+    return { blockHash, blockNumber, userId }
   }
 
   /**

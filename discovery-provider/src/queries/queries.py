@@ -541,7 +541,10 @@ def get_previously_private_playlists_route():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
-# Get the users for a given creator node url
+
+# Get the users with a given `creator_node_endpoint` as primary
+# NOTE This route is deprecated in favor of `/users/content_node` in src/api/v1/users.py:UsersByContentNode()
+#       It cannot be removed for backwards-compatibility
 @bp.route("/users/creator_node", methods=("GET",))
 def get_creator_node_users():
     try:
@@ -552,6 +555,7 @@ def get_creator_node_users():
         return api_helpers.success_response(users)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
+
 
 # Get the list of content nodes registered on UserReplicaSetManager
 @bp.route("/ursm_content_nodes", methods=("GET",))
@@ -564,6 +568,7 @@ def get_ursm_content_nodes():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
+
 # Get this discovery provider's ipfs peer info
 @bp.route("/ipfs_peer_info", methods=("GET",))
 def get_ipfs_peer_info_route():
@@ -572,6 +577,7 @@ def get_ipfs_peer_info_route():
         return api_helpers.success_response(ipfs_peer_info)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
+
 
 # Get details for a single play written to Solana
 @bp.route("/get_sol_play", methods=("GET",))
@@ -583,6 +589,7 @@ def get_sol_play_tx():
         return api_helpers.success_response(sig)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
+
 
 # Get details for latest track listen milestones
 # Used to parse and issue notifications

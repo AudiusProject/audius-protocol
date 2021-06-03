@@ -1,5 +1,6 @@
 import logging
 from sqlalchemy import desc, func
+from src import exceptions
 from src.models import Play
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -9,6 +10,9 @@ logger = logging.getLogger(__name__)
 
 # Get single play from table
 def get_sol_play(sol_tx_signature):
+    if not sol_tx_signature:
+        raise exceptions.ArgumentError("Missing tx signature")
+
     db = get_db_read_replica()
     sol_play = None
     with db.scoped_session() as session:

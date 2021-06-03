@@ -214,6 +214,7 @@ module.exports = function (app) {
 
     // Dedicated listen flow
     if (solanaListen) {
+      logger.info(`Sending Track listen transaction trackId=${trackId} userId=${userId}`)
       let solTxSignature = await solClient.createAndVerifyMessage(
         null,
         config.get('solanaSignerPrivateKey'),
@@ -221,7 +222,7 @@ module.exports = function (app) {
         trackId.toString(),
         'relay' // Static source value to indicate relayed listens
       )
-      logger.info(`Track listen tx submitted, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
+      logger.info(`Track listen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
       return successResponse({
         solTxSignature
       })
@@ -236,6 +237,7 @@ module.exports = function (app) {
     if (trackListenRecord && trackListenRecord[1]) {
       logger.info(`New track listen record inserted ${trackListenRecord}`)
     }
+    await models.TrackListenCount.increment('listens', { where: { hour: currentHour, trackId: req.params.id } })
 
     // Clients will send a randomly generated string UUID for anonymous users.
     // Those listened should NOT be recorded in the userTrackListen table

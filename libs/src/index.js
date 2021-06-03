@@ -174,7 +174,9 @@ class AudiusLibs {
     comstockConfig,
     captchaConfig,
     isServer,
-    isDebug = false
+    isDebug = false,
+    useTrackContentPolling = false,
+    useResumableTrackUpload = false
   }) {
     // set version
     this.version = packageJSON.version
@@ -208,6 +210,9 @@ class AudiusLibs {
     this.Track = null
     this.Playlist = null
     this.File = null
+
+    this.useTrackContentPolling = useTrackContentPolling
+    this.useResumableTrackUpload = useResumableTrackUpload
 
     // Schemas
     const schemaValidator = new SchemaValidator()
@@ -305,7 +310,9 @@ class AudiusLibs {
         this.schemas,
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
-        this.creatorNodeConfig.monitoringCallbacks
+        this.creatorNodeConfig.monitoringCallbacks,
+        this.useTrackContentPolling,
+        this.useResumableTrackUpload
       )
       await this.creatorNode.init()
     }

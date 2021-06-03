@@ -1,8 +1,14 @@
 const axios = require('axios')
 const FormData = require('form-data')
-const uuid = require('../../utils/uuid')
+const tus = require('tus-js-client')
 
+const { wait } = require('../../utils')
+const uuid = require('../../utils/uuid')
 const SchemaValidator = require('../schemaValidator')
+
+const CHUNK_SIZE = 2000000 // 2MB
+const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
+const POLL_STATUS_INTERVAL = 3000 // 3s
 
 // Currently only supports a single logged-in audius user
 class CreatorNode {
@@ -99,7 +105,9 @@ class CreatorNode {
     schemas,
     passList = null,
     blockList = null,
-    monitoringCallbacks = {}
+    monitoringCallbacks = {},
+    useTrackContentPolling,
+    useResumableTrackUpload
   ) {
     this.web3Manager = web3Manager
     // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
@@ -117,6 +125,10 @@ class CreatorNode {
     this.passList = passList
     this.blockList = blockList
     this.monitoringCallbacks = monitoringCallbacks
+
+    this.useTrackContentPolling = useTrackContentPolling
+    // Supported browsers https://github.com/tus/tus-js-client/blob/master/docs/installation.md#browser-support
+    this.useResumableTrackUpload = useResumableTrackUpload && tus.isSupported
   }
 
   async init () {
@@ -335,7 +347,66 @@ class CreatorNode {
    * @return {Object} response body
    */
   async uploadTrackAudio (file, onProgress) {
+    // tus + worker queue + polling
+    if (this.useResumableTrackUpload) {
+      return this.handleAsyncAndResumableTrackUpload(file, onProgress)
+    }
+
+    if (this.useTrackContentPolling) {
+      // multer + worker queue + polling
+      return this.handleAsyncAndNotResumableTrackUpload(file, onProgress)
+    }
+
+    // multer + direct response from /track_content
+    return this.handleSynchronousAndNotResumableTrackUpload(file, onProgress)
+  }
+
+  async handleAsyncAndResumableTrackUpload (file, onProgress) {
+    const { uuid } = await this._uploadResumableTrackFile(file, onProgress)
+    return this.pollProcessingStatus('transcode', uuid)
+  }
+
+  async handleAsyncAndNotResumableTrackUpload (file, onProgress) {
+    const { data: { uuid } } = await this._uploadFile(file, '/track_content_async', onProgress)
+    return this.pollProcessingStatus('transcode', uuid)
+  }
+
+  async handleSynchronousAndNotResumableTrackUpload (file, onProgress) {
     const { data: body } = await this._uploadFile(file, '/track_content', onProgress)
+    return body
+  }
+
+  async pollProcessingStatus (taskType, uuid) {
+    const route = this.creatorNodeEndpoint + '/track_content_status'
+    const start = Date.now()
+    while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
+      const { status, resp } = await this.getTrackContentProcessingStatus(uuid)
+      // Should have a body structure of:
+      //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
+      if (status && status === 'DONE') return resp
+      if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`${taskType} failed: uuid=${uuid}, error=${resp}`), route, uuid)
+
+      await wait(POLL_STATUS_INTERVAL)
+    }
+
+    // TODO: update MAX_TRACK_TRANSCODE_TIMEOUT if generalizing this method
+    await this._handleErrorHelper(new Error(`${taskType} took over ${MAX_TRACK_TRANSCODE_TIMEOUT}ms. uuid=${uuid}`), route, uuid)
+  }
+
+  /**
+   * Gets the task progress given the task type and uuid associated with the task
+   * @param {string} uuid the uuid of the track transcoding task
+   * @returns the status, and the success or failed response if the task is complete
+   */
+  async getTrackContentProcessingStatus (uuid) {
+    const { data: body } = await this._makeRequest({
+      url: '/track_content_status',
+      params: {
+        uuid
+      },
+      method: 'get'
+    })
+
     return body
   }
 
@@ -624,15 +695,12 @@ class CreatorNode {
   }
 
   /**
-   * Uploads a file to the connected creator node.
-   * @param {File} file
-   * @param {string} route route to handle upload (image_upload, track_upload, etc.)
-   * @param {function?} onProgress called with loaded bytes and total bytes
-   * @param {Object<string, any>} extraFormDataOptions extra FormData fields passed to the upload
+   * Create headers and formData for file upload
+   * @param {Object} file the file to upload
+   * @param {boolean} [isTrackUpload] flag to determine if uploading track. If true, add track upload headers
+   * @returns headers and formData in an object
    */
-  async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}, retries = 1) {
-    await this.ensureConnected()
-
+  createFormDataAndUploadHeaders (file, extraFormDataOptions = {}) {
     // form data is from browser, not imported npm module
     let formData = new FormData()
     formData.append('file', file)
@@ -648,9 +716,25 @@ class CreatorNode {
 
     const requestId = uuid()
     headers['X-Request-ID'] = requestId
+    return { headers, formData }
+  }
+
+  /**
+   * Uploads a file to the connected creator node.
+   * @param {File} file
+   * @param {string} route route to handle upload (image_upload, track_upload, etc.)
+   * @param {function?} onProgress called with loaded bytes and total bytes
+   * @param {Object<string, any>} extraFormDataOptions extra FormData fields passed to the upload
+   */
+  async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}, retries = 1) {
+    await this.ensureConnected()
+
+    const { headers, formData } = this.createFormDataAndUploadHeaders(file, extraFormDataOptions)
+    const requestId = headers['X-Request-ID']
 
     let total
     const url = this.creatorNodeEndpoint + route
+
     try {
       // Hack alert!
       //
@@ -691,6 +775,81 @@ class CreatorNode {
       }
       await this._handleErrorHelper(e, url, requestId)
     }
+  }
+
+  async _uploadResumableTrackFile (file, onProgress) {
+    await this.ensureConnected()
+    const { headers } = this.createFormDataAndUploadHeaders(file)
+    const url = this.creatorNodeEndpoint + '/track_content_upload'
+
+    try {
+      return await this.startResumableUpload(file, url, headers, onProgress)
+    } catch (e) {
+      this._handleErrorHelper(e, url, headers['X-Request-ID'])
+    }
+  }
+
+  // https://github.com/tus/tus-js-client/blob/master/docs/api.md
+  async startResumableUpload (file, url, headers, onProgress) {
+    return new Promise((resolve, reject) => {
+      const upload = new tus.Upload(file, {
+        // Endpoint is the upload creation URL from your tus server
+        endpoint: url,
+        // Retry delays will enable tus-js-client to automatically retry on errors
+        retryDelays: [0, 3000, 5000, 10000, 20000],
+        // Attach additional metadata about the file for the server
+        headers: {
+          ...headers,
+          filesize: file.size,
+          filetype: file.type,
+          filename: file.name
+        },
+        metadata: {
+          filesize: file.size,
+          filetype: file.type,
+          filename: file.name,
+          userId: this.userStateManager.getCurrentUser().user_id
+        },
+        // An optional integer representing the size of the file in bytes
+        uploadSize: file.size,
+        // Maximum size of PATCH request body in bytes
+        chunkSize: CHUNK_SIZE,
+        // When the same file is uploaded again after first success, do not reuse the previous upload
+        removeFingerprintOnSuccess: true,
+        // Callback for errors which cannot be fixed using retries
+        onError: async function (error) { reject(error) },
+        // Callback for reporting upload progress
+        onProgress: function (bytesUploaded, bytesTotal) {
+          // const percentage = (bytesUploaded / bytesTotal * 100).toFixed(2)
+          onProgress(bytesUploaded, bytesTotal)
+        },
+        // Callback for once the upload is completed
+        onSuccess: function () {
+          onProgress(file.size, file.size)
+          const patchUrlArr = upload.url.split('/')
+          const fileDir = '/' + patchUrlArr.slice(3, patchUrlArr.length - 1).join('/')
+          const fileName = patchUrlArr.slice(patchUrlArr.length - 1)[0]
+          const uuid = headers['X-Request-ID']
+          resolve({ fileDir, fileName, uuid })
+        },
+        // A fn used to generate a unique str from a corresponding file. Used to store the URL for an upload to resume
+        fingerprint: function (file, options) {
+          const { filename, filetype, userId } = options.metadata
+          return Promise.resolve(filename + filetype + userId)
+        }
+      })
+
+      // Check if there are any previous uploads to continue.
+      upload.findPreviousUploads().then(function (previousUploads) {
+        // Found previous uploads so we select the first one.
+        if (previousUploads.length) {
+          upload.resumeFromPreviousUpload(previousUploads[0])
+        }
+
+        // Start the upload
+        upload.start()
+      })
+    })
   }
 
   async _handleErrorHelper (e, requestUrl, requestId = null) {

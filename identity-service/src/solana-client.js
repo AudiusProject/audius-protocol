@@ -177,7 +177,12 @@ async function createAndVerifyMessage (
   let signature = await solanaWeb3.sendAndConfirmTransaction(
     solanaConnection,
     transaction,
-    [feePayerAccount]
+    [feePayerAccount],
+    {
+      skipPreflight: true,
+      commitment: config.get('solanaTxCommitmentLevel'),
+      preflightCommitment: config.get('solanaTxCommitmentLevel')
+    }
   )
 
   return signature
