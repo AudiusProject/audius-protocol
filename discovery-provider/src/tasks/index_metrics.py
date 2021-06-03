@@ -283,13 +283,12 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
 
         if new_route_metrics is not None and new_app_metrics is not None:
             visited_node_timestamps[node] = end_time
+            redis_set_and_dump(redis, metrics_visited_nodes, json.dumps(visited_node_timestamps))
 
     # persist updated summed unique counts
     persist_summed_unique_counts(db, end_time, summed_unique_daily_count, summed_unique_monthly_count)
 
     logger.info(f"visited node timestamps: {visited_node_timestamps}")
-    if visited_node_timestamps:
-        redis_set_and_dump(redis, metrics_visited_nodes, json.dumps(visited_node_timestamps))
 
 def get_historical_metrics(node):
     try:
