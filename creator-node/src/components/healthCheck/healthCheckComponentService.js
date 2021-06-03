@@ -75,7 +75,9 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     maxFileDescriptors,
     allocatedFileDescriptors,
     receivedBytesPerSec,
-    transferredBytesPerSec
+    transferredBytesPerSec,
+    rollingSyncSuccessCount,
+    rollingSyncFailCount
   ] = await getMonitors([
     MONITORS.DATABASE_CONNECTIONS,
     MONITORS.DATABASE_SIZE,
@@ -87,7 +89,9 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     MONITORS.MAX_FILE_DESCRIPTORS,
     MONITORS.ALLOCATED_FILE_DESCRIPTORS,
     MONITORS.RECEIVED_BYTES_PER_SEC,
-    MONITORS.TRANSFERRED_BYTES_PER_SEC
+    MONITORS.TRANSFERRED_BYTES_PER_SEC,
+    MONITORS.ROLLING_SYNC_SUCCESS_COUNT,
+    MONITORS.ROLLING_SYNC_FAIL_COUNT
   ])
 
   const response = {
@@ -107,7 +111,9 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     receivedBytesPerSec,
     transferredBytesPerSec,
     maxStorageUsedPercent,
-    numberOfCPUs
+    numberOfCPUs,
+    rollingSyncSuccessCount,
+    rollingSyncFailCount
   }
 
   return response

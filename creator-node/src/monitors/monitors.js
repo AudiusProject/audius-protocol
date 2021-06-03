@@ -25,6 +25,10 @@ const {
 const {
   getIPFSReadWriteStatus
 } = require('./ipfs')
+const {
+  getRollingSyncSuccessCount,
+  getRollingSyncFailCount
+} = require('./syncHistory')
 const redis = require('../redis')
 
 // Prefix used to key each monitored value in redis
@@ -159,6 +163,26 @@ const IPFS_READ_WRITE_STATUS = {
   type: 'json'
 }
 
+// The rolling window count of successful syncs
+// The window is for 30 days
+// Keep the rolling window count ttl to 1 day (refreshes daily)
+const ROLLING_SYNC_SUCCESS_COUNT = {
+  name: 'rollingSyncSuccessCount',
+  func: getRollingSyncSuccessCount,
+  ttl: 24 /* hours */ * 60 /* mins */ * 60 /* s */,
+  type: 'int'
+}
+
+// The rolling window count of failed syncs
+// The window is for 30 days
+// Keep the rolling window count ttl to 1 day (refreshes daily)
+const ROLLING_SYNC_FAIL_COUNT = {
+  name: 'rollingSyncFailCount',
+  func: getRollingSyncFailCount,
+  ttl: 24 /* hours */ * 60 /* mins */ * 60 /* s */,
+  type: 'int'
+}
+
 const MONITORS = {
   DATABASE_LIVENESS,
   DATABASE_SIZE,
@@ -179,7 +203,9 @@ const MONITORS = {
   REDIS_NUM_KEYS,
   REDIS_USED_MEMORY,
   REDIS_TOTAL_MEMORY,
-  IPFS_READ_WRITE_STATUS
+  IPFS_READ_WRITE_STATUS,
+  ROLLING_SYNC_SUCCESS_COUNT,
+  ROLLING_SYNC_FAIL_COUNT
 }
 
 const getMonitorRedisKey = (monitor) => `${MONITORING_REDIS_PREFIX}:${monitor.name}`
