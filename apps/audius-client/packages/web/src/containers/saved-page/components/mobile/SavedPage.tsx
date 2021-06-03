@@ -31,6 +31,7 @@ import {
 import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import Spin from 'antd/lib/spin'
+import { useArePlaylistUpdatesEnabled } from 'containers/remote-config/hooks'
 
 const emptyTabMessages = {
   afterSaved: "Once you have, this is where you'll find them!",
@@ -265,6 +266,10 @@ const PlaylistCardLineup = ({
   playlistUpdates: number[]
   updatePlaylistLastViewedAt: (playlistId: number) => void
 }) => {
+  const {
+    isEnabled: arePlaylistUpdatesEnabled
+  } = useArePlaylistUpdatesEnabled()
+
   const filteredPlaylists = getFilteredPlaylists(playlists || [])
   const playlistCards = filteredPlaylists.map(playlist => {
     return (
@@ -289,7 +294,10 @@ const PlaylistCardLineup = ({
             )
           )
         }}
-        updateDot={playlistUpdates.includes(playlist.playlist_id)}
+        updateDot={
+          !!arePlaylistUpdatesEnabled &&
+          playlistUpdates.includes(playlist.playlist_id)
+        }
       />
     )
   })
