@@ -1,10 +1,13 @@
 pragma solidity ^0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
 
 
 contract MockWormhole {
+    using SafeERC20 for ERC20;
+
     uint8 CHAIN_ID = 2;
 
     event LogTokensLocked(
@@ -29,6 +32,8 @@ contract MockWormhole {
         uint32 nonce,
         bool refund_dust
     ) public {
+        ERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
+
         uint8 asset_chain = CHAIN_ID;
         uint8 decimals = ERC20Detailed(asset).decimals();
         bytes32 asset_address = bytes32(uint256(asset));

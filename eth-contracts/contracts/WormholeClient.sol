@@ -77,6 +77,7 @@ contract WormholeClient is InitializableV2 {
         bool _refundDust
     ) public {
         transferToken.safeTransferFrom(msg.sender, address(this), _amount);
+        transferToken.approve(address(wormhole), _amount);
 
         wormhole.lockAssets(
             address(transferToken),
