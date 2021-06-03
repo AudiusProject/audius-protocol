@@ -301,7 +301,7 @@ module.exports = function (app) {
   app.get('/notifications', authMiddleware, handleResponse(async (req) => {
     const limit = parseInt(req.query.limit)
     const timeOffset = req.query.timeOffset ? moment(req.query.timeOffset) : moment()
-    const { blockchainUserId: userId, createdAt } = req.user
+    const { blockchainUserId: userId, createdAt, walletAddress } = req.user
     const createdDate = moment(createdAt)
     if (!timeOffset.isValid()) {
       return errorResponseBadRequest(`Invalid Date params`)
@@ -383,11 +383,6 @@ module.exports = function (app) {
       )
 
       let playlistUpdates = []
-      const user = await models.User.findOne({
-        attributes: ['walletAddress'],
-        where: { id: userId }
-      })
-      const walletAddress = user && user.walletAddress
       if (walletAddress) {
         const result = await models.UserEvents.findOne({
           attributes: ['playlistUpdates'],

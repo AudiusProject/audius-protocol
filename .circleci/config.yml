@@ -676,8 +676,8 @@ workflows:
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
-          requires:
-            - test-identity-service
+          # requires:
+          #   - test-identity-service
 
       - docker-build-and-push:
           name: build-solana-programs

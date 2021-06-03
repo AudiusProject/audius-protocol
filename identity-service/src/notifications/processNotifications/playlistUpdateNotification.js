@@ -13,6 +13,7 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
      * e.g. { user1: { playlist1: <timestamp1>, playlist2: <timestamp2>, ... }, ... }
      */
 
+  console.log('processPlaylistUpdateNotifications', { notifications })
   const userPlaylistUpdatesMap = {}
   notifications.forEach(notification => {
     const { metadata } = notification
@@ -29,14 +30,15 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
       }
     })
   })
+  console.log('userPlaylistUpdatesMap', { userPlaylistUpdatesMap })
 
   const userIds = Object.keys(userPlaylistUpdatesMap)
 
-  // get wallets for all user ids and map each user id to their wallet
+  // get wallets for all user ids and map each blockchain user id to their wallet
   const userIdsAndWallets = await models.User.findAll({
-    attributes: ['id', 'walletAddress'],
+    attributes: ['blockchainUserId', 'walletAddress'],
     where: {
-      id: userIds,
+      blockchainUserId: userIds,
       walletAddress: { [models.Sequelize.Op.ne]: null }
     },
     transaction: tx
@@ -47,9 +49,11 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
     userWallets.push(current.walletAddress)
     return {
       ...accumulator,
-      [current.id]: walletAddress
+      [current.blockchainUserId]: walletAddress
     }
   }, {})
+  console.log('userIdToWalletsMap', { userIdToWalletsMap })
+  console.log('userWallets', { userWallets })
 
   // get playlist updates for all wallets and map each wallet to its playlist updates
   const userWalletsAndPlaylistUpdates = await models.UserEvents.findAll({
@@ -69,6 +73,7 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
   const newPlaylistUpdatePromises = userIds.map(userId => {
     const walletAddress = userIdToWalletsMap[userId]
     if (!walletAddress) return Promise.resolve()
+    console.log('user id', userId)
 
     const dbPlaylistUpdates = userWalletToPlaylistUpdatesMap[walletAddress] || {}
     const fetchedPlaylistUpdates = userPlaylistUpdatesMap[userId]
@@ -81,6 +86,8 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
         lastUpdated: fetchedLastUpdated.valueOf()
       }
     })
+
+    console.log('dbPlaylistUpdates', { dbPlaylistUpdates })
 
     // upsert playlist updates based for the wallet address
     return models.UserEvents.upsert({
