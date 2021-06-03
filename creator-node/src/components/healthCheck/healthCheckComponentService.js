@@ -52,8 +52,10 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign =
  * @param {*} sequelize
  * @param {*} getMonitors
  * @param {number} numberOfCPUs the number of CPUs on this machine
+ * @param {function} getAggregateSyncData fn to get the latest daily sync count (success, fail, triggered)
+ * @param {function} getLatestSyncData fn to get the timestamps of the most recent sync (success, fail)
  */
-const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors, numberOfCPUs) => {
+const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors, numberOfCPUs, getAggregateSyncData, getLatestSyncData) => {
   const basicHealthCheck = await healthCheck({ libs }, logger, sequelize)
 
   // Location information
@@ -94,6 +96,9 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     MONITORS.ROLLING_SYNC_FAIL_COUNT
   ])
 
+  const latestDailySyncCount = await getAggregateSyncData()
+  const latestDailySyncTimestamps = await getLatestSyncData()
+
   const response = {
     ...basicHealthCheck,
     country,
@@ -112,8 +117,13 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     transferredBytesPerSec,
     maxStorageUsedPercent,
     numberOfCPUs,
+    // Rolling window days dependent on value set in monitor's sync history file
     rollingSyncSuccessCount,
-    rollingSyncFailCount
+    rollingSyncFailCount,
+    latestDailySyncSuccessCount: latestDailySyncCount.success,
+    latestDailySyncFailCount: latestDailySyncCount.fail,
+    latestDailySyncSuccessTimestamp: latestDailySyncTimestamps.success,
+    latestDailySyncFailTImestamp: latestDailySyncTimestamps.fail
   }
 
   return response

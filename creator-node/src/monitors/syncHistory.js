@@ -68,5 +68,6 @@ const getSyncCount = async key => {
 
 module.exports = {
   getRollingSyncSuccessCount,
-  getRollingSyncFailCount
+  getRollingSyncFailCount,
+  ROLLING_WINDOW
 }

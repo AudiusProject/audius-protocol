@@ -165,21 +165,21 @@ const IPFS_READ_WRITE_STATUS = {
 
 // The rolling window count of successful syncs
 // The window is for 30 days
-// Keep the rolling window count ttl to 1 day (refreshes daily)
+// Keep the rolling window count ttl to 1 hour (refreshes every hour)
 const ROLLING_SYNC_SUCCESS_COUNT = {
   name: 'rollingSyncSuccessCount',
   func: getRollingSyncSuccessCount,
-  ttl: 24 /* hours */ * 60 /* mins */ * 60 /* s */,
+  ttl: 60 /* mins */ * 60 /* s */,
   type: 'int'
 }
 
 // The rolling window count of failed syncs
 // The window is for 30 days
-// Keep the rolling window count ttl to 1 day (refreshes daily)
+// Keep the rolling window count ttl to 1 hour (refreshes every hour)
 const ROLLING_SYNC_FAIL_COUNT = {
   name: 'rollingSyncFailCount',
   func: getRollingSyncFailCount,
-  ttl: 24 /* hours */ * 60 /* mins */ * 60 /* s */,
+  ttl: 60 /* mins */ * 60 /* s */,
   type: 'int'
 }
 
