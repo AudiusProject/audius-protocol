@@ -6,7 +6,7 @@ import gifPreviewWorkerFile from 'workers/gifPreview.worker.js'
 const averageRgbWorker = new WebWorker(averageRgbWorkerFile, false)
 const gifPreviewWorker = new WebWorker(gifPreviewWorkerFile, false)
 
-const ALLOWED_IMAGE_FILE_TYPES = [
+export const ALLOWED_IMAGE_FILE_TYPES = [
   'image/jpeg',
   'image/png',
   'image/bmp',
