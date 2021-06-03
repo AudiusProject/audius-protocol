@@ -9,6 +9,7 @@ import ImageSelectionPopup from './ImageSelectionPopup'
 
 import { ImageSelectionProps, ImageSelectionDefaults } from './PropTypes'
 import styles from './ImageSelectionButton.module.css'
+import { ALLOWED_IMAGE_FILE_TYPES } from 'utils/imageProcessingUtil'
 
 const messages = {
   add: 'Add',
@@ -77,7 +78,7 @@ const ImageSelectionButton = ({
           <ReactDropzone
             onDrop={onSelect}
             className={styles.dropzone}
-            accept='image/*'
+            accept={ALLOWED_IMAGE_FILE_TYPES.join(', ')}
           >
             <Button
               className={cn(styles.button, styles.noPopup, {

@@ -5,6 +5,7 @@ import cn from 'classnames'
 
 import styles from './Dropzone.module.css'
 import { ReactComponent as IconUpload } from 'assets/img/iconUpload.svg'
+import { ALLOWED_IMAGE_FILE_TYPES } from 'utils/imageProcessingUtil'
 
 const messages = {
   track: 'Drag-and-drop a track here, or ',
@@ -56,6 +57,9 @@ const Dropzone = ({
       className={cn(styles.dropzone, className)}
       disabled={disabled}
       disableClick={disabled || disableClick}
+      accept={
+        type === 'image' ? ALLOWED_IMAGE_FILE_TYPES.join(', ') : 'audio/*'
+      }
     >
       <div className={styles.hoverBoundingBox}>
         <span className={styles.contentWrapper}>
