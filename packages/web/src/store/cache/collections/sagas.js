@@ -932,6 +932,7 @@ function* confirmDeleteAlbum(playlistId, trackIds, userId) {
         if (!confirmed) {
           throw new Error(`Could not confirm delete album for id ${playlistId}`)
         }
+        return playlistId
       },
       function* () {
         console.debug(`Successfully deleted album ${playlistId}`)
@@ -1015,6 +1016,7 @@ function* confirmDeletePlaylist(userId, playlistId) {
             `Could not confirm delete playlist track for playlist id ${playlistId}`
           )
         }
+        return confirmedPlaylistId
       },
       function* () {
         console.debug(`Successfully deleted playlist ${playlistId}`)

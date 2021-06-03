@@ -379,6 +379,7 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
               `Could not confirm remove wallet for account user id ${accountUserId}`
             )
           }
+          return accountUserId
         },
         // @ts-ignore: remove when confirmer is typed
         function* () {

@@ -147,6 +147,7 @@ export function* confirmRepostTrack(trackId: ID, user: User) {
             `Could not confirm repost track for track id ${trackId}`
           )
         }
+        return trackId
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
@@ -251,6 +252,7 @@ export function* confirmUndoRepostTrack(trackId: ID, user: User) {
             `Could not confirm undo repost track for track id ${trackId}`
           )
         }
+        return trackId
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
@@ -379,6 +381,7 @@ export function* confirmSaveTrack(trackId: ID) {
             `Could not confirm save track for track id ${trackId}`
           )
         }
+        return trackId
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
@@ -473,6 +476,7 @@ export function* confirmUnsaveTrack(trackId: ID) {
             `Could not confirm unsave track for track id ${trackId}`
           )
         }
+        return trackId
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
