@@ -79,7 +79,7 @@ svg.logo path {
   color: var(--neutral);
 }
 
-.navColumn .accountWrapper .warpperPhoto {
+.navColumn .accountWrapper .wrapperPhoto {
   position: relative;
   cursor: pointer;
 

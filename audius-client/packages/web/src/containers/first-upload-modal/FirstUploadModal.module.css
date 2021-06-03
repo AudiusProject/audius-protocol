@@ -35,7 +35,7 @@
   align-items: center;
 }
 
-.image {
+.imageWrapper {
   height: 194px;
   width: 194px;
   box-sizing: border-box;
@@ -43,6 +43,11 @@
   box-shadow: 0 2px 15px -3px var(--image-shadow);
   border-radius: 50%;
   overflow: hidden;
+}
+
+.image {
+  background-size: cover !important;
+  background-color: var(--default-profile-picture-background);
 }
 
 .name {

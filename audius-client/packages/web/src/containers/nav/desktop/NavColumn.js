@@ -241,7 +241,7 @@ const NavColumn = ({
           {account ? (
             <div className={styles.accountWrapper}>
               <DynamicImage
-                wrapperClassName={styles.warpperPhoto}
+                wrapperClassName={styles.wrapperPhoto}
                 className={styles.dynamicPhoto}
                 onClick={goToProfile}
                 image={profileImage}
