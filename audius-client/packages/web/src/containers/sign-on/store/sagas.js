@@ -272,7 +272,6 @@ function* signUp(action) {
         if (!confirmed) {
           throw new Error(`Could not confirm sign up for user id ${userId}`)
         }
-        // todo do we actually need the next line
         return yield call(AudiusBackend.getCreators, [userId])[0]
       },
       function* () {

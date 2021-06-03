@@ -103,6 +103,7 @@ export function* confirmRepostCollection(
             `Could not confirm repost collection for collection id ${collectionId}`
           )
         }
+        return collectionId
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
@@ -198,6 +199,7 @@ export function* confirmUndoRepostCollection(
             `Could not confirm undo repost collection for collection id ${collectionId}`
           )
         }
+        return collectionId
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
@@ -349,6 +351,7 @@ export function* confirmSaveCollection(ownerId: ID, collectionId: ID) {
             `Could not confirm save collection for collection id ${collectionId}`
           )
         }
+        return collectionId
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
@@ -454,6 +457,7 @@ export function* confirmUnsaveCollection(ownerId: ID, collectionId: ID) {
             `Could not confirm unsave collection for collection id ${collectionId}`
           )
         }
+        return collectionId
       },
       function* () {},
       // @ts-ignore: remove when confirmer is typed
