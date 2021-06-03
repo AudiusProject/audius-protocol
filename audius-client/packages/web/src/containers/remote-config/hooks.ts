@@ -42,3 +42,7 @@ export function useRemoteVar(
   const remoteVar = useMemo(() => getRemoteVar(key), [key, configLoaded])
   return remoteVar
 }
+
+export const useArePlaylistUpdatesEnabled = () => {
+  return useFlag(FeatureFlags.PLAYLIST_UPDATES_ENABLED)
+}

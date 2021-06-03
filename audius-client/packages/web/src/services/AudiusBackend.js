@@ -2243,6 +2243,8 @@ class AudiusBackend {
    * @param {playlistId} playlistId playlist id or folder id
    */
   static async updatePlaylistLastViewedAt(playlistId) {
+    if (!getFeatureEnabled(FeatureFlags.PLAYLIST_UPDATES_ENABLED)) return
+
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return

@@ -71,6 +71,7 @@ import { Variant } from 'models/Collection'
 import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
 import UserBadges from 'containers/user-badges/UserBadges'
 import UpdateDot from 'components/general/UpdateDot'
+import { useArePlaylistUpdatesEnabled } from 'containers/remote-config/hooks'
 
 const NavColumn = ({
   account,
@@ -100,6 +101,10 @@ const NavColumn = ({
   goToUpload,
   averageRGBColor
 }) => {
+  const {
+    isEnabled: arePlaylistUpdatesEnabled
+  } = useArePlaylistUpdatesEnabled()
+
   const record = useRecord()
   const goToSignUp = useCallback(
     source => {
@@ -391,7 +396,8 @@ const NavColumn = ({
                             )
                           })}
                         >
-                          {playlistUpdates.includes(id) ? (
+                          {!!arePlaylistUpdatesEnabled &&
+                          playlistUpdates.includes(id) ? (
                             <div className={styles.updateDotContainer}>
                               <Tooltip
                                 className={styles.updateDotTooltip}
@@ -448,7 +454,8 @@ const NavColumn = ({
                           })}
                           onClick={e => onClickNavLinkWithAccount(e, id)}
                         >
-                          {playlistUpdates.includes(id) ? (
+                          {!!arePlaylistUpdatesEnabled &&
+                          playlistUpdates.includes(id) ? (
                             <div className={styles.updateDotContainer}>
                               <Tooltip
                                 className={styles.updateDotTooltip}
