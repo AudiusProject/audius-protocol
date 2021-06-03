@@ -524,7 +524,7 @@ IpldBlacklistTest.updatePlaylistCoverPhoto = async ({
     // create playlist under userId
     const randomPlaylistName = genRandomString(8)
 
-    const playlistId = await executeOne(CREATOR_INDEX, libsWrapper => {
+    const { playlistId } = await executeOne(CREATOR_INDEX, libsWrapper => {
       return createPlaylist(
         libsWrapper,
         userId,
@@ -605,7 +605,7 @@ IpldBlacklistTest.updatePlaylistCoverPhotoNoMatch = async ({
 
     // create playlist under userId
     const randomPlaylistName = 'playlist_' + genRandomString(8)
-    const playlistId = await executeOne(CREATOR_INDEX, libsWrapper => {
+    const { playlistId } = await executeOne(CREATOR_INDEX, libsWrapper => {
       return createPlaylist(
         libsWrapper,
         userId,

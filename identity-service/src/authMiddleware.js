@@ -53,22 +53,19 @@ async function authMiddleware (req, res, next) {
     if (!encodedDataMessage) throw new Error('[Error]: Encoded data missing')
     if (!signature) throw new Error('[Error]: Encoded data signature missing')
 
-    let walletAddress = recoverPersonalSignature({ data: encodedDataMessage, sig: signature })
+    const walletAddress = recoverPersonalSignature({ data: encodedDataMessage, sig: signature })
     const user = await models.User.findOne({
       where: { walletAddress },
-      attributes: ['id', 'blockchainUserId', 'createdAt']
+      attributes: ['id', 'blockchainUserId', 'walletAddress', 'createdAt']
     })
     if (!user) throw new Error(`[Error]: no user found for wallet address ${walletAddress}`)
 
-    if (user && user.blockchainUserId) {
-      req.user = user
-      next()
-    } else {
+    if (!user.blockchainUserId) {
       const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
       await user.update({ blockchainUserId: discprovUser.user_id })
-      req.user = user
-      next()
     }
+    req.user = user
+    next()
   } catch (err) {
     const errorResponse = errorResponseBadRequest('[Error]: The wallet address is not associated with a user id')
     return sendResponse(req, res, errorResponse)

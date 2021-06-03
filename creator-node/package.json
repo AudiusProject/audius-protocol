@@ -54,7 +54,9 @@
     "rate-limit-redis": "^1.6.0",
     "sequelize": "^4.41.2",
     "shortid": "^2.2.14",
+    "sockstat": "^1.0.1",
     "systeminformation": "^5.0.2",
+    "tus-node-server": "^0.3.2",
     "umzug": "^2.2.0",
     "uuid": "3.3.2"
   },

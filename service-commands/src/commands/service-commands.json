@@ -44,6 +44,15 @@
       "cd eth-contracts/; npm run ganache-q"
     ]
   },
+  "solana-programs": {
+    "path": "solana-programs",
+    "up": [
+      "docker run -d --network audius_dev --entrypoint='' --name solana solanalabs/solana:beta sh -c 'solana-test-validator --gossip-host solana'",
+      "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/mnt\" audius/solana-programs > solana-program-config.json",
+      "cd solana-programs/; cp solana-program-config.json ../identity-service"
+    ],
+    "down": []
+  },
   "ipfs": {
     "up": [
       "libs/scripts/ipfs.sh up local-ipfs-node"
@@ -93,22 +102,28 @@
     "up": [
       "cd libs/initScripts; node configureLocalDiscProv.js",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
-      "cd discovery-provider; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml up --build -d",
+      "cd discovery-provider; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "echo 'Waiting 5 seconds...'",
+      "sleep 5"
+    ],
+    "up-web-server": [
+      "cd libs/initScripts; node configureLocalDiscProv.js",
+      "cd discovery-provider; docker-compose -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
     ],
     "down": [
-      "cd discovery-provider; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml down"
+      "cd discovery-provider; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down"
     ],
     "register": [
       "cd libs/; node initScripts/local.js register-discprov-1"
     ],
     "restart": [
-      "cd discovery-provider; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml down",
+      "cd discovery-provider; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
       "docker volume prune -f",
       "cd libs/initScripts; node configureLocalDiscProv.js",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
-      "cd discovery-provider; docker-compose -f compose/docker-compose.base.override.yml -f compose/docker-compose.dev.override.yml -f compose/docker-compose.ipfs.override.yml up --build -d",
+      "cd discovery-provider; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
     ]

@@ -1,0 +1,21 @@
+# Compose file to run the discovery postres container
+version: '3'
+services:
+  discovery-provider-db:
+    image: postgres:11.1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: audius_discovery
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - '5432:5432'
+    networks:
+      - audius_dev
+
+volumes:
+  postgres_data:
+
+networks:
+  audius_dev:
+    external: true

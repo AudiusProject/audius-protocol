@@ -189,7 +189,6 @@ def get_track_plays(self, db, lock):
         has_lock = lock.owned()
         if plays and has_lock:
             session.bulk_save_objects(plays)
-            session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY aggregate_plays")
 
         job_extra_info['has_lock'] = has_lock
         job_extra_info['number_rows_insert'] = len(plays)

@@ -113,6 +113,8 @@ jobs:
       - run:
           name: identity-service repo init
           command: |
+            source ~/.bash_profile
+            nvm install v10.16
             cd identity-service/
             npm install
       - save_cache:
@@ -130,7 +132,9 @@ jobs:
       - run:
           name: mad-dog repo init
           command: |
+            source ~/.bash_profile
             cd mad-dog/
+            nvm install v10.16
             npm install
       - save_cache:
           name: Save mad-dog cache
@@ -167,6 +171,7 @@ jobs:
             nvm use 10.16
             cd /home/circleci/project/service-commands/scripts/
             cd /home/circleci/project/libs/
+            npm rebuild
             npm link
             cd /home/circleci/project/service-commands/
             npm link
@@ -176,10 +181,8 @@ jobs:
             npm link @audius/service-commands
             cd /home/circleci/project/service-commands/scripts/
             sudo "$(which node)" hosts.js add
-            sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
             "$(which node)" setup.js up -nc 4
-            cd /home/circleci/project/service-commands/scripts/
-            "$(which node)" setup.js run user-replica-set-manager up
             cd /home/circleci/project/mad-dog/
             docker ps
             export ipfsHost="localhost"
@@ -539,6 +542,7 @@ jobs:
           condition: << parameters.force >>
           steps:
             - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
+      - setup_remote_docker
       # restores data-contracts
       - restore_cache:
           keys:
@@ -582,7 +586,8 @@ jobs:
         type: string
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           name: Get tag or latest
           command: |
@@ -673,5 +678,9 @@ workflows:
           repo: identity-service
           requires:
             - test-identity-service
+
+      - docker-build-and-push:
+          name: build-solana-programs
+          repo: solana-programs
 
       - test-mad-dog-e2e

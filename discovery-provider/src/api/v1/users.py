@@ -3,7 +3,7 @@ from src.api.v1.playlists import get_tracks_for_playlist
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from flask_restx import Resource, Namespace, fields, reqparse
 from src.api.v1.models.common import favorite
-from src.api.v1.models.users import user_model, user_model_full, associated_wallets, encoded_user_id
+from src.api.v1.models.users import user_model, user_model_full, associated_wallets, encoded_user_id, user_replica_set
 
 from src.queries.get_saves import get_saves
 from src.queries.get_users import get_users
@@ -15,6 +15,7 @@ from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
 from src.queries.get_associated_user_id import get_associated_user_id
+from src.queries.get_users_cnode import get_users_cnode, ReplicaType
 
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_activity, extend_favorite, extend_track, \
     extend_user, format_limit, format_offset, get_current_user_id, make_full_response, make_response, search_parser, success_response, abort_bad_request_param, \
@@ -42,7 +43,7 @@ def get_single_user(user_id, current_user_id):
     users = get_users(args)
     if not users:
         abort_not_found(user_id, ns)
-    user = extend_user(users[0])
+    user = extend_user(users[0], current_user_id)
     return success_response(user)
 
 
@@ -672,3 +673,30 @@ class AssociatedWalletByUserId(Resource):
         args = user_associated_wallet_route_parser.parse_args()
         user_id = get_associated_user_id({ "wallet" :args.get('associated_wallet') })
         return success_response({ "user_id": encode_int_id(user_id) if user_id else None })
+
+
+users_by_content_node_route_parser = reqparse.RequestParser()
+users_by_content_node_route_parser.add_argument('creator_node_endpoint', required=True, type=str)
+users_by_content_node_response = make_full_response("users_by_content_node", full_ns, fields.List(fields.Nested(user_replica_set)))
+@full_ns.route("/content_node/<string:replica_type>")
+class UsersByContentNode(Resource):
+    @full_ns.marshal_with(users_by_content_node_response)
+    # @cache(ttl_sec=30)
+    def get(self, replica_type):
+        """ New route to call get_users_cnode with replica_type param (only consumed by content node)
+            - Leaving `/users/creator_node` above untouched for backwards-compatibility
+
+            Response = array of objects of schema { user_id, wallet, primary, secondary1, secondary2 }
+        """
+        args = users_by_content_node_route_parser.parse_args()
+
+        cnode_url = args.get("creator_node_endpoint")
+
+        if replica_type == 'primary':
+            users = get_users_cnode(cnode_url, ReplicaType.PRIMARY)
+        elif replica_type == 'secondary':
+            users = get_users_cnode(cnode_url, ReplicaType.SECONDARY)
+        else:
+            users = get_users_cnode(cnode_url, ReplicaType.ALL)
+
+        return success_response(users)

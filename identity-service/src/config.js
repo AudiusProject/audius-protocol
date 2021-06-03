@@ -498,6 +498,54 @@ const config = convict({
     env: 'recaptchaServiceKey',
     default: ''
   },
+  cognitoAPISecret: {
+    doc: 'API Secret for Congnito',
+    format: String,
+    env: 'cognitoAPISecret',
+    default: ''
+  },
+  solanaEndpoint: {
+    doc: 'solanaEndpoint',
+    format: String,
+    default: '',
+    env: 'solanaEndpoint'
+  },
+  solanaTrackListenCountAddress: {
+    doc: 'solanaTrackListenCountAddress',
+    format: String,
+    default: '',
+    env: 'solanaTrackListenCountAddress'
+  },
+  solanaAudiusEthRegistryAddress: {
+    doc: 'solanaAudiusEthRegistryAddress',
+    format: String,
+    default: '',
+    env: 'solanaAudiusEthRegistryAddress'
+  },
+  solanaValidSigner: {
+    doc: 'solanaValidSigner',
+    format: String,
+    default: '',
+    env: 'solanaValidSigner'
+  },
+  solanaFeePayerWallet: {
+    doc: 'solanaFeePayerWallet',
+    format: 'string-array',
+    default: null,
+    env: 'solanaFeePayerWallet'
+  },
+  solanaSignerPrivateKey: {
+    doc: 'solanaSignerPrivateKey',
+    format: String,
+    default: '',
+    env: 'solanaSignerPrivateKey'
+  },
+  solanaTxCommitmentLevel: {
+    doc: 'solanaTxCommitmentLevel',
+    format: String,
+    default: 'processed',
+    env: 'solanaTxCommitmentLevel'
+  },
   sentryDSN: {
     doc: 'Sentry DSN key',
     format: String,
@@ -527,6 +575,18 @@ if (fs.existsSync('eth-contract-config.json')) {
     ethRegistryAddress: ethContractConfig.registryAddress,
     ethOwnerWallet: ethContractConfig.ownerWallet,
     ethWallets: ethContractConfig.allWallets
+  })
+}
+
+if (fs.existsSync('solana-program-config.json')) {
+  let solanaContractConfig = require('../solana-program-config.json')
+  config.load({
+    solanaTrackListenCountAddress: solanaContractConfig.trackListenCountAddress,
+    solanaAudiusEthRegistryAddress: solanaContractConfig.audiusEthRegistryAddress,
+    solanaValidSigner: solanaContractConfig.validSigner,
+    solanaFeePayerWallet: solanaContractConfig.feePayerWallet,
+    solanaEndpoint: solanaContractConfig.endpoint,
+    solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey
   })
 }
 

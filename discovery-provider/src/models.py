@@ -26,13 +26,21 @@ from src.model_validator import ModelValidator
 Base = declarative_base()
 logger = logging.getLogger(__name__)
 
-
-def validate_field_helper(field, value, model):
+# field_type is the sqlalchemy type from the model object
+def validate_field_helper(field, value, model, field_type):
     # TODO: need to write custom validator for these datetime fields as jsonschema
     # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use
     # also not totally necessary as these fields are created server side
     if field in ('created_at', 'updated_at'):
         return value
+
+    # remove null characters from varchar and text fields
+    # Postgres does not support these well and it throws this error if you try to insert
+    # `Fatal error in main loop A string literal cannot contain NUL (0x00) characters`
+    # the fix is to replace those characters with empty with empty string
+    # https://stackoverflow.com/questions/1347646/postgres-error-on-insert-error-invalid-byte-sequence-for-encoding-utf8-0x0
+    if type(field_type) in (String, Text) and value:
+        value = value.replace("\x00", "")
 
     to_validate = {
         field: value
@@ -158,6 +166,7 @@ class User(Base):
     secondary_ids = Column(postgresql.ARRAY(Integer), nullable=True)
     replica_set_update_signer = Column(String, nullable=True)
     has_collectibles = Column(Boolean, nullable=False, default=False, server_default='false')
+    playlist_library = Column(JSONB, nullable=True)
 
     PrimaryKeyConstraint(is_current, user_id, blockhash, txhash)
 
@@ -167,7 +176,7 @@ class User(Base):
     # unpacking args into @validates
     @validates(*fields)
     def validate_field(self, field, value):
-        return validate_field_helper(field, value, 'User')
+        return validate_field_helper(field, value, 'User', getattr(User, field).type)
 
     def __repr__(self):
         return f"<User(blockhash={self.blockhash},\
@@ -238,7 +247,7 @@ class Track(Base):
     # unpacking args into @validates
     @validates(*fields)
     def validate_field(self, field, value):
-        return validate_field_helper(field, value, 'Track')
+        return validate_field_helper(field, value, 'Track', getattr(Track, field).type)
 
     def __repr__(self):
         return (
@@ -294,6 +303,7 @@ class Playlist(Base):
     upc = Column(String)
     is_current = Column(Boolean, nullable=False)
     is_delete = Column(Boolean, nullable=False)
+    last_added_to = Column(DateTime, nullable=True)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
 
@@ -437,11 +447,14 @@ class Play(Base):
     user_id = Column(Integer, nullable=True, index=False)
     source = Column(String, nullable=True, index=False)
     play_item_id = Column(Integer, nullable=False, index=False)
+    slot = Column(Integer, nullable=True, index=False)
+    signature = Column(String, nullable=True, index=False)
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
     Index('ix_plays_user_play_item', 'play_item_id', 'user_id', unique=False)
     Index('ix_plays_user_play_item_date', 'play_item_id', 'user_id', 'created_at', unique=False)
+    Index('ix_plays_sol_signature', 'play_item_id', 'signature', unique=False)
 
     def __repr__(self):
         return f"<Play(\
@@ -449,6 +462,8 @@ id={self.id},\
 user_id={self.user_id},\
 source={self.source},\
 play_item_id={self.play_item_id}\
+slot={self.slot}\
+signature={self.signature}\
 updated_at={self.updated_at}\
 created_at={self.created_at}>"
 

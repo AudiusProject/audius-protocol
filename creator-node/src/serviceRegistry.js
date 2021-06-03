@@ -4,7 +4,8 @@ const redisClient = require('./redis')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const BlacklistManager = require('./blacklistManager')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
-const { SnapbackSM } = require('./snapbackSM')
+const { SnapbackSM } = require('./snapbackSM/snapbackSM')
+const AudiusLibs = require('@audius/libs')
 const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
@@ -65,6 +66,25 @@ class ServiceRegistry {
     this.monitoringQueue.start()
 
     this.servicesInitialized = true
+  }
+
+  /**
+  * Initializes the blacklistManager if it is not already initialized, and then returns it
+  * @returns initialized blacklistManager instance
+  */
+  async getBlacklistManager () {
+    if (!this.blacklistManager.initialized) {
+      await this.blacklistManager.init()
+    }
+
+    return this.blacklistManager
+  }
+
+  /**
+   * Returns the ipfs instance
+   */
+  getIPFS () {
+    return this.ipfs
   }
 
   /**

@@ -34,6 +34,8 @@ const ImageProcessingQueue = require('../ImageProcessingQueue')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
+const { constructProcessKey, PROCESS_NAMES } = require('../FileProcessingQueue')
+
 const { promisify } = require('util')
 
 const fsStat = promisify(fs.stat)
@@ -317,6 +319,13 @@ const getDirCID = async (req, res) => {
 }
 
 module.exports = function (app) {
+  app.get('/track_content_status', handleResponse(async (req, res) => {
+    const redisKey = constructProcessKey(PROCESS_NAMES.transcode, req.query.uuid)
+    const value = await redisClient.get(redisKey) || '{}'
+
+    return successResponse(JSON.parse(value))
+  }))
+
   /**
    * Store image in multiple-resolutions on disk + DB and make available via IPFS
    */

@@ -19,7 +19,8 @@ const USER_PROPS = [
   'location',
   'creator_node_endpoint',
   'associated_wallets',
-  'collectibles'
+  'collectibles',
+  'playlist_library'
 ]
 // User metadata fields that are required on the metadata object and only can have
 // non-null values
@@ -69,6 +70,9 @@ class Users extends Base {
     this._updateUserOperations = this._updateUserOperations.bind(this)
     this._validateUserMetadata = this._validateUserMetadata.bind(this)
     this._cleanUserMetadata = this._cleanUserMetadata.bind(this)
+
+    // For adding a creator_node_endpoint for a user if null
+    this.assignReplicaSetIfNecessary = this.assignReplicaSetIfNecessary.bind(this)
   }
 
   /* ----------- GETTERS ---------- */
@@ -312,13 +316,15 @@ class Users extends Base {
     } else {
       userId = (await this.contracts.UserFactoryClient.addUser(newMetadata.handle)).userId
     }
-    await this._addUserOperations(userId, newMetadata)
+    const { latestBlockHash: blockHash, latestBlockNumber: blockNumber } = await this._addUserOperations(
+      userId, newMetadata
+    )
 
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.user_id = userId
 
     this.userStateManager.setCurrentUser({ ...newMetadata })
-    return userId
+    return { blockHash, blockNumber, userId }
   }
 
   /**
@@ -337,8 +343,11 @@ class Users extends Base {
     if (!users || !users[0]) throw new Error(`Cannot update user because no current record exists for user id ${userId}`)
 
     const oldMetadata = users[0]
-    await this._updateUserOperations(newMetadata, oldMetadata, userId)
+    const { latestBlockHash: blockHash, latestBlockNumber: blockNumber } = await this._updateUserOperations(
+      newMetadata, oldMetadata, userId
+    )
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
+    return { blockHash, blockNumber }
   }
 
   /**
@@ -388,7 +397,9 @@ class Users extends Base {
     const { txReceipt } = await this.contracts.UserFactoryClient.updateMultihash(userId, updatedMultihashDecoded.digest)
 
     // Write remaining metadata fields to chain
-    const { latestBlockNumber } = await this._updateUserOperations(newMetadata, oldMetadata, userId)
+    let { latestBlockHash, latestBlockNumber } = await this._updateUserOperations(
+      newMetadata, oldMetadata, userId
+    )
 
     // Write to CN to associate blockchain user id with updated metadata and block number
     await this.creatorNode.associateCreator(userId, metadataFileUUID, Math.max(txReceipt.blockNumber, latestBlockNumber))
@@ -396,7 +407,12 @@ class Users extends Base {
     // Update libs instance with new user metadata object
     this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
 
-    return userId
+    if (!latestBlockHash || !latestBlockNumber) {
+      latestBlockHash = txReceipt.blockHash
+      latestBlockNumber = txReceipt.blockNumber
+    }
+
+    return { blockHash: latestBlockHash, blockNumber: latestBlockNumber, userId }
   }
 
   /**
@@ -584,6 +600,25 @@ class Users extends Base {
     }
   }
 
+  /**
+   * If a user's creator_node_endpoint is null, assign a replica set.
+   * Used during the sanity check and in uploadImage() in files.js
+   */
+  async assignReplicaSetIfNecessary () {
+    const user = this.userStateManager.getCurrentUser()
+
+    // If no user is logged in, or a creator node endpoint is already assigned,
+    // skip this call
+    if (!user || user.creator_node_endpoint) return
+
+    // Generate a replica set and assign to user
+    try {
+      await this.assignReplicaSet({ userId: user.user_id })
+    } catch (e) {
+      throw new Error(`assignReplicaSetIfNecessary error - ${e.toString()}`)
+    }
+  }
+
   /** Waits for a discovery provider to confirm that a creator node endpoint is updated. */
   async _waitForCreatorNodeEndpointIndexing (userId, creatorNodeEndpoint) {
     let isUpdated = false
@@ -629,10 +664,19 @@ class Users extends Base {
       addOps.push(this.contracts.UserFactoryClient.updateIsCreator(userId, metadata[USER_PROP_NAME_CONSTANTS.IS_CREATOR]))
     }
 
-    // Execute update promises concurrently
-    // TODO - what if one or more of these fails?
-    const ops = await Promise.all(addOps)
-    return { ops: ops, latestBlockNumber: Math.max(...ops.map(op => op.txReceipt.blockNumber)) }
+    let ops; let latestBlockNumber = -Infinity; let latestBlockHash
+    if (addOps.length > 0) {
+      // Execute update promises concurrently
+      // TODO - what if one or more of these fails?
+      // sort transactions by blocknumber and return most recent transaction
+      ops = await Promise.all(addOps)
+      const sortedOpsDesc = ops.sort((op1, op2) => op1.txReceipt.blockNumber > op2.txReceipt.blockNumber)
+      const latestTx = sortedOpsDesc[0].txReceipt
+      latestBlockNumber = latestTx.blockNumber
+      latestBlockHash = latestTx.blockHash
+    }
+
+    return { ops, latestBlockNumber, latestBlockHash }
   }
 
   async _updateUserOperations (newMetadata, currentMetadata, userId, exclude = []) {
@@ -672,10 +716,17 @@ class Users extends Base {
       }
     }
 
-    const ops = await Promise.all(updateOps)
-    const latestBlockNumber = Math.max(...ops.map(op => op.txReceipt.blockNumber))
+    let ops; let latestBlockNumber = -Infinity; let latestBlockHash
+    if (updateOps.length > 0) {
+      // sort transactions by blocknumber and return most recent transaction
+      ops = await Promise.all(updateOps)
+      const sortedOpsDesc = ops.sort((op1, op2) => op1.txReceipt.blockNumber > op2.txReceipt.blockNumber)
+      const latestTx = sortedOpsDesc[0].txReceipt
+      latestBlockNumber = latestTx.blockNumber
+      latestBlockHash = latestTx.blockHash
+    }
 
-    return { ops: ops, latestBlockNumber }
+    return { ops, latestBlockNumber, latestBlockHash }
   }
 
   _validateUserMetadata (metadata) {
