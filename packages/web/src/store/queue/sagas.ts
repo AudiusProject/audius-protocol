@@ -17,12 +17,14 @@ import {
 } from 'store/queue/slice'
 import * as playerActions from 'store/player/slice'
 import * as cacheActions from 'store/cache/actions'
+import * as queueActions from 'store/queue/actions'
 import {
   getId as getQueueTrackId,
   getIndex,
   getLength,
   getOvershot,
   getRepeat,
+  getShuffle,
   getSource,
   getUid,
   getUndershot
@@ -201,24 +203,34 @@ export function* watchNext() {
       return
     }
 
+    // Skip deleted track
     const id = yield select(getQueueTrackId)
     const track = yield select(getTrack, { id })
-    const source = yield select(getSource)
-    const userId = yield select(getUserId)
     if (track && track.is_delete) {
       yield put(next({ skip }))
     } else {
       const index = yield select(getIndex)
-      const length = yield select(getLength)
       if (index >= 0) {
-        if (index + 1 >= length) {
-          const recommendedTracks: Queueable[] = yield call(
-            getQueueAutoplay,
-            track?.genre,
-            track ? [track.track_id] : [],
-            userId
+        const source = yield select(getSource)
+        const length = yield select(getLength)
+        const shuffle = yield select(getShuffle)
+        const repeatMode = yield select(getRepeat)
+
+        const isCloseToEndOfQueue = index + 1 >= length
+        const isNotRepeating =
+          repeatMode === RepeatMode.OFF ||
+          (repeatMode === RepeatMode.SINGLE && skip)
+
+        // Get recommended tracks if not in shuffle and repeat modes and close to end of queue
+        if (!shuffle && isNotRepeating && isCloseToEndOfQueue) {
+          const userId = yield select(getUserId)
+          yield put(
+            queueActions.queueAutoplay(
+              track?.genre,
+              track ? [track.track_id] : [],
+              userId
+            )
           )
-          yield put(add({ entries: recommendedTracks }))
         }
         const uid = yield select(getUid)
         yield put(play({ uid, trackId: id, source }))
@@ -232,6 +244,26 @@ export function* watchNext() {
         yield put(playerActions.stop({}))
       }
     }
+  })
+}
+
+export function* watchQueueAutoplay() {
+  yield takeEvery(queueActions.QUEUE_AUTOPLAY, function* (
+    action: ReturnType<typeof queueActions.queueAutoplay>
+  ) {
+    const { genre, exclusionList, currentUserId } = action
+    const tracks: Track[] = yield call(
+      getRecommendedTracks,
+      genre,
+      exclusionList,
+      currentUserId
+    )
+    const recommendedTracks = tracks.map(({ track_id }) => ({
+      id: track_id,
+      uid: makeUid(Kind.TRACKS, track_id),
+      source: Source.RECOMMENDED_TRACKS
+    }))
+    yield put(add({ entries: recommendedTracks }))
   })
 }
 
@@ -296,30 +328,12 @@ export function* watchRemove() {
   })
 }
 
-export function* getQueueAutoplay(
-  genre: string,
-  exclusionList: number[],
-  currentUserId: Nullable<ID>
-): Generator<any, Queueable[], any> {
-  const tracks: Track[] = yield call(
-    getRecommendedTracks,
-    genre,
-    exclusionList,
-    currentUserId
-  )
-  const result = tracks.map(({ track_id }) => ({
-    id: track_id,
-    uid: makeUid(Kind.TRACKS, track_id),
-    source: Source.RECOMMENDED_TRACKS
-  }))
-  return result
-}
-
 const sagas = () => {
   const sagas = [
     watchPlay,
     watchPause,
     watchNext,
+    watchQueueAutoplay,
     watchPrevious,
     watchAdd,
     watchRemove
