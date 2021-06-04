@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 # returns the recorded skipped transactions in the db during indexing
 # filters by blocknumber, blockhash, or transaction hash if they are not null
-def get_skipped_transactions(blocknumber, blockhash, transactionhash):
+def get_skipped_transactions(blocknumber, blockhash, txhash):
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
         skipped_transactions_query = session.query(SkippedTransaction)
@@ -25,9 +25,9 @@ def get_skipped_transactions(blocknumber, blockhash, transactionhash):
             skipped_transactions_query = skipped_transactions_query.filter(
                 SkippedTransaction.blockhash == blockhash
             )
-        if transactionhash is not None:
+        if txhash is not None:
             skipped_transactions_query = skipped_transactions_query.filter(
-                SkippedTransaction.transactionhash == transactionhash
+                SkippedTransaction.txhash == txhash
             )
         skipped_transactions_results = skipped_transactions_query.all()
         skipped_transactions_list = list(map(
@@ -36,23 +36,24 @@ def get_skipped_transactions(blocknumber, blockhash, transactionhash):
         ))
         return skipped_transactions_list
 
-# returns the indexing transaction status
-# given a blocknumber, blockhash, and transaction
-# first checks whether there is an indexing error in entry
-# and whether the entry matches the given params
-# otherwise checks the database
-def get_transaction_status(blocknumber, blockhash, transactionhash):
+def get_transaction_status(blocknumber, blockhash, txhash):
+    """ Gets the indexing transaction status: 'PASSED', 'FAILED', or 'NOT_FOUND'
+    given a blocknumber, blockhash, and transaction
+    first checks whether there is an indexing error in reduis
+    and whether the entry matches the given params
+    otherwise checks the skipped_transactions in the database
+    """
     indexing_error = get_indexing_error(REDIS)
 
     # separating the conditions to reduce number of booleans in single condition (linting)
     if indexing_error:
-        keys_exist = 'blocknumber' in indexing_error and \
-            'blockhash' in indexing_error and \
-            'transactionhash' in indexing_error
-        if keys_exist and \
-            indexing_error['blocknumber'] == blocknumber and \
-            indexing_error['blockhash'] == blockhash and \
-            indexing_error['transactionhash'] == transactionhash:
+        blocknumber_match = 'blocknumber' in indexing_error and \
+            indexing_error['blocknumber'] == blocknumber
+        blockhash_match = 'blockhash' in indexing_error and \
+            indexing_error['blockhash'] == blockhash
+        txhash_match = 'txhash' in indexing_error and \
+            indexing_error['txhash'] == txhash
+        if blocknumber_match and blockhash_match and txhash_match:
             return 'FAILED'
 
     db = db_session.get_db_read_replica()
@@ -60,13 +61,13 @@ def get_transaction_status(blocknumber, blockhash, transactionhash):
         skipped_transactions_results = session.query(SkippedTransaction).filter(
             SkippedTransaction.blocknumber == blocknumber,
             SkippedTransaction.blockhash == blockhash,
-            SkippedTransaction.transactionhash == transactionhash
+            SkippedTransaction.txhash == txhash
         ).all()
         if len(skipped_transactions_results) > 1:
             raise Exception(
                 "Expected no more than 1 row for skipped indexing transaction with \
-                blocknumber={}, blockhash={}, transactionhash={}".format(
-                    blocknumber, blockhash, transactionhash
+                blocknumber={}, blockhash={}, txhash={}".format(
+                    blocknumber, blockhash, txhash
                 )
             )
         if len(skipped_transactions_results) == 1:
@@ -92,26 +93,26 @@ def get_indexing_error(redis_instance):
     indexing_error = get_pickled_key(redis_instance, INDEXING_ERROR_KEY)
     return indexing_error
 
-def set_indexing_error(redis_instance, blocknumber, blockhash, transactionhash, message, has_majority=False):
+def set_indexing_error(redis_instance, blocknumber, blockhash, txhash, message, has_consensus=False):
     indexing_error = get_pickled_key(redis_instance, INDEXING_ERROR_KEY)
 
     if indexing_error is None or (
-            indexing_error['blocknumber'] != blocknumber and
-            indexing_error['blockhash'] != blockhash and
-            indexing_error['transactionhash'] != transactionhash
+            indexing_error['blocknumber'] != blocknumber or
+            indexing_error['blockhash'] != blockhash or
+            indexing_error['txhash'] != txhash
     ):
         indexing_error = {
             'count': 1,
             'blocknumber': blocknumber,
             'blockhash': blockhash,
-            'transactionhash': transactionhash,
+            'txhash': txhash,
             'message': message,
-            'has_majority': has_majority
+            'has_consensus': has_consensus
         }
         pickle_and_set(redis_instance, INDEXING_ERROR_KEY, indexing_error)
     else:
         indexing_error['count'] += 1
-        indexing_error['has_majority'] = has_majority
+        indexing_error['has_consensus'] = has_consensus
         pickle_and_set(redis_instance, INDEXING_ERROR_KEY, indexing_error)
 
 def clear_indexing_error(redis_instance):

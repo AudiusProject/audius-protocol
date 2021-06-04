@@ -21,7 +21,7 @@ def upgrade():
         sa.Column('id', sa.Integer(), primary_key=True, nullable=False, autoincrement=True),
         sa.Column('blocknumber', sa.Integer(), nullable=False),
         sa.Column('blockhash', sa.String(), nullable=False),
-        sa.Column('transactionhash', sa.String(), nullable=False),
+        sa.Column('txhash', sa.String(), nullable=False),
         sa.Column('created_at', sa.DateTime(), nullable=False, default=sa.func.now()),
         sa.Column('updated_at', sa.DateTime(), nullable=False, default=sa.func.now(), onupdate=sa.func.now()),
         sa.PrimaryKeyConstraint('id')

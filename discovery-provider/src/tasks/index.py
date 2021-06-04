@@ -20,6 +20,7 @@ from src.queries.get_skipped_transactions import get_indexing_error, \
     set_indexing_error, clear_indexing_error
 from src.queries.confirm_indexing_transaction_error import confirm_indexing_transaction_error
 from src.utils.indexing_errors import IndexingError
+from sqlalchemy import func
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,9 @@ default_config_start_hash = "0x0"
 
 # Used to update user_replica_set_manager address and skip txs conditionally
 zero_address = "0x0000000000000000000000000000000000000000"
+
+# The maximum number of skipped transactions allowed
+MAX_SKIPPED_TX = 5
 
 def get_contract_info_if_exists(self, address):
     for contract_name, contract_address in contract_addresses.items():
@@ -168,11 +172,14 @@ def update_ursm_address(self):
             contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(user_replica_set_manager_address)
             logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
 
-def get_skip_tx_hash(session, redis):
+def save_and_get_skip_tx_hash(session, redis):
     """Fetch if there is a tx_hash to be skipped because of continuous errors
     """
     indexing_error = get_indexing_error(redis)
-    if isinstance(indexing_error, dict) and 'has_majority' in indexing_error and indexing_error['has_majority']:
+    if isinstance(indexing_error, dict) and 'has_consensus' in indexing_error and indexing_error['has_consensus']:
+        num_skipped_tx = session.query(func.count(SkippedTransaction.id)).scalar()
+        if num_skipped_tx > MAX_SKIPPED_TX:
+            return None
         skipped_tx = SkippedTransaction(
             blocknumber=indexing_error['blocknumber'],
             blockhash=indexing_error['blockhash'],
@@ -232,7 +239,7 @@ def index_blocks(self, db, blocks_list):
             # Sort transactions by hash
             sorted_txs = sorted(block.transactions, key=lambda entry: entry['hash'])
 
-            skip_tx_hash = get_skip_tx_hash(session, redis)
+            skip_tx_hash = save_and_get_skip_tx_hash(session, redis)
             # Parse tx events in each block
             for tx in sorted_txs:
                 tx_hash = web3.toHex(tx["hash"])
@@ -391,7 +398,7 @@ def index_blocks(self, db, blocks_list):
                 set_indexing_error(redis, err.blocknumber, err.blockhash, err.transactionhash, err.message)
                 confirm_indexing_transaction_error(
                     redis, err.blocknumber, err.blockhash, err.transactionhash, err.message)
-                raise
+                raise err
         # add the block number of the most recently processed block to redis
         redis.set(most_recent_indexed_block_redis_key, block.number)
         redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())

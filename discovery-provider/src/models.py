@@ -867,7 +867,7 @@ class SkippedTransaction(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     blocknumber = Column(Integer, nullable=False)
     blockhash = Column(String, nullable=False)
-    transactionhash = Column(String, nullable=False)
+    txhash = Column(String, nullable=False)
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
 
@@ -876,6 +876,6 @@ class SkippedTransaction(Base):
 id={self.id},\
 blocknumber={self.blocknumber},\
 blockhash={self.blockhash},\
-transactionhash={self.transactionhash},\
+txhash={self.txhash},\
 created_at={self.created_at},\
 updated_at={self.updated_at})>"
