@@ -23,7 +23,7 @@ module.exports = function (app) {
     if (!userIds.length) return errorResponseBadRequest('No valid ids provided')
 
     const recaptchaEntry = await sequelize.query(
-      `select "Users"."blockchainUserId" as "userId", "Users"."walletAddress" as "wallet", "BotScores"."recaptchaScore" as "score"
+      `select "Users"."blockchainUserId" as "userId", "Users"."walletAddress" as "wallet", "BotScores"."recaptchaScore" as "score", "BotScores"."recaptchaContext" as "context"
       from 
         "Users" inner join "BotScores" on "Users"."walletAddress" = "BotScores"."walletAddress"
       where
