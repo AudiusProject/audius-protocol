@@ -6,7 +6,7 @@ from src.queries.get_skipped_transactions import set_indexing_error
 logger = logging.getLogger(__name__)
 
 # Percent of total discovery nodes needed to skip indexing a transaction
-INDEXING_FAILURE_CONSENSUS_PERCENT = 0.67
+INDEXING_FAILURE_CONSENSUS_PERCENT = 1
 
 def confirm_indexing_transaction_error(redis, blocknumber, blockhash, transactionhash, message):
     """
@@ -32,5 +32,5 @@ def confirm_indexing_transaction_error(redis, blocknumber, blockhash, transactio
             logger.error(e)
 
     # Mark the redis indexing error w/ has_consensus = true so that it skips this transaction
-    if num_transaction_failures >= num_other_nodes * INDEXING_FAILURE_CONSENSUS_PERCENT:
+    if num_other_nodes >= 1 and num_transaction_failures >= num_other_nodes * INDEXING_FAILURE_CONSENSUS_PERCENT:
         set_indexing_error(redis, blocknumber, blockhash, transactionhash, message, True)
