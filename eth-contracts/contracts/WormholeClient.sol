@@ -48,6 +48,15 @@ contract WormholeClient is InitializableV2 {
     Wormhole internal wormhole;
 
     /**
+     * @notice Get the token used by the contract for transfer
+     * @return The token used by the contract for transfer
+     */
+    function token() external view returns (address) {
+        _requireIsInitialized();
+        return address(transferToken);
+    }
+
+    /**
      * @notice Function to initialize the contract
      * @param _tokenAddress - address of ERC20 token that will be transfered
      * @param _wormholeAddress - address for Wormhole proxy contract
@@ -141,14 +150,5 @@ contract WormholeClient is InitializableV2 {
             nonce,
             refundDust
         );
-    }
-
-    /**
-     * @notice Get the token used by the contract for transfer
-     * @return The token used by the contract for transfer
-     */
-    function token() external view returns (address) {
-        _requireIsInitialized();
-        return address(transferToken);
     }
 }
