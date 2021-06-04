@@ -37,53 +37,25 @@ impl Processor {
     /// ValidSigner version indicating signer uninitialization
     pub const VALID_SIGNER_UNINITIALIZED_VERSION: u8 = 0;
 
-    /// Process [recover instruction data]().
-    pub fn recover_instruction_data(
-        signature_data: &SignatureData,
-        valid_signer: &ValidSigner,
-    ) -> Vec<u8> {
-        let mut instruction_data = vec![];
-        let data_start = 1 + SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
-        instruction_data.resize(
-            data_start
-                + SecpSignatureOffsets::ETH_ADDRESS_SIZE
-                + SecpSignatureOffsets::SECP_SIGNATURE_SIZE
-                + signature_data.message.len()
-                + 1,
-            0,
-        );
-        let eth_address_offset = data_start;
-        instruction_data
+    fn validate_eth_signature(
+        expected_signer: [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
+        message: &[u8],
+        secp_instruction_data: Vec<u8>,
+    ) -> Result<(), AudiusError> {
+        let eth_address_offset = 12;
+        let instruction_signer = secp_instruction_data
             [eth_address_offset..eth_address_offset + SecpSignatureOffsets::ETH_ADDRESS_SIZE]
-            .copy_from_slice(&valid_signer.eth_address);
+            .to_vec();
+        if instruction_signer != expected_signer {
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
 
-        let signature_offset = data_start + SecpSignatureOffsets::ETH_ADDRESS_SIZE;
-        instruction_data
-            [signature_offset..signature_offset + SecpSignatureOffsets::SECP_SIGNATURE_SIZE]
-            .copy_from_slice(&signature_data.signature);
-
-        instruction_data[signature_offset + SecpSignatureOffsets::SECP_SIGNATURE_SIZE] =
-            signature_data.recovery_id;
-
-        let message_data_offset = signature_offset + SecpSignatureOffsets::SECP_SIGNATURE_SIZE + 1;
-        instruction_data[message_data_offset..].copy_from_slice(&signature_data.message);
-
-        let num_signatures = 1;
-        instruction_data[0] = num_signatures;
-        let offsets = SecpSignatureOffsets {
-            signature_offset: signature_offset as u16,
-            signature_instruction_index: 0,
-            eth_address_offset: eth_address_offset as u16,
-            eth_address_instruction_index: 0,
-            message_data_offset: message_data_offset as u16,
-            message_data_size: signature_data.message.len() as u16,
-            message_instruction_index: 0,
-        };
-
-        let packed_offsets = offsets.try_to_vec();
-        instruction_data[1..data_start].copy_from_slice(&packed_offsets.unwrap());
-
-        return instruction_data;
+        let message_data_offset = 97; // meta (12) + address (20) + signature (65) = 97
+        let instruction_message = secp_instruction_data[message_data_offset..].to_vec();
+        if instruction_message != message {
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
+        Ok(())
     }
 
     /// Process [Convert i64 from Vec<u8>] ()
@@ -135,10 +107,65 @@ impl Processor {
                 iterator as usize,
                 &instruction_info.data.borrow(),
             ).map_err(|_| AudiusError::SignatureMissing)?;
+
+            if secp_instruction.program_id != secp256k1_program::id() {
+                return Err(AudiusError::SignatureVerificationFailed.into());
+            }
+
             v.push(secp_instruction);
             iterator+=1;
         }
+
         return std::result::Result::Ok(v);
+    }
+
+    /// Process [ValidateSignerData]().
+    /// Validates eth signature recovery for each provided ValidSigner
+    pub fn validate_signer_data(
+        instruction_info: &AccountInfo,
+        signer_group_info: &AccountInfo,
+        valid_signer_accounts: &[&AccountInfo],
+        signature_data_array: &[&SignatureData]
+    ) -> Result<(), AudiusError> {
+
+        let instruction_recovery = Self::recover_secp_instructions(&instruction_info);
+        if instruction_recovery.is_err() {
+            return Err(AudiusError::Secp256InstructionLosing.into());
+        }
+
+        let recovered_instructions = instruction_recovery?;
+        if recovered_instructions.len() < valid_signer_accounts.len()
+            || recovered_instructions.len() < signature_data_array.len() {
+            return Err(AudiusError::Secp256InstructionLosing.into());
+        }
+
+        for i in 0..recovered_instructions.len() {
+            let secp_instruction = &recovered_instructions[i];
+            let valid_signer_info = valid_signer_accounts[i];
+            let signature_data = signature_data_array[i];
+
+            let valid_signer = Box::new(ValidSigner::try_from_slice(
+                &valid_signer_info.data.borrow(),
+            ).map_err(|_| AudiusError::InvalidInstruction)?);
+
+            if !valid_signer.is_initialized()
+            {
+                return Err(AudiusError::ValidSignerNotInitialized.into());
+            }
+
+            if valid_signer.signer_group != *signer_group_info.key
+            {
+                return Err(AudiusError::WrongSignerGroup.into());
+            }
+
+            Self::validate_eth_signature(
+                valid_signer.eth_address,
+                &signature_data.message,
+                secp_instruction.data.clone()
+            )?;
+        }
+
+        return std::result::Result::Ok(());
     }
 
     /// Process [InitSignerGroup]().
@@ -364,67 +391,6 @@ impl Processor {
         let clock_account_info = next_account_info(account_info_iter)?;
         let clock = Clock::from_account_info(&clock_account_info)?;
 
-        // Recover all secp instructions present in this tx
-        let instruction_recovery = Self::recover_secp_instructions(&instruction_info);
-        if instruction_recovery.is_err() {
-            return Err(AudiusError::Secp256InstructionLosing.into());
-        }
-
-        let recovered_instructions = instruction_recovery?;
-        if recovered_instructions.len() < 3 {
-            return Err(AudiusError::Secp256InstructionLosing.into());
-        }
-
-        let secp_instruction_1 = &recovered_instructions[0];
-        let secp_instruction_2 = &recovered_instructions[1];
-        let secp_instruction_3 = &recovered_instructions[2];
-
-        if secp_instruction_1.program_id != secp256k1_program::id()
-            || secp_instruction_2.program_id != secp256k1_program::id()
-            || secp_instruction_3.program_id != secp256k1_program::id() {
-            return Err(AudiusError::SignatureVerificationFailed.into());
-        }
-
-        let valid_signer_1 = Box::new(ValidSigner::try_from_slice(
-            &valid_signer_1_info.data.borrow(),
-        )?);
-        let valid_signer_2 = Box::new(ValidSigner::try_from_slice(
-            &valid_signer_2_info.data.borrow(),
-        )?);
-        let valid_signer_3 = Box::new(ValidSigner::try_from_slice(
-            &valid_signer_3_info.data.borrow(),
-        )?);
-
-        if !valid_signer_1.is_initialized()
-            || !valid_signer_2.is_initialized()
-            || !valid_signer_3.is_initialized()
-        {
-            return Err(AudiusError::ValidSignerNotInitialized.into());
-        }
-
-        if valid_signer_1.signer_group != *signer_group_info.key
-            || valid_signer_2.signer_group != *signer_group_info.key
-            || valid_signer_3.signer_group != *signer_group_info.key
-        {
-            return Err(AudiusError::WrongSignerGroup.into());
-        }
-
-        let instruction_data_1 = Self::recover_instruction_data(&signature_data_1, &valid_signer_1);
-        let instruction_data_2 = Self::recover_instruction_data(&signature_data_2, &valid_signer_2);
-        let instruction_data_3 = Self::recover_instruction_data(&signature_data_3, &valid_signer_3);
-
-        if instruction_data_1 != secp_instruction_1.data {
-            return Err(AudiusError::SignatureVerificationFailed.into());
-        }
-
-        if instruction_data_2 != secp_instruction_2.data {
-            return Err(AudiusError::SignatureVerificationFailed.into());
-        }
-
-        if instruction_data_3 != secp_instruction_3.data {
-            return Err(AudiusError::SignatureVerificationFailed.into());
-        }
-
         let signer_group = Box::new(SignerGroup::try_from_slice(
             &signer_group_info.data.borrow(),
         )?);
@@ -432,6 +398,15 @@ impl Processor {
         if !signer_group.is_initialized() {
             return Err(AudiusError::UninitializedSignerGroup.into());
         }
+
+        let valid_signer_acct_array = [valid_signer_1_info, valid_signer_2_info, valid_signer_3_info];
+        let sig_data_array = [&signature_data_1, &signature_data_2, &signature_data_3];
+        Self::validate_signer_data(
+            &instruction_info,
+            &signer_group_info,
+            &valid_signer_acct_array,
+            &sig_data_array
+        )?;
 
         // Each signature data message is expected to be a recent unix timestamp
         // If messages do not adhere to this format, the operation will fail
@@ -500,27 +475,6 @@ impl Processor {
         let clock_account_info = next_account_info(account_info_iter)?;
         let clock = Clock::from_account_info(&clock_account_info)?;
 
-        // Recover all secp instructions present in this tx
-        let instruction_recovery = Self::recover_secp_instructions(&instruction_info);
-        if instruction_recovery.is_err() {
-            return Err(AudiusError::Secp256InstructionLosing.into());
-        }
-
-        let recovered_instructions = instruction_recovery?;
-        if recovered_instructions.len() < 3 {
-            return Err(AudiusError::Secp256InstructionLosing.into());
-        }
-
-        let secp_instruction_1 = &recovered_instructions[0];
-        let secp_instruction_2 = &recovered_instructions[1];
-        let secp_instruction_3 = &recovered_instructions[2];
-
-        if secp_instruction_1.program_id != secp256k1_program::id()
-            || secp_instruction_2.program_id != secp256k1_program::id()
-            || secp_instruction_3.program_id != secp256k1_program::id() {
-            return Err(AudiusError::SignatureVerificationFailed.into());
-        }
-
         let signer_group = Box::new(SignerGroup::try_from_slice(
             &signer_group_info.data.borrow(),
         )?);
@@ -538,45 +492,14 @@ impl Processor {
             return Err(AudiusError::SignerAlreadyInitialized.into());
         }
 
-        let valid_signer_1 = Box::new(ValidSigner::try_from_slice(
-            &valid_signer_1_info.data.borrow(),
-        )?);
-        let valid_signer_2 = Box::new(ValidSigner::try_from_slice(
-            &valid_signer_2_info.data.borrow(),
-        )?);
-        let valid_signer_3 = Box::new(ValidSigner::try_from_slice(
-            &valid_signer_3_info.data.borrow(),
-        )?);
-
-        if !valid_signer_1.is_initialized()
-            || !valid_signer_2.is_initialized()
-            || !valid_signer_3.is_initialized()
-        {
-            return Err(AudiusError::ValidSignerNotInitialized.into());
-        }
-
-        if valid_signer_1.signer_group != *signer_group_info.key
-            || valid_signer_2.signer_group != *signer_group_info.key
-            || valid_signer_3.signer_group != *signer_group_info.key
-        {
-            return Err(AudiusError::WrongSignerGroup.into());
-        }
-
-        let instruction_data_1 = Self::recover_instruction_data(&signature_data_1, &valid_signer_1);
-        let instruction_data_2 = Self::recover_instruction_data(&signature_data_2, &valid_signer_2);
-        let instruction_data_3 = Self::recover_instruction_data(&signature_data_3, &valid_signer_3);
-
-        if instruction_data_1 != secp_instruction_1.data {
-            return Err(AudiusError::SignatureVerificationFailed.into());
-        }
-
-        if instruction_data_2 != secp_instruction_2.data {
-            return Err(AudiusError::SignatureVerificationFailed.into());
-        }
-
-        if instruction_data_3 != secp_instruction_3.data {
-            return Err(AudiusError::SignatureVerificationFailed.into());
-        }
+        let valid_signer_acct_array = [valid_signer_1_info, valid_signer_2_info, valid_signer_3_info];
+        let sig_data_array = [&signature_data_1, &signature_data_2, &signature_data_3];
+        Self::validate_signer_data(
+            &instruction_info,
+            &signer_group_info,
+            &valid_signer_acct_array,
+            &sig_data_array
+        )?;
 
         // Each signature data message is expected to be a recent unix timestamp
         // If messages do not adhere to this format, the operation will fail
@@ -619,22 +542,6 @@ impl Processor {
             return Err(AudiusError::InvalidInstruction.into());
         }
 
-        // Recover all secp instructions present in this tx
-        let instruction_recovery = Self::recover_secp_instructions(&instruction_info);
-        if instruction_recovery.is_err() {
-            return Err(AudiusError::Secp256InstructionLosing.into());
-        }
-
-        let recovered_instructions = instruction_recovery?;
-        if recovered_instructions.len() < 1 {
-            return Err(AudiusError::Secp256InstructionLosing.into());
-        }
-
-        let secp_instruction = &recovered_instructions[0];
-        if secp_instruction.program_id != secp256k1_program::id() {
-            return Err(AudiusError::SignatureVerificationFailed.into());
-        }
-
         let signer_group = Box::new(SignerGroup::try_from_slice(
             &signer_group_info.data.borrow(),
         )?);
@@ -643,23 +550,14 @@ impl Processor {
             return Err(AudiusError::UninitializedSignerGroup.into());
         }
 
-        let valid_signer = Box::new(ValidSigner::try_from_slice(
-            &valid_signer_info.data.borrow(),
-        )?);
-
-        if !valid_signer.is_initialized() {
-            return Err(AudiusError::ValidSignerNotInitialized.into());
-        }
-
-        if valid_signer.signer_group != *signer_group_info.key {
-            return Err(AudiusError::WrongSignerGroup.into());
-        }
-
-        let instruction_data = Self::recover_instruction_data(&signature_data, &valid_signer);
-
-        if instruction_data != secp_instruction.data {
-            return Err(AudiusError::SignatureVerificationFailed.into());
-        }
+        let valid_signer_acct_array = [valid_signer_info];
+        let sig_data_array = [&signature_data];
+        Self::validate_signer_data(
+            &instruction_info,
+            &signer_group_info,
+            &valid_signer_acct_array,
+            &sig_data_array
+        )?;
 
         Ok(())
     }

@@ -161,28 +161,19 @@ fn construct_signature_data(
     message: &[u8],
 ) -> (instruction::SignatureData, Instruction) {
     let priv_key = SecretKey::parse(priv_key_raw).unwrap();
-
     let secp256_program_instruction =
         secp256k1_instruction::new_secp256k1_instruction(&priv_key, message);
-
     let start = 1;
     let end = start + state::SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
-
     let offsets =
         state::SecpSignatureOffsets::try_from_slice(&secp256_program_instruction.data[start..end])
             .unwrap();
 
     let sig_start = offsets.signature_offset as usize;
     let sig_end = sig_start + state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE;
-
-    let mut signature: [u8; state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE] =
-        [0u8; state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE];
-    signature.copy_from_slice(&secp256_program_instruction.data[sig_start..sig_end]);
-
     let recovery_id = secp256_program_instruction.data[sig_end];
 
     let signature_data = instruction::SignatureData {
-        signature,
         recovery_id,
         message: message.to_vec(),
     };
@@ -623,35 +614,30 @@ async fn validate_signature() {
 }
 
 #[tokio::test]
-async fn validate_signature_with_wrong_data() {
+async fn validate_signature_with_wrong_signer() {
     let mut rng = thread_rng();
     let key: [u8; 32] = rng.gen();
     let priv_key = SecretKey::parse(&key).unwrap();
     let secp_pubkey = PublicKey::from_secret_key(&priv_key);
     let eth_address = construct_eth_address(&secp_pubkey);
-
     let message = [1u8; 29];
 
+    // Sign with an incorrect private key not matching the public eth address for this ValidSigner
+    let priv_key_2 = SecretKey::parse(&rng.gen()).unwrap();
     let secp256_program_instruction =
-        secp256k1_instruction::new_secp256k1_instruction(&priv_key, &message);
+        secp256k1_instruction::new_secp256k1_instruction(&priv_key_2, &message);
 
     let start = 1;
     let end = start + state::SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
-
     let offsets =
         state::SecpSignatureOffsets::try_from_slice(&secp256_program_instruction.data[start..end])
             .unwrap();
 
     let sig_start = offsets.signature_offset as usize;
     let sig_end = sig_start + state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE;
-
-    let signature: [u8; state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE] =
-        [8u8; state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE];
-
     let recovery_id = secp256_program_instruction.data[sig_end];
 
     let signature_data = instruction::SignatureData {
-        signature,
         recovery_id,
         message: message.to_vec(),
     };
