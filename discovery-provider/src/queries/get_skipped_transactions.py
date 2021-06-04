@@ -45,7 +45,6 @@ def get_transaction_status(blocknumber, blockhash, txhash):
     """
     indexing_error = get_indexing_error(REDIS)
 
-    # separating the conditions to reduce number of booleans in single condition (linting)
     if indexing_error:
         blocknumber_match = 'blocknumber' in indexing_error and \
             indexing_error['blocknumber'] == blocknumber
