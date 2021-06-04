@@ -1,7 +1,7 @@
 """add-skipped-transactions-table
 
 Revision ID: 7f4f44a8e880
-Revises: 6cf96b71cf3d
+Revises: 05e2eeb2bd03
 Create Date: 2021-05-24 20:14:46.963239
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '7f4f44a8e880'
-down_revision = '6cf96b71cf3d'
+down_revision = '05e2eeb2bd03'
 branch_labels = None
 depends_on = None
 
