@@ -44,7 +44,6 @@ impl Processor {
         }
 
         let signature_data = Box::new(SignatureData {
-            signature: instruction_data.signature,
             recovery_id: instruction_data.recovery_id,
             message: instruction_data
                 .track_data

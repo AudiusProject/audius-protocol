@@ -13,8 +13,6 @@ use solana_program::{
 #[repr(C)]
 #[derive(Clone, BorshDeserialize, BorshSerialize)]
 pub struct SignatureData {
-    /// Secp256k1 signature
-    pub signature: [u8; SecpSignatureOffsets::SECP_SIGNATURE_SIZE],
     /// Ethereum signature recovery ID
     pub recovery_id: u8,
     /// Signed message
