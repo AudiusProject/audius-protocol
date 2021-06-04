@@ -26,13 +26,15 @@ const verifyAndRecordCaptcha = async ({ token, walletAddress, url, logger, captc
 
 async function captchaMiddleware (req, res, next) {
   if (!config.get('recaptchaServiceKey')) {
-    req.logger.warn(`CAPTCHA - No service key found. Not calculating score for wallet=${req.body.walletAddress}`)
+    req.logger.warn(
+      `CAPTCHA - No service key found. Not calculating score at ${req.url} for wallet=${req.body.walletAddress}`
+    )
   } else {
     const libs = req.app.get('audiusLibs')
 
     verifyAndRecordCaptcha({
       token: req.body.token,
-      walletAddress: req.body.walletAddress,
+      walletAddress: req.body.walletAddress || req.body.senderAddress,
       url: req.url,
       logger: req.logger,
       captcha: libs.captcha
