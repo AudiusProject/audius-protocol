@@ -76,7 +76,6 @@ def get_update_is_creator_event():
     })
     return event_type, AttrDict({"blockHash": "0x", "args": update_is_creator_event})
 
-
 def get_update_creator_node_endpoint_event():
     event_type = user_event_types_lookup['update_creator_node_endpoint']
     update_creator_node_endpoint_event = AttrDict({
@@ -121,6 +120,22 @@ ipfs_client = IPFSClient({
         "collectibles": {
             "73:::0x417cf58dc18edd17025689d13af2b85f403e130c": {},
             "order": ["73:::0x417cf58dc18edd17025689d13af2b85f403e130c"]
+        },
+        "playlist_library": {
+            "contents": [
+                {
+                    "type": "folder",
+                    "name": "my favorite playlists",
+                    "contents": [
+                        {"type": "playlist", "playlist_id": 500},
+                        {"type": "explore_playlist", "playlist_id": "heavy-rotation"}
+                    ]
+                },
+                {"type": "playlist", "playlist_id": 501},
+                {"type": "playlist", "playlist_id": 502},
+                {"type": "explore_playlist", "playlist_id": "feeling-lucky"},
+                {"type": "playlist", "playlist_id": 503},
+            ]
         },
         "user_id": 1
     }
@@ -394,6 +409,7 @@ def test_index_users(app):
         assert user_record.profile_picture_sizes == ipfs_metadata["profile_picture_sizes"]
         assert user_record.cover_photo_sizes == ipfs_metadata["cover_photo_sizes"]
         assert user_record.has_collectibles == True
+        assert user_record.playlist_library == ipfs_metadata["playlist_library"]
 
         ipfs_associated_wallets = ipfs_metadata['associated_wallets']
         associated_wallets = session.query(AssociatedWallet).filter_by(

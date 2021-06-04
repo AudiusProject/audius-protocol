@@ -212,45 +212,49 @@ def parse_user_event(
             # ipfs_metadata properties are defined in get_ipfs_metadata
 
             # Fields also stored on chain
-            if "profile_picture" in ipfs_metadata and \
-                ipfs_metadata["profile_picture"]:
-                user_record.profile_picture = ipfs_metadata["profile_picture"]
+            if 'profile_picture' in ipfs_metadata and \
+                ipfs_metadata['profile_picture']:
+                user_record.profile_picture = ipfs_metadata['profile_picture']
 
-            if "cover_photo" in ipfs_metadata and \
-                ipfs_metadata["cover_photo"]:
-                user_record.cover_photo = ipfs_metadata["cover_photo"]
+            if 'cover_photo' in ipfs_metadata and \
+                ipfs_metadata['cover_photo']:
+                user_record.cover_photo = ipfs_metadata['cover_photo']
 
-            if "bio" in ipfs_metadata and \
-                ipfs_metadata["bio"]:
-                user_record.bio = ipfs_metadata["bio"]
+            if 'bio' in ipfs_metadata and \
+                ipfs_metadata['bio']:
+                user_record.bio = ipfs_metadata['bio']
 
-            if "name" in ipfs_metadata and \
-                ipfs_metadata["name"]:
-                user_record.name = ipfs_metadata["name"]
+            if 'name' in ipfs_metadata and \
+                ipfs_metadata['name']:
+                user_record.name = ipfs_metadata['name']
 
-            if "location" in ipfs_metadata and \
-                ipfs_metadata["location"]:
-                user_record.location = ipfs_metadata["location"]
+            if 'location' in ipfs_metadata and \
+                ipfs_metadata['location']:
+                user_record.location = ipfs_metadata['location']
 
             # Fields with no on-chain counterpart
-            if "profile_picture_sizes" in ipfs_metadata and \
-                ipfs_metadata["profile_picture_sizes"]:
-                user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
+            if 'profile_picture_sizes' in ipfs_metadata and \
+                ipfs_metadata['profile_picture_sizes']:
+                user_record.profile_picture = ipfs_metadata['profile_picture_sizes']
 
-            if "cover_photo_sizes" in ipfs_metadata and \
-                ipfs_metadata["cover_photo_sizes"]:
-                user_record.cover_photo = ipfs_metadata["cover_photo_sizes"]
+            if 'cover_photo_sizes' in ipfs_metadata and \
+                ipfs_metadata['cover_photo_sizes']:
+                user_record.cover_photo = ipfs_metadata['cover_photo_sizes']
 
-            if "collectibles" in ipfs_metadata and \
-                ipfs_metadata["collectibles"] and \
-                isinstance(ipfs_metadata["collectibles"], dict) and \
-                ipfs_metadata["collectibles"].items():
+            if 'collectibles' in ipfs_metadata and \
+                ipfs_metadata['collectibles'] and \
+                isinstance(ipfs_metadata['collectibles'], dict) and \
+                ipfs_metadata['collectibles'].items():
                 user_record.has_collectibles = True
             else:
                 user_record.has_collectibles = False
 
             if 'associated_wallets' in ipfs_metadata:
                 update_user_associated_wallets(session, update_task, user_record, ipfs_metadata['associated_wallets'])
+
+            if 'playlist_library' in ipfs_metadata and \
+                ipfs_metadata['playlist_library']:
+                user_record.playlist_library = ipfs_metadata['playlist_library']
 
     # All incoming profile photos intended to be a directory
     # Any write to profile_picture field is replaced by profile_picture_sizes

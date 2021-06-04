@@ -166,6 +166,7 @@ class User(Base):
     secondary_ids = Column(postgresql.ARRAY(Integer), nullable=True)
     replica_set_update_signer = Column(String, nullable=True)
     has_collectibles = Column(Boolean, nullable=False, default=False, server_default='false')
+    playlist_library = Column(JSONB, nullable=True)
 
     PrimaryKeyConstraint(is_current, user_id, blockhash, txhash)
 
@@ -302,6 +303,7 @@ class Playlist(Base):
     upc = Column(String)
     is_current = Column(Boolean, nullable=False)
     is_delete = Column(Boolean, nullable=False)
+    last_added_to = Column(DateTime, nullable=True)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
 

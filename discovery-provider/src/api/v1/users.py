@@ -43,7 +43,7 @@ def get_single_user(user_id, current_user_id):
     users = get_users(args)
     if not users:
         abort_not_found(user_id, ns)
-    user = extend_user(users[0])
+    user = extend_user(users[0], current_user_id)
     return success_response(user)
 
 
