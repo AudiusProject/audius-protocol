@@ -46,6 +46,7 @@ def user_replica_set_state_update(
     # Data format is {"cnode_sp_id": {"cnode_record", "events":[]}}
     cnode_events_lookup = {}
 
+    # pylint: disable=too-many-nested-blocks
     for tx_receipt in user_replica_set_mgr_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in user_replica_set_manager_event_types_arr:
@@ -67,7 +68,9 @@ def user_replica_set_state_update(
                     # first, get the user object from the db(if exists or create a new one)
                     # then set the lookup object for user_id with the appropriate props
                     if user_id and (user_id not in user_replica_set_events_lookup):
-                        ret_user = lookup_user_record(update_task, session, entry, block_number, block_timestamp, txhash)
+                        ret_user = lookup_user_record(
+                            update_task, session, entry, block_number, block_timestamp, txhash
+                        )
                         user_replica_set_events_lookup[user_id] = {"user": ret_user, "events": []}
 
                     if cnode_sp_id and (cnode_sp_id not in cnode_events_lookup):

@@ -1,6 +1,7 @@
 import logging
 import concurrent.futures
 
+from sqlalchemy import func
 from src.app import contract_addresses
 from src.models import Block, User, Track, Repost, Follow, Playlist, \
     Save, URSMContentNode, AssociatedWallet, SkippedTransaction
@@ -20,7 +21,6 @@ from src.queries.get_skipped_transactions import get_indexing_error, \
     set_indexing_error, clear_indexing_error
 from src.queries.confirm_indexing_transaction_error import confirm_indexing_transaction_error
 from src.utils.indexing_errors import IndexingError
-from sqlalchemy import func
 
 logger = logging.getLogger(__name__)
 
@@ -178,15 +178,15 @@ def save_and_get_skip_tx_hash(session, redis):
     indexing_error = get_indexing_error(redis)
     if isinstance(indexing_error, dict) and 'has_consensus' in indexing_error and indexing_error['has_consensus']:
         num_skipped_tx = session.query(func.count(SkippedTransaction.id)).scalar()
-        if num_skipped_tx > MAX_SKIPPED_TX:
+        if num_skipped_tx >= MAX_SKIPPED_TX:
             return None
         skipped_tx = SkippedTransaction(
             blocknumber=indexing_error['blocknumber'],
             blockhash=indexing_error['blockhash'],
-            transactionhash=indexing_error['transactionhash']
+            txhash=indexing_error['txhash']
         )
         session.add(skipped_tx)
-        return indexing_error['transactionhash']
+        return indexing_error['txhash']
     return None
 
 def index_blocks(self, db, blocks_list):
@@ -393,11 +393,11 @@ def index_blocks(self, db, blocks_list):
             except IndexingError as err:
                 logger.info(
                     f"index.py | Error in the indexing task at"
-                    f" block={err.blocknumber} and hash={err.transactionhash}"
+                    f" block={err.blocknumber} and hash={err.txhash}"
                 )
-                set_indexing_error(redis, err.blocknumber, err.blockhash, err.transactionhash, err.message)
+                set_indexing_error(redis, err.blocknumber, err.blockhash, err.txhash, err.message)
                 confirm_indexing_transaction_error(
-                    redis, err.blocknumber, err.blockhash, err.transactionhash, err.message)
+                    redis, err.blocknumber, err.blockhash, err.txhash, err.message)
                 raise err
         # add the block number of the most recently processed block to redis
         redis.set(most_recent_indexed_block_redis_key, block.number)
