@@ -310,14 +310,9 @@ fn command_send_message(
     let sig_start = offsets.signature_offset as usize;
     let sig_end = sig_start + SecpSignatureOffsets::SECP_SIGNATURE_SIZE;
 
-    let mut signature: [u8; SecpSignatureOffsets::SECP_SIGNATURE_SIZE] =
-        [0u8; SecpSignatureOffsets::SECP_SIGNATURE_SIZE];
-    signature.copy_from_slice(&secp256_program_instruction.data[sig_start..sig_end]);
-
     let recovery_id = secp256_program_instruction.data[sig_end];
 
     let signature_data = SignatureData {
-        signature,
         recovery_id,
         message: message.to_vec(),
     };
