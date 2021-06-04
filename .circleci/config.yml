@@ -614,21 +614,21 @@ jobs:
             - solana-programs/audius_eth_registry/target
           key: audius-eth-registry-deps-{{ checksum "solana-programs/audius_eth_registry/Cargo.toml" }}
 
-      - restore_cache:
-          keys:
-            - track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
-            - track-listen-count-deps-
-      - run:
-          name: run track listen count tests
-          command: |
-            export PATH=$PWD/solana-release/bin:$PATH
-            cd solana-programs/track_listen_count
-            cargo build-bpf
-            cargo test-bpf
-      - save_cache:
-          paths:
-            - solana-programs/track_listen_count/target
-          key: track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
+      # - restore_cache:
+      #     keys:
+      #       - track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
+      #       - track-listen-count-deps-
+      # - run:
+      #     name: run track listen count tests
+      #     command: |
+      #       export PATH=$PWD/solana-release/bin:$PATH
+      #       cd solana-programs/track_listen_count
+      #       cargo build-bpf
+      #       cargo test-bpf
+      # - save_cache:
+      #     paths:
+      #       - solana-programs/track_listen_count/target
+      #     key: track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
 
   docker-build-and-push:
     docker:
