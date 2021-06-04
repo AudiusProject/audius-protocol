@@ -8,6 +8,8 @@ const config = require('../config')
 const { getOwnEndpoint, getCreatorNodeEndpoints, ensureStorageMiddleware } = require('../middlewares')
 const { getIPFSPeerId } = require('../utils')
 
+const SyncHistoryAggregator = require('../snapbackSM/syncHistoryAggregator')
+
 // Dictionary tracking currently queued up syncs with debounce
 const syncQueue = {}
 
@@ -164,6 +166,7 @@ module.exports = function (app) {
     const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean
 
     // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
+
     if (walletPublicKeys.length === 0) {
       return errorResponseBadRequest(`Must provide one wallet param`)
     } else if (walletPublicKeys.length > 1) {
@@ -177,7 +180,7 @@ module.exports = function (app) {
     }
 
     if (immediate) {
-      let errorObj = await _nodesync(serviceRegistry, req.logger, walletPublicKeys, creatorNodeEndpoint, req.body.blockNumber)
+      let errorObj = await _nodesync(serviceRegistry, req.logger, walletPublicKeys, creatorNodeEndpoint, req.body.blockNumber, req.logContext)
       if (errorObj) {
         return errorResponseServerError(errorObj)
       } else {
@@ -194,7 +197,7 @@ module.exports = function (app) {
       }
       syncQueue[wallet] = setTimeout(
         async function () {
-          return _nodesync(serviceRegistry, req.logger, [wallet], creatorNodeEndpoint, req.body.blockNumber)
+          return _nodesync(serviceRegistry, req.logger, [wallet], creatorNodeEndpoint, req.body.blockNumber, req.logContext)
         },
         debounceTime
       )
@@ -202,6 +205,22 @@ module.exports = function (app) {
     }
 
     return successResponse()
+  }))
+
+  /**
+   * Returns sync history.
+   * `aggregateSyncData` - the number of succesful, failed, and triggered syncs for the current day
+   * `latestSyncData` - the date of the most recent successful and failed sync. will be `null` if no sync occurred with that state
+   *
+   * Structure:
+   *  aggregateSyncData = {triggered: <number>, success: <number>, fail: <number>}
+   *  latestSyncData = {success: <MM:DD:YYYYTHH:MM:SS:ssss>, fail: <MM:DD:YYYYTHH:MM:SS:ssss>}
+   */
+  app.get('/sync_history', handleResponse(async (req, res) => {
+    const aggregateSyncData = await SyncHistoryAggregator.getAggregateSyncData(req.logContext)
+    const latestSyncData = await SyncHistoryAggregator.getLatestSyncData(req.logContext)
+
+    return successResponse({ aggregateSyncData, latestSyncData })
   }))
 
   /** Checks if node sync is in progress for wallet. */
@@ -235,7 +254,7 @@ module.exports = function (app) {
  *    Secondaries have no knowledge of the current data state on primary, they simply replicate
  *    what they receive in each export.
  */
-async function _nodesync (serviceRegistry, logger, walletPublicKeys, creatorNodeEndpoint, blockNumber) {
+async function _nodesync (serviceRegistry, logger, walletPublicKeys, creatorNodeEndpoint, blockNumber, logContext) {
   const { redis } = serviceRegistry
 
   const start = Date.now()
@@ -551,9 +570,11 @@ async function _nodesync (serviceRegistry, logger, walletPublicKeys, creatorNode
         throw new Error(e)
       }
     }
+    await SyncHistoryAggregator.recordSyncSuccess(logContext)
   } catch (e) {
     logger.error(redisKey, 'Sync Error for wallets ', walletPublicKeys, `|| from endpoint ${creatorNodeEndpoint} ||`, e)
     errorObj = e
+    await SyncHistoryAggregator.recordSyncFail(logContext)
   } finally {
     // Release all redis locks
     for (let wallet of walletPublicKeys) {

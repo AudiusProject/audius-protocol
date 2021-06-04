@@ -73,6 +73,7 @@ notification_type_repost = 'Repost'
 notification_type_create = 'Create'
 notification_type_remix_create = 'RemixCreate'
 notification_type_remix_cosign = 'RemixCosign'
+notification_type_playlist_update = 'PlaylistUpdate'
 
 notification_blocknumber = 'blocknumber'
 notification_initiator = 'initiator'
@@ -91,6 +92,9 @@ notification_followee_id = 'followee_user_id'
 
 notification_repost_counts = 'repost_counts'
 notification_favorite_counts = 'favorite_counts'
+
+notification_playlist_update_timestamp = 'playlist_update_timestamp'
+notification_playlist_update_users = 'playlist_update_users'
 
 # Trending
 owner_follower_count = 'owner_follower_count'

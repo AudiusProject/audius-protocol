@@ -10,6 +10,7 @@ from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
+SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 
 # Maximum number of batches to process at once
@@ -84,14 +85,21 @@ def get_sol_tx_info(solana_client, tx_sig):
         retries -= 1
         logger.error(f"index_solana_plays.py | Retrying tx fetch: {tx_sig}")
 
+# Check for both SECP and SignerGroup
+# Ensures that a signature recovery was performed within the expected SignerGroup
+def is_valid_tx(account_keys):
+    if SECP_PROGRAM in account_keys and SIGNER_GROUP in account_keys:
+        return True
+    logger.error(f"index_solana_plays.py | Failed to find {SECP_PROGRAM} or {SIGNER_GROUP} in {account_keys}")
+    return False
+
 def parse_sol_play_transaction(session, solana_client, tx_sig):
     try:
         tx_info = get_sol_tx_info(solana_client, tx_sig)
         logger.info(
             f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}"
         )
-        if SECP_PROGRAM in tx_info["result"]["transaction"]["message"][
-                "accountKeys"]:
+        if is_valid_tx(tx_info["result"]["transaction"]["message"]["accountKeys"]):
             audius_program_index = tx_info["result"]["transaction"]["message"][
                 "accountKeys"].index(TRACK_LISTEN_PROGRAM)
             for instruction in tx_info["result"]["transaction"]["message"][
@@ -241,7 +249,10 @@ def process_solana_plays(solana_client):
     try:
         base58.b58decode(TRACK_LISTEN_PROGRAM)
     except ValueError:
-        logger.info("index_solana_plays.py | Invalid program configured, exiting")
+        logger.info(
+            f"index_solana_plays.py"
+            f"Invalid TrackListenCount program ({TRACK_LISTEN_PROGRAM}) configured, exiting."
+        )
         return
 
     db = index_solana_plays.db

@@ -301,7 +301,7 @@ module.exports = function (app) {
   app.get('/notifications', authMiddleware, handleResponse(async (req) => {
     const limit = parseInt(req.query.limit)
     const timeOffset = req.query.timeOffset ? moment(req.query.timeOffset) : moment()
-    const { blockchainUserId: userId, createdAt } = req.user
+    const { blockchainUserId: userId, createdAt, walletAddress } = req.user
     const createdDate = moment(createdAt)
     if (!timeOffset.isValid()) {
       return errorResponseBadRequest(`Invalid Date params`)
@@ -382,10 +382,31 @@ module.exports = function (app) {
         announcementsAfterFilter
       )
 
+      let playlistUpdates = []
+      if (walletAddress) {
+        const result = await models.UserEvents.findOne({
+          attributes: ['playlistUpdates'],
+          where: { walletAddress }
+        })
+        const playlistUpdatesResult = result && result.playlistUpdates
+        if (playlistUpdatesResult) {
+          const thirtyDaysAgo = moment().utc().subtract(30, 'days').valueOf()
+          playlistUpdates = Object.keys(playlistUpdatesResult)
+            .filter(playlistId =>
+              playlistUpdatesResult[playlistId].userLastViewed >= thirtyDaysAgo &&
+              playlistUpdatesResult[playlistId].lastUpdated >= thirtyDaysAgo &&
+              playlistUpdatesResult[playlistId].userLastViewed < playlistUpdatesResult[playlistId].lastUpdated
+            )
+            .map(id => parseInt(id))
+            .filter(Boolean)
+        }
+      }
+
       return successResponse({
         message: 'success',
         notifications: userNotifications.slice(0, limit),
-        totalUnread: unreadAnnouncementCount + unViewedCount
+        totalUnread: unreadAnnouncementCount + unViewedCount,
+        playlistUpdates
       })
     } catch (err) {
       return errorResponseBadRequest({

@@ -30,6 +30,12 @@ const downloadURL = (url, filename) => {
 }
 
 class File extends Base {
+  constructor (user, ...args) {
+    super(...args)
+
+    this.User = user
+  }
+
   /**
    * Fetches a file from IPFS with a given CID. Public gateways are tried first, then
    * fallback to a specified gateway and then to the default gateway.
@@ -147,6 +153,10 @@ class File extends Base {
   async uploadImage (file, square) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(file)
+
+    // Assign a creator_node_endpoint to the user if necessary
+    await this.User.assignReplicaSetIfNecessary()
+
     const resp = await this.creatorNode.uploadImage(file, square)
     return resp
   }

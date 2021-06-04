@@ -16,7 +16,7 @@
     "lint-fix": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
-    "@audius/libs": "1.1.19",
+    "@audius/libs": "1.2.1",
     "@solana/web3.js": "^1.2.5",
     "@sentry/node": "^6.2.5",
     "@sentry/tracing": "^6.2.5",

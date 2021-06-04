@@ -19,7 +19,8 @@ const USER_PROPS = [
   'location',
   'creator_node_endpoint',
   'associated_wallets',
-  'collectibles'
+  'collectibles',
+  'playlist_library'
 ]
 // User metadata fields that are required on the metadata object and only can have
 // non-null values
@@ -69,6 +70,9 @@ class Users extends Base {
     this._updateUserOperations = this._updateUserOperations.bind(this)
     this._validateUserMetadata = this._validateUserMetadata.bind(this)
     this._cleanUserMetadata = this._cleanUserMetadata.bind(this)
+
+    // For adding a creator_node_endpoint for a user if null
+    this.assignReplicaSetIfNecessary = this.assignReplicaSetIfNecessary.bind(this)
   }
 
   /* ----------- GETTERS ---------- */
@@ -593,6 +597,25 @@ class Users extends Base {
     } catch (e) {
       // TODO: think about handling the update metadata on chain and associating..
       throw new Error(`updateAndUploadMetadata() Error -- Phase ${phase}: ${e}`)
+    }
+  }
+
+  /**
+   * If a user's creator_node_endpoint is null, assign a replica set.
+   * Used during the sanity check and in uploadImage() in files.js
+   */
+  async assignReplicaSetIfNecessary () {
+    const user = this.userStateManager.getCurrentUser()
+
+    // If no user is logged in, or a creator node endpoint is already assigned,
+    // skip this call
+    if (!user || user.creator_node_endpoint) return
+
+    // Generate a replica set and assign to user
+    try {
+      await this.assignReplicaSet({ userId: user.user_id })
+    } catch (e) {
+      throw new Error(`assignReplicaSetIfNecessary error - ${e.toString()}`)
     }
   }
 

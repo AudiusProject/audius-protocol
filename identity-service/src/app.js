@@ -248,7 +248,7 @@ class App {
       this.express.set('announcementMap', announcementMap)
     } catch (err) {
       const audiusNotificationUrl = config.get('audiusNotificationUrl')
-      logger.error(`Error, unable to get aduius announcements from ${audiusNotificationUrl} \n [Err]:`, err)
+      logger.error(`Error, unable to get audius announcements from ${audiusNotificationUrl} \n [Err]:`, err)
     }
   }
 }
