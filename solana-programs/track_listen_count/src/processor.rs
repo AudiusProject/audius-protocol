@@ -4,6 +4,7 @@ use crate::{
     error::TrackListenCountError,
     instruction::{InstructionArgs, TemplateInstruction},
 };
+use solana_program::clock::UnixTimestamp;
 use audius_eth_registry::instruction::SignatureData;
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
@@ -11,7 +12,10 @@ use solana_program::{
     program::invoke, pubkey::Pubkey, sysvar::clock::Clock, sysvar::Sysvar,
 };
 
-const MAX_TIME_DIFF: i64 = 2000000; // this is about 3 minutes
+// Maximum time between multiple signer submission for adding additional
+// signers.
+// 10 minutes
+const MAX_TIME_DIFF_SECONDS: UnixTimestamp = 600;
 
 /// Program state handler.
 pub struct Processor {}
@@ -35,12 +39,11 @@ impl Processor {
         let clock_account_info = next_account_info(account_info_iter)?;
         let clock = Clock::from_account_info(&clock_account_info)?;
 
-        if (clock.unix_timestamp - instruction_data.track_data.timestamp).abs() > MAX_TIME_DIFF {
+        if (clock.unix_timestamp - instruction_data.track_data.timestamp).abs() > MAX_TIME_DIFF_SECONDS {
             return Err(TrackListenCountError::InvalidTimestamp.into());
         }
 
         let signature_data = Box::new(SignatureData {
-            signature: instruction_data.signature,
             recovery_id: instruction_data.recovery_id,
             message: instruction_data
                 .track_data
