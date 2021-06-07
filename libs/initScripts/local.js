@@ -18,7 +18,6 @@ const { getEthContractAccounts } = require('./helpers/utils')
 const serviceDirectoryList = ['discovery-provider', 'creator-node']
 const discProvEndpoint1 = 'http://dn1_web-server_1:5000'
 const discProvEndpoint2 = 'http://dn2_web-server_1:5001'
-const discProvEndpoint3 = 'http://dn3_web-server_1:5002'
 const creatorNodeEndpoint1 = 'http://cn1_creator-node_1:4000'
 const creatorNodeEndpoint2 = 'http://cn2_creator-node_1:4001'
 const creatorNodeEndpoint3 = 'http://cn3_creator-node_1:4002'
@@ -390,18 +389,7 @@ const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
   await queryLocalServices(audiusLibs, serviceTypesList)
 }
 
-const makeDiscoveryProviderEndpoint = (serviceNumber) => `http://dn${serviceNumber}_web-server_1:${5000 + parseInt(serviceNumber) -1}`
-
-// Account 0
-const _registerDiscProv1 = async (audiusLibs, ethAccounts) => {
-  await registerLocalService(audiusLibs, discoveryNodeType, discProvEndpoint1, amountOfAuds)
-}
-
-// Account 3
-const _registerDiscProv2 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[3])
-  await registerLocalService(audiusLibs4, discoveryNodeType, discProvEndpoint2, amountOfAuds)
-}
+const makeDiscoveryProviderEndpoint = (serviceNumber) => `http://dn${serviceNumber}_web-server_1:${5000 + parseInt(serviceNumber) - 1}`
 
 const _registerDiscProv = async (ethAccounts, serviceNumber) => {
   const audiusLibs = await initAudiusLibs(true, null, ethAccounts[8 + serviceNumber])
