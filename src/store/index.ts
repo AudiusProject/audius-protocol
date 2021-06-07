@@ -1,4 +1,8 @@
-import { ApolloClient, InMemoryCache } from '@apollo/client'
+import {
+  ApolloClient,
+  InMemoryCache,
+  NormalizedCacheObject
+} from '@apollo/client'
 import {
   combineReducers,
   createStore as createReduxStore,
@@ -42,18 +46,23 @@ export const client = new ApolloClient({
   cache: new InMemoryCache()
 })
 
-let hostedClient = null
-if (gqlBackupUri) {
-  hostedClient = new ApolloClient({
-    uri: gqlBackupUri,
-    cache: new InMemoryCache()
-  })
+let hostedClient: ApolloClient<NormalizedCacheObject> | null = null
+export const getBackupClient = () => {
+  if (hostedClient) {
+    return hostedClient
+  } else if (gqlBackupUri) {
+    hostedClient = new ApolloClient({
+      uri: gqlBackupUri,
+      cache: new InMemoryCache()
+    })
 
-  window.hostedClient = hostedClient
+    window.hostedClient = hostedClient
+    return hostedClient
+  }
+  return null
 }
 
 export const hasBackupClient = !!gqlBackupUri
-export const backupClient = hostedClient
 
 const aud = new Audius()
 window.aud = aud

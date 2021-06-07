@@ -20,7 +20,7 @@ import API from 'containers/API'
 import APILeaderboard from 'containers/APILeaderboard'
 import * as routes from 'utils/routes'
 
-import { client, backupClient, createStore } from './store'
+import { client, getBackupClient, createStore } from './store'
 import desktopStyles from './App.module.css'
 import mobileStyles from './AppMobile.module.css'
 import NotFound from 'containers/NotFound'
@@ -42,8 +42,11 @@ const App = () => {
   const [appolloClient, setApolloClient] = useState(client)
   const didClientError = useSelector(getDidGraphError)
   useEffect(() => {
-    if (didClientError && backupClient) {
-      setApolloClient(backupClient)
+    if (didClientError) {
+      const backupClient = getBackupClient()
+      if (backupClient) {
+        setApolloClient(backupClient)
+      }
     }
   }, [didClientError])
   return (
