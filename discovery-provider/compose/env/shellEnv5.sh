@@ -1,4 +1,4 @@
-export COMPOSE_PROJECT_NAME="dp5"
+export COMPOSE_PROJECT_NAME="dn5"
 export audius_server_port="5004"
 export audius_db_port="6435"
 export audius_ipfs_external_port="6065"

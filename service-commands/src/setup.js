@@ -425,7 +425,7 @@ const identityServiceUp = async () => {
  * Brings up an entire Audius Protocol stack.
  * @param {*} config. currently supports up to 4 Creator Nodes.
  */
-const allUp = async ({ numCreatorNodes = 4, numDiscoveryProviders = 1  }) => {
+const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1  }) => {
   console.log(
     "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
@@ -470,7 +470,7 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryProviders = 1  }) => {
     []
   )
 
-  const discoveryProviderCommands = _.range(1, numDiscoveryProviders + 1).reduce(
+  const discoveryNodesCommands = _.range(1, numDiscoveryNodes + 1).reduce(
     (acc, cur) => {
       return [
         ...acc,
@@ -489,7 +489,7 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryProviders = 1  }) => {
   const sequential = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
-    ...discoveryProviderCommands,
+    ...discoveryNodesCommands,
     [Service.USER_METADATA_NODE, SetupCommand.UNSET_SHELL_ENV],
     [Service.USER_METADATA_NODE, SetupCommand.UP_UM],
     [Service.USER_METADATA_NODE, SetupCommand.HEALTH_CHECK],

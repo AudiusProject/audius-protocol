@@ -16,9 +16,9 @@ const { getEthContractAccounts } = require('./helpers/utils')
 
 // Directories within the audius-protocol repository used for development
 const serviceDirectoryList = ['discovery-provider', 'creator-node']
-const discProvEndpoint1 = 'http://dp1_web-server_1:5000'
-const discProvEndpoint2 = 'http://dp2_web-server_1:5001'
-const discProvEndpoint3 = 'http://dp3_web-server_1:5002'
+const discProvEndpoint1 = 'http://dn1_web-server_1:5000'
+const discProvEndpoint2 = 'http://dn2_web-server_1:5001'
+const discProvEndpoint3 = 'http://dn3_web-server_1:5002'
 const creatorNodeEndpoint1 = 'http://cn1_creator-node_1:4000'
 const creatorNodeEndpoint2 = 'http://cn2_creator-node_1:4001'
 const creatorNodeEndpoint3 = 'http://cn3_creator-node_1:4002'
@@ -390,7 +390,7 @@ const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
   await queryLocalServices(audiusLibs, serviceTypesList)
 }
 
-const makeDiscoveryProviderEndpoint = (serviceNumber) => `http://dp${serviceNumber}_web-server_1:${5000 + parseInt(serviceNumber) -1}`
+const makeDiscoveryProviderEndpoint = (serviceNumber) => `http://dn${serviceNumber}_web-server_1:${5000 + parseInt(serviceNumber) -1}`
 
 // Account 0
 const _registerDiscProv1 = async (audiusLibs, ethAccounts) => {

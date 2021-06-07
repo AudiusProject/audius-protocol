@@ -11,7 +11,7 @@ const {
 } = ServiceCommands
 
 const NUM_CREATOR_NODES = 4
-const NUM_DISCOVERY_PROVIDERS = 1
+const NUM_DISCOVERY_NODES = 1
 const SERVICE_INSTANCE_NUMBER = 1
 
 const printOptions = () => {
@@ -60,14 +60,14 @@ program
     NUM_CREATOR_NODES.toString()
   )
   .option(
-    '-nd, --num-dp <number>',
-    'number of discovery providers',
-    NUM_DISCOVERY_PROVIDERS.toString()
+    '-nd, --num-dn <number>',
+    'number of discovery ndoes',
+    NUM_DISCOVERY_NODES.toString()
   )
   .action(async opts => {
     const numCreatorNodes = parseInt(opts.numCnodes)
-    const numDiscoveryProviders = parseInt(opts.numDp)
-    await allUp({ numCreatorNodes, numDiscoveryProviders })
+    const numDiscoveryNodes = parseInt(opts.numDp)
+    await allUp({ numCreatorNodes, numDiscoveryNodes })
   })
 
 program
@@ -91,14 +91,14 @@ program
   .option(
     '-nd, --num-dp <number>',
     'number of discovery providers',
-    NUM_DISCOVERY_PROVIDERS.toString()
+    NUM_DISCOVERY_NODES.toString()
   )
   .action(async opts => {
     console.log('Restarting services...')
     const numCreatorNodes = parseInt(opts.numCnodes)
-    const numDiscoveryProviders = parseInt(opts.numDp)
+    const numDiscoveryNodes = parseInt(opts.numDp)
     await runSetupCommand(Service.ALL, SetupCommand.DOWN)
-    await allUp({ numCreatorNodes, numDiscoveryProviders })
+    await allUp({ numCreatorNodes, numDiscoveryNodes })
   })
 
 program
