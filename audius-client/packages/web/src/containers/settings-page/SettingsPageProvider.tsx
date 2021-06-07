@@ -299,7 +299,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       )
     },
     showMatrixConfetti: () => {
-      dispatch(show({ isMatrix: true }))
+      dispatch(show())
     }
   }
 }
