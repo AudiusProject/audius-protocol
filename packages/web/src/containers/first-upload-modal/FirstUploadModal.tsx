@@ -1,12 +1,11 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { Modal } from '@audius/stems'
 import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
 
 import { AppState } from 'store/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import TwitterButton from 'components/general/TwitterButton'
-import MusicConfetti from 'components/background-animations/MusicConfetti'
 import { getAccountUser } from 'store/account/selectors'
 import { getIsOpen } from './store/selectors'
 import { setVisibility } from './store/slice'
@@ -20,6 +19,8 @@ import { fullProfilePage } from 'utils/route'
 import { useRecord, make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 import UserBadges from 'containers/user-badges/UserBadges'
+import ConnectedMusicConfetti from 'containers/music-confetti/ConnectedMusicConfetti'
+import { show } from 'containers/music-confetti/store/slice'
 
 const messages = {
   first: 'You just uploaded your first track to Audius!',
@@ -64,6 +65,13 @@ const FirstUploadModal = g(({ account, isOpen, close }) => {
     record(make(Name.TWEET_FIRST_UPLOAD, { handle: account.handle }))
   }, [account, record])
 
+  const dispatch = useDispatch()
+  useEffect(() => {
+    if (isOpen) {
+      dispatch(show())
+    }
+  }, [isOpen, dispatch])
+
   return (
     <>
       <Modal
@@ -106,7 +114,7 @@ const FirstUploadModal = g(({ account, isOpen, close }) => {
           </div>
         </div>
       </Modal>
-      {isOpen && <MusicConfetti />}
+      {isOpen && <ConnectedMusicConfetti />}
     </>
   )
 })
