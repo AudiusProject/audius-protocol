@@ -1,9 +1,15 @@
 const Bull = require('bull')
 
 const { logger } = require('../../logging')
+const processSync = require('./processSync')
 
-const JobProcessorConcurrency = 10
-const JobProcessorFnFilePath = `${__dirname}/syncQueueJobProcessor.js`
+// Direct serviceRegistry import is necessary here since `processSync` function requires it as a param (for now)
+const { serviceRegistry } = require('../../serviceRegistry')
+
+// TODO move to envvar + document
+const JobProcessorConcurrency = 50
+
+// const JobProcessorFnFilePath = `${__dirname}/syncQueueJobProcessor.js`
 
 /**
  * SyncQueue - handles enqueuing and processing of Sync jobs on secondary
@@ -34,13 +40,26 @@ class SyncQueue {
     )
 
     /**
-       * Queue will process tasks concurrently if provided a concurrency number and an absolute
-       *    path to file containing job processor function
-       * https://github.com/OptimalBits/bull/tree/013c51942e559517c57a117c27a550a0fb583aa8#separate-processes
-       */
+     * Queue will process tasks concurrently if provided a concurrency number, and will process all on
+     *    main thread if provided an in-line job processor function; it will distribute across child processes
+     *    if provided an absolute path to separate file containing job processor function.
+     *    https://github.com/OptimalBits/bull/tree/013c51942e559517c57a117c27a550a0fb583aa8#separate-processes
+     *
+     * @dev TODO - consider recording failures in redis
+     */
     this.queue.process(
       JobProcessorConcurrency,
-      JobProcessorFnFilePath
+      async (job, done) => {
+        const { walletPublicKeys, creatorNodeEndpoint } = job.data
+
+        try {
+          await processSync(serviceRegistry, walletPublicKeys, creatorNodeEndpoint)
+        } catch (e) {
+          logger.error(`processSync failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`, e.message)
+        }
+
+        done()
+      }
     )
 
     logger.info(`SIDTEST SYNCQUEUE CONSTRUCTION DONE`)

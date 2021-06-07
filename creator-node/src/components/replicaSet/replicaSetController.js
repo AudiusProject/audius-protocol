@@ -12,6 +12,12 @@ const { enqueueSync } = require('./syncQueueComponentService')
 
 const router = express.Router()
 
+/**
+ * Dictionary tracking currently queued up syncs with debounce
+ * @notice - this feature is likely to be deprecated in future as the need to debounce syncs goes away
+ */
+const syncQueue = {}
+
 // Controllers
 
 /**
@@ -43,9 +49,12 @@ const respondToURSMRequestForProposalController = async (req) => {
  */
 const syncRouteController = async (req, res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
+  const nodeConfig = serviceRegistry.nodeConfig
 
   const walletPublicKeys = req.body.wallet // array
   const creatorNodeEndpoint = req.body.creator_node_endpoint // string
+  const immediate = (req.body.immediate === true || req.body.immediate === 'true') // boolean
+  const blockNumber = req.body.blockNumber // integer
 
   // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
   if (walletPublicKeys.length === 0) {
@@ -60,7 +69,27 @@ const syncRouteController = async (req, res) => {
     req.logger.info(`SnapbackSM sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
   }
 
-  await enqueueSync({ serviceRegistry, walletPublicKeys, creatorNodeEndpoint })
+  // Enqueue sync immediately or with debounce, per request param
+  if (immediate) {
+    await enqueueSync({ serviceRegistry, walletPublicKeys, creatorNodeEndpoint })
+  } else {
+    const debounceTime = nodeConfig.get('debounceTime')
+
+    for (let wallet of walletPublicKeys) {
+      if (wallet in syncQueue) {
+        clearTimeout(syncQueue[wallet])
+        req.logger.info('SyncRouteController - clear timeout for', wallet, 'time', Date.now())
+      }
+      syncQueue[wallet] = setTimeout(
+        async function () {
+          // return _nodesync(serviceRegistry, req.logger, [wallet], creatorNodeEndpoint, req.body.blockNumber, req.logContext)
+          await enqueueSync({ serviceRegistry, walletPublicKeys: [wallet], creatorNodeEndpoint, blockNumber })
+        },
+        debounceTime
+      )
+      req.logger.info('SyncRouteController - set timeout for', wallet, 'time', Date.now())
+    }
+  }
 
   return successResponse()
 }

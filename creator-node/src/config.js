@@ -377,7 +377,7 @@ const config = convict({
     doc: 'sync debounce time in ms',
     format: 'nat',
     env: 'debounceTime',
-    default: 30000 // 30000ms = 30s
+    default: 0 // 0ms
   },
   dataRegistryAddress: {
     doc: 'data contracts registry address',

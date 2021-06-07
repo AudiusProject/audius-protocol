@@ -18,6 +18,8 @@ const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
  *    what they receive in each export.
  */
 async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoint, blockNumber = null) {
+  logger.info(`SIDTEST - serviceRegistry init status: ${serviceRegistry.servicesThatRequireServerInitialized}`)
+
   const { nodeConfig, redis } = serviceRegistry
 
   const FileSaveMaxConcurrency = nodeConfig.get('nodeSyncFileSaveMaxConcurrency')

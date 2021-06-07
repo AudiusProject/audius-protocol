@@ -1,11 +1,9 @@
 const AudiusLibs = require('@audius/libs')
-
 const redisClient = require('./redis')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const BlacklistManager = require('./blacklistManager')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
 const { SnapbackSM } = require('./snapbackSM/snapbackSM')
-const AudiusLibs = require('@audius/libs')
 const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
