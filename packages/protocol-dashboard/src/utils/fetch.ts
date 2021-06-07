@@ -28,6 +28,7 @@ export const withTimeout = async (
   return res
 }
 
+// TODO: put in env vars for staging
 export const fetchUntilSuccess = async (endpoints: string[]): Promise<any> => {
   const allowList = [
     'https://discoveryprovider.audius.co',

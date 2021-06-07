@@ -12,11 +12,13 @@ import { State as ClaimsState } from 'store/cache/claims/slice'
 import { State as AnalyticsState } from 'store/cache/analytics/slice'
 import { State as MusicState } from 'store/cache/music/slice'
 import { State as RewardsState } from 'store/cache/rewards/slice'
+import { State as APIState } from 'store/api/slice'
 
 export type AppState = {
   router: RouterState
   pageHistory: PageHistoryState
   account: AccountState
+  api: APIState
   cache: {
     discoveryProvider: DiscoveryProviderState
     contentNode: ContentNodeState
