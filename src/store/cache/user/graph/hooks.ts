@@ -62,8 +62,6 @@ export const useUsers = (status: Status | undefined) => {
     }
   }, [gqlData, dispatch, status])
 
-  console.log({ hasBackupClient, gqlError, didError })
-
   // If there is a fallback, do not return error until the fallback also errors
   if (hasBackupClient && gqlError && !didError) {
     return { error: null }
