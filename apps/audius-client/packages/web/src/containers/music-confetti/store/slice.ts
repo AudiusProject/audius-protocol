@@ -15,13 +15,11 @@ const slice = createSlice({
   name: 'music-confetti',
   initialState,
   reducers: {
-    show: (state, action: PayloadAction<{ isMatrix: boolean }>) => {
+    show: state => {
       state.isVisible = true
-      state.isMatrix = action.payload.isMatrix
     },
     hide: state => {
       state.isVisible = false
-      state.isMatrix = false
     }
   }
 })
@@ -32,8 +30,5 @@ export const { show, hide } = slice.actions
 
 export const getIsVisible = (state: AppState) =>
   state.application.ui.musicConfetti.isVisible
-
-export const getIsMatrix = (state: AppState) =>
-  state.application.ui.musicConfetti.isMatrix
 
 export default slice.reducer
