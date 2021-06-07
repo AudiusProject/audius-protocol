@@ -36,9 +36,9 @@ async function startConfettiAnimation(
   isMatrix: boolean
 ) {
   if (!canvasRef) return
-  const images = null
+  let images = null
   if (!isMatrix) {
-    const images = DEFAULT_IMAGES.map(icon => {
+    images = DEFAULT_IMAGES.map(icon => {
       const img = new Image()
       img.src = icon
       return img
