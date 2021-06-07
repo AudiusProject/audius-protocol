@@ -1,6 +1,7 @@
 import BN from 'bn.js'
-import { useQuery, gql } from '@apollo/client'
+import { gql } from '@apollo/client'
 import { useUsers } from 'store/cache/user/hooks'
+import { useGraphQuery as useQuery } from 'store/api/hooks'
 import getActiveStake from 'utils/activeStake'
 import { Status } from 'types'
 

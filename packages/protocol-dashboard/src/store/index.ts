@@ -1,4 +1,8 @@
-import { ApolloClient, InMemoryCache } from '@apollo/client'
+import {
+  ApolloClient,
+  InMemoryCache,
+  NormalizedCacheObject
+} from '@apollo/client'
 import {
   combineReducers,
   createStore as createReduxStore,
@@ -23,21 +27,42 @@ import analytics from 'store/cache/analytics/slice'
 import music from 'store/cache/music/slice'
 import account from 'store/account/slice'
 import pageHistory from 'store/pageHistory/slice'
+import api from 'store/api/slice'
 
 declare global {
   interface Window {
     aud: any
     store: any
     client: ApolloClient<any>
+    hostedClient: ApolloClient<any>
   }
 }
 
 const gqlUri = process.env.REACT_APP_GQL_URI
+const gqlBackupUri = process.env.REACT_APP_GQL_BACKUP_URI
 
 export const client = new ApolloClient({
   uri: gqlUri,
   cache: new InMemoryCache()
 })
+
+let hostedClient: ApolloClient<NormalizedCacheObject> | null = null
+export const getBackupClient = () => {
+  if (hostedClient) {
+    return hostedClient
+  } else if (gqlBackupUri) {
+    hostedClient = new ApolloClient({
+      uri: gqlBackupUri,
+      cache: new InMemoryCache()
+    })
+
+    window.hostedClient = hostedClient
+    return hostedClient
+  }
+  return null
+}
+
+export const hasBackupClient = !!gqlBackupUri
 
 const aud = new Audius()
 window.aud = aud
@@ -50,6 +75,7 @@ const getReducer = (history: History) => {
     router: connectRouter(history),
     pageHistory,
     account,
+    api,
     cache: combineReducers({
       discoveryProvider,
       contentNode,
