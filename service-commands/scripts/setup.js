@@ -66,7 +66,7 @@ program
   )
   .action(async opts => {
     const numCreatorNodes = parseInt(opts.numCnodes)
-    const numDiscoveryNodes = parseInt(opts.numDp)
+    const numDiscoveryNodes = parseInt(opts.numDn)
     await allUp({ numCreatorNodes, numDiscoveryNodes })
   })
 
@@ -89,14 +89,14 @@ program
     NUM_CREATOR_NODES.toString()
   )
   .option(
-    '-nd, --num-dp <number>',
-    'number of discovery providers',
+    '-nd, --num-dn <number>',
+    'number of discovery nodes',
     NUM_DISCOVERY_NODES.toString()
   )
   .action(async opts => {
     console.log('Restarting services...')
     const numCreatorNodes = parseInt(opts.numCnodes)
-    const numDiscoveryNodes = parseInt(opts.numDp)
+    const numDiscoveryNodes = parseInt(opts.numDn)
     await runSetupCommand(Service.ALL, SetupCommand.DOWN)
     await allUp({ numCreatorNodes, numDiscoveryNodes })
   })
