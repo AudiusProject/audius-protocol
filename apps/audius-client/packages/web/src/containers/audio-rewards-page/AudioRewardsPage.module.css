@@ -1,6 +1,5 @@
 .pageContainer {
   user-select: none;
-  min-width: 1080px;
 }
 
 .mobile {
@@ -15,26 +14,25 @@
 }
 
 .cryptoContentContainer {
-  display: inline-flex;
-  margin-bottom: 32px;
-  width: 100%;
+  display: flex;
+  margin: -12px -12px 20px -12px;
+  width: calc(100% + 24px);
+  flex-wrap: wrap;
+  justify-content: stretch;
 }
 
 .cryptoContentContainer.mobile {
   flex-wrap: wrap;
 }
 
-.explainerTile {
+.pageContainer .explainerTile {
   margin-bottom: 32px;
-  height: 243px;
+  height: auto;
 }
 
-.balanceTile {
+.pageContainer .balanceTile {
   height: 243px;
-}
-
-.balanceTile:not(.mobile) {
-  margin-right: 24px;
+  flex-grow: 99999;
 }
 
 .mobile .walletTile, .mobile.balanceTile {
@@ -42,8 +40,8 @@
   width: 100%;
 }
 
-.walletTile {
-  flex: 0 0 356px;
+.pageContainer .walletTile, .pageContainer .balanceTile {
+  margin: 12px;
 }
 
 .rewardsMobilePageContainer {
