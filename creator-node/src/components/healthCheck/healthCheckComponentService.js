@@ -78,8 +78,12 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     allocatedFileDescriptors,
     receivedBytesPerSec,
     transferredBytesPerSec,
-    rollingSyncSuccessCount,
-    rollingSyncFailCount
+    thirtyDayRollingSyncSuccessCount,
+    thirtyDayRollingSyncFailCount,
+    dailySyncSuccessCount,
+    dailySyncFailCount,
+    latestSyncSuccessTimestamp,
+    latestSyncFailTimestamp
   ] = await getMonitors([
     MONITORS.DATABASE_CONNECTIONS,
     MONITORS.DATABASE_SIZE,
@@ -92,12 +96,13 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     MONITORS.ALLOCATED_FILE_DESCRIPTORS,
     MONITORS.RECEIVED_BYTES_PER_SEC,
     MONITORS.TRANSFERRED_BYTES_PER_SEC,
-    MONITORS.ROLLING_SYNC_SUCCESS_COUNT,
-    MONITORS.ROLLING_SYNC_FAIL_COUNT
+    MONITORS.THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT,
+    MONITORS.THIRTY_DAY_ROLLING_SYNC_FAIL_COUNT,
+    MONITORS.DAILY_SYNC_SUCCESS_COUNT,
+    MONITORS.DAILY_SYNC_FAIL_COUNT,
+    MONITORS.LATEST_SYNC_SUCCESS_TIMESTAMP,
+    MONITORS.LATEST_SYNC_FAIL_TIMESTAMP
   ])
-
-  const latestDailySyncCount = await getAggregateSyncData()
-  const latestDailySyncTimestamps = await getLatestSyncData()
 
   const response = {
     ...basicHealthCheck,
@@ -118,12 +123,12 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     maxStorageUsedPercent,
     numberOfCPUs,
     // Rolling window days dependent on value set in monitor's sync history file
-    rollingSyncSuccessCount,
-    rollingSyncFailCount,
-    latestDailySyncSuccessCount: latestDailySyncCount.success,
-    latestDailySyncFailCount: latestDailySyncCount.fail,
-    latestDailySyncSuccessTimestamp: latestDailySyncTimestamps.success,
-    latestDailySyncFailTImestamp: latestDailySyncTimestamps.fail
+    thirtyDayRollingSyncSuccessCount,
+    thirtyDayRollingSyncFailCount,
+    dailySyncSuccessCount,
+    dailySyncFailCount,
+    latestSyncSuccessTimestamp,
+    latestSyncFailTimestamp
   }
 
   return response

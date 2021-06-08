@@ -1,14 +1,11 @@
 const redisClient = require('../redis')
 const SyncHistoryAggregator = require('../snapbackSM/syncHistoryAggregator')
 
-// The window to determine the aggregate sync history count
-const ROLLING_WINDOW = 30 // days
-
-const getRollingSyncSuccessCount = async () => {
+const get30DayRollingSyncSuccessCount = async () => {
   // Get the start and end dates of the rolling window
   const today = new Date()
   const rollingWindowStartDate = new Date(
-    today.setDate(today.getDate() - ROLLING_WINDOW)
+    today.setDate(today.getDate() - 30)
   )
   const rollingWindowEndDate = new Date()
 
@@ -16,7 +13,7 @@ const getRollingSyncSuccessCount = async () => {
   let rollingSyncSuccessCount = 0
   let date = rollingWindowStartDate
 
-  while (date <= rollingWindowEndDate) {
+  while (date <= rollingWindowEndDate) { // eslint-disable-line no-unmodified-loop-condition
     const redisDateKeySuffix = date.toISOString().split('T')[0] // ex.: "2021-05-04"
     const { success: syncSuccessCountKey } = SyncHistoryAggregator.getAggregateSyncKeys(redisDateKeySuffix)
 
@@ -30,11 +27,11 @@ const getRollingSyncSuccessCount = async () => {
   return rollingSyncSuccessCount
 }
 
-const getRollingSyncFailCount = async () => {
+const get30DayRollingSyncFailCount = async () => {
   // Get the start and end dates of the rolling window
   const today = new Date()
   const rollingWindowStartDate = new Date(
-    today.setDate(today.getDate() - ROLLING_WINDOW)
+    today.setDate(today.getDate() - 30)
   )
   const rollingWindowEndDate = new Date()
 
@@ -42,7 +39,7 @@ const getRollingSyncFailCount = async () => {
   let rollingSyncFailCount = 0
   let date = rollingWindowStartDate
 
-  while (date <= rollingWindowEndDate) {
+  while (date <= rollingWindowEndDate) { // eslint-disable-line no-unmodified-loop-condition
     const redisDateKeySuffix = date.toISOString().split('T')[0] // ex.: "2021-05-04"
     const { fail: syncFailCountKey } = SyncHistoryAggregator.getAggregateSyncKeys(redisDateKeySuffix)
 
@@ -56,6 +53,26 @@ const getRollingSyncFailCount = async () => {
   return rollingSyncFailCount
 }
 
+const getDailySyncSuccessCount = async () => {
+  const { success } = await SyncHistoryAggregator.getAggregateSyncData()
+  return success
+}
+
+const getDailySyncFailCount = async () => {
+  const { fail } = await SyncHistoryAggregator.getAggregateSyncData()
+  return fail
+}
+
+const getLatestSyncSuccessTimestamp = async () => {
+  const { success } = await SyncHistoryAggregator.getLatestSyncData()
+  return success
+}
+
+const getLatestSyncFailTimestamp = async () => {
+  const { fail } = await SyncHistoryAggregator.getLatestSyncData()
+  return fail
+}
+
 /**
  * Get sync count given key param
  * @param {string} key redis key for sync success or fail count
@@ -67,7 +84,10 @@ const getSyncCount = async key => {
 }
 
 module.exports = {
-  getRollingSyncSuccessCount,
-  getRollingSyncFailCount,
-  ROLLING_WINDOW
+  get30DayRollingSyncSuccessCount,
+  get30DayRollingSyncFailCount,
+  getDailySyncSuccessCount,
+  getDailySyncFailCount,
+  getLatestSyncSuccessTimestamp,
+  getLatestSyncFailTimestamp
 }

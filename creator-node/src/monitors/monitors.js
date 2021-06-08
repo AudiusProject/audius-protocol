@@ -26,8 +26,12 @@ const {
   getIPFSReadWriteStatus
 } = require('./ipfs')
 const {
-  getRollingSyncSuccessCount,
-  getRollingSyncFailCount
+  get30DayRollingSyncSuccessCount,
+  get30DayRollingSyncFailCount,
+  getDailySyncSuccessCount,
+  getDailySyncFailCount,
+  getLatestSyncSuccessTimestamp,
+  getLatestSyncFailTimestamp
 } = require('./syncHistory')
 const redis = require('../redis')
 
@@ -166,9 +170,9 @@ const IPFS_READ_WRITE_STATUS = {
 // The rolling window count of successful syncs
 // The window is for 30 days
 // Keep the rolling window count ttl to 1 hour (refreshes every hour)
-const ROLLING_SYNC_SUCCESS_COUNT = {
+const THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT = {
   name: 'rollingSyncSuccessCount',
-  func: getRollingSyncSuccessCount,
+  func: get30DayRollingSyncSuccessCount,
   ttl: 60 /* mins */ * 60 /* s */,
   type: 'int'
 }
@@ -176,11 +180,47 @@ const ROLLING_SYNC_SUCCESS_COUNT = {
 // The rolling window count of failed syncs
 // The window is for 30 days
 // Keep the rolling window count ttl to 1 hour (refreshes every hour)
-const ROLLING_SYNC_FAIL_COUNT = {
+const THIRTY_DAY_ROLLING_SYNC_FAIL_COUNT = {
   name: 'rollingSyncFailCount',
-  func: getRollingSyncFailCount,
+  func: get30DayRollingSyncFailCount,
   ttl: 60 /* mins */ * 60 /* s */,
   type: 'int'
+}
+
+// The daily count of successful syncs
+// Set ttl to every 5 minutes
+const DAILY_SYNC_SUCCESS_COUNT = {
+  name: 'dailySyncSuccessCount',
+  func: getDailySyncSuccessCount,
+  ttl: 5 /* mins */ * 60 /* s */,
+  type: 'int'
+}
+
+// The daily count of successful syncs
+// Set ttl freshness to every 5 minutes
+const DAILY_SYNC_FAIL_COUNT = {
+  name: 'dailySyncFailCount',
+  func: getDailySyncFailCount,
+  ttl: 5 /* mins */ * 60 /* s */,
+  type: 'int'
+}
+
+// The timestamp of the latest succesful sync
+// Set ttl freshness to every 5 minutes
+const LATEST_SYNC_SUCCESS_TIMESTAMP = {
+  name: 'latestSyncSuccessTimestamp',
+  func: getLatestSyncSuccessTimestamp,
+  ttl: 5 /* mins */ * 60 /* s */,
+  type: 'string'
+}
+
+// The timestamp of the latest failed sync
+// Set ttl freshness to every 5 minutes
+const LATEST_SYNC_FAIL_TIMESTAMP = {
+  name: 'latestSyncFailTimestamp',
+  func: getLatestSyncFailTimestamp,
+  ttl: 5 /* mins */ * 60 /* s */,
+  type: 'string'
 }
 
 const MONITORS = {
@@ -204,8 +244,12 @@ const MONITORS = {
   REDIS_USED_MEMORY,
   REDIS_TOTAL_MEMORY,
   IPFS_READ_WRITE_STATUS,
-  ROLLING_SYNC_SUCCESS_COUNT,
-  ROLLING_SYNC_FAIL_COUNT
+  THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT,
+  THIRTY_DAY_ROLLING_SYNC_FAIL_COUNT,
+  DAILY_SYNC_SUCCESS_COUNT,
+  DAILY_SYNC_FAIL_COUNT,
+  LATEST_SYNC_SUCCESS_TIMESTAMP,
+  LATEST_SYNC_FAIL_TIMESTAMP
 }
 
 const getMonitorRedisKey = (monitor) => `${MONITORING_REDIS_PREFIX}:${monitor.name}`
