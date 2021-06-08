@@ -104,9 +104,6 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     MONITORS.LATEST_SYNC_FAIL_TIMESTAMP
   ])
 
-  const latestDailySyncCount = await getAggregateSyncData()
-  const latestDailySyncTimestamps = await getLatestSyncData()
-
   const response = {
     ...basicHealthCheck,
     country,
