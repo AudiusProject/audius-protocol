@@ -245,11 +245,11 @@ does not grow unbounded over time and new discovery providers are able to safely
 This is performed by simply slicing the tx_batches array and discarding the newest transactions until an intersection
 is found - these limiting parameters are defined as TX_SIGNATURES_MAX_BATCHES, TX_SIGNATURES_RESIZE_LENGTH
 '''
-def process_solana_plays(TRACK_LISTEN_PROGRAM):
+def process_solana_plays(solana_client):
     try:
-        print(base58.b58decode(TRACK_LISTEN_PROGRAM))
+        base58.b58decode(TRACK_LISTEN_PROGRAM)
     except ValueError:
-        print(
+        logger.info(
             f"index_solana_plays.py"
             f"Invalid TrackListenCount program ({TRACK_LISTEN_PROGRAM}) configured, exiting."
         )
