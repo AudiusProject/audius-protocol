@@ -12,6 +12,7 @@
 
 .title {
   background: var(--page-header-gradient);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 900;
@@ -40,8 +41,9 @@
 }
 
 .titleContainer {
-  margin-bottom: 94px;
+  margin-bottom: 70px;
   max-width: 752px;
+  padding: 0 28px;
 }
 
 .titleContainer.mobile {
@@ -79,7 +81,9 @@
 .tiersContainer {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
+  margin-bottom: -24px;
 }
 
 .tiersContainer.mobile {
@@ -88,8 +92,8 @@
   padding: 0px 26px;
 }
 
-.tiersContainer:not(.mobile) > div {
-  margin: 0px 8px;
+.tierContainerWrapper {
+  margin: 32px 8px;
 }
 
 .tiersContainer.mobile > div {
