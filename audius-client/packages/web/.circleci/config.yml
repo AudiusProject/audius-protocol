@@ -684,7 +684,7 @@ workflows:
             - init
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)$/
+              only: /(^master)|(^hotfix.*)|(^release.*)$/
 
       - test-staging:
           context: Audius Client
@@ -715,7 +715,7 @@ workflows:
             - build-production
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)$/
+              only: /(^master)|(^hotfix.*)|(^release.*)$/
 
       # Allow hotfix to go to staging on command
       - hold-staging:
@@ -812,14 +812,14 @@ workflows:
             - init
           filters:
             branches:
-              only: /^master$/
+              only: /(^release.*)$/
       - deploy-mobile-production:
           context: Audius Client
           requires:
             - build-mobile-production
           filters:
             branches:
-              only: /^master$/
+              only: /(^release.*)$/
 
       # Release production web.
       - hold-production:
@@ -828,21 +828,21 @@ workflows:
             - build-production
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)$/
+              only: /(^master)|(^hotfix.*)|(^release.*)$/
       - deploy-production-s3:
           context: Audius Client
           requires:
             - hold-production
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)$/
+              only: /(^master)|(^hotfix.*)|(^release.*)$/
       - deploy-production-cloudflare:
           context: Audius Client
           requires:
             - hold-production
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)$/
+              only: /(^master)|(^hotfix.*)|(^release.*)$/
 
       # Upload sourcemaps
       - deploy-sentry-sourcemaps:
@@ -851,7 +851,7 @@ workflows:
             - deploy-production-s3
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)$/
+              only: /(^master)|(^hotfix.*)|(^release.*)$/
 
       - publish-github-release:
           context: Audius Client
@@ -859,7 +859,7 @@ workflows:
             - hold-production
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)$/
+              only: /(^master)|(^hotfix.*)|(^release.*)$/
 
       # Production IPFS build
       - build-ipfs-production:
@@ -867,21 +867,21 @@ workflows:
             - init
           filters:
             branches:
-              only: /^master$/
+              only: /(^release.*)$/
       - deploy-ipfs-production:
           context: Audius Client
           requires:
             - build-ipfs-production
           filters:
             branches:
-              only: /^master$/
+              only: /(^release.*)$/
       - hold-update-production-ga-ipfs-build:
           type: approval
           requires:
             - deploy-ipfs-production
           filters:
             branches:
-              only: /^master$/
+              only: /(^release.*)$/
       - update-production-ga-ipfs-build:
           context:
             - Audius Client
@@ -890,7 +890,7 @@ workflows:
             - hold-update-production-ga-ipfs-build
           filters:
             branches:
-              only: /^master$/
+              only: /(^release.*)$/
       - publish-production-build-cids:
           context:
             - Audius Client
@@ -898,14 +898,14 @@ workflows:
             - update-production-ga-ipfs-build
           filters:
             branches:
-              only: /^master$/
+              only: /(^release.*)$/
       - hold-update-ipfs-production-records:
           type: approval
           requires:
             - update-production-ga-ipfs-build
           filters:
             branches:
-              only: /^master$/
+              only: /(^release.*)$/
       - update-ipfs-production-records:
           context:
             - Audius Client
@@ -914,7 +914,7 @@ workflows:
             - hold-update-ipfs-production-records
           filters:
             branches:
-              only: /^master$/
+              only: /(^release.*)$/
 
       # Distribute staging desktop binaries.
       - hold-dist-mac-staging:
@@ -967,39 +967,39 @@ workflows:
             - build-production
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)$/
+              only: /(^master)|(^hotfix.*)|(^release.*)$/
       - dist-mac-production:
           context: Audius Client
           requires:
             - hold-dist-mac-production
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)$/
+              only: /(^master)|(^hotfix.*)|(^release.*)$/
       - hold-dist-win-production:
           type: approval
           requires:
             - build-production
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)$/
+              only: /(^master)|(^hotfix.*)|(^release.*)$/
       - dist-win-production:
           context: Audius Client
           requires:
             - hold-dist-win-production
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)$/
+              only: /(^master)|(^hotfix.*)|(^release.*)$/
       - hold-dist-linux-production:
           type: approval
           requires:
             - build-production
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)$/
+              only: /(^master)|(^hotfix.*)|(^release.*)$/
       - dist-linux-production:
           context: Audius Client
           requires:
             - hold-dist-linux-production
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)$/
+              only: /(^master)|(^hotfix.*)|(^release.*)$/
