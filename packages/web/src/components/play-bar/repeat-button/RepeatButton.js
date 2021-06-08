@@ -14,11 +14,23 @@ const RepeatStates = Object.freeze({
   ANIMATE_SINGLE_OFF: 5
 })
 
+const REPEAT_STATE_LS_KEY = 'repeatState'
+const getRepeatState = defaultState => {
+  const localStorageRepeatState = window.localStorage.getItem(
+    REPEAT_STATE_LS_KEY
+  )
+  if (localStorageRepeatState === null) {
+    window.localStorage.setItem(REPEAT_STATE_LS_KEY, defaultState)
+    return defaultState
+  } else {
+    return parseInt(localStorageRepeatState)
+  }
+}
 class RepeatButton extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      repeatState: RepeatStates.OFF,
+      repeatState: getRepeatState(RepeatStates.OFF),
       isPaused: true,
       icon: props.animations ? props.animations.pbIconRepeatAll : null
     }
@@ -71,6 +83,7 @@ class RepeatButton extends Component {
         icon = pbIconRepeatAll
         isPaused = true
     }
+    window.localStorage.setItem(REPEAT_STATE_LS_KEY, repeatState)
     this.setState({
       icon,
       isPaused,
