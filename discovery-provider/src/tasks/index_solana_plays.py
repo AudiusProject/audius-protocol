@@ -9,7 +9,7 @@ from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 
-TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
+TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"].strip()
 SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 
@@ -245,11 +245,11 @@ does not grow unbounded over time and new discovery providers are able to safely
 This is performed by simply slicing the tx_batches array and discarding the newest transactions until an intersection
 is found - these limiting parameters are defined as TX_SIGNATURES_MAX_BATCHES, TX_SIGNATURES_RESIZE_LENGTH
 '''
-def process_solana_plays(solana_client):
+def process_solana_plays(TRACK_LISTEN_PROGRAM):
     try:
-        base58.b58decode(TRACK_LISTEN_PROGRAM)
+        print(base58.b58decode(TRACK_LISTEN_PROGRAM))
     except ValueError:
-        logger.info(
+        print(
             f"index_solana_plays.py"
             f"Invalid TrackListenCount program ({TRACK_LISTEN_PROGRAM}) configured, exiting."
         )
