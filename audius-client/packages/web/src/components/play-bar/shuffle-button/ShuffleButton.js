@@ -12,11 +12,24 @@ const ShuffleStates = Object.freeze({
   ANIMATE_ON_OFF: 3
 })
 
+const SHUFFLE_STATE_LS_KEY = 'shuffleState'
+const getShuffleState = defaultState => {
+  const localStorageShuffleState = window.localStorage.getItem(
+    SHUFFLE_STATE_LS_KEY
+  )
+  if (localStorageShuffleState === null) {
+    window.localStorage.setItem(SHUFFLE_STATE_LS_KEY, defaultState)
+    return defaultState
+  } else {
+    return parseInt(localStorageShuffleState)
+  }
+}
+
 class ShuffleButton extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      shuffleState: ShuffleStates.OFF,
+      shuffleState: getShuffleState(ShuffleStates.OFF),
       isPaused: true,
       icon: props.animations ? props.animations.pbIconShuffleOn : null
     }
@@ -56,6 +69,7 @@ class ShuffleButton extends Component {
         icon = pbIconShuffleOn
         isPaused = true
     }
+    window.localStorage.setItem(SHUFFLE_STATE_LS_KEY, shuffleState)
     this.setState({
       icon,
       isPaused,
