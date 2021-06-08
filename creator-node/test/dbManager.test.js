@@ -417,7 +417,7 @@ describe('Test ClockRecord model', async function () {
         sourceTable: validSourceTable
       })
     } catch (e) {
-      assert.strictEqual(e, 'Can only insert contiguous clock values')
+      assert.ok(e.message.contains('Can only insert contiguous clock values'))
     }
 
     // successfully create clockrecord with contiguous clock value
@@ -435,7 +435,7 @@ describe('Test ClockRecord model', async function () {
         { cnodeUserUUID, clock: 5, sourceTable: validSourceTable }
       ])
     } catch (e) {
-      assert.strictEqual(e, 'Can only insert contiguous clock values')
+      assert.ok(e.message.contains('Can only insert contiguous clock values'))
     }
 
     // successfully bulk create multiple clock records
