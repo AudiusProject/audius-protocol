@@ -65,7 +65,7 @@ module.exports = (sequelize, DataTypes) => {
 
         // If not first clockRecord entry, clock value must be (previous.clock + 1)
         if (currentMaxClock && clock !== currentMaxClock + 1) {
-          return sequelize.Promise.reject(`Can only insert contiguous clock values. Inconsistency in beforeCreate currentMaxClock: ${currentMaxClock}, clock: ${clock}`)
+          return sequelize.Promise.reject(`Can only insert contiguous clock values. Inconsistency in beforeCreate - currentMaxClock: ${currentMaxClock}, clock: ${clock}`)
         }
       },
 
@@ -105,7 +105,7 @@ module.exports = (sequelize, DataTypes) => {
 
           // If not first clockRecord entry, clock value must be (previous.clock + 1)
           if (currentMaxClock && clock !== currentMaxClock + 1) {
-            return sequelize.Promise.reject(`Can only insert contiguous clock values. Inconsistency in beforeBulkCreate currentMaxClock: ${currentMaxClock}, clock: ${clock}`)
+            return sequelize.Promise.reject(`Can only insert contiguous clock values. Inconsistency in beforeBulkCreate - currentMaxClock: ${currentMaxClock}, clock: ${clock}`)
           }
 
           previousClock = clock
@@ -117,7 +117,7 @@ module.exports = (sequelize, DataTypes) => {
 
           // error if new clock is not previousClock + 1
           if (previousClock && clock !== previousClock + 1) {
-            return sequelize.Promise.reject(`Can only insert contiguous clock values. Inconsistency in beforeCreate previousClock: ${previousClock}, clock: ${clock}`)
+            return sequelize.Promise.reject(`Can only insert contiguous clock values. Inconsistency in beforeBulkCreate loop - previousClock: ${previousClock}, clock: ${clock}`)
           }
 
           previousClock = clock
