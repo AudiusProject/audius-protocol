@@ -107,7 +107,7 @@ def index_trending(self, db, redis):
             strategy = trending_strategy_factory.get_strategy(TrendingType.UNDERGROUND_TRACKS, version)
             cache_start_time = time.time()
             res = make_get_unpopulated_tracks(session, redis, strategy)()
-            key = make_underground_trending_cache_key()
+            key = make_underground_trending_cache_key(version)
             pickle_and_set(redis, key, res)
             cache_end_time = time.time()
             total_time = cache_end_time - cache_start_time
