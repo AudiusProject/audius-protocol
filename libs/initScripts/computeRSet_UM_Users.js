@@ -18,7 +18,6 @@ const ETH_TOKEN_ADDRESS = '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998'
 const ETH_OWNER_WALLET = '0xC7310a03e930DD659E15305ed7e1F5Df0F0426C5'
 const DATA_CONTRACTS_REGISTRY_ADDRESS = '0xC611C82150b56E6e4Ec5973AcAbA8835Dd0d75A2'
 
-
 // STAGING
 // const ETH_PROVIDER_ENDPOINT = 'https://eth.staging.audius.co'
 // const DISCOVERY_NODE_ENDPOINT = 'https://discoveryprovider.staging.audius.co'
@@ -112,18 +111,46 @@ async function getLatestUserId () {
 // Creates an array from [start+1, stop] e.g. range(0,500) -> [1,2,3,....,500]
 const range = (start, stop, step = 1) => Array.from({ length: ((stop - start) / step + 1) - 1 }, (_, i) => 1 + start + (i * step))
 
+// async function getAllUsersWithNoCreatorNodeEndpoint (offset, userIdToWallet, audiusLibs) {
+//   // TODO: use libs call like
+//   let usersRange = range(offset, offset + NUM_USERS_PER_BATCH_REQUEST)
+//   const subsetUsers = await audiusLibs.discoveryProvider.getUsers(
+//     NUM_USERS_PER_BATCH_REQUEST /* limit */,
+//     0 /* offset */,
+//     usersRange /* idsArray */
+//   )
+//   subsetUsers
+//     // Filter to users that do not have a CNE
+//     .filter(user => !user.creator_node_endpoint) // users with no rset
+//     // .filter(user => user.creator_node_endpoint && !user.secondary_ids && !user.primary_id) // users with rset not on contract
+//     // Add userId - wallet mapping
+//     .forEach(user => {
+//       userIdToWallet[user.user_id] = user.wallet
+//     })
+// }
+
+// FOR CREATOR_NODE_ENDPOINT BUG FIX: To only account for users who have state on UM
 async function getAllUsersWithNoCreatorNodeEndpoint (offset, userIdToWallet, audiusLibs) {
-  // TODO: use libs call like
-  let usersRange = range(offset, offset + NUM_USERS_PER_BATCH_REQUEST)
+  let usersRange = [
+    186935,
+    186624,
+    185598,
+    185538,
+    184240,
+    184238,
+    183610,
+    182873,
+    182708,
+    182419,
+    87486
+  ]
   const subsetUsers = await audiusLibs.discoveryProvider.getUsers(
-    NUM_USERS_PER_BATCH_REQUEST /* limit */,
+    100 /* limit */,
     0 /* offset */,
     usersRange /* idsArray */
   )
+
   subsetUsers
-    // Filter to users that do not have a CNE
-    .filter(user => !user.creator_node_endpoint) // users with no rset
-    // .filter(user => user.creator_node_endpoint && !user.secondary_ids && !user.primary_id) // users with rset not on contract
     // Add userId - wallet mapping
     .forEach(user => {
       userIdToWallet[user.user_id] = user.wallet
@@ -242,7 +269,7 @@ const syncSecondary = async ({ primary, secondary, wallet, userId }) => {
     } catch (e) {
       console.error(`userId=${userId} | Could not sync from primary=${primary} to secondary=${secondary} for wallet=${wallet}`, e)
     }
-    retries--;
+    retries--
     await Util.wait(500)
     console.error(`userId=${userId} | Retrying sync primary=${primary} to secondary=${secondary} for wallet=${wallet}`)
   }
@@ -337,7 +364,6 @@ const setReplicaSet = async ({
   secondary2,
   userId
 }) => {
-
   // console.log('test')
   // console.log(primary)
   // console.log(secondary1)
@@ -370,7 +396,7 @@ const updateSingleUser = async (
     primaryId,
     secondaryIds
   )
-  console.dir(tx, { depth: 5})
+  console.dir(tx, { depth: 5 })
 }
 
 const run = async () => {
@@ -401,7 +427,10 @@ const run = async () => {
 
   // const numUsersToProcess = numOfUsers
   const numUsersToProcess = 190000
-  for (offset = 160000; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  // TODO: uncomment this for actual calculation
+  // for (offset = 160000; offset < numUsersToProcess; offset = offset + NUM_USERS_PER_BATCH_REQUEST) {
+  let done = false
+  while (!done) {
     console.log('------------------------------------------------------')
     console.log(`Processing users batch range ${offset + 1} to ${offset + NUM_USERS_PER_BATCH_REQUEST}...`)
 
@@ -472,6 +501,7 @@ const run = async () => {
         console.log(
           `\nProcessing userId=${userId} to from primary=${USER_METADATA_ENDPOINT} -> secondaries=${spIdToEndpointAndCount[replicaSetSecondarySpIds[0]].endpoint},${spIdToEndpointAndCount[replicaSetSecondarySpIds[1]].endpoint}`
         )
+
         try {
           // Sync UM data to newly selected secondaries
           await syncAcrossSecondariesAndEnsureClockIsSynced(
@@ -490,11 +520,12 @@ const run = async () => {
             userId: parseInt(userId)
           })
           userIdsSuccess.push(userId)
-
         } catch (e) {
           console.error('Error with sync and or contract write', e)
           userIdsFail.push({ userId, error: e.message })
         }
+
+        done = true
       }))
       console.log(`Finished processing ${i}, ${i + sliceLength}`)
     }
