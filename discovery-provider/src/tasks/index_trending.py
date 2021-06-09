@@ -92,7 +92,7 @@ def index_trending(self, db, redis):
                 for time_range in time_ranges:
                     cache_start_time = time.time()
                     res = generate_unpopulated_trending(session, genre, time_range, strategy)
-                    key = make_trending_cache_key(time_range, genre)
+                    key = make_trending_cache_key(time_range, genre, version)
                     pickle_and_set(redis, key, res)
                     cache_end_time = time.time()
                     total_time = cache_end_time - cache_start_time
