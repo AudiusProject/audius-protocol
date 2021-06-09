@@ -11,19 +11,27 @@ class WormholeClient {
 
   /* ------- SETTERS ------- */
 
-  async lockAssets (owner, amount, solanaAccountHex, relayer) {
-    const ethTokenContractAddress = this.audiusTokenClient.contractAddress
-    const chainId = await this.ethWeb3Manager.web3.eth.getChainId()
-    const nonce = 133
-    const refundDust = false
-    console.log(this.WormholeContract)
+
+  async lockAssets (
+    fromAcct,
+    amount,
+    solanaAccount,
+    chainId,
+    refundDust,
+    deadline,
+    signedDigest,
+    relayer
+  ) {
     const method = this.WormholeContract.methods.lockAssets(
-      ethTokenContractAddress,
+      fromAcct,
       amount,
-      solanaAccountHex,
+      solanaAccount,
       chainId,
-      nonce,
-      refundDust
+      refundDust,
+      deadline,
+      signedDigest.v,
+      signedDigest.r,
+      signedDigest.s
     )
 
     console.log({ method })
@@ -31,12 +39,12 @@ class WormholeClient {
     const tx = await this.ethWeb3Manager.relayTransaction(
       method,
       this.contractAddress,
-      owner,
+      fromAcct,
       relayer,
       /* retries */ 0
     )
     return { txReceipt: tx }
-  }
+  } 
 }
 
 module.exports = WormholeClient

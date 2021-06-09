@@ -129,7 +129,7 @@ class EthContracts {
     this.WormholeClient = new WormholeClient(
       this.ethWeb3Manager,
       WormholeABI,
-      '0xf92cD566Ea4864356C5491c177A430C222d7e678', // contractAddress
+      '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7', // contractAddress
       this.AudiusTokenClient
     )
 
