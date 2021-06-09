@@ -25,7 +25,7 @@ time_delta_map = {
 # Returns listens counts for tracks, subject to time and
 # genre restrictions.
 # Returns [{ track_id: number, listens: number }]
-def get_listen_counts(session, time, genre, limit, offset, net_multiplier):
+def get_listen_counts(session, time, genre, limit, offset, net_multiplier=1):
 
     # Adds a created_at filter
     # on the base query, if applicable.
