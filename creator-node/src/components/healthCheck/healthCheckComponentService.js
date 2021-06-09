@@ -52,8 +52,10 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign =
  * @param {*} sequelize
  * @param {*} getMonitors
  * @param {number} numberOfCPUs the number of CPUs on this machine
+ * @param {function} getAggregateSyncData fn to get the latest daily sync count (success, fail, triggered)
+ * @param {function} getLatestSyncData fn to get the timestamps of the most recent sync (success, fail)
  */
-const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors, numberOfCPUs) => {
+const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors, numberOfCPUs, getAggregateSyncData, getLatestSyncData) => {
   const basicHealthCheck = await healthCheck({ libs }, logger, sequelize)
 
   // Location information
@@ -75,7 +77,13 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     maxFileDescriptors,
     allocatedFileDescriptors,
     receivedBytesPerSec,
-    transferredBytesPerSec
+    transferredBytesPerSec,
+    thirtyDayRollingSyncSuccessCount,
+    thirtyDayRollingSyncFailCount,
+    dailySyncSuccessCount,
+    dailySyncFailCount,
+    latestSyncSuccessTimestamp,
+    latestSyncFailTimestamp
   ] = await getMonitors([
     MONITORS.DATABASE_CONNECTIONS,
     MONITORS.DATABASE_SIZE,
@@ -87,7 +95,13 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     MONITORS.MAX_FILE_DESCRIPTORS,
     MONITORS.ALLOCATED_FILE_DESCRIPTORS,
     MONITORS.RECEIVED_BYTES_PER_SEC,
-    MONITORS.TRANSFERRED_BYTES_PER_SEC
+    MONITORS.TRANSFERRED_BYTES_PER_SEC,
+    MONITORS.THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT,
+    MONITORS.THIRTY_DAY_ROLLING_SYNC_FAIL_COUNT,
+    MONITORS.DAILY_SYNC_SUCCESS_COUNT,
+    MONITORS.DAILY_SYNC_FAIL_COUNT,
+    MONITORS.LATEST_SYNC_SUCCESS_TIMESTAMP,
+    MONITORS.LATEST_SYNC_FAIL_TIMESTAMP
   ])
 
   const response = {
@@ -107,7 +121,14 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     receivedBytesPerSec,
     transferredBytesPerSec,
     maxStorageUsedPercent,
-    numberOfCPUs
+    numberOfCPUs,
+    // Rolling window days dependent on value set in monitor's sync history file
+    thirtyDayRollingSyncSuccessCount,
+    thirtyDayRollingSyncFailCount,
+    dailySyncSuccessCount,
+    dailySyncFailCount,
+    latestSyncSuccessTimestamp,
+    latestSyncFailTimestamp
   }
 
   return response

@@ -25,6 +25,14 @@ const {
 const {
   getIPFSReadWriteStatus
 } = require('./ipfs')
+const {
+  get30DayRollingSyncSuccessCount,
+  get30DayRollingSyncFailCount,
+  getDailySyncSuccessCount,
+  getDailySyncFailCount,
+  getLatestSyncSuccessTimestamp,
+  getLatestSyncFailTimestamp
+} = require('./syncHistory')
 const redis = require('../redis')
 
 // Prefix used to key each monitored value in redis
@@ -159,6 +167,62 @@ const IPFS_READ_WRITE_STATUS = {
   type: 'json'
 }
 
+// The rolling window count of successful syncs
+// The window is for 30 days
+// Keep the rolling window count ttl to 1 hour (refreshes every hour)
+const THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT = {
+  name: 'rollingSyncSuccessCount',
+  func: get30DayRollingSyncSuccessCount,
+  ttl: 60 /* mins */ * 60 /* s */,
+  type: 'int'
+}
+
+// The rolling window count of failed syncs
+// The window is for 30 days
+// Keep the rolling window count ttl to 1 hour (refreshes every hour)
+const THIRTY_DAY_ROLLING_SYNC_FAIL_COUNT = {
+  name: 'rollingSyncFailCount',
+  func: get30DayRollingSyncFailCount,
+  ttl: 60 /* mins */ * 60 /* s */,
+  type: 'int'
+}
+
+// The daily count of successful syncs
+// Set ttl to every 5 minutes
+const DAILY_SYNC_SUCCESS_COUNT = {
+  name: 'dailySyncSuccessCount',
+  func: getDailySyncSuccessCount,
+  ttl: 5 /* mins */ * 60 /* s */,
+  type: 'int'
+}
+
+// The daily count of successful syncs
+// Set ttl freshness to every 5 minutes
+const DAILY_SYNC_FAIL_COUNT = {
+  name: 'dailySyncFailCount',
+  func: getDailySyncFailCount,
+  ttl: 5 /* mins */ * 60 /* s */,
+  type: 'int'
+}
+
+// The timestamp of the latest succesful sync
+// Set ttl freshness to every 5 minutes
+const LATEST_SYNC_SUCCESS_TIMESTAMP = {
+  name: 'latestSyncSuccessTimestamp',
+  func: getLatestSyncSuccessTimestamp,
+  ttl: 5 /* mins */ * 60 /* s */,
+  type: 'string'
+}
+
+// The timestamp of the latest failed sync
+// Set ttl freshness to every 5 minutes
+const LATEST_SYNC_FAIL_TIMESTAMP = {
+  name: 'latestSyncFailTimestamp',
+  func: getLatestSyncFailTimestamp,
+  ttl: 5 /* mins */ * 60 /* s */,
+  type: 'string'
+}
+
 const MONITORS = {
   DATABASE_LIVENESS,
   DATABASE_SIZE,
@@ -179,7 +243,13 @@ const MONITORS = {
   REDIS_NUM_KEYS,
   REDIS_USED_MEMORY,
   REDIS_TOTAL_MEMORY,
-  IPFS_READ_WRITE_STATUS
+  IPFS_READ_WRITE_STATUS,
+  THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT,
+  THIRTY_DAY_ROLLING_SYNC_FAIL_COUNT,
+  DAILY_SYNC_SUCCESS_COUNT,
+  DAILY_SYNC_FAIL_COUNT,
+  LATEST_SYNC_SUCCESS_TIMESTAMP,
+  LATEST_SYNC_FAIL_TIMESTAMP
 }
 
 const getMonitorRedisKey = (monitor) => `${MONITORING_REDIS_PREFIX}:${monitor.name}`
