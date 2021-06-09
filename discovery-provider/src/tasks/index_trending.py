@@ -92,7 +92,7 @@ def index_trending(self, db, redis):
                 for time_range in time_ranges:
                     cache_start_time = time.time()
                     res = generate_unpopulated_trending(session, genre, time_range, strategy)
-                    key = make_trending_cache_key(time_range, genre)
+                    key = make_trending_cache_key(time_range, genre, version)
                     pickle_and_set(redis, key, res)
                     cache_end_time = time.time()
                     total_time = cache_end_time - cache_start_time
@@ -107,7 +107,7 @@ def index_trending(self, db, redis):
             strategy = trending_strategy_factory.get_strategy(TrendingType.UNDERGROUND_TRACKS, version)
             cache_start_time = time.time()
             res = make_get_unpopulated_tracks(session, redis, strategy)()
-            key = make_underground_trending_cache_key()
+            key = make_underground_trending_cache_key(version)
             pickle_and_set(redis, key, res)
             cache_end_time = time.time()
             total_time = cache_end_time - cache_start_time
