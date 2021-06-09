@@ -7,7 +7,7 @@ const verifyAndRecordCaptcha = async ({ token, walletAddress, url, logger, captc
     try {
       ({ score, ok, hostname } = await captcha.verify(token))
 
-      if ((score || (score === 0)) && hostname) {
+      if (score !== undefined && score !== null && hostname) {
         models.BotScores.create({
           walletAddress,
           recaptchaScore: score,
