@@ -7,12 +7,14 @@ const verifyAndRecordCaptcha = async ({ token, walletAddress, url, logger, captc
     try {
       ({ score, ok, hostname } = await captcha.verify(token))
 
-      models.BotScores.create({
-        walletAddress,
-        recaptchaScore: score,
-        recaptchaContext: url,
-        recaptchaHostname: hostname
-      })
+      if (score !== undefined && score !== null && hostname) {
+        models.BotScores.create({
+          walletAddress,
+          recaptchaScore: score,
+          recaptchaContext: url,
+          recaptchaHostname: hostname
+        })
+      }
     } catch (e) {
       logger.error(`CAPTCHA - Error with calculating or recording recaptcha score for wallet=${walletAddress}`, e)
     }
