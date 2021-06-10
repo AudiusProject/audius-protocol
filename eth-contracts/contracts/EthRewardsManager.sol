@@ -34,6 +34,8 @@ contract EthRewardsManager is InitializableV2 {
     Wormhole internal wormhole;
     bytes32 internal recipient;
 
+    address public botOracle;
+
     /**
      * @notice Function to initialize the contract
      * @param _tokenAddress - address of ERC20 token
@@ -70,7 +72,7 @@ contract EthRewardsManager is InitializableV2 {
     }
 
     /**
-     * @notice Set the ClaimsManaager address
+     * @notice Set the recipient address
      * @dev Only callable by Governance address
      * @param _recipient - address for new recipient
      */
@@ -79,6 +81,18 @@ contract EthRewardsManager is InitializableV2 {
 
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
         recipient = _recipient;
+    }
+
+    /**
+     * @notice Set the botOracle address
+     * @dev Only callable by Governance address
+     * @param _botOracle - address for new botOracle
+     */
+    function setBotOracle(address _botOracle) external {
+        _requireIsInitialized();
+
+        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
+        botOracle = _botOracle;
     }
 
     /* External functions */
