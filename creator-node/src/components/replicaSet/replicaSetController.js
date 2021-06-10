@@ -80,7 +80,6 @@ const syncRouteController = async (req, res) => {
     if (errorObj) {
       return errorResponseServerError(errorObj)
     }
-
   } else {
     const debounceTime = nodeConfig.get('debounceTime')
 

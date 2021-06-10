@@ -4,6 +4,7 @@ const { logger } = require('../../logging')
 const models = require('../../models')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
+const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 
 /**
  * This function is only run on secondaries, to export and sync data from a user's primary.
@@ -341,14 +342,12 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
       }
     }
 
-    await SyncHistoryAggregator.recordSyncSuccess(logContext)
-
+    await SyncHistoryAggregator.recordSyncSuccess()
   } catch (e) {
     logger.error(redisKey, 'Sync Error for wallets ', walletPublicKeys, `|| from endpoint ${creatorNodeEndpoint} ||`, e.message)
     errorObj = e
 
-    await SyncHistoryAggregator.recordSyncFail(logContext)
-    
+    await SyncHistoryAggregator.recordSyncFail()
   } finally {
     // Release all redis locks
     for (let wallet of walletPublicKeys) {
