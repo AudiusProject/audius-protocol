@@ -45,7 +45,8 @@ contract EthRewardsManager is InitializableV2 {
         address _tokenAddress,
         address _governanceAddress,
         address _wormholeAddress,
-        bytes32 _recipient
+        bytes32 _recipient,
+        address _botOracle
     ) public initializer {
         require(Address.isContract(_tokenAddress), ERROR_TOKEN_NOT_CONTRACT);
         require(
@@ -55,6 +56,7 @@ contract EthRewardsManager is InitializableV2 {
         audiusToken = ERC20(_tokenAddress);
         wormhole = Wormhole(_wormholeAddress);
         recipient = _recipient;
+        botOracle = _botOracle;
         _updateGovernanceAddress(_governanceAddress);
         InitializableV2.initialize();
     }
