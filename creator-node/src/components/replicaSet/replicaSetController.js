@@ -48,6 +48,7 @@ const respondToURSMRequestForProposalController = async (req) => {
  * @notice Returns success regardless of sync outcome -> primary node will re-request sync if needed
  */
 const syncRouteController = async (req, res) => {
+  req.logger.info(`SIDTEST ENTER SYNCROUTECONTROLLER`)
   const serviceRegistry = req.app.get('serviceRegistry')
   const nodeConfig = serviceRegistry.nodeConfig
 

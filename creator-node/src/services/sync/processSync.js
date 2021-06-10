@@ -18,7 +18,7 @@ const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
  *    what they receive in each export.
  */
 async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoint, blockNumber = null) {
-  logger.info(`SIDTEST - serviceRegistry init status: ${serviceRegistry.servicesThatRequireServerInitialized}`)
+  logger.info(`SIDTEST PROCESS SYNC - serviceRegistry init status: ${serviceRegistry.servicesThatRequireServerInitialized}`)
 
   const { nodeConfig, redis } = serviceRegistry
 

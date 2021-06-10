@@ -4,7 +4,8 @@ const { logger } = require('../../logging')
 const processSync = require('./processSync')
 
 // Direct serviceRegistry import is necessary here since `processSync` function requires it as a param (for now)
-const { serviceRegistry } = require('../../serviceRegistry')
+// this breaks for some reason...
+// const { serviceRegistry } = require('../../serviceRegistry.js')
 
 // TODO move to envvar + document
 const JobProcessorConcurrency = 50
@@ -19,11 +20,12 @@ class SyncQueue {
   /**
    * Construct bull queue and define job processor
    */
-  constructor (nodeConfig, redis, ipfs, ipfsLatest) {
+  constructor (nodeConfig, redis, ipfs, ipfsLatest, serviceRegistry) {
     this.nodeConfig = nodeConfig
     this.redis = redis
     this.ipfs = ipfs
     this.ipfsLatest = ipfsLatest
+    this.serviceRegistry = serviceRegistry
 
     this.queue = new Bull(
       'sync-processing-queue',
@@ -39,6 +41,8 @@ class SyncQueue {
       }
     )
 
+    // logger.info(`SIDTEST SYNCQUEUE CONSTRUCTOR SERVICEREGISTRYINSTANCE ${typeof serviceRegistryInstance}`)
+
     /**
      * Queue will process tasks concurrently if provided a concurrency number, and will process all on
      *    main thread if provided an in-line job processor function; it will distribute across child processes
@@ -53,7 +57,7 @@ class SyncQueue {
         const { walletPublicKeys, creatorNodeEndpoint } = job.data
 
         try {
-          await processSync(serviceRegistry, walletPublicKeys, creatorNodeEndpoint)
+          await processSync(this.serviceRegistry, walletPublicKeys, creatorNodeEndpoint)
         } catch (e) {
           logger.error(`processSync failure for wallets ${walletPublicKeys} against ${creatorNodeEndpoint}`, e.message)
         }
