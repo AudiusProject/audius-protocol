@@ -16,8 +16,8 @@ const {
 // Configuration.
 // Should be CLI configurable in the future.
 const DEFAULT_NUM_CREATOR_NODES = 4
-const DEFAULT_NUM_USERS = 1
-const SNAPBACK_NUM_USERS = 4
+const DEFAULT_NUM_USERS = 2
+const SNAPBACK_NUM_USERS = 10
 const USER_REPLICA_SET_NUM_USERS = 4
 
 // Allow command line args for wallet index offset
@@ -195,7 +195,7 @@ async function main () {
         break
       }
       case 'test-snapback': {
-        const snapbackNumUsers = 4
+        const snapbackNumUsers = 40
         const test = makeTest(
           'snapback',
           snapbackSMParallelSyncTest,
@@ -237,6 +237,20 @@ async function main () {
         await testRunner([test])
         break
       }
+      // NOTE - this test in current form does not seem to work if DEFAULT_NUM_USERS != 2
+      case 'test-blacklist': {
+        // dynamically create ipld tests
+        const blacklistTests = Object.entries(IpldBlacklistTest).map(
+          ([testName, testLogic]) =>
+            makeTest(testName, testLogic, {
+              numCreatorNodes: 1,
+              numUsers: DEFAULT_NUM_USERS,
+              useZeroIndexedWallet: true
+            })
+        )
+        await testRunner(blacklistTests)
+        break
+      }
       case 'test-ci': {
         const coreIntegrationTests = makeTest('consistency:ci', coreIntegration, {
           numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
@@ -247,6 +261,7 @@ async function main () {
           numUsers: SNAPBACK_NUM_USERS
         })
 
+        // NOTE - this test in current form does not seem to work if DEFAULT_NUM_USERS != 2
         // dynamically create ipld tests
         const blacklistTests = Object.entries(IpldBlacklistTest).map(
           ([testName, testLogic]) =>
