@@ -4,9 +4,6 @@ const sessionManager = require('./sessionManager')
 const models = require('./models')
 const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
-// currently this import is undefined
-const { serviceRegistry } = require('./serviceRegistry')
-console.log(`SIDTEST MIDDLEWARES FILE INITIALIZED ${typeof serviceRegistry}`)
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { SyncType } = require('./snapbackSM/snapbackSM')
 
@@ -60,7 +57,6 @@ async function syncLockMiddleware (req, res, next) {
  */
 async function ensurePrimaryMiddleware (req, res, next) {
   const serviceRegistry = req.app.get('serviceRegistry')
-  req.logger.info(`SIDTEST ENSUREPRIMARYMIDDLEWARE SERVICEREGISTRY KEYS ${Object.keys(serviceRegistry)}`)
 
   if (config.get('isUserMetadataNode')) {
     return next()
@@ -156,11 +152,7 @@ async function ensureStorageMiddleware (req, res, next) {
  * @dev - TODO move this out of middlewares to Services layer
  */
 async function triggerSecondarySyncs (req) {
-  // req.logger.info(`SIDTEST STARTING TRIGGERSECONDARYSYNCS`)
-  // req.logger.info(`SIDTEST SERVICEREGISTRY KEYS ${!!serviceRegistry || Object.keys(serviceRegistry)}`)
-  // const { snapbackSM } = serviceRegistry
   const serviceRegistry = req.app.get('serviceRegistry')
-  req.logger.info(`SIDTEST TRIGGERSECONDARYSYNCS SERVICEREGISTRY KEYS ${Object.keys(serviceRegistry)}`)
   const { snapbackSM } = serviceRegistry
 
   if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) {
@@ -188,7 +180,6 @@ async function triggerSecondarySyncs (req) {
         primaryEndpoint: primary,
         syncType: SyncType.Manual
       })
-      req.logger.info(`SIDTEST COMPLETED TRIGGERSECONDARYSYNCS`)
     }))
   } catch (e) {
     req.logger.error(`Trigger secondary syncs ${req.session.wallet}`, e.message)

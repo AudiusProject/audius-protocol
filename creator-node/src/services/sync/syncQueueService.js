@@ -60,10 +60,8 @@ class SyncQueue {
   }
 
   async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint }) {
-    logger.info(`SIDTEST SYNCQUEUE ENQUEUESYNC START`)
     const jobProps = { walletPublicKeys, creatorNodeEndpoint }
     const job = await this.queue.add(jobProps)
-    logger.info(`SIDTEST SYNCQUEUE ENQUEUESYNC ADDED JOB`)
     return job
   }
 }

@@ -19,8 +19,6 @@ const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
  *    what they receive in each export.
  */
 async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoint, blockNumber = null) {
-  logger.info(`SIDTEST PROCESS SYNC - serviceRegistry init status: ${serviceRegistry.servicesThatRequireServerInitialized}`)
-
   const { nodeConfig, redis } = serviceRegistry
 
   const FileSaveMaxConcurrency = nodeConfig.get('nodeSyncFileSaveMaxConcurrency')
