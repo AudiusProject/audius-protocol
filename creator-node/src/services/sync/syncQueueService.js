@@ -3,14 +3,8 @@ const Bull = require('bull')
 const { logger } = require('../../logging')
 const processSync = require('./processSync')
 
-// Direct serviceRegistry import is necessary here since `processSync` function requires it as a param (for now)
-// this breaks for some reason...
-// const { serviceRegistry } = require('../../serviceRegistry.js')
-
 // TODO move to envvar + document
 const JobProcessorConcurrency = 50
-
-// const JobProcessorFnFilePath = `${__dirname}/syncQueueJobProcessor.js`
 
 /**
  * SyncQueue - handles enqueuing and processing of Sync jobs on secondary
@@ -41,8 +35,6 @@ class SyncQueue {
       }
     )
 
-    // logger.info(`SIDTEST SYNCQUEUE CONSTRUCTOR SERVICEREGISTRYINSTANCE ${typeof serviceRegistryInstance}`)
-
     /**
      * Queue will process tasks concurrently if provided a concurrency number, and will process all on
      *    main thread if provided an in-line job processor function; it will distribute across child processes
@@ -65,8 +57,6 @@ class SyncQueue {
         done()
       }
     )
-
-    logger.info(`SIDTEST SYNCQUEUE CONSTRUCTION DONE`)
   }
 
   async enqueueSync ({ walletPublicKeys, creatorNodeEndpoint }) {

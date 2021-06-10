@@ -4,11 +4,13 @@ const {
   successResponse,
   handleResponse,
   handleApiError,
-  errorResponseBadRequest
+  errorResponseBadRequest,
+  errorResponseServerError
 } = require('../../apiHelpers')
 const { respondToURSMRequestForSignature } = require('./URSMRegistrationComponentService')
 const { ensureStorageMiddleware } = require('../../middlewares')
 const { enqueueSync } = require('./syncQueueComponentService')
+const processSync = require('../../services/sync/processSync')
 
 const router = express.Router()
 
@@ -16,7 +18,7 @@ const router = express.Router()
  * Dictionary tracking currently queued up syncs with debounce
  * @notice - this feature is likely to be deprecated in future as the need to debounce syncs goes away
  */
-const syncQueue = {}
+const syncDebounceQueue = {}
 
 // Controllers
 
@@ -48,7 +50,6 @@ const respondToURSMRequestForProposalController = async (req) => {
  * @notice Returns success regardless of sync outcome -> primary node will re-request sync if needed
  */
 const syncRouteController = async (req, res) => {
-  req.logger.info(`SIDTEST ENTER SYNCROUTECONTROLLER`)
   const serviceRegistry = req.app.get('serviceRegistry')
   const nodeConfig = serviceRegistry.nodeConfig
 
@@ -67,28 +68,35 @@ const syncRouteController = async (req, res) => {
   // If sync_type body param provided, log it (param is currently only used for logging)
   const syncType = req.body.sync_type
   if (syncType) {
-    req.logger.info(`SnapbackSM sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
+    req.logger.info(`SyncRouteController - sync of type: ${syncType} initiated for ${walletPublicKeys} from ${creatorNodeEndpoint}`)
   }
 
-  // Enqueue sync immediately or with debounce, per request param
+  /**
+   * If immediate sync requested, enqueue immediately and return response
+   * Else, debounce + add sync to queue
+   */
   if (immediate) {
-    await enqueueSync({ serviceRegistry, walletPublicKeys, creatorNodeEndpoint })
+    let errorObj = await processSync(serviceRegistry, walletPublicKeys, creatorNodeEndpoint, blockNumber)
+    if (errorObj) {
+      return errorResponseServerError(errorObj)
+    }
+
   } else {
     const debounceTime = nodeConfig.get('debounceTime')
 
     for (let wallet of walletPublicKeys) {
-      if (wallet in syncQueue) {
-        clearTimeout(syncQueue[wallet])
-        req.logger.info('SyncRouteController - clear timeout for', wallet, 'time', Date.now())
+      if (wallet in syncDebounceQueue) {
+        clearTimeout(syncDebounceQueue[wallet])
+        req.logger.info(`SyncRouteController - clear timeout for ${wallet} at time ${Date.now()}`)
       }
-      syncQueue[wallet] = setTimeout(
+      syncDebounceQueue[wallet] = setTimeout(
         async function () {
-          // return _nodesync(serviceRegistry, req.logger, [wallet], creatorNodeEndpoint, req.body.blockNumber, req.logContext)
           await enqueueSync({ serviceRegistry, walletPublicKeys: [wallet], creatorNodeEndpoint, blockNumber })
+          delete (syncDebounceQueue[wallet])
         },
         debounceTime
       )
-      req.logger.info('SyncRouteController - set timeout for', wallet, 'time', Date.now())
+      req.logger.info(`SyncRouteController - set timeout for ${wallet} at time ${Date.now()}`)
     }
   }
 

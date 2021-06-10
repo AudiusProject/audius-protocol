@@ -16,8 +16,8 @@ const {
 // Configuration.
 // Should be CLI configurable in the future.
 const DEFAULT_NUM_CREATOR_NODES = 4
-const DEFAULT_NUM_USERS = 2
-const SNAPBACK_NUM_USERS = 10
+const DEFAULT_NUM_USERS = 1
+const SNAPBACK_NUM_USERS = 4
 const USER_REPLICA_SET_NUM_USERS = 4
 
 // Allow command line args for wallet index offset
@@ -195,7 +195,7 @@ async function main () {
         break
       }
       case 'test-snapback': {
-        const snapbackNumUsers = 40
+        const snapbackNumUsers = 4
         const test = makeTest(
           'snapback',
           snapbackSMParallelSyncTest,

@@ -340,9 +340,15 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         throw new Error(e)
       }
     }
+
+    await SyncHistoryAggregator.recordSyncSuccess(logContext)
+
   } catch (e) {
     logger.error(redisKey, 'Sync Error for wallets ', walletPublicKeys, `|| from endpoint ${creatorNodeEndpoint} ||`, e.message)
     errorObj = e
+
+    await SyncHistoryAggregator.recordSyncFail(logContext)
+    
   } finally {
     // Release all redis locks
     for (let wallet of walletPublicKeys) {
