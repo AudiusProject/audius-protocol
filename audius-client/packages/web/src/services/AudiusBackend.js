@@ -1204,6 +1204,7 @@ class AudiusBackend {
       return { blockHash, blockNumber, playlistId }
     } catch (err) {
       // This code path should never execute
+      console.debug('Reached client createPlaylist catch block')
       console.error(err.message)
       return { playlistId: null, error: true }
     }
