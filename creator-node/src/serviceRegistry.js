@@ -8,7 +8,7 @@ const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
-const SyncQueueService = require('./services/sync/syncQueueService')
+const SyncQueue = require('./services/sync/syncQueue')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -40,7 +40,7 @@ class ServiceRegistry {
     this.libs = null
     this.snapbackSM = null
     this.URSMRegistrationManager = null
-    this.syncQueueService = null
+    this.syncQueue = null
 
     this.servicesInitialized = false
     this.servicesThatRequireServerInitialized = false
@@ -105,9 +105,9 @@ class ServiceRegistry {
     // Retries indefinitely
     await this._initSnapbackSM()
 
-    // SyncqueueService construction (requires L1 identity)
+    // SyncQueue construction (requires L1 identity)
     // Note - passes in reference to self instance, a very sub-optimal workaround
-    this.syncQueueService = new SyncQueueService(
+    this.syncQueue = new SyncQueue(
       this.nodeConfig,
       this.redis,
       this.ipfs,
