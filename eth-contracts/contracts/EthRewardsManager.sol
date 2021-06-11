@@ -17,15 +17,19 @@ interface Wormhole {
     ) external;
 }
 
+
 contract EthRewardsManager is InitializableV2 {
     using SafeERC20 for ERC20;
 
-    string private constant ERROR_TOKEN_NOT_CONTRACT =
-        "EthRewardsManager: token is not a contract";
-    string private constant ERROR_WORMHOLE_NOT_CONTRACT =
-        "EthRewardsManager: wormhole is not a contract";
-    string private constant ERROR_ONLY_GOVERNANCE =
-        "EthRewardsManager: Only governance";
+    string private constant ERROR_TOKEN_NOT_CONTRACT = (
+        "EthRewardsManager: token is not a contract"
+    );
+    string private constant ERROR_WORMHOLE_NOT_CONTRACT = (
+        "EthRewardsManager: wormhole is not a contract"
+    );
+    string private constant ERROR_ONLY_GOVERNANCE = (
+        "EthRewardsManager: Only governance"
+    );
 
     address private governanceAddress;
 
