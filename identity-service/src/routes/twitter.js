@@ -75,7 +75,7 @@ module.exports = function (app) {
         let uuid = uuidv4()
         models.TwitterUser.create({
           twitterProfile: userProfile,
-          verified: userProfile.verified,
+          verified: true, // userProfile.verified,
           uuid: uuid
         })
 
