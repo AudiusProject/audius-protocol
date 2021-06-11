@@ -464,14 +464,12 @@ class Users extends Base {
       if (existingEndpoint) {
         // Don't validate what we're syncing from because the user isn't
         // a creator yet.
-        console.log('SIDTEST LIBS UPGRADETOCREATOR about to call syncSecondary with immediate = true')
         await this.creatorNode.syncSecondary(
           newPrimary,
           existingEndpoint,
           /* immediate= */ true,
           /* validate= */ false
         )
-        console.log('SIDTEST LIBS UPGRADETOCREATOR successfully called syncSecondary with immediate = true')
       }
 
       // Update local libs state with new CN endpoint
