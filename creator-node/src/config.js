@@ -463,7 +463,7 @@ const config = convict({
     doc: 'Array of comma separated CIDs to whitelist. Takes precedent over blacklist',
     format: String,
     env: 'cidWhitelist',
-    default: 'QmWXhUToTQX623nroEPUsBPjrpEWFUCb158FPYLDcgDZLL'
+    default: ''
   },
   enableRehydrate: {
     doc: 'Flag to enable or disable rehydrate',

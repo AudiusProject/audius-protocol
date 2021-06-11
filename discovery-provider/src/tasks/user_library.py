@@ -2,11 +2,12 @@ import logging
 from datetime import datetime
 from src.app import contract_addresses
 from src.models import Playlist, SaveType, Save
+from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
 
 def user_library_state_update(
-        self, update_task, session, user_library_factory_txs, block_number, block_timestamp
+        self, update_task, session, user_library_factory_txs, block_number, block_timestamp, block_hash
 ):
     """Return int representing number of User Library model state changes found in transaction."""
 
@@ -24,49 +25,56 @@ def user_library_state_update(
     playlist_save_state_changes = {}
 
     for tx_receipt in user_library_factory_txs:
-        add_track_save(
-            self,
-            user_library_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            track_save_state_changes,
-        )
+        try:
+            add_track_save(
+                self,
+                user_library_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                track_save_state_changes,
+            )
 
-        add_playlist_save(
-            self,
-            user_library_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            playlist_save_state_changes,
-        )
+            add_playlist_save(
+                self,
+                user_library_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                playlist_save_state_changes,
+            )
 
-        delete_track_save(
-            self,
-            user_library_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            track_save_state_changes,
-        )
+            delete_track_save(
+                self,
+                user_library_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                track_save_state_changes,
+            )
 
-        delete_playlist_save(
-            self,
-            user_library_contract,
-            update_task,
-            session,
-            tx_receipt,
-            block_number,
-            block_datetime,
-            playlist_save_state_changes,
-        )
+            delete_playlist_save(
+                self,
+                user_library_contract,
+                update_task,
+                session,
+                tx_receipt,
+                block_number,
+                block_datetime,
+                playlist_save_state_changes,
+            )
+        except Exception as e:
+            logger.info(f"Error in user library transaction")
+            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+            blockhash = update_task.web3.toHex(block_hash)
+            raise IndexingError('user_library', block_number, blockhash, txhash, str(e))
+
 
     for user_id in track_save_state_changes:
         for track_id in track_save_state_changes[user_id]:

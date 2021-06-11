@@ -132,7 +132,7 @@
                 },
                 "playlist_id": {
                     "type": "string",
-                    "pattern": "^[a-zA-Z \/-]+$"
+                    "pattern": "^[a-zA-Z \/-?]+$"
                 }
             }
         },
