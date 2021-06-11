@@ -291,7 +291,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
   } catch (e) {
     decisionTree.push({ stage: `saveFileForMultihashToFS error`, vals: e.message, time: Date.now() })
     _printDecisionTreeObj(decisionTree, logger)
-    throw new Error(`saveFileForMultihashToFS - ${e}`)
+    throw new Error(`saveFileForMultihashToFS - ${e.message}`)
   }
 }
 

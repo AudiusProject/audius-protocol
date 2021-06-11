@@ -25,7 +25,7 @@ class SyncHistoryAggregator {
    * Records a sync success
    * @param {Object} logContext the log context taken off of the Express req object
    */
-  static async recordSyncSuccess (logContext) {
+  static async recordSyncSuccess (logContext = {}) {
     await SyncHistoryAggregator.recordSyncData({
       state: SYNC_STATES.success,
       timeOfEvent: new Date().toISOString(), // ex: "2021-05-28T01:05:20.294Z"
@@ -37,7 +37,7 @@ class SyncHistoryAggregator {
    * Records a sync fail
    * @param {Object} logContext the log context taken off of the Express req object
    */
-  static async recordSyncFail (logContext) {
+  static async recordSyncFail (logContext = {}) {
     await SyncHistoryAggregator.recordSyncData({
       state: SYNC_STATES.fail,
       timeOfEvent: new Date().toISOString(), // ex: "2021-05-28T01:05:20.294Z"
