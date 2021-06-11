@@ -101,7 +101,7 @@ module.exports = function (app) {
         } })
         if (!igUser) throw new Error(`Could not find matching ig user in the db: ${profile.username}`)
         igUser.profile = profile
-        igUser.verified = true //profile.is_verified
+        igUser.verified = true // profile.is_verified
         await igUser.save()
 
         return successResponse(profile)
