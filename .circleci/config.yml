@@ -356,49 +356,6 @@ jobs:
       - coveralls/upload:
           path_to_lcov: ./eth-contracts/coverage/lcov.info
 
-  # Disabled - not included in any workflows below
-  # Not removing code in case of potential re-enabling
-  test-content-service:
-    docker:
-      # specify the version you desire here
-      - image: circleci/node:10.16.3
-      - image: ipfs/go-ipfs:release
-      - image: circleci/postgres:11.1
-        environment:
-          POSTGRES_USER: postgres
-          POSTGRES_DB: audius_content_service_test
-    parameters:
-      force:
-        type: boolean
-        default: false
-    steps:
-      - checkout
-      - unless:
-          condition: << parameters.force >>
-          steps:
-            - run: ./diff.sh content-service || (echo "no diff" && circleci-agent step halt)
-      # Download and cache dependencies
-      # - restore_cache:
-      #     keys:
-      #     - content-service-{{ checksum "content-service/package.json" }}
-      #     # fallback to using the latest cache if no exact match is found
-      #     - content-service-
-      - run:
-          name: configure content service
-          command: |
-            cd content-service/
-            npm install
-      # - save_cache:
-      #     paths:
-      #       - content-service/node_modules
-      #     key: content-service-{{ checksum "content-service/package.json" }}
-      - run:
-          name: run tests
-          command: |
-            cd content-service/
-            export POSTGRES_TEST_PORT=5432
-            npm run test
-
   test-creator-node:
     docker:
       # specify the version you desire here
