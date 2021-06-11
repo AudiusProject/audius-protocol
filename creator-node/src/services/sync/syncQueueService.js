@@ -3,9 +3,6 @@ const Bull = require('bull')
 const { logger } = require('../../logging')
 const processSync = require('./processSync')
 
-// TODO move to envvar + document
-const JobProcessorConcurrency = 50
-
 /**
  * SyncQueue - handles enqueuing and processing of Sync jobs on secondary
  * sync job = this node (secondary) will sync data for a user from their primary
@@ -13,6 +10,8 @@ const JobProcessorConcurrency = 50
 class SyncQueue {
   /**
    * Construct bull queue and define job processor
+   * @notice - accepts `serviceRegistry` instance, even though this class is initialized
+   *    in that serviceRegistry instance. A sub-optimal workaround for now.
    */
   constructor (nodeConfig, redis, ipfs, ipfsLatest, serviceRegistry) {
     this.nodeConfig = nodeConfig
@@ -43,8 +42,9 @@ class SyncQueue {
      *
      * @dev TODO - consider recording failures in redis
      */
+    const jobProcessorConcurrency = this.nodeConfig.get('syncQueueMaxConcurrency')
     this.queue.process(
-      JobProcessorConcurrency,
+      jobProcessorConcurrency,
       async (job, done) => {
         const { walletPublicKeys, creatorNodeEndpoint } = job.data
 

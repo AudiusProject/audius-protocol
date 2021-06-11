@@ -106,7 +106,14 @@ class ServiceRegistry {
     await this._initSnapbackSM()
 
     // SyncqueueService construction (requires L1 identity)
-    this.syncQueueService = new SyncQueueService(this.nodeConfig, this.redis, this.ipfs, this.ipfsLatest, this)
+    // Note - passes in reference to self instance, a very sub-optimal workaround
+    this.syncQueueService = new SyncQueueService(
+      this.nodeConfig,
+      this.redis,
+      this.ipfs,
+      this.ipfsLatest,
+      this
+    )
 
     // L2URSMRegistration (requires L1 identity)
     // Retries indefinitely
