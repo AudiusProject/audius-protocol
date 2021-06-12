@@ -4,7 +4,6 @@ const sessionManager = require('./sessionManager')
 const models = require('./models')
 const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
-const { serviceRegistry } = require('./serviceRegistry')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { SyncType } = require('./snapbackSM/snapbackSM')
 
@@ -153,6 +152,7 @@ async function ensureStorageMiddleware (req, res, next) {
  * @dev - TODO move this out of middlewares to Services layer
  */
 async function triggerSecondarySyncs (req) {
+  const serviceRegistry = req.app.get('serviceRegistry')
   const { snapbackSM } = serviceRegistry
 
   if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) {

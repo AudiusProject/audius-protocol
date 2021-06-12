@@ -37,6 +37,9 @@ pub enum AudiusError {
     /// Secp256 instruction losing
     #[error("Secp256 instruction losing")]
     Secp256InstructionLosing,
+    /// Signer group owner disabled
+    #[error("Signer group owner disabled")]
+    SignerGroupOwnerDisabled,
 }
 impl From<AudiusError> for ProgramError {
     fn from(e: AudiusError) -> Self {

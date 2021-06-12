@@ -13,8 +13,6 @@ use solana_program::{
 #[repr(C)]
 #[derive(Clone, BorshDeserialize, BorshSerialize)]
 pub struct SignatureData {
-    /// Secp256k1 signature
-    pub signature: [u8; SecpSignatureOffsets::SECP_SIGNATURE_SIZE],
     /// Ethereum signature recovery ID
     pub recovery_id: u8,
     /// Signed message
@@ -42,11 +40,36 @@ pub enum AudiusInstruction {
     ///   1. `[]` Signer group to remove from
     ///   2. `[s]` SignerGroup's owner
     ClearValidSigner,
+    ///   Validate multiple signatures
+    ///   Remove existing ValidSigner if all 3 are validated
+    ///   0. `[]`  Initialized valid signer 1
+    ///   1. `[]`  Initialized valid signer 2
+    ///   2. `[]`  Initialized valid signer 3
+    ///   3. `[]`  Signer group signer belongs to
+    ///   0. `[w]` Initialized valid signer to remove
+    ValidateMultipleSignaturesClearValidSigner(SignatureData, SignatureData, SignatureData),
     ///   Validate signature issued by valid signer
     ///
     ///   0. `[]` Initialized valid signer
     ///   1. `[]` Signer group signer belongs to
     ValidateSignature(SignatureData),
+    ///
+    ///   0. `[w]` SignerGroup to disable
+    ///   1. `[]` SignerGroup's owner
+    DisableSignerGroupOwner,
+    ///   Validate multiple signatures
+    ///   Add new ValidSigner if all 3 are validated
+    ///   0. `[]`  Initialized valid signer 1
+    ///   1. `[]`  Initialized valid signer 2
+    ///   2. `[]`  Initialized valid signer 3
+    ///   3. `[]`  Signer group signer belongs to
+    ///   4. `[w]` Incoming ValidSigner account
+    ValidateMultipleSignaturesAddSigner(
+        SignatureData,
+        SignatureData,
+        SignatureData,
+        [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
+    ),
 }
 
 /// Creates `InitSignerGroup` instruction
@@ -108,6 +131,40 @@ pub fn clear_valid_signer(
     })
 }
 
+/// Creates `ValidateMultipleSignaturesClearValidSigner` instruction
+pub fn validate_multiple_signatures_clear_valid_signer(
+    program_id: &Pubkey,
+    valid_signer_1: &Pubkey,
+    valid_signer_2: &Pubkey,
+    valid_signer_3: &Pubkey,
+    signer_group: &Pubkey,
+    old_valid_signer: &Pubkey,
+    signature_data_1: SignatureData,
+    signature_data_2: SignatureData,
+    signature_data_3: SignatureData,
+) -> Result<Instruction, ProgramError> {
+    let args = AudiusInstruction::ValidateMultipleSignaturesClearValidSigner(
+        signature_data_1,
+        signature_data_2,
+        signature_data_3,
+    );
+    let data = args.try_to_vec()?;
+    let accounts = vec![
+        AccountMeta::new_readonly(*valid_signer_1, false),
+        AccountMeta::new_readonly(*valid_signer_2, false),
+        AccountMeta::new_readonly(*valid_signer_3, false),
+        AccountMeta::new_readonly(*signer_group, false),
+        AccountMeta::new(*old_valid_signer, false),
+        AccountMeta::new_readonly(sysvar::instructions::id(), false),
+        AccountMeta::new_readonly(sysvar::clock::id(), false),
+    ];
+    Ok(Instruction {
+        program_id: *program_id,
+        accounts,
+        data,
+    })
+}
+
 /// Creates `ValidateSignature` instruction
 pub fn validate_signature(
     program_id: &Pubkey,
@@ -122,6 +179,42 @@ pub fn validate_signature(
         AccountMeta::new_readonly(*valid_signer_account, false),
         AccountMeta::new_readonly(*signer_group, false),
         AccountMeta::new_readonly(sysvar::instructions::id(), false),
+    ];
+    Ok(Instruction {
+        program_id: *program_id,
+        accounts,
+        data,
+    })
+}
+
+/// Creates `ValidateMultipleSignaturesAddSigner` instruction
+pub fn validate_multiple_signatures_add_signer(
+    program_id: &Pubkey,
+    valid_signer_1: &Pubkey,
+    valid_signer_2: &Pubkey,
+    valid_signer_3: &Pubkey,
+    signer_group: &Pubkey,
+    new_valid_signer: &Pubkey,
+    signature_data_1: SignatureData,
+    signature_data_2: SignatureData,
+    signature_data_3: SignatureData,
+    eth_pubkey: [u8; SecpSignatureOffsets::ETH_ADDRESS_SIZE],
+) -> Result<Instruction, ProgramError> {
+    let args = AudiusInstruction::ValidateMultipleSignaturesAddSigner(
+        signature_data_1,
+        signature_data_2,
+        signature_data_3,
+        eth_pubkey,
+    );
+    let data = args.try_to_vec()?;
+    let accounts = vec![
+        AccountMeta::new_readonly(*valid_signer_1, false),
+        AccountMeta::new_readonly(*valid_signer_2, false),
+        AccountMeta::new_readonly(*valid_signer_3, false),
+        AccountMeta::new_readonly(*signer_group, false),
+        AccountMeta::new(*new_valid_signer, false),
+        AccountMeta::new_readonly(sysvar::instructions::id(), false),
+        AccountMeta::new_readonly(sysvar::clock::id(), false),
     ];
     Ok(Instruction {
         program_id: *program_id,
@@ -150,5 +243,22 @@ pub fn validate_signature_with_sysvar(
         program_id: *program_id,
         accounts,
         data,
+    })
+}
+
+/// Creates `DisableSignerGroupOwner` instruction
+pub fn disable_signer_group_owner(
+    program_id: &Pubkey,
+    signer_group: &Pubkey,
+    owner: &Pubkey,
+) -> Result<Instruction, ProgramError> {
+    let accounts = vec![
+        AccountMeta::new(*signer_group, false),
+        AccountMeta::new_readonly(*owner, true),
+    ];
+    Ok(Instruction {
+        program_id: *program_id,
+        accounts,
+        data: AudiusInstruction::DisableSignerGroupOwner.try_to_vec()?,
     })
 }

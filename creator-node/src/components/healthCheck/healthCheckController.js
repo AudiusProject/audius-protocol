@@ -6,6 +6,7 @@ const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
 const { getMonitors } = require('../../monitors/monitors')
+const { getAggregateSyncData, getLatestSyncData } = require('../../snapbackSM/syncHistoryAggregator')
 
 const { recoverWallet } = require('../../apiSigning')
 const { handleTrackContentUpload, removeTrackFolder } = require('../../fileManager')
@@ -96,7 +97,9 @@ const healthCheckVerboseController = async (req) => {
     logger,
     sequelize,
     getMonitors,
-    numberOfCPUs
+    numberOfCPUs,
+    getAggregateSyncData,
+    getLatestSyncData
   )
 
   return successResponse({

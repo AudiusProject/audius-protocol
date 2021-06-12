@@ -6,7 +6,6 @@ const AudiusToken = artifacts.require('AudiusToken')
 const Registry = artifacts.require('Registry')
 
 const AudiusIdentityService = 'identity-service'
-const AudiusContentService = 'content-service'
 const AudiusCreatorNode = 'creator-node'
 const AudiusEthContracts = 'eth-contracts'
 
@@ -104,13 +103,6 @@ module.exports = async callback => {
     await outputJsonConfigFile(path.join(getDirectoryRoot(AudiusCreatorNode), '/eth-contract-config.json'))
   } catch (e) {
     console.log("Creator node doesn't exist, probably running via E2E setup scripts", e)
-  }
-
-  // special case for content service which isn't run locally for E2E test or during front end dev
-  try {
-    await outputJsonConfigFile(path.join(getDirectoryRoot(AudiusContentService), '/eth-contract-config.json'))
-  } catch (e) {
-    console.log("Content service folder doesn't exist, probably running via E2E setup scripts", e)
   }
 
   const dappOutput = path.join(os.homedir(), '/.audius')
