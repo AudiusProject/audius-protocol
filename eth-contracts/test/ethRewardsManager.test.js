@@ -70,6 +70,18 @@ contract('EthRewardsManager', async (accounts) => {
     await registry.addContract(ethRewardsManagerProxyKey, ethRewardsManagerProxy.address, { from: proxyDeployerAddress })
   })
 
+  it('botOracle', async () => {
+    await governance.guardianExecuteTransaction(
+      ethRewardsManagerProxyKey,
+      callValue0,
+      'setBotOracle(address)',
+      _lib.abiEncode(['address'], [accounts[10]]),
+      { from: guardianAddress }
+    )
+
+    assert.equal(await ethRewardsManagerProxy.botOracle(), accounts[10])
+  })
+
   it('transferToSolana', async () => {
     const amount = 100
 
@@ -86,5 +98,9 @@ contract('EthRewardsManager', async (accounts) => {
 
     assert.equal((await token.balanceOf(ethRewardsManagerProxy.address)).toNumber(), 0)
     assert.equal((await token.balanceOf(mockWormhole.address)).toNumber(), 100)
+  })
+
+  it('token', async () => {
+    assert.equal(await ethRewardsManagerProxy.token(), token.address)
   })
 })
