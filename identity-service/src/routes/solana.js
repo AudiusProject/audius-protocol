@@ -32,13 +32,12 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
   const { recentBlockhash, secpInstruction, instruction } = req.body
   req.logger.info(JSON.stringify(instruction, null, ' '))
 
-
   const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ secpInstruction, instruction })).digest('hex')
 
   try {
     if (!instruction) return errorResponseBadRequest('Please provide transaction instruction')
     const tx = new Transaction({ recentBlockhash })
-  
+
     if (secpInstruction) {
       const secpTransactionInstruction = Secp256k1Program.createInstructionWithPublicKey({
         publicKey: Buffer.from(secpInstruction.publicKey),
@@ -48,11 +47,11 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
       })
       tx.add(secpTransactionInstruction)
     }
-    
+
     const keys = instruction.keys.map(key => ({
-        pubkey: new PublicKey(key.pubkey),
-        isSigner: key.isSigner,
-        isWritable: key.isWritable
+      pubkey: new PublicKey(key.pubkey),
+      isSigner: key.isSigner,
+      isWritable: key.isWritable
     }))
 
     const feePayerAccount = getFeePayer()
@@ -64,7 +63,7 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
     })
     tx.add(txInstruction)
     tx.sign(feePayerAccount)
-    
+
     const transactionSignature = await sendAndConfirmTransaction(
       connection,
       tx,
@@ -75,7 +74,7 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
         preflightCommitment: 'processed'
       }
     )
-  
+
     return successResponse({ transactionSignature })
   } catch (e) {
     // if the tx fails, store it in redis with a 24 hour expiration
