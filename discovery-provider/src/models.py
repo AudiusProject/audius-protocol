@@ -879,3 +879,90 @@ blockhash={self.blockhash},\
 txhash={self.txhash},\
 created_at={self.created_at},\
 updated_at={self.updated_at})>"
+
+class ChallengeType(str, enum.Enum):
+    boolean = 'boolean'
+    numeric = 'numeric'
+
+class Challenge(Base):
+    __tablename__ = "challenges"
+
+    id = Column(String, primary_key=True, nullable=False, index=True)
+    type = Column(Enum(ChallengeType), nullable=False)
+    amount = Column(Integer, nullable=False)
+    active = Column(Boolean, nullable=False)
+    step_count = Column(Integer)
+    starting_block = Column(Integer)
+
+    def __repr__(self):
+        return f"<Challenge(\
+id={self.id},\
+type={self.type},\
+amount={self.amount},\
+active={self.active},\
+step_count={self.step_count},\
+starting_block={self.starting_block},\
+"
+
+class UserChallenge(Base):
+    __tablename__ = "user_challenges"
+
+    challenge_id = Column(String, ForeignKey("challenges.id"), nullable=False)
+    user_id = Column(Integer, nullable=False)
+    specifier = Column(String, nullable=False)
+    is_complete = Column(Boolean, nullable=False)
+    current_step_count = Column(Integer)
+
+    PrimaryKeyConstraint(challenge_id, specifier)
+
+    def __repr__(self):
+        return f"<UserChallenge(\
+challenge_id={self.challenge_id},\
+user_id={self.user_id},\
+is_complete={self.is_complete},\
+current_step_count={self.current_step_count},\
+"
+
+class ChallengeDisbursement(Base):
+    __tablename__ = "challenge_disbursements"
+
+    challenge_id = Column(String, ForeignKey("challenges.id"), nullable=False)
+    user_id = Column(Integer, nullable=False)
+    amount = Column(Integer, nullable=False)
+    block_number = Column(Integer, nullable=False)
+    specifier = Column(String, nullable=False)
+
+    PrimaryKeyConstraint(challenge_id, specifier)
+
+    def __repr__(self):
+        return f"<ChallengeDisbursement,\
+challenge_id={self.challenge_id},\
+user_id={self.user_id},\
+amount={self.amount},\
+block_number={self.block_number},\
+specifier={self.specifier},\
+"
+
+class ProfileCompletionChallenge(Base):
+    __tablename__ = "challenge_profile_completion"
+
+    user_id = Column(Integer, nullable=False, primary_key=True)
+    profile_description = Column(Boolean, nullable=False)
+    profile_name = Column(Boolean, nullable=False)
+    profile_picture = Column(Boolean, nullable=False)
+    profile_cover_photo = Column(Boolean, nullable=False)
+    follows_complete = Column(Boolean, nullable=False)
+    favorites_complete = Column(Boolean, nullable=False)
+    reposts_complete = Column(Boolean, nullable=False)
+
+    def __repr__(self):
+        return f"<ProfileCompletionChallenge,\
+user_id={self.user_id},\
+profile_description={self.profile_description},\
+profile_name={self.profile_name},\
+profile_picture={self.profile_picture},\
+profile_cover_photo={self.profile_cover_photo},\
+follows_complete={self.follows_complete},\
+favorites_complete={self.favorites_complete},\
+reposts_complete={self.reposts_complete},\
+"

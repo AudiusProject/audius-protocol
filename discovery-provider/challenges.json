@@ -1,0 +1,9 @@
+[
+	{
+		"id": "profile_completion",
+		"type": "numeric",
+		"amount": 5 ,
+		"active": true,
+		"step_count": 7
+	}
+]

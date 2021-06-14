@@ -23,6 +23,7 @@ from src.queries import queries, search, search_queries, health_check, notificat
     block_confirmation, skipped_transactions
 from src.api.v1 import api as api_v1
 from src.utils import helpers
+from src.utils.challenges import create_challenges
 from src.utils.multi_provider import MultiProvider
 from src.utils.session_manager import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
@@ -287,7 +288,7 @@ def configure_flask(test_config, app, mode="app"):
         ast.literal_eval(app.config["db"]["engine_args_literal"]),
     )
 
-
+    # Register route blueprints
     register_exception_handlers(app)
     app.register_blueprint(queries.bp)
     app.register_blueprint(search.bp)
@@ -299,6 +300,9 @@ def configure_flask(test_config, app, mode="app"):
 
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
+
+    # Create challenges
+    create_challenges(app.db_session_manager)
 
     return app
 
