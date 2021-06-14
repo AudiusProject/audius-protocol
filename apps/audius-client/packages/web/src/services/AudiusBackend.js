@@ -2156,6 +2156,9 @@ class AudiusBackend {
   /**
    * Gets an ordered string-like list of playlists that the
    * current account has favorited.
+   * @DEPRECATED
+   * TODO: Remove this method after a ~month or so from launch of playlist
+   * library.
    */
   static async getAccountPlaylistFavorites() {
     await waitForLibsInit()
@@ -2173,28 +2176,6 @@ class AudiusBackend {
     } catch (e) {
       console.error(e)
       return []
-    }
-  }
-
-  static async setAccountPlaylistFavorites(favorites) {
-    await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
-    if (!account) return
-    try {
-      const { data, signature } = await AudiusBackend.signData()
-      const res = await fetch(`${IDENTITY_SERVICE}/user_playlist_favorites`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [AuthHeaders.Message]: data,
-          [AuthHeaders.Signature]: signature
-        },
-        body: JSON.stringify({ favorites })
-      })
-      return res
-    } catch (e) {
-      console.error(e)
-      return false
     }
   }
 

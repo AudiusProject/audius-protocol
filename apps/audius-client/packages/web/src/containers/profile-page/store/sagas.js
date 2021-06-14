@@ -314,7 +314,7 @@ function* watchUpdateProfile() {
   yield takeEvery(profileActions.UPDATE_PROFILE, updateProfileAsync)
 }
 
-function* updateProfileAsync(action) {
+export function* updateProfileAsync(action) {
   yield call(waitForBackendSetup)
   action.metadata.bio = squashNewLines(action.metadata.bio)
 

@@ -40,6 +40,7 @@ import trendingUndergroundSagas from 'containers/trending-underground/store/saga
 
 import analyticsSagas from 'store/analytics/sagas'
 import accountSagas from 'store/account/sagas'
+import playlistLibrarySagas from 'store/playlist-library/sagas'
 import coreCacheSagas from 'store/cache/sagas'
 import tracksSagas from 'store/cache/tracks/sagas'
 import collectionsSagas from 'store/cache/collections/sagas'
@@ -69,13 +70,16 @@ export default function* rootSaga() {
   yield fork(setupBackend)
   const sagas = [].concat(
     // Config
-    accountSagas(),
     confirmerSagas(),
     backendSagas(),
     analyticsSagas(),
     cookieBannerSagas(),
     routingSagas(),
     reachabilitySagas(),
+
+    // Account
+    accountSagas(),
+    playlistLibrarySagas(),
 
     // Pages
     feedPageSagas(),

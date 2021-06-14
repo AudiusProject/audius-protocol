@@ -1,0 +1,33 @@
+.navLink {
+  transition: opacity 1s ease-in-out;
+}
+
+.dragging {
+  opacity: 0.5;
+}
+
+.droppable {
+  position: relative;
+}
+
+.droppable::after {
+  content: "";
+  position: absolute;
+  height: 2px;
+  width: 70%;
+  left: 20px;
+  bottom: 0;
+  border-radius: 2px;
+  background-color: var(--secondary);
+  opacity: 0;
+  transition: opacity 0.13s ease-in-out;
+}
+
+.droppableHover::after {
+  opacity: 1;
+}
+
+.top {
+  padding-top: 4px;
+  margin-top: -4px;
+}

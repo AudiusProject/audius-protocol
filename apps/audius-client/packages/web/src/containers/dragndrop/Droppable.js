@@ -41,7 +41,7 @@ const Droppable = props => {
     setHovered(false)
   }
 
-  const debounceDrop = debounce(drop, 150)
+  const debounceDrop = debounce(drop, 150, { leading: true })
 
   // When a new drag takes place, check if this droppable is appropriate and reattach
   // event listeners.
@@ -88,12 +88,13 @@ Droppable.propTypes = {
   onDrop: PropTypes.func,
   acceptedKinds: PropTypes.arrayOf(PropTypes.string),
   disabled: PropTypes.bool,
-  acceptOwner: PropTypes.bool
+  acceptOwner: PropTypes.bool,
+  children: PropTypes.any
 }
 
 Droppable.defaultProps = {
   onDrop: id => {},
-  acceptedKinds: ['track', 'album', 'playlist'],
+  acceptedKinds: ['track', 'album', 'playlist', 'library-playlist'],
   disabled: false,
   acceptOwner: true
 }

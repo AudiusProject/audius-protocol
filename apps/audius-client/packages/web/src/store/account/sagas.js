@@ -15,7 +15,8 @@ import {
   getAccountUser,
   getAccountAlbumIds,
   getAccountSavedPlaylistIds,
-  getAccountOwnedPlaylistIds
+  getAccountOwnedPlaylistIds,
+  getAccountToCache
 } from 'store/account/selectors'
 import { retrieveCollections } from 'store/cache/collections/utils'
 import { open as openBrowserPushPermissionModal } from 'store/application/ui/browserPushPermissionConfirmation/actions'
@@ -48,6 +49,8 @@ import {
   clearAudiusAccount,
   clearAudiusAccountUser
 } from 'services/LocalStorage'
+import { addPlaylistsNotInLibrary } from 'store/playlist-library/sagas'
+import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import { SignedIn } from 'services/native-mobile-interface/lifecycle'
 import { setSentryUser } from 'services/sentry'
 
@@ -78,6 +81,10 @@ function* onFetchAccount(account) {
   if (NATIVE_MOBILE) {
     new SignedIn(account).send()
   }
+
+  // Add playlists that might not have made it into the user's library.
+  // This could happen if the user creates a new playlist and then leaves their session.
+  yield fork(addPlaylistsNotInLibrary)
 }
 
 export function* fetchAccountAsync(action) {
@@ -140,20 +147,33 @@ export function* fetchAccountAsync(action) {
   // Set account ID in remote-config provider
   setUserId(account.user_id)
 
-  // Fetch "ordered" playlist identifiers to put in the store
-  // TODO: Support proper ordering of playlists
+  // @@@@@ Migration @@@@@
+  // Migrate users with old playlist orderings
+  // TODO: After a sufficient time post release (~month), we should remove this
+  // migration in favor of users being on the proper playlist library.
   const accountPlaylistFavorites = yield call(
     AudiusBackend.getAccountPlaylistFavorites
   )
   const orderedPlaylists = accountPlaylistFavorites
     ? accountPlaylistFavorites.favorites
     : []
-  yield call(cacheAccount, account, [...new Set(orderedPlaylists)])
 
+  if (orderedPlaylists.length > 0 && !account.playlist_library) {
+    const contents = orderedPlaylists.map(id => ({
+      type: 'explore_playlist',
+      playlist_id: id
+    }))
+    const playlistLibrary = { contents }
+    yield put(updatePlaylistLibrary({ playlistLibrary }))
+  }
+  // @@@@@ End migration @@@@@
+
+  // Cache the account and fire the onFetch callback. We're done.
+  yield call(cacheAccount, account)
   yield call(onFetchAccount, account)
 }
 
-function* cacheAccount(account, orderedPlaylists) {
+function* cacheAccount(account) {
   const collections = account.playlists || []
 
   yield put(
@@ -168,13 +188,17 @@ function* cacheAccount(account, orderedPlaylists) {
   const formattedAccount = {
     userId: account.user_id,
     collections,
-    orderedPlaylists,
     hasFavoritedItem
   }
   setAudiusAccount(formattedAccount)
   setAudiusAccountUser(account)
 
   yield put(accountActions.fetchAccountSucceeded(formattedAccount))
+}
+
+function* reCacheAccount(action) {
+  const account = yield select(getAccountToCache)
+  setAudiusAccount(account)
 }
 
 /**
@@ -409,6 +433,10 @@ function* watchFetchSavedPlaylists() {
   )
 }
 
+function* watchAddAccountPlaylist() {
+  yield takeEvery(accountActions.addAccountPlaylist.type, reCacheAccount)
+}
+
 function* getBrowserPushNotifcations() {
   yield takeEvery(
     accountActions.fetchBrowserPushNotifications.type,
@@ -446,6 +474,7 @@ export default function sagas() {
     watchFetchSavedPlaylists,
     watchShowPushNotificationConfirmation,
     watchUploadAccountCreator,
+    watchAddAccountPlaylist,
     getBrowserPushNotifcations,
     subscribeBrowserPushNotification,
     unsubscribeBrowserPushNotification
