@@ -33,7 +33,7 @@ class IdentityService {
         const token = await this.captcha.generate('identity/user')
         obj.token = token
       } catch (e) {
-        console.warn(`CAPTCHA - Recaptcha failed to generate token:`, e)
+        console.warn(`CAPTCHA (user) - Recaptcha failed to generate token in :`, e)
       }
     }
 
@@ -248,6 +248,15 @@ class IdentityService {
   }
 
   async relay (contractRegistryKey, contractAddress, senderAddress, encodedABI, gasLimit) {
+    let token
+    if (this.captcha) {
+      try {
+        token = await this.captcha.generate('identity/relay')
+      } catch (e) {
+        console.warn(`CAPTCHA (relay) - Recaptcha failed to generate token:`, e)
+      }
+    }
+
     return this._makeRequest({
       url: '/relay',
       method: 'post',
@@ -256,7 +265,8 @@ class IdentityService {
         contractAddress,
         senderAddress,
         encodedABI,
-        gasLimit
+        gasLimit,
+        token
       }
     })
   }

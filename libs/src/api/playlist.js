@@ -103,6 +103,7 @@ class Playlists extends Base {
         receipt = await this.contracts.PlaylistFactoryClient.orderPlaylistTracks(playlistId, trackIds)
       }
     } catch (e) {
+      console.debug(`Reached libs createPlaylist catch block with playlist id ${playlistId}`)
       console.error(e)
       return { playlistId, error: true }
     }

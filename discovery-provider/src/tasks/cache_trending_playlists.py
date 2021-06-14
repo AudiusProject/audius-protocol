@@ -16,7 +16,7 @@ trending_strategy_factory = TrendingStrategyFactory()
 def cache_trending(db, redis, strategy):
     with db.scoped_session() as session:
         for time_range in TIME_RANGES:
-            key = make_trending_cache_key(time_range)
+            key = make_trending_cache_key(time_range, strategy.version)
             res = make_get_unpopulated_playlists(session, time_range, strategy)()
             pickle_and_set(redis, key, res)
 

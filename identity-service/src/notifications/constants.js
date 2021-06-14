@@ -26,7 +26,8 @@ const notificationTypes = Object.freeze({
   MilestoneFavorite: 'MilestoneFavorite',
   MilestoneListen: 'MilestoneListen',
   Announcement: 'Announcement',
-  TrendingTrack: 'TrendingTrack'
+  TrendingTrack: 'TrendingTrack',
+  PlaylistUpdate: 'PlaylistUpdate'
 })
 
 const actionEntityTypes = Object.freeze({
