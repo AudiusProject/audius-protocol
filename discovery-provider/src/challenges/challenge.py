@@ -85,8 +85,8 @@ class ChallengeManager:
         self._updater.update_user_challenges(
             session,
             event_type,
-            self._challenge,
-            to_update
+            to_update,
+            self._challenge
         )
 
         logger.debug(f"Updated challenges from event [{event_type}]: [{to_update}]")

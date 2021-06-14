@@ -1,7 +1,10 @@
 import json
 import enum
+import logging
+
 from collections import defaultdict
 
+logger = logging.getLogger(__name__)
 REDIS_QUEUE_PREFIX = 'challenges-event-queue'
 
 class ChallengeEvent(str, enum.Enum):
@@ -27,12 +30,14 @@ class ChallengeEventBus:
     def dispatch(self, session, event, block_number, user_id):
         """Dispatches an event + block_number + user_id to Redis queue"""
         event_json = self._event_to_json(event, block_number, user_id)
+        logger.debug(f"ChallengeEventBus: dispatch {event_json}")
         self._redis.rpush(REDIS_QUEUE_PREFIX, event_json)
 
     def process_events(self, session, max_events=1000):
         """Dequeues `max_events` from Redis queue and processes them, forwarding to listening ChallengeManagers"""
         # get the first max_events elements
         events_json = self._redis.lrange(REDIS_QUEUE_PREFIX, 0, max_events)
+        logger.debug(f"ChallengeEventBus: dequeued {len(events_json)} events")
         # trim the first from the front of the list
         self._redis.ltrim(REDIS_QUEUE_PREFIX, len(events_json), -1)
         events_dicts = list(map(self._json_to_event, events_json))

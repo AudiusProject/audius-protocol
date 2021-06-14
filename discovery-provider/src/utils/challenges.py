@@ -17,7 +17,7 @@ def create_challenges(db):
         existing_ids = {c.id for c in session.query(Challenge).all()}
 
         # filter to only new challenges
-        challenges_dicts = filter(lambda c: c.get('id') not in existing_ids, challenges_dicts)
+        challenges_dicts = list(filter(lambda c: c.get('id') not in existing_ids, challenges_dicts))
         logger.info(f"Adding challenges: {challenges_dicts}")
 
         for challenge_dict in challenges_dicts:
