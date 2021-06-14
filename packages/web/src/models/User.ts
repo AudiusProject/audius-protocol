@@ -1,5 +1,6 @@
 import Color from 'models/common/Color'
 import { CID, ID } from 'models/common/Identifiers'
+import { PlaylistLibrary } from 'models/PlaylistLibrary'
 import { CoverPhotoSizes, ProfilePictureSizes } from 'models/common/ImageSizes'
 import { StringWei } from 'store/wallet/slice'
 import { Nullable } from 'utils/typeUtils'
@@ -47,6 +48,7 @@ export type UserMetadata = {
   instagramVerified?: boolean
   balance?: Nullable<StringWei>
   associated_wallets_balance?: Nullable<StringWei>
+  playlist_library?: PlaylistLibrary
 } & Timestamped
 
 export type ComputedUserProperties = {

@@ -1,11 +1,8 @@
-import { keyBy } from 'lodash'
 import { AppState } from 'store/types'
 import { getCollections } from 'store/cache/collections/selectors'
 import { getUser, getUsers } from 'store/cache/users/selectors'
 import { createSelector } from 'reselect'
 import { removeNullable } from 'utils/typeUtils'
-import { SMART_COLLECTION_MAP } from 'containers/smart-collection/smartCollections'
-import { SmartCollectionVariant } from 'containers/smart-collection/types'
 import { AccountCollection } from './reducer'
 
 const internalGetAccountCollections = (state: AppState) =>
@@ -24,6 +21,11 @@ export const getConnectivityFailure = (state: AppState) =>
   state.account.connectivityFailure
 export const getNeedsAccountRecovery = (state: AppState) =>
   state.account.needsAccountRecovery
+export const getAccountToCache = (state: AppState) => ({
+  userId: state.account.userId,
+  collections: state.account.collections,
+  hasFavoritedItem: state.account.hasFavoritedItem
+})
 
 export const getAccountUser = createSelector(
   [internalGetAccountUser],
@@ -46,6 +48,9 @@ export const getAccountIsCreator = createSelector(
 export const getAccountProfilePictureSizes = (state: AppState) => {
   const user = internalGetAccountUser(state)
   return user ? user._profile_picture_sizes : null
+}
+export const getPlaylistLibrary = (state: AppState) => {
+  return getAccountUser(state)?.playlist_library ?? null
 }
 
 /**
@@ -75,6 +80,12 @@ export const getAccountWithCollections = createSelector(
     }
   }
 )
+
+/**
+ * Gets the account's playlist nav bar info
+ */
+export const getAccountNavigationPlaylists = (state: AppState) =>
+  state.account.collections
 
 /**
  * Gets user playlists with playlists marked delete removed.
@@ -166,37 +177,6 @@ export const getAccountWithSavedPlaylistsAndAlbums = createSelector(
         c => c.is_album && c.ownerHandle !== handle
       )
     }
-  }
-)
-
-export const getAccountPlaylists = createSelector(
-  [getUserPlaylists, getUserPlaylistOrder],
-  (collections, order) => {
-    const playlists = collections.filter(c => !c.is_album)
-    const keyedPlaylists = keyBy(playlists, c => c.id)
-
-    let orderedResult: any[] = []
-    if (order) {
-      order.forEach((i: string) => {
-        if (parseInt(i, 10) in keyedPlaylists) {
-          orderedResult.push(keyedPlaylists[i])
-          delete keyedPlaylists[i]
-        } else {
-          const smartKey = i as SmartCollectionVariant
-          if (smartKey in SMART_COLLECTION_MAP) {
-            orderedResult.push(SMART_COLLECTION_MAP[smartKey])
-          }
-        }
-      })
-    }
-
-    // Sort by id desc so new playlist show up on top. (temp ids >> nominal ids).
-    // TODO: Remove this sorting when we fully support custom ordering
-    const remainingPlaylists = Object.values(keyedPlaylists).sort(
-      (a, b) => b.id - a.id
-    )
-    orderedResult = orderedResult.concat(remainingPlaylists)
-    return orderedResult
   }
 )
 

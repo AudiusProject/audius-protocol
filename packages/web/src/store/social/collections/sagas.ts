@@ -6,7 +6,7 @@ import * as cacheActions from 'store/cache/actions'
 import * as confirmerActions from 'store/confirmer/actions'
 import * as accountActions from 'store/account/reducer'
 import * as notificationActions from 'containers/notification/store/actions'
-import { getUserId, getUserPlaylistOrder } from 'store/account/selectors'
+import { getPlaylistLibrary, getUserId } from 'store/account/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import {
   getCollections,
@@ -14,6 +14,7 @@ import {
 } from 'store/cache/collections/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { confirmTransaction } from 'store/confirmer/sagas'
+import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import AudiusBackend from 'services/AudiusBackend'
 import { makeUid, makeKindId } from 'utils/uid'
 import * as signOnActions from 'containers/sign-on/store/actions'
@@ -26,6 +27,9 @@ import { share } from 'utils/share'
 import { formatShareText } from 'utils/formatUtil'
 import { make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
+import { PlaylistLibrary } from 'models/PlaylistLibrary'
+import { SmartCollectionVariant } from 'containers/smart-collection/types'
+import { removeFromPlaylistLibrary } from 'store/playlist-library/helpers'
 
 /* REPOST COLLECTION */
 
@@ -250,11 +254,20 @@ export function* saveSmartCollection(
     yield put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
-  const playlistOrder = yield select(getUserPlaylistOrder)
-  const newPlaylistOrder = [action.smartCollectionName, ...playlistOrder]
-
-  yield call(AudiusBackend.setAccountPlaylistFavorites, newPlaylistOrder)
-  yield put(accountActions.setPlaylistOrder({ order: newPlaylistOrder }))
+  const playlistLibrary: PlaylistLibrary =
+    (yield select(getPlaylistLibrary)) || {}
+  const newPlaylistLibrary: PlaylistLibrary = {
+    ...playlistLibrary,
+    contents: [
+      {
+        type: 'explore_playlist',
+        playlist_id: action.smartCollectionName as SmartCollectionVariant
+      },
+      ...(playlistLibrary.contents || [])
+    ]
+  }
+  console.log({ newPlaylistLibrary })
+  yield put(updatePlaylistLibrary({ playlistLibrary: newPlaylistLibrary }))
 
   const event = make(Name.FAVORITE, {
     kind: 'playlist',
@@ -387,14 +400,12 @@ export function* unsaveSmartCollection(
   action: ReturnType<typeof socialActions.unsaveSmartCollection>
 ) {
   yield call(waitForBackendSetup)
-  const playlistOrder = yield select(getUserPlaylistOrder)
-  const newPlaylistOrder = playlistOrder.filter(
-    (p: string) => p !== action.smartCollectionName
-  )
-
-  yield call(AudiusBackend.setAccountPlaylistFavorites, newPlaylistOrder)
-  yield put(accountActions.setPlaylistOrder({ order: newPlaylistOrder }))
-
+  const playlistLibrary: PlaylistLibrary = yield select(getPlaylistLibrary)
+  const newPlaylistLibrary = removeFromPlaylistLibrary(
+    playlistLibrary,
+    action.smartCollectionName as SmartCollectionVariant
+  ).library
+  yield put(updatePlaylistLibrary({ playlistLibrary: newPlaylistLibrary }))
   const event = make(Name.UNFAVORITE, {
     kind: 'playlist',
     source: action.source,

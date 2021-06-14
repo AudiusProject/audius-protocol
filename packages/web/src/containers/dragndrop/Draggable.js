@@ -19,6 +19,8 @@ const Draggable = props => {
     isOwner,
     drag,
     drop,
+    onDrag,
+    onDrop,
     children,
     forwardRef,
     ...otherProps // passed to child
@@ -52,18 +54,20 @@ const Draggable = props => {
 
         dt.setDragImage(wrapper, 0, 0)
       }
+      if (onDrag) onDrag()
     }
 
     const dragEnd = e => {
       document.getElementById('ghost').outerHTML = ''
       drop()
+      if (onDrop) onDrop()
     }
 
     if (draggableRef.current) {
       draggableRef.current.addEventListener('dragstart', dragStart, false)
       draggableRef.current.addEventListener('dragend', dragEnd, false)
     }
-  }, [drag, drop, id, kind, link, text, isOwner])
+  }, [drag, drop, id, kind, link, text, isOwner, onDrag, onDrop])
 
   const refFunc = ref => {
     draggableRef.current = ref
@@ -99,9 +103,11 @@ Draggable.propTypes = {
   isOwner: PropTypes.bool,
   text: PropTypes.string,
   link: PropTypes.string,
-  kind: PropTypes.oneOf(['track', 'album', 'playlist']),
-  id: PropTypes.number, // One of trackId, collectionId, userId
-  children: PropTypes.element
+  kind: PropTypes.oneOf(['track', 'album', 'playlist', 'library-playlist']),
+  id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]), // One of trackId, collectionId, userId
+  children: PropTypes.element,
+  onDrag: PropTypes.func,
+  onDrop: PropTypes.func
 }
 
 Draggable.defaultProps = {

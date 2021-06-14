@@ -48,6 +48,7 @@ export type ComputedCollectionProperties = {
   _marked_deleted?: boolean
   _cover_art_sizes: CoverArtSizes
   _moved?: UID
+  _temp?: boolean
 }
 
 export type Collection = CollectionMetadata & ComputedCollectionProperties

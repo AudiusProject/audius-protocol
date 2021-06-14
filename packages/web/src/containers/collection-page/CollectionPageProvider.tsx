@@ -37,7 +37,14 @@ import { FavoriteType } from 'models/Favorite'
 import { formatUrlName } from 'utils/formatUtil'
 
 import * as collectionActions from './store/actions'
-import { makeGetCollection, getCollectionTracksLineup } from './store/selectors'
+import {
+  getCollection,
+  getCollectionStatus,
+  getCollectionTracksLineup,
+  getCollectionUid,
+  getUser,
+  getUserUid
+} from './store/selectors'
 import {
   makeGetTableMetadatas,
   makeGetLineupOrder
@@ -77,7 +84,7 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import { SmartCollection } from 'models/Collection'
+import Collection, { SmartCollection } from 'models/Collection'
 import DeletedPage from 'containers/deleted-page/DeletedPage'
 import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
 import { getLocationPathname } from 'store/routing/selectors'
@@ -135,6 +142,14 @@ class CollectionPage extends Component<
   componentDidMount() {
     this.fetchCollection(getPathname(this.props.location))
     this.unlisten = this.props.history.listen((location, action) => {
+      if (
+        action !== 'REPLACE' &&
+        getPathname(this.props.location) !== getPathname(location)
+      ) {
+        // If the action is not replace (e.g. we are not trying to update
+        // the URL for the same playlist. Reset it.)
+        this.resetCollection()
+      }
       this.fetchCollection(getPathname(location))
       this.setState({
         initialOrder: null,
@@ -145,7 +160,10 @@ class CollectionPage extends Component<
 
   componentDidUpdate(prevProps: CollectionPageProps) {
     const {
-      collection: { userUid, metadata, status, user },
+      collection: metadata,
+      userUid,
+      status,
+      user,
       smartCollection,
       tracks,
       pathname,
@@ -207,7 +225,7 @@ class CollectionPage extends Component<
     if (metadata && metadata._moved && !updatingRoute) {
       this.setState({ updatingRoute: true })
       const collectionId = Uid.fromString(metadata._moved).id
-      // TODO: Put fetch collection succeeded and then replace routem
+      // TODO: Put fetch collection succeeded and then replace route
       fetchCollectionSucceeded(collectionId, metadata._moved, userUid)
       const newPath = pathname.replace(`${metadata.playlist_id}`, collectionId)
       this.setState(
@@ -225,9 +243,7 @@ class CollectionPage extends Component<
       this.setState({ updatingRoute: false })
     }
 
-    const {
-      collection: { metadata: prevMetadata }
-    } = prevProps
+    const { collection: prevMetadata } = prevProps
     if (metadata) {
       const params = parseCollectionRoute(pathname)
       if (params) {
@@ -243,8 +259,12 @@ class CollectionPage extends Component<
             : playlistPage(user!.handle, metadata.playlist_name, collectionId)
           this.props.replaceRoute(newPath)
         } else {
+          // Id matches or temp id matches
+          const idMatches =
+            collectionId === metadata.playlist_id ||
+            (metadata._temp && `${collectionId}` === `${metadata.playlist_id}`)
           // Check that the playlist name hasn't changed. If so, update url.
-          if (collectionId === metadata.playlist_id && title) {
+          if (idMatches && title) {
             if (newCollectionName !== title) {
               const newPath = pathname.replace(title, newCollectionName)
               this.props.replaceRoute(newPath)
@@ -317,9 +337,7 @@ class CollectionPage extends Component<
   }
 
   resetCollection = () => {
-    const {
-      collection: { collectionUid, userUid }
-    } = this.props
+    const { collectionUid, userUid } = this.props
     this.props.resetCollection(collectionUid, userUid)
   }
 
@@ -578,10 +596,7 @@ class CollectionPage extends Component<
   }
 
   onHeroTrackClickArtistName = () => {
-    const {
-      goToRoute,
-      collection: { user }
-    } = this.props
+    const { goToRoute, user } = this.props
     const playlistOwnerHandle = user ? user.handle : ''
     goToRoute(profilePage(playlistOwnerHandle))
   }
@@ -597,11 +612,7 @@ class CollectionPage extends Component<
   }
 
   onHeroTrackSave = () => {
-    const {
-      userPlaylists,
-      collection: { metadata },
-      smartCollection
-    } = this.props
+    const { userPlaylists, collection: metadata, smartCollection } = this.props
     const { playlistId } = this.state
     const isSaved =
       (metadata && playlistId
@@ -617,9 +628,7 @@ class CollectionPage extends Component<
   }
 
   onHeroTrackRepost = () => {
-    const {
-      collection: { metadata }
-    } = this.props
+    const { collection: metadata } = this.props
     const { playlistId } = this.state
     const isReposted = metadata ? metadata.has_current_user_reposted : false
     this.onRepostPlaylist(isReposted, playlistId!)
@@ -627,7 +636,7 @@ class CollectionPage extends Component<
 
   onClickReposts = () => {
     const {
-      collection: { metadata },
+      collection: metadata,
       setRepostPlaylistId,
       goToRoute,
       isMobile,
@@ -646,7 +655,7 @@ class CollectionPage extends Component<
 
   onClickFavorites = () => {
     const {
-      collection: { metadata },
+      collection: metadata,
       setFavoritePlaylistId,
       goToRoute,
       isMobile,
@@ -664,18 +673,12 @@ class CollectionPage extends Component<
   }
 
   onFollow = () => {
-    const {
-      onFollow,
-      collection: { metadata }
-    } = this.props
+    const { onFollow, collection: metadata } = this.props
     if (metadata) onFollow(metadata.playlist_owner_id)
   }
 
   onUnfollow = () => {
-    const {
-      onUnfollow,
-      collection: { metadata }
-    } = this.props
+    const { onUnfollow, collection: metadata } = this.props
     if (metadata) onUnfollow(metadata.playlist_owner_id)
   }
 
@@ -683,7 +686,9 @@ class CollectionPage extends Component<
     const {
       playing,
       type,
-      collection: { status, metadata, user },
+      status,
+      collection: metadata,
+      user,
       tracks,
       userId,
       userPlaylists,
@@ -762,12 +767,18 @@ class CollectionPage extends Component<
       )
     }
 
+    // Note:
+    // While some of our other page components key by playlist id, etc.
+    // here to allow for multiple pages to be in view at the same time while
+    // animating. Because we use temporary ids (which impact the URL) for
+    // playlists during creation, we can't simply key here by path or playlistId
+    // because we do not want a playlist transitioning from temp => not temp
+    // to trigger a rerender of everything
     return <this.props.children {...childProps} />
   }
 }
 
 function makeMapStateToProps() {
-  const getCollection = makeGetCollection()
   const getTracksLineup = makeGetTableMetadatas(getCollectionTracksLineup)
   const getLineupOrder = makeGetLineupOrder(getCollectionTracksLineup)
   const getCurrentQueueItem = makeGetCurrent()
@@ -775,7 +786,11 @@ function makeMapStateToProps() {
   const mapStateToProps = (state: AppState) => {
     return {
       tracks: getTracksLineup(state, {}),
-      collection: getCollection(state),
+      collectionUid: getCollectionUid(state) || '',
+      collection: getCollection(state) as Collection,
+      user: getUser(state),
+      userUid: getUserUid(state) || '',
+      status: getCollectionStatus(state) || '',
       order: getLineupOrder(state),
       userId: getUserId(state),
       userPlaylists: getAccountCollections(state, {}),
