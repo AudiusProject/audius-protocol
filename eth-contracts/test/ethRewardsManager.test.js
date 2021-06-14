@@ -70,7 +70,51 @@ contract('EthRewardsManager', async (accounts) => {
     await registry.addContract(ethRewardsManagerProxyKey, ethRewardsManagerProxy.address, { from: proxyDeployerAddress })
   })
 
+  it('governanceAddress', async () => {
+    const newGovernance = await _lib.deployGovernance(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress,
+      registry,
+      votingPeriod,
+      executionDelay,
+      votingQuorumPercent,
+      guardianAddress
+    )
+
+    await _lib.assertRevert(
+      ethRewardsManagerProxy.setBotOracle(newGovernance.address, { from: accounts[7] }),
+      'Only governance'
+    )
+
+    await _lib.assertRevert(
+      governance.guardianExecuteTransaction(
+        ethRewardsManagerProxyKey,
+        callValue0,
+        'setGovernanceAddress(address)',
+        _lib.abiEncode(['address'], [accounts[10]]),
+        { from: guardianAddress }
+      ),
+      'Governance: Transaction failed.'
+    )
+
+    await governance.guardianExecuteTransaction(
+      ethRewardsManagerProxyKey,
+      callValue0,
+      'setGovernanceAddress(address)',
+      _lib.abiEncode(['address'], [newGovernance.address]),
+      { from: guardianAddress }
+    )
+
+    assert.equal(await ethRewardsManagerProxy.getGovernanceAddress(), newGovernance.address)
+  })
+
   it('botOracle', async () => {
+    await _lib.assertRevert(
+      ethRewardsManagerProxy.setBotOracle(accounts[10], { from: accounts[7] }),
+      'Only governance'
+    )
+
     await governance.guardianExecuteTransaction(
       ethRewardsManagerProxyKey,
       callValue0,

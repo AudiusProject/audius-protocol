@@ -151,7 +151,7 @@ contract EthRewardsManager is InitializableV2 {
     function _updateGovernanceAddress(address _governanceAddress) internal {
         require(
             Governance(_governanceAddress).isGovernanceAddress() == true,
-            "Staking: _governanceAddress is not a valid governance contract"
+            "EthRewardsManager: _governanceAddress is not a valid governance contract"
         );
         governanceAddress = _governanceAddress;
     }
