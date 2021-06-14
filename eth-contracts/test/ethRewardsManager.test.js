@@ -19,7 +19,7 @@ contract('EthRewardsManager', async (accounts) => {
   const [, proxyAdminAddress, proxyDeployerAddress, staker, newUpdateAddress] = accounts
   const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
-  const botOracle = proxyDeployerAddress
+  const antiAbuseOracle = proxyDeployerAddress
   const recipient = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
   const newRecipient = Buffer.from('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'hex')
 
@@ -57,7 +57,7 @@ contract('EthRewardsManager', async (accounts) => {
     const ethRewardsManagerInitializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'address', 'bytes32', 'address'],
-      [token.address, governance.address, mockWormhole.address, recipient, botOracle]
+      [token.address, governance.address, mockWormhole.address, recipient, antiAbuseOracle]
     )
     ethRewardsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       ethRewardsManager0.address,
@@ -84,7 +84,7 @@ contract('EthRewardsManager', async (accounts) => {
     )
 
     await _lib.assertRevert(
-      ethRewardsManagerProxy.setBotOracle(newGovernance.address, { from: accounts[7] }),
+      ethRewardsManagerProxy.setantiAbuseOracle(newGovernance.address, { from: accounts[7] }),
       'Only governance'
     )
 
@@ -110,21 +110,21 @@ contract('EthRewardsManager', async (accounts) => {
     assert.equal(await ethRewardsManagerProxy.getGovernanceAddress(), newGovernance.address)
   })
 
-  it('botOracle', async () => {
+  it('antiAbuseOracle', async () => {
     await _lib.assertRevert(
-      ethRewardsManagerProxy.setBotOracle(accounts[10], { from: accounts[7] }),
+      ethRewardsManagerProxy.setantiAbuseOracle(accounts[10], { from: accounts[7] }),
       'Only governance'
     )
 
     await governance.guardianExecuteTransaction(
       ethRewardsManagerProxyKey,
       callValue0,
-      'setBotOracle(address)',
+      'setantiAbuseOracle(address)',
       _lib.abiEncode(['address'], [accounts[10]]),
       { from: guardianAddress }
     )
 
-    assert.equal(await ethRewardsManagerProxy.botOracle(), accounts[10])
+    assert.equal(await ethRewardsManagerProxy.antiAbuseOracle(), accounts[10])
   })
 
   it('recipient', async () => {

@@ -38,7 +38,7 @@ contract EthRewardsManager is InitializableV2 {
     Wormhole internal wormhole;
     bytes32 internal recipient;
 
-    address public botOracle;
+    address public antiAbuseOracle;
 
     /**
      * @notice Function to initialize the contract
@@ -50,7 +50,7 @@ contract EthRewardsManager is InitializableV2 {
         address _governanceAddress,
         address _wormholeAddress,
         bytes32 _recipient,
-        address _botOracle
+        address _antiAbuseOracle
     ) public initializer {
         require(Address.isContract(_tokenAddress), ERROR_TOKEN_NOT_CONTRACT);
         require(
@@ -60,7 +60,7 @@ contract EthRewardsManager is InitializableV2 {
         audiusToken = ERC20(_tokenAddress);
         wormhole = Wormhole(_wormholeAddress);
         recipient = _recipient;
-        botOracle = _botOracle;
+        antiAbuseOracle = _antiAbuseOracle;
         _updateGovernanceAddress(_governanceAddress);
         InitializableV2.initialize();
     }
@@ -90,15 +90,15 @@ contract EthRewardsManager is InitializableV2 {
     }
 
     /**
-     * @notice Set the botOracle address
+     * @notice Set the antiAbuseOracle address
      * @dev Only callable by Governance address
-     * @param _botOracle - address for new botOracle
+     * @param _antiAbuseOracle - address for new antiAbuseOracle
      */
-    function setBotOracle(address _botOracle) external {
+    function setantiAbuseOracle(address _antiAbuseOracle) external {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
-        botOracle = _botOracle;
+        antiAbuseOracle = _antiAbuseOracle;
     }
 
     /* External functions */
