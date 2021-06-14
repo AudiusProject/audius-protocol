@@ -7,7 +7,8 @@ import { SmartCollectionVariant } from './types'
 import { getCollection } from './store/selectors'
 import CollectionPage from 'containers/collection-page/CollectionPage'
 import { fetchSmartCollection } from './store/slice'
-import { getUserPlaylistOrder } from 'store/account/selectors'
+import { getPlaylistLibrary } from 'store/account/selectors'
+import { findInPlaylistLibrary } from 'store/playlist-library/helpers'
 
 type OwnProps = {
   variant: SmartCollectionVariant
@@ -20,7 +21,7 @@ type SmartCollectionPageProps = OwnProps &
 const SmartCollectionPage = ({
   variant,
   collection,
-  orderedPlaylists,
+  playlistLibrary,
   fetch
 }: SmartCollectionPageProps) => {
   useEffect(() => {
@@ -30,7 +31,9 @@ const SmartCollectionPage = ({
   if (collection) {
     collection = {
       ...collection,
-      has_current_user_saved: orderedPlaylists.includes(variant)
+      has_current_user_saved: playlistLibrary
+        ? !!findInPlaylistLibrary(playlistLibrary, variant)
+        : false
     }
   }
 
@@ -46,7 +49,7 @@ const SmartCollectionPage = ({
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
   return {
     collection: getCollection(state, { variant: ownProps.variant }),
-    orderedPlaylists: getUserPlaylistOrder(state)
+    playlistLibrary: getPlaylistLibrary(state)
   }
 }
 

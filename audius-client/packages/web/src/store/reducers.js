@@ -60,6 +60,7 @@ import usersReducer from 'store/cache/users/reducer'
 import queue from 'store/queue/slice'
 import player from 'store/player/slice'
 import tokenDashboard from 'store/token-dashboard/slice'
+import playlistLibrary from 'store/playlist-library/slice'
 
 import setAsArtistPickConfirmation from 'store/application/ui/setAsArtistPickConfirmation/reducer'
 import browserPushPermissionConfirmation from 'store/application/ui/browserPushPermissionConfirmation/reducer'
@@ -81,12 +82,18 @@ import wallet from 'store/wallet/slice'
 
 const createRootReducer = routeHistory =>
   combineReducers({
+    // Router
+    router: connectRouter(routeHistory),
+
     // Config
     backend,
-    account,
-    passwordReset,
     confirmer,
     reachability,
+
+    // Account
+    account,
+    passwordReset,
+    playlistLibrary,
 
     // UI Functions
     dragndrop,
@@ -115,8 +122,6 @@ const createRootReducer = routeHistory =>
     // Playback
     queue,
     player,
-
-    router: connectRouter(routeHistory),
 
     // Remote config/flags
     remoteConfig,

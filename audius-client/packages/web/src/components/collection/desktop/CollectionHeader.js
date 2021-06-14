@@ -546,7 +546,7 @@ class CollectionHeader extends PureComponent {
 
     return (
       <div className={styles.collectionHeader}>
-        <div key={collectionId} className={styles.topSection}>
+        <div className={styles.topSection}>
           <Artwork
             collectionId={collectionId}
             coverArtSizes={coverArtSizes}

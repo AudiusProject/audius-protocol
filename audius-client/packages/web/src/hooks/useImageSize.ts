@@ -102,6 +102,7 @@ const useImageSize = ({
   const [getPreviousId, setPreviousId] = useInstanceVar<number | null>(null)
 
   const getImageSize = () => {
+    // console.log('get size', { id, prev: getPreviousId(), size })
     if (id === null || id === undefined) {
       return ''
     }

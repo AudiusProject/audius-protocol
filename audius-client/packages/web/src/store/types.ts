@@ -32,6 +32,7 @@ import MusicConfetti from 'containers/music-confetti/store/slice'
 import MobileUploadDrawer from 'containers/mobile-upload-drawer/store/slice'
 import EnablePushNotificationsDrawer from 'containers/enable-push-notifications-drawer/store/slice'
 import AccountReducer from 'store/account/reducer'
+import PlaylistLibraryReducer from 'store/playlist-library/slice'
 import tokenDashboard from 'store/token-dashboard/slice'
 
 import Collection from 'models/Collection'
@@ -88,10 +89,13 @@ export enum Status {
 export type AppState = {
   // Config
   backend: BackendState
-  account: ReturnType<typeof AccountReducer>
   confirmer: ConfirmerState
-  passwordReset: PasswordResetState
   reachability: ReachabilityState
+
+  // Account
+  account: ReturnType<typeof AccountReducer>
+  passwordReset: PasswordResetState
+  playlistLibrary: ReturnType<typeof PlaylistLibraryReducer>
 
   // UI
   dragndrop: DragNDropState

@@ -107,7 +107,8 @@ const userMetadataSchema = {
   creator_node_endpoint: null,
   updated_at: null,
   associated_wallets: null,
-  collectibles: null
+  collectibles: null,
+  playlist_library: null
 }
 
 export const newUserMetadata = (fields, validate = false) => {
