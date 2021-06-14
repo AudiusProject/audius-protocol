@@ -21,6 +21,7 @@ contract('EthRewardsManager', async (accounts) => {
   const guardianAddress = proxyDeployerAddress
   const botOracle = proxyDeployerAddress
   const recipient = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
+  const newRecipient = Buffer.from('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'hex')
 
   const votingPeriod = 10
   const executionDelay = votingPeriod
@@ -124,6 +125,23 @@ contract('EthRewardsManager', async (accounts) => {
     )
 
     assert.equal(await ethRewardsManagerProxy.botOracle(), accounts[10])
+  })
+
+  it('recipient', async () => {
+    await _lib.assertRevert(
+      ethRewardsManagerProxy.setRecipient(newRecipient, { from: accounts[7] }),
+      'Only governance'
+    )
+
+    await governance.guardianExecuteTransaction(
+      ethRewardsManagerProxyKey,
+      callValue0,
+      'setRecipient(bytes32)',
+      _lib.abiEncode(['bytes32'], [newRecipient]),
+      { from: guardianAddress }
+    )
+
+    assert.equal(await ethRewardsManagerProxy.getRecipient(), `0x${newRecipient.toString('hex')}`)
   })
 
   it('transferToSolana', async () => {

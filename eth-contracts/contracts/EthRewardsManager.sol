@@ -142,6 +142,13 @@ contract EthRewardsManager is InitializableV2 {
         return governanceAddress;
     }
 
+    /// @notice Get the Governance address
+    function getRecipient() external view returns (bytes32) {
+        _requireIsInitialized();
+
+        return recipient;
+    }
+
     // ========================================= Internal Functions =========================================
 
     /**
