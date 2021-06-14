@@ -1,21 +1,13 @@
 const express = require('express')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
-const models = require('../models')
 const { getFeePayer } = require('../solana-client')
-const config = require('../config')
 const crypto = require('crypto')
-const util = require('util')
 
 const {
-  Account,
-  AccountMeta,
   Connection,
   PublicKey,
   Secp256k1Program,
   sendAndConfirmTransaction,
-  SystemProgram,
-  SYSVAR_RENT_PUBKEY,
-  SYSVAR_INSTRUCTIONS_PUBKEY,
   Transaction,
   TransactionInstruction
 } = require('@solana/web3.js')
