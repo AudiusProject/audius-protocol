@@ -7,6 +7,7 @@ from src.utils import multihash, helpers
 from src.models import Track, User, Stem, Remix
 from src.tasks.metadata import track_metadata_format
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
+from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ track_event_types_arr = [
     track_event_types_lookup['delete_track']
 ]
 
-def track_state_update(self, update_task, session, track_factory_txs, block_number, block_timestamp):
+def track_state_update(self, update_task, session, track_factory_txs, block_number, block_timestamp, block_hash):
     """Return int representing number of Track model state changes found in transaction."""
     num_total_changes = 0
 
@@ -58,20 +59,25 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
                         "events": []
                     }
 
-                parsed_track = parse_track_event(
-                    self,
-                    session,
-                    update_task,
-                    entry,
-                    event_type,
-                    track_events[track_id]["track"],
-                    block_timestamp)
+                try:
+                    parsed_track = parse_track_event(
+                        self,
+                        session,
+                        update_task,
+                        entry,
+                        event_type,
+                        track_events[track_id]["track"],
+                        block_timestamp)
 
-                # If track record object is None, it has a blacklisted metadata CID
-                if parsed_track is not None:
-                    track_events[track_id]["events"].append(event_type)
-                    track_events[track_id]["track"] = parsed_track
-                    processedEntries += 1
+                    # If track record object is None, it has a blacklisted metadata CID
+                    if parsed_track is not None:
+                        track_events[track_id]["events"].append(event_type)
+                        track_events[track_id]["track"] = parsed_track
+                        processedEntries += 1
+                except Exception as e:
+                    logger.info(f"Error in parse track transaction")
+                    blockhash = update_task.web3.toHex(block_hash)
+                    raise IndexingError('track', block_number, blockhash, txhash, str(e))
 
             num_total_changes += processedEntries
 

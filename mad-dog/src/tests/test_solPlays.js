@@ -87,6 +87,9 @@ async function solanaTrackListenCountsTest({
     let end = Date.now()
     let duration = end - start
     console.log(`Processed ${numSuccessfullyProcessed} listens in ${duration}ms`)
+    if (numSuccessfullyProcessed < numTracks) {
+        throw new Error('Failed to process 1 listen per track')
+    }
 }
 
 module.exports = {

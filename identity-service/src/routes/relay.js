@@ -1,11 +1,12 @@
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const txRelay = require('../relay/txRelay')
 const crypto = require('crypto')
+const captchaMiddleware = require('../captchaMiddleware')
 
 module.exports = function (app) {
   // TODO(roneilr): authenticate that user controls senderAddress somehow, potentially validate that
   // method sig has come from sender address as well
-  app.post('/relay', handleResponse(async (req, res, next) => {
+  app.post('/relay', captchaMiddleware, handleResponse(async (req, res, next) => {
     let body = req.body
     const redis = req.app.get('redis')
 

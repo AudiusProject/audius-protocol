@@ -19,8 +19,8 @@ def generate_unpopulated_trending(session, genre, time_range, strategy, limit=TR
     trending_tracks = generate_trending(session, time_range, genre, limit, 0, strategy)
 
     track_scores = [strategy.get_track_score(time_range, track) for track in trending_tracks['listen_counts']]
-    sorted_track_scores = sorted(track_scores, key=lambda k: k['score'], reverse=True)
-
+    # Re apply the limit just in case we did decide to include more tracks in the scoring than the limit
+    sorted_track_scores = sorted(track_scores, key=lambda k: k['score'], reverse=True)[:limit]
     track_ids = [track['track_id'] for track in sorted_track_scores]
 
     tracks = get_unpopulated_tracks(session, track_ids)

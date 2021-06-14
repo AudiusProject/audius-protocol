@@ -21,8 +21,7 @@ contract MockWormhole {
         uint32 nonce
     );
 
-    constructor() public {
-    }
+    constructor() public {}
 
     function lockAssets(
         address asset,

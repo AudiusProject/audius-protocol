@@ -25,7 +25,7 @@ time_delta_map = {
 # Returns listens counts for tracks, subject to time and
 # genre restrictions.
 # Returns [{ track_id: number, listens: number }]
-def get_listen_counts(session, time, genre, limit, offset):
+def get_listen_counts(session, time, genre, limit, offset, net_multiplier=1):
 
     # Adds a created_at filter
     # on the base query, if applicable.
@@ -99,7 +99,7 @@ def get_listen_counts(session, time, genre, limit, offset):
     # Add limit + offset + sort
     base_query = (base_query
                   .order_by(desc('count'))
-                  .limit(limit)
+                  .limit(limit * net_multiplier)
                   .offset(offset))
 
     listens = base_query.all()
@@ -116,9 +116,10 @@ def generate_trending(session, time, genre, limit, offset, strategy):
     score_params = strategy.get_score_params()
     xf = score_params['xf']
     pt = score_params['pt']
+    nm = score_params['nm'] if 'nm' in score_params else 1
 
     # Get listen counts
-    listen_counts = get_listen_counts(session, time, genre, limit, offset)
+    listen_counts = get_listen_counts(session, time, genre, limit, offset, nm)
 
     track_ids = [track[response_name_constants.track_id] for track in listen_counts]
 
