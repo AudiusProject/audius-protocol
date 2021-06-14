@@ -47,48 +47,10 @@ class PeerSetManager {
 
     for await (const peer of peerSet) {
       try {
-        const verboseHealthCheckResp = await this.determinePeerHealth(peer)
-
-        // TODO: consolidate CreatorNodeSelection + peer set health check calculation logic
+        const verboseHealthCheckResp = await this.getPeerHealth(peer)
 
         // Check for sufficient minimum storage size of 100GB
-        const { storagePathSize, storagePathUsed } = verboseHealthCheckResp
-        if (storagePathSize && storagePathUsed && storagePathSize - storagePathUsed >= MINIMUM_STORAGE_PATH_SIZE) {
-          throw new Error(`Almost out of storage=${storagePathSize - storagePathUsed}bytes remaining`)
-        }
-
-        // Check for sufficient memory space of 6GB
-        const { usedMemory, totalMemory } = verboseHealthCheckResp
-        if (usedMemory && totalMemory && totalMemory - usedMemory >= MINIMUM_MEMORY_UNUSED) {
-          throw new Error(`Running low on memory=${totalMemory - usedMemory}bytes remaining`)
-        }
-
-        // Check for sufficient file descriptors space of minimum 5%
-        const { allocatedFileDescriptors, maxFileDescriptors } = verboseHealthCheckResp
-        if (allocatedFileDescriptors && maxFileDescriptors && allocatedFileDescriptors / maxFileDescriptors >= MAX_FILE_DESCRIPTORS_OPEN) {
-          throw new Error(`Running low on file descriptors availability=${allocatedFileDescriptors / maxFileDescriptors * 100}% used`)
-        }
-
-        // Check historical sync data
-        const { latestDailySyncSuccessCount, latestDailySyncFailCount } = verboseHealthCheckResp
-        if (
-          latestDailySyncSuccessCount &&
-          latestDailySyncFailCount &&
-          latestDailySyncSuccessCount + latestDailySyncFailCount > MINIMUM_DAILY_SYNC_COUNT &&
-          latestDailySyncFailCount / (latestDailySyncFailCount + latestDailySyncSuccessCount) > MINIMUM_SYNC_FAIL_COUNT_PERCENTAGE
-        ) {
-          throw new Error(`Latest daily sync data shows that this node is not accepting syncs. Successful syncs=${latestDailySyncSuccessCount} || Failed syncs=${latestDailySyncFailCount}`)
-        }
-
-        const { rollingSyncSuccessCount, rollingSyncFailCount } = verboseHealthCheckResp
-        if (
-          rollingSyncSuccessCount &&
-          rollingSyncFailCount &&
-          rollingSyncSuccessCount + rollingSyncFailCount > MINIMUM_ROLLING_SYNC_COUNT &&
-          rollingSyncFailCount / (rollingSyncFailCount + rollingSyncSuccessCount) > MINIMUM_SYNC_FAIL_COUNT_PERCENTAGE
-        ) {
-          throw new Error(`Rolling sync data shows that this node historically does not accept syncs. Successful syncs=${rollingSyncSuccessCount} || Failed syncs=${rollingSyncFailCount}`)
-        }
+        this.determinePeerHealth(verboseHealthCheckResp)
       } catch (e) {
         unhealthyPeers.add(peer)
         this.logError(`getUnhealthyPeers() peer=${peer} is unhealthy: ${e.toString()}`)
@@ -241,7 +203,7 @@ class PeerSetManager {
    * @param {string} endpoint
    * @returns {Object} the /health_check/verbose response
    */
-  async determinePeerHealth (endpoint) {
+  async getPeerHealth (endpoint) {
     // Axios request will throw on timeout or non-200 response
     const resp = await axios({
       baseURL: endpoint,
@@ -251,6 +213,48 @@ class PeerSetManager {
     })
 
     return resp.data.data
+  }
+
+  /**
+   * Takes data off the verbose health check response and determines the peer heatlh
+   * @param {Object} verboseHealthCheckResp verbose health check response
+   *
+   * TODO: consolidate CreatorNodeSelection + peer set health check calculation logic
+   */
+  determinePeerHealth (verboseHealthCheckResp) {
+    const { storagePathSize, storagePathUsed } = verboseHealthCheckResp
+    if (storagePathSize && storagePathUsed && storagePathSize - storagePathUsed <= MINIMUM_STORAGE_PATH_SIZE) {
+      throw new Error(`Almost out of storage=${storagePathSize - storagePathUsed}bytes remaining`)
+    }
+
+    // Check for sufficient memory space of 6GB
+    const { usedMemory, totalMemory } = verboseHealthCheckResp
+    if (usedMemory && totalMemory && totalMemory - usedMemory <= MINIMUM_MEMORY_UNUSED) {
+      throw new Error(`Running low on memory=${totalMemory - usedMemory}bytes remaining`)
+    }
+
+    // Check for sufficient file descriptors space of minimum 5%
+    const { allocatedFileDescriptors, maxFileDescriptors } = verboseHealthCheckResp
+    if (allocatedFileDescriptors && maxFileDescriptors && allocatedFileDescriptors / maxFileDescriptors >= MAX_FILE_DESCRIPTORS_OPEN) {
+      throw new Error(`Running low on file descriptors availability=${allocatedFileDescriptors / maxFileDescriptors * 100}% used`)
+    }
+
+    // Check historical sync data
+    const { dailySyncSuccessCount, dailySyncFailCount } = verboseHealthCheckResp
+    if (dailySyncSuccessCount &&
+      dailySyncFailCount &&
+      dailySyncSuccessCount + dailySyncFailCount > MINIMUM_DAILY_SYNC_COUNT &&
+      dailySyncFailCount / (dailySyncFailCount + dailySyncSuccessCount) > MINIMUM_SYNC_FAIL_COUNT_PERCENTAGE) {
+      throw new Error(`Latest daily sync data shows that this node is not accepting syncs. Successful syncs=${dailySyncSuccessCount} || Failed syncs=${dailySyncFailCount}`)
+    }
+
+    const { thirtyDayRollingSyncSuccessCount, thirtyDayRollingSyncFailCount } = verboseHealthCheckResp
+    if (thirtyDayRollingSyncSuccessCount &&
+      thirtyDayRollingSyncFailCount &&
+      thirtyDayRollingSyncSuccessCount + thirtyDayRollingSyncFailCount > MINIMUM_ROLLING_SYNC_COUNT &&
+      thirtyDayRollingSyncFailCount / (thirtyDayRollingSyncFailCount + thirtyDayRollingSyncSuccessCount) > MINIMUM_SYNC_FAIL_COUNT_PERCENTAGE) {
+      throw new Error(`Rolling sync data shows that this node historically does not accept syncs. Successful syncs=${thirtyDayRollingSyncSuccessCount} || Failed syncs=${thirtyDayRollingSyncFailCount}`)
+    }
   }
 }
 
