@@ -1,7 +1,7 @@
 const express = require('express')
 const crypto = require('crypto')
 
-const config = require('./config')
+const config = require('../config')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFeePayer } = require('../solana-client')
 
