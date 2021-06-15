@@ -23,7 +23,6 @@ jobs:
           command: |
             cd ../
             mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
-            nvm install v14.16
 
       # Download and cache dependencies
 
@@ -39,6 +38,7 @@ jobs:
           name: libs repo init
           command: |
             cd libs
+            source ~/.bash_profile
             nvm install v14.16
             npm install
       - save_cache:
@@ -57,6 +57,7 @@ jobs:
           name: contract repo init
           command: |
             cd contracts/
+            node -v
             rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
             source ~/.bash_profile
             nvm install v14.16
