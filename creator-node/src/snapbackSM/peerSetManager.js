@@ -1,19 +1,15 @@
 const axios = require('axios')
 
+const config = require('../config')
 const { logger } = require('../logging')
 
-// TODO: config var
-// Can adjust as necessary
-const PEER_HEALTH_CHECK_REQUEST_TIMEOUT = 2000 // ms
-const MINIMUM_STORAGE_PATH_SIZE = 100000000000 // bytes; 100GB
-const MINIMUM_MEMORY_UNUSED = 6000000000 // bytes; 6GB
-const MAX_FILE_DESCRIPTORS_OPEN = 0.95 // percent
-// Minimum count of daily syncs that need to have occurred to consider daily sync history
-const MINIMUM_DAILY_SYNC_COUNT = 50
-// Minimum count of rolling syncs that need to have occurred to consider rolling sync history
-const MINIMUM_ROLLING_SYNC_COUNT = 5000
-// Minimum percentage of failed syncs to be considered unhealthy
-const MINIMUM_SYNC_FAIL_COUNT_PERCENTAGE = 0.50
+const PEER_HEALTH_CHECK_REQUEST_TIMEOUT = config.get('peerHealthCheckRequestTimeout')
+const MINIMUM_STORAGE_PATH_SIZE = config.get('minimumStoragePathSize')
+const MINIMUM_MEMORY_AVAILABLE = config.get('minimumMemoryAvailable')
+const MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE = config.get('maxFileDescriptorsAllocatedPercentage') / 100
+const MINIMUM_DAILY_SYNC_COUNT = config.get('minimumDailySyncCount')
+const MINIMUM_ROLLING_SYNC_COUNT = config.get('minimumRollingSyncCount')
+const MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE = config.get('minimumSuccessfulSyncCountPercentage') / 100
 
 class PeerSetManager {
   constructor ({ discoveryProviderEndpoint, creatorNodeEndpoint }) {
@@ -49,7 +45,7 @@ class PeerSetManager {
 
     for await (const peer of peerSet) {
       try {
-        const verboseHealthCheckResp = await this.getPeerHealth(peer)
+        const verboseHealthCheckResp = await this.queryVerboseHealthCheck(peer)
         this.determinePeerHealth(verboseHealthCheckResp)
       } catch (e) {
         unhealthyPeers.add(peer)
@@ -193,17 +189,13 @@ class PeerSetManager {
   }
 
   /**
-   * Determines if a peer node is sufficiently healthy and able to process syncRequests
-   *
-   * Peer health criteria:
-   * - verbose health check returns 200 within timeout
-   *
+   * Returns /health_check/verbose response
    * TODO: - consider moving this pure function to libs
    *
    * @param {string} endpoint
    * @returns {Object} the /health_check/verbose response
    */
-  async getPeerHealth (endpoint) {
+  async queryVerboseHealthCheck (endpoint) {
     // Axios request will throw on timeout or non-200 response
     const resp = await axios({
       baseURL: endpoint,
@@ -230,13 +222,13 @@ class PeerSetManager {
 
     // Check for sufficient memory space
     const { usedMemory, totalMemory } = verboseHealthCheckResp
-    if (usedMemory && totalMemory && totalMemory - usedMemory <= MINIMUM_MEMORY_UNUSED) {
+    if (usedMemory && totalMemory && totalMemory - usedMemory <= MINIMUM_MEMORY_AVAILABLE) {
       throw new Error(`Running low on memory=${totalMemory - usedMemory}bytes remaining`)
     }
 
     // Check for sufficient file descriptors space
     const { allocatedFileDescriptors, maxFileDescriptors } = verboseHealthCheckResp
-    if (allocatedFileDescriptors && maxFileDescriptors && allocatedFileDescriptors / maxFileDescriptors >= MAX_FILE_DESCRIPTORS_OPEN) {
+    if (allocatedFileDescriptors && maxFileDescriptors && allocatedFileDescriptors / maxFileDescriptors >= MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE) {
       throw new Error(`Running low on file descriptors availability=${allocatedFileDescriptors / maxFileDescriptors * 100}% used`)
     }
 
@@ -245,8 +237,8 @@ class PeerSetManager {
     if (dailySyncSuccessCount &&
       dailySyncFailCount &&
       dailySyncSuccessCount + dailySyncFailCount > MINIMUM_DAILY_SYNC_COUNT &&
-      dailySyncFailCount / (dailySyncFailCount + dailySyncSuccessCount) > MINIMUM_SYNC_FAIL_COUNT_PERCENTAGE) {
-      throw new Error(`Latest daily sync data shows that this node is not accepting syncs. Successful syncs=${dailySyncSuccessCount} || Failed syncs=${dailySyncFailCount}`)
+      dailySyncSuccessCount / (dailySyncFailCount + dailySyncSuccessCount) < MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE) {
+      throw new Error(`Latest daily sync data shows that this node fails at a high rate of syncs. Successful syncs=${dailySyncSuccessCount} || Failed syncs=${dailySyncFailCount}`)
     }
 
     // Check historical sync data for rolling window 30 days
@@ -254,8 +246,8 @@ class PeerSetManager {
     if (thirtyDayRollingSyncSuccessCount &&
       thirtyDayRollingSyncFailCount &&
       thirtyDayRollingSyncSuccessCount + thirtyDayRollingSyncFailCount > MINIMUM_ROLLING_SYNC_COUNT &&
-      thirtyDayRollingSyncFailCount / (thirtyDayRollingSyncFailCount + thirtyDayRollingSyncSuccessCount) > MINIMUM_SYNC_FAIL_COUNT_PERCENTAGE) {
-      throw new Error(`Rolling sync data shows that this node historically does not accept syncs. Successful syncs=${thirtyDayRollingSyncSuccessCount} || Failed syncs=${thirtyDayRollingSyncFailCount}`)
+      thirtyDayRollingSyncSuccessCount / (thirtyDayRollingSyncFailCount + thirtyDayRollingSyncSuccessCount) < MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE) {
+      throw new Error(`Rolling sync data shows that this node fails at a high rate of syncs. Successful syncs=${thirtyDayRollingSyncSuccessCount} || Failed syncs=${thirtyDayRollingSyncFailCount}`)
     }
   }
 }
