@@ -1,0 +1,19 @@
+import logging
+from flask import Blueprint, request
+from src.queries.get_user_signals import get_user_signals
+from src.api_helpers import success_response, error_response
+
+logger = logging.getLogger(__name__)
+
+bp = Blueprint("user_signals", __name__)
+
+@bp.route("/user_signals", methods=["GET"])
+def user_signals():
+    try:
+        handle = request.args.get("handle")
+        if not handle:
+            raise Exception("Please pass in a handle")
+        response = get_user_signals(handle)
+        return success_response(response, 200)
+    except Exception as e:
+        return error_response(e)
