@@ -1,7 +1,7 @@
 
 from datetime import datetime
 import redis
-from src.models import UserChallenge, ChallengeType, User, Block, Repost, RepostType, Save, Follow, SaveType
+from src.models import User, Block, Repost, RepostType, Save, Follow, SaveType
 from src.utils.db_session import get_db
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.challenge_event_bus import ChallengeEventBus, ChallengeEvent
