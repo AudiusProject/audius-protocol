@@ -8,7 +8,9 @@ const PEER_HEALTH_CHECK_REQUEST_TIMEOUT = 2000 // ms
 const MINIMUM_STORAGE_PATH_SIZE = 100000000000 // bytes; 100GB
 const MINIMUM_MEMORY_UNUSED = 6000000000 // bytes; 6GB
 const MAX_FILE_DESCRIPTORS_OPEN = 0.95 // percent
+// Minimum count of daily syncs that need to have occurred to consider daily sync history
 const MINIMUM_DAILY_SYNC_COUNT = 50
+// Minimum count of rolling syncs that need to have occurred to consider rolling sync history
 const MINIMUM_ROLLING_SYNC_COUNT = 5000
 // Minimum percentage of failed syncs to be considered unhealthy
 const MINIMUM_SYNC_FAIL_COUNT_PERCENTAGE = 0.50
@@ -48,8 +50,6 @@ class PeerSetManager {
     for await (const peer of peerSet) {
       try {
         const verboseHealthCheckResp = await this.getPeerHealth(peer)
-
-        // Check for sufficient minimum storage size of 100GB
         this.determinePeerHealth(verboseHealthCheckResp)
       } catch (e) {
         unhealthyPeers.add(peer)
@@ -222,24 +222,25 @@ class PeerSetManager {
    * TODO: consolidate CreatorNodeSelection + peer set health check calculation logic
    */
   determinePeerHealth (verboseHealthCheckResp) {
+    // Check for sufficient minimum storage size
     const { storagePathSize, storagePathUsed } = verboseHealthCheckResp
     if (storagePathSize && storagePathUsed && storagePathSize - storagePathUsed <= MINIMUM_STORAGE_PATH_SIZE) {
       throw new Error(`Almost out of storage=${storagePathSize - storagePathUsed}bytes remaining`)
     }
 
-    // Check for sufficient memory space of 6GB
+    // Check for sufficient memory space
     const { usedMemory, totalMemory } = verboseHealthCheckResp
     if (usedMemory && totalMemory && totalMemory - usedMemory <= MINIMUM_MEMORY_UNUSED) {
       throw new Error(`Running low on memory=${totalMemory - usedMemory}bytes remaining`)
     }
 
-    // Check for sufficient file descriptors space of minimum 5%
+    // Check for sufficient file descriptors space
     const { allocatedFileDescriptors, maxFileDescriptors } = verboseHealthCheckResp
     if (allocatedFileDescriptors && maxFileDescriptors && allocatedFileDescriptors / maxFileDescriptors >= MAX_FILE_DESCRIPTORS_OPEN) {
       throw new Error(`Running low on file descriptors availability=${allocatedFileDescriptors / maxFileDescriptors * 100}% used`)
     }
 
-    // Check historical sync data
+    // Check historical sync data for current day
     const { dailySyncSuccessCount, dailySyncFailCount } = verboseHealthCheckResp
     if (dailySyncSuccessCount &&
       dailySyncFailCount &&
@@ -248,6 +249,7 @@ class PeerSetManager {
       throw new Error(`Latest daily sync data shows that this node is not accepting syncs. Successful syncs=${dailySyncSuccessCount} || Failed syncs=${dailySyncFailCount}`)
     }
 
+    // Check historical sync data for rolling window 30 days
     const { thirtyDayRollingSyncSuccessCount, thirtyDayRollingSyncFailCount } = verboseHealthCheckResp
     if (thirtyDayRollingSyncSuccessCount &&
       thirtyDayRollingSyncFailCount &&
