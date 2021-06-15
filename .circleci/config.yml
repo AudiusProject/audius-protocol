@@ -38,6 +38,7 @@ jobs:
           name: libs repo init
           command: |
             cd libs
+            nvm install v14.16
             npm install
       - save_cache:
           name: Save libs cache
@@ -57,7 +58,7 @@ jobs:
             cd contracts/
             rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
             source ~/.bash_profile
-            nvm install 10.16
+            nvm install v14.16
             npm install
       - save_cache:
           name: Save contracts cache
@@ -77,7 +78,7 @@ jobs:
             cd eth-contracts/
             rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
             source ~/.bash_profile
-            nvm install 10.16
+            nvm install v14.16
             npm install
       - save_cache:
           name: Save eth-contracts cache
@@ -95,7 +96,7 @@ jobs:
           name: content-node repo init
           command: |
             source ~/.bash_profile
-            nvm install v10.16
+            nvm install v14.16
             cd creator-node/
             npm install
       - save_cache:
@@ -114,7 +115,7 @@ jobs:
           name: identity-service repo init
           command: |
             source ~/.bash_profile
-            nvm install v10.16
+            nvm install v14.16
             cd identity-service/
             npm install
       - save_cache:
@@ -168,7 +169,6 @@ jobs:
             export PROTOCOL_DIR=/home/circleci/project
             source ~/.bash_profile
             nvm install v14.16
-            nvm use 10.16
             cd /home/circleci/project/service-commands/scripts/
             cd /home/circleci/project/libs/
             npm rebuild
