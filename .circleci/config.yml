@@ -134,7 +134,7 @@ jobs:
           command: |
             source ~/.bash_profile
             cd mad-dog/
-            nvm install v10.16
+            nvm install v14.16
             npm install
       - save_cache:
           name: Save mad-dog cache
@@ -152,7 +152,7 @@ jobs:
           name: service-commands repo init
           command: |
             source ~/.bash_profile
-            nvm install v10.16
+            nvm install v14.16
             cd service-commands/
             npm install
       - save_cache:
@@ -167,7 +167,7 @@ jobs:
             set -e
             export PROTOCOL_DIR=/home/circleci/project
             source ~/.bash_profile
-            nvm install v10.16
+            nvm install v14.16
             nvm use 10.16
             cd /home/circleci/project/service-commands/scripts/
             cd /home/circleci/project/libs/
