@@ -23,7 +23,7 @@ import { decodeHashId, encodeHashId } from 'utils/route/hashIds'
 import { StemTrackMetadata } from 'models/Track'
 import { SearchKind } from 'containers/search-page/store/types'
 import { processSearchResults } from './helper'
-import { getRemoteVar, IntKeys } from '../remote-config'
+import { getRemoteVar, IntKeys, StringKeys } from '../remote-config'
 
 declare global {
   interface Window {
@@ -43,9 +43,16 @@ const ROOT_ENDPOINT_MAP = {
 }
 
 const FULL_ENDPOINT_MAP = {
-  trending: '/tracks/trending',
-  trendingIds: '/tracks/trending/ids',
-  trendingUnderground: '/tracks/trending/underground',
+  trending: (experiment: string | null) =>
+    experiment ? `/tracks/trending/${experiment}` : '/tracks/trending',
+  trendingIds: (experiment: string | null) =>
+    experiment ? `/tracks/trending/ids/${experiment}` : '/tracks/trending/ids',
+  trendingUnderground: (experiment: string | null) =>
+    experiment
+      ? `/tracks/trending/underground/${experiment}`
+      : '/tracks/trending/underground',
+  trendingPlaylists: (experiment: string | null) =>
+    experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
   recommended: '/tracks/recommended',
   following: (userId: OpaqueID) => `/users/${userId}/following`,
   followers: (userId: OpaqueID) => `/users/${userId}/followers`,
@@ -68,8 +75,7 @@ const FULL_ENDPOINT_MAP = {
   getRemixes: (trackId: OpaqueID) => `/tracks/${trackId}/remixes`,
   getRemixing: (trackId: OpaqueID) => `/tracks/${trackId}/remixing`,
   searchFull: `/search/full`,
-  searchAutocomplete: `/search/autocomplete`,
-  trendingPlaylists: `/playlists/trending`
+  searchAutocomplete: `/search/autocomplete`
 }
 
 const ENDPOINT_MAP = {
@@ -325,10 +331,10 @@ class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined,
       genre: genre || undefined
     }
-
+    const experiment = getRemoteVar(StringKeys.TRENDING_EXPERIMENT)
     const trendingResponse: Nullable<APIResponse<
       APITrack[]
-    >> = await this._getResponse(FULL_ENDPOINT_MAP.trending, params)
+    >> = await this._getResponse(FULL_ENDPOINT_MAP.trending(experiment), params)
 
     if (!trendingResponse) return []
 
@@ -350,10 +356,13 @@ class AudiusAPIClient {
       offset,
       user_id: encodedCurrentUserId
     }
-
+    const experiment = getRemoteVar(StringKeys.UNDERGROUND_TRENDING_EXPERIMENT)
     const trendingResponse: Nullable<APIResponse<
       APITrack[]
-    >> = await this._getResponse(FULL_ENDPOINT_MAP.trendingUnderground, params)
+    >> = await this._getResponse(
+      FULL_ENDPOINT_MAP.trendingUnderground(experiment),
+      params
+    )
 
     if (!trendingResponse) return []
 
@@ -369,9 +378,13 @@ class AudiusAPIClient {
       limit,
       genre: genre || undefined
     }
+    const experiment = getRemoteVar(StringKeys.TRENDING_EXPERIMENT)
     const trendingIdsResponse: Nullable<APIResponse<
       TrendingIdsResponse
-    >> = await this._getResponse(FULL_ENDPOINT_MAP.trendingIds, params)
+    >> = await this._getResponse(
+      FULL_ENDPOINT_MAP.trendingIds(experiment),
+      params
+    )
     if (!trendingIdsResponse) {
       return {
         week: [],
@@ -931,9 +944,13 @@ class AudiusAPIClient {
       time
     }
 
+    const experiment = getRemoteVar(StringKeys.PLAYLIST_TRENDING_EXPERIMENT)
     const response: Nullable<APIResponse<
       APIPlaylist[]
-    >> = await this._getResponse(FULL_ENDPOINT_MAP.trendingPlaylists, params)
+    >> = await this._getResponse(
+      FULL_ENDPOINT_MAP.trendingPlaylists(experiment),
+      params
+    )
 
     if (!response) return []
     const adapted = response.data

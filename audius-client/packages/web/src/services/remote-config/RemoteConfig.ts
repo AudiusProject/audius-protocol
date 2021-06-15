@@ -146,7 +146,16 @@ export enum StringKeys {
   /** TF */
   TF = 'TF',
   TPF = 'TPF',
-  UTF = 'UTF'
+  UTF = 'UTF',
+
+  /** Trending experiment id */
+  TRENDING_EXPERIMENT = 'TRENDING_EXPERIMENT',
+
+  /** Underground trending experiment id */
+  UNDERGROUND_TRENDING_EXPERIMENT = 'UNDERGROUND_TRENDING_EXPERIMENT',
+
+  /** Playlist trending experiment id */
+  PLAYLIST_TRENDING_EXPERIMENT = 'PLAYLIST_TRENDING_EXPERIMENT'
 }
 
 export type AllRemoteConfigKeys =
