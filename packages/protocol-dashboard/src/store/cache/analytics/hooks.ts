@@ -24,7 +24,7 @@ import { useDiscoveryProviders } from '../discoveryProvider/hooks'
 import { useAverageBlockTime, useEthBlockNumber } from '../protocol/hooks'
 import { weiAudToAud } from 'utils/numeric'
 import { ELECTRONIC_SUB_GENRES } from './genres'
-import { fetchUntilSuccess, fetchWithTimeout } from '../../../utils/fetch'
+import { fetchUntilSuccess } from '../../../utils/fetch'
 dayjs.extend(duration)
 
 const MONTH_IN_MS = dayjs.duration({ months: 1 }).asMilliseconds()
@@ -357,17 +357,18 @@ export function fetchTrailingTopGenres(
   nodes: DiscoveryProvider[]
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async dispatch => {
-    const node = nodes[0]
-    if (!node) return
     try {
       const startTime = getStartTime(bucket)
-      const url = `${node.endpoint}/v1/metrics/genres?start_time=${startTime}`
-      const res = await fetchWithTimeout(url)
+      const json = await fetchUntilSuccess(
+        nodes.map(
+          node => `${node.endpoint}/v1/metrics/genres?start_time=${startTime}`
+        )
+      )
 
       const agg: CountRecord = {
         Electronic: 0
       }
-      res.data.forEach((genre: { name: string; count: number }) => {
+      json.data.forEach((genre: { name: string; count: number }) => {
         const name = genre.name
         if (ELECTRONIC_SUB_GENRES.has(name)) {
           agg['Electronic'] += genre.count

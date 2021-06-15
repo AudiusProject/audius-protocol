@@ -30,22 +30,11 @@ export const withTimeout = async (
 
 // TODO: put in env vars for staging
 export const fetchUntilSuccess = async (endpoints: string[]): Promise<any> => {
-  const allowList = [
-    'https://discoveryprovider.audius.co',
-    'https://discoveryprovider2.audius.co',
-    'https://discoveryprovider3.audius.co',
-    'https://dn2.monophonic.digital',
-    'https://dn1.monophonic.digital'
-  ]
-
   try {
     const response = await fetchWithTimeout('https://api.audius.co')
     const allHealthyDps = response.data as string[]
-    const allowedHealthyDPs = allHealthyDps.filter(url =>
-      allowList.includes(url)
-    )
     const allowedEndpoints = endpoints.filter(endpoint =>
-      allowedHealthyDPs.some(url => endpoint.startsWith(url))
+      allHealthyDps.some(url => endpoint.startsWith(url))
     )
 
     // Pick a random endpoint from the allowed endpoints

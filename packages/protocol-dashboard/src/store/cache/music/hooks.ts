@@ -13,7 +13,7 @@ import {
   setTopPlaylists,
   setTopTracks
 } from './slice'
-import { fetchWithTimeout } from '../../../utils/fetch'
+import { fetchUntilSuccess } from '../../../utils/fetch'
 
 const AUDIUS_URL = process.env.REACT_APP_AUDIUS_URL
 
@@ -27,13 +27,14 @@ export const getTopAlbums = (state: AppState) => state.cache.music.topAlbums
 // -------------------------------- Thunk Actions  ---------------------------------
 
 export function fetchTopTracks(
-  node: DiscoveryProvider | any
+  nodes: DiscoveryProvider[]
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, getState, aud) => {
     try {
-      const url = `${node.endpoint}/v1/tracks/trending?limit=4`
-      const res = await fetchWithTimeout(url)
-      const tracks: Track[] = res.data.slice(0, 4).map((d: any) => ({
+      const json = await fetchUntilSuccess(
+        nodes.map(node => `${node.endpoint}/v1/tracks/trending?limit=4`)
+      )
+      const tracks: Track[] = json.data.slice(0, 4).map((d: any) => ({
         title: d.title,
         handle: d.user.handle,
         artwork: d.artwork?.['480x480'] ?? imageBlank,
@@ -49,13 +50,16 @@ export function fetchTopTracks(
 }
 
 export function fetchTopPlaylists(
-  node: DiscoveryProvider | any
+  nodes: DiscoveryProvider[]
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, getState, aud) => {
     try {
-      const url = `${node.endpoint}/v1/playlists/top?type=playlist&limit=5`
-      const res = await fetchWithTimeout(url)
-      const playlists: Playlist[] = res.data.map((d: any) => ({
+      const json = await fetchUntilSuccess(
+        nodes.map(
+          node => `${node.endpoint}/v1/playlists/top?type=playlist&limit=5`
+        )
+      )
+      const playlists: Playlist[] = json.data.map((d: any) => ({
         title: d.playlist_name,
         handle: d.user.handle,
         artwork: d.artwork?.['480x480'] ?? imageBlank,
@@ -71,13 +75,16 @@ export function fetchTopPlaylists(
 }
 
 export function fetchTopAlbums(
-  node: DiscoveryProvider | any
+  nodes: DiscoveryProvider[]
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async (dispatch, getState, aud) => {
     try {
-      const url = `${node.endpoint}/v1/playlists/top?type=album&limit=5`
-      const res = await fetchWithTimeout(url)
-      const albums: Playlist[] = res.data.map((d: any) => ({
+      const json = await fetchUntilSuccess(
+        nodes.map(
+          node => `${node.endpoint}/v1/playlists/top?type=album&limit=5`
+        )
+      )
+      const albums: Playlist[] = json.data.map((d: any) => ({
         title: d.playlist_name,
         handle: d.user.handle,
         artwork: d.artwork?.['480x480'] ?? imageBlank,
@@ -103,7 +110,7 @@ export const useTopTracks = () => {
   useEffect(() => {
     if (!doOnce && nodes[0] && !topTracks) {
       setDoOnce(true)
-      dispatch(fetchTopTracks(nodes[0]))
+      dispatch(fetchTopTracks(nodes))
     }
   }, [doOnce, topTracks, dispatch, nodes])
 
@@ -125,7 +132,7 @@ export const useTopPlaylists = () => {
   useEffect(() => {
     if (!doOnce && nodes[0] && !topPlaylists) {
       setDoOnce(true)
-      dispatch(fetchTopPlaylists(nodes[0]))
+      dispatch(fetchTopPlaylists(nodes))
     }
   }, [topPlaylists, dispatch, nodes, doOnce])
 
@@ -147,7 +154,7 @@ export const useTopAlbums = () => {
   useEffect(() => {
     if (!doOnce && nodes[0] && !topAlbums) {
       setDoOnce(true)
-      dispatch(fetchTopAlbums(nodes[0]))
+      dispatch(fetchTopAlbums(nodes))
     }
   }, [topAlbums, dispatch, nodes, doOnce])
 
