@@ -19,7 +19,7 @@ contract('EthRewardsManager', async (accounts) => {
   const [, proxyAdminAddress, proxyDeployerAddress, staker, newUpdateAddress] = accounts
   const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
-  const antiAbuseOracle = proxyDeployerAddress
+  const antiAbuseOracleAddress = proxyDeployerAddress
   const recipient = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
   const newRecipient = Buffer.from('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'hex')
 
@@ -57,7 +57,7 @@ contract('EthRewardsManager', async (accounts) => {
     const ethRewardsManagerInitializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'address', 'bytes32', 'address'],
-      [token.address, governance.address, mockWormhole.address, recipient, antiAbuseOracle]
+      [token.address, governance.address, mockWormhole.address, recipient, antiAbuseOracleAddress]
     )
     ethRewardsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       ethRewardsManager0.address,
@@ -84,7 +84,7 @@ contract('EthRewardsManager', async (accounts) => {
     )
 
     await _lib.assertRevert(
-      ethRewardsManagerProxy.setantiAbuseOracle(newGovernance.address, { from: accounts[7] }),
+      ethRewardsManagerProxy.setGovernanceAddress(newGovernance.address, { from: accounts[7] }),
       'Only governance'
     )
 
@@ -110,38 +110,38 @@ contract('EthRewardsManager', async (accounts) => {
     assert.equal(await ethRewardsManagerProxy.getGovernanceAddress(), newGovernance.address)
   })
 
-  it('antiAbuseOracle', async () => {
+  it('antiAbuseOracleAddress', async () => {
     await _lib.assertRevert(
-      ethRewardsManagerProxy.setantiAbuseOracle(accounts[10], { from: accounts[7] }),
+      ethRewardsManagerProxy.setAntiAbuseOracleAddress(accounts[10], { from: accounts[7] }),
       'Only governance'
     )
 
     await governance.guardianExecuteTransaction(
       ethRewardsManagerProxyKey,
       callValue0,
-      'setantiAbuseOracle(address)',
+      'setAntiAbuseOracleAddress(address)',
       _lib.abiEncode(['address'], [accounts[10]]),
       { from: guardianAddress }
     )
 
-    assert.equal(await ethRewardsManagerProxy.antiAbuseOracle(), accounts[10])
+    assert.equal(await ethRewardsManagerProxy.antiAbuseOracleAddress(), accounts[10])
   })
 
   it('recipient', async () => {
     await _lib.assertRevert(
-      ethRewardsManagerProxy.setRecipient(newRecipient, { from: accounts[7] }),
+      ethRewardsManagerProxy.setRecipientAddress(newRecipient, { from: accounts[7] }),
       'Only governance'
     )
 
     await governance.guardianExecuteTransaction(
       ethRewardsManagerProxyKey,
       callValue0,
-      'setRecipient(bytes32)',
+      'setRecipientAddress(bytes32)',
       _lib.abiEncode(['bytes32'], [newRecipient]),
       { from: guardianAddress }
     )
 
-    assert.equal(await ethRewardsManagerProxy.getRecipient(), `0x${newRecipient.toString('hex')}`)
+    assert.equal(await ethRewardsManagerProxy.getRecipientAddress(), `0x${newRecipient.toString('hex')}`)
   })
 
   it('transferToSolana', async () => {
@@ -149,6 +149,11 @@ contract('EthRewardsManager', async (accounts) => {
 
     await token.transfer(ethRewardsManagerProxy.address, amount, { from: tokenOwnerAddress })
     assert.equal((await token.balanceOf(ethRewardsManagerProxy.address)).toNumber(), amount)
+
+    await _lib.assertRevert(
+      ethRewardsManagerProxy.transferToSolana(1, { from: accounts[7] }),
+      'Only governance'
+    )
 
     await governance.guardianExecuteTransaction(
       ethRewardsManagerProxyKey,
