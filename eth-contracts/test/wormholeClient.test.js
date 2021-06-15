@@ -67,6 +67,10 @@ contract('WormholeClient', async (accounts) => {
     await registry.addContract(wormholeClientProxyKey, wormholeClientProxy.address, { from: proxyDeployerAddress })
   })
 
+  it('token', async () => {
+    assert.equal(await wormholeClient.token(), token.address)
+  })
+
   it('lock assets', async () => {
     const amount = 100
     const chainId = 1 // in ganache, the chain ID the token initializes with is always 1
@@ -97,7 +101,41 @@ contract('WormholeClient', async (accounts) => {
       nonce,
       deadline
     )
-    const result = _signatures.sign(digest, fromAcctPrivKey)
+
+    const workingResult = _signatures.sign(digest, fromAcctPrivKey)
+    const failingResult = _signatures.sign(digest, fromAcctPrivKey)
+
+    await _lib.assertRevert(
+      wormholeClient.lockAssets(
+        fromAcct,
+        amount,
+        recipient,
+        1,
+        true,
+        0,
+        workingResult.v,
+        workingResult.r,
+        workingResult.s,
+        { from: relayerAcct }
+      ),
+      'Deadline has expired'
+    )
+
+    await _lib.assertRevert(
+      wormholeClient.lockAssets(
+        accounts[10],
+        amount,
+        recipient,
+        1,
+        true,
+        deadline,
+        failingResult.v,
+        failingResult.r,
+        failingResult.s,
+        { from: relayerAcct }
+      ),
+      'Invalid signature'
+    )
 
     await wormholeClient.lockAssets(
       fromAcct,
@@ -106,9 +144,9 @@ contract('WormholeClient', async (accounts) => {
       1,
       true,
       deadline,
-      result.v,
-      result.r,
-      result.s,
+      workingResult.v,
+      workingResult.r,
+      workingResult.s,
       { from: relayerAcct }
     )
   })

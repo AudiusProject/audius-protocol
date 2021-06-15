@@ -113,7 +113,7 @@ contract WormholeClient is InitializableV2 {
         uint32 nonce = nonces[from]++;
 
         // solium-disable security/no-block-members
-        require(deadline >= block.timestamp, "AudiusToken: Deadline has expired");
+        require(deadline >= block.timestamp, "WormholeClient: Deadline has expired");
         bytes32 digest = keccak256(
             abi.encodePacked(
                 "\x19\x01",
@@ -136,7 +136,7 @@ contract WormholeClient is InitializableV2 {
         address recoveredAddress = ecrecover(digest, v, r, s);
         require(
             recoveredAddress != address(0) && recoveredAddress == from,
-            "AudiusToken: Invalid signature"
+            "WormholeClient: Invalid signature"
         );
 
         transferToken.safeTransferFrom(from, address(this), amount);
