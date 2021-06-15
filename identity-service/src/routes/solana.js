@@ -1,7 +1,11 @@
 const express = require('express')
+const crypto = require('crypto')
+
+const config = require('./config')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFeePayer } = require('../solana-client')
-const crypto = require('crypto')
+
+const solanaClusterEndpoint = config.get('solanaClusterEndpoint')
 
 const {
   Connection,
@@ -12,17 +16,12 @@ const {
   TransactionInstruction
 } = require('@solana/web3.js')
 
-// TODO: Get from config
-const solanaClusterEndpoint = 'https://api.mainnet-beta.solana.com'
-
 const solanaRouter = express.Router()
 const connection = new Connection(solanaClusterEndpoint)
 
-// Home page route.
 solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
   const redis = req.app.get('redis')
   const { recentBlockhash, secpInstruction, instruction } = req.body
-  req.logger.info(JSON.stringify(instruction, null, ' '))
 
   const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ secpInstruction, instruction })).digest('hex')
 

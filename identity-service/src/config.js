@@ -557,6 +557,12 @@ const config = convict({
     format: Number,
     env: 'ethGasMultiplier',
     default: 1.2
+  },
+  solanaClusterEndpoint: {
+    doc: 'The Solana RPC endpoint to make requests against',
+    format: String,
+    env: 'solanaClusterEndpoint',
+    default: null
   }
 })
 
