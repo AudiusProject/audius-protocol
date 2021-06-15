@@ -13,6 +13,8 @@ pub struct SignerGroup {
     pub version: u8,
     /// Pubkey of the account authorized to add/remove valid signers
     pub owner: Pubkey,
+    /// Boolean indicating whether the signer group owner is active
+    pub owner_enabled: bool,
 }
 
 /// Valid signer data
@@ -100,6 +102,7 @@ mod test {
         let signer_group = SignerGroup {
             version: 0,
             owner: Pubkey::new_from_array([1; 32]),
+            owner_enabled: true
         };
 
         let packed = signer_group.try_to_vec().unwrap();

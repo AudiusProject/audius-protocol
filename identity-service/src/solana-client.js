@@ -179,7 +179,9 @@ async function createAndVerifyMessage (
     transaction,
     [feePayerAccount],
     {
-      commitment: 'confirmed'
+      skipPreflight: true,
+      commitment: config.get('solanaTxCommitmentLevel'),
+      preflightCommitment: config.get('solanaTxCommitmentLevel')
     }
   )
 

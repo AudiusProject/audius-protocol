@@ -1,13 +1,14 @@
+const AudiusLibs = require('@audius/libs')
 const redisClient = require('./redis')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const BlacklistManager = require('./blacklistManager')
 const MonitoringQueue = require('./monitors/MonitoringQueue')
-const { SnapbackSM } = require('./snapbackSM')
-const AudiusLibs = require('@audius/libs')
+const { SnapbackSM } = require('./snapbackSM/snapbackSM')
 const config = require('./config')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
+const SyncQueue = require('./services/sync/syncQueue')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -39,6 +40,10 @@ class ServiceRegistry {
     this.libs = null
     this.snapbackSM = null
     this.URSMRegistrationManager = null
+    this.syncQueue = null
+
+    this.servicesInitialized = false
+    this.servicesThatRequireServerInitialized = false
   }
 
   /**
@@ -55,7 +60,10 @@ class ServiceRegistry {
       this.libs = await this._initAudiusLibs()
     }
 
+    // Intentionally not awaitted
     this.monitoringQueue.start()
+
+    this.servicesInitialized = true
   }
 
   /**
@@ -97,10 +105,21 @@ class ServiceRegistry {
     // Retries indefinitely
     await this._initSnapbackSM()
 
+    // SyncQueue construction (requires L1 identity)
+    // Note - passes in reference to self instance, a very sub-optimal workaround
+    this.syncQueue = new SyncQueue(
+      this.nodeConfig,
+      this.redis,
+      this.ipfs,
+      this.ipfsLatest,
+      this
+    )
+
     // L2URSMRegistration (requires L1 identity)
     // Retries indefinitely
     await this._registerNodeOnL2URSM()
 
+    this.servicesThatRequireServerInitialized = true
     this.logInfo(`All services that require server successfully initialized!`)
   }
 

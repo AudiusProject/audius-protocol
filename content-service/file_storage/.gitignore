@@ -1,4 +1,0 @@
-# this allows folder structure to be committed,
-# whilst still ignoring local storage files
-*
-!.gitignore

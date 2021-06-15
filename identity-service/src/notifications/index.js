@@ -214,7 +214,7 @@ class NotificationProcessor {
     const startDate = Date.now()
     const startTime = process.hrtime()
 
-    logger.info({ minBlock, oldMaxBlockNumber, startDate }, `${new Date()} - notifications main indexAll job`)
+    logger.info(`notifications main indexAll job - minBlock: ${minBlock}, oldMaxBlockNumber: ${oldMaxBlockNumber}, startDate: ${startDate}, startTime: ${new Date()}`)
 
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
@@ -222,6 +222,7 @@ class NotificationProcessor {
     // Below can be toggled once milestones are calculated in discovery
     // let listenCounts = await calculateTrackListenMilestones()
     let listenCounts = await calculateTrackListenMilestonesFromDiscovery(discoveryProvider)
+    logger.info(`notifications main indexAll job - calculateTrackListenMilestonesFromDiscovery complete`)
 
     let trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
 
@@ -244,6 +245,7 @@ class NotificationProcessor {
     let notifications = body.data.notifications
     let milestones = body.data.milestones
     let owners = body.data.owners
+    logger.info(`notifications main indexAll job - query notifications from discovery node complete`)
 
     // Use a single transaction
     const tx = await models.sequelize.transaction()
@@ -259,24 +261,29 @@ class NotificationProcessor {
 
       // Insert the notifications into the DB to make it easy for users to query for their grouped notifications
       await processNotifications(notifications, tx)
+      logger.info(`notifications main indexAll job - processNotifications complete`)
 
       // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
       await sendNotifications(audiusLibs, notifications, tx)
+      logger.info(`notifications main indexAll job - sendNotifications complete`)
 
       await indexMilestones(milestones, owners, metadata, listenCountWithOwners, audiusLibs, tx)
+      logger.info(`notifications main indexAll job - indexMilestones complete`)
 
       // Fetch trending track milestones
       await indexTrendingTracks(audiusLibs, tx)
+      logger.info(`notifications main indexAll job - indexTrendingTracks complete`)
 
       // Commit
       await tx.commit()
 
       // actually send out push notifications
       await drainPublishedMessages()
+      logger.info(`notifications main indexAll job - drainPublishedMessages complete`)
 
       const endTime = process.hrtime(startTime)
       const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
-      logger.info({ minBlock, startDate, duration, notifications: notifications.length }, `indexAll - finished main notification index job`)
+      logger.info(`notifications main indexAll job finished - minBlock: ${minBlock}, startDate: ${startDate}, duration: ${duration}, notifications: ${notifications.length}`)
     } catch (e) {
       logger.error(`Error indexing notification ${e}`)
       logger.error(e.stack)

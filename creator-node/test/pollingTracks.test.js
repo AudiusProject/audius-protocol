@@ -654,7 +654,7 @@ function getReqObj (fileUUID, fileDir, session) {
  * TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
 */
 function _getTestSegmentFilePathAtIndex (index) {
-  let suffix = '0'
+  let suffix = '000'
 
   if (index >= 0 && index < 10) suffix += `0${index}`
   else if (index >= 10 && index < 32) suffix += `${index}`

@@ -1,5 +1,6 @@
 from flask_restx import fields
 from .common import ns
+from .playlist_library import playlist_library
 
 associated_wallets = ns.model("associated_wallets", {
     "wallets": fields.List(fields.String, required=True)
@@ -54,7 +55,8 @@ user_model_full = ns.clone("user_full", user_model, {
     "profile_picture_sizes": fields.String,
     "profile_picture_legacy": fields.String,
     "metadata_multihash": fields.String,
-    "has_collectibles": fields.Boolean(required=True)
+    "has_collectibles": fields.Boolean(required=True),
+    "playlist_library": fields.Nested(playlist_library, allow_null=True)
 })
 
 user_replica_set = ns.model("user_replica_set", {

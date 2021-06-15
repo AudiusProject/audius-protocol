@@ -237,6 +237,20 @@ async function main () {
         await testRunner([test])
         break
       }
+      // NOTE - this test in current form does not seem to work if DEFAULT_NUM_USERS != 2
+      case 'test-blacklist': {
+        // dynamically create ipld tests
+        const blacklistTests = Object.entries(IpldBlacklistTest).map(
+          ([testName, testLogic]) =>
+            makeTest(testName, testLogic, {
+              numCreatorNodes: 1,
+              numUsers: DEFAULT_NUM_USERS,
+              useZeroIndexedWallet: true
+            })
+        )
+        await testRunner(blacklistTests)
+        break
+      }
       case 'test-ci': {
         const coreIntegrationTests = makeTest('consistency:ci', coreIntegration, {
           numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
@@ -247,6 +261,7 @@ async function main () {
           numUsers: SNAPBACK_NUM_USERS
         })
 
+        // NOTE - this test in current form does not seem to work if DEFAULT_NUM_USERS != 2
         // dynamically create ipld tests
         const blacklistTests = Object.entries(IpldBlacklistTest).map(
           ([testName, testLogic]) =>

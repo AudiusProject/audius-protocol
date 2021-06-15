@@ -166,6 +166,7 @@ class User(Base):
     secondary_ids = Column(postgresql.ARRAY(Integer), nullable=True)
     replica_set_update_signer = Column(String, nullable=True)
     has_collectibles = Column(Boolean, nullable=False, default=False, server_default='false')
+    playlist_library = Column(JSONB, nullable=True)
 
     PrimaryKeyConstraint(is_current, user_id, blockhash, txhash)
 
@@ -302,6 +303,7 @@ class Playlist(Base):
     upc = Column(String)
     is_current = Column(Boolean, nullable=False)
     is_delete = Column(Boolean, nullable=False)
+    last_added_to = Column(DateTime, nullable=True)
     updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
 
@@ -858,3 +860,22 @@ playlist_id={self.playlist_id},\
 is_album={self.is_album},\
 repost_count={self.repost_count},\
 save_count={self.save_count}>"
+
+class SkippedTransaction(Base):
+    __tablename__ = "skipped_transactions"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    blocknumber = Column(Integer, nullable=False)
+    blockhash = Column(String, nullable=False)
+    txhash = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<SkippedTransaction(\
+id={self.id},\
+blocknumber={self.blocknumber},\
+blockhash={self.blockhash},\
+txhash={self.txhash},\
+created_at={self.created_at},\
+updated_at={self.updated_at})>"

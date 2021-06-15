@@ -3,12 +3,12 @@ const fs = require('fs-extra')
 const multer = require('multer')
 const getUuid = require('uuid/v4')
 const axios = require('axios')
-const promiseAny = require('promise.any')
 
 const config = require('./config')
 const Utils = require('./utils')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
+const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -168,50 +168,29 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     if (gatewayUrlsMapped.length > 0) {
       try {
         let response
+        // ..replace(/\/$/, "") removes trailing slashes
         logger.debug(`Attempting to fetch multihash ${multihash} by racing replica set endpoints`)
+
         decisionTree.push({ stage: 'About to race requests via gateways', vals: gatewayUrlsMapped, time: Date.now() })
-
-        const GatewayRetrievalConcurrencyLimit = 5
-
-        for (let i = 0; i < gatewayUrlsMapped.length; i += GatewayRetrievalConcurrencyLimit) {
-          const gatewayUrlsSlice = gatewayUrlsMapped.slice(i, i + GatewayRetrievalConcurrencyLimit)
-          decisionTree.push({ stage: 'Fetching from gateways', vals: gatewayUrlsSlice, time: Date.now() })
-
-          /**
-           * promiseAny(promises) resolves to the first promise that resolves, or rejects if all reject
-           * Each internal request must reject after a timeout to ensure this does not wait forever
-           */
+        // Note - Requests are intentionally not parallel to minimize additional load on gateways
+        for (let index = 0; index < gatewayUrlsMapped.length; index++) {
+          const url = gatewayUrlsMapped[index]
+          decisionTree.push({ stage: 'Fetching from gateway', vals: url, time: Date.now() })
           try {
-            const resp = await promiseAny(gatewayUrlsSlice.map(
-              async url => {
-                const gatewayResp = await axios({
-                  method: 'get',
-                  url,
-                  responseType: 'stream',
-                  timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
-                })
-
-                if (gatewayResp.data) {
-                  decisionTree.push({ stage: 'Retrieved file from gateway', vals: url, time: Date.now() })
-                  return gatewayResp
-                }
-              }
-            ))
-
-            // promiseAny resolution means file was successfully retrieved -> short-circuit loop
+            const resp = await axios({
+              method: 'get',
+              url,
+              responseType: 'stream',
+              timeout: 20000 /* 20 sec - higher timeout to allow enough time to fetch copy320 */
+            })
             if (resp.data) {
               response = resp
+              decisionTree.push({ stage: 'Retrieved file from gateway', vals: url, time: Date.now() })
               break
             }
-
-            /**
-             * Log promiseAny rejection and continue to next loop iteration
-             * This just means that file retrieval failed from current gatewayUrlsSlice
-             */
           } catch (e) {
-            logger.error(`Error fetching file from gateways ${gatewayUrlsSlice}`)
-            decisionTree.push({ stage: 'Could not retrieve file from gateways', vals: gatewayUrlsSlice, time: Date.now() })
-
+            logger.error(`Error fetching file from other cnode ${url} ${e.message}`)
+            decisionTree.push({ stage: 'Could not retrieve file from gateway', vals: url, time: Date.now() })
             continue
           }
         }
@@ -312,7 +291,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
   } catch (e) {
     decisionTree.push({ stage: `saveFileForMultihashToFS error`, vals: e.message, time: Date.now() })
     _printDecisionTreeObj(decisionTree, logger)
-    throw new Error(`saveFileForMultihashToFS - ${e}`)
+    throw new Error(`saveFileForMultihashToFS - ${e.message}`)
   }
 }
 
@@ -431,15 +410,12 @@ const trackFileUpload = multer({
   storage: trackDiskStorage,
   limits: { fileSize: MAX_AUDIO_FILE_SIZE },
   fileFilter: function (req, file, cb) {
-    const fileExtension = getFileExtension(file.originalname).slice(1)
-    // the function should call `cb` with a boolean to indicate if the file should be accepted
-    if (ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(fileExtension) && AUDIO_MIME_TYPE_REGEX.test(file.mimetype)) {
-      req.logger.info(`Filetype: ${fileExtension}`)
-      req.logger.info(`Mimetype: ${file.mimetype}`)
+    try {
+      checkFileType(req.logger, { fileName: file.originalname, fileMimeType: file.mimetype })
       cb(null, true)
-    } else {
-      req.fileFilterError = `File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}] with mime type matching ${AUDIO_MIME_TYPE_REGEX}, got file ${fileExtension} with mime ${file.mimetype}`
-      cb(new Error(req.fileFilterError))
+    } catch (e) {
+      req.fileFilterError = e.message
+      cb(e)
     }
   }
 })
@@ -461,6 +437,58 @@ const handleTrackContentUpload = (req, res, next) => {
 
 function getFileExtension (fileName) {
   return (fileName.lastIndexOf('.') >= 0) ? fileName.substr(fileName.lastIndexOf('.')).toLowerCase() : ''
+}
+
+/**
+ * Checks the file type. Throws an error if not accepted.
+ * @param {Object} logger the logger instance from the express request object
+ * @param {Object} param
+ * @param {string} param.fileName the file name
+ * @param {string} param.fileMimeType the file type
+ */
+function checkFileType (logger, { fileName, fileMimeType }) {
+  const fileExtension = getFileExtension(fileName).slice(1)
+  // the function should call `cb` with a boolean to indicate if the file should be accepted
+  if (ALLOWED_UPLOAD_FILE_EXTENSIONS.includes(fileExtension) && AUDIO_MIME_TYPE_REGEX.test(fileMimeType)) {
+    logger.info(`Filetype: ${fileExtension}`)
+    logger.info(`Mimetype: ${fileMimeType}`)
+  } else {
+    throw new Error(`File type not accepted. Must be one of [${ALLOWED_UPLOAD_FILE_EXTENSIONS}] with mime type matching ${AUDIO_MIME_TYPE_REGEX}, got file ${fileExtension} with mime ${fileMimeType}`)
+  }
+}
+
+/**
+ * Checks the file size. Throws an error if file is too big.
+ * @param {number} fileSize file size in bytes
+ */
+function checkFileSize (fileSize) {
+  if (fileSize > MAX_AUDIO_FILE_SIZE) {
+    throw new Error(`File exceeded maximum size (${MAX_AUDIO_FILE_SIZE}): fileSize=${fileSize}`)
+  }
+}
+
+/**
+ * The middleware fn that checks file data existence, and calls `checkFileType` and `checkFileSize`.
+ * @param {Object} req express request object
+ * @param {string} req.filename the file name
+ * @param {string} req.filemimetype the file type
+ * @param {number} req.filesize file size in bytes
+ * @param {Object} res express response object
+ * @param {function} next callback to proceed to the next handler
+ */
+function checkFileMiddleware (req, res, next) {
+  const { filename: fileName, filetype: fileMimeType, filesize: fileSize } = req.headers
+  try {
+    if (!fileName || !fileMimeType || !fileSize) {
+      throw new Error(`Some/all file data not present: fileName=${fileName} fileType=${fileMimeType} fileSize=${fileSize}`)
+    }
+    checkFileType(req.logger, { fileName, fileMimeType })
+    checkFileSize(fileSize)
+  } catch (e) {
+    return sendResponse(req, res, errorResponseBadRequest(e.message))
+  }
+
+  return next()
 }
 
 /**
@@ -493,5 +521,7 @@ module.exports = {
   uploadTempDiskStorage,
   trackFileUpload,
   handleTrackContentUpload,
-  hasEnoughStorageSpace
+  hasEnoughStorageSpace,
+  getFileExtension,
+  checkFileMiddleware
 }

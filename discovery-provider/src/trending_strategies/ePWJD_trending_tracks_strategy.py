@@ -10,7 +10,7 @@ F = 50
 O = 1
 R = 0.25
 i = 0.01
-q = 40.0
+q = 100000.0
 T = {'day': 1, 'week':7, 'month':30, 'year':365, 'allTime': 100000}
 
 def z(time, track):
@@ -43,4 +43,4 @@ class TrendingTracksStrategyePWJD(BaseTrendingStrategy):
         return z(time, track)
 
     def get_score_params(self):
-        return {'xf': True, 'pt': 0}
+        return {'xf': True, 'pt': 0, 'nm': 5}

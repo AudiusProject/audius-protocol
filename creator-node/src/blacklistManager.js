@@ -1,6 +1,9 @@
 const { logger } = require('./logging')
 const models = require('./models')
 const redis = require('./redis')
+const config = require('./config')
+
+const CID_WHITELIST = new Set(config.get('cidWhitelist').split(','))
 
 const REDIS_SET_BLACKLIST_TRACKID_KEY = 'SET.BLACKLIST.TRACKID'
 const REDIS_SET_BLACKLIST_USERID_KEY = 'SET.BLACKLIST.USERID'
@@ -94,7 +97,12 @@ class BlacklistManager {
 
     // Retrieves CIDs from deduped trackIds
     const segmentsFromTrackIds = await this.getCIDsFromTrackIds([...trackIds])
-    const segmentCIDsToBlacklist = segmentsFromTrackIds.concat(segmentsToBlacklist)
+    let segmentCIDsToBlacklist = segmentsFromTrackIds.concat(segmentsToBlacklist)
+    let segmentCIDsToBlacklistSet = new Set(segmentCIDsToBlacklist)
+    // Filter out whitelisted CID's from the segments to remove
+    ;[...CID_WHITELIST].forEach(cid => segmentCIDsToBlacklistSet.delete(cid))
+
+    segmentCIDsToBlacklist = [...segmentCIDsToBlacklistSet]
 
     try {
       await this.addToRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToBlacklist)
@@ -138,6 +146,8 @@ class BlacklistManager {
     const tracks = await models.Track.findAll({ where: { blockchainId: trackIds } })
 
     let segmentCIDs = new Set()
+
+    // retrieve CID's from the track metadata
     for (const track of tracks) {
       if (!track.metadataJSON || !track.metadataJSON.track_segments) continue
 
@@ -145,6 +155,14 @@ class BlacklistManager {
         if (segment.multihash) {
           segmentCIDs.add(segment.multihash)
         }
+      }
+    }
+
+    // also retrieves the CID's directly from the files table so we get copy320
+    const files = await models.File.findAll({ where: { trackBlockchainId: trackIds } })
+    for (const file of files) {
+      if (file.type === 'track' || file.type === 'copy320') {
+        segmentCIDs.add(file.multihash)
       }
     }
 
