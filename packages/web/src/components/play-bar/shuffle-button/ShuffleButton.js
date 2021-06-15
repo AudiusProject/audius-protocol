@@ -35,6 +35,10 @@ class ShuffleButton extends Component {
     }
   }
 
+  componentDidMount() {
+    this.handleChange(this.state.shuffleState)
+  }
+
   componentDidUpdate(prevProps) {
     if (prevProps.animations !== this.props.animations) {
       this.handleChange(this.state.shuffleState)
