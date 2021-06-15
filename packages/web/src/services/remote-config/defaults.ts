@@ -36,7 +36,10 @@ export const remoteConfigStringDefaults: {
   [StringKeys.FORCE_MP3_STREAM_TRACK_IDS]: null,
   [StringKeys.TF]: null,
   [StringKeys.TPF]: null,
-  [StringKeys.UTF]: null
+  [StringKeys.UTF]: null,
+  [StringKeys.TRENDING_EXPERIMENT]: null,
+  [StringKeys.PLAYLIST_TRENDING_EXPERIMENT]: null,
+  [StringKeys.UNDERGROUND_TRENDING_EXPERIMENT]: null
 }
 export const remoteConfigDoubleDefaults: {
   [key in DoubleKeys]: number | null
