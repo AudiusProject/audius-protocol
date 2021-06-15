@@ -9,11 +9,11 @@ bp = Blueprint("user_signals", __name__)
 
 @bp.route("/user_signals", methods=["GET"])
 def user_signals():
+    handle = request.args.get("handle")
+    if not handle:
+        return error_response("Please pass in a handle")
     try:
-        handle = request.args.get("handle")
-        if not handle:
-            raise Exception("Please pass in a handle")
         response = get_user_signals(handle)
-        return success_response(response, 200)
+        return success_response(response)
     except Exception as e:
-        return error_response(e)
+        return error_response(f"Request failed: {e}")
