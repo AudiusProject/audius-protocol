@@ -36,6 +36,10 @@ class RepeatButton extends Component {
     }
   }
 
+  componentDidMount() {
+    this.handleChange(this.state.repeatState)
+  }
+
   componentDidUpdate(prevProps) {
     if (prevProps.animations !== this.props.animations) {
       this.handleChange(this.state.repeatState)
