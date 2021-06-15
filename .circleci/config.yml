@@ -23,6 +23,7 @@ jobs:
           command: |
             cd ../
             mkdir -p ~/.ssh && touch ~/.ssh/config && echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
+            nvm install v14.16
 
       # Download and cache dependencies
 
