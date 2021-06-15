@@ -1,5 +1,6 @@
 import * as _lib from '../utils/lib.js'
 import * as _signatures from '../utils/signatures.js'
+const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
 const MockWormhole = artifacts.require('MockWormhole')
 const WormholeClient = artifacts.require('WormholeClient')
@@ -137,7 +138,7 @@ contract('WormholeClient', async (accounts) => {
       'Invalid signature'
     )
 
-    await wormholeClient.lockAssets(
+    const tx = await wormholeClient.lockAssets(
       fromAcct,
       amount,
       recipient,
@@ -149,5 +150,16 @@ contract('WormholeClient', async (accounts) => {
       workingResult.s,
       { from: relayerAcct }
     )
+
+    await expectEvent.inTransaction(tx.tx, MockWormhole, 'LogTokensLocked', {
+      targetChain: '1',
+      tokenChain: '2',
+      tokenDecimals: await token.decimals(),
+      token: web3.utils.padLeft(token.address, 64).toLowerCase(),
+      sender: web3.utils.padLeft(wormholeClient.address, 64).toLowerCase(),
+      recipient: `0x${recipient.toString('hex')}`,
+      amount: amount.toString(),
+      nonce: nonce.toString()
+    })
   })
 })

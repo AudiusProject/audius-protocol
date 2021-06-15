@@ -1,5 +1,6 @@
 import * as _lib from '../utils/lib.js'
 import * as _signatures from '../utils/signatures.js'
+const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
 const MockWormhole = artifacts.require('MockWormhole')
 const EthRewardsManager = artifacts.require('EthRewardsManager')
@@ -155,13 +156,24 @@ contract('EthRewardsManager', async (accounts) => {
       'Only governance'
     )
 
-    await governance.guardianExecuteTransaction(
+    const tx = await governance.guardianExecuteTransaction(
       ethRewardsManagerProxyKey,
       callValue0,
       'transferToSolana(uint32)',
       _lib.abiEncode(['uint32'], [1]),
       { from: guardianAddress }
     )
+
+    await expectEvent.inTransaction(tx.tx, MockWormhole, 'LogTokensLocked', {
+      targetChain: '1',
+      tokenChain: '2',
+      tokenDecimals: await token.decimals(),
+      token: web3.utils.padLeft(token.address, 64).toLowerCase(),
+      sender: web3.utils.padLeft(ethRewardsManagerProxy.address, 64).toLowerCase(),
+      recipient: `0x${recipient.toString('hex')}`,
+      amount: amount.toString(),
+      nonce: '1'
+    })
 
     assert.equal((await token.balanceOf(ethRewardsManagerProxy.address)).toNumber(), 0)
     assert.equal((await token.balanceOf(mockWormhole.address)).toNumber(), 100)
