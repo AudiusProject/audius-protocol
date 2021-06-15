@@ -505,10 +505,10 @@ const config = convict({
     default: ''
   },
   solanaEndpoint: {
-    doc: 'solanaEndpoint',
+    doc: 'The Solana RPC endpoint to make requests against',
     format: String,
-    default: '',
-    env: 'solanaEndpoint'
+    env: 'solanaEndpoint',
+    default: null
   },
   solanaTrackListenCountAddress: {
     doc: 'solanaTrackListenCountAddress',
@@ -557,12 +557,6 @@ const config = convict({
     format: Number,
     env: 'ethGasMultiplier',
     default: 1.2
-  },
-  solanaClusterEndpoint: {
-    doc: 'The Solana RPC endpoint to make requests against',
-    format: String,
-    env: 'solanaClusterEndpoint',
-    default: null
   }
 })
 

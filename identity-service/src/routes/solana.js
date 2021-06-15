@@ -5,7 +5,7 @@ const config = require('../config')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
 const { getFeePayer } = require('../solana-client')
 
-const solanaClusterEndpoint = config.get('solanaClusterEndpoint')
+const solanaEndpoint = config.get('solanaEndpoint')
 
 const {
   Connection,
@@ -17,7 +17,7 @@ const {
 } = require('@solana/web3.js')
 
 const solanaRouter = express.Router()
-const connection = new Connection(solanaClusterEndpoint)
+const connection = new Connection(solanaEndpoint)
 
 solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
   const redis = req.app.get('redis')

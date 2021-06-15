@@ -60,5 +60,5 @@
   "recaptchaServiceKey": "",
   "solanaFeePayerWallet": "[]",
   "sentryDSN": "",
-  "solanaClusterEndpoint": "https://api.mainnet-beta.solana.com"
+  "solanaEndpoint": "https://api.mainnet-beta.solana.com"
 }
