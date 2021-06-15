@@ -25,7 +25,7 @@ class SyncHistoryAggregator {
    * Records a sync success
    * @param {Object} logContext the log context taken off of the Express req object
    */
-  static async recordSyncSuccess (logContext) {
+  static async recordSyncSuccess (logContext = {}) {
     await SyncHistoryAggregator.recordSyncData({
       state: SYNC_STATES.success,
       timeOfEvent: new Date().toISOString(), // ex: "2021-05-28T01:05:20.294Z"
@@ -37,7 +37,7 @@ class SyncHistoryAggregator {
    * Records a sync fail
    * @param {Object} logContext the log context taken off of the Express req object
    */
-  static async recordSyncFail (logContext) {
+  static async recordSyncFail (logContext = {}) {
     await SyncHistoryAggregator.recordSyncData({
       state: SYNC_STATES.fail,
       timeOfEvent: new Date().toISOString(), // ex: "2021-05-28T01:05:20.294Z"
@@ -99,11 +99,11 @@ class SyncHistoryAggregator {
   /**
    * Returns the aggregate sync data of the current day's number of successful, failed,
    * and triggered syncs
-   * @param {Object} logContext the log context off of the Express req object
+   * @param {Object?} logContext the log context off of the Express req object
    * @returns an object of the current day's aggregate sync count like
    *    {triggered: <natural number>, success: <natural number>, fail: <natural number>}
    */
-  static async getAggregateSyncData (logContext) {
+  static async getAggregateSyncData (logContext = {}) {
     const logger = genericLogger.child(logContext)
     let currentAggregateData = {
       success: 0,
@@ -134,11 +134,11 @@ class SyncHistoryAggregator {
   /**
    * Returns the date of the latest successful and failed sync. Will be `null` if a sync with those
    * states have not been triggered.
-   * @param {Object} logContext the log context off of the Express req object
+   * @param {Object?} logContext the log context off of the Express req object
    * @returns an object of the current day's aggregate sync count like
    *     {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
    */
-  static async getLatestSyncData (logContext) {
+  static async getLatestSyncData (logContext = {}) {
     const logger = genericLogger.child(logContext)
     let currentLatestSyncData = {
       success: null,
@@ -162,10 +162,11 @@ class SyncHistoryAggregator {
 
   /**
    * Retrieves the redis keys used for storing aggregate sync counts
+   * @param {string?} date string with the structure YYYY-MM-DD. defaulted to today's date
    * @returns an object of the `success` and `fail` redis keys for the aggregate sync count
    */
-  static getAggregateSyncKeys () {
-    const prefix = `aggregateSync:::${new Date().toISOString().split('T')[0]}`
+  static getAggregateSyncKeys (date = new Date().toISOString().split('T')[0]) {
+    const prefix = `aggregateSync:::${date}`
 
     // ex: aggregateSync:::2021-06-01:::success
     return {
@@ -176,10 +177,11 @@ class SyncHistoryAggregator {
 
   /**
    * Retreives the redis keys used for storing latest sync dates
+   * @param {string?} date string with the structure YYYY-MM-DD. defaulted to today's date
    * @returns an object of the `succes` and `fail` redis keys for the latest sync dates
    */
-  static getLatestSyncKeys () {
-    const prefix = `latestSync:::${new Date().toISOString().split('T')[0]}`
+  static getLatestSyncKeys (date = new Date().toISOString().split('T')[0]) {
+    const prefix = `latestSync:::${date}`
 
     // ex: latestSync:::2021-06-01:::success
     return {

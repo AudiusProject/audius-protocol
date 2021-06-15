@@ -21,7 +21,6 @@ const AudiusSharedLibs = 'audius-shared-libs'
 const AudiusDiscoveryProvider = 'discovery-provider'
 const AudiusIdentityService = 'identity-service'
 const AudiusCreatorNode = 'creator-node'
-const AudiusContentService = 'content-service'
 
 let registry
 
@@ -176,14 +175,6 @@ module.exports = async callback => {
       console.log("Identity service doesn't exist, probably running via E2E setup scripts")
     }
 
-    // special case for content service which isn't run locally for E2E test or during front end dev
-    try {
-      outputJsonConfigFile(getDirectoryRoot(AudiusContentService) + '/contract-config.json')
-    }
-    catch(e){
-      console.log("Content service folder doesn't exist, probably running via E2E setup scripts")
-    }
-
     // special case for ~/.audius/config.json used by front end
     const dappOutput = os.homedir() + '/.audius'
     if (!fs.existsSync(dappOutput)) {
@@ -213,14 +204,6 @@ module.exports = async callback => {
       outputJsonConfigFile(getDirectoryRoot(AudiusCreatorNode) + '/contract-config.json')
     } catch (e) {
       console.log("Creator node dir doesn't exist, probably running via E2E setup scripts")
-    }
-
-    // special case for content service which isn't run locally for E2E test or during front end dev
-    try {
-      outputJsonConfigFile(getDirectoryRoot(AudiusContentService) + '/contract-config.json')
-    }
-    catch(e){
-      console.log("Content service folder doesn't exist, probably running via E2E setup scripts")
     }
 
     // special case for ~/.audius/config.json used by front end

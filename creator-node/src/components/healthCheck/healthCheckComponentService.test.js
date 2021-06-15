@@ -44,6 +44,18 @@ const getMonitorsMock = async (monitors) => {
         return 776.7638177541248
       case MONITORS.TRANSFERRED_BYTES_PER_SEC.name:
         return 269500
+      case MONITORS.THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT.name:
+        return 50
+      case MONITORS.THIRTY_DAY_ROLLING_SYNC_FAIL_COUNT.name:
+        return 10
+      case MONITORS.DAILY_SYNC_SUCCESS_COUNT.name:
+        return 5
+      case MONITORS.DAILY_SYNC_FAIL_COUNT.name:
+        return 0
+      case MONITORS.LATEST_SYNC_SUCCESS_TIMESTAMP.name:
+        return '2021-06-08T21:29:34.231Z'
+      case MONITORS.LATEST_SYNC_FAIL_TIMESTAMP.name:
+        return ''
       default:
         return null
     }
@@ -126,7 +138,13 @@ describe('Test Health Check Verbose', function () {
       receivedBytesPerSec: 776.7638177541248,
       transferredBytesPerSec: 269500,
       maxStorageUsedPercent: 95,
-      numberOfCPUs: 2
+      numberOfCPUs: 2,
+      thirtyDayRollingSyncSuccessCount: 50,
+      thirtyDayRollingSyncFailCount: 10,
+      dailySyncSuccessCount: 5,
+      dailySyncFailCount: 0,
+      latestSyncSuccessTimestamp: '2021-06-08T21:29:34.231Z',
+      latestSyncFailTimestamp: ''
     })
   })
 })
