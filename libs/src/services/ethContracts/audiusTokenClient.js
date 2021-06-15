@@ -118,7 +118,6 @@ class AudiusTokenClient {
     )
     return { txReceipt: tx }
   }
-
 }
 
 module.exports = AudiusTokenClient

@@ -68,9 +68,9 @@ function getLockAssetsDigest (
 ) {
   const DOMAIN_SEPARATOR = getDomainSeparator(web3, name, address, chainId)
   let innerEncoded = web3.eth.abi.encodeParameters(
-    ['bytes32', 'address', 'uint256', 'bytes32', 'uint8', 
+    ['bytes32', 'address', 'uint256', 'bytes32', 'uint8',
       'uint32', 'bool', 'uint256'],
-    [getLockAssetTypeHash(), lockAssets.from, lockAssets.amount, lockAssets.recipient, 
+    [getLockAssetTypeHash(), lockAssets.from, lockAssets.amount, lockAssets.recipient,
       lockAssets.targetChain, nonce, lockAssets.refundDust, deadline]
   )
   let encoded = pack(

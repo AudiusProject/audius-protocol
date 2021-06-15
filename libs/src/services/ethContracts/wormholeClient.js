@@ -11,7 +11,6 @@ class WormholeClient {
 
   /* ------- SETTERS ------- */
 
-
   async lockAssets (
     fromAcct,
     amount,
@@ -34,8 +33,6 @@ class WormholeClient {
       signedDigest.s
     )
 
-    console.log({ method })
-
     const tx = await this.ethWeb3Manager.relayTransaction(
       method,
       this.contractAddress,
@@ -44,7 +41,7 @@ class WormholeClient {
       /* retries */ 0
     )
     return { txReceipt: tx }
-  } 
+  }
 }
 
 module.exports = WormholeClient

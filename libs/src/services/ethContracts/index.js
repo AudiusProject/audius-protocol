@@ -42,10 +42,19 @@ const serviceTypeList = Object.values(serviceType)
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 class EthContracts {
-  constructor (ethWeb3Manager, tokenContractAddress, registryAddress, claimDistributionContractAddress, isServer, isDebug = false) {
+  constructor (
+    ethWeb3Manager,
+    tokenContractAddress,
+    registryAddress,
+    claimDistributionContractAddress,
+    wormholeContractAddress,
+    isServer,
+    isDebug = false
+  ) {
     this.ethWeb3Manager = ethWeb3Manager
     this.tokenContractAddress = tokenContractAddress
     this.claimDistributionContractAddress = claimDistributionContractAddress
+    this.wormholeContractAddress = wormholeContractAddress
     this.registryAddress = registryAddress
     this.isServer = isServer
     this.isDebug = isDebug
@@ -129,7 +138,7 @@ class EthContracts {
     this.WormholeClient = new WormholeClient(
       this.ethWeb3Manager,
       WormholeABI,
-      '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7', // contractAddress
+      this.wormholeContractAddress,
       this.AudiusTokenClient
     )
 
