@@ -1,16 +1,19 @@
 import json
 import logging
 from src.models import Challenge
+from os import path
+import pathlib
 
 logger = logging.getLogger(__name__)
 
 def get_challenges_dicts():
-    with open("challenges.json") as f:
+    challenges_path = path.join(pathlib.Path(__file__).parent, 'challenges.json')
+    with open(challenges_path) as f:
         raw = f.read()
         parsed = json.loads(raw)
         return parsed
 
-def create_challenges(db):
+def create_new_challenges(db):
     challenges_dicts = get_challenges_dicts()
     challenges = []
     with db.scoped_session() as session:

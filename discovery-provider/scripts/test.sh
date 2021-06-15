@@ -81,7 +81,7 @@ docker-compose \
 sleep 5
 
 # Unit tests
-pytest src
+# pytest src
 
 # Integration tests
 pytest tests

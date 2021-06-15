@@ -14,7 +14,7 @@ class ProfileChallengeUpdater(ChallengeUpdater):
         completion_map = {completion.user_id: completion for completion in partial_completions}
 
         if event == ChallengeEvent.profile_update:
-            users = get_users(session, user_ids)
+            users = get_user_dicts(session, user_ids)
             self._handle_profile_updates(completion_map, users)
 
         elif event == ChallengeEvent.repost:
@@ -42,21 +42,21 @@ class ProfileChallengeUpdater(ChallengeUpdater):
                 profile_name=False,
                 profile_picture=False,
                 profile_cover_photo=False,
-                follows_complete=False,
-                reposts_complete=False,
-                favorites_complete=False
+                follows=False,
+                reposts=False,
+                favorites=False
             ) for user_id in user_ids]
         session.add_all(profile_completion_challenges)
 
     # Helpers
 
-    def _handle_profile_updates(self, completion_map, users):
-        for user in users:
-            completion = completion_map[user.user_id]
-            completion.profile_description = user.bio is not None
-            completion.profile_name = user.name is not None
-            completion.profile_picture = user.profile_picture is not None or user.profile_picture_sizes is not None
-            completion.profile_cover_photo = user.cover_photo is not None or user.cover_photo_sizes is not None
+    def _handle_profile_updates(self, completion_map, user_dicts):
+        for user in user_dicts:
+            completion = completion_map[user["user_id"]]
+            completion.profile_description = user["bio"] is not None
+            completion.profile_name = user["name"] is not None
+            completion.profile_picture = user["profile_picture"] is not None or user["profile_picture_sizes"] is not None
+            completion.profile_cover_photo = user["cover_photo"] is not None or user["cover_photo_sizes"] is not None
 
     def _handle_reposts(self, session, partial_completions):
         user_ids = list(map(lambda x: x.user_id, partial_completions))
@@ -68,7 +68,7 @@ class ProfileChallengeUpdater(ChallengeUpdater):
         reposts_counter = Counter(map(lambda x: x.user_id, reposts))
 
         for completion in partial_completions:
-            completion.reposts_complete = reposts_counter[completion.user_id] >= REPOST_THRESHOLD
+            completion.reposts = reposts_counter[completion.user_id] >= REPOST_THRESHOLD
 
     def _handle_follow(self, session, partial_completions):
         user_ids = list(map(lambda x: x.user_id, partial_completions))
@@ -79,7 +79,7 @@ class ProfileChallengeUpdater(ChallengeUpdater):
         ).all()
         follows_counter = Counter(map(lambda x: x.follower_user_id, follows))
         for completion in partial_completions:
-            completion.follows_complete = follows_counter[completion.user_id] >= FOLLOW_THRESHOLD
+            completion.follows = follows_counter[completion.user_id] >= FOLLOW_THRESHOLD
 
     def _handle_favorite(self, session, partial_completions):
         user_ids = list(map(lambda x: x.user_id, partial_completions))
@@ -90,17 +90,17 @@ class ProfileChallengeUpdater(ChallengeUpdater):
         ).all()
         follows_counter = Counter(map(lambda x: x.user_id, favorites))
         for completion in partial_completions:
-            completion.favorites_complete = follows_counter[completion.user_id] >= FAVORITES_THRESHOLD
+            completion.favorites = follows_counter[completion.user_id] >= FAVORITES_THRESHOLD
 
     def _get_steps_complete(self, partial_challenge):
         return (
             partial_challenge.profile_description +
-            partial_challenge.profile_name + 
+            partial_challenge.profile_name +
             partial_challenge.profile_picture +
             partial_challenge.profile_cover_photo +
-            partial_challenge.follows_complete +
-            partial_challenge.favorites_complete +
-            partial_challenge.reposts_complete
+            partial_challenge.follows +
+            partial_challenge.favorites +
+            partial_challenge.reposts
         )
 
 profile_challenge_manager = ChallengeManager('profile_completion', ProfileChallengeUpdater())
@@ -109,8 +109,28 @@ profile_challenge_manager = ChallengeManager('profile_completion', ProfileChalle
 def get_profile_completion_challenges(session, user_ids):
     return session.query(ProfileCompletionChallenge).filter(ProfileCompletionChallenge.user_id.in_(user_ids)).all()
 
-def get_users(session, user_ids):
-    return session.query(User).filter(User.user_id.in_(user_ids)).all()
+def get_user_dicts(session, user_ids):
+    res = (session.query(
+                User.bio,
+                User.name,
+                User.profile_picture,
+                User.profile_picture_sizes,
+                User.cover_photo,
+                User.cover_photo_sizes,
+                User.user_id,
+            ).filter(
+                User.user_id.in_(user_ids),
+                User.is_current == True
+            )).all()
+    return [{
+        "bio": attr[0],
+        "name": attr[1],
+        "profile_picture": attr[2],
+        "profile_picture_sizes": attr[3],
+        "cover_photo": attr[4],
+        "cover_photo_sizes": attr[5],
+        "user_id": attr[6]
+    } for attr in res]
 
 def get_aggregate_users(session, user_ids):
     return session.query(AggregateUser).filter(AggregateUser.user_id.in_(user_ids)).all()

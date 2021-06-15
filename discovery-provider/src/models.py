@@ -885,13 +885,23 @@ class ChallengeType(str, enum.Enum):
     numeric = 'numeric'
 
 class Challenge(Base):
+    """Represents a particular challenge type"""
     __tablename__ = "challenges"
 
+    # Identifies this challenge
     id = Column(String, primary_key=True, nullable=False, index=True)
+    # Whether the challenge is boolean (fully complete or not) or numeric (allows partial completion)
     type = Column(Enum(ChallengeType), nullable=False)
-    amount = Column(Integer, nullable=False)
+    # The amount of wAudio to disburse (9 decimals)
+    amount = Column(String, nullable=False)
+    # Whether the challenge is currently active
     active = Column(Boolean, nullable=False)
+    # Optional field to support numeric challenges,
+    # representing the number of steps to complete the challenge
     step_count = Column(Integer)
+    # Optional field for non-retroactive challenges -
+    # if set, events emitted prior to the starting_block
+    # will be ignord.
     starting_block = Column(Integer)
 
     def __repr__(self):
@@ -905,6 +915,7 @@ starting_block={self.starting_block},\
 "
 
 class UserChallenge(Base):
+    """Represents user progress through a particular challenge."""
     __tablename__ = "user_challenges"
 
     challenge_id = Column(String, ForeignKey("challenges.id"), nullable=False)
@@ -951,9 +962,9 @@ class ProfileCompletionChallenge(Base):
     profile_name = Column(Boolean, nullable=False)
     profile_picture = Column(Boolean, nullable=False)
     profile_cover_photo = Column(Boolean, nullable=False)
-    follows_complete = Column(Boolean, nullable=False)
-    favorites_complete = Column(Boolean, nullable=False)
-    reposts_complete = Column(Boolean, nullable=False)
+    follows = Column(Boolean, nullable=False)
+    favorites = Column(Boolean, nullable=False)
+    reposts = Column(Boolean, nullable=False)
 
     def __repr__(self):
         return f"<ProfileCompletionChallenge,\
@@ -962,7 +973,7 @@ profile_description={self.profile_description},\
 profile_name={self.profile_name},\
 profile_picture={self.profile_picture},\
 profile_cover_photo={self.profile_cover_photo},\
-follows_complete={self.follows_complete},\
+follows_complete={self.follows},\
 favorites_complete={self.favorites_complete},\
-reposts_complete={self.reposts_complete},\
+reposts_complete={self.reposts},\
 "

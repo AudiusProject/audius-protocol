@@ -19,7 +19,7 @@ def upgrade():
     op.create_table('challenges',
                     sa.Column('id', sa.String(), nullable=False, primary_key=True),
                     sa.Column('type', sa.Enum('boolean', 'numeric', name='challengetype'), nullable=False),
-                    sa.Column('amount', sa.Integer(), nullable=False),
+                    sa.Column('amount', sa.String(), nullable=False),
                     sa.Column('active', sa.Boolean(), nullable=False),
                     sa.Column('step_count', sa.Integer()),
                     sa.Column('starting_block', sa.Integer()),
@@ -37,7 +37,7 @@ def upgrade():
                     sa.Column('challenge_id', sa.String(), sa.ForeignKey('challenges.id'), nullable=False),
                     sa.Column('user_id', sa.Integer(), nullable=False),
                     sa.Column('amount', sa.Integer(), nullable=False),
-                    sa.Column('block_number', sa.Integer(), nullable=False),
+                    sa.Column('block_number', sa.Integer(), sa.ForeignKey('blocks.number'), nullable=False),
                     sa.Column('specifier', sa.String(), nullable=False),
                     sa.PrimaryKeyConstraint('challenge_id', 'specifier')
                     )
@@ -47,9 +47,9 @@ def upgrade():
                     sa.Column('profile_name', sa.Boolean(), nullable=False),
                     sa.Column('profile_picture', sa.Boolean(), nullable=False),
                     sa.Column('profile_cover_photo', sa.Boolean(), nullable=False),
-                    sa.Column('follows_complete', sa.Boolean(), nullable=False),
-                    sa.Column('favorites_complete', sa.Boolean(), nullable=False),
-                    sa.Column('reposts_complete', sa.Boolean(), nullable=False)
+                    sa.Column('follows', sa.Boolean(), nullable=False),
+                    sa.Column('favorites', sa.Boolean(), nullable=False),
+                    sa.Column('reposts', sa.Boolean(), nullable=False)
                     )
 
 def downgrade():
