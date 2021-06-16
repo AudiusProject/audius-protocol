@@ -105,8 +105,8 @@ export minimumStoragePathSize=10000000000
 # bytes; 2gb 
 export minimumMemoryAvailable=2000000000
 export maxFileDescriptorsAllocatedPercentage=95
-export minimumDailySyncCount=50
-export minimumRollingSyncCount=5000
+export minimumDailySyncCount=5
+export minimumRollingSyncCount=10
 export minimumSuccessfulSyncCountPercentage=50
 
 # tests
