@@ -111,7 +111,7 @@ class PlayBar extends Component {
 
     // If there was an intent to set initial volume and audio is defined
     // set the initial volume
-    if (this.state.initialVolume && audio) {
+    if (this.state.initialVolume !== null && audio) {
       audio.setVolume(this.state.initialVolume)
       this.setState({
         initialVolume: null
