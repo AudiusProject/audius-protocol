@@ -10,7 +10,7 @@ pytest==6.0.1
 SQLAlchemy-Utils==0.33.3
 chance==0.110
 pylint==2.3.1
-ipfshttpclient==0.6.0
+ipfshttpclient==0.7.0
 pytest-cov==2.6.0
 pytest-dotenv==0.5.2
 flask-cors==3.0.6
