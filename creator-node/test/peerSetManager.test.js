@@ -132,8 +132,8 @@ describe('test peerSetManager()', () => {
       assert.fail('Should not have considered latest sync history if vars are not present')
     }
 
-    verboseHealthCheckResp.dailySyncSuccessCount = 5
-    verboseHealthCheckResp.dailySyncFailCount = 10
+    verboseHealthCheckResp.dailySyncSuccessCount = 2
+    verboseHealthCheckResp.dailySyncFailCount = 1
 
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
@@ -166,7 +166,7 @@ describe('test peerSetManager()', () => {
     }
 
     verboseHealthCheckResp.thirtyDayRollingSyncSuccessCount = 5
-    verboseHealthCheckResp.thirtyDayRollingSyncFailCount = 10
+    verboseHealthCheckResp.thirtyDayRollingSyncFailCount = 1
 
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
