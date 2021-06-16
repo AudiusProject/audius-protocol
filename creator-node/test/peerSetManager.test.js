@@ -65,7 +65,7 @@ describe('test peerSetManager()', () => {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
       assert.fail('Should not have passed without meeting minimum storage requirements')
     } catch (e) {
-      // Swallow error
+      assert.ok(e.message.includes('storage'))
     }
   })
 
@@ -91,7 +91,7 @@ describe('test peerSetManager()', () => {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
       assert.fail('Should not have passed without meeting minimum memory requirements')
     } catch (e) {
-      // Swallow error
+      assert.ok(e.message.includes('memory'))
     }
   })
 
@@ -115,7 +115,7 @@ describe('test peerSetManager()', () => {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
       assert.fail('Should not have passed when surpassing file descriptors open threshold')
     } catch (e) {
-      // Swallow error
+      assert.ok(e.message.includes('file descriptors'))
     }
   })
 
@@ -142,12 +142,13 @@ describe('test peerSetManager()', () => {
     }
 
     verboseHealthCheckResp.dailySyncSuccessCount = 5
-    verboseHealthCheckResp.dailySyncFailCount = 30
+    verboseHealthCheckResp.dailySyncFailCount = 55
 
     try {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
-    } catch (e) {
       assert.fail('Should not have passed when fail count percentage is greater than success count')
+    } catch (e) {
+      assert.ok(e.message.includes('sync data'))
     }
   })
 
@@ -180,7 +181,7 @@ describe('test peerSetManager()', () => {
       peerSetManager.determinePeerHealth(verboseHealthCheckResp)
       assert.fail('Should not have passed when fail count percentage is greater than success count')
     } catch (e) {
-      // Swallow error
+      assert.ok(e.message.includes('sync data'))
     }
   })
 

@@ -99,6 +99,16 @@ export delegatePrivateKey="0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9a
 export creatorNodeEndpoint="http://localhost:5000"
 export spOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
 
+# Setting peerSetManager env vars
+# bytes; 100gb
+export minimumStoragePathSize=100000000000
+# bytes; 6gb 
+export minimumMemoryAvailable=6000000000
+export maxFileDescriptorsAllocatedPercentage=95
+export minimumDailySyncCount=50
+export minimumRollingSyncCount=5000
+export minimumSuccessfulSyncCountPercentage=50
+
 # tests
 run_unit_tests
 run_integration_tests
