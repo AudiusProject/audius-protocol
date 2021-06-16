@@ -223,6 +223,7 @@ const PlaylistLibrary = ({
           switch (identifier.type) {
             case 'explore_playlist': {
               const playlist = SMART_COLLECTION_MAP[identifier.playlist_id]
+              if (!playlist) return null
               return renderExplorePlaylist(playlist)
             }
             case 'playlist': {
