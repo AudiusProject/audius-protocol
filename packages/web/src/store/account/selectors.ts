@@ -4,6 +4,7 @@ import { getUser, getUsers } from 'store/cache/users/selectors'
 import { createSelector } from 'reselect'
 import { removeNullable } from 'utils/typeUtils'
 import { AccountCollection } from './reducer'
+import { ID } from 'models/common/Identifiers'
 
 const internalGetAccountCollections = (state: AppState) =>
   state.account.collections
@@ -84,8 +85,16 @@ export const getAccountWithCollections = createSelector(
 /**
  * Gets the account's playlist nav bar info
  */
-export const getAccountNavigationPlaylists = (state: AppState) =>
-  state.account.collections
+export const getAccountNavigationPlaylists = (state: AppState) => {
+  return Object.keys(state.account.collections).reduce((acc, cur) => {
+    const collection = state.account.collections[(cur as unknown) as number]
+    if (collection.is_album) return acc
+    return {
+      ...acc,
+      [cur]: collection
+    }
+  }, {} as { [id: number]: AccountCollection })
+}
 
 /**
  * Gets user playlists with playlists marked delete removed.
