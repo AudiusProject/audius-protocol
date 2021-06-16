@@ -1,5 +1,5 @@
 const config = require('../config')
-const { handleResponse, successResponse, errorResponseForbidden } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseBadRequest, errorResponseForbidden } = require('../apiHelpers')
 const { sequelize } = require('../models')
 
 module.exports = function (app) {
