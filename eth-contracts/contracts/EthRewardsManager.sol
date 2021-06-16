@@ -113,8 +113,6 @@ contract EthRewardsManager is InitializableV2 {
     function transferToSolana(uint32 _nonce) external {
         _requireIsInitialized();
 
-        require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
-
         uint256 balance = audiusToken.balanceOf(address(this));
         audiusToken.approve(address(wormhole), balance);
 
