@@ -492,16 +492,16 @@ const config = convict({
     default: 2000
   },
   minimumStoragePathSize: {
-    doc: 'Minimum storage size [bytes] on node to be a viable option in peer set',
+    doc: 'Minimum storage size [bytes] on node to be a viable option in peer set; 100gb',
     format: 'nat',
     env: 'minimumStoragePathSize',
     default: 100000000000
   },
   minimumMemoryAvailable: {
-    doc: 'Minimum memory available [bytes] on node to be a viable option in peer set',
+    doc: 'Minimum memory available [bytes] on node to be a viable option in peer set; 2gb',
     format: 'nat',
     env: 'minimumMemoryAvailable',
-    default: 6000000000
+    default: 2000000000
   },
   maxFileDescriptorsAllocatedPercentage: {
     doc: 'Max file descriptors allocated percentage on node to be a viable option in peer set',
@@ -525,7 +525,8 @@ const config = convict({
     doc: 'Minimum percentage of failed syncs to be considered unhealthy',
     format: 'nat',
     env: 'minimumSuccessfulSyncCountPercentage',
-    default: 50
+    // TODO: Update to higher percentage when higher threshold of syncs are passing
+    default: 0
   }
 
   // unsupported options at the moment
