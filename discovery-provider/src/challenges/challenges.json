@@ -1,6 +1,6 @@
 [
 	{
-		"id": "profile_completion",
+		"id": "profile-completion",
 		"type": "numeric",
 		"amount": "5",
 		"active": true,
