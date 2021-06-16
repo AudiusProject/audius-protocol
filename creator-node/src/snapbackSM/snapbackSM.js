@@ -92,6 +92,14 @@ class SnapbackSM {
       return
     }
 
+    // Setup the mapping of Content Node endpoint to service provider id. Used in reconfig
+    let endpointToSPIdMap = {}
+    const contentNodes = await this.audiusLibs.ethContracts.getServiceProviderList('content-node')
+    contentNodes.forEach(cn => {
+      endpointToSPIdMap[cn.endpoint] = cn.spID
+    })
+    this.endpointToSPIdMap = endpointToSPIdMap
+
     /**
      * Initialize all queue processors
      */
@@ -231,7 +239,8 @@ class SnapbackSM {
     userWallet,
     primaryEndpoint,
     secondaryEndpoint,
-    syncType
+    syncType,
+    immediate = false
   }) {
     const queue = (syncType === SyncType.Manual) ? this.manualSyncQueue : this.recurringSyncQueue
 
@@ -252,7 +261,8 @@ class SnapbackSM {
         wallet: [userWallet],
         creator_node_endpoint: primaryEndpoint,
         // Note - `sync_type` param is only used for logging by nodeSync.js
-        sync_type: syncType
+        sync_type: syncType,
+        immediate
       }
     }
 
@@ -271,15 +281,96 @@ class SnapbackSM {
   }
 
   /**
-   * Submit POA:UserReplicaSetFactory.updateReplicaSet() transaction to move user off unhealthy node
+   * Given the existing replica set where a primary or a secondary is unhealthy,
    *
    * @dev TODO use libs for CreatorNodeSelection logic + relayed chain call
    * @dev One issue - since it doesn't actually rectify broken replica sets, this will log every time it is processed
    */
   async issueUpdateReplicaSetOp (userId, wallet, primary, secondary1, secondary2, unhealthyReplica) {
     // await libs.userReplicaSetManagerClient._updateReplicaSet(userId, primary, [new secondaries], primary, [old secondaries])
+    this.log(`Dev Mode enabled=${this.snapbackDevModeEnabled} | Updating Replica Set for userID ${userId} & wallet ${wallet} from old replicaSet [${primary},${secondary1},${secondary2}] due to unhealthy replica ${unhealthyReplica}`)
 
-    this.log(`Updating Replica Set for userID ${userId} & wallet ${wallet} from old replicaSet [${primary},${secondary1},${secondary2}] due to unhealthy replica ${unhealthyReplica}`)
+    // Only issue reconfig if in snapback dev mode
+    if (!this.snapbackDevModeEnabled) return
+
+    /* Example response structure:
+      {type: "primary", endpoint: "https://creatornode.audius.co", clockValue: 285},
+      {type: "secondary", endpoint: "https://creatornode2.audius.co", clockValue: 285},
+      {type: "secondary", endpoint: "https://creatornode3.audius.co", clockValue: 285}
+    */
+    const clockResponses = await this.audiusLibs.creatorNode.getClockValuesFromReplicaSet()
+
+    // Select a new replica set, excluding the current replica set
+    const randomReplicaSet = await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
+      blacklist: new Set(clockResponses.map(response => response.endpoint))
+    })
+
+    let newReplicaSetSPIds
+    if (unhealthyReplica === clockResponses[0].endpoint) {
+      // The primary is unhealthy
+
+      // Pick the secondary with the higher clock value as the new primary, and leave the other secondary as is
+      let newPrimary, existingSecondary
+      if (clockResponses[1].clockValue >= clockResponses[2].clockValue) {
+        newPrimary = clockResponses[1].endpoint
+        existingSecondary = clockResponses[2].endpoint
+      } else {
+        existingSecondary = clockResponses[1].endpoint
+        newPrimary = clockResponses[2].endpoint
+      }
+
+      newReplicaSetSPIds = [
+        this.endpointToSPIdMap[newPrimary],
+        this.endpointToSPIdMap[existingSecondary],
+        // Choose the primary from Content Node selection logic as the new, second secondary
+        this.endpointToSPIdMap[randomReplicaSet.primary]
+      ]
+
+      const baseSyncRequestParams = {
+        userWallet: wallet,
+        primaryEndpoint: newPrimary,
+        syncType: SyncType.Manual,
+        immediate: true
+      }
+
+      // Enqueue syncs for the new secondary and keep existing secondary up to date
+      await this.enqueueSync({ ...baseSyncRequestParams, secondaryEndpoint: randomReplicaSet.primary })
+      await this.enqueueSync({ ...baseSyncRequestParams, secondaryEndpoint: existingSecondary })
+
+      this.log(`Unhealthy primary: Updating userId=${userId} wallet=${wallet} replica set from [${primary},${secondary1},${secondary2}] to [${newPrimary},${existingSecondary},${randomReplicaSet.primary}]`)
+    } else {
+      // A secondary is unhealthy
+
+      // Pick the healthy secondary to use during reconfig
+      const existingSecondary = clockResponses[1].endpoint !== unhealthyReplica
+        ? clockResponses[1].endpoint : clockResponses[2].endpoint
+
+      newReplicaSetSPIds = [
+        this.endpointToSPIdMap[primary],
+        this.endpointToSPIdMap[existingSecondary],
+        // Choose the primary from Content Node selection logic as the new, second secondary
+        this.endpointToSPIdMap[randomReplicaSet.primary]
+      ]
+
+      const baseSyncRequestParams = {
+        userWallet: wallet,
+        primaryEndpoint: primary,
+        syncType: SyncType.Manual,
+        immediate: true
+      }
+
+      // Enqueue sync for the new secondary
+      await this.enqueueSync({ ...baseSyncRequestParams, secondaryEndpoint: randomReplicaSet.primary })
+
+      this.log(`Unhealthy secondary: Updating userId=${userId} wallet=${wallet} replica set from [${primary},${secondary1},${secondary2}] to [${primary},${existingSecondary},${randomReplicaSet.primary}]`)
+    }
+
+    // Write replica set to contract
+    await this.audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+      userId,
+      newReplicaSetSPIds[0],
+      newReplicaSetSPIds.slice(1)
+    )
   }
 
   /**
@@ -475,11 +566,15 @@ class SnapbackSM {
           // filter out this endpoint
           replicas = replicas.filter(replica => replica !== this.endpoint)
 
+          const unhealthyReplicas = []
           for (const replica of replicas) {
             if (unhealthyPeers.has(replica)) {
-              requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: replica })
+              // requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: replica })
+              unhealthyReplicas.push(replica)
             }
           }
+
+          requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
         }
       }
       decisionTree.push({
