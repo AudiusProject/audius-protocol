@@ -38,7 +38,7 @@
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
       "echo 'Migrating eth contracts'",
-      "cd eth-contracts/; node_modules/.bin/truffle migrate"
+      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 9"
     ],
     "down": [
       "cd eth-contracts/; npm run ganache-q"
