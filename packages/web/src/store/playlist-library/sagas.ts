@@ -29,7 +29,10 @@ import { makeKindId } from 'utils/uid'
 import { Kind } from 'store/types'
 import { ID } from 'models/common/Identifiers'
 import * as cacheActions from 'store/cache/actions'
-import { containsTempPlaylist } from './helpers'
+import {
+  containsTempPlaylist,
+  removePlaylistLibraryDuplicates
+} from './helpers'
 
 const TEMP_PLAYLIST_UPDATE_HELPER = 'TEMP_PLAYLIST_UPDATE_HELPER'
 
@@ -68,7 +71,7 @@ function* watchUpdatePlaylistLibrary() {
     yield call(waitForBackendSetup)
 
     const account: User = yield select(getAccountUser)
-    account.playlist_library = playlistLibrary
+    account.playlist_library = removePlaylistLibraryDuplicates(playlistLibrary)
     yield put(
       cacheActions.update(Kind.USERS, [
         {
@@ -105,7 +108,7 @@ function* watchUpdatePlaylistLibraryWithTempPlaylist() {
   ) {
     const { playlistLibrary } = action.payload
     const account: User = yield select(getAccountUser)
-    account.playlist_library = playlistLibrary
+    account.playlist_library = removePlaylistLibraryDuplicates(playlistLibrary)
 
     // Map over playlist library contents and resolve each temp id playlist
     // to one with an actual id. Once we have the actual id, we can proceed

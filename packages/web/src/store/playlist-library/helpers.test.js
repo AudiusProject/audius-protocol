@@ -3,6 +3,7 @@ import {
   findIndexInPlaylistLibrary,
   findInPlaylistLibrary,
   removeFromPlaylistLibrary,
+  removePlaylistLibraryDuplicates,
   reorderPlaylistLibrary
 } from './helpers'
 
@@ -169,6 +170,107 @@ describe('removeFromPlaylistLibrary', () => {
       ]
     })
     expect(removed).toEqual(null)
+  })
+})
+
+describe('removePlaylistLibraryDuplicates', () => {
+  it('can remove single dupes', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'playlist', playlist_id: 1 }
+      ]
+    }
+    const ret = removePlaylistLibraryDuplicates(library)
+    expect(ret).toEqual({
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 }
+      ]
+    })
+  })
+
+  it('does not remove non duplicates', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'playlist', playlist_id: 4 },
+        { type: 'playlist', playlist_id: 5 },
+        { type: 'playlist', playlist_id: 6 }
+      ]
+    }
+    const ret = removePlaylistLibraryDuplicates(library)
+    expect(ret).toEqual({
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'playlist', playlist_id: 4 },
+        { type: 'playlist', playlist_id: 5 },
+        { type: 'playlist', playlist_id: 6 }
+      ]
+    })
+  })
+
+  it('can remove multiple dupes', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'playlist', playlist_id: 3 },
+        { type: 'playlist', playlist_id: 3 }
+      ]
+    }
+    const ret = removePlaylistLibraryDuplicates(library)
+    expect(ret).toEqual({
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 }
+      ]
+    })
+  })
+
+  it('can remove nested dupes', () => {
+    const library = {
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 },
+        {
+          type: 'folder',
+          name: 'favorites',
+          contents: [
+            { type: 'playlist', playlist_id: 2 },
+            { type: 'playlist', playlist_id: 3 },
+            { type: 'playlist', playlist_id: 5 }
+          ]
+        },
+        { type: 'playlist', playlist_id: 3 }
+      ]
+    }
+    const ret = removePlaylistLibraryDuplicates(library)
+    expect(ret).toEqual({
+      contents: [
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 },
+        {
+          type: 'folder',
+          name: 'favorites',
+          contents: [{ type: 'playlist', playlist_id: 5 }]
+        }
+      ]
+    })
   })
 })
 
