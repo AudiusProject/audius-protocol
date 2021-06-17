@@ -19,9 +19,11 @@ from flask_cors import CORS
 
 from src import exceptions
 from src import api_helpers
-from src.queries import queries, search, search_queries, health_check, notifications, block_confirmation
+from src.queries import queries, search, search_queries, health_check, notifications, \
+    block_confirmation, skipped_transactions
 from src.api.v1 import api as api_v1
 from src.utils import helpers
+from src.challenges.create_new_challenges import create_new_challenges
 from src.utils.multi_provider import MultiProvider
 from src.utils.session_manager import SessionManager
 from src.utils.config import config_files, shared_config, ConfigIni
@@ -286,7 +288,7 @@ def configure_flask(test_config, app, mode="app"):
         ast.literal_eval(app.config["db"]["engine_args_literal"]),
     )
 
-
+    # Register route blueprints
     register_exception_handlers(app)
     app.register_blueprint(queries.bp)
     app.register_blueprint(search.bp)
@@ -294,9 +296,13 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(notifications.bp)
     app.register_blueprint(health_check.bp)
     app.register_blueprint(block_confirmation.bp)
+    app.register_blueprint(skipped_transactions.bp)
 
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
+
+    # Create challenges
+    create_new_challenges(app.db_session_manager)
 
     return app
 
@@ -417,6 +423,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("update_discovery_lock")
     redis_inst.delete("aggregate_metrics_lock")
     redis_inst.delete("synchronize_metrics_lock")
+    redis_inst.delete("solana_plays_lock")
     logger.info('Redis instance initialized!')
 
     # Initialize custom task context with database object

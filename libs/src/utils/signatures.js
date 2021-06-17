@@ -18,6 +18,14 @@ const getPermitTypehash = () => {
   return _permitTypehash
 }
 
+let _lockAssetsTypehash = null
+const getLockAssetTypeHash = () => {
+  if (!_lockAssetsTypehash) {
+    _lockAssetsTypehash = Utils.keccak256('LockAssets(address from,uint256 amount,bytes32 recipient,uint8 targetChain,uint32 nonce,bool refundDust,uint256 deadline)')
+  }
+  return _lockAssetsTypehash
+}
+
 // Returns the EIP712 hash which should be signed by the user
 // in order to make a call to `permit`
 function getPermitDigest (
@@ -34,6 +42,36 @@ function getPermitDigest (
   let innerEncoded = web3.eth.abi.encodeParameters(
     ['bytes32', 'address', 'address', 'uint256', 'uint256', 'uint256'],
     [getPermitTypehash(), approve.owner, approve.spender, approve.value, nonce, deadline]
+  )
+  let encoded = pack(
+    ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
+    [
+      '0x19',
+      '0x01',
+      DOMAIN_SEPARATOR,
+      Utils.keccak256(innerEncoded)
+    ]
+  )
+  return Utils.keccak256(encoded)
+}
+
+// Returns the EIP712 hash which should be signed by the user
+// in order to make a call to `lockAssets`
+function getLockAssetsDigest (
+  web3,
+  name,
+  address,
+  chainId,
+  lockAssets,
+  nonce,
+  deadline
+) {
+  const DOMAIN_SEPARATOR = getDomainSeparator(web3, name, address, chainId)
+  let innerEncoded = web3.eth.abi.encodeParameters(
+    ['bytes32', 'address', 'uint256', 'bytes32', 'uint8',
+      'uint32', 'bool', 'uint256'],
+    [getLockAssetTypeHash(), lockAssets.from, lockAssets.amount, lockAssets.recipient,
+      lockAssets.targetChain, nonce, lockAssets.refundDust, deadline]
   )
   let encoded = pack(
     ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
@@ -64,5 +102,6 @@ function getDomainSeparator (web3, name, contractAddress, chainId) {
 
 module.exports = {
   sign,
-  getPermitDigest
+  getPermitDigest,
+  getLockAssetsDigest
 }

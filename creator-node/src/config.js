@@ -273,12 +273,18 @@ const config = convict({
     default: -1
   },
 
-  // NodeSync filesave concurrency limit
+  // Sync configs
   nodeSyncFileSaveMaxConcurrency: {
     doc: 'Max concurrency of saveFileForMultihashToFS calls inside nodesync',
     format: 'nat',
     env: 'nodeSyncFileSaveMaxConcurrency',
     default: 10
+  },
+  syncQueueMaxConcurrency: {
+    doc: 'Max concurrency of SyncQueue',
+    format: 'nat',
+    env: 'syncQueueMaxConcurrency',
+    default: 50
   },
 
   // wallet information
@@ -377,7 +383,7 @@ const config = convict({
     doc: 'sync debounce time in ms',
     format: 'nat',
     env: 'debounceTime',
-    default: 30000 // 30000ms = 30s
+    default: 0 // 0ms
   },
   dataRegistryAddress: {
     doc: 'data contracts registry address',
@@ -457,7 +463,7 @@ const config = convict({
     doc: 'Array of comma separated CIDs to whitelist. Takes precedent over blacklist',
     format: String,
     env: 'cidWhitelist',
-    default: 'QmWXhUToTQX623nroEPUsBPjrpEWFUCb158FPYLDcgDZLL'
+    default: ''
   },
   enableRehydrate: {
     doc: 'Flag to enable or disable rehydrate',
@@ -476,6 +482,51 @@ const config = convict({
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
     default: 5
+  },
+
+  // peerSetManager configs
+  peerHealthCheckRequestTimeout: {
+    doc: 'Timeout [ms] for checking health check route',
+    format: 'nat',
+    env: 'peerHealthCheckRequestTimeout',
+    default: 2000
+  },
+  minimumStoragePathSize: {
+    doc: 'Minimum storage size [bytes] on node to be a viable option in peer set; 100gb',
+    format: 'nat',
+    env: 'minimumStoragePathSize',
+    default: 100000000000
+  },
+  minimumMemoryAvailable: {
+    doc: 'Minimum memory available [bytes] on node to be a viable option in peer set; 2gb',
+    format: 'nat',
+    env: 'minimumMemoryAvailable',
+    default: 2000000000
+  },
+  maxFileDescriptorsAllocatedPercentage: {
+    doc: 'Max file descriptors allocated percentage on node to be a viable option in peer set',
+    format: 'nat',
+    env: 'maxFileDescriptorsAllocatedPercentage',
+    default: 95
+  },
+  minimumDailySyncCount: {
+    doc: 'Minimum count of daily syncs that need to have occurred to consider daily sync history',
+    format: 'nat',
+    env: 'minimumDailySyncCount',
+    default: 50
+  },
+  minimumRollingSyncCount: {
+    doc: 'Minimum count of rolling syncs that need to have occurred to consider rolling sync history',
+    format: 'nat',
+    env: 'minimumRollingSyncCount',
+    default: 5000
+  },
+  minimumSuccessfulSyncCountPercentage: {
+    doc: 'Minimum percentage of failed syncs to be considered unhealthy',
+    format: 'nat',
+    env: 'minimumSuccessfulSyncCountPercentage',
+    // TODO: Update to higher percentage when higher threshold of syncs are passing
+    default: 0
   }
 
   // unsupported options at the moment

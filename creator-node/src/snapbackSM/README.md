@@ -18,6 +18,12 @@ To ensure user data is present, we must have some sort of data redundancy across
         - If there is not already a sync job enqueued
     - Else if not healthy, reassigning different replica sets to users
 
+`syncHistoryAggregator.js`
+- Records the number of sync fails and successes triggered on the current Content Node in redis
+- Records the date of the most recent sync fail and success on the current Content Node in redis
+- Returns the number of sync fails and successes triggered on the current Content Node
+- Returns the date of the most recent sync fail and success on the current Content Node
+
 ### TODO:
 - [ ] Break `snapbackSM.js` into smaller classes
 - [ ] Add more logic to make syncs more robust

@@ -59,5 +59,6 @@
   "captchaScoreSecret": "captcha_score_secret",
   "recaptchaServiceKey": "",
   "solanaFeePayerWallet": "[]",
-  "sentryDSN": ""
+  "sentryDSN": "",
+  "solanaEndpoint": "https://api.mainnet-beta.solana.com"
 }

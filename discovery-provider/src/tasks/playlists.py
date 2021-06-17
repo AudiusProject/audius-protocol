@@ -6,12 +6,19 @@ from src.utils import helpers
 from src.models import Playlist
 from src.utils.playlist_event_constants import playlist_event_types_arr, playlist_event_types_lookup
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
+from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
 
 
 def playlist_state_update(
-        self, update_task, session, playlist_factory_txs, block_number, block_timestamp
+        self,
+        update_task,
+        session,
+        playlist_factory_txs,
+        block_number,
+        block_timestamp,
+        block_hash
 ):
     """Return int representing number of Playlist model state changes found in transaction."""
     num_total_changes = 0
@@ -35,34 +42,39 @@ def playlist_state_update(
             )().processReceipt(tx_receipt)
             processedEntries = 0 # if record does not get added, do not count towards num_total_changes
             for entry in playlist_events_tx:
-                playlist_id = entry["args"]._playlistId
-                playlist_ids.add(playlist_id)
+                try:
+                    playlist_id = entry["args"]._playlistId
+                    playlist_ids.add(playlist_id)
 
-                if playlist_id not in playlist_events_lookup:
-                    existing_playlist_entry = lookup_playlist_record(
-                        update_task, session, entry, block_number, txhash
+                    if playlist_id not in playlist_events_lookup:
+                        existing_playlist_entry = lookup_playlist_record(
+                            update_task, session, entry, block_number, txhash
+                        )
+                        playlist_events_lookup[playlist_id] = {
+                            "playlist": existing_playlist_entry,
+                            "events": [],
+                        }
+
+                    playlist_record = parse_playlist_event(
+                        self,
+                        update_task,
+                        entry,
+                        event_type,
+                        playlist_events_lookup[playlist_id]["playlist"],
+                        block_timestamp,
+                        session
                     )
-                    playlist_events_lookup[playlist_id] = {
-                        "playlist": existing_playlist_entry,
-                        "events": [],
-                    }
 
-                playlist_record = parse_playlist_event(
-                    self,
-                    update_task,
-                    entry,
-                    event_type,
-                    playlist_events_lookup[playlist_id]["playlist"],
-                    block_timestamp,
-                    session
-                )
+                    if playlist_record is not None:
+                        playlist_events_lookup[playlist_id]["events"].append(event_type)
+                        playlist_events_lookup[playlist_id]["playlist"] = playlist_record
+                        processedEntries += 1
+                except Exception as e:
+                    logger.info(f"Error in parse playlist transaction")
+                    blockhash = update_task.web3.toHex(block_hash)
+                    raise IndexingError('playlist', block_number, blockhash, txhash, str(e))
 
-                if playlist_record is not None:
-                    playlist_events_lookup[playlist_id]["events"].append(event_type)
-                    playlist_events_lookup[playlist_id]["playlist"] = playlist_record
-                    processedEntries += 1
-
-            num_total_changes += processedEntries
+                num_total_changes += processedEntries
 
     logger.info(f"index.py | playlists.py | There are {num_total_changes} events processed.")
 

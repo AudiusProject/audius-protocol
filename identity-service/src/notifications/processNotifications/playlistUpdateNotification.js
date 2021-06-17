@@ -32,11 +32,11 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
 
   const userIds = Object.keys(userPlaylistUpdatesMap)
 
-  // get wallets for all user ids and map each user id to their wallet
+  // get wallets for all user ids and map each blockchain user id to their wallet
   const userIdsAndWallets = await models.User.findAll({
-    attributes: ['id', 'walletAddress'],
+    attributes: ['blockchainUserId', 'walletAddress'],
     where: {
-      id: userIds,
+      blockchainUserId: userIds,
       walletAddress: { [models.Sequelize.Op.ne]: null }
     },
     transaction: tx
@@ -47,7 +47,7 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
     userWallets.push(current.walletAddress)
     return {
       ...accumulator,
-      [current.id]: walletAddress
+      [current.blockchainUserId]: walletAddress
     }
   }, {})
 

@@ -189,3 +189,4 @@ async function createAndVerifyMessage (
 }
 
 exports.createAndVerifyMessage = createAndVerifyMessage
+exports.getFeePayer = getFeePayer

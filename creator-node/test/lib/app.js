@@ -1,6 +1,8 @@
+const nodeConfig = require('../../src/config.js')
 const { runMigrations, clearDatabase } = require('../../src/migrationManager')
 const redisClient = require('../../src/redis')
 const MonitoringQueueMock = require('./monitoringQueueMock')
+const SyncQueue = require('../../src/services/sync/syncQueue')
 
 // Initialize private IPFS gateway counters
 redisClient.set('ipfsGatewayReqs', 0)
@@ -22,8 +24,11 @@ async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClien
     libs: libsClient,
     blacklistManager: blacklistManager,
     redis: redisClient,
-    monitoringQueue: new MonitoringQueueMock()
+    monitoringQueue: new MonitoringQueueMock(),
+    // syncQueue: new SyncQueue(nodeConfig, redisClient, ipfsClient, ipfsLatestClient || ipfsClient),
+    nodeConfig
   }
+  mockServiceRegistry.syncQueue = new SyncQueue(nodeConfig, redisClient, ipfsClient, ipfsLatestClient || ipfsClient, mockServiceRegistry)
 
   // Update the import to be the mocked ServiceRegistry instance
   require.cache[require.resolve('../../src/serviceRegistry')] = {
@@ -38,6 +43,19 @@ async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClien
   return appInfo
 }
 
+function getServiceRegistryMock (ipfsClient, libsClient, blacklistManager, ipfsLatestClient = null) {
+  return {
+    ipfs: ipfsClient,
+    ipfsLatest: ipfsLatestClient || ipfsClient,
+    libs: libsClient,
+    blacklistManager: blacklistManager,
+    redis: redisClient,
+    monitoringQueue: new MonitoringQueueMock(),
+    syncQueue: new SyncQueue(nodeConfig, redisClient, ipfsClient, ipfsLatestClient || ipfsClient),
+    nodeConfig
+  }
+}
+
 function clearRequireCache () {
   Object.keys(require.cache).forEach(function (key) {
     // exclude src/models/index from the key deletion because it initalizes a new connection pool
@@ -49,4 +67,4 @@ function clearRequireCache () {
   })
 }
 
-module.exports = { getApp }
+module.exports = { getApp, getServiceRegistryMock }

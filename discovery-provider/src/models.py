@@ -860,3 +860,120 @@ playlist_id={self.playlist_id},\
 is_album={self.is_album},\
 repost_count={self.repost_count},\
 save_count={self.save_count}>"
+
+class SkippedTransaction(Base):
+    __tablename__ = "skipped_transactions"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    blocknumber = Column(Integer, nullable=False)
+    blockhash = Column(String, nullable=False)
+    txhash = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(DateTime, nullable=False, default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<SkippedTransaction(\
+id={self.id},\
+blocknumber={self.blocknumber},\
+blockhash={self.blockhash},\
+txhash={self.txhash},\
+created_at={self.created_at},\
+updated_at={self.updated_at})>"
+
+class ChallengeType(str, enum.Enum):
+    boolean = 'boolean'
+    numeric = 'numeric'
+
+class Challenge(Base):
+    """Represents a particular challenge type"""
+    __tablename__ = "challenges"
+
+    # Identifies this challenge
+    id = Column(String, primary_key=True, nullable=False, index=True)
+    # Whether the challenge is boolean (fully complete or not) or numeric (allows partial completion)
+    type = Column(Enum(ChallengeType), nullable=False)
+    # The amount of wAudio to disburse (9 decimals)
+    amount = Column(String, nullable=False)
+    # Whether the challenge is currently active
+    active = Column(Boolean, nullable=False)
+    # Optional field to support numeric challenges,
+    # representing the number of steps to complete the challenge
+    step_count = Column(Integer)
+    # Optional field for non-retroactive challenges -
+    # if set, events emitted prior to the starting_block
+    # will be ignord.
+    starting_block = Column(Integer)
+
+    def __repr__(self):
+        return f"<Challenge(\
+id={self.id},\
+type={self.type},\
+amount={self.amount},\
+active={self.active},\
+step_count={self.step_count},\
+starting_block={self.starting_block},\
+"
+
+class UserChallenge(Base):
+    """Represents user progress through a particular challenge."""
+    __tablename__ = "user_challenges"
+
+    challenge_id = Column(String, ForeignKey("challenges.id"), nullable=False)
+    user_id = Column(Integer, nullable=False)
+    specifier = Column(String, nullable=False)
+    is_complete = Column(Boolean, nullable=False)
+    current_step_count = Column(Integer)
+
+    PrimaryKeyConstraint(challenge_id, specifier)
+
+    def __repr__(self):
+        return f"<UserChallenge(\
+challenge_id={self.challenge_id},\
+user_id={self.user_id},\
+is_complete={self.is_complete},\
+current_step_count={self.current_step_count},\
+"
+
+class ChallengeDisbursement(Base):
+    __tablename__ = "challenge_disbursements"
+
+    challenge_id = Column(String, ForeignKey("challenges.id"), nullable=False)
+    user_id = Column(Integer, nullable=False)
+    amount = Column(Integer, nullable=False)
+    block_number = Column(Integer, nullable=False)
+    specifier = Column(String, nullable=False)
+
+    PrimaryKeyConstraint(challenge_id, specifier)
+
+    def __repr__(self):
+        return f"<ChallengeDisbursement,\
+challenge_id={self.challenge_id},\
+user_id={self.user_id},\
+amount={self.amount},\
+block_number={self.block_number},\
+specifier={self.specifier},\
+"
+
+class ProfileCompletionChallenge(Base):
+    __tablename__ = "challenge_profile_completion"
+
+    user_id = Column(Integer, nullable=False, primary_key=True)
+    profile_description = Column(Boolean, nullable=False)
+    profile_name = Column(Boolean, nullable=False)
+    profile_picture = Column(Boolean, nullable=False)
+    profile_cover_photo = Column(Boolean, nullable=False)
+    follows = Column(Boolean, nullable=False)
+    favorites = Column(Boolean, nullable=False)
+    reposts = Column(Boolean, nullable=False)
+
+    def __repr__(self):
+        return f"<ProfileCompletionChallenge,\
+user_id={self.user_id},\
+profile_description={self.profile_description},\
+profile_name={self.profile_name},\
+profile_picture={self.profile_picture},\
+profile_cover_photo={self.profile_cover_photo},\
+follows_complete={self.follows},\
+favorites_complete={self.favorites_complete},\
+reposts_complete={self.reposts},\
+"

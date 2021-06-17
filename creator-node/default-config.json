@@ -44,5 +44,6 @@
   "userMetadataNodeUrl": "http://docker.for.mac.localhost:4000",
   "rehydrateMaxConcurrency": 10,
   "nodeSyncFileSaveMaxConcurrency": 10,
+  "syncQueueMaxConcurrency": 50,
   "creatorNodeEndpoint": ""
 }

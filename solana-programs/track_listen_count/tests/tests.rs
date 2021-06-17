@@ -27,7 +27,7 @@ pub fn program_test() -> ProgramTest {
 async fn setup() -> (BanksClient, Keypair, Hash, Keypair, Keypair) {
     let mut test_solana_env = program_test();
     test_solana_env.add_program(
-        "audius",
+        "audius_eth_registry",
         audius_eth_registry::id(),
         processor!(audius_eth_registry::processor::Processor::process),
     );
