@@ -95,7 +95,7 @@ jobs:
           name: content-node repo init
           command: |
             source ~/.bash_profile
-            nvm install v10.16
+            nvm install v14.16
             cd creator-node/
             npm install
       - save_cache:
@@ -361,7 +361,7 @@ jobs:
   test-creator-node:
     docker:
       # specify the version you desire here
-      - image: circleci/node:14.16
+      - image: circleci/node:14.16  
       - image: ipfs/go-ipfs:release
       - image: circleci/postgres:11.1
         environment:
