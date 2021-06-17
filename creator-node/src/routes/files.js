@@ -26,7 +26,7 @@ const {
   authMiddleware,
   ensurePrimaryMiddleware,
   syncLockMiddleware,
-  triggerSecondarySyncs,
+  triggerAndWaitForSecondarySyncs,
   ensureStorageMiddleware
 } = require('../middlewares')
 const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, findCIDInNetwork, timeout } = require('../utils')
@@ -425,6 +425,7 @@ module.exports = function (app) {
 
     // Record image file entries in DB
     const transaction = await models.sequelize.transaction()
+    let newDataRecord
     try {
       // Record dir file entry in DB
       const createDirFileQueryObj = {
@@ -433,7 +434,7 @@ module.exports = function (app) {
         storagePath: resizeResp.dir.dirDestPath,
         type: 'dir' // TODO - replace with models enum
       }
-      await DBManager.createNewDataRecord(createDirFileQueryObj, cnodeUserUUID, models.File, transaction)
+      newDataRecord = await DBManager.createNewDataRecord(createDirFileQueryObj, cnodeUserUUID, models.File, transaction)
 
       // Record all image res file entries in DB
       // Must be written sequentially to ensure clock values are correctly incremented and populated
@@ -446,7 +447,7 @@ module.exports = function (app) {
           dirMultihash: dirCID,
           fileName: file.sourceFile.split('/').slice(-1)[0]
         }
-        await DBManager.createNewDataRecord(createImageFileQueryObj, cnodeUserUUID, models.File, transaction)
+        newDataRecord = await DBManager.createNewDataRecord(createImageFileQueryObj, cnodeUserUUID, models.File, transaction)
       }
 
       req.logger.info(`route time = ${Date.now() - routestart}`)
@@ -456,7 +457,10 @@ module.exports = function (app) {
       return errorResponseServerError(e)
     }
 
-    triggerSecondarySyncs(req)
+    const primaryClockVal = newDataRecord.clock
+    // Must be awaitted and cannot be try-catched, ensuring that error from inside this rejects request
+    await triggerAndWaitForSecondarySyncs(req, { primaryClockVal, immediate: true, enforceQuorum: false })
+
     return successResponse({ dirCID })
   }))
 

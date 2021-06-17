@@ -29,7 +29,7 @@ const {
   authMiddleware,
   ensurePrimaryMiddleware,
   syncLockMiddleware,
-  triggerSecondarySyncs,
+  triggerAndWaitForSecondarySyncs,
   ensureStorageMiddleware
 } = require('../middlewares')
 const TranscodingQueue = require('../TranscodingQueue')
@@ -613,7 +613,10 @@ module.exports = function (app) {
       }
 
       await transaction.commit()
-      triggerSecondarySyncs(req)
+
+      const primaryClockVal = updatedCNodeUser.clock
+      await triggerAndWaitForSecondarySyncs(req, { primaryClockVal, immediate: true, enforceQuorum: false })
+
       return successResponse()
     } catch (e) {
       req.logger.error(e.message)

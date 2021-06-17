@@ -12,7 +12,7 @@ const {
   syncLockMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  triggerSecondarySyncs
+  triggerAndWaitForSecondarySyncs
 } = require('../middlewares')
 const DBManager = require('../dbManager')
 
@@ -118,13 +118,16 @@ module.exports = function (app) {
         coverArtFileUUID,
         profilePicFileUUID
       }
-      await DBManager.createNewDataRecord(createAudiusUserQueryObj, cnodeUserUUID, models.AudiusUser, transaction)
+      const newDataRecord = await DBManager.createNewDataRecord(createAudiusUserQueryObj, cnodeUserUUID, models.AudiusUser, transaction)
 
       // Update cnodeUser.latestBlockNumber
       await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction })
 
       await transaction.commit()
-      triggerSecondarySyncs(req)
+
+      const primaryClockVal = newDataRecord.clock
+      await triggerAndWaitForSecondarySyncs(req, { primaryClockVal, immediate: true, enforceQuorum: false })
+
       return successResponse()
     } catch (e) {
       await transaction.rollback()
