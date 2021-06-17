@@ -5,8 +5,9 @@ from src.models import User, Block, Repost, RepostType, Save, Follow, SaveType
 from src.utils.db_session import get_db
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.challenge_event_bus import ChallengeEventBus, ChallengeEvent
+from src.utils.config import shared_config
 
-REDIS_URL = 'redis://localhost:5379'
+REDIS_URL = shared_config["redis"]["url"]
 
 def test_profile_completion_challenge(app):
 
