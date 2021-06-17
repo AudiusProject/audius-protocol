@@ -3,7 +3,7 @@ const _lib = require('../utils/lib')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const EthRewardsManager = artifacts.require('EthRewardsManager')
 const Governance = artifacts.require('Governance')
-const MockWormhole = artifacts.require('MockWormhole') // TODO: remove this
+const MockWormhole = artifacts.require('MockWormhole')
 
 const ethRewardsManagerProxyKey = web3.utils.utf8ToHex('EthRewardsManagerProxy')
 
@@ -13,20 +13,26 @@ module.exports = (deployer, network, accounts) => {
     const proxyAdminAddress = config.proxyAdminAddress || accounts[10]
     const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
     const guardianAddress = config.guardianAddress || proxyDeployerAddress
-    // const wormholeAddress = config.wormholeAddress
+    const solanaRecipientAddress = config.solanaRecipientAddress || Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
+    const antiAbuseOracleAddress = config.antiAbuseOracleAddress || accounts[12]
+    let wormholeAddress = config.wormholeAddress
 
     const tokenAddress = process.env.tokenAddress
     const governanceAddress = process.env.governanceAddress
 
     const governance = await Governance.at(governanceAddress)
 
+    if (wormholeAddress === null) {
+      const mockWormhole = await deployer.deploy(MockWormhole, { from: proxyDeployerAddress })
+      wormholeAddress = mockWormhole.address
+    }
+
     // Deploy EthRewardsManager logic and proxy contracts + register proxy
-    const mockWormhole = await deployer.deploy(MockWormhole, { from: proxyDeployerAddress }) // TODO: remove this
     const ethRewardsManager0 = await deployer.deploy(EthRewardsManager, { from: proxyDeployerAddress })
     const initializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'address', 'bytes32', 'address'],
-      [tokenAddress, governanceAddress, mockWormhole.address, Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex'), accounts[13]]
+      [tokenAddress, governanceAddress, wormholeAddress, solanaRecipientAddress, antiAbuseOracleAddress]
     )
 
     const ethRewardsManagerProxy = await deployer.deploy(
