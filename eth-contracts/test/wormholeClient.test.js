@@ -68,6 +68,40 @@ contract('WormholeClient', async (accounts) => {
     await registry.addContract(wormholeClientProxyKey, wormholeClientProxy.address, { from: proxyDeployerAddress })
   })
 
+  it('fails when token is not a contract, init test', async () => {
+    const wormholeClient1 = await WormholeClient.new({ from: proxyDeployerAddress })
+    const invalidWormholeClientInitializeCallData = _lib.encodeCall(
+      'initialize',
+      ['address', 'address'],
+      [accounts[5], mockWormhole.address]
+    )
+    await _lib.assertRevert(
+      AudiusAdminUpgradeabilityProxy.new(
+        wormholeClient1.address,
+        governance.address,
+        invalidWormholeClientInitializeCallData,
+        { from: proxyDeployerAddress }
+      )
+    )
+  })
+
+  it('fails when wormhole is not a contract, init test', async () => {
+    const wormholeClient1 = await WormholeClient.new({ from: proxyDeployerAddress })
+    const invalidWormholeClientInitializeCallData = _lib.encodeCall(
+      'initialize',
+      ['address', 'address'],
+      [token.address, accounts[5]]
+    )
+    await _lib.assertRevert(
+      AudiusAdminUpgradeabilityProxy.new(
+        wormholeClient1.address,
+        governance.address,
+        invalidWormholeClientInitializeCallData,
+        { from: proxyDeployerAddress }
+      )
+    )
+  })
+
   it('token', async () => {
     assert.equal(await wormholeClient.token(), token.address)
   })

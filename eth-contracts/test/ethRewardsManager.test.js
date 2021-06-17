@@ -195,6 +195,40 @@ contract('EthRewardsManager', async (accounts) => {
     )
   })
 
+  it('fails when token is not contract, init test', async () => {
+    const invalidEthRewardsManagerInitializeCallData = _lib.encodeCall(
+      'initialize',
+      ['address', 'address', 'address', 'bytes32', 'address'],
+      [accounts[5], governance.address, mockWormhole.address, recipient, antiAbuseOracleAddress]
+    )
+    const ethRewardsManager1 = await EthRewardsManager.new({ from: proxyAdminAddress })
+    await _lib.assertRevert(
+      AudiusAdminUpgradeabilityProxy.new(
+        ethRewardsManager1.address,
+        governance.address,
+        invalidEthRewardsManagerInitializeCallData,
+        { from: proxyDeployerAddress }
+      )
+    )
+  })
+
+  it('fails when wormhole is not contract, init test', async () => {
+    const invalidEthRewardsManagerInitializeCallData = _lib.encodeCall(
+      'initialize',
+      ['address', 'address', 'address', 'bytes32', 'address'],
+      [token.address, governance.address, accounts[5], recipient, antiAbuseOracleAddress]
+    )
+    const ethRewardsManager1 = await EthRewardsManager.new({ from: proxyAdminAddress })
+    await _lib.assertRevert(
+      AudiusAdminUpgradeabilityProxy.new(
+        ethRewardsManager1.address,
+        governance.address,
+        invalidEthRewardsManagerInitializeCallData,
+        { from: proxyDeployerAddress }
+      )
+    )
+  })
+
   it('governanceAddress', async () => {
     const newGovernance = await _lib.deployGovernance(
       artifacts,
@@ -276,18 +310,7 @@ contract('EthRewardsManager', async (accounts) => {
     await token.transfer(ethRewardsManager.address, amount, { from: tokenOwnerAddress })
     assert.equal((await token.balanceOf(ethRewardsManager.address)).toNumber(), amount)
 
-    await _lib.assertRevert(
-      ethRewardsManager.transferToSolana(1, { from: accounts[7] }),
-      'Only governance'
-    )
-
-    const tx = await governance.guardianExecuteTransaction(
-      ethRewardsManagerProxyKey,
-      callValue0,
-      'transferToSolana(uint32)',
-      _lib.abiEncode(['uint32'], [1]),
-      { from: guardianAddress }
-    )
+    const tx = await ethRewardsManager.transferToSolana(1, { from: accounts[7] })
 
     await expectEvent.inTransaction(tx.tx, MockWormhole, 'LogTokensLocked', {
       targetChain: '1',
