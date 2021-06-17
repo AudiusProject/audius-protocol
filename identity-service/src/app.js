@@ -3,13 +3,15 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const mailgun = require('mailgun-js')
 const Redis = require('ioredis')
+const optimizelySDK = require('@optimizely/optimizely-sdk');
+const Sentry = require('@sentry/node')
+
 const config = require('./config.js')
 const txRelay = require('./relay/txRelay')
 const ethTxRelay = require('./relay/ethTxRelay')
 const { runMigrations } = require('./migrationManager')
 const audiusLibsWrapper = require('./audiusLibsInstance')
 const NotificationProcessor = require('./notifications/index.js')
-const Sentry = require('@sentry/node')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
@@ -30,6 +32,7 @@ class App {
     this.redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
     this.configureSentry()
     this.configureMailgun()
+    this.configureOptimizely()
 
     // Async job configuration
     this.notificationProcessor = new NotificationProcessor({
@@ -107,6 +110,17 @@ class App {
         dsn
       })
     }
+  }
+
+  configureOptimizely () {
+    const sdkKey = config.get('optimizelySdkKey')
+    const optimizelyClientInstance = optimizelySDK.createInstance({
+      sdkKey
+    })
+    
+    optimizelyClientInstance.onReady().then(() => {
+      this.express.set('optimizelyClient', optimizelyClientInstance)
+    })
   }
 
   async configureAudiusInstance () {

@@ -557,6 +557,12 @@ const config = convict({
     format: Number,
     env: 'ethGasMultiplier',
     default: 1.2
+  },
+  optimizelySdkKey: {
+    doc: 'Optimizely SDK key to use to fetch remote configuration',
+    format: String,
+    env: 'optimizelySdkKey',
+    default: null
   }
 })
 

@@ -113,7 +113,7 @@ class NotificationProcessor {
           logger.debug('notification queue processing error - tried to process a minBlock < oldMaxBlockNumber', minBlock, oldMaxBlockNumber)
           maxBlockNumber = oldMaxBlockNumber
         } else {
-          maxBlockNumber = await this.indexAll(audiusLibs, minBlock, oldMaxBlockNumber)
+          maxBlockNumber = await this.indexAll(audiusLibs, expressApp, minBlock, oldMaxBlockNumber)
         }
 
         // Update cached max block number
@@ -210,7 +210,7 @@ class NotificationProcessor {
    * 5. Process milestones
    * @param {Integer} minBlock min start block to start querying discprov for new notifications
    */
-  async indexAll (audiusLibs, minBlock, oldMaxBlockNumber) {
+  async indexAll (audiusLibs, expressApp, minBlock, oldMaxBlockNumber) {
     const startDate = Date.now()
     const startTime = process.hrtime()
 
@@ -271,7 +271,7 @@ class NotificationProcessor {
       logger.info(`notifications main indexAll job - indexMilestones complete`)
 
       // Fetch trending track milestones
-      await indexTrendingTracks(audiusLibs, tx)
+      await indexTrendingTracks(audiusLibs, expressApp, tx)
       logger.info(`notifications main indexAll job - indexTrendingTracks complete`)
 
       // Commit

@@ -19,6 +19,7 @@ const {
   pushNotificationMessagesMap
 } = require('./formatNotificationMetadata')
 const audiusLibsWrapper = require('../audiusLibsInstance')
+const { getRemoteVar, VARS } = require('../remoteConfig')
 
 const TRENDING_TIME = Object.freeze({
   DAY: 'day',
@@ -39,7 +40,9 @@ const TRENDING_INTERVAL_HOURS = 3
 // The highest rank for which a notification will be sent
 const MAX_TOP_TRACK_RANK = 10
 
-async function getTrendingTracks () {
+async function getTrendingTracks (optimizelyClient) {
+  const trendingExperiment = getRemoteVar(optimizelyClient, VARS.TRENDING_EXPERIMENT)
+
   try {
     // The owner info is then used to target listenCount milestone notifications
     let params = new URLSearchParams()
@@ -47,10 +50,13 @@ async function getTrendingTracks () {
     params.append('limit', MAX_TOP_TRACK_RANK)
 
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+    const url = trendingExperiment
+      ? `${discoveryProvider.discoveryProviderEndpoint}/v1/full/tracks/trending/${trendingExperiment}?time=week`
+      : `${discoveryProvider.discoveryProviderEndpoint}/v1/full/tracks/trending?time=week`
 
     const trendingTracksResponse = await axios({
       method: 'get',
-      url: `${discoveryProvider.discoveryProviderEndpoint}/v1/full/tracks/trending?time=week`,
+      url,
       params,
       timeout: 10000
     })
@@ -169,9 +175,10 @@ async function processTrendingTracks (audiusLibs, blocknumber, trendingTracks, t
   }
 }
 
-async function indexTrendingTracks (audiusLibs, tx) {
+async function indexTrendingTracks (audiusLibs, expressApp, tx) {
   try {
-    const { trendingTracks, blocknumber } = await getTrendingTracks()
+    const optimizelyClient = expressApp.get('optimizelyClient')
+    const { trendingTracks, blocknumber } = await getTrendingTracks(optimizelyClient)
     await processTrendingTracks(audiusLibs, blocknumber, trendingTracks, tx)
   } catch (err) {
     logger.error(`Unable to process trending track notifications: ${err.message}`)
