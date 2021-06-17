@@ -498,10 +498,10 @@ const config = convict({
     default: 100000000000
   },
   minimumMemoryAvailable: {
-    doc: 'Minimum memory available [bytes] on node to be a viable option in peer set; 2gb',
+    doc: 'Minimum memory available [bytes] on node to be a viable option in peer set; 3gb',
     format: 'nat',
     env: 'minimumMemoryAvailable',
-    default: 2000000000
+    default: 3000000000
   },
   maxFileDescriptorsAllocatedPercentage: {
     doc: 'Max file descriptors allocated percentage on node to be a viable option in peer set',
