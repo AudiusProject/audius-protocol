@@ -119,6 +119,46 @@ export const removeFromPlaylistLibrary = (
 }
 
 /**
+ * Removes duplicates in a playlist library
+ * @param library
+ * @param ids ids to keep track of as we recurse
+ */
+export const removePlaylistLibraryDuplicates = (
+  library: PlaylistLibrary | PlaylistLibraryFolder,
+  ids: Set<string> = new Set([])
+) => {
+  if (!library.contents) return library
+  const newContents: (PlaylistLibraryFolder | PlaylistLibraryIdentifier)[] = []
+
+  // Simple DFS (this likely is very small, so this is fine)
+  for (const item of library.contents) {
+    switch (item.type) {
+      case 'folder': {
+        const folder = removePlaylistLibraryDuplicates(
+          item,
+          ids
+        ) as PlaylistLibraryFolder
+        newContents.push(folder)
+        break
+      }
+      case 'playlist':
+      case 'explore_playlist':
+      case 'temp_playlist':
+        if (ids.has(`${item.playlist_id}`)) {
+          break
+        }
+        ids.add(`${item.playlist_id}`)
+        newContents.push(item)
+        break
+    }
+  }
+  return {
+    ...library,
+    contents: newContents
+  }
+}
+
+/**
  * Reorders a playlist library
  * TODO: Support folder reordering
  * @param library
