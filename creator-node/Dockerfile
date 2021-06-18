@@ -1,11 +1,11 @@
-FROM node:14.16 as builder
+FROM node:16.3 as builder
 RUN apt-get install make
 
 WORKDIR /app
 COPY package*.json ./
 RUN npm install --loglevel verbose
 
-FROM node:14.16-alpine
+FROM node:16.3-alpine
 
 WORKDIR /usr/src/app
 COPY --from=builder /app/node_modules ./node_modules
