@@ -17,9 +17,9 @@ const DEFAULTS = Object.freeze({
 const DUMMY_USER_ID = 'ANONYMOUS_USER'
 
 /**
- * Fetches
- * @param {*} optimizelyClient
- * @param {*} variable
+ * Fetches a remote variable
+ * @param {OptimizelyClient?} optimizelyClient
+ * @param {String} variable REMOTE_VARS value
  * @returns
  */
 const getRemoteVar = (optimizelyClient, variable) => {
