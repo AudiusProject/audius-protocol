@@ -802,22 +802,23 @@ class SnapbackSM {
           responseType: 'json',
           timeout: 1000 // 1000ms = 1s
         })
-        const { clockValue: secondaryClockVal } = secondaryClockStatusResp.data.data
+        const { clockValue: secondaryClockVal, syncInProgress } = secondaryClockStatusResp.data.data
 
         // If secondary is synced, return successfully
         if (secondaryClockVal >= primaryClockVal) {
           return
+
+          // Else, if a sync is not already in progress on the secondary, issue a new SyncRequest
+        } else if (!syncInProgress) {
+          await this.enqueueSync({
+            userWallet: wallet,
+            secondaryEndpoint: secondaryUrl,
+            primaryEndpoint: this.endpoint,
+            syncType: SyncType.Manual
+          })
         }
 
-        // Else, issue syncRequest to secondary
-        await this.enqueueSync({
-          userWallet: wallet,
-          secondaryEndpoint: secondaryUrl,
-          primaryEndpoint: this.endpoint,
-          syncType: SyncType.Manual
-        })
-
-        // Since enqueueSync is such a quick operation, give secondary some time to process before next loop iteration
+        // Give secondary some time to process ongoing or newly enqueued sync
         // NOTE - we might want to make this timeout longer
         await utils.timeout(500)
       } catch (e) {
