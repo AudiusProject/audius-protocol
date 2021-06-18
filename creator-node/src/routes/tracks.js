@@ -614,8 +614,7 @@ module.exports = function (app) {
 
       await transaction.commit()
 
-      const primaryClockVal = updatedCNodeUser.clock
-      await triggerAndWaitForSecondarySyncs(req, { primaryClockVal, immediate: true, enforceQuorum: false })
+      await triggerAndWaitForSecondarySyncs(req, { enforceQuorum: false })
 
       return successResponse()
     } catch (e) {

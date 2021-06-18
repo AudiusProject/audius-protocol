@@ -118,15 +118,14 @@ module.exports = function (app) {
         coverArtFileUUID,
         profilePicFileUUID
       }
-      const newDataRecord = await DBManager.createNewDataRecord(createAudiusUserQueryObj, cnodeUserUUID, models.AudiusUser, transaction)
+      await DBManager.createNewDataRecord(createAudiusUserQueryObj, cnodeUserUUID, models.AudiusUser, transaction)
 
       // Update cnodeUser.latestBlockNumber
       await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction })
 
       await transaction.commit()
 
-      const primaryClockVal = newDataRecord.clock
-      await triggerAndWaitForSecondarySyncs(req, { primaryClockVal, immediate: true, enforceQuorum: false })
+      await triggerAndWaitForSecondarySyncs(req, { enforceQuorum: false })
 
       return successResponse()
     } catch (e) {

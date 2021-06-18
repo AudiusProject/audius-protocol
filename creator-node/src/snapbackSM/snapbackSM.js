@@ -231,7 +231,8 @@ class SnapbackSM {
     userWallet,
     primaryEndpoint,
     secondaryEndpoint,
-    syncType
+    syncType,
+    immediate = false
   }) {
     const queue = (syncType === SyncType.Manual) ? this.manualSyncQueue : this.recurringSyncQueue
 
@@ -252,7 +253,9 @@ class SnapbackSM {
         wallet: [userWallet],
         creator_node_endpoint: primaryEndpoint,
         // Note - `sync_type` param is only used for logging by nodeSync.js
-        sync_type: syncType
+        sync_type: syncType,
+        // immediate = true will ensure secondary skips debounce and evaluates sync immediately
+        immediate
       }
     }
 
@@ -771,6 +774,48 @@ class SnapbackSM {
     return nodeUsers.filter(nodeUser =>
       nodeUser.user_id % ModuloBase === this.currentModuloSlice
     )
+  }
+
+  /**
+   *
+   */
+  async secondaryPromise (secondaryUrl, wallet, primaryClockVal, timeoutMs) {
+    const start = Date.now()
+
+    while (Date.now() - start < timeoutMs) {
+      try {
+        const secondaryClockStatusResp = await axios({
+          method: 'get',
+          baseURL: secondaryUrl,
+          url: `/users/clock_status/${wallet}`,
+          responseType: 'json',
+          timeout: 1000 // 1000ms = 1s
+        })
+        const { clockValue: secondaryClockVal } = secondaryClockStatusResp.data.data
+
+        // If secondary is synced, return successfully
+        if (secondaryClockVal >= primaryClockVal) {
+          return
+        }
+
+        // Send syncRequest to secondary
+        await this.enqueueSync({
+          userWallet: wallet,
+          secondaryEndpoint: secondaryUrl,
+          primaryEndpoint: this.endpoint,
+          syncType: SyncType.Manual,
+          immediate: true
+        })
+
+        // Since enqueueSync is such a quick operation, give secondary a second to process it before next loop iteration
+        await utils.timeout(500, true)
+      } catch (e) {
+        // do nothing and let while loop continue
+      }
+    }
+
+    // This condition will only be hit if the secondary has failed to sync within timeoutMs
+    throw new Error('TODO')
   }
 }
 

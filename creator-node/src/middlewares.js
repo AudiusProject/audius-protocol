@@ -6,7 +6,7 @@ const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
 const { SyncType } = require('./snapbackSM/snapbackSM')
-const axios = require('axios')
+const promiseAny = require('promise.any')
 
 /** Ensure valid cnodeUser and session exist for provided session token. */
 async function authMiddleware (req, res, next) {
@@ -190,7 +190,7 @@ async function triggerSecondarySyncs (req) {
 /**
  * Trigger SyncRequests to both secondaries, and wait for at least one to sync before returning
  */
-async function triggerAndWaitForSecondarySyncs (req, { primaryClockVal, immediate, enforceQuorum }) {
+async function triggerAndWaitForSecondarySyncs (req, { enforceQuorum }) {
   const serviceRegistry = req.app.get('serviceRegistry')
   const { snapbackSM } = serviceRegistry
 
@@ -218,73 +218,21 @@ async function triggerAndWaitForSecondarySyncs (req, { primaryClockVal, immediat
       throw new Error('TODO')
     }
 
-    const timeoutMs = enforceQuorum ? 20000 : 5000
-
-    /**
-     * Keep attempting to send syncRequest to secondary until it has synced or until timeoutMs
-     * TODO consider replacing with SnapbackSM.additionalSyncIsRequired code
-     */
-    const secondaryPromise = async function (secondaryUrl) {
-      const start = Date.now()
-      while (Date.now() - start < timeoutMs) {
-        try {
-          const secondaryClockStatusResp = await axios({
-            method: 'get',
-            baseURL: secondaryUrl,
-            url: `/users/clock_status/${wallet}`,
-            responseType: 'json',
-            timeout: 1000 // 1000ms = 1s
-          })
-          const { clockValue: secondaryClockVal } = secondaryClockStatusResp.data.data
-
-          // If secondary is synced, flip flag + return
-          if (secondaryClockVal >= primaryClockVal) {
-            return
-          }
-
-          // Send syncRequest to secondary; if immediate = true, submit POST request directly, else submit via SnapbackSM
-          if (immediate) {
-            await axios({
-              method: 'post',
-              baseURL: secondaryUrl,
-              url: '/sync',
-              data: {
-                wallet: [wallet],
-                creator_node_endpoint: primary,
-                immediate
-              },
-              timeout: timeoutMs * 2
-            })
-          } else {
-            await snapbackSM.enqueueSync({
-              userWallet: wallet,
-              secondaryEndpoint: secondaryUrl,
-              primaryEndpoint: primary,
-              syncType: SyncType.Manual
-            })
-
-            // Since enqueueSync is such a quick operation, give secondary a second to process it before next loop iteration
-            await utils.timeout(1000, false)
-          }
-        } catch (e) {
-          // do nothing and let while loop continue
-        }
-      }
-
-      // This condition will only be hit if the secondary has failed to sync within timeoutMs
+    // Fetch current clock val on primary
+    const cnodeUser = await models.CNodeUser.findOne({ where: { walletPublicKey: wallet } })
+    if (!cnodeUser || !cnodeUser.clock) {
       throw new Error('TODO')
     }
-    const secondaryPromises = secondaries.map(secondaryPromise)
+    const primaryClockVal = cnodeUser.clock
 
-    // Race will throw if neither of secondaryPromises resolves within timeoutMs
+    const timeoutMs = 20000 // enforceQuorum ? 20000 : 5000
+
     try {
-      const timeoutPromise = new Promise((resolve, reject) => {
-        setTimeout(() => reject(new Error('Timeout')), timeoutMs)
-      })
+      const secondaryPromises = secondaries.map((secondary) => { return snapbackSM.secondaryPromise(secondary, wallet, primaryClockVal, timeoutMs) })
 
-      await Promise.race([...secondaryPromises, timeoutPromise])
+      // Resolve as soon as first promise resolves, or reject if all promises reject
+      await promiseAny(secondaryPromises)
     } catch (e) {
-      req.logger.info(`SIDTEST TRIGGERSYNC failed promise.race`, e.message)
       // Throw Error (ie reject content upload) if quorum is being enforced & neither secondary successfully synced new content; else continue
       if (enforceQuorum) {
         throw new Error('TODO - writequorum failed')
