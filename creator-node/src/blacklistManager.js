@@ -18,6 +18,9 @@ class BlacklistManager {
 
   static async init () {
     try {
+      // clear existing redis keys
+      await this.deleteRedisKeys()
+
       const contentToBlacklist = await this.getTrackAndUserIdsToBlacklist()
       await this.fetchCIDsAndAddToRedis(contentToBlacklist)
       this.initialized = true
@@ -331,6 +334,13 @@ class BlacklistManager {
   // Retrieves all track ids in redis
   static async getAllTrackIds () {
     return redis.smembers(REDIS_SET_BLACKLIST_TRACKID_KEY)
+  }
+
+  // Delete all existing redis keys
+  static async deleteRedisKeys () {
+    await redis.del(this.getRedisTrackIdKey())
+    await redis.del(this.getRedisUserIdKey())
+    await redis.del(this.getRedisSegmentCIDKey())
   }
 }
 

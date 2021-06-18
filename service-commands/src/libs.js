@@ -6,7 +6,7 @@ const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const Utils = require('@audius/libs/src/utils')
 const config = require('../config/config')
 
-const DISCOVERY_NODE_ENDPOINT = 'http://audius-disc-prov_web-server_1:5000'
+const DISCOVERY_NODE_ENDPOINT = 'http://dn1_web-server_1:5000'
 const MAX_INDEXING_TIMEOUT = 10000
 
 /**
