@@ -85,7 +85,7 @@ jobs:
             - eth-contracts/node_modules
           key: v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
 
-      content node
+      # content node
       - restore_cache:
           name: Restore content-node cache
           keys:
