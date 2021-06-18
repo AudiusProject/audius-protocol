@@ -777,13 +777,24 @@ class SnapbackSM {
   }
 
   /**
-   *
+   * Issues syncRequest for user against secondary, and polls for replication up to primary
+   * If secondary fails to sync within specified timeoutMs, will error
    */
-  async secondaryPromise (secondaryUrl, wallet, primaryClockVal, timeoutMs) {
-    const start = Date.now()
+  async issueSyncRequestsUntilSynced (secondaryUrl, wallet, primaryClockVal, timeoutMs) {
+    // Issue syncRequest before polling secondary for replication
+    await this.enqueueSync({
+      userWallet: wallet,
+      secondaryEndpoint: secondaryUrl,
+      primaryEndpoint: this.endpoint,
+      syncType: SyncType.Manual,
+      immediate: true
+    })
 
+    // Poll clock status and issue syncRequests until secondary is caught up or until timeoutMs
+    const start = Date.now()
     while (Date.now() - start < timeoutMs) {
       try {
+        // Retrieve secondary clock status for user
         const secondaryClockStatusResp = await axios({
           method: 'get',
           baseURL: secondaryUrl,
@@ -798,24 +809,25 @@ class SnapbackSM {
           return
         }
 
-        // Send syncRequest to secondary
+        // Else, issue syncRequest to secondary
         await this.enqueueSync({
           userWallet: wallet,
           secondaryEndpoint: secondaryUrl,
           primaryEndpoint: this.endpoint,
           syncType: SyncType.Manual,
-          immediate: true
+          immediate: true // Skips debounce and ensures syncRequest is processed immediately
         })
 
-        // Since enqueueSync is such a quick operation, give secondary a second to process it before next loop iteration
-        await utils.timeout(500, true)
+        // Since enqueueSync is such a quick operation, give secondary some time to process before next loop iteration
+        // NOTE - we might want to make this timeout longer
+        await utils.timeout(500)
       } catch (e) {
         // do nothing and let while loop continue
       }
     }
 
     // This condition will only be hit if the secondary has failed to sync within timeoutMs
-    throw new Error('TODO')
+    throw new Error(`Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`)
   }
 }
 

@@ -12,7 +12,7 @@ const {
   syncLockMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  triggerAndWaitForSecondarySyncs
+  issueAndWaitForSecondarySyncRequests
 } = require('../middlewares')
 const DBManager = require('../dbManager')
 
@@ -125,7 +125,7 @@ module.exports = function (app) {
 
       await transaction.commit()
 
-      await triggerAndWaitForSecondarySyncs(req, { enforceQuorum: false })
+      await issueAndWaitForSecondarySyncRequests(req)
 
       return successResponse()
     } catch (e) {
