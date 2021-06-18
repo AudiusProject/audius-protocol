@@ -361,7 +361,7 @@ jobs:
   test-creator-node:
     docker:
       # specify the version you desire here
-      - image: circleci/node:14.16  
+      - image: circleci/node:16.3
       - image: ipfs/go-ipfs:release
       - image: circleci/postgres:11.1
         environment:
