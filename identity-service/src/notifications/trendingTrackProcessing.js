@@ -19,7 +19,7 @@ const {
   pushNotificationMessagesMap
 } = require('./formatNotificationMetadata')
 const audiusLibsWrapper = require('../audiusLibsInstance')
-const { getRemoteVar, VARS } = require('../remoteConfig')
+const { getRemoteVar, REMOTE_VARS } = require('../remoteConfig')
 
 const TRENDING_TIME = Object.freeze({
   DAY: 'day',
@@ -41,7 +41,7 @@ const TRENDING_INTERVAL_HOURS = 3
 const MAX_TOP_TRACK_RANK = 10
 
 async function getTrendingTracks (optimizelyClient) {
-  const trendingExperiment = getRemoteVar(optimizelyClient, VARS.TRENDING_EXPERIMENT)
+  const trendingExperiment = getRemoteVar(optimizelyClient, REMOTE_VARS.TRENDING_EXPERIMENT)
 
   try {
     // The owner info is then used to target listenCount milestone notifications
@@ -176,9 +176,8 @@ async function processTrendingTracks (audiusLibs, blocknumber, trendingTracks, t
   }
 }
 
-async function indexTrendingTracks (audiusLibs, expressApp, tx) {
+async function indexTrendingTracks (audiusLibs, optimizelyClient, tx) {
   try {
-    const optimizelyClient = expressApp.get('optimizelyClient')
     const { trendingTracks, blocknumber } = await getTrendingTracks(optimizelyClient)
     await processTrendingTracks(audiusLibs, blocknumber, trendingTracks, tx)
   } catch (err) {
