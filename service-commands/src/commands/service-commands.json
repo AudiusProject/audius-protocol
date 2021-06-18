@@ -97,7 +97,7 @@
   },
   "discovery-provider": {
     "protocol": "http",
-    "host": "audius-disc-prov_web-server_1",
+    "host": "dn1_web-server",
     "port": 5000,
     "up": [
       "cd libs/initScripts; node configureLocalDiscProv.js",
