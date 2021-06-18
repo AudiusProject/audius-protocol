@@ -86,16 +86,16 @@ jobs:
           key: v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
 
       # content node
-      # - restore_cache:
-      #     name: Restore content-node cache
-      #     keys:
-      #       - v1-content-node-{{ checksum "creator-node/package-lock.json" }}
-      #       - v1-content-node-
+      - restore_cache:
+          name: Restore content-node cache
+          keys:
+            - v1-content-node-{{ checksum "creator-node/package-lock.json" }}
+            - v1-content-node-
       - run:
           name: content-node repo init
           command: |
             source ~/.bash_profile
-            nvm install v14.16
+            nvm install v16.3
             cd creator-node/
             npm install
       - save_cache:
