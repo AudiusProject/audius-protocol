@@ -5,7 +5,7 @@ const models = require('./models')
 const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
-const { SyncType } = require('./snapbackSM/snapbackSM')
+const promiseAny = require('promise.any')
 
 /** Ensure valid cnodeUser and session exist for provided session token. */
 async function authMiddleware (req, res, next) {
@@ -147,42 +147,73 @@ async function ensureStorageMiddleware (req, res, next) {
 }
 
 /**
- * Tell all secondaries to sync against self.
- * @dev - Is not a middleware so it can be run before responding to client.
- * @dev - TODO move this out of middlewares to Services layer
+ * Issue SyncRequests to both secondaries, and wait for at least one to sync before returning
+ * @dev TODO - move out of middlewares layer
  */
-async function triggerSecondarySyncs (req) {
+async function issueAndWaitForSecondarySyncRequests (req) {
   const serviceRegistry = req.app.get('serviceRegistry')
   const { snapbackSM } = serviceRegistry
 
+  // Parse request headers
+  const pollingDurationMs = req.header('Polling-Duration-ms') || config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs')
+  const enforceWriteQuorum = req.header('Enforce-Write-Quorum') || config.get('enforceWriteQuorum')
+
   if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) {
+    req.logger.info(`issueAndWaitForSecondarySyncRequests - Cannot proceed due to isUserMetadataNode (${config.get('isUserMetadataNode')}) or snapbackDevModeEnabled ${config.get('snapbackDevModeEnabled')})`)
     return
   }
 
+  if (!req.session || !req.session.wallet) {
+    req.logger.error(`issueAndWaitForSecondarySyncRequests Error - req.session.wallet missing`)
+    return
+  }
+  const wallet = req.session.wallet
+
   try {
     if (!req.session.nodeIsPrimary || !req.session.creatorNodeEndpoints || !Array.isArray(req.session.creatorNodeEndpoints)) {
+      req.logger.info('issueAndWaitForSecondarySyncRequests - Cannot process sync op - this node is not primary or invalid creatorNodeEndpoints.')
       return
     }
 
-    const [primary, ...secondaries] = req.session.creatorNodeEndpoints
+    let [primary, ...secondaries] = req.session.creatorNodeEndpoints
+    secondaries = secondaries.filter(secondary => (!!secondary && _isFQDN(secondary)))
 
-    // Enqueue a manual sync for all secondaries
-    await Promise.all(secondaries.map(async secondary => {
-      if (!secondary || !_isFQDN(secondary)) {
-        return
+    if (primary !== config.get('creatorNodeEndpoint')) {
+      throw new Error(`issueAndWaitForSecondarySyncRequests Error - Cannot process sync op since this node is not the primary for user ${wallet}. Instead found ${primary}.`)
+    }
+
+    // Fetch current clock val on primary
+    const cnodeUser = await models.CNodeUser.findOne({ where: { walletPublicKey: wallet } })
+    if (!cnodeUser || !cnodeUser.clock) {
+      throw new Error(`issueAndWaitForSecondarySyncRequests Error - Failed to retrieve current clock value for user ${wallet} on current node.`)
+    }
+    const primaryClockVal = cnodeUser.clock
+
+    const replicationStart = Date.now()
+    try {
+      const secondaryPromises = secondaries.map(secondary => {
+        return snapbackSM.issueSyncRequestsUntilSynced(secondary, wallet, primaryClockVal, pollingDurationMs)
+      })
+
+      // Resolve as soon as first promise resolves, or reject if all promises reject
+      await promiseAny(secondaryPromises)
+
+      req.logger.info(`issueAndWaitForSecondarySyncRequests - At least one secondary successfully replicated content for user ${wallet} in ${Date.now() - replicationStart}ms`)
+    } catch (e) {
+      // Throw Error (ie reject content upload) if quorum is being enforced & neither secondary successfully synced new content
+      if (enforceWriteQuorum) {
+        throw new Error(`issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet} in ${Date.now() - replicationStart}ms`)
       }
 
-      const userWallet = req.session.wallet
+      // if !enforceWriteQuorum or >= 1 secondary synced -> do nothing (to indicate success)
+    }
 
-      await snapbackSM.enqueueSync({
-        userWallet,
-        secondaryEndpoint: secondary,
-        primaryEndpoint: primary,
-        syncType: SyncType.Manual
-      })
-    }))
+    // If any error during replication, error if quorum is enforced
   } catch (e) {
-    req.logger.error(`Trigger secondary syncs ${req.session.wallet}`, e.message)
+    req.logger.error(`issueAndWaitForSecondarySyncRequests Error - wallet ${wallet} ||`, e.message)
+    if (enforceWriteQuorum) {
+      throw new Error(`issueAndWaitForSecondarySyncRequests Error - Failed to reach 2/3 write quorum for user ${wallet}`)
+    }
   }
 }
 
@@ -382,7 +413,7 @@ module.exports = {
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  triggerSecondarySyncs,
+  issueAndWaitForSecondarySyncRequests,
   syncLockMiddleware,
   getOwnEndpoint,
   getCreatorNodeEndpoints

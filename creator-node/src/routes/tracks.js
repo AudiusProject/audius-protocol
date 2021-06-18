@@ -29,7 +29,7 @@ const {
   authMiddleware,
   ensurePrimaryMiddleware,
   syncLockMiddleware,
-  triggerSecondarySyncs,
+  issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware
 } = require('../middlewares')
 const TranscodingQueue = require('../TranscodingQueue')
@@ -613,7 +613,9 @@ module.exports = function (app) {
       }
 
       await transaction.commit()
-      triggerSecondarySyncs(req)
+
+      await issueAndWaitForSecondarySyncRequests(req)
+
       return successResponse()
     } catch (e) {
       req.logger.error(e.message)
