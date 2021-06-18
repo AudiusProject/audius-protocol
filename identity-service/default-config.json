@@ -60,5 +60,6 @@
   "recaptchaServiceKey": "",
   "solanaFeePayerWallet": "[]",
   "sentryDSN": "",
-  "solanaEndpoint": "https://api.mainnet-beta.solana.com"
+  "solanaEndpoint": "https://api.mainnet-beta.solana.com",
+  "optimizelySdkKey": ""
 }
