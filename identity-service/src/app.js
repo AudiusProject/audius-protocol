@@ -3,7 +3,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const mailgun = require('mailgun-js')
 const Redis = require('ioredis')
-const optimizelySDK = require('@optimizely/optimizely-sdk');
+const optimizelySDK = require('@optimizely/optimizely-sdk')
 const Sentry = require('@sentry/node')
 
 const config = require('./config.js')
@@ -117,7 +117,7 @@ class App {
     const optimizelyClientInstance = optimizelySDK.createInstance({
       sdkKey
     })
-    
+
     optimizelyClientInstance.onReady().then(() => {
       this.express.set('optimizelyClient', optimizelyClientInstance)
     })
