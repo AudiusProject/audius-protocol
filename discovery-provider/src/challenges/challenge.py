@@ -19,7 +19,7 @@ class ChallengeUpdater(ABC):
     to an instance of a `ChallengeManager`. The only required override is update_user_challenges
     """
     @abstractmethod
-    def update_user_challenges(self, session, event, user_challenges, challenge):
+    def update_user_challenges(self, session, event, user_challenges, step_count):
         """This is the main required method to fill out when implementing a new challenge.
         Given an event type, a list of existing user challenges, and the base challenge type,
         update the given user_challenges.
@@ -42,10 +42,11 @@ class ChallengeManager:
     """
 
     def __init__(self, challenge_id, updater):
-        self._challenge = None # added lazily in `process`
         self._challenge_id = challenge_id
         self._did_init = False
         self._updater = updater
+        self._starting_block = None
+        self._step_count = None
 
     def process(self, session, event_type, event_metadatas):
         """ Processes a number of events for a particular event type, updating
@@ -58,9 +59,9 @@ class ChallengeManager:
 
         # filter out events that took place before the starting block, returning
         # early if need be
-        if self._challenge.starting_block:
+        if self._starting_block:
             event_metadatas = (
-                list(filter(lambda x: x["block_number"] >= self._challenge.starting_block, event_metadatas))
+                list(filter(lambda x: x["block_number"] >= self._starting_block, event_metadatas))
             )
 
         if not event_metadatas:
@@ -69,7 +70,7 @@ class ChallengeManager:
         user_ids = list(map(lambda x: x["user_id"], event_metadatas))
 
         # Gets all user challenges,
-        existing_user_challenges = fetch_user_challenges(session, self._challenge.id, user_ids)
+        existing_user_challenges = fetch_user_challenges(session, self._challenge_id, user_ids)
 
         # Create users that need challenges still
         existing_user_ids = {challenge.user_id for challenge in existing_user_challenges}
@@ -86,7 +87,7 @@ class ChallengeManager:
             session,
             event_type,
             to_update,
-            self._challenge
+            self._step_count
         )
 
         logger.debug(f"Updated challenges from event [{event_type}]: [{to_update}]")
@@ -103,12 +104,13 @@ class ChallengeManager:
         challenge = session.query(Challenge).filter(Challenge.id == self._challenge_id).first()
         if not challenge:
             raise Exception('No matching challenge!')
-        self._challenge = challenge
+        self._starting_block = challenge.starting_block
+        self._step_count = challenge.step_count
         self._did_init = True
 
     def _create_new_challenges(self, user_ids):
         return [UserChallenge(
-            challenge_id=self._challenge.id,
+            challenge_id=self._challenge_id,
             user_id=user_id,
             specifier=self._updater.generate_specifier(user_id),
             is_complete=False,

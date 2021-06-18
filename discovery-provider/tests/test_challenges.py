@@ -66,10 +66,10 @@ def setup_challenges(app):
             session.add_all(user_challenges)
 
 class TestUpdater(ChallengeUpdater):
-    def update_user_challenges(self, session, event, user_challenges, challenge):
+    def update_user_challenges(self, session, event, user_challenges, step_count):
         for user_challenge in user_challenges:
             user_challenge.current_step_count += 1
-            if user_challenge.current_step_count >= challenge.step_count:
+            if user_challenge.current_step_count >= step_count:
                 user_challenge.is_complete = True
         return user_challenges
 

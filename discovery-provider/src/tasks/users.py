@@ -10,6 +10,7 @@ from src.tasks.metadata import user_metadata_format
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
 from src.queries.get_balances import enqueue_balance_refresh
 from src.utils.indexing_errors import IndexingError
+from src.challenges.challenge_event import ChallengeEvent
 logger = logging.getLogger(__name__)
 
 
@@ -25,6 +26,7 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
     user_contract = update_task.web3.eth.contract(
         address=contract_addresses["user_factory"], abi=user_abi
     )
+    challenge_bus = update_task.challenge_event_bus
 
     # This stores the state of the user object along with all the events applied to it
     # before it gets committed to the db
@@ -88,6 +90,7 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
         logger.info(f"index.py | users.py | Adding {value_obj['user']}")
         if value_obj["events"]:
             invalidate_old_user(session, user_id)
+            challenge_bus.dispatch(session, ChallengeEvent.profile_update, block_number, user_id)
             session.add(value_obj["user"])
 
     return num_total_changes, user_ids
