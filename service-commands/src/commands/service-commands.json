@@ -97,7 +97,7 @@
   },
   "discovery-provider": {
     "protocol": "http",
-    "host": "dn1_web-server",
+    "host": "dn1_web-server_1",
     "port": 5000,
     "up": [
       "cd libs/initScripts; node configureLocalDiscProv.js",
