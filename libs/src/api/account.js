@@ -1,7 +1,10 @@
 const { Base, Services } = require('./base')
 const CreatorNodeService = require('../services/creatorNode/index')
 const Utils = require('../utils')
-const { getPermitDigest, sign } = require('../utils/signatures')
+const {
+  getPermitDigest, sign, getLockAssetsDigest
+} = require('../utils/signatures')
+
 class Account extends Base {
   constructor (userApi, ...services) {
     super(...services)
@@ -24,6 +27,7 @@ class Account extends Base {
     this.searchFull = this.searchFull.bind(this)
     this.searchAutocomplete = this.searchAutocomplete.bind(this)
     this.searchTags = this.searchTags.bind(this)
+    this.permitAndSendTokensViaWormhole = this.permitAndSendTokensViaWormhole.bind(this)
   }
 
   /**
@@ -350,7 +354,7 @@ class Account extends Base {
   }
 
   /**
-   * Sends `amount` tokens to `recipientAddress` by way of `relayerAddress`
+   * Sends `amount` tokens to `recipientAddress`
    */
   async permitAndSendTokens (recipientAddress, amount) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
@@ -358,6 +362,73 @@ class Account extends Base {
     const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
     await this.permitProxySendTokens(myWalletAddress, selectedEthWallet, amount)
     await this.sendTokens(myWalletAddress, recipientAddress, selectedEthWallet, amount)
+  }
+
+  /**
+   * Sends `amount` tokens to `solanaAccount` by way of the wormhole
+   */
+  async permitAndSendTokensViaWormhole (amount, solanaAccount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    const myWalletAddress = this.web3Manager.getWalletAddress()
+    const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
+    const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
+    await this.permitProxySendTokens(myWalletAddress, wormholeAddress, amount)
+
+    const lockAssetsTx = await this.lockAssetsForWormhole(
+      myWalletAddress, amount, solanaAccount, selectedEthWallet
+    )
+    return lockAssetsTx
+  }
+
+  /**
+   * Locks assets owned by `fromAccount` into the Solana wormhole with a target
+   * solanaAccount destination via the provided relayer wallet.
+   */
+  async lockAssetsForWormhole (fromAccount, amount, solanaAccount, relayer) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    const web3 = this.ethWeb3Manager.getWeb3()
+    const wormholeClientAddress = this.ethContracts.WormholeClient.contractAddress
+
+    const chainId = await this.ethWeb3Manager.web3.eth.getChainId()
+
+    const currentBlockNumber = await web3.eth.getBlockNumber()
+    const currentBlock = await web3.eth.getBlock(currentBlockNumber)
+    // 1 hour, sufficiently far in future
+    const deadline = currentBlock.timestamp + (60 * 60 * 1)
+
+    const recipient = Buffer.from(solanaAccount, 'hex')
+    const nonce = await this.ethContracts.AudiusTokenClient.nonces(fromAccount)
+    const refundDust = false
+
+    const digest = getLockAssetsDigest(
+      web3,
+      'AudiusWormholeClient',
+      wormholeClientAddress,
+      chainId,
+      {
+        from: fromAccount,
+        amount,
+        recipient,
+        targetChain: chainId,
+        refundDust
+      },
+      nonce,
+      deadline
+    )
+    const myPrivateKey = this.web3Manager.getOwnerWalletPrivateKey()
+    const signedDigest = sign(digest, myPrivateKey)
+
+    const tx = await this.ethContracts.WormholeClient.lockAssets(
+      fromAccount,
+      amount,
+      recipient,
+      chainId,
+      refundDust,
+      deadline,
+      signedDigest,
+      relayer
+    )
+    return tx
   }
 
   /**
