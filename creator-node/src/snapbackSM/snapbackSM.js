@@ -814,8 +814,7 @@ class SnapbackSM {
           userWallet: wallet,
           secondaryEndpoint: secondaryUrl,
           primaryEndpoint: this.endpoint,
-          syncType: SyncType.Manual,
-          immediate: true // Skips debounce and ensures syncRequest is processed immediately
+          syncType: SyncType.Manual
         })
 
         // Since enqueueSync is such a quick operation, give secondary some time to process before next loop iteration
