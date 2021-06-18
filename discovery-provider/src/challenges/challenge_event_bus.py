@@ -84,6 +84,3 @@ def setup_challenge_bus():
     bus.register_listener(ChallengeEvent.favorite, profile_challenge_manager)
 
     return bus
-
-def get_challenge_bus():
-    return current_app.challenge_bus

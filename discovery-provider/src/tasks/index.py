@@ -325,7 +325,7 @@ def index_blocks(self, db, event_bus, blocks_list):
 
                 social_feature_state_changed = ( # pylint: disable=W0612
                     social_feature_state_update(
-                        self, update_task, session, event_bus, social_feature_factory_txs, 
+                        self, update_task, session, event_bus, social_feature_factory_txs,
                         block_number, block_timestamp, block_hash) > 0
                 )
                 logger.info(
@@ -363,8 +363,8 @@ def index_blocks(self, db, event_bus, blocks_list):
                 )
 
                 user_library_state_changed = user_library_state_update( # pylint: disable=W0612
-                    self, update_task, session, event_bus, user_library_factory_txs, block_number, block_timestamp, block_hash
-                )
+                    self, update_task, session, event_bus, user_library_factory_txs,
+                    block_number, block_timestamp, block_hash)
                 logger.info(
                     f"index.py | user_library_state_update completed"
                     f" user_library_state_changed={user_library_state_changed} for block={block_number}"
