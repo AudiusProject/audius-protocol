@@ -139,8 +139,16 @@ class AudiusLibs {
    * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
    * @param {string} ownerWallet
    * @param {string?} claimDistributionContractAddress
+   * @param {string?} wormholeContractAddress
    */
-  static configEthWeb3 (tokenAddress, registryAddress, providers, ownerWallet, claimDistributionContractAddress) {
+  static configEthWeb3 (
+    tokenAddress,
+    registryAddress,
+    providers,
+    ownerWallet,
+    claimDistributionContractAddress,
+    wormholeContractAddress
+  ) {
     let providerList
     if (typeof providers === 'string') {
       providerList = providers.split(',')
@@ -152,7 +160,14 @@ class AudiusLibs {
       throw new Error('Providers must be of type string, Array, or Web3 instance')
     }
 
-    return { tokenAddress, registryAddress, providers: providerList, ownerWallet, claimDistributionContractAddress }
+    return {
+      tokenAddress,
+      registryAddress,
+      providers: providerList,
+      ownerWallet,
+      claimDistributionContractAddress,
+      wormholeContractAddress
+    }
   }
 
   /**
@@ -264,6 +279,7 @@ class AudiusLibs {
         this.ethWeb3Config ? this.ethWeb3Config.tokenAddress : null,
         this.ethWeb3Config ? this.ethWeb3Config.registryAddress : null,
         (this.ethWeb3Config && this.ethWeb3Config.claimDistributionContractAddress) || null,
+        (this.ethWeb3Config && this.ethWeb3Config.wormholeContractAddress) || null,
         this.isServer,
         this.isDebug
       )

@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import os
 import pytest
-from sqlalchemy_utils import database_exists, drop_database
+from sqlalchemy_utils import database_exists, drop_database, create_database
 from web3 import HTTPProvider, Web3
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -11,6 +11,7 @@ import alembic.config
 from src.app import create_app, create_celery
 from src.utils import helpers
 from src.models import Base
+from src.utils.redis_connection import get_redis
 import src
 
 DB_URL = "postgresql+psycopg2://postgres:postgres@localhost/test_audius_discovery"
@@ -39,8 +40,11 @@ def app():
     if database_exists(DB_URL):
         drop_database(DB_URL)
 
-    # Create application for testing
-    discovery_provider_app = create_app(TEST_CONFIG_OVERRIDE)
+    create_database(DB_URL)
+
+    # Drop redis
+    redis = get_redis()
+    redis.flushall()
 
     # run db migrations because the db gets dropped at the start of the tests
     alembic_dir = os.getcwd()
@@ -49,6 +53,9 @@ def app():
     alembic_config.set_main_option("mode", "test")
     with helpers.cd(alembic_dir):
         alembic.command.upgrade(alembic_config, "head")
+
+    # Create application for testing
+    discovery_provider_app = create_app(TEST_CONFIG_OVERRIDE)
 
     yield discovery_provider_app
 

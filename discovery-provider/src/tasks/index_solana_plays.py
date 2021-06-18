@@ -378,7 +378,8 @@ def index_solana_plays(self):
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("solana_plays_lock", blocking_timeout=25)
+    # Max duration of lock is 4hrs or 14400 seconds
+    update_lock = redis.lock("solana_plays_lock", blocking_timeout=25, timeout=14400)
 
     try:
         # Attempt to acquire lock - do not block if unable to acquire
