@@ -189,7 +189,7 @@ def save_and_get_skip_tx_hash(session, redis):
         return indexing_error['txhash']
     return None
 
-def index_blocks(self, db, event_bus, blocks_list):
+def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
     redis = update_task.redis
 
@@ -307,7 +307,7 @@ def index_blocks(self, db, event_bus, blocks_list):
             try:
                 # bulk process operations once all tx's for block have been parsed
                 total_user_changes, user_ids = user_state_update(
-                    self, update_task, session, event_bus, user_factory_txs, block_number, block_timestamp, block_hash)
+                    self, update_task, session, user_factory_txs, block_number, block_timestamp, block_hash)
                 user_state_changed = total_user_changes > 0
                 logger.info(
                     f"index.py | user_state_update completed"
@@ -325,7 +325,7 @@ def index_blocks(self, db, event_bus, blocks_list):
 
                 social_feature_state_changed = ( # pylint: disable=W0612
                     social_feature_state_update(
-                        self, update_task, session, event_bus, social_feature_factory_txs,
+                        self, update_task, session, social_feature_factory_txs,
                         block_number, block_timestamp, block_hash) > 0
                 )
                 logger.info(
@@ -363,7 +363,7 @@ def index_blocks(self, db, event_bus, blocks_list):
                 )
 
                 user_library_state_changed = user_library_state_update( # pylint: disable=W0612
-                    self, update_task, session, event_bus, user_library_factory_txs,
+                    self, update_task, session, user_library_factory_txs,
                     block_number, block_timestamp, block_hash)
                 logger.info(
                     f"index.py | user_library_state_update completed"
@@ -627,7 +627,6 @@ def update_task(self):
     db = update_task.db
     web3 = update_task.web3
     redis = update_task.redis
-    challenge_event_bus = update_task.challenge_event_bus
 
     # Update redis cache for health check queries
     update_latest_block_redis()
@@ -751,7 +750,7 @@ def update_task(self):
             revert_blocks(self, db, revert_blocks_list)
 
             # Perform indexing operations
-            index_blocks(self, db, challenge_event_bus, index_blocks_list)
+            index_blocks(self, db, index_blocks_list)
             logger.info(f"index.py | update_task | {self.request.id} | Processing complete within session")
         else:
             logger.error(f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock")

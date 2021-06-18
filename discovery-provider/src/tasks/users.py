@@ -14,8 +14,7 @@ from src.challenges.challenge_event import ChallengeEvent
 logger = logging.getLogger(__name__)
 
 
-def user_state_update(self, update_task, session, challenge_bus,
-                      user_factory_txs, block_number, block_timestamp, block_hash):
+def user_state_update(self, update_task, session, user_factory_txs, block_number, block_timestamp, block_hash):
     """Return int representing number of User model state changes found in transaction."""
 
     num_total_changes = 0
@@ -27,6 +26,7 @@ def user_state_update(self, update_task, session, challenge_bus,
     user_contract = update_task.web3.eth.contract(
         address=contract_addresses["user_factory"], abi=user_abi
     )
+    challenge_bus = update_task.challenge_event_bus
 
     # This stores the state of the user object along with all the events applied to it
     # before it gets committed to the db

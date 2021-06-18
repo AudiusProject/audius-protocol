@@ -12,7 +12,6 @@ def social_feature_state_update(
         self,
         update_task,
         session,
-        challenge_bus,
         social_feature_factory_txs,
         block_number,
         block_timestamp,
@@ -29,6 +28,7 @@ def social_feature_state_update(
         address=contract_addresses["social_feature_factory"],
         abi=social_feature_factory_abi,
     )
+    challenge_bus = update_task.challenge_event_bus
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
     # stores net state changes of all reposts and follows and corresponding events in current block
@@ -143,12 +143,10 @@ def social_feature_state_update(
 ######## HELPERS ########
 
 def dispatch_challenge_repost(session, bus, repost, block_number):
-    user_id = repost.user_id
-    bus.dispatch(session, ChallengeEvent.repost, block_number, user_id)
+    bus.dispatch(session, ChallengeEvent.repost, block_number, repost.user_id)
 
 def dispatch_challenge_follow(session, bus, follow, block_number):
-    user_id = follow.follower_user_id
-    bus.dispatch(session, ChallengeEvent.follow, block_number, user_id)
+    bus.dispatch(session, ChallengeEvent.follow, block_number, follow.follower_user_id)
 
 
 def invalidate_old_repost(session, repost_user_id, repost_item_id, repost_type):

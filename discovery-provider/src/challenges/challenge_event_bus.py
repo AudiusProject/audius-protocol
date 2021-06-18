@@ -27,37 +27,44 @@ class ChallengeEventBus:
 
     def dispatch(self, session, event, block_number, user_id):
         """Dispatches an event + block_number + user_id to Redis queue"""
-        event_json = self._event_to_json(event, block_number, user_id)
-        logger.info(f"ChallengeEventBus: dispatch {event_json}")
-        self._redis.rpush(REDIS_QUEUE_PREFIX, event_json)
+        try:
+            event_json = self._event_to_json(event, block_number, user_id)
+            logger.info(f"ChallengeEventBus: dispatch {event_json}")
+            self._redis.rpush(REDIS_QUEUE_PREFIX, event_json)
+        except Exception as e:
+            logger.warning(f"ChallengeEventBus: error enqueuing to Redis: {e}")
 
     def process_events(self, session, max_events=1000):
         """Dequeues `max_events` from Redis queue and processes them, forwarding to listening ChallengeManagers.
         Returns the number of events it's processed.
         """
-        # get the first max_events elements.
-        events_json = self._redis.lrange(REDIS_QUEUE_PREFIX, 0, max_events)
-        logger.info(f"ChallengeEventBus: dequeued {len(events_json)} events")
-        # trim the first from the front of the list
-        self._redis.ltrim(REDIS_QUEUE_PREFIX, len(events_json), -1)
-        events_dicts = list(map(self._json_to_event, events_json))
+        try:
+            # get the first max_events elements.
+            events_json = self._redis.lrange(REDIS_QUEUE_PREFIX, 0, max_events)
+            logger.info(f"ChallengeEventBus: dequeued {len(events_json)} events")
+            # trim the first from the front of the list
+            self._redis.ltrim(REDIS_QUEUE_PREFIX, len(events_json), -1)
+            events_dicts = list(map(self._json_to_event, events_json))
 
-        # Consolidate event types for processing
-        # map of {"event_type": [{ user_id: number, block_number: number }]}}
-        event_user_dict = defaultdict(lambda: [])
-        for event_dict in events_dicts:
-            event_type = event_dict["event"]
-            event_user_dict[event_type].append({
-                "user_id": event_dict["user_id"],
-                "block_number": event_dict["block_number"]
-            })
+            # Consolidate event types for processing
+            # map of {"event_type": [{ user_id: number, block_number: number }]}}
+            event_user_dict = defaultdict(lambda: [])
+            for event_dict in events_dicts:
+                event_type = event_dict["event"]
+                event_user_dict[event_type].append({
+                    "user_id": event_dict["user_id"],
+                    "block_number": event_dict["block_number"]
+                })
 
-        for (event_type, event_dicts) in event_user_dict.items():
-            listeners = self._listeners[event_type]
-            for listener in listeners:
-                listener.process(session, event_type, event_dicts)
+            for (event_type, event_dicts) in event_user_dict.items():
+                listeners = self._listeners[event_type]
+                for listener in listeners:
+                    listener.process(session, event_type, event_dicts)
 
-        return len(events_json)
+            return len(events_json)
+        except Exception as e:
+            logger.warning(f"ChallengeEventBus: error processing from Redis: {e}")
+            return 0
     # Helpers
 
     def _event_to_json(self, event, block_number, user_id):
