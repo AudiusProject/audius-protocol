@@ -10,10 +10,11 @@ from src.tasks.metadata import user_metadata_format
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
 from src.queries.get_balances import enqueue_balance_refresh
 from src.utils.indexing_errors import IndexingError
+from src.challenges.challenge_event import ChallengeEvent
 logger = logging.getLogger(__name__)
 
 
-def user_state_update(self, update_task, session, user_factory_txs, block_number, block_timestamp, block_hash):
+def user_state_update(self, update_task, session, challenge_bus, user_factory_txs, block_number, block_timestamp, block_hash):
     """Return int representing number of User model state changes found in transaction."""
 
     num_total_changes = 0
@@ -88,6 +89,7 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
         logger.info(f"index.py | users.py | Adding {value_obj['user']}")
         if value_obj["events"]:
             invalidate_old_user(session, user_id)
+            challenge_bus.dispatch(session, ChallengeEvent.profile_update, block_number, user_id)
             session.add(value_obj["user"])
 
     return num_total_changes, user_ids

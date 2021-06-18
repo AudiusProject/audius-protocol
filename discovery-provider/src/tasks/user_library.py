@@ -3,11 +3,12 @@ from datetime import datetime
 from src.app import contract_addresses
 from src.models import Playlist, SaveType, Save
 from src.utils.indexing_errors import IndexingError
+from src.challenges.challenge_event import ChallengeEvent
 
 logger = logging.getLogger(__name__)
 
 def user_library_state_update(
-        self, update_task, session, user_library_factory_txs, block_number, block_timestamp, block_hash
+        self, update_task, session, challenge_bus, user_library_factory_txs, block_number, block_timestamp, block_hash
 ):
     """Return int representing number of User Library model state changes found in transaction."""
 
@@ -75,11 +76,12 @@ def user_library_state_update(
             blockhash = update_task.web3.toHex(block_hash)
             raise IndexingError('user_library', block_number, blockhash, txhash, str(e))
 
-
     for user_id in track_save_state_changes:
         for track_id in track_save_state_changes[user_id]:
             invalidate_old_save(session, user_id, track_id, SaveType.track)
-            session.add(track_save_state_changes[user_id][track_id])
+            save = track_save_state_changes[user_id][track_id]
+            session.add(save)
+            dispatch_favorite(session, challenge_bus, save, block_number)
         num_total_changes += len(track_save_state_changes[user_id])
 
     for user_id in playlist_save_state_changes:
@@ -94,6 +96,11 @@ def user_library_state_update(
 
     return num_total_changes
 
+######## HELPERS ########
+
+def dispatch_favorite(session, bus, save, block_number):
+    user_id = save.user_id
+    bus.dispatch(session, ChallengeEvent.favorite, block_number, user_id)
 
 def invalidate_old_save(session, user_id, playlist_id, save_type):
     num_invalidated_save_entries = (
