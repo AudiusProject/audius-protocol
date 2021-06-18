@@ -50,9 +50,10 @@ async function getTrendingTracks (optimizelyClient) {
     params.append('limit', MAX_TOP_TRACK_RANK)
 
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+    const baseUrl = `${discoveryProvider.discoveryProviderEndpoint}/v1/full/tracks/trending`
     const url = trendingExperiment
-      ? `${discoveryProvider.discoveryProviderEndpoint}/v1/full/tracks/trending/${trendingExperiment}?time=week`
-      : `${discoveryProvider.discoveryProviderEndpoint}/v1/full/tracks/trending?time=week`
+      ? `${baseUrl}/${trendingExperiment}?time=week`
+      : `${baseUrl}?time=week`
 
     const trendingTracksResponse = await axios({
       method: 'get',
