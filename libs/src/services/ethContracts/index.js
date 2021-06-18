@@ -10,6 +10,7 @@ const StakingProxyClient = require('./stakingProxyClient')
 const DelegateManagerClient = require('./delegateManagerClient')
 const ClaimsManagerClient = require('./claimsManagerClient')
 const ClaimDistributionClient = require('./claimDistributionClient')
+const WormholeClient = require('./wormholeClient')
 const Utils = require('../../utils')
 
 const AudiusTokenABI = Utils.importEthContractABI('AudiusToken.json').abi
@@ -21,6 +22,7 @@ const StakingABI = Utils.importEthContractABI('Staking.json').abi
 const DelegateManagerABI = Utils.importEthContractABI('DelegateManager.json').abi
 const ClaimsManagerABI = Utils.importEthContractABI('ClaimsManager.json').abi
 const ClaimDistributionABI = Utils.importEthContractABI('AudiusClaimDistributor.json').abi
+const WormholeABI = Utils.importEthContractABI('Wormhole.json').abi
 
 const GovernanceRegistryKey = 'Governance'
 const ServiceTypeManagerProxyKey = 'ServiceTypeManagerProxy'
@@ -40,10 +42,19 @@ const serviceTypeList = Object.values(serviceType)
 if (urlJoin && urlJoin.default) urlJoin = urlJoin.default
 
 class EthContracts {
-  constructor (ethWeb3Manager, tokenContractAddress, registryAddress, claimDistributionContractAddress, isServer, isDebug = false) {
+  constructor (
+    ethWeb3Manager,
+    tokenContractAddress,
+    registryAddress,
+    claimDistributionContractAddress,
+    wormholeContractAddress,
+    isServer,
+    isDebug = false
+  ) {
     this.ethWeb3Manager = ethWeb3Manager
     this.tokenContractAddress = tokenContractAddress
     this.claimDistributionContractAddress = claimDistributionContractAddress
+    this.wormholeContractAddress = wormholeContractAddress
     this.registryAddress = registryAddress
     this.isServer = isServer
     this.isDebug = isDebug
@@ -123,6 +134,13 @@ class EthContracts {
         this.claimDistributionContractAddress
       )
     }
+
+    this.WormholeClient = new WormholeClient(
+      this.ethWeb3Manager,
+      WormholeABI,
+      this.wormholeContractAddress,
+      this.AudiusTokenClient
+    )
 
     this.contractClients = [
       this.ServiceTypeManagerClient,
