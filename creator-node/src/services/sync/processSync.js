@@ -38,7 +38,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     redisKey = redis.getNodeSyncRedisKey(wallet)
     let lockHeld = await redisLock.getLock(redisKey)
     if (lockHeld) {
-      const errorObj = `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
+      errorObj = new Error(`Cannot change state of wallet ${wallet}. Node sync currently in progress.`)
       return errorObj
     }
     await redisLock.setLock(redisKey)
@@ -353,7 +353,8 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
       await redisLock.removeLock(redisKey)
     }
 
-    logger.error(redisKey, `Sync complete for wallets: ${walletPublicKeys.join(',')}. Status: ${errorObj ? 'Error: ' + errorObj.message : 'Success'}. Duration sync: ${Date.now() - start}. From endpoint ${creatorNodeEndpoint}.`)
+    if (errorObj) logger.error(redisKey, `Sync complete for wallets: ${walletPublicKeys.join(',')}. Status: Error, message: ${errorObj.message}. Duration sync: ${Date.now() - start}. From endpoint ${creatorNodeEndpoint}.`)
+    else logger.info(redisKey, `Sync complete for wallets: ${walletPublicKeys.join(',')}. Status: Success. Duration sync: ${Date.now() - start}. From endpoint ${creatorNodeEndpoint}.`)
   }
 
   return errorObj
