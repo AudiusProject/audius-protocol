@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 # Redis Key Convention:
 # API_V1:path:queryparams
 
+internal_api_cache_prefix = "INTERNAL_API"
 cache_prefix = "API_V1_ROUTE"
 default_ttl_sec = 60
 
