@@ -118,6 +118,12 @@ def test_handle_event(app):
                 "user_id": 3,
                 "block_number": 100
             },
+            # Attempt to add id 6 twice to
+            # ensure that it doesn't cause a collision
+            {
+                "user_id": 6,
+                "block_number": 100
+            },
             {
                 "user_id": 6,
                 "block_number": 100
