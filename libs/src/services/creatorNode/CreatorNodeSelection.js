@@ -1,4 +1,3 @@
-const axios = require('axios')
 const CreatorNode = require('.')
 const ServiceSelection = require('../../service-selection/ServiceSelection')
 const { timeRequestsAndSortByVersion } = require('../../utils/network')
@@ -37,8 +36,8 @@ class CreatorNodeSelection extends ServiceSelection {
         })
       },
       // Use the content node's configured whitelist if not provided
-      whitelist: whitelist || (creatorNode && creatorNode.passList) || null,
-      blacklist: blacklist || (creatorNode && creatorNode.blockList) || null
+      whitelist: whitelist || (creatorNode && creatorNode.passList),
+      blacklist: blacklist || (creatorNode && creatorNode.blockList)
     })
     this.creatorNode = creatorNode || new CreatorNode()
     this.numberOfNodes = numberOfNodes
@@ -102,32 +101,11 @@ class CreatorNodeSelection extends ServiceSelection {
    * @param {string} service Content Node endopint
    * @param {number?} timeout ms
    */
-  async getSyncStatus (service, timeout = null, wallet = null) {
+  async getSyncStatus (service, timeout = null) {
     try {
-      // In the case this call is used in snapbackSM, the Content Node will not have the
-      // libs creatorNode instance initialized. Fetch the user from Discovery Node instead.
-      let user = null
-      if (!this.creatorNode) {
-        // Return one of the nodes in the list
-        const discoveryNodes = await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('discovery-node')
-        console.log(discoveryNodes)
-        const discoveryNodeEndpoint = discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)].endpoint
-        console.log(discoveryNodeEndpoint)
-        user = (await axios({
-          baseURL: discoveryNodeEndpoint,
-          url: '/users',
-          method: 'get',
-          params: {
-            wallet
-          }
-        })).data.data
-      }
-
-      console.log('wat is the user', user)
-      const syncStatus = await this.creatorNode.getSyncStatus(service, timeout, user)
+      const syncStatus = await this.creatorNode.getSyncStatus(service, timeout)
       return { service, syncStatus, error: null }
     } catch (e) {
-      console.log(e.stack)
       return { service, syncStatus: null, error: e }
     }
   }

@@ -441,6 +441,30 @@ const config = convict({
     env: 'snapbackDevModeEnabled',
     default: false
   },
+  snapbackReconfigEnabled: {
+    doc: 'Enables replica set reconfiguration or not. Currently enabled for dev mode, disabled for prod.',
+    format: 'BooleanCustom',
+    env: 'snapbackReconfigEnabled',
+    default: false
+  },
+  snapbackModuloBase: {
+    doc: 'The modulo base to segment users by on snapback. Will process `1/snapbackModuloBase` users at some snapback interval',
+    format: 'nat',
+    env: 'snapbackModuloBase',
+    default: 24
+  },
+  snapbackDevJobDelay: {
+    doc: 'Local dev interval [ms] that snapbackSM jobs are fired; 3 seconds',
+    format: 'nat',
+    env: 'snapbackDevJobDelay',
+    default: 3000
+  },
+  snapbackProdJobDelay: {
+    doc: 'Prod interval [ms] that snapbackSM jobs are fired; 1 hour',
+    format: 'nat',
+    env: 'snapbackProdJobDelay',
+    default: 3600000
+  },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
     format: 'BooleanCustom',

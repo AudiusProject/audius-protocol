@@ -14,15 +14,6 @@ const MaxSyncMonitoringDurationInMs = 360000 // ms
 // Retry delay between requests during monitoring
 const SyncMonitoringRetryDelayMs = 15000
 
-// Base value used to filter users over a 24 hour period
-const ModuloBase = 24
-
-// For local dev, configure this to be the interval when SnapbackSM is fired
-const DevDelayInMS = 60000
-
-// Delay 1 hour between production state machine jobs
-const ProductionJobDelayInMs = 3600000 // ms
-
 // The number of replica set nodes
 const NUMBER_OF_REPLICA_SET_NODES = 3
 
@@ -81,7 +72,17 @@ class SnapbackSM {
       creatorNodeEndpoint: this.endpoint
     })
 
-    this.performReconfigOp = true
+    // Config to determine if reconfig is enabled
+    this.snapbackReconfigEnabled = this.nodeConfig.get('snapbackReconfigEnabled')
+
+    // Base value used to filter users over a 24 hour period
+    this.moduloBase = this.nodeConfig.get('snapbackModuloBase')
+
+    // For local dev, configure this to be the interval when SnapbackSM is fired
+    this.devDelayInMS = this.nodeConfig.get('snapbackDevJobDelay')
+
+    // Delay 1 hour between production state machine jobs
+    this.productionJobDelayInMs = this.nodeConfig.get('snapbackProdJobDelay')
   }
 
   /**
@@ -119,7 +120,7 @@ class SnapbackSM {
 
     // Initialize stateMachineQueue job processor
     // - Re-adds job to queue after processing current job, with a fixed delay
-    const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
+    const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? this.devDelayInMS : this.productionJobDelayInMs
     this.stateMachineQueue.process(
       async (job, done) => {
         try {
@@ -198,8 +199,8 @@ class SnapbackSM {
 
   // Randomly select an initial slice
   randomStartingSlice () {
-    let slice = Math.floor(Math.random() * Math.floor(ModuloBase))
-    this.log(`Starting at data slice ${slice}/${ModuloBase}`)
+    let slice = Math.floor(Math.random() * Math.floor(this.moduloBase))
+    this.log(`Starting at data slice ${slice}/${this.moduloBase}`)
     return slice
   }
 
@@ -311,7 +312,7 @@ class SnapbackSM {
     this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=[${unhealthyReplicas}] | current healthy peer set=[${healthyPeers}]`)
 
     // TODO: make optimizely flag
-    if (!this.performReconfigOp) return
+    if (!this.snapbackReconfigEnabled) return
 
     const reconfigPrefixLog = `[issueUpdateReplicaSetOp] Updating userId=${userId} wallet=${wallet} replica set=[${primary},${secondary1},${secondary2}] to`
     const unhealthyReplicasSet = new Set(unhealthyReplicas)
@@ -345,6 +346,7 @@ class SnapbackSM {
 
       // Write to URSM
       // TODO: figure out this
+      this.log(`${reconfigPrefixLog} new replica set=[${primary},${currentSecondary},${newSecondary}]`)
       phase = issueUpdateReplicaSetOpPhases.UPDATE_URSM_REPLICA_SET
       await this.audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
         userId,
@@ -359,10 +361,10 @@ class SnapbackSM {
         primaryEndpoint: primary,
         secondaryEndpoint: newSecondary
       })
-
-      this.log(`${reconfigPrefixLog} new replica set=[${primary},${currentSecondary},${newSecondary}]`)
     } catch (e) {
-      this.logError(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} failed at phase=${phase} reconfiguring to spIds=[${newReplicaSetSPIds}]: ${e.toString()}\n${e.stack}`)
+      const errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} failed at phase=${phase} reconfiguring to spIds=[${newReplicaSetSPIds}]: ${e.toString()}\n${e.stack}`
+      this.logError(errorMsg)
+      throw new Error(errorMsg)
     }
   }
 
@@ -688,17 +690,17 @@ class SnapbackSM {
         throw new Error('processStateMachineOperation():issueUpdateReplicaSetOp() Error')
       }
 
-      // Increment and adjust current slice by ModuloBase
+      // Increment and adjust current slice by this.moduloBase
       const previousModuloSlice = this.currentModuloSlice
       this.currentModuloSlice += 1
-      this.currentModuloSlice = this.currentModuloSlice % ModuloBase
+      this.currentModuloSlice = this.currentModuloSlice % this.moduloBase
 
       decisionTree.push({
         stage: 'END processStateMachineOperation()',
         vals: {
           currentModuloSlice: previousModuloSlice,
           nextModuloSlice: this.currentModuloSlice,
-          moduloBase: ModuloBase,
+          moduloBase: this.moduloBase,
           numSyncRequestsIssued,
           numUpdateReplicaOpsIssued
         },
@@ -876,7 +878,7 @@ class SnapbackSM {
    */
   sliceUsers (nodeUsers) {
     return nodeUsers.filter(nodeUser =>
-      nodeUser.user_id % ModuloBase === this.currentModuloSlice
+      nodeUser.user_id % this.moduloBase === this.currentModuloSlice
     )
   }
 
