@@ -63,6 +63,8 @@ def test_get_user_signals(app):
     populate_mock_db(db, test_entities)
 
     with db.scoped_session() as session:
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
+
         user_signals = _get_user_signals(session, "user1")
         assert user_signals['num_followers'] == 3
         assert user_signals['num_following'] == 1
