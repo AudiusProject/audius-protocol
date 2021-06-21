@@ -346,7 +346,9 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
   } catch (e) {
     // if the clock values somehow becomes corrupted, wipe the records before future re-syncs
     if (e.message.includes('Can only insert contiguous clock values')) {
-      await DBManager.deleteAllCNodeUserDataFromDB({ wallet })
+      for (let wallet of walletPublicKeys) {
+        await DBManager.deleteAllCNodeUserDataFromDB({ wallet })
+      }
     }
     logger.error(redisKey, 'Sync Error for wallets ', walletPublicKeys, `|| from endpoint ${creatorNodeEndpoint} ||`, e.message)
     errorObj = e
