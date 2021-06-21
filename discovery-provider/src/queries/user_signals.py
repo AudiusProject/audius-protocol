@@ -2,12 +2,14 @@ import logging
 from flask import Blueprint, request
 from src.queries.get_user_signals import get_user_signals
 from src.api_helpers import success_response, error_response
+from src.utils.redis_cache import cache
 
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("user_signals", __name__)
 
 @bp.route("/user_signals", methods=["GET"])
+@cache(ttl_sec=30, cache_prefix_override='INTERNAL_API')
 def user_signals():
     handle = request.args.get("handle")
     if not handle:
