@@ -343,7 +343,6 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
 
     await SyncHistoryAggregator.recordSyncSuccess()
   } catch (e) {
-    logger.error(redisKey, 'Sync Error for wallets ', walletPublicKeys, `|| from endpoint ${creatorNodeEndpoint} ||`, e.message)
     errorObj = e
 
     await SyncHistoryAggregator.recordSyncFail()
@@ -353,7 +352,8 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
       let redisKey = redis.getNodeSyncRedisKey(wallet)
       await redisLock.removeLock(redisKey)
     }
-    logger.info(redisKey, `DURATION SYNC ${Date.now() - start}`)
+
+    logger.error(redisKey, `Sync complete for wallets: ${walletPublicKeys.join(',')}. Status: ${errorObj ? 'Error: ' + errorObj.message : 'Success'}. Duration sync: ${Date.now() - start}. From endpoint ${creatorNodeEndpoint}.`)
   }
 
   return errorObj
