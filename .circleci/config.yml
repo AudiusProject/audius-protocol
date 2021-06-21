@@ -623,30 +623,6 @@ jobs:
             docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
 
 workflows:
-  # test master at midnight daily
-  test-nightly:
-    jobs:
-      - test-libs:
-          force: true
-      - test-contracts:
-          force: true
-      - test-eth-contracts:
-          force: true
-      - test-creator-node:
-          force: true
-      - test-discovery-provider:
-          force: true
-      - test-identity-service:
-          force: true
-      - test-solana-programs:
-          force: true
-    triggers:
-      - schedule:
-          cron: '0 5 * * *'
-          filters:
-            branches:
-              only: /(^master$)/
-
   # test, build and push all commits
   test-build-and-push:
     jobs:
@@ -700,3 +676,27 @@ workflows:
           #   - test-solana-programs
 
       - test-mad-dog-e2e
+
+  # test master at midnight daily
+  test-nightly:
+    jobs:
+      - test-libs:
+          force: true
+      - test-contracts:
+          force: true
+      - test-eth-contracts:
+          force: true
+      - test-creator-node:
+          force: true
+      - test-discovery-provider:
+          force: true
+      - test-identity-service:
+          force: true
+      - test-solana-programs:
+          force: true
+    triggers:
+      - schedule:
+          cron: '0 5 * * *'
+          filters:
+            branches:
+              only: /(^master$)/
