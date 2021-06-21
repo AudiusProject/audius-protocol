@@ -1,7 +1,7 @@
 const config = require('../config')
 const { handleResponse, successResponse, errorResponseForbidden } = require('../apiHelpers')
 const { sequelize } = require('../models')
-const { userHandleMiddleware } = require('../userHandleMiddleware')
+const userHandleMiddleware = require('../userHandleMiddleware')
 
 module.exports = function (app) {
   app.get('/scores', userHandleMiddleware, handleResponse(async req => {
