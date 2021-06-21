@@ -14,9 +14,6 @@ const MaxSyncMonitoringDurationInMs = 360000 // ms
 // Retry delay between requests during monitoring
 const SyncMonitoringRetryDelayMs = 15000
 
-// The number of replica set nodes
-const NUMBER_OF_REPLICA_SET_NODES = 3
-
 // Describes the type of sync operation
 const SyncType = Object.freeze({
   Recurring: 'RECURRING' /** scheduled background sync to keep secondaries up to date */,
@@ -46,7 +43,7 @@ class SnapbackSM {
 
     this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
     this.spID = this.nodeConfig.get('spID')
-    this.snapbackDevModeEnabled = true // this.nodeConfig.get('snapbackDevModeEnabled')
+    this.snapbackDevModeEnabled = this.nodeConfig.get('snapbackDevModeEnabled')
 
     this.MaxManualRequestSyncJobConcurrency = this.nodeConfig.get('maxManualRequestSyncJobConcurrency')
     this.MaxRecurringRequestSyncJobConcurrency = this.nodeConfig.get('maxRecurringRequestSyncJobConcurrency')
@@ -314,7 +311,6 @@ class SnapbackSM {
     // TODO: make optimizely flag
     if (!this.snapbackReconfigEnabled) return
 
-    const reconfigPrefixLog = `[issueUpdateReplicaSetOp] Updating userId=${userId} wallet=${wallet} replica set=[${primary},${secondary1},${secondary2}] to`
     const unhealthyReplicasSet = new Set(unhealthyReplicas)
     const baseSyncRequestParams = { userWallet: wallet, syncType: SyncType.Manual }
     let newReplicaSetSPIds = []
@@ -345,7 +341,7 @@ class SnapbackSM {
       ]
 
       // Write to URSM
-      this.log(`${reconfigPrefixLog} new replica set=[${primary},${currentHealthySecondary},${newSecondary}]`)
+      this.log(`[issueUpdateReplicaSetOp] Updating userId=${userId} wallet=${wallet} replica set=[${primary},${secondary1},${secondary2}] to new replica set=[${primary},${currentHealthySecondary},${newSecondary}]`)
       phase = issueUpdateReplicaSetOpPhases.UPDATE_URSM_REPLICA_SET
       await this.audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
         userId,
@@ -582,7 +578,6 @@ class SnapbackSM {
       decisionTree.push({
         stage: 'Build requiredUpdateReplicaSetOps and potentialSyncRequests arrays',
         vals: {
-          requiredUpdateReplicaSetOps,
           requiredUpdateReplicaSetOpsLength: requiredUpdateReplicaSetOps.length,
           potentialSyncRequestsLength: potentialSyncRequests.length
         },
@@ -661,6 +656,8 @@ class SnapbackSM {
       let healthyNodes
       try {
         for await (const userInfo of requiredUpdateReplicaSetOps) {
+          // If `healthyNodes` is undefined, fetch all the healthy nodes, excluding the current replica set
+          // while disabling sync checks
           if (!healthyNodes) {
             const { services: healthyServicesMap } = await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
               blacklist: new Set([userInfo.primary, userInfo.secondary1, userInfo.secondary2]),
@@ -718,7 +715,7 @@ class SnapbackSM {
     } finally {
       // Log decision tree
       try {
-        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree, null, 2)}`)
+        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree)}`)
       } catch (e) {
         this.logError(`Error printing processStateMachineOperation Decision Tree ${decisionTree}`)
       }
@@ -885,26 +882,6 @@ class SnapbackSM {
     return nodeUsers.filter(nodeUser =>
       nodeUser.user_id % this.moduloBase === this.currentModuloSlice
     )
-  }
-
-  // Fetch clock values with max number of attempts
-  async fetchClockValues (maxClockFetchAttempts = 10) {
-    let endpointToClockMap = {}
-    let fetchedClockValues = false
-    let attempts = 0
-
-    while (!fetchedClockValues || attempts++ < maxClockFetchAttempts) {
-      const clockResponses = await this.audiusLibs.creatorNode.getClockValuesFromReplicaSet()
-      for (const response of clockResponses) {
-        // If clock values are null, do not attempt to create `endpointToClockMap`
-        if (!response.clockValue) break
-        endpointToClockMap[response.endpoint] = response.clockValue
-      }
-
-      if (Object.keys(endpointToClockMap).length === NUMBER_OF_REPLICA_SET_NODES) fetchedClockValues = true
-    }
-
-    return endpointToClockMap
   }
 }
 
