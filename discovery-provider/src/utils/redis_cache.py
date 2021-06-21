@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 cache_prefix = "API_V1_ROUTE"
 default_ttl_sec = 60
 
-def extract_key(path, arg_items, cache_prefix_override):
+def extract_key(path, arg_items, cache_prefix_override=None):
     # filter out query-params with 'None' values
     filtered_arg_items = filter(lambda x: x[1] is not None, arg_items)
     req_args = stringify_query_params(filtered_arg_items)

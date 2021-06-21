@@ -1,4 +1,3 @@
-from sqlalchemy import func
 from src.models import User, AggregateUser
 from src.utils import db_session
 
