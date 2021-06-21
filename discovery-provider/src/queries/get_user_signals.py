@@ -1,5 +1,5 @@
 from sqlalchemy import func
-from src.models import User, Follow
+from src.models import User, AggregateUser
 from src.utils import db_session
 
 def get_user_signals(handle):
@@ -26,25 +26,16 @@ def _get_user_signals(session, handle):
 
     user_id, profile_picture, profile_picture_sizes, cover_photo, cover_photo_sizes = user_result
 
-    follower_results = (
-        session.query(func.count(Follow.followee_user_id))
-        .filter(Follow.is_current == True)
-        .filter(Follow.is_delete == False)
-        .filter(Follow.followee_user_id == user_id)
-        .group_by(Follow.followee_user_id)
+    user_follow_result = (
+        session.query(
+            AggregateUser.follower_count,
+            AggregateUser.following_count
+        )
+        .filter(AggregateUser.user_id == user_id)
         .first()
     )
-    num_followers = follower_results[0] if follower_results else 0
-
-    following_results = (
-        session.query(func.count(Follow.follower_user_id))
-        .filter(Follow.is_current == True)
-        .filter(Follow.is_delete == False)
-        .filter(Follow.follower_user_id == user_id)
-        .group_by(Follow.follower_user_id)
-        .first()
-    )
-    num_following = following_results[0] if following_results else 0
+    num_followers = user_follow_result[0] if user_follow_result else 0
+    num_following = user_follow_result[1] if user_follow_result else 0
 
     return {
         "num_followers": num_followers,
