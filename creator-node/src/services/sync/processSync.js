@@ -38,7 +38,8 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     redisKey = redis.getNodeSyncRedisKey(wallet)
     let lockHeld = await redisLock.getLock(redisKey)
     if (lockHeld) {
-      throw new Error(`Cannot change state of wallet ${wallet}. Node sync currently in progress.`)
+      const errorObj = `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
+      return errorObj
     }
     await redisLock.setLock(redisKey)
   }

@@ -286,6 +286,18 @@ const config = convict({
     env: 'syncQueueMaxConcurrency',
     default: 50
   },
+  issueAndWaitForSecondarySyncRequestsPollingDurationMs: {
+    doc: 'Duration for which to poll secondaries for content replication in `issueAndWaitForSecondarySyncRequests` function',
+    format: 'nat',
+    env: 'issueAndWaitForSecondarySyncRequestsPollingDurationMs',
+    default: 5000 // 5000ms = 5s (prod default)
+  },
+  enforceWriteQuorum: {
+    doc: 'Boolean flag indicating whether or not primary should reject write on 2/3 replication across replica set',
+    format: Boolean,
+    env: 'enforceWriteQuorum',
+    default: false
+  },
 
   // wallet information
   delegateOwnerWallet: {
