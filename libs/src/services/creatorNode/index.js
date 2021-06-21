@@ -431,27 +431,32 @@ class CreatorNode {
    * @param {string} endpoint
    * @param {number?} timeout ms
    */
-  async getSyncStatus (endpoint, timeout = null) {
-    const user = this.userStateManager.getCurrentUser()
-    if (user) {
-      const req = {
-        baseURL: endpoint,
-        url: `/sync_status/${user.wallet}`,
-        method: 'get'
-      }
-      if (timeout) req.timeout = timeout
-      const { data: body } = await axios(req)
-      const status = body.data
-      return {
-        status,
-        userBlockNumber: user.blocknumber,
-        trackBlockNumber: user.track_blocknumber,
-        // Whether or not the endpoint is behind in syncing
-        isBehind: status.latestBlockNumber < Math.max(user.blocknumber, user.track_blocknumber),
-        isConfigured: status.latestBlockNumber !== -1
-      }
+  async getSyncStatus (endpoint, timeout = null, user = null) {
+    // If user info is not passed in and userStateManager does not have a user, throw an error
+    if (!user) {
+      user = this.userStateManager.getCurrentUser()
+      if (!user) throw new Error(`No current user`)
     }
-    throw new Error(`No current user`)
+    return this.makeSyncStatusRequest(endpoint, user, timeout)
+  }
+
+  async makeSyncStatusRequest (endpoint, { wallet, blocknumber, track_blocknumber: trackBlockNumber }, timeout) {
+    const req = {
+      baseURL: endpoint,
+      url: `/sync_status/${wallet}`,
+      method: 'get'
+    }
+    if (timeout) { req.timeout = timeout }
+    const { data: body } = await axios(req)
+    const status = body.data
+    return {
+      status,
+      userBlockNumber: blocknumber,
+      trackBlockNumber,
+      // Whether or not the endpoint is behind in syncing
+      isBehind: status.latestBlockNumber < Math.max(blocknumber, trackBlockNumber),
+      isConfigured: status.latestBlockNumber !== -1
+    }
   }
 
   /**

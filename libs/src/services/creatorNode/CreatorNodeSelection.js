@@ -1,3 +1,5 @@
+const axios = require('axios')
+const CreatorNode = require('.')
 const ServiceSelection = require('../../service-selection/ServiceSelection')
 const { timeRequestsAndSortByVersion } = require('../../utils/network')
 const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
@@ -35,10 +37,10 @@ class CreatorNodeSelection extends ServiceSelection {
         })
       },
       // Use the content node's configured whitelist if not provided
-      whitelist: whitelist || creatorNode.passList,
-      blacklist: blacklist || creatorNode.blockList
+      whitelist: whitelist || (creatorNode && creatorNode.passList) || null,
+      blacklist: blacklist || (creatorNode && creatorNode.blockList) || null
     })
-    this.creatorNode = creatorNode
+    this.creatorNode = creatorNode || new CreatorNode()
     this.numberOfNodes = numberOfNodes
     this.ethContracts = ethContracts
     this.timeout = timeout
@@ -82,10 +84,10 @@ class CreatorNodeSelection extends ServiceSelection {
     services = healthyServicesList
 
     // Set index 0 from services as the primary
-    const primary = this.getPrimary(services)
+    const primary = 'http://cn2_creator-node_1:4001'
     // Set index 1 - services.length as the backups. Used in selecting secondaries
     this.setBackupsList(services.slice(1))
-    const secondaries = this.getSecondaries()
+    const secondaries = ['http://cn1_creator-node_1:4000', 'http://cn3_creator-node_1:4002']
     this.decisionTree.push({
       stage: DECISION_TREE_STATE.SELECT_PRIMARY_AND_SECONDARIES,
       val: { primary, secondaries: secondaries.toString(), services: Object.keys(servicesMap).toString() }
@@ -100,11 +102,32 @@ class CreatorNodeSelection extends ServiceSelection {
    * @param {string} service Content Node endopint
    * @param {number?} timeout ms
    */
-  async getSyncStatus (service, timeout = null) {
+  async getSyncStatus (service, timeout = null, wallet = null) {
     try {
-      const syncStatus = await this.creatorNode.getSyncStatus(service, timeout)
+      // In the case this call is used in snapbackSM, the Content Node will not have the
+      // libs creatorNode instance initialized. Fetch the user from Discovery Node instead.
+      let user = null
+      if (!this.creatorNode) {
+        // Return one of the nodes in the list
+        const discoveryNodes = await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('discovery-node')
+        console.log(discoveryNodes)
+        const discoveryNodeEndpoint = discoveryNodes[Math.floor(Math.random() * discoveryNodes.length)].endpoint
+        console.log(discoveryNodeEndpoint)
+        user = (await axios({
+          baseURL: discoveryNodeEndpoint,
+          url: '/users',
+          method: 'get',
+          params: {
+            wallet
+          }
+        })).data.data
+      }
+
+      console.log('wat is the user', user)
+      const syncStatus = await this.creatorNode.getSyncStatus(service, timeout, user)
       return { service, syncStatus, error: null }
     } catch (e) {
+      console.log(e.stack)
       return { service, syncStatus: null, error: e }
     }
   }
@@ -244,7 +267,7 @@ class CreatorNodeSelection extends ServiceSelection {
     this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_OUTDATED_AND_NO_STORAGE_SPACE, val: healthyServicesList })
 
     // Record metrics
-    if (this.creatorNode.monitoringCallbacks.healthCheck) {
+    if (this.creatorNode && this.creatorNode.monitoringCallbacks.healthCheck) {
       healthCheckedServices.forEach(check => {
         if (check.response && check.response.data) {
           const url = new URL(check.request.url)

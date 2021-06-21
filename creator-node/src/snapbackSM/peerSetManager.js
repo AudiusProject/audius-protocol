@@ -204,6 +204,11 @@ class PeerSetManager {
       timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT
     })
 
+    // test: force cn1 to be unhealthy
+    if (endpoint === 'http://cn1_creator-node_1:4000') {
+      resp.data.data.storagePathSize = resp.data.data.storagePathUsed
+    }
+
     return resp.data.data
   }
 
