@@ -83,10 +83,10 @@ class CreatorNodeSelection extends ServiceSelection {
     services = healthyServicesList
 
     // Set index 0 from services as the primary
-    const primary = 'http://cn2_creator-node_1:4001'
+    const primary = this.getPrimary(services)
     // Set index 1 - services.length as the backups. Used in selecting secondaries
     this.setBackupsList(services.slice(1))
-    const secondaries = ['http://cn1_creator-node_1:4000', 'http://cn3_creator-node_1:4002']
+    const secondaries = this.getSecondaries()
     this.decisionTree.push({
       stage: DECISION_TREE_STATE.SELECT_PRIMARY_AND_SECONDARIES,
       val: { primary, secondaries: secondaries.toString(), services: Object.keys(servicesMap).toString() }

@@ -329,24 +329,23 @@ class SnapbackSM {
     try {
       // Generate new replica set, excluding current replica set
       phase = issueUpdateReplicaSetOpPhases.SELECT_CREATOR_NODES
-      const currentSecondary = unhealthyReplicasSet.has(secondary1) ? secondary2 : secondary1
+      const currentHealthySecondary = unhealthyReplicasSet.has(secondary1) ? secondary2 : secondary1
 
       // make sure new secondary is not in current replica set
       let newSecondary = primary
-      while (newSecondary === primary || newSecondary === currentSecondary) {
+      while (newSecondary === primary || newSecondary === currentHealthySecondary) {
         newSecondary = healthyPeers[Math.floor(Math.random() * healthyPeers.length)]
       }
 
       // Reassign new secondary
       newReplicaSetSPIds = [
         this.endpointToSPIdMap[primary],
-        this.endpointToSPIdMap[currentSecondary],
+        this.endpointToSPIdMap[currentHealthySecondary],
         this.endpointToSPIdMap[newSecondary]
       ]
 
       // Write to URSM
-      // TODO: figure out this
-      this.log(`${reconfigPrefixLog} new replica set=[${primary},${currentSecondary},${newSecondary}]`)
+      this.log(`${reconfigPrefixLog} new replica set=[${primary},${currentHealthySecondary},${newSecondary}]`)
       phase = issueUpdateReplicaSetOpPhases.UPDATE_URSM_REPLICA_SET
       await this.audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
         userId,
@@ -671,7 +670,13 @@ class SnapbackSM {
             healthyNodes = Object.keys(healthyServicesMap)
           }
           await this.issueUpdateReplicaSetOp(
-            userInfo.user_id, userInfo.wallet, userInfo.primary, userInfo.secondary1, userInfo.secondary2, userInfo.unhealthyReplicas, healthyNodes
+            userInfo.user_id,
+            userInfo.wallet,
+            userInfo.primary,
+            userInfo.secondary1,
+            userInfo.secondary2,
+            userInfo.unhealthyReplicas,
+            healthyNodes
           )
           numUpdateReplicaOpsIssued++
         }
