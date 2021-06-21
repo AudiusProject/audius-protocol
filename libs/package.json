@@ -34,7 +34,12 @@
     "proper-url-join": "^1.2.0",
     "semver": "^6.3.0",
     "tus-js-client": "^2.3.0",
-    "web3": "1.2.7"
+    "web3": "1.2.7",
+    "@solana/spl-token": "^0.1.4",
+    "@solana/web3.js": "^1.9.1",
+    "borsh": "^0.4.0",
+    "keccak256": "^1.0.2",
+    "secp256k1": "^4.0.2"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.6",

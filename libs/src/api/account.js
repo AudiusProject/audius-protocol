@@ -132,6 +132,10 @@ class Account extends Base {
           const ownerWallet = await this.hedgehog.signUp(email, password)
           await this.web3Manager.setOwnerWallet(ownerWallet)
           await this.generateRecoveryLink({ handle: metadata.handle, host })
+          if (this.solanaWeb3Manager) {
+            // Create a user bank if the solana web3 manager is present
+            await this.solanaWeb3Manager.createUserBank()
+          }
         }
       }
 

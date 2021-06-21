@@ -3,6 +3,7 @@ const packageJSON = require('../package.json')
 const EthWeb3Manager = require('./services/ethWeb3Manager/index')
 const Web3Manager = require('./services/web3Manager/index')
 const EthContracts = require('./services/ethContracts/index')
+const SolanaWeb3Manager = require('./services/solanaWeb3Manager/index')
 const AudiusContracts = require('./services/dataContracts/index')
 const IdentityService = require('./services/identity/index')
 const Comstock = require('./services/comstock/index')
@@ -171,6 +172,35 @@ class AudiusLibs {
   }
 
   /**
+   * Configures a solana web3
+   * @param {Object} config
+   * @param {string} config.solanaClusterEndpoint the RPC endpoint to make requests against
+   * @param {string} config.mintAddress wAudio mint address
+   * @param {string} solanaTokenAddress native solana token program
+   * @param {string} generatedProgramPDA the generated program derived address we use so our 
+   *  bank program can take ownership of accounts
+   * @param {string} feePayerAddress address for the fee payer for transactions
+   * @param {string} audiusProgramAddress address of the audius user bank program
+   */
+  static configSolanWeb3({
+    solanaClusterEndpoint,
+    mintAddress,
+    solanaTokenAddress,
+    generatedProgramPDA,
+    feePayerAddress,
+    audiusProgramAddress
+  }) {
+    return {
+      solanaClusterEndpoint,
+      mintAddress,
+      solanaTokenAddress,
+      generatedProgramPDA,
+      feePayerAddress,
+      audiusProgramAddress
+    }
+  }
+
+  /**
    * Constructs an Audius Libs instance with configs.
    * Unless default-valued, all configs are optional.
    * @example
@@ -183,6 +213,7 @@ class AudiusLibs {
   constructor ({
     web3Config,
     ethWeb3Config,
+    solanaWeb3Config,
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
@@ -198,6 +229,7 @@ class AudiusLibs {
 
     this.ethWeb3Config = ethWeb3Config
     this.web3Config = web3Config
+    this.solanaWeb3Config = solanaWeb3Config
     this.identityServiceConfig = identityServiceConfig
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
@@ -269,6 +301,14 @@ class AudiusLibs {
         this.isServer
       )
       await this.web3Manager.init()
+    }
+    if (this.solanaWeb3Config && this.web3Manager) {
+      this.solanaWeb3Manager = new SolanaWeb3Manager(
+        this.solanaWeb3Config,
+        this.identityService,
+        this.web3Manager
+      )
+      await this.solanaWeb3Manager.init()
     }
 
     /** Contracts - Eth and Data Contracts */
@@ -348,6 +388,7 @@ class AudiusLibs {
       this.contracts,
       this.ethWeb3Manager,
       this.ethContracts,
+      this.solanaWeb3Manager,
       this.creatorNode,
       this.comstock,
       this.captcha,
