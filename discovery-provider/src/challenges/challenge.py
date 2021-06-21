@@ -74,7 +74,7 @@ class ChallengeManager:
 
         # Create users that need challenges still
         existing_user_ids = {challenge.user_id for challenge in existing_user_challenges}
-        needs_challenge_ids = [id for id in user_ids if not id in existing_user_ids]
+        needs_challenge_ids = list({id for id in user_ids if not id in existing_user_ids})
         in_progress_challenges = [challenge for challenge in existing_user_challenges if not challenge.is_complete]
         new_user_challenges = self._create_new_challenges(needs_challenge_ids)
 
