@@ -7,10 +7,7 @@ from spl.token.client import Token
 
 solana_client = Client("https://audius.rpcpool.com")
 
-print("HI")
-
 TEST_USER_BANK_PROGRAM = "8a3KEEEXgWyeJcZr4G5Y8r19TdriEMziBSi2qSEJxT6z"
-
 WAUDIO_PROGRAM_ID = "CYzPVv1zB9RH6hRWRKprFoepdD8Y7Q5HefCqrybvetja"
 WAUDIO_MINT_PUBKEY = "9zyPU1mjgzaVyQsYwKJJ7AhVz5bgx5uc1NPABvAcUXsT"
 
@@ -46,7 +43,7 @@ waudio_token = Token(
     program_id=token_program_key,
     payer=funder_account,
 )
-print(waudio_token)
+# print(waudio_token)
 
 """
 Querying this balance:
@@ -73,6 +70,7 @@ print(bal_obj_2)
 def get_address_pair(mint, hashed_eth_pk, program_id, spl_token_id):
     base_pk, base_seed = get_base_address(mint, program_id)
     derived_pk, derive_seed = get_derived_address(base_pk, hashed_eth_pk, spl_token_id)
+    print("derived pk: ", derived_pk)
     return [(base_pk, base_seed), (derived_pk, derive_seed)]
 
 
@@ -82,15 +80,18 @@ def get_base_address(mint, program_id):
 
 def get_derived_address(base, hashed_eth_pk, spl_token_id):
     seed = base58.b58encode(hashed_eth_pk).decode()
+    # seed = "EQn8JQ1deQMHdM9rNztLhxu8zP8vcaxMx85WYRun9WyK"
+    print("seed: ", seed)
     return PublicKey.create_with_seed(base, seed, spl_token_id), seed
 
 
-hashed_eth_pk = b""
-mint = PublicKey(WAUDIO_MINT_PUBKEY)
+hashed_eth_pk = b"c9D4B5727f7098F45ceF4AbfBc67bA53a714c247"
+mint = PublicKey(WAUDIO_PROGRAM_ID)
 program_id = PublicKey(TEST_USER_BANK_PROGRAM)
 spl_token_id = PublicKey(
     "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 )  # might be "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
 
 
-print(get_address_pair(mint, hashed_eth_pk, program_id, spl_token_id))
+print("base address:", get_base_address(mint, program_id))
+print("address pair:", get_address_pair(mint, hashed_eth_pk, program_id, spl_token_id))
