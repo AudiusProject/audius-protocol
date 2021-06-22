@@ -3,6 +3,7 @@ from datetime import datetime
 from src.app import contract_addresses
 from src.models import Repost, RepostType, Follow, Playlist
 from src.utils.indexing_errors import IndexingError
+from src.challenges.challenge_event import ChallengeEvent
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ def social_feature_state_update(
         address=contract_addresses["social_feature_factory"],
         abi=social_feature_factory_abi,
     )
+    challenge_bus = update_task.challenge_event_bus
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
     # stores net state changes of all reposts and follows and corresponding events in current block
@@ -110,7 +112,9 @@ def social_feature_state_update(
     for repost_user_id in track_repost_state_changes:
         for repost_track_id in track_repost_state_changes[repost_user_id]:
             invalidate_old_repost(session, repost_user_id, repost_track_id, RepostType.track)
-            session.add(track_repost_state_changes[repost_user_id][repost_track_id])
+            repost = track_repost_state_changes[repost_user_id][repost_track_id]
+            session.add(repost)
+            dispatch_challenge_repost(session, challenge_bus, repost, block_number)
         num_total_changes += len(track_repost_state_changes[repost_user_id])
 
     for repost_user_id in playlist_repost_state_changes:
@@ -121,19 +125,28 @@ def social_feature_state_update(
                 repost_playlist_id,
                 playlist_repost_state_changes[repost_user_id][repost_playlist_id].repost_type
             )
-            session.add(playlist_repost_state_changes[repost_user_id][repost_playlist_id])
+            repost = playlist_repost_state_changes[repost_user_id][repost_playlist_id]
+            session.add(repost)
+            dispatch_challenge_repost(session, challenge_bus, repost, block_number)
         num_total_changes += len(playlist_repost_state_changes[repost_user_id])
 
     for follower_user_id in follow_state_changes:
         for followee_user_id in follow_state_changes[follower_user_id]:
             invalidate_old_follow(session, follower_user_id, followee_user_id)
-            session.add(follow_state_changes[follower_user_id][followee_user_id])
+            follow = follow_state_changes[follower_user_id][followee_user_id]
+            session.add(follow)
+            dispatch_challenge_follow(session, challenge_bus, follow, block_number)
         num_total_changes += len(follow_state_changes[follower_user_id])
 
     return num_total_changes
 
-
 ######## HELPERS ########
+
+def dispatch_challenge_repost(session, bus, repost, block_number):
+    bus.dispatch(session, ChallengeEvent.repost, block_number, repost.user_id)
+
+def dispatch_challenge_follow(session, bus, follow, block_number):
+    bus.dispatch(session, ChallengeEvent.follow, block_number, follow.follower_user_id)
 
 
 def invalidate_old_repost(session, repost_user_id, repost_item_id, repost_type):

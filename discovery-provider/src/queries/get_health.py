@@ -9,7 +9,8 @@ from src.utils.config import shared_config
 from src.utils.redis_constants import latest_block_redis_key, \
     latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, most_recent_indexed_block_redis_key, \
     most_recent_indexed_ipld_block_redis_key, most_recent_indexed_ipld_block_hash_redis_key, \
-    trending_tracks_last_completion_redis_key, trending_playlists_last_completion_redis_key
+    trending_tracks_last_completion_redis_key, trending_playlists_last_completion_redis_key, \
+    challenges_last_processed_event_redis_key
 
 
 logger = logging.getLogger(__name__)
@@ -160,6 +161,7 @@ def get_health(args, use_redis_cache=True):
 
     trending_tracks_age_sec = get_elapsed_time_redis(redis, trending_tracks_last_completion_redis_key)
     trending_playlists_age_sec = get_elapsed_time_redis(redis, trending_playlists_last_completion_redis_key)
+    challenge_events_age_sec = get_elapsed_time_redis(redis, challenges_last_processed_event_redis_key)
 
     # Get system information monitor values
     sys_info = monitors.get_monitors([
@@ -186,6 +188,7 @@ def get_health(args, use_redis_cache=True):
         "git": os.getenv("GIT_SHA"),
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
+        "challenge_last_event_age_sec": challenge_events_age_sec,
         "number_of_cpus": number_of_cpus,
         **sys_info
     }

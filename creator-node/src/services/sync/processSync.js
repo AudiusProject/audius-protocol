@@ -39,7 +39,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     redisKey = redis.getNodeSyncRedisKey(wallet)
     let lockHeld = await redisLock.getLock(redisKey)
     if (lockHeld) {
-      const errorObj = `Cannot change state of wallet ${wallet}. Node sync currently in progress.`
+      errorObj = new Error(`Cannot change state of wallet ${wallet}. Node sync currently in progress.`)
       return errorObj
     }
     await redisLock.setLock(redisKey)
@@ -345,12 +345,12 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     await SyncHistoryAggregator.recordSyncSuccess()
   } catch (e) {
     // if the clock values somehow becomes corrupted, wipe the records before future re-syncs
-    if (e.message.includes('Can only insert contiguous clock values')) {
+    if (e.message.includes('Can only insert contiguous clock values')) {      
       for (let wallet of walletPublicKeys) {
+        logger.error(`Sync error for ${wallet} - "Can only insert contiguous clock values". Clearing db state for wallet.`)
         await DBManager.deleteAllCNodeUserDataFromDB({ wallet })
       }
     }
-    logger.error(redisKey, 'Sync Error for wallets ', walletPublicKeys, `|| from endpoint ${creatorNodeEndpoint} ||`, e.message)
     errorObj = e
 
     await SyncHistoryAggregator.recordSyncFail()
@@ -360,7 +360,9 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
       let redisKey = redis.getNodeSyncRedisKey(wallet)
       await redisLock.removeLock(redisKey)
     }
-    logger.info(redisKey, `DURATION SYNC ${Date.now() - start}`)
+
+    if (errorObj) logger.error(redisKey, `Sync complete for wallets: ${walletPublicKeys.join(',')}. Status: Error, message: ${errorObj.message}. Duration sync: ${Date.now() - start}. From endpoint ${creatorNodeEndpoint}.`)
+    else logger.info(redisKey, `Sync complete for wallets: ${walletPublicKeys.join(',')}. Status: Success. Duration sync: ${Date.now() - start}. From endpoint ${creatorNodeEndpoint}.`)
   }
 
   return errorObj
