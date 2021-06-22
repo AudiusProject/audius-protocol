@@ -85,7 +85,7 @@ def get_derived_address(base, hashed_eth_pk, spl_token_id):
     return PublicKey.create_with_seed(base, seed, spl_token_id), seed
 
 
-hashed_eth_pk = b"c9D4B5727f7098F45ceF4AbfBc67bA53a714c247"
+hashed_eth_pk = bytes.fromhex("c9D4B5727f7098F45ceF4AbfBc67bA53a714c247")
 mint = PublicKey(WAUDIO_PROGRAM_ID)
 program_id = PublicKey(TEST_USER_BANK_PROGRAM)
 spl_token_id = PublicKey(
