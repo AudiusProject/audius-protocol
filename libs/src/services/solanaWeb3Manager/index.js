@@ -57,6 +57,19 @@ class SolanaWeb3Manager {
   }
 
   /**
+   * Gets a solana bank account from the we3 provider's eth address
+   * @returns {PublicKey} UserBank
+   */
+  async getUserBank () {
+    const ethAddress = this.web3Manager.getWalletAddress()
+    return await getBankAccountAddress(
+      ethAddress,
+      this.generatedProgramPDA,
+      this.solanaTokenKey
+    )
+  }
+
+  /**
    * Transfers audio from the web3 provider's eth address
    * @param {string} recipientSolanaAddress
    */
