@@ -60,6 +60,9 @@ class SnapbackSM {
     this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
     this.recurringSyncQueue = this.createBullQueue('recurring-sync-queue')
 
+    // Base value used to filter users over a 24 hour period
+    this.moduloBase = this.nodeConfig.get('snapbackModuloBase')
+
     // Incremented as users are processed
     this.currentModuloSlice = this.randomStartingSlice()
 
@@ -71,9 +74,6 @@ class SnapbackSM {
 
     // Config to determine if reconfig is enabled
     this.snapbackReconfigEnabled = this.nodeConfig.get('snapbackReconfigEnabled')
-
-    // Base value used to filter users over a 24 hour period
-    this.moduloBase = this.nodeConfig.get('snapbackModuloBase')
 
     // For local dev, configure this to be the interval when SnapbackSM is fired
     this.devDelayInMS = this.nodeConfig.get('snapbackDevJobDelay')
