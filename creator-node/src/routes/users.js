@@ -156,10 +156,10 @@ module.exports = function (app) {
 
   /**
    * Returns latest clock value stored in CNodeUsers entry given wallet, or -1 if no entry found
+   * Also returns boolean indicating whether a sync is in progress
    */
   app.get('/users/clock_status/:walletPublicKey', handleResponse(async (req, res) => {
     let walletPublicKey = req.params.walletPublicKey
-
     walletPublicKey = walletPublicKey.toLowerCase()
 
     const cnodeUser = await models.CNodeUser.findOne({
@@ -168,7 +168,20 @@ module.exports = function (app) {
 
     const clockValue = (cnodeUser) ? cnodeUser.dataValues.clock : -1
 
-    return successResponse({ clockValue })
+    const redisClient = req.app.get('redisClient')
+    let syncInProgress = false
+    try {
+      const lockHeld = await redisClient.lock.getLock(
+        redisClient.getNodeSyncRedisKey(walletPublicKey)
+      )
+      if (lockHeld) {
+        syncInProgress = true
+      }
+    } catch (e) {
+      // Swallow error, leave syncInProgress unset
+    }
+
+    return successResponse({ clockValue, syncInProgress })
   }))
 
   /**

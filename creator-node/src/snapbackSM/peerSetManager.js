@@ -1,9 +1,15 @@
 const axios = require('axios')
 
+const config = require('../config')
 const { logger } = require('../logging')
 
-// TODO: config var
-const PEER_HEALTH_CHECK_REQUEST_TIMEOUT = 2000
+const PEER_HEALTH_CHECK_REQUEST_TIMEOUT = config.get('peerHealthCheckRequestTimeout')
+const MINIMUM_STORAGE_PATH_SIZE = config.get('minimumStoragePathSize')
+const MINIMUM_MEMORY_AVAILABLE = config.get('minimumMemoryAvailable')
+const MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE = config.get('maxFileDescriptorsAllocatedPercentage') / 100
+const MINIMUM_DAILY_SYNC_COUNT = config.get('minimumDailySyncCount')
+const MINIMUM_ROLLING_SYNC_COUNT = config.get('minimumRollingSyncCount')
+const MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE = config.get('minimumSuccessfulSyncCountPercentage') / 100
 
 class PeerSetManager {
   constructor ({ discoveryProviderEndpoint, creatorNodeEndpoint }) {
@@ -39,8 +45,8 @@ class PeerSetManager {
 
     for await (const peer of peerSet) {
       try {
-        // TODO: consider using the response
-        await this.determinePeerHealth(peer)
+        const verboseHealthCheckResp = await this.queryVerboseHealthCheck(peer)
+        this.determinePeerHealth(verboseHealthCheckResp)
       } catch (e) {
         unhealthyPeers.add(peer)
         this.logError(`getUnhealthyPeers() peer=${peer} is unhealthy: ${e.toString()}`)
@@ -183,24 +189,66 @@ class PeerSetManager {
   }
 
   /**
-   * Determines if a peer node is sufficiently healthy and able to process syncRequests
-   *
-   * Peer health criteria:
-   * - verbose health check returns 200 within timeout
-   *
+   * Returns /health_check/verbose response
    * TODO: - consider moving this pure function to libs
    *
    * @param {string} endpoint
    * @returns {Object} the /health_check/verbose response
    */
-  async determinePeerHealth (endpoint) {
+  async queryVerboseHealthCheck (endpoint) {
     // Axios request will throw on timeout or non-200 response
-    return axios({
+    const resp = await axios({
       baseURL: endpoint,
       url: '/health_check/verbose',
       method: 'get',
       timeout: PEER_HEALTH_CHECK_REQUEST_TIMEOUT
     })
+
+    return resp.data.data
+  }
+
+  /**
+   * Takes data off the verbose health check response and determines the peer heatlh
+   * @param {Object} verboseHealthCheckResp verbose health check response
+   *
+   * TODO: consolidate CreatorNodeSelection + peer set health check calculation logic
+   */
+  determinePeerHealth (verboseHealthCheckResp) {
+    // Check for sufficient minimum storage size
+    const { storagePathSize, storagePathUsed } = verboseHealthCheckResp
+    if (storagePathSize && storagePathUsed && storagePathSize - storagePathUsed <= MINIMUM_STORAGE_PATH_SIZE) {
+      throw new Error(`Almost out of storage=${storagePathSize - storagePathUsed}bytes remaining`)
+    }
+
+    // Check for sufficient memory space
+    const { usedMemory, totalMemory } = verboseHealthCheckResp
+    if (usedMemory && totalMemory && totalMemory - usedMemory <= MINIMUM_MEMORY_AVAILABLE) {
+      throw new Error(`Running low on memory=${totalMemory - usedMemory}bytes remaining`)
+    }
+
+    // Check for sufficient file descriptors space
+    const { allocatedFileDescriptors, maxFileDescriptors } = verboseHealthCheckResp
+    if (allocatedFileDescriptors && maxFileDescriptors && allocatedFileDescriptors / maxFileDescriptors >= MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE) {
+      throw new Error(`Running low on file descriptors availability=${allocatedFileDescriptors / maxFileDescriptors * 100}% used`)
+    }
+
+    // Check historical sync data for current day
+    const { dailySyncSuccessCount, dailySyncFailCount } = verboseHealthCheckResp
+    if (dailySyncSuccessCount &&
+      dailySyncFailCount &&
+      dailySyncSuccessCount + dailySyncFailCount > MINIMUM_DAILY_SYNC_COUNT &&
+      dailySyncSuccessCount / (dailySyncFailCount + dailySyncSuccessCount) < MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE) {
+      throw new Error(`Latest daily sync data shows that this node fails at a high rate of syncs. Successful syncs=${dailySyncSuccessCount} || Failed syncs=${dailySyncFailCount}`)
+    }
+
+    // Check historical sync data for rolling window 30 days
+    const { thirtyDayRollingSyncSuccessCount, thirtyDayRollingSyncFailCount } = verboseHealthCheckResp
+    if (thirtyDayRollingSyncSuccessCount &&
+      thirtyDayRollingSyncFailCount &&
+      thirtyDayRollingSyncSuccessCount + thirtyDayRollingSyncFailCount > MINIMUM_ROLLING_SYNC_COUNT &&
+      thirtyDayRollingSyncSuccessCount / (thirtyDayRollingSyncFailCount + thirtyDayRollingSyncSuccessCount) < MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE) {
+      throw new Error(`Rolling sync data shows that this node fails at a high rate of syncs. Successful syncs=${thirtyDayRollingSyncSuccessCount} || Failed syncs=${thirtyDayRollingSyncFailCount}`)
+    }
   }
 }
 

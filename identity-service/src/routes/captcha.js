@@ -1,37 +1,24 @@
 const config = require('../config')
-const { handleResponse, successResponse, errorResponseForbidden, errorResponseBadRequest } = require('../apiHelpers')
+const { handleResponse, successResponse, errorResponseForbidden } = require('../apiHelpers')
 const { sequelize } = require('../models')
+const userHandleMiddleware = require('../userHandleMiddleware')
 
 module.exports = function (app) {
-  app.get('/scores', handleResponse(async (req, res, next) => {
+  app.get('/scores', userHandleMiddleware, handleResponse(async req => {
     if (req.headers['x-captcha-score'] !== config.get('captchaScoreSecret')) {
-      return errorResponseForbidden('Not permissioned to view captcha score.')
+      return errorResponseForbidden('Not permissioned to view captcha scores.')
     }
 
-    let response = {}
-    const queryParams = req.query
+    const handle = req.query.handle
 
-    // If ids are not passed in, return
-    let userIds
-    if (queryParams && queryParams.id) {
-      userIds = queryParams.id
-    }
-    if (!userIds) return errorResponseBadRequest('No ids provided')
-
-    // If not valid ids are passed in, return
-    userIds = userIds.split(',').filter(id => parseInt(id))
-    if (!userIds.length) return errorResponseBadRequest('No valid ids provided')
-
-    const recaptchaEntry = await sequelize.query(
+    const recaptchaEntries = await sequelize.query(
       `select "Users"."blockchainUserId" as "userId", "Users"."walletAddress" as "wallet", "BotScores"."recaptchaScore" as "score", "BotScores"."recaptchaContext" as "context"
       from 
         "Users" inner join "BotScores" on "Users"."walletAddress" = "BotScores"."walletAddress"
       where
-        "Users"."blockchainUserId" in (${userIds})`
+        "Users"."handle" = ${handle}`
     )
 
-    response = recaptchaEntry[0].length ? recaptchaEntry[0] : response
-
-    return successResponse(response)
+    return successResponse(recaptchaEntries)
   }))
 }

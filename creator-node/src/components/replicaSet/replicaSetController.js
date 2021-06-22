@@ -86,7 +86,7 @@ const syncRouteController = async (req, res) => {
     for (let wallet of walletPublicKeys) {
       if (wallet in syncDebounceQueue) {
         clearTimeout(syncDebounceQueue[wallet])
-        req.logger.info(`SyncRouteController - clear timeout for ${wallet} at time ${Date.now()}`)
+        req.logger.info(`SyncRouteController - clear timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`)
       }
       syncDebounceQueue[wallet] = setTimeout(
         async function () {
@@ -95,7 +95,7 @@ const syncRouteController = async (req, res) => {
         },
         debounceTime
       )
-      req.logger.info(`SyncRouteController - set timeout for ${wallet} at time ${Date.now()}`)
+      req.logger.info(`SyncRouteController - set timeout of ${debounceTime}ms for ${wallet} at time ${Date.now()}`)
     }
   }
 

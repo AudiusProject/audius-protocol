@@ -26,7 +26,7 @@ const {
   authMiddleware,
   ensurePrimaryMiddleware,
   syncLockMiddleware,
-  triggerSecondarySyncs,
+  issueAndWaitForSecondarySyncRequests,
   ensureStorageMiddleware
 } = require('../middlewares')
 const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, findCIDInNetwork, timeout } = require('../utils')
@@ -456,7 +456,9 @@ module.exports = function (app) {
       return errorResponseServerError(e)
     }
 
-    triggerSecondarySyncs(req)
+    // Must be awaitted and cannot be try-catched, ensuring that error from inside this rejects request
+    await issueAndWaitForSecondarySyncRequests(req)
+
     return successResponse({ dirCID })
   }))
 

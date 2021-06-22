@@ -9,14 +9,16 @@ logger = logging.getLogger(__name__)
 # Redis Key Convention:
 # API_V1:path:queryparams
 
+internal_api_cache_prefix = "INTERNAL_API"
 cache_prefix = "API_V1_ROUTE"
 default_ttl_sec = 60
 
-def extract_key(path, arg_items):
+def extract_key(path, arg_items, cache_prefix_override=None):
     # filter out query-params with 'None' values
     filtered_arg_items = filter(lambda x: x[1] is not None, arg_items)
     req_args = stringify_query_params(filtered_arg_items)
-    key = f"{cache_prefix}:{path}:{req_args}"
+    prefix = cache_prefix_override if cache_prefix_override else cache_prefix
+    key = f"{prefix}:{path}:{req_args}"
     return key
 
 def get_pickled_key(redis, key):
@@ -49,13 +51,16 @@ def use_redis_cache(key, ttl_sec, work_func):
 def cache(**kwargs):
     """
     Cache decorator.
-    Should be called with `@cache(ttl_sec=123, transform=transform_response)`
+    Should be called with `@cache(ttl_sec=123, transform=transform_response, cache_prefix_override='some-prefix')`
 
     Arguments:
         ttl_sec: optional,number The time in seconds to cache the response if
             status code < 400
         transform: optional,func The transform function of the wrapped function
             to convert the function response to request response
+        cache_prefix_override: optional,the prefix for the cache key to use
+            currently the cache decorator function has a default prefix for public API routes
+            this param allows us to override the prefix for the internal API routes and avoid confusion
 
     Usage Notes:
         If the wrapped function returns a tuple, the transform function will not
@@ -78,13 +83,14 @@ def cache(**kwargs):
     """
     ttl_sec = kwargs["ttl_sec"] if "ttl_sec" in kwargs else default_ttl_sec
     transform = kwargs["transform"] if "transform" in kwargs else None
+    cache_prefix_override = kwargs["cache_prefix_override"] if "cache_prefix_override" in kwargs else None
     redis = redis_connection.get_redis()
 
     def outer_wrap(func):
         @functools.wraps(func)
         def inner_wrap(*args, **kwargs):
             has_user_id = 'user_id' in request.args and request.args['user_id'] is not None
-            key = extract_key(request.path, request.args.items())
+            key = extract_key(request.path, request.args.items(), cache_prefix_override)
             if not has_user_id:
                 cached_resp = redis.get(key)
 
