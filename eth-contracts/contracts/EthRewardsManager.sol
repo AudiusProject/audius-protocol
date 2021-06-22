@@ -38,7 +38,7 @@ contract EthRewardsManager is InitializableV2 {
     Wormhole internal wormhole;
     bytes32 internal recipient;
 
-    address public antiAbuseOracleAddress;
+    address[] internal antiAbuseOracleAddresses;
 
     /**
      * @notice Function to initialize the contract
@@ -46,14 +46,14 @@ contract EthRewardsManager is InitializableV2 {
      * @param _governanceAddress - address for Governance proxy contract
      * @param _wormholeAddress - address for Wormhole contract
      * @param _recipient - solana address of recipient
-     * @param _antiAbuseOracleAddress - address for antiAbuseOracleAddress
+     * @param _antiAbuseOracleAddresses - addresses for anti abuse oracle
      */
     function initialize(
         address _tokenAddress,
         address _governanceAddress,
         address _wormholeAddress,
         bytes32 _recipient,
-        address _antiAbuseOracleAddress
+        address[] memory _antiAbuseOracleAddresses
     ) public initializer {
         require(Address.isContract(_tokenAddress), ERROR_TOKEN_NOT_CONTRACT);
         require(
@@ -63,7 +63,7 @@ contract EthRewardsManager is InitializableV2 {
         audiusToken = ERC20(_tokenAddress);
         wormhole = Wormhole(_wormholeAddress);
         recipient = _recipient;
-        antiAbuseOracleAddress = _antiAbuseOracleAddress;
+        antiAbuseOracleAddresses = _antiAbuseOracleAddresses;
         _updateGovernanceAddress(_governanceAddress);
         InitializableV2.initialize();
     }
@@ -93,15 +93,15 @@ contract EthRewardsManager is InitializableV2 {
     }
 
     /**
-     * @notice Set antiAbuseOracleAddress
+     * @notice Set antiAbuseOracleAddresses
      * @dev Only callable by Governance address
-     * @param _antiAbuseOracleAddress - value of new antiAbuseOracleAddress
+     * @param _antiAbuseOracleAddresses - values of new anti abuse oracle addresses
      */
-    function setAntiAbuseOracleAddress(address _antiAbuseOracleAddress) external {
+    function setAntiAbuseOracleAddresses(address[] calldata _antiAbuseOracleAddresses) external {
         _requireIsInitialized();
 
         require(msg.sender == governanceAddress, ERROR_ONLY_GOVERNANCE);
-        antiAbuseOracleAddress = _antiAbuseOracleAddress;
+        antiAbuseOracleAddresses = _antiAbuseOracleAddresses;
     }
 
     /* External functions */
@@ -143,11 +143,18 @@ contract EthRewardsManager is InitializableV2 {
         return governanceAddress;
     }
 
-    /// @notice Get the Governance address
+    /// @notice Get the recipient address
     function getRecipientAddress() external view returns (bytes32) {
         _requireIsInitialized();
 
         return recipient;
+    }
+
+    /// @notice Get the anti abuse oracle addresses
+    function getAntiAbuseOracleAddresses() external view returns (address[] memory) {
+        _requireIsInitialized();
+
+        return antiAbuseOracleAddresses;
     }
 
     // ========================================= Internal Functions =========================================
