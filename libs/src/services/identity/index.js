@@ -284,6 +284,20 @@ class IdentityService {
     })
   }
 
+  /**
+   * Gets the correct wallet that will relay a txn for `senderAddress`
+   * @param {string} senderAddress wallet
+   */
+  async getEthRelayer (senderAddress) {
+    return this._makeRequest({
+      url: '/eth_relayer',
+      method: 'get',
+      params: {
+        wallet: senderAddress
+      }
+    })
+  }
+
   // Relays tx data through the solana relay endpoint
   // type TransactionData = {
   //   recentBlockhash: string
@@ -307,22 +321,7 @@ class IdentityService {
     return this._makeRequest({
       url: '/solana/relay',
       method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(transactionData)
-    })
-  }
-
-  /**
-   * Gets the correct wallet that will relay a txn for `senderAddress`
-   * @param {string} senderAddress wallet
-   */
-  async getEthRelayer (senderAddress) {
-    return this._makeRequest({
-      url: '/eth_relayer',
-      method: 'get',
-      params: {
-        wallet: senderAddress
-      }
+      data: transactionData
     })
   }
 

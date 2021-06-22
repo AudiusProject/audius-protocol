@@ -1,12 +1,16 @@
-const { PublicKey } = require('@solana/web3.js')
+const solanaWeb3 = require('@solana/web3.js')
 const { transferWAudioBalance } = require('./transfer')
 const { getBankAccountAddress, createUserBankFrom } = require('./userBank')
 
+const { PublicKey } = solanaWeb3
+
 class SolanaWeb3Manager {
-	constructor (solanaWeb3Config, identityService, web3Manager) {
+  constructor (solanaWeb3Config, identityService, web3Manager) {
     this.solanaWeb3Config = solanaWeb3Config
     this.identityService = identityService
     this.web3Manager = web3Manager
+
+    this.web3 = solanaWeb3
   }
 
   async init () {
@@ -26,7 +30,7 @@ class SolanaWeb3Manager {
     this.solanaTokenAddress = solanaTokenAddress
     this.solanaTokenKey = new PublicKey(solanaTokenAddress)
 
-    this.generatedProgramPDA = generatedProgramPDA
+    this.generatedProgramPDA = new PublicKey(generatedProgramPDA)
 
     this.feePayerAddress = feePayerAddress
     this.feePayerKey = new PublicKey(feePayerAddress)
@@ -43,9 +47,10 @@ class SolanaWeb3Manager {
     await createUserBankFrom(
       ethAddress,
       this.generatedProgramPDA,
-      this.feePayerAddress,
+      this.feePayerKey,
       this.mintKey,
       this.solanaTokenKey,
+      this.audiusProgramKey,
       this.solanaClusterEndpoint,
       this.identityService
     )
@@ -67,8 +72,9 @@ class SolanaWeb3Manager {
       this.web3Manager.getOwnerWalletPrivateKey(),
       senderSolanaAddress,
       recipientSolanaAddress,
-      this.solanaTokenKey,
       this.generatedProgramPDA,
+      this.solanaTokenKey,
+      this.audiusProgramKey,
       this.solanaClusterEndpoint,
       this.identityService
     )

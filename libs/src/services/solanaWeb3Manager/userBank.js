@@ -1,28 +1,49 @@
-import {
-  AccountMeta,
+const {
   Connection,
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY
-} from '@solana/web3.js'
-import bs58 from 'bs58'
-import BN from 'bn.js'
+} = require('@solana/web3.js')
+const BN = require('bn.js')
+const borsh = require('borsh')
+const bs58 = require('bs58')
+
+class CreateTokenAccountInstructionData {
+  constructor ({
+    ethAddress
+  }) {
+    this.hashed_eth_pk = ethAddress
+  }
+}
+
+const createTokenAccountInstructionSchema = new Map([
+  [
+    CreateTokenAccountInstructionData,
+    {
+      kind: 'struct',
+      fields: [
+        ['hashed_eth_pk', [20]]
+      ]
+    }
+  ]
+])
 
 const getBankAccountAddress = async (
   ethAddress,
   generatedProgramPDA,
   tokenProgramKey
 ) => {
-  const baseAccount = generatedProgramPDA
+  const strippedEthAddress = ethAddress.replace('0x', '')
 
-  // Solana client likes eth addresses as an array of uints
-  const rawEthAddress = new BN(ethAddress, 'hex')
+  const ethAddressArr = Uint8Array.of(
+    ...new BN(strippedEthAddress, 'hex').toArray('be')
+  )
 
   // We b58 encode our eth address to use as seed later on
-  const b58EthAddress = bs58.encode(rawEthAddress.toArrayLike(Buffer))
+  const b58EthAddress = bs58.encode(ethAddressArr)
 
   const accountToGenerate = await PublicKey.createWithSeed(
-    /* from pubkey / base */ baseAccount,
+    /* from pubkey / base */ generatedProgramPDA,
     /* seed */ b58EthAddress,
     /* programId / owner */ tokenProgramKey
   )
@@ -31,88 +52,87 @@ const getBankAccountAddress = async (
 
 // createUserBank deterministically creates a Solana wAudio token account
 // from an ethAddress (without the '0x' prefix)
-async function createUserBankFrom(
+async function createUserBankFrom (
   ethAddress,
   generatedProgramPDA,
-  feePayerAddress,
+  feePayerKey,
   mintKey,
   tokenProgramKey,
+  audiusProgramKey,
   solanaClusterEndpoint,
   identityService
 ) {
-  // Solana client likes eth addresses as an array of uints
-  const rawEthAddress = new BN(ethAddress, 'hex')
+  // Create instruction data
+  const strippedEthAddress = ethAddress.replace('0x', '')
 
-  // We need to prepend a zero hero so rust knows which enum case we're dealing with
-  // https://paulx.dev/blog/2021/01/14/programming-on-solana-an-introduction/
-  const ethAddressInstruction = Buffer.from(
-    Uint8Array.of(0, ...rawEthAddress.toArray('be'))
+  const ethAddressArr = Uint8Array.of(
+    ...new BN(strippedEthAddress, 'hex').toArray('be')
   )
 
-  // Assign the base account - this is the account that will
-  // eventually own the created account, and is the program derived address
-  // of our bank program
-  //
-  // we had to generate this once, and now it's hardcoded in env
-  const baseAccount = generatedProgramPDA
-  // const baseAccount = yield PublicKey.findProgramAddress(
-  //   [mintKey.toBytes().slice(0, 32)],
-  //   programPubkey
-  // )[0] as PublicKey
+  const instructionData = new CreateTokenAccountInstructionData({
+    ethAddress: ethAddressArr
+  })
+  const serializedInstructionData = borsh.serialize(
+    createTokenAccountInstructionSchema,
+    instructionData
+  )
 
+  // 0th index in the Rust instruction enum
+  const serializedInstructionEnum = Uint8Array.of(
+    0,
+    ...serializedInstructionData
+  )
+
+  // Create the account we aim to generate
   const accountToGenerate = await getBankAccountAddress(
     ethAddress,
     generatedProgramPDA,
     tokenProgramKey
   )
 
-  // Keys, in order:
-  // - funder (true)
-  // - mint
-  // - base acc
-  // - acc_to_create
-  // - spl_token_id
-  // - rent:id()
-  // - system_program:id()
   const accounts = [
-    // Funder
+    // 0. `[sw]` Account to pay for creating token acc
     {
-      pubkey: new PublicKey(feePayerAddress),
-      isWritable: true,
-      isSigner: true
+      pubkey: feePayerKey,
+      isSigner: true,
+      isWritable: true
     },
-    // Mint
+    // 1. `[r]` Mint account
     {
       pubkey: mintKey,
       isSigner: false,
       isWritable: false
     },
-    // Base acct
+    // 2. `[r]` Base acc used in PDA token acc (need because of create_with_seed instruction)
     {
-      pubkey: baseAccount,
+      pubkey: generatedProgramPDA,
       isSigner: false,
       isWritable: false
     },
-    // Account to create
+    // 3. `[w]` PDA token account to create
     {
       pubkey: accountToGenerate,
       isSigner: false,
       isWritable: true
     },
-    // token program
-    {
-      pubkey: tokenProgramKey,
-      isSigner: false,
-      isWritable: false
-    },
-    // Rent program
+    // `[r]` Rent id
     {
       pubkey: SYSVAR_RENT_PUBKEY,
       isSigner: false,
       isWritable: false
     },
-    // system program
-    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false }
+    // 5. `[r]` SPL token account id
+    {
+      pubkey: tokenProgramKey,
+      isSigner: false,
+      isWritable: false
+    },
+    // 6. `[r]` System program id
+    {
+      pubkey: SystemProgram.programId,
+      isSigner: false,
+      isWritable: false
+    }
   ]
 
   const connection = new Connection(solanaClusterEndpoint)
@@ -128,12 +148,12 @@ async function createUserBankFrom(
           isWritable: account.isWritable
         }
       }),
-      programId: audiusProgramPubkey.toString(),
-      data: ethAddressInstruction
+      programId: audiusProgramKey.toString(),
+      data: Buffer.from(serializedInstructionEnum)
     }
   }
 
-  const response = await this.identityService.relay(transactionData)
+  const response = await identityService.solanaRelay(transactionData)
   return response
 }
 

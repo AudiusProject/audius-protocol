@@ -1,21 +1,19 @@
-import {
-  AccountMeta,
+const {
   Connection,
   PublicKey,
   SYSVAR_INSTRUCTIONS_PUBKEY
-} from '@solana/web3.js'
-import BN from 'bn.js'
-import * as borsh from 'borsh'
-import keccak256 from 'keccak256'
-import secp256k1 from 'secp256k1'
-import SolanaClient from './index'
+} = require('@solana/web3.js')
+const BN = require('bn.js')
+const borsh = require('borsh')
+const keccak256 = require('keccak256')
+const secp256k1 = require('secp256k1')
 
 /**
  * Transfer wAUDIO between wallets on solana
  */
 
 class TransferInstructionData {
-  constructor({
+  constructor ({
     signature,
     ethAddress,
     recoveryId
@@ -43,12 +41,14 @@ const transferInstructionSchema = new Map([
 // transferWAudioBalance transfers wrapped Audio from one generated solana account to another.
 // For it to work, you have to have the eth private key belonging to the eth public key
 // that generated the solana account
-async function transferWAudioBalance(
+async function transferWAudioBalance (
   senderEthAddress,
   senderEthPrivateKey,
   senderSolanaAddress,
   recipientSolanaAddress,
+  generatedProgramPDA,
   tokenProgramKey,
+  audiusProgramKey,
   solanaClusterEndpoint,
   identityService
 ) {
@@ -131,12 +131,12 @@ async function transferWAudioBalance(
           isWritable: account.isWritable
         }
       }),
-      programId: audiusProgramPubkey.toString(),
+      programId: audiusProgramKey.toString(),
       data: Buffer.from(serializedInstructionEnum)
     }
   }
 
-  const response = await identityService.relay(transactionData)
+  const response = await identityService.solanaRelay(transactionData)
   return response
 }
 
