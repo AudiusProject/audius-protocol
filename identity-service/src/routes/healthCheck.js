@@ -13,6 +13,7 @@ const {
 } = require('../notifications/index.js')
 
 const axios = require('axios')
+const moment = require('moment')
 
 // Defaults used in relay health check endpoint
 const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
@@ -269,7 +270,7 @@ module.exports = function (app) {
   }))
 
   app.get('/notification_check', handleResponse(async (req, res) => {
-    let { maxBlockDifference } = req.query
+    let { maxBlockDifference, maxDrift } = req.query
     maxBlockDifference = maxBlockDifference || 100
 
     let highestBlockNumber = await models.NotificationAction.max('blocknumber')
@@ -303,9 +304,22 @@ module.exports = function (app) {
       notificationEmailsJobLastSuccess,
       notificationAnnouncementsJobLastSuccess
     }
-    if (notifBlockDiff > maxBlockDifference) {
+
+    // Test if last runs were recent enough
+    let withinBounds = true
+    if (maxDrift) {
+      const cutoff = moment().subtract(maxDrift, 'seconds')
+      const isWithinBounds = (key) => key ? moment(key).isAfter(cutoff) : true
+      withinBounds = (
+        isWithinBounds(notificationJobLastSuccess) &&
+        isWithinBounds(notificationEmailsJobLastSuccess) &&
+        isWithinBounds(notificationAnnouncementsJobLastSuccess)
+      )
+    }
+    if (!withinBounds || notifBlockDiff > maxBlockDifference) {
       return errorResponseServerError(resp)
     }
+
     return successResponse(resp)
   }))
 
