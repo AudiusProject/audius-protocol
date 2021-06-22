@@ -23,7 +23,7 @@ def get_derived_address(base, hashed_eth_pk, spl_token_id):
     return PublicKey.create_with_seed(base, seed, spl_token_id), seed
 
 
-TEST_USER_BANK_PROGRAM = PublicKey("8a3KEEEXgWyeJcZr4G5Y8r19TdriEMziBSi2qSEJxT6z")
+TEST_USER_BANK_PROGRAM = PublicKey("AVys2x8dfgTDLuGLh67Q1uYXixEsyqBhGDQ9fYV39Y9f")
 WAUDIO_PROGRAM_ID = PublicKey("CYzPVv1zB9RH6hRWRKprFoepdD8Y7Q5HefCqrybvetja")
 WAUDIO_MINT_PUBKEY = PublicKey("9zyPU1mjgzaVyQsYwKJJ7AhVz5bgx5uc1NPABvAcUXsT")
 
@@ -53,10 +53,28 @@ print(
     waudio_token.get_balance(PublicKey("E3Q1yeMU3LndGmcPD9msjzbBZEyb8JGtw7CBEwKcGL5g"))
 )
 
-hashed_eth_pk = bytes.fromhex("c9D4B5727f7098F45ceF4AbfBc67bA53a714c247")
+hashed_eth_pk = bytes.fromhex("d5c34c34e4e599463ad9b04aa584c5bd8d4e13dd")
 spl_token_id = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 base_address, derived_address = get_address_pair(
-    WAUDIO_PROGRAM_ID, hashed_eth_pk, TEST_USER_BANK_PROGRAM, spl_token_id
+    WAUDIO_PROGRAM_ID,
+    hashed_eth_pk,
+    TEST_USER_BANK_PROGRAM,
+    spl_token_id
 )
+# 0xd5c34c34e4e599463ad9b04aa584c5bd8d4e13dd
+# To - AztFuTo9DYASUqR2qSHLbMNcCsst3n2nbZxeYTdKpb1Q
 print("base address (pubkey, seed):", base_address)
 print("derived address (pubkey, seed):", derived_address)
+print("expected: AztFuTo9DYASUqR2qSHLbMNcCsst3n2nbZxeYTdKpb1Q")
+
+# 0xb37cad7de55280aeffd30ae0c50785f1fdc20c8c
+base_address_2, derived_address_2 = get_address_pair(
+    WAUDIO_PROGRAM_ID,
+    bytes.fromhex("b37cad7de55280aeffd30ae0c50785f1fdc20c8c"),
+    TEST_USER_BANK_PROGRAM,
+    spl_token_id
+)
+
+print("base address (pubkey, seed):", base_address_2)
+print("derived address (pubkey, seed):", derived_address_2)
+print("expected: CtMXFhqNEmB4LbStB27LU6VqSqGJj5UZzeKojEr6xvC9")
