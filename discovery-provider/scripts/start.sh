@@ -15,7 +15,7 @@ if [ -z "$audius_redis_url" ]; then
 fi
 
 if [ -z "$audius_db_url" ]; then
-    postgres &
+    sudo -u postgres postgres -D /db -h 127.0.0.1 &
     export audius_db_url=postgresql+psycopg2://postgres:postgres@localhost:5432/audius_discovery
     export audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@localhost:5432/audius_discovery
     export WAIT_HOSTS="localhost:5432"
