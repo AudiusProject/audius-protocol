@@ -40,17 +40,30 @@ class SecondarySyncHealthTracker {
    * Aggregates and 
    */
   static async getSyncMetricsForSecondary (secondary) {
-    const redisKey = SecondarySyncHealthTracker._getDailyRedisKey(secondary, '*', '*', '*', '*')
+    try {
+      const redisKey = SecondarySyncHealthTracker._getDailyRedisKey(secondary, '*', '*', '*', '*')
+
+      const keys = await redisClient.keys(redisKey)
+      const vals = await redisClient.mget(keys)
+
+      return vals
+    } catch (e) {
+      genericLogger.error(`secondarySyncHealthTracker - getSyncMetricsForSecondary() Error || ${e.message}`)
+      return []
+    }
   }
 
   static async getAllSyncMetrics () {
     try {
-      genericLogger.info(`SIDTEST getAllSyncMetrics START`)
       const redisKey = SecondarySyncHealthTracker._getDailyRedisKey('*', '*', '*', '*', '*')
-      const resp = await redisClient.keys(redisKey)
-      genericLogger.info(`SIDTEST getAllSyncMetrics ${redisKey}: ${resp}`)
+
+      const keys = await redisClient.keys(redisKey)
+      const vals = await redisClient.mget(keys)
+
+      return vals
     } catch (e) {
-      genericLogger.error(`SIDTEST GETALLSYNCMETRICS ERROR ${e.message}`)
+      genericLogger.error(`secondarySyncHealthTracker - getAllSyncMetrics() Error || ${e.message}`)
+      return []
     }
   }
 
@@ -58,11 +71,32 @@ class SecondarySyncHealthTracker {
    * Return success and failure counts for SyncRequest outcomes for given user wallet on given secondary
    */
   static async getSecondarySyncMetricsForUser (secondary, wallet) {
+    try {
+      const redisKey = SecondarySyncHealthTracker._getDailyRedisKey(secondary, wallet, '*', '*', '*')
 
+      const keys = await redisClient.keys(redisKey)
+      const vals = await redisClient.mget(keys)
+
+      return vals
+    } catch (e) {
+      genericLogger.error(`secondarySyncHealthTracker - getSecondarySyncMetricsForUser() Error || ${e.message}`)
+      return []
+    }
   }
 
   static async getSecondarySyncMetricsForUserForToday (secondary, wallet) {
+    try {
+      const today = new Date().toISOString().split('T')[0] // format: YYYY-MM-DD
+      const redisKey = SecondarySyncHealthTracker._getDailyRedisKey(secondary, wallet, '*', '*', today)
 
+      const keys = await redisClient.keys(redisKey)
+      const vals = await redisClient.mget(keys)
+
+      return vals
+    } catch (e) {
+      genericLogger.error(`secondarySyncHealthTracker - getSecondarySyncMetricsForUserForToday() Error || ${e.message}`)
+      return []
+    }
   }
 
   static _getDailyRedisKey (secondary, wallet, syncType, success, date = null) {
