@@ -1,5 +1,4 @@
 const {
-  Connection,
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY
@@ -30,8 +29,8 @@ const createTokenAccountInstructionSchema = new Map([
 
 const getBankAccountAddress = async (
   ethAddress,
-  generatedProgramPDA,
-  tokenProgramKey
+  claimableTokenPDA,
+  solanaTokenProgramKey
 ) => {
   const strippedEthAddress = ethAddress.replace('0x', '')
 
@@ -43,9 +42,9 @@ const getBankAccountAddress = async (
   const b58EthAddress = bs58.encode(ethAddressArr)
 
   const accountToGenerate = await PublicKey.createWithSeed(
-    /* from pubkey / base */ generatedProgramPDA,
+    /* from pubkey / base */ claimableTokenPDA,
     /* seed */ b58EthAddress,
-    /* programId / owner */ tokenProgramKey
+    /* programId / owner */ solanaTokenProgramKey
   )
   return accountToGenerate
 }
@@ -54,12 +53,12 @@ const getBankAccountAddress = async (
 // from an ethAddress (without the '0x' prefix)
 async function createUserBankFrom (
   ethAddress,
-  generatedProgramPDA,
+  claimableTokenPDA,
   feePayerKey,
   mintKey,
-  tokenProgramKey,
-  audiusProgramKey,
-  solanaClusterEndpoint,
+  solanaTokenProgramKey,
+  claimableTokenProgramKey,
+  connection,
   identityService
 ) {
   // Create instruction data
@@ -86,8 +85,8 @@ async function createUserBankFrom (
   // Create the account we aim to generate
   const accountToGenerate = await getBankAccountAddress(
     ethAddress,
-    generatedProgramPDA,
-    tokenProgramKey
+    claimableTokenPDA,
+    solanaTokenProgramKey
   )
 
   const accounts = [
@@ -105,7 +104,7 @@ async function createUserBankFrom (
     },
     // 2. `[r]` Base acc used in PDA token acc (need because of create_with_seed instruction)
     {
-      pubkey: generatedProgramPDA,
+      pubkey: claimableTokenPDA,
       isSigner: false,
       isWritable: false
     },
@@ -123,7 +122,7 @@ async function createUserBankFrom (
     },
     // 5. `[r]` SPL token account id
     {
-      pubkey: tokenProgramKey,
+      pubkey: solanaTokenProgramKey,
       isSigner: false,
       isWritable: false
     },
@@ -135,7 +134,6 @@ async function createUserBankFrom (
     }
   ]
 
-  const connection = new Connection(solanaClusterEndpoint)
   const { blockhash } = await connection.getRecentBlockhash()
 
   const transactionData = {
@@ -148,7 +146,7 @@ async function createUserBankFrom (
           isWritable: account.isWritable
         }
       }),
-      programId: audiusProgramKey.toString(),
+      programId: claimableTokenProgramKey.toString(),
       data: Buffer.from(serializedInstructionEnum)
     }
   }

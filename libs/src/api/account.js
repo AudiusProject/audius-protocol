@@ -106,8 +106,10 @@ class Account extends Base {
     profilePictureFile = null,
     coverPhotoFile = null,
     hasWallet = false,
-    host = (typeof window !== 'undefined' && window.location.origin) || null
+    host = (typeof window !== 'undefined' && window.location.origin) || null,
+    createWAudioUserBank = false
   ) {
+    console.log({ createWAudioUserBank })
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
@@ -132,11 +134,13 @@ class Account extends Base {
           const ownerWallet = await this.hedgehog.signUp(email, password)
           await this.web3Manager.setOwnerWallet(ownerWallet)
           await this.generateRecoveryLink({ handle: metadata.handle, host })
-          if (this.solanaWeb3Manager) {
-            // Create a user bank if the solana web3 manager is present
-            await this.solanaWeb3Manager.createUserBank()
-          }
         }
+      }
+
+      // Create a wAudio user bank address
+      if (createWAudioUserBank && this.solanaWeb3Manager) {
+        // Create a user bank if the solana web3 manager is present
+        await this.solanaWeb3Manager.createUserBank()
       }
 
       // Add user to chain

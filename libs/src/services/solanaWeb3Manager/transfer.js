@@ -1,5 +1,4 @@
 const {
-  Connection,
   PublicKey,
   SYSVAR_INSTRUCTIONS_PUBKEY
 } = require('@solana/web3.js')
@@ -14,13 +13,11 @@ const secp256k1 = require('secp256k1')
 
 class TransferInstructionData {
   constructor ({
-    signature,
     ethAddress,
-    recoveryId
+    amount
   }) {
-    this.signature = signature
     this.eth_address = ethAddress
-    this.recovery_id = recoveryId
+    this.amount = amount
   }
 }
 
@@ -30,9 +27,8 @@ const transferInstructionSchema = new Map([
     {
       kind: 'struct',
       fields: [
-        ['signature', [64]],
         ['eth_address', [20]],
-        ['recovery_id', 'u8']
+        ['amount', 'u64']
       ]
     }
   ]
@@ -42,36 +38,38 @@ const transferInstructionSchema = new Map([
 // For it to work, you have to have the eth private key belonging to the eth public key
 // that generated the solana account
 async function transferWAudioBalance (
+  amount,
   senderEthAddress,
   senderEthPrivateKey,
   senderSolanaAddress,
   recipientSolanaAddress,
-  generatedProgramPDA,
-  tokenProgramKey,
-  audiusProgramKey,
-  solanaClusterEndpoint,
+  claimableTokenPDA,
+  solanaTokenProgramKey,
+  claimableTokenProgramKey,
+  connection,
   identityService
 ) {
+  const strippedEthAddress = senderEthAddress.replace('0x', '')
+
   const ethAddressArr = Uint8Array.of(
-    ...new BN(senderEthAddress, 'hex').toArray('be')
+    ...new BN(strippedEthAddress, 'hex').toArray('be')
   )
 
   const ethPrivateKeyArr = Buffer.from(senderEthPrivateKey, 'hex')
 
   const senderSolanaPubkey = new PublicKey(senderSolanaAddress)
-  const recipeintPubkey = new PublicKey(recipientSolanaAddress)
+  const recipientPubkey = new PublicKey(recipientSolanaAddress)
 
   // hash the recipient solana pubkey and create signature
-  const msgHash = keccak256(recipeintPubkey.toBytes())
+  const msgHash = keccak256(recipientPubkey.toBytes())
   const signatureObj = secp256k1.ecdsaSign(
     Uint8Array.from(msgHash),
     ethPrivateKeyArr
   )
 
   const instructionData = new TransferInstructionData({
-    signature: signatureObj.signature,
-    recoveryId: signatureObj.recid,
-    ethAddress: ethAddressArr
+    ethAddress: ethAddressArr,
+    amount
   })
 
   // serialize it
@@ -88,24 +86,34 @@ async function transferWAudioBalance (
     ...serializedInstructionData
   )
 
-  const connection = new Connection(solanaClusterEndpoint)
-
   const accounts = [
-    // sender account (bank)
-    { pubkey: senderSolanaPubkey, isSigner: false, isWritable: true },
-    // receiver token account
-    { pubkey: recipeintPubkey, isSigner: false, isWritable: true },
-    // Bank token account authority (PDA of the userbank program)
-    { pubkey: generatedProgramPDA, isSigner: false, isWritable: false },
-    // spl token account
+    // 0. `[w]` Token acc from which tokens will be send (bank account)
     {
-      pubkey: tokenProgramKey,
+      pubkey: senderSolanaPubkey,
+      isSigner: false,
+      isWritable: true
+    },
+    // 1. `[w]` Receiver token acc
+    {
+      pubkey: recipientPubkey,
+      isSigner: false,
+      isWritable: true
+    },
+    // 2. `[r]` Banks token account authority
+    {
+      pubkey: claimableTokenPDA,
       isSigner: false,
       isWritable: false
     },
-    // sysvar instruction id
+    // 3. `[r]` Sysvar instruction id
     {
       pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
+      isSigner: false,
+      isWritable: false
+    },
+    // 4. `[r]` SPL token account id
+    {
+      pubkey: solanaTokenProgramKey,
       isSigner: false,
       isWritable: false
     }
@@ -119,7 +127,7 @@ async function transferWAudioBalance (
     recentBlockhash: blockhash,
     secpInstruction: {
       publicKey: Buffer.from(ethPubkey),
-      message: recipeintPubkey.toString(),
+      message: recipientPubkey.toString(),
       signature: Buffer.from(signatureObj.signature),
       recoveryId: signatureObj.recid
     },
@@ -131,7 +139,7 @@ async function transferWAudioBalance (
           isWritable: account.isWritable
         }
       }),
-      programId: audiusProgramKey.toString(),
+      programId: claimableTokenProgramKey.toString(),
       data: Buffer.from(serializedInstructionEnum)
     }
   }

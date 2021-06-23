@@ -177,26 +177,26 @@ class AudiusLibs {
    * @param {string} config.solanaClusterEndpoint the RPC endpoint to make requests against
    * @param {string} config.mintAddress wAudio mint address
    * @param {string} solanaTokenAddress native solana token program
-   * @param {string} generatedProgramPDA the generated program derived address we use so our
+   * @param {string} claimableTokenPDA the generated program derived address we use so our
    *  bank program can take ownership of accounts
    * @param {string} feePayerAddress address for the fee payer for transactions
-   * @param {string} audiusProgramAddress address of the audius user bank program
+   * @param {string} claimableTokenProgramAddress address of the audius user bank program
    */
   static configSolanaWeb3 ({
     solanaClusterEndpoint,
     mintAddress,
     solanaTokenAddress,
-    generatedProgramPDA,
+    claimableTokenPDA,
     feePayerAddress,
-    audiusProgramAddress
+    claimableTokenProgramAddress
   }) {
     return {
       solanaClusterEndpoint,
       mintAddress,
       solanaTokenAddress,
-      generatedProgramPDA,
+      claimableTokenPDA,
       feePayerAddress,
-      audiusProgramAddress
+      claimableTokenProgramAddress
     }
   }
 
