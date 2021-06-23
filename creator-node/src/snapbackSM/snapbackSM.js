@@ -16,7 +16,7 @@ const MaxSyncMonitoringDurationInMs = 360000 // ms
 const SyncMonitoringRetryDelayMs = 15000
 
 // Base value used to filter users over a 24 hour period
-const ModuloBase = 24
+const ModuloBase = 2
 
 // For local dev, configure this to be the interval when SnapbackSM is fired
 const DevDelayInMS = 3000
@@ -45,7 +45,7 @@ class SnapbackSM {
 
     this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
     this.spID = this.nodeConfig.get('spID')
-    this.snapbackDevModeEnabled = this.nodeConfig.get('snapbackDevModeEnabled')
+    this.snapbackDevModeEnabled = true
 
     this.MaxManualRequestSyncJobConcurrency = this.nodeConfig.get('maxManualRequestSyncJobConcurrency')
     this.MaxRecurringRequestSyncJobConcurrency = this.nodeConfig.get('maxRecurringRequestSyncJobConcurrency')
@@ -148,8 +148,6 @@ class SnapbackSM {
     await this.stateMachineQueue.add({ startTime: Date.now() })
 
     this.log(`SnapbackSM initialized in ${this.snapbackDevModeEnabled ? 'dev' : 'production'} mode. Added initial stateMachineQueue job; next job in ${stateMachineJobInterval}ms`)
-
-    await SecondarySyncHealthTracker.getAllSyncMetrics()
   }
 
   log (msg) {
