@@ -1,6 +1,6 @@
 const solanaWeb3 = require('@solana/web3.js')
 const { transferWAudioBalance } = require('./transfer')
-const { getBankAccountAddress, createUserBankFrom } = require('./userBank')
+const { getBankAccountAddress, createUserBankFrom, getBankAccountInfo } = require('./userBank')
 const { wAudioFromWeiAudio } = require('./wAudio')
 
 const { PublicKey } = solanaWeb3
@@ -105,6 +105,24 @@ class SolanaWeb3Manager {
   }
 
   /**
+   * Gets the info for a user bank account given a solana address.
+   * If the solanaAddress is not a valid user bank, returns `null`
+   */
+  async getUserBankInfo (solanaAddress) {
+    try {
+      const res = await getBankAccountInfo(
+        new PublicKey(solanaAddress),
+        this.mintKey,
+        this.solanaTokenKey,
+        this.connection
+      )
+      return res
+    } catch (e) {
+      return null
+    }
+  }
+
+  /**
    * Transfers audio from the web3 provider's eth address
    * @param {string} recipientSolanaAddress
    * @param {BN} amount the amount of $AUDIO to send in wei units of $AUDIO.
@@ -117,6 +135,12 @@ class SolanaWeb3Manager {
    * of wei $AUDIO for all method calls
    */
   async transferWAudio (recipientSolanaAddress, amount) {
+    // First, validate that the recipient solana address is a valid bank
+    const bankInfo = await this.getUserBankInfo(recipientSolanaAddress)
+    if (!bankInfo) {
+      throw new Error(`${recipientSolanaAddress} is not a valid User Bank `)
+    }
+
     const wAudioAmount = wAudioFromWeiAudio(amount)
 
     const ethAddress = this.web3Manager.getWalletAddress()

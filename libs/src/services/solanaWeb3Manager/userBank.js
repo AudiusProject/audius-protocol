@@ -1,8 +1,12 @@
 const {
   PublicKey,
   SystemProgram,
-  SYSVAR_RENT_PUBKEY
+  SYSVAR_RENT_PUBKEY,
+  Keypair
 } = require('@solana/web3.js')
+const {
+  Token
+} = require('@solana/spl-token')
 const BN = require('bn.js')
 const borsh = require('borsh')
 const bs58 = require('bs58')
@@ -27,6 +31,13 @@ const createTokenAccountInstructionSchema = new Map([
   ]
 ])
 
+/**
+ * Gets the back account address for a user given their ethAddress
+ * @param {string} ethAddress
+ * @param {string} claimableTokenPDA
+ * @param {PublicKey} solanaTokenProgramKey
+ * @returns
+ */
 const getBankAccountAddress = async (
   ethAddress,
   claimableTokenPDA,
@@ -49,18 +60,53 @@ const getBankAccountAddress = async (
   return accountToGenerate
 }
 
-// createUserBank deterministically creates a Solana wAudio token account
-// from an ethAddress (without the '0x' prefix)
-async function createUserBankFrom (
+/**
+ * Gets user bank account information
+ * @param {string} bankAccountAddress
+ * @param {PublicKey} mintKey
+ * @param {PublicKey} solanaTokenProgramKey
+ * @param {Connection} connection
+ * @returns
+ */
+const getBankAccountInfo = async (
+  bankAccountAddress,
+  mintKey,
+  solanaTokenProgramKey,
+  connection
+) => {
+  const token = new Token(
+    connection,
+    mintKey,
+    solanaTokenProgramKey,
+    Keypair.generate()
+  )
+  const info = await token.getAccountInfo(bankAccountAddress)
+  return info
+}
+
+/**
+ * createUserBank deterministically creates a Solana wAudio token account
+ * from a provided ethAddress
+ * @param {string} ethAddress
+ * @param {PublicKey} claimableTokenPDAKey
+ * @param {PublicKey} feePayerKey
+ * @param {PublicKey} mintKey
+ * @param {PublicKey} solanaTokenProgramKey
+ * @param {PublicKey} claimableTokenProgramKey
+ * @param {Connection} connection
+ * @param {IdentityService} identityService
+ * @returns
+ */
+const createUserBankFrom = async (
   ethAddress,
-  claimableTokenPDA,
+  claimableTokenPDAKey,
   feePayerKey,
   mintKey,
   solanaTokenProgramKey,
   claimableTokenProgramKey,
   connection,
   identityService
-) {
+) => {
   // Create instruction data
   const strippedEthAddress = ethAddress.replace('0x', '')
 
@@ -85,7 +131,7 @@ async function createUserBankFrom (
   // Create the account we aim to generate
   const accountToGenerate = await getBankAccountAddress(
     ethAddress,
-    claimableTokenPDA,
+    claimableTokenPDAKey,
     solanaTokenProgramKey
   )
 
@@ -104,7 +150,7 @@ async function createUserBankFrom (
     },
     // 2. `[r]` Base acc used in PDA token acc (need because of create_with_seed instruction)
     {
-      pubkey: claimableTokenPDA,
+      pubkey: claimableTokenPDAKey,
       isSigner: false,
       isWritable: false
     },
@@ -157,5 +203,6 @@ async function createUserBankFrom (
 
 module.exports = {
   getBankAccountAddress,
+  getBankAccountInfo,
   createUserBankFrom
 }
