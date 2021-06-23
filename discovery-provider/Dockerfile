@@ -16,6 +16,9 @@ RUN apk update && \
     apk add bash && \
     apk add postgresql-libs && \
     apk add libffi-dev && \
+    apk add redis && \
+    apk add go-ipfs --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community && \
+    apk add postgresql && \
     apk add --virtual .build-deps gcc musl-dev postgresql-dev && \
     python3 -m pip install -r requirements.txt --no-cache-dir && \
     apk --purge del .build-deps
@@ -34,7 +37,10 @@ RUN chmod +x scripts
 RUN mkdir -p ./build/contracts
 COPY --from=contracts /usr/src/app/build/contracts/ ./build/contracts/
 
+RUN ipfs init --profile server
+RUN bash scripts/init-db.sh
+
 ARG git_sha
 ENV GIT_SHA=$git_sha
 
-CMD ["bash", "scripts/start.sh"]
+CMD ["sh", "scripts/start.sh"]
