@@ -305,7 +305,9 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(api_v1.bp_full)
 
     # Create challenges
-    create_new_challenges(app.db_session_manager)
+    session_manager = app.db_session_manager
+    with session_manager.scoped_session() as session:
+        create_new_challenges(session)
 
     return app
 
