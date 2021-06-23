@@ -1,4 +1,3 @@
-const CreatorNode = require('.')
 const ServiceSelection = require('../../service-selection/ServiceSelection')
 const { timeRequestsAndSortByVersion } = require('../../utils/network')
 const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
@@ -39,7 +38,7 @@ class CreatorNodeSelection extends ServiceSelection {
       whitelist: whitelist || (creatorNode && creatorNode.passList),
       blacklist: blacklist || (creatorNode && creatorNode.blockList)
     })
-    this.creatorNode = creatorNode || new CreatorNode()
+    this.creatorNode = creatorNode
     this.numberOfNodes = numberOfNodes
     this.ethContracts = ethContracts
     this.timeout = timeout

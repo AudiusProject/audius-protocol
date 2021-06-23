@@ -465,16 +465,10 @@ const config = convict({
     env: 'snapbackModuloBase',
     default: 24
   },
-  snapbackDevJobDelay: {
-    doc: 'Local dev interval [ms] that snapbackSM jobs are fired; 3 seconds',
+  snapbackJobInterval: {
+    doc: 'Interval [ms] that snapbackSM jobs are fired; 1 hour',
     format: 'nat',
-    env: 'snapbackDevJobDelay',
-    default: 3000
-  },
-  snapbackProdJobDelay: {
-    doc: 'Prod interval [ms] that snapbackSM jobs are fired; 1 hour',
-    format: 'nat',
-    env: 'snapbackProdJobDelay',
+    env: 'snapbackJobInterval',
     default: 3600000
   },
   devMode: {
