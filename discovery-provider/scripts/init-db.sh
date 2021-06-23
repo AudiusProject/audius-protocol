@@ -12,6 +12,7 @@ sudo -u postgres postgres -D /db -h 127.0.0.1 &
 postgresPid="$!"
 export WAIT_HOSTS="localhost:5432"
 /wait
+sleep 60
 
 sudo -u postgres createdb audius_discovery
 

@@ -19,6 +19,7 @@ RUN apk update && \
     apk add redis && \
     apk add go-ipfs --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community && \
     apk add postgresql && \
+    apk add postgresql-contrib && \
     apk add --virtual .build-deps gcc musl-dev postgresql-dev && \
     python3 -m pip install -r requirements.txt --no-cache-dir && \
     apk --purge del .build-deps
