@@ -20,6 +20,7 @@ if [ -z "$audius_db_url" ]; then
     export audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@localhost:5432/audius_discovery
     export WAIT_HOSTS="localhost:5432"
     /wait
+    sleep 120
 fi
 
 celery -A src.worker.celery worker --loglevel info &
