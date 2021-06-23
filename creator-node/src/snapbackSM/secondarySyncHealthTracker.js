@@ -59,7 +59,7 @@ const SecondarySyncHealthTracker = {
   /**
    * Get SyncRequest outcome metrics for given secondary, all users, and all days
    */
-   async getSyncMetricsForSecondary (secondary) {
+  async getSyncMetricsForSecondary (secondary) {
     try {
       const pattern = SecondarySyncHealthTracker._getRedisKeyPattern(secondary, '*', '*', '*', '*')
 
@@ -105,7 +105,7 @@ const SecondarySyncHealthTracker = {
     if (!keys || !keys.length) {
       return {}
     }
-    
+
     // This works because vals.length === keys.length
     const vals = await redisClient.mget(keys)
 
@@ -132,7 +132,7 @@ const SecondarySyncHealthTracker = {
       stream.on('end', () => {
         resolve(Array.from(keySet).filter(Boolean))
       })
-      // stream.on('error'), 
+      // stream.on('error'),
     })
   },
 
