@@ -187,22 +187,6 @@ class CollectionPage extends Component<
 
     const { updatingRoute, initialOrder } = this.state
 
-    const params = parseCollectionRoute(pathname)
-    if (!params) return
-    if (status === Status.ERROR) {
-      if (
-        params &&
-        params.collectionId === this.state.playlistId &&
-        metadata?.playlist_owner_id !== this.props.userId
-      ) {
-        // Only route to not found page if still on the collection page and
-        // it is erroring on the correct playlistId
-        // and it's not our playlist
-        this.props.goToRoute(NOT_FOUND_PAGE)
-      }
-      return
-    }
-
     // Reset the initial order if it is unset OR
     // if the uids of the tracks in the lineup are changing with this
     // update (initialOrder should contain ALL of the uids, so it suffices to check the first one).
@@ -221,6 +205,24 @@ class CollectionPage extends Component<
         reordering: newInitialOrder
       })
     }
+
+    const params = parseCollectionRoute(pathname)
+
+    if (!params) return
+    if (status === Status.ERROR) {
+      if (
+        params &&
+        params.collectionId === this.state.playlistId &&
+        metadata?.playlist_owner_id !== this.props.userId
+      ) {
+        // Only route to not found page if still on the collection page and
+        // it is erroring on the correct playlistId
+        // and it's not our playlist
+        this.props.goToRoute(NOT_FOUND_PAGE)
+      }
+      return
+    }
+
     // Check if the collection has moved in the cache and redirect as needed.
     if (metadata && metadata._moved && !updatingRoute) {
       this.setState({ updatingRoute: true })
