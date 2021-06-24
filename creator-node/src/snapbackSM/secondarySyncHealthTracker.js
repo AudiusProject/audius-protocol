@@ -1,5 +1,10 @@
+/**
+ * SecondarySyncHealthTracker
+ * API for Primary to measure SyncRequest success and failure counts per Secondary, User, and Day
+ */
+
 const redisClient = require('../redis')
-const { logger: genericLogger } = require('../logging')
+const { logger } = require('../logging')
 
 const DailyRedisKeyExpirationSec = 90 /* days */ * 24 /* hr */ * 60 /* min */ * 60 /* s */
 
@@ -9,24 +14,18 @@ const Outcomes = Object.freeze({
 })
 
 const SecondarySyncHealthTracker = {
-  async recordSuccess (secondary, wallet, syncType, logContext = {}) {
-    await SecondarySyncHealthTracker._recordSyncRequestOutcome(
-      secondary, wallet, syncType, true, logContext
-    )
+  async recordSuccess (secondary, wallet, syncType) {
+    await this._recordSyncRequestOutcome(secondary, wallet, syncType, true)
   },
 
-  async recordFailure (secondary, wallet, syncType, logContext = {}) {
-    await SecondarySyncHealthTracker._recordSyncRequestOutcome(
-      secondary, wallet, syncType, false, logContext
-    )
+  async recordFailure (secondary, wallet, syncType) {
+    await this._recordSyncRequestOutcome(secondary, wallet, syncType, false)
   },
 
-  async _recordSyncRequestOutcome (secondary, wallet, syncType, success = true, logContext) {
-    const logger = genericLogger.child(logContext)
-
+  async _recordSyncRequestOutcome (secondary, wallet, syncType, success = true) {
     try {
       const outcome = success ? Outcomes.SUCCESS : Outcomes.FAILURE
-      const redisKey = SecondarySyncHealthTracker._getRedisKeyPattern(secondary, wallet, syncType, outcome)
+      const redisKey = this._getRedisKeyPattern(secondary, wallet, syncType, outcome)
 
       // incr() will create key with value 0 if non-existent
       await redisClient.incr(redisKey)
@@ -47,11 +46,11 @@ const SecondarySyncHealthTracker = {
    */
   async getAllSyncMetrics () {
     try {
-      const pattern = SecondarySyncHealthTracker._getRedisKeyPattern('*', '*', '*', '*', '*')
+      const pattern = this._getRedisKeyPattern('*', '*', '*', '*', '*')
 
-      return SecondarySyncHealthTracker._getMetricsMatchingPattern(pattern)
+      return this._getMetricsMatchingPattern(pattern)
     } catch (e) {
-      genericLogger.error(`secondarySyncHealthTracker - getAllSyncMetrics() Error || ${e.message}`)
+      logger.error(`secondarySyncHealthTracker - getAllSyncMetrics() Error || ${e.message}`)
       return {}
     }
   },
@@ -61,11 +60,11 @@ const SecondarySyncHealthTracker = {
    */
   async getSyncMetricsForSecondary (secondary) {
     try {
-      const pattern = SecondarySyncHealthTracker._getRedisKeyPattern(secondary, '*', '*', '*', '*')
+      const pattern = this._getRedisKeyPattern(secondary, '*', '*', '*', '*')
 
-      return SecondarySyncHealthTracker._getMetricsMatchingPattern(pattern)
+      return this._getMetricsMatchingPattern(pattern)
     } catch (e) {
-      genericLogger.error(`secondarySyncHealthTracker - getSyncMetricsForSecondary() Error || ${e.message}`)
+      logger.error(`secondarySyncHealthTracker - getSyncMetricsForSecondary() Error || ${e.message}`)
       return {}
     }
   },
@@ -75,11 +74,11 @@ const SecondarySyncHealthTracker = {
    */
   async getSecondarySyncMetricsForSecondaryForUser (secondary, wallet) {
     try {
-      const pattern = SecondarySyncHealthTracker._getRedisKeyPattern(secondary, wallet, '*', '*', '*')
+      const pattern = this._getRedisKeyPattern(secondary, wallet, '*', '*', '*')
 
-      return SecondarySyncHealthTracker._getMetricsMatchingPattern(pattern)
+      return this._getMetricsMatchingPattern(pattern)
     } catch (e) {
-      genericLogger.error(`secondarySyncHealthTracker - getSecondarySyncMetricsForUser() Error || ${e.message}`)
+      logger.error(`secondarySyncHealthTracker - getSecondarySyncMetricsForUser() Error || ${e.message}`)
       return {}
     }
   },
@@ -90,23 +89,29 @@ const SecondarySyncHealthTracker = {
   async getSecondarySyncMetricsForSecondaryForUserForToday (secondary, wallet) {
     try {
       const today = new Date().toISOString().split('T')[0] // format: YYYY-MM-DD
-      const pattern = SecondarySyncHealthTracker._getRedisKeyPattern(secondary, wallet, '*', '*', today)
+      const pattern = this._getRedisKeyPattern(secondary, wallet, '*', '*', today)
 
-      return SecondarySyncHealthTracker._getMetricsMatchingPattern(pattern)
+      return this._getMetricsMatchingPattern(pattern)
     } catch (e) {
-      genericLogger.error(`secondarySyncHealthTracker - getSecondarySyncMetricsForUserForToday() Error || ${e.message}`)
+      logger.error(`secondarySyncHealthTracker - getSecondarySyncMetricsForUserForToday() Error || ${e.message}`)
       return {}
     }
   },
 
+  /**
+   * Given redis key pattern, returns all keys matching pattern and associated values
+   * Returns map of key-value pairs
+   */
   async _getMetricsMatchingPattern (pattern) {
-    const keys = await SecondarySyncHealthTracker._getAllKeysMatchingPattern(pattern)
+    const keys = await this._getAllKeysMatchingPattern(pattern)
 
+    // Short-circuit here since redis `mget` throws if array param has 0-length
     if (!keys || !keys.length) {
       return {}
     }
 
     // This works because vals.length === keys.length
+    // https://redis.io/commands/mget
     const vals = await redisClient.mget(keys)
 
     // Zip keys and vals arrays into map of key-val pairs
@@ -120,6 +125,9 @@ const SecondarySyncHealthTracker = {
 
   /**
    * Returns array of all keys in Redis matching pattern, using redis SCAN
+   * https://github.com/luin/ioredis#streamify-scanning
+   *
+   * @returns array | Error
    */
   async _getAllKeysMatchingPattern (pattern) {
     const stream = redisClient.scanStream({ match: pattern })
@@ -132,10 +140,16 @@ const SecondarySyncHealthTracker = {
       stream.on('end', () => {
         resolve(Array.from(keySet).filter(Boolean))
       })
-      // stream.on('error'),
+      stream.on('error', e => {
+        reject(e)
+      })
     })
   },
 
+  /**
+   * Builds redis key pattern given params
+   * Key pattern string can map to one or multiple keys
+   */
   _getRedisKeyPattern (secondary, wallet, syncType, outcome, date = null) {
     const prefix = 'SecondarySyncRequestOutcomes-Daily'
 
