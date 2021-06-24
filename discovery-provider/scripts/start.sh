@@ -15,16 +15,18 @@ if [ -z "$audius_redis_url" ]; then
 fi
 
 if [ -z "$audius_db_url" ]; then
-    sudo -u postgres postgres -D /db -h 127.0.0.1 &
+    sudo -u postgres pg_ctl start -D /db
+    #sudo -u postgres postgres -D /db -h 127.0.0.1 &
     export audius_db_url=postgresql+psycopg2://postgres:postgres@localhost:5432/audius_discovery
     export audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@localhost:5432/audius_discovery
     export WAIT_HOSTS="localhost:5432"
     /wait
-    sleep 120
 fi
+
+./scripts/dev-server.sh &
+sleep 20 # wait for migrations to finish
 
 celery -A src.worker.celery worker --loglevel info &
 celery -A src.worker.celery beat --loglevel info &
-./scripts/dev-server.sh &
 
 wait

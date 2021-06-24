@@ -1,19 +1,11 @@
 #!/bin/bash
 
-mkdir /db
-chown postgres:postgres /db
+mkdir /run/postgresql /db
+chown -R postgres:postgres /run/postgresql /db
 chmod 700 /db
-sudo -u postgres initdb -D /db
 
-mkdir /run/postgresql
-chown -R postgres:postgres /run/postgresql
+sudo -u postgres pg_ctl init -D /db
 
-sudo -u postgres postgres -D /db -h 127.0.0.1 &
-postgresPid="$!"
-export WAIT_HOSTS="localhost:5432"
-/wait
-sleep 60
-
+sudo -u postgres pg_ctl start -D /db
 sudo -u postgres createdb audius_discovery
-
-kill $postgresPid
+sudo -u postgres pg_ctl stop -D /db
