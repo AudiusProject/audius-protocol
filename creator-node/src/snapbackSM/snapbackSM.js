@@ -777,7 +777,7 @@ class SnapbackSM {
     } finally {
       // Log decision tree
       try {
-        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree, null, 2)}`)
+        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree)}`)
       } catch (e) {
         this.logError(`Error printing processStateMachineOperation Decision Tree ${decisionTree}`)
       }
