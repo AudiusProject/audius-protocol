@@ -109,6 +109,10 @@ def populate_mock_db(db, entities):
                 is_current=True,
                 handle=user_meta.get('handle', i),
                 wallet=user_meta.get('wallet', i),
+                profile_picture=user_meta.get('profile_picture'),
+                profile_picture_sizes=user_meta.get('profile_picture_sizes'),
+                cover_photo=user_meta.get('cover_photo'),
+                cover_photo_sizes=user_meta.get('cover_photo_sizes'),
                 updated_at=user_meta.get("updated_at", datetime.now()),
                 created_at=user_meta.get("created_at", datetime.now()),
             )

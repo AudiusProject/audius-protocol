@@ -20,7 +20,7 @@ from flask_cors import CORS
 from src import exceptions
 from src import api_helpers
 from src.queries import queries, search, search_queries, health_check, notifications, \
-    block_confirmation, skipped_transactions
+    block_confirmation, skipped_transactions, user_signals
 from src.api.v1 import api as api_v1
 from src.utils import helpers
 from src.challenges.create_new_challenges import create_new_challenges
@@ -30,6 +30,7 @@ from src.utils.config import config_files, shared_config, ConfigIni
 from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
+from src.challenges.challenge_event_bus import setup_challenge_bus
 
 SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
@@ -288,6 +289,8 @@ def configure_flask(test_config, app, mode="app"):
         ast.literal_eval(app.config["db"]["engine_args_literal"]),
     )
 
+    app.challenge_bus = setup_challenge_bus()
+
     # Register route blueprints
     register_exception_handlers(app)
     app.register_blueprint(queries.bp)
@@ -297,12 +300,15 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(health_check.bp)
     app.register_blueprint(block_confirmation.bp)
     app.register_blueprint(skipped_transactions.bp)
+    app.register_blueprint(user_signals.bp)
 
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
 
     # Create challenges
-    create_new_challenges(app.db_session_manager)
+    session_manager = app.db_session_manager
+    with session_manager.scoped_session() as session:
+        create_new_challenges(session)
 
     return app
 
@@ -330,7 +336,7 @@ def configure_celery(flask_app, celery, test_config=None):
                  "src.tasks.index_network_peers", "src.tasks.index_trending",
                  "src.tasks.cache_user_balance", "src.monitors.monitoring_queue",
                  "src.tasks.cache_trending_playlists", "src.tasks.index_solana_plays",
-                 "src.tasks.index_aggregate_views"
+                 "src.tasks.index_aggregate_views", "src.tasks.index_challenges"
                  ],
         beat_schedule={
             "update_discovery_provider": {
@@ -396,6 +402,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_aggregate_playlist": {
                 "task": "update_aggregate_playlist",
                 "schedule": timedelta(seconds=30)
+            },
+            "index_challenges": {
+                "task": "index_challenges",
+                "schedule": timedelta(seconds=5)
             }
         },
         task_serializer="json",
@@ -424,6 +434,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("aggregate_metrics_lock")
     redis_inst.delete("synchronize_metrics_lock")
     redis_inst.delete("solana_plays_lock")
+    redis_inst.delete("index_challenges")
     logger.info('Redis instance initialized!')
 
     # Initialize custom task context with database object
@@ -437,6 +448,7 @@ def configure_celery(flask_app, celery, test_config=None):
             self._redis = redis_inst
             self._eth_web3_provider = eth_web3
             self._solana_client = solana_client
+            self._challenge_event_bus = flask_app.challenge_bus
 
         @property
         def abi_values(self):
@@ -469,6 +481,10 @@ def configure_celery(flask_app, celery, test_config=None):
         @property
         def solana_client(self):
             return self._solana_client
+
+        @property
+        def challenge_event_bus(self):
+            return self._challenge_event_bus
 
     celery.autodiscover_tasks(["src.tasks"], "index", True)
 

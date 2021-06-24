@@ -11,6 +11,7 @@ const DelegateManagerClient = require('./delegateManagerClient')
 const ClaimsManagerClient = require('./claimsManagerClient')
 const ClaimDistributionClient = require('./claimDistributionClient')
 const WormholeClient = require('./wormholeClient')
+const EthRewardsManagerClient = require('./ethRewardsManagerClient')
 const Utils = require('../../utils')
 
 const AudiusTokenABI = Utils.importEthContractABI('AudiusToken.json').abi
@@ -23,6 +24,7 @@ const DelegateManagerABI = Utils.importEthContractABI('DelegateManager.json').ab
 const ClaimsManagerABI = Utils.importEthContractABI('ClaimsManager.json').abi
 const ClaimDistributionABI = Utils.importEthContractABI('AudiusClaimDistributor.json').abi
 const WormholeABI = Utils.importEthContractABI('Wormhole.json').abi
+const EthRewardsManagerABI = Utils.importEthContractABI('EthRewardsManager.json').abi
 
 const GovernanceRegistryKey = 'Governance'
 const ServiceTypeManagerProxyKey = 'ServiceTypeManagerProxy'
@@ -31,6 +33,7 @@ const StakingProxyKey = 'StakingProxy'
 const DelegateManagerRegistryKey = 'DelegateManager'
 const ClaimsManagerProxyKey = 'ClaimsManagerProxy'
 const ClaimDistributionRegistryKey = 'ClaimDistribution'
+const EthRewardsManagerProxyKey = 'EthRewardsManagerProxy'
 
 const TWO_MINUTES = 2 * 60 * 1000
 
@@ -93,6 +96,13 @@ class EthContracts {
       this.ethWeb3Manager,
       ClaimsManagerABI,
       ClaimsManagerProxyKey,
+      this.getRegistryAddressForContract
+    )
+
+    this.EthRewardsManagerClient = new EthRewardsManagerClient(
+      this.ethWeb3Manager,
+      EthRewardsManagerABI,
+      EthRewardsManagerProxyKey,
       this.getRegistryAddressForContract
     )
 
