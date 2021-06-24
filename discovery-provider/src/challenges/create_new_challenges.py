@@ -16,13 +16,15 @@ def get_challenges_dicts():
 def create_new_challenges(session):
     challenges_dicts = get_challenges_dicts()
     challenges = []
-    existing_ids = {c.id for c in session.query(Challenge).all()}
+    existing_challenges = session.query(Challenge).all()
+    existing_ids = {c.id for c in existing_challenges}
 
     # filter to only new challenges
-    challenges_dicts = list(filter(lambda c: c.get('id') not in existing_ids, challenges_dicts))
+    new_challenges = list(filter(lambda c: c.get('id') not in existing_ids, challenges_dicts))
     logger.info(f"Adding challenges: {challenges_dicts}")
 
-    for challenge_dict in challenges_dicts:
+    # Add all the new challenges
+    for challenge_dict in new_challenges:
         challenge = Challenge(
             id=challenge_dict.get('id'),
             type=challenge_dict.get('type'),
@@ -33,3 +35,11 @@ def create_new_challenges(session):
         )
         challenges.append(challenge)
     session.add_all(challenges)
+
+    # Update any challenges whose active state / amount changed
+    existing_challenge_map = {challenge.id: challenge for challenge in existing_challenges}
+    for challenge_dict in challenges_dicts:
+        existing = existing_challenge_map[challenge_dict["id"]]
+        existing.active = challenge_dict["active"]
+        existing.amount = challenge_dict["amount"]
+
