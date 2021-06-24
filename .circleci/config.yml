@@ -623,22 +623,90 @@ jobs:
             docker push audius/<< parameters.repo >>:$(git rev-parse HEAD)
 
 workflows:
+  # test, build and push all commits
+  test-build-and-push:
+    jobs:
+      - test-libs:
+          name: test-libs
+      - docker-build-and-push:
+          name: build-libs
+          repo: libs
+          requires:
+            - test-libs
+
+      - test-contracts:
+          name: test-contracts
+      - docker-build-and-push:
+          name: build-contracts
+          repo: contracts
+          requires:
+            - test-contracts
+
+      - test-eth-contracts:
+          name: test-eth-contracts
+      - docker-build-and-push:
+          name: build-eth-contracts
+          repo: eth-contracts
+          requires:
+            - test-eth-contracts
+
+      - test-creator-node:
+          name: test-creator-node
+      - docker-build-and-push:
+          name: build-creator-node
+          repo: creator-node
+          requires:
+            - test-creator-node
+
+      - test-discovery-provider:
+          name: test-discovery-provider
+      - docker-build-and-push:
+          name: build-discovery-provider
+          repo: discovery-provider
+          requires:
+            - test-discovery-provider
+
+      - test-identity-service:
+          name: test-identity-service
+      - docker-build-and-push:
+          name: build-identity-service
+          repo: identity-service
+          requires:
+            - test-identity-service
+
+      - test-solana-programs:
+          name: test-solana-programs
+      - docker-build-and-push:
+          name: build-solana-programs
+          repo: solana-programs
+          requires:
+            - test-solana-programs
+
+      - test-mad-dog-e2e
+
   # test master at midnight daily
   test-nightly:
     jobs:
       - test-libs:
+          name: test-libs-nightly
           force: true
       - test-contracts:
+          name: test-contracts-nightly
           force: true
       - test-eth-contracts:
+          name: test-eth-contracts-nightly
           force: true
       - test-creator-node:
+          name: test-creator-node-nightly
           force: true
       - test-discovery-provider:
+          name: test-discovery-provider-nightly
           force: true
       - test-identity-service:
+          name: test-identity-service-nightly
           force: true
       - test-solana-programs:
+          name: test-solana-programs-nightly
           force: true
     triggers:
       - schedule:
@@ -646,57 +714,3 @@ workflows:
           filters:
             branches:
               only: /(^master$)/
-
-  # test, build and push all commits
-  test-build-and-push:
-    jobs:
-      - test-libs
-      - docker-build-and-push:
-          name: build-libs
-          repo: libs
-          requires:
-            - test-libs
-
-      - test-contracts
-      - docker-build-and-push:
-          name: build-contracts
-          repo: contracts
-          requires:
-            - test-contracts
-
-      - test-eth-contracts
-      - docker-build-and-push:
-          name: build-eth-contracts
-          repo: eth-contracts
-          requires:
-            - test-eth-contracts
-
-      - test-creator-node
-      - docker-build-and-push:
-          name: build-creator-node
-          repo: creator-node
-          requires:
-            - test-creator-node
-
-      - test-discovery-provider
-      - docker-build-and-push:
-          name: build-discovery-provider
-          repo: discovery-provider
-          requires:
-            - test-discovery-provider
-
-      - test-identity-service
-      - docker-build-and-push:
-          name: build-identity-service
-          repo: identity-service
-          requires:
-            - test-identity-service
-
-      - test-solana-programs
-      - docker-build-and-push:
-          name: build-solana-programs
-          repo: solana-programs
-          # requires:
-          #   - test-solana-programs
-
-      - test-mad-dog-e2e

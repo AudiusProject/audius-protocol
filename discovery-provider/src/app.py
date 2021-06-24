@@ -20,7 +20,7 @@ from flask_cors import CORS
 from src import exceptions
 from src import api_helpers
 from src.queries import queries, search, search_queries, health_check, notifications, \
-    block_confirmation, skipped_transactions
+    block_confirmation, skipped_transactions, user_signals
 from src.api.v1 import api as api_v1
 from src.utils import helpers
 from src.challenges.create_new_challenges import create_new_challenges
@@ -300,12 +300,15 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(health_check.bp)
     app.register_blueprint(block_confirmation.bp)
     app.register_blueprint(skipped_transactions.bp)
+    app.register_blueprint(user_signals.bp)
 
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
 
     # Create challenges
-    create_new_challenges(app.db_session_manager)
+    session_manager = app.db_session_manager
+    with session_manager.scoped_session() as session:
+        create_new_challenges(session)
 
     return app
 

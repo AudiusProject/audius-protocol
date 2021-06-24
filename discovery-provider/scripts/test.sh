@@ -63,11 +63,14 @@ docker-compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
   -f compose/docker-compose.ipfs.yml \
+  --env-file compose/.test.env \
   stop
+
 docker-compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
   -f compose/docker-compose.ipfs.yml \
+  --env-file compose/.test.env \
   rm -rf
 
 # Bring up local dependencies - postgres, redis, ipfs
@@ -76,6 +79,7 @@ docker-compose \
   -f compose/docker-compose.db.yml \
   -f compose/docker-compose.redis.yml \
   -f compose/docker-compose.ipfs.yml \
+  --env-file compose/.test.env \
   up -d
 
 sleep 5
