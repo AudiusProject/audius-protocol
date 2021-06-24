@@ -8,6 +8,7 @@ const { logger } = require('../logging')
 const SyncDeDuplicator = require('./snapbackDeDuplicator')
 const PeerSetManager = require('./peerSetManager')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
+const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 
 // Maximum number of time to wait for a sync operation, 6 minutes by default
 const MaxSyncMonitoringDurationInMs = 360000 // ms
@@ -806,6 +807,7 @@ class SnapbackSM {
     const endTimeMs = startTimeMs + MaxSyncMonitoringDurationInMs
 
     let additionalSyncRequired = true
+    let maxExportRangeExceeded = false
     while (Date.now() < endTimeMs) {
       try {
         const clockStatusResp = await axios(clockStatusRequestParams)
@@ -819,6 +821,7 @@ class SnapbackSM {
          */
         if (secondaryClockValue + MaxExportClockValueRange < primaryClockValue) {
           this.log(`${logMsgString} secondaryClock ${secondaryClockValue} || MaxExportClockValueRange exceeded -> re-enqueuing sync`)
+          maxExportRangeExceeded = true
           break
 
           /**
@@ -837,6 +840,17 @@ class SnapbackSM {
 
       // Delay between retries
       await utils.timeout(SyncMonitoringRetryDelayMs, false)
+    }
+
+    /**
+     * As Primary for user, record syncRequest outcomes to all secondaries
+     * For now, ignore syncRequests where a secondary is behind by more than `MaxExportClockValueRange` as
+     *    primary doesn't currently have sufficient tracking
+     */
+    if (!additionalSyncRequired && !maxExportRangeExceeded) {
+      await SecondarySyncHealthTracker.recordSuccess(secondaryUrl, userWallet, syncType)
+    } else {
+      await SecondarySyncHealthTracker.recordFailure(secondaryUrl, userWallet, syncType)
     }
 
     return additionalSyncRequired

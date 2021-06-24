@@ -6,7 +6,7 @@ module.exports = {
     proxyAdminAddress: null,
     guardianAddress: null,
     wormholeAddress: null,
-    antiAbuseOracleAddress: null,
+    antiAbuseOracleAddresses: null,
     solanaRecipientAddress: null
   },
   'test_local': {
@@ -14,7 +14,7 @@ module.exports = {
     proxyAdminAddress: null,
     guardianAddress: null,
     wormholeAddress: null,
-    antiAbuseOracleAddress: null,
+    antiAbuseOracleAddresses: null,
     solanaRecipientAddress: null
   },
   'soliditycoverage': {
@@ -22,7 +22,7 @@ module.exports = {
     proxyAdminAddress: null,
     guardianAddress: null,
     wormholeAddress: null,
-    antiAbuseOracleAddress: null,
+    antiAbuseOracleAddresses: null,
     solanaRecipientAddress: null
   },
   'audius_private': {
@@ -30,7 +30,7 @@ module.exports = {
     proxyAdminAddress: null,
     guardianAddress: null,
     wormholeAddress: null,
-    antiAbuseOracleAddress: null,
+    antiAbuseOracleAddresses: null,
     solanaRecipientAddress: null
   },
   'staging': {
@@ -38,7 +38,7 @@ module.exports = {
     proxyAdminAddress: null,
     guardianAddress: null,
     wormholeAddress: null,
-    antiAbuseOracleAddress: null,
+    antiAbuseOracleAddresses: null,
     solanaRecipientAddress: null
   },
   'production': {
@@ -46,7 +46,7 @@ module.exports = {
     proxyAdminAddress: null,
     guardianAddress: null,
     wormholeAddress: null,
-    antiAbuseOracleAddress: null,
+    antiAbuseOracleAddresses: null,
     solanaRecipientAddress: null
   }
 }
