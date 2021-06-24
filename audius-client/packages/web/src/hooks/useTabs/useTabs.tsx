@@ -431,8 +431,8 @@ const GestureSupportingBodyContainer = memo(
     const snapbackInterval = containerWidth * SNAPBACK_RATIO
 
     // Throttle the callbacks to set the tab accent for performance.
-    const throttledSetTabBarOffset = useCallback(
-      (offset: number) => throttle(setTabBarFractionalOffset, 150)(offset),
+    const throttledSetTabBarOffset = useMemo(
+      () => throttle(setTabBarFractionalOffset, 150),
       [setTabBarFractionalOffset]
     )
 
