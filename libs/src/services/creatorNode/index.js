@@ -80,50 +80,6 @@ class CreatorNode {
     return null
   }
 
-  /**
-   * Fetches the sync status of a user on a Content Node using the Discovery Node response
-   */
-  static async getSyncStatus ({ contentNodeEndpoint, wallet, discoveryNodeEndpoint, timeout = 2000 }) {
-    const getUserReq = {
-      baseURL: discoveryNodeEndpoint,
-      url: '/users',
-      params: { wallet },
-      method: 'get',
-      timeout
-    }
-    const getSyncStatusReq = {
-      baseURL: contentNodeEndpoint,
-      url: `/sync_status/${wallet}`,
-      method: 'get',
-      timeout
-    }
-
-    try {
-      const {
-        data: {
-          data: {
-            blocknumber: blockNumber,
-            track_blocknumber: trackBlockNumber
-          }
-        }
-      } = await axios(getUserReq)
-
-      const { data: body } = await axios(getSyncStatusReq)
-      const status = body.data
-
-      return {
-        status,
-        userBlockNumber: blockNumber,
-        trackBlockNumber: trackBlockNumber,
-        // Whether or not the endpoint is behind in syncing
-        isBehind: status.latestBlockNumber < Math.max(blockNumber, trackBlockNumber),
-        isConfigured: status.latestBlockNumber !== -1
-      }
-    } catch (e) {
-      throw new Error(`Issue with sync check for wallet=${wallet}: ${e.toString()}`)
-    }
-  }
-
   /* -------------- */
 
   /**

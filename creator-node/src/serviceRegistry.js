@@ -290,9 +290,7 @@ class ServiceRegistry {
       identityServiceConfig: identityService ? AudiusLibs.configIdentityService(identityService) : undefined,
       isDebug: config.get('creatorNodeIsDebug'),
       isServer: true,
-      enableUserReplicaSetManagerContract: true,
-      // TODO: need to wire up optimizely for this flag
-      snapbackReconfigEnabled: config.get('snapbackReconfigEnabled')
+      enableUserReplicaSetManagerContract: true
     })
 
     await audiusLibs.init()

@@ -63,7 +63,8 @@ class SnapbackSM {
     this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
     this.recurringSyncQueue = this.createBullQueue('recurring-sync-queue')
 
-    // Base value used to filter users over a 24 hour period
+    // 1/<moduloBase> users are handled over <snapbackJobInterval> ms interval
+    // ex: 1/<24> users are handled over <3600000> ms (1 hour)
     this.moduloBase = this.nodeConfig.get('snapbackModuloBase')
 
     // Incremented as users are processed
@@ -76,14 +77,13 @@ class SnapbackSM {
     })
 
     // Config to determine if reconfig is enabled
-    this.snapbackReconfigEnabled = (typeof this.audiusLibs.snapbackDevModeEnabled === 'boolean' && this.audiusLibs.snapbackDevModeEnabled) ||
-      this.nodeConfig.get('snapbackReconfigEnabled')
+    this.snapbackReconfigEnabled = this.nodeConfig.get('snapbackReconfigEnabled')
 
     // The interval when SnapbackSM is fired for state machine jobs
     this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
 
-    // Array of healthy node endpoints returned from CreatorNodeSelection logic
-    this.healthyNodes = null
+    // Mapping of Content Node endpoint to its service provider ID
+    this.endpointToSPIdMap = {}
   }
 
   /**
@@ -106,9 +106,6 @@ class SnapbackSM {
       this.log(`SnapbackSM disabled for userMetadataNode. ${this.endpoint}, isUserMetadata=${isUserMetadata}`)
       return
     }
-
-    // Setup the mapping of Content Node endpoint to service provider id. Used in reconfig
-    await this.updateEndpointToSpIdMap()
 
     /**
      * Initialize all queue processors
@@ -316,23 +313,23 @@ class SnapbackSM {
       return
     }
 
+    let errorMsg = null
     let phase = ''
     try {
       // Generate new replica set
       phase = issueUpdateReplicaSetOpPhases.GET_HEALTHY_CONTENT_NODES
-      const currentHealthySecondary = unhealthyReplicasSet.has(secondary1) ? secondary2 : secondary1
-      const newSecondary = await this.determineNewReplicaSet({ wallet, secondary1, secondary2, primary })
+      const { newPrimary, newSecondary1, newSecondary2 } = await this.determineNewReplicaSet({ wallet, secondary1, secondary2, primary, unhealthyReplicasSet })
 
-      this.log(`[issueUpdateReplicaSetOp] Updating userId=${userId} wallet=${wallet} replica set=[${primary},${secondary1},${secondary2}] to new replica set=[${primary},${currentHealthySecondary},${newSecondary}]`)
+      this.log(`[issueUpdateReplicaSetOp] Updating userId=${userId} wallet=${wallet} replica set=[${primary},${secondary1},${secondary2}] to new replica set=[${newPrimary},${newSecondary1},${newSecondary2}]`)
 
       if (!this.snapbackReconfigEnabled) return
 
       // Create new array of replica set spIds and write to URSM
       phase = issueUpdateReplicaSetOpPhases.UPDATE_URSM_REPLICA_SET
       newReplicaSetSPIds = [
-        this.endpointToSPIdMap[primary],
-        this.endpointToSPIdMap[currentHealthySecondary],
-        this.endpointToSPIdMap[newSecondary]
+        this.endpointToSPIdMap[newPrimary],
+        this.endpointToSPIdMap[newSecondary1],
+        this.endpointToSPIdMap[newSecondary2]
       ]
 
       await this.audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
@@ -346,13 +343,13 @@ class SnapbackSM {
       await this.enqueueSync({
         ...baseSyncRequestParams,
         primaryEndpoint: primary,
-        secondaryEndpoint: newSecondary
+        secondaryEndpoint: newSecondary2
       })
     } catch (e) {
-      const errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} failed at phase=${phase} reconfiguring to spIds=[${newReplicaSetSPIds}]: ${e.toString()}\n${e.stack}`
-      this.logError(errorMsg)
-      throw new Error(errorMsg)
+      errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} failed at phase=${phase} reconfiguring to spIds=[${newReplicaSetSPIds}]: ${e.toString()}\n${e.stack}`
     }
+
+    return errorMsg
   }
 
   /**
@@ -364,19 +361,20 @@ class SnapbackSM {
    * @returns {string} the endpoint of the newly selected secondary. Should not be a node in the
    *        current replica set.
    */
-  async determineNewReplicaSet ({ primary, secondary1, secondary2, wallet }) {
+  async determineNewReplicaSet ({ primary, secondary1, secondary2, wallet, unhealthyReplicasSet }) {
     // Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
-    if (!this.healthyNodes) {
-      const { services: healthyServicesMap } = await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
-        performSyncCheck: false
-      })
+    // Note: sync checks are disabled because there should not be any syncs occurring for a particular user
+    // on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
+    // There will be an explicit clock value check on the newly selected replica set nodes instead.
+    const { services: healthyServicesMap } = await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
+      performSyncCheck: false
+    })
 
-      this.healthyNodes = Object.keys(healthyServicesMap)
-      if (this.healthyNodes.length === 0) throw new Error('Unable to query any healthy Content Nodes')
-    }
+    const healthyNodes = Object.keys(healthyServicesMap)
+    if (healthyNodes.length === 0) throw new Error('Auto-selecting Content Nodes returned an empty list of healthy nodes.')
 
     // Make sure current replica set will not be chosen as potential nodes for the new replica set
-    const healthyPotentialPeers = this.healthyNodes.filter(node => node !== primary && node !== secondary1 && node !== secondary2)
+    const healthyPotentialPeers = healthyNodes.filter(node => node !== primary && node !== secondary1 && node !== secondary2)
     let currentNodeHasExistingUserState = true
     let i = 0
     let newSecondary
@@ -384,19 +382,27 @@ class SnapbackSM {
       // Select a random node that is not from the current replica set
       newSecondary = healthyPotentialPeers[Math.floor(Math.random() * healthyPotentialPeers.length)]
 
-      // Check to make sure that the newly selected secondary does not have state
-      const resp = await CreatorNode.getSyncStatus({
-        discoveryNodeEndpoint: this.audiusLibs.discoveryProvider.discoveryProviderEndpoint,
-        contentNodeEndpoint: newSecondary,
-        wallet
-      })
-
-      if (resp.status.clockValue === -1) currentNodeHasExistingUserState = false
+      // Check to make sure that the newly selected secondary does not have existing user state
+      try {
+        const clockValue = await CreatorNode.getClockValue(newSecondary, wallet)
+        if (clockValue === -1) currentNodeHasExistingUserState = false
+      } catch (e) {
+        // Something went wrong in checking clock value. Reselect another secondary.
+        this.logError(e.message)
+      }
     }
 
-    if (currentNodeHasExistingUserState) throw new Error(`Unable to select new secondary given current healthy Content Nodes=[${this.healthyNodes}]`)
+    if (currentNodeHasExistingUserState) throw new Error(`Unable to select new secondary given current healthy Content Nodes=[${healthyNodes}]`)
 
-    return newSecondary
+    const currentHealthySecondary = unhealthyReplicasSet.has(secondary1) ? secondary2 : secondary1
+
+    // NOTE: For v0 implementation, `newSecondary2` will be the newly selected secondary, whilst the other nodes will be the
+    // original replica set primary and secondary1
+    return {
+      newPrimary: primary,
+      newSecondary1: currentHealthySecondary,
+      newSecondary2: newSecondary
+    }
   }
 
   /**
@@ -648,6 +654,23 @@ class SnapbackSM {
         throw new Error('processStateMachineOperation():retrieveClockStatusesForSecondaryUsersFromNodes() Error')
       }
 
+      // Setup the mapping of Content Node endpoint to service provider id. Used in reconfig
+      try {
+        const endpointToSpIdMap = await this.createEndpointToSpIdMap()
+        this.endpointToSPIdMap = endpointToSpIdMap
+        // If map creation was successful, set snapbackReconfigEnabled to value in env file
+        this.snapbackReconfigEnabled = this.nodeConfig.get('snapbackReconfigEnabled')
+      } catch (e) {
+        // If map creation was not successful, turn off snapbackReconfigEnabled as reconfig cannot happen without
+        // this mapping
+        this.snapbackReconfigEnabled = false
+        decisionTree.push({
+          stage: 'createEndpointToSpIdMap() Error',
+          vals: e.message || e.toString(),
+          time: Date.now()
+        })
+      }
+
       // Issue all required sync requests
       let numSyncRequestsRequired, numSyncRequestsIssued, syncRequestErrors
       try {
@@ -690,8 +713,9 @@ class SnapbackSM {
        */
       let numUpdateReplicaOpsIssued = 0
       try {
+        const errors = []
         for await (const userInfo of requiredUpdateReplicaSetOps) {
-          await this.issueUpdateReplicaSetOp(
+          const errorMsg = await this.issueUpdateReplicaSetOp(
             userInfo.user_id,
             userInfo.wallet,
             userInfo.primary,
@@ -699,8 +723,10 @@ class SnapbackSM {
             userInfo.secondary2,
             userInfo.unhealthyReplicas
           )
-          numUpdateReplicaOpsIssued++
+
+          errorMsg ? errors.push(errorMsg) : numUpdateReplicaOpsIssued++
         }
+        if (errors.length > 0) throw new Error(`issueUpdateReplicaSetOp() failed for subset of users: [${errors.toString()}]`)
 
         decisionTree.push({
           stage: 'issueUpdateReplicaSetOp() Success',
@@ -721,12 +747,6 @@ class SnapbackSM {
       this.currentModuloSlice += 1
       this.currentModuloSlice = this.currentModuloSlice % this.moduloBase
 
-      // Clear this.healthyNodes for next modulo slice
-      this.healthyNodes = null
-
-      // Reinitialize this.endpointToSpIdMap to maintain freshness
-      await this.updateEndpointToSpIdMap()
-
       decisionTree.push({
         stage: 'END processStateMachineOperation()',
         vals: {
@@ -745,7 +765,7 @@ class SnapbackSM {
     } finally {
       // Log decision tree
       try {
-        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree)}`)
+        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree, null, 2)}`)
       } catch (e) {
         this.logError(`Error printing processStateMachineOperation Decision Tree ${decisionTree}`)
       }
@@ -968,13 +988,13 @@ class SnapbackSM {
     throw new Error(`Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`)
   }
 
-  async updateEndpointToSpIdMap () {
+  async createEndpointToSpIdMap () {
     let endpointToSPIdMap = {}
     const contentNodes = await this.audiusLibs.ethContracts.getServiceProviderList('content-node')
-    contentNodes.forEach(cn => {
-      endpointToSPIdMap[cn.endpoint] = cn.spID
-    })
-    this.endpointToSPIdMap = endpointToSPIdMap
+    contentNodes.forEach(cn => { endpointToSPIdMap[cn.endpoint] = cn.spID })
+
+    if (Object.keys(endpointToSPIdMap).length === 0) throw new Error('Unable to initialize this.endpointToSPIdMap')
+    return endpointToSPIdMap
   }
 }
 
