@@ -11,6 +11,11 @@ import {
   StringKeys
 } from 'services/remote-config'
 import { useSelector } from 'utils/reducer'
+import { getAccountUser } from 'store/account/selectors'
+import {
+  FeatureFlagCohortType,
+  flagCohortType
+} from 'services/remote-config/FeatureFlags'
 
 /**
  * Hooks into updates for a given feature flag.
@@ -21,9 +26,14 @@ export const useFlag = (flag: FeatureFlags) => {
   const configLoaded = useSelector(
     (state: AppState) => state.remoteConfig.remoteConfigLoaded
   )
-  // eslint complains about configLoaded as part of the deps array
-  // eslint-disable-next-line
-  const isEnabled = useMemo(() => getFeatureEnabled(flag), [flag, configLoaded])
+  const userIdFlag = flagCohortType[flag] === FeatureFlagCohortType.USER_ID
+  const hasAccount = useSelector(getAccountUser)
+  const shouldRecompute = userIdFlag ? hasAccount : true
+  const isEnabled = useMemo(
+    // We want configLoaded and shouldRecompute to trigger refreshes of the memo
+    // eslint-disable-next-line
+    () => getFeatureEnabled(flag), [flag, configLoaded, shouldRecompute]
+  )
   return { isLoaded: configLoaded, isEnabled }
 }
 
