@@ -107,6 +107,7 @@ class SolanaWeb3Manager {
   /**
    * Gets the info for a user bank account given a solana address.
    * If the solanaAddress is not a valid user bank, returns `null`
+   * @returns {AccountInfo | null}
    */
   async getUserBankInfo (solanaAddress) {
     try {

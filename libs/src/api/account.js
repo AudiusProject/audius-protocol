@@ -109,7 +109,6 @@ class Account extends Base {
     host = (typeof window !== 'undefined' && window.location.origin) || null,
     createWAudioUserBank = false
   ) {
-    console.log({ createWAudioUserBank })
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
