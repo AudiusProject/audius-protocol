@@ -9,8 +9,10 @@ import { resizeImage } from 'utils/imageProcessingUtil'
 import DesktopTwitterOverlay from 'containers/sign-on/components/desktop/TwitterOverlay'
 import MobileTwitterOverlay from 'containers/sign-on/components/mobile/TwitterOverlay'
 import ProfileForm from 'containers/sign-on/components/ProfileForm'
-
-const GENERAL_ADMISSION = process.env.REACT_APP_GENERAL_ADMISSION
+import {
+  formatInstagramProfile,
+  formatTwitterProfile
+} from 'containers/sign-on/utils/formatSocialProfile'
 
 const messages = {
   header: 'Tell Us About Yourself So Others Can Find You'
@@ -56,48 +58,33 @@ export class ProfilePage extends Component {
     this.setState({ isLoading: false })
   }
 
-  onTwitterLogin = async twitterProfile => {
+  onTwitterLogin = async twitterProfileRes => {
+    const { uuid, profile: twitterProfile } = await twitterProfileRes.json()
     try {
-      const { uuid, profile } = await twitterProfile.json()
-      const profileUrl = profile.profile_image_url_https.replace(
-        /_(normal|bigger|mini)/g,
-        ''
-      )
-      const imageBlob = await fetch(profileUrl).then(r => r.blob())
-      const artworkFile = new File([imageBlob], 'Artwork', {
-        type: 'image/jpeg'
-      })
-      const file = await resizeImage(artworkFile)
-      const url = URL.createObjectURL(file)
+      const {
+        uuid,
+        profile,
+        profileImage,
+        profileBanner,
+        requiresUserReview
+      } = await formatTwitterProfile(twitterProfile)
 
-      if (profile.profile_banner_url) {
-        const bannerImageBlob = await fetch(
-          profile.profile_banner_url
-        ).then(r => r.blob())
-        const bannerArtworkFile = new File([bannerImageBlob], 'Artwork', {
-          type: 'image/webp'
-        })
-        const bannerFile = await resizeImage(
-          bannerArtworkFile,
-          2000,
-          /* square= */ false
-        )
-        const bannerUrl = URL.createObjectURL(bannerFile)
+      this.props.validateHandle(profile.screen_name, error => {
         this.props.setTwitterProfile(
           uuid,
           profile,
-          { url, file },
-          { url: bannerUrl, file: bannerFile }
+          profileImage,
+          profileBanner,
+          !error && !requiresUserReview
         )
-      } else {
-        this.props.setTwitterProfile(uuid, profile, { url, file })
-      }
-      this.setState({
-        showTwitterOverlay: false,
-        initial: false,
-        isLoading: false
+        this.setState({
+          showTwitterOverlay: false,
+          initial: false,
+          isLoading: false
+        })
       })
     } catch (err) {
+      console.error(err)
       this.setState({
         showTwitterOverlay: false,
         initial: false,
@@ -106,32 +93,27 @@ export class ProfilePage extends Component {
     }
   }
 
-  onInstagramLogin = async (uuid, profile) => {
+  onInstagramLogin = async (uuid, instagramProfile) => {
     try {
-      if (profile.profile_pic_url_hd) {
-        try {
-          const profileUrl = `${GENERAL_ADMISSION}/proxy/simple?url=${encodeURIComponent(
-            profile.profile_pic_url_hd
-          )}`
-          const imageBlob = await fetch(profileUrl).then(r => r.blob())
-          const artworkFile = new File([imageBlob], 'Artwork', {
-            type: 'image/jpeg'
-          })
-          const file = await resizeImage(artworkFile)
-          const url = URL.createObjectURL(file)
-          this.props.setInstagramProfile(uuid, profile, { url, file })
-        } catch (e) {
-          console.error('Failed to fetch profile_pic_url_hd', e)
-          this.props.setInstagramProfile(uuid, profile)
-        }
-      } else {
-        this.props.setInstagramProfile(uuid, profile)
-      }
-      this.setState({
-        showTwitterOverlay: false,
-        initial: false
+      const {
+        uuid,
+        profile,
+        profileImage,
+        requiresUserReview
+      } = await formatInstagramProfile(uuid, profile)
+      this.props.validateHandle(profile.username, error => {
+        this.props.setInstagramProfile(
+          uuid,
+          profile,
+          profileImage,
+          !error && !requiresUserReview
+        )
+        this.setState({
+          showTwitterOverlay: false,
+          initial: false,
+          isLoading: false
+        })
       })
-      this.setState({ isLoading: false })
     } catch (err) {
       this.setState({
         showTwitterOverlay: false,
@@ -220,22 +202,6 @@ export class ProfilePage extends Component {
       </div>
     )
   }
-}
-
-ProfilePage.propTypes = {
-  setProfileImage: PropTypes.func,
-  onNextPage: PropTypes.func,
-  onEmailChange: PropTypes.func,
-  onTwitterLogin: PropTypes.func,
-  inputStatus: PropTypes.oneOf(['default', 'error', 'valid']),
-  errorType: PropTypes.oneOf(['invalidEmail', 'inUse']),
-  hadleFromTwitter: PropTypes.bool,
-  isMobile: PropTypes.bool
-}
-
-ProfilePage.defaultProps = {
-  inputStatus: 'default',
-  hadleFromTwitter: false
 }
 
 export default ProfilePage

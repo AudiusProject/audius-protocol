@@ -100,13 +100,15 @@ export function validateEmailFailed(error) {
 /**
  * Requests the backend to check if handle is valid
  * @param {string} handle the handle to check
+ * @param {((error: boolean) => void) | undefined} onValidate
+ *  callback to fire on successful validation
  */
-export function validateHandle(handle) {
-  return { type: VALIDATE_HANDLE, handle }
+export function validateHandle(handle, onValidate) {
+  return { type: VALIDATE_HANDLE, handle, onValidate }
 }
 
-export function validateHandleSucceeded(available, error = 'inUse') {
-  return { type: VALIDATE_HANDLE_SUCCEEDED, available, error }
+export function validateHandleSucceeded() {
+  return { type: VALIDATE_HANDLE_SUCCEEDED }
 }
 
 /**

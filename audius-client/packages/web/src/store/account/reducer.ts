@@ -39,8 +39,8 @@ export type InstagramProfile = {
   username: string
   biography?: string
   business_email?: string
-  edge_follow: { count: number }
-  edge_followed_by: { count: number }
+  edge_follow?: { count: number }
+  edge_followed_by?: { count: number }
   external_url?: string
   full_name?: string
   is_business_account?: boolean
@@ -51,9 +51,11 @@ export type InstagramProfile = {
 }
 
 export type TwitterProfile = {
-  verified: boolean
-  name: string
   screen_name: string
+  name: string
+  verified: boolean
+  profile_image_url_https: string
+  profile_banner_url?: string
 }
 
 const slice = createSlice({

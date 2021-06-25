@@ -69,15 +69,21 @@ export type SignOnProps = {
   onNameChange: (name: string) => void
   onSetProfileImage: (img: any) => void
   setTwitterProfile: (
-    twitterId: string,
-    profile: { screen_name?: string },
-    profileImage: any,
-    coverPhoto: any
+    uuid: string,
+    profile: any,
+    profileImg?: { url: string; file: any },
+    coverBannerImg?: { url: string; file: any },
+    skipEdit?: boolean
   ) => void
   setInstagramProfile: (
-    instagramId: string,
+    uuid: string,
     profile: InstagramProfile,
-    profileImage?: any
+    profileImg?: { url: string; file: any },
+    skipEdit?: boolean
+  ) => void
+  validateHandle: (
+    handle: string,
+    onValidate?: (error: boolean) => void
   ) => void
   onAddFollows: (followIds: ID[]) => void
   onRemoveFollows: (followIds: ID[]) => void
@@ -142,6 +148,7 @@ const SignOnProvider = ({
   onSetProfileImage,
   setTwitterProfile,
   setInstagramProfile,
+  validateHandle,
   onAddFollows,
   onRemoveFollows,
   onAutoSelect,
@@ -256,6 +263,7 @@ const SignOnProvider = ({
           setProfileImage={onSetProfileImage}
           setTwitterProfile={setTwitterProfile}
           setInstagramProfile={setInstagramProfile}
+          validateHandle={validateHandle}
           recordTwitterStart={recordTwitterStart}
           onNextPage={onNextPage}
         />

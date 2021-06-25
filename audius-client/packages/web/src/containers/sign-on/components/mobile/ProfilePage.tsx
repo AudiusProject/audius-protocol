@@ -3,13 +3,14 @@ import React, { useState, useCallback, useEffect } from 'react'
 import cn from 'classnames'
 
 import styles from './ProfilePage.module.css'
-import { resizeImage } from 'utils/imageProcessingUtil'
 import TwitterOverlay from 'containers/sign-on/components/mobile/TwitterOverlay'
 import ProfileForm from 'containers/sign-on/components/ProfileForm'
-import { InstagramProfile } from 'store/account/reducer'
+import { InstagramProfile, TwitterProfile } from 'store/account/reducer'
 import { MAIN_CONTENT_ID } from 'containers/App'
-
-const GENERAL_ADMISSION = process.env.REACT_APP_GENERAL_ADMISSION
+import {
+  formatInstagramProfile,
+  formatTwitterProfile
+} from 'containers/sign-on/utils/formatSocialProfile'
 
 const messages = {
   header: 'Tell Us About Yourself So Others Can Find You'
@@ -26,19 +27,23 @@ type ProfilePageProps = {
     uuid: string,
     profile: any,
     profileImg?: { url: string; file: any },
-    coverBannerImg?: { url: string; file: any }
+    coverBannerImg?: { url: string; file: any },
+    skipEdit?: boolean
   ) => void
   setInstagramProfile: (
     uuid: string,
     profile: InstagramProfile,
-    profileImg?: { url: string; file: any }
+    profileImg?: { url: string; file: any },
+    skipEdit?: boolean
   ) => void
   onHandleChange: (handle: string) => void
   onNameChange: (name: string) => void
   setProfileImage: (img: { url: string; file: any }) => void
+  validateHandle: (
+    handle: string,
+    onValidate?: (error: boolean) => void
+  ) => void
 }
-
-type TwitterProfile = any
 
 const ProfilePage = (props: ProfilePageProps) => {
   // If the handle field is disabled, don't let the user twitter auth
@@ -77,7 +82,8 @@ const ProfilePage = (props: ProfilePageProps) => {
     onNextPage,
     twitterId,
     setTwitterProfile,
-    setInstagramProfile
+    setInstagramProfile,
+    validateHandle
   } = props
 
   const onToggleTwitterOverlay = useCallback(() => {
@@ -96,72 +102,54 @@ const ProfilePage = (props: ProfilePageProps) => {
     if (getProfileValid()) onNextPage()
   }, [getProfileValid, onNextPage])
 
-  const onTwitterLogin = async (twitterProfile: TwitterProfile) => {
+  const onTwitterLogin = async (twitterProfileRes: Body) => {
+    const { uuid, profile: twitterProfile } = await twitterProfileRes.json()
     try {
-      const { uuid, profile } = await twitterProfile.json()
-      const profileUrl = profile.profile_image_url_https.replace(
-        /_(normal|bigger|mini)/g,
-        ''
-      )
-      const imageBlob = await fetch(profileUrl).then(r => r.blob())
-      const artworkFile = new File([imageBlob], 'Artwork', {
-        type: 'image/jpeg'
-      })
-      const file = await resizeImage(artworkFile)
-      const url = URL.createObjectURL(file)
+      const {
+        profile,
+        profileImage,
+        profileBanner,
+        requiresUserReview
+      } = await formatTwitterProfile(twitterProfile)
 
-      if (profile.profile_banner_url) {
-        const bannerImageBlob = await fetch(
-          profile.profile_banner_url
-        ).then(r => r.blob())
-        const bannerArtworkFile = new File([bannerImageBlob], 'Artwork', {
-          type: 'image/webp'
-        })
-        const bannerFile = await resizeImage(
-          bannerArtworkFile,
-          2000,
-          /* square= */ false
-        )
-        const bannerUrl = URL.createObjectURL(bannerFile)
+      validateHandle(profile.screen_name, (error: boolean) => {
         setTwitterProfile(
           uuid,
           profile,
-          { url, file },
-          { url: bannerUrl, file: bannerFile }
+          profileImage,
+          profileBanner,
+          !error && !requiresUserReview
         )
-      } else {
-        setTwitterProfile(uuid, profile, { url, file })
-      }
+        setShowTwitterOverlay(false)
+        setIsInitial(false)
+        setIsLoading(false)
+      })
     } catch (err) {
-      // TODO: Log error
-    } finally {
+      console.error(err)
       setShowTwitterOverlay(false)
       setIsInitial(false)
       setIsLoading(false)
     }
   }
 
-  const onInstagramLogin = async (uuid: string, profile: InstagramProfile) => {
+  const onInstagramLogin = async (
+    uuid: string,
+    instagramProfile: InstagramProfile
+  ) => {
     try {
-      if (profile.profile_pic_url_hd) {
-        try {
-          const profileUrl = `${GENERAL_ADMISSION}/proxy/simple?url=${encodeURIComponent(
-            profile.profile_pic_url_hd
-          )}`
-          const imageBlob = await fetch(profileUrl).then(r => r.blob())
-          const artworkFile = new File([imageBlob], 'Artwork', {
-            type: 'image/jpeg'
-          })
-          const file = await resizeImage(artworkFile)
-          const url = URL.createObjectURL(file)
-          setInstagramProfile(uuid, profile, { url, file })
-        } catch (e) {
-          console.error('Failed to fetch profile_pic_url_hd', e)
-          setInstagramProfile(uuid, profile)
-        }
-      } else {
-        setInstagramProfile(uuid, profile)
-      }
+      const {
+        profile,
+        profileImage,
+        requiresUserReview
+      } = await formatInstagramProfile(instagramProfile)
+      validateHandle(profile.username, (error: boolean) => {
+        setInstagramProfile(
+          uuid,
+          profile,
+          profileImage,
+          !error && !requiresUserReview
+        )
+      })
     } catch (err) {
       // Continue if error
     } finally {

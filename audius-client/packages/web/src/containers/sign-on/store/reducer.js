@@ -276,8 +276,8 @@ const actionsMap = {
       ...state,
       handle: {
         ...state.handle,
-        status: action.available ? 'success' : 'failure',
-        error: action.available ? '' : action.error
+        status: 'success',
+        error: ''
       }
     }
   },
