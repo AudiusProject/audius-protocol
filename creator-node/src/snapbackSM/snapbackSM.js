@@ -366,8 +366,8 @@ class SnapbackSM {
     const userPrimaryClockValues = await this.getUserPrimaryClockValues(userWallets)
 
     let numSyncRequestsRequired = 0
-    let numSyncRequestsIssued = 0
-    let syncRequestErrors = []
+    let numSyncRequestsEnqueued = 0
+    let enqueueSyncRequestErrors = []
 
     // TODO change to chunked parallel
     await Promise.all(userReplicaSets.map(async (user) => {
@@ -391,14 +391,14 @@ class SnapbackSM {
             syncType: SyncType.Recurring
           })
 
-          numSyncRequestsIssued += 1
+          numSyncRequestsEnqueued += 1
         }
       } catch (e) {
-        syncRequestErrors.push(`issueSyncRequest() Error for user ${JSON.stringify(user)} - ${e.message}`)
+        enqueueSyncRequestErrors.push(`issueSyncRequest() Error for user ${JSON.stringify(user)} - ${e.message}`)
       }
     }))
 
-    return { numSyncRequestsRequired, numSyncRequestsIssued, syncRequestErrors }
+    return { numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors }
   }
 
   /**
@@ -414,7 +414,8 @@ class SnapbackSM {
     let decisionTree = [{
       stage: 'BEGIN processStateMachineOperation()',
       vals: {
-        currentModuloSlice: this.currentModuloSlice
+        currentModuloSlice: this.currentModuloSlice,
+        moduloBase: ModuloBase
       },
       time: Date.now()
     }]
@@ -432,7 +433,6 @@ class SnapbackSM {
       }
 
       let unhealthyPeers
-
       try {
         unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
         decisionTree.push({
@@ -524,24 +524,25 @@ class SnapbackSM {
       }
 
       // Issue all required sync requests
-      let numSyncRequestsRequired, numSyncRequestsIssued, syncRequestErrors
+      let numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors
       try {
         const resp = await this.issueSyncRequests(potentialSyncRequests, secondaryNodesToUserClockStatusesMap)
         numSyncRequestsRequired = resp.numSyncRequestsRequired
-        numSyncRequestsIssued = resp.numSyncRequestsIssued
-        syncRequestErrors = resp.syncRequestErrors
+        numSyncRequestsEnqueued = resp.numSyncRequestsEnqueued
+        enqueueSyncRequestErrors = resp.enqueueSyncRequestErrors
 
-        if (syncRequestErrors.length > numSyncRequestsIssued) {
-          throw new Error()
+        // Error if > 50% syncRequests fail
+        if (enqueueSyncRequestErrors.length > numSyncRequestsEnqueued) {
+          throw new Error('More than 50% of SyncRequests failed to be enqueued')
         }
 
         decisionTree.push({
           stage: 'issueSyncRequests() Success',
           vals: {
             numSyncRequestsRequired,
-            numSyncRequestsIssued,
-            numSyncRequestErrors: syncRequestErrors.length,
-            syncRequestErrors
+            numSyncRequestsEnqueued,
+            numIssueSyncRequestErrors: enqueueSyncRequestErrors.length,
+            enqueueSyncRequestErrors
           },
           time: Date.now()
         })
@@ -549,14 +550,14 @@ class SnapbackSM {
         decisionTree.push({
           stage: 'issueSyncRequests() Error',
           vals: {
+            error: e.message,
             numSyncRequestsRequired,
-            numSyncRequestsIssued,
-            numSyncRequestErrors: (syncRequestErrors ? syncRequestErrors.length : null),
-            syncRequestErrors
+            numSyncRequestsEnqueued,
+            numIssueSyncRequestErrors: (enqueueSyncRequestErrors ? enqueueSyncRequestErrors.length : null),
+            enqueueSyncRequestErrors
           },
           time: Date.now()
         })
-        throw new Error('processStateMachineOperation():issueSyncRequests() Error')
       }
 
       /**
@@ -585,18 +586,12 @@ class SnapbackSM {
         throw new Error('processStateMachineOperation():issueUpdateReplicaSetOp() Error')
       }
 
-      // Increment and adjust current slice by ModuloBase
-      const previousModuloSlice = this.currentModuloSlice
-      this.currentModuloSlice += 1
-      this.currentModuloSlice = this.currentModuloSlice % ModuloBase
-
       decisionTree.push({
         stage: 'END processStateMachineOperation()',
         vals: {
-          currentModuloSlice: previousModuloSlice,
-          nextModuloSlice: this.currentModuloSlice,
+          currentModuloSlice: this.currentModuloSlice,
           moduloBase: ModuloBase,
-          numSyncRequestsIssued,
+          numSyncRequestsEnqueued,
           numUpdateReplicaOpsIssued
         },
         time: Date.now()
@@ -606,6 +601,10 @@ class SnapbackSM {
     } catch (e) {
       decisionTree.push({ stage: 'processStateMachineOperation Error', vals: e.message, time: Date.now() })
     } finally {
+      // Increment and adjust current slice by ModuloBase
+      this.currentModuloSlice += 1
+      this.currentModuloSlice = this.currentModuloSlice % ModuloBase
+
       // Log decision tree
       try {
         this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree)}`)
