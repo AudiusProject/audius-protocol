@@ -190,6 +190,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
         recordCompleteProfile,
         fields: { email, password, handle }
       } = this.props
+
       // Dispatch event to create account
       signUp(email.value, password.value, handle.value)
       recordCompleteProfile(email.value, handle.value)
@@ -337,19 +338,22 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
   setTwitterProfile = (
     twitterId: string,
     profile: { screen_name?: string; verified?: boolean },
-    profileImage: any,
-    coverPhoto: any
+    profileImg?: { url: string; file: any },
+    coverBannerImg?: { url: string; file: any },
+    skipEdit?: boolean
   ) => {
     const {
       fields: { email, handle }
     } = this.props
-    if (profile.screen_name) this.props.validateHandle(profile.screen_name)
-    this.props.setTwitterProfile(twitterId, profile, profileImage, coverPhoto)
+    this.props.setTwitterProfile(twitterId, profile, profileImg, coverBannerImg)
     this.props.recordTwitterComplete(
       !!profile.verified,
       email.value,
       handle.value
     )
+    if (skipEdit) {
+      this.onNextPage()
+    }
   }
 
   onRecordTwitterStart = () => {
@@ -360,10 +364,14 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
   setInstagramProfile = (
     instagramId: string,
     profile: { username?: string; is_verified?: boolean },
-    profileImage?: any
+    profileImg?: { url: string; file: any },
+    skipEdit?: boolean
   ) => {
     if (profile.username) this.props.validateHandle(profile.username)
-    this.props.setInstagramProfile(instagramId, profile, profileImage)
+    this.props.setInstagramProfile(instagramId, profile, profileImg)
+    if (skipEdit) {
+      this.onNextPage()
+    }
   }
 
   onMetaMaskSignIn = () => {
@@ -427,6 +435,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
       onViewSignUp: this.onViewSignUp,
       setTwitterProfile: this.setTwitterProfile,
       setInstagramProfile: this.setInstagramProfile,
+      validateHandle: this.props.validateHandle,
       onMetaMaskSignIn: this.onMetaMaskSignIn,
       recordTwitterStart: this.onRecordTwitterStart,
       recordTwitterComplete: this.props.recordTwitterComplete
@@ -468,8 +477,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setTwitterProfile: (
       twitterId: string,
       profile: object,
-      profileImage: object,
-      coverPhoto: string
+      profileImage?: { url: string; file: any },
+      coverPhoto?: { url: string; file: any }
     ) =>
       dispatch(
         signOnAction.setTwitterProfile(
@@ -491,8 +500,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(signOnAction.sendWelcomeEmail(name)),
     validateEmail: (email: string) =>
       dispatch(signOnAction.validateEmail(email)),
-    validateHandle: (handle: string) =>
-      dispatch(signOnAction.validateHandle(handle)),
+    validateHandle: (handle: string, onValidate?: (error: boolean) => void) =>
+      dispatch(signOnAction.validateHandle(handle, onValidate)),
     setValueField: (field: string, value: any) =>
       dispatch(signOnAction.setValueField(field, value)),
     setField: (field: string, value: any) =>
