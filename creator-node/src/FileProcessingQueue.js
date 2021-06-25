@@ -50,7 +50,7 @@ class FileProcessingQueue {
   async logStatus (logContext, message) {
     const logger = genericLogger.child(logContext)
     const count = await this.queue.count()
-    logger.debug(`FileProcessingQueue: ${message}, count: ${count}`)
+    logger.info(`FileProcessingQueue: ${message}, count: ${count}`)
   }
 
   async logError (logContext, message) {
