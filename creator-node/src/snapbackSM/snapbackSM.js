@@ -531,6 +531,7 @@ class SnapbackSM {
         numSyncRequestsIssued = resp.numSyncRequestsIssued
         syncRequestErrors = resp.syncRequestErrors
 
+        // Error if > 50% syncRequests fail
         if (syncRequestErrors.length > numSyncRequestsIssued) {
           throw new Error()
         }
@@ -556,7 +557,6 @@ class SnapbackSM {
           },
           time: Date.now()
         })
-        throw new Error('processStateMachineOperation():issueSyncRequests() Error')
       }
 
       /**
