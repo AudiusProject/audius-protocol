@@ -5,6 +5,7 @@ const redisClient = require('./redis')
 const { handleTrackContentRoute: transcodeFn } = require('./components/tracks/tracksComponentService')
 const { serviceRegistry } = require('./serviceRegistry')
 
+const MAX_CONCURRENCY = 100
 const EXPIRATION = 86400 // 24 hours in seconds
 const PROCESS_NAMES = Object.freeze({
   transcode: 'transcode'
@@ -34,23 +35,26 @@ class FileProcessingQueue {
       }
     )
 
-    this.queue.process(PROCESS_NAMES.transcode, async (job, done) => {
-      const { transcodeParams } = job.data
+    this.queue.process(
+      PROCESS_NAMES.transcode,
+      MAX_CONCURRENCY,
+      async (job, done) => {
+        const { transcodeParams } = job.data
 
-      try {
-        const response = await this.monitorProgress(PROCESS_NAMES.transcode, transcodeFn, transcodeParams)
-        done(null, { response })
-      } catch (e) {
-        this.logError(transcodeParams.logContext, `Could not process taskType=${PROCESS_NAMES.transcode} uuid=${transcodeParams.logContext.requestID}: ${e.toString()}`)
-        done(e.toString())
-      }
-    })
+        try {
+          const response = await this.monitorProgress(PROCESS_NAMES.transcode, transcodeFn, transcodeParams)
+          done(null, { response })
+        } catch (e) {
+          this.logError(transcodeParams.logContext, `Could not process taskType=${PROCESS_NAMES.transcode} uuid=${transcodeParams.logContext.requestID}: ${e.toString()}`)
+          done(e.toString())
+        }
+      })
   }
 
   async logStatus (logContext, message) {
     const logger = genericLogger.child(logContext)
     const count = await this.queue.count()
-    logger.debug(`FileProcessingQueue: ${message}, count: ${count}`)
+    logger.info(`FileProcessingQueue: ${message}, count: ${count}`)
   }
 
   async logError (logContext, message) {
