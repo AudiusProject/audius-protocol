@@ -533,7 +533,7 @@ class SnapbackSM {
 
         // Error if > 50% syncRequests fail
         if (syncRequestErrors.length > numSyncRequestsIssued) {
-          throw new Error()
+          throw new Error('More than 50% of SyncRequests failed')
         }
 
         decisionTree.push({
@@ -550,6 +550,7 @@ class SnapbackSM {
         decisionTree.push({
           stage: 'issueSyncRequests() Error',
           vals: {
+            error: e.message,
             numSyncRequestsRequired,
             numSyncRequestsIssued,
             numSyncRequestErrors: (syncRequestErrors ? syncRequestErrors.length : null),
