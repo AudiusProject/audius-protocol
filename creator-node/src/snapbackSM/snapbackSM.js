@@ -414,7 +414,8 @@ class SnapbackSM {
     let decisionTree = [{
       stage: 'BEGIN processStateMachineOperation()',
       vals: {
-        currentModuloSlice: this.currentModuloSlice
+        currentModuloSlice: this.currentModuloSlice,
+        moduloBase: ModuloBase
       },
       time: Date.now()
     }]
@@ -432,7 +433,6 @@ class SnapbackSM {
       }
 
       let unhealthyPeers
-
       try {
         unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
         decisionTree.push({
@@ -585,16 +585,10 @@ class SnapbackSM {
         throw new Error('processStateMachineOperation():issueUpdateReplicaSetOp() Error')
       }
 
-      // Increment and adjust current slice by ModuloBase
-      const previousModuloSlice = this.currentModuloSlice
-      this.currentModuloSlice += 1
-      this.currentModuloSlice = this.currentModuloSlice % ModuloBase
-
       decisionTree.push({
         stage: 'END processStateMachineOperation()',
         vals: {
-          currentModuloSlice: previousModuloSlice,
-          nextModuloSlice: this.currentModuloSlice,
+          currentModuloSlice: this.currentModuloSlice,
           moduloBase: ModuloBase,
           numSyncRequestsIssued,
           numUpdateReplicaOpsIssued
@@ -606,6 +600,10 @@ class SnapbackSM {
     } catch (e) {
       decisionTree.push({ stage: 'processStateMachineOperation Error', vals: e.message, time: Date.now() })
     } finally {
+      // Increment and adjust current slice by ModuloBase
+      this.currentModuloSlice += 1
+      this.currentModuloSlice = this.currentModuloSlice % ModuloBase
+
       // Log decision tree
       try {
         this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree)}`)
