@@ -1,8 +1,9 @@
 const { addAndUpgradeUsers } = require('../../helpers.js')
 const verifyValidCNs = require('./verifyValidCN')
-const deregisterCreatorNode = require('./deregisterCreatorNode.js')
+const deregisterRandomCreatorNode = require('./deregisterRandomCreatorNode.js')
 const stopRandomCreatorNode = require('./stopRandomCreatorNode.js')
 const setNumCreatorNodes = require('./setNumCreatorNodes.js')
+const { uploadTracksforUsers } = require('../../utils/uploadTracksForUsers')
 
 /**
  * Tests that the user replica sets update when a node is deregistered or down
@@ -15,7 +16,6 @@ const userReplicaSetNodes = async ({
   executeOne
 }) => {
 
-  // Make sure there are 4 creator nodes
   let creatorNodeIDToInfoMapping = {}
 
   let walletIndexToUserIdMap = {}
@@ -33,10 +33,12 @@ const userReplicaSetNodes = async ({
 
 
   for (let iteration = 0; iteration < iterations; iteration++) {
-    // Ensure that there are 10 registered CN before each iteration
     creatorNodeIDToInfoMapping = await setNumCreatorNodes(numCreatorNodes, executeOne)
 
-    const deregisteredCreatorNodeId = await deregisterCreatorNode(creatorNodeIDToInfoMapping)
+    // Upload tracks to users
+    await uploadTracksforUsers({ executeAll, executeOne, walletIndexToUserIdMap })
+
+    const deregisteredCreatorNodeId = await deregisterRandomCreatorNode(creatorNodeIDToInfoMapping)
 
     await new Promise(resolve => setTimeout(resolve, 10 * 1000))
     await verifyValidCNs(executeOne, executeAll, deregisteredCreatorNodeId, walletIndexToUserIdMap, creatorNodeIDToInfoMapping)

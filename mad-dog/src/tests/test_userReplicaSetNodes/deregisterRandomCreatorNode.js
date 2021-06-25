@@ -9,7 +9,7 @@ const { deregisterCreatorNode } = ServiceCommands
  * @param {Object} creatorNodeIDToInfoMapping 
  * @returns number The id of the creator node that was deregistered 
  */
-const deregsiterCN = async (creatorNodeIDToInfoMapping) => {
+const deregsiterRandomCreatorNode = async (creatorNodeIDToInfoMapping) => {
   const removeCNId = _.sample(Object.keys(creatorNodeIDToInfoMapping))
   // Remove content node 1
   await deregisterCreatorNode(removeCNId)
@@ -17,4 +17,4 @@ const deregsiterCN = async (creatorNodeIDToInfoMapping) => {
   return removeCNId
 }
 
-module.exports = deregsiterCN
+module.exports = deregsiterRandomCreatorNode
