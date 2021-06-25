@@ -113,6 +113,7 @@ class Account extends Base {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
+      SOLANA_USER_BANK_CREATION: 'SOLANA_USER_BANK_CREATION',
       UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES',
       ADD_USER: 'ADD_USER'
     }
@@ -138,6 +139,7 @@ class Account extends Base {
 
       // Create a wAudio user bank address
       if (createWAudioUserBank && this.solanaWeb3Manager) {
+        phase = phases.SOLANA_USER_BANK_CREATION
         // Create a user bank if the solana web3 manager is present
         await this.solanaWeb3Manager.createUserBank()
       }

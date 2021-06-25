@@ -42,7 +42,7 @@ class SolanaWeb3Manager {
     this.identityService = identityService
     this.web3Manager = web3Manager
 
-    this.web3 = solanaWeb3
+    this.solanaWeb3 = solanaWeb3
   }
 
   async init () {
@@ -78,16 +78,16 @@ class SolanaWeb3Manager {
    */
   async createUserBank () {
     const ethAddress = this.web3Manager.getWalletAddress()
-    await createUserBankFrom(
+    await createUserBankFrom({
       ethAddress,
-      this.claimableTokenPDAKey,
-      this.feePayerKey,
-      this.mintKey,
-      this.solanaTokenKey,
-      this.claimableTokenProgramKey,
-      this.connection,
-      this.identityService
-    )
+      claimableTokenPDAKey: this.claimableTokenPDAKey,
+      feePayerKey: this.feePayerKey,
+      mintKey: this.mintKey,
+      solanaTokenKey: this.solanaTokenKey,
+      claimableTokenProgramKey: this.claimableTokenProgramKey,
+      connection: this.connection,
+      identityService: this.identityService
+    })
   }
 
   /**
@@ -150,18 +150,18 @@ class SolanaWeb3Manager {
       this.claimableTokenPDAKey,
       this.solanaTokenKey
     )
-    await transferWAudioBalance(
-      wAudioAmount,
-      ethAddress,
-      this.web3Manager.getOwnerWalletPrivateKey(),
+    await transferWAudioBalance({
+      amount: wAudioAmount,
+      senderEthAddress: ethAddress,
+      senderEthPrivateKey: this.web3Manager.getOwnerWalletPrivateKey(),
       senderSolanaAddress,
       recipientSolanaAddress,
-      this.claimableTokenPDAKey,
-      this.solanaTokenKey,
-      this.claimableTokenProgramKey,
-      this.connection,
-      this.identityService
-    )
+      claimableTokenPDA: this.claimableTokenPDAKey,
+      solanaTokenProgramKey: this.solanaTokenKey,
+      claimableTokenProgramKey: this.claimableTokenProgramKey,
+      connection: this.connection,
+      identityService: this.identityService
+    })
   }
 }
 

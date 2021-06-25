@@ -61,12 +61,12 @@ const getBankAccountAddress = async (
 }
 
 /**
- * Gets user bank account information
+ * Gets user bank account information (e.g. balance, ownership, etc.)
  * @param {string} bankAccountAddress
  * @param {PublicKey} mintKey
  * @param {PublicKey} solanaTokenProgramKey
  * @param {Connection} connection
- * @returns
+ * @returns {AccountInfo}
  */
 const getBankAccountInfo = async (
   bankAccountAddress,
@@ -97,7 +97,7 @@ const getBankAccountInfo = async (
  * @param {IdentityService} identityService
  * @returns
  */
-const createUserBankFrom = async (
+const createUserBankFrom = async ({
   ethAddress,
   claimableTokenPDAKey,
   feePayerKey,
@@ -106,7 +106,7 @@ const createUserBankFrom = async (
   claimableTokenProgramKey,
   connection,
   identityService
-) => {
+}) => {
   // Create instruction data
   const strippedEthAddress = ethAddress.replace('0x', '')
 

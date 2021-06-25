@@ -34,10 +34,23 @@ const transferInstructionSchema = new Map([
   ]
 ])
 
-// transferWAudioBalance transfers wrapped Audio from one generated solana account to another.
-// For it to work, you have to have the eth private key belonging to the eth public key
-// that generated the solana account
-async function transferWAudioBalance (
+/**
+ * transferWAudioBalance transfers wrapped Audio from one generated solana account to another.
+ * For it to work, you have to have the eth private key belonging to the eth public key
+ * that generated the solana account
+ *
+ * @param {BN} amount amount to send
+ * @param {string} senderEthAddress sender's eth address (e.g. you)
+ * @param {string} senderEthPrivateKey sender's eth private key
+ * @param {string} senderSolanaAddress sender's solana address
+ * @param {string} recipientSolanaAddress recipient's solana address
+ * @param {string} claimableTokenPDA
+ * @param {PublicKey} solanaTokenProgramKey spl token key
+ * @param {Connection} connection
+ * @param {identityService} identityService
+ * @returns
+ */
+async function transferWAudioBalance ({
   amount,
   senderEthAddress,
   senderEthPrivateKey,
@@ -48,7 +61,7 @@ async function transferWAudioBalance (
   claimableTokenProgramKey,
   connection,
   identityService
-) {
+}) {
   const strippedEthAddress = senderEthAddress.replace('0x', '')
 
   const ethAddressArr = Uint8Array.of(
@@ -60,7 +73,7 @@ async function transferWAudioBalance (
   const senderSolanaPubkey = new PublicKey(senderSolanaAddress)
   const recipientPubkey = new PublicKey(recipientSolanaAddress)
 
-  // hash the recipient solana pubkey and create signature
+  // Hash the recipient solana pubkey and create signature
   const msgHash = keccak256(recipientPubkey.toBytes())
   const signatureObj = secp256k1.ecdsaSign(
     Uint8Array.from(msgHash),
@@ -72,15 +85,11 @@ async function transferWAudioBalance (
     amount
   })
 
-  // serialize it
   const serializedInstructionData = borsh.serialize(
     transferInstructionSchema,
     instructionData
   )
 
-  // give it the rust enum tag
-  // we can do this better all with borsh - look in
-  // identity or ask cheran
   const serializedInstructionEnum = Uint8Array.of(
     1,
     ...serializedInstructionData
