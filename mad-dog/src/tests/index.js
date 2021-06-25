@@ -5,6 +5,8 @@ const { userReplicaSetBlockSaturationTest } = require('./test_ursmBlockSaturatio
 const { userReplicaSetManagerTest } = require('./test_userReplicaSetManager.js')
 const { trackListenCountsTest } = require('./test_plays.js')
 
+// const { solanaTrackListenCountsTest } = require('./test_solPlays.js')
+const { userReplicaSetNodes } = require('./test_userReplicaSetNodes')
 
 module.exports = {
   coreIntegration,
@@ -12,5 +14,6 @@ module.exports = {
   IpldBlacklistTest,
   userReplicaSetManagerTest,
   userReplicaSetBlockSaturationTest,
-  trackListenCountsTest 
+  trackListenCountsTest,
+  userReplicaSetNodes
 }

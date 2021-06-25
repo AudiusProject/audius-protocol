@@ -11,6 +11,7 @@ const {
   IpldBlacklistTest,
   userReplicaSetBlockSaturationTest,
   trackListenCountsTest,
+  userReplicaSetNodes
 } = require('./tests/')
 
 // Configuration.
@@ -68,7 +69,7 @@ async function tearDownAllServices () {
 // This flag is set to 'true' to run the test with the 0th indexed wallet.
 // The default will be 'undefined' for the other tests that do not require
 // this flag.
-const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWallet }) => {
+const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWallet, ...restParams }) => {
   console.log(testFn)
   const wrappedTest = async ({ executeAll, executeOne }) => {
     try {
@@ -76,7 +77,8 @@ const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWalle
         executeAll,
         executeOne,
         numUsers,
-        numCreatorNodes
+        numCreatorNodes,
+        ...restParams
       })
       if (res && res.error) return { error: res.error }
       return { success: true }
@@ -249,6 +251,19 @@ async function main () {
             })
         )
         await testRunner(blacklistTests)
+        break
+      }
+      case 'test-ursm-nodes': {
+        const test = makeTest(
+          'userReplicaSetNodesTest',
+          userReplicaSetNodes,
+          {
+            numUsers: 8,
+            numCreatorNodes: 10,
+            iterations: 3
+          }
+        )
+        await testRunner([test])
         break
       }
       case 'test-ci': {
