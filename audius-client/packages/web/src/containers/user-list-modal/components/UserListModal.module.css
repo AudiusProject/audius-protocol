@@ -1,6 +1,8 @@
 .modalBody {
   max-width: 360px;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .modalHeader {
@@ -23,6 +25,7 @@
 }
 
 .scrollable {
+  display: flex;
   margin: 16px;
   min-height: 0;
   max-height: 690px;
