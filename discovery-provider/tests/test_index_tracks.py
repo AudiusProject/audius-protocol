@@ -6,6 +6,7 @@ from src.utils import helpers
 from src.utils.db_session import get_db
 from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
 
+
 def get_new_track_event():
     event_type = track_event_types_lookup['new_track']
     new_track_event = AttrDict({
@@ -17,6 +18,20 @@ def get_new_track_event():
         '_multihashSize': 32
     })
     return event_type, AttrDict({"blockHash": "0x", "args": new_track_event})
+
+
+def get_new_track_event_dupe():
+    event_type = track_event_types_lookup['new_track']
+    new_track_event = AttrDict({
+        '_id': 2,
+        '_trackOwnerId': 1,
+        '_multihashDigest':
+            b'@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg',
+        '_multihashHashFn': 18,
+        '_multihashSize': 32
+    })
+    return event_type, AttrDict({"blockHash": "0x", "args": new_track_event})
+
 
 def get_update_track_event():
     event_type = track_event_types_lookup['update_track']
@@ -36,14 +51,74 @@ def get_delete_track_event():
     })
     return event_type, AttrDict({"blockHash": "0x", "args": delete_track_event})
 
+
 multihash = helpers.multihash_digest_to_cid(
     b'@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82' +
     b'\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg'
 )
+multihash2 = helpers.multihash_digest_to_cid(
+    b'\x93\x7f\xa2\xe6\xf0\xe5\xb5f\xca\x14(4m.B' +
+    b'\xba3\xf8\xc8<|%*{\x11\xc1\xe2/\xd7\xee\xd7q'
+)
+
 ipfs_client = IPFSClient({
     multihash: {
         "owner_id": 1,
         "title": "real magic bassy flip",
+        "length": None,
+        "cover_art": None,
+        "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
+        "tags": "realmagic,rickyreed,theroom",
+        "genre": "R&B/Soul",
+        "mood": "Empowering",
+        "credits_splits": None,
+        "created_at": "2020-07-11 08:22:15",
+        "create_date": None,
+        "updated_at": "2020-07-11 08:22:15",
+        "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
+        "file_type": None,
+        "track_segments": [
+            {
+                "duration": 6.016,
+                "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp"
+            }
+        ],
+        "has_current_user_reposted": False,
+        "is_current": True,
+        "is_unlisted": False,
+        "field_visibility": {
+            "mood": True,
+            "tags": True,
+            "genre": True,
+            "share": True,
+            "play_count": True,
+            "remixes": True
+        },
+        "remix_of": {
+            "tracks": [
+                {
+                    "parent_track_id": 75808
+                }
+            ]
+        },
+        "repost_count": 12,
+        "save_count": 21,
+        "description": None,
+        "license": "All rights reserved",
+        "isrc": None,
+        "iswc": None,
+        "download": {
+            "cid": None,
+            "is_downloadable": False,
+            "requires_follow": False
+        },
+        "track_id": 77955,
+        "stem_of": None
+    },
+    
+    multihash2: {
+        "owner_id": 1,
+        "title": "real magic bassy flip again",
         "length": None,
         "cover_art": None,
         "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
@@ -201,6 +276,45 @@ def test_index_tracks(app):
             "requires_follow": track_metadata["download"].get("requires_follow") == True,
             "cid": track_metadata["download"].get("cid", None),
         }
+
+        # ================== Test Update Track Event ==================
+
+        event_type, entry = get_update_track_event()
+
+        parse_track_event(
+            None,
+            session,
+            update_task,
+            entry,
+            event_type,
+            track_record,
+            block_timestamp
+        )
+
+        # ============== Test New Track Event With Same Name =========
+
+        # Some sqlalchemy user instance
+        track_record_dupe = lookup_track_record(
+            update_task,
+            session,
+            entry,
+            2,  # event track id
+            block_number,
+            block_timestamp,
+            '0x'  # txhash
+        )
+
+        event_type, entry = get_new_track_event_dupe()
+
+        parse_track_event(
+            None,
+            session,
+            update_task,
+            entry,
+            event_type,
+            track_record_dupe,
+            block_timestamp
+        )
 
         # ================== Test Delete Track Event ==================
         event_type, entry = get_delete_track_event()

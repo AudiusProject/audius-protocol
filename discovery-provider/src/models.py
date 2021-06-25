@@ -879,3 +879,24 @@ blockhash={self.blockhash},\
 txhash={self.txhash},\
 created_at={self.created_at},\
 updated_at={self.updated_at})>"
+
+class TrackRoute(Base):
+    __tablename__ = "track_routes"
+
+    slug = Column(String, nullable=False)
+    title_slug = Column(String, nullable=False)
+    collision_id = Column(Integer, nullable=False)
+    owner_id = Column(Integer, nullable=False)
+    track_id = Column(Integer, nullable=False)
+    is_current = Column(Boolean, nullable=False)
+
+    PrimaryKeyConstraint(track_id, is_current)
+
+    def __repr__(self):
+        return f"<TrackRoute(\
+slug={self.slug},\
+title_slug={self.title_slug},\
+collision_id={self.collision_id},\
+owner_id={self.owner_id},\
+track_id={self.track_id},\
+is_current={self.is_curernt})>"
