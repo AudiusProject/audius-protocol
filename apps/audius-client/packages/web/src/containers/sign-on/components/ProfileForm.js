@@ -19,6 +19,7 @@ const messages = {
   manual: 'I’d rather fill out my profile manually',
   uploadProfilePicture: 'Upload a profile picture',
   errors: {
+    tooLong: 'Sorry, handle not supported',
     characters: 'Only use A-Z, 0-9, and underscores',
     inUse: 'That handle has already been taken',
     twitterReserved: 'This verified Twitter handle is reserved.',

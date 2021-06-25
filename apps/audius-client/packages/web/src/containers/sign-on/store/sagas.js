@@ -40,6 +40,7 @@ import { getIGUserUrl } from 'components/general/InstagramAuth'
 import { getRemoteVar, IntKeys, StringKeys } from 'services/remote-config'
 import { checkHandle } from './verifiedChecker'
 import { withTimeout } from 'utils/network'
+import { MAX_HANDLE_LENGTH } from '../utils/formatSocialProfile'
 
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 const IS_PRODUCTION = process.env.REACT_APP_ENVIRONMENT === 'production'
@@ -110,8 +111,8 @@ function* fetchFollowArtistGenre(followArtistCategory) {
   }
 }
 
-const isResrtictedHandle = handle => restrictedHandles.has(handle.toLowerCase())
-const isValidHandle = handle => /^[a-zA-Z0-9_]*$/.test(handle)
+const isRestrictedHandle = handle => restrictedHandles.has(handle.toLowerCase())
+const isHandleCharacterCompliant = handle => /^[a-zA-Z0-9_]*$/.test(handle)
 
 async function getInstagramUser(handle) {
   try {
@@ -137,24 +138,32 @@ async function getInstagramUser(handle) {
 }
 
 function* validateHandle(action) {
+  const { handle, onValidate } = action
   yield call(waitForBackendSetup)
   try {
-    if (!isValidHandle(action.handle)) {
-      yield put(signOnActions.validateHandleFailed('characters'))
+    if (handle.length > MAX_HANDLE_LENGTH) {
+      yield put(signOnActions.validateHandleFailed('tooLong'))
+      if (onValidate) onValidate(true)
       return
-    } else if (isResrtictedHandle(action.handle)) {
+    } else if (!isHandleCharacterCompliant(handle)) {
+      yield put(signOnActions.validateHandleFailed('characters'))
+      if (onValidate) onValidate(true)
+      return
+    } else if (isRestrictedHandle(handle)) {
       yield put(signOnActions.validateHandleFailed('inUse'))
+      if (onValidate) onValidate(true)
       return
     }
     yield delay(300) // Wait 300 ms to debounce user input
     const signOn = yield select(getSignOn)
     const verified = signOn.verified
 
+    let handleInUse
     if (IS_PRODUCTION_BUILD || IS_PRODUCTION) {
       const [inUse, twitterUserQuery, instagramUser] = yield all([
-        call(AudiusBackend.handleInUse, action.handle),
-        call(AudiusBackend.twitterHandle, action.handle),
-        call(getInstagramUser, action.handle)
+        call(AudiusBackend.handleInUse, handle),
+        call(AudiusBackend.twitterHandle, handle),
+        call(getInstagramUser, handle)
       ])
       const handleCheckStatus = checkHandle(
         verified,
@@ -163,19 +172,25 @@ function* validateHandle(action) {
       )
 
       if (handleCheckStatus !== 'notReserved') {
-        yield put(
-          signOnActions.validateHandleSucceeded(false, handleCheckStatus)
-        )
+        yield put(signOnActions.validateHandleFailed(handleCheckStatus))
+        if (onValidate) onValidate(true)
         return
       }
-
-      yield put(signOnActions.validateHandleSucceeded(!inUse))
+      handleInUse = inUse
     } else {
-      const inUse = yield call(AudiusBackend.handleInUse, action.handle)
-      yield put(signOnActions.validateHandleSucceeded(!inUse))
+      handleInUse = yield call(AudiusBackend.handleInUse, handle)
+    }
+
+    if (handleInUse) {
+      yield put(signOnActions.validateHandleFailed('inUse'))
+      if (onValidate) onValidate(true)
+    } else {
+      yield put(signOnActions.validateHandleSucceeded())
+      if (onValidate) onValidate(false)
     }
   } catch (err) {
     yield put(signOnActions.validateHandleFailed(err.message))
+    if (onValidate) onValidate(true)
   }
 }
 
