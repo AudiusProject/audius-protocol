@@ -6,7 +6,7 @@
   "version": "0.24.19",
   "private": true,
   "dependencies": {
-    "@audius/libs": "1.2.3",
+    "@audius/libs": "1.2.4",
     "@audius/stems": "0.3.7",
     "@optimizely/optimizely-sdk": "^4.0.0",
     "@reduxjs/toolkit": "^1.3.2",
@@ -21,6 +21,8 @@
     "bitski": "^0.10.9",
     "bn.js": "^4.11.9",
     "body-scroll-lock": "^2.6.4",
+    "borsh": "^0.4.0",
+    "bs58": "^4.0.1",
     "canvas-loop": "^1.0.7",
     "chart.js": "^2.5.0",
     "clamp": "^1.0.1",
