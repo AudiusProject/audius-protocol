@@ -83,7 +83,7 @@ class SolanaWeb3Manager {
       claimableTokenPDAKey: this.claimableTokenPDAKey,
       feePayerKey: this.feePayerKey,
       mintKey: this.mintKey,
-      solanaTokenKey: this.solanaTokenKey,
+      solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
       connection: this.connection,
       identityService: this.identityService
