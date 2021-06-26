@@ -4,7 +4,8 @@ export enum FeatureFlags {
   SOLANA_LISTEN_ENABLED = 'solana_listen_enabled',
   USE_TRACK_CONTENT_POLLING = 'use_track_content_polling',
   USE_RESUMABLE_TRACK_UPLOAD = 'use_resumable_track_upload',
-  PLAYLIST_UPDATES_ENABLED = 'playlist_updates_enabled'
+  PLAYLIST_UPDATES_ENABLED = 'playlist_updates_enabled',
+  CREATE_WAUDIO_USER_BANK_ON_SIGN_UP = 'create_waudio_user_bank_on_sign_up'
 }
 
 /**
@@ -15,7 +16,8 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.USE_TRACK_CONTENT_POLLING]: false,
   [FeatureFlags.SOLANA_LISTEN_ENABLED]: false,
   [FeatureFlags.USE_RESUMABLE_TRACK_UPLOAD]: false,
-  [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: false
+  [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: false,
+  [FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP]: false
 }
 
 export enum FeatureFlagCohortType {
@@ -38,7 +40,11 @@ export const flagCohortType: {
   [FeatureFlags.SOLANA_LISTEN_ENABLED]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.USE_RESUMABLE_TRACK_UPLOAD]: FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.TRENDING_UNDERGROUND]: FeatureFlagCohortType.USER_ID,
-  [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: FeatureFlagCohortType.USER_ID
+  [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: FeatureFlagCohortType.USER_ID,
+  // Create wAudio user bank on sign up is a session id experiment because it only impacts
+  // unauthenticated sessions during sign up
+  [FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP]:
+    FeatureFlagCohortType.SESSION_ID
 }
 
 export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId'

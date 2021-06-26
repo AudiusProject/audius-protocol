@@ -50,6 +50,16 @@ const ETH_OWNER_WALLET = process.env.REACT_APP_ETH_OWNER_WALLET
 const ETH_PROVIDER_URLS = process.env.REACT_APP_ETH_PROVIDER_URL.split(',')
 const CLAIM_DISTRIBUTION_CONTRACT_ADDRESS =
   process.env.REACT_APP_CLAIM_DISTRIBUTION_CONTRACT_ADDRESS
+
+const SOLANA_CLUSTER_ENDPOINT = process.env.REACT_APP_SOLANA_CLUSTER_ENDPOINT
+const WAUDIO_MINT_ADDRESS = process.env.REACT_APP_WAUDIO_MINT_ADDRESS
+const SOLANA_TOKEN_ADDRESS = process.env.REACT_APP_SOLANA_TOKEN_PROGRAM_ADDRESS
+const CLAIMABLE_TOKEN_PDA = process.env.REACT_APP_CLAIMABLE_TOKEN_PDA
+const SOLANA_FEE_PAYER_ADDRESS = process.env.REACT_APP_SOLANA_FEE_PAYER_ADDRESS
+const CLAIMABLE_TOKEN_PROGRAM_ADDRESS =
+  process.env.REACT_APP_CLAIMABLE_TOKEN_PROGRAM_ADDRESS
+const WORMHOLE_ADDRESS = process.env.REACT_APP_WORMHOLE_ADDRESS
+
 const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY
 
 const SEARCH_MAX_SAVED_RESULTS = 10
@@ -358,6 +368,7 @@ class AudiusBackend {
     let libsError = null
     const { web3Error, web3Config } = await AudiusBackend.getWeb3Config()
     const { ethWeb3Config } = AudiusBackend.getEthWeb3Config()
+    const { solanaWeb3Config } = AudiusBackend.getSolanaWeb3Config()
 
     let contentNodeBlockList = getRemoteVar(StringKeys.CONTENT_NODE_BLOCK_LIST)
     if (contentNodeBlockList) {
@@ -384,6 +395,7 @@ class AudiusBackend {
       audiusLibs = new AudiusLibs({
         web3Config,
         ethWeb3Config,
+        solanaWeb3Config,
         discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
           null,
           discoveryNodeBlockList,
@@ -439,7 +451,8 @@ class AudiusBackend {
         ETH_REGISTRY_ADDRESS,
         ethProviderUrls,
         ETH_OWNER_WALLET,
-        CLAIM_DISTRIBUTION_CONTRACT_ADDRESS
+        CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
+        WORMHOLE_ADDRESS
       )
     }
   }
@@ -476,6 +489,33 @@ class AudiusBackend {
         REGISTRY_ADDRESS,
         WEB3_PROVIDER_URLS
       )
+    }
+  }
+
+  static getSolanaWeb3Config() {
+    if (
+      !SOLANA_CLUSTER_ENDPOINT ||
+      !WAUDIO_MINT_ADDRESS ||
+      !SOLANA_TOKEN_ADDRESS ||
+      !CLAIMABLE_TOKEN_PDA ||
+      !SOLANA_FEE_PAYER_ADDRESS ||
+      !CLAIMABLE_TOKEN_PROGRAM_ADDRESS
+    ) {
+      console.error('Missing solana configs')
+      return {
+        error: true
+      }
+    }
+    return {
+      error: false,
+      solanaWeb3Config: AudiusLibs.configSolanaWeb3({
+        solanaClusterEndpoint: SOLANA_CLUSTER_ENDPOINT,
+        mintAddress: WAUDIO_MINT_ADDRESS,
+        solanaTokenAddress: SOLANA_TOKEN_ADDRESS,
+        claimableTokenPDA: CLAIMABLE_TOKEN_PDA,
+        feePayerAddress: SOLANA_FEE_PAYER_ADDRESS,
+        claimableTokenProgramAddress: CLAIMABLE_TOKEN_PROGRAM_ADDRESS
+      })
     }
   }
 
@@ -1553,7 +1593,8 @@ class AudiusBackend {
       formFields.profilePicture,
       formFields.coverPhoto,
       hasWallet,
-      AudiusBackend._getHostUrl()
+      AudiusBackend._getHostUrl(),
+      getFeatureEnabled(FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP)
     )
   }
 
