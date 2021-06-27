@@ -5,6 +5,7 @@ from tests.utils import populate_mock_db
 def make_user(
         user_id,
         handle,
+        wallet,
         profile_picture=None,
         profile_picture_sizes=None,
         cover_photo=None,
@@ -13,6 +14,7 @@ def make_user(
     return {
         'user_id': user_id,
         'handle': handle,
+        'wallet': wallet,
         'profile_picture': profile_picture,
         'profile_picture_sizes': profile_picture_sizes,
         'cover_photo': cover_photo,
@@ -31,18 +33,19 @@ def test_get_user_signals(app):
 
     test_entities = {
         'users': [
-            make_user(1, 'user1'),
-            make_user(2, 'user2'),
-            make_user(3, 'user3'),
-            make_user(4, 'user4'),
-            make_user(5, 'user5'),
-            make_user(6, 'user6', profile_picture='Qm0123456789abcdef0123456789abcdef0123456789ab'),
-            make_user(7, 'user7', profile_picture_sizes='Qm0123456789abcdef0123456789abcdef0123456789ab'),
-            make_user(8, 'user8', cover_photo='Qm0123456789abcdef0123456789abcdef0123456789ab'),
-            make_user(9, 'user9', cover_photo_sizes='Qm0123456789abcdef0123456789abcdef0123456789ab'),
+            make_user(1, 'user1', 'wallet1'),
+            make_user(2, 'user2', 'wallet2'),
+            make_user(3, 'user3', 'wallet3'),
+            make_user(4, 'user4', 'wallet4'),
+            make_user(5, 'user5', 'wallet5'),
+            make_user(6, 'user6', 'wallet6', profile_picture='Qm0123456789abcdef0123456789abcdef0123456789ab'),
+            make_user(7, 'user7', 'wallet7', profile_picture_sizes='Qm0123456789abcdef0123456789abcdef0123456789ab'),
+            make_user(8, 'user8', 'wallet8', cover_photo='Qm0123456789abcdef0123456789abcdef0123456789ab'),
+            make_user(9, 'user9', 'wallet9', cover_photo_sizes='Qm0123456789abcdef0123456789abcdef0123456789ab'),
             make_user(
                 10,
                 'user10',
+                'wallet10',
                 profile_picture='Qm0123456789abcdef0123456789abcdef0123456789ab',
                 cover_photo='Qm0123456789abcdef0123456789abcdef0123456789cd'
             )
@@ -70,33 +73,39 @@ def test_get_user_signals(app):
         assert user_signals['num_following'] == 1
         assert user_signals['has_profile_picture'] == False
         assert user_signals['has_cover_photo'] == False
+        assert user_signals['wallet'] == 'wallet1'
 
         user_signals = _get_user_signals(session, "user6")
         assert user_signals['num_followers'] == 1
         assert user_signals['num_following'] == 0
         assert user_signals['has_profile_picture'] == True
         assert user_signals['has_cover_photo'] == False
+        assert user_signals['wallet'] == 'wallet6'
 
         user_signals = _get_user_signals(session, "user7")
         assert user_signals['num_followers'] == 1
         assert user_signals['num_following'] == 0
         assert user_signals['has_profile_picture'] == True
         assert user_signals['has_cover_photo'] == False
+        assert user_signals['wallet'] == 'wallet7'
 
         user_signals = _get_user_signals(session, "user8")
         assert user_signals['num_followers'] == 1
         assert user_signals['num_following'] == 0
         assert user_signals['has_profile_picture'] == False
         assert user_signals['has_cover_photo'] == True
+        assert user_signals['wallet'] == 'wallet8'
 
         user_signals = _get_user_signals(session, "user9")
         assert user_signals['num_followers'] == 1
         assert user_signals['num_following'] == 0
         assert user_signals['has_profile_picture'] == False
         assert user_signals['has_cover_photo'] == True
+        assert user_signals['wallet'] == 'wallet9'
 
         user_signals = _get_user_signals(session, "user10")
         assert user_signals['num_followers'] == 0
         assert user_signals['num_following'] == 1
         assert user_signals['has_profile_picture'] == True
         assert user_signals['has_cover_photo'] == True
+        assert user_signals['wallet'] == 'wallet10'

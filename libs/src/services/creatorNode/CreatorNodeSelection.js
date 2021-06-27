@@ -35,8 +35,8 @@ class CreatorNodeSelection extends ServiceSelection {
         })
       },
       // Use the content node's configured whitelist if not provided
-      whitelist: whitelist || creatorNode.passList,
-      blacklist: blacklist || creatorNode.blockList
+      whitelist: whitelist || (creatorNode && creatorNode.passList),
+      blacklist: blacklist || (creatorNode && creatorNode.blockList)
     })
     this.creatorNode = creatorNode
     this.numberOfNodes = numberOfNodes
@@ -244,7 +244,7 @@ class CreatorNodeSelection extends ServiceSelection {
     this.decisionTree.push({ stage: DECISION_TREE_STATE.FILTER_OUT_UNHEALTHY_OUTDATED_AND_NO_STORAGE_SPACE, val: healthyServicesList })
 
     // Record metrics
-    if (this.creatorNode.monitoringCallbacks.healthCheck) {
+    if (this.creatorNode && this.creatorNode.monitoringCallbacks.healthCheck) {
       healthCheckedServices.forEach(check => {
         if (check.response && check.response.data) {
           const url = new URL(check.request.url)
