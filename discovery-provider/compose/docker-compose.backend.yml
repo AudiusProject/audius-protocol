@@ -35,7 +35,7 @@ services:
     env_file:
       - .env
     depends_on:
-      - discovery-provider-db 
+      - discovery-provider-db
     volumes:
       - '../.:/audius-discovery-provider'
     networks:

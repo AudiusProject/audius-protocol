@@ -26,7 +26,7 @@ waudio_token = Token(
     payer=[],  # not making any txs so payer is not required
 )
 
-MAX_SLOT = 84150237
+MIN_SLOT = 84150237
 
 signatures = solana_client.get_confirmed_signature_for_address2(TEST_USER_BANK_PROGRAM, limit=10)
 
@@ -49,7 +49,7 @@ def get_derived_address(base, hashed_eth_pk, spl_token_id):
 history = signatures['result']
 for tx_info in history:
     sig = tx_info['signature']
-    if tx_info['slot'] < MAX_SLOT:
+    if tx_info['slot'] < MIN_SLOT:
         break
     details = solana_client.get_confirmed_transaction(sig)
     # print(sig)

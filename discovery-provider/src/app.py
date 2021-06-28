@@ -151,7 +151,7 @@ def create_celery(test_config=None):
     eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
 
     # Initialize Solana web3 provider
-    solana_client = Client(SOLANA_ENDPOINT)
+    solana_client = Client('https://audius.rpcpool.com')
 
     global registry
     global user_factory
@@ -326,7 +326,8 @@ def configure_celery(flask_app, celery, test_config=None):
                  "src.tasks.index_network_peers", "src.tasks.index_trending",
                  "src.tasks.cache_user_balance", "src.monitors.monitoring_queue",
                  "src.tasks.cache_trending_playlists", "src.tasks.index_solana_plays",
-                 "src.tasks.index_aggregate_views"
+                 "src.tasks.index_aggregate_views",
+                 "src.tasks.index_user_bank"
                  ],
         beat_schedule={
             "update_discovery_provider": {
@@ -392,7 +393,11 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_aggregate_playlist": {
                 "task": "update_aggregate_playlist",
                 "schedule": timedelta(seconds=30)
-            }
+            },
+            "index_user_bank": {
+                "task": "index_user_bank",
+                "schedule": timedelta(seconds=1)
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -419,6 +424,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("update_discovery_lock")
     redis_inst.delete("aggregate_metrics_lock")
     redis_inst.delete("synchronize_metrics_lock")
+    redis_inst.delete("user_bank_lock")
     logger.info('Redis instance initialized!')
 
     # Initialize custom task context with database object
