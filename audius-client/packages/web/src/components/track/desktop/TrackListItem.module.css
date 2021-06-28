@@ -1,8 +1,8 @@
 .playlistTrack {
   z-index: 2;
-  border-bottom: 1px solid rgba(133,129,153,0.1);
-  border-left: 1px solid rgba(133,129,153,0.1);
-  border-right: 1px solid rgba(133,129,153,0.1);
+  border-bottom: 1px solid rgba(133, 129, 153, 0.1);
+  border-left: 1px solid rgba(133, 129, 153, 0.1);
+  border-right: 1px solid rgba(133, 129, 153, 0.1);
   cursor: pointer;
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
@@ -61,7 +61,7 @@
 }
 .show {
   opacity: 1;
-  transition: opacity ease-in-out .5s;
+  transition: opacity ease-in-out 0.5s;
 }
 
 .listButton {
@@ -149,6 +149,11 @@
   opacity: 0;
   margin: 0px 6px 0px 19px;
 }
+
+.menuContainer {
+  display: flex;
+}
+
 .iconKebabHorizontal {
   margin: 0 auto;
   width: 16px;
@@ -158,10 +163,10 @@
   fill: var(--neutral-light-4);
 }
 .iconKebabHorizontal:hover {
-  transform: scale3d(1.10,1.10,1.10);
+  transform: scale3d(1.1, 1.1, 1.1);
 }
 .iconKebabHorizontal:active {
-  transform: scale3d(1.10,1.10,1.10);
+  transform: scale3d(1.1, 1.1, 1.1);
 }
 
 .skeleton {

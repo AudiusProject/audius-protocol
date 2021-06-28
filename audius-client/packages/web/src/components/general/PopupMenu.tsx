@@ -1,29 +1,17 @@
 import React, { useCallback, useRef, useState } from 'react'
+
 import cn from 'classnames'
+
 import Popup from 'components/general/Popup'
-import styles from './IconPopup.module.css'
-import IconButton from './IconButton'
 
-export const iconPopupClass = 'iconPopup'
+import styles from './PopupMenu.module.css'
 
-type IconPopupItemProps = {
-  text: string
-  onClick: () => void
-  icon?: object
-  className?: string
-  menuIconClassName?: string
-}
-
-type IconPopupProps = {
-  icon: object
-  menu: { items: IconPopupItemProps[] }
-  disabled?: boolean
-  title?: string
-  popupClassName?: string
+export type PopupMenuProps = {
+  items: PopupMenuItem[]
   menuClassName?: string
-  iconClassName?: string
   menuIconClassName?: string
-
+  onClose?: () => void
+  popupClassName?: string
   position?:
     | 'topLeft'
     | 'topCenter'
@@ -31,30 +19,47 @@ type IconPopupProps = {
     | 'bottomLeft'
     | 'bottomCenter'
     | 'bottomRight'
+  title?: string
+  renderTrigger: (
+    ref: React.MutableRefObject<any>,
+    triggerPopup: () => void
+  ) => React.ReactNode | Element
+  zIndex?: number
 }
 
-const IconPopup: React.FC<IconPopupProps> = ({
-  icon,
-  menu,
-  title,
-  position,
-  popupClassName,
+export type PopupMenuItem = {
+  className?: string
+  icon?: object
+  menuIconClassName?: string
+  onClick: () => void
+  text: string
+  // Should the item be displayed in the menu?
+  condition?: () => boolean
+}
+
+export const PopupMenu = ({
+  items,
   menuClassName,
-  iconClassName,
   menuIconClassName,
-  disabled = false
-}) => {
-  const ref = useRef<any>()
+  popupClassName,
+  position,
+  renderTrigger,
+  title,
+  zIndex
+}: PopupMenuProps) => {
+  const ignoreClickOutsideRef = useRef<any>()
+  const triggerRef = useRef<any>()
 
   const [isPopupVisible, setIsPopupVisible] = useState<boolean>(false)
 
-  const handleIconClick = useCallback(
-    () => setIsPopupVisible(!isPopupVisible),
-    [isPopupVisible, setIsPopupVisible]
-  )
+  const triggerPopup = useCallback(() => setIsPopupVisible(!isPopupVisible), [
+    isPopupVisible,
+    setIsPopupVisible
+  ])
 
   const handleMenuItemClick = useCallback(
-    (item: IconPopupItemProps) => () => {
+    (item: PopupMenuItem) => (e: React.MouseEvent) => {
+      e.stopPropagation()
       item.onClick()
       setIsPopupVisible(false)
     },
@@ -65,23 +70,12 @@ const IconPopup: React.FC<IconPopupProps> = ({
     setIsPopupVisible
   ])
 
-  const style = {
-    [styles.focused]: isPopupVisible,
-    [styles.disabled]: disabled
-  }
-
   return (
-    <div className={cn(styles.popup, style, popupClassName)}>
-      <IconButton
-        ref={ref}
-        className={cn(styles.icon, iconPopupClass, iconClassName)}
-        icon={icon}
-        disabled={disabled}
-        onClick={handleIconClick}
-      />
-
+    <div className={cn(popupClassName)} ref={ignoreClickOutsideRef}>
+      {renderTrigger(triggerRef, triggerPopup)}
       <Popup
-        triggerRef={ref}
+        ignoreClickOutsideRef={ignoreClickOutsideRef}
+        triggerRef={triggerRef}
         className={styles.fit}
         wrapperClassName={styles.fitWrapper}
         isVisible={isPopupVisible}
@@ -89,9 +83,10 @@ const IconPopup: React.FC<IconPopupProps> = ({
         position={position}
         title={title || ''}
         noHeader={!title}
+        zIndex={zIndex}
       >
         <div className={styles.menu}>
-          {menu.items.map((item, i) => (
+          {items.map((item, i) => (
             <div
               key={`${item.text}_${i}`}
               className={cn(styles.item, menuClassName, item.className)}
@@ -117,5 +112,3 @@ const IconPopup: React.FC<IconPopupProps> = ({
     </div>
   )
 }
-
-export default IconPopup

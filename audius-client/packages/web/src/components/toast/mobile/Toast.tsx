@@ -3,9 +3,10 @@ import cn from 'classnames'
 
 import styles from './Toast.module.css'
 
+// TODO: SK - Move this into Stems
 interface ToastProps {
   children?: JSX.Element
-  text: ReactNode
+  content: ReactNode
   disabled?: boolean
   top?: number
   delay?: number
@@ -16,7 +17,11 @@ interface ToastProps {
   isOpen?: boolean
 }
 
-export const Toast = ({ children, text, containerClassName }: ToastProps) => {
+export const Toast = ({
+  children,
+  content,
+  containerClassName
+}: ToastProps) => {
   return (
     <>
       <div
@@ -26,7 +31,7 @@ export const Toast = ({ children, text, containerClassName }: ToastProps) => {
       >
         {children}
       </div>
-      <div className={styles.container}>{text}</div>
+      <div className={styles.container}>{content}</div>
     </>
   )
 }

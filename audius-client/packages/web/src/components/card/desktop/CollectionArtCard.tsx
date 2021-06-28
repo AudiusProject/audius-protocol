@@ -153,16 +153,22 @@ const CollectionArtCard = g(
               // @ts-ignore
               menu={menu}
               onClose={() => setIsPerspectiveDisabled(false)}
+              className={styles.iconKebabHorizontalWrapper}
             >
-              <div
-                className={styles.iconKebabHorizontalWrapper}
-                onClick={e => {
-                  e.stopPropagation()
-                  setIsPerspectiveDisabled(true)
-                }}
-              >
-                <IconKebabHorizontal className={styles.iconKebabHorizontal} />
-              </div>
+              {(ref, triggerPopup) => (
+                <div
+                  onClick={e => {
+                    e.stopPropagation()
+                    setIsPerspectiveDisabled(true)
+                    triggerPopup()
+                  }}
+                >
+                  <IconKebabHorizontal
+                    className={styles.iconKebabHorizontal}
+                    ref={ref}
+                  />
+                </div>
+              )}
             </Menu>
           </DynamicImage>
         </PerspectiveCard>

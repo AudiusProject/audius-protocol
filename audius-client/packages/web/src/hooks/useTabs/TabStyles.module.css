@@ -82,7 +82,7 @@
   height: 48px;
   background-color: var(--white);
   justify-content: space-around;
-  align-items: center ;
+  align-items: center;
   position: relative;
   box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
 }
@@ -99,9 +99,9 @@
   overflow: hidden;
 }
 
-.clippedOverflowX {
+.clippedOverflow {
   overflow-x: hidden;
-  overflow-y: visible;
+  overflow-y: hidden;
 }
 
 .elementWrapper {

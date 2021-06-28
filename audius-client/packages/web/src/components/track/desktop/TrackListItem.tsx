@@ -76,7 +76,10 @@ const TrackListItem = ({
     }
   }
 
-  const onMoreClick = (e: MouseEvent) => e.stopPropagation()
+  const onMoreClick = (triggerPopup: () => void) => (e: MouseEvent) => {
+    e.stopPropagation()
+    triggerPopup()
+  }
 
   const onPlayTrack = () => {
     if (!deleted && togglePlay) togglePlay(track.uid, track.track_id)
@@ -87,24 +90,23 @@ const TrackListItem = ({
     [styles.show]: !isLoading
   })
 
-  const menu: TrackMenuProps = {
+  const menu: Omit<TrackMenuProps, 'children'> = {
     handle: track.user.handle,
-    trackId: track.track_id,
-    trackTitle: track.title,
-    type: 'track',
-    isOwner: false,
-    isDeleted: deleted,
+    includeAddToPlaylist: true,
+    includeArtistPick: false,
     includeEdit: false,
     includeFavorite: true,
-    includeShare: true,
     includeRepost: true,
-    includeArtistPick: false,
+    includeShare: true,
     includeTrackPage: true,
-    includeAddToPlaylist: true,
     isArtistPick: track.user._artist_pick === track.track_id,
-    isReposted: track.has_current_user_reposted,
+    isDeleted: deleted,
     isFavorited: track.has_current_user_saved,
-    mount: 'page'
+    isOwner: false,
+    isReposted: track.has_current_user_reposted,
+    trackId: track.track_id,
+    trackTitle: track.title,
+    type: 'track'
   }
 
   return (
@@ -153,11 +155,17 @@ const TrackListItem = ({
         </div>
         {deleted ? <div className={styles.more} style={{ width: 16 }} /> : null}
         {!disableActions && !deleted ? (
-          <div className={styles.more} onClick={onMoreClick}>
-            <Menu menu={menu}>
-              <IconKebabHorizontal className={styles.iconKebabHorizontal} />
-            </Menu>
-          </div>
+          <Menu menu={menu} className={cn(styles.more)}>
+            {(ref, triggerPopup) => (
+              <div className={cn(styles.menuContainer)}>
+                <IconKebabHorizontal
+                  className={styles.iconKebabHorizontal}
+                  ref={ref}
+                  onClick={onMoreClick(triggerPopup)}
+                />
+              </div>
+            )}
+          </Menu>
         ) : null}
       </div>
     </div>

@@ -15,11 +15,12 @@ const animationConfig = {
 }
 
 type ToastContextProps = {
-  toast: (text: string, timeout?: number) => void
+  toast: (content: string | JSX.Element, timeout?: number) => void
+  clear: () => void
 }
 
 type Toast = {
-  text: string
+  content: string | JSX.Element
   key: string
 }
 
@@ -35,6 +36,7 @@ const interp = (i: number) => (y: number) =>
     : `translate3d(0, ${y + i * TOAST_SPACING}px, 0)`
 
 export const ToastContext = createContext<ToastContextProps>({
+  clear: () => {},
   toast: () => {}
 })
 
@@ -42,15 +44,17 @@ export const ToastContextProvider = memo((props: { children: JSX.Element }) => {
   const [toasts, setToasts] = useState<Toast[]>([])
 
   const toast = useCallback(
-    (text: string, timeout: number = DEFAULT_TIMEOUT) => {
+    (content: string | JSX.Element, timeout: number = DEFAULT_TIMEOUT) => {
       const key = uuid()
-      setToasts(toasts => [...toasts, { text, key }])
+      setToasts(toasts => [...toasts, { content, key }])
       setTimeout(() => {
         setToasts(toasts => toasts.slice(1))
       }, timeout)
     },
     [setToasts]
   )
+
+  const clear = useCallback(() => setToasts([]), [setToasts])
 
   const transitions = useTransition(toasts, toast => toast.key, {
     from: (toast: Toast) => ({ y: FROM_POSITION, opacity: 0 }),
@@ -66,6 +70,7 @@ export const ToastContextProvider = memo((props: { children: JSX.Element }) => {
   return (
     <ToastContext.Provider
       value={{
+        clear,
         toast
       }}
     >
@@ -79,7 +84,7 @@ export const ToastContextProvider = memo((props: { children: JSX.Element }) => {
             opacity: props.opacity
           }}
         >
-          <Toast text={item.text} isControlled isOpen />
+          <Toast content={item.content} isControlled isOpen />
         </animated.div>
       ))}
       {props.children}

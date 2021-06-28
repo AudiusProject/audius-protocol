@@ -1,14 +1,12 @@
 .container {
-  position: fixed;
-  left: 0;
-  right: 0;
   z-index: 100;
   display: inline-flex;
   justify-content: center;
   border-radius: 8px;
   background-color: var(--secondary);
-  padding: 12px 0px;
-  margin: 0px 64px;
+  padding: 12px 16px;
+  margin: auto;
+  max-width: 80%;
 
   color: var(--static-white);
   font-family: var(--font-family);

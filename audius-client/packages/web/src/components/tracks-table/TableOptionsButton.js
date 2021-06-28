@@ -52,13 +52,19 @@ class TableOptionsButton extends Component {
       >
         <div>
           <Menu {...overflowMenu}>
-            <div className={stylesTab.iconKebabHorizontalWrapper}>
-              <IconOptions
-                className={cn(stylesTab.iconKebabHorizontal, styles.icon, {
-                  [styles.iconHidden]: hiddenUntilHover
-                })}
-              />
-            </div>
+            {(ref, triggerPopup) => (
+              <div
+                className={stylesTab.iconKebabHorizontalWrapper}
+                onClick={triggerPopup}
+              >
+                <IconOptions
+                  className={cn(stylesTab.iconKebabHorizontal, styles.icon, {
+                    [styles.iconHidden]: hiddenUntilHover
+                  })}
+                  ref={ref}
+                />
+              </div>
+            )}
           </Menu>
         </div>
       </div>

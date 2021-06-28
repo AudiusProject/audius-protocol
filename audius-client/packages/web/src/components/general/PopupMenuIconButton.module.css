@@ -1,0 +1,58 @@
+.popup {
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--font-xs);
+  background-color: var(--white);
+}
+
+.popup path {
+  fill: var(--neutral-light-4);
+}
+
+.popup:hover {
+  border-radius: 4px;
+}
+
+.popup:hover path {
+  fill: var(--white);
+}
+
+.popup svg {
+  /* Scale the animation on the icon rather than the svg */
+  transform: none !important;
+}
+
+.popup.disabled {
+  cursor: default;
+}
+
+.popup.disabled:hover svg {
+  background: var(--white);
+}
+
+.popup.disabled path,
+.popup.disabled:hover path {
+  fill: var(--neutral-light-4);
+}
+
+.popup:hover .icon {
+  background: var(--secondary);
+  border: 1px solid var(--secondary-dark-2);
+  transform: scale(1.07);
+}
+
+.popup:active .icon {
+  transform: scale(0.95);
+}
+
+.popup.disabled:hover .icon {
+  background: none;
+  border: 1px solid var(--neutral-light-6);
+  transform: none;
+}
+
+.icon {
+  border-radius: 4px;
+  border: 1px solid var(--neutral-light-6);
+  overflow: hidden;
+}

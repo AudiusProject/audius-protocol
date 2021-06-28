@@ -27,7 +27,8 @@
   cursor: pointer;
 }
 
-.iconKebabHorizontal, .actionButton > svg {
+.iconKebabHorizontal,
+.actionButton > svg {
   margin: 0 auto;
 }
 .actionsSection.standalone .actionButton:first-child {
@@ -81,6 +82,15 @@
   justify-content: center;
 }
 
+.menuKebabContainer {
+  width: 100%;
+  height: 100%;
+}
+
+.menuKebabContainer > div {
+  margin: 0px auto;
+}
+
 .iconKebabHorizontalWrapper {
   width: 100%;
   height: 100%;
@@ -94,13 +104,13 @@
 .actionButton svg,
 .iconContainer svg,
 .iconKebabHorizontalWrapper svg {
-  transition: all .07s ease-in-out !important;
+  transition: all 0.07s ease-in-out !important;
 }
 
 .show .actionButton:hover svg,
 .show .iconContainer:hover svg,
 .show .iconKebabHorizontalWrapper:hover svg {
-  transform: scale3d(1.10,1.10,1.10);
+  transform: scale3d(1.1, 1.1, 1.1);
 }
 
 .show .actionButton:active svg,
@@ -109,10 +119,14 @@
   transform: scale(0.95);
 }
 
-.iconRepost, .iconShare .iconKebabHorizontal svg {
+.iconRepost,
+.iconShare .iconKebabHorizontal svg {
   width: 18px;
 }
-.iconRepost g path, .iconShare g path, .iconKebabHorizontal g path, .iconListens g path {
+.iconRepost g path,
+.iconShare g path,
+.iconKebabHorizontal g path,
+.iconListens g path {
   fill: var(--neutral-light-4);
 }
 .iconRepost.reposted g path {

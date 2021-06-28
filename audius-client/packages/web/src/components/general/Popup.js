@@ -6,8 +6,6 @@ import { useTransition, animated } from 'react-spring'
 import { useClickOutside } from '@audius/stems'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import styles from './Popup.module.css'
-import { iconPopupClass } from './IconPopup'
-import { findAncestor } from 'utils/domUtils'
 import useInstanceVar from 'hooks/useInstanceVar'
 import { getScrollParent } from 'utils/scrollParent'
 
@@ -78,6 +76,9 @@ const getComputedPosition = (position, rect, wrapper) => {
 const Popup = ({
   className,
   wrapperClassName,
+  // An optional ref to a container that, when a click happens inside
+  // will ignore the clickOutside logic
+  ignoreClickOutsideRef,
   isVisible,
   animationDuration,
   onClose,
@@ -87,7 +88,8 @@ const Popup = ({
   triggerRef,
   // The direction that the popup expands in
   position = 'bottomCenter',
-  children
+  children,
+  zIndex
 }) => {
   const wrapper = useRef()
   const placeholder = useRef()
@@ -192,9 +194,8 @@ const Popup = ({
   }, [onClose, onAfterClose, animationDuration])
 
   const clickOutsideRef = useClickOutside(handleClose, target => {
-    if (target instanceof Element) {
-      const popupIconElement = findAncestor(target, `.${iconPopupClass}`)
-      return popupIconElement?.classList.contains(iconPopupClass)
+    if (target instanceof Element && ignoreClickOutsideRef) {
+      return ignoreClickOutsideRef.current.contains(target)
     }
     return false
   })
@@ -216,12 +217,18 @@ const Popup = ({
     unique: true
   })
 
+  const wrapperStyle = zIndex ? { zIndex } : {}
+
   return (
     <>
       <div ref={placeholder} className={cn(styles.placeholder, className)} />
       {/* Portal the actual popup out of this dom structure so that it can break out of overflows */}
       {ReactDOM.createPortal(
-        <div ref={wrapper} className={cn(styles.wrapper, wrapperClassName)}>
+        <div
+          ref={wrapper}
+          className={cn(styles.wrapper, wrapperClassName)}
+          style={wrapperStyle}
+        >
           {transitions.map(({ item, key, props }) =>
             item ? (
               <animated.div
@@ -264,7 +271,8 @@ Popup.propTypes = {
   onAfterClose: PropTypes.func,
   // Top of popup title
   title: PropTypes.string.isRequired,
-  children: PropTypes.arrayOf(PropTypes.element)
+  children: PropTypes.arrayOf(PropTypes.element),
+  zIndex: PropTypes.number
 }
 
 Popup.defaultProps = {

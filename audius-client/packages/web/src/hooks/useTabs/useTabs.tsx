@@ -815,7 +815,7 @@ const BodyContainer = memo(
         className={cn(
           styles.bodyContainer,
           styles.bodyContainerDesktop,
-          styles.clippedOverflowX,
+          styles.clippedOverflow,
           containerClassName
         )}
         ref={containerCallbackRef}
@@ -850,7 +850,9 @@ type TabRecalculator = {
 
 export const useTabRecalculator = (): TabRecalculator => {
   // eslint-disable-next-line
-  const [getTabRecalculator, setTabRecalculator] = useInstanceVar<{recalculator:(() => void) | null}>({ recalculator: null })
+  const [getTabRecalculator, setTabRecalculator] = useInstanceVar<{
+    recalculator: (() => void) | null
+  }>({ recalculator: null })
 
   const recalculator = useMemo(
     () => ({

@@ -1,0 +1,50 @@
+.fitWrapper {
+  width: fit-content;
+  height: fit-content;
+}
+
+.fit {
+  width: fit-content;
+  height: fit-content;
+  box-shadow: 0 16px 20px var(--table-shadow);
+  border: 1px solid var(--neutral-light-7);
+  border-radius: 8px;
+}
+
+.menu {
+  background-color: var(--white);
+  text-align: start;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: var(--font-l);
+  font-weight: var(--font-demi-bold);
+  color: var(--neutral);
+}
+
+.item svg {
+  border-radius: 100%;
+  background: var(--neutral-light-4);
+}
+
+.item path {
+  fill: var(--white);
+}
+
+.item:hover {
+  cursor: pointer;
+  color: var(--white);
+  background: var(--secondary);
+}
+
+.item:hover svg {
+  background: var(--white);
+}
+
+.item:hover path {
+  fill: var(--secondary);
+}

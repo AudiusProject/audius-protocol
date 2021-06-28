@@ -35,6 +35,7 @@ const GenreSelectionModal = ({
       onClose={didClose}
       allowScroll={false}
       bodyClassName={styles.modalBody}
+      headerContainerClassName={styles.modalHeader}
     >
       <SimpleBar className={styles.simpleBar}>
         <GenreSelectionList
