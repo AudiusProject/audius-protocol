@@ -194,9 +194,14 @@ const Card = ({
         onClick={onBottomActionsClick}
       >
         <Menu menu={menu}>
-          <div className={styles.iconContainer}>
-            <IconKebabHorizontal className={styles.iconKebabHorizontal} />
-          </div>
+          {(ref, triggerPopup) => (
+            <div className={styles.iconContainer} onClick={triggerPopup}>
+              <IconKebabHorizontal
+                className={styles.iconKebabHorizontal}
+                ref={ref}
+              />
+            </div>
+          )}
         </Menu>
       </div>
     )

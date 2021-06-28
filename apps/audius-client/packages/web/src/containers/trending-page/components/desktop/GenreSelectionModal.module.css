@@ -7,6 +7,10 @@
   flex-direction: column;
 }
 
+.modalHeader {
+  margin: 0px 16px;
+}
+
 .simpleBar {
   flex: 1;
   min-height: 0px;

@@ -478,13 +478,21 @@ class GiantTrackTile extends PureComponent {
               {this.renderFavoriteButton()}
               <span>
                 <Menu {...overflowMenu}>
-                  <Button
-                    className={cn(styles.buttonFormatting, styles.moreButton)}
-                    textClassName={styles.buttonTextFormatting}
-                    type={ButtonType.COMMON}
-                    text={null}
-                    leftIcon={<IconKebabHorizontal />}
-                  />
+                  {(ref, triggerPopup) => (
+                    <div className={cn(styles.menuKebabContainer)} ref={ref}>
+                      <Button
+                        className={cn(
+                          styles.buttonFormatting,
+                          styles.moreButton
+                        )}
+                        leftIcon={<IconKebabHorizontal />}
+                        onClick={triggerPopup}
+                        text={null}
+                        textClassName={styles.buttonTextFormatting}
+                        type={ButtonType.COMMON}
+                      />
+                    </div>
+                  )}
                 </Menu>
               </span>
             </div>
