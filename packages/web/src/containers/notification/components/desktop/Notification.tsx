@@ -37,11 +37,8 @@ type NotificationItemProps = OwnProps &
 
 const NotificationItem = (props: NotificationItemProps) => {
   if (props.notification.type === NotificationType.Announcement) {
-    const menuProps: NotificationMenuProps = {
+    const menuProps: Omit<NotificationMenuProps, 'children'> = {
       type: 'notification',
-      mount: 'parent',
-      mountRef: props.panelRef,
-      scrollRef: props.scrollRef,
       notificationId: props.notification.id,
       notificationType: props.notification.type,
       onHide: props.hideNotification
@@ -56,11 +53,8 @@ const NotificationItem = (props: NotificationItemProps) => {
     )
   }
   const timeLabel = props.notification.timeLabel
-  const menuProps: NotificationMenuProps = {
+  const menuProps: Omit<NotificationMenuProps, 'children'> = {
     type: 'notification',
-    mount: 'parent',
-    mountRef: props.panelRef,
-    scrollRef: props.scrollRef,
     notificationId: props.notification.id,
     notificationType: props.notification.type,
     onHide: props.hideNotification

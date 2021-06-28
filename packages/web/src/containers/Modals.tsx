@@ -12,12 +12,12 @@ import BrowserPushConfirmationModal from './browser-push-confirmation-modal/Brow
 import FirstUploadModal from 'containers/first-upload-modal/FirstUploadModal'
 import UnloadDialog from 'containers/unload-dialog/UnloadDialog'
 import EditPlaylistModal from 'containers/edit-playlist/desktop/EditPlaylistModal'
-
 import { getClient } from 'utils/clientUtil'
 import Client from 'models/Client'
-import AppCTAModal from './app-cta-modal/AppCTAModal'
-import TierExplainerModal from './user-badges/TierExplainerModal'
-import RewardsModals from './audio-rewards-page/components/modals/RewardsModals'
+import AppCTAModal from 'containers/app-cta-modal/AppCTAModal'
+import TierExplainerModal from 'containers/user-badges/TierExplainerModal'
+import RewardsModals from 'containers/audio-rewards-page/components/modals/RewardsModals'
+import AddToPlaylistModal from 'containers/add-to-playlist/desktop/AddToPlaylistModal'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -42,6 +42,7 @@ const Modals = () => {
         <>
           <EmbedModal />
           <EditPlaylistModal />
+          <AddToPlaylistModal />
           <ConnectedUserListModal />
           <AppCTAModal />
           <TierExplainerModal />

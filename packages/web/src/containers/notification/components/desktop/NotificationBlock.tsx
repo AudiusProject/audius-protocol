@@ -33,7 +33,7 @@ export type NotificationBlockProps = {
   notification: any
   goToRoute: (route: string) => void
   toggleNotificationPanel: () => void
-  menuProps: NotificationMenuProps
+  menuProps: Omit<NotificationMenuProps, 'children'>
   markAsRead: (notificationId: string) => void
   setNotificationUsers: (userIds: ID[], limit: number) => void
   onClick?: () => void
@@ -161,9 +161,10 @@ const NotificationBlock = (props: NotificationBlockProps) => {
   )
 
   const onMenuClick = useCallback(
-    e => {
+    triggerPopup => (e: React.MouseEvent) => {
       e.stopPropagation()
       markNotificationAsRead()
+      triggerPopup()
     },
     [markNotificationAsRead]
   )
@@ -201,11 +202,19 @@ const NotificationBlock = (props: NotificationBlockProps) => {
       {header && (
         <div className={styles.headerContainer}>
           {header}
-          <div className={styles.menuContainer} onClick={onMenuClick}>
+          <div className={styles.menuContainer}>
             <Menu menu={props.menuProps}>
-              <div className={styles.iconContainer}>
-                <IconKebabHorizontal className={styles.iconKebabHorizontal} />
-              </div>
+              {(ref, triggerPopup) => (
+                <div
+                  className={styles.iconContainer}
+                  onClick={onMenuClick(triggerPopup)}
+                >
+                  <IconKebabHorizontal
+                    className={styles.iconKebabHorizontal}
+                    ref={ref}
+                  />
+                </div>
+              )}
             </Menu>
           </div>
         </div>
@@ -220,11 +229,19 @@ const NotificationBlock = (props: NotificationBlockProps) => {
         )}
         <div className={styles.body}>{body}</div>
         {!header && (
-          <div className={styles.menuContainer} onClick={onMenuClick}>
+          <div className={styles.menuContainer}>
             <Menu menu={props.menuProps}>
-              <div className={styles.iconContainer}>
-                <IconKebabHorizontal className={styles.iconKebabHorizontal} />
-              </div>
+              {(ref, triggerPopup) => (
+                <div
+                  className={styles.iconContainer}
+                  onClick={onMenuClick(triggerPopup)}
+                >
+                  <IconKebabHorizontal
+                    className={styles.iconKebabHorizontal}
+                    ref={ref}
+                  />
+                </div>
+              )}
             </Menu>
           </div>
         )}
