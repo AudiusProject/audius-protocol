@@ -286,6 +286,18 @@ const config = convict({
     env: 'syncQueueMaxConcurrency',
     default: 50
   },
+  issueAndWaitForSecondarySyncRequestsPollingDurationMs: {
+    doc: 'Duration for which to poll secondaries for content replication in `issueAndWaitForSecondarySyncRequests` function',
+    format: 'nat',
+    env: 'issueAndWaitForSecondarySyncRequestsPollingDurationMs',
+    default: 5000 // 5000ms = 5s (prod default)
+  },
+  enforceWriteQuorum: {
+    doc: 'Boolean flag indicating whether or not primary should reject write on 2/3 replication across replica set',
+    format: Boolean,
+    env: 'enforceWriteQuorum',
+    default: false
+  },
 
   // wallet information
   delegateOwnerWallet: {
@@ -441,6 +453,24 @@ const config = convict({
     env: 'snapbackDevModeEnabled',
     default: false
   },
+  snapbackReconfigEnabled: {
+    doc: 'Enables replica set reconfiguration or not. Currently enabled for dev mode, disabled for prod.',
+    format: 'BooleanCustom',
+    env: 'snapbackReconfigEnabled',
+    default: false
+  },
+  snapbackModuloBase: {
+    doc: 'The modulo base to segment users by on snapback. Will process `1/snapbackModuloBase` users at some snapback interval',
+    format: 'nat',
+    env: 'snapbackModuloBase',
+    default: 24
+  },
+  snapbackJobInterval: {
+    doc: 'Interval [ms] that snapbackSM jobs are fired; 1 hour',
+    format: 'nat',
+    env: 'snapbackJobInterval',
+    default: 3600000
+  },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
     format: 'BooleanCustom',
@@ -482,6 +512,51 @@ const config = convict({
     format: 'nat',
     env: 'maxRecurringRequestSyncJobConcurrency',
     default: 5
+  },
+
+  // peerSetManager configs
+  peerHealthCheckRequestTimeout: {
+    doc: 'Timeout [ms] for checking health check route',
+    format: 'nat',
+    env: 'peerHealthCheckRequestTimeout',
+    default: 2000
+  },
+  minimumStoragePathSize: {
+    doc: 'Minimum storage size [bytes] on node to be a viable option in peer set; 100gb',
+    format: 'nat',
+    env: 'minimumStoragePathSize',
+    default: 100000000000
+  },
+  minimumMemoryAvailable: {
+    doc: 'Minimum memory available [bytes] on node to be a viable option in peer set; 2gb',
+    format: 'nat',
+    env: 'minimumMemoryAvailable',
+    default: 2000000000
+  },
+  maxFileDescriptorsAllocatedPercentage: {
+    doc: 'Max file descriptors allocated percentage on node to be a viable option in peer set',
+    format: 'nat',
+    env: 'maxFileDescriptorsAllocatedPercentage',
+    default: 95
+  },
+  minimumDailySyncCount: {
+    doc: 'Minimum count of daily syncs that need to have occurred to consider daily sync history',
+    format: 'nat',
+    env: 'minimumDailySyncCount',
+    default: 50
+  },
+  minimumRollingSyncCount: {
+    doc: 'Minimum count of rolling syncs that need to have occurred to consider rolling sync history',
+    format: 'nat',
+    env: 'minimumRollingSyncCount',
+    default: 5000
+  },
+  minimumSuccessfulSyncCountPercentage: {
+    doc: 'Minimum percentage of failed syncs to be considered unhealthy',
+    format: 'nat',
+    env: 'minimumSuccessfulSyncCountPercentage',
+    // TODO: Update to higher percentage when higher threshold of syncs are passing
+    default: 0
   }
 
   // unsupported options at the moment

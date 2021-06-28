@@ -16,8 +16,8 @@ const { getEthContractAccounts } = require('./helpers/utils')
 
 // Directories within the audius-protocol repository used for development
 const serviceDirectoryList = ['discovery-provider', 'creator-node']
-const discProvEndpoint1 = 'http://audius-disc-prov_web-server_1:5000'
-const discProvEndpoint2 = 'http://audius-disc-prov_web-server_2:5000'
+const discProvEndpoint1 = 'http://dn1_web-server_1:5000'
+const discProvEndpoint2 = 'http://dn2_web-server_1:5001'
 const creatorNodeEndpoint1 = 'http://cn1_creator-node_1:4000'
 const creatorNodeEndpoint2 = 'http://cn2_creator-node_1:4001'
 const creatorNodeEndpoint3 = 'http://cn3_creator-node_1:4002'
@@ -99,12 +99,9 @@ const run = async () => {
         await _initAllVersions(audiusLibs)
         break
 
-      case 'register-discprov-1':
-        await _registerDiscProv1(audiusLibs, ethAccounts)
-        break
-
-      case 'register-discprov-2':
-        await _registerDiscProv2(audiusLibs, ethAccounts)
+      case 'register-discprov':
+        const serviceCount = args[3]
+        await _registerDiscProv(ethAccounts, parseInt(serviceCount))
         break
 
       case 'register-cnode': {
@@ -392,15 +389,12 @@ const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
   await queryLocalServices(audiusLibs, serviceTypesList)
 }
 
-// Account 0
-const _registerDiscProv1 = async (audiusLibs, ethAccounts) => {
-  await registerLocalService(audiusLibs, discoveryNodeType, discProvEndpoint1, amountOfAuds)
-}
+const makeDiscoveryProviderEndpoint = (serviceNumber) => `http://dn${serviceNumber}_web-server_1:${5000 + parseInt(serviceNumber) - 1}`
 
-// Account 3
-const _registerDiscProv2 = async (audiusLibs, ethAccounts) => {
-  let audiusLibs4 = await initAudiusLibs(true, null, ethAccounts[3])
-  await registerLocalService(audiusLibs4, discoveryNodeType, discProvEndpoint2, amountOfAuds)
+const _registerDiscProv = async (ethAccounts, serviceNumber) => {
+  const audiusLibs = await initAudiusLibs(true, null, ethAccounts[8 + serviceNumber])
+  const endpoint = makeDiscoveryProviderEndpoint(serviceNumber)
+  await registerLocalService(audiusLibs, discoveryNodeType, endpoint, amountOfAuds)
 }
 
 const makeCreatorNodeEndpoint = (serviceNumber) => `http://cn${serviceNumber}_creator-node_1:${4000 + parseInt(serviceNumber) - 1}`

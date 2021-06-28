@@ -12,7 +12,7 @@ const {
   syncLockMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  triggerSecondarySyncs
+  issueAndWaitForSecondarySyncRequests
 } = require('../middlewares')
 const DBManager = require('../dbManager')
 
@@ -124,7 +124,9 @@ module.exports = function (app) {
       await cnodeUser.update({ latestBlockNumber: blockNumber }, { transaction })
 
       await transaction.commit()
-      triggerSecondarySyncs(req)
+
+      await issueAndWaitForSecondarySyncRequests(req)
+
       return successResponse()
     } catch (e) {
       await transaction.rollback()

@@ -3,6 +3,7 @@ const packageJSON = require('../package.json')
 const EthWeb3Manager = require('./services/ethWeb3Manager/index')
 const Web3Manager = require('./services/web3Manager/index')
 const EthContracts = require('./services/ethContracts/index')
+const SolanaWeb3Manager = require('./services/solanaWeb3Manager/index')
 const AudiusContracts = require('./services/dataContracts/index')
 const IdentityService = require('./services/identity/index')
 const Comstock = require('./services/comstock/index')
@@ -139,8 +140,16 @@ class AudiusLibs {
    * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
    * @param {string} ownerWallet
    * @param {string?} claimDistributionContractAddress
+   * @param {string?} wormholeContractAddress
    */
-  static configEthWeb3 (tokenAddress, registryAddress, providers, ownerWallet, claimDistributionContractAddress) {
+  static configEthWeb3 (
+    tokenAddress,
+    registryAddress,
+    providers,
+    ownerWallet,
+    claimDistributionContractAddress,
+    wormholeContractAddress
+  ) {
     let providerList
     if (typeof providers === 'string') {
       providerList = providers.split(',')
@@ -152,7 +161,43 @@ class AudiusLibs {
       throw new Error('Providers must be of type string, Array, or Web3 instance')
     }
 
-    return { tokenAddress, registryAddress, providers: providerList, ownerWallet, claimDistributionContractAddress }
+    return {
+      tokenAddress,
+      registryAddress,
+      providers: providerList,
+      ownerWallet,
+      claimDistributionContractAddress,
+      wormholeContractAddress
+    }
+  }
+
+  /**
+   * Configures a solana web3
+   * @param {Object} config
+   * @param {string} config.solanaClusterEndpoint the RPC endpoint to make requests against
+   * @param {string} config.mintAddress wAudio mint address
+   * @param {string} solanaTokenAddress native solana token program
+   * @param {string} claimableTokenPDA the generated program derived address we use so our
+   *  bank program can take ownership of accounts
+   * @param {string} feePayerAddress address for the fee payer for transactions
+   * @param {string} claimableTokenProgramAddress address of the audius user bank program
+   */
+  static configSolanaWeb3 ({
+    solanaClusterEndpoint,
+    mintAddress,
+    solanaTokenAddress,
+    claimableTokenPDA,
+    feePayerAddress,
+    claimableTokenProgramAddress
+  }) {
+    return {
+      solanaClusterEndpoint,
+      mintAddress,
+      solanaTokenAddress,
+      claimableTokenPDA,
+      feePayerAddress,
+      claimableTokenProgramAddress
+    }
   }
 
   /**
@@ -168,6 +213,7 @@ class AudiusLibs {
   constructor ({
     web3Config,
     ethWeb3Config,
+    solanaWeb3Config,
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
@@ -183,6 +229,7 @@ class AudiusLibs {
 
     this.ethWeb3Config = ethWeb3Config
     this.web3Config = web3Config
+    this.solanaWeb3Config = solanaWeb3Config
     this.identityServiceConfig = identityServiceConfig
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
@@ -201,6 +248,7 @@ class AudiusLibs {
     this.ethWeb3Manager = null
     this.ethContracts = null
     this.web3Manager = null
+    this.solanaWeb3Manager = null
     this.contracts = null
     this.creatorNode = null
 
@@ -255,6 +303,14 @@ class AudiusLibs {
       )
       await this.web3Manager.init()
     }
+    if (this.solanaWeb3Config && this.web3Manager) {
+      this.solanaWeb3Manager = new SolanaWeb3Manager(
+        this.solanaWeb3Config,
+        this.identityService,
+        this.web3Manager
+      )
+      await this.solanaWeb3Manager.init()
+    }
 
     /** Contracts - Eth and Data Contracts */
     let contractsToInit = []
@@ -264,6 +320,7 @@ class AudiusLibs {
         this.ethWeb3Config ? this.ethWeb3Config.tokenAddress : null,
         this.ethWeb3Config ? this.ethWeb3Config.registryAddress : null,
         (this.ethWeb3Config && this.ethWeb3Config.claimDistributionContractAddress) || null,
+        (this.ethWeb3Config && this.ethWeb3Config.wormholeContractAddress) || null,
         this.isServer,
         this.isDebug
       )
@@ -332,6 +389,7 @@ class AudiusLibs {
       this.contracts,
       this.ethWeb3Manager,
       this.ethContracts,
+      this.solanaWeb3Manager,
       this.creatorNode,
       this.comstock,
       this.captcha,

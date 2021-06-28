@@ -7,6 +7,8 @@ const { logger } = require('../logging')
 
 const SyncDeDuplicator = require('./snapbackDeDuplicator')
 const PeerSetManager = require('./peerSetManager')
+const CreatorNode = require('@audius/libs/src/services/creatorNode')
+const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 
 // Maximum number of time to wait for a sync operation, 6 minutes by default
 const MaxSyncMonitoringDurationInMs = 360000 // ms
@@ -14,19 +16,20 @@ const MaxSyncMonitoringDurationInMs = 360000 // ms
 // Retry delay between requests during monitoring
 const SyncMonitoringRetryDelayMs = 15000
 
-// Base value used to filter users over a 24 hour period
-const ModuloBase = 24
-
-// For local dev, configure this to be the interval when SnapbackSM is fired
-const DevDelayInMS = 3000
-
-// Delay 1 hour between production state machine jobs
-const ProductionJobDelayInMs = 3600000 // ms
+// Max number of attempts to select new replica set in reconfig
+const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 100
 
 // Describes the type of sync operation
 const SyncType = Object.freeze({
   Recurring: 'RECURRING' /** scheduled background sync to keep secondaries up to date */,
   Manual: 'MANUAL' /** triggered by a user data write to primary */
+})
+
+// Phases in `issueUpdateReplicaSetOp`. Used for debugging if method fails
+const issueUpdateReplicaSetOpPhases = Object.freeze({
+  GET_HEALTHY_CONTENT_NODES: 'GET_HEALTHY_CONTENT_NODES',
+  ENQUEUE_SYNCS: 'ENQUEUE_SYNCS',
+  UPDATE_URSM_REPLICA_SET: 'UPDATE_URSM_REPLICA_SET'
 })
 
 /*
@@ -61,6 +64,10 @@ class SnapbackSM {
     this.manualSyncQueue = this.createBullQueue('manual-sync-queue')
     this.recurringSyncQueue = this.createBullQueue('recurring-sync-queue')
 
+    // 1/<moduloBase> users are handled over <snapbackJobInterval> ms interval
+    // ex: 1/<24> users are handled over <3600000> ms (1 hour)
+    this.moduloBase = this.nodeConfig.get('snapbackModuloBase')
+
     // Incremented as users are processed
     this.currentModuloSlice = this.randomStartingSlice()
 
@@ -69,6 +76,15 @@ class SnapbackSM {
       discoveryProviderEndpoint: audiusLibs.discoveryProvider.discoveryProviderEndpoint,
       creatorNodeEndpoint: this.endpoint
     })
+
+    // Config to determine if reconfig is enabled
+    this.snapbackReconfigEnabled = this.nodeConfig.get('snapbackReconfigEnabled')
+
+    // The interval when SnapbackSM is fired for state machine jobs
+    this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
+
+    // Mapping of Content Node endpoint to its service provider ID
+    this.endpointToSPIdMap = {}
   }
 
   /**
@@ -98,7 +114,6 @@ class SnapbackSM {
 
     // Initialize stateMachineQueue job processor
     // - Re-adds job to queue after processing current job, with a fixed delay
-    const stateMachineJobInterval = (this.snapbackDevModeEnabled) ? DevDelayInMS : ProductionJobDelayInMs
     this.stateMachineQueue.process(
       async (job, done) => {
         try {
@@ -107,7 +122,7 @@ class SnapbackSM {
           this.log(`StateMachineQueue error processing ${e}`)
         }
 
-        await utils.timeout(stateMachineJobInterval)
+        await utils.timeout(this.snapbackJobInterval)
 
         await this.stateMachineQueue.add({ starttime: Date.now() })
 
@@ -146,7 +161,7 @@ class SnapbackSM {
     // Enqueue first state machine operation (the processor internally re-enqueues job on recurring interval)
     await this.stateMachineQueue.add({ startTime: Date.now() })
 
-    this.log(`SnapbackSM initialized in ${this.snapbackDevModeEnabled ? 'dev' : 'production'} mode. Added initial stateMachineQueue job; next job in ${stateMachineJobInterval}ms`)
+    this.log(`SnapbackSM initialized in ${this.snapbackDevModeEnabled ? 'dev' : 'production'} mode. Added initial stateMachineQueue job; next job in ${this.snapbackJobInterval}ms`)
   }
 
   log (msg) {
@@ -177,8 +192,8 @@ class SnapbackSM {
 
   // Randomly select an initial slice
   randomStartingSlice () {
-    let slice = Math.floor(Math.random() * Math.floor(ModuloBase))
-    this.log(`Starting at data slice ${slice}/${ModuloBase}`)
+    let slice = Math.floor(Math.random() * Math.floor(this.moduloBase))
+    this.log(`Starting at data slice ${slice}/${this.moduloBase}`)
     return slice
   }
 
@@ -231,7 +246,8 @@ class SnapbackSM {
     userWallet,
     primaryEndpoint,
     secondaryEndpoint,
-    syncType
+    syncType,
+    immediate = false
   }) {
     const queue = (syncType === SyncType.Manual) ? this.manualSyncQueue : this.recurringSyncQueue
 
@@ -252,7 +268,9 @@ class SnapbackSM {
         wallet: [userWallet],
         creator_node_endpoint: primaryEndpoint,
         // Note - `sync_type` param is only used for logging by nodeSync.js
-        sync_type: syncType
+        sync_type: syncType,
+        // immediate = true will ensure secondary skips debounce and evaluates sync immediately
+        immediate
       }
     }
 
@@ -271,15 +289,125 @@ class SnapbackSM {
   }
 
   /**
-   * Submit POA:UserReplicaSetFactory.updateReplicaSet() transaction to move user off unhealthy node
+   * Depending on the size of `unhealthyReplicas`:
+   * 1. Determine a new replica set
+   * 2. Write new replica set to URSM
+   * 3. Sync data to new replica set
    *
-   * @dev TODO use libs for CreatorNodeSelection logic + relayed chain call
-   * @dev One issue - since it doesn't actually rectify broken replica sets, this will log every time it is processed
-   */
-  async issueUpdateReplicaSetOp (userId, wallet, primary, secondary1, secondary2, unhealthyReplica) {
-    // await libs.userReplicaSetManagerClient._updateReplicaSet(userId, primary, [new secondaries], primary, [old secondaries])
+   * @param {number} userId user id to issue a reconfiguration for
+   * @param {string} wallet wallet address of user id
+   * @param {string} primary endpoint of the current primary node on replica set
+   * @param {string} secondary1 endpoint of the current first secondary node on replica set
+   * @param {string} secondary2 endpoint of the current second secondary node on replica set
+   * @param {string[]} unhealthyReplicas array of endpoints of current replica set nodes that are unhealthy
+   * @param {string[]} healthyNodes array of healthy Content Node endpoints used for selecting new replica set
+  */
+  async issueUpdateReplicaSetOp (userId, wallet, primary, secondary1, secondary2, unhealthyReplicas, healthyNodes) {
+    this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=[${unhealthyReplicas}]`)
 
-    this.log(`Updating Replica Set for userID ${userId} & wallet ${wallet} from old replicaSet [${primary},${secondary1},${secondary2}] due to unhealthy replica ${unhealthyReplica}`)
+    const unhealthyReplicasSet = new Set(unhealthyReplicas)
+    const baseSyncRequestParams = { userWallet: wallet, syncType: SyncType.Manual }
+    let newReplicaSetSPIds = []
+
+    // If a primary is currently unhealthy or more than one node is unhealthy, skip for now
+    if (unhealthyReplicasSet.has(primary) || unhealthyReplicas.length > 1) {
+      this.log(`[issueUpdateReplicaSetOp] userId=${userId} skipping reconfig.`)
+      return
+    }
+
+    let errorMsg = null
+    let phase = ''
+    try {
+      // Generate new replica set
+      phase = issueUpdateReplicaSetOpPhases.GET_HEALTHY_CONTENT_NODES
+      const { newPrimary, newSecondary1, newSecondary2 } = await this.determineNewReplicaSet({
+        wallet,
+        secondary1,
+        secondary2,
+        primary,
+        unhealthyReplicasSet,
+        healthyNodes
+      })
+
+      this.log(`[issueUpdateReplicaSetOp] Updating userId=${userId} wallet=${wallet} replica set=[${primary},${secondary1},${secondary2}] to new replica set=[${newPrimary},${newSecondary1},${newSecondary2}]`)
+
+      if (!this.snapbackReconfigEnabled) return
+
+      // Create new array of replica set spIds and write to URSM
+      phase = issueUpdateReplicaSetOpPhases.UPDATE_URSM_REPLICA_SET
+      newReplicaSetSPIds = [
+        this.endpointToSPIdMap[newPrimary],
+        this.endpointToSPIdMap[newSecondary1],
+        this.endpointToSPIdMap[newSecondary2]
+      ]
+
+      await this.audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
+        userId,
+        newReplicaSetSPIds[0], // primary
+        newReplicaSetSPIds.slice(1) // [secondary1, secondary2]
+      )
+
+      // Sync data from existing primary to new secondary
+      phase = issueUpdateReplicaSetOpPhases.ENQUEUE_SYNCS
+      await this.enqueueSync({
+        ...baseSyncRequestParams,
+        primaryEndpoint: primary,
+        secondaryEndpoint: newSecondary2
+      })
+    } catch (e) {
+      errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} failed at phase=${phase} reconfiguring to spIds=[${newReplicaSetSPIds}]: ${e.toString()}\n${e.stack}`
+    }
+
+    return errorMsg
+  }
+
+  /**
+   * @param {Object} param
+   * @param {string} param.primary current user's primary endpoint
+   * @param {string} param.secondary1 current user's first secondary endpoint
+   * @param {string} param.secondary2 current user's second secondary endpoint
+   * @param {string} param.wallet current user's wallet address
+   * @param {string[]} param.unhealthyReplicasSet an array of endpoints of unhealthy replica set nodes
+   * @param {string[]} param.healthyNodes array of healthy Content Node endpoints used for selecting new replica set
+   * @returns {Object}
+   * {
+   *  newPrimary: {string} the endpoint of the newly selected primary,
+   *  newSecondary1: {string} the endpoint of the newly selected secondary #1,
+   *  newSecondary2: {string} the endpoint of the newly selected secondary #2
+   * }
+   */
+  async determineNewReplicaSet ({ primary, secondary1, secondary2, wallet, unhealthyReplicasSet, healthyNodes }) {
+    let currentNodeHasExistingUserState = true
+    let i = 0
+    let newSecondary
+    while (currentNodeHasExistingUserState && i++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS) {
+      // Make sure current replica set will not be chosen as potential nodes for the new replica set
+      const healthyPotentialPeers = healthyNodes.filter(node => node !== primary && node !== secondary1 && node !== secondary2)
+
+      // Select a random node that is not from the current replica set
+      newSecondary = healthyPotentialPeers[Math.floor(Math.random() * healthyPotentialPeers.length)]
+
+      // Check to make sure that the newly selected secondary does not have existing user state
+      try {
+        const clockValue = await CreatorNode.getClockValue(newSecondary, wallet)
+        if (clockValue === -1) currentNodeHasExistingUserState = false
+      } catch (e) {
+        // Something went wrong in checking clock value. Reselect another secondary.
+        this.logError(e.message)
+      }
+    }
+
+    if (currentNodeHasExistingUserState) throw new Error(`Unable to select new secondary given current healthy Content Nodes=[${healthyNodes}]`)
+
+    const currentHealthySecondary = unhealthyReplicasSet.has(secondary1) ? secondary2 : secondary1
+
+    // NOTE: For v0 implementation, `newSecondary2` will be the newly selected secondary, whilst the other nodes will be the
+    // original replica set primary and secondary1
+    return {
+      newPrimary: primary,
+      newSecondary1: currentHealthySecondary,
+      newSecondary2: newSecondary
+    }
   }
 
   /**
@@ -362,8 +490,8 @@ class SnapbackSM {
     const userPrimaryClockValues = await this.getUserPrimaryClockValues(userWallets)
 
     let numSyncRequestsRequired = 0
-    let numSyncRequestsIssued = 0
-    let syncRequestErrors = []
+    let numSyncRequestsEnqueued = 0
+    let enqueueSyncRequestErrors = []
 
     // TODO change to chunked parallel
     await Promise.all(userReplicaSets.map(async (user) => {
@@ -387,14 +515,14 @@ class SnapbackSM {
             syncType: SyncType.Recurring
           })
 
-          numSyncRequestsIssued += 1
+          numSyncRequestsEnqueued += 1
         }
       } catch (e) {
-        syncRequestErrors.push(`issueSyncRequest() Error for user ${JSON.stringify(user)} - ${e.message}`)
+        enqueueSyncRequestErrors.push(`issueSyncRequest() Error for user ${JSON.stringify(user)} - ${e.message}`)
       }
     }))
 
-    return { numSyncRequestsRequired, numSyncRequestsIssued, syncRequestErrors }
+    return { numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors }
   }
 
   /**
@@ -410,7 +538,8 @@ class SnapbackSM {
     let decisionTree = [{
       stage: 'BEGIN processStateMachineOperation()',
       vals: {
-        currentModuloSlice: this.currentModuloSlice
+        currentModuloSlice: this.currentModuloSlice,
+        moduloBase: this.ModuloBase
       },
       time: Date.now()
     }]
@@ -428,7 +557,6 @@ class SnapbackSM {
       }
 
       let unhealthyPeers
-
       try {
         unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
         decisionTree.push({
@@ -452,22 +580,30 @@ class SnapbackSM {
        * For every node user, record sync requests to issue to secondaries if this node is primary
        *    and record replica set updates to issue for any unhealthy replicas
        *
+       * Purpose for the if/else case is that if the current node is a primary, issue reconfig or sync requests.
+       * Else, if the current node is a secondary, only issue reconfig requests.
+       *
        * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
        * TODO make this more readable -> maybe two separate loops? need to ensure mutual exclusivity
        */
       for (const nodeUser of nodeUsers) {
         const { primary, secondary1, secondary2 } = nodeUser
 
+        let unhealthyReplicas = []
         if (primary === this.endpoint) {
           // filter out false-y values to account for incomplete replica sets
           const secondaries = ([secondary1, secondary2]).filter(Boolean)
 
           for (const secondary of secondaries) {
             if (unhealthyPeers.has(secondary)) {
-              requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: secondary })
+              unhealthyReplicas.push(secondary)
             } else {
               potentialSyncRequests.push({ ...nodeUser, endpoint: secondary })
             }
+          }
+
+          if (unhealthyReplicas.length > 0) {
+            requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
           }
         } else {
           // filter out false-y values to account for incomplete replica sets
@@ -477,8 +613,12 @@ class SnapbackSM {
 
           for (const replica of replicas) {
             if (unhealthyPeers.has(replica)) {
-              requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplica: replica })
+              unhealthyReplicas.push(replica)
             }
+          }
+
+          if (unhealthyReplicas.length > 0) {
+            requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
           }
         }
       }
@@ -519,25 +659,39 @@ class SnapbackSM {
         throw new Error('processStateMachineOperation():retrieveClockStatusesForSecondaryUsersFromNodes() Error')
       }
 
+      // Setup the mapping of Content Node endpoint to service provider id. Used in reconfig
+      const previousSnapbackReconfigEnabledValue = this.snapbackReconfigEnabled
+      await this.updateEndpointToSpIdMap()
+      decisionTree.push({
+        stage: `updateEndpointToSpIdMap()`,
+        vals: {
+          previousSnapbackReconfigEnabledValue,
+          currentSnapbackReconfigEnabledValue: this.snapbackReconfigEnabled,
+          endpointToSPIdMapSize: Object.keys(this.endpointToSPIdMap).length
+        },
+        time: Date.now()
+      })
+
       // Issue all required sync requests
-      let numSyncRequestsRequired, numSyncRequestsIssued, syncRequestErrors
+      let numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors
       try {
         const resp = await this.issueSyncRequests(potentialSyncRequests, secondaryNodesToUserClockStatusesMap)
         numSyncRequestsRequired = resp.numSyncRequestsRequired
-        numSyncRequestsIssued = resp.numSyncRequestsIssued
-        syncRequestErrors = resp.syncRequestErrors
+        numSyncRequestsEnqueued = resp.numSyncRequestsEnqueued
+        enqueueSyncRequestErrors = resp.enqueueSyncRequestErrors
 
-        if (syncRequestErrors.length > numSyncRequestsIssued) {
-          throw new Error()
+        // Error if > 50% syncRequests fail
+        if (enqueueSyncRequestErrors.length > numSyncRequestsEnqueued) {
+          throw new Error('More than 50% of SyncRequests failed to be enqueued')
         }
 
         decisionTree.push({
           stage: 'issueSyncRequests() Success',
           vals: {
             numSyncRequestsRequired,
-            numSyncRequestsIssued,
-            numSyncRequestErrors: syncRequestErrors.length,
-            syncRequestErrors
+            numSyncRequestsEnqueued,
+            numIssueSyncRequestErrors: enqueueSyncRequestErrors.length,
+            enqueueSyncRequestErrors
           },
           time: Date.now()
         })
@@ -545,28 +699,49 @@ class SnapbackSM {
         decisionTree.push({
           stage: 'issueSyncRequests() Error',
           vals: {
+            error: e.message,
             numSyncRequestsRequired,
-            numSyncRequestsIssued,
-            numSyncRequestErrors: (syncRequestErrors ? syncRequestErrors.length : null),
-            syncRequestErrors
+            numSyncRequestsEnqueued,
+            numIssueSyncRequestErrors: (enqueueSyncRequestErrors ? enqueueSyncRequestErrors.length : null),
+            enqueueSyncRequestErrors
           },
           time: Date.now()
         })
-        throw new Error('processStateMachineOperation():issueSyncRequests() Error')
       }
 
       /**
        * Issue all required replica set updates
        * TODO move to chunked parallel (maybe?) + wrap each in try-catch to not halt on single error
        */
-      let numUpdateReplicaOpsIssued
+      let numUpdateReplicaOpsIssued = 0
       try {
+        // Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
+        // Note: sync checks are disabled because there should not be any syncs occurring for a particular user
+        // on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
+        // There will be an explicit clock value check on the newly selected replica set nodes instead.
+        const { services: healthyServicesMap } = await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
+          performSyncCheck: false
+        })
+
+        const healthyNodes = Object.keys(healthyServicesMap)
+        if (healthyNodes.length === 0) throw new Error('Auto-selecting Content Nodes returned an empty list of healthy nodes.')
+
+        const errors = []
         for await (const userInfo of requiredUpdateReplicaSetOps) {
-          await this.issueUpdateReplicaSetOp(
-            userInfo.user_id, userInfo.wallet, userInfo.primary, userInfo.secondary1, userInfo.secondary2, userInfo.unhealthyReplica
+          const errorMsg = await this.issueUpdateReplicaSetOp(
+            userInfo.user_id,
+            userInfo.wallet,
+            userInfo.primary,
+            userInfo.secondary1,
+            userInfo.secondary2,
+            userInfo.unhealthyReplicas,
+            healthyNodes
           )
+
+          errorMsg ? errors.push(errorMsg) : numUpdateReplicaOpsIssued++
         }
-        numUpdateReplicaOpsIssued = requiredUpdateReplicaSetOps.length
+        if (errors.length > 0) throw new Error(`issueUpdateReplicaSetOp() failed for subset of users: [${errors.toString()}]`)
+
         decisionTree.push({
           stage: 'issueUpdateReplicaSetOp() Success',
           vals: { numUpdateReplicaOpsIssued },
@@ -581,18 +756,12 @@ class SnapbackSM {
         throw new Error('processStateMachineOperation():issueUpdateReplicaSetOp() Error')
       }
 
-      // Increment and adjust current slice by ModuloBase
-      const previousModuloSlice = this.currentModuloSlice
-      this.currentModuloSlice += 1
-      this.currentModuloSlice = this.currentModuloSlice % ModuloBase
-
       decisionTree.push({
         stage: 'END processStateMachineOperation()',
         vals: {
-          currentModuloSlice: previousModuloSlice,
-          nextModuloSlice: this.currentModuloSlice,
-          moduloBase: ModuloBase,
-          numSyncRequestsIssued,
+          currentModuloSlice: this.currentModuloSlice,
+          moduloBase: this.ModuloBase,
+          numSyncRequestsEnqueued,
           numUpdateReplicaOpsIssued
         },
         time: Date.now()
@@ -602,6 +771,10 @@ class SnapbackSM {
     } catch (e) {
       decisionTree.push({ stage: 'processStateMachineOperation Error', vals: e.message, time: Date.now() })
     } finally {
+      // Increment and adjust current slice by this.ModuloBase
+      this.currentModuloSlice += 1
+      this.currentModuloSlice = this.currentModuloSlice % this.ModuloBase
+
       // Log decision tree
       try {
         this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree)}`)
@@ -633,6 +806,7 @@ class SnapbackSM {
     const endTimeMs = startTimeMs + MaxSyncMonitoringDurationInMs
 
     let additionalSyncRequired = true
+    let maxExportRangeExceeded = false
     while (Date.now() < endTimeMs) {
       try {
         const clockStatusResp = await axios(clockStatusRequestParams)
@@ -646,6 +820,7 @@ class SnapbackSM {
          */
         if (secondaryClockValue + MaxExportClockValueRange < primaryClockValue) {
           this.log(`${logMsgString} secondaryClock ${secondaryClockValue} || MaxExportClockValueRange exceeded -> re-enqueuing sync`)
+          maxExportRangeExceeded = true
           break
 
           /**
@@ -664,6 +839,17 @@ class SnapbackSM {
 
       // Delay between retries
       await utils.timeout(SyncMonitoringRetryDelayMs, false)
+    }
+
+    /**
+     * As Primary for user, record syncRequest outcomes to all secondaries
+     * For now, ignore syncRequests where a secondary is behind by more than `MaxExportClockValueRange` as
+     *    primary doesn't currently have sufficient tracking
+     */
+    if (!additionalSyncRequired && !maxExportRangeExceeded) {
+      await SecondarySyncHealthTracker.recordSuccess(secondaryUrl, userWallet, syncType)
+    } else {
+      await SecondarySyncHealthTracker.recordFailure(secondaryUrl, userWallet, syncType)
     }
 
     return additionalSyncRequired
@@ -769,8 +955,84 @@ class SnapbackSM {
    */
   sliceUsers (nodeUsers) {
     return nodeUsers.filter(nodeUser =>
-      nodeUser.user_id % ModuloBase === this.currentModuloSlice
+      nodeUser.user_id % this.moduloBase === this.currentModuloSlice
     )
+  }
+
+  /**
+   * Issues syncRequest for user against secondary, and polls for replication up to primary
+   * If secondary fails to sync within specified timeoutMs, will error
+   */
+  async issueSyncRequestsUntilSynced (secondaryUrl, wallet, primaryClockVal, timeoutMs) {
+    // Issue syncRequest before polling secondary for replication
+    await this.enqueueSync({
+      userWallet: wallet,
+      secondaryEndpoint: secondaryUrl,
+      primaryEndpoint: this.endpoint,
+      syncType: SyncType.Manual,
+      immediate: true
+    })
+
+    // Poll clock status and issue syncRequests until secondary is caught up or until timeoutMs
+    const start = Date.now()
+    while (Date.now() - start < timeoutMs) {
+      try {
+        // Retrieve secondary clock status for user
+        const secondaryClockStatusResp = await axios({
+          method: 'get',
+          baseURL: secondaryUrl,
+          url: `/users/clock_status/${wallet}`,
+          responseType: 'json',
+          timeout: 1000 // 1000ms = 1s
+        })
+        const { clockValue: secondaryClockVal, syncInProgress } = secondaryClockStatusResp.data.data
+
+        // If secondary is synced, return successfully
+        if (secondaryClockVal >= primaryClockVal) {
+          return
+
+          // Else, if a sync is not already in progress on the secondary, issue a new SyncRequest
+        } else if (!syncInProgress) {
+          await this.enqueueSync({
+            userWallet: wallet,
+            secondaryEndpoint: secondaryUrl,
+            primaryEndpoint: this.endpoint,
+            syncType: SyncType.Manual
+          })
+        }
+
+        // Give secondary some time to process ongoing or newly enqueued sync
+        // NOTE - we might want to make this timeout longer
+        await utils.timeout(500)
+      } catch (e) {
+        // do nothing and let while loop continue
+      }
+    }
+
+    // This condition will only be hit if the secondary has failed to sync within timeoutMs
+    throw new Error(`Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`)
+  }
+
+  /**
+   * Updates `this.endpointToSPIdMap` to the mapping of <endpoint : spId>. If the fetch fails, rely on the previous
+   * `this.endpointToSPIdMap` value. If the previous value is also an empty object, disable reconfig.
+   */
+  async updateEndpointToSpIdMap () {
+    let endpointToSPIdMap = {}
+    try {
+      const contentNodes = await this.audiusLibs.ethContracts.getServiceProviderList('content-node')
+      contentNodes.forEach(cn => { endpointToSPIdMap[cn.endpoint] = cn.spID })
+    } catch (e) {
+      this.logError(`[updateEndpointToSpIdMap]: ${e.message}`)
+    }
+
+    if (Object.keys(endpointToSPIdMap).length > 0) this.endpointToSPIdMap = endpointToSPIdMap
+    if (Object.keys(this.endpointToSPIdMap).length === 0) {
+      this.logError('[updateEndpointToSpIdMap]: Unable to initialize this.endpointToSPIdMap')
+      this.snapbackReconfigEnabled = false
+    } else {
+      this.snapbackReconfigEnabled = this.nodeConfig.get('snapbackReconfigEnabled')
+    }
   }
 }
 
