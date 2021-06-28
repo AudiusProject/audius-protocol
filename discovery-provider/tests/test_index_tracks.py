@@ -1,6 +1,6 @@
 import random
 from datetime import datetime
-from src.models import Block, User
+from src.models import Block, TrackRoute, User
 from src.tasks.tracks import parse_track_event, lookup_track_record, track_event_types_lookup
 from src.utils import helpers
 from src.utils.db_session import get_db
@@ -118,7 +118,7 @@ ipfs_client = IPFSClient({
     
     multihash2: {
         "owner_id": 1,
-        "title": "real magic bassy flip again",
+        "title": "real magic bassy flip 1",
         "length": None,
         "cover_art": None,
         "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
@@ -280,7 +280,6 @@ def test_index_tracks(app):
         # ================== Test Update Track Event ==================
 
         event_type, entry = get_update_track_event()
-
         parse_track_event(
             None,
             session,
@@ -291,9 +290,23 @@ def test_index_tracks(app):
             block_timestamp
         )
 
-        # ============== Test New Track Event With Same Name =========
+        # Check that track routes are updated appropriately
+        track_routes = (
+            session.query(TrackRoute).filter(TrackRoute.track_id == 1).all()
+        )
+        assert len(track_routes) == 2
+        assert track_routes[0].is_current is False
+        assert track_routes[0].slug == "real-magic-bassy-flip"
+        assert track_routes[1].is_current is True
+        assert track_routes[1].slug == "real-magic-bassy-flip-1"
 
-        # Some sqlalchemy user instance
+        # ============== Test Track Route Collisions ===================
+
+        # Attempts to insert a new track with the route "real-magic-bassy-flip"
+        # Should attempt to try to route to "real-magic-bassy-flip-1", but
+        # that should be taken by the rename above, so the fallback logic
+        # should trigger making it go to "real-magic-bassy-flip-2"
+        event_type, entry = get_new_track_event_dupe()
         track_record_dupe = lookup_track_record(
             update_task,
             session,
@@ -304,7 +317,39 @@ def test_index_tracks(app):
             '0x'  # txhash
         )
 
+        parse_track_event(
+            None,
+            session,
+            update_task,
+            entry,
+            event_type,
+            track_record_dupe,
+            block_timestamp
+        )
+
+        # Check that track routes are assigned appropriately
+        track_routes = (
+            session.query(TrackRoute).filter(TrackRoute.track_id == 2).all()
+        )
+        assert len(track_routes) == 1
+        assert track_routes[0].is_current is True
+        assert track_routes[0].title_slug == "real-magic-bassy-flip"
+        assert track_routes[0].slug == "real-magic-bassy-flip-2"
+        assert track_routes[0].collision_id == 2
+
+        # Another "real-magic-bassy-flip", which should find collision id 2 and
+        # easily jump to collision id 3 and not need fallback logic
         event_type, entry = get_new_track_event_dupe()
+
+        track_record_dupe = lookup_track_record(
+            update_task,
+            session,
+            entry,
+            3,  # event track id
+            block_number,
+            block_timestamp,
+            '0x'  # txhash
+        )
 
         parse_track_event(
             None,
@@ -315,6 +360,16 @@ def test_index_tracks(app):
             track_record_dupe,
             block_timestamp
         )
+
+        # Check that track routes are assigned appropriately
+        track_routes = (
+            session.query(TrackRoute).filter(TrackRoute.track_id == 3).all()
+        )
+        assert len(track_routes) == 1
+        assert track_routes[0].is_current is True
+        assert track_routes[0].title_slug == "real-magic-bassy-flip"
+        assert track_routes[0].slug == "real-magic-bassy-flip-3"
+        assert track_routes[0].collision_id == 3
 
         # ================== Test Delete Track Event ==================
         event_type, entry = get_delete_track_event()

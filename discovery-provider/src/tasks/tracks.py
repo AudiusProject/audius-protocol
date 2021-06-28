@@ -174,11 +174,15 @@ def update_remixes_table(session, track_record, track_metadata):
                     session.add(remix)
 
 
-def update_track_routes_table(session, track_record, track_metadata):   
+def update_track_routes_table(session, track_record, track_metadata):
+    # Check if the title is staying the same, and if so, return early
+    if track_record.title == track_metadata['title']:
+        return
+
     # Get the title slug, and set the new slug to that
     # (will check for conflicts later)
     new_track_slug_title = (
-        helpers.create_track_slug(track_record.title)
+        helpers.create_track_slug(track_metadata['title'])
     )
     new_track_slug = new_track_slug_title
 
@@ -187,7 +191,7 @@ def update_track_routes_table(session, track_record, track_metadata):
         session
         .query(TrackRoute)
         .filter(TrackRoute.track_id == track_record.track_id,
-                TrackRoute.is_current == True)
+                TrackRoute.is_current == True)  # noqa: E712
         .one_or_none()
     )
 
@@ -195,9 +199,8 @@ def update_track_routes_table(session, track_record, track_metadata):
         if prev_track_route_record.title_slug == new_track_slug_title:
             # If the title slug hasn't changed, we have no work to do
             return
-        else:
-            # The new route will be current
-            prev_track_route_record.is_current = False
+        # The new route will be current
+        prev_track_route_record.is_current = False
 
     # Check for conflicts Find the max conflict ID for the track slug
     max_collision_id = (
@@ -307,6 +310,7 @@ def parse_track_event(
             creator_node_endpoint
         )
 
+        update_track_routes_table(session, track_record, track_metadata)
         track_record = populate_track_record_metadata(
             track_record,
             track_metadata,
@@ -330,7 +334,6 @@ def parse_track_event(
 
         update_stems_table(session, track_record, track_metadata)
         update_remixes_table(session, track_record, track_metadata)
-        update_track_routes_table(session, track_record, track_metadata)
 
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
@@ -366,6 +369,7 @@ def parse_track_event(
             creator_node_endpoint
         )
 
+        update_track_routes_table(session, track_record, track_metadata)
         track_record = populate_track_record_metadata(
             track_record,
             track_metadata,
@@ -389,7 +393,6 @@ def parse_track_event(
             track_record.cover_art = None
 
         update_remixes_table(session, track_record, track_metadata)
-        update_track_routes_table(session, track_record, track_metadata)
 
     if event_type == track_event_types_lookup["delete_track"]:
         track_record.is_delete = True
