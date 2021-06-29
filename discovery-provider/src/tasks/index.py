@@ -3,7 +3,8 @@ import concurrent.futures
 
 from sqlalchemy import func
 from src.app import contract_addresses
-from src.models import AssociatedWallet, Block, Follow, Playlist, Repost, Save, SkippedTransaction, Track, TrackRoute, URSMContentNode, User
+from src.models import AssociatedWallet, Block, Follow, Playlist, Repost,\
+    Save, SkippedTransaction, Track, TrackRoute, URSMContentNode, User
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
 from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001

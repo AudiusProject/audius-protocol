@@ -350,7 +350,7 @@ def create_track_slug(title, collision_id=0):
     Strips special characters, replaces spaces with dashes, converts to
     lowercase, and appends a collision_id if non-zero.
 
-    Example: 
+    Example:
     (Title="My Awesome Track!", collision_id=2) => "my-awesome-track-2"
     """
     # Strip out invalid character

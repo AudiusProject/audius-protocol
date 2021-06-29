@@ -1,7 +1,7 @@
 """create track routes table
 
 Revision ID: 301b1e42dc4b
-Revises: 05e2eeb2bd03
+Revises: 436c10e54758
 Create Date: 2021-06-09 20:51:52.531039
 
 """
@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker
 
 # revision identifiers, used by Alembic.
 revision = "301b1e42dc4b"
-down_revision = "7f4f44a8e880"
+down_revision = "436c10e54758"
 branch_labels = None
 depends_on = None
 
@@ -53,9 +53,9 @@ def upgrade():
             SELECT
                 track_id
                 , owner_id
-                , CONCAT(SPLIT_PART(route_id, '/', 2),  '-', track_id) 
+                , CONCAT(SPLIT_PART(route_id, '/', 2),  '-', track_id)
                     AS slug
-                , CONCAT(SPLIT_PART(route_id, '/', 2),  '-', track_id) 
+                , CONCAT(SPLIT_PART(route_id, '/', 2),  '-', track_id)
                     AS title_slug
                 , 0 AS collision_id
                 , is_current
@@ -63,7 +63,13 @@ def upgrade():
                 , blocknumber
             FROM tracks
             WHERE is_current
-            GROUP BY owner_id, track_id, route_id, is_current, blockhash, blocknumber;
+            GROUP BY
+                owner_id
+                , track_id
+                , route_id
+                , is_current
+                , blockhash
+                , blocknumber;
             """
         )
     )

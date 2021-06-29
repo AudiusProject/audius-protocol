@@ -409,6 +409,8 @@ def test_index_tracks(mock_index_task, app):
 
         revert_blocks(mock_index_task, db, [second_block])
 
+        session.commit()
+
         track_routes = (
             session.query(TrackRoute).all()
         )
