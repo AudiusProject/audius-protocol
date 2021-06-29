@@ -1,0 +1,5 @@
+export COMPOSE_PROJECT_NAME="dn8"
+export audius_server_port="5007"
+export audius_db_port="6438"
+export audius_ipfs_external_port="6068"
+export audius_redis_port="5388"

@@ -1,6 +1,7 @@
 const ethers = require('ethers')
 const abi = require('ethereumjs-abi')
 const assert = require('assert')
+const _signatures = require('./signatures.js')
 
 /** ensures use of pre-configured web3 if provided */
 let web3New
@@ -121,6 +122,24 @@ export const encodeCall = (name, args, values) => {
   const methodId = abi.methodID(name, args).toString('hex')
   const params = abi.rawEncode(args, values).toString('hex')
   return '0x' + methodId + params
+}
+
+export const permit = async (
+  token,
+  approverAcct,
+  approverAcctPrivKey,
+  spenderAcct,
+  amount,
+  relayerAcct,
+) => {
+  const name = await token.name()
+  const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
+
+  let nonce = (await token.nonces(approverAcct)).toNumber()
+  let deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
+  let digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverAcct, spender: spenderAcct, value: amount}, nonce, deadline)
+  let result = _signatures.sign(digest, approverAcctPrivKey)
+  await token.permit(approverAcct, spenderAcct, amount, deadline, result.v, result.r, result.s, {from: relayerAcct})
 }
 
 export const registerServiceProvider = async (

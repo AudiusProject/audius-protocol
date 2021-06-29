@@ -38,7 +38,7 @@
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
       "echo 'Migrating eth contracts'",
-      "cd eth-contracts/; node_modules/.bin/truffle migrate"
+      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 9"
     ],
     "down": [
       "cd eth-contracts/; npm run ganache-q"
@@ -97,12 +97,13 @@
   },
   "discovery-provider": {
     "protocol": "http",
-    "host": "audius-disc-prov_web-server_1",
+    "host": "dn1_web-server_1",
     "port": 5000,
     "up": [
       "cd libs/initScripts; node configureLocalDiscProv.js",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
-      "cd discovery-provider; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider;  . compose/env/shellEnv#.sh;  docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
     ],
@@ -113,17 +114,20 @@
       "sleep 5"
     ],
     "down": [
-      "cd discovery-provider; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down"
+      "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
+      "cd discovery-provider; . compose/env/unsetShellEnv.sh"
     ],
     "register": [
-      "cd libs/; node initScripts/local.js register-discprov-1"
+      "cd libs/; node initScripts/local.js register-discprov #"
     ],
     "restart": [
-      "cd discovery-provider; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
+      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
+      "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
       "docker volume prune -f",
       "cd libs/initScripts; node configureLocalDiscProv.js",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
-      "cd discovery-provider; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
     ]
@@ -148,7 +152,7 @@
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ],
     "down": [
-      "cd creator-node; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans"
+      "cd creator-node; . compose/env/shellEnv#.sh;  docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
     "restart": [
       "cd creator-node; . compose/env/unsetShellEnv.sh",

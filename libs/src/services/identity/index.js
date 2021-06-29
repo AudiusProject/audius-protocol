@@ -298,6 +298,33 @@ class IdentityService {
     })
   }
 
+  // Relays tx data through the solana relay endpoint
+  // type TransactionData = {
+  //   recentBlockhash: string
+  //   secpInstruction?: {
+  //     publicKey: any
+  //     message: string
+  //     signature: any
+  //     recoveryId: number
+  //   }
+  //   instruction: {
+  //     keys: {
+  //       pubkey: string
+  //       isSigner?: boolean
+  //       isWritable?: boolean
+  //     }[]
+  //     programId: string
+  //     data: any
+  //   }
+  // }
+  async solanaRelay (transactionData) {
+    return this._makeRequest({
+      url: '/solana/relay',
+      method: 'post',
+      data: transactionData
+    })
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest (axiosRequestObj) {
