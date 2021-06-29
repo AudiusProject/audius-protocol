@@ -625,11 +625,10 @@ def revert_blocks(self, db, revert_blocks_list):
                     .order_by(TrackRoute.blocknumber.desc())
                     .first()
                 )
-                logger.info(f"Reverting track route {track_route_to_revert}")
-                session.delete(track_route_to_revert)
-                session.commit()  # commit delete first to avoid pkey violation
                 if previous_track_route_entry:
                     previous_track_route_entry.is_current = True
+                logger.info(f"Reverting track route {track_route_to_revert}")
+                session.delete(track_route_to_revert)
 
             # Remove outdated block entry
             session.query(Block).filter(Block.blockhash == revert_hash).delete()

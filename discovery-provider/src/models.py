@@ -892,7 +892,7 @@ class TrackRoute(Base):
     blockhash = Column(String, nullable=False)
     blocknumber = Column(Integer, nullable=False)
 
-    PrimaryKeyConstraint(track_id, is_current)
+    PrimaryKeyConstraint(owner_id, slug)
 
     def __repr__(self):
         return f"<TrackRoute(\

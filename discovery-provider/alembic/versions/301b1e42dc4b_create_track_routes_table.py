@@ -30,13 +30,13 @@ def upgrade():
         sa.Column("is_current", sa.Boolean(), nullable=False, index=False),
         sa.Column("blockhash", sa.String(), nullable=False, index=False),
         sa.Column("blocknumber", sa.Integer(), nullable=False, index=False),
-        sa.UniqueConstraint("owner_id", "slug"),
-        sa.PrimaryKeyConstraint("track_id", "is_current")
+        sa.PrimaryKeyConstraint("owner_id", "slug"),
+        sa.Index("track_id", "is_current")
     )
     bind = op.get_bind()
     session = Session(bind=bind)
 
-    # Bring over existing routes
+    # Bring over existing routes (current tracks)
     session.execute(
         sa.text(
             """
@@ -53,8 +53,10 @@ def upgrade():
             SELECT
                 track_id
                 , owner_id
-                , CONCAT(SPLIT_PART(route_id, '/', 2),  '-', track_id) as slug
-                , CONCAT(SPLIT_PART(route_id, '/', 2),  '-', track_id) as title_slug
+                , CONCAT(SPLIT_PART(route_id, '/', 2),  '-', track_id) 
+                    AS slug
+                , CONCAT(SPLIT_PART(route_id, '/', 2),  '-', track_id) 
+                    AS title_slug
                 , 0 AS collision_id
                 , is_current
                 , blockhash
@@ -62,6 +64,63 @@ def upgrade():
             FROM tracks
             WHERE is_current
             GROUP BY owner_id, track_id, route_id, is_current, blockhash, blocknumber;
+            """
+        )
+    )
+
+    # Bring over existing routes (non-current tracks)
+    session.execute(
+        sa.text(
+            """
+            INSERT INTO track_routes (
+                track_id
+                , owner_id
+                , slug
+                , title_slug
+                , collision_id
+                , is_current
+                , blockhash
+                , blocknumber
+            )
+            SELECT
+                t.track_id
+                , t.owner_id
+                , t.slug
+                , t.title_slug
+                , t.collision_id
+                , t.is_current
+                , t.blockhash
+                , t.blocknumber
+            FROM (
+                SELECT
+                    nc.track_id
+                    , nc.owner_id
+                    , CONCAT(
+                            SPLIT_PART(nc.route_id, '/', 2),
+                            '-',
+                            nc.track_id
+                        ) AS slug
+                    , CONCAT(
+                            SPLIT_PART(nc.route_id, '/', 2),
+                            '-',
+                            nc.track_id
+                        ) AS title_slug
+                    , 0 AS collision_id
+                    , nc.is_current
+                    , nc.blockhash
+                    , nc.blocknumber
+                    , ROW_NUMBER() OVER (
+                            PARTITION BY nc.route_id
+                            ORDER BY nc.blocknumber DESC
+                        ) AS rank
+                FROM tracks AS c_tracks
+                JOIN tracks AS nc
+                ON c_tracks.track_id = nc.track_id
+                WHERE NOT nc.is_current
+                AND c_tracks.is_current
+                AND NOT nc.route_id = c_tracks.route_id
+            ) t
+            WHERE t.rank = 1;
             """
         )
     )
