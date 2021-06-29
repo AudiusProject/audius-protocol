@@ -1,6 +1,12 @@
 const solanaWeb3 = require('@solana/web3.js')
+const splToken = require('@solana/spl-token')
 const { transferWAudioBalance } = require('./transfer')
-const { getBankAccountAddress, createUserBankFrom, getBankAccountInfo } = require('./userBank')
+const { getBankAccountAddress, createUserBankFrom } = require('./userBank')
+const {
+  createAssociatedTokenAccount,
+  getAssociatedTokenAccountInfo,
+  findAssociatedTokenAddress
+} = require('./tokenAccount')
 const { wAudioFromWeiAudio } = require('./wAudio')
 
 const { PublicKey } = solanaWeb3
@@ -43,6 +49,7 @@ class SolanaWeb3Manager {
     this.web3Manager = web3Manager
 
     this.solanaWeb3 = solanaWeb3
+    this.splToken = splToken
   }
 
   async init () {
@@ -91,6 +98,35 @@ class SolanaWeb3Manager {
   }
 
   /**
+   * Creates a token account for the provided solana address (a wallet)
+   * See https://spl.solana.com/associated-token-account
+   * @param {string} solanaAddress
+   */
+  async createAssociatedTokenAccount (solanaAddress) {
+    await createAssociatedTokenAccount({
+      feePayerKey: this.feePayerKey,
+      solanaWalletKey: new PublicKey(solanaAddress),
+      mintKey: this.mintKey,
+      solanaTokenProgramKey: this.solanaTokenKey,
+      connection: this.connection,
+      identityService: this.identityService
+    })
+  }
+
+  /**
+   * Find sthe token account for a provided solana address (a wallet)
+   * See https://spl.solana.com/associated-token-account
+   * @param {string} solanaAddress
+   */
+  async findAssociatedTokenAddress (solanaAddress) {
+    return findAssociatedTokenAddress({
+      solanaWalletKey: new PublicKey(solanaAddress),
+      mintKey: this.mintKey,
+      solanaTokenProgramKey: this.solanaTokenKey
+    })
+  }
+
+  /**
    * Gets a solana bank account from the current we3 provider's eth address
    * @returns {PublicKey} UserBank
    */
@@ -105,18 +141,18 @@ class SolanaWeb3Manager {
   }
 
   /**
-   * Gets the info for a user bank account given a solana address.
-   * If the solanaAddress is not a valid user bank, returns `null`
+   * Gets the info for a user bank/wAudio token account given a solana address.
+   * If the solanaAddress is not a valid token account, returns `null`
    * @returns {AccountInfo | null}
    */
-  async getUserBankInfo (solanaAddress) {
+  async getAssociatedTokenAccountInfo (solanaAddress) {
     try {
-      const res = await getBankAccountInfo(
-        new PublicKey(solanaAddress),
-        this.mintKey,
-        this.solanaTokenKey,
-        this.connection
-      )
+      const res = await getAssociatedTokenAccountInfo({
+        tokenAccountAddressKey: new PublicKey(solanaAddress),
+        mintKey: this.mintKey,
+        solanaTokenProgramKey: this.solanaTokenKey,
+        connection: this.connection
+      })
       return res
     } catch (e) {
       return null
@@ -126,6 +162,9 @@ class SolanaWeb3Manager {
   /**
    * Transfers audio from the web3 provider's eth address
    * @param {string} recipientSolanaAddress
+   *  Recipient solana address which is either a user bank, wAudio token account,
+   *  or a solana account. In the last case, an associated token account is created
+   *  if one does not already exist for the solana account
    * @param {BN} amount the amount of $AUDIO to send in wei units of $AUDIO.
    * **IMPORTANT NOTE**
    * wAudio (Solana) does not support 10^-18 (wei) units of $AUDIO. The smallest
@@ -136,11 +175,23 @@ class SolanaWeb3Manager {
    * of wei $AUDIO for all method calls
    */
   async transferWAudio (recipientSolanaAddress, amount) {
-    // First, validate that the recipient solana address is a valid bank
-    const bankInfo = await this.getUserBankInfo(recipientSolanaAddress)
-    if (!bankInfo) {
-      throw new Error(`${recipientSolanaAddress} is not a valid User Bank `)
+    // Check if the solana address is a token account
+    let tokenAccountInfo = await this.getAssociatedTokenAccountInfo(recipientSolanaAddress)
+    if (!tokenAccountInfo) {
+      console.info('Provided recipient solana address was not a token account')
+      // If not, check to see if it already has an associated token account.
+      const associatedTokenAccount = await this.findAssociatedTokenAddress(recipientSolanaAddress)
+      tokenAccountInfo = await this.getAssociatedTokenAccountInfo(associatedTokenAccount.toString())
+
+      // If it's not a valid token account, we need to make one first
+      if (!tokenAccountInfo) {
+        console.info('Provided recipient solana address has no associated token account, creating')
+        await this.createAssociatedTokenAccount(recipientSolanaAddress)
+      }
+      recipientSolanaAddress = associatedTokenAccount.toString()
     }
+
+    console.info(`Transfering ${amount.toString()} wei $AUDIO to ${recipientSolanaAddress}`)
 
     const wAudioAmount = wAudioFromWeiAudio(amount)
 
