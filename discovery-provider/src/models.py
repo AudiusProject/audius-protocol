@@ -883,7 +883,10 @@ updated_at={self.updated_at})>"
 class TrackRoute(Base):
     __tablename__ = "track_routes"
 
+    # Actual URL slug for the track, includes collision_id
     slug = Column(String, nullable=False)
+    # Just the title piece of the slug for the track, excludes collision_id
+    # Used for finding max collision_id needed for duplicate title_slugs
     title_slug = Column(String, nullable=False)
     collision_id = Column(Integer, nullable=False)
     owner_id = Column(Integer, nullable=False)

@@ -344,7 +344,15 @@ def create_track_route_id(title, handle):
     return f"{sanitized_handle}/{sanitized_title}"
 
 
-def create_track_slug(title, conflict_index=0):
+def create_track_slug(title, collision_id=0):
+    """ Converts the title of a track into a URL-friendly 'slug'
+
+    Strips special characters, replaces spaces with dashes, converts to
+    lowercase, and appends a collision_id if non-zero.
+
+    Example: 
+    (Title="My Awesome Track!", collision_id=2) => "my-awesome-track-2"
+    """
     # Strip out invalid character
     sanitized_title = re.sub(
         r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]", "", title
@@ -352,18 +360,14 @@ def create_track_slug(title, conflict_index=0):
 
     # Convert whitespaces to dashes
     sanitized_title = re.sub(r"\s+", "-", sanitized_title)
-
-    # Convert multiple dashes to single dashes
     sanitized_title = re.sub(r"-+", "-", sanitized_title)
 
-    # Lowercase it
     sanitized_title = sanitized_title.lower()
 
-    # Add conflict index
-    if conflict_index > 0:
-        sanitized_title = f"{sanitized_title}-{conflict_index}"
+    if collision_id > 0:
+        sanitized_title = f"{sanitized_title}-{collision_id}"
 
-    return f"{sanitized_title}"
+    return sanitized_title
 
 
 # Validates the existance of arguments within a request.
