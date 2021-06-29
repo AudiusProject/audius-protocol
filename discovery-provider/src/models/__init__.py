@@ -25,6 +25,7 @@ from .models import \
     IPLDBlacklistBlock,\
     Play,\
     Playlist,\
+    ProfileCompletionChallenge,\
     Remix,\
     Repost,\
     RepostType,\
@@ -73,6 +74,7 @@ __all__ = [
     'IPLDBlacklistBlock',
     'Play',
     'Playlist',
+    'ProfileCompletionChallenge',
     'Remix',
     'Repost',
     'RepostType',
