@@ -5,7 +5,8 @@ from sqlalchemy import (
     Boolean,
     PrimaryKeyConstraint,
 )
-from . import Base
+from .models import Base
+
 
 class TrackRoute(Base):
     __tablename__ = "track_routes"
