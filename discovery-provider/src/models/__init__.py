@@ -1,4 +1,3 @@
-from .track_route import TrackRoute
 from .models import \
     AggregateDailyAppNameMetrics,\
     AggregateDailyTotalUsersMetrics,\
@@ -45,7 +44,7 @@ from .models import \
     User,\
     UserBalance,\
     UserChallenge
-
+from .track_route import TrackRoute
 
 __all__ = [
     'AggregateDailyAppNameMetrics',
