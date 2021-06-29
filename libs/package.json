@@ -20,7 +20,7 @@
   "dependencies": {
     "@audius/hedgehog": "1.0.8",
     "@ethersproject/solidity": "5.0.5",
-    "@solana/spl-token": "^0.1.4",
+    "@solana/spl-token": "0.1.6",
     "@solana/web3.js": "1.20.0",
     "abi-decoder": "1.2.0",
     "ajv": "^6.12.2",
