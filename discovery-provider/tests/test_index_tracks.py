@@ -1,12 +1,12 @@
 import random
 from datetime import datetime
+from unittest.mock import patch
 from src.models import Block, TrackRoute, User
 from src.tasks.index import revert_blocks
 from src.tasks.tracks import parse_track_event, lookup_track_record, track_event_types_lookup
 from src.utils import helpers
 from src.utils.db_session import get_db
 from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
-from unittest.mock import patch
 
 def get_new_track_event():
     event_type = track_event_types_lookup['new_track']
@@ -116,7 +116,6 @@ ipfs_client = IPFSClient({
         "track_id": 77955,
         "stem_of": None
     },
-    
     multihash2: {
         "owner_id": 1,
         "title": "real magic bassy flip 1",
@@ -405,7 +404,7 @@ def test_index_tracks(mock_index_task, app):
             .filter(TrackRoute.track_id == 1, TrackRoute.is_current == False)
             .all()
         )
-        assert len(track_route) > 0
+        assert track_route
 
         revert_blocks(mock_index_task, db, [second_block])
 
