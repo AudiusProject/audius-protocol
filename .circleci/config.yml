@@ -38,6 +38,9 @@ jobs:
           name: libs repo init
           command: |
             cd libs
+            rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
+            source ~/.bash_profile
+            nvm install 10.16
             npm install
       - save_cache:
           name: Save libs cache
