@@ -889,6 +889,8 @@ class TrackRoute(Base):
     owner_id = Column(Integer, nullable=False)
     track_id = Column(Integer, nullable=False)
     is_current = Column(Boolean, nullable=False)
+    blockhash = Column(String, nullable=False)
+    blocknumber = Column(Integer, nullable=False)
 
     PrimaryKeyConstraint(track_id, is_current)
 
@@ -899,4 +901,6 @@ title_slug={self.title_slug},\
 collision_id={self.collision_id},\
 owner_id={self.owner_id},\
 track_id={self.track_id},\
-is_current={self.is_curernt})>"
+is_current={self.is_current},\
+blockhash={self.blockhash},\
+blocknumber={self.blocknumber})>"

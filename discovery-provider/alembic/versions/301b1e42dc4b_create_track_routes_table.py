@@ -28,7 +28,8 @@ def upgrade():
         sa.Column("owner_id", sa.Integer(), nullable=False, index=False),
         sa.Column("track_id", sa.Integer(), nullable=False, index=False),
         sa.Column("is_current", sa.Boolean(), nullable=False, index=False),
-        sa.Index("owner_id", "slug"),
+        sa.Column("blockhash", sa.String(), nullable=False, index=False),
+        sa.Column("blocknumber", sa.Integer(), nullable=False, index=False),
         sa.UniqueConstraint("owner_id", "slug"),
         sa.PrimaryKeyConstraint("track_id", "is_current")
     )
@@ -46,6 +47,8 @@ def upgrade():
                 , title_slug
                 , collision_id
                 , is_current
+                , blockhash
+                , blocknumber
             )
             SELECT
                 track_id
@@ -54,9 +57,11 @@ def upgrade():
                 , CONCAT(SPLIT_PART(route_id, '/', 2),  '-', track_id) as title_slug
                 , 0 AS collision_id
                 , is_current
+                , blockhash
+                , blocknumber
             FROM tracks
             WHERE is_current
-            GROUP BY owner_id, track_id, route_id, is_current;
+            GROUP BY owner_id, track_id, route_id, is_current, blockhash, blocknumber;
             """
         )
     )

@@ -1,11 +1,12 @@
 import random
 from datetime import datetime
 from src.models import Block, TrackRoute, User
+from src.tasks.index import revert_blocks
 from src.tasks.tracks import parse_track_event, lookup_track_record, track_event_types_lookup
 from src.utils import helpers
 from src.utils.db_session import get_db
 from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
-
+from unittest.mock import patch
 
 def get_new_track_event():
     event_type = track_event_types_lookup['new_track']
@@ -173,7 +174,8 @@ ipfs_client = IPFSClient({
 web3 = Web3()
 
 # ========================================== Start Tests ==========================================
-def test_index_tracks(app):
+@patch('src.tasks.index')
+def test_index_tracks(mock_index_task, app):
     """Tests that tracks are indexed correctly"""
     with app.app_context():
         db = get_db()
@@ -278,6 +280,29 @@ def test_index_tracks(app):
         }
 
         # ================== Test Update Track Event ==================
+        prev_block = session.query(Block).filter(Block.is_current == True).one()
+        prev_block.is_current = False
+        block_number += 1
+        block_hash = f"0x{block_number}"
+        # Create a new block to test reverts later
+        second_block = Block(
+            blockhash=block_hash,
+            number=block_number,
+            is_current=True
+        )
+        session.add(second_block)
+        session.flush()
+
+        # Refresh the track record
+        track_record = lookup_track_record(
+            update_task,
+            session,
+            entry,
+            1, # event track id
+            block_number,
+            block_hash,
+            '0x' # txhash
+        )
 
         event_type, entry = get_update_track_event()
         parse_track_event(
@@ -313,7 +338,7 @@ def test_index_tracks(app):
             entry,
             2,  # event track id
             block_number,
-            block_timestamp,
+            block_hash,
             '0x'  # txhash
         )
 
@@ -347,7 +372,7 @@ def test_index_tracks(app):
             entry,
             3,  # event track id
             block_number,
-            block_timestamp,
+            block_hash,
             '0x'  # txhash
         )
 
@@ -370,6 +395,30 @@ def test_index_tracks(app):
         assert track_routes[0].title_slug == "real-magic-bassy-flip"
         assert track_routes[0].slug == "real-magic-bassy-flip-3"
         assert track_routes[0].collision_id == 3
+
+        # ================== Test Revert TrackRoute ===================
+
+        # Assert that there exists a previous record to revert to
+        # that isn't marked as is_current
+        track_route = (
+            session.query(TrackRoute)
+            .filter(TrackRoute.track_id == 1, TrackRoute.is_current == False)
+            .all()
+        )
+        assert len(track_route) > 0
+
+        revert_blocks(mock_index_task, db, [second_block])
+
+        track_routes = (
+            session.query(TrackRoute).all()
+        )
+
+        # That old route should now be marked as is_current, and in fact should
+        # be the only remaining route
+        assert len(track_routes) == 1
+        assert track_routes[0].is_current is True
+        assert track_routes[0].track_id == 1
+        assert track_routes[0].slug == "real-magic-bassy-flip"
 
         # ================== Test Delete Track Event ==================
         event_type, entry = get_delete_track_event()
