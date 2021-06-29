@@ -153,6 +153,7 @@ def create_celery(test_config=None):
     eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
 
     # Initialize Solana web3 provider
+    # solana_client = Client('https://audius.rpcpool.com')
     solana_client = Client('https://audius.rpcpool.com')
 
     global registry
@@ -336,8 +337,8 @@ def configure_celery(flask_app, celery, test_config=None):
                  "src.tasks.index_network_peers", "src.tasks.index_trending",
                  "src.tasks.cache_user_balance", "src.monitors.monitoring_queue",
                  "src.tasks.cache_trending_playlists", "src.tasks.index_solana_plays",
-                 "src.tasks.index_aggregate_views", "src.tasks.index_challenges"
-                "src.tasks.index_user_bank"
+                 "src.tasks.index_aggregate_views", "src.tasks.index_challenges",
+                 "src.tasks.index_user_bank"
                  ],
         beat_schedule={
             "update_discovery_provider": {
@@ -406,7 +407,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "index_user_bank": {
                 "task": "index_user_bank",
-                "schedule": timedelta(seconds=1)
+                "schedule": timedelta(seconds=5)
             },
             "index_challenges": {
                 "task": "index_challenges",

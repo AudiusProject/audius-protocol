@@ -1,10 +1,14 @@
+import concurrent.futures
 import logging
 import re
+import time
 
+from sqlalchemy import desc
+from sqlalchemy.sql.expression import intersect
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.solana import get_address_pair
-from src.models import User
+from src.models import User, UserBankTransaction, UserBankAccount
 
 from solana.publickey import PublicKey
 
@@ -15,6 +19,12 @@ USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS)
 WAUDIO_PROGRAM_ID = PublicKey("CYzPVv1zB9RH6hRWRKprFoepdD8Y7Q5HefCqrybvetja")
 SPL_TOKEN_ID = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 MIN_SLOT = 84150237
+
+# Maximum number of batches to process at once
+TX_SIGNATURES_MAX_BATCHES = 3
+
+# Last N entries present in tx_signatures array during processing
+TX_SIGNATURES_RESIZE_LENGTH = 3
 
 def parse_eth_address_from_msg(msg):
     logger.error(f"index_user_bank.py {msg}")
@@ -28,7 +38,7 @@ def parse_eth_address_from_msg(msg):
     public_key_str = f"0x{public_key}"
     return public_key_str, public_key_bytes
 
-def get_known_user(eth_address, db):
+def user_exists_for_eth_address(eth_address, db):
     with db.scoped_session() as session:
         logger.info(f"index_user_bank.py | Searching for user {eth_address}")
         existing_user_query = (
@@ -37,6 +47,210 @@ def get_known_user(eth_address, db):
             .filter(User.wallet == eth_address)
         ).first()
         logger.info(f"index_user_bank.py | Found user {existing_user_query}")
+        return existing_user_query is None
+
+def get_highest_user_bank_tx_slot(db):
+    slot = MIN_SLOT
+    with db.scoped_session() as session:
+        tx_query = (
+            session.query(UserBankTransaction)
+            .order_by(desc(UserBankTransaction.slot))
+        ).first()
+        if tx_query:
+            slot = tx_query.slot
+    return slot
+
+# Query a tx signature and confirm its existence
+def get_tx_in_db(session, tx_sig):
+    exists = False
+    tx_sig_db_count = (
+        session.query(UserBankTransaction)
+        .filter(
+                UserBankTransaction.signature == tx_sig
+            )
+        ).count()
+    exists = tx_sig_db_count > 0
+    logger.info(f"index_user_bank.py | {tx_sig} exists={exists}")
+    return exists
+
+# Retry 5x until a tx 'result' is found with valid contents
+# If not found, move forward
+def get_sol_tx_info(solana_client, tx_sig):
+    retries = 5
+    while retries > 0:
+        try:
+            tx_info = solana_client.get_confirmed_transaction(tx_sig)
+            if tx_info["result"] is not None:
+                return tx_info
+        except Exception as e:
+            logger.error(f"index_solana_plays.py | Error fetching tx {tx_sig}, {e}", exc_info=True)
+        retries -= 1
+        logger.error(f"index_solana_plays.py | Retrying tx fetch: {tx_sig}")
+    raise Exception(f"Failed fetching {tx_sig}, exit loop")
+
+def process_user_bank_tx_details(session, tx_info, tx_sig):
+    meta = tx_info['result']['meta']
+    error = meta['err']
+    if error:
+        logger.info(f"index_user_bank.py | Skipping error transaction from chain {tx_info}")
+        return
+    account_keys = tx_info['result']['transaction']['message']['accountKeys']
+    instructions = meta['logMessages']
+    for msg in instructions:
+        if 'EthereumAddress' in msg:
+            public_key_str, public_key_bytes = parse_eth_address_from_msg(msg)
+            logger.info(f"index_user_bank.py | {public_key_str}")
+            # Rederive address
+            base_address, derived_address = get_address_pair(
+                WAUDIO_PROGRAM_ID,
+                public_key_bytes,
+                USER_BANK_KEY,
+                SPL_TOKEN_ID
+            )
+            bank_acct = str(derived_address[0])
+            logger.info("index_user_bank.py " + str(bank_acct))
+            logger.info("index_user_bank.py " + str(account_keys))
+            # Confirm expected address is present
+            try:
+                bank_acct_index = account_keys.index(bank_acct)
+                session.add(UserBankAccount(
+                    signature=tx_sig,
+                    ethereum_address=public_key_str,
+                    bank_account=bank_acct
+                ))
+                if bank_acct_index:
+                    logger.info(f"index_user_bank.py | Found known account: {public_key_str}, {bank_acct}")
+
+            except ValueError as e:
+                logger.info(e)
+        elif 'Transfer' in msg:
+            # print(tx_info)
+            # print(account_keys)
+            # Accounts to refresh balance
+            acct_1 = account_keys[1]
+            acct_2 = account_keys[2]
+            print(f"Balance refresh accounts: {acct_1}, {acct_2}")
+
+def parse_user_bank_transaction(session, solana_client, tx_sig):
+    tx_info = get_sol_tx_info(solana_client, tx_sig)
+    tx_slot = tx_info['result']['slot']
+    logger.error(f"index_user_bank.py | parse_user_bank_transaction | {tx_slot}, {tx_sig} | {tx_info}")
+    process_user_bank_tx_details(session, tx_info, tx_sig)
+    session.add(UserBankTransaction(
+        signature=tx_sig,
+        slot=tx_slot
+    ))
+
+def process_user_bank_txs():
+    solana_client = index_user_bank.solana_client
+    db = index_user_bank.db
+    logger.info("index_user_bank.py | Acquired lock")
+    latest_processed_slot = get_highest_user_bank_tx_slot(db)
+    logger.info(f"index_user_bank.py | high tx = {latest_processed_slot}")
+
+    # List of signatures that will be populated as we traverse recent operations
+    transaction_signatures = []
+
+    # Current batch of transactions
+    transaction_signature_batch = []
+
+    last_tx_signature = None
+
+    # Loop exit condition
+    intersection_found = False
+
+    while not intersection_found:
+        transactions_history = solana_client.get_confirmed_signature_for_address2(
+            USER_BANK_ADDRESS,
+            before=last_tx_signature,
+            limit=20
+        )
+        transactions_array = transactions_history['result']
+        if not transactions_array:
+            intersection_found = True
+            logger.info(
+                f"index_user_bank.py | No transactions found before {last_tx_signature}"
+            )
+        else:
+            with db.scoped_session() as session:
+                for tx_info in transactions_array:
+                    tx_sig = tx_info['signature']
+                    tx_slot = tx_info['slot']
+                    logger.info(f"index_user_bank.py | Processing tx, tx_sig={tx_sig} | slot={tx_slot}")
+
+                    if tx_info['slot'] > latest_processed_slot:
+                        transaction_signature_batch.append(tx_sig)
+                    elif tx_info['slot'] <= latest_processed_slot and tx_info['slot'] > MIN_SLOT:
+                        # Check the tx signature for any txs in the latest batch,
+                        # and if not present in DB, add to processing
+                        logger.info(
+                            f"index_user_bank.py | Latest slot re-traversal\
+    slot={tx_slot}, sig={tx_sig},\
+    latest_processed_slot(db)={latest_processed_slot}")
+                        exists = get_tx_in_db(session, tx_sig)
+                        if exists:
+                            intersection_found = True
+                            break
+                        else:
+                            # Ensure this transaction is still processed
+                            transaction_signature_batch.append(tx_sig)
+
+                # Restart processing at the end of this transaction signature batch
+                last_tx = transactions_array[-1]
+                last_tx_signature = last_tx["signature"]
+
+                # Append batch of processed signatures
+                if transaction_signature_batch:
+                    transaction_signatures.append(transaction_signature_batch)
+
+                # Ensure processing does not grow unbounded
+                if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:
+                    logger.info(f"index_user_bank.py | slicing tx_sigs from {len(transaction_signatures)} entries")
+                    transaction_signatures = transaction_signatures[-TX_SIGNATURES_RESIZE_LENGTH:]
+                    logger.info(f"index_user_bank.py | sliced tx_sigs to {len(transaction_signatures)} entries")
+
+                # Reset batch state
+                transaction_signature_batch = []
+
+    logger.info(f"index_user_bank.py {str(transaction_signatures)}")
+
+    transaction_signatures.reverse()
+
+    logger.info(f"index_user_bank.py {str(transaction_signatures)}")
+
+    num_txs_processed = 0
+
+    for tx_sig_batch in transaction_signatures:
+        logger.error(f"index_user_bank.py | processing {tx_sig_batch}")
+        batch_start_time = time.time()
+        # Process each batch in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            with db.scoped_session() as session:
+                parse_sol_tx_futures = {
+                    executor.submit(
+                        parse_user_bank_transaction,
+                            session,
+                            solana_client,
+                            tx_sig
+                        ): tx_sig
+                    for tx_sig in tx_sig_batch
+                }
+                for future in concurrent.futures.as_completed(
+                        parse_sol_tx_futures):
+                    try:
+                        # No return value expected here so we just ensure all futures are resolved
+                        future.result()
+                        num_txs_processed += 1
+                    except Exception as exc:
+                        logger.error(f"index_user_bank.py | {exc}")
+
+        batch_end_time = time.time()
+        batch_duration = batch_end_time - batch_start_time
+        logger.info(
+            f"index_user_bank.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
+        )
+
+
 
 ######## CELERY TASKS ########
 @celery.task(name="index_user_bank", bind=True)
@@ -45,8 +259,6 @@ def index_user_bank(self):
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/__init__.py
     redis = index_user_bank.redis
-    solana_client = index_user_bank.solana_client
-    db = index_user_bank.db
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
@@ -56,44 +268,7 @@ def index_user_bank(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info("index_user_bank.py | Acquired lock")
-            signatures = solana_client.get_confirmed_signature_for_address2(USER_BANK_ADDRESS, limit=10)
-            history = signatures['result']
-            for tx_info in history:
-                sig = tx_info['signature']
-                logger.info(f"index_user_bank.py | {sig}")
-                if tx_info['slot'] < MIN_SLOT:
-                    logger.info(f"index_user_bank.py | Min slot found ({MIN_SLOT}), exiting")
-                    break
-                details = solana_client.get_confirmed_transaction(sig)
-                meta = details['result']['meta']
-                account_keys = details['result']['transaction']['message']['accountKeys']
-                instructions = meta['logMessages']
-                for msg in instructions:
-                    if 'EthereumAddress' in msg:
-                        public_key_str, public_key_bytes = parse_eth_address_from_msg(msg)
-                        logger.info(f"index_user_bank.py | {public_key_str}")
-                        # Rederive address
-                        base_address, derived_address = get_address_pair(
-                            WAUDIO_PROGRAM_ID,
-                            public_key_bytes,
-                            USER_BANK_KEY,
-                            SPL_TOKEN_ID
-                        )
-                        bank_acct = str(derived_address[0])
-                        logger.info("index_user_bank.py " + str(bank_acct))
-                        logger.info("index_user_bank.py " + str(account_keys))
-                        # Confirm expected address is present
-                        try:
-                            bank_acct_index = account_keys.index(bank_acct)
-                            if bank_acct_index:
-                                logger.info(f"index_user_bank.py | Found known account: {public_key_str}, {bank_acct}")
-                        except ValueError as e:
-                            logger.info(e)
-                        # Confirm whether this eth address is known within protocol
-                        get_known_user(public_key_str, db)
-
-            logger.info(f"index_user_bank.py {USER_BANK_ADDRESS}")
+            process_user_bank_txs()
         else:
             logger.info("index_user_bank.py | Failed to acquire lock")
     except Exception as e:
