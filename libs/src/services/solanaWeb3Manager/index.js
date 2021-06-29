@@ -114,7 +114,7 @@ class SolanaWeb3Manager {
   }
 
   /**
-   * Find sthe token account for a provided solana address (a wallet)
+   * Finds the wAudio token account for a provided solana address (a wallet)
    * See https://spl.solana.com/associated-token-account
    * @param {string} solanaAddress
    */

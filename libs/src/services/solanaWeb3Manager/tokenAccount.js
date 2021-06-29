@@ -37,12 +37,12 @@ async function findAssociatedTokenAddress ({
  * @param {Connection} connection
  * @returns {AccountInfo}
  */
-const getAssociatedTokenAccountInfo = async ({
+async function getAssociatedTokenAccountInfo ({
   tokenAccountAddressKey,
   mintKey,
   solanaTokenProgramKey,
   connection
-}) => {
+}) {
   const token = new Token(
     connection,
     mintKey,
@@ -60,7 +60,7 @@ const getAssociatedTokenAccountInfo = async ({
  * @param {PublicKey} mintKey
  * @param {PublicKey} solanaTokenProgramKey
  * @param {Connection} connection
- * @param {identityService} identityService
+ * @param {IdentityService} identityService
  */
 async function createAssociatedTokenAccount ({
   feePayerKey,
@@ -89,31 +89,31 @@ async function createAssociatedTokenAccount ({
       isSigner: false,
       isWritable: true
     },
-    // 2. `[]` Wallet address for the new associated token account
+    // 2. `[r]` Wallet address for the new associated token account
     {
       pubkey: solanaWalletKey,
       isSigner: false,
       isWritable: false
     },
-    // 3. `[]` The token mint for the new associated token account
+    // 3. `[r]` The token mint for the new associated token account
     {
       pubkey: mintKey,
       isSigner: false,
       isWritable: false
     },
-    // 4. `[]` System program
+    // 4. `[r]` System program
     {
       pubkey: SystemProgram.programId,
       isSigner: false,
       isWritable: false
     },
-    // 5. `[]` SPL Token program
+    // 5. `[r]` SPL Token program
     {
       pubkey: solanaTokenProgramKey,
       isSigner: false,
       isWritable: false
     },
-    // 6. `[]` Rent sysvar
+    // 6. `[r]` Rent sysvar
     {
       pubkey: SYSVAR_RENT_PUBKEY,
       isSigner: false,
