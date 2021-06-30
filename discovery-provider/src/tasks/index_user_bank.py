@@ -16,12 +16,19 @@ from solana.publickey import PublicKey
 
 logger = logging.getLogger(__name__)
 
+# Populate values used in UserBank indexing from config
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
 USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS)
-WAUDIO_PROGRAM_ID = PublicKey("CYzPVv1zB9RH6hRWRKprFoepdD8Y7Q5HefCqrybvetja")
-WAUDIO_MINT_PUBKEY = PublicKey("9zyPU1mjgzaVyQsYwKJJ7AhVz5bgx5uc1NPABvAcUXsT")
+WAUDIO_PROGRAM_ADDRESS = shared_config["solana"]["waudio_program_address"]
+WAUDIO_PROGRAM_PUBKEY = PublicKey(WAUDIO_PROGRAM_ADDRESS)
+WAUDIO_MINT_ADDRESS = shared_config["solana"]["waudio_mint_address"]
+WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS)
+
+# Static SPL Token Program ID
 SPL_TOKEN_ID = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
-MIN_SLOT = 84150237
+
+# Used to skip
+MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
 
 # Maximum number of batches to process at once
 TX_SIGNATURES_MAX_BATCHES = 3
@@ -29,7 +36,9 @@ TX_SIGNATURES_MAX_BATCHES = 3
 # Last N entries present in tx_signatures array during processing
 TX_SIGNATURES_RESIZE_LENGTH = 3
 
-# Recover ethereum public key information
+# Recover ethereum public key from bytes array
+# Message formatted as follows:
+# EthereumAddress = [214, 237, 135, 129, 143, 240, 221, 138, 97, 84, 199, 236, 234, 175, 81, 23, 114, 209, 118, 39]
 def parse_eth_address_from_msg(msg):
     logger.error(f"index_user_bank.py {msg}")
     res = re.findall(r'\[.*?\]', msg)
@@ -131,7 +140,7 @@ def process_user_bank_tx_details(session, tx_info, tx_sig, timestamp):
     waudio_token = Token(
         conn=solana_client,
         pubkey=WAUDIO_MINT_PUBKEY,
-        program_id=WAUDIO_PROGRAM_ID,
+        program_id=WAUDIO_PROGRAM_PUBKEY,
         payer=[],  # not making any txs so payer is not required
     )
 
@@ -148,7 +157,7 @@ def process_user_bank_tx_details(session, tx_info, tx_sig, timestamp):
             logger.info(f"index_user_bank.py | {public_key_str}")
             # Rederive address
             base_address, derived_address = get_address_pair(
-                WAUDIO_PROGRAM_ID,
+                WAUDIO_PROGRAM_PUBKEY,
                 public_key_bytes,
                 USER_BANK_KEY,
                 SPL_TOKEN_ID
@@ -175,9 +184,6 @@ def process_user_bank_tx_details(session, tx_info, tx_sig, timestamp):
             acct_1 = account_keys[1]
             acct_2 = account_keys[2]
             logger.info(f"index_user_bank.py | Balance refresh accounts: {acct_1}, {acct_2}")
-            # acct_1_bal = waudio_token.get_balance(PublicKey(acct_1))
-            # acct_2_bal = waudio_token.get_balance(PublicKey(acct_2))
-            # logger.info(f"index_user_bank.py | queried balance {acct_1}:{acct_1_bal}, {acct_2},{acct_2_bal}")
             refresh_user_balance(session, acct_1, waudio_token)
             refresh_user_balance(session, acct_2, waudio_token)
 
