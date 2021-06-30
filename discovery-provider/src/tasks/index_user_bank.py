@@ -3,16 +3,13 @@ import datetime
 import logging
 import re
 import time
-
 from sqlalchemy import desc, and_
-from sqlalchemy.sql.expression import intersect
-from src.tasks.celery_app import celery
-from src.utils.config import shared_config
-from src.utils.solana import get_address_pair
-# from src.queries.get_balances import enqueue_balance_refresh
 from src.models import User, UserBankTransaction, UserBankAccount, UserBalance
 from spl.token.client import Token
 from solana.publickey import PublicKey
+from src.tasks.celery_app import celery
+from src.utils.config import shared_config
+from src.utils.solana import get_address_pair
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +66,7 @@ def get_tx_in_db(session, tx_sig):
     tx_sig_db_count = (
         session.query(UserBankTransaction)
         .filter(
-                UserBankTransaction.signature == tx_sig
+            UserBankTransaction.signature == tx_sig
             )
         ).count()
     exists = tx_sig_db_count > 0
@@ -194,10 +191,11 @@ def parse_user_bank_transaction(session, solana_client, tx_sig):
     process_user_bank_tx_details(session, tx_info, tx_sig, parsed_timestamp)
     session.add(
         UserBankTransaction(
-        signature=tx_sig,
-        slot=tx_slot,
-        created_at=parsed_timestamp
-    ))
+            signature=tx_sig,
+            slot=tx_slot,
+            created_at=parsed_timestamp
+        )
+    )
 
 def process_user_bank_txs():
     solana_client = index_user_bank.solana_client

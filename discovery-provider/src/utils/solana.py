@@ -1,9 +1,5 @@
 import base58
-import solana
 from solana.publickey import PublicKey
-from solana.account import Account
-from solana.rpc.api import Client
-from spl.token.client import Token
 
 def get_address_pair(mint, hashed_eth_pk, program_id, spl_token_id):
     base_pk, base_seed = get_base_address(mint, program_id)
