@@ -153,8 +153,7 @@ def create_celery(test_config=None):
     eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
 
     # Initialize Solana web3 provider
-    # solana_client = Client('https://audius.rpcpool.com')
-    solana_client = Client('https://audius.rpcpool.com')
+    solana_client = Client(SOLANA_ENDPOINT)
 
     global registry
     global user_factory
