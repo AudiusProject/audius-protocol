@@ -327,7 +327,7 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
 def create_track_route_id(title, handle):
     # Strip out invalid character
     sanitized_title = re.sub(
-        r'!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]', '', title)
+        r'!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00', '', title)
 
     # Convert whitespaces to dashes
     sanitized_title = re.sub(r'\s+', '-', sanitized_title)
@@ -355,7 +355,7 @@ def create_track_slug(title, collision_id=0):
     """
     # Strip out invalid character
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]", "", title
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^", "", title
     )
 
     # Convert whitespaces to dashes

@@ -436,3 +436,8 @@ def test_index_tracks(mock_index_task, app):
 
         # updated_at should be updated every parse_track_event
         assert track_record.is_delete == True
+
+def test_track_index_helpers():
+    title = "#$*$(Strip\x00\x00\x00 !!@#*)&$(&#$%*Weird   + Characters"
+    assert helpers.create_track_slug(title, 0) == "strip-weird-characters"
+    assert helpers.create_track_slug(title, 3) == "strip-weird-characters-3"
