@@ -2,6 +2,7 @@ const bs58 = require('bs58')
 const Web3 = require('./web3')
 const axios = require('axios')
 const MultiProvider = require('./utils/multiProvider')
+const uuid = require('./utils/uuid')
 
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
@@ -135,6 +136,10 @@ class Utils {
 
   static isZeroAddress (address) {
     return (address === Utils.zeroAddress)
+  }
+
+  static makeUuid () {
+    return uuid()
   }
 }
 
