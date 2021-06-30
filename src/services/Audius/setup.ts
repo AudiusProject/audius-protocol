@@ -117,7 +117,7 @@ const configureReadOnlyLibs = async () => {
     ethProviderUrl,
     ethOwnerWallet
   )
-  const discoveryProviderConfig = {}
+  const discoveryProviderConfig = audius.configDiscoveryProvider()
 
   let audiusLibsConfig = {
     ethWeb3Config,

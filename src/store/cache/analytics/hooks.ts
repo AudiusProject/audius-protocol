@@ -129,10 +129,10 @@ async function fetchRoutesTimeSeries(
   let error = false
   let metric: TimeSeriesRecord[] = []
   try {
-    const bucket_size = BUCKET_GRANULARITY_MAP[bucket]
+    const bucketSize = BUCKET_GRANULARITY_MAP[bucket]
     metric = await fetchWithLibs({
       endpoint: `v1/metrics/aggregates/routes/${bucket}`,
-      queryParams: { bucket_size }
+      queryParams: { bucket_size: bucketSize }
     })
   } catch (e) {
     console.error(e)
@@ -161,14 +161,14 @@ async function fetchTimeSeries(
   nodes: DiscoveryProvider[],
   clampDays: boolean = true
 ) {
-  const start_time = getStartTime(bucket, clampDays)
+  const startTime = getStartTime(bucket, clampDays)
   let error = false
   let metric: TimeSeriesRecord[] = []
   try {
-    const bucket_size = BUCKET_GRANULARITY_MAP[bucket]
+    const bucketSize = BUCKET_GRANULARITY_MAP[bucket]
     const data = await fetchWithLibs({
       endpoint: `v1/metrics/${route}`,
-      queryParams: { bucket_size, start_time }
+      queryParams: { bucket_size: bucketSize, start_time: startTime }
     })
     metric = data.reverse()
   } catch (e) {
@@ -349,10 +349,10 @@ export function fetchTrailingTopGenres(
 ): ThunkAction<void, AppState, Audius, Action<string>> {
   return async dispatch => {
     try {
-      const start_time = getStartTime(bucket)
+      const startTime = getStartTime(bucket)
       const data = await fetchWithLibs({
         endpoint: 'v1/metrics/genres',
-        queryParams: { start_time }
+        queryParams: { start_time: startTime }
       })
 
       const agg: CountRecord = {
