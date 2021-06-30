@@ -24,7 +24,7 @@ WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS)
 # Static SPL Token Program ID
 SPL_TOKEN_ID = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 
-# Used to skip
+# Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
 
 # Maximum number of batches to process at once
@@ -140,7 +140,6 @@ def process_user_bank_tx_details(session, tx_info, tx_sig, timestamp):
         program_id=WAUDIO_PROGRAM_PUBKEY,
         payer=[],  # not making any txs so payer is not required
     )
-
     meta = tx_info['result']['meta']
     error = meta['err']
     if error:
@@ -153,6 +152,7 @@ def process_user_bank_tx_details(session, tx_info, tx_sig, timestamp):
             public_key_str, public_key_bytes = parse_eth_address_from_msg(msg)
             logger.info(f"index_user_bank.py | {public_key_str}")
             # Rederive address
+            # pylint: disable=unused-variable
             base_address, derived_address = get_address_pair(
                 WAUDIO_PROGRAM_PUBKEY,
                 public_key_bytes,
@@ -160,7 +160,7 @@ def process_user_bank_tx_details(session, tx_info, tx_sig, timestamp):
                 SPL_TOKEN_ID
             )
             bank_acct = str(derived_address[0])
-            # Confirm expected address is present
+            # Confirm expected address is present in transaction
             try:
                 bank_acct_index = account_keys.index(bank_acct)
                 session.add(UserBankAccount(
