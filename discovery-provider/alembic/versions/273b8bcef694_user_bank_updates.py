@@ -37,8 +37,9 @@ def upgrade():
                 sa.Column('bank_account', sa.String(), nullable=False),
                 sa.PrimaryKeyConstraint('signature')
                 )
+
     op.add_column('user_balances',
-                sa.Column('waudio', sa.Integer(), server_default='0', nullable=True)
+                sa.Column('waudio', sa.String(), server_default='0', nullable=True)
                 )
 
 

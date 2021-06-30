@@ -15,11 +15,11 @@ logger = logging.getLogger(__name__)
 
 # Populate values used in UserBank indexing from config
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
-USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS)
 WAUDIO_PROGRAM_ADDRESS = shared_config["solana"]["waudio_program_address"]
-WAUDIO_PROGRAM_PUBKEY = PublicKey(WAUDIO_PROGRAM_ADDRESS)
 WAUDIO_MINT_ADDRESS = shared_config["solana"]["waudio_mint_address"]
-WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS)
+USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
+WAUDIO_PROGRAM_PUBKEY = PublicKey(WAUDIO_PROGRAM_ADDRESS) if USER_BANK_ADDRESS else None
+WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS) if WAUDIO_MINT_ADDRESS else None
 
 # Static SPL Token Program ID
 SPL_TOKEN_ID = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
@@ -201,6 +201,14 @@ def process_user_bank_txs():
     solana_client = index_user_bank.solana_client
     db = index_user_bank.db
     logger.info("index_user_bank.py | Acquired lock")
+
+    # Exit if required configs are not found
+    if not WAUDIO_MINT_PUBKEY or not WAUDIO_PROGRAM_PUBKEY or not USER_BANK_KEY:
+        logger.info(
+            f"index_user_bank.py | Missing required configuration - exiting."
+        )
+        return
+
     latest_processed_slot = get_highest_user_bank_tx_slot(db)
     logger.info(f"index_user_bank.py | high tx = {latest_processed_slot}")
 

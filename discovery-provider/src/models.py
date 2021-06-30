@@ -779,8 +779,8 @@ class UserBalance(Base):
     balance = Column(String, nullable=False)
     associated_wallets_balance = Column(String, nullable=False)
 
-    # waudio balance
-    waudio = Column(Integer, nullable=False)
+    # wAudio balance
+    waudio = Column(String, nullable=False)
 
     def __repr__(self):
         return f"<UserBalance(\
