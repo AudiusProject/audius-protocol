@@ -39,7 +39,6 @@ def env_config_update(config, section_name, key):
         # Override any config values with environment variables if present
         # Variables are formatted as audius_<section_name>_<key>
         config[section_name][key] = env_var_value
-        logger.error(f"{env_var_name} : Exists? {env_var_value}")
 
 
 class ConfigIni(configparser.ConfigParser):  # pylint: disable=too-many-ancestors
@@ -106,8 +105,6 @@ for section in shared_config.sections():
     for static_item in shared_config.items(section):
         static_key = static_item[0]
         env_config_update(shared_config, section, static_key)
-
-print(shared_config)
 
 try:
     owner_wallet = shared_config['delegate']['owner_wallet']
