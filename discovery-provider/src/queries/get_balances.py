@@ -78,10 +78,6 @@ def get_balances(session, redis, user_ids, is_verified_ids_set=None):
         } for user_id in needs_balance_set}
     result.update(no_balance_dict)
 
-    # Add new balances to DB
-    new_user_balances = [UserBalance(user_id=x, balance=0, associated_wallets_balance=0) for x in needs_balance_set]
-    session.add_all(new_user_balances)
-
     # Get old balances that need refresh
     needs_refresh = [user_balance.user_id for user_balance in query
                      if does_user_balance_need_refresh(user_balance, False)]
