@@ -4,12 +4,12 @@ import logging
 import re
 import time
 from sqlalchemy import desc, and_
-from src.models import User, UserBankTransaction, UserBankAccount, UserBalance
 from spl.token.client import Token
 from solana.publickey import PublicKey
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.solana import get_address_pair
+from src.models import User, UserBankTransaction, UserBankAccount, UserBalance
 
 logger = logging.getLogger(__name__)
 
@@ -280,9 +280,9 @@ def process_user_bank_txs():
                 parse_sol_tx_futures = {
                     executor.submit(
                         parse_user_bank_transaction,
-                            session,
-                            solana_client,
-                            tx_sig
+                        session,
+                        solana_client,
+                        tx_sig
                         ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
