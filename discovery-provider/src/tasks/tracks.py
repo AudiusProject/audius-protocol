@@ -202,7 +202,7 @@ def update_track_routes_table(session, track_record, track_metadata):
         # The new route will be current
         prev_track_route_record.is_current = False
 
-    # Check for conflicts Find the max conflict ID for the track slug
+    # Check for collisions by slug titles, and get the max collision_id
     max_collision_id = (
         session
         .query(functions.max(TrackRoute.collision_id))
@@ -211,8 +211,21 @@ def update_track_routes_table(session, track_record, track_metadata):
         .one_or_none()
     )[0]
 
+    collision_count = 0
+    # If the new track_slug ends in a digit, there's a possibility it collides
+    # with an existing route when the collision_id is appended to its title_slug
+    if new_track_slug[-1].isdigit():
+        collision_count = (
+            session
+            .query(functions.count(TrackRoute.slug))
+            .filter(
+                TrackRoute.slug == new_track_slug,
+                TrackRoute.owner_id == track_record.owner_id)
+            .one_or_none()
+        )[0]
+
     new_collision_id = 0
-    has_collisions = False
+    has_collisions = collision_count > 0
     if max_collision_id is not None:
         has_collisions = True
         new_collision_id = max_collision_id
