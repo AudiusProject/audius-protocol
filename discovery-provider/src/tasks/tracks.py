@@ -263,6 +263,7 @@ def update_track_routes_table(session, track_record, track_metadata):
     new_track_route.is_current = True
     new_track_route.blockhash = track_record.blockhash
     new_track_route.blocknumber = track_record.blocknumber
+    new_track_route.txhash = track_record.txhash
     session.add(new_track_route)
 
     # Make sure to commit so we don't add the same route twice

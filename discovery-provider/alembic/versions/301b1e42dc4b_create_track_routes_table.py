@@ -30,6 +30,7 @@ def upgrade():
         sa.Column("is_current", sa.Boolean(), nullable=False, index=False),
         sa.Column("blockhash", sa.String(), nullable=False, index=False),
         sa.Column("blocknumber", sa.Integer(), nullable=False, index=False),
+        sa.Column("txhash", sa.String(), nullable=False, index=False),
         sa.PrimaryKeyConstraint("owner_id", "slug"),
         sa.Index("track_id", "is_current")
     )
@@ -49,6 +50,7 @@ def upgrade():
                 , is_current
                 , blockhash
                 , blocknumber
+                , txhash
             )
             SELECT
                 track_id
@@ -61,6 +63,7 @@ def upgrade():
                 , is_current
                 , blockhash
                 , blocknumber
+                ,txhash
             FROM tracks
             WHERE is_current
             GROUP BY
@@ -69,7 +72,8 @@ def upgrade():
                 , route_id
                 , is_current
                 , blockhash
-                , blocknumber;
+                , blocknumber
+                , txhash;
             """
         )
     )
@@ -87,6 +91,7 @@ def upgrade():
                 , is_current
                 , blockhash
                 , blocknumber
+                , txhash
             )
             SELECT
                 t.track_id
@@ -97,6 +102,7 @@ def upgrade():
                 , t.is_current
                 , t.blockhash
                 , t.blocknumber
+                , t.txhash
             FROM (
                 SELECT
                     nc.track_id
@@ -115,6 +121,7 @@ def upgrade():
                     , nc.is_current
                     , nc.blockhash
                     , nc.blocknumber
+                    , nc.txhash
                     , ROW_NUMBER() OVER (
                             PARTITION BY nc.route_id
                             ORDER BY nc.blocknumber DESC

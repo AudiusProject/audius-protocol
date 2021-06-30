@@ -22,6 +22,7 @@ class TrackRoute(Base):
     is_current = Column(Boolean, nullable=False)
     blockhash = Column(String, nullable=False)
     blocknumber = Column(Integer, nullable=False)
+    txhash = Column(String, nullable=False)
 
     PrimaryKeyConstraint(owner_id, slug)
 
@@ -34,4 +35,5 @@ owner_id={self.owner_id},\
 track_id={self.track_id},\
 is_current={self.is_current},\
 blockhash={self.blockhash},\
-blocknumber={self.blocknumber})>"
+blocknumber={self.blocknumber},\
+txhash={self.txhash})>"
