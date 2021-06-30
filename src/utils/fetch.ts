@@ -32,6 +32,7 @@ export const fetchWithLibs = async (req: {
   endpoint: string
   queryParams?: object
 }) => {
+  // TODO use audius client instead of window.audiusLibs
   const data = await window.audiusLibs.discoveryProvider._makeRequest(req)
 
   // if all nodes are unhealthy and unavailable
