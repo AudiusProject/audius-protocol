@@ -27,13 +27,18 @@ def upgrade():
     op.create_table('user_bank_txs',
                 sa.Column('signature', sa.String(), nullable=False),
                 sa.Column('slot', sa.Integer(), nullable=False),
+                sa.Column('created_at', sa.DateTime(), nullable=False),
                 sa.PrimaryKeyConstraint('signature')
                 )
     op.create_table('user_bank_accounts',
                 sa.Column('signature', sa.String(), nullable=False),
                 sa.Column('ethereum_address', sa.String(), nullable=False),
+                sa.Column('created_at', sa.DateTime(), nullable=False),
                 sa.Column('bank_account', sa.String(), nullable=False),
                 sa.PrimaryKeyConstraint('signature')
+                )
+    op.add_column('user_balances',
+                sa.Column('waudio', sa.Integer(), server_default='0', nullable=True)
                 )
 
 
@@ -43,3 +48,4 @@ def downgrade():
     # ### end Alembic commands ###
     op.drop_table('user_bank_txs')
     op.drop_table('user_bank_accounts')
+    op.drop_column('user_balances', 'waudio')

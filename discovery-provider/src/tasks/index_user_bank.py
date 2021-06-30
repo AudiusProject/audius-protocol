@@ -1,15 +1,17 @@
 import concurrent.futures
+import datetime
 import logging
 import re
 import time
 
-from sqlalchemy import desc
+from sqlalchemy import desc, and_
 from sqlalchemy.sql.expression import intersect
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.solana import get_address_pair
-from src.models import User, UserBankTransaction, UserBankAccount
-
+# from src.queries.get_balances import enqueue_balance_refresh
+from src.models import User, UserBankTransaction, UserBankAccount, UserBalance
+from spl.token.client import Token
 from solana.publickey import PublicKey
 
 logger = logging.getLogger(__name__)
@@ -17,6 +19,7 @@ logger = logging.getLogger(__name__)
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
 USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS)
 WAUDIO_PROGRAM_ID = PublicKey("CYzPVv1zB9RH6hRWRKprFoepdD8Y7Q5HefCqrybvetja")
+WAUDIO_MINT_PUBKEY = PublicKey("9zyPU1mjgzaVyQsYwKJJ7AhVz5bgx5uc1NPABvAcUXsT")
 SPL_TOKEN_ID = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 MIN_SLOT = 84150237
 
@@ -26,6 +29,7 @@ TX_SIGNATURES_MAX_BATCHES = 3
 # Last N entries present in tx_signatures array during processing
 TX_SIGNATURES_RESIZE_LENGTH = 3
 
+# Recover ethereum public key information
 def parse_eth_address_from_msg(msg):
     logger.error(f"index_user_bank.py {msg}")
     res = re.findall(r'\[.*?\]', msg)
@@ -38,17 +42,7 @@ def parse_eth_address_from_msg(msg):
     public_key_str = f"0x{public_key}"
     return public_key_str, public_key_bytes
 
-def user_exists_for_eth_address(eth_address, db):
-    with db.scoped_session() as session:
-        logger.info(f"index_user_bank.py | Searching for user {eth_address}")
-        existing_user_query = (
-            session.query(User)
-            .filter(User.is_current == True)
-            .filter(User.wallet == eth_address)
-        ).first()
-        logger.info(f"index_user_bank.py | Found user {existing_user_query}")
-        return existing_user_query is None
-
+# Return highest user bank slot that has been processed
 def get_highest_user_bank_tx_slot(db):
     slot = MIN_SLOT
     with db.scoped_session() as session:
@@ -83,12 +77,64 @@ def get_sol_tx_info(solana_client, tx_sig):
             if tx_info["result"] is not None:
                 return tx_info
         except Exception as e:
-            logger.error(f"index_solana_plays.py | Error fetching tx {tx_sig}, {e}", exc_info=True)
+            logger.error(f"index_user_bank.py | Error fetching tx {tx_sig}, {e}", exc_info=True)
         retries -= 1
-        logger.error(f"index_solana_plays.py | Retrying tx fetch: {tx_sig}")
+        logger.error(f"index_user_bank.py | Retrying tx fetch: {tx_sig}")
     raise Exception(f"Failed fetching {tx_sig}, exit loop")
 
-def process_user_bank_tx_details(session, tx_info, tx_sig):
+def refresh_user_balance(session, user_bank_acct, token):
+    user_query = (
+        session.query(User.user_id, User.wallet)
+        .join(
+            UserBankAccount,
+            and_(
+                UserBankAccount.bank_account == user_bank_acct,
+                UserBankAccount.ethereum_address == User.wallet
+            )
+        )
+        .filter(User.is_current == True)
+        .all()
+    )
+    logger.info(f"index_user_bank.py | Refresh user_id = {user_query}, {user_bank_acct}")
+    # Only refresh if this is a known account within audius
+    if user_query:
+        # Enqueue refresh operation
+        user_id_to_refresh = user_query[0][0]
+        user_balance_query = ((
+            session.query(UserBalance)
+        ).filter(
+            UserBalance.user_id == user_id_to_refresh
+        ).all())
+        logger.info(f"index_user_bank.py | UserBalance object = {user_balance_query}")
+
+        user_balance_object = None
+
+        if user_balance_query:
+            user_balance_object = user_balance_query[0]
+
+        # Create Balance object if necessary
+        if not user_balance_query:
+            user_balance_object = UserBalance(
+                user_id=user_id_to_refresh,
+                balance=0,
+                associated_wallets_balance=0
+            )
+            session.add(user_balance_object)
+
+        if user_balance_object:
+            bal_info = token.get_balance(PublicKey(user_bank_acct))
+            user_balance_object.waudio = bal_info['result']['value']['amount']
+            logger.info(f"index_user_bank.py | Updated balance: {user_balance_object}")
+
+def process_user_bank_tx_details(session, tx_info, tx_sig, timestamp):
+    solana_client = index_user_bank.solana_client
+    waudio_token = Token(
+        conn=solana_client,
+        pubkey=WAUDIO_MINT_PUBKEY,
+        program_id=WAUDIO_PROGRAM_ID,
+        payer=[],  # not making any txs so payer is not required
+    )
+
     meta = tx_info['result']['meta']
     error = meta['err']
     if error:
@@ -116,7 +162,8 @@ def process_user_bank_tx_details(session, tx_info, tx_sig):
                 session.add(UserBankAccount(
                     signature=tx_sig,
                     ethereum_address=public_key_str,
-                    bank_account=bank_acct
+                    bank_account=bank_acct,
+                    created_at=timestamp
                 ))
                 if bank_acct_index:
                     logger.info(f"index_user_bank.py | Found known account: {public_key_str}, {bank_acct}")
@@ -124,21 +171,29 @@ def process_user_bank_tx_details(session, tx_info, tx_sig):
             except ValueError as e:
                 logger.info(e)
         elif 'Transfer' in msg:
-            # print(tx_info)
-            # print(account_keys)
-            # Accounts to refresh balance
+           # Accounts to refresh balance
             acct_1 = account_keys[1]
             acct_2 = account_keys[2]
-            print(f"Balance refresh accounts: {acct_1}, {acct_2}")
+            logger.info(f"index_user_bank.py | Balance refresh accounts: {acct_1}, {acct_2}")
+            # acct_1_bal = waudio_token.get_balance(PublicKey(acct_1))
+            # acct_2_bal = waudio_token.get_balance(PublicKey(acct_2))
+            # logger.info(f"index_user_bank.py | queried balance {acct_1}:{acct_1_bal}, {acct_2},{acct_2_bal}")
+            refresh_user_balance(session, acct_1, waudio_token)
+            refresh_user_balance(session, acct_2, waudio_token)
 
 def parse_user_bank_transaction(session, solana_client, tx_sig):
     tx_info = get_sol_tx_info(solana_client, tx_sig)
     tx_slot = tx_info['result']['slot']
     logger.error(f"index_user_bank.py | parse_user_bank_transaction | {tx_slot}, {tx_sig} | {tx_info}")
-    process_user_bank_tx_details(session, tx_info, tx_sig)
-    session.add(UserBankTransaction(
+    timestamp = tx_info['result']['blockTime']
+    parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
+    logger.error(f"index_user_bank.py | parse_user_bank_transaction | {parsed_timestamp}")
+    process_user_bank_tx_details(session, tx_info, tx_sig, parsed_timestamp)
+    session.add(
+        UserBankTransaction(
         signature=tx_sig,
-        slot=tx_slot
+        slot=tx_slot,
+        created_at=parsed_timestamp
     ))
 
 def process_user_bank_txs():
@@ -177,7 +232,6 @@ def process_user_bank_txs():
                     tx_sig = tx_info['signature']
                     tx_slot = tx_info['slot']
                     logger.info(f"index_user_bank.py | Processing tx, tx_sig={tx_sig} | slot={tx_slot}")
-
                     if tx_info['slot'] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif tx_info['slot'] <= latest_processed_slot and tx_info['slot'] > MIN_SLOT:
@@ -212,14 +266,11 @@ def process_user_bank_txs():
                 # Reset batch state
                 transaction_signature_batch = []
 
-    logger.info(f"index_user_bank.py {str(transaction_signatures)}")
-
     transaction_signatures.reverse()
 
     logger.info(f"index_user_bank.py {str(transaction_signatures)}")
 
     num_txs_processed = 0
-
     for tx_sig_batch in transaction_signatures:
         logger.error(f"index_user_bank.py | processing {tx_sig_batch}")
         batch_start_time = time.time()
@@ -235,21 +286,19 @@ def process_user_bank_txs():
                         ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
-                for future in concurrent.futures.as_completed(
-                        parse_sol_tx_futures):
+                for future in concurrent.futures.as_completed(parse_sol_tx_futures):
                     try:
                         # No return value expected here so we just ensure all futures are resolved
                         future.result()
                         num_txs_processed += 1
                     except Exception as exc:
-                        logger.error(f"index_user_bank.py | {exc}")
+                        logger.error(f"index_user_bank.py | ERROR {exc}", exc_info=True)
 
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
         logger.info(
             f"index_user_bank.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
         )
-
 
 
 ######## CELERY TASKS ########
