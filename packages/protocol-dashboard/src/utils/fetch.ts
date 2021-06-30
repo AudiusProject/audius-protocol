@@ -28,15 +28,15 @@ export const withTimeout = async (
   return res
 }
 
-// TODO: put in env vars for staging
-export const fetchUntilSuccess = async (endpoints: string[]): Promise<any> => {
-  try {
-    // Pick a random endpoint from the allowed endpoints
-    const endpoint = endpoints[Math.floor(Math.random() * endpoints.length)]
-    console.info('Attempting endpoint: ', endpoint)
-    return await fetchWithTimeout(endpoint)
-  } catch (e) {
-    console.error(e)
-    return await fetchUntilSuccess(endpoints)
-  }
+export const fetchWithLibs = async (req: {
+  endpoint: string
+  queryParams?: object
+}) => {
+  // TODO use audius client instead of window.audiusLibs
+  const data = await window.audiusLibs.discoveryProvider._makeRequest(req)
+
+  // if all nodes are unhealthy and unavailable
+  if (!data) return Promise.reject()
+
+  return data
 }

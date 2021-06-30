@@ -24,7 +24,7 @@ import { useDiscoveryProviders } from '../discoveryProvider/hooks'
 import { useAverageBlockTime, useEthBlockNumber } from '../protocol/hooks'
 import { weiAudToAud } from 'utils/numeric'
 import { ELECTRONIC_SUB_GENRES } from './genres'
-import { fetchUntilSuccess } from '../../../utils/fetch'
+import { fetchWithLibs } from '../../../utils/fetch'
 dayjs.extend(duration)
 
 const MONTH_IN_MS = dayjs.duration({ months: 1 }).asMilliseconds()
@@ -129,14 +129,11 @@ async function fetchRoutesTimeSeries(
   let error = false
   let metric: TimeSeriesRecord[] = []
   try {
-    const bucket_size = BUCKET_GRANULARITY_MAP[bucket]
-    const res = await fetchUntilSuccess(
-      nodes.map(
-        node =>
-          `${node.endpoint}/v1/metrics/aggregates/routes/${bucket}?bucket_size=${bucket_size}`
-      )
-    )
-    metric = res.data
+    const bucketSize = BUCKET_GRANULARITY_MAP[bucket]
+    metric = await fetchWithLibs({
+      endpoint: `v1/metrics/aggregates/routes/${bucket}`,
+      queryParams: { bucket_size: bucketSize }
+    })
   } catch (e) {
     console.error(e)
     error = true
@@ -168,14 +165,12 @@ async function fetchTimeSeries(
   let error = false
   let metric: TimeSeriesRecord[] = []
   try {
-    const bucket_size = BUCKET_GRANULARITY_MAP[bucket]
-    const res = await fetchUntilSuccess(
-      nodes.map(
-        node =>
-          `${node.endpoint}/v1/metrics/${route}?bucket_size=${bucket_size}&start_time=${startTime}`
-      )
-    )
-    metric = res.data.reverse()
+    const bucketSize = BUCKET_GRANULARITY_MAP[bucket]
+    const data = await fetchWithLibs({
+      endpoint: `v1/metrics/${route}`,
+      queryParams: { bucket_size: bucketSize, start_time: startTime }
+    })
+    metric = data.reverse()
   } catch (e) {
     console.error(e)
     error = true
@@ -261,15 +256,13 @@ export function fetchTotalStaked(
 }
 
 const getTrailingAPI = async (nodes: DiscoveryProvider[]) => {
-  const json = await fetchUntilSuccess(
-    nodes.map(
-      node => `${node.endpoint}/v1/metrics/aggregates/routes/trailing/month`
-    )
-  )
+  const data = await fetchWithLibs({
+    endpoint: 'v1/metrics/aggregates/routes/trailing/month'
+  })
   return {
-    total_count: json?.data?.total_count ?? 0,
-    unique_count: json?.data?.unique_count ?? 0,
-    summed_unique_count: json?.data?.summed_unique_count ?? 0
+    total_count: data?.total_count ?? 0,
+    unique_count: data?.unique_count ?? 0,
+    summed_unique_count: data?.summed_unique_count ?? 0
   } as CountRecord
 }
 
@@ -299,13 +292,11 @@ const getTrailingTopApps = async (
   bucket: Bucket,
   limit: number
 ) => {
-  const json = await fetchUntilSuccess(
-    nodes.map(
-      node =>
-        `${node.endpoint}/v1/metrics/aggregates/apps/${bucket}?limit=${limit}`
-    )
-  )
-  return json.data as { name: string; count: number }[]
+  const data = await fetchWithLibs({
+    endpoint: `v1/metrics/aggregates/apps/${bucket}`,
+    queryParams: { limit }
+  })
+  return data as { name: string; count: number }[]
 }
 
 export function fetchTopApps(
@@ -359,16 +350,15 @@ export function fetchTrailingTopGenres(
   return async dispatch => {
     try {
       const startTime = getStartTime(bucket)
-      const json = await fetchUntilSuccess(
-        nodes.map(
-          node => `${node.endpoint}/v1/metrics/genres?start_time=${startTime}`
-        )
-      )
+      const data = await fetchWithLibs({
+        endpoint: 'v1/metrics/genres',
+        queryParams: { start_time: startTime }
+      })
 
       const agg: CountRecord = {
         Electronic: 0
       }
-      json.data.forEach((genre: { name: string; count: number }) => {
+      data.forEach((genre: { name: string; count: number }) => {
         const name = genre.name
         if (ELECTRONIC_SUB_GENRES.has(name)) {
           agg['Electronic'] += genre.count
