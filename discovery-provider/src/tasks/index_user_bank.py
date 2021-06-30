@@ -163,8 +163,6 @@ def process_user_bank_tx_details(session, tx_info, tx_sig, timestamp):
                 SPL_TOKEN_ID
             )
             bank_acct = str(derived_address[0])
-            logger.info("index_user_bank.py " + str(bank_acct))
-            logger.info("index_user_bank.py " + str(account_keys))
             # Confirm expected address is present
             try:
                 bank_acct_index = account_keys.index(bank_acct)
@@ -176,7 +174,6 @@ def process_user_bank_tx_details(session, tx_info, tx_sig, timestamp):
                 ))
                 if bank_acct_index:
                     logger.info(f"index_user_bank.py | Found known account: {public_key_str}, {bank_acct}")
-
             except ValueError as e:
                 logger.info(e)
         elif 'Transfer' in msg:
@@ -272,9 +269,8 @@ def process_user_bank_txs():
                 # Reset batch state
                 transaction_signature_batch = []
 
+    # Reverse batches aggregated so oldest transactions are processed first
     transaction_signatures.reverse()
-
-    logger.info(f"index_user_bank.py {str(transaction_signatures)}")
 
     num_txs_processed = 0
     for tx_sig_batch in transaction_signatures:
@@ -298,7 +294,8 @@ def process_user_bank_txs():
                         future.result()
                         num_txs_processed += 1
                     except Exception as exc:
-                        logger.error(f"index_user_bank.py | ERROR {exc}", exc_info=True)
+                        logger.error(f"index_user_bank.py | error {exc}", exc_info=True)
+                        raise
 
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
