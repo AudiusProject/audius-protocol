@@ -304,12 +304,16 @@ const discoveryNodeUp = async () => {
   const sequential = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
-    [Service.DISCOVERY_PROVIDER, SetupCommand.UP],
-    [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
+    [Service.DISCOVERY_PROVIDER, SetupCommand.UP, { serviceNumber: 1 }],
+    [
+      Service.DISCOVERY_PROVIDER,
+      SetupCommand.HEALTH_CHECK,
+      { serviceNumber: 1 }
+    ],
     [
       Service.DISCOVERY_PROVIDER,
       SetupCommand.REGISTER,
-      { ...options, retries: 2 }
+      { ...options, retries: 2, serviceNumber: 1 }
     ]
   ]
 
@@ -353,12 +357,20 @@ const discoveryNodeWebServerUp = async () => {
   const sequential = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
-    [Service.DISCOVERY_PROVIDER, SetupCommand.UP_WEB_SERVER],
-    [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
+    [
+      Service.DISCOVERY_PROVIDER,
+      SetupCommand.UP_WEB_SERVER,
+      { serviceNumber: 1 }
+    ],
+    [
+      Service.DISCOVERY_PROVIDER,
+      SetupCommand.HEALTH_CHECK,
+      { serviceNumber: 1 }
+    ],
     [
       Service.DISCOVERY_PROVIDER,
       SetupCommand.REGISTER,
-      { ...options, retries: 2 }
+      { ...options, retries: 2, serviceNumber: 1 }
     ]
   ]
 
@@ -425,7 +437,7 @@ const identityServiceUp = async () => {
  * Brings up an entire Audius Protocol stack.
  * @param {*} config. currently supports up to 4 Creator Nodes.
  */
-const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1  }) => {
+const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1 }) => {
   console.log(
     "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
@@ -475,7 +487,11 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1  }) => {
       return [
         ...acc,
         [Service.DISCOVERY_PROVIDER, SetupCommand.UP, { serviceNumber: cur }],
-        [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK, { serviceNumber: cur }],
+        [
+          Service.DISCOVERY_PROVIDER,
+          SetupCommand.HEALTH_CHECK,
+          { serviceNumber: cur }
+        ],
         [
           Service.DISCOVERY_PROVIDER,
           SetupCommand.REGISTER,
@@ -491,7 +507,11 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1  }) => {
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
     ...discoveryNodesCommands,
     [Service.USER_METADATA_NODE, SetupCommand.UNSET_SHELL_ENV],
-    [Service.USER_METADATA_NODE, SetupCommand.UP_UM, { ...options, waitSec: 10 }],
+    [
+      Service.USER_METADATA_NODE,
+      SetupCommand.UP_UM,
+      { ...options, waitSec: 10 }
+    ],
     [Service.USER_METADATA_NODE, SetupCommand.HEALTH_CHECK],
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
