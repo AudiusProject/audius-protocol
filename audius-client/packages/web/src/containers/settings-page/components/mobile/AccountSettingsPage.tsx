@@ -1,6 +1,5 @@
 import React, { useState, useContext, useCallback } from 'react'
-import cn from 'classnames'
-import { debounce } from 'lodash'
+
 import {
   Modal,
   Button,
@@ -9,24 +8,26 @@ import {
   IconSignOut,
   IconVerified
 } from '@audius/stems'
+import cn from 'classnames'
+import { debounce } from 'lodash'
 
+import DynamicImage from 'components/dynamic-image/DynamicImage'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
 import Row from 'components/groupable-list/Row'
-import { useUserProfilePicture } from 'hooks/useImageSize'
-
-import settingsPageStyles from './SettingsPage.module.css'
-import styles from './AccountSettingsPage.module.css'
-import { SquareSizes } from 'models/common/ImageSizes'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { SettingsPageProps } from './SettingsPage'
-import AudiusBackend from 'services/AudiusBackend'
-import SignOutPage from 'containers/nav/mobile/SignOut'
 import { ToastContext } from 'components/toast/ToastContext'
-import { make, useRecord } from 'store/analytics/actions'
+import SignOutPage from 'containers/nav/mobile/SignOut'
+import { useUserProfilePicture } from 'hooks/useImageSize'
+import { SquareSizes } from 'models/common/ImageSizes'
+import AudiusBackend from 'services/AudiusBackend'
 import { Name } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
 import { ACCOUNT_VERIFICATION_SETTINGS_PAGE } from 'utils/route'
+
+import styles from './AccountSettingsPage.module.css'
+import { SettingsPageProps } from './SettingsPage'
+import settingsPageStyles from './SettingsPage.module.css'
 
 const messages = {
   recovery: `Store your recovery email safely.

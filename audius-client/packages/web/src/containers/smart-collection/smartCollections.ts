@@ -1,3 +1,9 @@
+import { ReactComponent as IconExploreFeelingLucky } from 'assets/img/iconExploreFeelingLucky.svg'
+import { ReactComponent as IconExploreMostLoved } from 'assets/img/iconExploreMostLoved.svg'
+import { ReactComponent as IconExploreNewReleases } from 'assets/img/iconExploreNewReleases.svg'
+import { ReactComponent as IconExploreRotation } from 'assets/img/iconExploreRotation.svg'
+import { ReactComponent as IconExploreUnderRadar } from 'assets/img/iconExploreUnderRadar.svg'
+import { SmartCollection, Variant } from 'models/Collection'
 import {
   EXPLORE_HEAVY_ROTATION_PAGE,
   EXPLORE_BEST_NEW_RELEASES_PAGE,
@@ -6,13 +12,6 @@ import {
   EXPLORE_FEELING_LUCKY_PAGE
 } from 'utils/route'
 
-import { ReactComponent as IconExploreFeelingLucky } from 'assets/img/iconExploreFeelingLucky.svg'
-import { ReactComponent as IconExploreMostLoved } from 'assets/img/iconExploreMostLoved.svg'
-import { ReactComponent as IconExploreNewReleases } from 'assets/img/iconExploreNewReleases.svg'
-import { ReactComponent as IconExploreRotation } from 'assets/img/iconExploreRotation.svg'
-import { ReactComponent as IconExploreUnderRadar } from 'assets/img/iconExploreUnderRadar.svg'
-
-import { SmartCollection, Variant } from 'models/Collection'
 import { SmartCollectionVariant } from './types'
 
 export const HEAVY_ROTATION: SmartCollection = {

@@ -1,11 +1,13 @@
 import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+
 import { push as pushRoute } from 'connected-react-router'
-import { APP_REDIRECT } from 'utils/route'
-import { Dispatch } from 'redux'
 import { connect } from 'react-redux'
-import { getMobileOS } from 'utils/clientUtil'
+import { useLocation } from 'react-router-dom'
+import { Dispatch } from 'redux'
+
 import { MobileOS } from 'models/OS'
+import { getMobileOS } from 'utils/clientUtil'
+import { APP_REDIRECT } from 'utils/route'
 
 type AppRedirectListenerProps = ReturnType<typeof mapDispatchToProps>
 

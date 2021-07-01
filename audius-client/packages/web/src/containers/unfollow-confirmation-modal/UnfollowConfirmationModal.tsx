@@ -1,14 +1,17 @@
 import React from 'react'
-import { Dispatch } from 'redux'
+
 import { connect } from 'react-redux'
-import { AppState } from 'store/types'
-import UnfollowConfirmationModal from './components/UnfollowConfirmationModal'
-import { getIsOpen, getUserId } from './store/selectors'
-import * as actions from './store/actions'
-import * as socialActions from 'store/social/users/actions'
-import { ID } from 'models/common/Identifiers'
+import { Dispatch } from 'redux'
+
 import { setNotificationSubscription } from 'containers/profile-page/store/actions'
+import { ID } from 'models/common/Identifiers'
 import { FollowSource } from 'services/analytics'
+import * as socialActions from 'store/social/users/actions'
+import { AppState } from 'store/types'
+
+import UnfollowConfirmationModal from './components/UnfollowConfirmationModal'
+import * as actions from './store/actions'
+import { getIsOpen, getUserId } from './store/selectors'
 
 type UnfollowConfirmationModalProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>

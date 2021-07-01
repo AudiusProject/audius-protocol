@@ -1,27 +1,28 @@
 import React, { useState, useCallback } from 'react'
+
 import cn from 'classnames'
-import { formatCount } from 'utils/formatUtil'
+
+import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import Menu from 'containers/menu/Menu'
+import { OwnProps as NotificationMenuProps } from 'containers/menu/NotificationMenu'
 import {
   Entity,
   NotificationType,
   Achievement
 } from 'containers/notification/store/types'
-import { ID } from 'models/common/Identifiers'
 import Track from 'models/Track'
-
-import { profilePage } from 'utils/route'
-import { make, useRecord } from 'store/analytics/actions'
+import { ID } from 'models/common/Identifiers'
 import { Name } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
+import { formatCount } from 'utils/formatUtil'
+import { profilePage } from 'utils/route'
+
+import TrackContent from '../TrackContent'
 import { getEntityLink, TwitterShare } from '../TwitterShare'
+import { formatHeader, formatBody } from '../formatText'
 
-import Menu from 'containers/menu/Menu'
-import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-
-import { OwnProps as NotificationMenuProps } from 'containers/menu/NotificationMenu'
 import styles from './NotificationBlock.module.css'
 import UserHeader, { UserImage } from './UserHeader'
-import { formatHeader, formatBody } from '../formatText'
-import TrackContent from '../TrackContent'
 
 // The number of users thumbnail images to show in the top row
 // if there are multiple users associated w/ the notification

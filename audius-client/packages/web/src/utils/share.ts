@@ -1,7 +1,7 @@
-import { copyLinkToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { ShareMessage } from 'services/native-mobile-interface/share'
 import { getIsIOS } from 'utils/browser'
 import { isMobile } from 'utils/clientUtil'
+import { copyLinkToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 /**

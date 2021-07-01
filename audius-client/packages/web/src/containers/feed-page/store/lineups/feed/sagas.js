@@ -1,20 +1,20 @@
 import { call, select, all } from 'redux-saga/effects'
 
-import AudiusBackend from 'services/AudiusBackend'
 import {
   PREFIX,
   feedActions
 } from 'containers/feed-page/store/lineups/feed/actions'
-import { LineupSagas } from 'store/lineup/sagas'
 import { getFeedFilter } from 'containers/feed-page/store/selectors'
-import { waitForValue } from 'utils/sagaHelpers'
 import {
   getAccountReady,
   getStartedSignOnProcess
 } from 'containers/sign-on/store/selectors'
-import { Kind } from 'store/types'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
+import AudiusBackend from 'services/AudiusBackend'
 import { processAndCacheCollections } from 'store/cache/collections/utils'
+import { processAndCacheTracks } from 'store/cache/tracks/utils'
+import { LineupSagas } from 'store/lineup/sagas'
+import { Kind } from 'store/types'
+import { waitForValue } from 'utils/sagaHelpers'
 
 function* getTracks({ offset, limit }) {
   // In the case of sign on, we get an account before we have followed anyone,

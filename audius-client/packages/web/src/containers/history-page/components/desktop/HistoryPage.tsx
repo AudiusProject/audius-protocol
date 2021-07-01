@@ -1,15 +1,16 @@
 import React, { memo } from 'react'
-import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 
-import Header from 'components/general/header/desktop/Header'
+import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
+import Spin from 'antd/lib/spin'
+
 import Page from 'components/general/Page'
+import FilterInput from 'components/general/filter-input/FilterInput'
+import Header from 'components/general/header/desktop/Header'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import TracksTable from 'components/tracks-table/TracksTable'
 import { ID } from 'models/common/Identifiers'
 
 import styles from './HistoryPage.module.css'
-import FilterInput from 'components/general/filter-input/FilterInput'
-import Spin from 'antd/lib/spin'
 
 export type HistoryPageProps = {
   title: string

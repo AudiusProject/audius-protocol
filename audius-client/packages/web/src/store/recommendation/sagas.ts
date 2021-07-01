@@ -1,11 +1,13 @@
-import Track from '../../models/Track'
 import { call } from 'redux-saga/effects'
-import Explore from '../../services/audius-backend/Explore'
-import AudiusBackend from '../../services/AudiusBackend'
-import { processAndCacheTracks } from '../cache/tracks/utils'
+
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { Nullable } from '../../utils/typeUtils'
+
+import Track from '../../models/Track'
 import { ID } from '../../models/common/Identifiers'
+import AudiusBackend from '../../services/AudiusBackend'
+import Explore from '../../services/audius-backend/Explore'
+import { Nullable } from '../../utils/typeUtils'
+import { processAndCacheTracks } from '../cache/tracks/utils'
 
 export function* getRecommendedTracks(
   genre: string,

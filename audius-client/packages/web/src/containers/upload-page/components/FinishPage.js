@@ -1,27 +1,29 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
-import UploadType from './uploadType'
-import { DefaultSizes } from 'models/common/ImageSizes'
+import PropTypes from 'prop-types'
 
-import TrackTile from 'components/track/desktop/TrackTile'
-import PlaylistTile from 'components/track/desktop/PlaylistTile'
-import { ProgressStatus } from '../store/types'
-
-import placeholderArt from 'assets/img/imageBlank2x.png'
-import styles from './FinishPage.module.css'
-import Toast from 'components/toast/Toast'
-import { ComponentPlacement } from 'components/types'
-import ShareBanner from './ShareBanner'
 import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
-import { TrackTileSize } from 'components/track/types'
-import TrackListItem from 'components/track/desktop/TrackListItem'
+import placeholderArt from 'assets/img/imageBlank2x.png'
+import Toast from 'components/toast/Toast'
 import {
   TrackArtwork,
   CollectionArtwork
 } from 'components/track/desktop/Artwork'
+import PlaylistTile from 'components/track/desktop/PlaylistTile'
+import TrackListItem from 'components/track/desktop/TrackListItem'
+import TrackTile from 'components/track/desktop/TrackTile'
+import { TrackTileSize } from 'components/track/types'
+import { ComponentPlacement } from 'components/types'
 import ProgressBar from 'components/upload/ProgressBar'
 import UserBadges from 'containers/user-badges/UserBadges'
+import { DefaultSizes } from 'models/common/ImageSizes'
+
+import { ProgressStatus } from '../store/types'
+
+import styles from './FinishPage.module.css'
+import ShareBanner from './ShareBanner'
+import UploadType from './uploadType'
 
 const TOAST_DELAY_MILLIS = 5 * 1000
 

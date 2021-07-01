@@ -1,3 +1,5 @@
+import { mergeWith } from 'lodash'
+
 import {
   ADD_SUCCEEDED,
   UPDATE,
@@ -8,7 +10,6 @@ import {
   UNSUBSCRIBE_SUCCEEDED,
   SET_EXPIRED
 } from 'store/cache/actions'
-import { mergeWith } from 'lodash'
 
 /**
  * The cache is implemented as primarily a map of ids to metadata (track, playlist, collection).

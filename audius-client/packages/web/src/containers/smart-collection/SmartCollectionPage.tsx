@@ -1,14 +1,16 @@
 import React, { useEffect } from 'react'
-import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
 
-import { AppState } from 'store/types'
-import { SmartCollectionVariant } from './types'
-import { getCollection } from './store/selectors'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+
 import CollectionPage from 'containers/collection-page/CollectionPage'
-import { fetchSmartCollection } from './store/slice'
 import { getPlaylistLibrary } from 'store/account/selectors'
 import { findInPlaylistLibrary } from 'store/playlist-library/helpers'
+import { AppState } from 'store/types'
+
+import { getCollection } from './store/selectors'
+import { fetchSmartCollection } from './store/slice'
+import { SmartCollectionVariant } from './types'
 
 type OwnProps = {
   variant: SmartCollectionVariant

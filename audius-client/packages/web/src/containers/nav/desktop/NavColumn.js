@@ -1,10 +1,49 @@
 import React, { useCallback } from 'react'
+
+import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, NavLink } from 'react-router-dom'
-import { push as pushRoute } from 'connected-react-router'
-import cn from 'classnames'
 import SimpleBar from 'simplebar-react'
 import 'simplebar/dist/simplebar.min.css'
+
+import imageProfilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
+import CreatePlaylistModal from 'components/create-playlist/CreatePlaylistModal'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import Pill from 'components/general/Pill'
+import Tooltip from 'components/tooltip/Tooltip'
+import Droppable from 'containers/dragndrop/Droppable'
+import CurrentlyPlaying from 'containers/nav/desktop/CurrentlyPlaying'
+import NavButton from 'containers/nav/desktop/NavButton'
+import RouteNav from 'containers/nav/desktop/RouteNav'
+import {
+  toggleNotificationPanel,
+  updatePlaylistLastViewedAt
+} from 'containers/notification/store/actions'
+import {
+  getNotificationPanelIsOpen,
+  getNotificationUnreadCount
+} from 'containers/notification/store/selectors'
+import ConnectedProfileCompletionPane from 'containers/profile-progress/ConnectedProfileCompletionPane'
+import * as signOnActions from 'containers/sign-on/store/actions'
+import { resetState as resetUploadState } from 'containers/upload-page/store/actions'
+import UserBadges from 'containers/user-badges/UserBadges'
+import { useUserProfilePicture } from 'hooks/useImageSize'
+import { SquareSizes } from 'models/common/ImageSizes'
+import { Name, CreatePlaylistSource } from 'services/analytics'
+import { getAccountUser, getAccountStatus } from 'store/account/selectors'
+import { make, useRecord } from 'store/analytics/actions'
+import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
+import * as createPlaylistModalActions from 'store/application/ui/createPlaylistModal/actions'
+import { getIsOpen } from 'store/application/ui/createPlaylistModal/selectors'
+import {
+  createPlaylist,
+  addTrackToPlaylist
+} from 'store/cache/collections/actions'
+import { getIsDragging } from 'store/dragndrop/selectors'
+import { makeGetCurrent } from 'store/queue/selectors'
+import { saveCollection } from 'store/social/collections/actions'
+import { saveTrack } from 'store/social/tracks/actions'
 import { Status } from 'store/types'
 import {
   FEED_PAGE,
@@ -20,49 +59,8 @@ import {
   EXPLORE_PAGE
 } from 'utils/route'
 
-import {
-  toggleNotificationPanel,
-  updatePlaylistLastViewedAt
-} from 'containers/notification/store/actions'
-import {
-  getNotificationPanelIsOpen,
-  getNotificationUnreadCount
-} from 'containers/notification/store/selectors'
-import { resetState as resetUploadState } from 'containers/upload-page/store/actions'
-import {
-  createPlaylist,
-  addTrackToPlaylist
-} from 'store/cache/collections/actions'
-import { makeGetCurrent } from 'store/queue/selectors'
-import { getIsDragging } from 'store/dragndrop/selectors'
-import { getIsOpen } from 'store/application/ui/createPlaylistModal/selectors'
-import { getAccountUser, getAccountStatus } from 'store/account/selectors'
-import * as signOnActions from 'containers/sign-on/store/actions'
-import * as createPlaylistModalActions from 'store/application/ui/createPlaylistModal/actions'
-import { saveTrack } from 'store/social/tracks/actions'
-import { saveCollection } from 'store/social/collections/actions'
-
-import Tooltip from 'components/tooltip/Tooltip'
-import Pill from 'components/general/Pill'
-import NavButton from 'containers/nav/desktop/NavButton'
-import CurrentlyPlaying from 'containers/nav/desktop/CurrentlyPlaying'
-import CreatePlaylistModal from 'components/create-playlist/CreatePlaylistModal'
-import Droppable from 'containers/dragndrop/Droppable'
-import RouteNav from 'containers/nav/desktop/RouteNav'
-import ConnectedProfileCompletionPane from 'containers/profile-progress/ConnectedProfileCompletionPane'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-
-import { useUserProfilePicture } from 'hooks/useImageSize'
-import { SquareSizes } from 'models/common/ImageSizes'
-
-import imageProfilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
-
 import styles from './NavColumn.module.css'
 import NavHeader from './NavHeader'
-import { make, useRecord } from 'store/analytics/actions'
-import { Name, CreatePlaylistSource } from 'services/analytics'
-import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
-import UserBadges from 'containers/user-badges/UserBadges'
 import PlaylistLibrary from './PlaylistLibrary'
 
 const NavColumn = ({

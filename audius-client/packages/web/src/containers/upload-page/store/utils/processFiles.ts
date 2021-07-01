@@ -1,4 +1,5 @@
 import jsmediatags from 'jsmediatags'
+
 import * as schemas from 'schemas'
 import { resizeImage } from 'utils/imageProcessingUtil'
 

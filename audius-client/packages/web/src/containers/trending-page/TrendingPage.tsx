@@ -1,10 +1,13 @@
 import React from 'react'
-import TrendingPageProvider from './TrendingPageProvider'
+
 import { connect } from 'react-redux'
-import { isMobile } from 'utils/clientUtil'
+
 import { AppState } from 'store/types'
-import TrendingPageMobileContent from './components/mobile/TrendingPageContent'
+import { isMobile } from 'utils/clientUtil'
+
+import TrendingPageProvider from './TrendingPageProvider'
 import TrendingPageContent from './components/desktop/TrendingPageContent'
+import TrendingPageMobileContent from './components/mobile/TrendingPageContent'
 
 interface OwnProps {
   containerRef: React.RefObject<HTMLDivElement>

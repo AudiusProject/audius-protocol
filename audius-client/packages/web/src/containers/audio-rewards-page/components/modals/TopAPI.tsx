@@ -1,10 +1,12 @@
 import React, { useCallback } from 'react'
-import { useModalState } from 'hooks/useModalState'
-import ModalDrawer from './ModalDrawer'
+
 import AudiusAPI from 'assets/img/audiusAPI.png'
-import ButtonWithArrow from '../ButtonWithArrow'
+import { useModalState } from 'hooks/useModalState'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
+import ButtonWithArrow from '../ButtonWithArrow'
+
+import ModalDrawer from './ModalDrawer'
 import styles from './TopApi.module.css'
 
 const messages = {

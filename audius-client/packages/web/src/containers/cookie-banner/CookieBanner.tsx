@@ -1,15 +1,16 @@
 import React from 'react'
+
+import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
-import cn from 'classnames'
-
-import { dismissCookieBanner } from 'store/application/ui/cookieBanner/actions'
-import { isMobile } from 'utils/clientUtil'
-import { AppState } from 'store/types'
-import { getUid } from 'store/player/selectors'
-import { COOKIE_POLICY } from 'utils/route'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
+import { dismissCookieBanner } from 'store/application/ui/cookieBanner/actions'
+import { getUid } from 'store/player/selectors'
+import { AppState } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+import { COOKIE_POLICY } from 'utils/route'
+
 import styles from './CookieBanner.module.css'
 
 const messages = {

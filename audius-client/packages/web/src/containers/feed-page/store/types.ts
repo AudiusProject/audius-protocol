@@ -1,7 +1,7 @@
-import { ID } from 'models/common/Identifiers'
-import { LineupState } from 'models/common/Lineup'
 import FeedFilter from 'models/FeedFilter'
 import TimeRange from 'models/TimeRange'
+import { ID } from 'models/common/Identifiers'
+import { LineupState } from 'models/common/Lineup'
 
 export default interface DiscoveryPageState {
   suggestedFollows: ID[]

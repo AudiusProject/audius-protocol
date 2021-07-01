@@ -1,18 +1,19 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
+
 import {
   Button,
   ButtonType,
   ButtonSize,
   IconKebabVertical
 } from '@audius/stems'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
 
-import LabeledInput from 'components/data-entry/LabeledInput'
+import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
 import DropdownInput from 'components/data-entry/DropdownInput'
+import LabeledInput from 'components/data-entry/LabeledInput'
 import TagInput from 'components/data-entry/TagInput'
 import PreviewButton from 'components/upload/PreviewButton'
-import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
 import { GENRES, ELECTRONIC_PREFIX, getCannonicalName } from 'utils/genres'
 import { moodMap } from 'utils/moods'
 

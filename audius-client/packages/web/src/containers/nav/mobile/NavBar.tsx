@@ -1,7 +1,5 @@
 import React, { useState, useContext, useCallback, useEffect } from 'react'
-import { ReactComponent as AudiusLogo } from 'assets/img/audiusLogoHorizontal.svg'
-import SearchBar from 'components/search-bar/SearchBar'
-import cn from 'classnames'
+
 import {
   IconCaretRight,
   IconRemove,
@@ -9,27 +7,31 @@ import {
   IconSettings,
   IconCrown
 } from '@audius/stems'
-
-import styles from './NavBar.module.css'
+import cn from 'classnames'
+import { History } from 'history'
+import { useLocation } from 'react-router-dom'
 import { useTransition, animated } from 'react-spring'
-import { Status } from 'store/types'
+
+import { ReactComponent as AudiusLogo } from 'assets/img/audiusLogoHorizontal.svg'
+import IconButton from 'components/general/IconButton'
+import SearchBar from 'components/search-bar/SearchBar'
+import {
+  RouterContext,
+  SlideDirection
+} from 'containers/animated-switch/RouterContextProvider'
 import NavContext, {
   LeftPreset,
   CenterPreset,
   RightPreset
 } from 'containers/nav/store/context'
-import IconButton from 'components/general/IconButton'
-import { formatCount } from 'utils/formatUtil'
-import {
-  RouterContext,
-  SlideDirection
-} from 'containers/animated-switch/RouterContextProvider'
-import { History } from 'history'
-import { getIsIOS } from 'utils/browser'
 import { OpenNotificationsMessage } from 'services/native-mobile-interface/notifications'
-import { useLocation } from 'react-router-dom'
-import { isMatrix } from 'utils/theme/theme'
+import { Status } from 'store/types'
+import { getIsIOS } from 'utils/browser'
+import { formatCount } from 'utils/formatUtil'
 import { onNativeBack } from 'utils/nativeRoute'
+import { isMatrix } from 'utils/theme/theme'
+
+import styles from './NavBar.module.css'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

@@ -1,19 +1,20 @@
 import React, { useState } from 'react'
+
+import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { Spring } from 'react-spring/renderprops'
 import TwitterLogin from 'react-twitter-auth'
-import { Button, ButtonType, IconArrow } from '@audius/stems'
-
-import styles from './ProfileForm.module.css'
-import Input from 'components/data-entry/Input'
-import ProfilePicture from 'components/general/ProfilePicture'
-import { resizeImage } from 'utils/imageProcessingUtil'
 
 import profilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
-import StatusMessage from 'components/general/StatusMessage'
+import Input from 'components/data-entry/Input'
 import InstagramAuth from 'components/general/InstagramAuth'
+import ProfilePicture from 'components/general/ProfilePicture'
+import StatusMessage from 'components/general/StatusMessage'
 import { IDENTITY_SERVICE } from 'services/AudiusBackend'
+import { resizeImage } from 'utils/imageProcessingUtil'
+
+import styles from './ProfileForm.module.css'
 
 const messages = {
   manual: 'I’d rather fill out my profile manually',

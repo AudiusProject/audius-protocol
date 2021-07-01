@@ -1,6 +1,6 @@
 import React from 'react'
-import { Button, IconRepost, ButtonType } from '@audius/stems'
 
+import { Button, IconRepost, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
 import styles from './RepostButton.module.css'

@@ -1,13 +1,14 @@
+import BN from 'bn.js'
+
+import { ID } from 'models/common/Identifiers'
+import AudiusBackend from 'services/AudiusBackend'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import {
   BNWei,
   StringWei,
   stringWeiToBN,
   WalletAddress
 } from 'store/wallet/slice'
-import AudiusBackend from 'services/AudiusBackend'
-import { ID } from 'models/common/Identifiers'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import BN from 'bn.js'
 
 // 0.001 Audio
 export const MIN_TRANSFERRABLE_WEI = stringWeiToBN(

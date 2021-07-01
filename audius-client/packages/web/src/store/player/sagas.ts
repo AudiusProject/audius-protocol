@@ -1,7 +1,18 @@
 import { delay, eventChannel, END } from 'redux-saga'
 import { select, take, call, put, spawn, takeLatest } from 'redux-saga/effects'
 
-import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getRemoteVar, StringKeys } from 'services/remote-config'
+import * as cacheActions from 'store/cache/actions'
+import { getTrack } from 'store/cache/tracks/selectors'
+import { getUser } from 'store/cache/users/selectors'
+import {
+  getAudio,
+  getTrackId,
+  getUid,
+  getCounter,
+  getPlaying
+} from 'store/player/selectors'
 import {
   setAudioStream as setAudioStreamAction,
   play,
@@ -15,23 +26,13 @@ import {
   error as errorAction
 } from 'store/player/slice'
 import * as queueActions from 'store/queue/slice'
-import * as cacheActions from 'store/cache/actions'
 import { recordListen } from 'store/social/tracks/actions'
-import {
-  getAudio,
-  getTrackId,
-  getUid,
-  getCounter,
-  getPlaying
-} from 'store/player/selectors'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { getTrack } from 'store/cache/tracks/selectors'
-import { getUser } from 'store/cache/users/selectors'
 import { Kind } from 'store/types'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
-import errorSagas from './errorSagas'
 import { encodeHashId } from 'utils/route/hashIds'
-import { getRemoteVar, StringKeys } from 'services/remote-config'
+import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'
+
+import errorSagas from './errorSagas'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

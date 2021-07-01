@@ -1,9 +1,12 @@
+import { combineReducers } from 'redux'
 import { createReducer, ActionType } from 'typesafe-actions'
+
+import { UserListReducerFactory } from 'containers/user-list/store/reducer'
+
+import { USER_LIST_TAG } from '../NotificationUsersPage'
+
 import * as actions from './actions'
 import { NotificationUsersPageOwnState } from './types'
-import { UserListReducerFactory } from 'containers/user-list/store/reducer'
-import { USER_LIST_TAG } from '../NotificationUsersPage'
-import { combineReducers } from 'redux'
 
 type NotificationUsersActions = ActionType<typeof actions>
 

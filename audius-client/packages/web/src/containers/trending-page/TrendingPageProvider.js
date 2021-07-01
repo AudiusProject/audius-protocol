@@ -1,21 +1,19 @@
 import React, { PureComponent } from 'react'
-import { connect } from 'react-redux'
-import { withRouter, matchPath } from 'react-router-dom'
+
 import {
   push as pushRoute,
   replace as replaceRoute
 } from 'connected-react-router'
-import { trendingActions } from './store/lineups/trending/actions'
-import * as trendingPageActions from './store/actions'
-import { getHasAccount } from 'store/account/selectors'
-import { openSignOn } from 'containers/sign-on/store/actions'
-import { getPathname, TRENDING_GENRES } from 'utils/route'
-import { makeGetLineupMetadatas } from 'store/lineup/selectors'
-import { getPlaying, getBuffering } from 'store/player/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
-import TimeRange from 'models/TimeRange'
-import { GENRES } from 'utils/genres'
+import { connect } from 'react-redux'
+import { withRouter, matchPath } from 'react-router-dom'
 
+import { openSignOn } from 'containers/sign-on/store/actions'
+import {
+  trendingWeekActions,
+  trendingMonthActions,
+  trendingYearActions,
+  trendingActions
+} from 'containers/trending-page/store/lineups/trending/actions'
 import {
   getDiscoverTrendingLineup,
   getTrendingTimeRange,
@@ -25,14 +23,18 @@ import {
   getDiscoverTrendingMonthLineup,
   getLastFetchedTrendingGenre
 } from 'containers/trending-page/store/selectors'
-import {
-  trendingWeekActions,
-  trendingMonthActions,
-  trendingYearActions
-} from 'containers/trending-page/store/lineups/trending/actions'
-import { isMobile } from 'utils/clientUtil'
-import { make } from 'store/analytics/actions'
+import TimeRange from 'models/TimeRange'
 import { Name } from 'services/analytics'
+import { getHasAccount } from 'store/account/selectors'
+import { make } from 'store/analytics/actions'
+import { makeGetLineupMetadatas } from 'store/lineup/selectors'
+import { getPlaying, getBuffering } from 'store/player/selectors'
+import { makeGetCurrent } from 'store/queue/selectors'
+import { isMobile } from 'utils/clientUtil'
+import { GENRES } from 'utils/genres'
+import { getPathname, TRENDING_GENRES } from 'utils/route'
+
+import * as trendingPageActions from './store/actions'
 
 const messages = {
   trendingTitle: 'Trending',

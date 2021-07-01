@@ -1,7 +1,9 @@
 import { combineReducers, createSlice } from '@reduxjs/toolkit'
+
 import { asLineup } from 'store/lineup/reducer'
-import trendingReducer from './lineups/tracks/reducer'
+
 import { PREFIX } from './lineups/tracks/actions'
+import trendingReducer from './lineups/tracks/reducer'
 
 const initialState = {}
 

@@ -1,21 +1,21 @@
 import { createSelector } from 'reselect'
-import { AppState } from 'store/types'
+
 import {
   Entity,
   Notification,
   NotificationType,
   Achievement
 } from 'containers/notification/store/types'
-
-import { getUser, getUsers } from 'store/cache/users/selectors'
-import { getTrack, getTracks } from 'store/cache/tracks/selectors'
+import Collection from 'models/Collection'
+import Track from 'models/Track'
+import { getAccountUser } from 'store/account/selectors'
 import {
   getCollection,
   getCollections
 } from 'store/cache/collections/selectors'
-import { getAccountUser } from 'store/account/selectors'
-import Track from 'models/Track'
-import Collection from 'models/Collection'
+import { getTrack, getTracks } from 'store/cache/tracks/selectors'
+import { getUser, getUsers } from 'store/cache/users/selectors'
+import { AppState } from 'store/types'
 
 // Notification selectors
 export const getNotificationPanelIsOpen = (state: AppState) =>

@@ -6,15 +6,23 @@ import React, {
   useEffect,
   useCallback
 } from 'react'
-import { connect } from 'react-redux'
-import { push as pushRoute } from 'connected-react-router'
 
-import { AppState } from 'store/types'
+import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
+import { range } from 'lodash'
+import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
-import { UID, ID } from 'models/common/Identifiers'
+
+import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import ArtistPopover from 'components/artist/ArtistPopover'
+import { CollectionArtwork } from 'components/track/desktop/Artwork'
 import { TrackTileSize } from 'components/track/types'
-import { getUserFromCollection } from 'store/cache/users/selectors'
-import { getUserHandle } from 'store/account/selectors'
+import Draggable from 'containers/dragndrop/Draggable'
+import { OwnProps as CollectionkMenuProps } from 'containers/menu/CollectionMenu'
+import Menu from 'containers/menu/Menu'
+import UserBadges from 'containers/user-badges/UserBadges'
+import Track from 'models/Track'
+import { UID, ID } from 'models/common/Identifiers'
 import {
   ShareSource,
   RepostSource,
@@ -22,27 +30,8 @@ import {
   PlaybackSource,
   Name
 } from 'services/analytics'
-
+import { getUserHandle } from 'store/account/selectors'
 import { TrackEvent, make } from 'store/analytics/actions'
-import {
-  getCollection,
-  getTracksFromCollection
-} from 'store/cache/collections/selectors'
-import { getUid, getBuffering, getPlaying } from 'store/player/selectors'
-import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
-import { OwnProps as CollectionkMenuProps } from 'containers/menu/CollectionMenu'
-
-import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import { isDarkMode, isMatrix } from 'utils/theme/theme'
-
-import {
-  saveCollection,
-  unsaveCollection,
-  repostCollection,
-  undoRepostCollection,
-  shareCollection
-} from 'store/social/collections/actions'
-
 import {
   setUsers,
   setVisibility
@@ -51,13 +40,20 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import PlaylistTile from './PlaylistTile'
-import Track from 'models/Track'
-import ArtistPopover from 'components/artist/ArtistPopover'
-
-import cn from 'classnames'
-import { CollectionArtwork } from 'components/track/desktop/Artwork'
-import Draggable from 'containers/dragndrop/Draggable'
+import {
+  getCollection,
+  getTracksFromCollection
+} from 'store/cache/collections/selectors'
+import { getUserFromCollection } from 'store/cache/users/selectors'
+import { getUid, getBuffering, getPlaying } from 'store/player/selectors'
+import {
+  saveCollection,
+  unsaveCollection,
+  repostCollection,
+  undoRepostCollection,
+  shareCollection
+} from 'store/social/collections/actions'
+import { AppState } from 'store/types'
 import {
   albumPage,
   fullAlbumPage,
@@ -66,14 +62,15 @@ import {
   playlistPage,
   profilePage
 } from 'utils/route'
-import styles from './ConnectedPlaylistTile.module.css'
-import TrackListItem from './TrackListItem'
+import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
+import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
+
+import styles from './ConnectedPlaylistTile.module.css'
+import PlaylistTile from './PlaylistTile'
+import TrackListItem from './TrackListItem'
 import Stats from './stats/Stats'
 import { Flavor } from './stats/StatsText'
-import Menu from 'containers/menu/Menu'
-import UserBadges from 'containers/user-badges/UserBadges'
-import { range } from 'lodash'
 
 type OwnProps = {
   uid: UID

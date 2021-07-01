@@ -1,7 +1,10 @@
 import React from 'react'
-import { SkeletonTileProps } from 'components/track/types'
+
 import Skeleton from 'antd/lib/skeleton'
 import cn from 'classnames'
+
+import { SkeletonTileProps } from 'components/track/types'
+
 import styles from './SkeletonTile.module.css'
 
 const SkeletonTile = ({ index, tileSize, ordered }: SkeletonTileProps) => (

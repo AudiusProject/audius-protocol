@@ -1,16 +1,16 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
+
 import { Button, ButtonType, IconArrow } from '@audius/stems'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
 
 import Dropzone from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
-import TracksPreview from './TracksPreview'
-import UploadType from './uploadType'
-
 import SelectedServices from 'containers/service-selection/SelectedServices'
 
 import styles from './SelectPage.module.css'
+import TracksPreview from './TracksPreview'
+import UploadType from './uploadType'
 
 class SelectPage extends Component {
   state = {

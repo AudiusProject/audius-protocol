@@ -1,16 +1,17 @@
 import React, { memo, useEffect, useCallback, useContext } from 'react'
-import { Button, ButtonType } from '@audius/stems'
 
-import TrackList from 'components/track/mobile/TrackList'
-import { ID, UID } from 'models/common/Identifiers'
-import NavContext, { LeftPreset } from 'containers/nav/store/context'
+import { Button, ButtonType } from '@audius/stems'
+import Spin from 'antd/lib/spin'
+
 import MobilePageContainer from 'components/general/MobilePageContainer'
+import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
-import { TRENDING_PAGE } from 'utils/route'
+import NavContext, { LeftPreset } from 'containers/nav/store/context'
 import { LineupTrack } from 'models/Track'
+import { ID, UID } from 'models/common/Identifiers'
+import { TRENDING_PAGE } from 'utils/route'
 
 import styles from './HistoryPage.module.css'
-import Spin from 'antd/lib/spin'
 
 const messages = {
   header: 'LISTENING HISTORY',

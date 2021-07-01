@@ -1,12 +1,13 @@
-import { asLineup } from 'store/lineup/reducer'
 import feedReducer from 'containers/profile-page/store/lineups/feed/reducer'
 import tracksReducer from 'containers/profile-page/store/lineups/tracks/reducer'
-import { PREFIX as feedPrefix } from './lineups/feed/actions'
-import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
 import {
   FollowType,
   CollectionSortMode
 } from 'containers/profile-page/store/types'
+import { asLineup } from 'store/lineup/reducer'
+import { FOLLOW_USER, FOLLOW_USER_FAILED } from 'store/social/users/actions'
+import { Status } from 'store/types'
+
 import {
   FETCH_PROFILE,
   FETCH_PROFILE_SUCCEEDED,
@@ -24,8 +25,8 @@ import {
   UPDATE_MOST_USED_TAGS,
   SET_NOTIFICATION_SUBSCRIPTION
 } from './actions'
-import { FOLLOW_USER, FOLLOW_USER_FAILED } from 'store/social/users/actions'
-import { Status } from 'store/types'
+import { PREFIX as feedPrefix } from './lineups/feed/actions'
+import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
 
 const initialState = {
   handle: null,

@@ -1,5 +1,6 @@
-import * as collectionActions from './actions'
 import createErrorSagas from 'utils/errorSagas'
+
+import * as collectionActions from './actions'
 
 type CollectionErrors =
   | ReturnType<typeof collectionActions.createPlaylistFailed>

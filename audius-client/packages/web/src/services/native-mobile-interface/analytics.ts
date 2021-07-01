@@ -1,5 +1,5 @@
-import { MessageType } from './types'
 import { NativeMobileMessage } from './helpers'
+import { MessageType } from './types'
 
 export class SetAnalyticsUser extends NativeMobileMessage {
   constructor(handle: string, traits?: Record<string, any>) {

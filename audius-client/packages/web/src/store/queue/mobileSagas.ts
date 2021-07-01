@@ -1,10 +1,22 @@
 import { all, put, select, takeEvery, call } from 'redux-saga/effects'
 
+import Track from 'models/Track'
+import User from 'models/User'
 import { ID, UID } from 'models/common/Identifiers'
+import {
+  PersistQueueMessage,
+  RepeatModeMessage,
+  ShuffleMessage
+} from 'services/native-mobile-interface/queue'
+import { MessageType, Message } from 'services/native-mobile-interface/types'
+import { getUserId } from 'store/account/selectors'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
-import { play, repeat, shuffle, updateIndex } from 'store/queue/slice'
 import * as playerActions from 'store/player/slice'
+import { play, repeat, shuffle, updateIndex } from 'store/queue/slice'
+import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
+import { generateM3U8Variants } from 'utils/hlsUtil'
+
 import {
   getOrder,
   getIndex,
@@ -13,17 +25,6 @@ import {
   getShuffleIndex,
   getShuffleOrder
 } from './selectors'
-import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
-import { generateM3U8Variants } from 'utils/hlsUtil'
-import {
-  PersistQueueMessage,
-  RepeatModeMessage,
-  ShuffleMessage
-} from 'services/native-mobile-interface/queue'
-import { MessageType, Message } from 'services/native-mobile-interface/types'
-import { getUserId } from 'store/account/selectors'
-import Track from 'models/Track'
-import User from 'models/User'
 
 const PUBLIC_IPFS_GATEWAY = 'http://cloudflare-ipfs.com/ipfs/'
 const DEFAULT_IMAGE_URL =

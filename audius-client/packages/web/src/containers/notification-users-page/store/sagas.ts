@@ -1,12 +1,18 @@
-import UserListSagaFactory from 'containers/user-list/store/sagas'
-import { USER_LIST_TAG } from '../NotificationUsersPage'
 import { call, put, select } from 'redux-saga/effects'
-import { getId, getUserList } from './selectors'
+
+import {
+  getUserIds,
+  getId,
+  getUserList
+} from 'containers/notification-users-page/store/selectors'
+import { getNotificationById } from 'containers/notification/store/selectors'
+import UserListSagaFactory from 'containers/user-list/store/sagas'
+import { fetchUsers as retrieveUsers } from 'store/cache/users/sagas'
+
+import { USER_LIST_TAG } from '../NotificationUsersPage'
+
 import { getNotificationError } from './actions'
 import { watchRepostsError } from './errorSagas'
-import { getNotificationById } from 'containers/notification/store/selectors'
-import { fetchUsers as retrieveUsers } from 'store/cache/users/sagas'
-import { getUserIds } from 'containers/notification-users-page/store/selectors'
 
 function* errorDispatcher(error: Error) {
   const id = yield select(getId)

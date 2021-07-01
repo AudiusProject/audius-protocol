@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
+
 import { config, useSpring } from 'react-spring'
+
 import useInstanceVar from 'hooks/useInstanceVar'
-import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 import {
   EnablePullToRefreshMessage,
   DisablePullToRefreshMessage
 } from 'services/native-mobile-interface/android/pulltorefresh'
+import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 
 type UseHasReachedTopPointProps = {
   fetchContent: () => void

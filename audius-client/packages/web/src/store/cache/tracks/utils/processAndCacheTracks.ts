@@ -1,11 +1,13 @@
 import { put, call } from 'redux-saga/effects'
+
+import Track, { TrackMetadata } from 'models/Track'
 import * as cacheActions from 'store/cache/actions'
-import { reformat } from './reformat'
 import { Kind } from 'store/types'
 import { makeUid } from 'utils/uid'
-import { addUsersFromTracks } from './helpers'
-import Track, { TrackMetadata } from 'models/Track'
+
 import { setTracksIsBlocked } from './blocklist'
+import { addUsersFromTracks } from './helpers'
+import { reformat } from './reformat'
 
 /**
  * Processes tracks, adding users and calling `reformat`, before

@@ -1,16 +1,18 @@
 import React from 'react'
+
+import { IconVerified } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { Transition } from 'react-spring/renderprops'
 
-import styles from './TwitterOverlay.module.css'
+import { ReactComponent as IconGradientSave } from 'assets/img/gradientSave.svg'
+import InstagramButton from 'components/general/InstagramButton'
 import TwitterAuthButton from 'components/general/TwitterAuthButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import InstagramButton from 'components/general/InstagramButton'
-import { IconVerified } from '@audius/stems'
-import { ReactComponent as IconGradientSave } from 'assets/img/gradientSave.svg'
 import { useRemoteVar } from 'containers/remote-config/hooks'
 import { BooleanKeys } from 'services/remote-config'
+
+import styles from './TwitterOverlay.module.css'
 
 const messages = {
   twitterButton: 'Complete With Twitter',

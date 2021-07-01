@@ -1,16 +1,18 @@
 import React, { useCallback, useContext } from 'react'
-import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
-import { push as pushRoute } from 'connected-react-router'
 
-import { AppState } from 'store/types'
-import DeletePlaylistConfirmationModal from './components/DeletePlaylistConfirmationModal'
-import { getIsOpen, getPlaylistId } from './store/selectors'
-import * as actions from './store/actions'
+import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+
+import { RouterContext } from 'containers/animated-switch/RouterContextProvider'
 import { ID } from 'models/common/Identifiers'
 import { deletePlaylist } from 'store/cache/collections/actions'
+import { AppState } from 'store/types'
 import { TRENDING_PAGE } from 'utils/route'
-import { RouterContext } from 'containers/animated-switch/RouterContextProvider'
+
+import DeletePlaylistConfirmationModal from './components/DeletePlaylistConfirmationModal'
+import * as actions from './store/actions'
+import { getIsOpen, getPlaylistId } from './store/selectors'
 
 type DeletePlaylistConfirmationModalProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>

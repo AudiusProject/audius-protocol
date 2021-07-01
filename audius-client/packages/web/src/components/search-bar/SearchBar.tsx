@@ -1,13 +1,16 @@
 import React from 'react'
+
 import cn from 'classnames'
 import Lottie from 'react-lottie'
+
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import Tooltip from 'components/tooltip/Tooltip'
 import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
+import Tooltip from 'components/tooltip/Tooltip'
+import { OpenSearchMessage } from 'services/native-mobile-interface/search'
+import { Status } from 'store/types'
 
 import styles from './SearchBar.module.css'
-import { Status } from 'store/types'
-import { OpenSearchMessage } from 'services/native-mobile-interface/search'
+
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 interface SearchBarProps {

@@ -1,5 +1,6 @@
-import { OPEN, CLOSE, EditTrackModalActions } from './actions'
 import { ActionsMap } from 'utils/reducer'
+
+import { OPEN, CLOSE, EditTrackModalActions } from './actions'
 import EditTrackModalState from './types'
 
 const initialState = {

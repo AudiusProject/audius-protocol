@@ -1,11 +1,13 @@
-import cn from 'classnames'
 import React, { PureComponent } from 'react'
-import { connect } from 'react-redux'
-import { AppState } from 'store/types'
 
 import Tooltip from 'antd/lib/tooltip'
+import cn from 'classnames'
+import { connect } from 'react-redux'
+
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { getHasAccount } from 'store/account/selectors'
+import { AppState } from 'store/types'
+
 import styles from './Toast.module.css'
 
 type OwnProps = {

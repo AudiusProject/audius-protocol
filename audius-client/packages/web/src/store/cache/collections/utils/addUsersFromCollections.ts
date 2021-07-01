@@ -1,11 +1,12 @@
-import { makeUid } from 'utils/uid'
-import { UserCollectionMetadata } from 'models/Collection'
-import { Kind } from 'store/types'
-import { reformat as reformatUser } from 'store/cache/users/utils'
-import { put, select } from 'redux-saga/effects'
-import * as cacheActions from 'store/cache/actions'
-import { getAccountUser } from 'store/account/selectors'
 import { uniqBy } from 'lodash'
+import { put, select } from 'redux-saga/effects'
+
+import { UserCollectionMetadata } from 'models/Collection'
+import { getAccountUser } from 'store/account/selectors'
+import * as cacheActions from 'store/cache/actions'
+import { reformat as reformatUser } from 'store/cache/users/utils'
+import { Kind } from 'store/types'
+import { makeUid } from 'utils/uid'
 
 /**
  * Adds users from collection metadata to cache.

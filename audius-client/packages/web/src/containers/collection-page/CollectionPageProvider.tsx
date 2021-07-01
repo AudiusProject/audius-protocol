@@ -1,16 +1,44 @@
 import React, { Component } from 'react'
-import { open } from 'store/application/ui/mobileOverflowModal/actions'
+
+import { push as pushRoute, replace } from 'connected-react-router'
+import { UnregisterCallback } from 'history'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-import { UnregisterCallback } from 'history'
-import { push as pushRoute, replace } from 'connected-react-router'
-import { AppState, Status, Kind } from 'store/types'
 import { Dispatch } from 'redux'
 
-import { tracksActions } from './store/lineups/tracks/actions'
-import * as socialTracksActions from 'store/social/tracks/actions'
-import * as socialCollectionsActions from 'store/social/collections/actions'
-import * as socialUsersActions from 'store/social/users/actions'
+import DeletedPage from 'containers/deleted-page/DeletedPage'
+import { setFavorite } from 'containers/favorites-page/store/actions'
+import { updatePlaylistLastViewedAt } from 'containers/notification/store/actions'
+import { getPlaylistUpdates } from 'containers/notification/store/selectors'
+import { setRepost } from 'containers/reposts-page/store/actions'
+import { RepostType } from 'containers/reposts-page/store/types'
+import Collection, { SmartCollection } from 'models/Collection'
+import { FavoriteType } from 'models/Favorite'
+import { ID, UID, PlayableType } from 'models/common/Identifiers'
+import {
+  RepostSource,
+  FavoriteSource,
+  Name,
+  PlaybackSource,
+  ShareSource,
+  FollowSource
+} from 'services/analytics'
+import { getUserId, getAccountCollections } from 'store/account/selectors'
+import { TrackEvent, make } from 'store/analytics/actions'
+import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
+import { open } from 'store/application/ui/mobileOverflowModal/actions'
+import {
+  OverflowAction,
+  OverflowSource
+} from 'store/application/ui/mobileOverflowModal/types'
+import {
+  setUsers,
+  setVisibility
+} from 'store/application/ui/userListModal/slice'
+import {
+  UserListType,
+  UserListEntityType
+} from 'store/application/ui/userListModal/types'
 import {
   editPlaylist,
   removeTrackFromPlaylist,
@@ -18,6 +46,18 @@ import {
   publishPlaylist,
   deletePlaylist
 } from 'store/cache/collections/actions'
+import {
+  makeGetTableMetadatas,
+  makeGetLineupOrder
+} from 'store/lineup/selectors'
+import { getPlaying, getBuffering } from 'store/player/selectors'
+import { makeGetCurrent } from 'store/queue/selectors'
+import { getLocationPathname } from 'store/routing/selectors'
+import * as socialCollectionsActions from 'store/social/collections/actions'
+import * as socialTracksActions from 'store/social/tracks/actions'
+import * as socialUsersActions from 'store/social/users/actions'
+import { AppState, Status, Kind } from 'store/types'
+import { formatUrlName } from 'utils/formatUtil'
 import {
   trackPage,
   profilePage,
@@ -29,14 +69,13 @@ import {
   albumPage,
   getPathname
 } from 'utils/route'
-import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
-import { setRepost } from 'containers/reposts-page/store/actions'
-import { RepostType } from 'containers/reposts-page/store/types'
-import { setFavorite } from 'containers/favorites-page/store/actions'
-import { FavoriteType } from 'models/Favorite'
-import { formatUrlName } from 'utils/formatUtil'
+import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
+import { Uid } from 'utils/uid'
 
+import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
+import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'
 import * as collectionActions from './store/actions'
+import { tracksActions } from './store/lineups/tracks/actions'
 import {
   getCollection,
   getCollectionStatus,
@@ -46,50 +85,10 @@ import {
   getUserUid
 } from './store/selectors'
 import {
-  makeGetTableMetadatas,
-  makeGetLineupOrder
-} from 'store/lineup/selectors'
-import { getPlaying, getBuffering } from 'store/player/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
-import { getUserId, getAccountCollections } from 'store/account/selectors'
-
-import {
   TrackRecord,
   CollectionTrack,
   CollectionsPageType
 } from './store/types'
-import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
-import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'
-
-import { Uid } from 'utils/uid'
-import { ID, UID, PlayableType } from 'models/common/Identifiers'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'store/application/ui/mobileOverflowModal/types'
-import {
-  RepostSource,
-  FavoriteSource,
-  Name,
-  PlaybackSource,
-  ShareSource,
-  FollowSource
-} from 'services/analytics'
-import { TrackEvent, make } from 'store/analytics/actions'
-import {
-  setUsers,
-  setVisibility
-} from 'store/application/ui/userListModal/slice'
-import {
-  UserListType,
-  UserListEntityType
-} from 'store/application/ui/userListModal/types'
-import Collection, { SmartCollection } from 'models/Collection'
-import DeletedPage from 'containers/deleted-page/DeletedPage'
-import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
-import { getLocationPathname } from 'store/routing/selectors'
-import { getPlaylistUpdates } from 'containers/notification/store/selectors'
-import { updatePlaylistLastViewedAt } from 'containers/notification/store/actions'
 
 type OwnProps = {
   type: CollectionsPageType

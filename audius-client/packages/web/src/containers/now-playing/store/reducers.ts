@@ -1,5 +1,7 @@
 import { createReducer, ActionType } from 'typesafe-actions'
+
 import { MessageType } from 'services/native-mobile-interface/types'
+
 import * as actions from './actions'
 import { NowPlayingState } from './types'
 

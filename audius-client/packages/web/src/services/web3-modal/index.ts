@@ -1,4 +1,5 @@
 import Web3Modal, { IProviderOptions } from 'web3modal'
+
 import walletLinkSvg from 'assets/img/wallet-link.svg'
 const CHAIN_ID = process.env.REACT_APP_ETH_NETWORK_ID
 const BITSKI_CLIENT_ID = process.env.REACT_APP_BITSKI_CLIENT_ID

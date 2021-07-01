@@ -1,13 +1,14 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import UploadType from './uploadType'
-import { mapValues } from 'lodash'
+
 import { Button, ButtonType, IconArrow } from '@audius/stems'
+import { mapValues } from 'lodash'
+import PropTypes from 'prop-types'
 
 import FormTile from 'components/data-entry/FormTile'
 import InlineFormTile from 'components/data-entry/InlineFormTile'
 
 import styles from './EditPage.module.css'
+import UploadType from './uploadType'
 
 class EditPage extends Component {
   state = {

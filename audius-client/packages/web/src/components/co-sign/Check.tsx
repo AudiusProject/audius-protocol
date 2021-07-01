@@ -1,9 +1,11 @@
 import React from 'react'
+
 import cn from 'classnames'
 
 import { ReactComponent as IconCoSign } from 'assets/img/iconCoSign.svg'
-import { Size } from './types'
+
 import styles from './Check.module.css'
+import { Size } from './types'
 
 type CheckProps = {
   size: Size

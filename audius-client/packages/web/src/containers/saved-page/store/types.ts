@@ -1,9 +1,10 @@
-import Collection from 'models/Collection'
-import { UID, ID } from 'models/common/Identifiers'
-import { LineupState } from 'models/common/Lineup'
 import { Moment } from 'moment'
+
+import Collection from 'models/Collection'
 import Favorite from 'models/Favorite'
 import { LineupTrack } from 'models/Track'
+import { UID, ID } from 'models/common/Identifiers'
+import { LineupState } from 'models/common/Lineup'
 
 export default interface SavesPageState {
   localSaves: { [id: number]: UID }

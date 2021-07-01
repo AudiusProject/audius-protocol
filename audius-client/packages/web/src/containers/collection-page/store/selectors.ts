@@ -1,10 +1,10 @@
 import { createSelector } from 'reselect'
 
-import { getCollection as getCachedCollection } from 'store/cache/collections/selectors'
 import { getCollection as getSmartCollection } from 'containers/smart-collection/store/selectors'
+import { UID } from 'models/common/Identifiers'
+import { getCollection as getCachedCollection } from 'store/cache/collections/selectors'
 import { getUser as getCachedUser } from 'store/cache/users/selectors'
 import { AppState, Status } from 'store/types'
-import { UID } from 'models/common/Identifiers'
 
 export const getCollectionUid = (state: AppState) =>
   state.collection.collectionUid

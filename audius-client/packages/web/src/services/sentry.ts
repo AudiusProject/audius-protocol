@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/browser'
+
 import User from 'models/User'
 
 const analyticsBlacklist = [

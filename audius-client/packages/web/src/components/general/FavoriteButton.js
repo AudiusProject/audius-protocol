@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
 
-import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
+
 import { ReactComponent as IconHeart } from 'assets/img/iconHeart.svg'
+import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 
 import styles from './FavoriteButton.module.css'
 

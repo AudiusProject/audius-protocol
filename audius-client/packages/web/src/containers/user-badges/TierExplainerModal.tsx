@@ -1,17 +1,19 @@
 import React, { useCallback } from 'react'
-import { Button, ButtonSize, ButtonType, Modal } from '@audius/stems'
-import { Tier } from 'containers/audio-rewards-page/Tiers'
 
-import styles from './TierExplainerModal.module.css'
-import { useSelector } from 'utils/reducer'
+import { Button, ButtonSize, ButtonType, Modal } from '@audius/stems'
+import { push as pushRoute } from 'connected-react-router'
+import { useDispatch } from 'react-redux'
+
+import { Tier } from 'containers/audio-rewards-page/Tiers'
 import {
   getModalVisibility,
   setVisibility
 } from 'store/application/ui/modals/slice'
-import { useDispatch } from 'react-redux'
-import { useProfileTier } from './hooks'
-import { push as pushRoute } from 'connected-react-router'
+import { useSelector } from 'utils/reducer'
 import { DASHBOARD_PAGE } from 'utils/route'
+
+import styles from './TierExplainerModal.module.css'
+import { useProfileTier } from './hooks'
 
 export const messages = {
   title: '$AUDIO VIP Tiers',

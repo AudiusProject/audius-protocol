@@ -1,9 +1,11 @@
 import React, { memo, useState, useRef, useEffect } from 'react'
-import styles from './EditableName.module.css'
+
 import cn from 'classnames'
 
 import { ReactComponent as IconPencil } from 'assets/img/iconPencil.svg'
 import UserBadges from 'containers/user-badges/UserBadges'
+
+import styles from './EditableName.module.css'
 
 const EditableName = props => {
   const [editing, setEditing] = useState(false)

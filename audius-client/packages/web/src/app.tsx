@@ -1,13 +1,15 @@
 import React from 'react'
 
-import { Provider } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
+import { Provider } from 'react-redux'
 
+import logger from 'utils/logger'
+
+import AppContext from './AppContext'
+import App from './containers/App'
 import configureStore from './store/configureStore'
 import history from './utils/history'
-import logger from 'utils/logger'
-import AppContext from 'AppContext'
-import App from './containers/App'
+
 import './services/webVitals'
 import './index.css'
 

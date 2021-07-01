@@ -1,11 +1,9 @@
 import React, { MouseEvent } from 'react'
+
+import { IconInstagram, IconTwitterBird, IconDiscord } from '@audius/stems'
 import cn from 'classnames'
 
 import horizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color@2x.png'
-import { IconInstagram, IconTwitterBird, IconDiscord } from '@audius/stems'
-
-import styles from './Footer.module.css'
-
 import {
   AUDIUS_HOME_LINK,
   AUDIUS_TWITTER_LINK,
@@ -21,6 +19,8 @@ import {
   AUDIUS_EXPLORE_LINK,
   pushWindowRoute
 } from 'utils/route'
+
+import styles from './Footer.module.css'
 
 const handleClickRoute = (route: string) => (e: MouseEvent) => {
   e.preventDefault()

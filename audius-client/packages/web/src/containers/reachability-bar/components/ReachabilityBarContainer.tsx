@@ -1,7 +1,8 @@
 import React from 'react'
 
-import styles from './ReachabilityBarContainer.module.css'
 import { useTransition, animated } from 'react-spring'
+
+import styles from './ReachabilityBarContainer.module.css'
 
 const messages = {
   title: 'No Internet Connection'

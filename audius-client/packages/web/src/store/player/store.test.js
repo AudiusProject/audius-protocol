@@ -1,8 +1,9 @@
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
+
+import * as sagas from 'store/player/sagas'
 import reducer from 'store/player/slice'
 import * as actions from 'store/player/slice'
-import * as sagas from 'store/player/sagas'
 import { noopReducer } from 'store/testHelper'
 
 const initialTracks = {

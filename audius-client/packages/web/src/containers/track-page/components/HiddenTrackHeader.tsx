@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { ReactComponent as IconHidden } from 'assets/img/iconHidden.svg'
 
 import styles from './HiddenTrackHeader.module.css'

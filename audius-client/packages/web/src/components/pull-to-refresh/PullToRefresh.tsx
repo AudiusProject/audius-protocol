@@ -1,14 +1,16 @@
 import React, { useState, useEffect, ReactNode, memo } from 'react'
-import Lottie, { EventListener } from 'react-lottie'
+
 import cn from 'classnames'
+import Lottie, { EventListener } from 'react-lottie'
 import { animated } from 'react-spring'
 
 import iconRefreshPull from 'assets/animations/iconRefreshPull.json'
 import iconRefreshSpin from 'assets/animations/iconRefreshSpin.json'
-import styles from './PullToRefresh.module.css'
-import { useHasReachedTopPoint, useAndroidPullToRefresh } from './hooks'
 import useInstanceVar from 'hooks/useInstanceVar'
 import { getIsIOS } from 'utils/browser'
+
+import styles from './PullToRefresh.module.css'
+import { useHasReachedTopPoint, useAndroidPullToRefresh } from './hooks'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

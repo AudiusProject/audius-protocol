@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { ID } from 'models/common/Identifiers'
+
 import { StemUploadWithFile } from 'components/source-files-modal/SourceFilesModal'
+import { ID } from 'models/common/Identifiers'
 
 const initialState = {
   uploadsInProgress: {} as {

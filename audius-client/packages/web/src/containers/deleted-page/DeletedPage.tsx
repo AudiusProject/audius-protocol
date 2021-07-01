@@ -1,10 +1,12 @@
 import React from 'react'
+
+import Playable from 'models/Playable'
+import User from 'models/User'
+import { useIsMobile } from 'utils/clientUtil'
+
 import DeletedPageProvider from './DeletedPageProvider'
 import DeletedPageDesktopContent from './components/desktop/DeletedPage'
 import DeletedPageMobileContent from './components/mobile/DeletedPage'
-import { useIsMobile } from 'utils/clientUtil'
-import User from 'models/User'
-import Playable from 'models/Playable'
 
 type DeletedPageContentProps = {
   title: string

@@ -1,7 +1,7 @@
 import WebWorker from 'services/WebWorker'
-import resizeImageWorkerFile from 'workers/resizeImage.worker.js'
 import averageRgbWorkerFile from 'workers/averageRgb.worker.js'
 import gifPreviewWorkerFile from 'workers/gifPreview.worker.js'
+import resizeImageWorkerFile from 'workers/resizeImage.worker.js'
 
 const averageRgbWorker = new WebWorker(averageRgbWorkerFile, false)
 const gifPreviewWorker = new WebWorker(gifPreviewWorkerFile, false)

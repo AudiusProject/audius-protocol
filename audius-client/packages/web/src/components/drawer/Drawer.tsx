@@ -1,18 +1,19 @@
 import React, { useEffect, useCallback, useRef, ReactNode } from 'react'
+
+import { IconRemove, useClickOutside } from '@audius/stems'
+import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
 import cn from 'classnames'
-
-import styles from './Drawer.module.css'
-
 import { useSpring, animated, useTransition } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
+
 import useInstanceVar from 'hooks/useInstanceVar'
+import { usePortal } from 'hooks/usePortal'
 import {
   EnablePullToRefreshMessage,
   DisablePullToRefreshMessage
 } from 'services/native-mobile-interface/android/pulltorefresh'
-import { usePortal } from 'hooks/usePortal'
-import { IconRemove, useClickOutside } from '@audius/stems'
-import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
+
+import styles from './Drawer.module.css'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

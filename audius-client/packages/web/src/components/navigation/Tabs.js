@@ -1,7 +1,8 @@
 import React from 'react'
+
+import AntTabs from 'antd/lib/tabs'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
-import AntTabs from 'antd/lib/tabs'
 
 import styles from './Tabs.module.css'
 

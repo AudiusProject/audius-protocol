@@ -1,5 +1,5 @@
-import { SquareSizes, WidthSizes } from 'models/common/ImageSizes'
 import User from 'models/User'
+import { SquareSizes, WidthSizes } from 'models/common/ImageSizes'
 
 /**
  * Prunes blob url values off of a user.

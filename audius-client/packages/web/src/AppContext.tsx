@@ -1,10 +1,10 @@
 import React from 'react'
 
-import { NavProvider } from 'containers/nav/store/context'
-import { ScrollProvider } from 'containers/scroll-provider/ScrollProvider'
-import { RouterContextProvider } from 'containers/animated-switch/RouterContextProvider'
 import { HeaderContextProvider } from 'components/general/header/mobile/HeaderContextProvider'
 import { ToastContextProvider } from 'components/toast/ToastContext'
+import { RouterContextProvider } from 'containers/animated-switch/RouterContextProvider'
+import { NavProvider } from 'containers/nav/store/context'
+import { ScrollProvider } from 'containers/scroll-provider/ScrollProvider'
 
 type AppContextProps = {
   children: JSX.Element

@@ -1,6 +1,8 @@
 import { createReducer } from 'typesafe-actions'
-import { MobileKeyboardState } from './types'
+
 import { MessageType } from 'services/native-mobile-interface/types'
+
+import { MobileKeyboardState } from './types'
 
 const initialState = {
   mobileKeyboardVisible: false

@@ -1,4 +1,6 @@
-import { OpenSeaAsset, OpenSeaEvent } from 'services/opensea-client/types'
+import * as allPromisesSettled from 'promise.allsettled'
+
+import { Collectible } from 'containers/collectibles/components/types'
 import {
   isAssetValid,
   assetToCollectible,
@@ -6,8 +8,7 @@ import {
   transferEventToCollectible,
   isNotFromNullAddress
 } from 'containers/collectibles/helpers'
-import { Collectible } from 'containers/collectibles/components/types'
-import * as allPromisesSettled from 'promise.allsettled'
+import { OpenSeaAsset, OpenSeaEvent } from 'services/opensea-client/types'
 
 const OPENSEA_API_URL = process.env.REACT_APP_OPENSEA_API_URL
 const OPENSEA_NUM_ASSETS_LIMIT = 1000

@@ -1,18 +1,20 @@
 import React, { useEffect, useContext } from 'react'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
-import { push as pushRoute } from 'connected-react-router'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
-import ReactMarkdown from 'react-markdown'
-import { NOTIFICATION_PAGE } from 'utils/route'
 
-import { AppState } from 'store/types'
-import styles from './AnnouncementPage.module.css'
-import NavContext, { LeftPreset } from 'containers/nav/store/context'
+import { push as pushRoute } from 'connected-react-router'
+import ReactMarkdown from 'react-markdown'
+import { connect } from 'react-redux'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
+import { Dispatch } from 'redux'
+
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import Header from 'components/general/header/mobile/Header'
+import NavContext, { LeftPreset } from 'containers/nav/store/context'
 import { getNotificationById } from 'containers/notification/store/selectors'
 import { Notification } from 'containers/notification/store/types'
+import { AppState } from 'store/types'
+import { NOTIFICATION_PAGE } from 'utils/route'
+
+import styles from './AnnouncementPage.module.css'
 
 const messages = {
   title: 'NOTIFICATIONS',

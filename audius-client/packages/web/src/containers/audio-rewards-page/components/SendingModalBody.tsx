@@ -1,12 +1,15 @@
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import React from 'react'
-import cn from 'classnames'
-import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
-import DisplayAudio from './DisplayAudio'
 
-import styles from './SendingModalBody.module.css'
+import cn from 'classnames'
+
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { BNWei, WalletAddress } from 'store/wallet/slice'
+
+import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
+
+import DisplayAudio from './DisplayAudio'
 import { AddressWithArrow } from './SendInputConfirmation'
+import styles from './SendingModalBody.module.css'
 
 type SendingModalBodyProps = {
   amountToTransfer: BNWei

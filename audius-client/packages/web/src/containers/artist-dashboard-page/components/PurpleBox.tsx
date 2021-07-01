@@ -1,6 +1,8 @@
 import React, { ReactNode } from 'react'
-import styles from './PurpleBox.module.css'
+
 import cn from 'classnames'
+
+import styles from './PurpleBox.module.css'
 
 type PurpleBoxProps = {
   label: string

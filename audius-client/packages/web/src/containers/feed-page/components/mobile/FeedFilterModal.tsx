@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { Modal, Anchor } from '@audius/stems'
 
 import FeedFilter from 'models/FeedFilter'

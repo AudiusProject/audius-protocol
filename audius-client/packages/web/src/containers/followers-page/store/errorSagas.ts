@@ -1,6 +1,8 @@
-import { GET_FOLLOWING_ERROR, getFollowersError } from './actions'
 import { put, takeEvery } from 'redux-saga/effects'
+
 import * as errorActions from 'store/errors/actions'
+
+import { GET_FOLLOWING_ERROR, getFollowersError } from './actions'
 
 type ErrorActions = ReturnType<typeof getFollowersError>
 

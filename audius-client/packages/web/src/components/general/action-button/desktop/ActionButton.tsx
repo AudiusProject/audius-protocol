@@ -1,7 +1,9 @@
 import React from 'react'
+
+import cn from 'classnames'
+
 import Toast from 'components/toast/Toast'
 import { ComponentPlacement, MountPlacement } from 'components/types'
-import cn from 'classnames'
 
 import styles from './ActionButton.module.css'
 

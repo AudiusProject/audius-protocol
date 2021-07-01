@@ -1,3 +1,7 @@
+import { getIsIOS } from 'utils/browser'
+import { isMobile } from 'utils/clientUtil'
+import { FEED_PAGE } from 'utils/route'
+
 import {
   SET_ACCOUNT_READY,
   SET_FIELD,
@@ -32,9 +36,6 @@ import {
   REMOVE_FOLLOW_ARTISTS
 } from './actions'
 import { Pages, FollowArtistsCategory } from './types'
-import { FEED_PAGE } from 'utils/route'
-import { getIsIOS } from 'utils/browser'
-import { isMobile } from 'utils/clientUtil'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

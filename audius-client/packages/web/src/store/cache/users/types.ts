@@ -1,5 +1,5 @@
-import Cache from 'models/common/Cache'
 import User from 'models/User'
+import Cache from 'models/common/Cache'
 import { Status } from 'store/types'
 
 interface UsersCacheState extends Cache<User> {

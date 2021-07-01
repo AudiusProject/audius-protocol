@@ -1,11 +1,13 @@
-import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import React from 'react'
+
+import { Button, ButtonType, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
+
+import { ReactComponent as IconInstagram } from 'assets/img/iconInstagram.svg'
+import { IDENTITY_SERVICE } from 'services/AudiusBackend'
+
 import InstagramAuth from './InstagramAuth'
 import styles from './InstagramButton.module.css'
-import { ReactComponent as IconInstagram } from 'assets/img/iconInstagram.svg'
-
-import { IDENTITY_SERVICE } from 'services/AudiusBackend'
 
 type InstagramAuthButtonProps = {
   onSuccess?: (uuid: string, profile: any) => void

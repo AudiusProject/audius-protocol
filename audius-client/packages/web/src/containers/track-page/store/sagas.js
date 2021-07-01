@@ -1,26 +1,27 @@
+import { push as pushRoute } from 'connected-react-router'
 import moment from 'moment'
 import { fork, call, put, select, takeEvery, all } from 'redux-saga/effects'
 
 import tracksSagas from 'containers/track-page/store/lineups/tracks/sagas'
-import * as trackPageActions from './actions'
-import * as trackCacheActions from 'store/cache/tracks/actions'
-import { tracksActions } from './lineups/tracks/actions'
-import { waitForBackendSetup } from 'store/backend/sagas'
-import { getIsReachable } from 'store/reachability/selectors'
-import { getTrack as getCachedTrack } from 'store/cache/tracks/selectors'
-import { getTrack, getTrendingTrackRanks, getUser } from './selectors'
-import { push as pushRoute } from 'connected-react-router'
-import { retrieveTracks } from 'store/cache/tracks/utils'
-import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
-import { getUsers } from 'store/cache/users/selectors'
+import TimeRange from 'models/TimeRange'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { StringKeys } from 'services/remote-config'
 import {
   getRemoteVar,
   waitForRemoteConfig
 } from 'services/remote-config/Provider'
-import { StringKeys } from 'services/remote-config'
+import { waitForBackendSetup } from 'store/backend/sagas'
+import * as trackCacheActions from 'store/cache/tracks/actions'
+import { getTrack as getCachedTrack } from 'store/cache/tracks/selectors'
+import { retrieveTracks } from 'store/cache/tracks/utils'
+import { getUsers } from 'store/cache/users/selectors'
+import { getIsReachable } from 'store/reachability/selectors'
+import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
+
+import * as trackPageActions from './actions'
+import { tracksActions } from './lineups/tracks/actions'
 import { retrieveTrending } from './retrieveTrending'
-import TimeRange from 'models/TimeRange'
+import { getTrack, getTrendingTrackRanks, getUser } from './selectors'
 
 export const TRENDING_BADGE_LIMIT = 10
 

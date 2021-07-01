@@ -1,6 +1,7 @@
 import React from 'react'
 
 import { storiesOf } from '@storybook/react'
+
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
 import ImageSelectionPopup from 'components/image-selection/ImageSelectionPopup'
 

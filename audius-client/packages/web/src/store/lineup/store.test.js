@@ -2,21 +2,21 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 
-import { LineupSagas } from 'store/lineup/sagas'
+import { waitForBackendSetup } from 'store/backend/sagas'
+import { asCache, initialCacheState } from 'store/cache/reducer'
 import cacheSagas from 'store/cache/sagas'
+import { fetchUsers } from 'store/cache/users/sagas'
+import { initialState as initialConfirmerState } from 'store/confirmer/reducer'
 import { LineupActions } from 'store/lineup/actions'
 import { asLineup, initialLineupState } from 'store/lineup/reducer'
-import { asCache, initialCacheState } from 'store/cache/reducer'
-import queueReducer, {
-  initialState as initialQueueState
-} from 'store/queue/slice'
+import { LineupSagas } from 'store/lineup/sagas'
 import playerReducer, {
   initialState as initialPlayerState
 } from 'store/player/slice'
-import { initialState as initialConfirmerState } from 'store/confirmer/reducer'
-import { fetchUsers } from 'store/cache/users/sagas'
+import queueReducer, {
+  initialState as initialQueueState
+} from 'store/queue/slice'
 import { noopReducer, allSagas } from 'store/testHelper'
-import { waitForBackendSetup } from 'store/backend/sagas'
 import { Kind } from 'store/types'
 
 const PREFIX = 'tracks'

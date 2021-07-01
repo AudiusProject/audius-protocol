@@ -9,10 +9,26 @@ import {
   takeEvery,
   select
 } from 'redux-saga/effects'
-import mobileSagas from './mobileSagas'
+
+import Track from 'models/Track'
 import { ID } from 'models/common/Identifiers'
+import AudiusBackend from 'services/AudiusBackend'
+import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/notifications'
+import { getRemoteVar, IntKeys } from 'services/remote-config'
+import { remoteConfigIntDefaults } from 'services/remote-config/defaults'
+import { getUserId, getHasAccount } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
+import { retrieveCollections } from 'store/cache/collections/utils'
+import { retrieveTracks } from 'store/cache/tracks/utils'
+import { fetchUsers } from 'store/cache/users/sagas'
+import { getIsReachable } from 'store/reachability/selectors'
+import { Status } from 'store/types'
+import { isElectron } from 'utils/clientUtil'
+import { waitForValue } from 'utils/sagaHelpers'
+
 import * as notificationActions from './actions'
+import { watchNotificationError } from './errorSagas'
+import mobileSagas from './mobileSagas'
 import {
   getLastNotification,
   getNotificationById,
@@ -22,21 +38,7 @@ import {
   makeGetAllNotifications,
   getAllNotifications
 } from './selectors'
-import AudiusBackend from 'services/AudiusBackend'
-import { fetchUsers } from 'store/cache/users/sagas'
 import { Notification, Entity, NotificationType, Achievement } from './types'
-import { Status } from 'store/types'
-import { getUserId, getHasAccount } from 'store/account/selectors'
-import { watchNotificationError } from './errorSagas'
-import { waitForValue } from 'utils/sagaHelpers'
-import { isElectron } from 'utils/clientUtil'
-import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/notifications'
-import { getIsReachable } from 'store/reachability/selectors'
-import { retrieveCollections } from 'store/cache/collections/utils'
-import { retrieveTracks } from 'store/cache/tracks/utils'
-import Track from 'models/Track'
-import { getRemoteVar, IntKeys } from 'services/remote-config'
-import { remoteConfigIntDefaults } from 'services/remote-config/defaults'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

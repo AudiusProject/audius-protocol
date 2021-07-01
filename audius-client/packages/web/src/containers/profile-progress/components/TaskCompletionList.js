@@ -1,11 +1,11 @@
 import React from 'react'
-import TaskCompletionItem from './TaskCompletionItem'
-import PropTypes from 'prop-types'
 
 import cn from 'classnames'
+import PropTypes from 'prop-types'
 
-import styles from './TaskCompletionList.module.css'
 import { CompletionStageArray } from './PropTypes'
+import TaskCompletionItem from './TaskCompletionItem'
+import styles from './TaskCompletionList.module.css'
 
 const sortIncompleteFirst = list => {
   const incomplete = list.filter(e => !e.isCompleted)

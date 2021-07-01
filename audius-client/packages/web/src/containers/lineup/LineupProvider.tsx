@@ -1,29 +1,30 @@
 /* global Element */
 import React, { PureComponent } from 'react'
-import { connect } from 'react-redux'
-import { push as pushRoute } from 'connected-react-router'
-import { Transition } from 'react-spring/renderprops'
+
 import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
 import InfiniteScroll from 'react-infinite-scroller'
-import { ID, UID } from 'models/common/Identifiers'
-
-import { Status, AppState, Kind } from 'store/types'
-import { delineateByTime, delineateByFeatured } from './delineate'
-
-import styles from './Lineup.module.css'
+import { connect } from 'react-redux'
+import { Transition } from 'react-spring/renderprops'
 import { Dispatch } from 'redux'
-import { LineupVariant } from './types'
+
 import {
   TrackTileProps,
   PlaylistTileProps,
   TrackTileSize,
   TileProps
 } from 'components/track/types'
-import { isMobile } from 'utils/clientUtil'
-import { LineupActions } from 'store/lineup/actions'
+import { ID, UID } from 'models/common/Identifiers'
 import { Lineup } from 'models/common/Lineup'
-import { TrackEvent, make } from 'store/analytics/actions'
 import { Name, PlaybackSource } from 'services/analytics'
+import { TrackEvent, make } from 'store/analytics/actions'
+import { LineupActions } from 'store/lineup/actions'
+import { Status, AppState, Kind } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+
+import styles from './Lineup.module.css'
+import { delineateByTime, delineateByFeatured } from './delineate'
+import { LineupVariant } from './types'
 
 // The max number of tiles to load
 const MAX_TILES_COUNT = 1000

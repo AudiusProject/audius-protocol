@@ -1,21 +1,22 @@
 import React, { useEffect, useCallback } from 'react'
+
+import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
-import { push as pushRoute } from 'connected-react-router'
 
-import { getLineup } from './store/selectors'
-import { moreByActions } from './store/lineups/more-by/actions'
-
-import { makeGetLineupMetadatas } from 'store/lineup/selectors'
-import { AppState } from 'store/types'
-import { DeletedPageProps as MobileDeletedPageProps } from './components/mobile/DeletedPage'
-import { DeletedPageProps as DesktopDeletedPageProps } from './components/desktop/DeletedPage'
-import { makeGetCurrent } from 'store/queue/selectors'
-import { getPlaying, getBuffering } from 'store/player/selectors'
-import { profilePage } from 'utils/route'
 import { LineupVariant } from 'containers/lineup/types'
-import User from 'models/User'
 import Playable from 'models/Playable'
+import User from 'models/User'
+import { makeGetLineupMetadatas } from 'store/lineup/selectors'
+import { getPlaying, getBuffering } from 'store/player/selectors'
+import { makeGetCurrent } from 'store/queue/selectors'
+import { AppState } from 'store/types'
+import { profilePage } from 'utils/route'
+
+import { DeletedPageProps as DesktopDeletedPageProps } from './components/desktop/DeletedPage'
+import { DeletedPageProps as MobileDeletedPageProps } from './components/mobile/DeletedPage'
+import { moreByActions } from './store/lineups/more-by/actions'
+import { getLineup } from './store/selectors'
 
 type OwnProps = {
   title: string

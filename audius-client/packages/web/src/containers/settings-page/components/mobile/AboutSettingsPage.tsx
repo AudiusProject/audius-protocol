@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from 'react'
 
+import appIcon from 'assets/img/appIcon.png'
+import { ReactComponent as IconCareers } from 'assets/img/iconCareers.svg'
+import { ReactComponent as IconContact } from 'assets/img/iconContact.svg'
+import { ReactComponent as IconDiscord } from 'assets/img/iconDiscord.svg'
+import { ReactComponent as IconInstagram } from 'assets/img/iconInstagram.svg'
+import { ReactComponent as IconTwitter } from 'assets/img/iconTwitterBird.svg'
 import Page from 'components/general/Page'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
 import Row from 'components/groupable-list/Row'
-
-import settingsPageStyles from './SettingsPage.module.css'
-import styles from './AboutSettingsPage.module.css'
-import { SettingsPageProps } from './SettingsPage'
-
-import { ReactComponent as IconDiscord } from 'assets/img/iconDiscord.svg'
-import { ReactComponent as IconTwitter } from 'assets/img/iconTwitterBird.svg'
-import { ReactComponent as IconInstagram } from 'assets/img/iconInstagram.svg'
-import { ReactComponent as IconContact } from 'assets/img/iconContact.svg'
-import { ReactComponent as IconCareers } from 'assets/img/iconCareers.svg'
-import appIcon from 'assets/img/appIcon.png'
+import { GetVersion } from 'services/native-mobile-interface/version'
 
 import { version } from '../../../../../package.json'
-import { GetVersion } from 'services/native-mobile-interface/version'
+
+import styles from './AboutSettingsPage.module.css'
+import { SettingsPageProps } from './SettingsPage'
+import settingsPageStyles from './SettingsPage.module.css'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

@@ -1,4 +1,5 @@
 import { decodeHashId } from './hashIds'
+
 // eslint-disable-next-line
 import { mockDecode } from '__mocks__/Hashids'
 

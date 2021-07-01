@@ -1,5 +1,6 @@
-import * as socialTrackActions from './actions'
 import createErrorSagas from 'utils/errorSagas'
+
+import * as socialTrackActions from './actions'
 
 type TrackRepostErrors =
   | ReturnType<typeof socialTrackActions.trackRepostFailed>

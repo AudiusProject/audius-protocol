@@ -1,32 +1,33 @@
 import React, { useContext, useMemo, useState } from 'react'
 
+import { Modal } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
-import { Modal } from '@audius/stems'
 import SimpleBar from 'simplebar-react'
 
 import { ReactComponent as IconMultiselectAdd } from 'assets/img/iconMultiselectAdd.svg'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'
 import { ToastContext } from 'components/toast/ToastContext'
+import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
+import { getCollectionId } from 'containers/collection-page/store/selectors'
+import { useCollectionCoverArt } from 'hooks/useImageSize'
+import Collection from 'models/Collection'
+import { SquareSizes } from 'models/common/ImageSizes'
+import { newCollectionMetadata } from 'schemas'
+import { CreatePlaylistSource } from 'services/analytics'
 import { getAccountWithOwnPlaylists } from 'store/account/selectors'
 import {
   addTrackToPlaylist,
   createPlaylist
 } from 'store/cache/collections/actions'
-import { useCollectionCoverArt } from 'hooks/useImageSize'
 import { AppState } from 'store/types'
-
-import { getIsOpen, getTrackId, getTrackTitle } from '../store/selectors'
-import { close } from '../store/actions'
-import styles from './AddToPlaylistModal.module.css'
-import { newCollectionMetadata } from 'schemas'
 import { playlistPage } from 'utils/route'
-import { CreatePlaylistSource } from 'services/analytics'
-import { SquareSizes } from 'models/common/ImageSizes'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import Collection from 'models/Collection'
-import { getCollectionId } from 'containers/collection-page/store/selectors'
-import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
+
+import { close } from '../store/actions'
+import { getIsOpen, getTrackId, getTrackTitle } from '../store/selectors'
+
+import styles from './AddToPlaylistModal.module.css'
 
 const messages = {
   title: 'Add to Playlist',

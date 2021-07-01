@@ -1,5 +1,7 @@
 import { createCustomAction } from 'typesafe-actions'
+
 import { ID } from 'models/common/Identifiers'
+
 import { RepostType } from './types'
 
 export const SET_REPOST = 'REPOSTING_USER_PAGE/SET_REPOST'

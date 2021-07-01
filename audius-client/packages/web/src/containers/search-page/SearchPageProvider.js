@@ -1,30 +1,32 @@
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { withRouter } from 'react-router-dom'
-import { Redirect } from 'react-router'
-import { push as pushRoute } from 'connected-react-router'
-import { getPlaying, getBuffering } from 'store/player/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
-import { makeGetLineupMetadatas } from 'store/lineup/selectors'
-import { make } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
 
-import * as searchPageActions from './store/actions'
-import * as helpers from './helpers'
-import { SearchKind } from './store/types'
-import { tracksActions } from './store/lineups/tracks/actions'
+import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
+import { Redirect } from 'react-router'
+import { withRouter } from 'react-router-dom'
+
 import {
   makeGetSearchArtists,
   makeGetSearchPlaylists,
   makeGetSearchAlbums
 } from 'containers/search-page/store/selectors'
+import { Name } from 'services/analytics'
+import { getUserId } from 'store/account/selectors'
+import { make } from 'store/analytics/actions'
+import { makeGetLineupMetadatas } from 'store/lineup/selectors'
+import { getPlaying, getBuffering } from 'store/player/selectors'
+import { makeGetCurrent } from 'store/queue/selectors'
 import {
   NOT_FOUND_PAGE,
   SEARCH_CATEGORY_PAGE,
   SEARCH_PAGE,
   doesMatchRoute
 } from 'utils/route'
-import { getUserId } from 'store/account/selectors'
+
+import * as helpers from './helpers'
+import * as searchPageActions from './store/actions'
+import { tracksActions } from './store/lineups/tracks/actions'
+import { SearchKind } from './store/types'
 
 class SearchPageProvider extends Component {
   constructor(props) {

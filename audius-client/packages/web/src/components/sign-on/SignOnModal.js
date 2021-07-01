@@ -1,8 +1,10 @@
 import React, { useRef } from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
-import styles from './SignOnModal.module.css'
+import PropTypes from 'prop-types'
 import { useTransition, animated, config } from 'react-spring'
+
+import styles from './SignOnModal.module.css'
 
 export const SignOnModal = props => {
   const contentRef = useRef()

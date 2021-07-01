@@ -1,15 +1,16 @@
 import React, { useState, useRef, ReactNode } from 'react'
-import cn from 'classnames'
+
 import {
   IconTwitterBird,
   IconInstagram,
   IconDonate,
   IconLink
 } from '@audius/stems'
+import cn from 'classnames'
 
 import Input from 'components/data-entry/Input'
-import { Type } from './SocialLink'
 
+import { Type } from './SocialLink'
 import styles from './SocialLinkInput.module.css'
 
 const sanitizeHandle = (handle: string) => {

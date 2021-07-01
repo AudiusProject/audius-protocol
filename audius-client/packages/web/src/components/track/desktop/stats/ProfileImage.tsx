@@ -1,15 +1,17 @@
 import React, { memo } from 'react'
-import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
+
 import cn from 'classnames'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { useUserProfilePicture } from 'hooks/useImageSize'
+import { ID } from 'models/common/Identifiers'
+import { SquareSizes } from 'models/common/ImageSizes'
+import { getUser } from 'store/cache/users/selectors'
+import { AppState } from 'store/types'
 
 import styles from './ProfileImage.module.css'
-import { useUserProfilePicture } from 'hooks/useImageSize'
-import { SquareSizes } from 'models/common/ImageSizes'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { AppState } from 'store/types'
-import { ID } from 'models/common/Identifiers'
-import { getUser } from 'store/cache/users/selectors'
 
 type OwnProps = {
   userId: ID

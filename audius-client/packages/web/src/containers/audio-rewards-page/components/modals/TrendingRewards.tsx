@@ -1,31 +1,35 @@
-import { TabSlider } from '@audius/stems'
 import React, { useCallback, useEffect, useState } from 'react'
-import styles from './TrendingRewards.module.css'
+
+import { TabSlider } from '@audius/stems'
+import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 import { TwitterTweetEmbed } from 'react-twitter-embed'
-import { useModalState } from 'hooks/useModalState'
-import ModalDrawer from './ModalDrawer'
-import ButtonWithArrow from '../ButtonWithArrow'
-import {
-  TRENDING_PAGE,
-  TRENDING_PLAYLISTS_PAGE,
-  TRENDING_UNDERGROUND_PAGE
-} from 'utils/route'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useSelector } from 'utils/reducer'
+
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import {
   getTrendingRewardsModalType,
   TrendingRewardsModalType,
   setTrendingRewardsModalType
 } from 'containers/audio-rewards-page/store/slice'
-import { useDispatch } from 'react-redux'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useRemoteVar } from 'containers/remote-config/hooks'
-import { StringKeys } from 'services/remote-config'
-import { getTheme, isDarkMode } from 'utils/theme/theme'
+import { useModalState } from 'hooks/useModalState'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import Theme from 'models/Theme'
+import { StringKeys } from 'services/remote-config'
 import { isMobile } from 'utils/clientUtil'
-import cn from 'classnames'
+import { useSelector } from 'utils/reducer'
+import {
+  TRENDING_PAGE,
+  TRENDING_PLAYLISTS_PAGE,
+  TRENDING_UNDERGROUND_PAGE
+} from 'utils/route'
+import { getTheme, isDarkMode } from 'utils/theme/theme'
+
+import ButtonWithArrow from '../ButtonWithArrow'
+
+import ModalDrawer from './ModalDrawer'
+import styles from './TrendingRewards.module.css'
 
 const messages = {
   tracksTitle: 'Top 5 Tracks Each Week Receive 100 $AUDIO',

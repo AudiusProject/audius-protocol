@@ -1,17 +1,16 @@
 /* global web3, localStorage, fetch, Image */
 
+import * as DiscoveryAPI from '@audius/libs/src/services/discoveryProvider/requests'
+import * as IdentityAPI from '@audius/libs/src/services/identity/requests'
 import moment from 'moment-timezone'
-import * as schemas from 'schemas'
-import CIDCache from 'store/cache/CIDCache'
-import { DefaultSizes } from 'models/common/ImageSizes'
-import { uuid } from 'utils/uid'
-import FeedFilter from 'models/FeedFilter'
-import { track } from 'store/analytics/providers/segment'
-import { Name } from 'services/analytics'
 
 import placeholderCoverArt from 'assets/img/imageBlank2x.png'
-import placeholderProfilePicture from 'assets/img/imageProfilePicEmpty2X.png'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
+import placeholderProfilePicture from 'assets/img/imageProfilePicEmpty2X.png'
+import FeedFilter from 'models/FeedFilter'
+import { DefaultSizes } from 'models/common/ImageSizes'
+import * as schemas from 'schemas'
+import { Name } from 'services/analytics'
 import {
   IntKeys,
   getRemoteVar,
@@ -19,22 +18,23 @@ import {
   BooleanKeys,
   FeatureFlags
 } from 'services/remote-config'
+import { track } from 'store/analytics/providers/segment'
+import CIDCache from 'store/cache/CIDCache'
+import { isElectron } from 'utils/clientUtil'
+import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
+import { Timer } from 'utils/performance'
+import { uuid } from 'utils/uid'
+
 import {
   waitForLibsInit,
   withEagerOption,
   LIBS_INITTED_EVENT
 } from './audius-backend/eagerLoadUtils'
-
-import * as DiscoveryAPI from '@audius/libs/src/services/discoveryProvider/requests'
-import * as IdentityAPI from '@audius/libs/src/services/identity/requests'
-import { Timer } from 'utils/performance'
 import {
   getFeatureEnabled,
   waitForRemoteConfig
 } from './remote-config/Provider'
 import { monitoringCallbacks } from './serviceMonitoring'
-import { isElectron } from 'utils/clientUtil'
-import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 
 export const IDENTITY_SERVICE = process.env.REACT_APP_IDENTITY_SERVICE
 export const USER_NODE = process.env.REACT_APP_USER_NODE

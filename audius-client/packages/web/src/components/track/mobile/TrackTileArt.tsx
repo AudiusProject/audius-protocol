@@ -1,19 +1,20 @@
 import React, { memo } from 'react'
-import { ID } from 'models/common/Identifiers'
-
-import styles from './TrackTileArt.module.css'
 
 import cn from 'classnames'
+
+import CoSign from 'components/co-sign/CoSign'
+import { Size } from 'components/co-sign/types'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
 import {
   useTrackCoverArt,
   useCollectionCoverArt,
   useLoadImageWithTimeout
 } from 'hooks/useImageSize'
-import { CoverArtSizes, SquareSizes } from 'models/common/ImageSizes'
-import { Size } from 'components/co-sign/types'
 import { Remix } from 'models/Track'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import CoSign from 'components/co-sign/CoSign'
+import { ID } from 'models/common/Identifiers'
+import { CoverArtSizes, SquareSizes } from 'models/common/ImageSizes'
+
+import styles from './TrackTileArt.module.css'
 
 type TrackTileArtProps = {
   isTrack: boolean

@@ -1,7 +1,9 @@
 import React from 'react'
+
 import PropTypes from 'prop-types'
-import SegmentedProgressBar from 'components/segmented-progress-bar/SegmentedProgressBar'
 import { useSpring, animated } from 'react-spring'
+
+import SegmentedProgressBar from 'components/segmented-progress-bar/SegmentedProgressBar'
 
 import styles from './ProfileCompletionPanel.module.css'
 

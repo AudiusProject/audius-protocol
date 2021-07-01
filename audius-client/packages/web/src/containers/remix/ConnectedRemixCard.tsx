@@ -1,17 +1,18 @@
 import React, { useCallback } from 'react'
-import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
+
 import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
 
 import RemixCard from 'components/remix/RemixCard'
+import { useUserProfilePicture, useTrackCoverArt } from 'hooks/useImageSize'
 import { ID } from 'models/common/Identifiers'
-import { AppState } from 'store/types'
+import { SquareSizes } from 'models/common/ImageSizes'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUserFromTrack } from 'store/cache/users/selectors'
-import { SquareSizes } from 'models/common/ImageSizes'
-import { withNullGuard } from 'utils/withNullGuard'
-import { useUserProfilePicture, useTrackCoverArt } from 'hooks/useImageSize'
+import { AppState } from 'store/types'
 import { trackPage, profilePage } from 'utils/route'
+import { withNullGuard } from 'utils/withNullGuard'
 
 type OwnProps = {
   trackId: ID

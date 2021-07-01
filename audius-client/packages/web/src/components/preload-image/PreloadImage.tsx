@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
+
 import cn from 'classnames'
+
 import { preload } from 'utils/image'
 
 import styles from './PreloadImage.module.css'

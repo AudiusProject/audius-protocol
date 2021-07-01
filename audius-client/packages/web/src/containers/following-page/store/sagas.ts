@@ -1,14 +1,17 @@
-import UserListSagaFactory from 'containers/user-list/store/sagas'
-import { USER_LIST_TAG } from '../FollowingPage'
 import { put, select } from 'redux-saga/effects'
-import { getId, getUserList, getUserIds } from './selectors'
-import { ID } from 'models/common/Identifiers'
+
+import UserListSagaFactory from 'containers/user-list/store/sagas'
 import { createUserListProvider } from 'containers/user-list/utils'
+import User from 'models/User'
+import { ID } from 'models/common/Identifiers'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getUser } from 'store/cache/users/selectors'
+
+import { USER_LIST_TAG } from '../FollowingPage'
+
 import { getFollowingError } from './actions'
 import { watchFollowingError } from './errorSagas'
-import User from 'models/User'
-import { getUser } from 'store/cache/users/selectors'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getId, getUserList, getUserIds } from './selectors'
 
 const provider = createUserListProvider<User>({
   getExistingEntity: getUser,

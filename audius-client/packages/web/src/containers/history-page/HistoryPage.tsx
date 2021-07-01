@@ -1,11 +1,13 @@
 import React from 'react'
-import HistoryPageProvider from './HistoryPageProvider'
-import { connect } from 'react-redux'
-import { isMobile } from 'utils/clientUtil'
-import { AppState } from 'store/types'
 
-import MobileHistoryPage from './components/mobile/HistoryPage'
+import { connect } from 'react-redux'
+
+import { AppState } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+
+import HistoryPageProvider from './HistoryPageProvider'
 import DesktopHistoryPage from './components/desktop/HistoryPage'
+import MobileHistoryPage from './components/mobile/HistoryPage'
 
 type HistoryPageProps = ReturnType<typeof mapStateToProps>
 const HistoryPage = ({ isMobile }: HistoryPageProps) => {

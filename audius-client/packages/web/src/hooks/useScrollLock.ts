@@ -1,5 +1,6 @@
-import { useDispatch } from 'react-redux'
 import { useScrollLock as stemsScrollLock } from '@audius/stems'
+import { useDispatch } from 'react-redux'
+
 import {
   incrementScrollCount,
   decrementScrollCount

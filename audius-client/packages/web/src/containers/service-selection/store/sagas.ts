@@ -1,8 +1,14 @@
 import { all, fork, call, put, select, takeEvery } from 'redux-saga/effects'
-import { waitForBackendSetup } from 'store/backend/sagas'
-import { waitForValue } from 'utils/sagaHelpers'
-import { watchServiceSelectionErrors } from './errorSagas'
+
 import AudiusBackend from 'services/AudiusBackend'
+import { getAccountUser } from 'store/account/selectors'
+import { waitForBackendSetup } from 'store/backend/sagas'
+import * as cacheActions from 'store/cache/actions'
+import { Kind } from 'store/types'
+import { waitForValue } from 'utils/sagaHelpers'
+
+import { watchServiceSelectionErrors } from './errorSagas'
+import { getSecondaries, getSelectedServices } from './selectors'
 import {
   fetchServices,
   fetchServicesSucceeded,
@@ -13,11 +19,6 @@ import {
   setSyncing as setSyncingAction,
   Service
 } from './slice'
-
-import * as cacheActions from 'store/cache/actions'
-import { getAccountUser } from 'store/account/selectors'
-import { getSecondaries, getSelectedServices } from './selectors'
-import { Kind } from 'store/types'
 
 export function* watchFetchServices() {
   yield takeEvery(fetchServices.type, function* () {

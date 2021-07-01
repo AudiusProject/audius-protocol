@@ -1,13 +1,15 @@
 import React, { memo, useCallback } from 'react'
+
 import cn from 'classnames'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 
 import { ID } from 'models/common/Identifiers'
 import { CoverArtSizes } from 'models/common/ImageSizes'
-import styles from './TrackList.module.css'
-import TrackListItem from './ConnectedTrackListItem'
-import { TrackItemAction } from './TrackListItem'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
+
+import TrackListItem from './ConnectedTrackListItem'
+import styles from './TrackList.module.css'
+import { TrackItemAction } from './TrackListItem'
 
 type TrackListProps = {
   containerClassName?: string

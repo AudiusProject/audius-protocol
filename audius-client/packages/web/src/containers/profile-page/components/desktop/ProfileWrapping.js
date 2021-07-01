@@ -1,28 +1,27 @@
 import React, { useState, useCallback } from 'react'
+
 import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
 
-import ProfilePicture from 'components/general/ProfilePicture'
-import UploadChip from 'components/upload/UploadChip'
-import More from 'components/general/More'
-import Tag from 'components/track/Tag'
+import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
 import ArtistChip from 'components/artist/ArtistChip'
+import UserListModal from 'components/artist/UserListModal'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
-import UserListModal from 'components/artist/UserListModal'
-
+import More from 'components/general/More'
+import ProfilePicture from 'components/general/ProfilePicture'
+import Tag from 'components/track/Tag'
+import UploadChip from 'components/upload/UploadChip'
 import EditableName from 'containers/profile-page/components/EditableName'
 import SocialLink, { Type } from 'containers/profile-page/components/SocialLink'
 import SocialLinkInput from 'containers/profile-page/components/SocialLinkInput'
-import { make, useRecord } from 'store/analytics/actions'
+import ProfilePageBadge from 'containers/user-badges/ProfilePageBadge'
 import { Name } from 'services/analytics'
-
-import { profilePage, searchResultsPage, UPLOAD_PAGE } from 'utils/route'
+import { make, useRecord } from 'store/analytics/actions'
 import { formatCount, squashNewLines } from 'utils/formatUtil'
+import { profilePage, searchResultsPage, UPLOAD_PAGE } from 'utils/route'
 
 import styles from './ProfilePage.module.css'
-import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
-import ProfilePageBadge from 'containers/user-badges/ProfilePageBadge'
 
 const Tags = props => {
   const { tags, goToRoute } = props

@@ -1,11 +1,14 @@
 import React from 'react'
-import SignOnProvider from './SignOnProvider'
+
 import { connect } from 'react-redux'
-import { isMobile } from 'utils/clientUtil'
-import { AppState } from 'store/types'
-import SignOnMobilePage from './components/mobile/SignOnPage'
-import SignOnDesktopPage from './components/desktop/SignOnPage'
+
 import { Pages } from 'containers/sign-on/store/types'
+import { AppState } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+
+import SignOnProvider from './SignOnProvider'
+import SignOnDesktopPage from './components/desktop/SignOnPage'
+import SignOnMobilePage from './components/mobile/SignOnPage'
 import { getPage } from './store/selectors'
 
 type OwnProps = {

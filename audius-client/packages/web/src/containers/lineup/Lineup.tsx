@@ -1,15 +1,16 @@
 import React from 'react'
+
 import { connect } from 'react-redux'
 
-import { isMobile } from 'utils/clientUtil'
+import DesktopPlaylistTile from 'components/track/desktop/ConnectedPlaylistTile'
+import DesktopTrackTile from 'components/track/desktop/ConnectedTrackTile'
+import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
+import MobileTrackTile from 'components/track/mobile/ConnectedTrackTile'
 import { AppState, Status } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+
 import LineupProvider, { LineupProviderProps } from './LineupProvider'
 import { LineupVariant } from './types'
-
-import DesktopPlaylistTile from 'components/track/desktop/ConnectedPlaylistTile'
-import MobilePlaylistTile from 'components/track/mobile/ConnectedPlaylistTile'
-import DesktopTrackTile from 'components/track/desktop/ConnectedTrackTile'
-import MobileTrackTile from 'components/track/mobile/ConnectedTrackTile'
 
 export type LineupWithoutTile = Omit<
   LineupProviderProps,

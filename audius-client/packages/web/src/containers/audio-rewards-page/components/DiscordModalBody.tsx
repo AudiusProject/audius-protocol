@@ -1,8 +1,10 @@
-import { Button, ButtonType, IconDiscord } from '@audius/stems'
 import React from 'react'
-import { ModalBodyWrapper } from '../WalletModal'
-import ClickableAddress from './ClickableAddress'
 
+import { Button, ButtonType, IconDiscord } from '@audius/stems'
+
+import { ModalBodyWrapper } from '../WalletModal'
+
+import ClickableAddress from './ClickableAddress'
 import styles from './DiscordModalBody.module.css'
 
 type DiscordModalBodyProps = {

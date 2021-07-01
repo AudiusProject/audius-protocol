@@ -1,8 +1,10 @@
 import React, { memo } from 'react'
 
-import styles from './LoadingPage.module.css'
 import Lottie from 'react-lottie'
+
 import loadingSpinningGlyph from 'assets/animations/loadingSpinningGlyph.json'
+
+import styles from './LoadingPage.module.css'
 
 const messages = {
   title: 'Your Account is Almost Ready to Rock ',

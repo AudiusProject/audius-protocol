@@ -1,34 +1,34 @@
 import React, { PureComponent } from 'react'
-import { connect } from 'react-redux'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 
+import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
+import { ReactComponent as IconShare } from 'assets/img/iconShare.svg'
+import Toast from 'components/toast/Toast'
+import Tooltip from 'components/tooltip/Tooltip'
 import Menu from 'containers/menu/Menu'
-
-import {
-  repostTrack,
-  undoRepostTrack,
-  shareTrack
-} from 'store/social/tracks/actions'
+import { ShareSource, RepostSource } from 'services/analytics'
+import { getUserHandle } from 'store/account/selectors'
 import {
   repostCollection,
   undoRepostCollection,
   shareCollection
 } from 'store/social/collections/actions'
+import {
+  repostTrack,
+  undoRepostTrack,
+  shareTrack
+} from 'store/social/tracks/actions'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
-import { getUserHandle } from 'store/account/selectors'
-
-import Toast from 'components/toast/Toast'
-import styles from './ActionsTab.module.css'
-import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
-import { ReactComponent as IconShare } from 'assets/img/iconShare.svg'
-import Tooltip from 'components/tooltip/Tooltip'
 import {
   REPOST_TOAST_TIMEOUT_MILLIS,
   SHARE_TOAST_TIMEOUT_MILLIS
 } from 'utils/constants'
-import { ShareSource, RepostSource } from 'services/analytics'
+
+import styles from './ActionsTab.module.css'
 
 const MinimizedActionsTab = props => {
   const { isHidden, isDisabled, overflowMenu } = props

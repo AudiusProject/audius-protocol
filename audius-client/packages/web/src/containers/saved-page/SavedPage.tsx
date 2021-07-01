@@ -1,11 +1,13 @@
 import React from 'react'
-import SavedPageProvider from './SavedPageProvider'
-import { connect } from 'react-redux'
-import { isMobile } from 'utils/clientUtil'
-import { AppState } from 'store/types'
 
-import MobileSavedPage from './components/mobile/SavedPage'
+import { connect } from 'react-redux'
+
+import { AppState } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+
+import SavedPageProvider from './SavedPageProvider'
 import DesktopSavedPage from './components/desktop/SavedPage'
+import MobileSavedPage from './components/mobile/SavedPage'
 
 type OwnProps = {}
 

@@ -1,11 +1,12 @@
 import React from 'react'
+
 import { storiesOf } from '@storybook/react'
 
-import TrackInfo from 'components/track/TrackInfo'
-import TrackTile from 'components/track/desktop/TrackTile'
-import PlaylistTile from 'components/track/desktop/PlaylistTile'
-import GiantTrackTile from 'components/track/GiantTrackTile'
 import EditTrackModal from 'components/track/EditTrackModal'
+import GiantTrackTile from 'components/track/GiantTrackTile'
+import TrackInfo from 'components/track/TrackInfo'
+import PlaylistTile from 'components/track/desktop/PlaylistTile'
+import TrackTile from 'components/track/desktop/TrackTile'
 import MobileTrackList from 'components/track/mobile/TrackList'
 
 const CenteredBackground = props => (

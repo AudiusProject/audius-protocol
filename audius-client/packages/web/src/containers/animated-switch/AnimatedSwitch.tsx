@@ -6,10 +6,12 @@ import React, {
   useState,
   useCallback
 } from 'react'
+
 import { Switch, useLocation, useHistory } from 'react-router-dom'
 import { useTransition, animated } from 'react-spring'
+
 import useInstanceVar from 'hooks/useInstanceVar'
-import { RouterContext, SlideDirection } from './RouterContextProvider'
+import { getIsIOS } from 'utils/browser'
 import {
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
@@ -21,7 +23,8 @@ import {
   profilePage,
   getPathname
 } from 'utils/route'
-import { getIsIOS } from 'utils/browser'
+
+import { RouterContext, SlideDirection } from './RouterContextProvider'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

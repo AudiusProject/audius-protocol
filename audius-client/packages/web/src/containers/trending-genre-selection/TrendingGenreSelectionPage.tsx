@@ -1,22 +1,25 @@
 import React from 'react'
-import * as discoverPageActions from 'containers/trending-page/store/actions'
-import TrendingGenreSelectionPage from './components/TrendingGenreSelectionPage'
-import { GENRES, ELECTRONIC_PREFIX } from 'utils/genres'
-import { Dispatch } from 'redux'
-import { AppState } from 'store/types'
-import { connect } from 'react-redux'
-import {
-  getTrendingGenre,
-  getTrendingTimeRange
-} from 'containers/trending-page/store/selectors'
+
 import { push as pushRoute } from 'connected-react-router'
-import { TRENDING_PAGE } from 'utils/route'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+
+import * as discoverPageActions from 'containers/trending-page/store/actions'
 import {
   trendingMonthActions,
   trendingYearActions,
   trendingWeekActions
 } from 'containers/trending-page/store/lineups/trending/actions'
+import {
+  getTrendingGenre,
+  getTrendingTimeRange
+} from 'containers/trending-page/store/selectors'
 import TimeRange from 'models/TimeRange'
+import { AppState } from 'store/types'
+import { GENRES, ELECTRONIC_PREFIX } from 'utils/genres'
+import { TRENDING_PAGE } from 'utils/route'
+
+import TrendingGenreSelectionPage from './components/TrendingGenreSelectionPage'
 
 type ConnectedTrendingGenreSelectionPageProps = {} & ReturnType<
   typeof mapStateToProps

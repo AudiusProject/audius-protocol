@@ -9,41 +9,40 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import * as profileActions from './actions'
+import feedSagas from 'containers/profile-page/store/lineups/feed/sagas.js'
+import tracksSagas from 'containers/profile-page/store/lineups/tracks/sagas.js'
+import { DefaultSizes } from 'models/common/ImageSizes'
+import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
+import { setAudiusAccountUser } from 'services/LocalStorage'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
+import { getUserId } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as cacheActions from 'store/cache/actions'
-import { Kind } from 'store/types'
-import * as confirmerActions from 'store/confirmer/actions'
-import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
-import { confirmTransaction } from 'store/confirmer/sagas'
-import { getUserId } from 'store/account/selectors'
-import {
-  getProfileUserId,
-  getProfileFollowers,
-  getProfileUser
-} from './selectors'
-import { makeUid, makeKindId } from 'utils/uid'
-
 import {
   fetchUsers,
   fetchUserByHandle,
   fetchUserCollections
 } from 'store/cache/users/sagas'
-import { FollowType } from './types'
-
-import feedSagas from 'containers/profile-page/store/lineups/feed/sagas.js'
-import tracksSagas from 'containers/profile-page/store/lineups/tracks/sagas.js'
-import { DefaultSizes } from 'models/common/ImageSizes'
-import { squashNewLines } from 'utils/formatUtil'
-import { getIsReachable } from 'store/reachability/selectors'
-import { isMobile } from 'utils/clientUtil'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { processAndCacheUsers } from 'store/cache/users/utils'
 import { getUser } from 'store/cache/users/selectors'
-import { waitForValue } from 'utils/sagaHelpers'
-import { setAudiusAccountUser } from 'services/LocalStorage'
+import { processAndCacheUsers } from 'store/cache/users/utils'
+import * as confirmerActions from 'store/confirmer/actions'
+import { confirmTransaction } from 'store/confirmer/sagas'
+import { getIsReachable } from 'store/reachability/selectors'
+import { Kind } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+import { squashNewLines } from 'utils/formatUtil'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
-import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
+import { waitForValue } from 'utils/sagaHelpers'
+import { makeUid, makeKindId } from 'utils/uid'
+
+import * as profileActions from './actions'
+import {
+  getProfileUserId,
+  getProfileFollowers,
+  getProfileUser
+} from './selectors'
+import { FollowType } from './types'
 
 function* watchFetchProfile() {
   yield takeLatest(profileActions.FETCH_PROFILE, fetchProfileAsync)

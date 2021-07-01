@@ -5,14 +5,15 @@ import {
   PopupMenuItem,
   PopupMenuProps
 } from 'components/general/PopupMenu'
+
 import CollectionMenu, {
   OwnProps as CollectionMenuProps
 } from './CollectionMenu'
-import TrackMenu, { OwnProps as TrackMenuProps } from './TrackMenu'
-import UserMenu, { OwnProps as UserMenuProps } from './UserMenu'
 import NotificationMenu, {
   OwnProps as NotificationMenuProps
 } from './NotificationMenu'
+import TrackMenu, { OwnProps as TrackMenuProps } from './TrackMenu'
+import UserMenu, { OwnProps as UserMenuProps } from './UserMenu'
 
 export type MenuOptionType =
   | UserMenuProps

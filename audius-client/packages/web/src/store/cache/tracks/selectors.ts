@@ -1,7 +1,7 @@
+import Track from 'models/Track'
+import { ID, UID } from 'models/common/Identifiers'
 import { getEntry, getAllEntries } from 'store/cache/selectors'
 import { Kind, AppState, Status } from 'store/types'
-import { ID, UID } from 'models/common/Identifiers'
-import Track from 'models/Track'
 
 export const getTrack = (
   state: AppState,

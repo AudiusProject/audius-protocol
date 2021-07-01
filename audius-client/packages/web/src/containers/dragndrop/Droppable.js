@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { connect } from 'react-redux'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
 import { debounce } from 'lodash'
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 
 import { getIsDragging } from 'store/dragndrop/selectors'
+
 import styles from './Droppable.module.css'
 
 const Droppable = props => {

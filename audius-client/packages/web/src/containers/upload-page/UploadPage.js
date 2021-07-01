@@ -1,33 +1,33 @@
 import React, { Component } from 'react'
+
+import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
-import { push as pushRoute } from 'connected-react-router'
 import { Spring } from 'react-spring/renderprops'
+
+import Page from 'components/general/Page'
+import Header from 'components/general/header/desktop/Header'
+import { dropdownRows as stemRows } from 'components/source-files-modal/SourceFilesModal'
+import { openWithDelay } from 'containers/first-upload-modal/store/slice'
+import { processFiles } from 'containers/upload-page/store/utils/processFiles'
+import * as schemas from 'schemas'
+import { Name } from 'services/analytics'
+import { getAccountUser } from 'store/account/selectors'
+import { make } from 'store/analytics/actions'
+import { pause as pauseQueue } from 'store/queue/slice'
+import { trackPage, playlistPage, albumPage, profilePage } from 'utils/route'
+
+import styles from './UploadPage.module.css'
+import EditPage from './components/EditPage'
+import FinishPage from './components/FinishPage'
+import SelectPage from './components/SelectPage'
+import UploadType from './components/uploadType'
 import {
   uploadTracks,
   reset,
   undoResetState,
   toggleMultiTrackNotification
 } from './store/actions'
-import { getAccountUser } from 'store/account/selectors'
-import { pause as pauseQueue } from 'store/queue/slice'
-import { openWithDelay } from 'containers/first-upload-modal/store/slice'
-import * as schemas from 'schemas'
-import { trackPage, playlistPage, albumPage, profilePage } from 'utils/route'
-import { make } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
-
-import Header from 'components/general/header/desktop/Header'
-import Page from 'components/general/Page'
-
-import styles from './UploadPage.module.css'
-
-import SelectPage from './components/SelectPage'
-import EditPage from './components/EditPage'
-import FinishPage from './components/FinishPage'
-import UploadType from './components/uploadType'
-import { dropdownRows as stemRows } from 'components/source-files-modal/SourceFilesModal'
-import { processFiles } from 'containers/upload-page/store/utils/processFiles'
 
 const Pages = Object.freeze({
   SELECT: 0,

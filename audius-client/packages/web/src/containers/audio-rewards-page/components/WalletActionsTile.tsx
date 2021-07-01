@@ -1,19 +1,22 @@
 import React from 'react'
-import styles from './WalletActionsTile.module.css'
-import cn from 'classnames'
-import { useSelector } from 'utils/reducer'
-import { getAccountBalance, BNWei } from 'store/wallet/slice'
-import BN from 'bn.js'
+
 import { Button, ButtonType } from '@audius/stems'
+import BN from 'bn.js'
+import cn from 'classnames'
 import { useDispatch } from 'react-redux'
-import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
+
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
+import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
 import {
   pressReceive,
   pressSend,
   pressConnectWallets,
   getAssociatedWallets
 } from 'store/token-dashboard/slice'
+import { getAccountBalance, BNWei } from 'store/wallet/slice'
+import { useSelector } from 'utils/reducer'
+
+import styles from './WalletActionsTile.module.css'
 
 const messages = {
   receiveLabel: 'RECEIVE $AUDIO',

@@ -1,11 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import styles from './ExplainerTile.module.css'
+
 import cn from 'classnames'
-import { getTheme, isDarkMode as getIsDarkMode } from 'utils/theme/theme'
+
 import TokenStill from 'assets/img/tokenSpinStill.png'
-import Theme from 'models/Theme'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import Theme from 'models/Theme'
 import { isMobile } from 'utils/clientUtil'
+import { getTheme, isDarkMode as getIsDarkMode } from 'utils/theme/theme'
+
+import styles from './ExplainerTile.module.css'
 
 const TOKEN_ANIMATION_URL =
   'https://d1ne8ucs302cxl.cloudfront.net/animations/spinnytoken.mp4'

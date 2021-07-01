@@ -1,6 +1,8 @@
-import { getDownloadLinkForSystem } from './DownloadApp'
-import { OS } from 'models/OS'
 import fetchMock from 'fetch-mock'
+
+import { OS } from 'models/OS'
+
+import { getDownloadLinkForSystem } from './DownloadApp'
 
 const LATEST_MAC = `version: 0.20.4
 files:

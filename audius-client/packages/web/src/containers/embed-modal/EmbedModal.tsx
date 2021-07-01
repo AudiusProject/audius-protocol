@@ -1,25 +1,25 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
+
 import { Modal, Button, ButtonType } from '@audius/stems'
-import { connect } from 'react-redux'
 import cn from 'classnames'
-
-import { close } from './store/actions'
-import { getIsOpen, getId, getKind, getMetadata } from './store/selectors'
-
-import styles from './EmbedModal.module.css'
-import { AppState } from 'store/types'
-import { Size } from './types'
+import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
-import { PlayableType, ID } from 'models/common/Identifiers'
 
 import TabSlider from 'components/data-entry/TabSlider'
-import EmbedCopy from './components/EmbedCopy'
-import EmbedFrame from './components/EmbedFrame'
-import { BASE_GA_URL } from 'utils/route'
 import Collection from 'models/Collection'
 import Track from 'models/Track'
-import { useRecord, make } from 'store/analytics/actions'
+import { PlayableType, ID } from 'models/common/Identifiers'
 import { Name } from 'services/analytics'
+import { useRecord, make } from 'store/analytics/actions'
+import { AppState } from 'store/types'
+import { BASE_GA_URL } from 'utils/route'
+
+import styles from './EmbedModal.module.css'
+import EmbedCopy from './components/EmbedCopy'
+import EmbedFrame from './components/EmbedFrame'
+import { close } from './store/actions'
+import { getIsOpen, getId, getKind, getMetadata } from './store/selectors'
+import { Size } from './types'
 
 const BASE_EMBED_URL = `${BASE_GA_URL}/embed`
 

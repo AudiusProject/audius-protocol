@@ -1,19 +1,21 @@
-import { useLineupProps } from 'containers/lineup/hooks'
-import { trendingUndergroundLineupActions } from './store/lineups/tracks/actions'
-import { getLineup } from './store/lineups/tracks/selectors'
 import React, { useEffect } from 'react'
-import { LineupVariant } from 'containers/lineup/types'
-import DesktopHeader from 'components/general/header/desktop/Header'
-import Page from 'components/general/Page'
-import Lineup from 'containers/lineup/Lineup'
+
 import { useDispatch } from 'react-redux'
+
+import MobilePageContainer from 'components/general/MobilePageContainer'
+import Page from 'components/general/Page'
+import DesktopHeader from 'components/general/header/desktop/Header'
+import { useMobileHeader } from 'components/general/header/mobile/hooks'
+import Lineup from 'containers/lineup/Lineup'
+import { useLineupProps } from 'containers/lineup/hooks'
+import { LineupVariant } from 'containers/lineup/types'
+import RewardsBanner from 'containers/trending-page/components/RewardsBanner'
 import { isMobile } from 'utils/clientUtil'
 import { BASE_URL, TRENDING_UNDERGROUND_PAGE } from 'utils/route'
 
-import { useMobileHeader } from 'components/general/header/mobile/hooks'
-import MobilePageContainer from 'components/general/MobilePageContainer'
 import styles from './TrendingUndergroundPage.module.css'
-import RewardsBanner from 'containers/trending-page/components/RewardsBanner'
+import { trendingUndergroundLineupActions } from './store/lineups/tracks/actions'
+import { getLineup } from './store/lineups/tracks/selectors'
 
 const useTrendingUndergroundLineup = (containerRef: HTMLElement) => {
   return useLineupProps({

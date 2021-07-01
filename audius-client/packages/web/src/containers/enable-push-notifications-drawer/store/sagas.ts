@@ -1,5 +1,7 @@
 import { put, takeEvery } from 'redux-saga/effects'
+
 import { MessageType } from 'services/native-mobile-interface/types'
+
 import { show } from './slice'
 
 function* watchEnablePushNotificationsReminder() {

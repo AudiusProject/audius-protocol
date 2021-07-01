@@ -1,22 +1,22 @@
 import React, { memo } from 'react'
-import cn from 'classnames'
 
+import { PbIconPlay as IconPlay, PbIconPause as IconPause } from '@audius/stems'
+import cn from 'classnames'
 import Lottie from 'react-lottie'
 
-import styles from './Artwork.module.css'
-import { PbIconPlay as IconPlay, PbIconPause as IconPause } from '@audius/stems'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import CoSign from 'components/co-sign/CoSign'
+import { Size } from 'components/co-sign/types'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
 import {
   useTrackCoverArt,
   useCollectionCoverArt,
   useLoadImageWithTimeout
 } from 'hooks/useImageSize'
-import { SquareSizes, CoverArtSizes } from 'models/common/ImageSizes'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-
-import CoSign from 'components/co-sign/CoSign'
-import { Size } from 'components/co-sign/types'
 import { ID } from 'models/common/Identifiers'
+import { SquareSizes, CoverArtSizes } from 'models/common/ImageSizes'
+
+import styles from './Artwork.module.css'
 
 enum PlayStatus {
   Buffering = 'Buffering',

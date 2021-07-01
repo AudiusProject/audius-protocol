@@ -3,6 +3,7 @@ import {
   SetAnalyticsUser,
   TrackAnalyticsEvent
 } from 'services/native-mobile-interface/analytics'
+
 import { version } from '../../../../package.json'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE

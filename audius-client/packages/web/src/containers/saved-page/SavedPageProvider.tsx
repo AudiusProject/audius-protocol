@@ -1,42 +1,42 @@
 import React, { PureComponent } from 'react'
+
+import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-import { push as pushRoute } from 'connected-react-router'
-
-import { makeGetTableMetadatas } from 'store/lineup/selectors'
-import { getSavedTracksLineup } from 'containers/saved-page/store/selectors'
-import { getAccountWithSavedPlaylistsAndAlbums } from 'store/account/selectors'
-import { getPlaying, getBuffering } from 'store/player/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
-import * as saveActions from './store/actions'
-import { tracksActions } from './store/lineups/tracks/actions'
-import * as socialActions from 'store/social/tracks/actions'
-import * as accountActions from 'store/account/reducer'
-
-import { trackPage, profilePage } from 'utils/route'
-import { formatCount } from 'utils/formatUtil'
-import { ID, UID } from 'models/common/Identifiers'
-import { AppState } from 'store/types'
 import { Dispatch } from 'redux'
 
-import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
-import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'
-import {
-  Tabs as ProfileTabs,
-  SavedPageTrack,
-  TrackRecord,
-  SavedPageCollection
-} from './store/types'
+import { updatePlaylistLastViewedAt } from 'containers/notification/store/actions'
+import { getPlaylistUpdates } from 'containers/notification/store/selectors'
+import { getSavedTracksLineup } from 'containers/saved-page/store/selectors'
+import { ID, UID } from 'models/common/Identifiers'
 import {
   RepostSource,
   FavoriteSource,
   PlaybackSource,
   Name
 } from 'services/analytics'
+import * as accountActions from 'store/account/reducer'
+import { getAccountWithSavedPlaylistsAndAlbums } from 'store/account/selectors'
 import { TrackEvent, make } from 'store/analytics/actions'
+import { makeGetTableMetadatas } from 'store/lineup/selectors'
+import { getPlaying, getBuffering } from 'store/player/selectors'
+import { makeGetCurrent } from 'store/queue/selectors'
+import * as socialActions from 'store/social/tracks/actions'
+import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
-import { getPlaylistUpdates } from 'containers/notification/store/selectors'
-import { updatePlaylistLastViewedAt } from 'containers/notification/store/actions'
+import { formatCount } from 'utils/formatUtil'
+import { trackPage, profilePage } from 'utils/route'
+
+import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'
+import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
+import * as saveActions from './store/actions'
+import { tracksActions } from './store/lineups/tracks/actions'
+import {
+  Tabs as ProfileTabs,
+  SavedPageTrack,
+  TrackRecord,
+  SavedPageCollection
+} from './store/types'
 
 const messages = {
   title: 'Favorites',

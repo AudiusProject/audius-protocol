@@ -1,11 +1,13 @@
 import React, { Component } from 'react'
-import { open } from 'store/application/ui/mobileOverflowModal/actions'
-import { connect } from 'react-redux'
+
 import { push as pushRoute, replace } from 'connected-react-router'
-import { AppState, Status } from 'store/types'
+import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { makeGetLineupMetadatas } from 'store/lineup/selectors'
+import DeletedPage from 'containers/deleted-page/DeletedPage'
+import { setFavorite } from 'containers/favorites-page/store/actions'
+import { setRepost } from 'containers/reposts-page/store/actions'
+import { RepostType } from 'containers/reposts-page/store/types'
 import {
   getUser,
   getLineup,
@@ -15,12 +17,44 @@ import {
   getStatus,
   getSourceSelector
 } from 'containers/track-page/store/selectors'
-import { getUserId } from 'store/account/selectors'
-import { tracksActions } from './store/lineups/tracks/actions'
-import * as cacheTrackActions from 'store/cache/tracks/actions'
 import * as unfollowConfirmationActions from 'containers/unfollow-confirmation-modal/store/actions'
+import { FavoriteType } from 'models/Favorite'
+import Track from 'models/Track'
+import { ID, CID, PlayableType } from 'models/common/Identifiers'
+import {
+  FollowSource,
+  FavoriteSource,
+  RepostSource,
+  ShareSource,
+  Name,
+  PlaybackSource
+} from 'services/analytics'
+import { getUserId } from 'store/account/selectors'
+import { TrackEvent, make } from 'store/analytics/actions'
+import { open } from 'store/application/ui/mobileOverflowModal/actions'
+import {
+  OverflowAction,
+  OverflowSource
+} from 'store/application/ui/mobileOverflowModal/types'
+import {
+  setUsers,
+  setVisibility
+} from 'store/application/ui/userListModal/slice'
+import {
+  UserListType,
+  UserListEntityType
+} from 'store/application/ui/userListModal/types'
+import * as cacheTrackActions from 'store/cache/tracks/actions'
+import { makeGetLineupMetadatas } from 'store/lineup/selectors'
+import { getPlaying, getBuffering } from 'store/player/selectors'
+import { makeGetCurrent } from 'store/queue/selectors'
+import { getLocationPathname } from 'store/routing/selectors'
 import * as socialTracksActions from 'store/social/tracks/actions'
 import * as socialUsersActions from 'store/social/users/actions'
+import { AppState, Status } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+import { formatUrlName } from 'utils/formatUtil'
+import { getCannonicalName } from 'utils/genres'
 import {
   profilePage,
   searchResultsPage,
@@ -32,53 +66,17 @@ import {
   trackRemixesPage,
   trackPage
 } from 'utils/route'
-import { formatUrlName } from 'utils/formatUtil'
 import { parseTrackRoute, TrackRouteParams } from 'utils/route/trackRouteParser'
-import { ID, CID, PlayableType } from 'models/common/Identifiers'
-import { Uid } from 'utils/uid'
-import { getLocationPathname } from 'store/routing/selectors'
-import { getPlaying, getBuffering } from 'store/player/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
-
-import * as trackPageActions from './store/actions'
-import { TRENDING_BADGE_LIMIT } from './store/sagas'
-
-import { OwnProps as MobileTrackPageProps } from './components/mobile/TrackPage'
-import { OwnProps as DesktopTrackPageProps } from './components/desktop/TrackPage'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'store/application/ui/mobileOverflowModal/types'
-import { isMobile } from 'utils/clientUtil'
-import { setRepost } from 'containers/reposts-page/store/actions'
-import { setFavorite } from 'containers/favorites-page/store/actions'
-import { RepostType } from 'containers/reposts-page/store/types'
-import { FavoriteType } from 'models/Favorite'
-import {
-  FollowSource,
-  FavoriteSource,
-  RepostSource,
-  ShareSource,
-  Name,
-  PlaybackSource
-} from 'services/analytics'
-import { TrackEvent, make } from 'store/analytics/actions'
-
-import {
-  setUsers,
-  setVisibility
-} from 'store/application/ui/userListModal/slice'
-import {
-  UserListType,
-  UserListEntityType
-} from 'store/application/ui/userListModal/types'
-import StemsSEOHint from './components/StemsSEOHint'
-
 import { getTrackPageTitle, getTrackPageDescription } from 'utils/seo'
 import { formatSeconds, formatDate } from 'utils/timeUtil'
-import { getCannonicalName } from 'utils/genres'
-import Track from 'models/Track'
-import DeletedPage from 'containers/deleted-page/DeletedPage'
+import { Uid } from 'utils/uid'
+
+import StemsSEOHint from './components/StemsSEOHint'
+import { OwnProps as DesktopTrackPageProps } from './components/desktop/TrackPage'
+import { OwnProps as MobileTrackPageProps } from './components/mobile/TrackPage'
+import * as trackPageActions from './store/actions'
+import { tracksActions } from './store/lineups/tracks/actions'
+import { TRENDING_BADGE_LIMIT } from './store/sagas'
 
 const getRemixParentTrackId = (track: Track | null) =>
   track?.remix_of?.tracks?.[0]?.parent_track_id

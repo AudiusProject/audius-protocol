@@ -1,4 +1,5 @@
 import Theme from 'models/Theme'
+
 import { NativeMobileMessage } from './helpers'
 import { MessageType } from './types'
 

@@ -1,9 +1,12 @@
 import React, { useCallback } from 'react'
+
 import { IconDiscord } from '@audius/stems'
+import cn from 'classnames'
+import { useDispatch } from 'react-redux'
+
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
-import { useDispatch } from 'react-redux'
-import cn from 'classnames'
+import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getAccountUser } from 'store/account/selectors'
 import {
   confirmSend,
@@ -25,21 +28,21 @@ import {
   WalletAddress,
   weiToString
 } from 'store/wallet/slice'
+import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 import { Nullable } from 'utils/typeUtils'
+
+import styles from './WalletModal.module.css'
+import ConnectWalletsBody from './components/ConnectWalletsBody'
+import DiscordModalBody from './components/DiscordModalBody'
+import ErrorBody from './components/ErrorBody'
 import ReceiveBody from './components/ReceiveBody'
+import RemoveWalletBody from './components/RemoveWalletBody'
 import SendInputBody from './components/SendInputBody'
 import SendInputConfirmation from './components/SendInputConfirmation'
 import SendInputSuccess from './components/SendInputSuccess'
-import ConnectWalletsBody from './components/ConnectWalletsBody'
-import ErrorBody from './components/ErrorBody'
-import styles from './WalletModal.module.css'
 import SendingModalBody from './components/SendingModalBody'
-import DiscordModalBody from './components/DiscordModalBody'
-import RemoveWalletBody from './components/RemoveWalletBody'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import ModalDrawer from './components/modals/ModalDrawer'
-import { isMobile } from 'utils/clientUtil'
 
 const DISCORD_URL = 'https://discord.com/invite/kZkT9ZK'
 

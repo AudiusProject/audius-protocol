@@ -1,10 +1,12 @@
 import React, { Component } from 'react'
+
+import { Button, ButtonType, IconUpload, IconNote } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
-import { Button, ButtonType, IconUpload, IconNote } from '@audius/stems'
+
+import backgroundPlaceholder from 'assets/img/1-Concert-3-1.jpg'
 
 import styles from './StartPlatformPage.module.css'
-import backgroundPlaceholder from 'assets/img/1-Concert-3-1.jpg'
 
 const messages = {
   title: 'It’s Time To Start Your Audius Journey!',

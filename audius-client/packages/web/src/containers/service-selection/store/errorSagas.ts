@@ -1,6 +1,8 @@
-import { fetchServicesFailed } from './slice'
 import { put, takeEvery } from 'redux-saga/effects'
+
 import * as errorActions from 'store/errors/actions'
+
+import { fetchServicesFailed } from './slice'
 
 const errorsWithoutRedirect = new Set([fetchServicesFailed.type])
 

@@ -1,11 +1,12 @@
 import React, { MouseEvent } from 'react'
+
 import cn from 'classnames'
 
-import styles from './ShareButton.module.css'
-
 import shareDark from 'assets/img/iconShareDark@2x.png'
-import shareLight from 'assets/img/iconShareLight@2x.png'
 import shareMatrix from 'assets/img/iconShareInactiveMatrix@2x.png'
+import shareLight from 'assets/img/iconShareLight@2x.png'
+
+import styles from './ShareButton.module.css'
 
 type ShareButtonProps = {
   onClick: (e: MouseEvent) => void

@@ -1,5 +1,6 @@
 import { call, select } from 'redux-saga/effects'
 
+import { retrieveUserTracks } from 'containers/profile-page/store/lineups/tracks/retrieveUserTracks'
 import {
   PREFIX,
   tracksActions
@@ -8,11 +9,10 @@ import {
   getSourceSelector as sourceSelector,
   getLineup
 } from 'containers/track-page/store/selectors'
-import { LineupSagas } from 'store/lineup/sagas'
-import { getTrack } from 'store/cache/tracks/selectors'
-import { waitForValue } from 'utils/sagaHelpers'
-import { retrieveUserTracks } from 'containers/profile-page/store/lineups/tracks/retrieveUserTracks'
 import { getUserId } from 'store/account/selectors'
+import { getTrack } from 'store/cache/tracks/selectors'
+import { LineupSagas } from 'store/lineup/sagas'
+import { waitForValue } from 'utils/sagaHelpers'
 
 function* getTracks({ offset, limit, payload }) {
   const { ownerHandle, trackId } = payload

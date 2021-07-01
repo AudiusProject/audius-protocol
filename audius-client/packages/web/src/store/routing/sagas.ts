@@ -1,16 +1,17 @@
-import { take, takeEvery, select, put } from 'redux-saga/effects'
 import {
   LOCATION_CHANGE,
   push as pushRoute,
   goBack
 } from 'connected-react-router'
-import mobileSagas from './mobileSagas'
+import { take, takeEvery, select, put } from 'redux-saga/effects'
+
 import {
   OnFirstPage,
   NotOnFirstPage,
   ChangedPage
 } from 'services/native-mobile-interface/lifecycle'
 import { MessageType } from 'services/native-mobile-interface/types'
+import { getUserHandle } from 'store/account/selectors'
 import {
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
@@ -21,8 +22,9 @@ import {
   profilePage,
   getPathname
 } from 'utils/route'
+
+import mobileSagas from './mobileSagas'
 import { getLocationPathname } from './selectors'
-import { getUserHandle } from 'store/account/selectors'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 enum LocationAction {

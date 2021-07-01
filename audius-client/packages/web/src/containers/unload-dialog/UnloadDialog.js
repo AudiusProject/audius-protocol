@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react'
+
 import { Modal } from '@audius/stems'
 import { connect } from 'react-redux'
 
-import { getIsConfirming } from 'store/confirmer/selectors'
-
 import ConfirmationBox from 'components/general/ConfirmationBox'
-
-import { setupHotkeys, removeHotkeys, ModifierKeys } from 'utils/hotkeyUtil'
+import { getIsConfirming } from 'store/confirmer/selectors'
 import { isElectron } from 'utils/clientUtil'
+import { setupHotkeys, removeHotkeys, ModifierKeys } from 'utils/hotkeyUtil'
+
 import styles from './UnloadDialog.module.css'
 
 const MESSAGE_TEXT = `

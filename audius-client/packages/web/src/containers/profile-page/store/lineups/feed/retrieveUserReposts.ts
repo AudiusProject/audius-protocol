@@ -1,7 +1,8 @@
-import { UserCollection } from 'models/Collection'
-import { ID } from 'models/common/Identifiers'
-import Track, { UserTrackMetadata } from 'models/Track'
 import { all } from 'redux-saga/effects'
+
+import { UserCollection } from 'models/Collection'
+import Track, { UserTrackMetadata } from 'models/Track'
+import { ID } from 'models/common/Identifiers'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { processAndCacheCollections } from 'store/cache/collections/utils'
 import { processAndCacheTracks } from 'store/cache/tracks/utils'

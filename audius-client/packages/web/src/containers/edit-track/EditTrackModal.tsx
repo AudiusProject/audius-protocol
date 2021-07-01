@@ -1,34 +1,34 @@
 import React, { useEffect, useState } from 'react'
-import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
-import { push as pushRoute } from 'connected-react-router'
-import { Dispatch } from 'redux'
-import { matchPath } from 'react-router'
 
-import * as cacheTrackActions from 'store/cache/tracks/actions'
+import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
+import { matchPath } from 'react-router'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
+import { Dispatch } from 'redux'
+
+import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
+import {
+  StemUploadWithFile,
+  dropdownRows
+} from 'components/source-files-modal/SourceFilesModal'
+import EditTrackModalComponent from 'components/track/EditTrackModal'
+import { processFiles } from 'containers/upload-page/store/utils/processFiles'
+import { StemCategory } from 'models/Stems'
+import Track from 'models/Track'
+import { ID } from 'models/common/Identifiers'
 import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
 import {
   getMetadata,
   getIsOpen,
   getStems
 } from 'store/application/ui/editTrackModal/selectors'
-import { AppState } from 'store/types'
-import { ID } from 'models/common/Identifiers'
-import { FEED_PAGE, getPathname } from 'utils/route'
-
-import EditTrackModalComponent from 'components/track/EditTrackModal'
-import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
-import Track from 'models/Track'
-import { StemCategory } from 'models/Stems'
-import {
-  StemUploadWithFile,
-  dropdownRows
-} from 'components/source-files-modal/SourceFilesModal'
-import { processFiles } from 'containers/upload-page/store/utils/processFiles'
-import { removeNullable } from 'utils/typeUtils'
-import { startStemUploads } from 'store/application/ui/stemsUpload/slice'
-import { uuid } from 'utils/uid'
 import { getCurrentUploads } from 'store/application/ui/stemsUpload/selectors'
+import { startStemUploads } from 'store/application/ui/stemsUpload/slice'
+import * as cacheTrackActions from 'store/cache/tracks/actions'
+import { AppState } from 'store/types'
+import { FEED_PAGE, getPathname } from 'utils/route'
+import { removeNullable } from 'utils/typeUtils'
+import { uuid } from 'utils/uid'
 
 const messages = {
   deleteTrack: 'DELETE TRACK'

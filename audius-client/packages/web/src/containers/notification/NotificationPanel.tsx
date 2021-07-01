@@ -1,20 +1,21 @@
 import React, { useRef, useCallback } from 'react'
-import Lottie from 'react-lottie'
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import cn from 'classnames'
 
-import { ID } from 'models/common/Identifiers'
-import SimpleBar from 'simplebar-react'
-import InfiniteScroll from 'react-infinite-scroller'
 import AntModal from 'antd/lib/modal'
-import styles from './NotificationPanel.module.css'
-import EmptyNotifications from './components/EmptyNotifications'
-import NotificationProvider from './NotificationProvider'
+import cn from 'classnames'
+import InfiniteScroll from 'react-infinite-scroller'
+import Lottie from 'react-lottie'
+import SimpleBar from 'simplebar-react'
 
-import NotificationModal from './components/desktop/NotificationModal'
-import NotificationItem from './components/desktop/Notification'
-import { Notification } from './store/types'
+import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { ID } from 'models/common/Identifiers'
 import { Status } from 'store/types'
+
+import styles from './NotificationPanel.module.css'
+import NotificationProvider from './NotificationProvider'
+import EmptyNotifications from './components/EmptyNotifications'
+import NotificationItem from './components/desktop/Notification'
+import NotificationModal from './components/desktop/NotificationModal'
+import { Notification } from './store/types'
 
 const messages = {
   title: 'Notifications',

@@ -1,5 +1,7 @@
 import React from 'react'
+
 import { Redirect, Route, RouteProps } from 'react-router'
+
 import { TRENDING_PAGE } from 'utils/route'
 
 type BaseDesktopRouteProps = RouteProps & { isMobile: boolean }

@@ -1,4 +1,5 @@
 import { ID } from 'models/common/Identifiers'
+
 import { Notification } from './types'
 
 export const FETCH_NOTIFICATIONS = 'NOTIFICATION/FETCH_NOTIFICATIONS'

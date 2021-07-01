@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import Slider from 'antd/lib/slider'
 
-import { setupHotkeys, ModifierKeys } from 'utils/hotkeyUtil'
-// import pbIconVolume from 'assets/img/pbIconVolume.svg'
+import Slider from 'antd/lib/slider'
+import PropTypes from 'prop-types'
+
 import { ReactComponent as IconVolume0 } from 'assets/img/iconVolume0.svg'
 import { ReactComponent as IconVolume1 } from 'assets/img/iconVolume1.svg'
 import { ReactComponent as IconVolume2 } from 'assets/img/iconVolume2.svg'
 import { ReactComponent as IconVolume3 } from 'assets/img/iconVolume3.svg'
+import { setupHotkeys, ModifierKeys } from 'utils/hotkeyUtil'
 
 import styles from './VolumeBar.module.css'
 

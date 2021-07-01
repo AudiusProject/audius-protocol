@@ -1,32 +1,16 @@
 import React, { useCallback } from 'react'
+
 import Lottie from 'react-lottie'
 
-import User from 'models/User'
-import { UserCollection, Variant as CollectionVariant } from 'models/Collection'
-import { Status } from 'store/types'
-
-import Page from 'components/general/Page'
-import Header from 'components/general/header/desktop/Header'
-import { BASE_URL, EXPLORE_PAGE, stripBaseUrl } from 'utils/route'
+import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import CollectionArtCard from 'components/card/desktop/CollectionArtCard'
 import UserArtCard from 'components/card/desktop/UserArtCard'
-import Section, { Layout } from './Section'
-import { useOrderedLoad } from 'hooks/useOrderedLoad'
+import Page from 'components/general/Page'
+import Header from 'components/general/header/desktop/Header'
 import PerspectiveCard, {
   TextInterior,
   EmojiInterior
 } from 'components/perspective-card/PerspectiveCard'
-
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
-
-import styles from './ExplorePage.module.css'
-import {
-  HEAVY_ROTATION,
-  BEST_NEW_RELEASES,
-  UNDER_THE_RADAR,
-  MOST_LOVED,
-  FEELING_LUCKY
-} from 'containers/smart-collection/smartCollections'
 import {
   LET_THEM_DJ,
   TOP_ALBUMS,
@@ -39,6 +23,21 @@ import {
   INTIMATE_PLAYLISTS
 } from 'containers/explore-page/collections'
 import { ExploreCollectionsVariant } from 'containers/explore-page/store/types'
+import {
+  HEAVY_ROTATION,
+  BEST_NEW_RELEASES,
+  UNDER_THE_RADAR,
+  MOST_LOVED,
+  FEELING_LUCKY
+} from 'containers/smart-collection/smartCollections'
+import { useOrderedLoad } from 'hooks/useOrderedLoad'
+import { UserCollection, Variant as CollectionVariant } from 'models/Collection'
+import User from 'models/User'
+import { Status } from 'store/types'
+import { BASE_URL, EXPLORE_PAGE, stripBaseUrl } from 'utils/route'
+
+import styles from './ExplorePage.module.css'
+import Section, { Layout } from './Section'
 
 const messages = {
   featuredPlaylists: 'Playlists We Love Right Now',

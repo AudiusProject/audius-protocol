@@ -1,17 +1,20 @@
-import UserListSagaFactory from 'containers/user-list/store/sagas'
-import { USER_LIST_TAG } from '../FavoritesPage'
 import { select, put } from 'redux-saga/effects'
-import { getId, getUserList, getUserIds, getFavoriteType } from './selectors'
-import { getTrack } from 'store/cache/tracks/selectors'
+
+import UserListSagaFactory from 'containers/user-list/store/sagas'
+import { createUserListProvider } from 'containers/user-list/utils'
+import Collection from 'models/Collection'
+import { FavoriteType } from 'models/Favorite'
 import Track from 'models/Track'
 import { ID } from 'models/common/Identifiers'
-import Collection from 'models/Collection'
-import { getCollection } from 'store/cache/collections/selectors'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { createUserListProvider } from 'containers/user-list/utils'
-import { FavoriteType } from 'models/Favorite'
+import { getCollection } from 'store/cache/collections/selectors'
+import { getTrack } from 'store/cache/tracks/selectors'
+
+import { USER_LIST_TAG } from '../FavoritesPage'
+
 import { trackFavoriteError, playlistFavoriteError } from './actions'
 import { watchFavoriteError } from './errorSagas'
+import { getId, getUserList, getUserIds, getFavoriteType } from './selectors'
 
 const getPlaylistFavorites = createUserListProvider<Collection>({
   getExistingEntity: getCollection,

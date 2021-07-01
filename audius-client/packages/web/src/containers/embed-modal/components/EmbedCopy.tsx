@@ -1,9 +1,10 @@
 import React, { useCallback } from 'react'
 
-import styles from './EmbedCopy.module.css'
-import { copyToClipboard } from 'utils/clipboardUtil'
 import Toast from 'components/toast/Toast'
 import { MountPlacement, ComponentPlacement } from 'components/types'
+import { copyToClipboard } from 'utils/clipboardUtil'
+
+import styles from './EmbedCopy.module.css'
 
 const messages = {
   copy: 'Click To Copy',

@@ -1,14 +1,15 @@
 import React, { useState, useCallback } from 'react'
+
+import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import commonPasswordList from 'fxa-common-password-list'
-import { Button, ButtonType, IconArrow } from '@audius/stems'
+
+import Input from 'components/data-entry/Input'
+import StatusMessage from 'components/general/StatusMessage'
+import { OpenLinkMessage } from 'services/native-mobile-interface/linking'
+import { TERMS_OF_SERVICE, PRIVACY_POLICY, BASE_URL } from 'utils/route'
 
 import styles from './PasswordPage.module.css'
-import Input from 'components/data-entry/Input'
-
-import StatusMessage from 'components/general/StatusMessage'
-import { TERMS_OF_SERVICE, PRIVACY_POLICY, BASE_URL } from 'utils/route'
-import { OpenLinkMessage } from 'services/native-mobile-interface/linking'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

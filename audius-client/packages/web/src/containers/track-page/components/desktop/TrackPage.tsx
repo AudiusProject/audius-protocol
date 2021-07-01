@@ -1,25 +1,26 @@
 import React from 'react'
+
 import cn from 'classnames'
 
-import { ID, CID } from 'models/common/Identifiers'
-
-import Page from 'components/general/Page'
 import CoverPhoto from 'components/general/CoverPhoto'
-import StatBanner from 'components/general/StatBanner'
 import NavBanner from 'components/general/NavBanner'
-import GiantTrackTile from 'components/track/GiantTrackTile'
-import Lineup from 'containers/lineup/Lineup'
-import { TrackTileSize } from 'components/track/types'
-import { LineupVariant } from 'containers/lineup/types'
-import styles from './TrackPage.module.css'
-import { QueueItem } from 'store/queue/types'
-import { tracksActions } from 'containers/track-page/store/lineups/tracks/actions'
-import User from 'models/User'
-import Track from 'models/Track'
-import { LineupState } from 'models/common/Lineup'
-import { getTrackDefaults, emptyStringGuard } from 'containers/track-page/utils'
-import Remixes from './Remixes'
+import Page from 'components/general/Page'
 import SectionButton from 'components/general/SectionButton'
+import StatBanner from 'components/general/StatBanner'
+import GiantTrackTile from 'components/track/GiantTrackTile'
+import { TrackTileSize } from 'components/track/types'
+import Lineup from 'containers/lineup/Lineup'
+import { LineupVariant } from 'containers/lineup/types'
+import { tracksActions } from 'containers/track-page/store/lineups/tracks/actions'
+import { getTrackDefaults, emptyStringGuard } from 'containers/track-page/utils'
+import Track from 'models/Track'
+import User from 'models/User'
+import { ID, CID } from 'models/common/Identifiers'
+import { LineupState } from 'models/common/Lineup'
+import { QueueItem } from 'store/queue/types'
+
+import Remixes from './Remixes'
+import styles from './TrackPage.module.css'
 
 const messages = {
   moreBy: 'More By',

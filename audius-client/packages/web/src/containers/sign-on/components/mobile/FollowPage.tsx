@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import cn from 'classnames'
-import { Button, ButtonType, IconArrow } from '@audius/stems'
 
-import styles from './FollowPage.module.css'
-import UserCard from 'components/card/UserCard'
-import User from 'models/User'
-import { ID } from 'models/common/Identifiers'
+import { Button, ButtonType, IconArrow } from '@audius/stems'
+import cn from 'classnames'
+
 import { ReactComponent as IconWand } from 'assets/img/iconWand.svg'
-import { FollowArtistsCategory, artistCategories } from '../../store/types'
+import UserCard from 'components/card/UserCard'
 import SelectablePills from 'components/selectable-pill/SelectablePills'
 import { MAIN_CONTENT_ID } from 'containers/App'
+import User from 'models/User'
+import { ID } from 'models/common/Identifiers'
+
+import { FollowArtistsCategory, artistCategories } from '../../store/types'
+
+import styles from './FollowPage.module.css'
 
 const messages = {
   title: 'Follow At Least 3 Artists To Get Started',

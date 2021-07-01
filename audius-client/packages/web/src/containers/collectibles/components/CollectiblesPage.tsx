@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+
 import {
   Button,
   ButtonSize,
@@ -6,28 +7,29 @@ import {
   IconPencil,
   Modal
 } from '@audius/stems'
+import Spin from 'antd/lib/spin'
 import cn from 'classnames'
-import styles from 'containers/collectibles/components/CollectiblesPage.module.css'
-import UserBadges from 'containers/user-badges/UserBadges'
 import {
   DragDropContext,
   Draggable,
   Droppable,
   DropResult
 } from 'react-beautiful-dnd'
+
 import { ReactComponent as IconGradientCollectibles } from 'assets/img/iconGradientCollectibles.svg'
-import {
-  Collectible,
-  CollectiblesMetadata
-} from 'containers/collectibles/components/types'
-import CollectibleDetails from 'containers/collectibles/components/CollectibleDetails'
-import { ProfileUser } from 'containers/profile-page/store/types'
 import Drawer from 'components/drawer/Drawer'
-import Spin from 'antd/lib/spin'
+import CollectibleDetails from 'containers/collectibles/components/CollectibleDetails'
 import {
   HiddenCollectibleRow,
   VisibleCollectibleRow
 } from 'containers/collectibles/components/CollectibleRow'
+import styles from 'containers/collectibles/components/CollectiblesPage.module.css'
+import {
+  Collectible,
+  CollectiblesMetadata
+} from 'containers/collectibles/components/types'
+import { ProfileUser } from 'containers/profile-page/store/types'
+import UserBadges from 'containers/user-badges/UserBadges'
 import useInstanceVar from 'hooks/useInstanceVar'
 
 export const editTableContainerClass = 'editTableContainer'

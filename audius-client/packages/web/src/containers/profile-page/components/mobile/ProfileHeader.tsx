@@ -1,7 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react'
-import cn from 'classnames'
-import Linkify from 'linkifyjs/react'
-import Skeleton from 'antd/lib/skeleton'
+
 import {
   Button,
   ButtonType,
@@ -11,31 +9,34 @@ import {
   IconDonate,
   IconLink
 } from '@audius/stems'
+import Skeleton from 'antd/lib/skeleton'
+import cn from 'classnames'
+import Linkify from 'linkifyjs/react'
 
+import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
+import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import FollowButton from 'components/general/FollowButton'
+import SubscribeButton from 'components/general/SubscribeButton'
+import ProfilePageBadge from 'containers/user-badges/ProfilePageBadge'
+import UserBadges from 'containers/user-badges/UserBadges'
+import { useUserCoverPhoto, useUserProfilePicture } from 'hooks/useImageSize'
+import { ID } from 'models/common/Identifiers'
 import {
   CoverPhotoSizes,
   ProfilePictureSizes,
   WidthSizes,
   SquareSizes
 } from 'models/common/ImageSizes'
-import { ID } from 'models/common/Identifiers'
-import { useUserCoverPhoto, useUserProfilePicture } from 'hooks/useImageSize'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { FOLLOWING_USERS_ROUTE, FOLLOWERS_USERS_ROUTE } from 'utils/route'
-import { formatCount, squashNewLines } from 'utils/formatUtil'
-
-import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
-import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
-import styles from './ProfileHeader.module.css'
-import FollowButton from 'components/general/FollowButton'
-import GrowingCoverPhoto from './GrowingCoverPhoto'
-import UploadStub from './UploadStub'
-import SubscribeButton from 'components/general/SubscribeButton'
-import { make, useRecord } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
+import { formatCount, squashNewLines } from 'utils/formatUtil'
+import { FOLLOWING_USERS_ROUTE, FOLLOWERS_USERS_ROUTE } from 'utils/route'
+
+import GrowingCoverPhoto from './GrowingCoverPhoto'
+import styles from './ProfileHeader.module.css'
 import UploadButton from './UploadButton'
-import UserBadges from 'containers/user-badges/UserBadges'
-import ProfilePageBadge from 'containers/user-badges/ProfilePageBadge'
+import UploadStub from './UploadStub'
 
 const messages = {
   tracks: 'Tracks',

@@ -1,22 +1,22 @@
 import React from 'react'
 
-import { FeedPageContentProps } from 'containers/feed-page/types'
-import { LineupVariant } from 'containers/lineup/types'
-import { feedActions } from 'containers/feed-page/store/lineups/feed/actions'
-import FeedFilter from 'models/FeedFilter'
 import Page from 'components/general/Page'
 import Header from 'components/general/header/desktop/Header'
-import FeedFilters from './FeedFilters'
-import Lineup from 'containers/lineup/Lineup'
-import EndOfLineup from 'containers/lineup/EndOfLineup'
 import EmptyFeed from 'containers/feed-page/components/EmptyFeed'
-import { make, useRecord } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
-
+import { feedActions } from 'containers/feed-page/store/lineups/feed/actions'
+import { FeedPageContentProps } from 'containers/feed-page/types'
+import EndOfLineup from 'containers/lineup/EndOfLineup'
+import Lineup from 'containers/lineup/Lineup'
 import {
   getLoadMoreTrackCount,
   INITIAL_LOAD_TRACKS_MULTIPLIER
 } from 'containers/lineup/LineupProvider'
+import { LineupVariant } from 'containers/lineup/types'
+import FeedFilter from 'models/FeedFilter'
+import { Name } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
+
+import FeedFilters from './FeedFilters'
 
 const initialFilters = [FeedFilter.ALL, FeedFilter.ORIGINAL, FeedFilter.REPOST]
 

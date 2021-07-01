@@ -1,13 +1,15 @@
 import React, { memo } from 'react'
-import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
 
-import styles from './StatsText.module.css'
-import { AppState } from 'store/types'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+
+import User from 'models/User'
 import { ID } from 'models/common/Identifiers'
 import { getUser } from 'store/cache/users/selectors'
-import User from 'models/User'
+import { AppState } from 'store/types'
 import { formatCount, pluralize } from 'utils/formatUtil'
+
+import styles from './StatsText.module.css'
 
 export enum Flavor {
   REPOST = 'REPOST',

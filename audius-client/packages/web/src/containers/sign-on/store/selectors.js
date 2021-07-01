@@ -1,4 +1,5 @@
 import { createSelector } from 'reselect'
+
 import { getUsers } from 'store/cache/users/selectors'
 
 // Sign On selectors

@@ -1,19 +1,22 @@
-import { ID } from 'models/common/Identifiers'
 import React, { cloneElement, ReactElement } from 'react'
-import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
-import IconBronzeBadge from 'assets/img/tokenBadgeBronze40@2x.png'
-import IconSilverBadge from 'assets/img/tokenBadgeSilver40@2x.png'
-import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
-import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum40@2x.png'
+
+import cn from 'classnames'
+
 import { ReactComponent as IconBronzeBadgeSVG } from 'assets/img/IconBronzeBadge.svg'
-import { ReactComponent as IconSilverBadgeSVG } from 'assets/img/IconSilverBadge.svg'
 import { ReactComponent as IconGoldBadgeSVG } from 'assets/img/IconGoldBadge.svg'
 import { ReactComponent as IconPlatinumBadgeSVG } from 'assets/img/IconPlatinumBadge.svg'
-import styles from './UserBadges.module.css'
-import { BadgeTier } from './utils'
-import cn from 'classnames'
+import { ReactComponent as IconSilverBadgeSVG } from 'assets/img/IconSilverBadge.svg'
+import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
+import IconBronzeBadge from 'assets/img/tokenBadgeBronze40@2x.png'
+import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
+import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum40@2x.png'
+import IconSilverBadge from 'assets/img/tokenBadgeSilver40@2x.png'
+import { ID } from 'models/common/Identifiers'
 import { Nullable } from 'utils/typeUtils'
+
+import styles from './UserBadges.module.css'
 import { useSelectTierInfo } from './hooks'
+import { BadgeTier } from './utils'
 
 const audioTierMapSVG: { [tier in BadgeTier]: Nullable<ReactElement> } = {
   none: null,

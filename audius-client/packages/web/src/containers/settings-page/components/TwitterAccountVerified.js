@@ -1,8 +1,11 @@
 import React, { Component } from 'react'
+
 import cn from 'classnames'
 import PropTypes from 'prop-types'
-import styles from './TwitterAccountVerified.module.css'
+
 import TwitterAuthButton from 'components/general/TwitterAuthButton'
+
+import styles from './TwitterAccountVerified.module.css'
 
 const messages = {
   verify: 'Verify with Twitter'

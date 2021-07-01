@@ -1,16 +1,17 @@
 import React, { useState, MouseEvent } from 'react'
+
 import cn from 'classnames'
 
-import styles from './FavoriteButton.module.css'
-
-import heartDark from 'assets/img/iconHeartDark@2x.png'
-import heartDarkAlt from 'assets/img/iconHeartDarkAlt@2x.png'
-import heartDarkActive from 'assets/img/iconHeartDarkActive@2x.png'
-import heartLight from 'assets/img/iconHeartLight@2x.png'
-import heartLightAlt from 'assets/img/iconHeartLightAlt@2x.png'
-import heartLightActive from 'assets/img/iconHeartLightActive@2x.png'
 import heartActiveMatrix from 'assets/img/iconHeartActiveMatrix@2x.png'
+import heartDark from 'assets/img/iconHeartDark@2x.png'
+import heartDarkActive from 'assets/img/iconHeartDarkActive@2x.png'
+import heartDarkAlt from 'assets/img/iconHeartDarkAlt@2x.png'
 import heartInactiveMatrix from 'assets/img/iconHeartInactiveMatrix@2x.png'
+import heartLight from 'assets/img/iconHeartLight@2x.png'
+import heartLightActive from 'assets/img/iconHeartLightActive@2x.png'
+import heartLightAlt from 'assets/img/iconHeartLightAlt@2x.png'
+
+import styles from './FavoriteButton.module.css'
 
 type FavoriteButtonProps = {
   isDarkMode: boolean

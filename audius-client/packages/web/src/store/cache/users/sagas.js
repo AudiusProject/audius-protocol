@@ -1,34 +1,35 @@
+import { mergeWith } from 'lodash'
 import { call, put, select, take, takeEvery, race } from 'redux-saga/effects'
-import { Kind, Status } from 'store/types'
 
+import {
+  getSelectedServices,
+  getStatus
+} from 'containers/service-selection/store/selectors'
+import { fetchServicesFailed } from 'containers/service-selection/store/slice'
+import { DefaultSizes } from 'models/common/ImageSizes'
 import AudiusBackend from 'services/AudiusBackend'
-import { averageRgb } from 'utils/imageProcessingUtil'
-import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
-import { waitForValue } from 'utils/sagaHelpers'
+import {
+  getAudiusAccountUser,
+  setAudiusAccountUser
+} from 'services/LocalStorage'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getAccountUser, getUserId } from 'store/account/selectors'
 import * as cacheActions from 'store/cache/actions'
+import { retrieveCollections } from 'store/cache/collections/utils'
+import { mergeCustomizer } from 'store/cache/reducer'
+import { retrieve } from 'store/cache/sagas'
 import * as userActions from 'store/cache/users/actions'
 import {
   getUser,
   getUsers,
   getUserTimestamps
 } from 'store/cache/users/selectors'
-import {
-  getSelectedServices,
-  getStatus
-} from 'containers/service-selection/store/selectors'
-import { fetchServicesFailed } from 'containers/service-selection/store/slice'
-import { retrieveCollections } from 'store/cache/collections/utils'
-import { retrieve } from 'store/cache/sagas'
-import { DefaultSizes } from 'models/common/ImageSizes'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { getAccountUser, getUserId } from 'store/account/selectors'
+import { Kind, Status } from 'store/types'
+import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
+import { averageRgb } from 'utils/imageProcessingUtil'
+import { waitForValue } from 'utils/sagaHelpers'
+
 import { pruneBlobValues, reformat } from './utils'
-import {
-  getAudiusAccountUser,
-  setAudiusAccountUser
-} from 'services/LocalStorage'
-import { mergeWith } from 'lodash'
-import { mergeCustomizer } from 'store/cache/reducer'
 
 /**
  * If the user is not a creator, upgrade the user to a creator node.

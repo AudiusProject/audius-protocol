@@ -1,9 +1,9 @@
 /* globals Audio, Event, Blob */
+import Hls from 'hls.js'
+
+import { TrackSegment } from 'models/Track'
 import { fetchCID } from 'services/AudiusBackend'
 import { generateM3U8, generateM3U8Variants } from 'utils/hlsUtil'
-
-import Hls from 'hls.js'
-import { TrackSegment } from 'models/Track'
 
 declare global {
   interface Window {

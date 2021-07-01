@@ -1,15 +1,18 @@
 import React, { useState, useCallback } from 'react'
+
 import { connect } from 'react-redux'
+import { animated } from 'react-spring'
+
+import MusicConfetti from 'components/background-animations/MusicConfetti'
 import ProfileCompletionPanel from 'containers/profile-progress/components/ProfileCompletionPanel'
 import {
   getOrderedCompletionStages,
   getIsAccountLoaded
 } from 'containers/profile-progress/store/selectors'
-import ProfileCompletionTooltip from './components/ProfileCompletionTooltip'
-import { animated } from 'react-spring'
-import { useProfileCompletionDismissal, useSlideDown } from './hooks'
-import MusicConfetti from 'components/background-animations/MusicConfetti'
 import { getAccountUser } from 'store/account/selectors'
+
+import ProfileCompletionTooltip from './components/ProfileCompletionTooltip'
+import { useProfileCompletionDismissal, useSlideDown } from './hooks'
 
 const ORIGINAL_HEIGHT_PIXELS = 118
 

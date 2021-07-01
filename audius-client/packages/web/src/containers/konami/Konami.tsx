@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+
 import { useKonami } from 'hooks/useKonami'
 
 const Konami = () => {

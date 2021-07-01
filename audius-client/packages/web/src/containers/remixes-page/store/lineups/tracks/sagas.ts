@@ -1,3 +1,4 @@
+import { select } from 'redux-saga-test-plan/matchers'
 import { call, put } from 'redux-saga/effects'
 
 import {
@@ -5,13 +6,13 @@ import {
   tracksActions
 } from 'containers/remixes-page/store/lineups/tracks/actions'
 import { getTrackId, getLineup } from 'containers/remixes-page/store/selectors'
-import { LineupSagas } from 'store/lineup/sagas'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
-import { setCount } from '../../slice'
-import { AppState } from 'store/types'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getUserId } from 'store/account/selectors'
-import { select } from 'redux-saga-test-plan/matchers'
+import { processAndCacheTracks } from 'store/cache/tracks/utils'
+import { LineupSagas } from 'store/lineup/sagas'
+import { AppState } from 'store/types'
+
+import { setCount } from '../../slice'
 
 function* getTracks({
   offset,

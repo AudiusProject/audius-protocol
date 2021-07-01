@@ -1,12 +1,14 @@
+import { useEffect } from 'react'
+
+import { push as pushRoute } from 'connected-react-router'
+import { useDispatch } from 'react-redux'
+
 import {
   showRequiresAccountModal,
   updateRouteOnExit
 } from 'containers/sign-on/store/actions'
-import { useEffect } from 'react'
-import { useDispatch } from 'react-redux'
 import { getAccountUser } from 'store/account/selectors'
 import { useSelector } from 'utils/reducer'
-import { push as pushRoute } from 'connected-react-router'
 import { SIGN_UP_PAGE } from 'utils/route'
 
 /**

@@ -1,15 +1,17 @@
 import React, { useState, useEffect, memo } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
 
-import styles from './SearchBarResult.module.css'
-import searchBarStyles from './SearchBar.module.css'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
+
 import placeholderArt from 'assets/img/imageBlank2x.png'
-import AudiusBackend from 'services/AudiusBackend'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
-import { Kind } from 'store/types'
 import UserBadges from 'containers/user-badges/UserBadges'
+import AudiusBackend from 'services/AudiusBackend'
+import { Kind } from 'store/types'
+import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
+
+import searchBarStyles from './SearchBar.module.css'
+import styles from './SearchBarResult.module.css'
 
 const Image = memo(props => {
   const { defaultImage, imageMultihash, size, isUser } = props

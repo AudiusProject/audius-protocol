@@ -1,7 +1,9 @@
 import React from 'react'
+
 import { connect } from 'react-redux'
-import { isMobile } from 'utils/clientUtil'
+
 import { AppState } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
 
 import ExplorePageProvider from './ExplorePageProvider'
 import DesktopExplorePage from './components/desktop/ExplorePage'

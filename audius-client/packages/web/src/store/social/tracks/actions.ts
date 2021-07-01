@@ -1,4 +1,5 @@
 import { createCustomAction } from 'typesafe-actions'
+
 import { ID, CID } from 'models/common/Identifiers'
 import { RepostSource, FavoriteSource, ShareSource } from 'services/analytics'
 

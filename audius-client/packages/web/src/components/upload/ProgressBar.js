@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
+
 import Progress from 'antd/lib/progress'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
 
 import styles from './ProgressBar.module.css'
 

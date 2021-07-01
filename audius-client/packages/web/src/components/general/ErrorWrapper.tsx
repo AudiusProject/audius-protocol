@@ -1,4 +1,5 @@
 import React from 'react'
+
 import * as Sentry from '@sentry/browser'
 
 export type ErrorWrapperProps = {

@@ -1,9 +1,11 @@
 import React from 'react'
-import SelectablePill from './SelectablePill'
+
 import cn from 'classnames'
 
-import styles from './SelectablePill.module.css'
 import useDelayHandler from 'hooks/useDelayHandler'
+
+import SelectablePill from './SelectablePill'
+import styles from './SelectablePill.module.css'
 
 type PillContainerProps = {
   content: React.ReactNode[]

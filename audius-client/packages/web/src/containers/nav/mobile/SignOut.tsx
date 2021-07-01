@@ -1,11 +1,12 @@
 import React, { useCallback } from 'react'
-import cn from 'classnames'
-import { Button, ButtonType } from '@audius/stems'
 
-import { signOut } from 'utils/signOut'
-import { make, useRecord } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
+import { Button, ButtonType } from '@audius/stems'
+import cn from 'classnames'
+
 import { disablePushNotifications } from 'containers/settings-page/store/mobileSagas'
+import { Name } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
+import { signOut } from 'utils/signOut'
 
 import styles from './SignOut.module.css'
 

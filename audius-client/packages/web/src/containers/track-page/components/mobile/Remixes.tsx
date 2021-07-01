@@ -1,13 +1,14 @@
 import React from 'react'
 
-import { ID } from 'models/common/Identifiers'
+import cn from 'classnames'
+
 import { ReactComponent as IconRemix } from 'assets/img/iconRemix.svg'
 import SectionButton from 'components/general/SectionButton'
 import ConnectedRemixCard from 'containers/remix/ConnectedRemixCard'
-import cn from 'classnames'
+import { ID } from 'models/common/Identifiers'
+import { isMatrix } from 'utils/theme/theme'
 
 import styles from './Remixes.module.css'
-import { isMatrix } from 'utils/theme/theme'
 
 const messages = {
   title: 'Remixes',

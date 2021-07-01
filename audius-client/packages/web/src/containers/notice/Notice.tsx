@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react'
+
+import { IconRemove } from '@audius/stems'
 import cn from 'classnames'
+
 import { useRemoteVar } from 'containers/remote-config/hooks'
 import { StringKeys } from 'services/remote-config'
 
 import styles from './Notice.module.css'
-import { IconRemove } from '@audius/stems'
 
 const Notice = ({ shouldPadTop }: { shouldPadTop: boolean }) => {
   const [isVisible, setIsVisible] = useState(false)

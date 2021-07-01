@@ -1,13 +1,14 @@
 import { takeLatest, call, put, fork, select } from 'redux-saga/effects'
 
+import tracksSagas from 'containers/saved-page/store/lineups/tracks/sagas'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getAccountUser } from 'store/account/selectors'
+import { processAndCacheTracks } from 'store/cache/tracks/utils'
+import { waitForValue } from 'utils/sagaHelpers'
+
 import * as actions from './actions'
 import { tracksActions } from './lineups/tracks/actions'
-import tracksSagas from 'containers/saved-page/store/lineups/tracks/sagas'
-import { getAccountUser } from 'store/account/selectors'
-import { waitForValue } from 'utils/sagaHelpers'
 import { getSaves } from './selectors'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
 
 function* fetchTracksLineup() {
   yield put(tracksActions.fetchLineupMetadatas())

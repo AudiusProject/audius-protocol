@@ -1,10 +1,11 @@
 import { call, put, take, fork, takeEvery } from 'redux-saga/effects'
+
 import * as discoverActions from 'containers/feed-page/store/actions'
 import { feedActions } from 'containers/feed-page/store/lineups/feed/actions'
-import * as socialActions from 'store/social/users/actions'
-import { waitForBackendSetup } from 'store/backend/sagas'
 import { fetchSuggestedFollowUserIds } from 'containers/sign-on/store/sagas'
+import { waitForBackendSetup } from 'store/backend/sagas'
 import { fetchUsers } from 'store/cache/users/sagas'
+import * as socialActions from 'store/social/users/actions'
 
 import feedSagas from './lineups/feed/sagas.js'
 

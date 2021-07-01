@@ -1,8 +1,8 @@
-import { OpenSeaAsset, OpenSeaEvent } from 'services/opensea-client/types'
 import {
   Collectible,
   CollectibleType
 } from 'containers/collectibles/components/types'
+import { OpenSeaAsset, OpenSeaEvent } from 'services/opensea-client/types'
 import { gifPreview } from 'utils/imageProcessingUtil'
 
 /**

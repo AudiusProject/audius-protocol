@@ -1,7 +1,7 @@
 import { delay } from 'redux-saga'
 import { call, put, race, select, takeEvery } from 'redux-saga/effects'
 
-import { waitForValue } from 'utils/sagaHelpers'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import * as confirmerActions from 'store/confirmer/actions'
 import {
   getResult,
@@ -10,7 +10,7 @@ import {
   getConfirmLength,
   getIsDone
 } from 'store/confirmer/selectors'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { waitForValue } from 'utils/sagaHelpers'
 
 const BlockConfirmation = Object.freeze({
   CONFIRMED: 'CONFIRMED',

@@ -1,7 +1,7 @@
-import { AppState } from 'store/types'
 import { PlayableType } from 'models/common/Identifiers'
-import { getTrack } from 'store/cache/tracks/selectors'
 import { getCollection } from 'store/cache/collections/selectors'
+import { getTrack } from 'store/cache/tracks/selectors'
+import { AppState } from 'store/types'
 
 export const getIsOpen = (state: AppState) =>
   state.application.ui.embedModal.isOpen

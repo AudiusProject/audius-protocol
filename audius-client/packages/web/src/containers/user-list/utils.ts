@@ -1,10 +1,10 @@
-import { AppState } from 'store/types'
+import { call, select } from 'redux-saga/effects'
 
 import User, { UserMetadata } from 'models/User'
-import { call, select } from 'redux-saga/effects'
 import { ID } from 'models/common/Identifiers'
 import { getAccountUser, getUserId } from 'store/account/selectors'
 import { processAndCacheUsers } from 'store/cache/users/utils'
+import { AppState } from 'store/types'
 
 export type UserListProviderArgs<T> = {
   // Gets the track or playlist we're referencing.

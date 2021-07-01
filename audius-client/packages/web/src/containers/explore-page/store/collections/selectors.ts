@@ -1,8 +1,9 @@
-import { AppState, Status } from 'store/types'
-import { ExploreCollectionsVariant } from '../types'
-import { getCollections as getCachedCollections } from 'store/cache/collections/selectors'
 import Collection from 'models/Collection'
+import { getCollections as getCachedCollections } from 'store/cache/collections/selectors'
 import { getUsers } from 'store/cache/users/selectors'
+import { AppState, Status } from 'store/types'
+
+import { ExploreCollectionsVariant } from '../types'
 
 const getBaseState = (state: AppState) =>
   state.application.pages.exploreCollections

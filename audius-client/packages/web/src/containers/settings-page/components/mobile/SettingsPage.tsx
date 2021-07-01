@@ -1,21 +1,30 @@
 import React, { useContext, useEffect, useCallback } from 'react'
 
+import cn from 'classnames'
+
+import horizontalLogo from 'assets/img/settingsPageLogo.png'
+import TabSlider from 'components/data-entry/TabSlider'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Page from 'components/general/Page'
-import NavContext, { LeftPreset } from 'containers/nav/store/context'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
 import Row from 'components/groupable-list/Row'
+import NavContext, { LeftPreset } from 'containers/nav/store/context'
 import { useUserProfilePicture } from 'hooks/useImageSize'
-
+import useScrollToTop from 'hooks/useScrollToTop'
+import Theme from 'models/Theme'
+import { ID } from 'models/common/Identifiers'
+import { SquareSizes, ProfilePictureSizes } from 'models/common/ImageSizes'
+import { InstagramProfile, TwitterProfile } from 'store/account/reducer'
+import { getIsIOS } from 'utils/browser'
 import {
   ACCOUNT_SETTINGS_PAGE,
   HISTORY_PAGE,
   ABOUT_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE
 } from 'utils/route'
-import AccountSettingsPage from './AccountSettingsPage'
-import AboutSettingsPage from './AboutSettingsPage'
-import NotificationsSettingsPage from './NotificationsSettingsPage'
+import { isDarkMode } from 'utils/theme/theme'
+
 import {
   Notifications,
   EmailFrequency,
@@ -24,20 +33,13 @@ import {
   PushNotifications,
   Cast
 } from '../../store/types'
-import { getIsIOS } from 'utils/browser'
 
+import AboutSettingsPage from './AboutSettingsPage'
+import AccountSettingsPage from './AccountSettingsPage'
+import NotificationsSettingsPage from './NotificationsSettingsPage'
 import styles from './SettingsPage.module.css'
-import horizontalLogo from 'assets/img/settingsPageLogo.png'
-import { SquareSizes, ProfilePictureSizes } from 'models/common/ImageSizes'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { ID } from 'models/common/Identifiers'
-import Theme from 'models/Theme'
-import TabSlider from 'components/data-entry/TabSlider'
-import useScrollToTop from 'hooks/useScrollToTop'
-import { isDarkMode } from 'utils/theme/theme'
-import cn from 'classnames'
 import VerificationPage from './VerificationPage'
-import { InstagramProfile, TwitterProfile } from 'store/account/reducer'
+
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export enum SubPage {

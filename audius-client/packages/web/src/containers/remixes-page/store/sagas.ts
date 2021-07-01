@@ -1,9 +1,9 @@
 import { takeEvery, call, put } from 'redux-saga/effects'
 
-import tracksSagas from './lineups/tracks/sagas'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { retrieveTracks } from 'store/cache/tracks/utils'
 
+import tracksSagas from './lineups/tracks/sagas'
 import { fetchTrack, fetchTrackSucceeded } from './slice'
 
 function* watchFetch() {

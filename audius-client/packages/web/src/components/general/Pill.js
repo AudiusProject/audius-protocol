@@ -1,6 +1,7 @@
 import React from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
+import PropTypes from 'prop-types'
 
 import { ReactComponent as IconSave } from 'assets/img/iconSave.svg'
 

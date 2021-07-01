@@ -1,8 +1,10 @@
 import React, { useContext, useEffect } from 'react'
+
 import MobilePageContainer from 'components/general/MobilePageContainer'
-import UserList from 'containers/user-list/UserList'
-import { getUserList } from './store/selectors'
 import NavContext, { LeftPreset } from 'containers/nav/store/context'
+import UserList from 'containers/user-list/UserList'
+
+import { getUserList } from './store/selectors'
 
 const messages = {
   title: 'Following'

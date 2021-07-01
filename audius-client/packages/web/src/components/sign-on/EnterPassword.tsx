@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
-import commonPasswordList from 'fxa-common-password-list'
-import cn from 'classnames'
-import Spin from 'antd/lib/spin'
-import { Button, ButtonType, IconArrow } from '@audius/stems'
 
-import StatusMessage from 'components/general/StatusMessage'
+import { Button, ButtonType, IconArrow } from '@audius/stems'
+import Spin from 'antd/lib/spin'
+import cn from 'classnames'
+import commonPasswordList from 'fxa-common-password-list'
+
 import Input from 'components/data-entry/Input'
+import StatusMessage from 'components/general/StatusMessage'
+
 import styles from './EnterPassword.module.css'
 
 const MIN_PASSWORD_LEN = 8

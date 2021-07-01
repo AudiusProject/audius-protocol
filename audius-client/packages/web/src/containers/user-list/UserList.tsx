@@ -1,21 +1,24 @@
 import React, { useEffect } from 'react'
-import { AppState } from 'store/types'
-import { UserListStoreState } from './store/types'
-import { ID } from 'models/common/Identifiers'
-import UserList from './components/UserList'
-import { getUserId } from 'store/account/selectors'
-import * as socialActions from 'store/social/users/actions'
-import * as unfollowConfirmationActions from 'containers/unfollow-confirmation-modal/store/actions'
-import { Dispatch } from 'redux'
+
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
-import { profilePage } from 'utils/route'
-import { loadMore, setPageSize } from './store/actions'
-import { getUsers } from 'store/cache/users/selectors'
-import User from 'models/User'
-import { isMobile } from 'utils/clientUtil'
-import { FollowSource } from 'services/analytics'
+import { Dispatch } from 'redux'
+
 import { setNotificationSubscription } from 'containers/profile-page/store/actions'
+import * as unfollowConfirmationActions from 'containers/unfollow-confirmation-modal/store/actions'
+import User from 'models/User'
+import { ID } from 'models/common/Identifiers'
+import { FollowSource } from 'services/analytics'
+import { getUserId } from 'store/account/selectors'
+import { getUsers } from 'store/cache/users/selectors'
+import * as socialActions from 'store/social/users/actions'
+import { AppState } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+import { profilePage } from 'utils/route'
+
+import UserList from './components/UserList'
+import { loadMore, setPageSize } from './store/actions'
+import { UserListStoreState } from './store/types'
 
 type ConnectedUserListOwnProps = {
   // A tag uniquely identifying this particular instance of a UserList in the store.

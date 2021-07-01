@@ -1,8 +1,9 @@
 import React from 'react'
-import styles from './PrivacyPolicyPage.module.css'
 
-import NavBanner from 'components/public-site/NavBanner'
 import Footer from 'components/public-site/Footer'
+import NavBanner from 'components/public-site/NavBanner'
+
+import styles from './PrivacyPolicyPage.module.css'
 
 const messages = {
   download: 'Download Privacy Policy'

@@ -1,5 +1,6 @@
 import { delay } from 'redux-saga'
 import { takeEvery, put } from 'redux-saga/effects'
+
 import { openWithDelay, setVisibility } from './slice'
 
 function* watchOpenWithDelay() {

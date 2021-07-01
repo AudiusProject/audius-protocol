@@ -1,11 +1,13 @@
 import React from 'react'
+
+import cn from 'classnames'
 import PropTypes from 'prop-types'
 import ReactDropzone from 'react-dropzone'
-import cn from 'classnames'
 
-import styles from './Dropzone.module.css'
 import { ReactComponent as IconUpload } from 'assets/img/iconUpload.svg'
 import { ALLOWED_IMAGE_FILE_TYPES } from 'utils/imageProcessingUtil'
+
+import styles from './Dropzone.module.css'
 
 const messages = {
   track: 'Drag-and-drop a track here, or ',

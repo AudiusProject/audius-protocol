@@ -1,14 +1,17 @@
 import React, { useCallback } from 'react'
-import styles from './RemoveWalletBody.module.css'
-import cn from 'classnames'
+
 import { Button, ButtonType } from '@audius/stems'
-import { useSelector } from 'utils/reducer'
+import cn from 'classnames'
+import { useDispatch } from 'react-redux'
+
 import {
   confirmRemoveWallet,
   getRemoveWallet,
   pressConnectWallets
 } from 'store/token-dashboard/slice'
-import { useDispatch } from 'react-redux'
+import { useSelector } from 'utils/reducer'
+
+import styles from './RemoveWalletBody.module.css'
 
 const messages = {
   warning: 'Are you sure you want to remove this wallet from your account?',

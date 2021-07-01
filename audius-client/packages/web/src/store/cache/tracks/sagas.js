@@ -7,37 +7,34 @@ import {
   takeEvery,
   takeLatest
 } from 'redux-saga/effects'
-import { Kind } from 'store/types'
 
+import * as signOnActions from 'containers/sign-on/store/actions'
+import { DefaultSizes } from 'models/common/ImageSizes'
 import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
+import { Name } from 'services/analytics'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import TrackDownload from 'services/audius-backend/TrackDownload'
-import { averageRgb } from 'utils/imageProcessingUtil'
-
-import { fetchUsers } from 'store/cache/users/sagas'
 import {
   getAccountUser,
   getUserId,
   getUserHandle
 } from 'store/account/selectors'
+import { make } from 'store/analytics/actions'
+import { setColor } from 'store/application/ui/average-color/slice'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
-
 import * as cacheActions from 'store/cache/actions'
 import * as trackActions from 'store/cache/tracks/actions'
-import * as confirmerActions from 'store/confirmer/actions'
-import { getUser } from 'store/cache/users/selectors'
-import * as signOnActions from 'containers/sign-on/store/actions'
-import { DefaultSizes } from 'models/common/ImageSizes'
-import { squashNewLines, formatUrlName } from 'utils/formatUtil'
-import { make } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
-
 import { getTrack } from 'store/cache/tracks/selectors'
+import { fetchUsers } from 'store/cache/users/sagas'
+import { getUser } from 'store/cache/users/selectors'
+import * as confirmerActions from 'store/confirmer/actions'
+import { confirmTransaction } from 'store/confirmer/sagas'
+import { Kind } from 'store/types'
+import { squashNewLines, formatUrlName } from 'utils/formatUtil'
+import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
+import { averageRgb } from 'utils/imageProcessingUtil'
 import { waitForValue } from 'utils/sagaHelpers'
 import { makeKindId } from 'utils/uid'
-import { setColor } from 'store/application/ui/average-color/slice'
-import { confirmTransaction } from 'store/confirmer/sagas'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

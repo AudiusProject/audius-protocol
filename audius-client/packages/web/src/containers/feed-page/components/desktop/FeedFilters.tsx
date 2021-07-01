@@ -1,7 +1,7 @@
 import React from 'react'
 
-import FeedFilter from 'models/FeedFilter'
 import SelectablePills from 'components/selectable-pill/SelectablePills'
+import FeedFilter from 'models/FeedFilter'
 
 type FeedFiltersProps = {
   filter: FeedFilter

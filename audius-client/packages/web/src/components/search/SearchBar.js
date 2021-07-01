@@ -1,19 +1,21 @@
-import { isEqual } from 'lodash'
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import Input from 'antd/lib/input'
-import AutoComplete from 'antd/lib/auto-complete'
-import Lottie from 'react-lottie'
-import cn from 'classnames'
 
-import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'
-import SearchBarResult from 'components/search/SearchBarResult'
-import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
-import { ReactComponent as IconArrow } from 'assets/img/iconArrowGrey.svg'
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import styles from './SearchBar.module.css'
-import { Status, Kind } from 'store/types'
+import AutoComplete from 'antd/lib/auto-complete'
+import Input from 'antd/lib/input'
+import cn from 'classnames'
+import { isEqual } from 'lodash'
+import PropTypes from 'prop-types'
+import Lottie from 'react-lottie'
 import { Transition } from 'react-spring/renderprops'
+
+import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { ReactComponent as IconArrow } from 'assets/img/iconArrowGrey.svg'
+import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
+import SearchBarResult from 'components/search/SearchBarResult'
+import { Status, Kind } from 'store/types'
+import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'
+
+import styles from './SearchBar.module.css'
 
 const Option = AutoComplete.Option
 const OptGroup = AutoComplete.OptGroup

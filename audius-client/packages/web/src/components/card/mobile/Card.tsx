@@ -1,25 +1,27 @@
 import React from 'react'
+
 import cn from 'classnames'
 
-import styles from './Card.module.css'
 import placeholderArt from 'assets/img/imageBlank2x.png'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import {
-  ProfilePictureSizes,
-  SquareSizes,
-  CoverArtSizes
-} from 'models/common/ImageSizes'
+import UpdateDot from 'components/general/UpdateDot'
+import RepostFavoritesStats, {
+  Size
+} from 'components/repost-favorites-stats/RepostFavoritesStats'
+import UserBadges from 'containers/user-badges/UserBadges'
 import {
   useCollectionCoverArt,
   useUserProfilePicture
 } from 'hooks/useImageSize'
 import { ID } from 'models/common/Identifiers'
+import {
+  ProfilePictureSizes,
+  SquareSizes,
+  CoverArtSizes
+} from 'models/common/ImageSizes'
 import { pluralize } from 'utils/formatUtil'
-import RepostFavoritesStats, {
-  Size
-} from 'components/repost-favorites-stats/RepostFavoritesStats'
-import UserBadges from 'containers/user-badges/UserBadges'
-import UpdateDot from 'components/general/UpdateDot'
+
+import styles from './Card.module.css'
 
 const UserImage = (props: { id: ID; imageSize: ProfilePictureSizes }) => {
   const image = useUserProfilePicture(

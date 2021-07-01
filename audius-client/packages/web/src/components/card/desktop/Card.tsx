@@ -1,27 +1,29 @@
-import cn from 'classnames'
-import ActionsTab from 'components/actions-tab/ActionsTab'
-import Menu, { MenuOptionType } from 'containers/menu/Menu'
 import React, { MouseEvent, useState, useEffect, useCallback } from 'react'
+
+import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import placeholderArt from 'assets/img/imageBlank2x.png'
-import styles from './Card.module.css'
+import ActionsTab from 'components/actions-tab/ActionsTab'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import {
-  ProfilePictureSizes,
-  SquareSizes,
-  CoverArtSizes
-} from 'models/common/ImageSizes'
+import RepostFavoritesStats, {
+  Size
+} from 'components/repost-favorites-stats/RepostFavoritesStats'
+import Menu, { MenuOptionType } from 'containers/menu/Menu'
+import UserBadges from 'containers/user-badges/UserBadges'
 import {
   useCollectionCoverArt,
   useUserProfilePicture
 } from 'hooks/useImageSize'
 import { ID } from 'models/common/Identifiers'
-import RepostFavoritesStats, {
-  Size
-} from 'components/repost-favorites-stats/RepostFavoritesStats'
+import {
+  ProfilePictureSizes,
+  SquareSizes,
+  CoverArtSizes
+} from 'models/common/ImageSizes'
 import { pluralize } from 'utils/formatUtil'
-import UserBadges from 'containers/user-badges/UserBadges'
+
+import styles from './Card.module.css'
 
 const cardSizeStyles = {
   small: {

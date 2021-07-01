@@ -1,16 +1,18 @@
 import React from 'react'
+
+import cn from 'classnames'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
-import cn from 'classnames'
 
-import NowPlayingDrawer from 'containers/now-playing/NowPlayingDrawer'
-import { isMobile } from 'utils/clientUtil'
-import { AppState } from 'store/types'
-import DesktopPlayBar from './desktop/PlayBar'
-import { getUid as getPlayingUid } from 'store/player/selectors'
-import styles from './PlayBarProvider.module.css'
-import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
 import { getIsOpen } from 'containers/add-to-playlist/store/selectors'
+import NowPlayingDrawer from 'containers/now-playing/NowPlayingDrawer'
+import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
+import { getUid as getPlayingUid } from 'store/player/selectors'
+import { AppState } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+
+import styles from './PlayBarProvider.module.css'
+import DesktopPlayBar from './desktop/PlayBar'
 
 type OwnProps = {
   isMobile: boolean

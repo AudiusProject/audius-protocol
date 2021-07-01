@@ -1,8 +1,10 @@
-import { Modal, ModalProps } from '@audius/stems'
 import React from 'react'
-import { isMobile } from 'utils/clientUtil'
-import Drawer, { DrawerProps } from 'components/drawer/Drawer'
+
+import { Modal, ModalProps } from '@audius/stems'
 import cn from 'classnames'
+
+import Drawer, { DrawerProps } from 'components/drawer/Drawer'
+import { isMobile } from 'utils/clientUtil'
 
 import styles from './ModalDrawer.module.css'
 

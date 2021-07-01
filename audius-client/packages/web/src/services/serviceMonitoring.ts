@@ -1,4 +1,5 @@
 import { track } from 'store/analytics/providers/segment'
+
 import { Name } from './analytics'
 import { getRemoteVar, IntKeys } from './remote-config'
 

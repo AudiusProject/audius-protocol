@@ -1,26 +1,27 @@
 import React, { useContext, useEffect } from 'react'
+
 import { useDispatch } from 'react-redux'
 
-import Header from 'components/general/header/desktop/Header'
-import Page from 'components/general/Page'
-
-import styles from './AudioRewardsPage.module.css'
-import ExplainerTile from './components/ExplainerTile'
-import { BalanceTile, WalletTile } from './Tiles'
-import WalletModal from './WalletModal'
-import Tiers from './Tiers'
-import RewardsTile from './RewardsTile'
-import { isMobile } from 'utils/clientUtil'
-import { useMobileHeader } from 'components/general/header/mobile/hooks'
 import MobilePageContainer from 'components/general/MobilePageContainer'
-import { AUDIO_PAGE, BASE_URL, TRENDING_PAGE } from 'utils/route'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import Page from 'components/general/Page'
+import Header from 'components/general/header/desktop/Header'
+import { useMobileHeader } from 'components/general/header/mobile/hooks'
 import NavContext, {
   LeftPreset,
   RightPreset
 } from 'containers/nav/store/context'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
+import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { preloadWalletProviders } from 'store/token-dashboard/slice'
+import { isMobile } from 'utils/clientUtil'
+import { AUDIO_PAGE, BASE_URL, TRENDING_PAGE } from 'utils/route'
+
+import styles from './AudioRewardsPage.module.css'
+import RewardsTile from './RewardsTile'
+import Tiers from './Tiers'
+import { BalanceTile, WalletTile } from './Tiles'
+import WalletModal from './WalletModal'
+import ExplainerTile from './components/ExplainerTile'
 
 export const messages = {
   title: '$AUDIO & Rewards',

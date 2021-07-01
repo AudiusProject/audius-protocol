@@ -1,6 +1,7 @@
-import User from 'models/User'
 import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from '@audius/libs/src/constants'
 import { DISCOVERY_PROVIDER_TIMESTAMP } from '@audius/libs/src/services/discoveryProvider/constants'
+
+import User from 'models/User'
 
 const AUDIUS_ACCOUNT_KEY = '@audius/account'
 const AUDIUS_ACCOUNT_USER_KEY = '@audius/audius-user'

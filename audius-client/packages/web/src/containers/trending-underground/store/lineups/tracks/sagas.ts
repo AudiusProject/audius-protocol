@@ -1,16 +1,18 @@
-import { PREFIX, trendingUndergroundLineupActions } from './actions'
-import { LineupSagas } from 'store/lineup/sagas'
-import { getLineup } from './selectors'
 import { call, select } from 'redux-saga/effects'
-import { getUserId } from 'store/account/selectors'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+
 import Track, { UserTrackMetadata } from 'models/Track'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { StringKeys } from 'services/remote-config'
 import {
   getRemoteVar,
   waitForRemoteConfig
 } from 'services/remote-config/Provider'
-import { StringKeys } from 'services/remote-config'
+import { getUserId } from 'store/account/selectors'
+import { processAndCacheTracks } from 'store/cache/tracks/utils'
+import { LineupSagas } from 'store/lineup/sagas'
+
+import { PREFIX, trendingUndergroundLineupActions } from './actions'
+import { getLineup } from './selectors'
 
 function* getTrendingUnderground({
   limit,

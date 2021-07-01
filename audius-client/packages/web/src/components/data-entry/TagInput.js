@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
+
+import Tag from 'antd/lib/tag'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
-import Tag from 'antd/lib/tag'
 
+import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
+import { ReactComponent as IconSave } from 'assets/img/iconSave.svg'
 import { trimToAlphaNumeric } from 'utils/formatUtil'
 
-import { ReactComponent as IconSave } from 'assets/img/iconSave.svg'
-import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import styles from './TagInput.module.css'
 
 const isAlphaNumeric = string => {

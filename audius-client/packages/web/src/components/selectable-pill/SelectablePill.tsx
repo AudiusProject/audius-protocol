@@ -1,5 +1,7 @@
 import React from 'react'
+
 import cn from 'classnames'
+
 import { isMobile } from 'utils/clientUtil'
 
 import styles from './SelectablePill.module.css'

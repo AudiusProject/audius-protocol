@@ -1,17 +1,18 @@
 import React, { memo, useState, useEffect, useCallback } from 'react'
+
+import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import { debounce } from 'lodash'
 import PropTypes from 'prop-types'
-import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 
+import Input from 'components/data-entry/Input'
+import TextArea from 'components/data-entry/TextArea'
+import UploadArtwork from 'components/upload/UploadArtwork'
+import { useCollectionCoverArt } from 'hooks/useImageSize'
+import { SquareSizes } from 'models/common/ImageSizes'
 import * as schemas from 'schemas'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
-import UploadArtwork from 'components/upload/UploadArtwork'
-import Input from 'components/data-entry/Input'
-import TextArea from 'components/data-entry/TextArea'
 import styles from './CreatePlaylistModal.module.css'
-import { useCollectionCoverArt } from 'hooks/useImageSize'
-import { SquareSizes } from 'models/common/ImageSizes'
 
 const initialFormFields = {
   artwork: {},

@@ -1,6 +1,8 @@
 import React from 'react'
-import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
+
 import Input from 'antd/lib/input'
+
+import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
 
 import styles from './FilterInput.module.css'
 

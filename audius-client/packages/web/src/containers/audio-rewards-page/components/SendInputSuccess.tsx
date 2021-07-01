@@ -1,11 +1,12 @@
 import React from 'react'
+
 import { WalletAddress, formatWei, BNWei } from 'store/wallet/slice'
 
 import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
-import DisplayAudio from './DisplayAudio'
-import { AddressWithArrow } from './SendInputConfirmation'
-import PurpleBox from './PurpleBox'
 
+import DisplayAudio from './DisplayAudio'
+import PurpleBox from './PurpleBox'
+import { AddressWithArrow } from './SendInputConfirmation'
 import styles from './SendInputSuccess.module.css'
 import TokenHoverTooltip from './TokenHoverTooltip'
 

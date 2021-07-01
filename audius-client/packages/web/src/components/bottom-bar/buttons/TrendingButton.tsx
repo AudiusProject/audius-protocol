@@ -1,4 +1,5 @@
 import React, { memo } from 'react'
+
 import AnimatedBottomButton from './AnimatedBottomButton'
 import { ButtonProps } from './types'
 

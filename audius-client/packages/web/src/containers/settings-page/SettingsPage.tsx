@@ -1,11 +1,13 @@
 import React from 'react'
-import SettingsPageProvider from './SettingsPageProvider'
-import { connect } from 'react-redux'
-import { isMobile } from 'utils/clientUtil'
-import { AppState } from 'store/types'
 
-import MobileSettingsPage, { SubPage } from './components/mobile/SettingsPage'
+import { connect } from 'react-redux'
+
+import { AppState } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+
+import SettingsPageProvider from './SettingsPageProvider'
 import DesktopSettingsPage from './components/desktop/SettingsPage'
+import MobileSettingsPage, { SubPage } from './components/mobile/SettingsPage'
 
 type OwnProps = {
   containerRef: React.RefObject<HTMLDivElement>

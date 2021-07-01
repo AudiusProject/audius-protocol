@@ -1,10 +1,12 @@
 import React from 'react'
-import PropTypes from 'prop-types'
-import { ReactComponent as IconValidationCheck } from 'assets/img/iconValidationCheck.svg'
-import cn from 'classnames'
 
-import styles from './TaskCompletionItem.module.css'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
+
+import { ReactComponent as IconValidationCheck } from 'assets/img/iconValidationCheck.svg'
+
 import { CompletionStage } from './PropTypes'
+import styles from './TaskCompletionItem.module.css'
 
 const CompletionIcon = ({ isCompleted }) => {
   return (

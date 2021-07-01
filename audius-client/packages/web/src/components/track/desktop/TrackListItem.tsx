@@ -1,18 +1,21 @@
 import React, { memo, MouseEvent } from 'react'
+
 import cn from 'classnames'
 
+import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import ArtistPopover from 'components/artist/ArtistPopover'
 import Skeleton from 'components/general/Skeleton'
 import TablePlayButton from 'components/tracks-table/TablePlayButton'
-import ArtistPopover from 'components/artist/ArtistPopover'
 import Menu from 'containers/menu/Menu'
-import styles from './TrackListItem.module.css'
-import { formatSeconds } from 'utils/timeUtil'
-import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
-import { trackPage, profilePage } from 'utils/route'
-import { TrackTileSize } from '../types'
 import { OwnProps as TrackMenuProps } from 'containers/menu/TrackMenu'
 import { UID, ID } from 'models/common/Identifiers'
 import { EnhancedCollectionTrack } from 'store/cache/collections/selectors'
+import { trackPage, profilePage } from 'utils/route'
+import { formatSeconds } from 'utils/timeUtil'
+
+import { TrackTileSize } from '../types'
+
+import styles from './TrackListItem.module.css'
 
 const makeStrings = ({ deleted }: { deleted: boolean }) => ({
   deleted: deleted ? ` [Deleted By Artist]` : '',

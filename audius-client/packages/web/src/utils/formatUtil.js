@@ -1,5 +1,5 @@
-import numeral from 'numeral'
 import BN from 'bn.js'
+import numeral from 'numeral'
 
 /**
  * The format for counting numbers should be 4 characters if possible (3 numbers and 1 Letter) without trailing 0

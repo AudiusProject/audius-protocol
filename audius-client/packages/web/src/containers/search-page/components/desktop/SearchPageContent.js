@@ -1,13 +1,18 @@
 import React, { Component } from 'react'
-import Toast from 'components/toast/Toast'
-import Spin from 'antd/lib/spin'
-import Lineup from 'containers/lineup/Lineup'
-import Page from 'components/general/Page'
 
-import { tracksActions } from 'containers/search-page/store/lineups/tracks/actions'
+import Spin from 'antd/lib/spin'
+import { Redirect } from 'react-router'
+
+import { ReactComponent as IconBigSearch } from 'assets/img/iconBigSearch.svg'
 import Card from 'components/card/desktop/Card'
+import Page from 'components/general/Page'
+import CategoryHeader from 'components/general/header/desktop/CategoryHeader'
 import Header from 'components/general/header/desktop/Header'
+import Toast from 'components/toast/Toast'
 import CardLineup from 'containers/lineup/CardLineup'
+import Lineup from 'containers/lineup/Lineup'
+import { tracksActions } from 'containers/search-page/store/lineups/tracks/actions'
+import { Status } from 'store/types'
 import { formatCount } from 'utils/formatUtil'
 import {
   albumPage,
@@ -20,10 +25,6 @@ import {
 } from 'utils/route'
 
 import styles from './SearchPageContent.module.css'
-import { ReactComponent as IconBigSearch } from 'assets/img/iconBigSearch.svg'
-import { Status } from 'store/types'
-import { Redirect } from 'react-router'
-import CategoryHeader from 'components/general/header/desktop/CategoryHeader'
 
 const SEARCH_HEADER_MAX_WIDTH_PX = 720
 

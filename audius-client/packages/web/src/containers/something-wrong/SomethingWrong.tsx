@@ -1,21 +1,22 @@
 import React, { useCallback, useEffect } from 'react'
+
+import { Button, ButtonType } from '@audius/stems'
+import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
-import cn from 'classnames'
-import { Button, ButtonType } from '@audius/stems'
 
 import tiledBackground from 'assets/img/notFoundTiledBackround.png'
-import { AppState } from 'store/types'
-
-import styles from './SomethingWrong.module.css'
-import { HOME_PAGE, ERROR_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
-import { getTheme } from 'store/application/ui/theme/selectors'
 import Theme from 'models/Theme'
-import { isMatrix, shouldShowDark } from 'utils/theme/theme'
-import { useIsMobile } from 'utils/clientUtil'
+import { Name } from 'services/analytics'
 import { ReloadMessage } from 'services/native-mobile-interface/linking'
 import { track } from 'store/analytics/providers/segment'
-import { Name } from 'services/analytics'
+import { getTheme } from 'store/application/ui/theme/selectors'
+import { AppState } from 'store/types'
+import { useIsMobile } from 'utils/clientUtil'
+import { HOME_PAGE, ERROR_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
+import { isMatrix, shouldShowDark } from 'utils/theme/theme'
+
+import styles from './SomethingWrong.module.css'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

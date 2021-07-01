@@ -4,9 +4,10 @@ import {
   ADD_LOCAL_SAVE,
   REMOVE_LOCAL_SAVE
 } from 'containers/saved-page/store/actions'
-import { asLineup } from 'store/lineup/reducer'
-import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
 import tracksReducer from 'containers/saved-page/store/lineups/tracks/reducer'
+import { asLineup } from 'store/lineup/reducer'
+
+import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
 
 const initialState = {
   // id => uid

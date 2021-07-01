@@ -1,14 +1,17 @@
+import { select } from 'redux-saga-test-plan/matchers'
 import { call, put } from 'redux-saga/effects'
-import { ID } from 'models/common/Identifiers'
-import { Kind } from 'store/types'
+
 import { UserTrackMetadata } from 'models/Track'
-import { waitForValue } from 'utils/sagaHelpers'
-import { getTrack } from '../selectors'
-import * as cacheActions from 'store/cache/actions'
-import { processAndCacheTracks } from './processAndCacheTracks'
+import { ID } from 'models/common/Identifiers'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getUserId } from 'store/account/selectors'
-import { select } from 'redux-saga-test-plan/matchers'
+import * as cacheActions from 'store/cache/actions'
+import { Kind } from 'store/types'
+import { waitForValue } from 'utils/sagaHelpers'
+
+import { getTrack } from '../selectors'
+
+import { processAndCacheTracks } from './processAndCacheTracks'
 
 const INITIAL_FETCH_LIMIT = 6
 

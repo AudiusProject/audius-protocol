@@ -1,4 +1,13 @@
+import { select } from 'redux-saga-test-plan/matchers'
 import { all, call, put, take, takeEvery } from 'redux-saga/effects'
+
+import { Name } from 'services/analytics'
+import walletClient from 'services/wallet-client/WalletClient'
+import { fetchAccountSucceeded } from 'store/account/reducer'
+import { getAccountUser } from 'store/account/selectors'
+import { make } from 'store/analytics/actions'
+import { SETUP_BACKEND_SUCCEEDED } from 'store/backend/actions'
+import { fetchAssociatedWallets } from 'store/token-dashboard/slice'
 import {
   getBalance,
   setBalance,
@@ -12,14 +21,6 @@ import {
   BNWei,
   getLocalBalanceDidChange
 } from 'store/wallet/slice'
-import { fetchAccountSucceeded } from 'store/account/reducer'
-import walletClient from 'services/wallet-client/WalletClient'
-import { select } from 'redux-saga-test-plan/matchers'
-import { SETUP_BACKEND_SUCCEEDED } from 'store/backend/actions'
-import { make } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
-import { getAccountUser } from 'store/account/selectors'
-import { fetchAssociatedWallets } from 'store/token-dashboard/slice'
 
 // TODO: handle errors
 const errors = {

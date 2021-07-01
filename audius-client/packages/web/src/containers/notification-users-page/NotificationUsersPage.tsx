@@ -1,19 +1,21 @@
 import React, { useContext, useEffect } from 'react'
+
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-import MobilePageContainer from 'components/general/MobilePageContainer'
-import UserList from 'containers/user-list/UserList'
-import { getUserList } from './store/selectors'
-import NavContext, { LeftPreset } from 'containers/nav/store/context'
 import { Dispatch } from 'redux'
+
+import MobilePageContainer from 'components/general/MobilePageContainer'
+import NavContext, { LeftPreset } from 'containers/nav/store/context'
+import {
+  getId,
+  getPageTitle,
+  getUserList
+} from 'containers/notification-users-page/store/selectors'
+import UserList from 'containers/user-list/UserList'
+import { loadMore } from 'containers/user-list/store/actions'
 import { AppState } from 'store/types'
 
 import { setNotificationId } from './store/actions'
-import {
-  getId,
-  getPageTitle
-} from 'containers/notification-users-page/store/selectors'
-import { loadMore } from 'containers/user-list/store/actions'
 
 export const USER_LIST_TAG = 'NOTIFICATION'
 

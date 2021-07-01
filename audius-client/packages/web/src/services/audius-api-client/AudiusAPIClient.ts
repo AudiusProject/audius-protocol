@@ -1,6 +1,19 @@
+import { SearchKind } from 'containers/search-page/store/types'
 import TimeRange from 'models/TimeRange'
-import { Nullable, removeNullable } from 'utils/typeUtils'
+import { StemTrackMetadata } from 'models/Track'
 import { ID } from 'models/common/Identifiers'
+import AudiusBackend from 'services/AudiusBackend'
+import {
+  getEagerDiscprov,
+  waitForLibsInit
+} from 'services/audius-backend/eagerLoadUtils'
+import { decodeHashId, encodeHashId } from 'utils/route/hashIds'
+import { Nullable, removeNullable } from 'utils/typeUtils'
+
+import { getRemoteVar, IntKeys, StringKeys } from '../remote-config'
+
+import * as adapter from './ResponseAdapter'
+import { processSearchResults } from './helper'
 import {
   APIActivity,
   APIBlockConfirmation,
@@ -13,17 +26,6 @@ import {
   APIUser,
   OpaqueID
 } from './types'
-import * as adapter from './ResponseAdapter'
-import AudiusBackend from 'services/AudiusBackend'
-import {
-  getEagerDiscprov,
-  waitForLibsInit
-} from 'services/audius-backend/eagerLoadUtils'
-import { decodeHashId, encodeHashId } from 'utils/route/hashIds'
-import { StemTrackMetadata } from 'models/Track'
-import { SearchKind } from 'containers/search-page/store/types'
-import { processSearchResults } from './helper'
-import { getRemoteVar, IntKeys, StringKeys } from '../remote-config'
 
 declare global {
   interface Window {

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+
 import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'
 
 enum Modifier {

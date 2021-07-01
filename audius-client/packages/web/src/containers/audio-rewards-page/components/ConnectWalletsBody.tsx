@@ -1,21 +1,24 @@
 import React, { useCallback } from 'react'
-import styles from './ConnectWalletsBody.module.css'
-import cn from 'classnames'
+
 import { Button, ButtonType } from '@audius/stems'
+import cn from 'classnames'
+import { useDispatch } from 'react-redux'
+
 import { ReactComponent as IconCopy } from 'assets/img/iconCopy.svg'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemoveTrack.svg'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { useSelector } from 'utils/reducer'
+import Toast from 'components/toast/Toast'
+import { ComponentPlacement, MountPlacement } from 'components/types'
 import {
   connectNewWallet,
   getAssociatedWallets,
   requestRemoveWallet,
   getRemoveWallet
 } from 'store/token-dashboard/slice'
-import { useDispatch } from 'react-redux'
-import Toast from 'components/toast/Toast'
-import { ComponentPlacement, MountPlacement } from 'components/types'
 import { copyToClipboard } from 'utils/clipboardUtil'
+import { useSelector } from 'utils/reducer'
+
+import styles from './ConnectWalletsBody.module.css'
 
 const WALLET_COUNT_LIMIT = 5
 const COPIED_TOAST_TIMEOUT = 2000

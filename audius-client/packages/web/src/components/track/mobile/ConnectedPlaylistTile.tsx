@@ -1,39 +1,16 @@
 import React, { memo, useCallback, useMemo } from 'react'
+
+import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
-import { push as pushRoute } from 'connected-react-router'
 
-import PlaylistTile from './PlaylistTile'
 import { PlaylistTileProps } from 'components/track/types'
-import { ID } from 'models/common/Identifiers'
-import {
-  saveCollection,
-  unsaveCollection,
-  repostCollection,
-  undoRepostCollection,
-  shareCollection
-} from 'store/social/collections/actions'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'store/application/ui/mobileOverflowModal/types'
-import { open } from 'store/application/ui/mobileOverflowModal/actions'
-import { AppState } from 'store/types'
-
-import {
-  albumPage,
-  playlistPage,
-  profilePage,
-  REPOSTING_USERS_ROUTE,
-  FAVORITING_USERS_ROUTE
-} from 'utils/route'
+import { setFavorite } from 'containers/favorites-page/store/actions'
 import { setRepost } from 'containers/reposts-page/store/actions'
 import { RepostType } from 'containers/reposts-page/store/types'
-import { getUserId } from 'store/account/selectors'
-import { setFavorite } from 'containers/favorites-page/store/actions'
 import { FavoriteType } from 'models/Favorite'
-import { isMatrix, shouldShowDark } from 'utils/theme/theme'
-import { getTheme } from 'store/application/ui/theme/selectors'
+import Track from 'models/Track'
+import { ID } from 'models/common/Identifiers'
 import {
   FavoriteSource,
   RepostSource,
@@ -41,15 +18,40 @@ import {
   PlaybackSource,
   ShareSource
 } from 'services/analytics'
+import { getUserId } from 'store/account/selectors'
 import { useRecord, make } from 'store/analytics/actions'
-import { getUserFromCollection } from 'store/cache/users/selectors'
+import { open } from 'store/application/ui/mobileOverflowModal/actions'
+import {
+  OverflowAction,
+  OverflowSource
+} from 'store/application/ui/mobileOverflowModal/types'
+import { getTheme } from 'store/application/ui/theme/selectors'
 import {
   getCollection,
   getTracksFromCollection
 } from 'store/cache/collections/selectors'
+import { getUserFromCollection } from 'store/cache/users/selectors'
 import { getUid, getBuffering, getPlaying } from 'store/player/selectors'
-import Track from 'models/Track'
+import {
+  saveCollection,
+  unsaveCollection,
+  repostCollection,
+  undoRepostCollection,
+  shareCollection
+} from 'store/social/collections/actions'
+import { AppState } from 'store/types'
+import {
+  albumPage,
+  playlistPage,
+  profilePage,
+  REPOSTING_USERS_ROUTE,
+  FAVORITING_USERS_ROUTE
+} from 'utils/route'
+import { isMatrix, shouldShowDark } from 'utils/theme/theme'
+
 import { getCollectionWithFallback, getUserWithFallback } from '../helpers'
+
+import PlaylistTile from './PlaylistTile'
 
 type ConnectedPlaylistTileProps = PlaylistTileProps &
   ReturnType<typeof mapStateToProps> &

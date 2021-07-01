@@ -1,9 +1,10 @@
-import { UserTrackMetadata } from 'models/Track'
 import { UserCollectionMetadata } from 'models/Collection'
+import { UserTrackMetadata } from 'models/Track'
 import { UserMetadata } from 'models/User'
+import { removeNullable } from 'utils/typeUtils'
+
 import * as adapter from './ResponseAdapter'
 import { APIResponse, APISearch } from './types'
-import { removeNullable } from 'utils/typeUtils'
 
 const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50

@@ -1,15 +1,17 @@
 import React, { useCallback } from 'react'
-import cn from 'classnames'
 
-import styles from './RewardsBanner.module.css'
 import { IconArrow, IconCrown } from '@audius/stems'
-import { isMobile } from 'utils/clientUtil'
-import { useModalState } from 'hooks/useModalState'
+import cn from 'classnames'
 import { useDispatch } from 'react-redux'
+
 import {
   setTrendingRewardsModalType,
   TrendingRewardsModalType
 } from 'containers/audio-rewards-page/store/slice'
+import { useModalState } from 'hooks/useModalState'
+import { isMobile } from 'utils/clientUtil'
+
+import styles from './RewardsBanner.module.css'
 
 const messages = {
   rewards: '$AUDIO REWARDS',

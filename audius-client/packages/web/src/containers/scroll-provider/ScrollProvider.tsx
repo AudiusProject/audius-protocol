@@ -1,8 +1,10 @@
 import React, { memo, createContext, useCallback } from 'react'
-import { useIsMobile } from 'utils/clientUtil'
-import useInstanceVar from 'hooks/useInstanceVar'
-import { TRACK_PAGE, NOTIFICATION_PAGE } from 'utils/route'
+
 import { matchPath } from 'react-router-dom'
+
+import useInstanceVar from 'hooks/useInstanceVar'
+import { useIsMobile } from 'utils/clientUtil'
+import { TRACK_PAGE, NOTIFICATION_PAGE } from 'utils/route'
 
 type ScrollRecords = { [route: string]: number }
 

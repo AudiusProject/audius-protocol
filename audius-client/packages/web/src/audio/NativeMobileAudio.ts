@@ -1,4 +1,3 @@
-import { generateM3U8Variants } from 'utils/hlsUtil'
 import { TrackSegment } from 'models/Track'
 import {
   PlayTrackMessage,
@@ -7,6 +6,7 @@ import {
   SeekMessage
 } from 'services/native-mobile-interface/player'
 import { Info } from 'store/player/types'
+import { generateM3U8Variants } from 'utils/hlsUtil'
 
 const PUBLIC_IPFS_GATEWAY = 'http://cloudflare-ipfs.com/ipfs/'
 

@@ -1,8 +1,11 @@
 import React from 'react'
-import ReachabilityBarContainer from './components/ReachabilityBarContainer'
-import { AppState } from 'store/types'
-import { getIsReachable } from 'store/reachability/selectors'
+
 import { connect } from 'react-redux'
+
+import { getIsReachable } from 'store/reachability/selectors'
+import { AppState } from 'store/types'
+
+import ReachabilityBarContainer from './components/ReachabilityBarContainer'
 
 type ConnectedReachabilityBarProps = ReturnType<typeof mapStateToProps>
 

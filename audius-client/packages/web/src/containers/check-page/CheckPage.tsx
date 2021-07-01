@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+
 import { push as pushRoute } from 'connected-react-router'
+import { useDispatch, useSelector } from 'react-redux'
+
+import AudiusBackend from 'services/AudiusBackend'
 import { getAccountUser } from 'store/account/selectors'
 import { SIGN_IN_PAGE, TRENDING_PAGE } from 'utils/route'
-import AudiusBackend from 'services/AudiusBackend'
 
 import './CheckPage.module.css'
 

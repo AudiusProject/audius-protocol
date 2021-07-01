@@ -1,20 +1,30 @@
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { push as pushRoute } from 'connected-react-router'
-import { trackPage, profilePage } from 'utils/route'
+
 import { Scrubber } from '@audius/stems'
+import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
 
-import { RepeatMode } from 'store/queue/types'
-
+import FavoriteButton from 'components/general/FavoriteButton'
+import RepostButton from 'components/general/RepostButton'
+import PlayButton from 'components/play-bar/PlayButton'
+import VolumeBar from 'components/play-bar/VolumeBar'
+import NextButtonProvider from 'components/play-bar/next-button/NextButtonProvider'
+import PreviousButtonProvider from 'components/play-bar/previous-button/PreviousButtonProvider'
+import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
+import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
+import Tooltip from 'components/tooltip/Tooltip'
 import {
-  repostTrack,
-  undoRepostTrack,
-  saveTrack,
-  unsaveTrack
-} from 'store/social/tracks/actions'
-import { seek, reset } from 'store/player/slice'
-import { play, pause, next, previous, repeat, shuffle } from 'store/queue/slice'
-
+  RepostSource,
+  FavoriteSource,
+  Name,
+  PlaybackSource
+} from 'services/analytics'
+import { getUserId } from 'store/account/selectors'
+import { make } from 'store/analytics/actions'
+import { getTheme } from 'store/application/ui/theme/selectors'
+import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
+import { getLineupHasTracks } from 'store/lineup/selectors'
 import {
   getAudio,
   getPlaying,
@@ -22,36 +32,23 @@ import {
   getUid as getPlayingUid,
   getBuffering
 } from 'store/player/selectors'
+import { seek, reset } from 'store/player/slice'
 import { makeGetCurrent } from 'store/queue/selectors'
-import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
-import { getLineupHasTracks } from 'store/lineup/selectors'
-import { getUserId } from 'store/account/selectors'
-import { getTheme } from 'store/application/ui/theme/selectors'
-
-import PlayingTrackInfo from './components/PlayingTrackInfo'
-import VolumeBar from 'components/play-bar/VolumeBar'
-import PlayButton from 'components/play-bar/PlayButton'
-import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
-import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
-import NextButtonProvider from 'components/play-bar/next-button/NextButtonProvider'
-import PreviousButtonProvider from 'components/play-bar/previous-button/PreviousButtonProvider'
-import RepostButton from 'components/general/RepostButton'
-import FavoriteButton from 'components/general/FavoriteButton'
-import Tooltip from 'components/tooltip/Tooltip'
-import cn from 'classnames'
+import { play, pause, next, previous, repeat, shuffle } from 'store/queue/slice'
+import { RepeatMode } from 'store/queue/types'
+import {
+  repostTrack,
+  undoRepostTrack,
+  saveTrack,
+  unsaveTrack
+} from 'store/social/tracks/actions'
+import { Genre } from 'utils/genres'
+import { setupHotkeys } from 'utils/hotkeyUtil'
+import { trackPage, profilePage } from 'utils/route'
+import { isMatrix, shouldShowDark } from 'utils/theme/theme'
 
 import styles from './PlayBar.module.css'
-
-import { setupHotkeys } from 'utils/hotkeyUtil'
-import { isMatrix, shouldShowDark } from 'utils/theme/theme'
-import {
-  RepostSource,
-  FavoriteSource,
-  Name,
-  PlaybackSource
-} from 'services/analytics'
-import { make } from 'store/analytics/actions'
-import { Genre } from 'utils/genres'
+import PlayingTrackInfo from './components/PlayingTrackInfo'
 
 const VOLUME_GRANULARITY = 100.0
 const SEEK_INTERVAL = 200

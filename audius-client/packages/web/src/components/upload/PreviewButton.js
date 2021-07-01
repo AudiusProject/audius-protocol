@@ -1,8 +1,9 @@
 import React, { Component } from 'react'
+
 import PropTypes from 'prop-types'
 
-import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
 import { ReactComponent as IconStop } from 'assets/img/iconStop.svg'
+import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
 
 import styles from './PreviewButton.module.css'
 

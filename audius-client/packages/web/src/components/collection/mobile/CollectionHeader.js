@@ -1,27 +1,27 @@
 import React, { memo, useCallback } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
-
-import { formatSecondsAsText, formatDate } from 'utils/timeUtil'
-import Skeleton from 'antd/lib/skeleton'
 
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
+import Skeleton from 'antd/lib/skeleton'
+import cn from 'classnames'
+import Linkify from 'linkifyjs/react'
+import PropTypes from 'prop-types'
 
-import styles from './CollectionHeader.module.css'
-import { useCollectionCoverArt } from 'hooks/useImageSize'
-import { SquareSizes } from 'models/common/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { formatCount, squashNewLines } from 'utils/formatUtil'
 import ActionButtonRow from 'containers/track-page/components/mobile/ActionButtonRow'
 import StatsButtonRow from 'containers/track-page/components/mobile/StatsButtonRow'
-import { OverflowAction } from 'store/application/ui/mobileOverflowModal/types'
-import Linkify from 'linkifyjs/react'
-import { isDarkMode } from 'utils/theme/theme'
-import { isShareToastDisabled } from 'utils/clipboardUtil'
-import { make, useRecord } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
-import { Variant } from 'models/Collection'
 import UserBadges from 'containers/user-badges/UserBadges'
+import { useCollectionCoverArt } from 'hooks/useImageSize'
+import { Variant } from 'models/Collection'
+import { SquareSizes } from 'models/common/ImageSizes'
+import { Name } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
+import { OverflowAction } from 'store/application/ui/mobileOverflowModal/types'
+import { isShareToastDisabled } from 'utils/clipboardUtil'
+import { formatCount, squashNewLines } from 'utils/formatUtil'
+import { isDarkMode } from 'utils/theme/theme'
+import { formatSecondsAsText, formatDate } from 'utils/timeUtil'
+
+import styles from './CollectionHeader.module.css'
 
 const messages = {
   privatePlaylist: 'Private Playlist',

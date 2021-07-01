@@ -1,7 +1,8 @@
 import React from 'react'
+
+import { goBack, goForward } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
-import { goBack, goForward } from 'connected-react-router'
 
 import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 

@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import cn from 'classnames'
 
-import HorizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color@2x.png'
 import {
   IconExplore,
   IconTrending,
   IconCampFire,
   IconKebabHorizontal
 } from '@audius/stems'
+import cn from 'classnames'
+
+import HorizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color@2x.png'
 import {
   pushWindowRoute,
   handleClickRoute,

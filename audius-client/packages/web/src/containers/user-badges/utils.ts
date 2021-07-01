@@ -1,3 +1,7 @@
+import BN from 'bn.js'
+import { createSelector } from 'reselect'
+
+import User from 'models/User'
 import { ID } from 'models/common/Identifiers'
 import { getAccountUser } from 'store/account/selectors'
 import { getUser } from 'store/cache/users/selectors'
@@ -9,9 +13,6 @@ import {
   StringWei,
   stringWeiToAudioBN
 } from 'store/wallet/slice'
-import BN from 'bn.js'
-import { createSelector } from 'reselect'
-import User from 'models/User'
 
 export type BadgeTier = 'none' | 'bronze' | 'silver' | 'gold' | 'platinum'
 

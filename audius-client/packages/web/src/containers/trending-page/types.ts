@@ -1,9 +1,8 @@
-import { ID, UID } from 'models/common/Identifiers'
 import TimeRange from 'models/TimeRange'
-import User from 'models/User'
-
-import { Lineup } from 'models/common/Lineup'
 import Track from 'models/Track'
+import User from 'models/User'
+import { ID, UID } from 'models/common/Identifiers'
+import { Lineup } from 'models/common/Lineup'
 
 type ExtraTrendingLineupProps = {}
 

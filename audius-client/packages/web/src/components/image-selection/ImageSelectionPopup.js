@@ -1,18 +1,17 @@
 import React, { useState, useCallback, useRef } from 'react'
-import PropTypes from 'prop-types'
+
 import { Button, ButtonType } from '@audius/stems'
-
-import RandomImage from 'services/RandomImage'
-
-import Popup from 'components/general/Popup'
-import TabSlider from 'components/data-entry/TabSlider'
-import Dropzone from 'components/upload/Dropzone'
-import InvalidFileType from 'components/upload/InvalidFileType'
+import PropTypes from 'prop-types'
 
 import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
+import TabSlider from 'components/data-entry/TabSlider'
+import Popup from 'components/general/Popup'
+import Dropzone from 'components/upload/Dropzone'
+import InvalidFileType from 'components/upload/InvalidFileType'
+import RandomImage from 'services/RandomImage'
 
-import { ImageSelectionProps, ImageSelectionDefaults } from './PropTypes'
 import styles from './ImageSelectionPopup.module.css'
+import { ImageSelectionProps, ImageSelectionDefaults } from './PropTypes'
 
 const POPULAR_TERMS = ['neon', 'space', 'beach', 'nature', 'abstract']
 

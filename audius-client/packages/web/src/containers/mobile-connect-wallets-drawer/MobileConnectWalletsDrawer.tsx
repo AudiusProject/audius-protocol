@@ -1,11 +1,11 @@
 import React from 'react'
-import { useSelector } from 'utils/reducer'
-
-import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
 
 import Drawer from 'components/drawer/Drawer'
-import styles from './MobileConnectWalletsDrawer.module.css'
+import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
 import { getModalVisibility } from 'store/application/ui/modals/slice'
+import { useSelector } from 'utils/reducer'
+
+import styles from './MobileConnectWalletsDrawer.module.css'
 
 const messages = {
   title: 'Connect Wallets',

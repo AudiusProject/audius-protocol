@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
+
 import { Button, ButtonType, ButtonSize, IconFollow } from '@audius/stems'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
+
+import UserCard from 'components/card/UserCard'
 
 import styles from './FollowUsers.module.css'
-import UserCard from 'components/card/UserCard'
 
 const messages = {
   cta: `Let’s fix that by following some of these artists!`

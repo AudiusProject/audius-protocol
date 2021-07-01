@@ -1,4 +1,5 @@
 import { AppState } from 'store/types'
+
 import { SmartCollectionVariant } from '../types'
 
 const getBaseState = (state: AppState) =>

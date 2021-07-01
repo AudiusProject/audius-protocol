@@ -1,9 +1,9 @@
 import Theme from 'models/Theme'
+import { getIsIOS } from 'utils/browser'
 
 import DarkTheme from './dark'
 import DefaultTheme from './default'
 import MatrixTheme from './matrix'
-import { getIsIOS } from 'utils/browser'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { connect } from 'react-redux'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
-
-import { openModal, fetchServices } from './store/slice'
-import { getSelectedServices } from './store/selectors'
-import { trimServiceName } from './utils'
-
-import Tooltip from 'components/tooltip/Tooltip'
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 
 import { ReactComponent as IconInfo } from 'assets/img/iconInfo.svg'
+import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './SelectedServices.module.css'
+import { getSelectedServices } from './store/selectors'
+import { openModal, fetchServices } from './store/slice'
+import { trimServiceName } from './utils'
 
 const ServiceName = props => {
   const trimmedName = trimServiceName(props.name)

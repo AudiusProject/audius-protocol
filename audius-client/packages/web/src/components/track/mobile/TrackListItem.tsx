@@ -1,21 +1,23 @@
-import cn from 'classnames'
 import React, { memo } from 'react'
+
 import { IconKebabHorizontal } from '@audius/stems'
+import cn from 'classnames'
+import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
 import { ReactComponent as IconHeart } from 'assets/img/iconHeart.svg'
+import { ReactComponent as IconRemoveTrack } from 'assets/img/iconRemoveTrack.svg'
 import { ReactComponent as IconPause } from 'assets/img/pbIconPause.svg'
 import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
-import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
-import { ReactComponent as IconRemoveTrack } from 'assets/img/iconRemoveTrack.svg'
+import IconButton from 'components/general/IconButton'
 import TablePlayButton from 'components/tracks-table/TablePlayButton'
+import UserBadges from 'containers/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useImageSize'
 import { ID } from 'models/common/Identifiers'
 import { CoverArtSizes, SquareSizes } from 'models/common/ImageSizes'
-import Lottie from 'react-lottie'
+
 import styles from './TrackListItem.module.css'
-import IconButton from 'components/general/IconButton'
-import UserBadges from 'containers/user-badges/UserBadges'
 
 export enum TrackItemAction {
   Save = 'save',

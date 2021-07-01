@@ -1,9 +1,5 @@
 import React, { PureComponent, useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
-import Linkify from 'linkifyjs/react'
-import Input from 'antd/lib/input'
-import Spin from 'antd/lib/spin'
+
 import {
   Button,
   ButtonType,
@@ -16,25 +12,29 @@ import {
   IconPencil,
   IconRocket
 } from '@audius/stems'
-
-import { formatSecondsAsText, formatDate } from 'utils/timeUtil'
-
-import InfoLabel from 'components/track/InfoLabel'
-import ArtistPopover from 'components/artist/ArtistPopover'
-import Toast from 'components/toast/Toast'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import Skeleton from 'components/general/Skeleton'
+import Input from 'antd/lib/input'
+import Spin from 'antd/lib/spin'
+import cn from 'classnames'
+import Linkify from 'linkifyjs/react'
+import PropTypes from 'prop-types'
 
 import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
-import styles from './CollectionHeader.module.css'
+import ArtistPopover from 'components/artist/ArtistPopover'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import Skeleton from 'components/general/Skeleton'
+import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
+import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
+import InfoLabel from 'components/track/InfoLabel'
+import Menu from 'containers/menu/Menu'
+import UserBadges from 'containers/user-badges/UserBadges'
 import { useCollectionCoverArt } from 'hooks/useImageSize'
+import { Variant } from 'models/Collection'
 import { SquareSizes } from 'models/common/ImageSizes'
 import { squashNewLines } from 'utils/formatUtil'
-import Menu from 'containers/menu/Menu'
-import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
-import { Variant } from 'models/Collection'
-import UserBadges from 'containers/user-badges/UserBadges'
+import { formatSecondsAsText, formatDate } from 'utils/timeUtil'
+
+import styles from './CollectionHeader.module.css'
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1148,

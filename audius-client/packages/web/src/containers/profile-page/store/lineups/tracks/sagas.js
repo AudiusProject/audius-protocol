@@ -2,26 +2,27 @@ import { all, call, select, takeEvery, put } from 'redux-saga/effects'
 
 import {
   PREFIX,
-  tracksActions
+  tracksActions,
+  tracksActions as lineupActions
 } from 'containers/profile-page/store/lineups/tracks/actions'
 import {
   getProfileUserId,
   getProfileTracksLineup,
   getProfileUserHandle
 } from 'containers/profile-page/store/selectors'
-import { LineupSagas } from 'store/lineup/sagas'
-import { getTrack } from 'store/cache/tracks/selectors'
-import { DELETE_TRACK } from 'store/cache/tracks/actions'
-import { tracksActions as lineupActions } from './actions'
-import { SET_ARTIST_PICK } from 'store/social/tracks/actions'
-import { retrieveTracks } from 'store/cache/tracks/utils'
-
 import { getUserId } from 'store/account/selectors'
-import { retrieveUserTracks } from './retrieveUserTracks'
-import { waitForValue } from 'utils/sagaHelpers'
+import { DELETE_TRACK } from 'store/cache/tracks/actions'
+import { getTrack } from 'store/cache/tracks/selectors'
+import { retrieveTracks } from 'store/cache/tracks/utils'
 import { getUser } from 'store/cache/users/selectors'
-import { TracksSortMode } from '../../types'
+import { LineupSagas } from 'store/lineup/sagas'
+import { SET_ARTIST_PICK } from 'store/social/tracks/actions'
 import { Kind } from 'store/types'
+import { waitForValue } from 'utils/sagaHelpers'
+
+import { TracksSortMode } from '../../types'
+
+import { retrieveUserTracks } from './retrieveUserTracks'
 
 function* getTracks({ offset, limit, payload }) {
   const handle = yield select(getProfileUserHandle)

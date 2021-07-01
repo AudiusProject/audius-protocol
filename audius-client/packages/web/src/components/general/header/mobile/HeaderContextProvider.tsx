@@ -6,9 +6,11 @@ import React, {
   useEffect,
   useContext
 } from 'react'
-import { useIsMobile } from 'utils/clientUtil'
+
 import { useLocation } from 'react-router-dom'
+
 import useInstanceVar from 'hooks/useInstanceVar'
+import { useIsMobile } from 'utils/clientUtil'
 
 type HeaderContextProps = {
   header: ReactNode

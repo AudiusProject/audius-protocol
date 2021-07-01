@@ -1,7 +1,9 @@
 import { call, put, takeLatest, select, all } from 'redux-saga/effects'
+
 import * as userListActions from 'containers/user-list/store/actions'
-import { FetchUserIdsSaga, UserListStoreState } from './types'
 import { AppState } from 'store/types'
+
+import { FetchUserIdsSaga, UserListStoreState } from './types'
 
 // Factory for creating UserList sagas that listen to a particular tag,
 // call and arbitrary `fetchUsers` method, and handle errors via an `errorDispatcher` function.

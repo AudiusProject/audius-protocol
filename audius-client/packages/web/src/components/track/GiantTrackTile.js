@@ -1,8 +1,5 @@
 import React, { PureComponent } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
-import Linkify from 'linkifyjs/react'
-import Spin from 'antd/lib/spin'
+
 import {
   Button,
   ButtonType,
@@ -14,27 +11,30 @@ import {
   IconPlay,
   IconKebabHorizontal
 } from '@audius/stems'
+import Spin from 'antd/lib/spin'
+import cn from 'classnames'
+import Linkify from 'linkifyjs/react'
+import PropTypes from 'prop-types'
 
-import Badge from './Badge'
-import InfoLabel from './InfoLabel'
-import Tag from './Tag'
-import Menu from 'containers/menu/Menu'
 import ArtistPopover from 'components/artist/ArtistPopover'
-import Toast from 'components/toast/Toast'
-
-import { formatDate, formatSeconds } from 'utils/timeUtil'
-import { squashNewLines } from 'utils/formatUtil'
-import { moodMap } from 'utils/moods'
-import Tooltip from 'components/tooltip/Tooltip'
-import HiddenTrackHeader from 'containers/track-page/components/HiddenTrackHeader'
-
-import styles from './GiantTrackTile.module.css'
-import GiantArtwork from './GiantArtwork'
-import { getCannonicalName } from 'utils/genres'
 import Skeleton from 'components/general/Skeleton'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
+import Toast from 'components/toast/Toast'
+import Tooltip from 'components/tooltip/Tooltip'
 import DownloadButtons from 'containers/download-buttons/DownloadButtons'
+import Menu from 'containers/menu/Menu'
+import HiddenTrackHeader from 'containers/track-page/components/HiddenTrackHeader'
 import UserBadges from 'containers/user-badges/UserBadges'
+import { squashNewLines } from 'utils/formatUtil'
+import { getCannonicalName } from 'utils/genres'
+import { moodMap } from 'utils/moods'
+import { formatDate, formatSeconds } from 'utils/timeUtil'
+
+import Badge from './Badge'
+import GiantArtwork from './GiantArtwork'
+import styles from './GiantTrackTile.module.css'
+import InfoLabel from './InfoLabel'
+import Tag from './Tag'
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,

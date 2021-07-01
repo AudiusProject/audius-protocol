@@ -1,11 +1,13 @@
+import { UserCollectionMetadata, Variant } from 'models/Collection'
 import Favorite from 'models/Favorite'
-import { ID } from 'models/common/Identifiers'
 import Repost from 'models/Repost'
 import { Remix, StemTrackMetadata, UserTrackMetadata } from 'models/Track'
-import { UserCollectionMetadata, Variant } from 'models/Collection'
 import { UserMetadata } from 'models/User'
+import { ID } from 'models/common/Identifiers'
+import { StringWei } from 'store/wallet/slice'
 import { decodeHashId } from 'utils/route/hashIds'
 import { removeNullable } from 'utils/typeUtils'
+
 import {
   APIActivity,
   APIFavorite,
@@ -22,7 +24,6 @@ import {
   APISearchAutocomplete,
   APISearchPlaylist
 } from './types'
-import { StringWei } from 'store/wallet/slice'
 
 export const makeUser = (
   user: APISearchUser | APIUser

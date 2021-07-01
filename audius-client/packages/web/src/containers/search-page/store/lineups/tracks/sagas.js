@@ -1,21 +1,22 @@
 import { select, all, call } from 'redux-saga/effects'
 
-import { getTracks } from 'store/cache/tracks/selectors'
-import { PREFIX, tracksActions } from './actions'
-import { LineupSagas } from 'store/lineup/sagas'
-import { getSearchResultsPageTracks } from 'containers/search-page/store/selectors'
-import { SearchKind } from 'containers/search-page/store/types'
 import {
   getCategory,
   getQuery,
   isTagSearch,
   getSearchTag
 } from 'containers/search-page/helpers'
-import { isMobile } from 'utils/clientUtil'
 import {
   getSearchResults,
   getTagSearchResults
 } from 'containers/search-page/store/sagas'
+import { getSearchResultsPageTracks } from 'containers/search-page/store/selectors'
+import { SearchKind } from 'containers/search-page/store/types'
+import { getTracks } from 'store/cache/tracks/selectors'
+import { LineupSagas } from 'store/lineup/sagas'
+import { isMobile } from 'utils/clientUtil'
+
+import { PREFIX, tracksActions } from './actions'
 
 function* getSearchPageResultsTracks({ offset, limit, payload }) {
   const category = getCategory()

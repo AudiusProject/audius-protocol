@@ -1,17 +1,17 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import numeral from 'numeral'
 
-import PreviewButton from 'components/upload/PreviewButton'
+import numeral from 'numeral'
+import PropTypes from 'prop-types'
 
 import iconFileAiff from 'assets/img/iconFileAiff.svg'
 import iconFileFlac from 'assets/img/iconFileFlac.svg'
 import iconFileMp3 from 'assets/img/iconFileMp3.svg'
 import iconFileOgg from 'assets/img/iconFileOgg.svg'
-import iconFileWav from 'assets/img/iconFileWav.svg'
 import iconFileUnknown from 'assets/img/iconFileUnknown.svg'
-
+import iconFileWav from 'assets/img/iconFileWav.svg'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
+import PreviewButton from 'components/upload/PreviewButton'
+
 import styles from './TrackPreview.module.css'
 
 const supportsPreview = new Set([

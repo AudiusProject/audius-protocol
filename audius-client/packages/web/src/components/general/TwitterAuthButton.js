@@ -1,9 +1,11 @@
 import React from 'react'
+
 import PropTypes from 'prop-types'
-import TwitterAuth from './TwitterAuth'
-import TwitterButton from './TwitterButton'
 
 import { IDENTITY_SERVICE } from 'services/AudiusBackend'
+
+import TwitterAuth from './TwitterAuth'
+import TwitterButton from './TwitterButton'
 
 const TwitterAuthButton = props => {
   return (

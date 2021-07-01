@@ -1,13 +1,14 @@
 import React, { memo, useContext } from 'react'
 
-import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
-import { isShareToastDisabled } from 'utils/clipboardUtil'
-import styles from './BottomButtons.module.css'
 import FavoriteButton from 'components/general/alt-button/FavoriteButton'
+import MoreButton from 'components/general/alt-button/MoreButton'
 import RepostButton from 'components/general/alt-button/RepostButton'
 import ShareButton from 'components/general/alt-button/ShareButton'
-import MoreButton from 'components/general/alt-button/MoreButton'
 import { ToastContext } from 'components/toast/ToastContext'
+import { isShareToastDisabled } from 'utils/clipboardUtil'
+import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
+
+import styles from './BottomButtons.module.css'
 
 type BottomButtonsProps = {
   hasSaved: boolean

@@ -1,16 +1,18 @@
 import React, { memo } from 'react'
-import { Dispatch } from 'redux'
-import { ID } from 'models/common/Identifiers'
-import { connect } from 'react-redux'
-import { AppState } from 'store/types'
-import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 
-import styles from './PinTrackConfirmation.module.css'
-import { setArtistPick, unsetArtistPick } from 'store/social/tracks/actions'
+import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+
+import { ID } from 'models/common/Identifiers'
 import { getAccountUser } from 'store/account/selectors'
 import { cancelSetAsArtistPick } from 'store/application/ui/setAsArtistPickConfirmation/actions'
-import { PinTrackAction } from 'store/application/ui/setAsArtistPickConfirmation/types'
 import { getSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/selectors'
+import { PinTrackAction } from 'store/application/ui/setAsArtistPickConfirmation/types'
+import { setArtistPick, unsetArtistPick } from 'store/social/tracks/actions'
+import { AppState } from 'store/types'
+
+import styles from './PinTrackConfirmation.module.css'
 
 type PinTrackConfirmationProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>

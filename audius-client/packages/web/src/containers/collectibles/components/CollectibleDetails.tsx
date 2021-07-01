@@ -1,20 +1,22 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import cn from 'classnames'
+
 import { Modal, IconLink } from '@audius/stems'
+import cn from 'classnames'
+
+import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
+import { ReactComponent as IconMute } from 'assets/img/iconVolume0.svg'
+import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
+import Drawer from 'components/drawer/Drawer'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
+import PreloadImage from 'components/preload-image/PreloadImage'
 import {
   Collectible,
   CollectibleType
 } from 'containers/collectibles/components//types'
-import styles from 'containers/collectibles/components/CollectiblesPage.module.css'
-import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
-import { ReactComponent as IconMute } from 'assets/img/iconVolume0.svg'
-import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
-import { formatDateWithTimezoneOffset } from 'utils/timeUtil'
-import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
-import PreloadImage from 'components/preload-image/PreloadImage'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import Drawer from 'components/drawer/Drawer'
 import { collectibleMessages } from 'containers/collectibles/components/CollectiblesPage'
+import styles from 'containers/collectibles/components/CollectiblesPage.module.css'
+import { formatDateWithTimezoneOffset } from 'utils/timeUtil'
 
 const CollectibleMedia: React.FC<{
   collectible: Collectible

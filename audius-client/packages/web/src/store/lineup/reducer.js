@@ -10,7 +10,6 @@ import {
   SET_PAGE,
   stripPrefix
 } from 'store/lineup/actions'
-
 import { Status } from 'store/types'
 
 export const initialLineupState = {

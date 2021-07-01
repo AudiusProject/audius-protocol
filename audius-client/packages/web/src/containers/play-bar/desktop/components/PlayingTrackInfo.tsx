@@ -1,16 +1,17 @@
 import React, { useEffect } from 'react'
+
 import cn from 'classnames'
 import { animated, useSpring } from 'react-spring'
 
-import Draggable from 'containers/dragndrop/Draggable'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import Draggable from 'containers/dragndrop/Draggable'
+import UserBadges from 'containers/user-badges/UserBadges'
+import { useUserProfilePicture } from 'hooks/useImageSize'
 import { ID } from 'models/common/Identifiers'
 import { ProfilePictureSizes, SquareSizes } from 'models/common/ImageSizes'
 import { fullTrackPage } from 'utils/route'
 
-import { useUserProfilePicture } from 'hooks/useImageSize'
 import styles from './PlayingTrackInfo.module.css'
-import UserBadges from 'containers/user-badges/UserBadges'
 
 interface PlayingTrackInfoProps {
   trackId: number

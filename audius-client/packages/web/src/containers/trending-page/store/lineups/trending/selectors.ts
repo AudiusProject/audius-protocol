@@ -1,5 +1,5 @@
-import { LineupStateTrack } from 'models/common/Lineup'
 import TimeRange from 'models/TimeRange'
+import { LineupStateTrack } from 'models/common/Lineup'
 import { AppState } from 'store/types'
 
 export const getTrendingEntries = (timeRange: TimeRange) => (

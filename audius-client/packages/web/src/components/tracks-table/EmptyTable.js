@@ -1,6 +1,7 @@
 import React from 'react'
-import PropTypes from 'prop-types'
+
 import { Button, ButtonType } from '@audius/stems'
+import PropTypes from 'prop-types'
 
 import styles from './EmptyTable.module.css'
 

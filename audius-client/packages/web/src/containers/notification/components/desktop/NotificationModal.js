@@ -1,10 +1,12 @@
 import React from 'react'
-import PropTypes from 'prop-types'
-import SimpleBar from 'simplebar-react'
+
 import AntModal from 'antd/lib/modal'
+import PropTypes from 'prop-types'
+import ReactMarkdown from 'react-markdown'
+import SimpleBar from 'simplebar-react'
+
 import { ReactComponent as IconAnnouncementUnread } from 'assets/img/iconAnnouncementUnread.svg'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
-import ReactMarkdown from 'react-markdown'
 
 import styles from './NotificationModal.module.css'
 

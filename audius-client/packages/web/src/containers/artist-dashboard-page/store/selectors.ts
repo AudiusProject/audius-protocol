@@ -1,6 +1,7 @@
 import { createSelector } from 'reselect'
-import { AppState } from 'store/types'
+
 import { getAccountUser } from 'store/account/selectors'
+import { AppState } from 'store/types'
 
 // Dashboard selectors
 export const getDashboardStatus = (state: AppState) => state.dashboard.status

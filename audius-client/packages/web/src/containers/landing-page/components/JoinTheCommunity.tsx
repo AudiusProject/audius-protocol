@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
+
 import cn from 'classnames'
 import { useSpring, animated } from 'react-spring'
 
-import podcastImage2x from 'assets/img/publicSite/podcast@2x.jpg'
 import cypherImage2x from 'assets/img/publicSite/cypher@2x.jpg'
-
-import useHasViewed from 'hooks/useHasViewed'
+import podcastImage2x from 'assets/img/publicSite/podcast@2x.jpg'
 import useCardWeight from 'hooks/useCardWeight'
+import useHasViewed from 'hooks/useHasViewed'
 import {
   AUDIUS_PODCAST_LINK,
   AUDIUS_CYPHER_LINK,

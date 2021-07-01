@@ -1,17 +1,20 @@
 import React from 'react'
-import styles from './BalanceTile.module.css'
+
+import BN from 'bn.js'
 import cn from 'classnames'
-import { useSelector } from 'utils/reducer'
+
+import { getAssociatedWallets } from 'store/token-dashboard/slice'
 import {
   getAccountBalance,
   getAccountTotalBalance,
   formatWei,
   BNWei
 } from 'store/wallet/slice'
-import BN from 'bn.js'
-import TokenHoverTooltip from './TokenHoverTooltip'
-import { getAssociatedWallets } from 'store/token-dashboard/slice'
+import { useSelector } from 'utils/reducer'
 import { Nullable } from 'utils/typeUtils'
+
+import styles from './BalanceTile.module.css'
+import TokenHoverTooltip from './TokenHoverTooltip'
 
 const messages = {
   audio: '$AUDIO',

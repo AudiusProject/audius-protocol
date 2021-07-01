@@ -1,14 +1,16 @@
 import React, { memo, ReactChildren, useCallback } from 'react'
 
-import TrackTile from './TrackTile'
+import { IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import SimpleBar from 'simplebar-react'
+
 import {
   TrackTileSize,
   DesktopPlaylistTileProps as PlaylistTileProps
 } from 'components/track/types'
+
 import styles from './PlaylistTile.module.css'
-import { IconArrow } from '@audius/stems'
+import TrackTile from './TrackTile'
 
 const DefaultTileContainer = ({ children }: { children: ReactChildren }) =>
   children

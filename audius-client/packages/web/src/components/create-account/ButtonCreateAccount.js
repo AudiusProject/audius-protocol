@@ -1,12 +1,12 @@
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import cn from 'classnames'
 
+import cn from 'classnames'
+import { connect } from 'react-redux'
+
+import icon from 'assets/img/iconCreateAccount.svg'
 import { openSignOn } from 'containers/sign-on/store/actions'
 
 import styles from './ButtonCreateAccount.module.css'
-
-import icon from 'assets/img/iconCreateAccount.svg'
 
 class ButtonCreateAccount extends Component {
   clicked = () => {

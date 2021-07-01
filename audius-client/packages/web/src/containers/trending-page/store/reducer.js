@@ -1,22 +1,21 @@
-import { asLineup } from 'store/lineup/reducer'
-import {
-  trendingWeek,
-  trendingMonth,
-  trendingYear
-} from 'containers/trending-page/store/lineups/trending/reducer'
-import {
-  TRENDING_WEEK_PREFIX,
-  TRENDING_MONTH_PREFIX,
-  TRENDING_YEAR_PREFIX
-} from 'containers/trending-page/store/lineups/trending/actions'
-import TimeRange from 'models/TimeRange'
-import { GENRES } from 'utils/genres'
-
 import {
   SET_TRENDING_GENRE,
   SET_TRENDING_TIME_RANGE,
   SET_LAST_FETCHED_TRENDING_GENRE
 } from 'containers/trending-page/store/actions'
+import {
+  TRENDING_WEEK_PREFIX,
+  TRENDING_MONTH_PREFIX,
+  TRENDING_YEAR_PREFIX
+} from 'containers/trending-page/store/lineups/trending/actions'
+import {
+  trendingWeek,
+  trendingMonth,
+  trendingYear
+} from 'containers/trending-page/store/lineups/trending/reducer'
+import TimeRange from 'models/TimeRange'
+import { asLineup } from 'store/lineup/reducer'
+import { GENRES } from 'utils/genres'
 
 const urlParams = new URLSearchParams(window.location.search)
 const genre = urlParams.get('genre')

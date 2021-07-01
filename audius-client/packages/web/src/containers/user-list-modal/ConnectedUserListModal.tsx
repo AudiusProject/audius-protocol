@@ -1,13 +1,16 @@
 import React from 'react'
+
 import { connect } from 'react-redux'
-import UserListModal from './components/UserListModal'
-import { AppState } from 'store/types'
+import { Dispatch } from 'redux'
+
 import {
   getUserListType,
   getIsOpen
 } from 'store/application/ui/userListModal/selectors'
-import { Dispatch } from 'redux'
 import { setVisibility } from 'store/application/ui/userListModal/slice'
+import { AppState } from 'store/types'
+
+import UserListModal from './components/UserListModal'
 
 type ConnectedUserListModalProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>

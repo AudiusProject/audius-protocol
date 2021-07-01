@@ -1,14 +1,15 @@
 import React, { Component } from 'react'
-import cn from 'classnames'
-import PropTypes from 'prop-types'
-import commonPasswordList from 'fxa-common-password-list'
+
 import { Button, ButtonType, IconArrow } from '@audius/stems'
+import cn from 'classnames'
+import commonPasswordList from 'fxa-common-password-list'
+import PropTypes from 'prop-types'
 
-import styles from './PasswordPage.module.css'
 import Input from 'components/data-entry/Input'
-
 import StatusMessage from 'components/general/StatusMessage'
 import { TERMS_OF_SERVICE, PRIVACY_POLICY } from 'utils/route'
+
+import styles from './PasswordPage.module.css'
 
 const messages = {
   header: 'Create A Password That Is Secure And Easy To Remember!',

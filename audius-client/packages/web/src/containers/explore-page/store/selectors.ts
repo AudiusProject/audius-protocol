@@ -1,11 +1,10 @@
 import { createSelector } from 'reselect'
 
-import { AppState, Status } from 'store/types'
-import User from 'models/User'
 import { UserCollection } from 'models/Collection'
-
-import { getUsers } from 'store/cache/users/selectors'
+import User from 'models/User'
 import { getCollections } from 'store/cache/collections/selectors'
+import { getUsers } from 'store/cache/users/selectors'
+import { AppState, Status } from 'store/types'
 
 const getExplore = (state: AppState) => state.application.pages.explore
 

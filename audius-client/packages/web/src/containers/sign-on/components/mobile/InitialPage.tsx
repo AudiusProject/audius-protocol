@@ -5,19 +5,21 @@ import React, {
   useEffect,
   useRef
 } from 'react'
-import Spin from 'antd/lib/spin'
-import { Button, ButtonType, IconArrow } from '@audius/stems'
 
-import Input from 'components/data-entry/Input'
+import { Button, ButtonType, IconArrow } from '@audius/stems'
+import Spin from 'antd/lib/spin'
 import cn from 'classnames'
 import { Spring } from 'react-spring/renderprops'
-import StatusMessage from 'components/general/StatusMessage'
-import audiusLogoHorizontal from 'assets/img/Horizontal-Logo-Full-Color.png'
+
 import djBackgroundImage from 'assets/img/2-DJ-4-3.jpg'
+import audiusLogoHorizontal from 'assets/img/Horizontal-Logo-Full-Color.png'
 import signupCtaImage from 'assets/img/signUpCTA.png'
-import { RouterContext } from 'containers/animated-switch/RouterContextProvider'
-import styles from './InitialPage.module.css'
+import Input from 'components/data-entry/Input'
+import StatusMessage from 'components/general/StatusMessage'
 import PreloadImage from 'components/preload-image/PreloadImage'
+import { RouterContext } from 'containers/animated-switch/RouterContextProvider'
+
+import styles from './InitialPage.module.css'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

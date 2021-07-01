@@ -1,20 +1,22 @@
 import React, { useEffect, useRef, useState } from 'react'
-import styles from 'containers/collectibles/components/CollectiblesPage.module.css'
+
 import cn from 'classnames'
-import Tooltip from 'components/tooltip/Tooltip'
-import { formatDateWithTimezoneOffset } from 'utils/timeUtil'
+
 import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
 import { ReactComponent as IconShow } from 'assets/img/iconMultiselectAdd.svg'
 import { ReactComponent as IconHide } from 'assets/img/iconRemoveTrack.svg'
+import Tooltip from 'components/tooltip/Tooltip'
 import {
   collectibleMessages,
   editTableContainerClass
 } from 'containers/collectibles/components/CollectiblesPage'
+import styles from 'containers/collectibles/components/CollectiblesPage.module.css'
 import {
   Collectible,
   CollectibleType
 } from 'containers/collectibles/components/types'
 import { findAncestor } from 'utils/domUtils'
+import { formatDateWithTimezoneOffset } from 'utils/timeUtil'
 
 // @ts-ignore
 export const VisibleCollectibleRow = props => {

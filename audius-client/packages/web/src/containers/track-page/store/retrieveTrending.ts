@@ -1,13 +1,14 @@
+import { call, put, select } from 'redux-saga/effects'
+
 import { setLastFetchedTrendingGenre } from 'containers/trending-page/store/actions'
 import { getTrendingEntries } from 'containers/trending-page/store/lineups/trending/selectors'
 import {
   getLastFetchedTrendingGenre,
   getTrendingGenre
 } from 'containers/trending-page/store/selectors'
-import { ID } from 'models/common/Identifiers'
 import TimeRange from 'models/TimeRange'
 import Track, { UserTrackMetadata } from 'models/Track'
-import { call, put, select } from 'redux-saga/effects'
+import { ID } from 'models/common/Identifiers'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getRemoteVar, StringKeys } from 'services/remote-config'
 import { waitForRemoteConfig } from 'services/remote-config/Provider'

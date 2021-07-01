@@ -1,9 +1,9 @@
 import React from 'react'
 
+import { ReactComponent as IconArrow } from 'assets/img/iconArrowGrey.svg'
 import Banner from 'components/banner/Banner'
 import Pill from 'components/general/Pill'
 
-import { ReactComponent as IconArrow } from 'assets/img/iconArrowGrey.svg'
 import styles from './CTABanner.module.css'
 
 const messages = {

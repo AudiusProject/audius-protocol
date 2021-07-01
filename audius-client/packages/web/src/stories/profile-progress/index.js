@@ -1,10 +1,11 @@
 import React from 'react'
 
 import { storiesOf } from '@storybook/react'
+
 import SegmentedProgressBar from 'components/segmented-progress-bar/SegmentedProgressBar'
-import ProfileCompletionPanel from 'containers/profile-progress/components/ProfileCompletionPanel'
-import ProfileCompletionHeroCard from 'containers/profile-progress/components/ProfileCompletionHeroCard'
 import ProfileCompletionTooltip from 'containers//profile-progress/components/ProfileCompletionTooltip'
+import ProfileCompletionHeroCard from 'containers/profile-progress/components/ProfileCompletionHeroCard'
+import ProfileCompletionPanel from 'containers/profile-progress/components/ProfileCompletionPanel'
 
 export default () => {
   return storiesOf('ProfileProgress', module)

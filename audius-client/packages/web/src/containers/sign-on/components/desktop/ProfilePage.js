@@ -1,18 +1,20 @@
 /* globals fetch, File */
 import React, { Component } from 'react'
+
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import styles from './ProfilePage.module.css'
 import BackButton from 'components/general/BackButton'
-import { resizeImage } from 'utils/imageProcessingUtil'
+import ProfileForm from 'containers/sign-on/components/ProfileForm'
 import DesktopTwitterOverlay from 'containers/sign-on/components/desktop/TwitterOverlay'
 import MobileTwitterOverlay from 'containers/sign-on/components/mobile/TwitterOverlay'
-import ProfileForm from 'containers/sign-on/components/ProfileForm'
 import {
   formatInstagramProfile,
   formatTwitterProfile
 } from 'containers/sign-on/utils/formatSocialProfile'
+import { resizeImage } from 'utils/imageProcessingUtil'
+
+import styles from './ProfilePage.module.css'
 
 const messages = {
   header: 'Tell Us About Yourself So Others Can Find You'

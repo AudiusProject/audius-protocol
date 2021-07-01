@@ -1,8 +1,9 @@
 import { takeEvery, call, put } from 'redux-saga/effects'
 
-import { fetchTrack, fetchTrackSucceeded, fetchTrackFailed } from './slice'
 import { retrieveTracks } from 'store/cache/tracks/utils/retrieveTracks'
 import { parseTrackRoute } from 'utils/route/trackRouteParser'
+
+import { fetchTrack, fetchTrackSucceeded, fetchTrackFailed } from './slice'
 
 const getTrackId = (url: string) => {
   // Get just the pathname part from the url

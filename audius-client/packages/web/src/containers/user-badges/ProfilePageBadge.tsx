@@ -1,12 +1,15 @@
-import { BadgeTier } from 'containers/user-badges/utils'
-import { ID } from 'models/common/Identifiers'
-import { audioTierMapPng } from 'containers/user-badges/UserBadges'
 import React, { useCallback } from 'react'
-import styles from './ProfilePageBadge.module.css'
+
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
-import { useSelectTierInfo } from './hooks'
+
+import { audioTierMapPng } from 'containers/user-badges/UserBadges'
+import { BadgeTier } from 'containers/user-badges/utils'
+import { ID } from 'models/common/Identifiers'
 import { setVisibility } from 'store/application/ui/modals/slice'
+
+import styles from './ProfilePageBadge.module.css'
+import { useSelectTierInfo } from './hooks'
 
 type ProfilePageBadgeProps = {
   userId: ID

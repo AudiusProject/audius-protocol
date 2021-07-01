@@ -1,8 +1,10 @@
 import { matchPath } from 'react-router-dom'
-import { USER_ID_PAGE, PROFILE_PAGE, staticRoutes } from 'utils/route'
-import { decodeHashId } from './hashIds'
-import { ID } from 'models/common/Identifiers'
+
 import { TabRoute } from 'containers/profile-page/store/types'
+import { ID } from 'models/common/Identifiers'
+import { USER_ID_PAGE, PROFILE_PAGE, staticRoutes } from 'utils/route'
+
+import { decodeHashId } from './hashIds'
 
 type UserRouteParams =
   | { handle: string; userId: null; tab: null }

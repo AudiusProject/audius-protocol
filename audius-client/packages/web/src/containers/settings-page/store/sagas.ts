@@ -1,16 +1,9 @@
 import { select, call, put, takeEvery } from 'redux-saga/effects'
-import AudiusBackend from 'services/AudiusBackend'
-import { waitForBackendSetup } from 'store/backend/sagas'
-import { getBrowserNotificationSettings } from './selectors'
-import * as actions from './actions'
-import { CAST_METHOD } from './reducer'
-import errorSagas from './errorSagas'
-import mobileSagas from './mobileSagas'
-import { make } from 'store/analytics/actions'
-import { BrowserNotificationSetting } from './types'
-import { Name } from 'services/analytics'
-import { isElectron } from 'utils/clientUtil'
 
+import AudiusBackend from 'services/AudiusBackend'
+import { Name } from 'services/analytics'
+import { make } from 'store/analytics/actions'
+import { waitForBackendSetup } from 'store/backend/sagas'
 import {
   Permission,
   isPushManagerAvailable,
@@ -20,6 +13,14 @@ import {
   getPushManagerBrowserSubscription,
   getSafariPushBrowser
 } from 'utils/browserNotifications'
+import { isElectron } from 'utils/clientUtil'
+
+import * as actions from './actions'
+import errorSagas from './errorSagas'
+import mobileSagas from './mobileSagas'
+import { CAST_METHOD } from './reducer'
+import { getBrowserNotificationSettings } from './selectors'
+import { BrowserNotificationSetting } from './types'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

@@ -1,32 +1,31 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
+
+import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-import { AppState, Status } from 'store/types'
 import { Dispatch } from 'redux'
 
-import { tracksActions } from './store/lineups/tracks/actions'
-import * as socialActions from 'store/social/tracks/actions'
-import { getUserId } from 'store/account/selectors'
-
-import { getPlaying, getBuffering } from 'store/player/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
-import { makeGetTableMetadatas } from 'store/lineup/selectors'
 import { getHistoryTracksLineup } from 'containers/history-page/store/selectors'
-import { push as pushRoute } from 'connected-react-router'
-import { trackPage, profilePage } from 'utils/route'
-
 import { ID, UID } from 'models/common/Identifiers'
-
-import { HistoryPageProps as DesktopHistoryPageProps } from './components/desktop/HistoryPage'
-import { HistoryPageProps as MobileHistoryPageProps } from './components/mobile/HistoryPage'
 import {
   RepostSource,
   FavoriteSource,
   Name,
   PlaybackSource
 } from 'services/analytics'
+import { getUserId } from 'store/account/selectors'
 import { useRecord, make } from 'store/analytics/actions'
+import { makeGetTableMetadatas } from 'store/lineup/selectors'
+import { getPlaying, getBuffering } from 'store/player/selectors'
+import { makeGetCurrent } from 'store/queue/selectors'
+import * as socialActions from 'store/social/tracks/actions'
+import { AppState, Status } from 'store/types'
+import { trackPage, profilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
+
+import { HistoryPageProps as DesktopHistoryPageProps } from './components/desktop/HistoryPage'
+import { HistoryPageProps as MobileHistoryPageProps } from './components/mobile/HistoryPage'
+import { tracksActions } from './store/lineups/tracks/actions'
 
 const messages = {
   title: 'History',

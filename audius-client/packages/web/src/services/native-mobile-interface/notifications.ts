@@ -1,6 +1,7 @@
-import { MessageType } from './types'
-import { NativeMobileMessage } from './helpers'
 import { Notification } from 'containers/notification/store/types'
+
+import { NativeMobileMessage } from './helpers'
+import { MessageType } from './types'
 
 export class EnablePushNotificationsMessage extends NativeMobileMessage {
   constructor() {

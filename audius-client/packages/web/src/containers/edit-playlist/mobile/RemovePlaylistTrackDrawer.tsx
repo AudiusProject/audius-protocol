@@ -1,8 +1,10 @@
 import React from 'react'
 
-import Drawer from 'components/drawer/Drawer'
-import styles from './RemovePlaylistTrackDrawer.module.css'
 import { Button, ButtonType } from '@audius/stems'
+
+import Drawer from 'components/drawer/Drawer'
+
+import styles from './RemovePlaylistTrackDrawer.module.css'
 
 const messages = {
   title: `Are You Sure?`,

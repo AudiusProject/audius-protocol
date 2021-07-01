@@ -1,17 +1,18 @@
 import React from 'react'
+
 import { storiesOf } from '@storybook/react'
 
-import FollowButton from 'components/general/FollowButton'
 import BackButton from 'components/general/BackButton'
-import Pill from 'components/general/Pill'
-import Header from 'components/general/header/desktop/Header'
-import Stats from 'components/general/Stats'
-import More from 'components/general/More'
-import CoverPhoto from 'components/general/CoverPhoto'
-import StatBanner from 'components/general/StatBanner'
-import NavBanner from 'components/general/NavBanner'
-import Mask from 'components/general/Mask'
 import ConfirmationBox from 'components/general/ConfirmationBox'
+import CoverPhoto from 'components/general/CoverPhoto'
+import FollowButton from 'components/general/FollowButton'
+import Mask from 'components/general/Mask'
+import More from 'components/general/More'
+import NavBanner from 'components/general/NavBanner'
+import Pill from 'components/general/Pill'
+import StatBanner from 'components/general/StatBanner'
+import Stats from 'components/general/Stats'
+import Header from 'components/general/header/desktop/Header'
 import Toast from 'components/toast/Toast'
 
 export default () => {

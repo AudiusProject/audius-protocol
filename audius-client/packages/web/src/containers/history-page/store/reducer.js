@@ -1,5 +1,6 @@
-import { asLineup } from 'store/lineup/reducer'
 import tracksReducer from 'containers/history-page/store/lineups/tracks/reducer'
+import { asLineup } from 'store/lineup/reducer'
+
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
 
 const initialState = {}

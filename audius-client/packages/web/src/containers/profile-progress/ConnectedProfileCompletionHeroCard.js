@@ -1,14 +1,17 @@
 import React from 'react'
-import ProfileCompletionHeroCard from 'containers/profile-progress/components/ProfileCompletionHeroCard'
+
 import { connect } from 'react-redux'
+import { animated } from 'react-spring'
+
+import { profileMeterDismissed } from 'containers/profile-page/store/actions'
+import ProfileCompletionHeroCard from 'containers/profile-progress/components/ProfileCompletionHeroCard'
 import {
   getOrderedCompletionStages,
   getProfilePageMeterDismissed,
   getIsAccountLoaded
 } from 'containers/profile-progress/store/selectors'
-import { profileMeterDismissed } from 'containers/profile-page/store/actions'
+
 import { useVerticalCollapse, useProfileCompletionDismissal } from './hooks'
-import { animated } from 'react-spring'
 
 const ORIGINAL_HEIGHT_PIXELS = 206
 

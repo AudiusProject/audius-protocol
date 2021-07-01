@@ -1,6 +1,6 @@
-import { AppState } from 'store/types'
-import { getTrack, getTracks } from 'store/cache/tracks/selectors'
 import { StemTrack } from 'models/Track'
+import { getTrack, getTracks } from 'store/cache/tracks/selectors'
+import { AppState } from 'store/types'
 
 export const getBaseState = (state: AppState) =>
   state.application.ui.editTrackModal

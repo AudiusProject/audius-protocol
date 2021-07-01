@@ -1,12 +1,14 @@
 import React from 'react'
+
+import cn from 'classnames'
 import PropTypes from 'prop-types'
 import SimpleBar from 'simplebar-react'
-import cn from 'classnames'
 
-import UploadType from './uploadType'
-import TrackPreview from 'components/upload/TrackPreview'
-import styles from './TracksPreview.module.css'
 import TabSlider from 'components/data-entry/TabSlider'
+import TrackPreview from 'components/upload/TrackPreview'
+
+import styles from './TracksPreview.module.css'
+import UploadType from './uploadType'
 
 const uploadDescriptions = {
   [UploadType.PLAYLIST]:

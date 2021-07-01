@@ -1,13 +1,14 @@
 import React, { useCallback } from 'react'
 
-import styles from './TrackContent.module.css'
-import { useTrackCoverArt } from 'hooks/useImageSize'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import User from 'models/User'
-import Track from 'models/Track'
-import Collection from 'models/Collection'
-import { SquareSizes } from 'models/common/ImageSizes'
 import CoSign, { Size } from 'components/co-sign/CoSign'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { useTrackCoverArt } from 'hooks/useImageSize'
+import Collection from 'models/Collection'
+import Track from 'models/Track'
+import User from 'models/User'
+import { SquareSizes } from 'models/common/ImageSizes'
+
+import styles from './TrackContent.module.css'
 const TrackContent = ({
   notification,
   goToEntityPage

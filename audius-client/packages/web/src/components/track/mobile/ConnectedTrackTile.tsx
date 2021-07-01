@@ -1,11 +1,23 @@
 import React, { memo } from 'react'
-import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
-import { push as pushRoute } from 'connected-react-router'
 
-import TrackTile from './TrackTile'
+import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+
 import { TrackTileProps } from 'components/track/types'
+import { setFavorite } from 'containers/favorites-page/store/actions'
+import { setRepost } from 'containers/reposts-page/store/actions'
+import { RepostType } from 'containers/reposts-page/store/types'
+import { FavoriteType } from 'models/Favorite'
 import { ID } from 'models/common/Identifiers'
+import { FavoriteSource, RepostSource, ShareSource } from 'services/analytics'
+import { getUserId } from 'store/account/selectors'
+import { open } from 'store/application/ui/mobileOverflowModal/actions'
+import {
+  OverflowAction,
+  OverflowSource
+} from 'store/application/ui/mobileOverflowModal/types'
+import { getTheme } from 'store/application/ui/theme/selectors'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUserFromTrack } from 'store/cache/users/selectors'
 import { getUid, getPlaying, getBuffering } from 'store/player/selectors'
@@ -16,27 +28,18 @@ import {
   undoRepostTrack,
   shareTrack
 } from 'store/social/tracks/actions'
+import { AppState } from 'store/types'
 import {
   trackPage,
   profilePage,
   REPOSTING_USERS_ROUTE,
   FAVORITING_USERS_ROUTE
 } from 'utils/route'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'store/application/ui/mobileOverflowModal/types'
-import { open } from 'store/application/ui/mobileOverflowModal/actions'
-import { AppState } from 'store/types'
-import { RepostType } from 'containers/reposts-page/store/types'
-import { getUserId } from 'store/account/selectors'
-import { setFavorite } from 'containers/favorites-page/store/actions'
-import { FavoriteType } from 'models/Favorite'
-import { setRepost } from 'containers/reposts-page/store/actions'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
-import { getTheme } from 'store/application/ui/theme/selectors'
-import { FavoriteSource, RepostSource, ShareSource } from 'services/analytics'
+
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
+
+import TrackTile from './TrackTile'
 
 type ConnectedTrackTileProps = TrackTileProps &
   ReturnType<typeof mapStateToProps> &

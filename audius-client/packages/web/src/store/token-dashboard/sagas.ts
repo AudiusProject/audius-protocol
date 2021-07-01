@@ -1,5 +1,38 @@
 import { select } from 'redux-saga-test-plan/matchers'
 import { all, call, put, race, take, takeLatest } from 'redux-saga/effects'
+import { WalletLinkProvider } from 'walletlink'
+
+import { fetchServices } from 'containers/service-selection/store/slice'
+import { ID } from 'models/common/Identifiers'
+import { newUserMetadata } from 'schemas'
+import AudiusBackend from 'services/AudiusBackend'
+import apiClient, {
+  AssociatedWalletsResponse
+} from 'services/audius-api-client/AudiusAPIClient'
+import { BooleanKeys, getRemoteVar } from 'services/remote-config'
+import connectWeb3Wallet, {
+  loadWalletLink,
+  loadBitski,
+  loadWalletConnect
+} from 'services/web3-modal/index'
+import { fetchAccountSucceeded } from 'store/account/reducer'
+import { getUserId, getAccountUser } from 'store/account/selectors'
+import * as cacheActions from 'store/cache/actions'
+import { upgradeToCreator } from 'store/cache/users/sagas'
+import { requestConfirmation } from 'store/confirmer/actions'
+import { confirmTransaction } from 'store/confirmer/sagas'
+import { Kind } from 'store/types'
+import {
+  send as walletSend,
+  claimFailed,
+  weiToString,
+  sendSucceeded,
+  getBalance,
+  sendFailed,
+  WalletAddress
+} from 'store/wallet/slice'
+import { Nullable } from 'utils/typeUtils'
+
 import {
   fetchAssociatedWallets,
   connectNewWallet,
@@ -20,40 +53,6 @@ import {
   updateWalletError,
   preloadWalletProviders
 } from './slice'
-import {
-  send as walletSend,
-  claimFailed,
-  weiToString,
-  sendSucceeded,
-  getBalance,
-  sendFailed,
-  WalletAddress
-} from 'store/wallet/slice'
-
-import { requestConfirmation } from 'store/confirmer/actions'
-import AudiusBackend from 'services/AudiusBackend'
-import apiClient, {
-  AssociatedWalletsResponse
-} from 'services/audius-api-client/AudiusAPIClient'
-import { getUserId, getAccountUser } from 'store/account/selectors'
-import { Nullable } from 'utils/typeUtils'
-import { ID } from 'models/common/Identifiers'
-import connectWeb3Wallet, {
-  loadWalletLink,
-  loadBitski,
-  loadWalletConnect
-} from 'services/web3-modal/index'
-import { newUserMetadata } from 'schemas'
-
-import { fetchAccountSucceeded } from 'store/account/reducer'
-
-import { upgradeToCreator } from 'store/cache/users/sagas'
-import * as cacheActions from 'store/cache/actions'
-import { Kind } from 'store/types'
-import { BooleanKeys, getRemoteVar } from 'services/remote-config'
-import { fetchServices } from 'containers/service-selection/store/slice'
-import { WalletLinkProvider } from 'walletlink'
-import { confirmTransaction } from 'store/confirmer/sagas'
 
 const CONNECT_WALLET_CONFIRMATION_UID = 'CONNECT_WALLET'
 

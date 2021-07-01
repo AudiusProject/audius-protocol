@@ -1,7 +1,9 @@
-import { onProviderReady } from 'services/remote-config/Provider'
-import { put, take } from 'redux-saga/effects'
-import { setDidLoad } from './slice'
 import { eventChannel, END } from 'redux-saga'
+import { put, take } from 'redux-saga/effects'
+
+import { onProviderReady } from 'services/remote-config/Provider'
+
+import { setDidLoad } from './slice'
 
 const PROVIDER_READY_EVENT = 'PROVIDER_READY'
 

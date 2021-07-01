@@ -1,12 +1,14 @@
 import React, { Component } from 'react'
-import cn from 'classnames'
-import PropTypes from 'prop-types'
+
 import { Button, ButtonType } from '@audius/stems'
 import Tooltip from 'antd/lib/tooltip'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
+
 import { Utils } from 'services/AudiusBackend'
+import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
 import styles from './MetaMaskModal.module.css'
-import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
 const WEB3_NETWORK_ID = process.env.REACT_APP_WEB3_NETWORK_ID
 

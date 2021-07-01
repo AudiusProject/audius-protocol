@@ -4,6 +4,7 @@ import {
   DISMISS_COOKIE_BANNER
 } from 'store/application/ui/cookieBanner/actions'
 import { makeReducer } from 'utils/reducer'
+
 import { CookieBannerState } from './types'
 
 const initialState: CookieBannerState = {

@@ -3,8 +3,8 @@ import { expectSaga } from 'redux-saga-test-plan'
 import { call } from 'redux-saga/effects'
 
 import * as actions from 'store/confirmer/actions'
-import * as sagas from 'store/confirmer/sagas'
 import reducer from 'store/confirmer/reducer'
+import * as sagas from 'store/confirmer/sagas'
 
 const initialState = {
   confirm: {},

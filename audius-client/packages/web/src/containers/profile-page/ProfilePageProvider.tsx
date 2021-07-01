@@ -1,54 +1,58 @@
 import React, { PureComponent } from 'react'
+
+import { push as pushRoute, replace } from 'connected-react-router'
+import { UnregisterCallback } from 'history'
+import moment from 'moment'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-import { push as pushRoute, replace } from 'connected-react-router'
-import moment from 'moment'
-import { UnregisterCallback } from 'history'
-import { AppState, Kind, Status } from 'store/types'
 import { Dispatch } from 'redux'
-import { Tabs, FollowType, TracksSortMode, getTabForRoute } from './store/types'
-import { ID, UID } from 'models/common/Identifiers'
 
-import { resizeImage } from 'utils/imageProcessingUtil'
-
-import * as profileActions from './store/actions'
-import * as socialActions from 'store/social/users/actions'
-import * as createPlaylistModalActions from 'store/application/ui/createPlaylistModal/actions'
+import { setFollowers } from 'containers/followers-page/store/actions'
+import { setFollowing } from 'containers/following-page/store/actions'
+import {
+  CollectionSortMode,
+  Tabs,
+  FollowType,
+  TracksSortMode,
+  getTabForRoute
+} from 'containers/profile-page/store/types'
 import * as unfollowConfirmationActions from 'containers/unfollow-confirmation-modal/store/actions'
-import { open } from 'store/application/ui/mobileOverflowModal/actions'
-import { tracksActions } from './store/lineups/tracks/actions'
-import { feedActions } from './store/lineups/feed/actions'
-import { makeGetLineupMetadatas } from 'store/lineup/selectors'
+import { BadgeTier } from 'containers/user-badges/utils'
+import { ID, UID } from 'models/common/Identifiers'
+import { newUserMetadata } from 'schemas'
+import { Name, FollowSource, ShareSource } from 'services/analytics'
 import { getAccountUser } from 'store/account/selectors'
+import { make, TrackEvent } from 'store/analytics/actions'
+import * as createPlaylistModalActions from 'store/application/ui/createPlaylistModal/actions'
+import { open } from 'store/application/ui/mobileOverflowModal/actions'
+import {
+  OverflowSource,
+  OverflowAction
+} from 'store/application/ui/mobileOverflowModal/types'
+import { getIsDone } from 'store/confirmer/selectors'
+import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
-import { getLocationPathname } from 'store/routing/selectors'
-
 import { makeGetCurrent } from 'store/queue/selectors'
+import { getLocationPathname } from 'store/routing/selectors'
+import * as socialActions from 'store/social/users/actions'
+import { AppState, Kind, Status } from 'store/types'
+import { formatCount } from 'utils/formatUtil'
+import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
+import { resizeImage } from 'utils/imageProcessingUtil'
+import { getPathname, NOT_FOUND_PAGE, profilePage } from 'utils/route'
+import { parseUserRoute } from 'utils/route/userRouteParser'
+import { makeKindId } from 'utils/uid'
+
+import { ProfilePageProps as DesktopProfilePageProps } from './components/desktop/ProfilePage'
+import { ProfilePageProps as MobileProfilePageProps } from './components/mobile/ProfilePage'
+import * as profileActions from './store/actions'
+import { feedActions } from './store/lineups/feed/actions'
+import { tracksActions } from './store/lineups/tracks/actions'
 import {
   makeGetProfile,
   getProfileFeedLineup,
   getProfileTracksLineup
 } from './store/selectors'
-import { CollectionSortMode } from 'containers/profile-page/store/types'
-import { getPathname, NOT_FOUND_PAGE, profilePage } from 'utils/route'
-import { newUserMetadata } from 'schemas'
-import { formatCount } from 'utils/formatUtil'
-
-import { ProfilePageProps as DesktopProfilePageProps } from './components/desktop/ProfilePage'
-import { ProfilePageProps as MobileProfilePageProps } from './components/mobile/ProfilePage'
-import { setFollowing } from 'containers/following-page/store/actions'
-import { setFollowers } from 'containers/followers-page/store/actions'
-import {
-  OverflowSource,
-  OverflowAction
-} from 'store/application/ui/mobileOverflowModal/types'
-import { make, TrackEvent } from 'store/analytics/actions'
-import { Name, FollowSource, ShareSource } from 'services/analytics'
-import { parseUserRoute } from 'utils/route/userRouteParser'
-import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
-import { makeKindId } from 'utils/uid'
-import { getIsDone } from 'store/confirmer/selectors'
-import { BadgeTier } from 'containers/user-badges/utils'
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,

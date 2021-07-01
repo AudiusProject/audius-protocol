@@ -1,20 +1,21 @@
 import React, { useCallback } from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
-import { HOME_PAGE, BASE_URL, stripBaseUrl } from 'utils/route'
+import PropTypes from 'prop-types'
 
-import NavButton from 'containers/nav/desktop/NavButton'
-import NotificationPanel from 'containers/notification/NotificationPanel'
-
-import { ReactComponent as IconNotification } from 'assets/img/iconNotification.svg'
 import { ReactComponent as AudiusLogoHorizontal } from 'assets/img/audiusLogoHorizontal.svg'
-import { formatCount } from 'utils/formatUtil'
-import styles from './NavHeader.module.css'
-import { useRemoteVar } from 'containers/remote-config/hooks'
-import { StringKeys } from 'services/remote-config'
-import { getTheme } from 'utils/theme/theme'
-import Theme from 'models/Theme'
+import { ReactComponent as IconNotification } from 'assets/img/iconNotification.svg'
+import NavButton from 'containers/nav/desktop/NavButton'
 import NavIconPopover from 'containers/nav/desktop/NavIconPopover'
+import NotificationPanel from 'containers/notification/NotificationPanel'
+import { useRemoteVar } from 'containers/remote-config/hooks'
+import Theme from 'models/Theme'
+import { StringKeys } from 'services/remote-config'
+import { formatCount } from 'utils/formatUtil'
+import { HOME_PAGE, BASE_URL, stripBaseUrl } from 'utils/route'
+import { getTheme } from 'utils/theme/theme'
+
+import styles from './NavHeader.module.css'
 
 const NavHeader = ({
   account,

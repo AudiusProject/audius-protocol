@@ -1,17 +1,29 @@
 import { useContext } from 'react'
-import { Dispatch } from 'redux'
-import { ID, PlayableType } from 'models/common/Identifiers'
-import { connect } from 'react-redux'
-import { push as pushRoute } from 'connected-react-router'
-import { AppState } from 'store/types'
-import { trackPage, profilePage } from 'utils/route'
 
+import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+
+import { PopupMenuItem } from 'components/general/PopupMenu'
+import { ToastContext } from 'components/toast/ToastContext'
+import { requestOpen as openAddToPlaylist } from 'containers/add-to-playlist/store/actions'
+import { getCollectionId } from 'containers/collection-page/store/selectors'
+import * as embedModalActions from 'containers/embed-modal/store/actions'
+import { ID, PlayableType } from 'models/common/Identifiers'
+import { newCollectionMetadata } from 'schemas'
+import {
+  FavoriteSource,
+  RepostSource,
+  ShareSource,
+  CreatePlaylistSource
+} from 'services/analytics'
+import { getAccountOwnedPlaylists } from 'store/account/selectors'
+import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
+import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import {
   createPlaylist,
   addTrackToPlaylist
 } from 'store/cache/collections/actions'
-import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
-import * as embedModalActions from 'containers/embed-modal/store/actions'
 import {
   saveTrack,
   unsaveTrack,
@@ -19,20 +31,8 @@ import {
   undoRepostTrack,
   shareTrack
 } from 'store/social/tracks/actions'
-import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
-import { getAccountOwnedPlaylists } from 'store/account/selectors'
-import { newCollectionMetadata } from 'schemas'
-import { requestOpen as openAddToPlaylist } from 'containers/add-to-playlist/store/actions'
-
-import { ToastContext } from 'components/toast/ToastContext'
-import { getCollectionId } from 'containers/collection-page/store/selectors'
-import {
-  FavoriteSource,
-  RepostSource,
-  ShareSource,
-  CreatePlaylistSource
-} from 'services/analytics'
-import { PopupMenuItem } from 'components/general/PopupMenu'
+import { AppState } from 'store/types'
+import { trackPage, profilePage } from 'utils/route'
 
 const messages = {
   addToNewPlaylist: 'Add to New Playlist',

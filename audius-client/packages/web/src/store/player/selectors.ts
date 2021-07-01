@@ -1,4 +1,5 @@
 import { createSelector } from 'reselect'
+
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import { AppState } from 'store/types'

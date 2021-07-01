@@ -1,6 +1,7 @@
-import { OverflowSource, MobileOverflowModalState } from './types'
-import { OPEN, CLOSE } from './actions'
 import { makeReducer, ActionsMap } from 'utils/reducer'
+
+import { OPEN, CLOSE } from './actions'
+import { OverflowSource, MobileOverflowModalState } from './types'
 
 const initialState: MobileOverflowModalState = {
   isOpen: false,

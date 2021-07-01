@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react'
+
 import {
   Button,
   ButtonSize,
@@ -6,16 +7,17 @@ import {
   IconRemove,
   Modal
 } from '@audius/stems'
+import cn from 'classnames'
+
+import IconButton from 'components/general/IconButton'
+import Switch from 'components/general/Switch'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import Dropdown from 'components/navigation/Dropdown'
+import Dropzone from 'components/upload/Dropzone'
+import { StemCategory, stemCategoryFriendlyNames } from 'models/Stems'
+import Track, { Download } from 'models/Track'
 
 import styles from './SourceFilesModal.module.css'
-import Dropzone from 'components/upload/Dropzone'
-import Track, { Download } from 'models/Track'
-import { StemCategory, stemCategoryFriendlyNames } from 'models/Stems'
-import Dropdown from 'components/navigation/Dropdown'
-import IconButton from 'components/general/IconButton'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import Switch from 'components/general/Switch'
-import cn from 'classnames'
 
 const MAX_ROWS = 5
 

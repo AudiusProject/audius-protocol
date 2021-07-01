@@ -1,16 +1,17 @@
 import React, { ReactNode, useEffect, useContext } from 'react'
-import cn from 'classnames'
-import { connect } from 'react-redux'
-import { Helmet } from 'react-helmet'
 
+import cn from 'classnames'
+import { Helmet } from 'react-helmet'
+import { connect } from 'react-redux'
+
+import { ScrollContext } from 'containers/scroll-provider/ScrollProvider'
+import useInstanceVar from 'hooks/useInstanceVar'
 import { getHasTrack } from 'store/player/selectors'
 import { AppState } from 'store/types'
+import { getPathname } from 'utils/route'
+import { getSafeArea, SafeAreaDirection } from 'utils/safeArea'
 
 import styles from './MobilePageContainer.module.css'
-import { ScrollContext } from 'containers/scroll-provider/ScrollProvider'
-import { getSafeArea, SafeAreaDirection } from 'utils/safeArea'
-import useInstanceVar from 'hooks/useInstanceVar'
-import { getPathname } from 'utils/route'
 
 const messages = {
   dotAudius: '• Audius',

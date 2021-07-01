@@ -1,6 +1,8 @@
 import React from 'react'
+
 import cn from 'classnames'
 import PropTypes from 'prop-types'
+
 import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
 
 import styles from './Delineator.module.css'

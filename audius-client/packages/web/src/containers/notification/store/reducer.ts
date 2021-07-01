@@ -1,6 +1,7 @@
 import { Status } from 'store/types'
-import NotificationState, { Notification } from './types'
+
 import * as actions from './actions'
+import NotificationState, { Notification } from './types'
 
 const initialState: NotificationState = {
   notifications: {},

@@ -1,23 +1,26 @@
 import React, { useCallback } from 'react'
-import cn from 'classnames'
+
 import { IconKebabHorizontal } from '@audius/stems'
+import cn from 'classnames'
+
+import IconButton from 'components/general/IconButton'
 import {
   Entity,
   NotificationType,
   Achievement
 } from 'containers/notification/store/types'
-import { ID } from 'models/common/Identifiers'
-import IconButton from 'components/general/IconButton'
-import { profilePage } from 'utils/route'
-import { make, useRecord } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
 import Track from 'models/Track'
+import { ID } from 'models/common/Identifiers'
+import { Name } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
+import { profilePage } from 'utils/route'
 
-import styles from './Notification.module.css'
-import UserHeader, { UserImage } from './ConnectedUserHeader'
-import { formatHeader, formatBody } from '../formatText'
-import { getEntityLink, TwitterShare } from '../TwitterShare'
 import TrackContent from '../TrackContent'
+import { getEntityLink, TwitterShare } from '../TwitterShare'
+import { formatHeader, formatBody } from '../formatText'
+
+import UserHeader, { UserImage } from './ConnectedUserHeader'
+import styles from './Notification.module.css'
 
 // The number of users thumbnail images to show in the top row
 // if there are multiple users associated w/ the notification

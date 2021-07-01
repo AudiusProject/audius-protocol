@@ -1,6 +1,9 @@
 import React from 'react'
+
 import { WalletAddress } from 'store/wallet/slice'
+
 import { ModalBodyWrapper } from '../WalletModal'
+
 import ClickableAddress from './ClickableAddress'
 import styles from './ReceiveBody.module.css'
 

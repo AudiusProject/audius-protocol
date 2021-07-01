@@ -1,23 +1,23 @@
 import React, { useCallback, useEffect } from 'react'
+
 import cn from 'classnames'
 
+import TabSlider from 'components/data-entry/TabSlider'
 import Page from 'components/general/Page'
+import Switch from 'components/general/Switch'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
-
-import settingsPageStyles from './SettingsPage.module.css'
-import { SettingsPageProps } from './SettingsPage'
 import Row from 'components/groupable-list/Row'
-import TabSlider from 'components/data-entry/TabSlider'
-import Switch from 'components/general/Switch'
 import {
   EmailFrequency,
   PushNotificationSetting
 } from 'containers/settings-page/store/types'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
+import { PromptPushNotificationPermissions } from 'services/native-mobile-interface/notifications'
 
 import styles from './NotificationsSettingsPage.module.css'
-import { PromptPushNotificationPermissions } from 'services/native-mobile-interface/notifications'
+import { SettingsPageProps } from './SettingsPage'
+import settingsPageStyles from './SettingsPage.module.css'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

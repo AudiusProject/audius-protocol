@@ -1,19 +1,21 @@
 import React, { useState } from 'react'
+
+import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
-import { AppState } from 'store/types'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
+
 import CreatePlaylistModal from 'components/create-playlist/CreatePlaylistModal'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
+import { ID } from 'models/common/Identifiers'
 import {
   getIsOpen,
   getCollectionId
 } from 'store/application/ui/editPlaylistModal/selectors'
-import { getCollectionWithUser } from 'store/cache/collections/selectors'
 import { close } from 'store/application/ui/editPlaylistModal/slice'
 import { editPlaylist, deletePlaylist } from 'store/cache/collections/actions'
-import { ID } from 'models/common/Identifiers'
-import { push as pushRoute } from 'connected-react-router'
+import { getCollectionWithUser } from 'store/cache/collections/selectors'
+import { AppState } from 'store/types'
 import { FEED_PAGE, getPathname, playlistPage } from 'utils/route'
 import zIndex from 'utils/zIndex'
 

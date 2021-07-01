@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
+
 import {
   Button,
   ButtonSize,
@@ -9,6 +8,8 @@ import {
   IconFollowing,
   IconUnfollow
 } from '@audius/stems'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
 
 import styles from './FollowButton.module.css'
 
