@@ -339,10 +339,6 @@ def configure_celery(flask_app, celery, test_config=None):
                  "src.tasks.index_aggregate_views", "src.tasks.index_challenges"
                  ],
         beat_schedule={
-            "vacuum_db": {
-                "task": "vacuum_db",
-                "schedule": timedelta(days=1),
-            },
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
                 "schedule": timedelta(seconds=indexing_interval_sec),
@@ -370,6 +366,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_materialized_views": {
                 "task": "update_materialized_views",
                 "schedule": timedelta(seconds=300)
+            },
+            "vacuum_db": {
+                "task": "vacuum_db",
+                "schedule": timedelta(days=1),
             },
             "update_network_peers": {
                 "task": "update_network_peers",
