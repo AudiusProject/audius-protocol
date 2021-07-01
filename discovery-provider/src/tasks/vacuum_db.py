@@ -1,6 +1,5 @@
 import logging
 from src.tasks.celery_app import celery
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 logger = logging.getLogger(__name__)
 
@@ -19,11 +18,11 @@ def vacuum_db(self):
         have_lock = update_lock.acquire(blocking=False)
 
         if have_lock:
-            connection = db.raw_connection()
-            connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            with connection.cursor() as curs:
-                curs.execute("VACUUM ANALYZE")
-            connection.close()
+            engine = db._engine
+            with engine.connect().execution_options(
+                isolation_level="AUTOCOMMIT"
+            ) as connection:
+                connection.execute("VACUUM ANALYZE")
         else:
             logger.info("vacuum_db.py | Failed to acquire lock")
     except Exception as e:
