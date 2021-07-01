@@ -151,7 +151,7 @@ def process_user_bank_tx_details(session, tx_info, tx_sig, timestamp):
         if 'EthereumAddress' in msg:
             public_key_str, public_key_bytes = parse_eth_address_from_msg(msg)
             logger.info(f"index_user_bank.py | {public_key_str}")
-            # Rederive address
+            # Rederive address based on user public key
             # pylint: disable=unused-variable
             base_address, derived_address = get_address_pair(
                 WAUDIO_PROGRAM_PUBKEY,
@@ -186,8 +186,17 @@ def parse_user_bank_transaction(session, solana_client, tx_sig):
     tx_slot = tx_info['result']['slot']
     timestamp = tx_info['result']['blockTime']
     parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
-    logger.error(f"index_user_bank.py | parse_user_bank_transaction | {tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}")
-    process_user_bank_tx_details(session, tx_info, tx_sig, parsed_timestamp)
+
+    logger.error(f"index_user_bank.py |\
+parse_user_bank_transaction |\
+{tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}")
+
+    process_user_bank_tx_details(
+        session,
+        tx_info,
+        tx_sig,
+        parsed_timestamp
+    )
     session.add(
         UserBankTransaction(
             signature=tx_sig,
@@ -239,7 +248,7 @@ def process_user_bank_txs():
                 for tx_info in transactions_array:
                     tx_sig = tx_info['signature']
                     tx_slot = tx_info['slot']
-                    logger.info(f"index_user_bank.py | Processing tx, tx_sig={tx_sig} | slot={tx_slot}")
+                    logger.info(f"index_user_bank.py | Processing tx={tx_sig} | slot={tx_slot}")
                     if tx_info['slot'] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
                     elif tx_info['slot'] <= latest_processed_slot and tx_info['slot'] > MIN_SLOT:
