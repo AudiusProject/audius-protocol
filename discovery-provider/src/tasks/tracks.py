@@ -1,4 +1,6 @@
 import logging
+import time
+import functools
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import null, functions
@@ -174,6 +176,22 @@ def update_remixes_table(session, track_record, track_metadata):
                     session.add(remix)
 
 
+def time_method(function_name):
+    def time_method_inner(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kargs):
+            tick = time.perf_counter()
+            func(*args, **kargs)
+            tock = time.perf_counter()
+            elapsed = tock - tick
+            logger.info(
+                f"TIME_METHOD Function={function_name} Elapsed={elapsed:0.6f}s"
+            )
+        return wrapper
+    return time_method_inner
+
+
+@time_method("update_track_routes_table")
 def update_track_routes_table(session, track_record, track_metadata):
     # Check if the title is staying the same, and if so, return early
     if track_record.title == track_metadata['title']:
