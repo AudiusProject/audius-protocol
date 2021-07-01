@@ -46,6 +46,8 @@ from .models import \
     UserBalance,\
     UserChallenge
 from .track_route import TrackRoute
+from .user_bank import UserBankTransaction
+from .user_bank import UserBankAccount
 
 __all__ = [
     'AggregateDailyAppNameMetrics',
@@ -94,5 +96,7 @@ __all__ = [
     'URSMContentNode',
     'User',
     'UserBalance',
-    'UserChallenge'
+    'UserChallenge',
+    'UserBankTransaction',
+    'UserBankAccount'
 ]
