@@ -1,5 +1,4 @@
 import logging
-import time
 from src.tasks.celery_app import celery
 
 logger = logging.getLogger(__name__)
