@@ -1,10 +1,12 @@
 import logging
+import time
+import functools
 from datetime import datetime
 from sqlalchemy.orm.session import make_transient
-from sqlalchemy.sql import null
+from sqlalchemy.sql import null, functions
 from src.app import contract_addresses
 from src.utils import multihash, helpers
-from src.models import Track, User, Stem, Remix
+from src.models import Remix, Stem, Track, TrackRoute, User
 from src.tasks.metadata import track_metadata_format
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.utils.indexing_errors import IndexingError
@@ -141,6 +143,7 @@ def invalidate_old_track(session, track_id):
         num_invalidated_tracks > 0
     ), "Update operation requires a current track to be invalidated"
 
+
 def update_stems_table(session, track_record, track_metadata):
     if (not "stem_of" in track_metadata) or (not isinstance(track_metadata["stem_of"], dict)):
         return
@@ -171,6 +174,130 @@ def update_remixes_table(session, track_record, track_metadata):
                         child_track_id=child_track_id
                     )
                     session.add(remix)
+
+
+def time_method(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kargs):
+        tick = time.perf_counter()
+        func(*args, **kargs)
+        tock = time.perf_counter()
+        elapsed = tock - tick
+        logger.info(
+            f"TIME_METHOD Function={func.__name__} Elapsed={elapsed:0.6f}s"
+        )
+    return wrapper
+
+
+@time_method
+def update_track_routes_table(session, track_record, track_metadata):
+    # Check if the title is staying the same, and if so, return early
+    if track_record.title == track_metadata['title']:
+        return
+
+    # Get the title slug, and set the new slug to that
+    # (will check for conflicts later)
+    new_track_slug_title = (
+        helpers.create_track_slug(track_metadata['title'])
+    )
+    new_track_slug = new_track_slug_title
+
+    # Find the current route for the track
+    prev_track_route_record = (
+        session
+        .query(TrackRoute)
+        .filter(TrackRoute.track_id == track_record.track_id,
+                TrackRoute.is_current == True)  # noqa: E712
+        .one_or_none()
+    )
+
+    if prev_track_route_record is not None:
+        if prev_track_route_record.title_slug == new_track_slug_title:
+            # If the title slug hasn't changed, we have no work to do
+            return
+        # The new route will be current
+        prev_track_route_record.is_current = False
+
+    # Check for collisions by slug titles, and get the max collision_id
+    max_collision_id = (
+        session
+        .query(functions.max(TrackRoute.collision_id))
+        .filter(TrackRoute.title_slug == new_track_slug_title,
+                TrackRoute.owner_id == track_record.owner_id)
+        .one_or_none()
+    )[0]
+
+    collision_count = 0
+    # If the new track_slug ends in a digit, there's a possibility it collides
+    # with an existing route when the collision_id is appended to its title_slug
+    if new_track_slug[-1].isdigit():
+        collision_count = (
+            session
+            .query(functions.count(TrackRoute.slug))
+            .filter(
+                TrackRoute.slug == new_track_slug,
+                TrackRoute.owner_id == track_record.owner_id)
+            .one_or_none()
+        )[0]
+
+    new_collision_id = 0
+    has_collisions = collision_count > 0
+    if max_collision_id is not None:
+        has_collisions = True
+        new_collision_id = max_collision_id
+    while has_collisions:
+        # If there is an existing track by the user with that slug,
+        # then we need to append the collision number to the slug
+        new_collision_id += 1
+        new_track_slug = helpers.create_track_slug(
+            track_metadata["title"],
+            new_collision_id)
+
+        # Check for new collisions after making the new slug
+        # In rare cases the user may have track names that end in numbers that
+        # conflict with this track name when the collision id is appended,
+        # for example they could be trying to create a route that conflicts
+        # with the old routing (of appending -{track_id}) This is a fail safe
+        # to increment the collision ID until no such collisions are present.
+        #
+        # Example scenario:
+        #   - User uploads track titled "Track" (title_slug: 'track')
+        #   - User uploads track titled "Track 1" (title_slug: 'track-1')
+        #   - User uploads track titled "Track" (title_slug: 'track')
+        #       - Try collision_id: 1, slug: 'track-1' and find new collision
+        #       - Use collision_id: 2, slug: 'track-2'
+        #   - User uploads track titled "Track" (title_slug: 'track')
+        #       - Use collision_id: 3, slug: 'track-3'
+        #   - User uploads track titled "Track 1" (title_slug: 'track-1')
+        #       - Use collision_id: 1, slug: 'track-1-1'
+        #
+        # This may be expensive with many collisions, but should be rare.
+        collision_count = (
+            session
+            .query(functions.count(TrackRoute.slug))
+            .filter(
+                TrackRoute.slug == new_track_slug,
+                TrackRoute.owner_id == track_record.owner_id)
+            .one_or_none()
+        )[0]
+        has_collisions = collision_count > 0
+
+    # Add the new track route
+    new_track_route = TrackRoute()
+    new_track_route.slug = new_track_slug
+    new_track_route.title_slug = new_track_slug_title
+    new_track_route.collision_id = new_collision_id
+    new_track_route.owner_id = track_record.owner_id
+    new_track_route.track_id = track_record.track_id
+    new_track_route.is_current = True
+    new_track_route.blockhash = track_record.blockhash
+    new_track_route.blocknumber = track_record.blocknumber
+    new_track_route.txhash = track_record.txhash
+    session.add(new_track_route)
+
+    # Make sure to commit so we don't add the same route twice
+    session.commit()
+
 
 def parse_track_event(
         self, session, update_task, entry, event_type, track_record, block_timestamp
@@ -215,6 +342,7 @@ def parse_track_event(
             creator_node_endpoint
         )
 
+        update_track_routes_table(session, track_record, track_metadata)
         track_record = populate_track_record_metadata(
             track_record,
             track_metadata,
@@ -273,6 +401,7 @@ def parse_track_event(
             creator_node_endpoint
         )
 
+        update_track_routes_table(session, track_record, track_metadata)
         track_record = populate_track_record_metadata(
             track_record,
             track_metadata,
@@ -307,10 +436,12 @@ def parse_track_event(
 
     return track_record
 
+
 def is_valid_json_field(metadata, field):
     if field in metadata and isinstance(metadata[field], dict) and metadata[field]:
         return True
     return False
+
 
 def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.title = track_metadata["title"]

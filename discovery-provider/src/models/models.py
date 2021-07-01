@@ -23,6 +23,7 @@ from sqlalchemy import (
 )
 from src.model_validator import ModelValidator
 
+
 Base = declarative_base()
 logger = logging.getLogger(__name__)
 
