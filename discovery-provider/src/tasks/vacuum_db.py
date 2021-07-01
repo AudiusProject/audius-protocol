@@ -20,7 +20,7 @@ def vacuum_db(self):
 
         if have_lock:
             with db.scoped_session() as session:
-                session.execute("VACUUM FULL")
+                session.execute("VACUUM FULL ANALYZE")
         else:
             logger.info("vacuum_db.py | Failed to acquire lock")
     except Exception as e:
