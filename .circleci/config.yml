@@ -89,11 +89,11 @@ jobs:
           key: v1-eth-contracts-{{ checksum "eth-contracts/package-lock.json" }}
 
       # content node
-      # - restore_cache:
-      #     name: Restore content-node cache
-      #     keys:
-      #       - v1-content-node-{{ checksum "creator-node/package-lock.json" }}
-      #       - v1-content-node-
+      - restore_cache:
+          name: Restore content-node cache
+          keys:
+            - v1-content-node-{{ checksum "creator-node/package-lock.json" }}
+            - v1-content-node-
       - run:
           name: content-node repo init
           command: |
@@ -382,11 +382,11 @@ jobs:
           steps:
             - run: ./diff.sh creator-node || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "creator-node/package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+      # - restore_cache:
+      #     keys:
+      #     - v1-dependencies-{{ checksum "creator-node/package.json" }}
+      #     # fallback to using the latest cache if no exact match is found
+      #     - v1-dependencies-
       - run:
           name: setup
           command: |
