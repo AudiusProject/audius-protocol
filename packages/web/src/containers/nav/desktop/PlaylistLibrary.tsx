@@ -1,34 +1,34 @@
 import React, { useCallback, useState } from 'react'
-import { NavLink, NavLinkProps } from 'react-router-dom'
-import cn from 'classnames'
 
+import cn from 'classnames'
+import { useDispatch } from 'react-redux'
+import { NavLink, NavLinkProps } from 'react-router-dom'
+
+import UpdateDot from 'components/general/UpdateDot'
+import Tooltip from 'components/tooltip/Tooltip'
+import Draggable from 'containers/dragndrop/Draggable'
+import Droppable from 'containers/dragndrop/Droppable'
+import { getPlaylistUpdates } from 'containers/notification/store/selectors'
+import { useArePlaylistUpdatesEnabled } from 'containers/remote-config/hooks'
+import { SMART_COLLECTION_MAP } from 'containers/smart-collection/smartCollections'
+import { SmartCollectionVariant } from 'containers/smart-collection/types'
+import { SmartCollection } from 'models/Collection'
+import { ID } from 'models/common/Identifiers'
+import { AccountCollection } from 'store/account/reducer'
 import {
   getAccountNavigationPlaylists,
   getAccountUser,
   getPlaylistLibrary
 } from 'store/account/selectors'
-import { getPlaylistUpdates } from 'containers/notification/store/selectors'
+import { addTrackToPlaylist } from 'store/cache/collections/actions'
+import { getIsDragging } from 'store/dragndrop/selectors'
+import { reorderPlaylistLibrary } from 'store/playlist-library/helpers'
+import { update } from 'store/playlist-library/slice'
 import { useSelector } from 'utils/reducer'
 import { playlistPage, getPathname } from 'utils/route'
 
-import Droppable from 'containers/dragndrop/Droppable'
-import UpdateDot from 'components/general/UpdateDot'
 import navColumnStyles from './NavColumn.module.css'
 import styles from './PlaylistLibrary.module.css'
-
-import { addTrackToPlaylist } from 'store/cache/collections/actions'
-import { getIsDragging } from 'store/dragndrop/selectors'
-import { ID } from 'models/common/Identifiers'
-import { SMART_COLLECTION_MAP } from 'containers/smart-collection/smartCollections'
-import { SmartCollection } from 'models/Collection'
-import { AccountCollection } from 'store/account/reducer'
-import Draggable from 'containers/dragndrop/Draggable'
-import { useDispatch } from 'react-redux'
-import { update } from 'store/playlist-library/slice'
-import { SmartCollectionVariant } from 'containers/smart-collection/types'
-import { reorderPlaylistLibrary } from 'store/playlist-library/helpers'
-import Tooltip from 'components/tooltip/Tooltip'
-import { useArePlaylistUpdatesEnabled } from 'containers/remote-config/hooks'
 
 type DraggableNavLinkProps = NavLinkProps & {
   droppableKey: ID | SmartCollectionVariant

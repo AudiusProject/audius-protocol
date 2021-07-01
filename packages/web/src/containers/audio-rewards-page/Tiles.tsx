@@ -1,30 +1,33 @@
 import React, { useCallback } from 'react'
-import styles from './Tiles.module.css'
-import cn from 'classnames'
-import { useSelector } from 'utils/reducer'
-import {
-  getAccountBalance,
-  formatWei,
-  BNWei,
-  getAccountTotalBalance
-} from 'store/wallet/slice'
-import BN from 'bn.js'
+
 import { Button, ButtonType } from '@audius/stems'
+import BN from 'bn.js'
+import cn from 'classnames'
 import { useDispatch } from 'react-redux'
-import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
+
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
+import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
+import MobileConnectWalletsDrawer from 'containers/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
+import { useModalState } from 'hooks/useModalState'
+import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import {
   getAssociatedWallets,
   pressConnectWallets,
   pressReceive,
   pressSend
 } from 'store/token-dashboard/slice'
-import TokenHoverTooltip from './components/TokenHoverTooltip'
+import {
+  getAccountBalance,
+  formatWei,
+  BNWei,
+  getAccountTotalBalance
+} from 'store/wallet/slice'
 import { isMobile } from 'utils/clientUtil'
-import { useModalState } from 'hooks/useModalState'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { useSelector } from 'utils/reducer'
 import { Nullable } from 'utils/typeUtils'
-import MobileConnectWalletsDrawer from 'containers/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
+
+import styles from './Tiles.module.css'
+import TokenHoverTooltip from './components/TokenHoverTooltip'
 const messages = {
   noClaim1: 'You earn $AUDIO by using Audius.',
   noClaim2: 'The more you use Audius, the more $AUDIO you earn.',

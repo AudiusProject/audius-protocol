@@ -1,3 +1,5 @@
+import React, { useCallback } from 'react'
+
 import {
   Button,
   ButtonType,
@@ -5,17 +7,17 @@ import {
   IconTwitterBird,
   IconUpload
 } from '@audius/stems'
-import TwitterButton from 'components/general/TwitterButton'
-import React, { useCallback } from 'react'
-import { useModalState } from 'hooks/useModalState'
-import ModalDrawer from './ModalDrawer'
-import { InstagramButton } from 'components/general/InstagramButton'
 
-import styles from './VerifiedUpload.module.css'
+import { InstagramButton } from 'components/general/InstagramButton'
+import TwitterButton from 'components/general/TwitterButton'
+import { useModalState } from 'hooks/useModalState'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { ACCOUNT_SETTINGS_PAGE, SETTINGS_PAGE, UPLOAD_PAGE } from 'utils/route'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'
+import { ACCOUNT_SETTINGS_PAGE, SETTINGS_PAGE, UPLOAD_PAGE } from 'utils/route'
+
+import ModalDrawer from './ModalDrawer'
+import styles from './VerifiedUpload.module.css'
 
 const messages = {
   title: 'Verified Upload',

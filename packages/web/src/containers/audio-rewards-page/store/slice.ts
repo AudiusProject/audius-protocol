@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
 import { AppState } from 'store/types'
 
 export type TrendingRewardsModalType = 'tracks' | 'playlists' | 'underground'

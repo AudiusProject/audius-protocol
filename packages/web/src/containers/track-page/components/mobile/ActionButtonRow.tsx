@@ -1,15 +1,17 @@
 import React, { useContext, useCallback } from 'react'
-import IconButton from 'components/general/IconButton'
-import cn from 'classnames'
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
 
-import styles from './ActionButtonRow.module.css'
+import { IconShare, IconKebabHorizontal } from '@audius/stems'
+import cn from 'classnames'
+import Lottie from 'react-lottie'
+
+import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import AnimatedIconButton, {
   AnimatedIconType
 } from 'components/animated-button/AnimatedIconButton'
-import Lottie from 'react-lottie'
+import IconButton from 'components/general/IconButton'
 import { ToastContext } from 'components/toast/ToastContext'
-import { IconShare, IconKebabHorizontal } from '@audius/stems'
+
+import styles from './ActionButtonRow.module.css'
 
 const messages = {
   copied: 'Copied To Clipboard!'

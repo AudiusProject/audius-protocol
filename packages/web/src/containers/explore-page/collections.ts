@@ -1,6 +1,9 @@
 import { ReactNode } from 'react'
-import { ExploreCollectionsVariant } from './store/types'
 
+import { ReactComponent as IconCassette } from 'assets/img/iconCassette.svg'
+import { ReactComponent as IconExploreDJ } from 'assets/img/iconExploreDJ.svg'
+import { ReactComponent as IconExploreTopAlbums } from 'assets/img/iconExploreTopAlbums.svg'
+import { ReactComponent as IconExploreTopPlaylists } from 'assets/img/iconExploreTopPlaylists.svg'
 import {
   EXPLORE_LET_THEM_DJ_PAGE,
   EXPLORE_TOP_ALBUMS_PAGE,
@@ -9,10 +12,7 @@ import {
   TRENDING_UNDERGROUND_PAGE
 } from 'utils/route'
 
-import { ReactComponent as IconExploreDJ } from 'assets/img/iconExploreDJ.svg'
-import { ReactComponent as IconExploreTopAlbums } from 'assets/img/iconExploreTopAlbums.svg'
-import { ReactComponent as IconExploreTopPlaylists } from 'assets/img/iconExploreTopPlaylists.svg'
-import { ReactComponent as IconCassette } from 'assets/img/iconCassette.svg'
+import { ExploreCollectionsVariant } from './store/types'
 
 export type ExploreCollection = {
   variant: ExploreCollectionsVariant

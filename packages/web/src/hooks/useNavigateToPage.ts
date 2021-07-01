@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
-import { useDispatch } from 'react-redux'
+
 import { push as pushRoute } from 'connected-react-router'
+import { useDispatch } from 'react-redux'
 
 /**
  * Wraps page navigation.

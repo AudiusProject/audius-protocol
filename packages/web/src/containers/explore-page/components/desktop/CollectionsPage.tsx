@@ -1,11 +1,16 @@
 import React, { useCallback, MouseEvent } from 'react'
+
 import Spin from 'antd/lib/spin'
 
-import { UserCollection } from 'models/Collection'
-import { Status } from 'store/types'
-
+import ArtistPopover from 'components/artist/ArtistPopover'
+import Card from 'components/card/desktop/Card'
 import Page from 'components/general/Page'
 import Header from 'components/general/header/desktop/Header'
+import CardLineup from 'containers/lineup/CardLineup'
+import { useOrderedLoad } from 'hooks/useOrderedLoad'
+import { UserCollection } from 'models/Collection'
+import { ID } from 'models/common/Identifiers'
+import { Status } from 'store/types'
 import {
   playlistPage,
   fullPlaylistPage,
@@ -15,13 +20,8 @@ import {
   EXPLORE_PAGE,
   profilePage
 } from 'utils/route'
-import Card from 'components/card/desktop/Card'
-import CardLineup from 'containers/lineup/CardLineup'
-import { useOrderedLoad } from 'hooks/useOrderedLoad'
 
 import styles from './CollectionsPage.module.css'
-import { ID } from 'models/common/Identifiers'
-import ArtistPopover from 'components/artist/ArtistPopover'
 
 export type CollectionsPageProps = {
   title: string

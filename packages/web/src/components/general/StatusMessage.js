@@ -1,13 +1,14 @@
 import React from 'react'
+
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { animated, useTransition } from 'react-spring'
 
-import styles from './StatusMessage.module.css'
-
+import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
 import { ReactComponent as IconValidationCheck } from 'assets/img/iconValidationCheck.svg'
 import { ReactComponent as IconValidationX } from 'assets/img/iconValidationX.svg'
-import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
+
+import styles from './StatusMessage.module.css'
 
 export const StatusDefault = props => (
   <div

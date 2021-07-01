@@ -1,14 +1,15 @@
-import Color from 'models/common/Color'
-import { CID, ID } from 'models/common/Identifiers'
-import { PlaylistLibrary } from 'models/PlaylistLibrary'
-import { CoverPhotoSizes, ProfilePictureSizes } from 'models/common/ImageSizes'
-import { StringWei } from 'store/wallet/slice'
-import { Nullable } from 'utils/typeUtils'
-import Timestamped from './common/Timestamped'
 import {
   Collectible,
   CollectiblesMetadata
 } from 'containers/collectibles/components/types'
+import { PlaylistLibrary } from 'models/PlaylistLibrary'
+import Color from 'models/common/Color'
+import { CID, ID } from 'models/common/Identifiers'
+import { CoverPhotoSizes, ProfilePictureSizes } from 'models/common/ImageSizes'
+import { StringWei } from 'store/wallet/slice'
+import { Nullable } from 'utils/typeUtils'
+
+import Timestamped from './common/Timestamped'
 
 export type UserMetadata = {
   album_count: number

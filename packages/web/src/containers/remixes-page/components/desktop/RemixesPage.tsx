@@ -1,18 +1,20 @@
 import React from 'react'
+
+import cn from 'classnames'
+
+import { ReactComponent as IconRemixes } from 'assets/img/iconRemix.svg'
 import Page from 'components/general/Page'
 import Header from 'components/general/header/desktop/Header'
-import { ReactComponent as IconRemixes } from 'assets/img/iconRemix.svg'
-
-import styles from './RemixesPage.module.css'
 import Lineup, { LineupWithoutTile } from 'containers/lineup/Lineup'
-import { withNullGuard } from 'utils/withNullGuard'
+import UserBadges from 'containers/user-badges/UserBadges'
 import Track from 'models/Track'
 import User from 'models/User'
 import { pluralize } from 'utils/formatUtil'
 import { fullTrackRemixesPage } from 'utils/route'
-import UserBadges from 'containers/user-badges/UserBadges'
-import cn from 'classnames'
 import { isMatrix } from 'utils/theme/theme'
+import { withNullGuard } from 'utils/withNullGuard'
+
+import styles from './RemixesPage.module.css'
 
 const messages = {
   remixes: 'Remix',

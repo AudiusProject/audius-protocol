@@ -1,25 +1,25 @@
 import React, { useState } from 'react'
-import { connect } from 'react-redux'
+
 import { Modal } from '@audius/stems'
-import PropTypes from 'prop-types'
 import cn from 'classnames'
 import { each } from 'lodash'
-import SimpleBar from 'simplebar-react'
+import PropTypes from 'prop-types'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
+import { connect } from 'react-redux'
+import SimpleBar from 'simplebar-react'
 
-import { setSelected, closeModal } from './store/slice'
+import SearchBar from 'components/search-bar/SearchBar'
+
+import styles from './ServiceSelectionModal.module.css'
+import Service from './components/Service'
 import {
   getShowModal,
   getServices,
   getPrimary,
   getSecondaries
 } from './store/selectors'
+import { setSelected, closeModal } from './store/slice'
 import { getCountry } from './utils'
-
-import Service from './components/Service'
-import SearchBar from 'components/search-bar/SearchBar'
-
-import styles from './ServiceSelectionModal.module.css'
 
 const PRIMARY_SERVICE_ID = 'primary-service'
 const FIRST_SECONDARY_SERVICE_ID = 'first-secondary-service'

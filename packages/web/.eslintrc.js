@@ -23,7 +23,33 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module'
   },
-  plugins: ['react', 'react-hooks', '@typescript-eslint', 'jest'],
+  plugins: ['react', 'react-hooks', '@typescript-eslint', 'jest', 'import'],
+  settings: {
+    'import/resolver': {
+      // NOTE: sk - These aliases are required for the import/order rule.
+      // We are using the typescript baseUrl to do absolute import paths
+      // relative to /src, which eslint can't tell apart from 3rd party deps
+      alias: {
+        map: [
+          ['__mocks__', './src/__mocks__'],
+          ['audio', './src/audio'],
+          ['assets', './src/assets'],
+          ['components', './src/components'],
+          ['containers', './src/containers'],
+          ['hooks', './src/hooks'],
+          ['models', './src/models'],
+          ['schemas', './src/schemas'],
+          ['services', './src/services'],
+          ['store', './src/store'],
+          ['stories', './src/stories'],
+          ['types', './src/types'],
+          ['utils', './src/utils'],
+          ['workers', './src/workers']
+        ],
+        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
+      }
+    }
+  },
   rules: {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
@@ -62,6 +88,32 @@ module.exports = {
     'prettier/prettier': 'error',
 
     'space-before-function-paren': 'off',
-    'generator-star-spacing': 'off'
+    'generator-star-spacing': 'off',
+
+    'import/order': [
+      'error',
+      {
+        alphabetize: {
+          order: 'asc'
+        },
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          'parent',
+          'sibling',
+          'index'
+        ],
+        'newlines-between': 'always',
+        pathGroups: [
+          {
+            pattern: 'react',
+            group: 'builtin',
+            position: 'before'
+          }
+        ],
+        pathGroupsExcludedImportTypes: ['builtin']
+      }
+    ]
   }
 }

@@ -1,4 +1,5 @@
 import { createCustomAction } from 'typesafe-actions'
+
 import { ID } from 'models/common/Identifiers'
 
 export const SET_FOLOWING = 'FOLLOWING_USER_PAGE/SET_FOLOWING'

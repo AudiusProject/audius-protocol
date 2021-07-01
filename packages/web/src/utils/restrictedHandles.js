@@ -1,5 +1,5 @@
-import { moodMap } from 'utils/moods'
 import { GENRES } from 'utils/genres'
+import { moodMap } from 'utils/moods'
 import { orderedRoutes } from 'utils/route'
 
 const restrictedRoutes = orderedRoutes

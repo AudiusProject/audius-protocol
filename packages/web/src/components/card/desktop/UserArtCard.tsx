@@ -1,21 +1,17 @@
 import React, { useCallback } from 'react'
-import { connect } from 'react-redux'
-import { push as pushRoute } from 'connected-react-router'
 
 import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
 
 import placeholderArt from 'assets/img/imageBlank2x.png'
-import styles from './UserArtCard.module.css'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { SquareSizes } from 'models/common/ImageSizes'
+import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
+import UserBadges from 'containers/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useImageSize'
 import { ID } from 'models/common/Identifiers'
-import { AppState } from 'store/types'
-import { Dispatch } from 'redux'
-import { getUser } from 'store/cache/users/selectors'
-import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
-import { profilePage } from 'utils/route'
-import { formatCount } from 'utils/formatUtil'
+import { SquareSizes } from 'models/common/ImageSizes'
 import {
   setUsers,
   setVisibility
@@ -24,8 +20,13 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
+import { getUser } from 'store/cache/users/selectors'
+import { AppState } from 'store/types'
+import { formatCount } from 'utils/formatUtil'
+import { profilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
-import UserBadges from 'containers/user-badges/UserBadges'
+
+import styles from './UserArtCard.module.css'
 
 const messages = {
   followers: (count: number) => `${formatCount(count)} Followers`

@@ -1,15 +1,15 @@
 import { all, call, put, select, takeEvery, spawn } from 'redux-saga/effects'
 
 import * as cacheActions from 'store/cache/actions'
-import { getCache } from 'store/cache/selectors'
-import { getConfirmCalls } from 'store/confirmer/selectors'
+import { getCollections } from 'store/cache/collections/selectors'
 import { CACHE_PRUNE_MIN } from 'store/cache/config'
-import { makeKindId, makeUids } from 'utils/uid'
+import { getCache } from 'store/cache/selectors'
+import { getTracks } from 'store/cache/tracks/selectors'
+import { getUsers } from 'store/cache/users/selectors'
+import { getConfirmCalls } from 'store/confirmer/selectors'
 import { Status, Kind } from 'store/types'
 import * as persistentCache from 'utils/persistentCache'
-import { getUsers } from 'store/cache/users/selectors'
-import { getTracks } from 'store/cache/tracks/selectors'
-import { getCollections } from 'store/cache/collections/selectors'
+import { makeKindId, makeUids } from 'utils/uid'
 
 const DEFAULT_ENTRY_TTL = 5 /* min */ * 60 /* seconds */ * 1000 /* ms */
 const REFRESH_BLACKLIST_INTERVAL_MS = 3 /* seconds */ * 1000 /* ms */

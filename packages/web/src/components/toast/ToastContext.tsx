@@ -1,10 +1,12 @@
 import React, { createContext, memo, useState, useCallback } from 'react'
-import Toast from './mobile/Toast'
 
-import styles from './ToastContext.module.css'
 import { useTransition, animated } from 'react-spring'
+
 import { getSafeArea, SafeAreaDirection } from 'utils/safeArea'
 import { uuid } from 'utils/uid'
+
+import styles from './ToastContext.module.css'
+import Toast from './mobile/Toast'
 
 const DEFAULT_TIMEOUT = 3000
 

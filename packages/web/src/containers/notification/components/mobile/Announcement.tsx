@@ -1,14 +1,15 @@
 import React, { useCallback } from 'react'
-import ReactMarkdown from 'react-markdown'
-import moment from 'moment'
-import cn from 'classnames'
+
 import { IconKebabHorizontal } from '@audius/stems'
+import cn from 'classnames'
+import moment from 'moment'
+import ReactMarkdown from 'react-markdown'
 
 import { ReactComponent as IconAnnouncement } from 'assets/img/iconAnnouncement.svg'
 import { ReactComponent as IconAnnouncementUnread } from 'assets/img/iconAnnouncementUnread.svg'
 import IconButton from 'components/general/IconButton'
-import { make, useRecord } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
 
 import styles from './Announcement.module.css'
 

@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
+
 import { AppState } from 'store/types'
 import {
   WEI,

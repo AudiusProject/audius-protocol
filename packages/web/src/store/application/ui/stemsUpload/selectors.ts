@@ -1,5 +1,5 @@
-import { AppState } from 'store/types'
 import { ID } from 'models/common/Identifiers'
+import { AppState } from 'store/types'
 
 const getBase = (state: AppState) => state.application.ui.stemsUpload
 export const getCurrentUploads = (state: AppState, parentTrackId: ID) => {

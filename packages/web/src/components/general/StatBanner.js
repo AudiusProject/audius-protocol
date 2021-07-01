@@ -1,5 +1,5 @@
 import React from 'react'
-import PropTypes from 'prop-types'
+
 import {
   Button,
   ButtonSize,
@@ -7,11 +7,13 @@ import {
   IconShare,
   IconPencil
 } from '@audius/stems'
+import PropTypes from 'prop-types'
 
 import FollowButton from 'components/general/FollowButton'
-import SubscribeButton from 'components/general/SubscribeButton'
 import Stats from 'components/general/Stats'
+import SubscribeButton from 'components/general/SubscribeButton'
 import Toast from 'components/toast/Toast'
+
 import styles from './StatBanner.module.css'
 
 const BUTTON_COLLAPSE_WIDTHS = {

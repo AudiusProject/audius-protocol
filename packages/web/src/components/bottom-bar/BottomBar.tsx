@@ -6,20 +6,22 @@ import React, {
   useEffect
 } from 'react'
 
-import styles from './BottomBar.module.css'
-import FeedButton from 'components/bottom-bar/buttons/FeedButton'
-import TrendingButton from 'components/bottom-bar/buttons/TrendingButton'
+import { useLocation } from 'react-router-dom'
+
 import ExploreButton from 'components/bottom-bar/buttons/ExploreButton'
 import FavoritesButton from 'components/bottom-bar/buttons/FavoritesButton'
+import FeedButton from 'components/bottom-bar/buttons/FeedButton'
 import ProfileButton from 'components/bottom-bar/buttons/ProfileButton'
+import TrendingButton from 'components/bottom-bar/buttons/TrendingButton'
+import { RouterContext } from 'containers/animated-switch/RouterContextProvider'
 import {
   FEED_PAGE,
   TRENDING_PAGE,
   EXPLORE_PAGE,
   FAVORITES_PAGE
 } from 'utils/route'
-import { RouterContext } from 'containers/animated-switch/RouterContextProvider'
-import { useLocation } from 'react-router-dom'
+
+import styles from './BottomBar.module.css'
 
 type Props = {
   currentPage: string

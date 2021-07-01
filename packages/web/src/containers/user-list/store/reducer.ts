@@ -1,6 +1,7 @@
-import { UserListStoreState } from './types'
 import { createReducer, ActionType } from 'typesafe-actions'
+
 import * as actions from './actions'
+import { UserListStoreState } from './types'
 
 type UserListActions = ActionType<typeof actions>
 

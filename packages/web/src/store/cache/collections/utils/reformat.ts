@@ -1,10 +1,11 @@
-import AudiusBackend from 'services/AudiusBackend'
+import { omit } from 'lodash'
+
 import Collection, {
   CollectionMetadata,
   UserCollectionMetadata,
   Variant
 } from 'models/Collection'
-import { omit } from 'lodash'
+import AudiusBackend from 'services/AudiusBackend'
 
 /**
  * Adds cover_art_url to a collection object if it does not have one set

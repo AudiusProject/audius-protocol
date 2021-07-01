@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { useChain, useSpring, useTrail, animated } from 'react-spring'
-import cn from 'classnames'
-import styles from './Description.module.css'
 
-import productShot1x from 'assets/img/publicSite/product-shot@1x.png'
-import productShot2x from 'assets/img/publicSite/product-shot@2x.png'
+import cn from 'classnames'
+import { useChain, useSpring, useTrail, animated } from 'react-spring'
+
 import dotsLogo1x from 'assets/img/publicSite/dot-logo@1x.jpg'
 import dotsLogo2x from 'assets/img/publicSite/dot-logo@2x.jpg'
+import productShot1x from 'assets/img/publicSite/product-shot@1x.png'
+import productShot2x from 'assets/img/publicSite/product-shot@2x.png'
+
+import styles from './Description.module.css'
 
 const messages = {
   title1: 'We Give Everyone the',

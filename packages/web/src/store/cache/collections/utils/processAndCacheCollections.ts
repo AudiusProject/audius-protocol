@@ -1,13 +1,15 @@
 import { put, call } from 'redux-saga/effects'
-import { addUsersFromCollections } from './addUsersFromCollections'
-import { reformat } from './reformat'
-import { makeUid } from 'utils/uid'
+
+import { UserCollectionMetadata } from 'models/Collection'
+import { ID } from 'models/common/Identifiers'
 import * as cacheActions from 'store/cache/actions'
 import { Kind } from 'store/types'
-import { UserCollectionMetadata } from 'models/Collection'
-import { retrieveTracksForCollections } from './retrieveCollections'
+import { makeUid } from 'utils/uid'
+
 import { addTracksFromCollections } from './addTracksFromCollections'
-import { ID } from 'models/common/Identifiers'
+import { addUsersFromCollections } from './addUsersFromCollections'
+import { reformat } from './reformat'
+import { retrieveTracksForCollections } from './retrieveCollections'
 
 /**
  * Processes and caches a collection

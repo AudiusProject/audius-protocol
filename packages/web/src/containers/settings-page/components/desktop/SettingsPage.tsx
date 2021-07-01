@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import cn from 'classnames'
+
 import {
   Modal,
   Button,
@@ -8,37 +8,37 @@ import {
   IconNotification,
   IconSignOut
 } from '@audius/stems'
+import cn from 'classnames'
 
-import DownloadApp from 'services/download-app/DownloadApp'
-import AudiusBackend from 'services/AudiusBackend'
-import { signOut } from 'utils/signOut'
-import { isMobile, isElectron, getOS } from 'utils/clientUtil'
-import SelectedServices from 'containers/service-selection/SelectedServices'
+import audiusIcon from 'assets/img/audiusIcon.png'
+import TabSlider from 'components/data-entry/TabSlider'
 import ConfirmationBox from 'components/general/ConfirmationBox'
-import Header from 'components/general/header/desktop/Header'
 import Page from 'components/general/Page'
+import Header from 'components/general/header/desktop/Header'
 import Toast from 'components/toast/Toast'
 import { ComponentPlacement } from 'components/types'
+import SelectedServices from 'containers/service-selection/SelectedServices'
+import { OS } from 'models/OS'
+import Theme from 'models/Theme'
+import { ID } from 'models/common/Identifiers'
+import { ProfilePictureSizes } from 'models/common/ImageSizes'
+import AudiusBackend from 'services/AudiusBackend'
+import DownloadApp from 'services/download-app/DownloadApp'
+import { InstagramProfile } from 'store/account/reducer'
+import { isMobile, isElectron, getOS } from 'utils/clientUtil'
+import { signOut } from 'utils/signOut'
+
+import { version } from '../../../../../package.json'
 import {
   Notifications,
   BrowserNotificationSetting,
   EmailFrequency
 } from '../../store/types'
 
-import TabSlider from 'components/data-entry/TabSlider'
-import Theme from 'models/Theme'
-
-import { version } from '../../../../../package.json'
-
 import NotificationSettings from './NotificationSettings'
+import SettingsCard from './SettingsCard'
 import styles from './SettingsPage.module.css'
 import VerificationModal from './VerificationModal'
-import SettingsCard from './SettingsCard'
-import { OS } from 'models/OS'
-import audiusIcon from 'assets/img/audiusIcon.png'
-import { ProfilePictureSizes } from 'models/common/ImageSizes'
-import { ID } from 'models/common/Identifiers'
-import { InstagramProfile } from 'store/account/reducer'
 
 const SIGN_OUT_MODAL_TEXT = `
   Are you sure you want to sign out?

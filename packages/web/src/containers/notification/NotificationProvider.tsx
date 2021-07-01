@@ -1,20 +1,12 @@
 import React, { useCallback, useEffect } from 'react'
-import { connect } from 'react-redux'
-import { AppState, Status } from 'store/types'
-import { Dispatch } from 'redux'
+
 import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
 
 import { ID } from 'models/common/Identifiers'
+import { AppState, Status } from 'store/types'
 
-import {
-  getNotificationHasLoaded,
-  getNotificationStatus,
-  getNotificationHasMore,
-  getNotificationPanelIsOpen,
-  getNotificationModalIsOpen,
-  makeGetAllNotifications,
-  getModalNotification
-} from './store/selectors'
 import {
   markAsRead,
   markAllAsRead,
@@ -26,6 +18,15 @@ import {
   markAllAsViewed,
   toggleNotificationPanel
 } from './store/actions'
+import {
+  getNotificationHasLoaded,
+  getNotificationStatus,
+  getNotificationHasMore,
+  getNotificationPanelIsOpen,
+  getNotificationModalIsOpen,
+  makeGetAllNotifications,
+  getModalNotification
+} from './store/selectors'
 
 type OwnProps = {
   children: React.ComponentType<any>

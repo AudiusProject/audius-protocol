@@ -1,14 +1,16 @@
 import React, { Component } from 'react'
+
 import PropTypes from 'prop-types'
-import styles from './ArtistCard.module.css'
+
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowButton from 'components/general/FollowButton'
 import Stats from 'components/general/Stats'
-
+import UserBadges from 'containers/user-badges/UserBadges'
 import { useUserCoverPhoto, useUserProfilePicture } from 'hooks/useImageSize'
 import { WidthSizes, SquareSizes } from 'models/common/ImageSizes'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import UserBadges from 'containers/user-badges/UserBadges'
+
+import styles from './ArtistCard.module.css'
 
 const gradient = `linear-gradient(180deg, rgba(0, 0, 0, 0.001) 0%, rgba(0, 0, 0, 0.005) 67.71%, rgba(0, 0, 0, 0.15) 79.17%, rgba(0, 0, 0, 0.25) 100%)`
 

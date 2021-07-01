@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
 
 import AntTooltip from 'antd/lib/tooltip'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
+
 import styles from './Tooltip.module.css'
 
 export const Tooltip = props => {

@@ -1,9 +1,11 @@
 import React, { memo, useState, useEffect, useRef, useCallback } from 'react'
-import Lottie from 'react-lottie'
+
 import cn from 'classnames'
+import Lottie from 'react-lottie'
+
+import useInstanceVar from 'hooks/useInstanceVar'
 
 import styles from './AnimatedButtonProvider.module.css'
-import useInstanceVar from 'hooks/useInstanceVar'
 
 export type BaseAnimatedButtonProps = {
   onClick: ((e: React.MouseEvent) => void) | (() => void)

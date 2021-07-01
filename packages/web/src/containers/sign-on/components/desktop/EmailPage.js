@@ -1,16 +1,17 @@
 import React, { Component } from 'react'
+
+import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { Spring } from 'react-spring/renderprops'
-import { Button, ButtonType, IconArrow } from '@audius/stems'
+
+import audiusLogoColored from 'assets/img/audiusLogoColored.png'
+import Input from 'components/data-entry/Input'
+import StatusMessage from 'components/general/StatusMessage'
+import PreloadImage from 'components/preload-image/PreloadImage'
 
 import styles from './EmailPage.module.css'
 import { MetaMaskOption } from './MetaMaskOption'
-import Input from 'components/data-entry/Input'
-
-import audiusLogoColored from 'assets/img/audiusLogoColored.png'
-import StatusMessage from 'components/general/StatusMessage'
-import PreloadImage from 'components/preload-image/PreloadImage'
 
 const messages = {
   title: 'Sign Up For Audius',

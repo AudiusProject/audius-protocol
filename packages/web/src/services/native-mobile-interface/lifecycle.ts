@@ -1,6 +1,7 @@
-import { MessageType } from './types'
-import { NativeMobileMessage } from './helpers'
 import User from 'models/User'
+
+import { NativeMobileMessage } from './helpers'
+import { MessageType } from './types'
 
 export class BackendDidSetup extends NativeMobileMessage {
   constructor() {

@@ -1,7 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
+import Track from 'models/Track'
 import Color from 'models/common/Color'
 import { CID } from 'models/common/Identifiers'
-import Track from 'models/Track'
 import { AppState } from 'store/types'
 import { Nullable } from 'utils/typeUtils'
 

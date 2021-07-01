@@ -1,9 +1,10 @@
+import { createSlice } from '@reduxjs/toolkit'
 import { combineReducers } from 'redux'
 
-import { createSlice } from '@reduxjs/toolkit'
-import moreByTracksReducer from './lineups/more-by/reducer'
-import { PREFIX as moreByPrefix } from './lineups/more-by/actions'
 import { asLineup } from 'store/lineup/reducer'
+
+import { PREFIX as moreByPrefix } from './lineups/more-by/actions'
+import moreByTracksReducer from './lineups/more-by/reducer'
 
 type State = {}
 

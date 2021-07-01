@@ -1,19 +1,21 @@
+import React, { useCallback } from 'react'
+
+import { useDispatch } from 'react-redux'
+
 import Drawer from 'components/drawer/Drawer'
 import {
   audioTierMapPng,
   TierLevel,
   TierNumber
 } from 'containers/audio-rewards-page/Tiers'
-import React, { useCallback } from 'react'
-import { useDispatch } from 'react-redux'
 import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
 import { setVisibility } from 'store/application/ui/modals/slice'
 import { useSelector } from 'utils/reducer'
-import { useProfileTier } from './hooks'
-import { BadgeTierText } from './ProfilePageBadge'
-import { messages } from './TierExplainerModal'
 
+import { BadgeTierText } from './ProfilePageBadge'
 import styles from './TierExplainerDrawer.module.css'
+import { messages } from './TierExplainerModal'
+import { useProfileTier } from './hooks'
 
 const TierExplainerDrawer = () => {
   // use the modal visibility state

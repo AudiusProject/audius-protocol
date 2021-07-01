@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import styles from './ArtistTestimonials.module.css'
+
 import { Parallax } from 'react-scroll-parallax'
 import { useSpring, useTransition, animated } from 'react-spring'
-import useHasViewed from 'hooks/useHasViewed'
-import useCardWeight from 'hooks/useCardWeight'
 
 import artistBlau from 'assets/img/publicSite/artist-blau@2x.jpg'
 import artistDeadmau5 from 'assets/img/publicSite/artist-deadmau5@2x.jpg'
@@ -11,6 +9,10 @@ import artistMrCarmack from 'assets/img/publicSite/artist-mrcarmack@2x.jpg'
 import artistRezz from 'assets/img/publicSite/artist-rezz@2x.jpg'
 import artistStaffordsBros from 'assets/img/publicSite/artist-staffordbros@2x.jpg'
 import dots2x from 'assets/img/publicSite/dots@2x.jpg'
+import useCardWeight from 'hooks/useCardWeight'
+import useHasViewed from 'hooks/useHasViewed'
+
+import styles from './ArtistTestimonials.module.css'
 
 const messages = {
   title: 'Built With The Best',

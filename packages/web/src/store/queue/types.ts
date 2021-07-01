@@ -1,6 +1,6 @@
-import { ID, UID } from 'models/common/Identifiers'
 import Track from 'models/Track'
 import User from 'models/User'
+import { ID, UID } from 'models/common/Identifiers'
 
 export enum RepeatMode {
   OFF = 'OFF',

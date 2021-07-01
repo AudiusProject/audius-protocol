@@ -1,8 +1,9 @@
-import { Action } from 'redux'
 import {
   useSelector as untypedUseSelector,
   TypedUseSelectorHook
 } from 'react-redux'
+import { Action } from 'redux'
+
 import { AppState } from 'store/types'
 
 // The TypedUseSelectorHook can't handle selectors created by reselect,

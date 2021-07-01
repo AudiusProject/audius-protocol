@@ -1,11 +1,13 @@
 import React from 'react'
+
 import PropTypes from 'prop-types'
-import TaskCompletionList from './TaskCompletionList'
+import { useSpring, animated } from 'react-spring'
+
+import SegmentedProgressBar from 'components/segmented-progress-bar/SegmentedProgressBar'
 
 import styles from './ProfileCompletionHeroCard.module.css'
-import SegmentedProgressBar from 'components/segmented-progress-bar/SegmentedProgressBar'
 import { CompletionStageArray } from './PropTypes'
-import { useSpring, animated } from 'react-spring'
+import TaskCompletionList from './TaskCompletionList'
 
 const strings = {
   complete: 'PROFILE COMPLETE'

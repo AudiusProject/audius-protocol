@@ -1,14 +1,16 @@
 import { takeEvery, put, call, select } from 'redux-saga/effects'
-import { startStemUploads, stemUploadsSucceeded } from './slice'
+
 import { handleUploads } from 'containers/upload-page/store/sagas'
 import { createStemMetadata } from 'containers/upload-page/store/utils/stems'
-import { retrieveTracks } from 'store/cache/tracks/utils'
-import { getTrack } from 'store/cache/tracks/selectors'
 import Track from 'models/Track'
 import User from 'models/User'
-import { getUser } from 'store/cache/users/selectors'
-import { make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
+import { make } from 'store/analytics/actions'
+import { getTrack } from 'store/cache/tracks/selectors'
+import { retrieveTracks } from 'store/cache/tracks/utils'
+import { getUser } from 'store/cache/users/selectors'
+
+import { startStemUploads, stemUploadsSucceeded } from './slice'
 
 function* watchUploadStems() {
   yield takeEvery(startStemUploads.type, function* (

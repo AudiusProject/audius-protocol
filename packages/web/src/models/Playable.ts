@@ -1,6 +1,6 @@
 import Collection from './Collection'
-import { PlayableType } from './common/Identifiers'
 import Track from './Track'
+import { PlayableType } from './common/Identifiers'
 
 type Playable =
   | {

@@ -1,5 +1,6 @@
 import { createSelector } from 'reselect'
 
+import { UID } from 'models/common/Identifiers'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import {
@@ -7,7 +8,6 @@ import {
   getTrackId as getPlayerTrackId
 } from 'store/player/selectors'
 import { AppState } from 'store/types'
-import { UID } from 'models/common/Identifiers'
 
 export const getOrder = (state: AppState) => state.queue.order
 export const getLength = (state: AppState) => state.queue.order.length

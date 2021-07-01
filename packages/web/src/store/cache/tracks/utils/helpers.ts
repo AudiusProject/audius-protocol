@@ -1,12 +1,13 @@
+import { uniqBy } from 'lodash'
+import { put, select } from 'redux-saga/effects'
+
 import { TrackMetadata } from 'models/Track'
 import User from 'models/User'
-import { Kind } from 'store/types'
-import { put, select } from 'redux-saga/effects'
+import { getAccountUser } from 'store/account/selectors'
 import * as cacheActions from 'store/cache/actions'
 import { reformat as reformatUser } from 'store/cache/users/utils'
+import { Kind } from 'store/types'
 import { makeUid } from 'utils/uid'
-import { getAccountUser } from 'store/account/selectors'
-import { uniqBy } from 'lodash'
 
 /**
  * Adds users from track metadata to cache.

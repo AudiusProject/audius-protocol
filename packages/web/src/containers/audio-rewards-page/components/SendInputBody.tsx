@@ -1,3 +1,5 @@
+import React, { useCallback, useMemo, useState } from 'react'
+
 import {
   Button,
   TokenValueInput,
@@ -5,7 +7,9 @@ import {
   IconValidationX,
   ButtonType
 } from '@audius/stems'
-import React, { useCallback, useMemo, useState } from 'react'
+
+import { ReactComponent as IconGoldBadgeSVG } from 'assets/img/IconGoldBadge.svg'
+import { MIN_TRANSFERRABLE_WEI } from 'services/wallet-client/WalletClient'
 import {
   audioToWei,
   BNAudio,
@@ -17,13 +21,13 @@ import {
   WalletAddress,
   weiToAudio
 } from 'store/wallet/slice'
-import { Nullable } from 'utils/typeUtils'
-import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
-import styles from './SendInputBody.module.css'
-import DashboardTokenValueSlider from './DashboardTokenValueSlider'
 import { convertFloatToWei } from 'utils/formatUtil'
-import { MIN_TRANSFERRABLE_WEI } from 'services/wallet-client/WalletClient'
-import { ReactComponent as IconGoldBadgeSVG } from 'assets/img/IconGoldBadge.svg'
+import { Nullable } from 'utils/typeUtils'
+
+import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
+
+import DashboardTokenValueSlider from './DashboardTokenValueSlider'
+import styles from './SendInputBody.module.css'
 
 const messages = {
   warningTitle: 'PROCEED WITH CAUTION',

@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import { Button, ButtonType } from '@audius/stems'
 
-import styles from './MetaMaskOption.module.css'
+import { Button, ButtonType } from '@audius/stems'
+import PropTypes from 'prop-types'
 
 import { ReactComponent as LogoMetaMask } from 'assets/img/logoMetaMask.svg'
+
+import styles from './MetaMaskOption.module.css'
 
 const MetaMaskSignupText = props => {
   return (

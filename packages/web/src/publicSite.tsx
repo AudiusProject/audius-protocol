@@ -1,14 +1,15 @@
 import React, { useState, useCallback, useEffect } from 'react'
+
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 
 import NavScreen from 'components/public-site/NavOverlay'
+import LandingPage from 'containers/landing-page/LandingPage'
 import {
   TRENDING_PAGE,
   SIGN_UP_PAGE,
   UPLOAD_PAGE,
   EXPLORE_PAGE
 } from 'utils/route'
-import LandingPage from 'containers/landing-page/LandingPage'
 const PressKitPage = React.lazy(() =>
   import('containers/press-kit-page/PressKitPage')
 )

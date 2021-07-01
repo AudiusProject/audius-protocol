@@ -1,14 +1,14 @@
 import { call, cancel, fork, put, race, select, take } from 'redux-saga/effects'
 
 import * as searchActions from 'containers/search-bar/store/actions'
-
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { waitForBackendSetup } from 'store/backend/sagas'
-import { getUserId } from 'store/account/selectors'
-import { getSearch } from './selectors'
-import { make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getUserId } from 'store/account/selectors'
+import { make } from 'store/analytics/actions'
+import { waitForBackendSetup } from 'store/backend/sagas'
+
 import mobileSagas from './mobileSagas'
+import { getSearch } from './selectors'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 export function* getSearchResults(searchText) {

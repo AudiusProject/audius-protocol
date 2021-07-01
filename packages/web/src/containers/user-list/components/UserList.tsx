@@ -1,12 +1,14 @@
 import React from 'react'
-import { ID } from 'models/common/Identifiers'
-import User from 'models/User'
-import InfiniteScroll from 'react-infinite-scroller'
-import ArtistChip from 'components/artist/ArtistChip'
-import Lottie from 'react-lottie'
-import FollowButton from 'components/general/FollowButton'
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
+
 import cn from 'classnames'
+import InfiniteScroll from 'react-infinite-scroller'
+import Lottie from 'react-lottie'
+
+import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import ArtistChip from 'components/artist/ArtistChip'
+import FollowButton from 'components/general/FollowButton'
+import User from 'models/User'
+import { ID } from 'models/common/Identifiers'
 
 import styles from './UserList.module.css'
 

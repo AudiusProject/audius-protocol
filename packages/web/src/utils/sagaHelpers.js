@@ -1,5 +1,6 @@
 /** Helper Sagas */
 
+import { push as pushRoute } from 'connected-react-router'
 import { delay, eventChannel, END } from 'redux-saga'
 import {
   all,
@@ -10,13 +11,14 @@ import {
   take,
   takeEvery
 } from 'redux-saga/effects'
-import { push as pushRoute } from 'connected-react-router'
-import { SIGN_UP_PAGE } from './route'
-import { getAccountUser } from 'store/account/selectors'
+
 import {
   updateRouteOnExit,
   showRequiresAccountModal
 } from 'containers/sign-on/store/actions'
+import { getAccountUser } from 'store/account/selectors'
+
+import { SIGN_UP_PAGE } from './route'
 
 /**
  * Calls the provided array of calls in batches with delayMs milliseconds between each batch.

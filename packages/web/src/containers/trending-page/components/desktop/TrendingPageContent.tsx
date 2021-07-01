@@ -1,27 +1,28 @@
 import React, { useState, useRef, useCallback } from 'react'
 
-import { TrendingPageContentProps } from 'containers/trending-page/types'
-import TimeRange from 'models/TimeRange'
-import Lineup from 'containers/lineup/Lineup'
-import { GENRES, ELECTRONIC_PREFIX } from 'utils/genres'
-import GenreSelectionModal from './GenreSelectionModal'
-import { Status } from 'store/types'
-import { LineupVariant } from 'containers/lineup/types'
+import Page from 'components/general/Page'
+import Header from 'components/general/header/desktop/Header'
 import EndOfLineup from 'containers/lineup/EndOfLineup'
+import Lineup from 'containers/lineup/Lineup'
+import { LineupVariant } from 'containers/lineup/types'
 import {
   trendingWeekActions,
   trendingMonthActions,
   trendingYearActions
 } from 'containers/trending-page/store/lineups/trending/actions'
+import { TrendingPageContentProps } from 'containers/trending-page/types'
 import useTabs from 'hooks/useTabs/useTabs'
-import Header from 'components/general/header/desktop/Header'
-import TrendingGenreFilters from './TrendingGenreFilters'
-import Page from 'components/general/Page'
-import { make, useRecord } from 'store/analytics/actions'
+import TimeRange from 'models/TimeRange'
 import { Name } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
+import { Status } from 'store/types'
+import { GENRES, ELECTRONIC_PREFIX } from 'utils/genres'
 
-import styles from './TrendingPageContent.module.css'
 import RewardsBanner from '../RewardsBanner'
+
+import GenreSelectionModal from './GenreSelectionModal'
+import TrendingGenreFilters from './TrendingGenreFilters'
+import styles from './TrendingPageContent.module.css'
 
 const messages = {
   thisWeek: 'THIS WEEK',

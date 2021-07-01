@@ -1,5 +1,5 @@
-import { AppState } from 'store/types'
 import { useMemo } from 'react'
+
 import {
   getFeatureEnabled,
   FeatureFlags,
@@ -10,12 +10,13 @@ import {
   DoubleKeys,
   StringKeys
 } from 'services/remote-config'
-import { useSelector } from 'utils/reducer'
-import { getAccountUser } from 'store/account/selectors'
 import {
   FeatureFlagCohortType,
   flagCohortType
 } from 'services/remote-config/FeatureFlags'
+import { getAccountUser } from 'store/account/selectors'
+import { AppState } from 'store/types'
+import { useSelector } from 'utils/reducer'
 
 /**
  * Hooks into updates for a given feature flag.

@@ -1,6 +1,8 @@
-import * as signOnActions from './actions'
-import * as errorActions from 'store/errors/actions'
 import { put, takeEvery } from 'redux-saga/effects'
+
+import * as errorActions from 'store/errors/actions'
+
+import * as signOnActions from './actions'
 
 const noRedirectSet = new Set([
   // Twitter failures are not fatal

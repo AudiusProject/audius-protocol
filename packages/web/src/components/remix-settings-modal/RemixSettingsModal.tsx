@@ -1,19 +1,20 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react'
+
 import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import { debounce } from 'lodash'
 
 import Input from 'components/data-entry/Input'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import UserBadges from 'containers/user-badges/UserBadges'
+import { useTrackCoverArt } from 'hooks/useImageSize'
 import Track from 'models/Track'
 import User from 'models/User'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { useTrackCoverArt } from 'hooks/useImageSize'
+import { ID } from 'models/common/Identifiers'
 import { SquareSizes } from 'models/common/ImageSizes'
+import { fullTrackPage } from 'utils/route'
+import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './RemixSettingsModal.module.css'
-import { withNullGuard } from 'utils/withNullGuard'
-import { ID } from 'models/common/Identifiers'
-import { fullTrackPage } from 'utils/route'
-import UserBadges from 'containers/user-badges/UserBadges'
 
 const INPUT_DEBOUNCE_MS = 1000
 

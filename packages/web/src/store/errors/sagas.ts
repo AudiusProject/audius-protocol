@@ -1,8 +1,10 @@
-import { takeEvery, put } from 'redux-saga/effects'
-import * as errorActions from './actions'
 import * as Sentry from '@sentry/browser'
 import { push as pushRoute } from 'connected-react-router'
+import { takeEvery, put } from 'redux-saga/effects'
+
 import { ERROR_PAGE } from 'utils/route'
+
+import * as errorActions from './actions'
 
 export const Levels: { [level in errorActions.Level]: Sentry.Severity } = {
   Critical: Sentry.Severity.Critical,

@@ -1,16 +1,19 @@
 import React, { useState, useCallback, useEffect } from 'react'
+
+import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import SimpleBar from 'simplebar-react-legacy'
-import { Button, ButtonType, IconArrow } from '@audius/stems'
-
-import SelectablePills from 'components/selectable-pill/SelectablePills'
-import styles from './FollowPage.module.css'
-import UserCard from 'components/card/UserCard'
-import { ID } from 'models/common/Identifiers'
-import User from 'models/User'
-import { FollowArtistsCategory, artistCategories } from '../../store/types'
 
 import { ReactComponent as IconWand } from 'assets/img/iconWand.svg'
+import UserCard from 'components/card/UserCard'
+import SelectablePills from 'components/selectable-pill/SelectablePills'
+import User from 'models/User'
+import { ID } from 'models/common/Identifiers'
+
+import { FollowArtistsCategory, artistCategories } from '../../store/types'
+
+import styles from './FollowPage.module.css'
+
 const messages = {
   title: 'Follow At Least 3 Artists To Get Started',
   subTitle:

@@ -1,11 +1,14 @@
 import React, { PureComponent } from 'react'
-import { connect } from 'react-redux'
-import { AppState } from 'store/types'
-import { Dispatch } from 'redux'
+
 import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
 
+import { show } from 'containers/music-confetti/store/slice'
+import { makeGetTierAndVerifiedForUser } from 'containers/user-badges/utils'
+import Theme from 'models/Theme'
+import { Name } from 'services/analytics'
 import * as accountActions from 'store/account/reducer'
-
 import {
   getAccountVerified,
   getAccountIsCreator,
@@ -14,31 +17,11 @@ import {
   getUserHandle,
   getUserName
 } from 'store/account/selectors'
-import Theme from 'models/Theme'
-import { getTheme } from 'store/application/ui/theme/selectors'
-import { setTheme } from 'store/application/ui/theme/actions'
-import { open as openBrowserPushPermissionModal } from 'store/application/ui/browserPushPermissionConfirmation/actions'
-import {
-  getBrowserNotificationSettings,
-  getPushNotificationSettings,
-  getEmailFrequency,
-  getCastMethod
-} from './store/selectors'
-import * as settingPageActions from './store/actions'
-import {
-  BrowserNotificationSetting,
-  EmailFrequency,
-  PushNotificationSetting,
-  Cast
-} from './store/types'
-
-import { SettingsPageProps as DesktopSettingsPageProps } from './components/desktop/SettingsPage'
-import {
-  SettingsPageProps as MobileSettingsPageProps,
-  SubPage
-} from './components/mobile/SettingsPage'
 import { make, TrackEvent } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
+import { open as openBrowserPushPermissionModal } from 'store/application/ui/browserPushPermissionConfirmation/actions'
+import { setTheme } from 'store/application/ui/theme/actions'
+import { getTheme } from 'store/application/ui/theme/selectors'
+import { AppState } from 'store/types'
 import {
   isPushManagerAvailable,
   isSafariPushAvailable,
@@ -47,8 +30,25 @@ import {
   Permission
 } from 'utils/browserNotifications'
 import { withClassNullGuard } from 'utils/withNullGuard'
-import { show } from 'containers/music-confetti/store/slice'
-import { makeGetTierAndVerifiedForUser } from 'containers/user-badges/utils'
+
+import { SettingsPageProps as DesktopSettingsPageProps } from './components/desktop/SettingsPage'
+import {
+  SettingsPageProps as MobileSettingsPageProps,
+  SubPage
+} from './components/mobile/SettingsPage'
+import * as settingPageActions from './store/actions'
+import {
+  getBrowserNotificationSettings,
+  getPushNotificationSettings,
+  getEmailFrequency,
+  getCastMethod
+} from './store/selectors'
+import {
+  BrowserNotificationSetting,
+  EmailFrequency,
+  PushNotificationSetting,
+  Cast
+} from './store/types'
 
 const messages = {
   title: 'Settings',

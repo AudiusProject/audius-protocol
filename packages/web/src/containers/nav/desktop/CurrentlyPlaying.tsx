@@ -1,5 +1,6 @@
-import cn from 'classnames'
 import React, { memo, useRef } from 'react'
+
+import cn from 'classnames'
 
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Draggable from 'containers/dragndrop/Draggable'

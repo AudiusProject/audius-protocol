@@ -1,22 +1,24 @@
-import { TrackTileProps } from 'components/track/types'
-import { ID } from 'models/common/Identifiers'
 import React, { useCallback, useState, useEffect } from 'react'
 
-import styles from './TrackTile.module.css'
+import { IconCrown, IconTrending } from '@audius/stems'
+import cn from 'classnames'
 
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
-import cn from 'classnames'
-import { formatCount } from 'utils/formatUtil'
-import { formatSeconds } from 'utils/timeUtil'
 import Skeleton from 'components/general/Skeleton'
-import ArtistPick from '../ArtistPick'
-import BottomButtons from './BottomButtons'
-import TrackTileArt from './TrackTileArt'
 import FavoriteButton from 'components/general/alt-button/FavoriteButton'
 import RepostButton from 'components/general/alt-button/RepostButton'
+import { TrackTileProps } from 'components/track/types'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { IconCrown, IconTrending } from '@audius/stems'
+import { ID } from 'models/common/Identifiers'
+import { formatCount } from 'utils/formatUtil'
+import { formatSeconds } from 'utils/timeUtil'
+
+import ArtistPick from '../ArtistPick'
+
+import BottomButtons from './BottomButtons'
+import styles from './TrackTile.module.css'
+import TrackTileArt from './TrackTileArt'
 
 const messages = {
   artistPick: "Artist's Pick",

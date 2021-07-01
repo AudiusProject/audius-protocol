@@ -1,13 +1,15 @@
 import { useMemo } from 'react'
+
 import { useDispatch } from 'react-redux'
+
+import { LineupVariant } from 'containers/lineup/types'
+import { LineupState } from 'models/common/Lineup'
 import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getBuffering, getPlaying } from 'store/player/selectors'
-import { useSelector } from 'utils/reducer'
-import { LineupVariant } from 'containers/lineup/types'
-import { AppState } from 'store/types'
-import { LineupState } from 'models/common/Lineup'
 import { makeGetCurrent } from 'store/queue/selectors'
+import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
+import { useSelector } from 'utils/reducer'
 
 type LineupActions = any
 

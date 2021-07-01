@@ -1,9 +1,11 @@
 import React from 'react'
+
+import { Button, IconArrow, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
-import styles from './AppCTA.module.css'
-import { Button, IconArrow, ButtonType } from '@audius/stems'
 import QRCode from 'assets/img/imageQR.png'
+
+import styles from './AppCTA.module.css'
 
 const messages = {
   appCTA: 'Get The App',

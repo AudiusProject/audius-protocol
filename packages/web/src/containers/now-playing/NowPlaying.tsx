@@ -1,26 +1,51 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { connect } from 'react-redux'
-import cn from 'classnames'
-import {
-  pushUniqueRoute as pushRoute,
-  profilePage,
-  trackPage
-} from 'utils/route'
-import { Dispatch } from 'redux'
 
 import { Scrubber } from '@audius/stems'
+import cn from 'classnames'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
 
+import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
+import CoSign, { Size } from 'components/co-sign/CoSign'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import PlayButton from 'components/play-bar/PlayButton'
+import NextButtonProvider from 'components/play-bar/next-button/NextButtonProvider'
+import PreviousButtonProvider from 'components/play-bar/previous-button/PreviousButtonProvider'
+import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
+import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import { PlayButtonStatus } from 'components/play-bar/types'
+import { getCastMethod } from 'containers/settings-page/store/selectors'
+import UserBadges from 'containers/user-badges/UserBadges'
+import { useTrackCoverArt } from 'hooks/useImageSize'
 import { ID } from 'models/common/Identifiers'
-import { seek, reset } from 'store/player/slice'
+import { SquareSizes } from 'models/common/ImageSizes'
+import {
+  FavoriteSource,
+  RepostSource,
+  PlaybackSource,
+  Name,
+  ShareSource
+} from 'services/analytics'
+import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
+import { getUserId } from 'store/account/selectors'
+import { useRecord, make } from 'store/analytics/actions'
+import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
+import { open } from 'store/application/ui/mobileOverflowModal/actions'
+import {
+  OverflowAction,
+  OverflowActionCallbacks,
+  OverflowSource
+} from 'store/application/ui/mobileOverflowModal/types'
 import {
   getAudio,
   getBuffering,
   getCounter,
   getPlaying
 } from 'store/player/selectors'
-import { next, pause, play, previous, repeat, shuffle } from 'store/queue/slice'
+import { seek, reset } from 'store/player/slice'
+import { AudioState } from 'store/player/types'
 import { makeGetCurrent } from 'store/queue/selectors'
+import { next, pause, play, previous, repeat, shuffle } from 'store/queue/slice'
 import { RepeatMode } from 'store/queue/types'
 import {
   saveTrack,
@@ -29,45 +54,19 @@ import {
   undoRepostTrack,
   shareTrack
 } from 'store/social/tracks/actions'
-import {
-  OverflowAction,
-  OverflowActionCallbacks,
-  OverflowSource
-} from 'store/application/ui/mobileOverflowModal/types'
-import { open } from 'store/application/ui/mobileOverflowModal/actions'
 import { AppState } from 'store/types'
-import { getCastMethod } from 'containers/settings-page/store/selectors'
-
-import PlayButton from 'components/play-bar/PlayButton'
-import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
-import NextButtonProvider from 'components/play-bar/next-button/NextButtonProvider'
-import PreviousButtonProvider from 'components/play-bar/previous-button/PreviousButtonProvider'
+import { Genre } from 'utils/genres'
+import {
+  pushUniqueRoute as pushRoute,
+  profilePage,
+  trackPage
+} from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
+import { withNullGuard } from 'utils/withNullGuard'
 
-import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
 import styles from './NowPlaying.module.css'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { useTrackCoverArt } from 'hooks/useImageSize'
-import { SquareSizes } from 'models/common/ImageSizes'
-import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import ActionsBar from './components/ActionsBar'
 import { getIsCasting } from './store/selectors'
-import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
-import { getUserId } from 'store/account/selectors'
-import {
-  FavoriteSource,
-  RepostSource,
-  PlaybackSource,
-  Name,
-  ShareSource
-} from 'services/analytics'
-import { useRecord, make } from 'store/analytics/actions'
-import { AudioState } from 'store/player/types'
-import { withNullGuard } from 'utils/withNullGuard'
-import CoSign, { Size } from 'components/co-sign/CoSign'
-import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
-import UserBadges from 'containers/user-badges/UserBadges'
-import { Genre } from 'utils/genres'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

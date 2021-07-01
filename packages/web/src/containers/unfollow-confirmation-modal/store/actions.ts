@@ -1,4 +1,5 @@
 import { createCustomAction } from 'typesafe-actions'
+
 import { ID } from 'models/common/Identifiers'
 
 export const SET_OPEN = 'UNFOLLOW_CONFIRMATION/SET_OPEN'

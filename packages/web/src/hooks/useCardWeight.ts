@@ -1,5 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react'
+
 import { useSpring } from 'react-spring'
+
 import useInstanceVar from './useInstanceVar'
 
 // Calculates how drastically cursor-position changes over length will

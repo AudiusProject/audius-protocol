@@ -1,5 +1,6 @@
-import * as actions from './actions'
 import { ActionType, createReducer } from 'typesafe-actions'
+
+import * as actions from './actions'
 import { ReachabilityState } from './types'
 
 type ReachabilityActions = ActionType<typeof actions>

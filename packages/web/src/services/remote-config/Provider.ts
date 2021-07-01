@@ -1,11 +1,9 @@
 import optimizely from '@optimizely/optimizely-sdk'
-import {
-  IntKeys,
-  StringKeys,
-  DoubleKeys,
-  BooleanKeys,
-  AllRemoteConfigKeys
-} from './RemoteConfig'
+
+import { ID } from 'models/common/Identifiers'
+import { Nullable } from 'utils/typeUtils'
+import { uuid } from 'utils/uid'
+
 import {
   FeatureFlags,
   flagDefaults,
@@ -14,14 +12,18 @@ import {
   FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY
 } from './FeatureFlags'
 import {
+  IntKeys,
+  StringKeys,
+  DoubleKeys,
+  BooleanKeys,
+  AllRemoteConfigKeys
+} from './RemoteConfig'
+import {
   remoteConfigIntDefaults,
   remoteConfigStringDefaults,
   remoteConfigDoubleDefaults,
   remoteConfigBooleanDefaults
 } from './defaults'
-import { ID } from 'models/common/Identifiers'
-import { Nullable } from 'utils/typeUtils'
-import { uuid } from 'utils/uid'
 
 // Constants
 // All optimizely feature keys are lowercase_snake

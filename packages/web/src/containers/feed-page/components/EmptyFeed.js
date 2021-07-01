@@ -1,7 +1,8 @@
 import React from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
+
 import { Button, ButtonType, ButtonSize } from '@audius/stems'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
 
 import styles from './EmptyFeed.module.css'
 import FollowArtists from './FollowUsers'

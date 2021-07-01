@@ -1,17 +1,18 @@
 import React, { useEffect } from 'react'
+
+import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-import { push as pushRoute } from 'connected-react-router'
-
-import { AppState } from 'store/types'
 import { Dispatch } from 'redux'
+
 import { getAccountUser } from 'store/account/selectors'
-import { fetchExplore } from './store/actions'
-import { makeGetExplore } from './store/selectors'
+import { AppState } from 'store/types'
 import { formatCount } from 'utils/formatUtil'
 
-import { ExplorePageProps as MobileExplorePageProps } from './components/mobile/ExplorePage'
 import { ExplorePageProps as DesktopExplorePageProps } from './components/desktop/ExplorePage'
+import { ExplorePageProps as MobileExplorePageProps } from './components/mobile/ExplorePage'
+import { fetchExplore } from './store/actions'
+import { makeGetExplore } from './store/selectors'
 
 const messages = {
   title: 'Explore',

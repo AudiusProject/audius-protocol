@@ -1,9 +1,11 @@
 import React, { useState, useCallback } from 'react'
+
 import { connect } from 'react-redux'
+
+import useHotkeys from 'hooks/useHotkey'
 import { AppState } from 'store/types'
 
 import styles from './ConfirmerPreview.module.css'
-import useHotkeys from 'hooks/useHotkey'
 
 type ConfirmerPreviewProps = {} & ReturnType<typeof mapStateToProps>
 

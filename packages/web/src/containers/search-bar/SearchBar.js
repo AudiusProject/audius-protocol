@@ -1,12 +1,19 @@
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { withRouter } from 'react-router-dom'
-import { matchPath } from 'react-router'
-import { has } from 'lodash'
-import { make } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
 
-import { fetchSearch, cancelFetchSearch, clearSearch } from './store/actions'
+import { push as pushRoute } from 'connected-react-router'
+import { has } from 'lodash'
+import { connect } from 'react-redux'
+import { matchPath } from 'react-router'
+import { withRouter } from 'react-router-dom'
+
+import placeholderArt from 'assets/img/imageBlank2x.png'
+import profilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
+import Bar from 'components/search/SearchBar'
+import { getSearch } from 'containers/search-bar/store/selectors'
+import { getTierForUser } from 'containers/user-badges/utils'
+import { SquareSizes } from 'models/common/ImageSizes'
+import { Name } from 'services/analytics'
+import { make } from 'store/analytics/actions'
 import {
   trackPage,
   albumPage,
@@ -14,15 +21,9 @@ import {
   profilePage,
   getPathname
 } from 'utils/route'
-import { push as pushRoute } from 'connected-react-router'
-import { getSearch } from 'containers/search-bar/store/selectors'
-import styles from './SearchBar.module.css'
-import { SquareSizes } from 'models/common/ImageSizes'
-import placeholderArt from 'assets/img/imageBlank2x.png'
-import profilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
 
-import Bar from 'components/search/SearchBar'
-import { getTierForUser } from 'containers/user-badges/utils'
+import styles from './SearchBar.module.css'
+import { fetchSearch, cancelFetchSearch, clearSearch } from './store/actions'
 
 class SearchBar extends Component {
   state = {

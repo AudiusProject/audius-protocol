@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
-import { isMobile } from 'utils/clientUtil'
+
 import cn from 'classnames'
 import { ClassValue } from 'classnames/types'
+
+import { isMobile } from 'utils/clientUtil'
 
 /**
  * Wraps classnames and applies a mobile class as needed.

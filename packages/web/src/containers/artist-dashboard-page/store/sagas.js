@@ -1,18 +1,19 @@
-import { all, call, put, take, takeEvery } from 'redux-saga/effects'
 import { each } from 'lodash'
 import moment from 'moment'
+import { all, call, put, take, takeEvery } from 'redux-saga/effects'
 
-import * as dashboardActions from './actions'
+import { retrieveUserTracks } from 'containers/profile-page/store/lineups/tracks/retrieveUserTracks'
+import AudiusBackend from 'services/AudiusBackend'
+import { getRemoteVar, IntKeys } from 'services/remote-config'
 import { getAccountUser } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { doEvery, requiresAccount, waitForValue } from 'utils/sagaHelpers'
-import AudiusBackend from 'services/AudiusBackend'
-import { formatUrlName } from 'utils/formatUtil'
-import { getBalance } from 'store/wallet/slice'
-import { getRemoteVar, IntKeys } from 'services/remote-config'
-import { DASHBOARD_PAGE } from 'utils/route'
-import { retrieveUserTracks } from 'containers/profile-page/store/lineups/tracks/retrieveUserTracks'
 import { retrieveTracks } from 'store/cache/tracks/utils'
+import { getBalance } from 'store/wallet/slice'
+import { formatUrlName } from 'utils/formatUtil'
+import { DASHBOARD_PAGE } from 'utils/route'
+import { doEvery, requiresAccount, waitForValue } from 'utils/sagaHelpers'
+
+import * as dashboardActions from './actions'
 
 function* fetchDashboardAsync(action) {
   yield call(waitForBackendSetup)

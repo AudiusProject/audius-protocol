@@ -1,19 +1,21 @@
 import React from 'react'
-import { Button, ButtonType, IconUser } from '@audius/stems'
-import Lineup, { LineupWithoutTile } from 'containers/lineup/Lineup'
-import { withNullGuard } from 'utils/withNullGuard'
-import User from 'models/User'
 
-import styles from './DeletedPage.module.css'
+import { Button, ButtonType, IconUser } from '@audius/stems'
+
+import ArtistPopover from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import MobilePageContainer from 'components/general/MobilePageContainer'
+import Lineup, { LineupWithoutTile } from 'containers/lineup/Lineup'
+import UserBadges from 'containers/user-badges/UserBadges'
 import { useTrackCoverArt, useCollectionCoverArt } from 'hooks/useImageSize'
+import Playable from 'models/Playable'
+import User from 'models/User'
 import { ID, PlayableType } from 'models/common/Identifiers'
 import { CoverArtSizes, SquareSizes } from 'models/common/ImageSizes'
-import ArtistPopover from 'components/artist/ArtistPopover'
-import MobilePageContainer from 'components/general/MobilePageContainer'
-import Playable from 'models/Playable'
 import { NestedNonNullable } from 'utils/typeUtils'
-import UserBadges from 'containers/user-badges/UserBadges'
+import { withNullGuard } from 'utils/withNullGuard'
+
+import styles from './DeletedPage.module.css'
 
 const messages = {
   trackDeleted: 'Track [Deleted]',

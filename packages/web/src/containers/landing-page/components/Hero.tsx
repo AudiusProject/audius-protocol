@@ -1,18 +1,18 @@
 import React, { useCallback } from 'react'
+
 import cn from 'classnames'
 import { Parallax, withController } from 'react-scroll-parallax'
 
-import styles from './Hero.module.css'
-
-import HeroForeground from 'assets/img/publicSite/Hero-Foreground.png'
-import HeroForegroundMobile from 'assets/img/publicSite/Hero-Foreground-mobile@2x.png'
-import HeroBackground from 'assets/img/publicSite/Hero-Background@2x.jpg'
 import HeroBackgroundMobile from 'assets/img/publicSite/Hero-Background-mobile.jpg'
+import HeroBackground from 'assets/img/publicSite/Hero-Background@2x.jpg'
+import HeroForegroundMobile from 'assets/img/publicSite/Hero-Foreground-mobile@2x.png'
+import HeroForeground from 'assets/img/publicSite/Hero-Foreground.png'
 import GlyphPattern1x from 'assets/img/publicSite/glyph-pattern@1x.png'
 import GlyphPattern2x from 'assets/img/publicSite/glyph-pattern@2x.png'
 import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
-
 import { AUDIUS_ORG, AUDIUS_SIGN_UP_LINK, pushWindowRoute } from 'utils/route'
+
+import styles from './Hero.module.css'
 
 const messages = {
   title: 'UNLEASH YOUR MUSIC',

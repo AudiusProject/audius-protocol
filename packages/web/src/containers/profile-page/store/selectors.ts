@@ -1,11 +1,12 @@
+import moment from 'moment'
 import { createSelector } from 'reselect'
 
-import { getUser, getUsers } from 'store/cache/users/selectors'
 import { getCollections } from 'store/cache/collections/selectors'
-import { CollectionSortMode } from './types'
-import moment from 'moment'
+import { getUser, getUsers } from 'store/cache/users/selectors'
 import { AppState } from 'store/types'
 import { removeNullable } from 'utils/typeUtils'
+
+import { CollectionSortMode } from './types'
 
 // Profile selectors
 export const getProfileStatus = (state: AppState) => state.profile.status

@@ -1,19 +1,20 @@
 import React, { useEffect, useCallback } from 'react'
+
+import cn from 'classnames'
 import { useSpring, animated } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
-import cn from 'classnames'
+
 import { ReactComponent as AudiusLogo } from 'assets/img/audiusLogoHorizontal.svg'
-
-import MobilePlayBar from 'containers/play-bar/mobile/PlayBar'
-import NowPlaying from './NowPlaying'
-
-import styles from './NowPlayingDrawer.module.css'
 import ConnectedBottomBar from 'containers/nav/mobile/ConnectedBottomBar'
+import MobilePlayBar from 'containers/play-bar/mobile/PlayBar'
 import useInstanceVar from 'hooks/useInstanceVar'
 import {
   EnablePullToRefreshMessage,
   DisablePullToRefreshMessage
 } from 'services/native-mobile-interface/android/pulltorefresh'
+
+import NowPlaying from './NowPlaying'
+import styles from './NowPlayingDrawer.module.css'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

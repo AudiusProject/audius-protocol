@@ -1,9 +1,11 @@
 import React from 'react'
+
 import { Modal } from '@audius/stems'
+import cn from 'classnames'
+
+import Switch from '../Switch'
 
 import styles from './UnlistedTrackModal.module.css'
-import cn from 'classnames'
-import Switch from '../Switch'
 
 const messages = {
   title: 'TRACK VISIBILITY',

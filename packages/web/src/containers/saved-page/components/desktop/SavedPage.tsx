@@ -1,32 +1,32 @@
 import React from 'react'
+
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 
-import Header from 'components/general/header/desktop/Header'
-import Page from 'components/general/Page'
+import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
+import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import Card from 'components/card/desktop/Card'
-import CardLineup from 'containers/lineup/CardLineup'
+import Page from 'components/general/Page'
+import FilterInput from 'components/general/filter-input/FilterInput'
+import Header from 'components/general/header/desktop/Header'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import TracksTable from 'components/tracks-table/TracksTable'
-import { ID, UID } from 'models/common/Identifiers'
-import { Lineup } from 'models/common/Lineup'
-import User from 'models/User'
-
-import { albumPage } from 'utils/route'
-import { Status } from 'store/types'
-import { QueueItem } from 'store/queue/types'
-
-import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
-import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
-import styles from './SavedPage.module.css'
+import CardLineup from 'containers/lineup/CardLineup'
 import {
   Tabs as ProfileTabs,
   TrackRecord,
   SavedPageTrack,
   SavedPageCollection
 } from 'containers/saved-page/store/types'
-import useTabs from 'hooks/useTabs/useTabs'
-import FilterInput from 'components/general/filter-input/FilterInput'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
+import useTabs from 'hooks/useTabs/useTabs'
+import User from 'models/User'
+import { ID, UID } from 'models/common/Identifiers'
+import { Lineup } from 'models/common/Lineup'
+import { QueueItem } from 'store/queue/types'
+import { Status } from 'store/types'
+import { albumPage } from 'utils/route'
+
+import styles from './SavedPage.module.css'
 
 const messages = {
   filterPlaceholder: 'Filter Tracks'

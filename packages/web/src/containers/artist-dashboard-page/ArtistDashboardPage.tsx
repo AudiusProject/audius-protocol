@@ -1,16 +1,32 @@
 import React, { Suspense, Component, useMemo } from 'react'
+
+import Spin from 'antd/lib/spin'
+import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
+import { each } from 'lodash'
+import moment, { Moment } from 'moment'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-import { push as pushRoute } from 'connected-react-router'
-import cn from 'classnames'
-import moment, { Moment } from 'moment'
-import { each } from 'lodash'
-import Spin from 'antd/lib/spin'
-import { formatCount } from 'utils/formatUtil'
-import { profilePage, trackPage, TRENDING_PAGE } from 'utils/route'
-import Header from 'components/general/header/desktop/Header'
+import { Dispatch } from 'redux'
+
 import Page from 'components/general/Page'
+import Header from 'components/general/header/desktop/Header'
+import TableOptionsButton from 'components/tracks-table/TableOptionsButton'
 import TracksTable, { alphaSortFn } from 'components/tracks-table/TracksTable'
+import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
+import Theme from 'models/Theme'
+import Track from 'models/Track'
+import User from 'models/User'
+import { ID } from 'models/common/Identifiers'
+import { getTheme } from 'store/application/ui/theme/selectors'
+import { Status, AppState } from 'store/types'
+import { formatCount } from 'utils/formatUtil'
+import lazyWithPreload from 'utils/lazyWithPreload'
+import { profilePage, trackPage, TRENDING_PAGE } from 'utils/route'
+import { withClassNullGuard } from 'utils/withNullGuard'
+
+import styles from './ArtistDashboardPage.module.css'
+import ArtistProfile from './components/ArtistProfile'
 import {
   fetchDashboard,
   fetchDashboardListenData,
@@ -21,19 +37,6 @@ import {
   getDashboardStatus,
   makeGetDashboard
 } from './store/selectors'
-import { Status, AppState } from 'store/types'
-import styles from './ArtistDashboardPage.module.css'
-import ArtistProfile from './components/ArtistProfile'
-import { Dispatch } from 'redux'
-import Track from 'models/Track'
-import { ID } from 'models/common/Identifiers'
-import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
-import TableOptionsButton from 'components/tracks-table/TableOptionsButton'
-import User from 'models/User'
-import { withClassNullGuard } from 'utils/withNullGuard'
-import lazyWithPreload from 'utils/lazyWithPreload'
-import { getTheme } from 'store/application/ui/theme/selectors'
-import Theme from 'models/Theme'
 
 const TotalPlaysChart = lazyWithPreload(() =>
   import('./components/TotalPlaysChart')

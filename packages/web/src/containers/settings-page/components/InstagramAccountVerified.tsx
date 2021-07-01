@@ -1,5 +1,7 @@
 import React from 'react'
+
 import InstagramButton from 'components/general/InstagramButton'
+
 import styles from './InstagramAccountVerified.module.css'
 
 const messages = {

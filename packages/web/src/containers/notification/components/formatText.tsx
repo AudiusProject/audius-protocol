@@ -1,8 +1,15 @@
 import React, { useCallback } from 'react'
-import { formatCount } from 'utils/formatUtil'
-import styles from './FormatText.module.css'
-import ArtistPopover from 'components/artist/ArtistPopover'
+
 import cn from 'classnames'
+
+import ArtistPopover from 'components/artist/ArtistPopover'
+import {
+  Notification,
+  NotificationType,
+  Achievement
+} from 'containers/notification/store/types'
+import UserBadges from 'containers/user-badges/UserBadges'
+import { formatCount } from 'utils/formatUtil'
 import {
   fullTrackPage,
   fullAlbumPage,
@@ -13,12 +20,7 @@ import {
   playlistPage
 } from 'utils/route'
 
-import {
-  Notification,
-  NotificationType,
-  Achievement
-} from 'containers/notification/store/types'
-import UserBadges from 'containers/user-badges/UserBadges'
+import styles from './FormatText.module.css'
 
 const getEntityName = (entity: any) => entity.title || entity.playlist_name
 export const getRankSuffix = (rank: number) => {

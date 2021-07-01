@@ -1,9 +1,11 @@
 import { MouseEvent } from 'react'
-import { matchPath } from 'react-router'
+
 import { push as pushRoute } from 'connected-react-router'
+import { Location as HistoryLocation } from 'history'
+import { matchPath } from 'react-router'
+
 import { ID } from 'models/common/Identifiers'
 import { encodeUrlName } from 'utils/formatUtil'
-import { Location as HistoryLocation } from 'history'
 
 const USE_HASH_ROUTING = process.env.REACT_APP_USE_HASH_ROUTING
 

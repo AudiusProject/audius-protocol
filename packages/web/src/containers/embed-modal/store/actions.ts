@@ -1,4 +1,5 @@
 import { createCustomAction } from 'typesafe-actions'
+
 import { ID, PlayableType } from 'models/common/Identifiers'
 
 export const OPEN = 'EMBED_MODAL/OPEN'

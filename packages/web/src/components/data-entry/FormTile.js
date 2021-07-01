@@ -1,36 +1,36 @@
 import React, { Component, useState, useCallback } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
-import { Button, ButtonType, IconDownload, IconIndent } from '@audius/stems'
 
+import { Button, ButtonType, IconDownload, IconIndent } from '@audius/stems'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
+
+import DatePicker from 'components/data-entry/DatePicker'
+import DropdownInput from 'components/data-entry/DropdownInput'
+import Input from 'components/data-entry/Input'
+import LabeledInput from 'components/data-entry/LabeledInput'
+import TagInput from 'components/data-entry/TagInput'
+import TextArea from 'components/data-entry/TextArea'
+import LabeledButton from 'components/general/LabeledButton'
+import Switch from 'components/general/Switch'
+import UnlistedTrackModal from 'components/general/unlisted-track-modal/UnlistedTrackModal'
+import Dropdown from 'components/navigation/Dropdown'
+import SourceFilesModal from 'components/source-files-modal/SourceFilesModal'
+import PreviewButton from 'components/upload/PreviewButton'
+import UploadArtwork from 'components/upload/UploadArtwork'
+import ConnectedRemixSettingsModal from 'containers/remix-settings-modal/ConnectedRemixSettingsModal'
+import { createRemixOfMetadata } from 'containers/upload-page/store/utils/remixes'
 import {
   ALL_RIGHTS_RESERVED_TYPE,
   computeLicense,
   computeLicenseVariables,
   getDescriptionForType
 } from 'utils/creativeCommonsUtil'
-import { createRemixOfMetadata } from 'containers/upload-page/store/utils/remixes'
+import { GENRES, ELECTRONIC_PREFIX, getCannonicalName } from 'utils/genres'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { moodMap } from 'utils/moods'
 
-import PreviewButton from 'components/upload/PreviewButton'
-import Input from 'components/data-entry/Input'
-import LabeledInput from 'components/data-entry/LabeledInput'
-import DropdownInput from 'components/data-entry/DropdownInput'
-import TagInput from 'components/data-entry/TagInput'
-import TextArea from 'components/data-entry/TextArea'
-import DatePicker from 'components/data-entry/DatePicker'
-import Dropdown from 'components/navigation/Dropdown'
-import UploadArtwork from 'components/upload/UploadArtwork'
-import LabeledButton from 'components/general/LabeledButton'
-import UnlistedTrackModal from 'components/general/unlisted-track-modal/UnlistedTrackModal'
-import Switch from 'components/general/Switch'
-
 import styles from './FormTile.module.css'
-import { GENRES, ELECTRONIC_PREFIX, getCannonicalName } from 'utils/genres'
-import SourceFilesModal from 'components/source-files-modal/SourceFilesModal'
-import ConnectedRemixSettingsModal from 'containers/remix-settings-modal/ConnectedRemixSettingsModal'
 
 const MOODS = Object.keys(moodMap).map(k => ({ text: k, el: moodMap[k] }))
 

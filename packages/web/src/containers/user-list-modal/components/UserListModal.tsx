@@ -1,19 +1,20 @@
 import React from 'react'
-import { Modal } from '@audius/stems'
-import { UserListType } from 'store/application/ui/userListModal/types'
-import { USER_LIST_TAG as REPOST_TAG } from 'containers/reposts-page/RepostsPage'
-import { USER_LIST_TAG as FAVORITES_TAG } from 'containers/favorites-page/FavoritesPage'
-import { USER_LIST_TAG as FOLLOWER_TAG } from 'containers/followers-page/FollowersPage'
-import UserList from 'containers/user-list/UserList'
-import { getUserList as repostsSelector } from 'containers/reposts-page/store/selectors'
-import { getUserList as favoritesSelector } from 'containers/favorites-page/store/selectors'
-import { getUserList as followersSelector } from 'containers/followers-page/store/selectors'
 
+import { Modal } from '@audius/stems'
 import SimpleBar from 'simplebar-react-legacy'
 
-import styles from './UserListModal.module.css'
-import { AppState } from 'store/types'
+import { USER_LIST_TAG as FAVORITES_TAG } from 'containers/favorites-page/FavoritesPage'
+import { getUserList as favoritesSelector } from 'containers/favorites-page/store/selectors'
+import { USER_LIST_TAG as FOLLOWER_TAG } from 'containers/followers-page/FollowersPage'
+import { getUserList as followersSelector } from 'containers/followers-page/store/selectors'
+import { USER_LIST_TAG as REPOST_TAG } from 'containers/reposts-page/RepostsPage'
+import { getUserList as repostsSelector } from 'containers/reposts-page/store/selectors'
+import UserList from 'containers/user-list/UserList'
 import { UserListStoreState } from 'containers/user-list/store/types'
+import { UserListType } from 'store/application/ui/userListModal/types'
+import { AppState } from 'store/types'
+
+import styles from './UserListModal.module.css'
 
 const SIMPLE_BAR_ID = 'USER_LIST_SIMPLE_BAR'
 

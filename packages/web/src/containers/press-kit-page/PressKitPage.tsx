@@ -1,13 +1,14 @@
 import React from 'react'
-import styles from './PressKitPage.module.css'
+
 import cn from 'classnames'
 import { useTrail, animated } from 'react-spring'
 
-import NavBanner from 'components/public-site/NavBanner'
-import Footer from 'components/public-site/Footer'
-
 import neonImg from 'assets/img/publicSite/neon.jpg'
+import Footer from 'components/public-site/Footer'
+import NavBanner from 'components/public-site/NavBanner'
 import { AUDIUS_PRESS_KIT_ZIP } from 'utils/route'
+
+import styles from './PressKitPage.module.css'
 
 const messages = {
   title: 'Press Kit',

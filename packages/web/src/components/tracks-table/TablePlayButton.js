@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
 
-import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
+
 import { ReactComponent as IconPause } from 'assets/img/pbIconPause.svg'
+import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
 
 import styles from './TablePlayButton.module.css'
 

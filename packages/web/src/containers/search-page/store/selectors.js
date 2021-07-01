@@ -1,7 +1,8 @@
-import { getUsers } from 'store/cache/users/selectors'
-import { getCollections } from 'store/cache/collections/selectors'
-import { createShallowSelector } from 'utils/selectorHelpers'
 import { createSelector } from 'reselect'
+
+import { getCollections } from 'store/cache/collections/selectors'
+import { getUsers } from 'store/cache/users/selectors'
+import { createShallowSelector } from 'utils/selectorHelpers'
 
 // Search Results selectors
 export const getSearchTracksLineup = state => state.search.tracks

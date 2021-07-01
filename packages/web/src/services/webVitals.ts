@@ -1,6 +1,7 @@
 import { getCLS, getFID, getLCP, getFCP, getTTFB } from 'web-vitals'
-import { track } from 'store/analytics/providers/segment'
+
 import { Name } from 'services/analytics'
+import { track } from 'store/analytics/providers/segment'
 import { findRoute, getPathname } from 'utils/route'
 
 // Establish the "initial load" route

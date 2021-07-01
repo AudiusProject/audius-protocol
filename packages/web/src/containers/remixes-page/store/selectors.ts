@@ -1,6 +1,6 @@
-import { AppState } from 'store/types'
 import { getTrack as getCachedTrack } from 'store/cache/tracks/selectors'
 import { getUserFromTrack } from 'store/cache/users/selectors'
+import { AppState } from 'store/types'
 
 export const getBaseState = (state: AppState) => state.application.pages.remixes
 

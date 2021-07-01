@@ -1,4 +1,5 @@
 import React from 'react'
+
 import {
   IconTwitterBird,
   IconInstagram,
@@ -6,10 +7,11 @@ import {
   IconLink
 } from '@audius/stems'
 
-import styles from './EditProfile.module.css'
+import EditableRow, { Format } from 'components/groupable-list/EditableRow'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
-import EditableRow, { Format } from 'components/groupable-list/EditableRow'
+
+import styles from './EditProfile.module.css'
 
 type EditProfileProps = {
   name: string

@@ -1,8 +1,10 @@
 import React, { ReactNode } from 'react'
-import styles from './ErrorBody.module.css'
-import cn from 'classnames'
+
 import { Button, ButtonType } from '@audius/stems'
+import cn from 'classnames'
 import SimpleBar from 'simplebar-react'
+
+import styles from './ErrorBody.module.css'
 
 const messages = {
   okay: 'OKAY'

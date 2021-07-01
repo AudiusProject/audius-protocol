@@ -1,50 +1,49 @@
 import React, { useEffect, useState, useCallback, useContext } from 'react'
-import { connect } from 'react-redux'
+
 import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import * as createPlaylistActions from 'store/application/ui/createPlaylistModal/actions'
-import { AppState } from 'store/types'
-import { useTemporaryNavContext } from 'containers/nav/store/context'
-import TextElement, { Type } from 'containers/nav/mobile/TextElement'
+import { ReactComponent as IconCamera } from 'assets/img/iconCamera.svg'
+import placeholderCoverArt from 'assets/img/imageBlank2x.png'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import EditableRow, { Format } from 'components/groupable-list/EditableRow'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
-import EditableRow, { Format } from 'components/groupable-list/EditableRow'
-import * as schemas from 'schemas'
-import { resizeImage } from 'utils/imageProcessingUtil'
-import { playlistPage } from 'utils/route'
+import { ToastContext } from 'components/toast/ToastContext'
 import TrackList from 'components/track/mobile/TrackList'
-
+import { tracksActions } from 'containers/collection-page/store/lineups/tracks/actions'
+import TextElement, { Type } from 'containers/nav/mobile/TextElement'
+import { useTemporaryNavContext } from 'containers/nav/store/context'
+import UploadStub from 'containers/profile-page/components/mobile/UploadStub'
+import useHasChangedRoute from 'hooks/useHasChangedRoute'
+import { useCollectionCoverArt } from 'hooks/useImageSize'
+import Collection from 'models/Collection'
+import { ID } from 'models/common/Identifiers'
+import { SquareSizes } from 'models/common/ImageSizes'
+import * as schemas from 'schemas'
+import RandomImage from 'services/RandomImage'
+import { CreatePlaylistSource } from 'services/analytics'
 import { getAccountUser } from 'store/account/selectors'
+import * as createPlaylistActions from 'store/application/ui/createPlaylistModal/actions'
+import {
+  getMetadata,
+  getTracks
+} from 'store/application/ui/createPlaylistModal/selectors'
 import {
   createPlaylist,
   editPlaylist,
   orderPlaylist,
   removeTrackFromPlaylist
 } from 'store/cache/collections/actions'
-
-import { tracksActions } from 'containers/collection-page/store/lineups/tracks/actions'
-import {
-  getMetadata,
-  getTracks
-} from 'store/application/ui/createPlaylistModal/selectors'
+import { AppState } from 'store/types'
+import { resizeImage } from 'utils/imageProcessingUtil'
+import { playlistPage } from 'utils/route'
+import { Nullable } from 'utils/typeUtils'
+import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './EditPlaylistPage.module.css'
-import placeholderCoverArt from 'assets/img/imageBlank2x.png'
-import { ReactComponent as IconCamera } from 'assets/img/iconCamera.svg'
-import Collection from 'models/Collection'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import UploadStub from 'containers/profile-page/components/mobile/UploadStub'
-import RandomImage from 'services/RandomImage'
-import { ID } from 'models/common/Identifiers'
-import { useCollectionCoverArt } from 'hooks/useImageSize'
-import { SquareSizes } from 'models/common/ImageSizes'
-import { ToastContext } from 'components/toast/ToastContext'
-import { CreatePlaylistSource } from 'services/analytics'
-import { withNullGuard } from 'utils/withNullGuard'
 import RemovePlaylistTrackDrawer from './RemovePlaylistTrackDrawer'
-import { Nullable } from 'utils/typeUtils'
-import useHasChangedRoute from 'hooks/useHasChangedRoute'
 
 const messages = {
   createPlaylist: 'Create Playlist',

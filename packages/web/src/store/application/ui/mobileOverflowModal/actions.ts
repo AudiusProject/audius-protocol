@@ -1,9 +1,10 @@
+import { ID } from 'models/common/Identifiers'
+
 import {
   OverflowAction,
   OverflowSource,
   OverflowActionCallbacks
 } from './types'
-import { ID } from 'models/common/Identifiers'
 
 export const OPEN = 'OPEN' as const
 export const CLOSE = 'CLOSE' as const

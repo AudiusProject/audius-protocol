@@ -1,4 +1,6 @@
 import React, { useCallback } from 'react'
+
+import { ReactComponent as IconTwitterBird } from 'assets/img/iconTwitterBird.svg'
 import {
   Notification,
   NotificationType,
@@ -7,6 +9,12 @@ import {
   RemixCreate,
   TrendingTrack
 } from 'containers/notification/store/types'
+import Collection from 'models/Collection'
+import Track from 'models/Track'
+import User from 'models/User'
+import AudiusBackend from 'services/AudiusBackend'
+import { Name } from 'services/analytics'
+import { make, useRecord, TrackEvent } from 'store/analytics/actions'
 import {
   fullTrackPage,
   fullAlbumPage,
@@ -16,15 +24,9 @@ import {
   albumPage,
   playlistPage
 } from 'utils/route'
-import { make, useRecord, TrackEvent } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
-import User from 'models/User'
-import Track from 'models/Track'
-import Collection from 'models/Collection'
-import AudiusBackend from 'services/AudiusBackend'
-import { ReactComponent as IconTwitterBird } from 'assets/img/iconTwitterBird.svg'
-import styles from './TwitterShare.module.css'
 import { openTwitterLink } from 'utils/tweet'
+
+import styles from './TwitterShare.module.css'
 import { getRankSuffix } from './formatText'
 
 export const getEntityLink = (

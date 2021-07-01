@@ -1,16 +1,17 @@
 import React, { memo, useState } from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
+import PropTypes from 'prop-types'
 import Lottie from 'react-lottie'
 
-import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-
-import styles from './CoverPhoto.module.css'
-import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
 import { useUserCoverPhoto } from 'hooks/useImageSize'
 import { WidthSizes } from 'models/common/ImageSizes'
+
+import styles from './CoverPhoto.module.css'
 
 const messages = {
   imageName: 'Cover Photo'

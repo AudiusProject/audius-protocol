@@ -1,10 +1,12 @@
 import React, { ReactNode } from 'react'
+
 import { connect } from 'react-redux'
+
 import SearchPageProvider from 'containers/search-page/SearchPageProvider'
 import DesktopSearchPageContent from 'containers/search-page/components/desktop/SearchPageContent'
-import { AppState } from 'store/types'
 import MobileSearchPageContent from 'containers/search-page/components/mobile/SearchPageContent'
 import Client from 'models/Client'
+import { AppState } from 'store/types'
 import { getClient } from 'utils/clientUtil'
 
 type ownProps = {

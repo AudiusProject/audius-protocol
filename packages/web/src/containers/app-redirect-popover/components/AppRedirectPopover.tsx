@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
+
 import { Button, ButtonType } from '@audius/stems'
+import { animated, useTransition } from 'react-spring'
+
+import AppIcon from 'assets/img/appIcon240.png'
+import { isMobile } from 'utils/clientUtil'
+import { APP_REDIRECT, getPathname } from 'utils/route'
 
 import styles from './AppRedirectPopover.module.css'
-import { APP_REDIRECT, getPathname } from 'utils/route'
-import AppIcon from 'assets/img/appIcon240.png'
-import { animated, useTransition } from 'react-spring'
-import { isMobile } from 'utils/clientUtil'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

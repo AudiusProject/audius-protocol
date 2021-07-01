@@ -8,6 +8,7 @@ import React, {
   useEffect,
   useCallback
 } from 'react'
+
 import { useIsMobile } from 'utils/clientUtil'
 
 type NavContextProps = {

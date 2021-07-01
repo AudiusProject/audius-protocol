@@ -1,9 +1,12 @@
+import { combineReducers } from 'redux'
 import { createReducer, ActionType } from 'typesafe-actions'
+
+import { UserListReducerFactory } from 'containers/user-list/store/reducer'
+
+import { USER_LIST_TAG } from '../RepostsPage'
+
 import * as actions from './actions'
 import { RepostsOwnState, RepostType } from './types'
-import { UserListReducerFactory } from 'containers/user-list/store/reducer'
-import { USER_LIST_TAG } from '../RepostsPage'
-import { combineReducers } from 'redux'
 
 type TrackRepostActions = ActionType<typeof actions>
 

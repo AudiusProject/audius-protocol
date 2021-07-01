@@ -1,5 +1,6 @@
-import { initialLineupState } from 'store/lineup/reducer'
 import { RESET_SUCCEEDED, stripPrefix } from 'store/lineup/actions'
+import { initialLineupState } from 'store/lineup/reducer'
+
 import {
   PREFIX,
   TRENDING_WEEK_PREFIX,

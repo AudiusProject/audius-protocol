@@ -1,15 +1,17 @@
 import React, { ReactNode, useCallback } from 'react'
-import cn from 'classnames'
-import Linkify from 'linkifyjs/react'
+
 import {
   IconTwitterBird,
   IconInstagram,
   IconDonate,
   IconLink
 } from '@audius/stems'
+import cn from 'classnames'
+import Linkify from 'linkifyjs/react'
+
+import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './SocialLink.module.css'
-import Tooltip from 'components/tooltip/Tooltip'
 
 export enum Type {
   TWITTER,

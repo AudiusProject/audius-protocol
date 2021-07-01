@@ -1,13 +1,14 @@
 import React, { useCallback } from 'react'
-import { connect } from 'react-redux'
 
-import styles from './NewPlaylistButton.module.css'
-import { AppState } from 'store/types'
+import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import * as createPlaylistActions from 'store/application/ui/createPlaylistModal/actions'
-import { useRecord, make } from 'store/analytics/actions'
 import { Name, CreatePlaylistSource } from 'services/analytics'
+import { useRecord, make } from 'store/analytics/actions'
+import * as createPlaylistActions from 'store/application/ui/createPlaylistModal/actions'
+import { AppState } from 'store/types'
+
+import styles from './NewPlaylistButton.module.css'
 
 const messages = {
   createPlaylist: 'Create a New Playlist'

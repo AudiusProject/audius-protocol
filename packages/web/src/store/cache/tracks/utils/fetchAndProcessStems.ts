@@ -1,13 +1,16 @@
 import { call, put } from 'redux-saga/effects'
-import { ID } from 'models/common/Identifiers'
-import { Kind } from 'store/types'
-import { Stem, StemTrackMetadata } from 'models/Track'
-import { waitForValue } from 'utils/sagaHelpers'
-import { getTrack } from '../selectors'
-import * as cacheActions from 'store/cache/actions'
+
 import { StemCategory } from 'models/Stems'
-import { processAndCacheTracks } from './processAndCacheTracks'
+import { Stem, StemTrackMetadata } from 'models/Track'
+import { ID } from 'models/common/Identifiers'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import * as cacheActions from 'store/cache/actions'
+import { Kind } from 'store/types'
+import { waitForValue } from 'utils/sagaHelpers'
+
+import { getTrack } from '../selectors'
+
+import { processAndCacheTracks } from './processAndCacheTracks'
 
 /**
  * Fetches stems for a parent track.

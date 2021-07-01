@@ -1,23 +1,22 @@
 import React from 'react'
+
 import { connect } from 'react-redux'
-import { AppState } from 'store/types'
 import { Dispatch } from 'redux'
 
+import ErrorWrapper from 'components/general/ErrorWrapper'
 import { OwnProps as NotificationMenuProps } from 'containers/menu/NotificationMenu'
-
-import { NotificationType } from 'containers/notification/store/types'
 import {
   getNotificationUser,
   getNotificationUsers,
   getNotificationEntity,
   getNotificationEntities
 } from 'containers/notification/store/selectors'
-
+import { NotificationType } from 'containers/notification/store/types'
 import { ID } from 'models/common/Identifiers'
+import { AppState } from 'store/types'
 
-import NotificationBlock, { USER_LENGTH_LIMIT } from './NotificationBlock'
 import Announcement from './Announcement'
-import ErrorWrapper from 'components/general/ErrorWrapper'
+import NotificationBlock, { USER_LENGTH_LIMIT } from './NotificationBlock'
 type OwnProps = {
   notification: any
   panelRef: any

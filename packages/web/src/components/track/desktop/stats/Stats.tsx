@@ -1,14 +1,15 @@
 import React, { memo } from 'react'
+
 import cn from 'classnames'
 
-import Repost from 'models/Repost'
-import Favorite from 'models/Favorite'
-
-import styles from './Stats.module.css'
-import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
 import { ReactComponent as IconFavorite } from 'assets/img/iconHeart.svg'
+import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
+import Favorite from 'models/Favorite'
+import Repost from 'models/Repost'
 import { formatCount } from 'utils/formatUtil'
+
 import ProfileImage from './ProfileImage'
+import styles from './Stats.module.css'
 import StatsText, { Flavor } from './StatsText'
 
 const MAX_REPOST_IMAGES = 3

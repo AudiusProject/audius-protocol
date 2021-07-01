@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
-import bgSmallWave from 'assets/img/bgWaveSmall.svg'
+
 import bgLargeWave from 'assets/img/bgWaveLarge.svg'
+import bgSmallWave from 'assets/img/bgWaveSmall.svg'
 
 // Prevent Pixi lib from printing to console
 PIXI.utils.skipHello()

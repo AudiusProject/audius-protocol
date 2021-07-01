@@ -1,11 +1,11 @@
+import Collection from 'models/Collection'
+import FeedFilter from 'models/FeedFilter'
+import Track from 'models/Track'
+import { ID } from 'models/common/Identifiers'
 import AudiusBackend, {
   IDENTITY_SERVICE,
   AuthHeaders
 } from 'services/AudiusBackend'
-import { ID } from 'models/common/Identifiers'
-import Track from 'models/Track'
-import Collection from 'models/Collection'
-import FeedFilter from 'models/FeedFilter'
 
 type CollectionWithScore = Collection & { score: number }
 

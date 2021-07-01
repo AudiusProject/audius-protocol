@@ -1,28 +1,27 @@
 import React, { useEffect, useContext } from 'react'
-import { Status } from 'store/types'
 
-import TrackList from 'components/track/mobile/TrackList'
 import CollectionHeader from 'components/collection/mobile/CollectionHeader'
+import MobilePageContainer from 'components/general/MobilePageContainer'
+import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
+import TrackList from 'components/track/mobile/TrackList'
+import {
+  CollectionsPageType,
+  CollectionTrack
+} from 'containers/collection-page/store/types'
+import { computeCollectionMetadataProps } from 'containers/collection-page/store/utils'
 import NavContext, {
   LeftPreset,
   CenterPreset,
   RightPreset
 } from 'containers/nav/store/context'
+import NetworkConnectivityMonitor from 'containers/network-connectivity/NetworkConnectivityMonitor'
+import Collection, { SmartCollection, Variant } from 'models/Collection'
+import User from 'models/User'
+import { ID } from 'models/common/Identifiers'
+import { OverflowAction } from 'store/application/ui/mobileOverflowModal/types'
+import { Status } from 'store/types'
 
 import styles from './CollectionPage.module.css'
-import { ID } from 'models/common/Identifiers'
-import User from 'models/User'
-import {
-  CollectionsPageType,
-  CollectionTrack
-} from 'containers/collection-page/store/types'
-import Collection, { SmartCollection, Variant } from 'models/Collection'
-
-import { computeCollectionMetadataProps } from 'containers/collection-page/store/utils'
-import { OverflowAction } from 'store/application/ui/mobileOverflowModal/types'
-import NetworkConnectivityMonitor from 'containers/network-connectivity/NetworkConnectivityMonitor'
-import MobilePageContainer from 'components/general/MobilePageContainer'
-import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
 
 const messages = {
   emptyPlaylist: 'This playlist is empty.'

@@ -1,11 +1,12 @@
 import React from 'react'
+
 import cn from 'classnames'
 import { Parallax } from 'react-scroll-parallax'
 import { useSpring, animated } from 'react-spring'
-import useHasViewed from 'hooks/useHasViewed'
 
-import { ReactComponent as IconQuotePyramid } from 'assets/img/publicSite/quote-pyramid.svg'
 import dots2x from 'assets/img/publicSite/dots@2x.jpg'
+import { ReactComponent as IconQuotePyramid } from 'assets/img/publicSite/quote-pyramid.svg'
+import useHasViewed from 'hooks/useHasViewed'
 
 import styles from './PlatformTagline.module.css'
 

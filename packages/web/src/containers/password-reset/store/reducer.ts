@@ -1,3 +1,6 @@
+import { Status } from 'store/types'
+import { ActionsMap } from 'utils/reducer'
+
 import {
   CHANGE_PASSWORD,
   CHANGE_PASSWORD_SUCCEEDED,
@@ -5,8 +8,6 @@ import {
   ChangePasswordActions
 } from './actions'
 import { PasswordResetState } from './types'
-import { ActionsMap } from 'utils/reducer'
-import { Status } from 'store/types'
 
 const initialState = {
   status: Status.LOADING

@@ -1,39 +1,26 @@
 import React, { Component } from 'react'
-import { connect } from 'react-redux'
-import { AppState } from 'store/types'
-import { Dispatch } from 'redux'
-import { UnregisterCallback } from 'history'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
-import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'
+
 import {
   push as pushRoute,
   replace as replaceRoute,
   goBack
 } from 'connected-react-router'
-import {
-  SignOnProps as MobileSignOnProps,
-  MobilePages
-} from './components/mobile/SignOnPage'
-import {
-  SignOnProps as DesktopSignOnProps,
-  ValidDesktopPages
-} from './components/desktop/SignOnPage'
-import { ID } from 'models/common/Identifiers'
-import { make, TrackEvent } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
-import { isElectron } from 'utils/clientUtil'
-import { showPushNotificationConfirmation } from 'store/account/reducer'
-import { Pages, FollowArtistsCategory } from 'containers/sign-on/store/types'
+import { UnregisterCallback } from 'history'
 import { sampleSize } from 'lodash'
+import { connect } from 'react-redux'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
+import { Dispatch } from 'redux'
+
+import { Pages, FollowArtistsCategory } from 'containers/sign-on/store/types'
 import User from 'models/User'
-import {
-  getSignOn,
-  getIsMobileSignOnVisible,
-  getToastText,
-  makeGetFollowArtists,
-  getRouteOnExit
-} from './store/selectors'
-import * as signOnAction from './store/actions'
+import { ID } from 'models/common/Identifiers'
+import { Name } from 'services/analytics'
+import { showPushNotificationConfirmation } from 'store/account/reducer'
+import { getHasAccount } from 'store/account/selectors'
+import { make, TrackEvent } from 'store/analytics/actions'
+import { AppState } from 'store/types'
+import { isElectron } from 'utils/clientUtil'
+import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'
 import {
   TRENDING_PAGE,
   UPLOAD_PAGE,
@@ -41,7 +28,23 @@ import {
   SIGN_IN_PAGE,
   SIGN_UP_PAGE
 } from 'utils/route'
-import { getHasAccount } from 'store/account/selectors'
+
+import {
+  SignOnProps as DesktopSignOnProps,
+  ValidDesktopPages
+} from './components/desktop/SignOnPage'
+import {
+  SignOnProps as MobileSignOnProps,
+  MobilePages
+} from './components/mobile/SignOnPage'
+import * as signOnAction from './store/actions'
+import {
+  getSignOn,
+  getIsMobileSignOnVisible,
+  getToastText,
+  makeGetFollowArtists,
+  getRouteOnExit
+} from './store/selectors'
 
 const messages = {
   title: 'Sign Up',

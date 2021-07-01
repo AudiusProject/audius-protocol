@@ -1,23 +1,25 @@
 import React, { useState, useContext, useEffect, useCallback } from 'react'
+
 import cn from 'classnames'
 
-import styles from './FeedPageContent.module.css'
-import Header from 'components/general/header/mobile/Header'
-import { FeedPageContentProps } from 'containers/feed-page/types'
 import MobilePageContainer from 'components/general/MobilePageContainer'
-import Lineup from 'containers/lineup/Lineup'
-import { feedActions } from 'containers/feed-page/store/lineups/feed/actions'
-import { useMainPageHeader } from 'containers/nav/store/context'
-import { Status } from 'store/types'
-import useAsyncPoll from 'hooks/useAsyncPoll'
-import PullToRefresh from 'components/pull-to-refresh/PullToRefresh'
-import FeedFilter from 'models/FeedFilter'
-import FeedFilterModal from './FeedFilterModal'
-import Filters from './FeedFilterButton'
+import Header from 'components/general/header/mobile/Header'
 import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
-import { make, useRecord } from 'store/analytics/actions'
+import PullToRefresh from 'components/pull-to-refresh/PullToRefresh'
+import { feedActions } from 'containers/feed-page/store/lineups/feed/actions'
+import { FeedPageContentProps } from 'containers/feed-page/types'
+import Lineup from 'containers/lineup/Lineup'
+import { useMainPageHeader } from 'containers/nav/store/context'
+import useAsyncPoll from 'hooks/useAsyncPoll'
+import FeedFilter from 'models/FeedFilter'
 import { Name } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
+import { Status } from 'store/types'
 import { BASE_URL, FEED_PAGE } from 'utils/route'
+
+import Filters from './FeedFilterButton'
+import FeedFilterModal from './FeedFilterModal'
+import styles from './FeedPageContent.module.css'
 
 const filters = [FeedFilter.ALL, FeedFilter.ORIGINAL, FeedFilter.REPOST]
 

@@ -1,10 +1,9 @@
-import { useSelector, shallowEqual, useDispatch } from 'react-redux'
-import { AppState } from 'store/types'
-import { getTrack, getTracks } from 'store/cache/tracks/selectors'
+import { useCallback } from 'react'
+
 import moment from 'moment'
-import Track, { StemTrack } from 'models/Track'
-import { getCurrentUploads } from 'store/application/ui/stemsUpload/selectors'
-import { getHasAccount } from 'store/account/selectors'
+import { useSelector, shallowEqual, useDispatch } from 'react-redux'
+import { useLocation } from 'react-router-dom'
+
 import {
   openSignOn,
   updateRouteOnExit,
@@ -12,15 +11,19 @@ import {
   showRequiresAccountModal
 } from 'containers/sign-on/store/actions'
 import { stemCategoryFriendlyNames, StemCategory } from 'models/Stems'
-import { useCallback } from 'react'
+import Track, { StemTrack } from 'models/Track'
 import { ID } from 'models/common/Identifiers'
+import { getHasAccount } from 'store/account/selectors'
+import { getCurrentUploads } from 'store/application/ui/stemsUpload/selectors'
+import { getTrack, getTracks } from 'store/cache/tracks/selectors'
+import { AppState } from 'store/types'
+
 import {
   ButtonState,
   messages,
   DownloadButtonProps,
   ButtonType
 } from './DownloadButtons'
-import { useLocation } from 'react-router-dom'
 
 const doesRequireFollow = (
   isOwner: boolean,

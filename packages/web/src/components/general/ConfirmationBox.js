@@ -1,6 +1,7 @@
 import React from 'react'
-import PropTypes from 'prop-types'
+
 import { Button, ButtonSize, ButtonType } from '@audius/stems'
+import PropTypes from 'prop-types'
 
 import styles from './ConfirmationBox.module.css'
 

@@ -1,10 +1,12 @@
-import { AppState } from 'store/types'
+import { createSelector } from 'reselect'
+
+import { ID } from 'models/common/Identifiers'
 import { getCollections } from 'store/cache/collections/selectors'
 import { getUser, getUsers } from 'store/cache/users/selectors'
-import { createSelector } from 'reselect'
+import { AppState } from 'store/types'
 import { removeNullable } from 'utils/typeUtils'
+
 import { AccountCollection } from './reducer'
-import { ID } from 'models/common/Identifiers'
 
 const internalGetAccountCollections = (state: AppState) =>
   state.account.collections

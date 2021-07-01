@@ -1,10 +1,11 @@
 import React from 'react'
-import Tooltip from 'components/tooltip/Tooltip'
-import TaskCompletionList from './TaskCompletionList'
 
-import styles from './ProfileCompletionTooltip.module.css'
+import Tooltip from 'components/tooltip/Tooltip'
+
 import { getPercentageComplete } from './ProfileCompletionHeroCard'
+import styles from './ProfileCompletionTooltip.module.css'
 import { CompletionStageArray } from './PropTypes'
+import TaskCompletionList from './TaskCompletionList'
 
 const makeStrings = ({ completionPercentage }) => ({
   completionPercentage: `Profile ${completionPercentage}% Complete`

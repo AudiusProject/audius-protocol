@@ -1,27 +1,30 @@
 import React, { useCallback, useContext } from 'react'
-import { AppState, Status } from 'store/types'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+
 import { push as pushRoute, goBack } from 'connected-react-router'
+import { connect } from 'react-redux'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
+import { Dispatch } from 'redux'
+
+import {
+  RouterContext,
+  SlideDirection
+} from 'containers/animated-switch/RouterContextProvider'
+import { getNotificationUnreadCount } from 'containers/notification/store/selectors'
+import { getSearchStatus } from 'containers/search-page/store/selectors'
+import { openSignOn } from 'containers/sign-on/store/actions'
+import { Name } from 'services/analytics'
+import { getAccountUser, getAccountStatus } from 'store/account/selectors'
+import { make, useRecord } from 'store/analytics/actions'
+import { AppState, Status } from 'store/types'
+import { getIsIOS } from 'utils/browser'
 import {
   TRENDING_PAGE,
   NOTIFICATION_PAGE,
   SETTINGS_PAGE,
   AUDIO_PAGE
 } from 'utils/route'
-import { openSignOn } from 'containers/sign-on/store/actions'
-import { getAccountUser, getAccountStatus } from 'store/account/selectors'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
+
 import NavBar from './NavBar'
-import { getSearchStatus } from 'containers/search-page/store/selectors'
-import { getNotificationUnreadCount } from 'containers/notification/store/selectors'
-import {
-  RouterContext,
-  SlideDirection
-} from 'containers/animated-switch/RouterContextProvider'
-import { getIsIOS } from 'utils/browser'
-import { make, useRecord } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
 
 type ConnectedNavBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &

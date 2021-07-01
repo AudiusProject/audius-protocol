@@ -6,17 +6,22 @@ import {
   takeEvery,
   takeLatest
 } from 'redux-saga/effects'
-import {
-  add,
-  clear,
-  next,
-  pause,
-  play,
-  previous,
-  remove
-} from 'store/queue/slice'
-import * as playerActions from 'store/player/slice'
+
+import Track from 'models/Track'
+import { ID, UID } from 'models/common/Identifiers'
+import { Name, PlaybackSource } from 'services/analytics'
+import { getUserId } from 'store/account/selectors'
+import { make } from 'store/analytics/actions'
 import * as cacheActions from 'store/cache/actions'
+import { getCollection } from 'store/cache/collections/selectors'
+import { getId } from 'store/cache/selectors'
+import { getTrack } from 'store/cache/tracks/selectors'
+import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
+import {
+  getTrackId as getPlayerTrackId,
+  getUid as getPlayerUid
+} from 'store/player/selectors'
+import * as playerActions from 'store/player/slice'
 import * as queueActions from 'store/queue/actions'
 import {
   getId as getQueueTrackId,
@@ -29,25 +34,23 @@ import {
   getUid,
   getUndershot
 } from 'store/queue/selectors'
-import { getId } from 'store/cache/selectors'
-import { getTrack } from 'store/cache/tracks/selectors'
-import { getCollection } from 'store/cache/collections/selectors'
 import {
-  getTrackId as getPlayerTrackId,
-  getUid as getPlayerUid
-} from 'store/player/selectors'
-import { Kind } from 'store/types'
+  add,
+  clear,
+  next,
+  pause,
+  play,
+  previous,
+  remove
+} from 'store/queue/slice'
 import { Queueable, RepeatMode, Source } from 'store/queue/types'
-import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
+import { Kind } from 'store/types'
 import { makeUid, Uid } from 'utils/uid'
-import mobileSagas from './mobileSagas'
-import { make } from 'store/analytics/actions'
-import { Name, PlaybackSource } from 'services/analytics'
-import { ID, UID } from 'models/common/Identifiers'
-import Track from 'models/Track'
-import { getRecommendedTracks } from '../recommendation/sagas'
-import { getUserId } from 'store/account/selectors'
+
 import { Nullable } from '../../utils/typeUtils'
+import { getRecommendedTracks } from '../recommendation/sagas'
+
+import mobileSagas from './mobileSagas'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'

@@ -1,6 +1,8 @@
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
 import NativeMobileAudio from 'audio/NativeMobileAudio'
 import { UID, ID } from 'models/common/Identifiers'
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
 import { AudioState } from './types'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE

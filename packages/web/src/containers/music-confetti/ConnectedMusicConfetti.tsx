@@ -1,10 +1,13 @@
-import MusicConfetti from 'components/background-animations/MusicConfetti'
 import React, { useCallback } from 'react'
+
 import { useDispatch } from 'react-redux'
+
+import MusicConfetti from 'components/background-animations/MusicConfetti'
 import { useIsMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
-import { hide, getIsVisible } from './store/slice'
 import { isMatrix } from 'utils/theme/theme'
+
+import { hide, getIsVisible } from './store/slice'
 
 const ConnectedMusicConfetti = () => {
   const dispatch = useDispatch()

@@ -1,3 +1,6 @@
+import { getIsIOS } from 'utils/browser'
+import { ActionsMap } from 'utils/reducer'
+
 import {
   ToggleNotificationSetting,
   TOGGLE_NOTIFICATION_SETTING,
@@ -11,7 +14,6 @@ import {
   SET_BROWSER_NOTIFICATION_PERMISSION,
   SET_BROWSER_NOTIFICATION_ENABLED
 } from './actions'
-import { ActionsMap } from 'utils/reducer'
 import SettingsPageState, {
   BrowserNotificationSetting,
   emailFrequency,
@@ -19,7 +21,6 @@ import SettingsPageState, {
   PushNotificationSetting,
   Cast
 } from './types'
-import { getIsIOS } from 'utils/browser'
 
 export const CAST_METHOD = 'CAST_METHOD'
 const getCastMethod = () => {

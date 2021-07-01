@@ -1,24 +1,26 @@
 import React, { memo } from 'react'
-import { connect } from 'react-redux'
-import TrackListItem, { TrackListItemProps } from './TrackListItem'
+
 import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
+
+import { ID } from 'models/common/Identifiers'
+import { FavoriteSource, RepostSource } from 'services/analytics'
+import { open } from 'store/application/ui/mobileOverflowModal/actions'
+import {
+  OverflowAction,
+  OverflowSource
+} from 'store/application/ui/mobileOverflowModal/types'
+import { getUserFromTrack } from 'store/cache/users/selectors'
 import {
   saveTrack,
   unsaveTrack,
   repostTrack,
   undoRepostTrack
 } from 'store/social/tracks/actions'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'store/application/ui/mobileOverflowModal/types'
-import { open } from 'store/application/ui/mobileOverflowModal/actions'
-
-import { ID } from 'models/common/Identifiers'
-import { FavoriteSource, RepostSource } from 'services/analytics'
 import { AppState } from 'store/types'
-import { getUserFromTrack } from 'store/cache/users/selectors'
+
+import TrackListItem, { TrackListItemProps } from './TrackListItem'
 
 type OwnProps = Omit<TrackListItemProps, 'userId'>
 type StateProps = ReturnType<typeof mapStateToProps>

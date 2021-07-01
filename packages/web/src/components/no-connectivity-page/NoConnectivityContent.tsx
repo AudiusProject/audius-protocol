@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import styles from './NoConnectivityContent.module.css'
+
 import { Button, ButtonType } from '@audius/stems'
-import { ReactComponent as IconOffline } from 'assets/img/iconOffline.svg'
-import cn from 'classnames'
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import Lottie from 'react-lottie'
 import { disableBodyScroll, clearAllBodyScrollLocks } from 'body-scroll-lock'
+import cn from 'classnames'
+import Lottie from 'react-lottie'
+
+import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { ReactComponent as IconOffline } from 'assets/img/iconOffline.svg'
+
+import styles from './NoConnectivityContent.module.css'
 
 const messages = {
   title: "You're not connected to the internet.",

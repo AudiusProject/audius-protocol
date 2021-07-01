@@ -1,13 +1,13 @@
 import React, { memo, useEffect } from 'react'
 
+import CoSign from 'components/co-sign/CoSign'
+import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useImageSize'
-import { CoverArtSizes, SquareSizes } from 'models/common/ImageSizes'
-import CoSign from 'components/co-sign/CoSign'
 import { Remix } from 'models/Track'
+import { CoverArtSizes, SquareSizes } from 'models/common/ImageSizes'
 
 import styles from './GiantArtwork.module.css'
-import { Size } from 'components/co-sign/types'
 
 type GiantArtworkProps = {
   trackId: number

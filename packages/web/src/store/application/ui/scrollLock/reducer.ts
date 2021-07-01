@@ -1,6 +1,7 @@
-import { ScrollLockState } from './types'
-import { INCREMENT_COUNT, DECREMENT_COUNT } from './actions'
 import { makeReducer } from 'utils/reducer'
+
+import { INCREMENT_COUNT, DECREMENT_COUNT } from './actions'
+import { ScrollLockState } from './types'
 
 const initialState: ScrollLockState = {
   lockCount: 0

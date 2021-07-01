@@ -1,20 +1,21 @@
 import React from 'react'
-import { Modal } from '@audius/stems'
-import { connect } from 'react-redux'
-import PropTypes from 'prop-types'
 
-import FollowButton from 'components/general/FollowButton'
-import ArtistChip from 'components/artist/ArtistChip'
+import { Modal } from '@audius/stems'
+import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
-import SimpleBar from 'simplebar-react'
-import * as socialActions from 'store/social/users/actions'
+import PropTypes from 'prop-types'
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'
+import { connect } from 'react-redux'
+import SimpleBar from 'simplebar-react'
+
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import cn from 'classnames'
+import ArtistChip from 'components/artist/ArtistChip'
+import FollowButton from 'components/general/FollowButton'
+import { FollowSource } from 'services/analytics'
+import * as socialActions from 'store/social/users/actions'
 
 import styles from './UserListModal.module.css'
-import { FollowSource } from 'services/analytics'
 
 const SCROLL_THRESHOLD = 400
 

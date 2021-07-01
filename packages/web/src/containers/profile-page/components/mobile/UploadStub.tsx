@@ -1,9 +1,10 @@
 import React, { useState, useRef, useCallback } from 'react'
-import Lottie from 'react-lottie'
-import cn from 'classnames'
 
-import { ReactComponent as IconUpload } from 'assets/img/iconUpload.svg'
+import cn from 'classnames'
+import Lottie from 'react-lottie'
+
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { ReactComponent as IconUpload } from 'assets/img/iconUpload.svg'
 
 import styles from './UploadStub.module.css'
 

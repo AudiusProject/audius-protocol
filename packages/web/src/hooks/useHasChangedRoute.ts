@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
+
 import { useLocation } from 'react-router-dom'
+
 import useInstanceVar from 'hooks/useInstanceVar'
 
 /**

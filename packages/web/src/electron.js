@@ -1,20 +1,21 @@
+const fs = require('fs')
+const path = require('path')
+const url = require('url')
+const util = require('util')
+const stat = util.promisify(fs.stat)
+
 const {
   app,
   protocol,
   BrowserWindow,
+  ipcMain,
   Menu,
   session,
   shell,
   globalShortcut
 } = require('electron')
-const { autoUpdater } = require('electron-updater')
 const logger = require('electron-log')
-const ipcMain = require('electron').ipcMain
-const fs = require('fs')
-const url = require('url')
-const path = require('path')
-const util = require('util')
-const stat = util.promisify(fs.stat)
+const { autoUpdater } = require('electron-updater')
 
 // The protocol scheme determines what URLs resolve to the app.
 // In this case audius:// will.

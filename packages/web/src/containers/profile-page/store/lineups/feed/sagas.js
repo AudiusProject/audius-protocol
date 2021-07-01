@@ -9,14 +9,15 @@ import {
   getProfileFeedLineup,
   getProfileUserHandle
 } from 'containers/profile-page/store/selectors'
-import { LineupSagas } from 'store/lineup/sagas'
 import { getUserId } from 'store/account/selectors'
-import { retrieveUserReposts } from './retrieveUserReposts'
+import { getCollections } from 'store/cache/collections/selectors'
 import { getTracks } from 'store/cache/tracks/selectors'
 import { getConfirmCalls, getResult } from 'store/confirmer/selectors'
-import { getIdFromKindId, getKindFromKindId } from 'utils/uid'
+import { LineupSagas } from 'store/lineup/sagas'
 import { Kind } from 'store/types'
-import { getCollections } from 'store/cache/collections/selectors'
+import { getIdFromKindId, getKindFromKindId } from 'utils/uid'
+
+import { retrieveUserReposts } from './retrieveUserReposts'
 
 function* getReposts({ offset, limit, payload }) {
   const handle = yield select(getProfileUserHandle)

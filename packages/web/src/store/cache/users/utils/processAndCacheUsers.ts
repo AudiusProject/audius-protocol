@@ -1,9 +1,11 @@
-import { reformat } from './reformat'
-import User from 'models/User'
 import { put } from 'redux-saga/effects'
+
+import User from 'models/User'
 import * as cacheActions from 'store/cache/actions'
 import { Kind } from 'store/types'
 import { makeUid } from 'utils/uid'
+
+import { reformat } from './reformat'
 
 export function* processAndCacheUsers(users: User[]) {
   const reformattedUser = users.map(user => {

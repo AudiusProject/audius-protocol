@@ -2,9 +2,9 @@ import React from 'react'
 
 import cn from 'classnames'
 
+import IconButton from 'components/general/IconButton'
 import { PopupMenu, PopupMenuProps } from 'components/general/PopupMenu'
 
-import IconButton from 'components/general/IconButton'
 import styles from './PopupMenuIconButton.module.css'
 
 type PopupMenuIconButtonProps = {

@@ -7,11 +7,12 @@ import {
   FETCH_SEARCH_PAGE_TAGS_SUCCEEDED,
   FETCH_SEARCH_PAGE_TAGS_FAILED
 } from 'containers/search-page/store/actions'
-import { asLineup } from 'store/lineup/reducer'
-import tracksReducer from 'containers/search-page/store/lineups/tracks/reducer'
 import { PREFIX } from 'containers/search-page/store/lineups/tracks/actions'
+import tracksReducer from 'containers/search-page/store/lineups/tracks/reducer'
+import { asLineup } from 'store/lineup/reducer'
 import { Status } from 'store/types'
 import { ActionsMap } from 'utils/reducer'
+
 import SearchPageState from './types'
 
 const initialState: SearchPageState = {

@@ -1,15 +1,16 @@
 import React, { useState } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
-import ReactDropzone from 'react-dropzone'
+
 import { Button, IconCamera, ButtonType } from '@audius/stems'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
+import ReactDropzone from 'react-dropzone'
 
 import InvalidFileType from 'components/upload/InvalidFileType'
-import ImageSelectionPopup from './ImageSelectionPopup'
-
-import { ImageSelectionProps, ImageSelectionDefaults } from './PropTypes'
-import styles from './ImageSelectionButton.module.css'
 import { ALLOWED_IMAGE_FILE_TYPES } from 'utils/imageProcessingUtil'
+
+import styles from './ImageSelectionButton.module.css'
+import ImageSelectionPopup from './ImageSelectionPopup'
+import { ImageSelectionProps, ImageSelectionDefaults } from './PropTypes'
 
 const messages = {
   add: 'Add',

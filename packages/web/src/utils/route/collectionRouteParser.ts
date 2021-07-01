@@ -1,7 +1,9 @@
 import { matchPath } from 'react-router-dom'
-import { PLAYLIST_PAGE, ALBUM_PAGE, PLAYLIST_ID_PAGE } from 'utils/route'
-import { decodeHashId } from './hashIds'
+
 import { ID } from 'models/common/Identifiers'
+import { PLAYLIST_PAGE, ALBUM_PAGE, PLAYLIST_ID_PAGE } from 'utils/route'
+
+import { decodeHashId } from './hashIds'
 
 type CollectionRouteParams =
   | {

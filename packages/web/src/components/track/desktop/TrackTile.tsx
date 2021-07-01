@@ -1,27 +1,28 @@
 import React, { memo, MouseEvent, useCallback } from 'react'
+
+import { IconCrown } from '@audius/stems'
 import cn from 'classnames'
-import styles from './TrackTile.module.css'
+
+import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
+import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
+import Skeleton from 'components/general/Skeleton'
+import FavoriteButton from 'components/general/alt-button/FavoriteButton'
+import RepostButton from 'components/general/alt-button/RepostButton'
+import ShareButton from 'components/general/alt-button/ShareButton'
+import Toast from 'components/toast/Toast'
+import Tooltip from 'components/tooltip/Tooltip'
+import { ComponentPlacement, MountPlacement } from 'components/types'
+import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
+import { formatCount, pluralize } from 'utils/formatUtil'
+import { formatSeconds } from 'utils/timeUtil'
+
+import ArtistPick from '../ArtistPick'
 import {
   TrackTileSize,
   DesktopTrackTileProps as TrackTileProps
 } from '../types'
 
-import FavoriteButton from 'components/general/alt-button/FavoriteButton'
-import RepostButton from 'components/general/alt-button/RepostButton'
-
-import { formatSeconds } from 'utils/timeUtil'
-import { formatCount, pluralize } from 'utils/formatUtil'
-
-import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
-import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
-import ShareButton from 'components/general/alt-button/ShareButton'
-import Skeleton from 'components/general/Skeleton'
-import ArtistPick from '../ArtistPick'
-import Toast from 'components/toast/Toast'
-import Tooltip from 'components/tooltip/Tooltip'
-import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
-import { ComponentPlacement, MountPlacement } from 'components/types'
-import { IconCrown } from '@audius/stems'
+import styles from './TrackTile.module.css'
 
 const messages = {
   getPlays: (listenCount: number) => ` ${pluralize('Play', listenCount)}`,

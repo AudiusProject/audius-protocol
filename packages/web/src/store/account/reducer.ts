@@ -1,7 +1,8 @@
-import { Status } from 'store/types'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { ID } from 'models/common/Identifiers'
 import { keyBy } from 'lodash'
+
+import { ID } from 'models/common/Identifiers'
+import { Status } from 'store/types'
 
 const initialState = {
   collections: {} as { [id: number]: AccountCollection },

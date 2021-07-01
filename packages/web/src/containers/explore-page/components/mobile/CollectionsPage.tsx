@@ -1,19 +1,19 @@
 import React, { useContext, useEffect } from 'react'
+
 import Spin from 'antd/lib/spin'
 
+import Card from 'components/card/mobile/Card'
+import MobilePageContainer from 'components/general/MobilePageContainer'
+import Header from 'components/general/header/mobile/Header'
+import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
+import CardLineup from 'containers/lineup/CardLineup'
+import { useSubPageHeader } from 'containers/nav/store/context'
 import { UserCollection } from 'models/Collection'
+import { ID } from 'models/common/Identifiers'
 import { Status } from 'store/types'
 import { playlistPage, albumPage, BASE_URL, EXPLORE_PAGE } from 'utils/route'
 
-import MobilePageContainer from 'components/general/MobilePageContainer'
-import Header from 'components/general/header/mobile/Header'
-import Card from 'components/card/mobile/Card'
-import CardLineup from 'containers/lineup/CardLineup'
-import { useSubPageHeader } from 'containers/nav/store/context'
-
 import styles from './CollectionsPage.module.css'
-import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
-import { ID } from 'models/common/Identifiers'
 
 export type CollectionsPageProps = {
   title: string

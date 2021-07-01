@@ -1,6 +1,8 @@
-import { useDispatch as useDispatchRedux } from 'react-redux'
-import { Name, AllTrackingEvents } from 'services/analytics'
 import { useCallback } from 'react'
+
+import { useDispatch as useDispatchRedux } from 'react-redux'
+
+import { Name, AllTrackingEvents } from 'services/analytics'
 
 /** UI EVENTS */
 export const IDENTIFY = 'ANALYTICS/IDENTIFY'

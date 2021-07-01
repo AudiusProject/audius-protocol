@@ -1,10 +1,13 @@
 import React from 'react'
-import FeedPageProvider from './FeedPageProvider'
+
 import { connect } from 'react-redux'
-import { isMobile } from 'utils/clientUtil'
+
 import { AppState } from 'store/types'
-import FeedPageMobileContent from './components/mobile/FeedPageContent'
+import { isMobile } from 'utils/clientUtil'
+
+import FeedPageProvider from './FeedPageProvider'
 import FeedPageContent from './components/desktop/FeedPageContent'
+import FeedPageMobileContent from './components/mobile/FeedPageContent'
 
 interface OwnProps {
   containerRef: React.RefObject<HTMLDivElement>

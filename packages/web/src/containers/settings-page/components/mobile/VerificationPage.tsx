@@ -1,16 +1,5 @@
 import React, { useCallback, useState } from 'react'
-import cn from 'classnames'
 
-import Page from 'components/general/Page'
-
-import settingsPageStyles from './SettingsPage.module.css'
-import { SettingsPageProps } from './SettingsPage'
-import InstagramAccountVerification from '../InstagramAccountVerified'
-import TwitterAccountVerification from '../TwitterAccountVerified'
-
-import styles from './VerificationPage.module.css'
-import { InstagramProfile, TwitterProfile } from 'store/account/reducer'
-import { Status } from 'store/types'
 import {
   Button,
   ButtonSize,
@@ -18,17 +7,29 @@ import {
   IconNote,
   IconValidationX
 } from '@audius/stems'
+import cn from 'classnames'
+
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import Page from 'components/general/Page'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { useUserProfilePicture } from 'hooks/useImageSize'
-import { ProfilePictureSizes, SquareSizes } from 'models/common/ImageSizes'
-import { profilePage } from 'utils/route'
-import { ID } from 'models/common/Identifiers'
-import { BooleanKeys } from 'services/remote-config'
 import { useRemoteVar } from 'containers/remote-config/hooks'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { useRecord, make, TrackEvent } from 'store/analytics/actions'
+import { useUserProfilePicture } from 'hooks/useImageSize'
+import { ID } from 'models/common/Identifiers'
+import { ProfilePictureSizes, SquareSizes } from 'models/common/ImageSizes'
 import { Name } from 'services/analytics'
+import { BooleanKeys } from 'services/remote-config'
+import { InstagramProfile, TwitterProfile } from 'store/account/reducer'
+import { useRecord, make, TrackEvent } from 'store/analytics/actions'
+import { Status } from 'store/types'
+import { profilePage } from 'utils/route'
+
+import InstagramAccountVerification from '../InstagramAccountVerified'
+import TwitterAccountVerification from '../TwitterAccountVerified'
+
+import { SettingsPageProps } from './SettingsPage'
+import settingsPageStyles from './SettingsPage.module.css'
+import styles from './VerificationPage.module.css'
 
 const messages = {
   title: 'VERIFICATION',
