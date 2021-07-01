@@ -1,5 +1,6 @@
 import * as pinTrackActions from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import { makeReducer } from 'utils/reducer'
+
 import { SetAsArtistPickConfirmationState } from './types'
 
 const initialState: SetAsArtistPickConfirmationState = {

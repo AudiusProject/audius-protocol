@@ -1,3 +1,5 @@
+import { Status } from 'store/types'
+
 import {
   FETCH_DASHBOARD,
   FETCH_DASHBOARD_SUCCEEDED,
@@ -5,7 +7,6 @@ import {
   FETCH_DASHBOARD_LISTEN_DATA_SUCCEEDED,
   FETCH_DASHBOARD_LISTEN_DATA_FAILED
 } from './actions'
-import { Status } from 'store/types'
 
 const initialState = {
   status: Status.LOADING,

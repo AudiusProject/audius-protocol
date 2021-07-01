@@ -1,4 +1,5 @@
 import { createCustomAction } from 'typesafe-actions'
+
 import { ID } from 'models/common/Identifiers'
 import { FollowSource, ShareSource } from 'services/analytics'
 

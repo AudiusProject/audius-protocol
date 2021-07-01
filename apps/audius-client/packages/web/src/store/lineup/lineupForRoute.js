@@ -1,14 +1,13 @@
 import { matchPath } from 'react-router'
 
-import { getDiscoverFeedLineup } from 'containers/feed-page/store/selectors'
-import { getCurrentDiscoverTrendingLineup } from 'containers/trending-page/store/selectors'
-import { getHistoryTracksLineup } from 'containers/history-page/store/selectors'
-import { getSavedTracksLineup } from 'containers/saved-page/store/selectors'
-import { getProfileTracksLineup } from 'containers/profile-page/store/selectors'
-import { getSearchTracksLineup } from 'containers/search-page/store/selectors'
 import { getCollectionTracksLineup } from 'containers/collection-page/store/selectors'
+import { getDiscoverFeedLineup } from 'containers/feed-page/store/selectors'
+import { getHistoryTracksLineup } from 'containers/history-page/store/selectors'
+import { getProfileTracksLineup } from 'containers/profile-page/store/selectors'
+import { getSavedTracksLineup } from 'containers/saved-page/store/selectors'
+import { getSearchTracksLineup } from 'containers/search-page/store/selectors'
 import { getLineup } from 'containers/track-page/store/selectors'
-
+import { getCurrentDiscoverTrendingLineup } from 'containers/trending-page/store/selectors'
 import {
   FEED_PAGE,
   TRENDING_PAGE,

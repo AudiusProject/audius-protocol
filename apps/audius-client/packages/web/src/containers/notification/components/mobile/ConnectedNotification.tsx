@@ -1,25 +1,26 @@
 import React, { useCallback } from 'react'
-import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
-import { AppState } from 'store/types'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'store/application/ui/mobileOverflowModal/types'
-import { open } from 'store/application/ui/mobileOverflowModal/actions'
-import Announcement from './Announcement'
 
-import { NotificationType } from 'containers/notification/store/types'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+
+import ErrorWrapper from 'components/general/ErrorWrapper'
 import {
   getNotificationUser,
   getNotificationUsers,
   getNotificationEntity,
   getNotificationEntities
 } from 'containers/notification/store/selectors'
+import { NotificationType } from 'containers/notification/store/types'
 import { ID } from 'models/common/Identifiers'
+import { open } from 'store/application/ui/mobileOverflowModal/actions'
+import {
+  OverflowAction,
+  OverflowSource
+} from 'store/application/ui/mobileOverflowModal/types'
+import { AppState } from 'store/types'
 
+import Announcement from './Announcement'
 import Notification, { USER_LENGTH_LIMIT } from './Notification'
-import ErrorWrapper from 'components/general/ErrorWrapper'
 
 type OwnProps = {
   goToRoute: (route: string) => void

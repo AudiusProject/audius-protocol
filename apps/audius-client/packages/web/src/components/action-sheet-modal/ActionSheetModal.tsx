@@ -1,10 +1,11 @@
 import React from 'react'
-import { Anchor, Modal } from '@audius/stems'
 
+import { Anchor, Modal } from '@audius/stems'
 import cn from 'classnames'
 
-import styles from './ActionSheetModal.module.css'
 import { isDarkMode } from 'utils/theme/theme'
+
+import styles from './ActionSheetModal.module.css'
 
 type ActionSheetAction = {
   text: string

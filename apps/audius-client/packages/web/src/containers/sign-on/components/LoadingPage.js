@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react'
-import cn from 'classnames'
+
 import Spin from 'antd/lib/spin'
+import cn from 'classnames'
 
 import styles from './LoadingPage.module.css'
 

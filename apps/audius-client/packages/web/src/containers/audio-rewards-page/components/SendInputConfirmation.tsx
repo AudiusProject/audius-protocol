@@ -1,5 +1,7 @@
-import { Button, ButtonType, IconArrow } from '@audius/stems'
 import React from 'react'
+
+import { Button, ButtonType, IconArrow } from '@audius/stems'
+
 import {
   BNWei,
   StringAudio,
@@ -7,10 +9,11 @@ import {
   WalletAddress,
   weiToAudio
 } from 'store/wallet/slice'
-import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
-import DisplayAudio from './DisplayAudio'
-import DashboardTokenValueSlider from './DashboardTokenValueSlider'
 
+import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
+
+import DashboardTokenValueSlider from './DashboardTokenValueSlider'
+import DisplayAudio from './DisplayAudio'
 import styles from './SendInputConfirmation.module.css'
 
 const messages = {

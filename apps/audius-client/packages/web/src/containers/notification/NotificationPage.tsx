@@ -1,19 +1,20 @@
 import React, { useEffect, useCallback, useContext } from 'react'
-import Lottie from 'react-lottie'
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
 
-import { ID } from 'models/common/Identifiers'
 import InfiniteScroll from 'react-infinite-scroller'
-import styles from './NotificationPage.module.css'
-import EmptyNotifications from './components/EmptyNotifications'
-import NotificationProvider from './NotificationProvider'
+import Lottie from 'react-lottie'
 
-import NavContext, { LeftPreset } from 'containers/nav/store/context'
-import ConnectedNotification from './components/mobile/ConnectedNotification'
+import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import MobilePageContainer from 'components/general/MobilePageContainer'
-import { Notification } from './store/types'
-import { Status } from 'store/types'
+import NavContext, { LeftPreset } from 'containers/nav/store/context'
 import NetworkConnectivityMonitor from 'containers/network-connectivity/NetworkConnectivityMonitor'
+import { ID } from 'models/common/Identifiers'
+import { Status } from 'store/types'
+
+import styles from './NotificationPage.module.css'
+import NotificationProvider from './NotificationProvider'
+import EmptyNotifications from './components/EmptyNotifications'
+import ConnectedNotification from './components/mobile/ConnectedNotification'
+import { Notification } from './store/types'
 
 const messages = {
   documentTitle: 'Notifications',

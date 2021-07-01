@@ -1,13 +1,15 @@
 import React, { memo } from 'react'
+
 import { IconDownload } from '@audius/stems'
+import cn from 'classnames'
+
+import IconButton from 'components/general/IconButton'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import Tooltip from 'components/tooltip/Tooltip'
+import { ID } from 'models/common/Identifiers'
 
 import styles from './DownloadButtons.module.css'
-import { ID } from 'models/common/Identifiers'
-import cn from 'classnames'
-import Tooltip from 'components/tooltip/Tooltip'
-import IconButton from 'components/general/IconButton'
 import { useButtons } from './hooks'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 export enum ButtonState {
   PROCESSING,

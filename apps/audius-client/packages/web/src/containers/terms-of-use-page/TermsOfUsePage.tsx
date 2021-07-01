@@ -1,8 +1,9 @@
 import React from 'react'
-import styles from './TermsOfUsePage.module.css'
 
-import NavBanner from 'components/public-site/NavBanner'
 import Footer from 'components/public-site/Footer'
+import NavBanner from 'components/public-site/NavBanner'
+
+import styles from './TermsOfUsePage.module.css'
 
 const messages = {
   download: 'Download Terms of Use'

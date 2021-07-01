@@ -1,10 +1,12 @@
-import { takeEvery, put } from 'redux-saga/effects'
-import * as accountActions from 'store/account/reducer'
 import { push as pushRoute } from 'connected-react-router'
-import { SIGN_UP_PAGE, SIGN_IN_PAGE, doesMatchRoute } from 'utils/route'
-import { MessageType } from 'services/native-mobile-interface/types'
-import { setNeedsAccountRecovery } from './reducer'
+import { takeEvery, put } from 'redux-saga/effects'
+
 import { ReloadMessage } from 'services/native-mobile-interface/linking'
+import { MessageType } from 'services/native-mobile-interface/types'
+import * as accountActions from 'store/account/reducer'
+import { SIGN_UP_PAGE, SIGN_IN_PAGE, doesMatchRoute } from 'utils/route'
+
+import { setNeedsAccountRecovery } from './reducer'
 
 export const RESET_REQUIRED_KEY = 'password-reset-required'
 export const ENTROPY_KEY = 'hedgehog-entropy-key'

@@ -1,13 +1,89 @@
 import React, { Component, Suspense } from 'react'
-import { connect } from 'react-redux'
-import { Switch, Route, Redirect, withRouter } from 'react-router-dom'
-import { matchPath } from 'react-router'
-import cn from 'classnames'
-import * as Sentry from '@sentry/browser'
-import semver from 'semver'
-import { make } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
 
+import * as Sentry from '@sentry/browser'
+import cn from 'classnames'
+import { connect } from 'react-redux'
+import { matchPath } from 'react-router'
+import { Switch, Route, Redirect, withRouter } from 'react-router-dom'
+import semver from 'semver'
+
+import MobileDesktopBanner from 'components/banner/CTABanner'
+import UpdateAppBanner from 'components/banner/UpdateAppBanner'
+import Web3ErrorBanner from 'components/banner/Web3ErrorBanner'
+import { BACKGROUND_ELEMENT_ID as HEADER_BACKGROUND_GUTTER_ID } from 'components/general/header/desktop/Header'
+import { HeaderContextConsumer } from 'components/general/header/mobile/HeaderContextProvider'
+import DesktopRoute from 'components/routes/DesktopRoute'
+import MobileRoute from 'components/routes/MobileRoute'
+import AnnouncementPage from 'containers/announcement-page/AnnoucementPage'
+import AppRedirectListener from 'containers/app-redirect-popover/AppRedirectListener'
+import AppRedirectPopover from 'containers/app-redirect-popover/components/AppRedirectPopover'
+import ArtistDashboardPage from 'containers/artist-dashboard-page/ArtistDashboardPage'
+import AudioRewardsPage from 'containers/audio-rewards-page/AudioRewardsPage'
+import CheckPage from 'containers/check-page/CheckPage'
+import CollectionPage from 'containers/collection-page/CollectionPage'
+import ConfirmerPreview from 'containers/confirmer-preview/ConfirmerPreview'
+import CookieBanner from 'containers/cookie-banner/CookieBanner'
+import EmptyPage from 'containers/empty-page/EmptyPage'
+import ExplorePage from 'containers/explore-page/ExplorePage'
+import FavoritesPage from 'containers/favorites-page/FavoritesPage'
+import FeedPage from 'containers/feed-page/FeedPage'
+import HistoryPage from 'containers/history-page/HistoryPage'
+import Konami from 'containers/konami/Konami'
+import Navigator from 'containers/nav/Navigator'
+import NotFoundPage from 'containers/not-found-page/NotFoundPage'
+import NotificationUsersPage from 'containers/notification-users-page/NotificationUsersPage'
+import NotificationPage from 'containers/notification/NotificationPage'
+import PinnedTrackConfirmation from 'containers/pin-track-confirmation/PinTrackConfirmation'
+import PlayBarProvider from 'containers/play-bar/PlayBarProvider'
+import ProfilePage from 'containers/profile-page/ProfilePage'
+import ConnectedReachabilityBar from 'containers/reachability-bar/ReachabilityBar'
+import RemixesPage from 'containers/remixes-page/RemixesPage'
+import RepostsPage from 'containers/reposts-page/RepostsPage'
+import RequiresUpdate from 'containers/requires-update/RequiresUpdate'
+import SavedPage from 'containers/saved-page/SavedPage'
+import SearchPage from 'containers/search-page/SearchPage'
+import SignOn from 'containers/sign-on/SignOn'
+import {
+  openSignOn,
+  updateRouteOnCompletion as updateRouteOnSignUpCompletion
+} from 'containers/sign-on/store/actions'
+import { getStatus as getSignOnStatus } from 'containers/sign-on/store/selectors'
+import { Pages as SignOnPages } from 'containers/sign-on/store/types'
+import SomethingWrong from 'containers/something-wrong/SomethingWrong'
+import TrackPage from 'containers/track-page/TrackPage'
+import TrendingGenreSelectionPage from 'containers/trending-genre-selection/TrendingGenreSelectionPage'
+import TrendingPage from 'containers/trending-page/TrendingPage'
+import TrendingPlaylistsPage from 'containers/trending-playlists/TrendingPlaylistPage'
+import TrendingUndergroundPage from 'containers/trending-underground/TrendingUndergroundPage'
+import UploadType from 'containers/upload-page/components/uploadType'
+import Visualizer from 'containers/visualizer/Visualizer'
+import Client from 'models/Client'
+import Theme from 'models/Theme'
+import { Name } from 'services/analytics'
+import { ThemeChangeMessage } from 'services/native-mobile-interface/theme'
+import { initializeSentry } from 'services/sentry'
+import {
+  getHasAccount,
+  getAccountStatus,
+  getUserId,
+  getConnectivityFailure,
+  getUserHandle
+} from 'store/account/selectors'
+import { make } from 'store/analytics/actions'
+import { setVisibility as setAppModalCTAVisibility } from 'store/application/ui/app-cta-modal/slice'
+import { getShowCookieBanner } from 'store/application/ui/cookieBanner/selectors'
+import {
+  incrementScrollCount as incrementScrollCountAction,
+  decrementScrollCount as decrementScrollCountAction
+} from 'store/application/ui/scrollLock/actions'
+import { setTheme } from 'store/application/ui/theme/actions'
+import { getTheme } from 'store/application/ui/theme/selectors'
+import { getWeb3Error } from 'store/backend/selectors'
+import { Status } from 'store/types'
+import { isMobile, getClient } from 'utils/clientUtil'
+import lazyWithPreload from 'utils/lazyWithPreload'
+import { clearAll } from 'utils/persistentCache'
+import 'utils/redirect'
 import {
   FEED_PAGE,
   TRENDING_PAGE,
@@ -69,100 +145,20 @@ import {
   getPathname,
   TRENDING_PLAYLISTS_PAGE_LEGACY
 } from 'utils/route'
-import 'utils/redirect'
-import { isMobile, getClient } from 'utils/clientUtil'
-import { Status } from 'store/types'
-import {
-  getHasAccount,
-  getAccountStatus,
-  getUserId,
-  getConnectivityFailure,
-  getUserHandle
-} from 'store/account/selectors'
-import { getWeb3Error } from 'store/backend/selectors'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
-import CookieBanner from 'containers/cookie-banner/CookieBanner'
-import MobileDesktopBanner from 'components/banner/CTABanner'
-import UpdateAppBanner from 'components/banner/UpdateAppBanner'
-import Web3ErrorBanner from 'components/banner/Web3ErrorBanner'
-
-import PinnedTrackConfirmation from 'containers/pin-track-confirmation/PinTrackConfirmation'
-import SomethingWrong from 'containers/something-wrong/SomethingWrong'
-import RequiresUpdate from 'containers/requires-update/RequiresUpdate'
-import PlayBarProvider from 'containers/play-bar/PlayBarProvider'
-import UploadType from 'containers/upload-page/components/uploadType'
-import Visualizer from 'containers/visualizer/Visualizer'
-import { Pages as SignOnPages } from 'containers/sign-on/store/types'
-import {
-  incrementScrollCount as incrementScrollCountAction,
-  decrementScrollCount as decrementScrollCountAction
-} from 'store/application/ui/scrollLock/actions'
-
 import styles from './App.module.css'
-import Navigator from 'containers/nav/Navigator'
-import DesktopRoute from 'components/routes/DesktopRoute'
-import MobileRoute from 'components/routes/MobileRoute'
-import Client from 'models/Client'
-import Theme from 'models/Theme'
-import { getShowCookieBanner } from 'store/application/ui/cookieBanner/selectors'
-import { getStatus as getSignOnStatus } from 'containers/sign-on/store/selectors'
-import {
-  openSignOn,
-  updateRouteOnCompletion as updateRouteOnSignUpCompletion
-} from 'containers/sign-on/store/actions'
-import { setTheme } from 'store/application/ui/theme/actions'
-import lazyWithPreload from 'utils/lazyWithPreload'
-import { initializeSentry } from 'services/sentry'
-import { getTheme } from 'store/application/ui/theme/selectors'
-import { BACKGROUND_ELEMENT_ID as HEADER_BACKGROUND_GUTTER_ID } from 'components/general/header/desktop/Header'
-import { HeaderContextConsumer } from 'components/general/header/mobile/HeaderContextProvider'
-import { SubPage } from './settings-page/components/mobile/SettingsPage'
-import { clearAll } from 'utils/persistentCache'
-import { SmartCollectionVariant } from './smart-collection/types'
-import { ExploreCollectionsVariant } from './explore-page/store/types'
-import { setVisibility as setAppModalCTAVisibility } from 'store/application/ui/app-cta-modal/slice'
-
 import AnimatedSwitch from './animated-switch/AnimatedSwitch'
-
-import FeedPage from 'containers/feed-page/FeedPage'
-import TrendingPage from 'containers/trending-page/TrendingPage'
-import CollectionPage from 'containers/collection-page/CollectionPage'
-import TrackPage from 'containers/track-page/TrackPage'
-import ProfilePage from 'containers/profile-page/ProfilePage'
-import RemixesPage from 'containers/remixes-page/RemixesPage'
-
-import NotificationPage from 'containers/notification/NotificationPage'
-import AnnouncementPage from 'containers/announcement-page/AnnoucementPage'
-import NotFoundPage from 'containers/not-found-page/NotFoundPage'
-import ArtistDashboardPage from 'containers/artist-dashboard-page/ArtistDashboardPage'
-import AudioRewardsPage from 'containers/audio-rewards-page/AudioRewardsPage'
-import SearchPage from 'containers/search-page/SearchPage'
-import HistoryPage from 'containers/history-page/HistoryPage'
-import SavedPage from 'containers/saved-page/SavedPage'
-import ExplorePage from 'containers/explore-page/ExplorePage'
-import EmptyPage from 'containers/empty-page/EmptyPage'
-import RepostsPage from 'containers/reposts-page/RepostsPage'
-import FavoritesPage from 'containers/favorites-page/FavoritesPage'
-import NotificationUsersPage from 'containers/notification-users-page/NotificationUsersPage'
-import FollowingPage from './following-page/FollowingPage'
-import FollowersPage from './followers-page/FollowersPage'
-import TopLevelPage from './nav/mobile/TopLevelPage'
-import TrendingGenreSelectionPage from 'containers/trending-genre-selection/TrendingGenreSelectionPage'
-import ConnectedReachabilityBar from 'containers/reachability-bar/ReachabilityBar'
-import Konami from 'containers/konami/Konami'
-import AppRedirectPopover from 'containers/app-redirect-popover/components/AppRedirectPopover'
-import AppRedirectListener from 'containers/app-redirect-popover/AppRedirectListener'
-import SmartCollectionPage from './smart-collection/SmartCollectionPage'
-import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
-import ConfirmerPreview from 'containers/confirmer-preview/ConfirmerPreview'
-import Notice from './notice/Notice'
-import SignOn from 'containers/sign-on/SignOn'
 import EnablePushNotificationsDrawer from './enable-push-notifications-drawer/EnablePushNotificationsDrawer'
-import { ThemeChangeMessage } from 'services/native-mobile-interface/theme'
-import TrendingPlaylistsPage from 'containers/trending-playlists/TrendingPlaylistPage'
-import TrendingUndergroundPage from 'containers/trending-underground/TrendingUndergroundPage'
-import CheckPage from 'containers/check-page/CheckPage'
+import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
+import { ExploreCollectionsVariant } from './explore-page/store/types'
+import FollowersPage from './followers-page/FollowersPage'
+import FollowingPage from './following-page/FollowingPage'
+import TopLevelPage from './nav/mobile/TopLevelPage'
+import Notice from './notice/Notice'
+import { SubPage } from './settings-page/components/mobile/SettingsPage'
+import SmartCollectionPage from './smart-collection/SmartCollectionPage'
+import { SmartCollectionVariant } from './smart-collection/types'
 
 const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
 

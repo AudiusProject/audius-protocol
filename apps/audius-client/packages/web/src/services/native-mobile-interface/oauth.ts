@@ -1,5 +1,5 @@
-import { MessageType } from './types'
 import { NativeMobileMessage } from './helpers'
+import { MessageType } from './types'
 
 export class RequestTwitterAuthMessage extends NativeMobileMessage {
   constructor(authURL: string) {

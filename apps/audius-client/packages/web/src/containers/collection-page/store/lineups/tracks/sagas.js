@@ -1,23 +1,23 @@
-import { select, call } from 'redux-saga/effects'
-import moment from 'moment'
 import { keyBy } from 'lodash'
+import moment from 'moment'
+import { select, call } from 'redux-saga/effects'
 
-import { waitForValue } from 'utils/sagaHelpers'
-import { PREFIX, tracksActions } from './actions'
-import { LineupSagas } from 'store/lineup/sagas'
-import { getPositions } from 'store/queue/selectors'
-import { getCollection as getSmartCollection } from 'containers/smart-collection/store/selectors'
 import {
   getCollection,
   getSmartCollectionVariant,
   getCollectionId,
   getCollectionTracksLineup
 } from 'containers/collection-page/store/selectors'
-import { Kind } from 'store/types'
-
-import { Uid } from 'utils/uid'
+import { getCollection as getSmartCollection } from 'containers/smart-collection/store/selectors'
 import { retrieveTracks } from 'store/cache/tracks/utils'
+import { LineupSagas } from 'store/lineup/sagas'
+import { getPositions } from 'store/queue/selectors'
+import { Kind } from 'store/types'
+import { waitForValue } from 'utils/sagaHelpers'
 import { removeNullable } from 'utils/typeUtils'
+import { Uid } from 'utils/uid'
+
+import { PREFIX, tracksActions } from './actions'
 
 function* getCollectionTracks() {
   const smartCollectionVariant = yield select(getSmartCollectionVariant)

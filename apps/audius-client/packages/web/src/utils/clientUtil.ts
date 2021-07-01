@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
 
-import { OS, MobileOS } from 'models/OS'
 import Client from 'models/Client'
+import { OS, MobileOS } from 'models/OS'
+
 declare global {
   interface Window {
     opera: any

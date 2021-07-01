@@ -1,13 +1,14 @@
 import { eventChannel } from 'redux-saga'
 import { put, call, spawn, takeEvery } from 'redux-saga/effects'
 
-import { setTheme, PREFERS_DARK_MEDIA_QUERY } from 'utils/theme/theme'
-import { actionChannelDispatcher } from 'utils/sagaHelpers'
-import { SET_THEME, ThemeActions, setTheme as setThemeAction } from './actions'
 import Theme from 'models/Theme'
 import { PrefersColorSchemeMessage } from 'services/native-mobile-interface/android/theme'
-import { getIsIOS } from 'utils/browser'
 import { ThemeChangeMessage } from 'services/native-mobile-interface/theme'
+import { getIsIOS } from 'utils/browser'
+import { actionChannelDispatcher } from 'utils/sagaHelpers'
+import { setTheme, PREFERS_DARK_MEDIA_QUERY } from 'utils/theme/theme'
+
+import { SET_THEME, ThemeActions, setTheme as setThemeAction } from './actions'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

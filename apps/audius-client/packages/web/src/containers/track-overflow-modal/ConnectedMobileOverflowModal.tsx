@@ -1,23 +1,35 @@
 import React from 'react'
-import MobileOverflowModal from './components/MobileOverflowModal'
-import { AppState } from 'store/types'
+
+import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
-import { getMobileOverflowModal } from 'store/application/ui/mobileOverflowModal/selectors'
-import { close } from 'store/application/ui/mobileOverflowModal/actions'
-import { open as openEditPlaylist } from 'store/application/ui/createPlaylistModal/actions'
+
 import { requestOpen as openAddToPlaylist } from 'containers/add-to-playlist/store/actions'
 import { setOpen as openDeletePlaylist } from 'containers/delete-playlist-confirmation-modal/store/actions'
-import { OverflowSource } from 'store/application/ui/mobileOverflowModal/types'
+import {
+  unsubscribeUser,
+  hideNotification
+} from 'containers/notification/store/actions'
+import { getNotificationById } from 'containers/notification/store/selectors'
+import {
+  Notification,
+  NotificationType
+} from 'containers/notification/store/types'
 import { ID } from 'models/common/Identifiers'
 import {
-  repostTrack,
-  undoRepostTrack,
-  saveTrack,
-  unsaveTrack,
-  shareTrack
-} from 'store/social/tracks/actions'
-import { push as pushRoute } from 'connected-react-router'
-import { trackPage, profilePage, playlistPage, albumPage } from 'utils/route'
+  FollowSource,
+  ShareSource,
+  RepostSource,
+  FavoriteSource
+} from 'services/analytics'
+import { open as openEditPlaylist } from 'store/application/ui/createPlaylistModal/actions'
+import { close } from 'store/application/ui/mobileOverflowModal/actions'
+import { getMobileOverflowModal } from 'store/application/ui/mobileOverflowModal/selectors'
+import { OverflowSource } from 'store/application/ui/mobileOverflowModal/types'
+import { publishPlaylist } from 'store/cache/collections/actions'
+import { getCollection } from 'store/cache/collections/selectors'
+import { getTrack } from 'store/cache/tracks/selectors'
+import { getUser } from 'store/cache/users/selectors'
 import {
   repostCollection,
   undoRepostCollection,
@@ -25,27 +37,18 @@ import {
   unsaveCollection,
   shareCollection
 } from 'store/social/collections/actions'
-import { publishPlaylist } from 'store/cache/collections/actions'
 import {
-  unsubscribeUser,
-  hideNotification
-} from 'containers/notification/store/actions'
-import { getNotificationById } from 'containers/notification/store/selectors'
-import { getUser } from 'store/cache/users/selectors'
-import { getTrack } from 'store/cache/tracks/selectors'
-import { getCollection } from 'store/cache/collections/selectors'
-import {
-  Notification,
-  NotificationType
-} from 'containers/notification/store/types'
-import { connect } from 'react-redux'
+  repostTrack,
+  undoRepostTrack,
+  saveTrack,
+  unsaveTrack,
+  shareTrack
+} from 'store/social/tracks/actions'
 import { followUser, unfollowUser, shareUser } from 'store/social/users/actions'
-import {
-  FollowSource,
-  ShareSource,
-  RepostSource,
-  FavoriteSource
-} from 'services/analytics'
+import { AppState } from 'store/types'
+import { trackPage, profilePage, playlistPage, albumPage } from 'utils/route'
+
+import MobileOverflowModal from './components/MobileOverflowModal'
 
 type ConnectedMobileOverflowModalProps = {} & ReturnType<
   typeof mapStateToProps

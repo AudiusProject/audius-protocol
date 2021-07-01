@@ -1,7 +1,9 @@
 import { takeEvery, select } from 'redux-saga/effects'
-import { getScrollLockCount } from './selectors'
-import * as scrollLockActions from './actions'
+
 import { isMobile } from 'utils/clientUtil'
+
+import * as scrollLockActions from './actions'
+import { getScrollLockCount } from './selectors'
 
 const ROOT_ID = 'root'
 const SCROLL_LOCK_CLASS = 'scrollLock'

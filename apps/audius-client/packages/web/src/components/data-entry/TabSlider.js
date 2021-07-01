@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
+import PropTypes from 'prop-types'
+import { useSpring, animated } from 'react-spring'
 
 import styles from './TabSlider.module.css'
-import { useSpring, animated } from 'react-spring'
 
 // Note, offset is the inner padding of the container div
 const OFFSET = 3

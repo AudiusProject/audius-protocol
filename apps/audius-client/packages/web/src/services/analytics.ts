@@ -1,7 +1,8 @@
-import TimeRange from 'models/TimeRange'
 import FeedFilter from 'models/FeedFilter'
+import TimeRange from 'models/TimeRange'
 import { ID, PlayableType } from 'models/common/Identifiers'
 import { WalletAddress } from 'store/wallet/slice'
+
 import { MonitorPayload, ServiceMonitorType } from './serviceMonitoring'
 
 export const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'

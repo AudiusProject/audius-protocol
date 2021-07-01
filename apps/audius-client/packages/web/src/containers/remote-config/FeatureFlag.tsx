@@ -1,5 +1,7 @@
 import React from 'react'
+
 import { FeatureFlags } from 'services/remote-config'
+
 import { useFlag } from './hooks'
 
 type FeatureFlagProps = {

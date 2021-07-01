@@ -1,9 +1,10 @@
 import React from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
 
-import { ReactComponent as IconUpload } from 'assets/img/iconUpload.svg'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
+
 import { ReactComponent as IconPlus } from 'assets/img/iconMultiselectAdd.svg'
+import { ReactComponent as IconUpload } from 'assets/img/iconUpload.svg'
 
 import styles from './UploadChip.module.css'
 

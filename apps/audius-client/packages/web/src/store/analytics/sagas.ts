@@ -1,10 +1,11 @@
-import { take, takeEvery, call } from 'redux-saga/effects'
 import { LOCATION_CHANGE } from 'connected-react-router'
+import { take, takeEvery, call } from 'redux-saga/effects'
+
+import { Name } from 'services/analytics'
+import { ScreenAnalyticsEvent } from 'services/native-mobile-interface/analytics'
 import * as analyticsActions from 'store/analytics/actions'
 
 import { identify, track } from './providers/segment'
-import { ScreenAnalyticsEvent } from 'services/native-mobile-interface/analytics'
-import { Name } from 'services/analytics'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

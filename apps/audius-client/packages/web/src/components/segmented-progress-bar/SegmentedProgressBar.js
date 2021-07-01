@@ -1,7 +1,8 @@
 import React from 'react'
-import PropTypes from 'prop-types'
-import { range } from 'lodash'
+
 import cn from 'classnames'
+import { range } from 'lodash'
+import PropTypes from 'prop-types'
 
 import styles from './SegmentedProgressBar.module.css'
 

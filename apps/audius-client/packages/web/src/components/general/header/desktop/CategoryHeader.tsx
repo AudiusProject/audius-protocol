@@ -1,7 +1,7 @@
 import React from 'react'
 
-import More from 'components/general/More'
 import Delineator from 'components/delineator/Delineator'
+import More from 'components/general/More'
 
 import styles from './CategoryHeader.module.css'
 

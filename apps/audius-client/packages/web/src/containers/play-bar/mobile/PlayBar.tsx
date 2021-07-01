@@ -1,9 +1,27 @@
 import React, { useEffect, useState } from 'react'
+
+import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
-import cn from 'classnames'
 
+import CoSign, { Size } from 'components/co-sign/CoSign'
+import FavoriteButton from 'components/general/alt-button/FavoriteButton'
+import PlayButton from 'components/play-bar/PlayButton'
+import TrackingBar from 'components/play-bar/TrackingBar'
 import { PlayButtonStatus } from 'components/play-bar/types'
+import { useTrackCoverArt } from 'hooks/useImageSize'
+import { ID } from 'models/common/Identifiers'
+import { SquareSizes } from 'models/common/ImageSizes'
+import { FavoriteSource, Name, PlaybackSource } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
+import {
+  getAudio,
+  getBuffering,
+  getCounter,
+  getPlaying
+} from 'store/player/selectors'
+import { AudioState } from 'store/player/types'
+import { makeGetCurrent } from 'store/queue/selectors'
 import { pause, play } from 'store/queue/slice'
 import {
   recordListen,
@@ -11,28 +29,9 @@ import {
   unsaveTrack
 } from 'store/social/tracks/actions'
 import { AppState } from 'store/types'
-
-import PlayButton from 'components/play-bar/PlayButton'
-import {
-  getAudio,
-  getBuffering,
-  getCounter,
-  getPlaying
-} from 'store/player/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
+import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import styles from './PlayBar.module.css'
-
-import CoSign, { Size } from 'components/co-sign/CoSign'
-import TrackingBar from 'components/play-bar/TrackingBar'
-import { ID } from 'models/common/Identifiers'
-import { isDarkMode, isMatrix } from 'utils/theme/theme'
-import FavoriteButton from 'components/general/alt-button/FavoriteButton'
-import { FavoriteSource, Name, PlaybackSource } from 'services/analytics'
-import { make, useRecord } from 'store/analytics/actions'
-import { useTrackCoverArt } from 'hooks/useImageSize'
-import { SquareSizes } from 'models/common/ImageSizes'
-import { AudioState } from 'store/player/types'
 
 const SEEK_INTERVAL = 200
 

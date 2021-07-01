@@ -1,14 +1,14 @@
 import React, { memo, useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
+import PropTypes from 'prop-types'
 import Lottie from 'react-lottie'
 
-import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { SquareSizes } from 'models/common/ImageSizes'
-import { useUserProfilePicture } from 'hooks/useImageSize'
-
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
+import { useUserProfilePicture } from 'hooks/useImageSize'
+import { SquareSizes } from 'models/common/ImageSizes'
 
 import styles from './ProfilePicture.module.css'
 

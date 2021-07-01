@@ -1,8 +1,19 @@
 import React, { useCallback, useState } from 'react'
-import { AppState } from 'store/types'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+
 import { push as pushRoute } from 'connected-react-router'
+import { connect } from 'react-redux'
+import { withRouter, RouteComponentProps } from 'react-router-dom'
+import { Dispatch } from 'redux'
+
+import BottomBar from 'components/bottom-bar/BottomBar'
+import { setTab } from 'containers/explore-page/store/actions'
+import { Tabs } from 'containers/explore-page/store/types'
+import {
+  openSignOn,
+  showRequiresAccountModal
+} from 'containers/sign-on/store/actions'
+import { getUserHandle } from 'store/account/selectors'
+import { AppState } from 'store/types'
 import {
   FEED_PAGE,
   TRENDING_PAGE,
@@ -11,16 +22,7 @@ import {
   profilePage,
   getPathname
 } from 'utils/route'
-import { getUserHandle } from 'store/account/selectors'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
-import BottomBar from 'components/bottom-bar/BottomBar'
-import {
-  openSignOn,
-  showRequiresAccountModal
-} from 'containers/sign-on/store/actions'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
-import { setTab } from 'containers/explore-page/store/actions'
-import { Tabs } from 'containers/explore-page/store/types'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

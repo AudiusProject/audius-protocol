@@ -1,5 +1,6 @@
-import useInstanceVar from './useInstanceVar'
 import { useState, useEffect, useCallback } from 'react'
+
+import useInstanceVar from './useInstanceVar'
 
 enum KonamiKey {
   UP = 'UP',

@@ -1,14 +1,15 @@
 import React, { useMemo, ReactNode, RefObject } from 'react'
+
 import cn from 'classnames'
 
 import Tooltip from 'components/tooltip/Tooltip'
-import HoverInfo from './HoverInfo'
-import Check from './Check'
-import { Size } from './types'
-
-import styles from './CoSign.module.css'
-import { useIsMobile } from 'utils/clientUtil'
 import { ID } from 'models/common/Identifiers'
+import { useIsMobile } from 'utils/clientUtil'
+
+import Check from './Check'
+import styles from './CoSign.module.css'
+import HoverInfo from './HoverInfo'
+import { Size } from './types'
 
 const CoSignCheck = ({
   coSignName,

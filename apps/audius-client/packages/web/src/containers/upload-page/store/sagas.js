@@ -1,3 +1,5 @@
+import { push as pushRoute } from 'connected-react-router'
+import { range } from 'lodash'
 import { channel, buffers } from 'redux-saga'
 import {
   call,
@@ -10,45 +12,43 @@ import {
   all,
   race
 } from 'redux-saga/effects'
-import { range } from 'lodash'
 
-import * as uploadActions from './actions'
-import { push as pushRoute } from 'connected-react-router'
-import * as confirmerActions from 'store/confirmer/actions'
-import * as cacheActions from 'store/cache/actions'
-import * as tracksActions from 'store/cache/tracks/actions'
+import {
+  getSelectedServices,
+  getStatus
+} from 'containers/service-selection/store/selectors'
+import { fetchServicesFailed } from 'containers/service-selection/store/slice'
+import UploadType from 'containers/upload-page/components/uploadType'
+import { getStems } from 'containers/upload-page/store/selectors'
+import { updateAndFlattenStems } from 'containers/upload-page/store/utils/stems'
+import AudiusBackend from 'services/AudiusBackend'
+import { Name } from 'services/analytics'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import * as accountActions from 'store/account/reducer'
 import {
   getAccountUser,
   getUserHandle,
   getUserId
 } from 'store/account/selectors'
-import {
-  getSelectedServices,
-  getStatus
-} from 'containers/service-selection/store/selectors'
-import { getUser } from 'store/cache/users/selectors'
-import AudiusBackend from 'services/AudiusBackend'
-import { waitForBackendSetup } from 'store/backend/sagas'
-import UploadType from 'containers/upload-page/components/uploadType'
-import { confirmTransaction } from 'store/confirmer/sagas'
-import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'
-import { Kind, Status } from 'store/types'
-import { makeUid } from 'utils/uid'
-import { ProgressStatus } from './types'
-import { reformat } from 'store/cache/collections/utils'
-import { ERROR_PAGE } from 'utils/route'
-import { watchUploadErrors } from './errorSagas'
-import { formatUrlName } from 'utils/formatUtil'
-import { fetchServicesFailed } from 'containers/service-selection/store/slice'
 import { make } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
-import { getStems } from 'containers/upload-page/store/selectors'
-import { updateAndFlattenStems } from 'containers/upload-page/store/utils/stems'
+import { waitForBackendSetup } from 'store/backend/sagas'
+import * as cacheActions from 'store/cache/actions'
+import { reformat } from 'store/cache/collections/utils'
+import * as tracksActions from 'store/cache/tracks/actions'
 import { trackNewRemixEvent } from 'store/cache/tracks/sagas'
-import { reportSuccessAndFailureEvents } from './utils/sagaHelpers'
+import { getUser } from 'store/cache/users/selectors'
+import * as confirmerActions from 'store/confirmer/actions'
+import { confirmTransaction } from 'store/confirmer/sagas'
+import { Kind, Status } from 'store/types'
+import { formatUrlName } from 'utils/formatUtil'
+import { ERROR_PAGE } from 'utils/route'
+import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'
+import { makeUid } from 'utils/uid'
 
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import * as uploadActions from './actions'
+import { watchUploadErrors } from './errorSagas'
+import { ProgressStatus } from './types'
+import { reportSuccessAndFailureEvents } from './utils/sagaHelpers'
 
 const MAX_CONCURRENT_UPLOADS = 4
 const MAX_CONCURRENT_REGISTRATIONS = 4

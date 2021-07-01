@@ -1,14 +1,17 @@
 import { takeEvery, call, put } from 'redux-saga/effects'
-import { fetch, fetchSucceeded } from './slice'
-import { waitForBackendSetup } from 'store/backend/sagas'
-import { waitForValue, requiresAccount } from 'utils/sagaHelpers'
-import { getAccountStatus } from 'store/account/selectors'
+
 import Collection from 'models/Collection'
-import { ExploreCollectionsVariant } from '../types'
 import Explore from 'services/audius-backend/Explore'
+import { getAccountStatus } from 'store/account/selectors'
+import { waitForBackendSetup } from 'store/backend/sagas'
 import { processAndCacheCollections } from 'store/cache/collections/utils'
 import { Status } from 'store/types'
 import { EXPLORE_PAGE } from 'utils/route'
+import { waitForValue, requiresAccount } from 'utils/sagaHelpers'
+
+import { ExploreCollectionsVariant } from '../types'
+
+import { fetch, fetchSucceeded } from './slice'
 
 function* fetchLetThemDJ() {
   const collections = yield call(Explore.getTopCollections, 'playlist', true)

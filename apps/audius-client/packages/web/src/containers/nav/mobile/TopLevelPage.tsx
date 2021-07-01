@@ -1,17 +1,17 @@
 import React from 'react'
+
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { AppState } from 'store/types'
-import { getIsOpen as getIsCreatePlaylistModalOpen } from 'store/application/ui/createPlaylistModal/selectors'
-import { getIsOpen as getIsAddToPlaylistPageOpen } from 'containers/add-to-playlist/store/selectors'
-
-import EditPlaylistPage from 'containers/edit-playlist/mobile/EditPlaylistPage'
 import AddToPlaylistPage from 'containers/add-to-playlist/mobile/AddToPlaylist'
+import { getIsOpen as getIsAddToPlaylistPageOpen } from 'containers/add-to-playlist/store/selectors'
+import EditPlaylistPage from 'containers/edit-playlist/mobile/EditPlaylistPage'
+import useScrollLock from 'hooks/useScrollLock'
+import { getIsOpen as getIsCreatePlaylistModalOpen } from 'store/application/ui/createPlaylistModal/selectors'
+import { AppState } from 'store/types'
 
 import styles from './TopLevelPage.module.css'
-import useScrollLock from 'hooks/useScrollLock'
 
 type TopLevelPageProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>

@@ -1,11 +1,13 @@
+import { put, takeEvery } from 'redux-saga/effects'
+
+import * as errorActions from 'store/errors/actions'
+
 import {
   GET_TRACK_REPOST_ERROR,
   GET_PLAYLIST_REPOST_ERROR,
   trackRepostError,
   playlistRepostError
 } from './actions'
-import { put, takeEvery } from 'redux-saga/effects'
-import * as errorActions from 'store/errors/actions'
 
 type ErrorActions =
   | ReturnType<typeof trackRepostError>

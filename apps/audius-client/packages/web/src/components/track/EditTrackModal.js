@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import PropTypes from 'prop-types'
-import { mapValues } from 'lodash'
-import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 
-import * as schemas from 'schemas'
+import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
+import { mapValues } from 'lodash'
+import PropTypes from 'prop-types'
 
 import FormTile from 'components/data-entry/FormTile'
-
-import styles from './EditTrackModal.module.css'
 import { useTrackCoverArt } from 'hooks/useImageSize'
 import { SquareSizes } from 'models/common/ImageSizes'
+import * as schemas from 'schemas'
 import zIndex from 'utils/zIndex'
+
+import styles from './EditTrackModal.module.css'
 
 const EditTrackModal = ({
   visible,

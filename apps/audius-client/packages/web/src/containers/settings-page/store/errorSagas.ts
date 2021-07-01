@@ -1,5 +1,6 @@
-import * as actions from './actions'
 import createErrorSagas from 'utils/errorSagas'
+
+import * as actions from './actions'
 
 type Errors = actions.TogglePushNotificationSettingFailed
 

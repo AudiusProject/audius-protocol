@@ -1,20 +1,18 @@
 import React, { useCallback } from 'react'
-import { Button, ButtonType, IconTwitterBird } from '@audius/stems'
 
+import { Button, ButtonType, IconTwitterBird } from '@audius/stems'
 import cn from 'classnames'
-import styles from './ShareBanner.module.css'
+
 import backgroundPlaceholder from 'assets/img/1-Concert-3-1.jpg'
 import { ReactComponent as IconShare } from 'assets/img/iconShare.svg'
-import AudiusBackend from 'services/AudiusBackend'
-import { copyLinkToClipboard } from 'utils/clipboardUtil'
-import User from 'models/User'
 import Toast from 'components/toast/Toast'
 import { MountPlacement, ComponentPlacement } from 'components/types'
-import { useRecord, make } from 'store/analytics/actions'
+import User from 'models/User'
+import AudiusBackend from 'services/AudiusBackend'
 import { Name } from 'services/analytics'
-import { UploadPageState } from '../store/types'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-
+import { useRecord, make } from 'store/analytics/actions'
+import { copyLinkToClipboard } from 'utils/clipboardUtil'
 import {
   fullTrackPage,
   fullAlbumPage,
@@ -26,6 +24,10 @@ import {
   playlistPage
 } from 'utils/route'
 import { openTwitterLink } from 'utils/tweet'
+
+import { UploadPageState } from '../store/types'
+
+import styles from './ShareBanner.module.css'
 
 type UploadType = 'Track' | 'Tracks' | 'Album' | 'Playlist' | 'Remix'
 type ContinuePage = 'Track' | 'Profile' | 'Album' | 'Playlist' | 'Remix'

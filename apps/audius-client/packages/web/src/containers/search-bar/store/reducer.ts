@@ -7,6 +7,7 @@ import {
 } from 'containers/search-bar/store/actions'
 import { Status } from 'store/types'
 import { ActionsMap } from 'utils/reducer'
+
 import SearchBarState from './types'
 
 const initialState = {

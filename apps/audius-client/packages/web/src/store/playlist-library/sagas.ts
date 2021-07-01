@@ -6,33 +6,35 @@ import {
   takeEvery,
   takeLatest
 } from 'redux-saga/effects'
-import { waitForBackendSetup } from 'store/backend/sagas'
-import { update } from './slice'
+
 import * as profileActions from 'containers/profile-page/store/actions'
-import {
-  getAccountNavigationPlaylists,
-  getAccountUser,
-  getPlaylistLibrary
-} from 'store/account/selectors'
-import User from 'models/User'
+import { updateProfileAsync } from 'containers/profile-page/store/sagas'
 import {
   PlaylistIdentifier,
   PlaylistLibrary,
   PlaylistLibraryFolder,
   PlaylistLibraryIdentifier
 } from 'models/PlaylistLibrary'
+import User from 'models/User'
+import { ID } from 'models/common/Identifiers'
 import { AccountCollection } from 'store/account/reducer'
+import {
+  getAccountNavigationPlaylists,
+  getAccountUser,
+  getPlaylistLibrary
+} from 'store/account/selectors'
+import { waitForBackendSetup } from 'store/backend/sagas'
+import * as cacheActions from 'store/cache/actions'
 import { getResult } from 'store/confirmer/selectors'
-import { updateProfileAsync } from 'containers/profile-page/store/sagas'
+import { Kind } from 'store/types'
 import { waitForValue } from 'utils/sagaHelpers'
 import { makeKindId } from 'utils/uid'
-import { Kind } from 'store/types'
-import { ID } from 'models/common/Identifiers'
-import * as cacheActions from 'store/cache/actions'
+
 import {
   containsTempPlaylist,
   removePlaylistLibraryDuplicates
 } from './helpers'
+import { update } from './slice'
 
 const TEMP_PLAYLIST_UPDATE_HELPER = 'TEMP_PLAYLIST_UPDATE_HELPER'
 

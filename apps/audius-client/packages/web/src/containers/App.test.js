@@ -1,7 +1,9 @@
 import React from 'react'
+
+import { ConnectedRouter } from 'connected-react-router'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
-import { ConnectedRouter } from 'connected-react-router'
+
 import configureStore from 'store/configureStore'
 import history from 'utils/history'
 

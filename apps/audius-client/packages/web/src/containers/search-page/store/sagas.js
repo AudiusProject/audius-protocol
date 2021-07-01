@@ -1,18 +1,17 @@
 import { select, call, takeLatest, put } from 'redux-saga/effects'
 
+import * as searchPageActions from 'containers/search-page/store/actions'
+import { tracksActions as tracksLineupActions } from 'containers/search-page/store/lineups/tracks/actions'
+import tracksSagas from 'containers/search-page/store/lineups/tracks/sagas'
 import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { waitForBackendSetup } from 'store/backend/sagas'
-import { fetchUsers } from 'store/cache/users/sagas'
-import { trimToAlphaNumeric } from 'utils/formatUtil'
 import { getUserId } from 'store/account/selectors'
-
-import { tracksActions as tracksLineupActions } from 'containers/search-page/store/lineups/tracks/actions'
-import * as searchPageActions from 'containers/search-page/store/actions'
-import tracksSagas from 'containers/search-page/store/lineups/tracks/sagas'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
+import { waitForBackendSetup } from 'store/backend/sagas'
 import { processAndCacheCollections } from 'store/cache/collections/utils'
+import { processAndCacheTracks } from 'store/cache/tracks/utils'
+import { fetchUsers } from 'store/cache/users/sagas'
 import { processAndCacheUsers } from 'store/cache/users/utils'
+import { trimToAlphaNumeric } from 'utils/formatUtil'
 
 export function* getTagSearchResults(tag, kind, limit, offset) {
   const results = yield call(AudiusBackend.searchTags, {

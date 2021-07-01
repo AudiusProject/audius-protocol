@@ -1,9 +1,12 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
-import AntMenu from 'antd/lib/menu'
+
 import AntDropdown from 'antd/lib/dropdown'
+import AntMenu from 'antd/lib/menu'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
+
 import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDown.svg'
+
 import styles from './Dropdown.module.css'
 
 class Dropdown extends Component {

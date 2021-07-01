@@ -1,14 +1,17 @@
 import React, { Component } from 'react'
+
+import moment from 'moment'
+import numeral from 'numeral'
 import PropTypes from 'prop-types'
 import { Line } from 'react-chartjs-2'
-import numeral from 'numeral'
-import Dropdown from 'components/navigation/Dropdown'
+
 import DropdownInput from 'components/data-entry/DropdownInput'
-import moment from 'moment'
+import Dropdown from 'components/navigation/Dropdown'
+import { formatCount } from 'utils/formatUtil'
+
+import { messages } from '../ArtistDashboardPage'
 
 import styles from './TotalPlaysChart.module.css'
-import { formatCount } from 'utils/formatUtil'
-import { messages } from '../ArtistDashboardPage'
 
 const MONTHS = {
   JAN: 'January',

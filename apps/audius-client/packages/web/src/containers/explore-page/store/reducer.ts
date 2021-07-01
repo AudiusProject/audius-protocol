@@ -1,3 +1,6 @@
+import { Status } from 'store/types'
+import { ActionsMap } from 'utils/reducer'
+
 import {
   FETCH_EXPLORE,
   FETCH_EXPLORE_SUCCEEDED,
@@ -5,9 +8,7 @@ import {
   ExplorePageActions,
   SET_TAB
 } from './actions'
-import { Status } from 'store/types'
 import ExplorePageState, { Tabs } from './types'
-import { ActionsMap } from 'utils/reducer'
 
 const initialState: ExplorePageState = {
   playlists: [],

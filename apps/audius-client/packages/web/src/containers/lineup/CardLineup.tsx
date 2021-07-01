@@ -1,12 +1,12 @@
 import React from 'react'
+
 import cn from 'classnames'
-
 import { connect } from 'react-redux'
-import { isMobile } from 'utils/clientUtil'
-import { AppState } from 'store/types'
 
-import Draggable from 'containers/dragndrop/Draggable'
 import CategoryHeader from 'components/general/header/desktop/CategoryHeader'
+import Draggable from 'containers/dragndrop/Draggable'
+import { AppState } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
 
 import styles from './CardLineup.module.css'
 

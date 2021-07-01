@@ -1,10 +1,13 @@
+import { combineReducers } from 'redux'
 import { createReducer, ActionType } from 'typesafe-actions'
+
+import { UserListReducerFactory } from 'containers/user-list/store/reducer'
+import { FavoriteType } from 'models/Favorite'
+
+import { USER_LIST_TAG } from '../FavoritesPage'
+
 import * as actions from './actions'
 import { FavoritesOwnState } from './types'
-import { UserListReducerFactory } from 'containers/user-list/store/reducer'
-import { USER_LIST_TAG } from '../FavoritesPage'
-import { combineReducers } from 'redux'
-import { FavoriteType } from 'models/Favorite'
 
 type FavoriteActions = ActionType<typeof actions>
 

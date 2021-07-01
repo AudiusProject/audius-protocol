@@ -1,16 +1,17 @@
 import React, { useCallback } from 'react'
+
 import { Modal, Button, IconDownload, ButtonType } from '@audius/stems'
-import { useSelector } from 'utils/reducer'
 import { useDispatch } from 'react-redux'
-import { setVisibility } from 'store/application/ui/app-cta-modal/slice'
+
 import QRCode from 'assets/img/imageQR.png'
+import { Name } from 'services/analytics'
 import DownloadApp from 'services/download-app/DownloadApp'
+import { make } from 'store/analytics/actions'
+import { setVisibility } from 'store/application/ui/app-cta-modal/slice'
+import { getOS } from 'utils/clientUtil'
+import { useSelector } from 'utils/reducer'
 
 import styles from './AppCTAModal.module.css'
-
-import { getOS } from 'utils/clientUtil'
-import { make } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
 
 const messages = {
   title: 'Get The Audius Mobile App',

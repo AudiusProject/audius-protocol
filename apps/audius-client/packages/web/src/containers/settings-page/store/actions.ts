@@ -1,3 +1,5 @@
+import { Permission } from 'utils/browserNotifications'
+
 import {
   BrowserNotificationSetting,
   EmailFrequency,
@@ -5,7 +7,6 @@ import {
   PushNotificationSetting,
   Cast
 } from './types'
-import { Permission } from 'utils/browserNotifications'
 
 export const TOGGLE_NOTIFICATION_SETTING =
   'SETTINGS_PAGE/TOGGLE_NOTIFICATION_SETTING'

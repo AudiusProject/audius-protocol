@@ -1,4 +1,5 @@
 import Hashids from 'hashids'
+
 import { Nullable } from 'utils/typeUtils'
 
 const HASH_SALT = 'azowernasdfoia'

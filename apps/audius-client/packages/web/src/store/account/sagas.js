@@ -1,14 +1,25 @@
 import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
-import { waitForBackendSetup } from 'store/backend/sagas'
-import * as accountActions from 'store/account/reducer'
-import * as cacheActions from 'store/cache/actions'
+import {
+  setBrowserNotificationPermission,
+  setBrowserNotificationEnabled,
+  setBrowserNotificationSettingsOn
+} from 'containers/settings-page/store/actions'
 import * as uploadActions from 'containers/upload-page/store/actions'
-import { Kind, Status } from 'store/types'
 import AudiusBackend from 'services/AudiusBackend'
-import mobileSagas from './mobileSagas'
-import { identify } from 'store/analytics/actions'
-import { waitForValue } from 'utils/sagaHelpers'
+import {
+  getAudiusAccount,
+  getAudiusAccountUser,
+  getCurrentUserExists,
+  setAudiusAccount,
+  setAudiusAccountUser,
+  clearAudiusAccount,
+  clearAudiusAccountUser
+} from 'services/LocalStorage'
+import { SignedIn } from 'services/native-mobile-interface/lifecycle'
+import { setUserId } from 'services/remote-config/Provider'
+import { setSentryUser } from 'services/sentry'
+import * as accountActions from 'store/account/reducer'
 import {
   getUserId,
   getUserHandle,
@@ -18,8 +29,14 @@ import {
   getAccountOwnedPlaylistIds,
   getAccountToCache
 } from 'store/account/selectors'
-import { retrieveCollections } from 'store/cache/collections/utils'
+import { identify } from 'store/analytics/actions'
 import { open as openBrowserPushPermissionModal } from 'store/application/ui/browserPushPermissionConfirmation/actions'
+import { waitForBackendSetup } from 'store/backend/sagas'
+import * as cacheActions from 'store/cache/actions'
+import { retrieveCollections } from 'store/cache/collections/utils'
+import { addPlaylistsNotInLibrary } from 'store/playlist-library/sagas'
+import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
+import { Kind, Status } from 'store/types'
 import {
   Permission,
   isPushManagerAvailable,
@@ -33,26 +50,10 @@ import {
   removeHasRequestedBrowserPermission,
   shouldRequestBrowserPermission
 } from 'utils/browserNotifications'
-import {
-  setBrowserNotificationPermission,
-  setBrowserNotificationEnabled,
-  setBrowserNotificationSettingsOn
-} from 'containers/settings-page/store/actions'
 import { isMobile, isElectron } from 'utils/clientUtil'
-import { setUserId } from 'services/remote-config/Provider'
-import {
-  getAudiusAccount,
-  getAudiusAccountUser,
-  getCurrentUserExists,
-  setAudiusAccount,
-  setAudiusAccountUser,
-  clearAudiusAccount,
-  clearAudiusAccountUser
-} from 'services/LocalStorage'
-import { addPlaylistsNotInLibrary } from 'store/playlist-library/sagas'
-import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
-import { SignedIn } from 'services/native-mobile-interface/lifecycle'
-import { setSentryUser } from 'services/sentry'
+import { waitForValue } from 'utils/sagaHelpers'
+
+import mobileSagas from './mobileSagas'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 

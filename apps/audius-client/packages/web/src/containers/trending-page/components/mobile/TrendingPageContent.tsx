@@ -1,39 +1,41 @@
 import React, { useEffect, useContext, useCallback, useMemo } from 'react'
+
 import cn from 'classnames'
 
-import styles from './TrendingPageContent.module.css'
-import Header from 'components/general/header/mobile/Header'
-import { TrendingPageContentProps } from 'containers/trending-page/types'
-import TimeRange from 'models/TimeRange'
+import { ReactComponent as IconAllTime } from 'assets/img/iconAllTime.svg'
+import { ReactComponent as IconDay } from 'assets/img/iconDay.svg'
+import { ReactComponent as IconMonth } from 'assets/img/iconMonth.svg'
 import MobilePageContainer from 'components/general/MobilePageContainer'
+import Header from 'components/general/header/mobile/Header'
+import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
+import PullToRefresh from 'components/pull-to-refresh/PullToRefresh'
+import { EndOfLineup } from 'containers/lineup/EndOfLineup'
 import Lineup from 'containers/lineup/Lineup'
+import { LineupVariant } from 'containers/lineup/types'
 import NavContext, {
   LeftPreset,
   CenterPreset,
   RightPreset
 } from 'containers/nav/store/context'
-import PullToRefresh from 'components/pull-to-refresh/PullToRefresh'
-import { Status } from 'store/types'
-import useAsyncPoll from 'hooks/useAsyncPoll'
-import useTabs from 'hooks/useTabs/useTabs'
-import { EndOfLineup } from 'containers/lineup/EndOfLineup'
-import { ReactComponent as IconDay } from 'assets/img/iconDay.svg'
-import { ReactComponent as IconMonth } from 'assets/img/iconMonth.svg'
-import { ReactComponent as IconAllTime } from 'assets/img/iconAllTime.svg'
-import { make, useRecord } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
-import { BASE_URL, TRENDING_PAGE } from 'utils/route'
-
 import {
   trendingWeekActions,
   trendingMonthActions,
   trendingYearActions
 } from 'containers/trending-page/store/lineups/trending/actions'
-import { LineupVariant } from 'containers/lineup/types'
-import TrendingFilterButton from './TrendingFilterButton'
-import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
+import { TrendingPageContentProps } from 'containers/trending-page/types'
+import useAsyncPoll from 'hooks/useAsyncPoll'
+import useTabs from 'hooks/useTabs/useTabs'
+import TimeRange from 'models/TimeRange'
+import { Name } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
+import { Status } from 'store/types'
+import { BASE_URL, TRENDING_PAGE } from 'utils/route'
 import { scrollWindowToTop } from 'utils/scroll'
+
 import RewardsBanner from '../RewardsBanner'
+
+import TrendingFilterButton from './TrendingFilterButton'
+import styles from './TrendingPageContent.module.css'
 
 const messages = {
   title: 'Trending',

@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
+import PropTypes from 'prop-types'
 import Lottie from 'react-lottie'
 
+import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import placeholderArt from 'assets/img/imageBlank2x.png'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
 import Toast from 'components/toast/Toast'
 
-import placeholderArt from 'assets/img/imageBlank2x.png'
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import styles from './UploadArtwork.module.css'
 
 const messages = {

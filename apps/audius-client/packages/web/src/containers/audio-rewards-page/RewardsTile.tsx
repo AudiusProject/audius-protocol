@@ -1,12 +1,15 @@
 import React, { ReactNode } from 'react'
-import { Tile } from './components/ExplainerTile'
-import styles from './RewardsTile.module.css'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { useSetVisibility } from 'hooks/useModalState'
-import ButtonWithArrow from './components/ButtonWithArrow'
-import { useRemoteVar } from 'containers/remote-config/hooks'
-import { StringKeys } from 'services/remote-config'
+
 import { useDispatch } from 'react-redux'
+
+import { useRemoteVar } from 'containers/remote-config/hooks'
+import { useSetVisibility } from 'hooks/useModalState'
+import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { StringKeys } from 'services/remote-config'
+
+import styles from './RewardsTile.module.css'
+import ButtonWithArrow from './components/ButtonWithArrow'
+import { Tile } from './components/ExplainerTile'
 import { setTrendingRewardsModalType } from './store/slice'
 
 type RewardID =

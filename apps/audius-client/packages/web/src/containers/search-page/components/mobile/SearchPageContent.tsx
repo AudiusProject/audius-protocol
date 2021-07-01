@@ -1,31 +1,37 @@
 import React, { useCallback, useContext, useEffect, useMemo } from 'react'
+
+import Spin from 'antd/lib/spin'
 import cn from 'classnames'
-import MobilePageContainer from 'components/general/MobilePageContainer'
-import { tracksActions } from 'containers/search-page/store/lineups/tracks/actions'
-import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
+import { matchPath } from 'react-router'
+import { Dispatch } from 'redux'
+
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
+import { ReactComponent as IconBigSearch } from 'assets/img/iconBigSearch.svg'
+import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
-import { ReactComponent as IconBigSearch } from 'assets/img/iconBigSearch.svg'
-import { UID } from 'models/common/Identifiers'
-import User from 'models/User'
-import { Status } from 'store/types'
-
-import styles from './SearchPageContent.module.css'
-import { LineupState } from 'models/common/Lineup'
+import Card from 'components/card/mobile/Card'
+import MobilePageContainer from 'components/general/MobilePageContainer'
+import Header from 'components/general/header/mobile/Header'
+import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
+import CardLineup from 'containers/lineup/CardLineup'
 import Lineup from 'containers/lineup/Lineup'
-import { Dispatch } from 'redux'
 import NavContext, {
   LeftPreset,
   CenterPreset,
   RightPreset
 } from 'containers/nav/store/context'
+import { tracksActions } from 'containers/search-page/store/lineups/tracks/actions'
 import useTabs from 'hooks/useTabs/useTabs'
-import Card from 'components/card/mobile/Card'
 import { UserCollection } from 'models/Collection'
-import CardLineup from 'containers/lineup/CardLineup'
-import Header from 'components/general/header/mobile/Header'
-import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
+import User from 'models/User'
+import { UID } from 'models/common/Identifiers'
+import { LineupState } from 'models/common/Lineup'
+import { Name } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
+import { getLocationPathname } from 'store/routing/selectors'
+import { Status } from 'store/types'
+import { useSelector } from 'utils/reducer'
 import {
   albumPage,
   playlistPage,
@@ -33,13 +39,9 @@ import {
   fullSearchResultsPage,
   SEARCH_PAGE
 } from 'utils/route'
-import { make, useRecord } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
 
-import Spin from 'antd/lib/spin'
-import { matchPath } from 'react-router'
-import { getLocationPathname } from 'store/routing/selectors'
-import { useSelector } from 'utils/reducer'
+import styles from './SearchPageContent.module.css'
+
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 type SearchPageContentProps = {

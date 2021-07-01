@@ -1,33 +1,16 @@
 import React, { useEffect, useState, useCallback } from 'react'
-import { Dispatch } from 'redux'
+
+import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { matchPath } from 'react-router'
-import { push as pushRoute } from 'connected-react-router'
-
-import { AppState } from 'store/types'
-import { CollectionsPageProps as MobileCollectionsPageProps } from './components/mobile/CollectionsPage'
-import { CollectionsPageProps as DesktopCollectionsPageProps } from './components/desktop/CollectionsPage'
-import { ExploreCollectionsVariant } from './store/types'
-import { getCollections, getStatus } from './store/collections/selectors'
-import { fetch } from './store/collections/slice'
 import { useLocation } from 'react-router-dom'
-import {
-  EXPLORE_MOOD_PLAYLISTS_PAGE,
-  REPOSTING_USERS_ROUTE,
-  FAVORITING_USERS_ROUTE,
-  getPathname
-} from 'utils/route'
-import {
-  EXPLORE_COLLECTIONS_MAP,
-  ExploreCollection,
-  ExploreMoodCollection,
-  EXPLORE_MOOD_COLLECTIONS_MAP
-} from './collections'
-import { ID } from 'models/common/Identifiers'
+import { Dispatch } from 'redux'
+
+import { setFavorite } from 'containers/favorites-page/store/actions'
 import { setRepost } from 'containers/reposts-page/store/actions'
 import { RepostType } from 'containers/reposts-page/store/types'
-import { setFavorite } from 'containers/favorites-page/store/actions'
 import { FavoriteType } from 'models/Favorite'
+import { ID } from 'models/common/Identifiers'
 import {
   setUsers,
   setVisibility
@@ -36,6 +19,25 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
+import { AppState } from 'store/types'
+import {
+  EXPLORE_MOOD_PLAYLISTS_PAGE,
+  REPOSTING_USERS_ROUTE,
+  FAVORITING_USERS_ROUTE,
+  getPathname
+} from 'utils/route'
+
+import {
+  EXPLORE_COLLECTIONS_MAP,
+  ExploreCollection,
+  ExploreMoodCollection,
+  EXPLORE_MOOD_COLLECTIONS_MAP
+} from './collections'
+import { CollectionsPageProps as DesktopCollectionsPageProps } from './components/desktop/CollectionsPage'
+import { CollectionsPageProps as MobileCollectionsPageProps } from './components/mobile/CollectionsPage'
+import { getCollections, getStatus } from './store/collections/selectors'
+import { fetch } from './store/collections/slice'
+import { ExploreCollectionsVariant } from './store/types'
 
 type OwnProps = {
   isMobile: boolean

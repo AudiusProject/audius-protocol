@@ -1,13 +1,12 @@
-import { Dispatch } from 'redux'
-import { ID } from 'models/common/Identifiers'
-import { connect } from 'react-redux'
 import { push as pushRoute } from 'connected-react-router'
-import { profilePage } from 'utils/route'
-
-import * as socialActions from 'store/social/users/actions'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
 
 import { PopupMenuItem } from 'components/general/PopupMenu'
+import { ID } from 'models/common/Identifiers'
 import { FollowSource, ShareSource } from 'services/analytics'
+import * as socialActions from 'store/social/users/actions'
+import { profilePage } from 'utils/route'
 
 export type OwnProps = {
   children: (items: PopupMenuItem[]) => JSX.Element

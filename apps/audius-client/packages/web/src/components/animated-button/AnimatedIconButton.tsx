@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
-import AnimatedButtonProvider from './AnimatedButtonProvider'
+
 import { uuid } from 'utils/uid'
+
+import AnimatedButtonProvider from './AnimatedButtonProvider'
 
 export enum AnimatedIconType {
   FAVORITE = 'FAVORITE',

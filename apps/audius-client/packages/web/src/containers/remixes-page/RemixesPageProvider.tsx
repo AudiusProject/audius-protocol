@@ -1,22 +1,23 @@
 import React, { useEffect, useCallback } from 'react'
+
+import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
-import { push as pushRoute } from 'connected-react-router'
 
-import { getTrack, getUser, getLineup, getCount } from './store/selectors'
-import { tracksActions } from './store/lineups/tracks/actions'
-
-import { makeGetLineupMetadatas } from 'store/lineup/selectors'
-import { AppState } from 'store/types'
-import { RemixesPageProps as MobileRemixesPageProps } from './components/mobile/RemixesPage'
-import { RemixesPageProps as DesktopRemixesPageProps } from './components/desktop/RemixesPage'
-import { ID } from 'models/common/Identifiers'
-import { useTrackIdFromUrl } from './hooks'
-import { makeGetCurrent } from 'store/queue/selectors'
-import { getPlaying, getBuffering } from 'store/player/selectors'
-import { fetchTrack, reset } from './store/slice'
-import { trackPage, profilePage } from 'utils/route'
 import { LineupVariant } from 'containers/lineup/types'
+import { ID } from 'models/common/Identifiers'
+import { makeGetLineupMetadatas } from 'store/lineup/selectors'
+import { getPlaying, getBuffering } from 'store/player/selectors'
+import { makeGetCurrent } from 'store/queue/selectors'
+import { AppState } from 'store/types'
+import { trackPage, profilePage } from 'utils/route'
+
+import { RemixesPageProps as DesktopRemixesPageProps } from './components/desktop/RemixesPage'
+import { RemixesPageProps as MobileRemixesPageProps } from './components/mobile/RemixesPage'
+import { useTrackIdFromUrl } from './hooks'
+import { tracksActions } from './store/lineups/tracks/actions'
+import { getTrack, getUser, getLineup, getCount } from './store/selectors'
+import { fetchTrack, reset } from './store/slice'
 
 const messages = {
   title: 'Remixes',

@@ -1,7 +1,9 @@
 import { matchPath } from 'react-router-dom'
-import { TRACK_ID_PAGE, TRACK_PAGE } from 'utils/route'
-import { decodeHashId } from './hashIds'
+
 import { ID } from 'models/common/Identifiers'
+import { TRACK_ID_PAGE, TRACK_PAGE } from 'utils/route'
+
+import { decodeHashId } from './hashIds'
 
 export type TrackRouteParams =
   | { trackTitle: string; trackId: ID; handle: string }

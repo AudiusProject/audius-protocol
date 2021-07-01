@@ -1,15 +1,16 @@
 import React, { ReactNode } from 'react'
+
 import cn from 'classnames'
 import { useSpring, animated } from 'react-spring'
 
-import useHasViewed from 'hooks/useHasViewed'
-import styles from './PlatformFeatures.module.css'
-
+import { ReactComponent as IconAudio } from 'assets/img/publicSite/iconAudio.svg'
+import { ReactComponent as IconCensorship } from 'assets/img/publicSite/iconCensorship.svg'
+import { ReactComponent as IconFree } from 'assets/img/publicSite/iconFree.svg'
 import womanPlayingGuitarImg1x from 'assets/img/publicSite/woman-playing-guitar@1x.jpg'
 import womanPlayingGuitarImg2x from 'assets/img/publicSite/woman-playing-guitar@2x.jpg'
-import { ReactComponent as IconCensorship } from 'assets/img/publicSite/iconCensorship.svg'
-import { ReactComponent as IconAudio } from 'assets/img/publicSite/iconAudio.svg'
-import { ReactComponent as IconFree } from 'assets/img/publicSite/iconFree.svg'
+import useHasViewed from 'hooks/useHasViewed'
+
+import styles from './PlatformFeatures.module.css'
 
 const messages = {
   title: (isMobile: boolean) =>

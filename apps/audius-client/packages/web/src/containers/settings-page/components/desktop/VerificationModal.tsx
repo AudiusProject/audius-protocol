@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react'
-import cn from 'classnames'
 
 import {
   Modal,
@@ -9,27 +8,29 @@ import {
   IconNote,
   ButtonSize
 } from '@audius/stems'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 
-import styles from './VerificationModal.module.css'
+import { ReactComponent as IconValidationX } from 'assets/img/iconValidationX.svg'
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { show as showMusicConfetti } from 'containers/music-confetti/store/slice'
+import { useRemoteVar } from 'containers/remote-config/hooks'
+import UserBadges from 'containers/user-badges/UserBadges'
+import { useUserProfilePicture } from 'hooks/useImageSize'
+import { ID } from 'models/common/Identifiers'
+import { ProfilePictureSizes, SquareSizes } from 'models/common/ImageSizes'
+import { Name } from 'services/analytics'
+import { BooleanKeys } from 'services/remote-config'
+import { TwitterProfile, InstagramProfile } from 'store/account/reducer'
+import { useRecord, make, TrackEvent } from 'store/analytics/actions'
+import { Status } from 'store/types'
+import { profilePage } from 'utils/route'
+
 import InstagramAccountVerification from '../InstagramAccountVerified'
 import TwitterAccountVerification from '../TwitterAccountVerified'
 
-import { ReactComponent as IconValidationX } from 'assets/img/iconValidationX.svg'
-import { Status } from 'store/types'
-import { ProfilePictureSizes, SquareSizes } from 'models/common/ImageSizes'
-import { useUserProfilePicture } from 'hooks/useImageSize'
-import { ID } from 'models/common/Identifiers'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { TwitterProfile, InstagramProfile } from 'store/account/reducer'
-import { profilePage } from 'utils/route'
-import { useRemoteVar } from 'containers/remote-config/hooks'
-import { BooleanKeys } from 'services/remote-config'
-import { show as showMusicConfetti } from 'containers/music-confetti/store/slice'
-import { useDispatch } from 'react-redux'
-import UserBadges from 'containers/user-badges/UserBadges'
-import { useRecord, make, TrackEvent } from 'store/analytics/actions'
-import { Name } from 'services/analytics'
+import styles from './VerificationModal.module.css'
 
 const messages = {
   title: 'Verification',

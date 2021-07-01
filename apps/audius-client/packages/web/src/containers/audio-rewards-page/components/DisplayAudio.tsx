@@ -1,7 +1,10 @@
 import React from 'react'
-import { BNWei, formatWei } from 'store/wallet/slice'
-import styles from './DisplayAudio.module.css'
+
 import cn from 'classnames'
+
+import { BNWei, formatWei } from 'store/wallet/slice'
+
+import styles from './DisplayAudio.module.css'
 import TokenHoverTooltip from './TokenHoverTooltip'
 
 type DisplayAudioProps = {

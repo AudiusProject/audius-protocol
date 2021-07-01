@@ -1,16 +1,16 @@
 import React from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
+import PropTypes from 'prop-types'
 import Lottie from 'react-lottie'
 
-import { trimServiceName, countryCodeToFlag } from '../utils'
-
-import Tooltip from 'components/tooltip/Tooltip'
-
+import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
 import { ReactComponent as IconMultiselectAdd } from 'assets/img/iconMultiselectAdd.svg'
 import { ReactComponent as IconMultiselectRemove } from 'assets/img/iconMultiselectRemove.svg'
-import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import Tooltip from 'components/tooltip/Tooltip'
+
+import { trimServiceName, countryCodeToFlag } from '../utils'
 
 import styles from './Service.module.css'
 

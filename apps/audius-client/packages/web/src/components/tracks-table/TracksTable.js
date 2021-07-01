@@ -1,30 +1,30 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
+
+import Table from 'antd/lib/table'
 import cn from 'classnames'
 import moment from 'moment'
+import PropTypes from 'prop-types'
 import {
   DragDropContext,
   Droppable as RbdDroppable,
   Draggable as RbdDraggable
 } from 'react-beautiful-dnd'
-import Table from 'antd/lib/table'
 
-import { formatSeconds } from 'utils/timeUtil'
+import { ReactComponent as IconCarrotDown } from 'assets/img/iconCaretDown.svg'
+import ArtistPopover from 'components/artist/ArtistPopover'
+import Tooltip from 'components/tooltip/Tooltip'
+import TableDragHandle from 'components/tracks-table/TableDragHandle'
+import TableFavoriteButton from 'components/tracks-table/TableFavoriteButton'
+import TableOptionsButton from 'components/tracks-table/TableOptionsButton'
+import TablePlayButton from 'components/tracks-table/TablePlayButton'
+import TableRepostButton from 'components/tracks-table/TableRepostButton'
+import Draggable from 'containers/dragndrop/Draggable'
+import UserBadges from 'containers/user-badges/UserBadges'
 import { formatCount } from 'utils/formatUtil'
 import { fullTrackPage } from 'utils/route'
-
-import Draggable from 'containers/dragndrop/Draggable'
-import ArtistPopover from 'components/artist/ArtistPopover'
-import TablePlayButton from 'components/tracks-table/TablePlayButton'
-import TableFavoriteButton from 'components/tracks-table/TableFavoriteButton'
-import TableRepostButton from 'components/tracks-table/TableRepostButton'
-import TableOptionsButton from 'components/tracks-table/TableOptionsButton'
-import TableDragHandle from 'components/tracks-table/TableDragHandle'
-import Tooltip from 'components/tooltip/Tooltip'
+import { formatSeconds } from 'utils/timeUtil'
 
 import styles from './TracksTable.module.css'
-import { ReactComponent as IconCarrotDown } from 'assets/img/iconCaretDown.svg'
-import UserBadges from 'containers/user-badges/UserBadges'
 
 /**
  * Sorter for two items based on their alphanumeric (lowercase) value.

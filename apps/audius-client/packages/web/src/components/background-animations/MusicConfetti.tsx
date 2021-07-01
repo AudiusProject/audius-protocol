@@ -1,14 +1,14 @@
 /* global Image */
 import React, { useRef, useState, useEffect, useCallback } from 'react'
+
 import heartIconPrimary from 'assets/img/particles/particleHeartPrimary.svg'
 import heartIconSecondary from 'assets/img/particles/particleHeartSecondary.svg'
-import noteIconSecondary from 'assets/img/particles/particleNoteSecondary.svg'
-import noteIconPrimary from 'assets/img/particles/particleNotePrimary.svg'
 import listensIconPrimary from 'assets/img/particles/particleListensPrimary.svg'
 import listensIconSecondary from 'assets/img/particles/particleListensSecondary.svg'
+import noteIconPrimary from 'assets/img/particles/particleNotePrimary.svg'
+import noteIconSecondary from 'assets/img/particles/particleNoteSecondary.svg'
 import playlistsIconPrimary from 'assets/img/particles/particlePlaylistPrimary.svg'
 import playlistsIconSecondary from 'assets/img/particles/particlePlaylistSecondary.svg'
-
 import Confetti from 'utils/animations/music-confetti'
 import { useOnResizeEffect } from 'utils/effects'
 

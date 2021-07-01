@@ -2,17 +2,17 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 
 import * as actions from 'store/cache/actions'
-import sagas from 'store/cache/sagas'
+import * as config from 'store/cache/config'
 import { asCache, initialCacheState } from 'store/cache/reducer'
+import sagas from 'store/cache/sagas'
 import { initialState as initialConfirmerState } from 'store/confirmer/reducer'
-import { Status, Kind } from 'store/types'
 import {
   noopReducer,
   allSagas,
   takeSaga,
   takeEverySaga
 } from 'store/testHelper'
-import * as config from 'store/cache/config'
+import { Status, Kind } from 'store/types'
 import { makeKindId } from 'utils/uid'
 
 const MOCK_TIMESTAMP = 1479427200000

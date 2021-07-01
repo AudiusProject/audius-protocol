@@ -1,8 +1,8 @@
 import { omit } from 'lodash'
 
-import AudiusBackend from 'services/AudiusBackend'
 import Track, { TrackMetadata } from 'models/Track'
 import { CoverArtSizes } from 'models/common/ImageSizes'
+import AudiusBackend from 'services/AudiusBackend'
 
 /**
  * Adds _cover_art_sizes to a track object if it does not have one set

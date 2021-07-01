@@ -1,13 +1,15 @@
 import { call, select } from 'redux-saga/effects'
-import { getUserId } from 'store/account/selectors'
-import { LineupSagas } from 'store/lineup/sagas'
-import { PREFIX, trendingPlaylistLineupActions } from './actions'
-import { getLineup } from './selectors'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { processAndCacheCollections } from 'store/cache/collections/utils'
+
 import Collection, { UserCollectionMetadata } from 'models/Collection'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getRemoteVar, StringKeys } from 'services/remote-config'
 import { waitForRemoteConfig } from 'services/remote-config/Provider'
+import { getUserId } from 'store/account/selectors'
+import { processAndCacheCollections } from 'store/cache/collections/utils'
+import { LineupSagas } from 'store/lineup/sagas'
+
+import { PREFIX, trendingPlaylistLineupActions } from './actions'
+import { getLineup } from './selectors'
 
 function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
   yield call(waitForRemoteConfig)

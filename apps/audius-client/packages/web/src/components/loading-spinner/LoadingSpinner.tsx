@@ -1,8 +1,11 @@
 import React from 'react'
-import Lottie from 'react-lottie'
-import styles from './LoadingSpinner.module.css'
-import loadingSpinner from 'assets/animations/loadingSpinner.json'
+
 import cn from 'classnames'
+import Lottie from 'react-lottie'
+
+import loadingSpinner from 'assets/animations/loadingSpinner.json'
+
+import styles from './LoadingSpinner.module.css'
 
 type LoadingSpinnerProps = { className?: string }
 

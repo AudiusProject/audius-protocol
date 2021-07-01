@@ -1,10 +1,11 @@
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { combineReducers } from 'redux'
 
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import remixesTracksReducer from './lineups/tracks/reducer'
-import { PREFIX as remixesTracksPrefix } from './lineups/tracks/actions'
-import { asLineup } from 'store/lineup/reducer'
 import { ID } from 'models/common/Identifiers'
+import { asLineup } from 'store/lineup/reducer'
+
+import { PREFIX as remixesTracksPrefix } from './lineups/tracks/actions'
+import remixesTracksReducer from './lineups/tracks/reducer'
 
 type State = {
   trackId: ID | null

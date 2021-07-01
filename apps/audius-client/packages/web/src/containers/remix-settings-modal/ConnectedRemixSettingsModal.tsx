@@ -1,11 +1,14 @@
 import React, { useEffect } from 'react'
+
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
-import { AppState, Status } from 'store/types'
+
 import RemixSettingsModal from 'components/remix-settings-modal/RemixSettingsModal'
-import { fetchTrack, fetchTrackSucceeded, reset } from './store/slice'
-import { getTrack, getUser, getStatus } from './store/selectors'
 import { ID } from 'models/common/Identifiers'
+import { AppState, Status } from 'store/types'
+
+import { getTrack, getUser, getStatus } from './store/selectors'
+import { fetchTrack, fetchTrackSucceeded, reset } from './store/slice'
 
 type OwnProps = {
   isOpen: boolean

@@ -1,19 +1,18 @@
-import { createStore, applyMiddleware } from 'redux'
-import createSagaMiddleware from 'redux-saga'
+import * as Sentry from '@sentry/browser'
 import {
   routerMiddleware,
   replace as replaceRoute
 } from 'connected-react-router'
-
+import { createStore, applyMiddleware } from 'redux'
 import { composeWithDevTools } from 'redux-devtools-extension'
-
-import rootSaga from 'store/sagas'
-import createRootReducer from 'store/reducers'
-import history from 'utils/history'
-import * as Sentry from '@sentry/browser'
+import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
-import { ERROR_PAGE } from 'utils/route'
+
+import createRootReducer from 'store/reducers'
+import rootSaga from 'store/sagas'
 import { getIsDeployedOnHost } from 'utils/clientUtil'
+import history from 'utils/history'
+import { ERROR_PAGE } from 'utils/route'
 
 const onSagaError = (error, extraInfo) => {
   console.error(`Caught saga error: ${error}`)

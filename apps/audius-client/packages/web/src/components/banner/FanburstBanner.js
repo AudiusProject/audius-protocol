@@ -1,6 +1,7 @@
 import React from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
+import PropTypes from 'prop-types'
 
 import Banner from 'components/banner/Banner'
 

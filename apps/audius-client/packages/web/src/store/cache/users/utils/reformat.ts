@@ -1,6 +1,6 @@
-import AudiusBackend from 'services/AudiusBackend'
 import User, { UserMetadata } from 'models/User'
 import { CoverPhotoSizes, ProfilePictureSizes } from 'models/common/ImageSizes'
+import AudiusBackend from 'services/AudiusBackend'
 
 /**
  * Adds profile picture and cover art to a user object if it does not have one set

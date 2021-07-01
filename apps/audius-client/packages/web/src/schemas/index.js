@@ -1,4 +1,5 @@
 import { pick } from 'lodash'
+
 import { createRemixOfMetadata } from 'containers/upload-page/store/utils/remixes'
 
 const trackMetadataSchema = {

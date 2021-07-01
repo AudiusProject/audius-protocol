@@ -1,17 +1,18 @@
 import React, { PureComponent } from 'react'
-import PropTypes from 'prop-types'
-import Spin from 'antd/lib/spin'
+
 import { Button, ButtonType, IconArrow } from '@audius/stems'
-
-import styles from './SignInPage.module.css'
-import { MetaMaskOption } from './MetaMaskOption'
-import Input from 'components/data-entry/Input'
+import Spin from 'antd/lib/spin'
 import cn from 'classnames'
+import PropTypes from 'prop-types'
 import { Spring } from 'react-spring/renderprops'
-import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 
+import audiusLogoColored from 'assets/img/audiusLogoColored.png'
+import Input from 'components/data-entry/Input'
 import StatusMessage from 'components/general/StatusMessage'
 import PreloadImage from 'components/preload-image/PreloadImage'
+
+import { MetaMaskOption } from './MetaMaskOption'
+import styles from './SignInPage.module.css'
 
 const messages = {
   title: 'Sign Into Your Audius Account',

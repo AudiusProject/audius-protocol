@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react'
-import { PlaylistTileProps } from 'components/track/types'
-import { UID, ID } from 'models/common/Identifiers'
 
-import styles from './PlaylistTile.module.css'
+import cn from 'classnames'
+import { range } from 'lodash'
 
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
-import cn from 'classnames'
-import { formatCount } from 'utils/formatUtil'
-import { formatSeconds } from 'utils/timeUtil'
 import Skeleton from 'components/general/Skeleton'
-import BottomButtons from './BottomButtons'
-import TrackTileArt from './TrackTileArt'
 import FavoriteButton from 'components/general/alt-button/FavoriteButton'
 import RepostButton from 'components/general/alt-button/RepostButton'
-import { LineupTrack } from 'models/Track'
+import { PlaylistTileProps } from 'components/track/types'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { range } from 'lodash'
+import { LineupTrack } from 'models/Track'
+import { UID, ID } from 'models/common/Identifiers'
+import { formatCount } from 'utils/formatUtil'
+import { formatSeconds } from 'utils/timeUtil'
+
+import BottomButtons from './BottomButtons'
+import styles from './PlaylistTile.module.css'
 import { RankIcon } from './TrackTile'
+import TrackTileArt from './TrackTileArt'
 
 type TrackItemProps = {
   index: number

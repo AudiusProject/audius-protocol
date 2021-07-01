@@ -1,8 +1,9 @@
+import Collection from 'models/Collection'
+import Track from 'models/Track'
+import User from 'models/User'
 import { ID } from 'models/common/Identifiers'
 import { Status } from 'store/types'
-import Track from 'models/Track'
-import Collection from 'models/Collection'
-import User from 'models/User'
+
 import {
   getNotificationEntities,
   getNotificationEntity,

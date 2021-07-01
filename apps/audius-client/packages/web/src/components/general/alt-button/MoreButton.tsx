@@ -1,11 +1,12 @@
 import React from 'react'
+
 import cn from 'classnames'
 
-import styles from './MoreButton.module.css'
-
+import moreMatrix from 'assets/img/iconKebabInactiveMatrix@2x.png'
 import moreDark from 'assets/img/iconMoreDark@2x.png'
 import moreLight from 'assets/img/iconMoreLight@2x.png'
-import moreMatrix from 'assets/img/iconKebabInactiveMatrix@2x.png'
+
+import styles from './MoreButton.module.css'
 
 type MoreButtonProps = {
   onClick: () => void

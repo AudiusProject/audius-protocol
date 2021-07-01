@@ -1,15 +1,16 @@
 import React from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
-import { formatCount } from 'utils/formatUtil'
+import PropTypes from 'prop-types'
 
 import ArtistPopover from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { SquareSizes } from 'models/common/ImageSizes'
+import UserBadges from 'containers/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useImageSize'
+import { SquareSizes } from 'models/common/ImageSizes'
+import { formatCount } from 'utils/formatUtil'
 
 import styles from './ArtistChip.module.css'
-import UserBadges from 'containers/user-badges/UserBadges'
 
 const ArtistChip = props => {
   const profilePicture = useUserProfilePicture(

@@ -1,6 +1,8 @@
-import { UserListModalState, UserListType, UserListEntityType } from './types'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
 import { ID } from 'models/common/Identifiers'
+
+import { UserListModalState, UserListType, UserListEntityType } from './types'
 
 // Types
 

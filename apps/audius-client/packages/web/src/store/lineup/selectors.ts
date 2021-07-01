@@ -1,9 +1,9 @@
 import { createSelector } from 'reselect'
 
+import { LineupState } from 'models/common/Lineup'
 import { getTracksByUid } from 'store/cache/tracks/selectors'
 import { getUsers } from 'store/cache/users/selectors'
 import { AppState } from 'store/types'
-import { LineupState } from 'models/common/Lineup'
 import { removeNullable } from 'utils/typeUtils'
 
 // Some lineups can have additional properties (T)

@@ -1,6 +1,7 @@
 import React, { useState, useCallback, ReactNode } from 'react'
-import cn from 'classnames'
+
 import { Button, ButtonType } from '@audius/stems'
+import cn from 'classnames'
 
 import styles from './Section.module.css'
 

@@ -1,27 +1,28 @@
 import React, { useEffect, useContext } from 'react'
+
+import { Button, ButtonType } from '@audius/stems'
+import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
+import Lottie from 'react-lottie'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
-import Lottie from 'react-lottie'
-import { push as pushRoute } from 'connected-react-router'
+import { Dispatch } from 'redux'
+
+import notFoundAnimation from 'assets/animations/404.json'
+import tiledBackground from 'assets/img/notFoundTiledBackround.png'
+import Page from 'components/general/Page'
 import NavContext, {
   CenterPreset,
   RightPreset
 } from 'containers/nav/store/context'
-import { Dispatch } from 'redux'
-import cn from 'classnames'
-import { Button, ButtonType } from '@audius/stems'
-
-import Page from 'components/general/Page'
-import { isMobile } from 'utils/clientUtil'
-import { AppState } from 'store/types'
-
-import tiledBackground from 'assets/img/notFoundTiledBackround.png'
-import notFoundAnimation from 'assets/animations/404.json'
-import styles from './NotFoundPage.module.css'
-import { getTheme } from 'store/application/ui/theme/selectors'
-import { isMatrix, shouldShowDark } from 'utils/theme/theme'
-import { useRecord, make } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
+import { useRecord, make } from 'store/analytics/actions'
+import { getTheme } from 'store/application/ui/theme/selectors'
+import { AppState } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+import { isMatrix, shouldShowDark } from 'utils/theme/theme'
+
+import styles from './NotFoundPage.module.css'
 
 const messages = {
   title: 'Not Found',

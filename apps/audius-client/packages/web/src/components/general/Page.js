@@ -1,9 +1,11 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
-import { Spring } from 'react-spring/renderprops'
+import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
+import { Spring } from 'react-spring/renderprops'
 import calcScrollbarWidth from 'scrollbar-width'
+
 import SearchBar from 'containers/search-bar/SearchBar'
 
 import styles from './Page.module.css'

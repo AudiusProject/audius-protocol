@@ -1,13 +1,15 @@
 import React from 'react'
-import CollectionPageProvider from './CollectionPageProvider'
-import { connect } from 'react-redux'
-import { isMobile } from 'utils/clientUtil'
-import { AppState } from 'store/types'
-import { CollectionsPageType } from './store/types'
 
-import MobileCollectionPage from './components/mobile/CollectionPage'
-import DesktopCollectionPage from './components/desktop/CollectionPage'
+import { connect } from 'react-redux'
+
 import { SmartCollection } from 'models/Collection'
+import { AppState } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+
+import CollectionPageProvider from './CollectionPageProvider'
+import DesktopCollectionPage from './components/desktop/CollectionPage'
+import MobileCollectionPage from './components/mobile/CollectionPage'
+import { CollectionsPageType } from './store/types'
 
 type OwnProps = {
   type: CollectionsPageType

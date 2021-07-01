@@ -1,4 +1,5 @@
 import React, { memo } from 'react'
+
 import { Modal, Button, ButtonSize, ButtonType } from '@audius/stems'
 import PropTypes from 'prop-types'
 

@@ -1,13 +1,15 @@
 import React from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
+import PropTypes from 'prop-types'
+
+import DynamicImage from 'components/dynamic-image/DynamicImage'
+import UserBadges from 'containers/user-badges/UserBadges'
+import { useUserProfilePicture } from 'hooks/useImageSize'
+import { SquareSizes } from 'models/common/ImageSizes'
 import { formatCount } from 'utils/formatUtil'
 
 import styles from './UserCard.module.css'
-import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { SquareSizes } from 'models/common/ImageSizes'
-import { useUserProfilePicture } from 'hooks/useImageSize'
-import UserBadges from 'containers/user-badges/UserBadges'
 
 const UserCard = ({
   className,

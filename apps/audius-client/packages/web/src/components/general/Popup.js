@@ -1,13 +1,16 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import ReactDOM from 'react-dom'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
-import { useTransition, animated } from 'react-spring'
+
 import { useClickOutside } from '@audius/stems'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
+import ReactDOM from 'react-dom'
+import { useTransition, animated } from 'react-spring'
+
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
-import styles from './Popup.module.css'
 import useInstanceVar from 'hooks/useInstanceVar'
 import { getScrollParent } from 'utils/scrollParent'
+
+import styles from './Popup.module.css'
 
 /**
  * Gets the css transform origin prop from the display position

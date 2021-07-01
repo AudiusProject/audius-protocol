@@ -1,16 +1,18 @@
 /* globals fetch, File */
 import React, { useState, useCallback, useEffect } from 'react'
+
 import cn from 'classnames'
 
-import styles from './ProfilePage.module.css'
-import TwitterOverlay from 'containers/sign-on/components/mobile/TwitterOverlay'
-import ProfileForm from 'containers/sign-on/components/ProfileForm'
-import { InstagramProfile, TwitterProfile } from 'store/account/reducer'
 import { MAIN_CONTENT_ID } from 'containers/App'
+import ProfileForm from 'containers/sign-on/components/ProfileForm'
+import TwitterOverlay from 'containers/sign-on/components/mobile/TwitterOverlay'
 import {
   formatInstagramProfile,
   formatTwitterProfile
 } from 'containers/sign-on/utils/formatSocialProfile'
+import { InstagramProfile, TwitterProfile } from 'store/account/reducer'
+
+import styles from './ProfilePage.module.css'
 
 const messages = {
   header: 'Tell Us About Yourself So Others Can Find You'

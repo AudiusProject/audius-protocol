@@ -1,9 +1,11 @@
 import React, { memo, useState } from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
-import { formatCount } from 'utils/formatUtil'
+import PropTypes from 'prop-types'
 
 import UserListModal from 'components/artist/UserListModal'
+import { formatCount } from 'utils/formatUtil'
+
 import styles from './Stats.module.css'
 
 const Stat = props => {

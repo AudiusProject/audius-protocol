@@ -1,6 +1,7 @@
 import React from 'react'
-import cn from 'classnames'
+
 import { Button, ButtonType } from '@audius/stems'
+import cn from 'classnames'
 
 import styles from './NotificationPermissionsPage.module.css'
 

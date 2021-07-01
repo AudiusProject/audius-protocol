@@ -1,22 +1,24 @@
 import { call, select } from 'redux-saga/effects'
-import { Kind, AppState } from 'store/types'
-import { ID } from 'models/common/Identifiers'
-import { getCollections } from 'store/cache/collections/selectors'
-import { retrieve } from 'store/cache/sagas'
-import { getEntryTimestamp } from 'store/cache/selectors'
-import AudiusBackend from 'services/AudiusBackend'
+
 import Collection, {
   CollectionMetadata,
   UserCollectionMetadata
 } from 'models/Collection'
-import { reformat } from './reformat'
-import { retrieveTracks } from 'store/cache/tracks/utils'
-import { addUsersFromCollections } from './addUsersFromCollections'
-import { makeUid } from 'utils/uid'
-import { addTracksFromCollections } from './addTracksFromCollections'
-import { getUserId } from 'store/account/selectors'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import Track from 'models/Track'
+import { ID } from 'models/common/Identifiers'
+import AudiusBackend from 'services/AudiusBackend'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { getUserId } from 'store/account/selectors'
+import { getCollections } from 'store/cache/collections/selectors'
+import { retrieve } from 'store/cache/sagas'
+import { getEntryTimestamp } from 'store/cache/selectors'
+import { retrieveTracks } from 'store/cache/tracks/utils'
+import { Kind, AppState } from 'store/types'
+import { makeUid } from 'utils/uid'
+
+import { addTracksFromCollections } from './addTracksFromCollections'
+import { addUsersFromCollections } from './addUsersFromCollections'
+import { reformat } from './reformat'
 
 function* markCollectionDeleted(
   collectionMetadatas: CollectionMetadata[]

@@ -1,10 +1,13 @@
 import React from 'react'
+
 import { connect } from 'react-redux'
+
+import { AppState } from 'store/types'
+import { isMobile } from 'utils/clientUtil'
+
 import TrackPageProvider from './TrackPageProvider'
 import TrackPageDesktopContent from './components/desktop/TrackPage'
 import TrackPageMobileContent from './components/mobile/TrackPage'
-import { isMobile } from 'utils/clientUtil'
-import { AppState } from 'store/types'
 
 interface OwnProps {}
 

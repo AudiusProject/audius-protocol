@@ -1,9 +1,11 @@
-import { ID } from 'models/common/Identifiers'
 import { useMemo } from 'react'
-import { useSelector } from 'utils/reducer'
-import { makeGetTierAndVerifiedForUser } from './utils'
+
 import { getProfileUser } from 'containers/profile-page/store/selectors'
+import { ID } from 'models/common/Identifiers'
 import { getAccountUser } from 'store/account/selectors'
+import { useSelector } from 'utils/reducer'
+
+import { makeGetTierAndVerifiedForUser } from './utils'
 
 /**
  * Wraps our reselect tier selector in useMemo and useSelector

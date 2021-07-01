@@ -1,11 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react'
+
 import cn from 'classnames'
 
 import { ReactComponent as IconNotification } from 'assets/img/iconNotification.svg'
 import { ReactComponent as IconNotificationOff } from 'assets/img/iconNotificationOff.svg'
-import styles from './SubscribeButton.module.css'
 import { isMobile } from 'utils/clientUtil'
 import { isMatrix } from 'utils/theme/theme'
+
+import styles from './SubscribeButton.module.css'
 
 type SubscribeButtonProps = {
   className?: string

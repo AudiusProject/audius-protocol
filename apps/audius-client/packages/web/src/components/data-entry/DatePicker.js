@@ -1,9 +1,10 @@
 import 'react-dates/initialize'
 import 'react-dates/lib/css/_datepicker.css'
-import moment from 'moment'
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
+import moment from 'moment'
+import PropTypes from 'prop-types'
 import { SingleDatePicker, isInclusivelyBeforeDay } from 'react-dates'
 
 import { ReactComponent as IconCalendar } from 'assets/img/iconCalendar.svg'

@@ -1,5 +1,5 @@
-import { MessageType } from './types'
 import { NativeMobileMessage } from './helpers'
+import { MessageType } from './types'
 
 export class OpenSearchMessage extends NativeMobileMessage {
   constructor({ reset }: { reset: boolean } = { reset: true }) {

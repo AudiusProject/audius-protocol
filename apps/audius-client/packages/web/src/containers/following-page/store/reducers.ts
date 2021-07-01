@@ -1,9 +1,12 @@
+import { combineReducers } from 'redux'
 import { createReducer, ActionType } from 'typesafe-actions'
+
+import { UserListReducerFactory } from 'containers/user-list/store/reducer'
+
+import { USER_LIST_TAG } from '../FollowingPage'
+
 import * as actions from './actions'
 import { FollowingOwnState } from './types'
-import { UserListReducerFactory } from 'containers/user-list/store/reducer'
-import { USER_LIST_TAG } from '../FollowingPage'
-import { combineReducers } from 'redux'
 
 type FollowingActions = ActionType<typeof actions>
 

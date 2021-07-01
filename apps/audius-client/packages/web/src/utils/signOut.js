@@ -1,13 +1,14 @@
 /* globals localStorage */
-import { clearTheme } from './theme/theme'
+import { BADGE_LOCAL_STORAGE_KEY } from 'containers/audio-rewards-page/Tiers'
 import AudiusBackend from 'services/AudiusBackend'
-import { ReloadMessage } from 'services/native-mobile-interface/linking'
-import { removeHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import {
   clearAudiusAccount,
   clearAudiusAccountUser
 } from 'services/LocalStorage'
-import { BADGE_LOCAL_STORAGE_KEY } from 'containers/audio-rewards-page/Tiers'
+import { ReloadMessage } from 'services/native-mobile-interface/linking'
+import { removeHasRequestedBrowserPermission } from 'utils/browserNotifications'
+
+import { clearTheme } from './theme/theme'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const AUDIUS_EVENTS = 'events'

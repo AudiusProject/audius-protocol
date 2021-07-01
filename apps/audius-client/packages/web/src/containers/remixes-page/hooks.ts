@@ -1,5 +1,5 @@
-import { TRACK_REMIXES_PAGE } from 'utils/route'
 import { useRouteMatch } from 'hooks/useRouteMatch'
+import { TRACK_REMIXES_PAGE } from 'utils/route'
 
 export const useTrackIdFromUrl = () => {
   const params = useRouteMatch<{

@@ -1,5 +1,6 @@
-import * as socialCollectionActions from './actions'
 import createErrorSagas from 'utils/errorSagas'
+
+import * as socialCollectionActions from './actions'
 
 type CollectionErrors =
   | ReturnType<typeof socialCollectionActions.repostCollectionFailed>

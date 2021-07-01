@@ -1,18 +1,19 @@
 import React, { useState } from 'react'
+
 import { useSpring, animated } from 'react-spring'
-import useHasViewed from 'hooks/useHasViewed'
 
-import staffordBrosPlaylist from 'assets/img/publicSite/staffordBrosPlaylist@2x.jpg'
-import bnLLiveSets from 'assets/img/publicSite/BnLLiveSets@2x.jpg'
 import lau from 'assets/img/publicSite/3lau@2x.jpg'
-import isItLove from 'assets/img/publicSite/isItLove@2x.jpg'
-
-import { ReactComponent as IconListenOnAudius } from 'assets/img/publicSite/listen-on-audius.svg'
+import bnLLiveSets from 'assets/img/publicSite/BnLLiveSets@2x.jpg'
 import { ReactComponent as IconLines } from 'assets/img/publicSite/Lines.svg'
 import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
+import isItLove from 'assets/img/publicSite/isItLove@2x.jpg'
+import { ReactComponent as IconListenOnAudius } from 'assets/img/publicSite/listen-on-audius.svg'
+import staffordBrosPlaylist from 'assets/img/publicSite/staffordBrosPlaylist@2x.jpg'
 import useCardWeight from 'hooks/useCardWeight'
-import styles from './FeaturedContent.module.css'
+import useHasViewed from 'hooks/useHasViewed'
 import { pushWindowRoute } from 'utils/route'
+
+import styles from './FeaturedContent.module.css'
 
 const messages = {
   title: 'Featured Content',

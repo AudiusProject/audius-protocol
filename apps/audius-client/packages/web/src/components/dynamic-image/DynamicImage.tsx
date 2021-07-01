@@ -1,10 +1,11 @@
-import cn from 'classnames'
 import React, { memo, ReactNode, useEffect, useRef, RefObject } from 'react'
 
-import styles from './DynamicImage.module.css'
-import useInstanceVar from 'hooks/useInstanceVar'
+import cn from 'classnames'
 
 import transparentPlaceholderImg from 'assets/img/1x1-transparent.png'
+import useInstanceVar from 'hooks/useInstanceVar'
+
+import styles from './DynamicImage.module.css'
 
 const placeholder =
   'linear-gradient(315deg, var(--neutral-light-8) 0%, var(--neutral-light-9) 100%)'

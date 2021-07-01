@@ -1,27 +1,28 @@
 import React, { useEffect, useContext } from 'react'
 
-import { ID } from 'models/common/Identifiers'
+import MobilePageContainer from 'components/general/MobilePageContainer'
+import SectionButton from 'components/general/SectionButton'
+import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
 import Lineup from 'containers/lineup/Lineup'
 import { LineupVariant } from 'containers/lineup/types'
-import styles from './TrackPage.module.css'
-import Track from 'models/Track'
-import { QueueItem } from 'store/queue/types'
-import TrackPageHeader from './TrackHeader'
-import { tracksActions } from 'containers/track-page/store/lineups/tracks/actions'
 import NavContext, {
   LeftPreset,
   CenterPreset,
   RightPreset
 } from 'containers/nav/store/context'
-import { OverflowAction } from 'store/application/ui/mobileOverflowModal/types'
-import SectionButton from 'components/general/SectionButton'
 import NetworkConnectivityMonitor from 'containers/network-connectivity/NetworkConnectivityMonitor'
-import MobilePageContainer from 'components/general/MobilePageContainer'
-import Remixes from './Remixes'
-import User from 'models/User'
-import { LineupState } from 'models/common/Lineup'
+import { tracksActions } from 'containers/track-page/store/lineups/tracks/actions'
 import { getTrackDefaults, emptyStringGuard } from 'containers/track-page/utils'
-import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
+import Track from 'models/Track'
+import User from 'models/User'
+import { ID } from 'models/common/Identifiers'
+import { LineupState } from 'models/common/Lineup'
+import { OverflowAction } from 'store/application/ui/mobileOverflowModal/types'
+import { QueueItem } from 'store/queue/types'
+
+import Remixes from './Remixes'
+import TrackPageHeader from './TrackHeader'
+import styles from './TrackPage.module.css'
 
 const messages = {
   moreBy: 'More By',

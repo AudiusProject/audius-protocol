@@ -4,10 +4,10 @@ import {
   PREFIX,
   moreByActions
 } from 'containers/deleted-page/store/lineups/more-by/actions'
-import { LineupSagas } from 'store/lineup/sagas'
 import { getLineup } from 'containers/deleted-page/store/selectors'
 import { retrieveUserTracks } from 'containers/profile-page/store/lineups/tracks/retrieveUserTracks'
 import { getUserId } from 'store/account/selectors'
+import { LineupSagas } from 'store/lineup/sagas'
 
 function* getTracks({
   payload

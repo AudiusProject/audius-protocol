@@ -1,12 +1,12 @@
-import { getEntry, getAllEntries } from 'store/cache/selectors'
-import { Kind, AppState, Status } from 'store/types'
-import { getTracks } from 'store/cache/tracks/selectors'
-import { getUsers, getUser as getUserById } from 'store/cache/users/selectors'
-import { Uid } from 'utils/uid'
-import { ID, UID } from 'models/common/Identifiers'
 import Collection from 'models/Collection'
 import Track from 'models/Track'
 import User from 'models/User'
+import { ID, UID } from 'models/common/Identifiers'
+import { getEntry, getAllEntries } from 'store/cache/selectors'
+import { getTracks } from 'store/cache/tracks/selectors'
+import { getUsers, getUser as getUserById } from 'store/cache/users/selectors'
+import { Kind, AppState, Status } from 'store/types'
+import { Uid } from 'utils/uid'
 
 export const getCollection = (
   state: AppState,

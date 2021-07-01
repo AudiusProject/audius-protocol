@@ -1,12 +1,14 @@
 import { set, get, keys, del, clear } from 'idb-keyval'
-import { Kind } from 'store/types'
-import { Track } from 'models/Track'
+import { mergeWith } from 'lodash'
+
 import Collection from 'models/Collection'
+import { Track } from 'models/Track'
 import User from 'models/User'
 import { ID } from 'models/common/Identifiers'
-import { mergeWith } from 'lodash'
-import { makeUid } from './uid'
 import { mergeCustomizer } from 'store/cache/reducer'
+import { Kind } from 'store/types'
+
+import { makeUid } from './uid'
 
 const DISABLE_PERSISTENCE_KEY = 'disable-cache-persistence'
 

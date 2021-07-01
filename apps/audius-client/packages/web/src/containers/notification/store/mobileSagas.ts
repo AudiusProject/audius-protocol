@@ -1,5 +1,5 @@
 import { all, call, put, select, takeEvery } from 'redux-saga/effects'
-import { waitForBackendSetup } from 'store/backend/sagas'
+
 import AudiusBackend from 'services/AudiusBackend'
 import {
   FetchNotificationsSuccessMessage,
@@ -7,9 +7,12 @@ import {
   FetchNotificationsFailureMessage,
   ResetNotificationsBadgeCount
 } from 'services/native-mobile-interface/notifications'
-import { getHasAccount } from 'store/account/selectors'
 import { MessageType } from 'services/native-mobile-interface/types'
+import { getHasAccount } from 'store/account/selectors'
+import { waitForBackendSetup } from 'store/backend/sagas'
+
 import * as notificationActions from './actions'
+import { getNotifications } from './sagas'
 import {
   getNotificationEntities,
   getNotificationEntity,
@@ -17,7 +20,6 @@ import {
   getNotificationUsers
 } from './selectors'
 import { ConnectedNotification, Notification, NotificationType } from './types'
-import { getNotifications } from './sagas'
 
 // The maximum number of users to fetch along with a notification,
 // which determines the number of profile pictures to show

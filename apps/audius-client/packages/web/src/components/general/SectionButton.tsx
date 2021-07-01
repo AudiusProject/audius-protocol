@@ -1,4 +1,5 @@
 import React from 'react'
+
 import cn from 'classnames'
 
 import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'

@@ -1,6 +1,5 @@
-import { asLineup } from 'store/lineup/reducer'
 import tracksReducer from 'containers/collection-page/store/lineups/tracks/reducer'
-import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
+import { asLineup } from 'store/lineup/reducer'
 import { Status } from 'store/types'
 
 import {
@@ -10,6 +9,7 @@ import {
   RESET_COLLECTION,
   SET_SMART_COLLECTION
 } from './actions'
+import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
 
 const initialState = {
   collectionId: null,

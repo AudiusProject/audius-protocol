@@ -1,7 +1,8 @@
-import { MessageType } from './types'
-import { NativeMobileMessage } from './helpers'
-import { RepeatMode } from 'store/queue/types'
 import { ID, UID } from 'models/common/Identifiers'
+import { RepeatMode } from 'store/queue/types'
+
+import { NativeMobileMessage } from './helpers'
+import { MessageType } from './types'
 
 // Array of m3u8 "data" files
 type TrackInfo = {

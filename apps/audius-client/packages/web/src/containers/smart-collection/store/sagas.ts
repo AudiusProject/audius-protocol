@@ -1,8 +1,15 @@
 import { takeEvery, put, call } from 'redux-saga/effects'
 
-import { fetchSmartCollection, fetchSmartCollectionSucceeded } from './slice'
-import { requiresAccount, waitForValue } from 'utils/sagaHelpers'
+import { setSmartCollection } from 'containers/collection-page/store/actions'
+import Track from 'models/Track'
 import Explore from 'services/audius-backend/Explore'
+import { getAccountStatus } from 'store/account/selectors'
+import { waitForBackendSetup } from 'store/backend/sagas'
+import { processAndCacheTracks } from 'store/cache/tracks/utils'
+import { getLuckyTracks } from 'store/recommendation/sagas'
+import { Status } from 'store/types'
+import { EXPLORE_PAGE } from 'utils/route'
+import { requiresAccount, waitForValue } from 'utils/sagaHelpers'
 
 import {
   HEAVY_ROTATION,
@@ -12,14 +19,8 @@ import {
   UNDER_THE_RADAR
 } from '../smartCollections'
 import { SmartCollectionVariant } from '../types'
-import { waitForBackendSetup } from 'store/backend/sagas'
-import { getAccountStatus } from 'store/account/selectors'
-import { setSmartCollection } from 'containers/collection-page/store/actions'
-import Track from 'models/Track'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
-import { Status } from 'store/types'
-import { EXPLORE_PAGE } from 'utils/route'
-import { getLuckyTracks } from 'store/recommendation/sagas'
+
+import { fetchSmartCollection, fetchSmartCollectionSucceeded } from './slice'
 
 const COLLECTIONS_LIMIT = 25
 

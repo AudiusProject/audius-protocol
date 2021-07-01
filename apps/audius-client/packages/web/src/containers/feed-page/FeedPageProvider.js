@@ -1,27 +1,29 @@
 import React, { PureComponent } from 'react'
-import { connect } from 'react-redux'
-import { withRouter, matchPath } from 'react-router-dom'
+
 import {
   push as pushRoute,
   replace as replaceRoute
 } from 'connected-react-router'
-import { feedActions } from './store/lineups/feed/actions'
-import * as discoverPageAction from './store/actions'
-import { getHasAccount } from 'store/account/selectors'
-import { openSignOn } from 'containers/sign-on/store/actions'
-import { makeGetLineupMetadatas } from 'store/lineup/selectors'
-import { getPlaying, getBuffering } from 'store/player/selectors'
-import { makeGetCurrent } from 'store/queue/selectors'
+import { connect } from 'react-redux'
+import { withRouter, matchPath } from 'react-router-dom'
 
 import {
   getDiscoverFeedLineup,
   makeGetSuggestedFollows,
   getFeedFilter
 } from 'containers/feed-page/store/selectors'
-import { isMobile } from 'utils/clientUtil'
-import { make } from 'store/analytics/actions'
+import { openSignOn } from 'containers/sign-on/store/actions'
 import { Name } from 'services/analytics'
+import { getHasAccount } from 'store/account/selectors'
+import { make } from 'store/analytics/actions'
+import { makeGetLineupMetadatas } from 'store/lineup/selectors'
+import { getPlaying, getBuffering } from 'store/player/selectors'
+import { makeGetCurrent } from 'store/queue/selectors'
+import { isMobile } from 'utils/clientUtil'
 import { getPathname, TRENDING_PAGE } from 'utils/route'
+
+import * as discoverPageAction from './store/actions'
+import { feedActions } from './store/lineups/feed/actions'
 
 const messages = {
   feedTitle: 'Feed',

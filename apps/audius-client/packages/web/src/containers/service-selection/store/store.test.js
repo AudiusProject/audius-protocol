@@ -1,12 +1,13 @@
+import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
+import * as matchers from 'redux-saga-test-plan/matchers'
+
+import AudiusBackend from 'services/AudiusBackend'
+import { waitForBackendSetup } from 'store/backend/sagas'
+import { noopReducer } from 'store/testHelper'
 
 import * as sagas from './sagas'
 import reducer, { fetchServices } from './slice'
-import { combineReducers } from 'redux'
-import * as matchers from 'redux-saga-test-plan/matchers'
-import { waitForBackendSetup } from 'store/backend/sagas'
-import { noopReducer } from 'store/testHelper'
-import AudiusBackend from 'services/AudiusBackend'
 
 const initialState = {
   // Service name => {country, latitude, longitude, ping, isSyncing}

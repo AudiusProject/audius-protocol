@@ -1,8 +1,10 @@
 import { delay } from 'redux-saga'
 import { takeEvery, call, put, race, select } from 'redux-saga/effects'
-import { isMobile } from 'utils/clientUtil'
-import { setUnreachable, setReachable } from './actions'
+
 import { MessageType, Message } from 'services/native-mobile-interface/types'
+import { isMobile } from 'utils/clientUtil'
+
+import { setUnreachable, setReachable } from './actions'
 import { getIsReachable } from './selectors'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE

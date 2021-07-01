@@ -1,8 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ExploreCollectionsVariant } from '../types'
 import { ID } from 'models/common/Identifiers'
 import { Status } from 'store/types'
+
+import { ExploreCollectionsVariant } from '../types'
 
 type FetchPayload = {
   variant: ExploreCollectionsVariant

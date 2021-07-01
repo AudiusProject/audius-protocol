@@ -1,5 +1,7 @@
 import { call, put, takeEvery } from 'redux-saga/effects'
+
 import { shouldShowCookieBanner, dismissCookieBanner } from 'utils/gdpr'
+
 import { showCookieBanner, DISMISS_COOKIE_BANNER } from './actions'
 
 export function* checkCookieBanner() {

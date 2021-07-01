@@ -1,9 +1,10 @@
 import React from 'react'
-import ProfilePageProvider from './ProfilePageProvider'
 
-import MobileProfilePage from './components/mobile/ProfilePage'
-import DesktopProfilePage from './components/desktop/ProfilePage'
 import { useIsMobile } from 'utils/clientUtil'
+
+import ProfilePageProvider from './ProfilePageProvider'
+import DesktopProfilePage from './components/desktop/ProfilePage'
+import MobileProfilePage from './components/mobile/ProfilePage'
 
 type ProfilePageProps = {
   containerRef: React.RefObject<HTMLDivElement>

@@ -1,7 +1,7 @@
 import React from 'react'
 
-import styles from './NoConnectivityPage.module.css'
 import NoConnectivityContent from './NoConnectivityContent'
+import styles from './NoConnectivityPage.module.css'
 
 const NoConnectivityPage = () => {
   return (

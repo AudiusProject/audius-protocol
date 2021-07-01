@@ -1,7 +1,8 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
+
 import Select from 'antd/lib/select'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
 
 import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDown.svg'
 

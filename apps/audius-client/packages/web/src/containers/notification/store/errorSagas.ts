@@ -1,6 +1,8 @@
-import * as notificationActions from './actions'
-import * as errorActions from 'store/errors/actions'
 import { put, takeEvery } from 'redux-saga/effects'
+
+import * as errorActions from 'store/errors/actions'
+
+import * as notificationActions from './actions'
 
 const noRedirectSet = new Set([
   // Failed to fetch notifications

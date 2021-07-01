@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react'
+
 import cn from 'classnames'
 import { Parallax } from 'react-scroll-parallax'
 import { useChain, useTrail, animated } from 'react-spring'
 
-import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
 import hqAudio from 'assets/img/publicSite/HQ-Audio@1x.jpg'
+import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
 import { AUDIUS_LISTENING_LINK, pushWindowRoute } from 'utils/route'
 
 import styles from './CTAListening.module.css'

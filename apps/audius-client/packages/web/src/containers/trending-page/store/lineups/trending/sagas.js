@@ -1,9 +1,10 @@
 import { select } from 'redux-saga/effects'
 
-import { LineupSagas } from 'store/lineup/sagas'
-import TimeRange from 'models/TimeRange'
-
+import { retrieveTrending } from 'containers/track-page/store/retrieveTrending'
 import { getTrendingGenre } from 'containers/trending-page/store/selectors'
+import TimeRange from 'models/TimeRange'
+import { getUserId } from 'store/account/selectors'
+import { LineupSagas } from 'store/lineup/sagas'
 
 import {
   TRENDING_WEEK_PREFIX,
@@ -13,8 +14,6 @@ import {
   trendingMonthActions,
   trendingYearActions
 } from './actions'
-import { getUserId } from 'store/account/selectors'
-import { retrieveTrending } from 'containers/track-page/store/retrieveTrending'
 
 function getTracks(timeRange) {
   return function* ({ offset, limit }) {

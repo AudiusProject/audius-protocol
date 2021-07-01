@@ -1,6 +1,6 @@
+import User from 'models/User'
 import { ID, UID } from 'models/common/Identifiers'
 import { LineupState } from 'models/common/Lineup'
-import User from 'models/User'
 import { Status } from 'store/types'
 
 export enum FollowType {

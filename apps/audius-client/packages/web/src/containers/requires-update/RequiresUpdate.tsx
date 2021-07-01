@@ -1,11 +1,13 @@
 import React from 'react'
-import Spin from 'antd/lib/spin'
+
 import { Button, ButtonType, ButtonSize } from '@audius/stems'
+import Spin from 'antd/lib/spin'
 
 import tileBackground from 'assets/img/notFoundTiledBackround.png'
-import styles from './RequiresUpdate.module.css'
 import Theme from 'models/Theme'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
+
+import styles from './RequiresUpdate.module.css'
 
 const messages = {
   title: 'Please Update ✨',

@@ -1,19 +1,20 @@
 import React, { useCallback } from 'react'
-import cn from 'classnames'
+
 import { Modal } from '@audius/stems'
+import cn from 'classnames'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
-
-import styles from './NotificationSettings.module.css'
-import Switch from 'components/general/Switch'
 import TabSlider from 'components/data-entry/TabSlider'
+import Switch from 'components/general/Switch'
 import {
   Notifications,
   BrowserNotificationSetting,
   EmailFrequency
 } from 'containers/settings-page/store/types'
-import { isElectron } from 'utils/clientUtil'
 import { Permission } from 'utils/browserNotifications'
+import { isElectron } from 'utils/clientUtil'
+
+import styles from './NotificationSettings.module.css'
 
 const messages = {
   title: 'NOTIFICATIONS',

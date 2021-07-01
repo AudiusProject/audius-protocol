@@ -1,13 +1,13 @@
 import { call, put, takeLatest, takeEvery } from 'redux-saga/effects'
 
-import * as collectionActions from './actions'
-import { retrieveCollections } from 'store/cache/collections/utils'
-import * as cacheActions from 'store/cache/actions'
-import { Kind } from 'store/types'
-
-import tracksSagas from 'containers/collection-page/store/lineups/tracks/sagas.js'
 import { tracksActions } from 'containers/collection-page/store/lineups/tracks/actions.js'
+import tracksSagas from 'containers/collection-page/store/lineups/tracks/sagas.js'
+import * as cacheActions from 'store/cache/actions'
+import { retrieveCollections } from 'store/cache/collections/utils'
+import { Kind } from 'store/types'
 import { makeUid } from 'utils/uid'
+
+import * as collectionActions from './actions'
 
 function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {

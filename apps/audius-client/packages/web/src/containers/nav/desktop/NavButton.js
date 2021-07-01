@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
-import PropTypes from 'prop-types'
-import cn from 'classnames'
+
 import {
   Button,
   ButtonType,
@@ -9,6 +8,8 @@ import {
   IconUpload
 } from '@audius/stems'
 import Spin from 'antd/lib/spin'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
 
 import styles from './NavButton.module.css'
 

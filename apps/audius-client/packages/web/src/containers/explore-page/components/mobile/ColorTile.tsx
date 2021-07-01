@@ -1,8 +1,10 @@
 import React, { ReactNode } from 'react'
+
 import cn from 'classnames'
 
-import styles from './ColorTile.module.css'
 import { ReactComponent as IconAudioRewardsPill } from 'assets/img/iconAudioRewardsPill.svg'
+
+import styles from './ColorTile.module.css'
 
 type ColorTileProps = {
   title: string

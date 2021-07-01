@@ -1,8 +1,10 @@
 import React from 'react'
-import PropTypes from 'prop-types'
+
 import cn from 'classnames'
+import PropTypes from 'prop-types'
 
 import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
+
 import styles from './BackButton.module.css'
 
 const BackButton = props => {
