@@ -1,5 +1,6 @@
 const Bull = require('bull')
 const axios = require('axios')
+const _ = require('lodash')
 
 const utils = require('../utils')
 const models = require('../models')
@@ -171,6 +172,10 @@ class SnapbackSM {
     logger.info(`SnapbackSM: ${msg}`)
   }
 
+  logWarn (msg) {
+    logger.warn(`SnapbackSM WARNING: ${msg}`)
+  }
+
   logError (msg) {
     logger.error(`SnapbackSM ERROR: ${msg}`)
   }
@@ -310,7 +315,7 @@ class SnapbackSM {
 
     const unhealthyReplicasSet = new Set(unhealthyReplicas)
     const baseSyncRequestParams = { userWallet: wallet, syncType: SyncType.Manual }
-    let response = { errorMsg: null, issusedReconfig: false }
+    let response = { errorMsg: null, issuedReconfig: false }
     let newReplicaSetSPIds = []
     let phase = ''
     try {
@@ -325,14 +330,9 @@ class SnapbackSM {
         healthyNodes
       })
 
-      if (!newPrimary || !newSecondary1 || !newSecondary2) {
-        const errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} Issue with determining new replica set=[${newPrimary},${newSecondary1},${newSecondary2}]`
-        this.logError(errorMsg)
-        response.errorMsg = errorMsg
-        return response
+      if (newPrimary && newSecondary1 && newSecondary2) {
+        this.log(`[issueUpdateReplicaSetOp] Updating userId=${userId} wallet=${wallet} replica set=[${primary},${secondary1},${secondary2}] to new replica set=[${newPrimary},${newSecondary1},${newSecondary2}] issueReconfig=${issueReconfig}`)
       }
-
-      this.log(`[issueUpdateReplicaSetOp] Updating userId=${userId} wallet=${wallet} replica set=[${primary},${secondary1},${secondary2}] to new replica set=[${newPrimary},${newSecondary1},${newSecondary2}] issueReconfig=${issueReconfig}`)
 
       if (!this.snapbackReconfigEnabled || !issueReconfig) {
         this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} skipping reconfig`)
@@ -360,6 +360,11 @@ class SnapbackSM {
       await this.enqueueSync({
         ...baseSyncRequestParams,
         primaryEndpoint: primary,
+        secondaryEndpoint: newSecondary1
+      })
+      await this.enqueueSync({
+        ...baseSyncRequestParams,
+        primaryEndpoint: primary,
         secondaryEndpoint: newSecondary2
       })
     } catch (e) {
@@ -368,7 +373,7 @@ class SnapbackSM {
       return response
     }
 
-    return { errorMsg: null, issuedReconfig: true }
+    return response
   }
 
   /**
@@ -378,7 +383,7 @@ class SnapbackSM {
    * @param {string} param.secondary1 current user's first secondary endpoint
    * @param {string} param.secondary2 current user's second secondary endpoint
    * @param {string} param.wallet current user's wallet address
-   * @param {string[]} param.unhealthyReplicasSet an array of endpoints of unhealthy replica set nodes
+   * @param {Set<string>} param.unhealthyReplicasSet a set of endpoints of unhealthy replica set nodes
    * @param {string[]} param.healthyNodes array of healthy Content Node endpoints used for selecting new replica set
    * @returns {Object}
    * {
@@ -388,13 +393,20 @@ class SnapbackSM {
    * }
    */
   async determineNewReplicaSet ({ primary, secondary1, secondary2, wallet, unhealthyReplicasSet, healthyNodes }) {
+    // If entire replica set is unhealthy, select an entire new replica set
+    if (unhealthyReplicasSet.size === NUMBER_OF_REPLICA_SET_NODES) {
+      this.logWarn(`[determineNewReplicaSet] Entire replica set=[${Array.from(unhealthyReplicasSet)}] is unhealthy. Not issuing new replica set.`)
+      return { newPrimary: null, newSecondary1: null, newSecondary2: null, issueReconfig: false }
+    }
+
+    // Select a random node that is not from the current replica set. Make sure the random node does not have any
+    // existing user data for the current user. If there is pre-existing data in the randomly selected node, keep
+    // searching for a node that has no state.
     let newReplicaNodesSet = new Set()
-    let i = 0
-    let issueReconfig = false
+    let selectNewReplicaSetAttemptCounter = 0
     let newPrimary, newSecondary1, newSecondary2
-    while (newReplicaNodesSet.size !== NUMBER_OF_REPLICA_SET_NODES && i++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS) {
-      // Select a random node that is not from the current replica set
-      let randomHealthyNode = healthyNodes[Math.floor(Math.random() * healthyNodes.length)]
+    while (newReplicaNodesSet.size < unhealthyReplicasSet.size && selectNewReplicaSetAttemptCounter++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS) {
+      let randomHealthyNode = _.sample(healthyNodes)
 
       // If node is already present in set, keep finding a unique healthy node
       if (newReplicaNodesSet.has(randomHealthyNode)) continue
@@ -411,24 +423,26 @@ class SnapbackSM {
       }
     }
 
-    let newReplicaNodes = Array.from(newReplicaNodesSet)
-    // We need a minimum of `NUMBER_OF_REPLICA_SET_NODES` to perform the reconfig op. In the case that
-    // the max number replica set attempts were made, push null
-    while (newReplicaNodes.length < NUMBER_OF_REPLICA_SET_NODES) {
-      newReplicaNodes.push(null)
+    if (newReplicaNodesSet.size < unhealthyReplicasSet.size) {
+      throw new Error('[determineNewReplicaSet] Not enough healthy nodes found to issue new replica set')
     }
 
     // Note: for v0, only issue reconfigs if only 1 secondary is unhealthy. Else, just log out the tentative
     // new replica set to be assigned.
-
+    let newReplicaNodes = Array.from(newReplicaNodesSet)
+    let issueReconfig = false
     if (unhealthyReplicasSet.size === 1) {
       if (unhealthyReplicasSet.has(primary)) {
         // If the primary is unhealthy, select the higher clock value of the two secondaries as the new primary,
-        // and then seelct 2 new secondaries
+        // and then select 2 new secondaries
+
+        // TODO: consider rechecking if primary is truly unhealthy. then, below logic as last ditch effort if primary is indeed unhealthy.
+        // will update below method/logic after team discussion
         const secondariesToClockMap = await this.fetchClockValues(secondary1, secondary2, wallet)
-        newPrimary = secondariesToClockMap[secondary1] >= secondariesToClockMap[secondary2] ? secondary1 : secondary2
-        newSecondary1 = newReplicaNodes[0] // sync
-        newSecondary2 = newReplicaNodes[1] // sync
+        let currentHealthySecondary
+        ([newPrimary, currentHealthySecondary] = secondariesToClockMap[secondary1] >= secondariesToClockMap[secondary2] ? [secondary1, secondary2] : [secondary2, secondary1])
+        newSecondary1 = currentHealthySecondary // sync
+        newSecondary2 = newReplicaNodes[0] // sync
       } else {
         // If one secondary is unhealthy, select a new secondary
         issueReconfig = true
@@ -447,11 +461,6 @@ class SnapbackSM {
       }
       newSecondary1 = newReplicaNodes[0] // sync
       newSecondary2 = newReplicaNodes[1] // sync
-    } else {
-      // If entire replica set is unhealthy, select an entire new replica set
-      newPrimary = newReplicaNodes[0]
-      newSecondary1 = newReplicaNodes[1]
-      newSecondary2 = newReplicaNodes[2]
     }
 
     return { newPrimary, newSecondary1, newSecondary2, issueReconfig }
