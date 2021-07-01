@@ -20,7 +20,7 @@ def vacuum_db(self):
         if have_lock:
             engine = db._engine
             with engine.connect().execution_options(
-                isolation_level="AUTOCOMMIT"
+                    isolation_level="AUTOCOMMIT"
             ) as connection:
                 connection.execute("VACUUM ANALYZE")
         else:
