@@ -184,10 +184,9 @@ def process_user_bank_tx_details(session, tx_info, tx_sig, timestamp):
 def parse_user_bank_transaction(session, solana_client, tx_sig):
     tx_info = get_sol_tx_info(solana_client, tx_sig)
     tx_slot = tx_info['result']['slot']
-    logger.error(f"index_user_bank.py | parse_user_bank_transaction | {tx_slot}, {tx_sig} | {tx_info}")
     timestamp = tx_info['result']['blockTime']
     parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
-    logger.error(f"index_user_bank.py | parse_user_bank_transaction | {parsed_timestamp}")
+    logger.error(f"index_user_bank.py | parse_user_bank_transaction | {tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}")
     process_user_bank_tx_details(session, tx_info, tx_sig, parsed_timestamp)
     session.add(
         UserBankTransaction(
