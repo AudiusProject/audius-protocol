@@ -17,9 +17,9 @@ module.exports = function (app) {
       from 
         "Users" inner join "BotScores" on "Users"."walletAddress" = "BotScores"."walletAddress"
       where
-        "Users"."handle" = ?`,
+        "Users"."handle" = :handle`,
       {
-        replacements: [handle],
+        replacements: { handle },
         type: QueryTypes.SELECT
       }
     )

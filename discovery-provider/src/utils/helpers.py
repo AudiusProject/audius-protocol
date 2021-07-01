@@ -327,7 +327,7 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
 def create_track_route_id(title, handle):
     # Strip out invalid character
     sanitized_title = re.sub(
-        r'!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]', '', title)
+        r'!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00', '', title)
 
     # Convert whitespaces to dashes
     sanitized_title = re.sub(r'\s+', '-', sanitized_title)
@@ -342,6 +342,33 @@ def create_track_route_id(title, handle):
     sanitized_handle = handle.lower()
 
     return f"{sanitized_handle}/{sanitized_title}"
+
+
+def create_track_slug(title, collision_id=0):
+    """ Converts the title of a track into a URL-friendly 'slug'
+
+    Strips special characters, replaces spaces with dashes, converts to
+    lowercase, and appends a collision_id if non-zero.
+
+    Example:
+    (Title="My Awesome Track!", collision_id=2) => "my-awesome-track-2"
+    """
+    # Strip out invalid character
+    sanitized_title = re.sub(
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^", "", title
+    )
+
+    # Convert whitespaces to dashes
+    sanitized_title = re.sub(r"\s+", "-", sanitized_title)
+    sanitized_title = re.sub(r"-+", "-", sanitized_title)
+
+    sanitized_title = sanitized_title.lower()
+
+    if collision_id > 0:
+        sanitized_title = f"{sanitized_title}-{collision_id}"
+
+    return sanitized_title
+
 
 # Validates the existance of arguments within a request.
 # req_args is a map, expected_args is a list of string arguments expected to be present in the map.
