@@ -17,11 +17,16 @@ const estimateGas = async ({
   gasLimitMaximum,
   multiplier = GAS_LIMIT_MULTIPLIER
 }) => {
-  const estimatedGas = await method.estimateGas({ from, gas: gasLimitMaximum })
-  // Rounding is necessary here as fractional gas limits will break
-  const safeEstimatedGas = Math.ceil(estimatedGas * multiplier)
-  console.info(`Estimated gas limit ${safeEstimatedGas} for method ${method._method.name}`)
-  return safeEstimatedGas
+  try {
+    const estimatedGas = await method.estimateGas({ from, gas: gasLimitMaximum })
+    // Rounding is necessary here as fractional gas limits will break
+    const safeEstimatedGas = Math.ceil(estimatedGas * multiplier)
+    console.info(`Estimated gas limit ${safeEstimatedGas} for method ${method._method.name}`)
+    return safeEstimatedGas
+  } catch (e) {
+    console.error(`Unable to estimate gas for transaction ${method._method.name}`)
+    return gasLimitMaximum
+  }
 }
 
 module.exports = { estimateGas }
