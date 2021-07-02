@@ -1,9 +1,9 @@
 from functools import reduce
 from collections import defaultdict
+# pylint: disable=E0611
 from typing import List, DefaultDict, TypedDict, Tuple
 from sqlalchemy import and_
 from src.models import UserChallenge, Challenge, ChallengeType, ChallengeDisbursement
-
 
 class ChallengeResponse(TypedDict):
     challenge_id: str

@@ -9,7 +9,7 @@ redis==3.2.0
 pytest==6.0.1
 SQLAlchemy-Utils==0.33.3
 chance==0.110
-pylint==2.9.3
+pylint==2.3.1
 ipfshttpclient==0.8.0a1
 pytest-cov==2.6.0
 pytest-dotenv==0.5.2
