@@ -39,7 +39,7 @@ def create_new_challenges(session):
     # Update any challenges whose active state / amount changed
     existing_challenge_map = {challenge.id: challenge for challenge in existing_challenges}
     for challenge_dict in challenges_dicts:
-        existing = existing_challenge_map[challenge_dict["id"]]
-        existing.active = challenge_dict["active"]
-        existing.amount = challenge_dict["amount"]
-
+        existing = existing_challenge_map.get(challenge_dict["id"])
+        if existing:
+            existing.active = challenge_dict["active"]
+            existing.amount = challenge_dict["amount"]
