@@ -5,6 +5,7 @@ from hashids import Hashids
 from flask_restx import fields, reqparse
 from datetime import datetime
 from .models.common import full_response
+from src.queries.get_challenges import ChallengeResponse
 
 logger = logging.getLogger(__name__)
 
@@ -244,6 +245,12 @@ def extend_activity(item):
         }
     return None
 
+def extend_challenge_response(challenge: ChallengeResponse):
+    user_id = encode_int_id(challenge["user_id"])
+    new_challenge = challenge.copy()
+    new_challenge["user_id"] = user_id
+    return new_challenge
+
 def abort_bad_path_param(param, namespace):
     namespace.abort(400, "Oh no! Bad path parameter {}.".format(param))
 
@@ -325,4 +332,6 @@ def get_default_max(value, default, max=None):
         return value
     else:
         return min(value, max)
+
+
 
