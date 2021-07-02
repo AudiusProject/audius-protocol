@@ -413,7 +413,7 @@ jobs:
 
   test-discovery-provider:
     docker:
-      - image: circleci/python:3.8
+      - image: circleci/python:3.8-node-browsers
         # Discovery provider dependencies
       - image: circleci/postgres:11.1
         environment:
