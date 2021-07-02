@@ -2,8 +2,8 @@ from flask import current_app
 from src.challenges.profile_challenge import profile_challenge_manager
 
 class ChallengeManagerRegistry:
-
     """Maintains a mapping of challenge_id => manager"""
+
     def __init__(self):
         self.managers = {}
 

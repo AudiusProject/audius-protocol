@@ -8,179 +8,183 @@ from src.models import (
 )
 from src.queries.get_challenges import get_challenges
 
+def setup_db(session):
+    blocks = [Block(blockhash="0x1", number=1, parenthash="", is_current=True)]
+    challenges = [
+        Challenge(
+            id="boolean_challenge_1",
+            type=ChallengeType.boolean,
+            active=True,
+            amount=5,
+        ),
+        Challenge(
+            id="boolean_challenge_2",
+            type=ChallengeType.boolean,
+            active=True,
+            amount=5,
+        ),
+        Challenge(
+            id="boolean_challenge_3",
+            type=ChallengeType.boolean,
+            active=True,
+            amount=5,
+        ),
+        # No progress on this, but active
+        # should be returned
+        Challenge(
+            id="boolean_challenge_4",
+            type=ChallengeType.boolean,
+            active=True,
+            amount=5,
+        ),
+        # Inactive, with no progress
+        Challenge(
+            id="boolean_challenge_5",
+            type=ChallengeType.boolean,
+            active=False,
+            amount=5,
+        ),
+        # Inactive, WITH progress
+        Challenge(
+            id="boolean_challenge_6",
+            type=ChallengeType.boolean,
+            active=False,
+            amount=5,
+        ),
+        Challenge(
+            id="trending_challenge_1",
+            type=ChallengeType.trending,
+            active=True,
+            amount=5,
+        ),
+        Challenge(
+            id="aggregate_challenge_1",
+            type=ChallengeType.aggregate,
+            active=True,
+            amount=5,
+            step_count=3,
+        ),
+        Challenge(
+            id="aggregate_challenge_2",
+            type=ChallengeType.aggregate,
+            active=True,
+            amount=5,
+            step_count=2,
+        ),
+        Challenge(
+            id="aggregate_challenge_3",
+            type=ChallengeType.aggregate,
+            active=True,
+            amount=5,
+            step_count=2,
+        ),
+        Challenge(
+            id="trending_1", type=ChallengeType.trending, active=True, amount=5
+        ),
+        Challenge(
+            id="trending_2", type=ChallengeType.trending, active=True, amount=5
+        ),
+        Challenge(
+            id="trending_3", type=ChallengeType.trending, active=True, amount=5
+        ),
+    ]
+    user_challenges = [
+        # Finished the first challenge, disbursed
+        UserChallenge(
+            challenge_id="boolean_challenge_1",
+            user_id=1,
+            specifier="1",
+            is_complete=True,
+        ),
+        # Did finish the second challenge, did not disburse
+        UserChallenge(
+            challenge_id="boolean_challenge_2",
+            user_id=1,
+            specifier="1",
+            is_complete=True,
+        ),
+        # Did not finish challenge 3
+        UserChallenge(
+            challenge_id="boolean_challenge_3",
+            user_id=1,
+            specifier="1",
+            is_complete=False,
+        ),
+        # Inactive challenge
+        UserChallenge(
+            challenge_id="boolean_challenge_6",
+            user_id=1,
+            specifier="1",
+            is_complete=True,
+        ),
+        UserChallenge(
+            challenge_id="aggregate_challenge_1",
+            user_id=1,
+            specifier="1-2",  # compound specifiers, like if user1 invites user2
+            is_complete=True,
+        ),
+        # Ensure that a non-complete user-challenge isn't counted towards
+        # aggregate challenge score
+        UserChallenge(
+            challenge_id="aggregate_challenge_1",
+            user_id=1,
+            specifier="1-3",
+            is_complete=False,
+        ),
+        UserChallenge(
+            challenge_id="aggregate_challenge_2",
+            user_id=1,
+            specifier="1-2",
+            is_complete=True,
+        ),
+        UserChallenge(
+            challenge_id="aggregate_challenge_2",
+            user_id=1,
+            specifier="1-3",
+            is_complete=True,
+        ),
+        # Trending 1 should be finished and included
+        UserChallenge(
+            challenge_id="trending_1",
+            user_id=1,
+            specifier="06-01-2020",
+            is_complete=True,
+        ),
+        # Trending 2 should not be included
+        UserChallenge(
+            challenge_id="trending_2",
+            user_id=1,
+            specifier="06-01-2020",
+            is_complete=False,
+        ),
+    ]
+    disbursements = [
+        ChallengeDisbursement(
+            challenge_id="boolean_challenge_1",
+            user_id=1,
+            amount=5,
+            block_number=1,
+            specifier="1",
+        )
+    ]
+
+    # Wipe any existing challenges in the DB from running migrations, etc
+    session.query(Challenge).delete()
+    session.commit()
+    session.add_all(blocks)
+    session.commit()
+    session.add_all(challenges)
+    session.commit()
+    session.add_all(user_challenges)
+    session.commit()
+    session.add_all(disbursements)
+
 
 def test_get_challenges(app):
     with app.app_context():
         db = get_db()
-        blocks = [Block(blockhash="0x1", number=1, parenthash="", is_current=True)]
-        challenges = [
-            Challenge(
-                id="boolean_challenge_1",
-                type=ChallengeType.boolean,
-                active=True,
-                amount=5,
-            ),
-            Challenge(
-                id="boolean_challenge_2",
-                type=ChallengeType.boolean,
-                active=True,
-                amount=5,
-            ),
-            Challenge(
-                id="boolean_challenge_3",
-                type=ChallengeType.boolean,
-                active=True,
-                amount=5,
-            ),
-            # No progress on this, but active
-            # should be returned
-            Challenge(
-                id="boolean_challenge_4",
-                type=ChallengeType.boolean,
-                active=True,
-                amount=5,
-            ),
-            # Inactive, with no progress
-            Challenge(
-                id="boolean_challenge_5",
-                type=ChallengeType.boolean,
-                active=False,
-                amount=5,
-            ),
-            # Inactive, WITH progress
-            Challenge(
-                id="boolean_challenge_6",
-                type=ChallengeType.boolean,
-                active=False,
-                amount=5,
-            ),
-            Challenge(
-                id="trending_challenge_1",
-                type=ChallengeType.trending,
-                active=True,
-                amount=5,
-            ),
-            Challenge(
-                id="aggregate_challenge_1",
-                type=ChallengeType.aggregate,
-                active=True,
-                amount=5,
-                step_count=3,
-            ),
-            Challenge(
-                id="aggregate_challenge_2",
-                type=ChallengeType.aggregate,
-                active=True,
-                amount=5,
-                step_count=2,
-            ),
-            Challenge(
-                id="aggregate_challenge_3",
-                type=ChallengeType.aggregate,
-                active=True,
-                amount=5,
-                step_count=2,
-            ),
-            Challenge(
-                id="trending_1", type=ChallengeType.trending, active=True, amount=5
-            ),
-            Challenge(
-                id="trending_2", type=ChallengeType.trending, active=True, amount=5
-            ),
-            Challenge(
-                id="trending_3", type=ChallengeType.trending, active=True, amount=5
-            ),
-        ]
-        user_challenges = [
-            # Finished the first challenge, disbursed
-            UserChallenge(
-                challenge_id="boolean_challenge_1",
-                user_id=1,
-                specifier="1",
-                is_complete=True,
-            ),
-            # Did finish the second challenge, did not disburse
-            UserChallenge(
-                challenge_id="boolean_challenge_2",
-                user_id=1,
-                specifier="1",
-                is_complete=True,
-            ),
-            # Did not finish challenge 3
-            UserChallenge(
-                challenge_id="boolean_challenge_3",
-                user_id=1,
-                specifier="1",
-                is_complete=False,
-            ),
-            # Inactive challenge
-            UserChallenge(
-                challenge_id="boolean_challenge_6",
-                user_id=1,
-                specifier="1",
-                is_complete=True,
-            ),
-            UserChallenge(
-                challenge_id="aggregate_challenge_1",
-                user_id=1,
-                specifier="1-2",  # compound specifiers, like if user1 invites user2
-                is_complete=True,
-            ),
-            # Ensure that a non-complete user-challenge isn't counted towards
-            # aggregate challenge score
-            UserChallenge(
-                challenge_id="aggregate_challenge_1",
-                user_id=1,
-                specifier="1-3",
-                is_complete=False,
-            ),
-            UserChallenge(
-                challenge_id="aggregate_challenge_2",
-                user_id=1,
-                specifier="1-2",
-                is_complete=True,
-            ),
-            UserChallenge(
-                challenge_id="aggregate_challenge_2",
-                user_id=1,
-                specifier="1-3",
-                is_complete=True,
-            ),
-            # Trending 1 should be finished and included
-            UserChallenge(
-                challenge_id="trending_1",
-                user_id=1,
-                specifier="06-01-2020",
-                is_complete=True,
-            ),
-            # Trending 2 should not be included
-            UserChallenge(
-                challenge_id="trending_2",
-                user_id=1,
-                specifier="06-01-2020",
-                is_complete=False,
-            ),
-        ]
-        disbursements = [
-            ChallengeDisbursement(
-                challenge_id="boolean_challenge_1",
-                user_id=1,
-                amount=5,
-                block_number=1,
-                specifier="1",
-            )
-        ]
         with db.scoped_session() as session:
-            # Wipe any existing challenges in the DB from running migrations, etc
-            session.query(Challenge).delete()
-            session.commit()
-            session.add_all(blocks)
-            session.commit()
-            session.add_all(challenges)
-            session.commit()
-            session.add_all(user_challenges)
-            session.commit()
-            session.add_all(disbursements)
+            setup_db(session)
 
             # Try to get the challenges, not historical
             res = get_challenges(1, False, session)
@@ -250,7 +254,7 @@ def test_get_challenges(app):
             assert chal_agg_3["current_step_count"] == 0
             assert chal_agg_3["max_steps"] == 2
 
-            # complet trending challenge
+            # complete trending challenge
             chal_trend_1 = res_map["trending_1"]
             assert chal_trend_1["is_disbursed"] == False
             assert chal_trend_1["is_active"]
