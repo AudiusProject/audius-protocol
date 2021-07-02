@@ -89,7 +89,7 @@ export const getTracksFromCollection = (
   )
   const users = getUsers(state, { ids: userIds })
 
-  if (!users) return emptyList
+  if (!users || Object.keys(users).length === 0) return emptyList
 
   // Return tracks & rebuild UIDs for the track so they refer directly to this collection
   return collection.playlist_contents.track_ids.map((t, i) => {
