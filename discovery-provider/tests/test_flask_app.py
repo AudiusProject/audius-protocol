@@ -9,10 +9,7 @@ from .conftest import TEST_BROKER_URL, TEST_CONFIG_OVERRIDE
 def test_creator_endpoint(app, client):
     """Ensure that the value returned from the exposed endpoint matches value in postgres"""
     return_value = client.get("/users")
-    json_data = return_value.get_json()
-    print("DATA IS")
-    print(json_data)
-    json_data = json_data["data"]
+    json_data = return_value.get_json()["data"]
     num_users_from_endpoint = len(json_data) if json_data is not None else 0
     with app.app_context():
         db = get_db()
