@@ -62,9 +62,10 @@ def create_empty_user_challenges(user_id: int, challenges: List[Challenge]) -> L
         user_challenges.append(user_challenge)
     return user_challenges
 
-# gets challenges
+# gets challenges, returning:
 # - any existing user_challenge, rolling up aggregate ones
 # - for active, non-hidden challenges, returns default state
+# - ignores inactive + completed, unless show_historical is true
 def get_challenges(user_id: int, show_historical: bool, session) -> List[ChallengeResponse]:
     challenges_and_disbursements: List[Tuple[UserChallenge, ChallengeDisbursement]] = (
         session.query(UserChallenge, ChallengeDisbursement)

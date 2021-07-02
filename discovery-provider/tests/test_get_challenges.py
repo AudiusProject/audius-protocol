@@ -100,11 +100,6 @@ def test_get_challenges(app):
                 amount=5
             )
         ]
-        # TODO: need to add
-        # an example for a hidden, but partially complete challenge.
-        # These should be returned I think? What does this even represent?
-
-        # And what do we do with non-disbursed challenges?
         user_challenges = [
             # Finished the first challenge, disbursed
             UserChallenge(
@@ -275,4 +270,3 @@ def test_get_challenges(app):
             assert historical['is_active'] == False
             assert historical['is_complete']
             assert historical['is_disbursed'] == False
-

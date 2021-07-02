@@ -332,6 +332,3 @@ def get_default_max(value, default, max=None):
         return value
     else:
         return min(value, max)
-
-
-
