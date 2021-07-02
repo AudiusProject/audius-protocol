@@ -1,10 +1,8 @@
 from functools import reduce
-from sqlalchemy import and_
-from typing import List, DefaultDict, TypedDict, Tuple
 from collections import defaultdict
-from src.utils.db_session import get_db_read_replica
+from typing import List, DefaultDict, TypedDict, Tuple
+from sqlalchemy import and_
 from src.models import UserChallenge, Challenge, ChallengeType, ChallengeDisbursement
-from src.utils.helpers import model_to_dictionary
 
 
 class ChallengeResponse(TypedDict):
@@ -92,8 +90,7 @@ def get_challenges(user_id: int, show_historical: bool, session) -> List[Challen
     # grab user challenges
     # if not historical, filter only to *active* challenges
     existing_user_challenges: List[UserChallenge] = [i[0] for i in challenges_and_disbursements
-        if show_historical or all_challenges_map[i[0].challenge_id].active
-    ]
+                                                     if show_historical or all_challenges_map[i[0].challenge_id].active]
     disbursements: List[ChallengeDisbursement] = [i[1] for i in challenges_and_disbursements]
 
     regular_user_challenges: List[ChallengeResponse] = []
@@ -118,10 +115,11 @@ def get_challenges(user_id: int, show_historical: bool, session) -> List[Challen
 
     # Return empty user challenges for active challenges that are non-hidden
     active_non_hidden_challenges: List[Challenge] = [challenge for challenge in all_challenges if
-        (challenge.active and not challenge.type == ChallengeType.trending)
-    ]
+                                                     (challenge.active and
+                                                      not challenge.type == ChallengeType.trending)]
     existing_challenge_ids = {user_challenge.challenge_id for user_challenge in existing_user_challenges}
-    needs_user_challenge = [challenge for challenge in active_non_hidden_challenges if challenge.id not in existing_challenge_ids]
+    needs_user_challenge = [challenge for challenge in active_non_hidden_challenges if
+                            challenge.id not in existing_challenge_ids]
     empty_challenges = create_empty_user_challenges(user_id, needs_user_challenge)
 
     combined = regular_user_challenges + rolled_up + empty_challenges
