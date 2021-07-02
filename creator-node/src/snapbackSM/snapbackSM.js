@@ -89,6 +89,11 @@ class SnapbackSM {
 
     // Mapping of Content Node endpoint to its service provider ID
     this.endpointToSPIdMap = {}
+
+    // We do not want to eagerly cycle off the primary when issuing reconfigs if necessary, as the primary may
+    // have data that the secondaries lack. In this case, wait until `this.moduloBase` iterations for the
+    // primary to potentially become healthy again. This set is used to track visited primaries.
+    this.unhealthyPrimaryToWalletMap = {}
   }
 
   /**
@@ -393,18 +398,97 @@ class SnapbackSM {
    * }
    */
   async determineNewReplicaSet ({ primary, secondary1, secondary2, wallet, unhealthyReplicasSet, healthyNodes }) {
+    let response = { newPrimary: null, newSecondary1: null, newSecondary2: null, issueReconfig: false }
+
     // If entire replica set is unhealthy, select an entire new replica set
     if (unhealthyReplicasSet.size === NUMBER_OF_REPLICA_SET_NODES) {
       this.logWarn(`[determineNewReplicaSet] Entire replica set=[${Array.from(unhealthyReplicasSet)}] is unhealthy. Not issuing new replica set.`)
-      return { newPrimary: null, newSecondary1: null, newSecondary2: null, issueReconfig: false }
+      return response
     }
 
-    // Select a random node that is not from the current replica set. Make sure the random node does not have any
-    // existing user data for the current user. If there is pre-existing data in the randomly selected node, keep
-    // searching for a node that has no state.
+    const newReplicaNodes = await this.selectRandomReplicaSetNodes({
+      unhealthyReplicasSet,
+      healthyNodes,
+      wallet
+    })
+
+    // Perform last ditch effort to see if primary is truly unhealthy. If the primary responds
+    // with a 200 from the health check, remove from `unhealthyReplicaSet`. Else, continue with
+    // the new replica set determination logic.
+    const secondariesToClockMap = await this.fetchClockValues(secondary1, secondary2, wallet)
+    unhealthyReplicasSet = await this.finalizeUnhealthyReplicaSet({
+      unhealthyReplicasSet,
+      primary,
+      secondary1,
+      secondary2,
+      wallet,
+      secondariesToClockMap
+    })
+
+    // If the primary is still in the unhealthy replica set, and this primary for this wallet has not
+    // been visited before, add to in memory map and skip reconfig.
+    if (unhealthyReplicasSet.has(primary)) {
+      if (!this.walletInUnhealthyPrimaryMap(primary, wallet)) {
+        this.addWalletToUnhealthyPrimaryMap(primary, wallet)
+        return response
+      }
+    }
+
+    // Note: for v0, only issue reconfigs if only 1 secondary is unhealthy. Else, just log out the tentative
+    // new replica set to be assigned.
+
+    let issueReconfig = false // TODO: make this an env var
+    let newPrimary, newSecondary1, newSecondary2
+    if (unhealthyReplicasSet.size === 1) {
+      if (unhealthyReplicasSet.has(primary)) {
+        // If snapbackSM has already checked this primary and it failed the health check, select the higher clock
+        // value of the two secondaries as the new primary, leave the other as the first secondary, and select a new second secondary
+        let currentHealthySecondary
+        ([newPrimary, currentHealthySecondary] = secondariesToClockMap[secondary1] >= secondariesToClockMap[secondary2] ? [secondary1, secondary2] : [secondary2, secondary1])
+        response.newPrimary = newPrimary
+        response.newSecondary1 = currentHealthySecondary
+        response.newSecondary2 = newReplicaNodes[0]
+      } else {
+        // If one secondary is unhealthy, select a new secondary
+        issueReconfig = true
+        const currentHealthySecondary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
+        response.newPrimary = primary
+        response.newSecondary1 = currentHealthySecondary
+        response.newSecondary2 = newReplicaNodes[0]
+      }
+    } else if (unhealthyReplicasSet.size === 2) {
+      if (unhealthyReplicasSet.has(primary)) {
+        // If primary + secondary is unhealthy, use other healthy secondary as primary and 2 random secondaries
+        response.newPrimary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
+      } else {
+        // If both secondaries are unhealthy, keep original primary and select two random secondaries
+        response.newPrimary = primary
+      }
+      response.newSecondary1 = newReplicaNodes[0]
+      response.newSecondary2 = newReplicaNodes[1]
+    }
+
+    // If code reached this point, new nodes have been selected for reconfig. Remove the primary-wallet from map.
+    this.removeWalletFromUnhealthyPrimaryMap(primary, wallet)
+
+    return { newPrimary, newSecondary1, newSecondary2, issueReconfig }
+  }
+
+  /**
+   * Select a random node that is not from the current replica set. Make sure the random node does not have any
+   * existing user data for the current user. If there is pre-existing data in the randomly selected node, keep
+   * searching for a node that has no state.
+   *
+   * If an insufficient amount of new replica set nodes are chosen, this method will throw an error.
+   * @param {Object} param
+   * @param {Set<string>} param.unhealthyReplicasSet a set of the unhealthy replica set endpoints
+   * @param {string[]} param.healthyNodes an array of all the healthy nodes available on the network
+   * @param {string} param.wallet the wallet of the current user
+   * @returns a string[] of the new replica set nodes
+   */
+  async selectRandomReplicaSetNodes ({ unhealthyReplicasSet, healthyNodes, wallet }) {
     let newReplicaNodesSet = new Set()
     let selectNewReplicaSetAttemptCounter = 0
-    let newPrimary, newSecondary1, newSecondary2
     while (newReplicaNodesSet.size < unhealthyReplicasSet.size && selectNewReplicaSetAttemptCounter++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS) {
       let randomHealthyNode = _.sample(healthyNodes)
 
@@ -414,56 +498,38 @@ class SnapbackSM {
       // Check to make sure that the newly selected secondary does not have existing user state
       try {
         const clockValue = await CreatorNode.getClockValue(randomHealthyNode, wallet)
-        if (clockValue === -1) {
-          newReplicaNodesSet.add(randomHealthyNode)
-        }
+        if (clockValue === -1) { newReplicaNodesSet.add(randomHealthyNode) }
       } catch (e) {
         // Something went wrong in checking clock value. Reselect another secondary.
-        this.logError(`[determineNewReplicaSet] ${e.message}`)
+        this.logError(`[selectRandomReplicaSetNode] ${e.message}`)
       }
     }
 
     if (newReplicaNodesSet.size < unhealthyReplicasSet.size) {
-      throw new Error('[determineNewReplicaSet] Not enough healthy nodes found to issue new replica set')
+      throw new Error('[selectRandomReplicaSetNode] Not enough healthy nodes found to issue new replica set')
     }
 
-    // Note: for v0, only issue reconfigs if only 1 secondary is unhealthy. Else, just log out the tentative
-    // new replica set to be assigned.
-    let newReplicaNodes = Array.from(newReplicaNodesSet)
-    let issueReconfig = false
-    if (unhealthyReplicasSet.size === 1) {
-      if (unhealthyReplicasSet.has(primary)) {
-        // If the primary is unhealthy, select the higher clock value of the two secondaries as the new primary,
-        // and then select 2 new secondaries
+    return Array.from(newReplicaNodesSet)
+  }
 
-        // TODO: consider rechecking if primary is truly unhealthy. then, below logic as last ditch effort if primary is indeed unhealthy.
-        // will update below method/logic after team discussion
-        const secondariesToClockMap = await this.fetchClockValues(secondary1, secondary2, wallet)
-        let currentHealthySecondary
-        ([newPrimary, currentHealthySecondary] = secondariesToClockMap[secondary1] >= secondariesToClockMap[secondary2] ? [secondary1, secondary2] : [secondary2, secondary1])
-        newSecondary1 = currentHealthySecondary // sync
-        newSecondary2 = newReplicaNodes[0] // sync
-      } else {
-        // If one secondary is unhealthy, select a new secondary
-        issueReconfig = true
-        const currentHealthySecondary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
-        newPrimary = primary
-        newSecondary1 = currentHealthySecondary
-        newSecondary2 = newReplicaNodes[0]
-      }
-    } else if (unhealthyReplicasSet.size === 2) {
-      if (unhealthyReplicasSet.has(primary)) {
-        // If primary + secondary is unhealthy, use other healthy secondary as primary and 2 random secondaries
-        newPrimary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
-      } else {
-        // If both secondaries are unhealthy, keep original primary and select two random secondaries
-        newPrimary = primary
-      }
-      newSecondary1 = newReplicaNodes[0] // sync
-      newSecondary2 = newReplicaNodes[1] // sync
+  // If the primary is part of the replica set, truly check to see if it is unhealthy.
+  async finalizeUnhealthyReplicaSet ({ unhealthyReplicasSet, primary, secondary1, secondary2, wallet, secondariesToClockMap }) {
+    let updatedUnhealthyReplicasSet = new Set(unhealthyReplicasSet)
+    // TODO: Should we query this multiple times??
+    if (updatedUnhealthyReplicasSet.has(primary)) {
+      try {
+        this.peerSetManager.queryVerboseHealthCheck(primary)
+        updatedUnhealthyReplicasSet.delete(primary)
+      } catch (e) { /* Swallow error */ }
     }
 
-    return { newPrimary, newSecondary1, newSecondary2, issueReconfig }
+    // Fetch the clock values for the secondaries. This map is only used in the case that only the primary is unhealthy.
+    // However, if after `maxClockFetchAttempts` that a clock value cannot be retrieved, we should mark the secondary as unhealthy
+    // TODO: should we though? maybe the clock check could just be flakey.
+    if (!secondariesToClockMap[secondary1]) { updatedUnhealthyReplicasSet.add(secondary1) }
+    if (!secondariesToClockMap[secondary2]) { updatedUnhealthyReplicasSet.add(secondary2) }
+
+    return updatedUnhealthyReplicasSet
   }
 
   /**
@@ -1123,10 +1189,28 @@ class SnapbackSM {
       }
     }
 
-    if (!secondariesToClockMap[secondary1]) { secondariesToClockMap[secondary1] = -1 }
-    if (!secondariesToClockMap[secondary2]) { secondariesToClockMap[secondary2] = -1 }
+    if (!secondariesToClockMap[secondary1]) { secondariesToClockMap[secondary1] = null }
+    if (!secondariesToClockMap[secondary2]) { secondariesToClockMap[secondary2] = null }
 
     return secondariesToClockMap
+  }
+
+  walletInUnhealthyPrimaryMap (primary, wallet) {
+    return this.unhealthyPrimaryToWalletMap[primary] && this.unhealthyPrimaryToWalletMap[primary].has(wallet)
+  }
+
+  addWalletToUnhealthyPrimaryMap (primary, wallet) {
+    if (!this.unhealthyPrimaryToWalletMap[primary]) {
+      this.unhealthyPrimaryToWalletMap[primary] = new Set([wallet])
+    } else {
+      this.unhealthyPrimaryToWalletMap[primary].add(wallet)
+    }
+  }
+
+  removeWalletFromUnhealthyPrimaryMap (primary, wallet) {
+    if (this.walletInUnhealthyPrimaryMap(primary, wallet)) {
+      this.unhealthyPrimaryToWalletMap[primary].remove(wallet)
+    }
   }
 }
 
