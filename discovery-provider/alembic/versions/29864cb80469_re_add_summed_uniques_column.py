@@ -9,20 +9,22 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = '29864cb80469'
-down_revision = 'b7185f6920d3'
+revision = "29864cb80469"
+down_revision = "b7185f6920d3"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
     connection = op.get_bind()
-    connection.execute('''
+    connection.execute(
+        """
     begin;
         ALTER TABLE "aggregate_daily_unique_users_metrics" ADD COLUMN IF NOT EXISTS "summed_count" INTEGER;
         ALTER TABLE "aggregate_monthly_unique_users_metrics" ADD COLUMN IF NOT EXISTS "summed_count" INTEGER;
     commit;
-    ''')
+    """
+    )
 
 
 def downgrade():

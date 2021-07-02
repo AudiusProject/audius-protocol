@@ -7,8 +7,15 @@ from src.challenges.challenge_event import ChallengeEvent
 
 logger = logging.getLogger(__name__)
 
+
 def user_library_state_update(
-        self, update_task, session, user_library_factory_txs, block_number, block_timestamp, block_hash
+    self,
+    update_task,
+    session,
+    user_library_factory_txs,
+    block_number,
+    block_timestamp,
+    block_hash,
 ):
     """Return int representing number of User Library model state changes found in transaction."""
 
@@ -75,7 +82,7 @@ def user_library_state_update(
             logger.info(f"Error in user library transaction")
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             blockhash = update_task.web3.toHex(block_hash)
-            raise IndexingError('user_library', block_number, blockhash, txhash, str(e))
+            raise IndexingError("user_library", block_number, blockhash, txhash, str(e))
 
     for user_id in track_save_state_changes:
         for track_id in track_save_state_changes[user_id]:
@@ -91,16 +98,20 @@ def user_library_state_update(
                 session,
                 user_id,
                 playlist_id,
-                playlist_save_state_changes[user_id][playlist_id].save_type)
+                playlist_save_state_changes[user_id][playlist_id].save_type,
+            )
             session.add(playlist_save_state_changes[user_id][playlist_id])
         num_total_changes += len(playlist_save_state_changes[user_id])
 
     return num_total_changes
 
+
 ######## HELPERS ########
+
 
 def dispatch_favorite(session, bus, save, block_number):
     bus.dispatch(session, ChallengeEvent.favorite, block_number, save.user_id)
+
 
 def invalidate_old_save(session, user_id, playlist_id, save_type):
     num_invalidated_save_entries = (
@@ -111,20 +122,20 @@ def invalidate_old_save(session, user_id, playlist_id, save_type):
             Save.save_type == save_type,
             Save.is_current == True,
         )
-        .update({"is_current":False})
+        .update({"is_current": False})
     )
     return num_invalidated_save_entries
 
 
 def add_track_save(
-        self,
-        user_library_contract,
-        update_task,
-        session,
-        tx_receipt,
-        block_number,
-        block_datetime,
-        track_state_changes,
+    self,
+    user_library_contract,
+    update_task,
+    session,
+    tx_receipt,
+    block_number,
+    block_datetime,
+    track_state_changes,
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_add_track_events = user_library_contract.events.TrackSaveAdded().processReceipt(
@@ -136,7 +147,9 @@ def add_track_save(
         save_user_id = event_args._userId
         save_track_id = event_args._trackId
 
-        if (save_user_id in track_state_changes) and (save_track_id in track_state_changes[save_user_id]):
+        if (save_user_id in track_state_changes) and (
+            save_track_id in track_state_changes[save_user_id]
+        ):
             track_state_changes[save_user_id][save_track_id].is_delete = False
         else:
             save = Save(
@@ -157,18 +170,18 @@ def add_track_save(
 
 
 def add_playlist_save(
-        self,
-        user_library_contract,
-        update_task,
-        session,
-        tx_receipt,
-        block_number,
-        block_datetime,
-        playlist_state_changes,
+    self,
+    user_library_contract,
+    update_task,
+    session,
+    tx_receipt,
+    block_number,
+    block_datetime,
+    playlist_state_changes,
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_add_playlist_events = user_library_contract.events.PlaylistSaveAdded().processReceipt(
-        tx_receipt
+    new_add_playlist_events = (
+        user_library_contract.events.PlaylistSaveAdded().processReceipt(tx_receipt)
     )
 
     for event in new_add_playlist_events:
@@ -177,15 +190,21 @@ def add_playlist_save(
         save_playlist_id = event_args._playlistId
         save_type = SaveType.playlist
 
-        playlist_entry = session.query(Playlist).filter(
-            Playlist.is_current == True,
-            Playlist.playlist_id == save_playlist_id).all()
+        playlist_entry = (
+            session.query(Playlist)
+            .filter(
+                Playlist.is_current == True, Playlist.playlist_id == save_playlist_id
+            )
+            .all()
+        )
 
         if playlist_entry:
             if playlist_entry[0].is_album:
                 save_type = SaveType.album
 
-        if (save_user_id in playlist_state_changes) and (save_playlist_id in playlist_state_changes[save_user_id]):
+        if (save_user_id in playlist_state_changes) and (
+            save_playlist_id in playlist_state_changes[save_user_id]
+        ):
             playlist_state_changes[save_user_id][save_playlist_id].is_delete = False
         else:
             save = Save(
@@ -206,25 +225,27 @@ def add_playlist_save(
 
 
 def delete_track_save(
-        self,
-        user_library_contract,
-        update_task,
-        session,
-        tx_receipt,
-        block_number,
-        block_datetime,
-        track_state_changes,
+    self,
+    user_library_contract,
+    update_task,
+    session,
+    tx_receipt,
+    block_number,
+    block_datetime,
+    track_state_changes,
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_delete_track_events = user_library_contract.events.TrackSaveDeleted().processReceipt(
-        tx_receipt
+    new_delete_track_events = (
+        user_library_contract.events.TrackSaveDeleted().processReceipt(tx_receipt)
     )
     for event in new_delete_track_events:
         event_args = event["args"]
         save_user_id = event_args._userId
         save_track_id = event_args._trackId
 
-        if (save_user_id in track_state_changes) and (save_track_id in track_state_changes[save_user_id]):
+        if (save_user_id in track_state_changes) and (
+            save_track_id in track_state_changes[save_user_id]
+        ):
             track_state_changes[save_user_id][save_track_id].is_delete = True
         else:
             save = Save(
@@ -245,18 +266,18 @@ def delete_track_save(
 
 
 def delete_playlist_save(
-        self,
-        user_library_contract,
-        update_task,
-        session,
-        tx_receipt,
-        block_number,
-        block_datetime,
-        playlist_state_changes,
+    self,
+    user_library_contract,
+    update_task,
+    session,
+    tx_receipt,
+    block_number,
+    block_datetime,
+    playlist_state_changes,
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-    new_add_playlist_events = user_library_contract.events.PlaylistSaveDeleted().processReceipt(
-        tx_receipt
+    new_add_playlist_events = (
+        user_library_contract.events.PlaylistSaveDeleted().processReceipt(tx_receipt)
     )
 
     for event in new_add_playlist_events:
@@ -265,15 +286,21 @@ def delete_playlist_save(
         save_playlist_id = event_args._playlistId
         save_type = SaveType.playlist
 
-        playlist_entry = session.query(Playlist).filter(
-            Playlist.is_current == True,
-            Playlist.playlist_id == save_playlist_id).all()
+        playlist_entry = (
+            session.query(Playlist)
+            .filter(
+                Playlist.is_current == True, Playlist.playlist_id == save_playlist_id
+            )
+            .all()
+        )
 
         if playlist_entry:
             if playlist_entry[0].is_album:
                 save_type = SaveType.album
 
-        if (save_user_id in playlist_state_changes) and (save_playlist_id in playlist_state_changes[save_user_id]):
+        if (save_user_id in playlist_state_changes) and (
+            save_playlist_id in playlist_state_changes[save_user_id]
+        ):
             playlist_state_changes[save_user_id][save_playlist_id].is_delete = True
         else:
             save = Save(

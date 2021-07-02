@@ -26,15 +26,17 @@ def refresh(redis, db, monitor):
     # Invoke the monitor function with kwargs for db and redis.
     # This allows any monitor to access the db and/or redis connection.
     value = monitor[monitor_names.func](db=db, redis=redis)
-    logger.info(f"monitoring_queue.py | Computed value for {monitor[monitor_names.name]} {value}")
+    logger.info(
+        f"monitoring_queue.py | Computed value for {monitor[monitor_names.name]} {value}"
+    )
 
     redis.set(key, value)
 
-    if 'ttl' in monitor:
+    if "ttl" in monitor:
         # Set a TTL (in seconds) key to track when this value needs refreshing.
         # We store a separate TTL key rather than expiring the value itself
         # so that in the case of an error, the current value can still be read
-        redis.set(ttl_key, 1, monitor['ttl'])
+        redis.set(ttl_key, 1, monitor["ttl"])
 
 
 @celery.task(name="monitoring_queue", bind=True)
@@ -64,10 +66,14 @@ def monitoring_queue_task(self):
                 try:
                     refresh(redis, db, monitor)
                 except Exception as e:
-                    logger.warning(f"monitoring_queue.py | Error computing {monitor['name']} {e}")
+                    logger.warning(
+                        f"monitoring_queue.py | Error computing {monitor['name']} {e}"
+                    )
 
             end_time = time.time()
-            logger.info(f"monitoring_queue.py | Finished monitoring_queue in {end_time - start_time} seconds")
+            logger.info(
+                f"monitoring_queue.py | Finished monitoring_queue in {end_time - start_time} seconds"
+            )
         else:
             logger.info("monitoring_queue.py | Failed to acquire lock")
     except Exception as e:

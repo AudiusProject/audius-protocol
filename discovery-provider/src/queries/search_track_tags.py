@@ -7,6 +7,7 @@ from src.queries.query_helpers import populate_track_metadata, get_track_play_co
 
 logger = logging.getLogger(__name__)
 
+
 def search_track_tags(session, args):
     """
     Gets the tracks with a given tag
@@ -25,7 +26,7 @@ def search_track_tags(session, args):
 
     track_ids = (
         session.query(TagTrackUserMatview.track_id)
-        .filter(TagTrackUserMatview.tag == args['search_str'].lower())
+        .filter(TagTrackUserMatview.tag == args["search_str"].lower())
         .all()
     )
 
@@ -48,19 +49,20 @@ def search_track_tags(session, args):
     track_play_counts = get_track_play_counts(session, track_ids)
 
     tracks = populate_track_metadata(
-        session, track_ids, tracks, args['current_user_id'])
+        session, track_ids, tracks, args["current_user_id"]
+    )
 
     for track in tracks:
         track_id = track["track_id"]
-        track[response_name_constants.play_count] = track_play_counts.get(
-            track_id, 0)
+        track[response_name_constants.play_count] = track_play_counts.get(track_id, 0)
 
-    play_count_sorted_tracks = \
-        sorted(
-            tracks, key=lambda i: i[response_name_constants.play_count], reverse=True)
+    play_count_sorted_tracks = sorted(
+        tracks, key=lambda i: i[response_name_constants.play_count], reverse=True
+    )
 
     # Add pagination parameters to track and user results
-    play_count_sorted_tracks = \
-        play_count_sorted_tracks[slice(args['offset'], args['offset'] + args['limit'], 1)]
+    play_count_sorted_tracks = play_count_sorted_tracks[
+        slice(args["offset"], args["offset"] + args["limit"], 1)
+    ]
 
     return play_count_sorted_tracks

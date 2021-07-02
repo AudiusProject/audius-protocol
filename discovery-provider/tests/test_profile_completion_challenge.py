@@ -1,4 +1,3 @@
-
 from datetime import datetime
 import redis
 from src.models import User, Block, Repost, RepostType, Save, Follow, SaveType
@@ -9,6 +8,7 @@ from src.utils.config import shared_config
 
 REDIS_URL = shared_config["redis"]["url"]
 
+
 def test_profile_completion_challenge(app):
 
     redis_conn = redis.Redis.from_url(url=REDIS_URL)
@@ -17,19 +17,19 @@ def test_profile_completion_challenge(app):
     with app.app_context():
         db = get_db()
 
-    block = Block(blockhash='0x1', number=1)
+    block = Block(blockhash="0x1", number=1)
     user = User(
-        blockhash='0x1',
+        blockhash="0x1",
         blocknumber=1,
-        txhash='xyz',
+        txhash="xyz",
         user_id=1,
         is_current=True,
-        handle='TestHandle',
-        handle_lc='testhandle',
-        wallet='0x123',
+        handle="TestHandle",
+        handle_lc="testhandle",
+        wallet="0x123",
         is_creator=False,
         is_verified=False,
-        name='test_name',
+        name="test_name",
         created_at=datetime.now(),
         updated_at=datetime.now(),
     )
@@ -57,14 +57,14 @@ def test_profile_completion_challenge(app):
 
         # Do a repost
         repost = Repost(
-            blockhash='0x1',
+            blockhash="0x1",
             blocknumber=1,
             user_id=1,
             repost_item_id=1,
             repost_type=RepostType.track,
             is_current=True,
             is_delete=False,
-            created_at=datetime.now()
+            created_at=datetime.now(),
         )
         session.add(repost)
         session.flush()
@@ -75,14 +75,14 @@ def test_profile_completion_challenge(app):
 
         # Do a save
         save = Save(
-            blockhash='0x1',
+            blockhash="0x1",
             blocknumber=1,
             user_id=1,
             save_item_id=1,
             save_type=SaveType.track,
             is_current=True,
             is_delete=False,
-            created_at=datetime.now()
+            created_at=datetime.now(),
         )
         session.add(save)
         session.flush()
@@ -94,13 +94,13 @@ def test_profile_completion_challenge(app):
 
         # Do 1 follow, then 5 total follows
         follow = Follow(
-            blockhash='0x1',
+            blockhash="0x1",
             blocknumber=1,
             is_current=True,
             is_delete=False,
             created_at=datetime.now(),
             follower_user_id=1,
-            followee_user_id=2
+            followee_user_id=2,
         )
         session.add(follow)
         session.flush()
@@ -112,40 +112,40 @@ def test_profile_completion_challenge(app):
         assert state.current_step_count == 3 and not state.is_complete
         follows = [
             Follow(
-                blockhash='0x1',
+                blockhash="0x1",
                 blocknumber=1,
                 is_current=True,
                 is_delete=False,
                 created_at=datetime.now(),
                 follower_user_id=1,
-                followee_user_id=3
+                followee_user_id=3,
             ),
             Follow(
-                blockhash='0x1',
+                blockhash="0x1",
                 blocknumber=1,
                 is_current=True,
                 is_delete=False,
                 created_at=datetime.now(),
                 follower_user_id=1,
-                followee_user_id=4
+                followee_user_id=4,
             ),
             Follow(
-                blockhash='0x1',
+                blockhash="0x1",
                 blocknumber=1,
                 is_current=True,
                 is_delete=False,
                 created_at=datetime.now(),
                 follower_user_id=1,
-                followee_user_id=5
+                followee_user_id=5,
             ),
             Follow(
-                blockhash='0x1',
+                blockhash="0x1",
                 blocknumber=1,
                 is_current=True,
                 is_delete=False,
                 created_at=datetime.now(),
                 follower_user_id=1,
-                followee_user_id=6
+                followee_user_id=6,
             ),
         ]
         session.add_all(follows)
@@ -156,7 +156,9 @@ def test_profile_completion_challenge(app):
         assert state.current_step_count == 4 and not state.is_complete
 
         # profile_picture
-        session.query(User).filter(User.user_id == 1).update({"profile_picture": "profilepictureurl"})
+        session.query(User).filter(User.user_id == 1).update(
+            {"profile_picture": "profilepictureurl"}
+        )
         session.flush()
         bus.dispatch(session, ChallengeEvent.profile_update, 1, 1)
         bus.process_events(session)
@@ -164,7 +166,9 @@ def test_profile_completion_challenge(app):
         assert state.current_step_count == 5 and not state.is_complete
 
         # profile description
-        session.query(User).filter(User.user_id == 1).update({"bio": "profiledescription"})
+        session.query(User).filter(User.user_id == 1).update(
+            {"bio": "profiledescription"}
+        )
         session.flush()
         bus.dispatch(session, ChallengeEvent.profile_update, 1, 1)
         bus.process_events(session)
@@ -180,10 +184,9 @@ def test_profile_completion_challenge(app):
         assert state.current_step_count == 5 and not state.is_complete
 
         # profile_cover_photo
-        session.query(User).filter(User.user_id == 1).update({
-            "bio": "profiledescription",
-            "cover_photo": "test_cover_photo"
-        })
+        session.query(User).filter(User.user_id == 1).update(
+            {"bio": "profiledescription", "cover_photo": "test_cover_photo"}
+        )
         session.flush()
         bus.dispatch(session, ChallengeEvent.profile_update, 1, 1)
         bus.process_events(session)

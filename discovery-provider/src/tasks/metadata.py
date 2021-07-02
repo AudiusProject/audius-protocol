@@ -22,7 +22,7 @@ track_metadata_format = {
     "remix_of": None,
     "is_unlisted": False,
     "field_visibility": None,
-    "stem_of": None
+    "stem_of": None,
 }
 
 # Required format for user metadata retrieved from IPFS

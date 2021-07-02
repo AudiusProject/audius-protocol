@@ -13,11 +13,9 @@ def setup_trending(db, date):
         {"genre": "Electronic"},
         {"genre": "Pop"},
         {"genre": "Electronic"},
-
         # Tracks we don't want to count
         {"genre": "Electronic", "is_unlisted": True},
         {"genre": "Electronic", "is_delete": True},
-
     ]
 
     test_plays = [
@@ -28,12 +26,10 @@ def setup_trending(db, date):
         {"item_id": 1},
         {"item_id": 2},
         {"item_id": 3},
-
         # > 1 wk plays
         {"item_id": 2, "created_at": date - timedelta(weeks=2)},
         {"item_id": 2, "created_at": date - timedelta(weeks=2)},
         {"item_id": 3, "created_at": date - timedelta(weeks=2)},
-
         # We don't want to count these guys (tracks deleted/unlisted)
         {"item_id": 3},
         {"item_id": 3},
@@ -49,7 +45,7 @@ def setup_trending(db, date):
             block = Block(
                 blockhash=blockhash,
                 number=i,
-                parenthash='0x01',
+                parenthash="0x01",
                 is_current=True,
             )
 
@@ -60,12 +56,12 @@ def setup_trending(db, date):
                 is_current=track_meta.get("is_current", True),
                 is_delete=track_meta.get("is_delete", False),
                 owner_id=300,
-                route_id='',
+                route_id="",
                 track_segments=[],
                 genre=track_meta.get("genre", ""),
                 updated_at=track_meta.get("updated_at", date),
                 created_at=track_meta.get("created_at", date),
-                is_unlisted=track_meta.get("is_unlisted", False)
+                is_unlisted=track_meta.get("is_unlisted", False),
             )
 
             # add block and then flush before
@@ -85,16 +81,11 @@ def setup_trending(db, date):
                 aggregate_plays[item_id] = 1
 
             play = Play(
-                id=i,
-                play_item_id=item_id,
-                created_at=play_meta.get("created_at", date)
+                id=i, play_item_id=item_id, created_at=play_meta.get("created_at", date)
             )
             session.add(play)
         for i, count in aggregate_plays.items():
-            session.add(AggregatePlays(
-                play_item_id=i,
-                count=count
-            ))
+            session.add(AggregatePlays(play_item_id=i, count=count))
 
 
 # Helper to sort results before validating
@@ -102,7 +93,9 @@ def validate_results(actual, expected):
     sorter = lambda x: x["track_id"]
     assert sorted(actual, key=sorter) == sorted(expected, key=sorter)
 
+
 # Tests
+
 
 def test_get_listen_counts_year(postgres_mock_db):
     """Happy path test: test that we get all valid listens from prior year"""
@@ -118,9 +111,10 @@ def test_get_listen_counts_year(postgres_mock_db):
     expected = [
         {"track_id": 0, "listens": 2, "created_at": date},
         {"track_id": 1, "listens": 2, "created_at": date},
-        {"track_id": 2, "listens": 3, "created_at": date}
+        {"track_id": 2, "listens": 3, "created_at": date},
     ]
     validate_results(res, expected)
+
 
 def test_get_listen_counts_week(postgres_mock_db):
     """Test slicing by time range"""
@@ -136,9 +130,10 @@ def test_get_listen_counts_week(postgres_mock_db):
     expected = [
         {"track_id": 0, "listens": 2, "created_at": date},
         {"track_id": 1, "listens": 2, "created_at": date},
-        {"track_id": 2, "listens": 1, "created_at": date}
+        {"track_id": 2, "listens": 1, "created_at": date},
     ]
     validate_results(res, expected)
+
 
 def test_get_listen_counts_genre_filtered(postgres_mock_db):
     """Test slicing by genre"""
@@ -154,6 +149,7 @@ def test_get_listen_counts_genre_filtered(postgres_mock_db):
     expected = [{"track_id": 1, "listens": 2, "created_at": date}]
     validate_results(res, expected)
 
+
 def test_get_listen_counts_all_time(postgres_mock_db):
     """Test slicing by genre"""
     # setup
@@ -168,6 +164,6 @@ def test_get_listen_counts_all_time(postgres_mock_db):
     expected = [
         {"track_id": 0, "listens": 2, "created_at": date},
         {"track_id": 1, "listens": 2, "created_at": date},
-        {"track_id": 2, "listens": 3, "created_at": date}
+        {"track_id": 2, "listens": 3, "created_at": date},
     ]
     validate_results(res, expected)

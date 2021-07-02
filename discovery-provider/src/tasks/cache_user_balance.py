@@ -36,7 +36,10 @@ REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
 #     enqueued User Ids in Redis that are *not* ready to be refreshed yet are left in the queue
 #     for later.
 
-def refresh_user_ids(redis, db, token_contract, delegate_manager_contract, staking_contract, eth_web3):
+
+def refresh_user_ids(
+    redis, db, token_contract, delegate_manager_contract, staking_contract, eth_web3
+):
     # List users in Redis set, balances decoded as strings
     redis_user_ids = redis.smembers(REDIS_PREFIX)
     redis_user_ids = [int(user_id.decode()) for user_id in redis_user_ids]
@@ -44,18 +47,22 @@ def refresh_user_ids(redis, db, token_contract, delegate_manager_contract, staki
     if not redis_user_ids:
         return
 
-    logger.info(f"cache_user_balance.py | Starting refresh with {len(redis_user_ids)} user_ids: {redis_user_ids}")
+    logger.info(
+        f"cache_user_balance.py | Starting refresh with {len(redis_user_ids)} user_ids: {redis_user_ids}"
+    )
 
     with db.scoped_session() as session:
-        query = ((
-            session.query(UserBalance)
-        ).filter(
-            UserBalance.user_id.in_(redis_user_ids)
-        ).all())
+        query = (
+            (session.query(UserBalance))
+            .filter(UserBalance.user_id.in_(redis_user_ids))
+            .all()
+        )
 
         # Balances from current user lookup may
         # not be present in the db, so make those
-        not_present_set = {user_id for user_id in redis_user_ids} - {user.user_id for user in query}
+        not_present_set = {user_id for user_id in redis_user_ids} - {
+            user.user_id for user in query
+        }
         new_balances = [
             UserBalance(user_id=user_id, balance=0, associated_wallets_balance=0)
             for user_id in not_present_set
@@ -79,13 +86,14 @@ def refresh_user_ids(redis, db, token_contract, delegate_manager_contract, staki
                 and_(
                     AssociatedWallet.user_id == User.user_id,
                     AssociatedWallet.is_current == True,
-                    AssociatedWallet.is_delete == False
-                )
+                    AssociatedWallet.is_delete == False,
+                ),
             )
             .filter(
                 User.user_id.in_(needs_refresh_map.keys()),
                 User.is_current == True,
-            ).all()
+            )
+            .all()
         )
         user_id_wallets = {}
         for user in user_query:
@@ -96,25 +104,39 @@ def refresh_user_ids(redis, db, token_contract, delegate_manager_contract, staki
                 if not "associated_wallets" in user_id_wallets[user_id]:
                     user_id_wallets[user_id]["associated_wallets"] = [associated_wallet]
                 else:
-                    user_id_wallets[user_id]["associated_wallets"].append(associated_wallet)
+                    user_id_wallets[user_id]["associated_wallets"].append(
+                        associated_wallet
+                    )
 
-        logger.info(f"cache_user_balance.py | fetching for {len(user_query)} users: {needs_refresh_map.keys()}")
+        logger.info(
+            f"cache_user_balance.py | fetching for {len(user_query)} users: {needs_refresh_map.keys()}"
+        )
 
         # Fetch balances
         for user_id, wallets in user_id_wallets.items():
             try:
                 owner_wallet = wallets["owner_wallet"]
                 owner_wallet = eth_web3.toChecksumAddress(owner_wallet)
-                owner_wallet_balance = token_contract.functions.balanceOf(owner_wallet).call()
+                owner_wallet_balance = token_contract.functions.balanceOf(
+                    owner_wallet
+                ).call()
                 associated_balance = 0
 
                 if "associated_wallets" in wallets:
                     for wallet in wallets["associated_wallets"]:
                         wallet = eth_web3.toChecksumAddress(wallet)
                         balance = token_contract.functions.balanceOf(wallet).call()
-                        delegation_balance = delegate_manager_contract.functions.getTotalDelegatorStake(wallet).call()
-                        stake_balance = staking_contract.functions.totalStakedFor(wallet).call()
-                        associated_balance += balance + delegation_balance + stake_balance
+                        delegation_balance = (
+                            delegate_manager_contract.functions.getTotalDelegatorStake(
+                                wallet
+                            ).call()
+                        )
+                        stake_balance = staking_contract.functions.totalStakedFor(
+                            wallet
+                        ).call()
+                        associated_balance += (
+                            balance + delegation_balance + stake_balance
+                        )
 
                 # update the balance on the user model
                 user_balance = needs_refresh_map[user_id]
@@ -122,18 +144,23 @@ def refresh_user_ids(redis, db, token_contract, delegate_manager_contract, staki
                 user_balance.associated_wallets_balance = associated_balance
 
             except Exception as e:
-                logger.error(f"cache_user_balance.py | Error fetching balance for user {user_id}: {(e)}")
+                logger.error(
+                    f"cache_user_balance.py | Error fetching balance for user {user_id}: {(e)}"
+                )
 
         # Commit the new balances
         session.commit()
 
         # Remove the fetched balances from Redis set
         to_remove = [user.user_id for user in needs_refresh]
-        logger.info(f"cache_user_balance.py | Got balances for {len(user_query)} users, removing from Redis.")
+        logger.info(
+            f"cache_user_balance.py | Got balances for {len(user_query)} users, removing from Redis."
+        )
         if to_remove:
             redis.srem(REDIS_PREFIX, *to_remove)
             # Add the count of the balances
             redis.incrby(REDIS_ETH_BALANCE_COUNTER_KEY, len(to_remove))
+
 
 def get_token_contract(eth_web3, shared_config):
     eth_registry_address = eth_web3.toChecksumAddress(
@@ -154,6 +181,7 @@ def get_token_contract(eth_web3, shared_config):
 
     return audius_token_instance
 
+
 def get_delegate_manager_contract(eth_web3, shared_config):
     eth_registry_address = eth_web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
@@ -172,6 +200,7 @@ def get_delegate_manager_contract(eth_web3, shared_config):
     )
 
     return delegate_manager_instance
+
 
 def get_staking_contract(eth_web3, shared_config):
     eth_registry_address = eth_web3.toChecksumAddress(
@@ -192,6 +221,7 @@ def get_staking_contract(eth_web3, shared_config):
 
     return staking_instance
 
+
 @celery.task(name="update_user_balances", bind=True)
 def update_user_balances_task(self):
     """Caches user Audio balances, in wei."""
@@ -211,14 +241,20 @@ def update_user_balances_task(self):
             start_time = time.time()
 
             token_inst = get_token_contract(eth_web3, shared_config)
-            delegate_manager_inst = get_delegate_manager_contract(eth_web3, shared_config)
+            delegate_manager_inst = get_delegate_manager_contract(
+                eth_web3, shared_config
+            )
             staking_inst = get_staking_contract(eth_web3, shared_config)
             token_inst = get_token_contract(eth_web3, shared_config)
-            refresh_user_ids(redis, db, token_inst, delegate_manager_inst, staking_inst, eth_web3)
+            refresh_user_ids(
+                redis, db, token_inst, delegate_manager_inst, staking_inst, eth_web3
+            )
 
             end_time = time.time()
             redis.set(user_balances_refresh_last_completion_redis_key, int(end_time))
-            logger.info(f"cache_user_balance.py | Finished cache_user_balance in {end_time - start_time} seconds")
+            logger.info(
+                f"cache_user_balance.py | Finished cache_user_balance in {end_time - start_time} seconds"
+            )
         else:
             logger.info("cache_user_balance.py | Failed to acquire lock")
     except Exception as e:

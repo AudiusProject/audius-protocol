@@ -12,8 +12,12 @@ from src.queries.get_stems_of import get_stems_of
 from src.queries.get_feed import get_feed
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from src.queries.get_follow_intersection_users import get_follow_intersection_users
-from src.queries.get_track_repost_intersection_users import get_track_repost_intersection_users
-from src.queries.get_playlist_repost_intersection_users import get_playlist_repost_intersection_users
+from src.queries.get_track_repost_intersection_users import (
+    get_track_repost_intersection_users,
+)
+from src.queries.get_playlist_repost_intersection_users import (
+    get_playlist_repost_intersection_users,
+)
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_reposters_for_track import get_reposters_for_track
@@ -30,7 +34,9 @@ from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_previously_unlisted_tracks import get_previously_unlisted_tracks
-from src.queries.get_previously_private_playlists import get_previously_private_playlists
+from src.queries.get_previously_private_playlists import (
+    get_previously_private_playlists,
+)
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.get_users_cnode import get_users_cnode
 from src.queries.get_ursm_cnodes import get_ursm_cnodes
@@ -44,15 +50,21 @@ bp = Blueprint("queries", __name__)
 
 def to_dict(multi_dict):
     """Converts a multi dict into a dict where only list entries are not flat"""
-    return {k: v if len(v) > 1 else v[0] for (k, v) in multi_dict.to_dict(flat=False).items()}
+    return {
+        k: v if len(v) > 1 else v[0]
+        for (k, v) in multi_dict.to_dict(flat=False).items()
+    }
+
 
 def parse_bool_param(field):
     """Converts a url param to a boolean value"""
     return field.lower() == "true" if field else False
 
+
 def parse_id_array_param(list):
     """Converts a list of strings ids to int"""
     return [int(y) for y in list]
+
 
 ######## ROUTES ########
 
@@ -72,6 +84,7 @@ def get_users_route():
     args["current_user_id"] = current_user_id
     users = get_users(args)
     return api_helpers.success_response(users)
+
 
 # Returns all tracks (paginated) with each track's repost count
 # optionally filters by track ids
@@ -156,7 +169,11 @@ def get_feed_route():
     args = to_dict(request.args)
     # filter should be one of ["all", "reposts", "original"]
     # empty filter value results in "all"
-    if "filter" in request.args and request.args.get("filter") in ["all", "repost", "original"]:
+    if "filter" in request.args and request.args.get("filter") in [
+        "all",
+        "repost",
+        "original",
+    ]:
         args["filter"] = args.get("filter")
     else:
         args["filter"] = "all"
@@ -189,7 +206,10 @@ def get_repost_feed_for_user_route(user_id):
 # intersection of user1's followers and user2's followees
 # get intersection of users that follow followeeUserId and users that are followed by followerUserId
 # followee = user that is followed; follower = user that follows
-@bp.route("/users/intersection/follow/<int:followee_user_id>/<int:follower_user_id>", methods=("GET",))
+@bp.route(
+    "/users/intersection/follow/<int:followee_user_id>/<int:follower_user_id>",
+    methods=("GET",),
+)
 @record_metrics
 def get_follow_intersection_users_route(followee_user_id, follower_user_id):
     users = get_follow_intersection_users(followee_user_id, follower_user_id)
@@ -200,12 +220,14 @@ def get_follow_intersection_users_route(followee_user_id, follower_user_id):
 # followed by follower_user_id.
 # - Followee = user that is followed. Follower = user that follows.
 # - repost_track_id = track that is reposted. repost_user_id = user that reposted track.
-@bp.route("/users/intersection/repost/track/<int:repost_track_id>/<int:follower_user_id>", methods=("GET",))
+@bp.route(
+    "/users/intersection/repost/track/<int:repost_track_id>/<int:follower_user_id>",
+    methods=("GET",),
+)
 @record_metrics
 def get_track_repost_intersection_users_route(repost_track_id, follower_user_id):
     try:
-        users = get_track_repost_intersection_users(
-            repost_track_id, follower_user_id)
+        users = get_track_repost_intersection_users(repost_track_id, follower_user_id)
         return api_helpers.success_response(users)
     except exceptions.NotFoundError as e:
         return api_helpers.error_response(str(e), 404)
@@ -215,12 +237,16 @@ def get_track_repost_intersection_users_route(repost_track_id, follower_user_id)
 # are followed by provided follower_user_id.
 # - Followee = user that is followed. Follower = user that follows.
 # - repost_playlist_id = playlist that is reposted. repost_user_id = user that reposted playlist.
-@bp.route("/users/intersection/repost/playlist/<int:repost_playlist_id>/<int:follower_user_id>", methods=("GET",))
+@bp.route(
+    "/users/intersection/repost/playlist/<int:repost_playlist_id>/<int:follower_user_id>",
+    methods=("GET",),
+)
 @record_metrics
 def get_playlist_repost_intersection_users_route(repost_playlist_id, follower_user_id):
     try:
         users = get_playlist_repost_intersection_users(
-            repost_playlist_id, follower_user_id)
+            repost_playlist_id, follower_user_id
+        )
         return api_helpers.success_response(users)
     except exceptions.NotFoundError as e:
         return api_helpers.error_response(str(e), 404)
@@ -233,10 +259,10 @@ def get_followers_for_user_route(followee_user_id):
     current_user_id = get_current_user_id(required=False)
     (limit, offset) = get_pagination_vars()
     args = {
-        'followee_user_id': followee_user_id,
-        'current_user_id': current_user_id,
-        'limit': limit,
-        'offset': offset
+        "followee_user_id": followee_user_id,
+        "current_user_id": current_user_id,
+        "limit": limit,
+        "offset": offset,
     }
     users = get_followers_for_user(args)
     return api_helpers.success_response(users)
@@ -249,10 +275,10 @@ def get_followees_for_user_route(follower_user_id):
     current_user_id = get_current_user_id(required=False)
     (limit, offset) = get_pagination_vars()
     args = {
-        'follower_user_id': follower_user_id,
-        'current_user_id': current_user_id,
-        'limit': limit,
-        'offset': offset
+        "follower_user_id": follower_user_id,
+        "current_user_id": current_user_id,
+        "limit": limit,
+        "offset": offset,
     }
     users = get_followees_for_user(args)
     return api_helpers.success_response(users)
@@ -266,10 +292,10 @@ def get_reposters_for_track_route(repost_track_id):
         current_user_id = get_current_user_id(required=False)
         (limit, offset) = get_pagination_vars()
         args = {
-            'repost_track_id': repost_track_id,
-            'current_user_id': current_user_id,
-            'limit': limit,
-            'offset': offset
+            "repost_track_id": repost_track_id,
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
         }
         user_results = get_reposters_for_track(args)
         return api_helpers.success_response(user_results)
@@ -285,10 +311,10 @@ def get_reposters_for_playlist_route(repost_playlist_id):
         current_user_id = get_current_user_id(required=False)
         (limit, offset) = get_pagination_vars()
         args = {
-            'repost_playlist_id': repost_playlist_id,
-            'current_user_id': current_user_id,
-            'limit': limit,
-            'offset': offset
+            "repost_playlist_id": repost_playlist_id,
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
         }
         user_results = get_reposters_for_playlist(args)
         return api_helpers.success_response(user_results)
@@ -304,10 +330,10 @@ def get_savers_for_track_route(save_track_id):
         current_user_id = get_current_user_id(required=False)
         (limit, offset) = get_pagination_vars()
         args = {
-            'save_track_id': save_track_id,
-            'current_user_id': current_user_id,
-            'limit': limit,
-            'offset': offset
+            "save_track_id": save_track_id,
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
         }
         user_results = get_savers_for_track(args)
         return api_helpers.success_response(user_results)
@@ -323,10 +349,10 @@ def get_savers_for_playlist_route(save_playlist_id):
         current_user_id = get_current_user_id(required=False)
         (limit, offset) = get_pagination_vars()
         args = {
-            'save_playlist_id': save_playlist_id,
-            'current_user_id': current_user_id,
-            'limit': limit,
-            'offset': offset
+            "save_playlist_id": save_playlist_id,
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
         }
         user_results = get_savers_for_playlist(args)
         return api_helpers.success_response(user_results)
@@ -388,15 +414,15 @@ def get_top_playlists_route(type):
         filter?: (string) Optional filter to include (supports 'followees') default=None
     """
     args = to_dict(request.args)
-    if 'limit' in request.args:
-        args['limit'] = min(request.args.get('limit', type=int), 100)
+    if "limit" in request.args:
+        args["limit"] = min(request.args.get("limit", type=int), 100)
     else:
-        args['limit'] = 16
+        args["limit"] = 16
 
-    if 'mood' in request.args:
-        args['mood'] = request.args.get('mood')
+    if "mood" in request.args:
+        args["mood"] = request.args.get("mood")
     else:
-        args['mood'] = None
+        args["mood"] = None
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
     try:
@@ -410,23 +436,23 @@ def get_top_playlists_route(type):
 @record_metrics
 def get_top_followee_windowed_route(type, window):
     """
-        Gets a windowed (over a certain timerange) view into the "top" of a certain type
-        amongst followees. Requires an account.
-        This endpoint is useful in generating views like:
-            - New releases
+    Gets a windowed (over a certain timerange) view into the "top" of a certain type
+    amongst followees. Requires an account.
+    This endpoint is useful in generating views like:
+        - New releases
 
-        Args:
-            type: (string) The `type` (same as repost/save type) to query from. Currently only
-                track is supported.
-            window: (string) The window from now() to look back over. Supports all standard
-                SqlAlchemy interval notation (week, month, year, etc.).
-            limit?: (number) default=25, max=100
+    Args:
+        type: (string) The `type` (same as repost/save type) to query from. Currently only
+            track is supported.
+        window: (string) The window from now() to look back over. Supports all standard
+            SqlAlchemy interval notation (week, month, year, etc.).
+        limit?: (number) default=25, max=100
     """
     args = to_dict(request.args)
-    if 'limit' in request.args:
-        args['limit'] = min(request.args.get('limit', type=int), 100)
+    if "limit" in request.args:
+        args["limit"] = min(request.args.get("limit", type=int), 100)
     else:
-        args['limit'] = 25
+        args["limit"] = 25
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
 
@@ -441,20 +467,20 @@ def get_top_followee_windowed_route(type, window):
 @record_metrics
 def get_top_followee_saves_route(type):
     """
-        Gets a global view into the most saved of `type` amongst followees. Requires an account.
-        This endpoint is useful in generating views like:
-            - Most favorited
+    Gets a global view into the most saved of `type` amongst followees. Requires an account.
+    This endpoint is useful in generating views like:
+        - Most favorited
 
-        Args:
-            type: (string) The `type` (same as repost/save type) to query from. Currently only
-                track is supported.
-            limit?: (number) default=25, max=100
+    Args:
+        type: (string) The `type` (same as repost/save type) to query from. Currently only
+            track is supported.
+        limit?: (number) default=25, max=100
     """
     args = to_dict(request.args)
-    if 'limit' in request.args:
-        args['limit'] = min(request.args.get('limit', type=int), 100)
+    if "limit" in request.args:
+        args["limit"] = min(request.args.get("limit", type=int), 100)
     else:
-        args['limit'] = 25
+        args["limit"] = 25
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
 

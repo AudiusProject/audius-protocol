@@ -1,11 +1,15 @@
 import logging
 from flask import Blueprint, request
-from src.queries.get_skipped_transactions import get_skipped_transactions, get_transaction_status
+from src.queries.get_skipped_transactions import (
+    get_skipped_transactions,
+    get_transaction_status,
+)
 from src.api_helpers import error_response, success_response
 
 logger = logging.getLogger(__name__)
 
 bp = Blueprint("indexing", __name__)
+
 
 @bp.route("/indexing/skipped_transactions", methods=["GET"])
 def check_skipped_transactions():
@@ -22,6 +26,7 @@ def check_skipped_transactions():
     )
     return success_response(skipped_transactions)
 
+
 @bp.route("/indexing/transaction_status", methods=["GET"])
 def check_transaction_status():
     """
@@ -34,7 +39,7 @@ def check_transaction_status():
     if blocknumber is None or blockhash is None or transactionhash is None:
         return error_response(
             f"Please pass in required query parameters 'blocknumber', 'blockhash', and 'transactionhash'",
-            400
+            400,
         )
     try:
         transaction_status = get_transaction_status(

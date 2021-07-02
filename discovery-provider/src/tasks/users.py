@@ -11,10 +11,19 @@ from src.utils.user_event_constants import user_event_types_arr, user_event_type
 from src.queries.get_balances import enqueue_balance_refresh
 from src.utils.indexing_errors import IndexingError
 from src.challenges.challenge_event import ChallengeEvent
+
 logger = logging.getLogger(__name__)
 
 
-def user_state_update(self, update_task, session, user_factory_txs, block_number, block_timestamp, block_hash):
+def user_state_update(
+    self,
+    update_task,
+    session,
+    user_factory_txs,
+    block_number,
+    block_timestamp,
+    block_hash,
+):
     """Return int representing number of User model state changes found in transaction."""
 
     num_total_changes = 0
@@ -40,8 +49,10 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
     for tx_receipt in user_factory_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in user_event_types_arr:
-            user_events_tx = getattr(user_contract.events, event_type)().processReceipt(tx_receipt)
-            processedEntries = 0 # if record does not get added, do not count towards num_total_changes
+            user_events_tx = getattr(user_contract.events, event_type)().processReceipt(
+                tx_receipt
+            )
+            processedEntries = 0  # if record does not get added, do not count towards num_total_changes
             for entry in user_events_tx:
                 user_id = entry["args"]._userId
                 try:
@@ -53,7 +64,13 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
                     # then set the lookup object for user_id with the appropriate props
                     if user_id not in user_events_lookup:
                         ret_user = lookup_user_record(
-                            update_task, session, entry, block_number, block_timestamp, txhash)
+                            update_task,
+                            session,
+                            entry,
+                            block_number,
+                            block_timestamp,
+                            txhash,
+                        )
                         user_events_lookup[user_id] = {"user": ret_user, "events": []}
 
                     # Add or update the value of the user record for this block in user_events_lookup,
@@ -69,7 +86,7 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
                         entry,
                         event_type,
                         user_events_lookup[user_id]["user"],
-                        block_timestamp
+                        block_timestamp,
                     )
                     if user_record is not None:
                         user_events_lookup[user_id]["events"].append(event_type)
@@ -78,11 +95,15 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
                 except Exception as e:
                     logger.error(f"Error in parse user transaction")
                     event_blockhash = update_task.web3.toHex(block_hash)
-                    raise IndexingError('user', block_number, event_blockhash, txhash, str(e))
+                    raise IndexingError(
+                        "user", block_number, event_blockhash, txhash, str(e)
+                    )
 
             num_total_changes += processedEntries
 
-    logger.info(f"index.py | users.py | There are {num_total_changes} events processed.")
+    logger.info(
+        f"index.py | users.py | There are {num_total_changes} events processed."
+    )
 
     # for each record in user_events_lookup, invalidate the old record and add the new record
     # we do this after all processing has completed so the user record is atomic by block, not tx
@@ -90,13 +111,17 @@ def user_state_update(self, update_task, session, user_factory_txs, block_number
         logger.info(f"index.py | users.py | Adding {value_obj['user']}")
         if value_obj["events"]:
             invalidate_old_user(session, user_id)
-            challenge_bus.dispatch(session, ChallengeEvent.profile_update, block_number, user_id)
+            challenge_bus.dispatch(
+                session, ChallengeEvent.profile_update, block_number, user_id
+            )
             session.add(value_obj["user"])
 
     return num_total_changes, user_ids
 
 
-def lookup_user_record(update_task, session, entry, block_number, block_timestamp, txhash):
+def lookup_user_record(
+    update_task, session, entry, block_number, block_timestamp, txhash
+):
     event_blockhash = update_task.web3.toHex(entry.blockHash)
     event_args = entry["args"]
     user_id = event_args._userId
@@ -104,7 +129,7 @@ def lookup_user_record(update_task, session, entry, block_number, block_timestam
     # Check if the userId is in the db
     user_exists = session.query(User).filter_by(user_id=event_args._userId).count() > 0
 
-    user_record = None # will be set in this if/else
+    user_record = None  # will be set in this if/else
     if user_exists:
         user_record = (
             session.query(User)
@@ -120,7 +145,7 @@ def lookup_user_record(update_task, session, entry, block_number, block_timestam
         user_record = User(
             is_current=True,
             user_id=user_id,
-            created_at=datetime.utcfromtimestamp(block_timestamp)
+            created_at=datetime.utcfromtimestamp(block_timestamp),
         )
 
     # update these fields regardless of type
@@ -148,8 +173,17 @@ def invalidate_old_user(session, user_id):
 
 
 def parse_user_event(
-        self, user_contract, update_task, session, tx_receipt, block_number, entry, event_type, user_record,
-        block_timestamp):
+    self,
+    user_contract,
+    update_task,
+    session,
+    tx_receipt,
+    block_number,
+    entry,
+    event_type,
+    user_record,
+    block_timestamp,
+):
     event_args = entry["args"]
 
     # type specific field changes
@@ -159,7 +193,9 @@ def parse_user_event(
         user_record.handle_lc = handle_str.lower()
         user_record.wallet = event_args._wallet.lower()
     elif event_type == user_event_types_lookup["update_multihash"]:
-        metadata_multihash = helpers.multihash_digest_to_cid(event_args._multihashDigest)
+        metadata_multihash = helpers.multihash_digest_to_cid(
+            event_args._multihashDigest
+        )
         is_blacklisted = is_blacklisted_ipld(session, metadata_multihash)
         # If cid is in blacklist, do not update user
         if is_blacklisted:
@@ -176,7 +212,9 @@ def parse_user_event(
     elif event_type == user_event_types_lookup["update_bio"]:
         user_record.bio = event_args._bio
     elif event_type == user_event_types_lookup["update_profile_photo"]:
-        profile_photo_multihash = helpers.multihash_digest_to_cid(event_args._profilePhotoDigest)
+        profile_photo_multihash = helpers.multihash_digest_to_cid(
+            event_args._profilePhotoDigest
+        )
         is_blacklisted = is_blacklisted_ipld(session, profile_photo_multihash)
         if is_blacklisted:
             logger.info(
@@ -186,7 +224,9 @@ def parse_user_event(
             return None
         user_record.profile_picture = profile_photo_multihash
     elif event_type == user_event_types_lookup["update_cover_photo"]:
-        cover_photo_multihash = helpers.multihash_digest_to_cid(event_args._coverPhotoDigest)
+        cover_photo_multihash = helpers.multihash_digest_to_cid(
+            event_args._coverPhotoDigest
+        )
         is_blacklisted = is_blacklisted_ipld(session, cover_photo_multihash)
         if is_blacklisted:
             logger.info(
@@ -204,7 +244,9 @@ def parse_user_event(
         # legacy `creator_node_endpoint` changes
         # Reference user_replica_set.py for the updated indexing flow around this field
         replica_set_upgraded = user_replica_set_upgraded(user_record)
-        logger.info(f"index.py | users.py | {user_record.handle} Replica set upgraded: {replica_set_upgraded}")
+        logger.info(
+            f"index.py | users.py | {user_record.handle} Replica set upgraded: {replica_set_upgraded}"
+        )
         if not replica_set_upgraded:
             user_record.creator_node_endpoint = event_args._creatorNodeEndpoint
 
@@ -214,75 +256,88 @@ def parse_user_event(
     # If the multihash is updated, fetch the metadata (if not fetched) and update the associated wallets column
     if event_type == user_event_types_lookup["update_multihash"]:
         # Look up metadata multihash in IPFS and override with metadata fields
-        ipfs_metadata = get_ipfs_metadata(
-            update_task, user_record
-        )
+        ipfs_metadata = get_ipfs_metadata(update_task, user_record)
 
         if ipfs_metadata:
             # ipfs_metadata properties are defined in get_ipfs_metadata
 
             # Fields also stored on chain
-            if 'profile_picture' in ipfs_metadata and \
-                ipfs_metadata['profile_picture']:
-                user_record.profile_picture = ipfs_metadata['profile_picture']
+            if "profile_picture" in ipfs_metadata and ipfs_metadata["profile_picture"]:
+                user_record.profile_picture = ipfs_metadata["profile_picture"]
 
-            if 'cover_photo' in ipfs_metadata and \
-                ipfs_metadata['cover_photo']:
-                user_record.cover_photo = ipfs_metadata['cover_photo']
+            if "cover_photo" in ipfs_metadata and ipfs_metadata["cover_photo"]:
+                user_record.cover_photo = ipfs_metadata["cover_photo"]
 
-            if 'bio' in ipfs_metadata and \
-                ipfs_metadata['bio']:
-                user_record.bio = ipfs_metadata['bio']
+            if "bio" in ipfs_metadata and ipfs_metadata["bio"]:
+                user_record.bio = ipfs_metadata["bio"]
 
-            if 'name' in ipfs_metadata and \
-                ipfs_metadata['name']:
-                user_record.name = ipfs_metadata['name']
+            if "name" in ipfs_metadata and ipfs_metadata["name"]:
+                user_record.name = ipfs_metadata["name"]
 
-            if 'location' in ipfs_metadata and \
-                ipfs_metadata['location']:
-                user_record.location = ipfs_metadata['location']
+            if "location" in ipfs_metadata and ipfs_metadata["location"]:
+                user_record.location = ipfs_metadata["location"]
 
             # Fields with no on-chain counterpart
-            if 'profile_picture_sizes' in ipfs_metadata and \
-                ipfs_metadata['profile_picture_sizes']:
-                user_record.profile_picture = ipfs_metadata['profile_picture_sizes']
+            if (
+                "profile_picture_sizes" in ipfs_metadata
+                and ipfs_metadata["profile_picture_sizes"]
+            ):
+                user_record.profile_picture = ipfs_metadata["profile_picture_sizes"]
 
-            if 'cover_photo_sizes' in ipfs_metadata and \
-                ipfs_metadata['cover_photo_sizes']:
-                user_record.cover_photo = ipfs_metadata['cover_photo_sizes']
+            if (
+                "cover_photo_sizes" in ipfs_metadata
+                and ipfs_metadata["cover_photo_sizes"]
+            ):
+                user_record.cover_photo = ipfs_metadata["cover_photo_sizes"]
 
-            if 'collectibles' in ipfs_metadata and \
-                ipfs_metadata['collectibles'] and \
-                isinstance(ipfs_metadata['collectibles'], dict) and \
-                ipfs_metadata['collectibles'].items():
+            if (
+                "collectibles" in ipfs_metadata
+                and ipfs_metadata["collectibles"]
+                and isinstance(ipfs_metadata["collectibles"], dict)
+                and ipfs_metadata["collectibles"].items()
+            ):
                 user_record.has_collectibles = True
             else:
                 user_record.has_collectibles = False
 
-            if 'associated_wallets' in ipfs_metadata:
-                update_user_associated_wallets(session, update_task, user_record, ipfs_metadata['associated_wallets'])
+            if "associated_wallets" in ipfs_metadata:
+                update_user_associated_wallets(
+                    session,
+                    update_task,
+                    user_record,
+                    ipfs_metadata["associated_wallets"],
+                )
 
-            if 'playlist_library' in ipfs_metadata and \
-                ipfs_metadata['playlist_library']:
-                user_record.playlist_library = ipfs_metadata['playlist_library']
+            if (
+                "playlist_library" in ipfs_metadata
+                and ipfs_metadata["playlist_library"]
+            ):
+                user_record.playlist_library = ipfs_metadata["playlist_library"]
 
     # All incoming profile photos intended to be a directory
     # Any write to profile_picture field is replaced by profile_picture_sizes
     if user_record.profile_picture:
-        logger.info(f"index.py | users.py | Processing user profile_picture {user_record.profile_picture}")
+        logger.info(
+            f"index.py | users.py | Processing user profile_picture {user_record.profile_picture}"
+        )
         user_record.profile_picture_sizes = user_record.profile_picture
         user_record.profile_picture = None
 
     # All incoming cover photos intended to be a directory
     # Any write to cover_photo field is replaced by cover_photo_sizes
     if user_record.cover_photo:
-        logger.info(f"index.py | users.py | Processing user cover photo {user_record.cover_photo}")
+        logger.info(
+            f"index.py | users.py | Processing user cover photo {user_record.cover_photo}"
+        )
         user_record.cover_photo_sizes = user_record.cover_photo
         user_record.cover_photo = None
     return user_record
 
-def update_user_associated_wallets(session, update_task, user_record, associated_wallets):
-    """ Updates the user associated wallets table """
+
+def update_user_associated_wallets(
+    session, update_task, user_record, associated_wallets
+):
+    """Updates the user associated wallets table"""
     try:
         if not isinstance(associated_wallets, dict):
             # With malformed associated wallets, we update the associated wallets
@@ -296,27 +351,34 @@ def update_user_associated_wallets(session, update_task, user_record, associated
             .all()
         )
 
-        previous_wallets = [wallet for [wallet] in prev_user_associated_wallets_response]
+        previous_wallets = [
+            wallet for [wallet] in prev_user_associated_wallets_response
+        ]
         added_associated_wallets = set()
 
-        session.query(AssociatedWallet).filter_by(user_id=user_record.user_id).update({"is_current": False})
+        session.query(AssociatedWallet).filter_by(user_id=user_record.user_id).update(
+            {"is_current": False}
+        )
 
         # Verify the wallet signatures and create the user id to wallet associations
         for associated_wallet, wallet_metadata in associated_wallets.items():
-            if not 'signature' in wallet_metadata or not isinstance(wallet_metadata['signature'], str):
+            if not "signature" in wallet_metadata or not isinstance(
+                wallet_metadata["signature"], str
+            ):
                 continue
             signed_wallet = recover_user_id_hash(
-                update_task.web3,
-                user_record.user_id,
-                wallet_metadata['signature']
+                update_task.web3, user_record.user_id, wallet_metadata["signature"]
             )
 
             if signed_wallet == associated_wallet:
                 # Check that the wallet doesn't already exist
                 wallet_exists = (
                     session.query(AssociatedWallet)
-                    .filter_by(wallet=associated_wallet, is_current=True, is_delete=False)
-                    .count() > 0
+                    .filter_by(
+                        wallet=associated_wallet, is_current=True, is_delete=False
+                    )
+                    .count()
+                    > 0
                 )
                 if not wallet_exists:
                     added_associated_wallets.add(signed_wallet)
@@ -326,7 +388,7 @@ def update_user_associated_wallets(session, update_task, user_record, associated
                         is_current=True,
                         is_delete=False,
                         blocknumber=user_record.blocknumber,
-                        blockhash=user_record.blockhash
+                        blockhash=user_record.blockhash,
                     )
                     session.add(associated_wallet_entry)
 
@@ -339,7 +401,7 @@ def update_user_associated_wallets(session, update_task, user_record, associated
                     is_current=True,
                     is_delete=True,
                     blocknumber=user_record.blocknumber,
-                    blockhash=user_record.blockhash
+                    blockhash=user_record.blockhash,
                 )
                 session.add(associated_wallet_entry)
 
@@ -347,11 +409,14 @@ def update_user_associated_wallets(session, update_task, user_record, associated
         if is_updated_wallets:
             enqueue_balance_refresh(update_task.redis, [user_record.user_id])
     except Exception as e:
-        logger.error(f"index.py | users.py | Fatal updating user associated wallets while indexing {e}", exc_info=True)
+        logger.error(
+            f"index.py | users.py | Fatal updating user associated wallets while indexing {e}",
+            exc_info=True,
+        )
 
 
 def recover_user_id_hash(web3, user_id, signature):
-    message_hash = defunct_hash_message(text=f'AudiusUserID:{user_id}')
+    message_hash = defunct_hash_message(text=f"AudiusUserID:{user_id}")
     wallet_address = web3.eth.account.recoverHash(message_hash, signature=signature)
     return wallet_address
 
@@ -363,12 +428,15 @@ def get_ipfs_metadata(update_task, user_record):
         user_metadata = update_task.ipfs_client.get_metadata(
             user_record.metadata_multihash,
             user_metadata_format,
-            user_record.creator_node_endpoint
+            user_record.creator_node_endpoint,
         )
-        logger.info(f'index.py | users.py | {user_metadata}')
+        logger.info(f"index.py | users.py | {user_metadata}")
     return user_metadata
+
 
 # Determine whether this user has identity established on the UserReplicaSetManager contract
 def user_replica_set_upgraded(user_record):
-    primary_replica_set_configured = (user_record.primary_id is not None and user_record.primary_id > 0)
+    primary_replica_set_configured = (
+        user_record.primary_id is not None and user_record.primary_id > 0
+    )
     return primary_replica_set_configured

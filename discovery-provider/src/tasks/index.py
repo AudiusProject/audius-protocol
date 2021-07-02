@@ -3,8 +3,19 @@ import concurrent.futures
 
 from sqlalchemy import func
 from src.app import contract_addresses
-from src.models import AssociatedWallet, Block, Follow, Playlist, Repost,\
-    Save, SkippedTransaction, Track, TrackRoute, URSMContentNode, User
+from src.models import (
+    AssociatedWallet,
+    Block,
+    Follow,
+    Playlist,
+    Repost,
+    Save,
+    SkippedTransaction,
+    Track,
+    TrackRoute,
+    URSMContentNode,
+    User,
+)
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
 from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
@@ -12,14 +23,25 @@ from src.tasks.social_features import social_feature_state_update
 from src.tasks.playlists import playlist_state_update
 from src.tasks.user_library import user_library_state_update
 from src.tasks.user_replica_set import user_replica_set_state_update
-from src.utils.redis_constants import latest_block_redis_key, \
-    latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, \
-    most_recent_indexed_block_redis_key
-from src.utils.redis_cache import remove_cached_user_ids, \
-    remove_cached_track_ids, remove_cached_playlist_ids
-from src.queries.get_skipped_transactions import get_indexing_error, \
-    set_indexing_error, clear_indexing_error
-from src.queries.confirm_indexing_transaction_error import confirm_indexing_transaction_error
+from src.utils.redis_constants import (
+    latest_block_redis_key,
+    latest_block_hash_redis_key,
+    most_recent_indexed_block_hash_redis_key,
+    most_recent_indexed_block_redis_key,
+)
+from src.utils.redis_cache import (
+    remove_cached_user_ids,
+    remove_cached_track_ids,
+    remove_cached_playlist_ids,
+)
+from src.queries.get_skipped_transactions import (
+    get_indexing_error,
+    set_indexing_error,
+    clear_indexing_error,
+)
+from src.queries.confirm_indexing_transaction_error import (
+    confirm_indexing_transaction_error,
+)
 from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
@@ -38,11 +60,13 @@ zero_address = "0x0000000000000000000000000000000000000000"
 # The maximum number of skipped transactions allowed
 MAX_SKIPPED_TX = 5
 
+
 def get_contract_info_if_exists(self, address):
     for contract_name, contract_address in contract_addresses.items():
         if update_task.web3.toChecksumAddress(contract_address) == address:
             return (contract_name, contract_address)
     return None
+
 
 def initialize_blocks_table_if_necessary(db):
     redis = update_task.redis
@@ -64,11 +88,16 @@ def initialize_blocks_table_if_necessary(db):
                 parenthash=target_blockhash,
                 is_current=True,
             )
-            if target_block.number == 0 or target_blockhash == default_config_start_hash:
+            if (
+                target_block.number == 0
+                or target_blockhash == default_config_start_hash
+            ):
                 block_model.number = None
 
             session.add(block_model)
-            logger.info(f"index.py | initialize_blocks_table_if_necessary | Initializing blocks table - {block_model}")
+            logger.info(
+                f"index.py | initialize_blocks_table_if_necessary | Initializing blocks table - {block_model}"
+            )
         else:
             assert (
                 current_block_query_result.count() == 1
@@ -77,20 +106,26 @@ def initialize_blocks_table_if_necessary(db):
             # set the last indexed block in redis
             current_block_result = current_block_query_result.first()
             if current_block_result.number:
-                redis.set(most_recent_indexed_block_redis_key, current_block_result.number)
+                redis.set(
+                    most_recent_indexed_block_redis_key, current_block_result.number
+                )
             if current_block_result.blockhash:
-                redis.set(most_recent_indexed_block_hash_redis_key, current_block_result.blockhash)
+                redis.set(
+                    most_recent_indexed_block_hash_redis_key,
+                    current_block_result.blockhash,
+                )
 
     return target_blockhash
 
+
 def get_latest_block(db):
     latest_block = None
-    block_processing_window = int(update_task.shared_config["discprov"]["block_processing_window"])
+    block_processing_window = int(
+        update_task.shared_config["discprov"]["block_processing_window"]
+    )
     with db.scoped_session() as session:
         current_block_query = session.query(Block).filter_by(is_current=True)
-        assert (
-            current_block_query.count() == 1
-        ), "Expected SINGLE row marked as current"
+        assert current_block_query.count() == 1, "Expected SINGLE row marked as current"
 
         current_block_query_results = current_block_query.all()
         current_block = current_block_query_results[0]
@@ -101,23 +136,37 @@ def get_latest_block(db):
 
         target_latest_block_number = current_block_number + block_processing_window
 
-        latest_block_from_chain = update_task.web3.eth.getBlock('latest', True)
+        latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
         latest_block_number_from_chain = latest_block_from_chain.number
 
         if target_latest_block_number > latest_block_number_from_chain:
             target_latest_block_number = latest_block_number_from_chain
 
-        logger.info(f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}")
+        logger.info(
+            f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
+        )
         latest_block = update_task.web3.eth.getBlock(target_latest_block_number, True)
     return latest_block
 
+
 def update_latest_block_redis():
-    latest_block_from_chain = update_task.web3.eth.getBlock('latest', True)
-    default_indexing_interval_seconds = int(update_task.shared_config["discprov"]["block_processing_interval_sec"])
+    latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
+    default_indexing_interval_seconds = int(
+        update_task.shared_config["discprov"]["block_processing_interval_sec"]
+    )
     redis = update_task.redis
     # these keys have a TTL which is the indexing interval
-    redis.set(latest_block_redis_key, latest_block_from_chain.number, ex=default_indexing_interval_seconds)
-    redis.set(latest_block_hash_redis_key, latest_block_from_chain.hash.hex(), ex=default_indexing_interval_seconds)
+    redis.set(
+        latest_block_redis_key,
+        latest_block_from_chain.number,
+        ex=default_indexing_interval_seconds,
+    )
+    redis.set(
+        latest_block_hash_redis_key,
+        latest_block_from_chain.hash.hex(),
+        ex=default_indexing_interval_seconds,
+    )
+
 
 def fetch_tx_receipt(transaction):
     web3 = update_task.web3
@@ -128,10 +177,13 @@ def fetch_tx_receipt(transaction):
     response["tx_hash"] = tx_hash
     return response
 
+
 def fetch_tx_receipts(self, block_transactions):
     block_tx_with_receipts = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        future_to_tx_receipt = {executor.submit(fetch_tx_receipt, tx): tx for tx in block_transactions}
+        future_to_tx_receipt = {
+            executor.submit(fetch_tx_receipt, tx): tx for tx in block_transactions
+        }
         for future in concurrent.futures.as_completed(future_to_tx_receipt):
             tx = future_to_tx_receipt[future]
             try:
@@ -143,8 +195,11 @@ def fetch_tx_receipts(self, block_transactions):
     num_processed_txs = len(block_tx_with_receipts.keys())
     num_submitted_txs = len(block_transactions)
     if num_processed_txs != num_submitted_txs:
-        raise Exception(f"index.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}")
+        raise Exception(
+            f"index.py | fetch_tx_receipts Expected ${num_submitted_txs} received {num_processed_txs}"
+        )
     return block_tx_with_receipts
+
 
 # During each indexing iteration, check if the address for UserReplicaSetManager
 # has been set in the L2 contract registry - if so, update the global contract_addresses object
@@ -169,25 +224,34 @@ def update_ursm_address(self):
             bytes("UserReplicaSetManager", "utf-8")
         ).call()
         if user_replica_set_manager_address != zero_address:
-            contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(user_replica_set_manager_address)
-            logger.info(f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}")
+            contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(
+                user_replica_set_manager_address
+            )
+            logger.info(
+                f"index.py | Updated user_replica_set_manager_address={user_replica_set_manager_address}"
+            )
+
 
 def save_and_get_skip_tx_hash(session, redis):
-    """Fetch if there is a tx_hash to be skipped because of continuous errors
-    """
+    """Fetch if there is a tx_hash to be skipped because of continuous errors"""
     indexing_error = get_indexing_error(redis)
-    if isinstance(indexing_error, dict) and 'has_consensus' in indexing_error and indexing_error['has_consensus']:
+    if (
+        isinstance(indexing_error, dict)
+        and "has_consensus" in indexing_error
+        and indexing_error["has_consensus"]
+    ):
         num_skipped_tx = session.query(func.count(SkippedTransaction.id)).scalar()
         if num_skipped_tx >= MAX_SKIPPED_TX:
             return None
         skipped_tx = SkippedTransaction(
-            blocknumber=indexing_error['blocknumber'],
-            blockhash=indexing_error['blockhash'],
-            txhash=indexing_error['txhash']
+            blocknumber=indexing_error["blocknumber"],
+            blockhash=indexing_error["blockhash"],
+            txhash=indexing_error["txhash"],
         )
         session.add(skipped_tx)
-        return indexing_error['txhash']
+        return indexing_error["txhash"]
     return None
+
 
 def index_blocks(self, db, blocks_list):
     web3 = update_task.web3
@@ -237,7 +301,7 @@ def index_blocks(self, db, blocks_list):
             tx_receipt_dict = fetch_tx_receipts(self, block.transactions)
 
             # Sort transactions by hash
-            sorted_txs = sorted(block.transactions, key=lambda entry: entry['hash'])
+            sorted_txs = sorted(block.transactions, key=lambda entry: entry["hash"])
 
             skip_tx_hash = save_and_get_skip_tx_hash(session, redis)
             # Parse tx events in each block
@@ -248,7 +312,9 @@ def index_blocks(self, db, blocks_list):
 
                 # Skip in case a transaction targets zero address
                 if tx_target_contract_address == zero_address:
-                    logger.info(f"index.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}")
+                    logger.info(
+                        f"index.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}"
+                    )
                     continue
 
                 if skip_tx_hash is not None and skip_tx_hash == tx_hash:
@@ -273,7 +339,10 @@ def index_blocks(self, db, blocks_list):
                     track_factory_txs.append(tx_receipt)
 
                 # Handle social operations
-                if tx_target_contract_address == contract_addresses["social_feature_factory"]:
+                if (
+                    tx_target_contract_address
+                    == contract_addresses["social_feature_factory"]
+                ):
                     logger.info(
                         f"index.py | Social feature contract addr: {tx_target_contract_address}"
                         f"tx from block - {tx}, receipt - {tx_receipt}"
@@ -289,7 +358,10 @@ def index_blocks(self, db, blocks_list):
                     playlist_factory_txs.append(tx_receipt)
 
                 # Handle User Library operations
-                if tx_target_contract_address == contract_addresses["user_library_factory"]:
+                if (
+                    tx_target_contract_address
+                    == contract_addresses["user_library_factory"]
+                ):
                     logger.info(
                         f"index.py | User Library contract addr: {tx_target_contract_address}"
                         f"tx from block - {tx}, receipt - {tx_receipt}"
@@ -297,7 +369,10 @@ def index_blocks(self, db, blocks_list):
                     user_library_factory_txs.append(tx_receipt)
 
                 # Handle UserReplicaSetManager operations
-                if tx_target_contract_address == contract_addresses["user_replica_set_manager"]:
+                if (
+                    tx_target_contract_address
+                    == contract_addresses["user_replica_set_manager"]
+                ):
                     logger.info(
                         f"index.py | User Replica Set Manager contract addr: {tx_target_contract_address}"
                         f"tx from block - {tx}, receipt - {tx_receipt}"
@@ -307,7 +382,14 @@ def index_blocks(self, db, blocks_list):
             try:
                 # bulk process operations once all tx's for block have been parsed
                 total_user_changes, user_ids = user_state_update(
-                    self, update_task, session, user_factory_txs, block_number, block_timestamp, block_hash)
+                    self,
+                    update_task,
+                    session,
+                    user_factory_txs,
+                    block_number,
+                    block_timestamp,
+                    block_hash,
+                )
                 user_state_changed = total_user_changes > 0
                 logger.info(
                     f"index.py | user_state_update completed"
@@ -315,7 +397,13 @@ def index_blocks(self, db, blocks_list):
                 )
 
                 total_track_changes, track_ids = track_state_update(
-                    self, update_task, session, track_factory_txs, block_number, block_timestamp, block_hash
+                    self,
+                    update_task,
+                    session,
+                    track_factory_txs,
+                    block_number,
+                    block_timestamp,
+                    block_hash,
                 )
                 track_state_changed = total_track_changes > 0
                 logger.info(
@@ -323,10 +411,17 @@ def index_blocks(self, db, blocks_list):
                     f" track_state_changed={track_state_changed} for block={block_number}"
                 )
 
-                social_feature_state_changed = ( # pylint: disable=W0612
+                social_feature_state_changed = (  # pylint: disable=W0612
                     social_feature_state_update(
-                        self, update_task, session, social_feature_factory_txs,
-                        block_number, block_timestamp, block_hash) > 0
+                        self,
+                        update_task,
+                        session,
+                        social_feature_factory_txs,
+                        block_number,
+                        block_timestamp,
+                        block_hash,
+                    )
+                    > 0
                 )
                 logger.info(
                     f"index.py | social_feature_state_update completed"
@@ -334,17 +429,18 @@ def index_blocks(self, db, blocks_list):
                 )
 
                 # Index UserReplicaSet changes
-                total_user_replica_set_changes, replica_user_ids = (
-                    user_replica_set_state_update(
-                        self,
-                        update_task,
-                        session,
-                        user_replica_set_manager_txs,
-                        block_number,
-                        block_timestamp,
-                        block_hash,
-                        redis
-                    )
+                (
+                    total_user_replica_set_changes,
+                    replica_user_ids,
+                ) = user_replica_set_state_update(
+                    self,
+                    update_task,
+                    session,
+                    user_replica_set_manager_txs,
+                    block_number,
+                    block_timestamp,
+                    block_hash,
+                    redis,
                 )
                 user_replica_set_state_changed = total_user_replica_set_changes > 0
                 logger.info(
@@ -354,7 +450,13 @@ def index_blocks(self, db, blocks_list):
 
                 # Playlist state operations processed in bulk
                 total_playlist_changes, playlist_ids = playlist_state_update(
-                    self, update_task, session, playlist_factory_txs, block_number, block_timestamp, block_hash
+                    self,
+                    update_task,
+                    session,
+                    playlist_factory_txs,
+                    block_number,
+                    block_timestamp,
+                    block_hash,
                 )
                 playlist_state_changed = total_playlist_changes > 0
                 logger.info(
@@ -362,17 +464,27 @@ def index_blocks(self, db, blocks_list):
                     f" playlist_state_changed={playlist_state_changed} for block={block_number}"
                 )
 
-                user_library_state_changed = user_library_state_update( # pylint: disable=W0612
-                    self, update_task, session, user_library_factory_txs,
-                    block_number, block_timestamp, block_hash)
+                user_library_state_changed = (
+                    user_library_state_update(  # pylint: disable=W0612
+                        self,
+                        update_task,
+                        session,
+                        user_library_factory_txs,
+                        block_number,
+                        block_timestamp,
+                        block_hash,
+                    )
+                )
                 logger.info(
                     f"index.py | user_library_state_update completed"
                     f" user_library_state_changed={user_library_state_changed} for block={block_number}"
                 )
 
-                track_lexeme_state_changed = (user_state_changed or track_state_changed)
+                track_lexeme_state_changed = user_state_changed or track_state_changed
                 session.commit()
-                logger.info(f"index.py | session commmited to db for block=${block_number}")
+                logger.info(
+                    f"index.py | session commmited to db for block=${block_number}"
+                )
                 if skip_tx_hash:
                     clear_indexing_error(redis)
                 if user_state_changed:
@@ -387,23 +499,31 @@ def index_blocks(self, db, blocks_list):
                 if playlist_state_changed:
                     if playlist_ids:
                         remove_cached_playlist_ids(redis, playlist_ids)
-                logger.info(f"index.py | redis cache clean operations complete for block=${block_number}")
+                logger.info(
+                    f"index.py | redis cache clean operations complete for block=${block_number}"
+                )
             except IndexingError as err:
                 logger.info(
                     f"index.py | Error in the indexing task at"
                     f" block={err.blocknumber} and hash={err.txhash}"
                 )
-                set_indexing_error(redis, err.blocknumber, err.blockhash, err.txhash, err.message)
+                set_indexing_error(
+                    redis, err.blocknumber, err.blockhash, err.txhash, err.message
+                )
                 confirm_indexing_transaction_error(
-                    redis, err.blocknumber, err.blockhash, err.txhash, err.message)
+                    redis, err.blocknumber, err.blockhash, err.txhash, err.message
+                )
                 raise err
         # add the block number of the most recently processed block to redis
         redis.set(most_recent_indexed_block_redis_key, block.number)
         redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
-        logger.info(f"index.py | update most recently processed block complete for block=${block_number}")
+        logger.info(
+            f"index.py | update most recently processed block complete for block=${block_number}"
+        )
 
     if num_blocks > 0:
         logger.warning(f"index.py | index_blocks | Indexed {num_blocks} blocks")
+
 
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
 def revert_blocks(self, db, revert_blocks_list):
@@ -415,13 +535,15 @@ def revert_blocks(self, db, revert_blocks_list):
     logger.info(f"index.py | {self.request.id} | num_revert_blocks:{num_revert_blocks}")
 
     if num_revert_blocks > 10000:
-        raise Exception('Unexpected revert, >10,0000 blocks')
+        raise Exception("Unexpected revert, >10,0000 blocks")
 
     if num_revert_blocks > 500:
         logger.error(f"index.py | {self.request.id} | Revert blocks list > 500")
         logger.error(revert_blocks_list)
         revert_blocks_list = revert_blocks_list[:500]
-        logger.error(f"index.py | {self.request.id} | Sliced revert blocks list {revert_blocks_list}")
+        logger.error(
+            f"index.py | {self.request.id} | Sliced revert blocks list {revert_blocks_list}"
+        )
 
     logger.info(f"index.py | {self.request.id} | Reverting {num_revert_blocks} blocks")
     logger.info(revert_blocks_list)
@@ -471,10 +593,14 @@ def revert_blocks(self, db, revert_blocks_list):
                 session.query(User).filter(User.blockhash == revert_hash).all()
             )
             revert_ursm_content_node_entries = (
-                session.query(URSMContentNode).filter(URSMContentNode.blockhash == revert_hash).all()
+                session.query(URSMContentNode)
+                .filter(URSMContentNode.blockhash == revert_hash)
+                .all()
             )
             revert_associated_wallets = (
-                session.query(AssociatedWallet).filter(AssociatedWallet.blockhash == revert_hash).all()
+                session.query(AssociatedWallet)
+                .filter(AssociatedWallet.blockhash == revert_hash)
+                .all()
             )
             revert_track_routes = (
                 session.query(TrackRoute)
@@ -522,8 +648,12 @@ def revert_blocks(self, db, revert_blocks_list):
             for follow_to_revert in revert_follow_entries:
                 previous_follow_entry = (
                     session.query(Follow)
-                    .filter(Follow.follower_user_id == follow_to_revert.follower_user_id)
-                    .filter(Follow.followee_user_id == follow_to_revert.followee_user_id)
+                    .filter(
+                        Follow.follower_user_id == follow_to_revert.follower_user_id
+                    )
+                    .filter(
+                        Follow.followee_user_id == follow_to_revert.followee_user_id
+                    )
                     .order_by(Follow.blocknumber.desc())
                     .first()
                 )
@@ -576,7 +706,9 @@ def revert_blocks(self, db, revert_blocks_list):
                 if previous_ursm_content_node_entry:
                     previous_ursm_content_node_entry.is_current = True
                 # Remove previous ursm Content Node entires
-                logger.info(f"Reverting ursm Content Node: {ursm_content_node_to_revert}")
+                logger.info(
+                    f"Reverting ursm Content Node: {ursm_content_node_to_revert}"
+                )
                 session.delete(ursm_content_node_to_revert)
 
             # TODO: ASSERT ON IDS GREATER FOR BOTH DATA MODELS
@@ -609,8 +741,11 @@ def revert_blocks(self, db, revert_blocks_list):
                     session.query(AssociatedWallet).filter(
                         AssociatedWallet.user_id == user_id
                     ).filter(
-                        AssociatedWallet.blocknumber == previous_associated_wallet_entry.blocknumber
-                    ).update({"is_current": True})
+                        AssociatedWallet.blocknumber
+                        == previous_associated_wallet_entry.blocknumber
+                    ).update(
+                        {"is_current": True}
+                    )
                 # Remove outdated associated wallets
                 logger.info(f"Reverting associated Wallet: {user_id}")
                 session.delete(associated_wallets_to_revert)
@@ -619,8 +754,10 @@ def revert_blocks(self, db, revert_blocks_list):
                 track_id = track_route_to_revert.track_id
                 previous_track_route_entry = (
                     session.query(TrackRoute)
-                    .filter(TrackRoute.track_id == track_id,
-                            TrackRoute.blocknumber < revert_block_number)
+                    .filter(
+                        TrackRoute.track_id == track_id,
+                        TrackRoute.blocknumber < revert_block_number,
+                    )
                     .order_by(TrackRoute.blocknumber.desc())
                     .first()
                 )
@@ -632,10 +769,13 @@ def revert_blocks(self, db, revert_blocks_list):
             # Remove outdated block entry
             session.query(Block).filter(Block.blockhash == revert_hash).delete()
 
-            rebuild_playlist_index = rebuild_playlist_index or bool(revert_playlist_entries)
+            rebuild_playlist_index = rebuild_playlist_index or bool(
+                revert_playlist_entries
+            )
             rebuild_track_index = rebuild_track_index or bool(revert_track_entries)
             rebuild_user_index = rebuild_user_index or bool(revert_user_entries)
     # TODO - if we enable revert, need to set the most_recent_indexed_block_redis_key key in redis
+
 
 ######## CELERY TASKS ########
 @celery.task(name="update_discovery_provider", bind=True)
@@ -658,7 +798,9 @@ def update_task(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info(f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock")
+            logger.info(
+                f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock"
+            )
             initialize_blocks_table_if_necessary(db)
 
             latest_block = get_latest_block(db)
@@ -770,9 +912,13 @@ def update_task(self):
 
             # Perform indexing operations
             index_blocks(self, db, index_blocks_list)
-            logger.info(f"index.py | update_task | {self.request.id} | Processing complete within session")
+            logger.info(
+                f"index.py | update_task | {self.request.id} | Processing complete within session"
+            )
         else:
-            logger.error(f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock")
+            logger.error(
+                f"index.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock"
+            )
     except Exception as e:
         logger.error(f"Fatal error in main loop {e}", exc_info=True)
         raise e

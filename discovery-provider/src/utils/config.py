@@ -66,12 +66,16 @@ class ConfigIni(configparser.ConfigParser):  # pylint: disable=too-many-ancestor
                 self._load_item(section_name, item[0])
 
         # Set db_read_replica url to same as db url if none provided
-        if ('url_read_replica' not in current_app.config['db']) or (not current_app.config['db']['url_read_replica']):
-            current_app.config['db']['url_read_replica'] = current_app.config['db']['url']
+        if ("url_read_replica" not in current_app.config["db"]) or (
+            not current_app.config["db"]["url_read_replica"]
+        ):
+            current_app.config["db"]["url_read_replica"] = current_app.config["db"][
+                "url"
+            ]
 
         # Always disable (not included in app.default_config)
         # See https://flask-restx.readthedocs.io/en/latest/mask.html#usage
-        current_app.config['RESTX_MASK_SWAGGER'] = False
+        current_app.config["RESTX_MASK_SWAGGER"] = False
 
     def _load_item(self, section_name, key):
         """Load the specified item from the [flask] section. Type is
@@ -96,6 +100,7 @@ class ConfigIni(configparser.ConfigParser):  # pylint: disable=too-many-ancestor
             current_app.config[section_name][key] = str(self.get(section_name, key))
         env_config_update(current_app.config, section_name, key)
 
+
 shared_config = configparser.ConfigParser()
 shared_config.read(config_files)
 
@@ -107,13 +112,15 @@ for section in shared_config.sections():
         env_config_update(shared_config, section, static_key)
 
 try:
-    owner_wallet = shared_config['delegate']['owner_wallet']
-    private_key = shared_config['delegate']['private_key']
+    owner_wallet = shared_config["delegate"]["owner_wallet"]
+    private_key = shared_config["delegate"]["private_key"]
 
     if not owner_wallet or not private_key:
         raise RuntimeError()
 
 except (KeyError, RuntimeError) as e:
-    raise RuntimeError(f"""
+    raise RuntimeError(
+        f"""
     Missing delegate owner wallet ({owner_wallet}) and/or delgate private key ({private_key}): {e}
-    """)
+    """
+    )
