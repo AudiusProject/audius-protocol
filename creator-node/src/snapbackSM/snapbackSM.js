@@ -458,7 +458,7 @@ class SnapbackSM {
     // Note: for v0, only issue reconfigs if only 1 secondary is unhealthy. Else, just log out the tentative
     // new replica set to be assigned.
 
-    let newPrimary, newSecondary1, newSecondary2
+    let newPrimary
     if (unhealthyReplicasSet.size === 1) {
       if (unhealthyReplicasSet.has(primary)) {
         // If snapbackSM has already checked this primary and it failed the health check, select the higher clock
