@@ -69,6 +69,9 @@ const SecondarySyncHealthTracker = {
     }
   },
 
+  /**
+   * Get SyncRequest outcome metrics for given user, all secondaries, and all days
+   */
   async getSyncMetricsForUser (wallet) {
     try {
       const pattern = this._getRedisKeyPattern('*', wallet, '*', '*', '*')

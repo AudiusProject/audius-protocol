@@ -615,7 +615,7 @@ class SnapbackSM {
           const userSecondarySyncHealthOutcomes = await SecondarySyncHealthTracker.getSyncMetricsForUser(nodeUser.wallet)
 
           // Compute sync success rate per secondary per user
-          let sec1UserSyncSuccesses = 0, sec1UserSyncFailures = 0, sec2UserSyncSuccesses = 0, sec2UserSyncFailures = 0
+          let sec1UserSyncSuccesses = 0; let sec1UserSyncFailures = 0; let sec2UserSyncSuccesses = 0; let sec2UserSyncFailures = 0
           for (let [key, count] of Object.entries(userSecondarySyncHealthOutcomes)) {
             count = parseInt(count)
             if (key.includes(secondary1) && key.includes('Success')) {
@@ -632,8 +632,8 @@ class SnapbackSM {
           }
 
           // Compute sync success rates for both secondaries
-          const sec1UserSyncSuccessRate = (sec1UserSyncFailures === 0) ? 1 : (sec1UserSyncSuccesses / secondary1SyncFailures)
-          const sec2UserSyncSuccessRate = (sec2UserSyncFailures === 0) ? 1 : (sec2UserSyncSuccesses / secondary2SyncFailures)
+          const sec1UserSyncSuccessRate = (sec1UserSyncFailures === 0) ? 1 : (sec1UserSyncSuccesses / sec1UserSyncFailures)
+          const sec2UserSyncSuccessRate = (sec2UserSyncFailures === 0) ? 1 : (sec2UserSyncSuccesses / sec2UserSyncFailures)
 
           // If success rate for either secondary falls under threshold -> mark as unhealthy
           if (sec1UserSyncSuccessRate < 0.5 && !unhealthyReplicas.includes(secondary1)) {
