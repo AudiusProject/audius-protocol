@@ -11,7 +11,7 @@ if (typeof window === 'undefined' || window === null) {
   XMLHttpRequestRef = window.XMLHttpRequest
 }
 
-const DEFAULT_GAS_AMOUNT = 1011968
+const DEFAULT_GAS_LIMIT = 2000000
 
 /** singleton class to be instantiated and persisted with every AudiusLibs */
 class Web3Manager {
@@ -167,7 +167,7 @@ class Web3Manager {
   ) {
     const gasLimit = txGasLimit || await estimateGas({
       method: contractMethod,
-      gasLimitMaximum: DEFAULT_GAS_AMOUNT
+      gasLimitMaximum: DEFAULT_GAS_LIMIT
     })
     if (this.useExternalWeb3) {
       return contractMethod.send(
