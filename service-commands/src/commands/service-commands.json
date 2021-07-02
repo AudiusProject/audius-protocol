@@ -109,7 +109,7 @@
     ],
     "up-web-server": [
       "cd libs/initScripts; node configureLocalDiscProv.js",
-      "cd discovery-provider; docker-compose -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
     ],
