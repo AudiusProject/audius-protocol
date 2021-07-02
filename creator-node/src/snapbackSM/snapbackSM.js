@@ -52,6 +52,8 @@ class SnapbackSM {
     this.MaxManualRequestSyncJobConcurrency = this.nodeConfig.get('maxManualRequestSyncJobConcurrency')
     this.MaxRecurringRequestSyncJobConcurrency = this.nodeConfig.get('maxRecurringRequestSyncJobConcurrency')
 
+    this.MinimumSecondaryUserSyncSuccessPercent = this.nodeConfig.get('minimumSecondaryUserSyncSuccessPercent') / 100
+
     // Throw an error if running as creator node and no libs are provided
     if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint)) {
       throw new Error('Missing required configs - cannot start')
@@ -636,10 +638,10 @@ class SnapbackSM {
           const sec2UserSyncSuccessRate = (sec2UserSyncFailures === 0) ? 1 : (sec2UserSyncSuccesses / sec2UserSyncFailures)
 
           // If success rate for either secondary falls under threshold -> mark as unhealthy
-          if (sec1UserSyncSuccessRate < 0.5 && !unhealthyReplicas.includes(secondary1)) {
+          if (sec1UserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent && !unhealthyReplicas.includes(secondary1)) {
             unhealthyReplicas.push(secondary1)
           }
-          if (sec2UserSyncSuccessRate < 0.5 && !unhealthyReplicas.includes(secondary2)) {
+          if (sec2UserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent && !unhealthyReplicas.includes(secondary2)) {
             unhealthyReplicas.push(secondary2)
           }
 
