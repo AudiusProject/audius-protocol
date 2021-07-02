@@ -332,7 +332,7 @@ def configure_celery(flask_app, celery, test_config=None):
     celery.conf.update(
         imports=["src.tasks.index", "src.tasks.index_blacklist",
                  "src.tasks.index_plays", "src.tasks.index_metrics",
-                 "src.tasks.index_materialized_views",
+                 "src.tasks.index_materialized_views", "src.tasks.vacuum_db",
                  "src.tasks.index_network_peers", "src.tasks.index_trending",
                  "src.tasks.cache_user_balance", "src.monitors.monitoring_queue",
                  "src.tasks.cache_trending_playlists", "src.tasks.index_solana_plays",
@@ -366,6 +366,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_materialized_views": {
                 "task": "update_materialized_views",
                 "schedule": timedelta(seconds=300)
+            },
+            "vacuum_db": {
+                "task": "vacuum_db",
+                "schedule": timedelta(days=1),
             },
             "update_network_peers": {
                 "task": "update_network_peers",
