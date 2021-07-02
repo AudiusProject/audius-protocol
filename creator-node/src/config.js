@@ -471,6 +471,12 @@ const config = convict({
     env: 'snapbackJobInterval',
     default: 3600000
   },
+  snapbackHighestReconfigMode: {
+    doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
+    format: String,
+    env: 'snapbackHighestReconfigMode',
+    default: 'RECONFIG_DISABLED'
+  },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
     format: 'BooleanCustom',
