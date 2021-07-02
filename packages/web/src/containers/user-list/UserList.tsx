@@ -92,7 +92,7 @@ function mapStateToProps(state: AppState, ownProps: ConnectedUserListOwnProps) {
   const { hasMore, loading, userIds } = ownProps.stateSelector(state)
   const userId = getUserId(state)
   const usersMap: { [id: number]: User } = getUsers(state, { ids: userIds })
-  const users = userIds.map(id => usersMap[id])
+  const users = userIds.map(id => usersMap[id]).filter(Boolean)
   return {
     loggedIn: !!userId,
     userId,
