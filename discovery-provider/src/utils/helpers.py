@@ -145,6 +145,11 @@ formatter = JsonFormatter(
     mix_extra=True
 )
 
+def reset_logging():
+    root = logging.getLogger()
+    list(map(root.removeHandler, root.handlers))
+    list(map(root.removeFilter, root.filters))
+
 # Configures root logger with custom format and loglevel
 # All child loggers will inherit settings from root logger as configured in this function
 def configure_logging(loglevel_str='WARN'):
