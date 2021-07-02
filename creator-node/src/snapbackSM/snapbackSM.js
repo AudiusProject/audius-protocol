@@ -494,7 +494,7 @@ class SnapbackSM {
     // If code reached this point, new nodes have been selected for reconfig. Remove the primary-wallet from map.
     this.removeWalletFromUnhealthyPrimaryMap(primary, wallet)
 
-    return { newPrimary, newSecondary1, newSecondary2, issueReconfig }
+    return response
   }
 
   /**
