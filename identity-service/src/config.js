@@ -57,6 +57,18 @@ const config = convict({
     env: 'logLevel',
     default: 'info'
   },
+  tikTokAPIKey: {
+    doc: 'TikTok API key',
+    format: String,
+    env: 'tikTokAPIKey',
+    default: null
+  },
+  tikTokAPISecret: {
+    doc: 'TikTok API Secret',
+    format: String,
+    env: 'tikTokAPISecret',
+    default: null
+  },
   twitterAPIKey: {
     doc: 'Twitter API key',
     format: String,
