@@ -15,7 +15,7 @@ from src.utils.redis_connection import get_redis
 import src
 
 DB_URL = "postgresql+psycopg2://postgres:postgres@localhost/test_audius_discovery"
-TEST_BROKER_URL = "redis://localhost:5380/0"
+TEST_BROKER_URL = "redis://localhost:5379/0"
 ENGINE_ARGS_LITERAL = '{ \
     "pool_size": 10, \
     "max_overflow": 0, \
