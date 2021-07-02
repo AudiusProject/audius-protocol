@@ -624,9 +624,9 @@ class SnapbackSM {
               sec1UserSyncSuccesses += count
             } else if (key.includes(secondary1) && key.includes('Failure')) {
               sec1UserSyncFailures += count
-            } if (key.includes(secondary1) && key.includes('Success')) {
+            } else if (key.includes(secondary2) && key.includes('Success')) {
               sec2UserSyncSuccesses += count
-            } if (key.includes(secondary1) && key.includes('Failure')) {
+            } else if (key.includes(secondary2) && key.includes('Failure')) {
               sec2UserSyncFailures += count
             } else {
               // this can be hit if old secondaries are present, should be ignored

@@ -71,6 +71,7 @@ const startApp = async () => {
     await logIpfsPeerIds()
 
     const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
+    config.set('snapbackDevModeEnabled', true)
 
     await serviceRegistry.initServices()
     logger.info(`Initialized services (Node running in ${nodeMode})`)
