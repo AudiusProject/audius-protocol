@@ -454,7 +454,7 @@ describe('test SnapbackSM', function () {
 
     nock(constants.primaryEndpoint)
       .get(() => true)
-      .reply(500, { data: 'THIS IS SAD' })
+      .reply(500)
 
     nock(constants.secondary1Endpoint)
       .persist()
@@ -491,10 +491,6 @@ describe('test SnapbackSM', function () {
       healthyNodes
     })
 
-    nock(constants.primaryEndpoint)
-      .get('/health_check/verbose')
-      .reply(200, { data: healthCheckVerboseResponse })
-
     // Second iteration - Primary becomes healthy during check
     const { newPrimary, newSecondary1, newSecondary2, issueReconfig } = await snapback.determineNewReplicaSet({
       primary: constants.primaryEndpoint,
@@ -516,13 +512,74 @@ describe('test SnapbackSM', function () {
     assert.ok(snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
   })
 
-  // it('[determineNewReplicaSet] if primary+secondary are unhealthy on first iteration, and the primary has not been health checked yet, return falsy replica set', async function () {
+  it.only('[determineNewReplicaSet] if primary+secondary are unhealthy on first iteration, and on second iteration the primary fails the health check again, return a secondary promoted to a primary, and 2 new secondaries', async function () {
+    nodeConfig.set('snapbackHighestReconfigMode', 'PRIMARY_AND_OR_SECONDARIES')
 
-  // })
+    // Create SnapbackSM instance
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
-  // it('[determineNewReplicaSet] if primary+secondary are unhealthy on first iteration, and on second iteration the primary fails the health check again, return a secondary promoted to a primary, and 2 new secondaries', async function () {
+    // Mock `selectRandomReplicaSetNodes` to return the healthy nodes
+    snapback.selectRandomReplicaSetNodes = async () => { return healthyNodes }
 
-  // })
+    nock(constants.primaryEndpoint)
+      .persist()
+      .get(() => true)
+      .reply(500)
+
+    nock(constants.secondary1Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: { clockValue: 10 } })
+
+    nock(constants.secondary2Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: { clockValue: 10 } })
+
+    nock(constants.healthyNode1Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: healthCheckVerboseResponse })
+
+    nock(constants.healthyNode2Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: healthCheckVerboseResponse })
+
+    nock(constants.healthyNode3Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: healthCheckVerboseResponse })
+
+    await snapback.determineNewReplicaSet({
+      primary: constants.primaryEndpoint,
+      secondary1: constants.secondary1Endpoint,
+      secondary2: constants.secondary2Endpoint,
+      wallet: constants.wallet,
+      unhealthyReplicasSet: new Set([constants.primaryEndpoint, constants.secondary1Endpoint]),
+      healthyNodes
+    })
+
+    const { newPrimary, newSecondary1, newSecondary2, issueReconfig } = await snapback.determineNewReplicaSet({
+      primary: constants.primaryEndpoint,
+      secondary1: constants.secondary1Endpoint,
+      secondary2: constants.secondary2Endpoint,
+      wallet: constants.wallet,
+      unhealthyReplicasSet: new Set([constants.primaryEndpoint, constants.secondary1Endpoint]),
+      healthyNodes
+    })
+
+    // Check to make sure that the new replica set is what we expect it to be
+    // New replica set are all falsy
+    assert.strictEqual(newPrimary, constants.secondary2Endpoint)
+    assert.ok(healthyNodes.includes(newSecondary1))
+    assert.ok(healthyNodes.includes(newSecondary2))
+    assert.strictEqual(issueReconfig, true)
+    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
+    assert.ok(snapback.enabledReconfigModes.has('ONE_SECONDARY'))
+    assert.ok(snapback.enabledReconfigModes.has('MULTIPLE_SECONDARIES'))
+    assert.ok(snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
+  })
 
   // it('[determineNewReplicaSet] if primary+secondary are unhealthy on first iteration, and on second iteration the primary passes the health check, return the existing replica set with a new secondary', async function () {
 
