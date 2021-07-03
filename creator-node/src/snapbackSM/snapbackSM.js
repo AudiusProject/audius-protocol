@@ -37,11 +37,27 @@ const issueUpdateReplicaSetOpPhases = Object.freeze({
 })
 
 const reconfigModes = Object.freeze({
-  RECONFIG_DISABLED: 0,
-  ONE_SECONDARY: 1,
-  MULTIPLE_SECONDARIES: 2,
-  PRIMARY_AND_OR_SECONDARIES: 3,
-  ENTIRE_REPLICA_SET: 4 // This mode is currently not used
+  RECONFIG_DISABLED: {
+    key: 'RECONFIG_DISABLED',
+    value: 0
+  },
+  ONE_SECONDARY: {
+    key: 'ONE_SECONDARY',
+    value: 1
+  },
+  MULTIPLE_SECONDARIES: {
+    key: 'MULTIPLE_SECONDARIES',
+    value: 2
+  },
+  PRIMARY_AND_OR_SECONDARIES: {
+    key: 'PRIMARY_AND_OR_SECONDARIES',
+    value: 3
+  },
+  // This mode is currently not used
+  ENTIRE_REPLICA_SET: {
+    key: 'ENTIRE_REPLICA_SET',
+    value: 4
+  }
 })
 
 /*
@@ -108,8 +124,8 @@ class SnapbackSM {
 
     // The set of modes enabled for reconfig ops
     // e.x.: 'PRIMARY_AND_SECONDARY' is the reconfig mode -> 'RECONFIG_DISABLED', 'ONE_SECONDARY', 'MULTIPLE_SECONDARIES', 'PRIMARY_AND_SECONDARY' enabled
-    this.enabledReconfigModes = new Set(reconfigModes.filter(mode =>
-      reconfigModes[mode] <= reconfigModes[this.highestReconfigModeEnabled]
+    this.enabledReconfigModes = new Set(Object.keys(reconfigModes).filter(mode =>
+      reconfigModes[mode].value <= reconfigModes[this.highestReconfigModeEnabled].value
     ))
   }
 
@@ -424,7 +440,7 @@ class SnapbackSM {
     // If entire replica set is unhealthy, select an entire new replica set
     if (unhealthyReplicasSet.size === NUMBER_OF_REPLICA_SET_NODES) {
       this.logWarn(`[determineNewReplicaSet] Entire replica set=[${Array.from(unhealthyReplicasSet)}] is unhealthy. Not issuing new replica set.`)
-      response.issueReconfig = this.isModeEnabled(reconfigModes.RECONFIG_DISABLED)
+      response.issueReconfig = this.isModeEnabled(reconfigModes.RECONFIG_DISABLED.key)
       return response
     }
 
@@ -451,7 +467,7 @@ class SnapbackSM {
     // been visited before, add to in memory map and skip reconfig.
     if (unhealthyReplicasSet.has(primary) && !this.walletInUnhealthyPrimaryMap(primary, wallet)) {
       this.addWalletToUnhealthyPrimaryMap(primary, wallet)
-      response.issueReconfig = this.isModeEnabled(reconfigModes.RECONFIG_DISABLED)
+      response.issueReconfig = this.isModeEnabled(reconfigModes.RECONFIG_DISABLED.key)
       return response
     }
 
@@ -468,24 +484,24 @@ class SnapbackSM {
         response.newPrimary = newPrimary
         response.newSecondary1 = currentHealthySecondary
         response.newSecondary2 = newReplicaNodes[0]
-        response.issueReconfig = this.isModeEnabled(reconfigModes.PRIMARY_AND_OR_SECONDARIES)
+        response.issueReconfig = this.isModeEnabled(reconfigModes.PRIMARY_AND_OR_SECONDARIES.key)
       } else {
         // If one secondary is unhealthy, select a new secondary
         const currentHealthySecondary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
         response.newPrimary = primary
         response.newSecondary1 = currentHealthySecondary
         response.newSecondary2 = newReplicaNodes[0]
-        response.issueReconfig = this.isModeEnabled(reconfigModes.ONE_SECONDARY)
+        response.issueReconfig = this.isModeEnabled(reconfigModes.ONE_SECONDARY.key)
       }
     } else if (unhealthyReplicasSet.size === 2) {
       if (unhealthyReplicasSet.has(primary)) {
         // If primary + secondary is unhealthy, use other healthy secondary as primary and 2 random secondaries
         response.newPrimary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
-        response.issueReconfig = this.isModeEnabled(reconfigModes.PRIMARY_AND_OR_SECONDARIES)
+        response.issueReconfig = this.isModeEnabled(reconfigModes.PRIMARY_AND_OR_SECONDARIES.key)
       } else {
         // If both secondaries are unhealthy, keep original primary and select two random secondaries
         response.newPrimary = primary
-        response.issueReconfig = this.isModeEnabled(reconfigModes.MULTIPLE_SECONDARIES)
+        response.issueReconfig = this.isModeEnabled(reconfigModes.MULTIPLE_SECONDARIES.key)
       }
       response.newSecondary1 = newReplicaNodes[0]
       response.newSecondary2 = newReplicaNodes[1]
@@ -541,7 +557,7 @@ class SnapbackSM {
     // TODO: Should we query this multiple times??
     if (updatedUnhealthyReplicasSet.has(primary)) {
       try {
-        this.peerSetManager.queryVerboseHealthCheck(primary)
+        await this.peerSetManager.queryVerboseHealthCheck(primary)
         updatedUnhealthyReplicasSet.delete(primary)
       } catch (e) { /* Swallow error */ }
     }
@@ -1219,7 +1235,10 @@ class SnapbackSM {
   }
 
   walletInUnhealthyPrimaryMap (primary, wallet) {
-    return this.unhealthyPrimaryToWalletMap[primary] && this.unhealthyPrimaryToWalletMap[primary].has(wallet)
+    if (this.unhealthyPrimaryToWalletMap[primary] && this.unhealthyPrimaryToWalletMap[primary].has(wallet)) {
+      return true
+    }
+    return false
   }
 
   addWalletToUnhealthyPrimaryMap (primary, wallet) {
@@ -1232,7 +1251,7 @@ class SnapbackSM {
 
   removeWalletFromUnhealthyPrimaryMap (primary, wallet) {
     if (this.walletInUnhealthyPrimaryMap(primary, wallet)) {
-      this.unhealthyPrimaryToWalletMap[primary].remove(wallet)
+      this.unhealthyPrimaryToWalletMap[primary].delete(wallet)
     }
   }
 
