@@ -884,6 +884,8 @@ updated_at={self.updated_at})>"
 class ChallengeType(str, enum.Enum):
     boolean = 'boolean'
     numeric = 'numeric'
+    aggregate = 'aggregate'
+    trending = 'trending'
 
 class Challenge(Base):
     """Represents a particular challenge type"""
@@ -891,7 +893,6 @@ class Challenge(Base):
 
     # Identifies this challenge
     id = Column(String, primary_key=True, nullable=False, index=True)
-    # Whether the challenge is boolean (fully complete or not) or numeric (allows partial completion)
     type = Column(Enum(ChallengeType), nullable=False)
     # The amount of wAudio to disburse (9 decimals)
     amount = Column(String, nullable=False)
@@ -932,15 +933,14 @@ class UserChallenge(Base):
 challenge_id={self.challenge_id},\
 user_id={self.user_id},\
 is_complete={self.is_complete},\
-current_step_count={self.current_step_count},\
-"
+current_step_count={self.current_step_count})>"
 
 class ChallengeDisbursement(Base):
     __tablename__ = "challenge_disbursements"
 
     challenge_id = Column(String, ForeignKey("challenges.id"), nullable=False)
     user_id = Column(Integer, nullable=False)
-    amount = Column(Integer, nullable=False)
+    amount = Column(String, nullable=False)
     block_number = Column(Integer, nullable=False)
     specifier = Column(String, nullable=False)
 
@@ -952,8 +952,7 @@ challenge_id={self.challenge_id},\
 user_id={self.user_id},\
 amount={self.amount},\
 block_number={self.block_number},\
-specifier={self.specifier},\
-"
+specifier={self.specifier})>"
 
 class ProfileCompletionChallenge(Base):
     __tablename__ = "challenge_profile_completion"
@@ -976,5 +975,4 @@ profile_picture={self.profile_picture},\
 profile_cover_photo={self.profile_cover_photo},\
 follows_complete={self.follows},\
 favorites_complete={self.favorites_complete},\
-reposts_complete={self.reposts},\
-"
+reposts_complete={self.reposts})>"

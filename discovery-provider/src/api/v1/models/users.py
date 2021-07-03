@@ -66,3 +66,15 @@ user_replica_set = ns.model("user_replica_set", {
     "secondary1": fields.String(required=False),
     "secondary2": fields.String(required=False)
 })
+
+challenge_response = ns.model("challenge_response", {
+   "challenge_id": fields.String(required=True),
+   "user_id": fields.String(required=True),
+   "specifier": fields.String(), # Not required for aggregates
+   "is_complete": fields.Boolean(required=True),
+   "is_active": fields.Boolean(required=True),
+   "is_disbursed": fields.Boolean(required=True),
+   "current_step_count": fields.Integer(),
+   "max_steps": fields.Integer(),
+   "challenge_type": fields.String(required=True)
+})
