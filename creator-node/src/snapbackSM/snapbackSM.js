@@ -613,29 +613,9 @@ class SnapbackSM {
           /**
            * If either secondary has a Sync success rate for user below threshold, add it to `unhealthyReplicas` list
            */
-          // Fetch secondary SyncRequest outcomes from SecondarySyncHealthTracker
-          const userSecondarySyncHealthOutcomes = await SecondarySyncHealthTracker.getSyncMetricsForUser(nodeUser.wallet)
-
-          // Compute sync success rate per secondary per user
-          let sec1UserSyncSuccesses = 0; let sec1UserSyncFailures = 0; let sec2UserSyncSuccesses = 0; let sec2UserSyncFailures = 0
-          for (let [key, count] of Object.entries(userSecondarySyncHealthOutcomes)) {
-            count = parseInt(count)
-            if (key.includes(secondary1) && key.includes('Success')) {
-              sec1UserSyncSuccesses += count
-            } else if (key.includes(secondary1) && key.includes('Failure')) {
-              sec1UserSyncFailures += count
-            } else if (key.includes(secondary2) && key.includes('Success')) {
-              sec2UserSyncSuccesses += count
-            } else if (key.includes(secondary2) && key.includes('Failure')) {
-              sec2UserSyncFailures += count
-            } else {
-              // this can be hit if old secondaries are present, should be ignored
-            }
-          }
-
-          // Compute sync success rates for both secondaries
-          const sec1UserSyncSuccessRate = (sec1UserSyncFailures === 0) ? 1 : (sec1UserSyncSuccesses / sec1UserSyncFailures)
-          const sec2UserSyncSuccessRate = (sec2UserSyncFailures === 0) ? 1 : (sec2UserSyncSuccesses / sec2UserSyncFailures)
+          const [sec1UserSyncSuccessRate, sec2UserSyncSuccessRate] = await SecondarySyncHealthTracker.computeUserSecondarySyncSuccessRates(
+            nodeUser.wallet, secondary1, secondary2
+          )
 
           // If success rate for either secondary falls under threshold -> mark as unhealthy
           if (sec1UserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent && !unhealthyReplicas.includes(secondary1)) {

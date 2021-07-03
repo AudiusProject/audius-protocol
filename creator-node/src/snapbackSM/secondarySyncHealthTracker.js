@@ -41,6 +41,34 @@ const SecondarySyncHealthTracker = {
     }
   },
 
+  async computeUserSecondarySyncSuccessRates (wallet, secondary1, secondary2) {
+    // Retrieve map of all SyncRequestOutcome keys and daily counts for user from all secondaries
+    const userSecondarySyncHealthOutcomes = await SecondarySyncHealthTracker.getSyncMetricsForUser(wallet)
+
+    // Compute sync success rate per secondary for user
+    let sec1UserSyncSuccesses = 0; let sec1UserSyncFailures = 0; let sec2UserSyncSuccesses = 0; let sec2UserSyncFailures = 0
+    for (let [key, count] of Object.entries(userSecondarySyncHealthOutcomes)) {
+      count = parseInt(count)
+      if (key.includes(secondary1) && key.includes('Success')) {
+        sec1UserSyncSuccesses += count
+      } else if (key.includes(secondary1) && key.includes('Failure')) {
+        sec1UserSyncFailures += count
+      } else if (key.includes(secondary2) && key.includes('Success')) {
+        sec2UserSyncSuccesses += count
+      } else if (key.includes(secondary2) && key.includes('Failure')) {
+        sec2UserSyncFailures += count
+      } else {
+        // this case can be hit if old secondaries are present, should be ignored
+      }
+    }
+
+    // Compute sync success rates for both secondaries
+    const sec1UserSyncSuccessRate = (sec1UserSyncFailures === 0) ? 1 : (sec1UserSyncSuccesses / sec1UserSyncFailures)
+    const sec2UserSyncSuccessRate = (sec2UserSyncFailures === 0) ? 1 : (sec2UserSyncSuccesses / sec2UserSyncFailures)
+
+    return [sec1UserSyncSuccessRate, sec2UserSyncSuccessRate]
+  },
+
   /**
    * Get SyncRequest outcome metrics for all secondaries, users, and days
    */
