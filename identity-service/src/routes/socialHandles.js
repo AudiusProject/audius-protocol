@@ -44,7 +44,7 @@ module.exports = function (app) {
       'twitterProfile.screen_name': twitterHandle,
       verified: true
     } })
-    if (twitterUser) { handle = twitterHandle }
+    if (twitterUser) { twitterHandle = handle }
 
     if (socialHandles) {
       await socialHandles.update({

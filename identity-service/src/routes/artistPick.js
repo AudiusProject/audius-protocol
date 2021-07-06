@@ -6,7 +6,7 @@ const authMiddleware = require('../authMiddleware')
 module.exports = function (app) {
   app.post('/artist_pick', authMiddleware, handleResponse(async (req, res, next) => {
     const handle = req.user.handle
-    const { trackId, handle } = req.body
+    const { trackId } = req.body
 
     if (!handle) return errorResponseBadRequest('Please provide handle')
 
