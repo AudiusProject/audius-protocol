@@ -600,7 +600,22 @@ class SnapbackSM {
     return Array.from(newReplicaNodesSet)
   }
 
-  // If the primary is part of the replica set, truly check to see if it is unhealthy.
+  /**
+   * In the case that the primary is in `unhealthyReplicasSet`, attempt last ditch effort to hit the health
+   * check verbose route to see if it responds with a 200. If so, mark the primary as healthy. We do this as to not eagerly
+   * move user data off of a primary as this is an expensive operation we do not want to frequently perform.
+   *
+   * Additionally, check the secondaries clock values. If the values are null, add the secondaries to the unhealthy set.
+   *
+   * @param {Object} param
+   * @param {Set<string>} unhealthyReplicasSet set of current replica set endpoints that are unhealthy
+   * @param {string} primary endpoint of the current primary node on replica set
+   * @param {string} secondary1 endpoint of the current first secondary node on replica set
+   * @param {string} secondary2 endpoint of the current second secondary node on replica set
+   * @param {string} wallet wallet address of user id
+   * @param {Object} secondariesToClockMap mapping of { secondary endpoint : clock value }. The return response from `fetchClockValues()`
+   * @returns {Set<string>} updated set of unhealthy replica set endpoints
+   */
   async finalizeUnhealthyReplicaSet ({ unhealthyReplicasSet, primary, secondary1, secondary2, wallet, secondariesToClockMap }) {
     let updatedUnhealthyReplicasSet = new Set(unhealthyReplicasSet)
     // TODO: Should we query this multiple times??
