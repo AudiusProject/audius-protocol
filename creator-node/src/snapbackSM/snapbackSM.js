@@ -36,12 +36,22 @@ const issueUpdateReplicaSetOpPhases = Object.freeze({
   UPDATE_URSM_REPLICA_SET: 'UPDATE_URSM_REPLICA_SET'
 })
 
-// Modes used in issuing a reconfig
+// Modes used in issuing a reconfig. Each successive mode is a superset of the mode prior.
+// The `key` of the reconfig states is used to identify the current reconfig mode.
+// The `value` of the reconfig states is used in the superset logic of determining which type of
+// reconfig is enabled.
 const RECONFIG_MODE_KEYS = [
+  // Reconfiguration is entirely disabled
   'RECONFIG_DISABLED',
+  // Reconfiguration is enabled only if one secondary is unhealthy
   'ONE_SECONDARY',
+  // Reconfiguration is enabled for one secondary and multiple secondaries (currently two secondaries)
   'MULTIPLE_SECONDARIES',
+  // Reconfiguration is enabled for one secondary, multiple secondaries, a primary, and a primary and one secondary
   'PRIMARY_AND_OR_SECONDARIES',
+  // Reconfiguration is enabled for one secondary, multiple secondaries, a primary, and a primary and one secondary,
+  // and entire replica set
+  // Note: this mode will probably be disabled.
   'ENTIRE_REPLICA_SET'
 ]
 
@@ -64,7 +74,6 @@ const RECONFIG_MODE_KEYS = [
       key: 'PRIMARY_AND_OR_SECONDARIES',
       value: 3
     },
-    // This mode is currently not used
     ENTIRE_REPLICA_SET: {
       key: 'ENTIRE_REPLICA_SET',
       value: 4
@@ -438,6 +447,21 @@ class SnapbackSM {
 
   /**
    * Logic to determine the new replica set. Used in reconfig op.
+   *
+   * The logic below is as follows:
+   * 1. If the entire replica set is unhealthy, do not issue reconfig and return early
+   * 2. Select the unhealthy replica set nodes size worth of healthy nodes to prepare for issuing reconfig
+   * 3. Depending the number and type of unhealthy nodes in `unhealthyReplicaSet`, issue reconfig:
+   *  - if one secondary is unhealthy -> {primary: current primary, secondary1: the healthy secondary, secondary2: new healthy node}
+   *  - if two secondaries are unhealthy -> {primary: current primary, secondary1: new healthy node, secondary2: new healthy node}
+   *  - if one primary is unhealthy -> {primary: higher clock value of the two secondaries, secondary1: the healthy secondary, secondary2: new healthy node}
+   *  - if one primary and one secondary are unhealthy -> {primary: the healthy secondary, secondary1: new healthy node, secondary2: new healthy node}
+   *  - if entire replica set is unhealthy -> (do not issue reconfig) {primary: null, secondary1: null, secondary2: null}
+   *
+   * Also, there is the notion of `issueReconfig`. This value is used to determine whether or not to issue a reconfig based on
+   * the value of `this.highestReconfigModeEnabled` and the type of reconfig that needs to be issued. See `RECONFIG_MODE_KEYS` variable
+   * for more information.
+   *
    * @param {Object} param
    * @param {string} param.primary current user's primary endpoint
    * @param {string} param.secondary1 current user's first secondary endpoint
@@ -447,9 +471,10 @@ class SnapbackSM {
    * @param {string[]} param.healthyNodes array of healthy Content Node endpoints used for selecting new replica set
    * @returns {Object}
    * {
-   *  newPrimary: {string} the endpoint of the newly selected primary,
-   *  newSecondary1: {string} the endpoint of the newly selected secondary #1,
-   *  newSecondary2: {string} the endpoint of the newly selected secondary #2
+   *  newPrimary: {string | null} the endpoint of the newly selected primary or null,
+   *  newSecondary1: {string | null} the endpoint of the newly selected secondary #1,
+   *  newSecondary2: {string | null} the endpoint of the newly selected secondary #2,
+   *  issueReconfig: {boolean} flag to issue reconfig or not
    * }
    */
   async determineNewReplicaSet ({ primary, secondary1, secondary2, wallet, unhealthyReplicasSet, healthyNodes }) {
