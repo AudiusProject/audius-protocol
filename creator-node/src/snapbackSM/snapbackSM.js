@@ -140,9 +140,15 @@ class SnapbackSM {
     // Mapping of Content Node endpoint to its service provider ID
     this.endpointToSPIdMap = {}
 
-    // We do not want to eagerly cycle off the primary when issuing reconfigs if necessary, as the primary may
-    // have data that the secondaries lack. In this case, wait until `this.moduloBase` iterations for the
-    // primary to potentially become healthy again. This set is used to track visited primaries.
+    /* We do not want to eagerly cycle off the primary when issuing reconfigs if necessary, as the primary may
+      have data that the secondaries lack. In this case, wait until `this.moduloBase` iterations for the
+      primary to potentially become healthy again. This map is used to track visited primaries for particular wallets.
+
+      Schema:
+      {
+        {string} endpoint - the endpoint of the primary: {Set<string>} set of wallets for which the primary has been unhealthy for
+      }
+    */
     this.unhealthyPrimaryToWalletMap = {}
 
     // The highest level of reconfig ops allowed. If the passed in mode is not one of the enabled modes, default to `RECONFIG_DISABLED`this.getHighestReconfigModeEnabled()
