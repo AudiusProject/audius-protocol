@@ -1,4 +1,5 @@
 import express from 'express'
+import { decodeHashId } from '../utils/hashids'
 
 import { getCollection, getTrack, getTracks, getUser, getUsers, shouldRedirectTrack } from '../utils/helpers'
 import { getCollectionPath, getCoverArt, getTrackPath } from './helpers'
@@ -7,15 +8,15 @@ import { BedtimeFormat, GetCollectionResponse, GetTracksResponse, TrackResponse 
 // Error Messages
 const DELETED_MESSAGE = 'DELETED'
 
-const getTrackMetadata = async (trackId: number, ownerId: number): Promise<GetTracksResponse> => {
+const getTrackMetadata = async (trackId: number, ownerId: number | null): Promise<GetTracksResponse> => {
   try {
     if (shouldRedirectTrack(trackId)) return Promise.reject(new Error(DELETED_MESSAGE))
     const track = await getTrack(trackId)
     if (track.is_delete) return Promise.reject(new Error(DELETED_MESSAGE))
-    if (track.owner_id !== ownerId) return Promise.reject(new Error('OwnerIds do not match'))
+    if (ownerId && track.owner_id !== ownerId) return Promise.reject(new Error('OwnerIds do not match'))
     if (track.is_unlisted) return Promise.reject(new Error('Attempted to embed a hidden track'))
 
-    const user  = await getUser(ownerId)
+    const user = track.user
     const coverArt = getCoverArt(track, user)
     const urlPath = getTrackPath({ ownerHandle: user.handle, title: track.title, id: track.track_id })
 
@@ -78,9 +79,10 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
 // We do a bit of parallelization here.
 // We first grab the collection and owner user in parallel. Once both are completed, we
 // then grab the tracks and cover art in parallel, both of which require the fetched collection and owner user.
-const getCollectionMetadata = async (collectionId: number, ownerId: number): Promise<GetCollectionResponse> => {
+const getCollectionMetadata = async (collectionId: number, ownerId: number | null): Promise<GetCollectionResponse> => {
   try {
-    const [collection, ownerUser] = await Promise.all([getCollection(collectionId), getUser(ownerId)])
+    const collection = await getCollection(collectionId)
+    const ownerUser = collection.user
 
     if (collection.playlist_owner_id !== ownerUser.user_id) return Promise.reject(new Error('OwnerIds do not match'))
     if (collection.is_delete) return Promise.reject(new Error(DELETED_MESSAGE))
@@ -122,28 +124,47 @@ export const getBedtimeResponse = async (
   req: express.Request,
   res: express.Response
 ) => {
-  const { id } = req.params
-  if (id === undefined) {
-    res.status(500).send(`Error: empty ID`)
-    return
+  let parsedId: number
+  let parsedOwnerId: number | null
+
+  if (req.params.hashId) {
+    const idFromHashId = decodeHashId(req.params.hashId)
+    if (!idFromHashId) {
+      res.status(500).send(`Error: bad hash id`)
+      return
+    }
+    parsedId = idFromHashId
+  } else {
+    const { id } = req.params
+    if (id === undefined) {
+      res.status(500).send(`Error: empty ID`)
+      return
+    }
+
+    parsedId = parseInt(id, 10)
   }
 
-  const { ownerId } = req.query
-  if (ownerId === undefined) {
-    res.status(500).send(`Error: empty OwnerID`)
-    return
+  if (req.params.hashId) {
+    parsedOwnerId = null
+  } else {
+    const { ownerId } = req.query
+    if (ownerId === undefined && !req.params.hashId) {
+      res.status(500).send(`Error: empty OwnerID`)
+      return
+    }
+
+    parsedOwnerId = parseInt(ownerId, 10)
   }
 
   try {
-    const [parsedId, parsedOwnerId] = [parseInt(id, 10), parseInt(ownerId, 10)]
     let resp = null
     switch (format) {
       case BedtimeFormat.TRACK:
-        console.debug(`Embed track: [${id}]`)
+        console.debug(`Embed track: [${parsedId}]`)
         resp = await getTrackMetadata(parsedId, parsedOwnerId)
         break
       case BedtimeFormat.COLLECTION:
-        console.debug(`Embed collection: [${id}]`)
+        console.debug(`Embed collection: [${parsedId}]`)
         resp = await getCollectionMetadata(parsedId, parsedOwnerId)
         break
       default:

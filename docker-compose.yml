@@ -25,6 +25,9 @@ services:
       dockerfile: Dockerfile
     container_name: node
     restart: unless-stopped
+    volumes:
+      # Mount the code for hot reloading
+      - .:/usr/src/app
     logging:
       options:
         max-size: 1g
