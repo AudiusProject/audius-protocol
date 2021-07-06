@@ -36,29 +36,49 @@ const issueUpdateReplicaSetOpPhases = Object.freeze({
   UPDATE_URSM_REPLICA_SET: 'UPDATE_URSM_REPLICA_SET'
 })
 
-const reconfigModes = Object.freeze({
-  RECONFIG_DISABLED: {
-    key: 'RECONFIG_DISABLED',
-    value: 0
-  },
-  ONE_SECONDARY: {
-    key: 'ONE_SECONDARY',
-    value: 1
-  },
-  MULTIPLE_SECONDARIES: {
-    key: 'MULTIPLE_SECONDARIES',
-    value: 2
-  },
-  PRIMARY_AND_OR_SECONDARIES: {
-    key: 'PRIMARY_AND_OR_SECONDARIES',
-    value: 3
-  },
-  // This mode is currently not used
-  ENTIRE_REPLICA_SET: {
-    key: 'ENTIRE_REPLICA_SET',
-    value: 4
+// Modes used in issuing a reconfig
+const RECONFIG_MODE_KEYS = [
+  'RECONFIG_DISABLED',
+  'ONE_SECONDARY',
+  'MULTIPLE_SECONDARIES',
+  'PRIMARY_AND_OR_SECONDARIES',
+  'ENTIRE_REPLICA_SET'
+]
+
+/*
+  `RECONFIG_MODES` will look like:
+  {
+    RECONFIG_DISABLED: {
+      key: 'RECONFIG_DISABLED',
+      value: 0
+    },
+    ONE_SECONDARY: {
+      key: 'ONE_SECONDARY',
+      value: 1
+    },
+    MULTIPLE_SECONDARIES: {
+      key: 'MULTIPLE_SECONDARIES',
+      value: 2
+    },
+    PRIMARY_AND_OR_SECONDARIES: {
+      key: 'PRIMARY_AND_OR_SECONDARIES',
+      value: 3
+    },
+    // This mode is currently not used
+    ENTIRE_REPLICA_SET: {
+      key: 'ENTIRE_REPLICA_SET',
+      value: 4
+    }
+  }
+*/
+let RECONFIG_MODES = {}
+RECONFIG_MODE_KEYS.forEach((mode, i) => {
+  RECONFIG_MODES[mode] = {
+    key: mode,
+    value: i
   }
 })
+RECONFIG_MODES = Object.freeze(RECONFIG_MODES)
 
 /*
   SnapbackSM aka Snapback StateMachine
@@ -119,13 +139,16 @@ class SnapbackSM {
     // primary to potentially become healthy again. This set is used to track visited primaries.
     this.unhealthyPrimaryToWalletMap = {}
 
-    // The highest level of reconfig ops allowed
-    this.highestReconfigModeEnabled = this.nodeConfig.get('snapbackHighestReconfigMode')
+    // The highest level of reconfig ops allowed. If the passed in mode is not one of the enabled modes, default to `RECONFIG_DISABLED`
+    const highestReconfigModeEnabled = RECONFIG_MODE_KEYS.includes(this.nodeConfig.get('snapbackHighestReconfigMode'))
+      ? this.nodeConfig.get('snapbackHighestReconfigMode') : RECONFIG_MODES.RECONFIG_DISABLED.key
+
+    this.highestReconfigModeEnabled = highestReconfigModeEnabled
 
     // The set of modes enabled for reconfig ops
     // e.x.: 'PRIMARY_AND_SECONDARY' is the reconfig mode -> 'RECONFIG_DISABLED', 'ONE_SECONDARY', 'MULTIPLE_SECONDARIES', 'PRIMARY_AND_SECONDARY' enabled
-    this.enabledReconfigModes = new Set(Object.keys(reconfigModes).filter(mode =>
-      reconfigModes[mode].value <= reconfigModes[this.highestReconfigModeEnabled].value
+    this.enabledReconfigModes = new Set(RECONFIG_MODE_KEYS.filter(mode =>
+      RECONFIG_MODES[mode].value <= RECONFIG_MODES[this.highestReconfigModeEnabled].value
     ))
   }
 
@@ -441,7 +464,7 @@ class SnapbackSM {
     // If entire replica set is unhealthy, select an entire new replica set
     if (unhealthyReplicasSet.size === NUMBER_OF_REPLICA_SET_NODES) {
       this.logWarn(`[determineNewReplicaSet] Entire replica set=[${Array.from(unhealthyReplicasSet)}] is unhealthy. Not issuing new replica set.`)
-      response.issueReconfig = this.isModeEnabled(reconfigModes.RECONFIG_DISABLED.key)
+      response.issueReconfig = this.isModeEnabled(RECONFIG_MODES.RECONFIG_DISABLED.key)
       return response
     }
 
@@ -468,7 +491,7 @@ class SnapbackSM {
     // been visited before, add to in memory map and skip reconfig.
     if (unhealthyReplicasSet.has(primary) && !this.walletInUnhealthyPrimaryMap(primary, wallet)) {
       this.addWalletToUnhealthyPrimaryMap(primary, wallet)
-      response.issueReconfig = this.isModeEnabled(reconfigModes.RECONFIG_DISABLED.key)
+      response.issueReconfig = this.isModeEnabled(RECONFIG_MODES.RECONFIG_DISABLED.key)
       return response
     }
 
@@ -485,24 +508,24 @@ class SnapbackSM {
         response.newPrimary = newPrimary
         response.newSecondary1 = currentHealthySecondary
         response.newSecondary2 = newReplicaNodes[0]
-        response.issueReconfig = this.isModeEnabled(reconfigModes.PRIMARY_AND_OR_SECONDARIES.key)
+        response.issueReconfig = this.isModeEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
       } else {
         // If one secondary is unhealthy, select a new secondary
         const currentHealthySecondary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
         response.newPrimary = primary
         response.newSecondary1 = currentHealthySecondary
         response.newSecondary2 = newReplicaNodes[0]
-        response.issueReconfig = this.isModeEnabled(reconfigModes.ONE_SECONDARY.key)
+        response.issueReconfig = this.isModeEnabled(RECONFIG_MODES.ONE_SECONDARY.key)
       }
     } else if (unhealthyReplicasSet.size === 2) {
       if (unhealthyReplicasSet.has(primary)) {
         // If primary + secondary is unhealthy, use other healthy secondary as primary and 2 random secondaries
         response.newPrimary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
-        response.issueReconfig = this.isModeEnabled(reconfigModes.PRIMARY_AND_OR_SECONDARIES.key)
+        response.issueReconfig = this.isModeEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
       } else {
         // If both secondaries are unhealthy, keep original primary and select two random secondaries
         response.newPrimary = primary
-        response.issueReconfig = this.isModeEnabled(reconfigModes.MULTIPLE_SECONDARIES.key)
+        response.issueReconfig = this.isModeEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key)
       }
       response.newSecondary1 = newReplicaNodes[0]
       response.newSecondary2 = newReplicaNodes[1]
@@ -1257,9 +1280,9 @@ class SnapbackSM {
   }
 
   isModeEnabled (mode) {
-    if (mode === reconfigModes.RECONFIG_DISABLED) return false
+    if (mode === RECONFIG_MODES.RECONFIG_DISABLED) return false
     return this.enabledReconfigModes.has(mode)
   }
 }
 
-module.exports = { SnapbackSM, SyncType }
+module.exports = { SnapbackSM, SyncType, RECONFIG_MODE_KEYS, RECONFIG_MODES }

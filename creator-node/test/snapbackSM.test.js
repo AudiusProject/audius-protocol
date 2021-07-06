@@ -1,7 +1,7 @@
 const nock = require('nock')
 const assert = require('assert')
 
-const { SnapbackSM, SyncType } = require('../src/snapbackSM/snapbackSM')
+const { SnapbackSM, SyncType, RECONFIG_MODES } = require('../src/snapbackSM/snapbackSM')
 const models = require('../src/models')
 const { getLibsMock } = require('./lib/libsMock')
 const utils = require('../src/utils')
@@ -185,7 +185,16 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(recurringWaitingJobIDs.length, 0)
   })
 
-  it('[determineNewReplicaSet] if entire replica set is unhealthy, return falsy replica set ', async function () {
+  it('[determineNewReplicaSet] if config has an unrecognizable mode, default to `RECONFIG_DISABLED`', async function () {
+    nodeConfig.set('snapbackHighestReconfigMode', 'pizza')
+
+    // Create SnapbackSM instance
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    snapback.highestReconfigModeEnabled = RECONFIG_MODES.RECONFIG_DISABLED.key
+  })
+
+  it('[determineNewReplicaSet] if entire replica set is unhealthy, return falsy replica set', async function () {
     // Create SnapbackSM instance
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
@@ -206,8 +215,8 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(issueReconfig, true) // TODO: probably make this return false
   })
 
-  it('[determineNewReplicaSet] if one secondary is unhealthy, return new secondary ', async function () {
-    // Set `snapbackHighestReconfigMode` to 'ONE_SECONDARY'
+  it('[determineNewReplicaSet] if one secondary is unhealthy, return new secondary', async function () {
+    // Set `snapbackHighestReconfigMode` to'ONE_SECONDARY'
     nodeConfig.set('snapbackHighestReconfigMode', 'ONE_SECONDARY')
 
     // Create SnapbackSM instance
