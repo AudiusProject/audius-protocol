@@ -31,7 +31,7 @@ const SyncType = Object.freeze({
 
 // Phases in `issueUpdateReplicaSetOp`. Used for debugging if method fails
 const issueUpdateReplicaSetOpPhases = Object.freeze({
-  GET_HEALTHY_CONTENT_NODES: 'GET_HEALTHY_CONTENT_NODES',
+  DETERMINE_NEW_REPLICA_SET: 'DETERMINE_NEW_REPLICA_SET',
   ENQUEUE_SYNCS: 'ENQUEUE_SYNCS',
   UPDATE_URSM_REPLICA_SET: 'UPDATE_URSM_REPLICA_SET'
 })
@@ -390,7 +390,7 @@ class SnapbackSM {
     let phase = ''
     try {
       // Generate new replica set
-      phase = issueUpdateReplicaSetOpPhases.GET_HEALTHY_CONTENT_NODES
+      phase = issueUpdateReplicaSetOpPhases.DETERMINE_NEW_REPLICA_SET
       const { newPrimary, newSecondary1, newSecondary2, issueReconfig } = await this.determineNewReplicaSet({
         wallet,
         secondary1,
