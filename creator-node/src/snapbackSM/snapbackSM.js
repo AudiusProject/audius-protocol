@@ -1275,9 +1275,27 @@ class SnapbackSM {
     }
   }
 
-  // Fetch clock values with max number of attempts
+  /**
+   * Fetches the clock values for the wallet and secondaries passed in with a max attempt count.
+   * This is used in reconfig ops where if a secondary needs to be promoted to a primary, select the
+   * secondary that has a higher clock value.
+   *
+   * If after `maxClockFetchAttempts` a clock value for a secondary is unavailable, return a clock value
+   * of null.
+   * @param {string} secondary1 the endpoint of one of the secondaries
+   * @param {string} secondary2 the endpoint of the other secondary
+   * @param {string} wallet the wallet of the user
+   * @param {number} [maxClockFetchAttempts=10] the max number of tries to retrieve a clock value
+   * @returns {Object}
+   *  {
+   *    {string} the endpoint of the first secondary: {number | null} the clock value or null
+   *    {string} the endpoint of the second secondary: {number | null} the clock value or null
+   *  }
+   */
   async fetchClockValues (secondary1, secondary2, wallet, maxClockFetchAttempts = 10) {
     let secondariesToClockMap = {}
+    secondariesToClockMap[secondary1] = null
+    secondariesToClockMap[secondary2] = null
     let attempts = 0
 
     while (attempts++ < maxClockFetchAttempts) {
@@ -1305,9 +1323,6 @@ class SnapbackSM {
         return secondariesToClockMap
       }
     }
-
-    if (!secondariesToClockMap[secondary1]) { secondariesToClockMap[secondary1] = null }
-    if (!secondariesToClockMap[secondary2]) { secondariesToClockMap[secondary2] = null }
 
     return secondariesToClockMap
   }
