@@ -69,7 +69,9 @@ async function tearDownAllServices () {
 // This flag is set to 'true' to run the test with the 0th indexed wallet.
 // The default will be 'undefined' for the other tests that do not require
 // this flag.
-const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWallet, ...restParams }) => {
+// The `additionalConfigs` is used for additional parameters for tests
+// * It is used to pass in `iterations` for the test_userReplicaSetNodes
+const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWallet, ...additionalConfigs }) => {
   console.log(testFn)
   const wrappedTest = async ({ executeAll, executeOne }) => {
     try {
@@ -78,7 +80,7 @@ const makeTest = (name, testFn, { numUsers, numCreatorNodes, useZeroIndexedWalle
         executeOne,
         numUsers,
         numCreatorNodes,
-        ...restParams
+        ...additionalConfigs
       })
       if (res && res.error) return { error: res.error }
       return { success: true }

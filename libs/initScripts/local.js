@@ -118,13 +118,9 @@ const run = async () => {
         break
       }
 
-      case 'get-accounts': {
-        await _printAccounts(ethAccounts)
-        break
-      }
-
       case 'print-accounts': {
-        await _getEthContractAccounts(ethAccounts)
+        const numAccounts = args[3] || 20
+        await _printEthContractAccounts(ethAccounts, numAccounts)
         break
       }
 
@@ -429,21 +425,10 @@ const _deregisterCnode = async (ethAccounts, serviceNumber) => {
   await deregisterLocalService(audiusLibs, contentNodeType, endpoint)
 }
 
-const _printAccounts = async (ethAccounts) => {
-  let ganacheEthAccounts = await getEthContractAccounts()
-  const MAX_ACCOUNTS = 10
-  for (let i = 0; i < MAX_ACCOUNTS; i += 1) {
-    let addr = ethAccounts[i]
-    let privateKey = ganacheEthAccounts['private_keys'][addr.toLowerCase()]
-    console.log(`${i + 1}:${addr}:${privateKey}`)
-  }
-}
-
-const _getEthContractAccounts = async (ethAccounts) => {
+const _printEthContractAccounts = async (ethAccounts, numAccounts = 20) => {
   let ganacheEthAccounts = await getEthContractAccounts()
   const accts = []
-  const MAX_ACCOUNTS = 20
-  for (let i = 0; i < MAX_ACCOUNTS; i += 1) {
+  for (let i = 0; i < numAccounts; i += 1) {
     let addr = ethAccounts[i]
     let privateKey = ganacheEthAccounts['private_keys'][addr.toLowerCase()]
     accts.push({
