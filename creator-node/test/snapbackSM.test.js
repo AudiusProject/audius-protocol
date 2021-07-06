@@ -16,7 +16,8 @@ const constants = {
   healthyNode2Endpoint: 'http://healthy2_cn.co',
   healthyNode3Endpoint: 'http://healthy3_cn.co',
   primaryClockVal: 1,
-  wallet: '0x4749a62b82983fdcf19ce328ef2a7f7ec8915fe5'
+  wallet: '0x4749a62b82983fdcf19ce328ef2a7f7ec8915fe5',
+  userId: 1
 }
 
 const healthCheckVerboseResponse = {
@@ -662,5 +663,35 @@ describe('test SnapbackSM', function () {
     assert.ok(snapback.enabledReconfigModes.has('ONE_SECONDARY'))
     assert.ok(snapback.enabledReconfigModes.has('MULTIPLE_SECONDARIES'))
     assert.ok(snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
+  })
+
+  it('[issueUpdateReplicaSetOp] if when `this.endpointToSPIdMap` is used and it does not have an spId for an endpoint, do not issue reconfig', async function () {
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    // Clear the map to mock the inability to map an endpoint to its SP id
+    snapback.endpointToSPIdMap = {}
+    // Return default response
+    snapback.determineNewReplicaSet = async () => {
+      return {
+        newPrimary: constants.primaryEndpoint,
+        newSecondary1: constants.secondary1Endpoint,
+        newSecondary2: constants.healthyNode1Endpoint,
+        issueReconfig: true
+      }
+    }
+
+    const { errorMsg, issuedReconfig } = await snapback.issueUpdateReplicaSetOp(
+      constants.userId,
+      constants.wallet,
+      constants.primaryEndpoint,
+      constants.secondary1Endpoint,
+      constants.secondary2Endpoint,
+      [constants.secondary1Endpoint] /* unhealthyReplicas */,
+      healthyNodes /* healthyNodes */
+    )
+
+    // Check to make sure that issueReconfig is false and the error is the expected error
+    assert.ok(errorMsg.includes('unable to find valid SPs from new replica set'))
+    assert.strictEqual(issuedReconfig, false)
   })
 })

@@ -402,20 +402,33 @@ class SnapbackSM {
 
       // If any of the tentatively new replica set nodes are falsy, do not issue reconfig
       if (!newPrimary || !newSecondary1 || !newSecondary2) {
-        this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} new replica set is improper. Skipping reconfig.`)
+        this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} new replica set is improper. Skipping reconfig.`)
         return response
       }
 
-      this.log(`[issueUpdateReplicaSetOp] Updating userId=${userId} wallet=${wallet} replica set=[${primary},${secondary1},${secondary2}] to new replica set=[${newPrimary},${newSecondary1},${newSecondary2}] issueReconfig=${issueReconfig}`)
+      this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} updating replica set=[${primary},${secondary1},${secondary2}] to new replica set=[${newPrimary},${newSecondary1},${newSecondary2}] issueReconfig=${issueReconfig}`)
 
       // If snapback is not enabled, print the tentative new replica set, but do not issue a reconfig.
       if (!issueReconfig) {
-        this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} issuing reconfig disabled. Skipping reconfig.`)
+        this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} issuing reconfig disabled. Skipping reconfig.`)
         return response
       }
 
       // Create new array of replica set spIds and write to URSM
       phase = issueUpdateReplicaSetOpPhases.UPDATE_URSM_REPLICA_SET
+      const newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
+      newReplicaSetEndpoints.forEach(endpt => {
+        if (this.endpointToSPIdMap[endpt]) newReplicaSetSPIds.push(this.endpointToSPIdMap[endpt])
+      })
+
+      // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
+      // selected as part of the new replica set, do not issue reconfig
+      if (newReplicaSetSPIds.length !== NUMBER_OF_REPLICA_SET_NODES) {
+        response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set spIds=[${newReplicaSetSPIds}]. Skipping reconfig.`
+        this.logError(response.errorMsg)
+        return response
+      }
+
       newReplicaSetSPIds = [
         this.endpointToSPIdMap[newPrimary],
         this.endpointToSPIdMap[newSecondary1],
