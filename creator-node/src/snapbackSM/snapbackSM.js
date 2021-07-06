@@ -385,18 +385,19 @@ class SnapbackSM {
         healthyNodes
       })
 
-      // If snapback is not enabled, or any of the tentatively new replica set nodes are falsy, do not issue reconfig
-      if (
-        !issueReconfig ||
-        !newPrimary ||
-        !newSecondary1 ||
-        !newSecondary2
-      ) {
-        this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} skipping reconfig`)
+      // If any of the tentatively new replica set nodes are falsy, do not issue reconfig
+      if (!newPrimary || !newSecondary1 || !newSecondary2) {
+        this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} new replica set is improper. Skipping reconfig.`)
         return response
       }
 
       this.log(`[issueUpdateReplicaSetOp] Updating userId=${userId} wallet=${wallet} replica set=[${primary},${secondary1},${secondary2}] to new replica set=[${newPrimary},${newSecondary1},${newSecondary2}] issueReconfig=${issueReconfig}`)
+
+      // If snapback is not enabled, print the tentative new replica set, but do not issue a reconfig.
+      if (!issueReconfig) {
+        this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} issuing reconfig disabled. Skipping reconfig.`)
+        return response
+      }
 
       // Create new array of replica set spIds and write to URSM
       phase = issueUpdateReplicaSetOpPhases.UPDATE_URSM_REPLICA_SET
