@@ -1,8 +1,8 @@
 import logging # pylint: disable=C0302
 
-from sqlalchemy import func
+from sqlalchemy import func, and_, or_
 from sqlalchemy.sql.functions import coalesce
-from src.models import AggregatePlays, Track, User
+from src.models import AggregatePlays, Track, TrackRoute, User
 from src.utils import helpers, redis_connection
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import add_query_pagination, get_pagination_vars, parse_sort_param, \
@@ -137,3 +137,42 @@ def get_tracks(args):
                     track['user'] = user
 
     return tracks
+
+
+def get_track_id_by_slug(handle: str, slug: str):
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        route = (
+            session.query(TrackRoute)
+            .join(User, User.user_id == TrackRoute.owner_id)
+            .filter(User.is_current, TrackRoute.is_current)
+            .filter(TrackRoute.slug == slug)
+            .filter(User.handle_lc == handle.lower())
+        ).one()
+        return route.track_id
+
+
+def get_tracks_by_routes(routes: list):
+    db = get_db_read_replica()
+
+    filters = []
+    for route in routes:
+        filters.append(and_(
+            TrackRoute.slug == route["slug"],
+            User.handle_lc == route["handle"].lower()
+        ))
+
+    with db.scoped_session() as session:
+        tracks_query = (
+            session.query(Track, TrackRoute)
+            .join(User, Track.owner_id == User.user_id)
+            .join(TrackRoute,
+                  and_(TrackRoute.track_id == Track.track_id,
+                       TrackRoute.owner_id == Track.owner_id))
+            # .filter(User.is_current)
+            .filter(or_(*filters))
+        )
+        print(str(tracks_query))
+        tracks = tracks_query.all()
+        print(tracks)
+        return tracks
