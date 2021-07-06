@@ -1213,7 +1213,7 @@ class SnapbackSM {
   }
 
   // Fetch clock values with max number of attempts
-  async fetchClockValues (secondary1, secondary2, wallet, maxClockFetchAttempts = 50) {
+  async fetchClockValues (secondary1, secondary2, wallet, maxClockFetchAttempts = 10) {
     let secondariesToClockMap = {}
     let attempts = 0
 
