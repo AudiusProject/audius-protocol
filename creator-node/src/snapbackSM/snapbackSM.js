@@ -473,9 +473,14 @@ class SnapbackSM {
    * 3. Depending the number and type of unhealthy nodes in `unhealthyReplicaSet`, issue reconfig:
    *  - if one secondary is unhealthy -> {primary: current primary, secondary1: the healthy secondary, secondary2: new healthy node}
    *  - if two secondaries are unhealthy -> {primary: current primary, secondary1: new healthy node, secondary2: new healthy node}
-   *  - if one primary is unhealthy -> {primary: higher clock value of the two secondaries, secondary1: the healthy secondary, secondary2: new healthy node}
-   *  - if one primary and one secondary are unhealthy -> {primary: the healthy secondary, secondary1: new healthy node, secondary2: new healthy node}
+   *  - ** if one primary is unhealthy -> {primary: higher clock value of the two secondaries, secondary1: the healthy secondary, secondary2: new healthy node}
+   *  - ** if one primary and one secondary are unhealthy -> {primary: the healthy secondary, secondary1: new healthy node, secondary2: new healthy node}
    *  - if entire replica set is unhealthy -> (do not issue reconfig) {primary: null, secondary1: null, secondary2: null}
+   *
+   * ** - If in the case a primary is ever unhealthy, we do not want to pre-emptively issue a reconfig and cycle out the primary. If a
+   * primary is ever unhealthy, mark for that wallet in `this.unhealthyPrimaryToWalletMap` that for this current iteration, this primary
+   * is unhealthy. If by `this.moduloBase` iterations later that the primary is still unhealthy and has been marked as visited for that
+   * wallet, issue a reconfig for that primary.
    *
    * Also, there is the notion of `issueReconfig`. This value is used to determine whether or not to issue a reconfig based on
    * the value of `this.highestReconfigModeEnabled` and the type of reconfig that needs to be issued. See `RECONFIG_MODE_KEYS` variable
@@ -499,10 +504,9 @@ class SnapbackSM {
   async determineNewReplicaSet ({ primary, secondary1, secondary2, wallet, unhealthyReplicasSet, healthyNodes }) {
     let response = { newPrimary: null, newSecondary1: null, newSecondary2: null, issueReconfig: false }
 
-    // If entire replica set is unhealthy, select an entire new replica set
+    // If entire replica set is unhealthy, do not issue reconfig
     if (unhealthyReplicasSet.size === NUMBER_OF_REPLICA_SET_NODES) {
       this.logWarn(`[determineNewReplicaSet] Entire replica set=[${Array.from(unhealthyReplicasSet)}] is unhealthy. Not issuing new replica set.`)
-      response.issueReconfig = false
       return response
     }
 
