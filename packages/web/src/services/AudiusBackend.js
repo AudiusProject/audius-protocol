@@ -1033,13 +1033,15 @@ class AudiusBackend {
         newMetadata.website ||
         newMetadata.donation
       ) {
+        const { data, signature } = await AudiusBackend.signData()
         await fetch(`${IDENTITY_SERVICE}/social_handles`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            [AuthHeaders.Message]: data,
+            [AuthHeaders.Signature]: signature
           },
           body: JSON.stringify({
-            handle: newMetadata.handle,
             twitterHandle: newMetadata.twitter_handle,
             instagramHandle: newMetadata.instagram_handle,
             website: newMetadata.website,
@@ -1536,14 +1538,16 @@ class AudiusBackend {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     try {
+      const { data, signature } = await AudiusBackend.signData()
       await fetch(`${IDENTITY_SERVICE}/artist_pick`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          [AuthHeaders.Message]: data,
+          [AuthHeaders.Signature]: signature
         },
         body: JSON.stringify({
-          trackId,
-          handle: account.handle
+          trackId
         })
       })
     } catch (err) {
