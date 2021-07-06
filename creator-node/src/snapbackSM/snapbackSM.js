@@ -458,7 +458,7 @@ class SnapbackSM {
     // If entire replica set is unhealthy, select an entire new replica set
     if (unhealthyReplicasSet.size === NUMBER_OF_REPLICA_SET_NODES) {
       this.logWarn(`[determineNewReplicaSet] Entire replica set=[${Array.from(unhealthyReplicasSet)}] is unhealthy. Not issuing new replica set.`)
-      response.issueReconfig = this.isReconfigModeEnabled(RECONFIG_MODES.RECONFIG_DISABLED.key)
+      response.issueReconfig = false
       return response
     }
 

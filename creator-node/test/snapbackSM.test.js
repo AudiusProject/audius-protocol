@@ -212,7 +212,7 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(newPrimary, null)
     assert.strictEqual(newSecondary1, null)
     assert.strictEqual(newSecondary2, null)
-    assert.strictEqual(issueReconfig, true) // TODO: probably make this return false
+    assert.strictEqual(issueReconfig, false)
   })
 
   it('[determineNewReplicaSet] if one secondary is unhealthy, return new secondary', async function () {
