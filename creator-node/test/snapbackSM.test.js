@@ -191,7 +191,7 @@ describe('test SnapbackSM', function () {
     // Create SnapbackSM instance
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
-    snapback.highestReconfigModeEnabled = RECONFIG_MODES.RECONFIG_DISABLED.key
+    assert.strictEqual(snapback.highestReconfigModeEnabled, RECONFIG_MODES.RECONFIG_DISABLED.key)
   })
 
   it('[determineNewReplicaSet] if entire replica set is unhealthy, return falsy replica set', async function () {
