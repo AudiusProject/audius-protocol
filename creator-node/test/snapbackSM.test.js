@@ -491,6 +491,10 @@ describe('test SnapbackSM', function () {
       healthyNodes
     })
 
+    nock(constants.primaryEndpoint)
+      .get(() => true)
+      .reply(200)
+
     // Second iteration - Primary becomes healthy during check
     const { newPrimary, newSecondary1, newSecondary2, issueReconfig } = await snapback.determineNewReplicaSet({
       primary: constants.primaryEndpoint,
@@ -512,7 +516,7 @@ describe('test SnapbackSM', function () {
     assert.ok(snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
   })
 
-  it.only('[determineNewReplicaSet] if primary+secondary are unhealthy on first iteration, and on second iteration the primary fails the health check again, return a secondary promoted to a primary, and 2 new secondaries', async function () {
+  it('[determineNewReplicaSet] if primary+secondary are unhealthy on first iteration, and on second iteration the primary fails the health check again, return a secondary promoted to a primary, and 2 new secondaries', async function () {
     nodeConfig.set('snapbackHighestReconfigMode', 'PRIMARY_AND_OR_SECONDARIES')
 
     // Create SnapbackSM instance
@@ -570,7 +574,6 @@ describe('test SnapbackSM', function () {
     })
 
     // Check to make sure that the new replica set is what we expect it to be
-    // New replica set are all falsy
     assert.strictEqual(newPrimary, constants.secondary2Endpoint)
     assert.ok(healthyNodes.includes(newSecondary1))
     assert.ok(healthyNodes.includes(newSecondary2))
@@ -581,12 +584,74 @@ describe('test SnapbackSM', function () {
     assert.ok(snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
   })
 
-  // it('[determineNewReplicaSet] if primary+secondary are unhealthy on first iteration, and on second iteration the primary passes the health check, return the existing replica set with a new secondary', async function () {
+  it('[determineNewReplicaSet] if primary+secondary are unhealthy on first iteration, and on second iteration the primary passes the health check, return the existing replica set with a new secondary', async function () {
+    nodeConfig.set('snapbackHighestReconfigMode', 'PRIMARY_AND_OR_SECONDARIES')
 
-  // })
+    // Create SnapbackSM instance
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
-  // // think about this one
-  // it('[determineNewReplicaSet] if primary is added to `this.unhealthyPrimaryMap` only once, ensure that after it gets cleared after some amount of time', async function () {
+    // Mock `selectRandomReplicaSetNodes` to return the healthy nodes
+    snapback.selectRandomReplicaSetNodes = async () => { return healthyNodes }
 
-  // })
+    nock(constants.primaryEndpoint)
+      .get(() => true)
+      .reply(500)
+
+    nock(constants.secondary1Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: { clockValue: 10 } })
+
+    nock(constants.secondary2Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: { clockValue: 10 } })
+
+    nock(constants.healthyNode1Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: healthCheckVerboseResponse })
+
+    nock(constants.healthyNode2Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: healthCheckVerboseResponse })
+
+    nock(constants.healthyNode3Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: healthCheckVerboseResponse })
+
+    await snapback.determineNewReplicaSet({
+      primary: constants.primaryEndpoint,
+      secondary1: constants.secondary1Endpoint,
+      secondary2: constants.secondary2Endpoint,
+      wallet: constants.wallet,
+      unhealthyReplicasSet: new Set([constants.primaryEndpoint, constants.secondary1Endpoint]),
+      healthyNodes
+    })
+
+    nock(constants.primaryEndpoint)
+      .get(() => true)
+      .reply(200)
+
+    const { newPrimary, newSecondary1, newSecondary2, issueReconfig } = await snapback.determineNewReplicaSet({
+      primary: constants.primaryEndpoint,
+      secondary1: constants.secondary1Endpoint,
+      secondary2: constants.secondary2Endpoint,
+      wallet: constants.wallet,
+      unhealthyReplicasSet: new Set([constants.primaryEndpoint, constants.secondary1Endpoint]),
+      healthyNodes
+    })
+
+    // Check to make sure that the new replica set is what we expect it to be
+    assert.strictEqual(newPrimary, constants.primaryEndpoint)
+    assert.strictEqual(newSecondary1, constants.secondary2Endpoint)
+    assert.ok(healthyNodes.includes(newSecondary2))
+    assert.strictEqual(issueReconfig, true)
+    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
+    assert.ok(snapback.enabledReconfigModes.has('ONE_SECONDARY'))
+    assert.ok(snapback.enabledReconfigModes.has('MULTIPLE_SECONDARIES'))
+    assert.ok(snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
+  })
 })

@@ -437,6 +437,7 @@ class SnapbackSM {
    */
   async determineNewReplicaSet ({ primary, secondary1, secondary2, wallet, unhealthyReplicasSet, healthyNodes }) {
     let response = { newPrimary: null, newSecondary1: null, newSecondary2: null, issueReconfig: false }
+
     // If entire replica set is unhealthy, select an entire new replica set
     if (unhealthyReplicasSet.size === NUMBER_OF_REPLICA_SET_NODES) {
       this.logWarn(`[determineNewReplicaSet] Entire replica set=[${Array.from(unhealthyReplicasSet)}] is unhealthy. Not issuing new replica set.`)
