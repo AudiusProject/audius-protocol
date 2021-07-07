@@ -142,7 +142,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         multiDexEnabled true
 
-        versionCode 112
+        versionCode 113
         versionName "1.0.85"
         resValue "string", "build_config_package", "co.audius.app"
     }
