@@ -38,7 +38,7 @@ def check_transaction_status():
     transactionhash = request.args.get("transactionhash")
     if blocknumber is None or blockhash is None or transactionhash is None:
         return error_response(
-            f"Please pass in required query parameters 'blocknumber', 'blockhash', and 'transactionhash'",
+            "Please pass in required query parameters 'blocknumber', 'blockhash', and 'transactionhash'",
             400,
         )
     try:

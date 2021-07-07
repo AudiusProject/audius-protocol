@@ -153,7 +153,7 @@ def user_replica_set_state_update(
                                 event_type
                             )
                 except Exception as e:
-                    logger.info(f"Error in parse user replica set transaction")
+                    logger.info("Error in parse user replica set transaction")
                     event_blockhash = update_task.web3.toHex(block_hash)
                     raise IndexingError(
                         "user_replica_set",

@@ -166,7 +166,7 @@ def test_sweep_metrics(redis_mock, db_mock):
     redis_mock.hmset(beforeKey, app_names)
     redis_mock.hmset(afterKey, app_names)
 
-    keys = redis_mock.keys(f"API_METRICS:applications:*")
+    keys = redis_mock.keys("API_METRICS:applications:*")
     key_strs = [key_byte.decode("utf-8") for key_byte in keys]
 
     assert len(keys) == 3
@@ -196,7 +196,7 @@ def test_sweep_metrics(redis_mock, db_mock):
         assert len(music_res) == 1
 
     # SHould be removed after the sweep
-    keys = redis_mock.keys(f"API_METRICS:applications:*")
+    keys = redis_mock.keys("API_METRICS:applications:*")
     key_strs = [key_byte.decode("utf-8") for key_byte in keys]
 
     assert len(keys) == 2

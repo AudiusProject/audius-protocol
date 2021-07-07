@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 # (note that connections have their isolation level wiped before being returned
 # to the conn pool: https://docs.sqlalchemy.org/en/14/core/connections.html
 def vacuum_matviews(db):
-    logger.info(f"index_materialized_views.py | Beginning vacuum")
+    logger.info("index_materialized_views.py | Beginning vacuum")
     vacuum_start = time.time()
 
     engine = db._engine

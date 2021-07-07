@@ -222,7 +222,7 @@ class IPFSClient:
             r = self._api.swarm.connect(peer, timeout=3)
             logger.info(r)
         except Exception as e:
-            logger.error(f"IPFSCLIENT | IPFS Failed to update peer")
+            logger.error("IPFSCLIENT | IPFS Failed to update peer")
             logger.error(e)
 
     def update_cnode_urls(self, cnode_endpoints):

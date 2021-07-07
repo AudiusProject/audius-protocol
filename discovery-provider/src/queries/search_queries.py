@@ -574,7 +574,7 @@ def user_search_query(
         return []
 
     res = sqlalchemy.text(
-        f"""
+        """
         select u.user_id, b.balance, b.associated_wallets_balance from (
             select user_id from (
                 select user_id, (

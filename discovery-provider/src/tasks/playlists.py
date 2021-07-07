@@ -75,7 +75,7 @@ def playlist_state_update(
                         ] = playlist_record
                         processedEntries += 1
                 except Exception as e:
-                    logger.info(f"Error in parse playlist transaction")
+                    logger.info("Error in parse playlist transaction")
                     blockhash = update_task.web3.toHex(block_hash)
                     raise IndexingError(
                         "playlist", block_number, blockhash, txhash, str(e)

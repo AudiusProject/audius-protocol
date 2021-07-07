@@ -102,7 +102,7 @@ def social_feature_state_update(
                 follow_state_changes,
             )
         except Exception as e:
-            logger.info(f"Error in parse track transaction")
+            logger.info("Error in parse track transaction")
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             blockhash = update_task.web3.toHex(block_hash)
             raise IndexingError(

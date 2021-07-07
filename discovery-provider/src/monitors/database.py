@@ -66,9 +66,10 @@ def get_database_connection_info(**kwargs):
     db = kwargs["db"]
     with db.scoped_session() as session:
         q = sqlalchemy.text(
-            f"select wait_event_type, wait_event, state, query, to_char(query_start, 'DD Mon YYYY HH:MI:SSPM')"
-            + f'as "query_start" from pg_stat_activity where datname = current_database()'
+            "select wait_event_type, wait_event, state, query, to_char(query_start, 'DD Mon YYYY HH:MI:SSPM')"
+            + 'as "query_start" from pg_stat_activity where datname = current_database()'
         )
+
         result = session.execute(q).fetchall()
         connection_info = [dict(row) for row in result]
         return json.dumps(connection_info)
@@ -85,7 +86,7 @@ def get_database_index_count(**kwargs):
     db = kwargs["db"]
     with db.scoped_session() as session:
         q = sqlalchemy.text(
-            f"SELECT COUNT(*) FROM pg_indexes WHERE schemaname = 'public'"
+            "SELECT COUNT(*) FROM pg_indexes WHERE schemaname = 'public'"
         )
         res = session.execute(q).fetchone()[0]
         return res
@@ -102,8 +103,8 @@ def get_database_index_info(**kwargs):
     db = kwargs["db"]
     with db.scoped_session() as session:
         q = sqlalchemy.text(
-            f"SELECT tablename, indexname, indexdef FROM pg_indexes WHERE schemaname = 'public'"
-            + f"ORDER BY tablename, indexname"
+            "SELECT tablename, indexname, indexdef FROM pg_indexes WHERE schemaname = 'public'"
+            + "ORDER BY tablename, indexname"
         )
         result = session.execute(q).fetchall()
         connection_info = [dict(row) for row in result]

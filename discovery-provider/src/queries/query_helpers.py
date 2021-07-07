@@ -266,7 +266,7 @@ def get_track_play_count_dict(session, track_ids):
     if not track_ids:
         return {}
     query = text(
-        f"""
+        """
         select play_item_id, count
         from aggregate_plays
         where play_item_id in :ids

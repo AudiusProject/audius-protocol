@@ -267,12 +267,12 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
     latest_block_hash = None
 
     if redis is None or web3 is None:
-        raise Exception(f"Invalid arguments for get_latest_chain_block_set_if_nx")
+        raise Exception("Invalid arguments for get_latest_chain_block_set_if_nx")
 
     # also check for 'eth' attribute in web3 which means it's initialized and connected to a provider
     if not hasattr(web3, "eth"):
         raise Exception(
-            f"Invalid web3 argument for get_latest_chain_block_set_if_nx, web3 is not initialized"
+            "Invalid web3 argument for get_latest_chain_block_set_if_nx, web3 is not initialized"
         )
 
     stored_latest_block_num = redis.get(latest_block_redis_key)

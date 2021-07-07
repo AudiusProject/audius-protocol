@@ -94,7 +94,7 @@ def track_state_update(
                         track_events[track_id]["track"] = parsed_track
                         processedEntries += 1
                 except Exception as e:
-                    logger.info(f"Error in parse track transaction")
+                    logger.info("Error in parse track transaction")
                     blockhash = update_task.web3.toHex(block_hash)
                     raise IndexingError(
                         "track", block_number, blockhash, txhash, str(e)

@@ -79,7 +79,7 @@ def user_library_state_update(
                 playlist_save_state_changes,
             )
         except Exception as e:
-            logger.info(f"Error in user library transaction")
+            logger.info("Error in user library transaction")
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             blockhash = update_task.web3.toHex(block_hash)
             raise IndexingError(
