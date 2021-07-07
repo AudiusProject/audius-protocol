@@ -277,7 +277,7 @@ def extend_activity(item):
     return None
 
 
-challenge_type_map: Dict[ChallengeType, str] = {
+challenge_type_map: Dict[str, str] = {
     ChallengeType.boolean: "boolean",
     ChallengeType.numeric: "numeric",
     ChallengeType.aggregate: "aggregate",
