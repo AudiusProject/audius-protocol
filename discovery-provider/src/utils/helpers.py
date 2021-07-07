@@ -17,6 +17,8 @@ from . import multihash
 def get_ip(request_obj):
     """Gets the IP address from a request using the X-Forwarded-For header if present"""
     ip = request_obj.headers.get('X-Forwarded-For', request_obj.remote_addr)
+    if not ip:
+        return ""
     return ip.split(',')[0].strip()
 
 def redis_restore(redis, key):
@@ -145,6 +147,11 @@ formatter = JsonFormatter(
     mix_extra=True
 )
 
+def reset_logging():
+    root = logging.getLogger()
+    list(map(root.removeHandler, root.handlers))
+    list(map(root.removeFilter, root.filters))
+
 # Configures root logger with custom format and loglevel
 # All child loggers will inherit settings from root logger as configured in this function
 def configure_logging(loglevel_str='WARN'):
@@ -176,6 +183,7 @@ def configure_flask_app_logging(app, loglevel_str):
     # Set a timer before the req to get the request time
     @app.before_request
     def start_timer(): # pylint: disable=W0612
+        # pylint: disable=E0237
         g.start = time.time()
 
     # Log the request
@@ -327,7 +335,7 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
 def create_track_route_id(title, handle):
     # Strip out invalid character
     sanitized_title = re.sub(
-        r'!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]', '', title)
+        r'!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00', '', title)
 
     # Convert whitespaces to dashes
     sanitized_title = re.sub(r'\s+', '-', sanitized_title)
@@ -342,6 +350,33 @@ def create_track_route_id(title, handle):
     sanitized_handle = handle.lower()
 
     return f"{sanitized_handle}/{sanitized_title}"
+
+
+def create_track_slug(title, collision_id=0):
+    """ Converts the title of a track into a URL-friendly 'slug'
+
+    Strips special characters, replaces spaces with dashes, converts to
+    lowercase, and appends a collision_id if non-zero.
+
+    Example:
+    (Title="My Awesome Track!", collision_id=2) => "my-awesome-track-2"
+    """
+    # Strip out invalid character
+    sanitized_title = re.sub(
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^", "", title
+    )
+
+    # Convert whitespaces to dashes
+    sanitized_title = re.sub(r"\s+", "-", sanitized_title)
+    sanitized_title = re.sub(r"-+", "-", sanitized_title)
+
+    sanitized_title = sanitized_title.lower()
+
+    if collision_id > 0:
+        sanitized_title = f"{sanitized_title}-{collision_id}"
+
+    return sanitized_title
+
 
 # Validates the existance of arguments within a request.
 # req_args is a map, expected_args is a list of string arguments expected to be present in the map.

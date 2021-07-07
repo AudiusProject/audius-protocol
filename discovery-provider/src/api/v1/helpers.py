@@ -1,10 +1,13 @@
 import logging
+from typing import Dict
 from src import api_helpers
 from src.utils.config import shared_config
 from hashids import Hashids
 from flask_restx import fields, reqparse
 from datetime import datetime
 from .models.common import full_response
+from src.queries.get_challenges import ChallengeResponse
+from src.models import ChallengeType
 
 logger = logging.getLogger(__name__)
 
@@ -244,6 +247,20 @@ def extend_activity(item):
         }
     return None
 
+challenge_type_map: Dict[ChallengeType, str] = {
+    ChallengeType.boolean: 'boolean',
+    ChallengeType.numeric: 'numeric',
+    ChallengeType.aggregate: 'aggregate',
+    ChallengeType.trending: 'trending'
+}
+
+def extend_challenge_response(challenge: ChallengeResponse):
+    user_id = encode_int_id(challenge["user_id"])
+    new_challenge = challenge.copy()
+    new_challenge["user_id"] = user_id
+    new_challenge["challenge_type"] = challenge_type_map[challenge["challenge_type"]]
+    return new_challenge
+
 def abort_bad_path_param(param, namespace):
     namespace.abort(400, "Oh no! Bad path parameter {}.".format(param))
 
@@ -325,4 +342,3 @@ def get_default_max(value, default, max=None):
         return value
     else:
         return min(value, max)
-

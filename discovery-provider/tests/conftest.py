@@ -46,6 +46,9 @@ def app():
     redis = get_redis()
     redis.flushall()
 
+    # Clear any existing logging config
+    helpers.reset_logging()
+
     # run db migrations because the db gets dropped at the start of the tests
     alembic_dir = os.getcwd()
     alembic_config = alembic.config.Config(f"{alembic_dir}/alembic.ini")

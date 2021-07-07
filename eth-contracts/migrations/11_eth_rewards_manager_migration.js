@@ -14,7 +14,7 @@ module.exports = (deployer, network, accounts) => {
     const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
     const guardianAddress = config.guardianAddress || proxyDeployerAddress
     const solanaRecipientAddress = config.solanaRecipientAddress || Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
-    const antiAbuseOracleAddress = config.antiAbuseOracleAddress || accounts[12]
+    const antiAbuseOracleAddresses = config.antiAbuseOracleAddresses || [accounts[12], accounts[13], accounts[14]]
     let wormholeAddress = config.wormholeAddress
 
     const tokenAddress = process.env.tokenAddress
@@ -31,8 +31,8 @@ module.exports = (deployer, network, accounts) => {
     const ethRewardsManager0 = await deployer.deploy(EthRewardsManager, { from: proxyDeployerAddress })
     const initializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'address', 'bytes32', 'address'],
-      [tokenAddress, governanceAddress, wormholeAddress, solanaRecipientAddress, antiAbuseOracleAddress]
+      ['address', 'address', 'address', 'bytes32', 'address[]'],
+      [tokenAddress, governanceAddress, wormholeAddress, solanaRecipientAddress, antiAbuseOracleAddresses]
     )
 
     const ethRewardsManagerProxy = await deployer.deploy(

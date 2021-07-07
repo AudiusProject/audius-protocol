@@ -1,6 +1,8 @@
 import random
 from datetime import datetime
-from src.models import Block, User
+from unittest.mock import patch
+from src.models import Block, TrackRoute, User
+from src.tasks.index import revert_blocks
 from src.tasks.tracks import parse_track_event, lookup_track_record, track_event_types_lookup
 from src.utils import helpers
 from src.utils.db_session import get_db
@@ -17,6 +19,20 @@ def get_new_track_event():
         '_multihashSize': 32
     })
     return event_type, AttrDict({"blockHash": "0x", "args": new_track_event})
+
+
+def get_new_track_event_dupe():
+    event_type = track_event_types_lookup['new_track']
+    new_track_event = AttrDict({
+        '_id': 2,
+        '_trackOwnerId': 1,
+        '_multihashDigest':
+            b'@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg',
+        '_multihashHashFn': 18,
+        '_multihashSize': 32
+    })
+    return event_type, AttrDict({"blockHash": "0x", "args": new_track_event})
+
 
 def get_update_track_event():
     event_type = track_event_types_lookup['update_track']
@@ -36,14 +52,73 @@ def get_delete_track_event():
     })
     return event_type, AttrDict({"blockHash": "0x", "args": delete_track_event})
 
+
 multihash = helpers.multihash_digest_to_cid(
     b'@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82' +
     b'\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg'
 )
+multihash2 = helpers.multihash_digest_to_cid(
+    b'\x93\x7f\xa2\xe6\xf0\xe5\xb5f\xca\x14(4m.B' +
+    b'\xba3\xf8\xc8<|%*{\x11\xc1\xe2/\xd7\xee\xd7q'
+)
+
 ipfs_client = IPFSClient({
     multihash: {
         "owner_id": 1,
         "title": "real magic bassy flip",
+        "length": None,
+        "cover_art": None,
+        "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
+        "tags": "realmagic,rickyreed,theroom",
+        "genre": "R&B/Soul",
+        "mood": "Empowering",
+        "credits_splits": None,
+        "created_at": "2020-07-11 08:22:15",
+        "create_date": None,
+        "updated_at": "2020-07-11 08:22:15",
+        "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
+        "file_type": None,
+        "track_segments": [
+            {
+                "duration": 6.016,
+                "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp"
+            }
+        ],
+        "has_current_user_reposted": False,
+        "is_current": True,
+        "is_unlisted": False,
+        "field_visibility": {
+            "mood": True,
+            "tags": True,
+            "genre": True,
+            "share": True,
+            "play_count": True,
+            "remixes": True
+        },
+        "remix_of": {
+            "tracks": [
+                {
+                    "parent_track_id": 75808
+                }
+            ]
+        },
+        "repost_count": 12,
+        "save_count": 21,
+        "description": None,
+        "license": "All rights reserved",
+        "isrc": None,
+        "iswc": None,
+        "download": {
+            "cid": None,
+            "is_downloadable": False,
+            "requires_follow": False
+        },
+        "track_id": 77955,
+        "stem_of": None
+    },
+    multihash2: {
+        "owner_id": 1,
+        "title": "real magic bassy flip 1",
         "length": None,
         "cover_art": None,
         "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
@@ -98,7 +173,8 @@ ipfs_client = IPFSClient({
 web3 = Web3()
 
 # ========================================== Start Tests ==========================================
-def test_index_tracks(app):
+@patch('src.tasks.index')
+def test_index_tracks(mock_index_task, app):
     """Tests that tracks are indexed correctly"""
     with app.app_context():
         db = get_db()
@@ -202,6 +278,149 @@ def test_index_tracks(app):
             "cid": track_metadata["download"].get("cid", None),
         }
 
+        # ================== Test Update Track Event ==================
+        prev_block = session.query(Block).filter(Block.is_current == True).one()
+        prev_block.is_current = False
+        block_number += 1
+        block_hash = f"0x{block_number}"
+        # Create a new block to test reverts later
+        second_block = Block(
+            blockhash=block_hash,
+            number=block_number,
+            is_current=True
+        )
+        session.add(second_block)
+        session.flush()
+
+        # Refresh the track record
+        track_record = lookup_track_record(
+            update_task,
+            session,
+            entry,
+            1, # event track id
+            block_number,
+            block_hash,
+            '0x' # txhash
+        )
+
+        event_type, entry = get_update_track_event()
+        parse_track_event(
+            None,
+            session,
+            update_task,
+            entry,
+            event_type,
+            track_record,
+            block_timestamp
+        )
+
+        # Check that track routes are updated appropriately
+        track_routes = (
+            session.query(TrackRoute).filter(TrackRoute.track_id == 1).all()
+        )
+        assert len(track_routes) == 2
+        assert track_routes[0].is_current is False
+        assert track_routes[0].slug == "real-magic-bassy-flip"
+        assert track_routes[1].is_current is True
+        assert track_routes[1].slug == "real-magic-bassy-flip-1"
+
+        # ============== Test Track Route Collisions ===================
+
+        # Attempts to insert a new track with the route "real-magic-bassy-flip"
+        # Should attempt to try to route to "real-magic-bassy-flip-1", but
+        # that should be taken by the rename above, so the fallback logic
+        # should trigger making it go to "real-magic-bassy-flip-2"
+        event_type, entry = get_new_track_event_dupe()
+        track_record_dupe = lookup_track_record(
+            update_task,
+            session,
+            entry,
+            2,  # event track id
+            block_number,
+            block_hash,
+            '0x'  # txhash
+        )
+
+        parse_track_event(
+            None,
+            session,
+            update_task,
+            entry,
+            event_type,
+            track_record_dupe,
+            block_timestamp
+        )
+
+        # Check that track routes are assigned appropriately
+        track_routes = (
+            session.query(TrackRoute).filter(TrackRoute.track_id == 2).all()
+        )
+        assert len(track_routes) == 1
+        assert track_routes[0].is_current is True
+        assert track_routes[0].title_slug == "real-magic-bassy-flip"
+        assert track_routes[0].slug == "real-magic-bassy-flip-2"
+        assert track_routes[0].collision_id == 2
+
+        # Another "real-magic-bassy-flip", which should find collision id 2 and
+        # easily jump to collision id 3 and not need fallback logic
+        event_type, entry = get_new_track_event_dupe()
+
+        track_record_dupe = lookup_track_record(
+            update_task,
+            session,
+            entry,
+            3,  # event track id
+            block_number,
+            block_hash,
+            '0x'  # txhash
+        )
+
+        parse_track_event(
+            None,
+            session,
+            update_task,
+            entry,
+            event_type,
+            track_record_dupe,
+            block_timestamp
+        )
+
+        # Check that track routes are assigned appropriately
+        track_routes = (
+            session.query(TrackRoute).filter(TrackRoute.track_id == 3).all()
+        )
+        assert len(track_routes) == 1
+        assert track_routes[0].is_current is True
+        assert track_routes[0].title_slug == "real-magic-bassy-flip"
+        assert track_routes[0].slug == "real-magic-bassy-flip-3"
+        assert track_routes[0].collision_id == 3
+
+        # ================== Test Revert TrackRoute ===================
+
+        # Assert that there exists a previous record to revert to
+        # that isn't marked as is_current
+        track_route = (
+            session.query(TrackRoute)
+            .filter(TrackRoute.track_id == 1, TrackRoute.is_current == False)
+            .all()
+        )
+        assert track_route
+
+        revert_blocks(mock_index_task, db, [second_block])
+
+        session.commit()
+
+        track_routes = (
+            session.query(TrackRoute).all()
+        )
+
+        # That old route should now be marked as is_current, and in fact should
+        # be the only remaining route
+        assert len(track_routes) == 1
+        assert track_routes[0].is_current is True
+        assert track_routes[0].track_id == 1
+        assert track_routes[0].slug == "real-magic-bassy-flip"
+
         # ================== Test Delete Track Event ==================
         event_type, entry = get_delete_track_event()
 
@@ -217,3 +436,8 @@ def test_index_tracks(app):
 
         # updated_at should be updated every parse_track_event
         assert track_record.is_delete == True
+
+def test_track_index_helpers():
+    title = "#$*$(Strip\x00\x00\x00 !!@#*)&$(&#$%*Weird   + Characters"
+    assert helpers.create_track_slug(title, 0) == "strip-weird-characters"
+    assert helpers.create_track_slug(title, 3) == "strip-weird-characters-3"

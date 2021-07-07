@@ -1,6 +1,7 @@
 const config = require('../config')
 const { handleResponse, successResponse, errorResponseForbidden } = require('../apiHelpers')
-const { sequelize } = require('../models')
+const models = require('../models')
+const { QueryTypes } = require('sequelize')
 const userHandleMiddleware = require('../userHandleMiddleware')
 
 module.exports = function (app) {
@@ -11,12 +12,16 @@ module.exports = function (app) {
 
     const handle = req.query.handle
 
-    const recaptchaEntries = await sequelize.query(
+    const recaptchaEntries = await models.sequelize.query(
       `select "Users"."blockchainUserId" as "userId", "Users"."walletAddress" as "wallet", "BotScores"."recaptchaScore" as "score", "BotScores"."recaptchaContext" as "context"
       from 
         "Users" inner join "BotScores" on "Users"."walletAddress" = "BotScores"."walletAddress"
       where
-        "Users"."handle" = ${handle}`
+        "Users"."handle" = :handle`,
+      {
+        replacements: { handle },
+        type: QueryTypes.SELECT
+      }
     )
 
     return successResponse(recaptchaEntries)

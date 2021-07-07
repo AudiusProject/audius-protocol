@@ -30,10 +30,10 @@ contract('EthRewardsManager', async (accounts) => {
   let mockDelegateManager, mockStakingCaller, mockWormhole
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
-  const [, proxyAdminAddress, proxyDeployerAddress, staker, newUpdateAddress] = accounts
+  const [, proxyAdminAddress, proxyDeployerAddress, staker, antiAbuseOracleAddress1, antiAbuseOracleAddress2, antiAbuseOracleAddress3] = accounts
   const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
-  const antiAbuseOracleAddress = proxyDeployerAddress
+  const antiAbuseOracleAddresses = [antiAbuseOracleAddress1, antiAbuseOracleAddress2, antiAbuseOracleAddress3]
   const recipient = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
 
   const approveTransferAndStake = async (amount, staker) => {
@@ -123,8 +123,8 @@ contract('EthRewardsManager', async (accounts) => {
     const ethRewardsManager0 = await EthRewardsManager.new({ from: proxyDeployerAddress })
     const ethRewardsManagerInitializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'address', 'bytes32', 'address'],
-      [token.address, governance.address, mockWormhole.address, recipient, antiAbuseOracleAddress]
+      ['address', 'address', 'address', 'bytes32', 'address[]'],
+      [token.address, governance.address, mockWormhole.address, recipient, antiAbuseOracleAddresses]
     )
     const ethRewardsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       ethRewardsManager0.address,
@@ -198,8 +198,8 @@ contract('EthRewardsManager', async (accounts) => {
   it('fails when token is not contract, init test', async () => {
     const invalidEthRewardsManagerInitializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'address', 'bytes32', 'address'],
-      [accounts[5], governance.address, mockWormhole.address, recipient, antiAbuseOracleAddress]
+      ['address', 'address', 'address', 'bytes32', 'address[]'],
+      [accounts[5], governance.address, mockWormhole.address, recipient, antiAbuseOracleAddresses]
     )
     const ethRewardsManager1 = await EthRewardsManager.new({ from: proxyAdminAddress })
     await _lib.assertRevert(
@@ -215,8 +215,8 @@ contract('EthRewardsManager', async (accounts) => {
   it('fails when wormhole is not contract, init test', async () => {
     const invalidEthRewardsManagerInitializeCallData = _lib.encodeCall(
       'initialize',
-      ['address', 'address', 'address', 'bytes32', 'address'],
-      [token.address, governance.address, accounts[5], recipient, antiAbuseOracleAddress]
+      ['address', 'address', 'address', 'bytes32', 'address[]'],
+      [token.address, governance.address, accounts[5], recipient, antiAbuseOracleAddresses]
     )
     const ethRewardsManager1 = await EthRewardsManager.new({ from: proxyAdminAddress })
     await _lib.assertRevert(
@@ -268,21 +268,21 @@ contract('EthRewardsManager', async (accounts) => {
     assert.equal(await ethRewardsManager.getGovernanceAddress(), newGovernance.address)
   })
 
-  it('antiAbuseOracleAddress', async () => {
+  it('antiAbuseOracleAddresses', async () => {
     await _lib.assertRevert(
-      ethRewardsManager.setAntiAbuseOracleAddress(accounts[10], { from: accounts[7] }),
+      ethRewardsManager.setAntiAbuseOracleAddresses([accounts[10], accounts[11], accounts[12]], { from: accounts[7] }),
       'Only governance'
     )
 
     await governance.guardianExecuteTransaction(
       ethRewardsManagerProxyKey,
       callValue0,
-      'setAntiAbuseOracleAddress(address)',
-      _lib.abiEncode(['address'], [accounts[10]]),
+      'setAntiAbuseOracleAddresses(address[])',
+      _lib.abiEncode(['address[]'], [[accounts[10], accounts[11], accounts[12]]]),
       { from: guardianAddress }
     )
 
-    assert.equal(await ethRewardsManager.antiAbuseOracleAddress(), accounts[10])
+    assert.deepEqual(await ethRewardsManager.getAntiAbuseOracleAddresses(), [accounts[10], accounts[11], accounts[12]])
   })
 
   it('recipient', async () => {

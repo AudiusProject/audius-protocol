@@ -5,6 +5,7 @@ const models = require('../../models')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
+const DBManager = require('../../dbManager')
 
 /**
  * This function is only run on secondaries, to export and sync data from a user's primary.
@@ -343,6 +344,13 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
 
     await SyncHistoryAggregator.recordSyncSuccess()
   } catch (e) {
+    // if the clock values somehow becomes corrupted, wipe the records before future re-syncs
+    if (e.message.includes('Can only insert contiguous clock values')) {
+      for (let wallet of walletPublicKeys) {
+        logger.error(`Sync error for ${wallet} - "Can only insert contiguous clock values". Clearing db state for wallet.`)
+        await DBManager.deleteAllCNodeUserDataFromDB({ lookupWallet: wallet })
+      }
+    }
     errorObj = e
 
     await SyncHistoryAggregator.recordSyncFail()

@@ -38,6 +38,9 @@ jobs:
           name: libs repo init
           command: |
             cd libs
+            rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
+            source ~/.bash_profile
+            nvm install 10.16
             npm install
       - save_cache:
           name: Save libs cache
@@ -95,7 +98,7 @@ jobs:
           name: content-node repo init
           command: |
             source ~/.bash_profile
-            nvm install v10.16
+            nvm install v14.16
             cd creator-node/
             npm install
       - save_cache:
@@ -361,7 +364,7 @@ jobs:
   test-creator-node:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.16.3
+      - image: circleci/node:14.16  
       - image: ipfs/go-ipfs:release
       - image: circleci/postgres:11.1
         environment:
@@ -410,7 +413,7 @@ jobs:
 
   test-discovery-provider:
     docker:
-      - image: circleci/python:3.7-stretch-node-browsers-legacy
+      - image: circleci/python:3.8-node-browsers
         # Discovery provider dependencies
       - image: circleci/postgres:11.1
         environment:

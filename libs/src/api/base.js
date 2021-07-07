@@ -17,6 +17,7 @@ class Base {
     contracts,
     ethWeb3Manager,
     ethContracts,
+    solanaWeb3Manager,
     creatorNode,
     comstock,
     captcha,
@@ -30,6 +31,7 @@ class Base {
     this.contracts = contracts
     this.ethWeb3Manager = ethWeb3Manager
     this.ethContracts = ethContracts
+    this.solanaWeb3Manager = solanaWeb3Manager
     this.creatorNode = creatorNode
     this.comstock = comstock
     this.captcha = captcha

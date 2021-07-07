@@ -1,10 +1,12 @@
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const Sequelize = require('sequelize')
 const models = require('../models')
+const authMiddleware = require('../authMiddleware')
 
 module.exports = function (app) {
-  app.post('/artist_pick', handleResponse(async (req, res, next) => {
-    const { trackId, handle } = req.body
+  app.post('/artist_pick', authMiddleware, handleResponse(async (req, res, next) => {
+    const handle = req.user.handle
+    const { trackId } = req.body
 
     if (!handle) return errorResponseBadRequest('Please provide handle')
 
