@@ -1,8 +1,8 @@
 # requires authentication to Dockerhub
 FROM audius/contracts:1.0.0 as contracts
 
-FROM python:3.8.0-alpine
-MAINTAINER Hareesh Nagaraj <hareesh@audius.co>
+FROM alpine:3.13
+LABEL Hareesh Nagaraj <hareesh@audius.co>
 
 ENV INSTALL_PATH /audius-discovery-provider
 RUN mkdir -p $INSTALL_PATH
@@ -17,9 +17,13 @@ RUN apk update && \
     apk add postgresql-libs && \
     apk add libffi-dev && \
     apk add redis && \
-    apk add go-ipfs --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community && \
+    apk add go-ipfs && \
+    apk add sudo && \
     apk add postgresql && \
     apk add postgresql-contrib && \
+    apk add python3 && \
+    apk add python3-dev && \
+    apk add py3-pip && \
     apk add --virtual .build-deps gcc musl-dev postgresql-dev && \
     python3 -m pip install -r requirements.txt --no-cache-dir && \
     apk --purge del .build-deps
