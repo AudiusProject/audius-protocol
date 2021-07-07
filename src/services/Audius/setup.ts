@@ -19,6 +19,7 @@ declare global {
 const Web3 = window.Web3
 window.Utils = Utils
 
+const identityServiceEndpoint = process.env.REACT_APP_IDENTITY_SERVICE_ENDPOINT
 const ethRegistryAddress = process.env.REACT_APP_ETH_REGISTRY_ADDRESS
 const ethTokenAddress = process.env.REACT_APP_ETH_TOKEN_ADDRESS
 
@@ -149,9 +150,14 @@ const configureReadOnlyLibs = async () => {
     DISCOVERY_NODE_ALLOW_LIST
   )
 
+  const identityServiceConfig = audius.configIdentityService(
+    identityServiceEndpoint
+  )
+
   let audiusLibsConfig = {
     ethWeb3Config,
     discoveryProviderConfig,
+    identityServiceConfig,
     isServer: false
   }
   const libs = new audius(audiusLibsConfig)
@@ -186,6 +192,9 @@ const configureLibsWithAccount = async () => {
     ),
     discoveryProviderConfig: audius.configDiscoveryProvider(
       DISCOVERY_NODE_ALLOW_LIST
+    ),
+    identityServiceConfig: audius.configIdentityService(
+      identityServiceEndpoint
     ),
     isServer: false
   }
