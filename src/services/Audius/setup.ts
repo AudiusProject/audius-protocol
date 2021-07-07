@@ -135,6 +135,7 @@ export async function setup(this: AudiusClient): Promise<void> {
 
   window.audiusLibs = this.libs
   this.isSetup = true
+  this.onSetupFinished()
 }
 
 const configureReadOnlyLibs = async () => {

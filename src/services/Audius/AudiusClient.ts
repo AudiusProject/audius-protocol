@@ -21,7 +21,9 @@ import {
   getEthWallet,
   getBlock,
   getBlockNearTimestamp,
-  toChecksumAddress
+  toChecksumAddress,
+  onSetup,
+  onSetupFinished
 } from './helpers'
 import { getUserDelegates } from './wrappers'
 
@@ -34,6 +36,7 @@ export class AudiusClient {
     this.Staking = new Staking(this)
     this.Governance = new Governance(this)
     this.Claim = new Claim(this)
+    this.onSetup()
   }
 
   AudiusToken: AudiusToken
@@ -47,6 +50,9 @@ export class AudiusClient {
   libs: any = {}
   setup = setup
 
+  _setupPromiseResolve: undefined | (() => void)
+  isSetupPromise: undefined | Promise<void>
+
   isSetup = false // If the setup is complete
   hasValidAccount = false // If metamask is set up correctly
   isAccountMisconfigured = false // If metamask is present and account is not connected
@@ -56,6 +62,9 @@ export class AudiusClient {
   // Class helpers
   hasPermissions = hasPermissions
   awaitSetup = awaitSetup
+
+  onSetup = onSetup
+  onSetupFinished = onSetupFinished
 
   // Wrapper functions
   getUserDelegates = getUserDelegates
