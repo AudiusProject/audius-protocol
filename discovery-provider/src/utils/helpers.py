@@ -400,4 +400,4 @@ class DateTimeEncoder(JSONEncoder):
     def default(self, o):  # pylint: disable=method-hidden
         if isinstance(o, (datetime.date, datetime.datetime)):
             return o.isoformat()
-        return super(DateTimeEncoder, self).default(o)
+        return super().default(o)

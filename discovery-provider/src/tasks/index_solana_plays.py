@@ -333,9 +333,8 @@ def process_solana_plays(solana_client):
                             # subsequent transactions in this batch have already been processed
                             intersection_found = True
                             break
-                        else:
-                            # Ensure this transaction is still processed
-                            transaction_signature_batch.append(tx_sig)
+                        # Otherwise, ensure this transaction is still processed
+                        transaction_signature_batch.append(tx_sig)
                 # Restart processing at the end of this transaction signature batch
                 last_tx = transactions_array[-1]
                 last_tx_signature = last_tx["signature"]

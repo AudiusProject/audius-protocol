@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 import logging
 import enum
 
@@ -96,6 +97,7 @@ def get_fields_to_validate(model):
 
 
 class BlockMixin:
+    # pylint: disable=property-with-parameters
     @declared_attr
     def __tablename__(self, cls):
         return cls.__name__.lower()

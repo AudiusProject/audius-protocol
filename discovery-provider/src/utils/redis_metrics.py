@@ -53,7 +53,7 @@ def get_rounded_date_time():
 """
 datetime_format = "%Y/%m/%d:%H"
 datetime_format_secondary = "%Y/%m/%d:%H:%M"
-day_format = datetime_format_secondary.split(":")[0]
+day_format = datetime_format_secondary.split(":", maxsplit=1)[0]
 
 
 def get_rounded_date_time():
