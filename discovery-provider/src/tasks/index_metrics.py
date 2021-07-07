@@ -81,7 +81,7 @@ def process_route_keys(session, redis, key, ip, date):
             session.bulk_save_objects(route_metrics)
         redis.delete(key)
     except Exception as e:
-        raise Exception("Error processing route key %s with error %s" % (key, e))
+        raise Exception("Error processing route key %s with error %s" % (key, e)) from e
 
 
 def process_app_name_keys(session, redis, key, ip, date):
@@ -106,7 +106,9 @@ def process_app_name_keys(session, redis, key, ip, date):
         redis.delete(key)
 
     except Exception as e:
-        raise Exception("Error processing app name key %s with error %s" % (key, e))
+        raise Exception(
+            "Error processing app name key %s with error %s" % (key, e)
+        ) from e
 
 
 def sweep_metrics(db, redis):

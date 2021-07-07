@@ -107,7 +107,7 @@ def social_feature_state_update(
             blockhash = update_task.web3.toHex(block_hash)
             raise IndexingError(
                 "social_feature", block_number, blockhash, txhash, str(e)
-            )
+            ) from e
 
     # bulk process all repost and follow changes
 

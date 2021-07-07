@@ -161,7 +161,7 @@ def user_replica_set_state_update(
                         event_blockhash,
                         txhash,
                         str(e),
-                    )
+                    ) from e
             num_user_replica_set_changes += len(user_events_tx)
 
     # for each record in user_replica_set_events_lookup, invalidate the old record and add the new record

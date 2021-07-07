@@ -79,7 +79,7 @@ def playlist_state_update(
                     blockhash = update_task.web3.toHex(block_hash)
                     raise IndexingError(
                         "playlist", block_number, blockhash, txhash, str(e)
-                    )
+                    ) from e
 
                 num_total_changes += processedEntries
 

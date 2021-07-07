@@ -71,8 +71,8 @@ def get_current_user_id(required=True):
     try:
         if uid:
             uid = int(uid)
-    except ValueError:
-        raise exceptions.ArgumentError("must be valid integer")
+    except ValueError as e:
+        raise exceptions.ArgumentError("must be valid integer") from e
     if required and not uid:
         raise exceptions.ArgumentError("Need to include valid X-User-ID header")
 
@@ -87,10 +87,10 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
     params = sort.split(",")
     try:
         params = {param[0]: param[1] for param in [p.split(":") for p in params]}
-    except IndexError:
+    except IndexError as e:
         raise exceptions.ArgumentError(
             "Need to specify :asc or :desc on all parameters"
-        )
+        ) from e
     order_bys = []
     for field in params.keys():
         if field not in whitelist_sort_params:

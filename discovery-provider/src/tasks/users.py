@@ -93,11 +93,11 @@ def user_state_update(
                         user_events_lookup[user_id]["user"] = user_record
                         processedEntries += 1
                 except Exception as e:
-                    logger.error(f"Error in parse user transaction")
+                    logger.error("Error in parse user transaction")
                     event_blockhash = update_task.web3.toHex(block_hash)
                     raise IndexingError(
                         "user", block_number, event_blockhash, txhash, str(e)
-                    )
+                    ) from e
 
             num_total_changes += processedEntries
 

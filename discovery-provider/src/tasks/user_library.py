@@ -82,7 +82,9 @@ def user_library_state_update(
             logger.info(f"Error in user library transaction")
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             blockhash = update_task.web3.toHex(block_hash)
-            raise IndexingError("user_library", block_number, blockhash, txhash, str(e))
+            raise IndexingError(
+                "user_library", block_number, blockhash, txhash, str(e)
+            ) from e
 
     for user_id in track_save_state_changes:
         for track_id in track_save_state_changes[user_id]:

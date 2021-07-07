@@ -168,18 +168,18 @@ class ModelValidator:
         try:
             schema["definitions"][model]["properties"] = new_property
         except KeyError as ke:
-            raise KeyError(f"Could not find keys for {model} schema: {ke}")
+            raise KeyError(f"Could not find keys for {model} schema: {ke}") from ke
 
     @classmethod
     def _set_required(cls, schema, model, new_required):
         try:
             schema["definitions"][model]["required"] = [new_required]
         except KeyError as ke:
-            raise KeyError(f"Could not find keys for {model} schema: {ke}")
+            raise KeyError(f"Could not find keys for {model} schema: {ke}") from ke
 
     @classmethod
     def _get_required(cls, schema, model):
         try:
             return schema["definitions"][model]["required"]
         except KeyError as ke:
-            raise KeyError(f"Could not find keys for {model} schema: {ke}")
+            raise KeyError(f"Could not find keys for {model} schema: {ke}") from ke

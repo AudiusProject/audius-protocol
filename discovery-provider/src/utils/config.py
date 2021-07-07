@@ -123,4 +123,4 @@ except (KeyError, RuntimeError) as e:
         f"""
     Missing delegate owner wallet ({owner_wallet}) and/or delgate private key ({private_key}): {e}
     """
-    )
+    ) from e
