@@ -151,7 +151,7 @@ class SnapbackSM {
     */
     this.unhealthyPrimaryToWalletMap = {}
 
-    // The highest level of reconfig ops allowed. If the passed in mode is not one of the enabled modes, default to `RECONFIG_DISABLED`this.getHighestReconfigModeEnabled()
+    // The highest level of reconfig ops allowed. If the passed in mode is not one of the enabled modes, default to `RECONFIG_DISABLED`
     this.highestReconfigModeEnabled = this.getHighestReconfigModeEnabled()
 
     // The set of modes enabled for reconfig ops
