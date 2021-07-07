@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import Button from 'components/Button'
+import { useSelector } from 'react-redux'
 import clsx from 'clsx'
 
+import Button from 'components/Button'
 import Paper from 'components/Paper'
 import { ButtonType } from '@audius/stems'
 import DelegateStakeModal from 'components/DelegateStakeModal'
@@ -26,6 +27,7 @@ import { createStyles } from 'utils/mobile'
 import UserImage from 'components/UserImage'
 import Bounds from 'components/Bounds'
 import Tooltip, { Position } from 'components/Tooltip'
+import { getDelegatorInfo } from 'store/cache/protocol/hooks'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -34,7 +36,8 @@ const messages = {
   undelegate: 'UNDELEGATE',
   claim: 'CLAIM',
   makeClaim: 'Make Claim',
-  claimOutOfBounds: 'Total stake out of bounds'
+  claimOutOfBounds: 'Total stake out of bounds',
+  delegatorLimitReached: 'This operator has reached its delegator limit'
 }
 
 type UserInfoProps = {
@@ -60,6 +63,7 @@ const UserInfo = ({
   const { name, wallet } = user
   const { isLoggedIn } = useAccount()
   const [isOpen, setIsOpen] = useState(false)
+  const { maxDelegators } = useSelector(getDelegatorInfo)
   const onClick = useCallback(() => setIsOpen(true), [setIsOpen])
   const onClose = useCallback(() => setIsOpen(false), [setIsOpen])
   const { hasClaim, status: claimStatus } = usePendingClaim(wallet)
@@ -128,16 +132,26 @@ const UserInfo = ({
     isLoggedIn && !isOwner && claimStatus === Status.Success && hasClaim
 
   const isClaimDisabled = !isValidBounds
+  const isDelegatorLimitReached =
+    maxDelegators !== undefined &&
+    (user as Operator)?.delegators?.length >= maxDelegators
 
   return (
     <>
       {showDelegate && (
         <div className={styles.buttonContainer}>
-          <Button
-            text={messages.delegate}
-            type={ButtonType.PRIMARY}
-            onClick={onClick}
-          />
+          <Tooltip
+            position={Position.TOP}
+            text={messages.delegatorLimitReached}
+            isDisabled={!isDelegatorLimitReached}
+          >
+            <Button
+              text={messages.delegate}
+              type={ButtonType.PRIMARY}
+              isDisabled={isDelegatorLimitReached}
+              onClick={onClick}
+            />
+          </Tooltip>
           <DelegateStakeModal
             serviceOperatorWallet={wallet}
             isOpen={isOpen}
@@ -170,7 +184,6 @@ const UserInfo = ({
             position={Position.TOP}
             text={messages.claimOutOfBounds}
             isDisabled={!isClaimDisabled}
-            className={styles.claimDisabledTooltip}
           >
             <Button
               text={messages.claim}
