@@ -38,7 +38,8 @@ def get_playlist_cover_photo_updated_event():
     playlist_cover_photo_updated_event = AttrDict(
         {
             "_playlistId": 1,
-            "_playlistImageMultihashDigest": b"\xad\x8d\x1eeG\xf2\x12\xe3\x817\x7f\xb1A\xc6 M~\xfe\x03F\x98f\xab\xfa3\x17ib\xdcC>\xed",
+            "_playlistImageMultihashDigest": b"\xad\x8d\x1eeG\xf2\x12\xe3\x817"
+            + b"\x7f\xb1A\xc6 M~\xfe\x03F\x98f\xab\xfa3\x17ib\xdcC>\xed",
         }
     )
     return event_type, AttrDict(

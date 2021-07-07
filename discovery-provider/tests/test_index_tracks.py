@@ -19,7 +19,8 @@ def get_new_track_event():
         {
             "_id": 1,
             "_trackOwnerId": 1,
-            "_multihashDigest": b"@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg",
+            "_multihashDigest": b"@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}\x17"
+            + b"\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg",
             "_multihashHashFn": 18,
             "_multihashSize": 32,
         }
@@ -33,7 +34,8 @@ def get_new_track_event_dupe():
         {
             "_id": 2,
             "_trackOwnerId": 1,
-            "_multihashDigest": b"@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg",
+            "_multihashDigest": b"@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh"
+            + b"\x82\xc5}\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg",
             "_multihashHashFn": 18,
             "_multihashSize": 32,
         }
@@ -47,7 +49,8 @@ def get_update_track_event():
         {
             "_trackId": 1,
             "_trackOwnerId": 1,
-            "_multihashDigest": b"\x93\x7f\xa2\xe6\xf0\xe5\xb5f\xca\x14(4m.B\xba3\xf8\xc8<|%*{\x11\xc1\xe2/\xd7\xee\xd7q",
+            "_multihashDigest": b"\x93\x7f\xa2\xe6\xf0\xe5\xb5f\xca"
+            + b"\x14(4m.B\xba3\xf8\xc8<|%*{\x11\xc1\xe2/\xd7\xee\xd7q",
             "_multihashHashFn": 18,
             "_multihashSize": 32,
         }
@@ -216,7 +219,10 @@ def test_index_tracks(mock_index_task, app):
             handle="ray",
             blockhash=block_hash,
             blocknumber=block_number,
-            creator_node_endpoint="http://cn2_creator-node_1:4001,http://cn1_creator-node_1:4000,http://cn3_creator-node_1:4002",
+            creator_node_endpoint=(
+                "http://cn2_creator-node_1:4001,http://cn1_creator-node_1:4000,"
+                "http://cn3_creator-node_1:4002"
+            ),
             created_at=datetime.utcfromtimestamp(block_timestamp),
             updated_at=datetime.utcfromtimestamp(block_timestamp),
         )

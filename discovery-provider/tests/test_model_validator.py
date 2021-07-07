@@ -18,7 +18,7 @@ def test_one_field_schema_bad_value():
     track = {"title": 1}
     try:
         ModelValidator.validate(to_validate=track, field="title", model="Track")
-        assert False, f"test_model_validator [test_one_field_schema_bad_value] failed"
+        assert False, "test_model_validator [test_one_field_schema_bad_value] failed"
     except BaseException:
         assert True
 
@@ -27,7 +27,7 @@ def test_one_field_schema_bad_key():
     track = {"wrong": "ok"}
     try:
         ModelValidator.validate(to_validate=track, field="title", model="Track")
-        assert False, f"test_model_validator [test_one_field_schema_bad_key] failed"
+        assert False, "test_model_validator [test_one_field_schema_bad_key] failed"
     except BaseException:
         assert True
 
@@ -38,7 +38,7 @@ def test_one_field_schema_bad_key_and_value():
         ModelValidator.validate(to_validate=track, field="title", model="Track")
         assert (
             False
-        ), f"test_model_validator [test_one_field_schema_bad_key_and_value] failed"
+        ), "test_model_validator [test_one_field_schema_bad_key_and_value] failed"
     except BaseException:
         assert True
 
@@ -49,7 +49,7 @@ def test_one_field_schema_with_additional_properties():
         ModelValidator.validate(to_validate=track, field="title", model="Track")
         assert (
             False
-        ), f"test_model_validator [test_one_field_schema_with_additional_properties] failed"
+        ), "test_model_validator [test_one_field_schema_with_additional_properties] failed"
     except BaseException:
         assert True
 
@@ -58,9 +58,7 @@ def test_one_field_schema_empty_object():
     track = {}
     try:
         ModelValidator.validate(to_validate=track, field="title", model="Track")
-        assert (
-            False
-        ), f"test_model_validator [test_one_field_schema_empty_object] failed"
+        assert False, "test_model_validator [test_one_field_schema_empty_object] failed"
     except BaseException:
         assert True
 
@@ -69,9 +67,7 @@ def test_one_field_schema_empty_object():
 def test_schema_missing():
     try:
         ModelValidator.validate(to_validate={}, field="title", model="non-existant")
-        assert (
-            False
-        ), f"test_model_validator [test_one_field_schema_empty_object] failed"
+        assert False, "test_model_validator [test_one_field_schema_empty_object] failed"
     except BaseException:
         assert True
 
@@ -80,7 +76,7 @@ def test_schema_invalid_json():
     ModelValidator.BASE_PATH = "./tests/res/"
     try:
         ModelValidator.validate(to_validate={}, field="title", model="bad")
-        assert False, f"test_model_validator [test_schema_invalid_json] failed"
+        assert False, "test_model_validator [test_schema_invalid_json] failed"
     except BaseException:
         assert True
 
@@ -90,6 +86,6 @@ def test_schema_missing_model_key():
 
     try:
         ModelValidator.validate(to_validate={}, field="title", model="user_bad")
-        assert False, f"test_model_validator [test_schema_missing_model_key] failed"
+        assert False, "test_model_validator [test_schema_missing_model_key] failed"
     except BaseException:
         assert True

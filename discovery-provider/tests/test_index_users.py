@@ -41,7 +41,8 @@ def get_update_location_event():
     update_location_event = AttrDict(
         {
             "_userId": 1,
-            "_location": b"location\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
+            "_location": b"location\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+            + b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
         }
     )
     return event_type, AttrDict({"blockHash": "0x", "args": update_location_event})
@@ -52,7 +53,8 @@ def get_update_profile_photo_event():
     update_profile_photo_event = AttrDict(
         {
             "_userId": 1,
-            "_profilePhotoDigest": b"\xc6\x0f\xc2@\x8f\xd1\xb7R\xbb\xe3\xf6\xc3\xa45\x19\x9d\xc6\x10g\x8dm\xe4\x15\x86|\x91\\r\xaa\x01\xab-",
+            "_profilePhotoDigest": b"\xc6\x0f\xc2@\x8f\xd1\xb7R\xbb\xe3\xf6\xc3"
+            + b"\xa45\x19\x9d\xc6\x10g\x8dm\xe4\x15\x86|\x91\\r\xaa\x01\xab-",
         }
     )
     return event_type, AttrDict({"blockHash": "0x", "args": update_profile_photo_event})
@@ -63,7 +65,8 @@ def get_update_cover_photo_event():
     update_cover_photo_event = AttrDict(
         {
             "_userId": 1,
-            "_coverPhotoDigest": b"C\x9a\r\xa5PO\x99\x8c\xdf;\x8cT\xdc\x18\xf5**\x80\x01\xe3j-\xd7\x11_\x84\xde%T\xd0\xcd\xc6",
+            "_coverPhotoDigest": b"C\x9a\r\xa5PO\x99\x8c\xdf;\x8cT\xdc\x18\xf5**\x80"
+            + b"\x01\xe3j-\xd7\x11_\x84\xde%T\xd0\xcd\xc6",
         }
     )
     return event_type, AttrDict({"blockHash": "0x", "args": update_cover_photo_event})
@@ -92,7 +95,8 @@ def get_update_creator_node_endpoint_event():
     update_creator_node_endpoint_event = AttrDict(
         {
             "_userId": 1,
-            "_creatorNodeEndpoint": "http://cn2_creator-node_1:4001,http://cn1_creator-node_1:4000,http://cn3_creator-node_1:4002",
+            "_creatorNodeEndpoint": "http://cn2_creator-node_1:4001,http://cn1_creator-node_1:4000,"
+            + "http://cn3_creator-node_1:4002",
         }
     )
     return event_type, AttrDict(
@@ -119,7 +123,8 @@ ipfs_client = IPFSClient(
             "cover_photo_sizes": "QmQnJ8uXf886crAticzPGgrfqxq68kAxBXXcK73geFakUo",
             "bio": "ðŸŒ\n;",
             "location": "chik fil yay!",
-            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode.audius.co,https://content-node.audius.co",
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode.audius.co,"
+            + "https://content-node.audius.co",
             "associated_wallets": {
                 "0xEfFe2E2Dfc7945ED6Fd4C07c0B668589C52819BF": {
                     "signature": "0xdde72a90dad4a0027ca87630a2b5615240d9ad545f2fc50e24952a2b4f2c5a"
