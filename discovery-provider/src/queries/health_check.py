@@ -4,6 +4,7 @@ from flask import Blueprint, request
 from src.queries.get_latest_play import get_latest_play
 from src.queries.queries import parse_bool_param
 from src.queries.get_health import get_health, get_latest_ipld_indexed_block
+from src.queries.get_sol_plays import get_latest_sol_plays
 from src.api_helpers import success_response
 from src.utils import helpers
 
@@ -76,6 +77,22 @@ def play_check():
     return success_response(
         latest_play,
         500 if error else 200,
+        sign_response=False
+    )
+
+# Health check for latest play stored in the db
+@bp.route("/sol_play_check", methods=["GET"])
+def sol_play_check():
+    """
+       limit: number of latest plays to return
+    """
+    limit = request.args.get("limit", type=int)
+
+    latest_sol_plays = get_latest_sol_plays(limit)
+
+    return success_response(
+        latest_sol_plays,
+        200,
         sign_response=False
     )
 

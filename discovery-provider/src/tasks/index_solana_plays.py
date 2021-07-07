@@ -49,7 +49,7 @@ def parse_instruction_data(data):
     try:
         user_id = int(decoded[user_id_start:user_id_end])
     except ValueError:
-        logger.error(f"Failed to parse user_id from {decoded[user_id_start:user_id_end]}", exc_info=True)
+        logger.warning(f"Failed to parse user_id from {decoded[user_id_start:user_id_end]}", exc_info=True)
 
     track_id_length = int.from_bytes(decoded[user_id_end:user_id_end + 4],
                                      "little")
@@ -65,7 +65,7 @@ def parse_instruction_data(data):
     try:
         source = str(decoded[source_start:source_end], 'utf-8')
     except ValueError:
-        logger.error(f"Failed to parse source from {decoded[source_start:source_end]}", exc_info=True)
+        logger.warning(f"Failed to parse source from {decoded[source_start:source_end]}", exc_info=True)
 
     timestamp = int.from_bytes(decoded[source_end:source_end + 8], "little")
 
@@ -84,6 +84,7 @@ def get_sol_tx_info(solana_client, tx_sig):
             logger.error(f"index_solana_plays.py | Error fetching tx {tx_sig}, {e}", exc_info=True)
         retries -= 1
         logger.error(f"index_solana_plays.py | Retrying tx fetch: {tx_sig}")
+    raise Exception(f"index_solana_plays.py | Failed to fetch {tx_sig}")
 
 # Check for both SECP and SignerGroup
 # Ensures that a signature recovery was performed within the expected SignerGroup
@@ -132,6 +133,7 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
             logger.info(f"index_solana_plays.py | tx={tx_sig} Failed to find SECP_PROGRAM")
     except Exception as e:
         logger.error(f"index_solana_plays.py | Error processing {tx_sig}, {e}", exc_info=True)
+        raise e
 
 
 # Query the highest traversed solana slot
@@ -342,7 +344,7 @@ def process_solana_plays(solana_client):
     num_txs_processed = 0
 
     for tx_sig_batch in transaction_signatures:
-        logger.error(f"index_solana_plays.py | processing {tx_sig_batch}")
+        logger.info(f"index_solana_plays.py | processing {tx_sig_batch}")
         batch_start_time = time.time()
         # Process each batch in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
@@ -360,6 +362,7 @@ def process_solana_plays(solana_client):
                         num_txs_processed += 1
                     except Exception as exc:
                         logger.error(f"index_solana_plays.py | {exc}")
+                        raise exc
 
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
