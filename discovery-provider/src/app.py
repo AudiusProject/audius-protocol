@@ -58,6 +58,7 @@ logger = logging.getLogger(__name__)
 
 
 def init_contracts():
+    """Test"""
     registry_address = web3.toChecksumAddress(
         shared_config["contracts"]["registry"]
     )
