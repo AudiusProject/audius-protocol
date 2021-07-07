@@ -143,7 +143,7 @@ android {
         multiDexEnabled true
 
         versionCode 112
-        versionName "1.0.84"
+        versionName "1.0.85"
         resValue "string", "build_config_package", "co.audius.app"
     }
     productFlavors {
