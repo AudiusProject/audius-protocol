@@ -139,8 +139,9 @@ def get_latest_block(db):
         latest_block_from_chain = update_task.web3.eth.getBlock("latest", True)
         latest_block_number_from_chain = latest_block_from_chain.number
 
-        if target_latest_block_number > latest_block_number_from_chain:
-            target_latest_block_number = latest_block_number_from_chain
+        target_latest_block_number = min(
+            target_latest_block_number, latest_block_number_from_chain
+        )
 
         logger.info(
             f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"

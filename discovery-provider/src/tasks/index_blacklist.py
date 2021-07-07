@@ -84,8 +84,9 @@ def get_latest_blacklist_block(db):
         )
         latest_block_number_from_chain = latest_block_from_chain.number
 
-        if target_latest_block_number > latest_block_number_from_chain:
-            target_latest_block_number = latest_block_number_from_chain
+        target_latest_block_number = min(
+            target_latest_block_number, latest_block_number_from_chain
+        )
 
         logger.info(
             f"IPLDBLACKLIST | get_latest_blacklist_block | "
