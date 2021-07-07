@@ -4,6 +4,7 @@ import redis
 from sqlalchemy import func
 
 from src.trending_strategies.trending_type_and_version import TrendingType
+
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
 from src.models import (
@@ -39,7 +40,7 @@ from src.utils.config import shared_config
 from src.trending_strategies.trending_strategy_factory import DEFAULT_TRENDING_VERSIONS
 
 redis_url = shared_config["redis"]["url"]
-redis = redis.Redis.from_url(url=redis_url)
+redis_conn = redis.Redis.from_url(url=redis_url)
 
 logger = logging.getLogger(__name__)
 
@@ -211,7 +212,7 @@ def _get_underground_trending(args, strategy):
         key = make_underground_trending_cache_key(strategy.version)
 
         (tracks, track_ids) = use_redis_cache(
-            key, None, make_get_unpopulated_tracks(session, redis, strategy)
+            key, None, make_get_unpopulated_tracks(session, redis_conn, strategy)
         )
 
         # Apply limit + offset early to reduce the amount of

@@ -16,7 +16,7 @@ from src.utils.redis_constants import most_recent_indexed_block_redis_key
 from src.queries.get_health import get_latest_chain_block_set_if_nx
 
 redis_url = shared_config["redis"]["url"]
-redis = redis.Redis.from_url(url=redis_url)
+redis_conn = redis.Redis.from_url(url=redis_url)
 web3_connection = web3_provider.get_web3()
 logger = logging.getLogger(__name__)
 disc_prov_version = helpers.get_discovery_provider_version()
@@ -52,8 +52,10 @@ def success_response(
 def response_dict_with_metadata(response_dictionary, sign_response):
     response_dictionary["success"] = True
 
-    latest_indexed_block = redis.get(most_recent_indexed_block_redis_key)
-    latest_chain_block, _ = get_latest_chain_block_set_if_nx(redis, web3_connection)
+    latest_indexed_block = redis_conn.get(most_recent_indexed_block_redis_key)
+    latest_chain_block, _ = get_latest_chain_block_set_if_nx(
+        redis_conn, web3_connection
+    )
 
     response_dictionary["latest_indexed_block"] = (
         int(latest_indexed_block) if latest_indexed_block else None

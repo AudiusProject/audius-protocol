@@ -105,7 +105,7 @@ search_autocomplete_response = make_full_response(
 
 
 @full_ns.route("/autocomplete")
-class FullSearch(Resource):
+class FullSearchAutocomplete(Resource):
     @full_ns.expect(search_route_parser)
     @full_ns.doc(
         id="""Get Users/Tracks/Playlists/albums that best match the search query""",

@@ -460,7 +460,7 @@ favorites_response = make_full_response(
 
 
 @full_ns.route("/<string:user_id>/favorites/tracks")
-class FavoritedTracks(Resource):
+class FavoritedTracksFull(Resource):
     @record_metrics
     @full_ns.doc(
         id="""Get User's Favorite Tracks""",

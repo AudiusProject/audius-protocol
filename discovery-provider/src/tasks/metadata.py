@@ -1,5 +1,8 @@
+from typing import Dict, Any
+
 # Required format for track metadata retrieved from IPFS
-track_metadata_format = {
+
+track_metadata_format: Dict[str, Any] = {
     "owner_id": None,
     "title": None,
     "route_id": None,

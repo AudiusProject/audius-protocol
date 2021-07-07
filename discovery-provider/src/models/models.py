@@ -1,6 +1,7 @@
 import logging
 import enum
 
+from typing import Any
 from jsonschema import ValidationError
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.dialects import postgresql
@@ -24,7 +25,7 @@ from sqlalchemy import (
 from src.model_validator import ModelValidator
 
 
-Base = declarative_base()
+Base: Any = declarative_base()
 logger = logging.getLogger(__name__)
 
 # field_type is the sqlalchemy type from the model object

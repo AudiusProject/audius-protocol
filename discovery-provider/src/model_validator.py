@@ -1,6 +1,7 @@
 import os.path
 import json
 import copy
+from typing import Dict, Any
 import logging  # pylint: disable=C0302
 from jsonschema import Draft7Validator, ValidationError, SchemaError
 
@@ -23,7 +24,7 @@ class ModelValidator:
     }
     """
 
-    models_to_schema_and_fields_dict = {}
+    models_to_schema_and_fields_dict: Dict[str, Any] = {}
     BASE_PATH = "./src/schemas/"
     FILE_NAME = ""
 

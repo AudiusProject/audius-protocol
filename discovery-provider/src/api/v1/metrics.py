@@ -27,6 +27,7 @@ from src.queries.get_route_metrics import (
     get_aggregate_route_metrics,
     get_historical_route_metrics,
 )
+
 from src.queries.get_app_name_metrics import (
     get_app_name_metrics,
     get_aggregate_app_metrics,
