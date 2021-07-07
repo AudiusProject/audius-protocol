@@ -28,6 +28,33 @@ const ethProviderUrl =
 const ethOwnerWallet = process.env.REACT_APP_ETH_OWNER_WALLET
 const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID
 
+const DISCOVERY_NODE_ALLOW_LIST = new Set([
+  'https://discoveryprovider2.audius.co',
+  'https://discoveryprovider3.audius.co',
+  'https://discoveryprovider.audius3.prod-us-west-2.staked.cloud',
+  'https://discoveryprovider.audius7.prod-us-west-2.staked.cloud',
+  'https://discoveryprovider.audius.prod-us-west-2.staked.cloud',
+  'https://discoveryprovider.audius4.prod-us-west-2.staked.cloud',
+  'https://discovery-a.mainnet.audius.radar.tech',
+  'https://discovery-d.mainnet.audius.radar.tech',
+  'https://discoveryprovider.audius6.prod-us-west-2.staked.cloud',
+  'https://discoveryprovider.audius1.prod-us-west-2.staked.cloud',
+  'https://discoveryprovider.audius2.prod-us-west-2.staked.cloud',
+  'https://discoveryprovider.audius5.prod-us-west-2.staked.cloud',
+  'https://audius-metadata-2.figment.io',
+  'https://dn-jpn.audius.metadata.fyi',
+  'https://dn-usa.audius.metadata.fyi',
+  'https://audius-discovery-1.altego.net',
+  'https://audius-disco.ams-x01.nl.supercache.org',
+  'https://discovery-au-01.audius.openplayer.org',
+  'https://dn1.monophonic.digital',
+  'https://disc-gru01.audius.hashbeam.com',
+  'https://audius-dp.nuremberg.creatorseed.com',
+  'https://audius-dp.johannesburg.creatorseed.com',
+  'https://discoveryprovider.audius.co',
+  'https://dn2.monophonic.digital'
+])
+
 // Used to prevent two callbacks from firing triggering reload
 let willReload = false
 
@@ -117,7 +144,9 @@ const configureReadOnlyLibs = async () => {
     ethProviderUrl,
     ethOwnerWallet
   )
-  const discoveryProviderConfig = audius.configDiscoveryProvider()
+  const discoveryProviderConfig = audius.configDiscoveryProvider(
+    DISCOVERY_NODE_ALLOW_LIST
+  )
 
   let audiusLibsConfig = {
     ethWeb3Config,
@@ -154,7 +183,9 @@ const configureLibsWithAccount = async () => {
       configuredMetamaskWeb3,
       metamaskAccount
     ),
-    discoveryProviderConfig: audius.configDiscoveryProvider(),
+    discoveryProviderConfig: audius.configDiscoveryProvider(
+      DISCOVERY_NODE_ALLOW_LIST
+    ),
     isServer: false
   }
   const libs = new audius(audiusLibsConfig)
