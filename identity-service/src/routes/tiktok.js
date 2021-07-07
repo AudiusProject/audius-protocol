@@ -1,9 +1,6 @@
 const axios = require("axios");
-const qs = require("querystring");
+const cors = require('cors')
 const config = require("../config.js");
-const models = require("../models");
-const uuidv4 = require("uuid/v4");
-const txRelay = require("../relay/txRelay");
 
 const {
   handleResponse,
@@ -22,27 +19,32 @@ module.exports = function (app) {
       res.cookie("csrfState", csrfState, { maxAge: 60000 });
 
       let url = "https://open-api.tiktok.com/platform/oauth/connect/";
-      console.log("KEY", config.get("tikTokAPIKey"));
 
       url += `?client_key=${config.get("tikTokAPIKey")}`;
       url += "&scope=user.info.basic,share.sound.create";
       url += "&response_type=code";
-      url += "&redirect_uri=https://audius.co";
+      url += `&redirect_uri=https://audius.co`;
       url += "&state=" + csrfState;
 
       res.redirect(url);
     })
   );
 
-  app.get(
+  const accessTokenCorsOptions =  {   
+    credentials: true,
+    origin: config.get("tikTokAuthOrigin")
+  }
+
+  app.options("/tiktok/access_token", cors(accessTokenCorsOptions))
+  app.post(
     "/tiktok/access_token",
+    cors(accessTokenCorsOptions),
     handleResponse(async (req, res, next) => {
-      const { code, state } = req.query;
+      const { code, state } = req.body;
       const { csrfState } = req.cookies;
 
-      if (state !== csrfState) {
-        res.status(422).send("Invalid state");
-        return;
+      if (!state || !csrfState || state !== csrfState) {
+        return errorResponseBadRequest("Invalid state");
       }
 
       let urlAccessToken = "https://open-api.tiktok.com/oauth/access_token/";
@@ -51,7 +53,7 @@ module.exports = function (app) {
       urlAccessToken += "&code=" + code;
       urlAccessToken += "&grant_type=authorization_code";
 
-      const resp = await axios.post(url_access_token);
+      const resp = await axios.post(urlAccessToken);
 
       return successResponse(resp);
     })

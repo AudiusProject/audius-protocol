@@ -1,5 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const mailgun = require('mailgun-js')
 const Redis = require('ioredis')
@@ -148,7 +149,10 @@ class App {
   setMiddleware () {
     this.express.use(loggingMiddleware)
     this.express.use(bodyParser.json({ limit: '1mb' }))
-    this.express.use(cors())
+    this.express.use(cookieParser())
+    this.express.use(cors({
+      preflightContinue: true
+    }))
   }
 
   // Create rate limits for listens on a per track per user basis and per track per ip basis

@@ -69,6 +69,12 @@ const config = convict({
     env: 'tikTokAPISecret',
     default: null
   },
+  tikTokAuthOrigin: {
+    doc: 'The CORS allowed origin set on the /tikTok/access_token route',
+    format: String,
+    env: 'tikTokAuthOrigin',
+    default: null
+  },
   twitterAPIKey: {
     doc: 'Twitter API key',
     format: String,
