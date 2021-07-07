@@ -38,7 +38,7 @@ const Menu = (props: MenuProps) => {
       position='bottomRight'
       renderTrigger={props.children}
       popupClassName={className}
-      zIndex={12}
+      zIndex={menu.type === 'notification' ? 10000 : 12}
     />
   )
 
