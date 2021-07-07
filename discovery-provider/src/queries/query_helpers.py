@@ -164,10 +164,7 @@ def populate_user_metadata(
         .group_by(Track.owner_id)
         .all()
     )
-    track_blocknumber_dict = {
-        user_id: track_blocknumber
-        for (user_id, track_blocknumber) in track_blocknumbers
-    }
+    track_blocknumber_dict = dict(track_blocknumbers)
 
     current_user_followed_user_ids = {}
     current_user_followee_follow_count_dict = {}
@@ -209,10 +206,9 @@ def populate_user_metadata(
             .group_by(Follow.followee_user_id)
             .all()
         )
-        current_user_followee_follow_count_dict = {
-            user_id: followee_follow_count
-            for (user_id, followee_follow_count) in current_user_followee_follow_counts
-        }
+        current_user_followee_follow_count_dict = dict(
+            current_user_followee_follow_counts
+        )
 
     is_verified_ids_set = {user["user_id"] for user in users if user["is_verified"]}
     balance_dict = get_balances(session, redis, user_ids, is_verified_ids_set)
@@ -925,9 +921,7 @@ def get_follower_count_dict(session, user_ids, max_block_number=None):
 
     follower_counts = follower_counts.group_by(Follow.followee_user_id).all()
 
-    follower_count_dict = {
-        user_id: follower_count for (user_id, follower_count) in follower_counts
-    }
+    follower_count_dict = dict(follower_counts)
     return follower_count_dict
 
 

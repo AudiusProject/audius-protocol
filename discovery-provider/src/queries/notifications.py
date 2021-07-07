@@ -387,9 +387,7 @@ def notifications():
                 [SaveType.track],
                 max_block_number,
             )
-            track_favorite_dict = {
-                track_id: fave_count for (track_id, fave_count) in track_favorite_counts
-            }
+            track_favorite_dict = dict(track_favorite_counts)
 
             favorite_remix_notifications = get_cosign_remix_notifications(
                 session, max_block_number, favorite_remix_tracks
@@ -405,9 +403,7 @@ def notifications():
                 [SaveType.album],
                 max_block_number,
             )
-            album_favorite_dict = {
-                album_id: fave_count for (album_id, fave_count) in album_favorite_counts
-            }
+            album_favorite_dict = dict(album_favorite_counts)
 
         if favorited_playlist_ids:
             playlist_favorite_counts = get_save_counts(
@@ -418,10 +414,7 @@ def notifications():
                 [SaveType.playlist],
                 max_block_number,
             )
-            playlist_favorite_dict = {
-                playlist_id: fave_count
-                for (playlist_id, fave_count) in playlist_favorite_counts
-            }
+            playlist_favorite_dict = dict(playlist_favorite_counts)
 
         milestone_info[const.notification_favorite_counts] = {}
         milestone_info[const.notification_favorite_counts][
@@ -525,10 +518,7 @@ def notifications():
                 [RepostType.track],
                 max_block_number,
             )
-            track_repost_count_dict = {
-                track_id: repost_count
-                for (track_id, repost_count) in track_repost_counts
-            }
+            track_repost_count_dict = dict(track_repost_counts)
 
             repost_remix_notifications = get_cosign_remix_notifications(
                 session, max_block_number, repost_remix_tracks
@@ -544,10 +534,7 @@ def notifications():
                 [RepostType.album],
                 max_block_number,
             )
-            album_repost_count_dict = {
-                album_id: repost_count
-                for (album_id, repost_count) in album_repost_counts
-            }
+            album_repost_count_dict = dict(album_repost_counts)
 
         if reposted_playlist_ids:
             playlist_repost_counts = get_repost_counts(
@@ -558,10 +545,7 @@ def notifications():
                 [RepostType.playlist],
                 max_block_number,
             )
-            playlist_repost_count_dict = {
-                playlist_id: repost_count
-                for (playlist_id, repost_count) in playlist_repost_counts
-            }
+            playlist_repost_count_dict = dict(playlist_repost_counts)
 
         milestone_info[const.notification_repost_counts] = {}
         milestone_info[const.notification_repost_counts][
@@ -917,8 +901,6 @@ def milestones_followers():
             .filter(AggregateUser.user_id.in_(user_ids))
             .all()
         )
-        follower_count_dict = {
-            user_id: follower_count for (user_id, follower_count) in follower_counts
-        }
+        follower_count_dict = dict(follower_counts)
 
     return api_helpers.success_response(follower_count_dict)

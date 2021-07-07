@@ -60,9 +60,7 @@ def refresh_user_ids(
 
         # Balances from current user lookup may
         # not be present in the db, so make those
-        not_present_set = {user_id for user_id in redis_user_ids} - {
-            user.user_id for user in query
-        }
+        not_present_set = set(redis_user_ids) - {user.user_id for user in query}
         new_balances = [
             UserBalance(user_id=user_id, balance=0, associated_wallets_balance=0)
             for user_id in not_present_set

@@ -155,9 +155,7 @@ def generate_trending(session, time, genre, limit, offset, strategy):
     ).all()
 
     # Generate track_id <-> owner_id mapping
-    track_owner_dict = {
-        track_id: owner_id for (track_id, owner_id) in track_owners_query
-    }
+    track_owner_dict = dict(track_owners_query)
     # Generate list of owner ids
     track_owner_list = [owner_id for (track_id, owner_id) in track_owners_query]
 
@@ -199,7 +197,7 @@ def generate_trending(session, time, genre, limit, offset, strategy):
     }
 
     karma_query = get_karma(session, tuple(track_ids), None, False, xf)
-    karma_counts_for_id = {track_id: karma for (track_id, karma) in karma_query}
+    karma_counts_for_id = dict(karma_query)
 
     trending_tracks = []
     for track_entry in listen_counts:
