@@ -10,5 +10,6 @@
   "python.pythonPath": "/usr/bin/python3",
   "python.formatting.provider": "black", // This gives us autoforatting
   "editor.formatOnSave": true,
-  "python.analysis.typeCheckingMode": "strict"
+  "python.analysis.typeCheckingMode": "basic",
+  "python.languageServer": "Pylance"
 }
