@@ -14,7 +14,7 @@ num-traits = "0.2"
 num_enum = "0.5.1"
 solana-program = "1.7.0"
 thiserror = "1.0"
-borsh = "0.8.2"
+borsh = "0.9.0"
 audius_eth_registry = { path = "../audius_eth_registry", features = [ "no-entrypoint" ] }
 
 [dev-dependencies]
