@@ -504,7 +504,12 @@ def get_track_remix_metadata(session, tracks, current_user_id):
     # build `populated_users` as a map of userId -> json user
     if remix_parent_owners:
         [remix_parent_owner_ids, remix_parent_owners] = list(
-            zip(*[[k, remix_parent_owners[k]] for k in remix_parent_owners])
+            zip(
+                *[
+                    [k, remix_parent_owner]
+                    for k, remix_parent_owner in remix_parent_owners.items()
+                ]
+            )
         )
         remix_parent_owners = helpers.query_result_to_list(list(remix_parent_owners))
         populated_remix_parent_users = populate_user_metadata(

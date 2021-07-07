@@ -86,24 +86,24 @@ def user_library_state_update(
                 "user_library", block_number, blockhash, txhash, str(e)
             ) from e
 
-    for user_id in track_save_state_changes:
-        for track_id in track_save_state_changes[user_id]:
+    for user_id, track_ids in track_save_state_changes.items():
+        for track_id in track_ids:
             invalidate_old_save(session, user_id, track_id, SaveType.track)
-            save = track_save_state_changes[user_id][track_id]
+            save = track_ids[track_id]
             session.add(save)
             dispatch_favorite(session, challenge_bus, save, block_number)
-        num_total_changes += len(track_save_state_changes[user_id])
+        num_total_changes += len(track_ids)
 
-    for user_id in playlist_save_state_changes:
-        for playlist_id in playlist_save_state_changes[user_id]:
+    for user_id, playlist_ids in playlist_save_state_changes.items():
+        for playlist_id in playlist_ids:
             invalidate_old_save(
                 session,
                 user_id,
                 playlist_id,
-                playlist_save_state_changes[user_id][playlist_id].save_type,
+                playlist_ids[playlist_id].save_type,
             )
-            session.add(playlist_save_state_changes[user_id][playlist_id])
-        num_total_changes += len(playlist_save_state_changes[user_id])
+            session.add(playlist_ids[playlist_id])
+        num_total_changes += len(playlist_ids)
 
     return num_total_changes
 
