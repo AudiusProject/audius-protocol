@@ -191,6 +191,7 @@ def configure_flask_app_logging(app, loglevel_str):
     # Set a timer before the req to get the request time
     @app.before_request
     def start_timer():  # pylint: disable=W0612
+        # pylint: disable=E0237
         g.start = time.time()
 
     # Log the request

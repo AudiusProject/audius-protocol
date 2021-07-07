@@ -24,6 +24,9 @@ jsonformatter==0.3.0
 pytest-postgresql==2.4.1
 eventlet==0.28.0
 psutil==5.8.0
+types-python-dateutil==0.1.4
+types-redis==3.5.4
+types-requests==2.25.0
 
 # Below dependencies added during Solana integration
 base58==2.1.0
