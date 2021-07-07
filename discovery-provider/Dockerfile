@@ -2,7 +2,7 @@
 FROM audius/contracts:1.0.0 as contracts
 
 FROM alpine:3.13
-LABEL Hareesh Nagaraj <hareesh@audius.co>
+LABEL maintainer="Hareesh Nagaraj <hareesh@audius.co>"
 
 ENV INSTALL_PATH /audius-discovery-provider
 RUN mkdir -p $INSTALL_PATH
