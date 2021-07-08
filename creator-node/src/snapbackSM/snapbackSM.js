@@ -137,20 +137,6 @@ class SnapbackSM {
     // The interval when SnapbackSM is fired for state machine jobs
     this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
 
-    // Mapping of Content Node endpoint to its service provider ID
-    this.endpointToSPIdMap = {}
-
-    /* We do not want to eagerly cycle off the primary when issuing reconfigs if necessary, as the primary may
-      have data that the secondaries lack. In this case, wait until `this.moduloBase` iterations for the
-      primary to potentially become healthy again. This map is used to track visited primaries for particular wallets.
-
-      Schema:
-      {
-        {string} endpoint - the endpoint of the primary: {Set<string>} set of wallets for which the primary has been unhealthy for
-      }
-    */
-    this.unhealthyPrimaryToWalletMap = {}
-
     // The highest level of reconfig ops allowed. If the passed in mode is not one of the enabled modes, default to `RECONFIG_DISABLED`
     this.highestReconfigModeEnabled = this.getHighestReconfigModeEnabled()
 
@@ -379,12 +365,13 @@ class SnapbackSM {
    * @param {string} secondary2 endpoint of the current second secondary node on replica set
    * @param {string[]} unhealthyReplicas array of endpoints of current replica set nodes that are unhealthy
    * @param {string[]} healthyNodes array of healthy Content Node endpoints used for selecting new replica set
+   * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+   * @param {Object[]} potentialSyncRequests array of { primary, secondary1, secondary2, user_id, wallet, endpoint (the endpoint to perform a sync to) }
   */
-  async issueUpdateReplicaSetOp (userId, wallet, primary, secondary1, secondary2, unhealthyReplicas, healthyNodes) {
+  async issueUpdateReplicaSetOp (userId, wallet, primary, secondary1, secondary2, unhealthyReplicas, healthyNodes, replicaSetNodesToUserClockStatusesMap, potentialSyncRequests) {
     this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=[${unhealthyReplicas}]`)
 
     const unhealthyReplicasSet = new Set(unhealthyReplicas)
-    const baseSyncRequestParams = { userWallet: wallet, syncType: SyncType.Manual }
     let response = { errorMsg: null, issuedReconfig: false }
     let newReplicaSetSPIds = []
     let phase = ''
@@ -397,14 +384,9 @@ class SnapbackSM {
         secondary2,
         primary,
         unhealthyReplicasSet,
-        healthyNodes
+        healthyNodes,
+        replicaSetNodesToUserClockStatusesMap
       })
-
-      // If any of the tentatively new replica set nodes are falsy, do not issue reconfig
-      if (!newPrimary || !newSecondary1 || !newSecondary2) {
-        this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} new replica set is improper. Skipping reconfig.`)
-        return response
-      }
 
       this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} updating replica set=[${primary},${secondary1},${secondary2}] to new replica set=[${newPrimary},${newSecondary1},${newSecondary2}] issueReconfig=${issueReconfig}`)
 
@@ -418,7 +400,7 @@ class SnapbackSM {
       phase = issueUpdateReplicaSetOpPhases.UPDATE_URSM_REPLICA_SET
       const newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
       newReplicaSetEndpoints.forEach(endpt => {
-        if (this.endpointToSPIdMap[endpt]) newReplicaSetSPIds.push(this.endpointToSPIdMap[endpt])
+        if (this.peerSetManager.endpointToSPIdMap[endpt]) newReplicaSetSPIds.push(this.peerSetManager.endpointToSPIdMap[endpt])
       })
 
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
@@ -430,9 +412,9 @@ class SnapbackSM {
       }
 
       newReplicaSetSPIds = [
-        this.endpointToSPIdMap[newPrimary],
-        this.endpointToSPIdMap[newSecondary1],
-        this.endpointToSPIdMap[newSecondary2]
+        this.peerSetManager.endpointToSPIdMap[newPrimary],
+        this.peerSetManager.endpointToSPIdMap[newSecondary1],
+        this.peerSetManager.endpointToSPIdMap[newSecondary2]
       ]
 
       await this.audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
@@ -443,18 +425,16 @@ class SnapbackSM {
 
       response.issuedReconfig = true
 
-      // Sync data from existing primary to new secondary
-      phase = issueUpdateReplicaSetOpPhases.ENQUEUE_SYNCS
-      await this.enqueueSync({
-        ...baseSyncRequestParams,
-        primaryEndpoint: primary,
-        secondaryEndpoint: newSecondary1
-      })
-      await this.enqueueSync({
-        ...baseSyncRequestParams,
-        primaryEndpoint: primary,
-        secondaryEndpoint: newSecondary2
-      })
+      // // Sync data from existing primary to new secondary
+      let newNodeUser = {
+        primary: newPrimary,
+        secondary1: newSecondary1,
+        secondary2: newSecondary2,
+        user_id: userId,
+        wallet
+      }
+      potentialSyncRequests.push({ ...newNodeUser, endpoint: newSecondary1 })
+      potentialSyncRequests.push({ ...newNodeUser, endpoint: newSecondary2 })
     } catch (e) {
       const errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} failed at phase=${phase} reconfiguring to spIds=[${newReplicaSetSPIds}]: ${e.toString()}\n${e.stack}`
       response.errorMsg = errorMsg
@@ -493,6 +473,7 @@ class SnapbackSM {
    * @param {string} param.wallet current user's wallet address
    * @param {Set<string>} param.unhealthyReplicasSet a set of endpoints of unhealthy replica set nodes
    * @param {string[]} param.healthyNodes array of healthy Content Node endpoints used for selecting new replica set
+   * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
    * @returns {Object}
    * {
    *  newPrimary: {string | null} the endpoint of the newly selected primary or null,
@@ -501,41 +482,14 @@ class SnapbackSM {
    *  issueReconfig: {boolean} flag to issue reconfig or not
    * }
    */
-  async determineNewReplicaSet ({ primary, secondary1, secondary2, wallet, unhealthyReplicasSet, healthyNodes }) {
+  async determineNewReplicaSet ({ primary, secondary1, secondary2, wallet, unhealthyReplicasSet, healthyNodes, replicaSetNodesToUserClockStatusesMap }) {
     let response = { newPrimary: null, newSecondary1: null, newSecondary2: null, issueReconfig: false }
-
-    // If entire replica set is unhealthy, do not issue reconfig
-    if (unhealthyReplicasSet.size === NUMBER_OF_REPLICA_SET_NODES) {
-      this.logWarn(`[determineNewReplicaSet] Entire replica set=[${Array.from(unhealthyReplicasSet)}] is unhealthy. Not issuing new replica set.`)
-      return response
-    }
 
     const newReplicaNodes = await this.selectRandomReplicaSetNodes({
       unhealthyReplicasSet,
       healthyNodes,
       wallet
     })
-
-    // Perform last ditch effort to see if primary is truly unhealthy. If the primary responds
-    // with a 200 from the health check, remove from `unhealthyReplicaSet`. Else, continue with
-    // the new replica set determination logic.
-    const secondariesToClockMap = await this.fetchClockValues(secondary1, secondary2, wallet)
-    unhealthyReplicasSet = await this.finalizeUnhealthyReplicaSet({
-      unhealthyReplicasSet,
-      primary,
-      secondary1,
-      secondary2,
-      wallet,
-      secondariesToClockMap
-    })
-
-    // If the primary is still in the unhealthy replica set, and this primary for this wallet has not
-    // been visited before, add to in memory map and skip reconfig.
-    if (unhealthyReplicasSet.has(primary) && !this.walletInUnhealthyPrimaryMap(primary, wallet)) {
-      this.addWalletToUnhealthyPrimaryMap(primary, wallet)
-      response.issueReconfig = this.isReconfigModeEnabled(RECONFIG_MODES.RECONFIG_DISABLED.key)
-      return response
-    }
 
     // Note: for v0, only issue reconfigs if only 1 secondary is unhealthy. Else, just log out the tentative
     // new replica set to be assigned.
@@ -546,7 +500,8 @@ class SnapbackSM {
         // If snapbackSM has already checked this primary and it failed the health check, select the higher clock
         // value of the two secondaries as the new primary, leave the other as the first secondary, and select a new second secondary
         let currentHealthySecondary
-        ([newPrimary, currentHealthySecondary] = secondariesToClockMap[secondary1] >= secondariesToClockMap[secondary2] ? [secondary1, secondary2] : [secondary2, secondary1])
+        ([newPrimary, currentHealthySecondary] = replicaSetNodesToUserClockStatusesMap[secondary1][wallet] >= replicaSetNodesToUserClockStatusesMap[secondary2][wallet]
+          ? [secondary1, secondary2] : [secondary2, secondary1])
         response.newPrimary = newPrimary
         response.newSecondary1 = currentHealthySecondary
         response.newSecondary2 = newReplicaNodes[0]
@@ -572,9 +527,6 @@ class SnapbackSM {
       response.newSecondary1 = newReplicaNodes[0]
       response.newSecondary2 = newReplicaNodes[1]
     }
-
-    // If code reached this point, new nodes have been selected for reconfig. Remove the primary-wallet from map.
-    this.removeWalletFromUnhealthyPrimaryMap(primary, wallet)
 
     return response
   }
@@ -653,65 +605,78 @@ class SnapbackSM {
   }
 
   /**
-   * Converts provided array of SyncRequests to issue to a map(secondaryNode => userWallets[]) for easier access
+   * Converts provided array of SyncRequests to issue to a map(replica set node => userWallets[]) for easier access
    *
-   * @param {Array} potentialSyncRequests array of objects with schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
-   * @returns {Object} map of secondary endpoint strings to array of wallet strings of users with that node as secondary
+   * @param {Array} nodeUsers array of objects with schema { user_id, wallet, primary, secondary1, secondary2 }
+   * @returns {Object} map of replica set endpoint strings to array of wallet strings of users with that node as part of replica set
    */
-  buildSecondaryNodesToUserWalletsMap (potentialSyncRequests) {
-    const secondaryNodesToUserWalletsMap = {}
+  buildReplicaSetNodesToUserWalletsMap (nodeUsers) {
+    const replicaSetNodesToUserWalletsMap = {}
 
-    potentialSyncRequests.forEach(userInfo => {
-      const { wallet, endpoint: secondary } = userInfo
+    nodeUsers.forEach(userInfo => {
+      const { wallet, primary, secondary1, secondary2 } = userInfo
+      const replicaSet = [primary, secondary1, secondary2]
 
-      if (!secondaryNodesToUserWalletsMap[secondary]) {
-        secondaryNodesToUserWalletsMap[secondary] = []
-      }
+      replicaSet.forEach(node => {
+        if (!replicaSetNodesToUserWalletsMap[node]) {
+          replicaSetNodesToUserWalletsMap[node] = []
+        }
 
-      secondaryNodesToUserWalletsMap[secondary].push(wallet)
+        replicaSetNodesToUserWalletsMap[node].push(wallet)
+      })
     })
 
-    return secondaryNodesToUserWalletsMap
+    return replicaSetNodesToUserWalletsMap
   }
 
   /**
-   * Given map(secondaryNode => userWallets[]), retrieves clock values for every (secondaryNode, userWallet) pair
+   * Given map(replica set node => userWallets[]), retrieves clock values for every (node, userWallet) pair
    *
    * @returns {Object} map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
    */
-  async retrieveClockStatusesForSecondaryUsersFromNodes (secondaryNodesToUserWalletsMap) {
-    const secondaryNodesToUserClockValuesMap = {}
+  async retrieveClockStatusesForUsersAcrossReplicaSet (replicaSetNodesToUserWalletsMap, maxUserClockFetchAttempts = 10) {
+    const replicaSetNodesToUserClockValuesMap = {}
 
-    const secondaryNodes = Object.keys(secondaryNodesToUserWalletsMap)
+    const replicaSetNodes = Object.keys(replicaSetNodesToUserWalletsMap)
 
     // TODO change to batched parallel requests
-    await Promise.all(secondaryNodes.map(async (secondaryNode) => {
-      secondaryNodesToUserClockValuesMap[secondaryNode] = {}
+    await Promise.all(replicaSetNodes.map(async (replicaSetNode) => {
+      replicaSetNodesToUserClockValuesMap[replicaSetNode] = {}
 
-      const secondaryNodeUserWallets = secondaryNodesToUserWalletsMap[secondaryNode]
+      const replicaSetNodeUserWallets = replicaSetNodesToUserWalletsMap[replicaSetNode]
 
       const axiosReqParams = {
-        baseURL: secondaryNode,
+        baseURL: replicaSetNode,
         url: '/users/batch_clock_status',
         method: 'post',
-        data: { 'walletPublicKeys': secondaryNodeUserWallets }
+        data: { 'walletPublicKeys': replicaSetNodeUserWallets }
       }
 
-      // TODO convert to axios-retry, wrap in try-catch
-      const userClockValuesResp = (await axios(axiosReqParams)).data.data.users
+      // TODO: convert to axios-retry, wrap in try-catch
+      let userClockValuesResp
+      let userClockFetchAttempts = 0
+      while (userClockFetchAttempts++ < maxUserClockFetchAttempts) {
+        try {
+          userClockValuesResp = (await axios(axiosReqParams)).data.data.users
+        } catch (e) {
+          /* Swallow error */
+        }
+      }
+      if (!userClockValuesResp) throw new Error('Could not fetch clock values for users across replica set')
 
       userClockValuesResp.forEach(userClockValueResp => {
         const { walletPublicKey, clock } = userClockValueResp
         try {
-          secondaryNodesToUserClockValuesMap[secondaryNode][walletPublicKey] = clock
+          replicaSetNodesToUserClockValuesMap[replicaSetNode][walletPublicKey] = clock
         } catch (e) {
-          this.log(`Error updating secondaryNodesToUserClockValuesMap for wallet ${walletPublicKey} to clock ${clock}`)
+          // TODO: should we be throwing if the map could not be updated for 1 user? should we skip?
+          this.log(`Error updating replicaSetNodesToUserClockValuesMap for wallet ${walletPublicKey} to clock ${clock}`)
           throw e
         }
       })
     }))
 
-    return secondaryNodesToUserClockValuesMap
+    return replicaSetNodesToUserClockValuesMap
   }
 
   /**
@@ -798,6 +763,34 @@ class SnapbackSM {
         throw new Error(`processStateMachineOperation():getNodeUsers()/sliceUsers() Error: ${e.toString()}`)
       }
 
+      // Build map of <replica set node : [array of wallets that are on this replica set node]>
+      const replicaSetNodesToUserWalletsMap = this.buildReplicaSetNodesToUserWalletsMap(nodeUsers)
+      decisionTree.push({
+        stage: 'buildReplicaSetNodesToUserWalletsMap() Success',
+        vals: { numSecondaryNodes: Object.keys(replicaSetNodesToUserWalletsMap).length },
+        time: Date.now()
+      })
+
+      // Retrieve clock statuses for all users and their current replica sets
+      let replicaSetNodesToUserClockStatusesMap
+      try {
+        replicaSetNodesToUserClockStatusesMap = await this.retrieveClockStatusesForUsersAcrossReplicaSet(
+          replicaSetNodesToUserWalletsMap
+        )
+        decisionTree.push({
+          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Success',
+          vals: replicaSetNodesToUserClockStatusesMap,
+          time: Date.now()
+        })
+      } catch (e) {
+        decisionTree.push({
+          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
+          vals: e.message,
+          time: Date.now()
+        })
+        throw new Error('processStateMachineOperation():retrieveClockStatusesForUsersAcrossReplicaSet() Error')
+      }
+
       let unhealthyPeers
       try {
         unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
@@ -829,7 +822,7 @@ class SnapbackSM {
        * TODO make this more readable -> maybe two separate loops? need to ensure mutual exclusivity
        */
       for (const nodeUser of nodeUsers) {
-        const { primary, secondary1, secondary2 } = nodeUser
+        const { primary, secondary1, secondary2, wallet } = nodeUser
 
         let unhealthyReplicas = []
         if (primary === this.endpoint) {
@@ -854,8 +847,21 @@ class SnapbackSM {
           replicas = replicas.filter(replica => replica !== this.endpoint)
 
           for (const replica of replicas) {
+            // potentialSyncRequests.push({ ...nodeUser, endpoint: replica })
             if (unhealthyPeers.has(replica)) {
-              unhealthyReplicas.push(replica)
+              let addToUnhealthyReplicas = true
+
+              if (replica === primary) {
+                // If the current replica is the primary, perform a second health check.
+                // If the primary is unhealthy, add to `unhealthyReplicas`
+                addToUnhealthyReplicas = !this.peerSetManager.isPrimaryHealthy(primary, wallet)
+              } else {
+                // Else, if the clock value is not present for the given replica and wallet
+                // If the secondary clock value is not found, add to `unhealthyReplicas`
+                addToUnhealthyReplicas = !!replicaSetNodesToUserWalletsMap[replica][wallet]
+              }
+
+              if (addToUnhealthyReplicas) unhealthyReplicas.push(replica)
             }
           }
 
@@ -873,76 +879,28 @@ class SnapbackSM {
         time: Date.now()
       })
 
-      // Build map of secondary node to secondary user wallets array
-      const secondaryNodesToUserWalletsMap = this.buildSecondaryNodesToUserWalletsMap(potentialSyncRequests)
-      decisionTree.push({
-        stage: 'buildSecondaryNodesToUserWalletsMap() Success',
-        vals: { numSecondaryNodes: Object.keys(secondaryNodesToUserWalletsMap).length },
-        time: Date.now()
-      })
-
-      // Retrieve clock statuses for all secondary users from secondary nodes
-      let secondaryNodesToUserClockStatusesMap
-      try {
-        secondaryNodesToUserClockStatusesMap = await this.retrieveClockStatusesForSecondaryUsersFromNodes(
-          secondaryNodesToUserWalletsMap
-        )
-        decisionTree.push({
-          stage: 'retrieveClockStatusesForSecondaryUsersFromNodes() Success',
-          vals: { },
-          time: Date.now()
-        })
-      } catch (e) {
-        decisionTree.push({
-          stage: 'retrieveClockStatusesForSecondaryUsersFromNodes() Error',
-          vals: e.message,
-          time: Date.now()
-        })
-        throw new Error('processStateMachineOperation():retrieveClockStatusesForSecondaryUsersFromNodes() Error')
-      }
-
       // Setup the mapping of Content Node endpoint to service provider id. Used in reconfig
-      await this.updateEndpointToSpIdMap()
-      decisionTree.push({
-        stage: `updateEndpointToSpIdMap()`,
-        vals: {
-          endpointToSPIdMapSize: Object.keys(this.endpointToSPIdMap).length
-        },
-        time: Date.now()
-      })
-
-      // Issue all required sync requests
-      let numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors
       try {
-        const resp = await this.issueSyncRequests(potentialSyncRequests, secondaryNodesToUserClockStatusesMap)
-        numSyncRequestsRequired = resp.numSyncRequestsRequired
-        numSyncRequestsEnqueued = resp.numSyncRequestsEnqueued
-        enqueueSyncRequestErrors = resp.enqueueSyncRequestErrors
-
-        // Error if > 50% syncRequests fail
-        if (enqueueSyncRequestErrors.length > numSyncRequestsEnqueued) {
-          throw new Error('More than 50% of SyncRequests failed to be enqueued')
-        }
+        await this.peerSetManager.updateEndpointToSpIdMap(this.audiusLibs.ethContracts)
+        // Reset `this.highestReconfigModeEnabled` to the enabled mode
+        this.highestReconfigModeEnabled = this.getHighestReconfigModeEnabled()
 
         decisionTree.push({
-          stage: 'issueSyncRequests() Success',
+          stage: `updateEndpointToSpIdMap() Success`,
           vals: {
-            numSyncRequestsRequired,
-            numSyncRequestsEnqueued,
-            numIssueSyncRequestErrors: enqueueSyncRequestErrors.length,
-            enqueueSyncRequestErrors
+            endpointToSPIdMapSize: Object.keys(this.peerSetManager.endpointToSPIdMap).length
           },
           time: Date.now()
         })
       } catch (e) {
+        // If unable to initialize `endpointToSpIdMap`, disable reconfig
+        this.highestReconfigModeEnabled = RECONFIG_MODES.RECONFIG_DISABLED.key
+
         decisionTree.push({
-          stage: 'issueSyncRequests() Error',
+          stage: `updateEndpointToSpIdMap() Error`,
           vals: {
-            error: e.message,
-            numSyncRequestsRequired,
-            numSyncRequestsEnqueued,
-            numIssueSyncRequestErrors: (enqueueSyncRequestErrors ? enqueueSyncRequestErrors.length : null),
-            enqueueSyncRequestErrors
+            endpointToSPIdMapSize: Object.keys(this.peerSetManager.endpointToSPIdMap).length,
+            error: e.message
           },
           time: Date.now()
         })
@@ -974,7 +932,9 @@ class SnapbackSM {
             userInfo.secondary1,
             userInfo.secondary2,
             userInfo.unhealthyReplicas,
-            healthyNodes
+            healthyNodes,
+            replicaSetNodesToUserWalletsMap,
+            potentialSyncRequests
           )
 
           if (errorMsg) errors.push(errorMsg)
@@ -994,6 +954,43 @@ class SnapbackSM {
           time: Date.now()
         })
         throw new Error('processStateMachineOperation():issueUpdateReplicaSetOp() Error')
+      }
+
+      // Issue all required sync requests
+      let numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors
+      try {
+        const resp = await this.issueSyncRequests(potentialSyncRequests, replicaSetNodesToUserClockStatusesMap)
+        numSyncRequestsRequired = resp.numSyncRequestsRequired
+        numSyncRequestsEnqueued = resp.numSyncRequestsEnqueued
+        enqueueSyncRequestErrors = resp.enqueueSyncRequestErrors
+
+        // Error if > 50% syncRequests fail
+        if (enqueueSyncRequestErrors.length > numSyncRequestsEnqueued) {
+          throw new Error('More than 50% of SyncRequests failed to be enqueued')
+        }
+
+        decisionTree.push({
+          stage: 'issueSyncRequests() Success',
+          vals: {
+            numSyncRequestsRequired,
+            numSyncRequestsEnqueued,
+            numIssueSyncRequestErrors: enqueueSyncRequestErrors.length,
+            enqueueSyncRequestErrors
+          },
+          time: Date.now()
+        })
+      } catch (e) {
+        decisionTree.push({
+          stage: 'issueSyncRequests() Error',
+          vals: {
+            error: e.message,
+            numSyncRequestsRequired,
+            numSyncRequestsEnqueued,
+            numIssueSyncRequestErrors: (enqueueSyncRequestErrors ? enqueueSyncRequestErrors.length : null),
+            enqueueSyncRequestErrors
+          },
+          time: Date.now()
+        })
       }
 
       decisionTree.push({
@@ -1251,101 +1248,6 @@ class SnapbackSM {
 
     // This condition will only be hit if the secondary has failed to sync within timeoutMs
     throw new Error(`Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`)
-  }
-
-  /**
-   * Updates `this.endpointToSPIdMap` to the mapping of <endpoint : spId>. If the fetch fails, rely on the previous
-   * `this.endpointToSPIdMap` value. If the previous value is also an empty object, disable reconfig.
-   */
-  async updateEndpointToSpIdMap () {
-    let endpointToSPIdMap = {}
-    try {
-      const contentNodes = await this.audiusLibs.ethContracts.getServiceProviderList('content-node')
-      contentNodes.forEach(cn => { endpointToSPIdMap[cn.endpoint] = cn.spID })
-    } catch (e) {
-      this.logError(`[updateEndpointToSpIdMap]: ${e.message}`)
-    }
-
-    if (Object.keys(endpointToSPIdMap).length > 0) this.endpointToSPIdMap = endpointToSPIdMap
-    if (Object.keys(this.endpointToSPIdMap).length === 0) {
-      this.logError('[updateEndpointToSpIdMap]: Unable to initialize this.endpointToSPIdMap')
-      this.highestReconfigModeEnabled = RECONFIG_MODES.RECONFIG_DISABLED.key
-    } else {
-      this.highestReconfigModeEnabled = this.getHighestReconfigModeEnabled()
-    }
-  }
-
-  /**
-   * Fetches the clock values for the wallet and secondaries passed in with a max attempt count.
-   * This is used in reconfig ops where if a secondary needs to be promoted to a primary, select the
-   * secondary that has a higher clock value.
-   *
-   * If after `maxClockFetchAttempts` a clock value for a secondary is unavailable, return a clock value
-   * of null.
-   * @param {string} secondary1 the endpoint of one of the secondaries
-   * @param {string} secondary2 the endpoint of the other secondary
-   * @param {string} wallet the wallet of the user
-   * @param {number} [maxClockFetchAttempts=10] the max number of tries to retrieve a clock value
-   * @returns {Object}
-   *  {
-   *    {string} the endpoint of the first secondary: {number | null} the clock value or null
-   *    {string} the endpoint of the second secondary: {number | null} the clock value or null
-   *  }
-   */
-  async fetchClockValues (secondary1, secondary2, wallet, maxClockFetchAttempts = 10) {
-    let secondariesToClockMap = {}
-    secondariesToClockMap[secondary1] = null
-    secondariesToClockMap[secondary2] = null
-    let attempts = 0
-
-    while (attempts++ < maxClockFetchAttempts) {
-      const [secondary1ClockResponse, secondary2ClockResponse] = await Promise.all(
-        [secondary1, secondary2].map(node => {
-          return async () => {
-            let clockValue = null
-            try {
-              clockValue = await CreatorNode.getClockValue(node, wallet, 5000)
-            } catch (e) { /* Swallow error */ }
-            return clockValue
-          }
-        })
-      )
-
-      if (secondary1ClockResponse) {
-        secondariesToClockMap[secondary1] = secondary1ClockResponse
-      }
-
-      if (secondary2ClockResponse) {
-        secondariesToClockMap[secondary2] = secondary2ClockResponse
-      }
-
-      if (secondariesToClockMap[secondary1] && secondariesToClockMap[secondary2]) {
-        return secondariesToClockMap
-      }
-    }
-
-    return secondariesToClockMap
-  }
-
-  walletInUnhealthyPrimaryMap (primary, wallet) {
-    if (this.unhealthyPrimaryToWalletMap[primary] && this.unhealthyPrimaryToWalletMap[primary].has(wallet)) {
-      return true
-    }
-    return false
-  }
-
-  addWalletToUnhealthyPrimaryMap (primary, wallet) {
-    if (!this.unhealthyPrimaryToWalletMap[primary]) {
-      this.unhealthyPrimaryToWalletMap[primary] = new Set([wallet])
-    } else {
-      this.unhealthyPrimaryToWalletMap[primary].add(wallet)
-    }
-  }
-
-  removeWalletFromUnhealthyPrimaryMap (primary, wallet) {
-    if (this.walletInUnhealthyPrimaryMap(primary, wallet)) {
-      this.unhealthyPrimaryToWalletMap[primary].delete(wallet)
-    }
   }
 
   isReconfigModeEnabled (mode) {

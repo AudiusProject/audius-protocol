@@ -15,6 +15,20 @@ class PeerSetManager {
   constructor ({ discoveryProviderEndpoint, creatorNodeEndpoint }) {
     this.discoveryProviderEndpoint = discoveryProviderEndpoint
     this.creatorNodeEndpoint = creatorNodeEndpoint
+
+    /* We do not want to eagerly cycle off the primary when issuing reconfigs if necessary, as the primary may
+      have data that the secondaries lack. In this case, wait until `this.moduloBase` iterations for the
+      primary to potentially become healthy again. This map is used to track visited primaries for particular wallets.
+
+      Schema:
+      {
+        {string} endpoint - the endpoint of the primary: {Set<string>} set of wallets for which the primary has been unhealthy for
+      }
+    */
+    this.unhealthyPrimaryToWalletMap = {}
+
+    // Mapping of Content Node endpoint to its service provider ID
+    this.endpointToSPIdMap = {}
   }
 
   log (msg) {
@@ -26,14 +40,13 @@ class PeerSetManager {
   }
 
   /**
-   * Retrieves node users, paritions it into a slice, computes the peer set of the node users,
-   * and performs a health check on the peer set.
+   * Performs a health check on the peer set
    * @param {Object[]} nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
    * @returns the unhealthy peers in a Set
    *
    * @note consider returning healthy set?
    */
-  async getUnhealthyPeers (nodeUsers) {
+  async getUnhealthyPeers (nodeUsers, performSimpleCheck = false) {
     // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
     let peerSet = this.computeContentNodePeerSet(nodeUsers)
 
@@ -44,16 +57,24 @@ class PeerSetManager {
     const unhealthyPeers = new Set()
 
     for await (const peer of peerSet) {
-      try {
-        const verboseHealthCheckResp = await this.queryVerboseHealthCheck(peer)
-        this.determinePeerHealth(verboseHealthCheckResp)
-      } catch (e) {
+      if (!this.isNodeHealthy(peer, performSimpleCheck)) {
         unhealthyPeers.add(peer)
-        this.logError(`getUnhealthyPeers() peer=${peer} is unhealthy: ${e.toString()}`)
       }
     }
 
     return unhealthyPeers
+  }
+
+  async isNodeHealthy (peer, performSimpleCheck = false) {
+    try {
+      const verboseHealthCheckResp = await this.queryVerboseHealthCheck(peer)
+      if (!performSimpleCheck) { this.determinePeerHealth(verboseHealthCheckResp) }
+    } catch (e) {
+      this.logError(`isNodeHealthy() peer=${peer} is unhealthy: ${e.toString()}`)
+      return false
+    }
+
+    return true
   }
 
   /**
@@ -248,6 +269,73 @@ class PeerSetManager {
       thirtyDayRollingSyncSuccessCount + thirtyDayRollingSyncFailCount > MINIMUM_ROLLING_SYNC_COUNT &&
       thirtyDayRollingSyncSuccessCount / (thirtyDayRollingSyncFailCount + thirtyDayRollingSyncSuccessCount) < MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE) {
       throw new Error(`Rolling sync data shows that this node fails at a high rate of syncs. Successful syncs=${thirtyDayRollingSyncSuccessCount} || Failed syncs=${thirtyDayRollingSyncFailCount}`)
+    }
+  }
+
+  /**
+   * Updates `this.endpointToSPIdMap` to the mapping of <endpoint : spId>. If the fetch fails, rely on the previous
+   * `this.endpointToSPIdMap` value. If the existing map is empty, throw error as we need this map to issue reconfigs.
+   * @param {Object} ethContracts audiusLibs.ethContracts instance; has helper fn to get service provider info
+   */
+  async updateEndpointToSpIdMap (ethContracts) {
+    let endpointToSPIdMap = {}
+    try {
+      const contentNodes = await ethContracts.getServiceProviderList('content-node')
+      contentNodes.forEach(cn => { endpointToSPIdMap[cn.endpoint] = cn.spID })
+    } catch (e) {
+      this.logError(`[updateEndpointToSpIdMap]: ${e.message}`)
+    }
+
+    if (Object.keys(endpointToSPIdMap).length > 0) this.endpointToSPIdMap = endpointToSPIdMap
+    if (Object.keys(this.endpointToSPIdMap).length === 0) {
+      const errorMsg = '[updateEndpointToSpIdMap]: Unable to initialize this.endpointToSPIdMap'
+      this.logError(errorMsg)
+      throw new Error(errorMsg)
+    }
+  }
+
+  /**
+   * Perform a simple health check to see if a primary is truly unhealthy.
+   * @param {string} primary primary endpoint
+   * @param {string} wallet user wallet
+   * @returns boolean of whether primary is healthy or not
+   */
+  isPrimaryHealthy (primary, wallet) {
+    // Check to see if the primary is healthy
+    if (!this.isNodeHealthy(primary, true)) {
+      if (this.walletInUnhealthyPrimaryMap(primary, wallet)) {
+        // If this primary-wallet pair has been visited before, mark primary for that user as unhealthy
+        return false
+      } else {
+        // Else, mark as visited and the current primary-wallet pair as healthy for the time being
+        this.addWalletToUnhealthyPrimaryMap(primary, wallet)
+        return true
+      }
+    }
+
+    // The primary-wallet is healthy. Remove from map and mark as healthy
+    this.removeWalletFromUnhealthyPrimaryMap(primary, wallet)
+    return true
+  }
+
+  walletInUnhealthyPrimaryMap (primary, wallet) {
+    if (this.unhealthyPrimaryToWalletMap[primary] && this.unhealthyPrimaryToWalletMap[primary].has(wallet)) {
+      return true
+    }
+    return false
+  }
+
+  addWalletToUnhealthyPrimaryMap (primary, wallet) {
+    if (!this.unhealthyPrimaryToWalletMap[primary]) {
+      this.unhealthyPrimaryToWalletMap[primary] = new Set([wallet])
+    } else {
+      this.unhealthyPrimaryToWalletMap[primary].add(wallet)
+    }
+  }
+
+  removeWalletFromUnhealthyPrimaryMap (primary, wallet) {
+    if (this.walletInUnhealthyPrimaryMap(primary, wallet)) {
+      this.unhealthyPrimaryToWalletMap[primary].delete(wallet)
     }
   }
 }
