@@ -8,6 +8,7 @@ const utils = require('../src/utils')
 const { getApp } = require('./lib/app')
 const nodeConfig = require('../src/config')
 
+const wallet = '0x4749a62b82983fdcf19ce328ef2a7f7ec8915fe5'
 const constants = {
   primaryEndpoint: 'http://test_cn_primary.co',
   secondary1Endpoint: 'http://test_cn_secondary1.co',
@@ -16,8 +17,19 @@ const constants = {
   healthyNode2Endpoint: 'http://healthy2_cn.co',
   healthyNode3Endpoint: 'http://healthy3_cn.co',
   primaryClockVal: 1,
-  wallet: '0x4749a62b82983fdcf19ce328ef2a7f7ec8915fe5',
+  wallet,
   userId: 1
+}
+
+const replicaSetNodesToUserClockStatusesMap = {}
+replicaSetNodesToUserClockStatusesMap[constants.primaryEndpoint] = {
+  wallet: 10
+}
+replicaSetNodesToUserClockStatusesMap[constants.secondary1Endpoint] = {
+  wallet: 10
+}
+replicaSetNodesToUserClockStatusesMap[constants.secondary2Endpoint] = {
+  wallet: 10
 }
 
 const healthCheckVerboseResponse = {
@@ -199,6 +211,9 @@ describe('test SnapbackSM', function () {
     // Create SnapbackSM instance
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
+    // Mock `selectRandomReplicaSetNodes` to return the healthy nodes
+    snapback.selectRandomReplicaSetNodes = async () => { return healthyNodes }
+
     // Pass in size 3 of `unhealthyReplicasSet`
     const { newPrimary, newSecondary1, newSecondary2, issueReconfig } = await snapback.determineNewReplicaSet({
       primary: constants.primaryEndpoint,
@@ -206,7 +221,8 @@ describe('test SnapbackSM', function () {
       secondary2: constants.secondary2Endpoint,
       wallet: constants.wallet,
       unhealthyReplicasSet: new Set([constants.primaryEndpoint, constants.secondary1Endpoint, constants.secondary2Endpoint]),
-      healthyNodes
+      healthyNodes,
+      replicaSetNodesToUserClockStatusesMap
     })
 
     // Check to make sure that the return is falsy
@@ -258,7 +274,8 @@ describe('test SnapbackSM', function () {
       secondary2: constants.secondary2Endpoint,
       wallet: constants.wallet,
       unhealthyReplicasSet: new Set([constants.secondary2Endpoint]),
-      healthyNodes
+      healthyNodes,
+      replicaSetNodesToUserClockStatusesMap
     })
 
     // Check to make sure that the new replica set is what we expect it to be
@@ -313,7 +330,8 @@ describe('test SnapbackSM', function () {
       secondary2: constants.secondary2Endpoint,
       wallet: constants.wallet,
       unhealthyReplicasSet: new Set([constants.secondary1Endpoint, constants.secondary2Endpoint]),
-      healthyNodes
+      healthyNodes,
+      replicaSetNodesToUserClockStatusesMap
     })
 
     // Check to make sure that the new replica set is what we expect it to be
@@ -369,7 +387,8 @@ describe('test SnapbackSM', function () {
       secondary2: constants.secondary2Endpoint,
       wallet: constants.wallet,
       unhealthyReplicasSet: new Set([constants.primaryEndpoint]),
-      healthyNodes
+      healthyNodes,
+      replicaSetNodesToUserClockStatusesMap
     })
 
     // Check to make sure that the new replica set is what we expect it to be
@@ -429,7 +448,8 @@ describe('test SnapbackSM', function () {
       secondary2: constants.secondary2Endpoint,
       wallet: constants.wallet,
       unhealthyReplicasSet: new Set([constants.primaryEndpoint]),
-      healthyNodes
+      healthyNodes,
+      replicaSetNodesToUserClockStatusesMap
     })
 
     // Second iteration - Pass in size 1 of `unhealthyReplicasSet`
@@ -439,7 +459,8 @@ describe('test SnapbackSM', function () {
       secondary2: constants.secondary2Endpoint,
       wallet: constants.wallet,
       unhealthyReplicasSet: new Set([constants.primaryEndpoint]),
-      healthyNodes
+      healthyNodes,
+      replicaSetNodesToUserClockStatusesMap
     })
 
     // Check to make sure that the new replica set is what we expect it to be
@@ -498,7 +519,8 @@ describe('test SnapbackSM', function () {
       secondary2: constants.secondary2Endpoint,
       wallet: constants.wallet,
       unhealthyReplicasSet: new Set([constants.primaryEndpoint]),
-      healthyNodes
+      healthyNodes,
+      replicaSetNodesToUserClockStatusesMap
     })
 
     nock(constants.primaryEndpoint)
@@ -512,7 +534,8 @@ describe('test SnapbackSM', function () {
       secondary2: constants.secondary2Endpoint,
       wallet: constants.wallet,
       unhealthyReplicasSet: new Set([constants.primaryEndpoint]),
-      healthyNodes
+      healthyNodes,
+      replicaSetNodesToUserClockStatusesMap
     })
 
     // Check to make sure that the new replica set is what we expect it to be
@@ -571,7 +594,8 @@ describe('test SnapbackSM', function () {
       secondary2: constants.secondary2Endpoint,
       wallet: constants.wallet,
       unhealthyReplicasSet: new Set([constants.primaryEndpoint, constants.secondary1Endpoint]),
-      healthyNodes
+      healthyNodes,
+      replicaSetNodesToUserClockStatusesMap
     })
 
     const { newPrimary, newSecondary1, newSecondary2, issueReconfig } = await snapback.determineNewReplicaSet({
@@ -580,7 +604,8 @@ describe('test SnapbackSM', function () {
       secondary2: constants.secondary2Endpoint,
       wallet: constants.wallet,
       unhealthyReplicasSet: new Set([constants.primaryEndpoint, constants.secondary1Endpoint]),
-      healthyNodes
+      healthyNodes,
+      replicaSetNodesToUserClockStatusesMap
     })
 
     // Check to make sure that the new replica set is what we expect it to be
@@ -638,7 +663,8 @@ describe('test SnapbackSM', function () {
       secondary2: constants.secondary2Endpoint,
       wallet: constants.wallet,
       unhealthyReplicasSet: new Set([constants.primaryEndpoint, constants.secondary1Endpoint]),
-      healthyNodes
+      healthyNodes,
+      replicaSetNodesToUserClockStatusesMap
     })
 
     nock(constants.primaryEndpoint)
@@ -651,7 +677,8 @@ describe('test SnapbackSM', function () {
       secondary2: constants.secondary2Endpoint,
       wallet: constants.wallet,
       unhealthyReplicasSet: new Set([constants.primaryEndpoint, constants.secondary1Endpoint]),
-      healthyNodes
+      healthyNodes,
+      replicaSetNodesToUserClockStatusesMap
     })
 
     // Check to make sure that the new replica set is what we expect it to be
