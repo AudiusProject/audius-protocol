@@ -15,7 +15,11 @@ export default class Identity {
     serviceProviderWallet: Address
   ): Promise<BN | null> {
     try {
-      const { minimumDelegationAmount } = await this.aud.libs.identityService.getMinimumDelegationAmount(serviceProviderWallet)
+      const {
+        minimumDelegationAmount
+      } = await this.aud.libs.identityService.getMinimumDelegationAmount(
+        serviceProviderWallet
+      )
       return new BN(minimumDelegationAmount)
     } catch (error) {
       return null
@@ -23,9 +27,7 @@ export default class Identity {
   }
 
   // Sets the minimum delegation in identity for a service provider
-  async updateMinimumDelegationAmount(
-    amount: BN
-  ): Promise<boolean> {
+  async updateMinimumDelegationAmount(amount: BN): Promise<boolean> {
     await this.aud.libs.Account.updateMinimumDelegationAmount(amount.toString())
     return true
   }

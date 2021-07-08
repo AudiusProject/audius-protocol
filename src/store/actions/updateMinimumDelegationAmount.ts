@@ -29,15 +29,18 @@ function updateMinimumDelegationAmount(
       }
 
       // Set the min delegation amount for the user
-      const updateDelegation = aud.Identity.updateMinimumDelegationAmount(amount)
-      const timeoutPromise = new Promise(resolve => setTimeout(resolve, MIN_LOADING_SPINNER_MS)) 
+      const updateDelegation = aud.Identity.updateMinimumDelegationAmount(
+        amount
+      )
+      const timeoutPromise = new Promise(resolve =>
+        setTimeout(resolve, MIN_LOADING_SPINNER_MS)
+      )
 
       // Wait a minimum of the loading spinner time
       await Promise.all([timeoutPromise, updateDelegation])
 
       // Re-fetch user to refresh
       await dispatch(fetchUser(wallet))
-
 
       setStatus(Status.Success)
     } catch (err) {

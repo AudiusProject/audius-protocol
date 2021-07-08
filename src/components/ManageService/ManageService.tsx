@@ -21,7 +21,13 @@ import { useModalControls } from 'utils/hooks'
 import { accountPage } from 'utils/routes'
 
 import Button, { ButtonType } from 'components/Button'
-import { IconArrowWhite, IconValidationCheck, IconUser, IconMinimum, IconDeployerCut } from '@audius/stems'
+import {
+  IconArrowWhite,
+  IconValidationCheck,
+  IconUser,
+  IconMinimum,
+  IconDeployerCut
+} from '@audius/stems'
 import { usePushRoute } from 'utils/effects'
 import { TICKER } from 'utils/consts'
 import { useMakeClaim } from 'store/actions/makeClaim'
@@ -149,14 +155,18 @@ const MinimumDelegationAmount = ({
       </div>
       {messages.minimunDelegationAmount}
       <DisplayAudio
-       className={styles.minDelgationAmount}
-       amount={minimumDelegationAmount} 
-       label={TICKER}
-       />
+        className={styles.minDelgationAmount}
+        amount={minimumDelegationAmount}
+        label={TICKER}
+      />
       <span className={styles.actionText} onClick={onClick}>
         {messages.change}
       </span>
-      <MinimumDelegationAmountModal minimumDelegationAmount={minimumDelegationAmount} isOpen={isOpen} onClose={onClose} />
+      <MinimumDelegationAmountModal
+        minimumDelegationAmount={minimumDelegationAmount}
+        isOpen={isOpen}
+        onClose={onClose}
+      />
     </div>
   )
 }
@@ -337,7 +347,9 @@ const ManageService: React.FC<ManageServiceProps> = (
               />
               <MinimumDelegationAmount
                 className={styles.accountAction}
-                minimumDelegationAmount={(accountUser as Operator).minDelegationAmount}
+                minimumDelegationAmount={
+                  (accountUser as Operator).minDelegationAmount
+                }
               />
               {(accountUser as Operator).delegators.length > 0 && (
                 <Delegators

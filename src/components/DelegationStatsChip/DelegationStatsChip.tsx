@@ -42,7 +42,10 @@ const DelegationStatsChip = ({
       isLoading={isLoading}
     >
       <InlineStat label={messages.deployerCut} value={`${deployerCut}%`} />
-      <InlineStat label={messages.minDelegation} value={<DisplayAudio amount={minDelegation}/>} />
+      <InlineStat
+        label={messages.minDelegation}
+        value={<DisplayAudio amount={minDelegation} />}
+      />
       <InlineStat label={messages.delegators} value={delegators.toString()} />
     </StatsChip>
   )

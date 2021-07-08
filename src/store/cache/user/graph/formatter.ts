@@ -46,11 +46,15 @@ export const formatUser = async (
 
   // Fetch the user's min delegation amount and default to the protocol value if not set or too low
   const protocolMinDelegationAmount = await aud.Delegate.getMinDelegationAmount()
-  let minDelegationAmount = await aud.Identity.getMinimumDelegationAmount(userWallet)
-  if (minDelegationAmount === null || protocolMinDelegationAmount.gt(minDelegationAmount)) {
+  let minDelegationAmount = await aud.Identity.getMinimumDelegationAmount(
+    userWallet
+  )
+  if (
+    minDelegationAmount === null ||
+    protocolMinDelegationAmount.gt(minDelegationAmount)
+  ) {
     minDelegationAmount = protocolMinDelegationAmount
   }
-
 
   return {
     ...formattedUser,

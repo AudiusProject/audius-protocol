@@ -74,7 +74,10 @@ const MinimumDelegationAmountModal: React.FC<MinimumDelegationAmountModalProps> 
   }, [status, onClose, onCloseConfirm])
 
   const topBox = (
-    <StandaloneBox>{`${messages.confirmChange} to `}<DisplayAudio amount={minDelegationBN} label={TICKER} /></StandaloneBox>
+    <StandaloneBox>
+      {`${messages.confirmChange} to `}
+      <DisplayAudio amount={minDelegationBN} label={TICKER} />
+    </StandaloneBox>
   )
 
   return (
@@ -95,7 +98,11 @@ const MinimumDelegationAmountModal: React.FC<MinimumDelegationAmountModalProps> 
         />
         <div className={styles.currentLabel}>
           {messages.currentLabel}
-          <DisplayAudio className={styles.audioLabel} amount={minimumDelegationAmount} label={TICKER} />
+          <DisplayAudio
+            className={styles.audioLabel}
+            amount={minimumDelegationAmount}
+            label={TICKER}
+          />
         </div>
       </div>
       <Button
