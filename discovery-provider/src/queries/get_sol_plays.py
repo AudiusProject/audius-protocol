@@ -31,7 +31,12 @@ def get_sol_play(sol_tx_signature):
 # Get last x sol specific plays
 def get_latest_sol_plays(limit=10):
     db = get_db_read_replica()
-    sol_play = None
+
+    # Cap max returned db entries
+    if limit > 100:
+        limit = 100
+
+    sol_plays = None
     with db.scoped_session() as session:
         base_query = (
             session.query(Play)
@@ -41,9 +46,9 @@ def get_latest_sol_plays(limit=10):
         )
         query_results = base_query.all()
         if query_results:
-            sol_play = helpers.query_result_to_list(query_results)
+            sol_plays = helpers.query_result_to_list(query_results)
 
-    return sol_play
+    return sol_plays
 
 # For the n most recently listened to tracks, return the all time listen counts for those tracks
 def get_track_listen_milestones(limit=100):
