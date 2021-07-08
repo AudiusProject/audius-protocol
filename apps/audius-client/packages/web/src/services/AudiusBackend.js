@@ -210,11 +210,28 @@ const fetchImageCID = async (cid, creatorNodeGateways = [], cache = true) => {
   await waitForLibsInit()
   // Else, race fetching of the image from all gateways & return the image url blob
   try {
-    const image = await audiusLibs.File.fetchCID(
-      cid,
-      creatorNodeGateways,
-      () => {}
-    )
+    const promises = [
+      // Try to fetch the CID
+      audiusLibs.File.fetchCID(cid, creatorNodeGateways, () => {}).catch(
+        () => new Promise()
+      )
+    ]
+    if (cid.includes('/')) {
+      // Try to fetch the CID without the size if it is one with a size.
+      // Very old users have set _sizes that point to a single CID,
+      // not a folder of CIDs.
+      // This code path should be executed very rarely.
+      promises.push(
+        audiusLibs.File.fetchCID(
+          cid.split('/')[0],
+          creatorNodeGateways,
+          () => {}
+        ).catch(() => new Promise())
+      )
+    }
+    // Note: the raced promises here have a do-nothing .catch, which makes
+    // this promise.race behave like promise.any
+    const image = await Promise.race(promises)
     const url = URL.createObjectURL(image.data)
     if (cache) CIDCache.add(cid, url)
     return url
