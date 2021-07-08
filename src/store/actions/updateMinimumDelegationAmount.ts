@@ -10,8 +10,6 @@ import { Status } from 'types'
 import Audius from 'services/Audius'
 import { AppState } from 'store/types'
 
-const MIN_LOADING_SPINNER_MS = 1000 /* ms */
-
 function updateMinimumDelegationAmount(
   amount: BN,
   setStatus: (status: Status) => void,
@@ -29,15 +27,7 @@ function updateMinimumDelegationAmount(
       }
 
       // Set the min delegation amount for the user
-      const updateDelegation = aud.Identity.updateMinimumDelegationAmount(
-        amount
-      )
-      const timeoutPromise = new Promise(resolve =>
-        setTimeout(resolve, MIN_LOADING_SPINNER_MS)
-      )
-
-      // Wait a minimum of the loading spinner time
-      await Promise.all([timeoutPromise, updateDelegation])
+      await aud.Identity.updateMinimumDelegationAmount(amount)
 
       // Re-fetch user to refresh
       await dispatch(fetchUser(wallet))

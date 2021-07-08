@@ -20,6 +20,12 @@ export default class Identity {
       } = await this.aud.libs.identityService.getMinimumDelegationAmount(
         serviceProviderWallet
       )
+
+      if (!minimumDelegationAmount) return null
+
+      const isNumeric = /^\d+$/.test(minimumDelegationAmount)
+      if (!isNumeric) return null
+
       return new BN(minimumDelegationAmount)
     } catch (error) {
       return null
