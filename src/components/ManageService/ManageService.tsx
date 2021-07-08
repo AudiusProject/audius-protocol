@@ -21,7 +21,7 @@ import { useModalControls } from 'utils/hooks'
 import { accountPage } from 'utils/routes'
 
 import Button, { ButtonType } from 'components/Button'
-import { IconArrowWhite, IconValidationCheck, IconUser, IconMinimum } from '@audius/stems'
+import { IconArrowWhite, IconValidationCheck, IconUser, IconMinimum, IconDeployerCut } from '@audius/stems'
 import { usePushRoute } from 'utils/effects'
 import { TICKER } from 'utils/consts'
 import { useMakeClaim } from 'store/actions/makeClaim'
@@ -122,7 +122,9 @@ const DeployerCut = ({
   const { isOpen, onClick, onClose } = useModalControls()
   return (
     <div className={clsx({ [className!]: !!className })}>
-      <IconValidationCheck className={clsx(styles.actionIcon)} />
+      <div className={clsx(styles.actionIcon, styles.userWrapper)}>
+        <IconDeployerCut className={clsx(styles.deployerCutIcon)} />
+      </div>
       {`${messages.deployerCut} ${cut}%`}
       <span className={styles.actionText} onClick={onClick}>
         {messages.change}

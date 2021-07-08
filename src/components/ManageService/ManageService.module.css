@@ -154,6 +154,11 @@
   width: 12px;
 }
 
+.deployerCutIcon {
+  height: 16px;
+  width: 16px;
+}
+
 .userIcon path {
   fill: var(--static-white);
 }
