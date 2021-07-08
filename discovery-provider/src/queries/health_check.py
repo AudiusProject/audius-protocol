@@ -97,7 +97,6 @@ def sol_play_check():
         'chain_tx': latest_cached_sol_tx,
         'db_info': latest_db_sol_plays
     }
-    logger.error(response)
 
     return success_response(
         response,

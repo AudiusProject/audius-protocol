@@ -97,7 +97,7 @@ def cache_latest_tx_redis(solana_client, redis, tx):
         tx_slot = tx['slot']
         pickle_and_set(redis, latest_sol_play_tx_key, { 'signature': tx_sig , 'slot': tx_slot })
     except Exception as e:
-        raise Exception(f"index_solana_plays.py | Failed to cache latest transaction")
+        raise Exception(f"index_solana_plays.py | Failed to cache latest transaction {tx}")
 
 # Check for both SECP and SignerGroup
 # Ensures that a signature recovery was performed within the expected SignerGroup
