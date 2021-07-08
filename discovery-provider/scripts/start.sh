@@ -23,6 +23,8 @@ if [ -z "$audius_db_url" ]; then
         chown -R postgres:postgres /db
         chmod 700 /db
         sudo -u postgres pg_ctl init -D /db
+        echo "host all all 0.0.0.0/0 trust" >>/db/pg_hba.conf
+        echo "listen_addresses = '*'" >>/db/postgresql.conf
         sudo -u postgres pg_ctl start -D /db
         sudo -u postgres createdb audius_discovery
     else
