@@ -44,6 +44,14 @@ export const formatUser = async (
     userWallet
   )
 
+  // Fetch the user's min delegation amount and default to the protocol value if not set or too low
+  const protocolMinDelegationAmount = await aud.Delegate.getMinDelegationAmount()
+  let minDelegationAmount = await aud.Identity.getMinimumDelegationAmount(userWallet)
+  if (minDelegationAmount === null || protocolMinDelegationAmount.gt(minDelegationAmount)) {
+    minDelegationAmount = protocolMinDelegationAmount
+  }
+
+
   return {
     ...formattedUser,
     serviceProvider,
@@ -70,6 +78,7 @@ export const formatUser = async (
           amount: new BN(user.pendingDecreaseStake.decreaseAmount),
           lockupExpiryBlock: parseInt(user.pendingDecreaseStake.expiryBlock)
         }
-      : { amount: new BN(0), lockupExpiryBlock: 0 }
+      : { amount: new BN(0), lockupExpiryBlock: 0 },
+    minDelegationAmount
   }
 }

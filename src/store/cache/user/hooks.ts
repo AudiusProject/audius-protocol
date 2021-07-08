@@ -118,6 +118,7 @@ const getServiceProviderMetadata = async (
   delegators: Array<Delegate>
   delegatedTotal: BN
   totalStakedFor: BN
+  minDelegationAmount: BN
 }> => {
   const totalStakedFor = await aud.Staking.totalStakedFor(wallet)
   const delegatedTotal = await aud.Delegate.getTotalDelegatedToServiceProvider(
@@ -140,6 +141,12 @@ const getServiceProviderMetadata = async (
     wallet
   )
 
+  const protocolMinDelegationAmount = await aud.Delegate.getMinDelegationAmount()
+  let minDelegationAmount = await aud.Identity.getMinimumDelegationAmount(wallet)
+  if (minDelegationAmount === null || protocolMinDelegationAmount.gt(minDelegationAmount)) {
+    minDelegationAmount = protocolMinDelegationAmount
+  }
+
   return {
     serviceProvider,
     discoveryProviders,
@@ -147,7 +154,8 @@ const getServiceProviderMetadata = async (
     contentNodes,
     totalStakedFor,
     delegatedTotal,
-    delegators
+    delegators,
+    minDelegationAmount
   }
 }
 

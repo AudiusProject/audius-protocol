@@ -1,19 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Utils } from '@audius/libs'
-import { useProtocolDelegator } from 'store/cache/protocol/hooks'
 import { useUser } from 'store/cache/user/hooks'
 import { Address, BigNumber, Status, Operator } from 'types'
 
 export const useUserDelegation = (wallet: Address) => {
   const [status, setStatus] = useState<undefined | Status>()
   const [error, setError] = useState<string>('')
+  const [min, setMin] = useState<BigNumber>(Utils.toBN('0'))
   const [max, setMax] = useState<BigNumber>(Utils.toBN('0'))
 
   const { status: userStatus, user } = useUser({ wallet })
-
-  const delegationInfo = useProtocolDelegator()
-
-  const min = delegationInfo.minDelegationAmount
 
   useEffect(() => {
     setStatus(undefined)
@@ -29,11 +25,15 @@ export const useUserDelegation = (wallet: Address) => {
       user &&
       'serviceProvider' in user
     ) {
+      const minDelegationAmount = (user as Operator).minDelegationAmount
+      setMin(minDelegationAmount)
       const userMax = (user as Operator).serviceProvider.maxAccountStake
       const userTotalStaked = (user as Operator).totalStakedFor
       const allowedMax = userMax.sub(userTotalStaked)
       setMax(allowedMax)
       setStatus(Status.Success)
+    } else {
+      setStatus(Status.Loading)
     }
   }, [status, userStatus, user, setMax])
 
