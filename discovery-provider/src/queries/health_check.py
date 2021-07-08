@@ -1,6 +1,5 @@
 from datetime import datetime
 import logging
-import json
 from flask import Blueprint, request
 from src.queries.get_latest_play import get_latest_play
 from src.queries.queries import parse_bool_param
