@@ -9,7 +9,7 @@ def get_redis_num_keys(**kwargs):
         db: global database instance
         redis: global redis instance
     """
-    redis = kwargs['redis']
+    redis = kwargs["redis"]
     num_keys = redis.dbsize()
     return num_keys
 
@@ -22,9 +22,9 @@ def get_redis_used_memory(**kwargs):
         db: global database instance
         redis: global redis instance
     """
-    redis = kwargs['redis']
+    redis = kwargs["redis"]
     info = redis.info()
-    return info['used_memory']
+    return info["used_memory"]
 
 
 def get_redis_total_memory(**kwargs):

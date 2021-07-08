@@ -2,13 +2,21 @@ import logging
 from functools import reduce
 from datetime import date, timedelta
 from sqlalchemy import desc, func
-from src.models import RouteMetricsTrailingWeek, RouteMetricsTrailingMonth, RouteMetricsAllTime, \
-    AppMetricsTrailingWeek, AppMetricsTrailingMonth, AppMetricsAllTime, AggregateDailyUniqueUsersMetrics, \
-    AggregateDailyTotalUsersMetrics
+from src.models import (
+    RouteMetricsTrailingWeek,
+    RouteMetricsTrailingMonth,
+    RouteMetricsAllTime,
+    AppMetricsTrailingWeek,
+    AppMetricsTrailingMonth,
+    AppMetricsAllTime,
+    AggregateDailyUniqueUsersMetrics,
+    AggregateDailyTotalUsersMetrics,
+)
 from src.utils import db_session
 from src import exceptions
 
 logger = logging.getLogger(__name__)
+
 
 def get_aggregate_route_metrics_trailing_month():
     """
@@ -21,6 +29,7 @@ def get_aggregate_route_metrics_trailing_month():
     with db.scoped_session() as session:
         return _get_aggregate_route_metrics_trailing_month(session)
 
+
 def _get_aggregate_route_metrics_trailing_month(session):
     today = date.today()
     thirty_days_ago = today - timedelta(days=30)
@@ -28,7 +37,7 @@ def _get_aggregate_route_metrics_trailing_month(session):
     counts = (
         session.query(
             func.sum(AggregateDailyUniqueUsersMetrics.count),
-            func.sum(AggregateDailyUniqueUsersMetrics.summed_count)
+            func.sum(AggregateDailyUniqueUsersMetrics.summed_count),
         )
         .filter(thirty_days_ago <= AggregateDailyUniqueUsersMetrics.timestamp)
         .filter(AggregateDailyUniqueUsersMetrics.timestamp < today)
@@ -46,10 +55,11 @@ def _get_aggregate_route_metrics_trailing_month(session):
     logger.info(f"trailing month total count: {total_count}")
 
     return {
-        'unique_count': counts[0],
-        'summed_unique_count': counts[1],
-        'total_count': total_count[0]
+        "unique_count": counts[0],
+        "summed_unique_count": counts[1],
+        "total_count": total_count[0],
     }
+
 
 def get_monthly_trailing_route_metrics():
     """
@@ -62,10 +72,8 @@ def get_monthly_trailing_route_metrics():
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
         metrics = session.query(RouteMetricsTrailingMonth).all()
-        return {
-            "count": metrics[0].count,
-            "unique_count": metrics[0].unique_count
-        }
+        return {"count": metrics[0].count, "unique_count": metrics[0].unique_count}
+
 
 def get_trailing_app_metrics(args):
     """
@@ -98,10 +106,7 @@ def _get_trailing_app_metrics(session, args):
     else:
         raise exceptions.ArgumentError("Invalid time_range")
 
-    query = (query
-             .order_by(desc('count'))
-             .limit(limit)
-             .all())
+    query = query.order_by(desc("count")).limit(limit).all()
 
     route_query = route_query.first()
 
@@ -111,11 +116,14 @@ def _get_trailing_app_metrics(session, args):
     existing_count = reduce(lambda x, y: x + y["count"], metrics, 0)
     unknown_count = route_query.count - existing_count
     for i, metric in enumerate(metrics[:]):
-        if unknown_count > metric['count'] or i == len(metrics):
-            metrics.insert(i, {
-                'name': 'unknown',
-                'count': unknown_count,
-            })
+        if unknown_count > metric["count"] or i == len(metrics):
+            metrics.insert(
+                i,
+                {
+                    "name": "unknown",
+                    "count": unknown_count,
+                },
+            )
             break
 
     return metrics

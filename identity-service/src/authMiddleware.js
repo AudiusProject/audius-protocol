@@ -56,13 +56,13 @@ async function authMiddleware (req, res, next) {
     const walletAddress = recoverPersonalSignature({ data: encodedDataMessage, sig: signature })
     const user = await models.User.findOne({
       where: { walletAddress },
-      attributes: ['id', 'blockchainUserId', 'walletAddress', 'createdAt']
+      attributes: ['id', 'blockchainUserId', 'walletAddress', 'createdAt', 'handle']
     })
     if (!user) throw new Error(`[Error]: no user found for wallet address ${walletAddress}`)
 
-    if (!user.blockchainUserId) {
+    if (!user.blockchainUserId || !user.handle) {
       const discprovUser = await queryDiscprovForUserId(walletAddress, handle)
-      await user.update({ blockchainUserId: discprovUser.user_id })
+      await user.update({ blockchainUserId: discprovUser.user_id, handle: discprovUser.handle })
     }
     req.user = user
     next()

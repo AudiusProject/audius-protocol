@@ -4,6 +4,11 @@ const readline = require('readline')
 const ethContractsMigrationOutput = require('../../eth-contracts/migrations/migration-output.json')
 const solanaConfig = require('../../solana-programs/solana-program-config.json')
 
+const ETH_CONTRACTS_REGISTRY = 'audius_eth_contracts_registry'
+const SOLANA_TRACK_LISTEN_COUNT_ADDRESS = 'audius_solana_track_listen_count_address'
+const SOLANA_ENDPOINT = 'audius_solana_endpoint'
+const SOLANA_SIGNER_GROUP_ADDRESS = 'audius_solana_signer_group_address'
+
 // LOCAL DEVELOPMENT ONLY
 // Updates audius_eth_contracts_registry in discovery provider
 const configureLocalDiscProv = async () => {
@@ -35,21 +40,21 @@ const _updateDiscoveryProviderEnvFile = async (readPath, writePath, ethRegistryA
   let solanaTrackListenCountAddressFound = false
   let solanaEndpointFound = false
   let signerGroupFound = false
-  const ethRegistryAddressLine = `audius_eth_contracts_registry=${ethRegistryAddress}`
-  const solanaTrackListenCountAddressLine = `audius_solana_track_listen_count_address=${solanaTrackListenCountAddress}`
-  const solanaEndpointLine = `audius_solana_endpoint=${solanaEndpoint}`
-  const signerGroupLine = `audius_solana_signer_group_address=${signerGroup}`
+  const ethRegistryAddressLine = `${ETH_CONTRACTS_REGISTRY}=${ethRegistryAddress}`
+  const solanaTrackListenCountAddressLine = `${SOLANA_TRACK_LISTEN_COUNT_ADDRESS}=${solanaTrackListenCountAddress}`
+  const solanaEndpointLine = `${SOLANA_ENDPOINT}=${solanaEndpoint}`
+  const signerGroupLine = `${SOLANA_SIGNER_GROUP_ADDRESS}=${signerGroup}`
   for await (const line of rl) {
-    if (line.includes('audius_eth_contracts_registry')) {
+    if (line.includes(ETH_CONTRACTS_REGISTRY)) {
       output.push(ethRegistryAddressLine)
       ethRegistryAddressFound = true
-    } else if (line.includes('audius_solana_track_listen_count_address')) {
+    } else if (line.includes(SOLANA_TRACK_LISTEN_COUNT_ADDRESS)) {
       output.push(solanaTrackListenCountAddressLine)
       solanaTrackListenCountAddressFound = true
-    } else if (line.includes('audius_solana_endpoint')) {
+    } else if (line.includes(SOLANA_ENDPOINT)) {
       output.push(solanaEndpointLine)
       solanaEndpointFound = true
-    } else if (line.includes('audius_signer_group_address')) {
+    } else if (line.includes(SOLANA_SIGNER_GROUP_ADDRESS)) {
       output.push(signerGroupLine)
       signerGroupFound = true
     } else {
@@ -69,7 +74,7 @@ const _updateDiscoveryProviderEnvFile = async (readPath, writePath, ethRegistryA
     output.push(signerGroupLine)
   }
   fs.writeFileSync(writePath, output.join('\n'))
-  console.log(`Updated DISCOVERY PROVIDER ${writePath} audius_eth_contracts_registry=${ethRegistryAddress}`)
+  console.log(`Updated DISCOVERY PROVIDER ${writePath} ${ETH_CONTRACTS_REGISTRY}=${ethRegistryAddress}`)
 }
 
 configureLocalDiscProv()

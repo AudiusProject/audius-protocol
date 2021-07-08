@@ -1,4 +1,4 @@
-import logging # pylint: disable=C0302
+import logging  # pylint: disable=C0302
 import pickle
 
 from src.utils import redis_connection
@@ -9,7 +9,8 @@ from src.utils.redis_cache import get_user_id_cache_key
 logger = logging.getLogger(__name__)
 
 # Cache unpopulated users for 5 min
-ttl_sec = 5*60
+ttl_sec = 5 * 60
+
 
 def get_cached_users(user_ids):
     redis_user_id_keys = map(get_user_id_cache_key, user_ids)
@@ -33,7 +34,7 @@ def get_cached_users(user_ids):
 def set_users_in_cache(users):
     redis = redis_connection.get_redis()
     for user in users:
-        key = get_user_id_cache_key(user['user_id'])
+        key = get_user_id_cache_key(user["user_id"])
         serialized = pickle.dumps(user)
         redis.set(key, serialized, ttl_sec)
 
@@ -58,20 +59,18 @@ def get_unpopulated_users(session, user_ids):
     cached_users = {}
     for cached_user in cached_users_results:
         if cached_user:
-            cached_users[cached_user['user_id']] = cached_user
+            cached_users[cached_user["user_id"]] = cached_user
 
-    user_ids_to_fetch = filter(
-        lambda user_id: user_id not in cached_users, user_ids)
+    user_ids_to_fetch = filter(lambda user_id: user_id not in cached_users, user_ids)
 
     users = (
-        session
-        .query(User)
+        session.query(User)
         .filter(User.is_current == True, User.wallet != None, User.handle != None)
         .filter(User.user_id.in_(user_ids_to_fetch))
         .all()
     )
     users = helpers.query_result_to_list(users)
-    queried_users = {user['user_id']: user for user in users}
+    queried_users = {user["user_id"]: user for user in users}
 
     set_users_in_cache(users)
 

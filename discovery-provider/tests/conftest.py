@@ -29,7 +29,7 @@ TEST_CONFIG_OVERRIDE = {
         "url": DB_URL,
         "url_read_replica": DB_URL,
         "engine_args_literal": ENGINE_ARGS_LITERAL,
-        "run_migrations": "true"
+        "run_migrations": "true",
     }
 }
 
@@ -45,6 +45,9 @@ def app():
     # Drop redis
     redis = get_redis()
     redis.flushall()
+
+    # Clear any existing logging config
+    helpers.reset_logging()
 
     # run db migrations because the db gets dropped at the start of the tests
     alembic_dir = os.getcwd()
@@ -130,7 +133,8 @@ def contracts(app):  # pylint: disable=redefined-outer-name
         "web3": web3,
     }
 
-postgresql_my = factories.postgresql('postgresql_nooproc')
+
+postgresql_my = factories.postgresql("postgresql_nooproc")
 
 # Returns Postgres DB session, and configures
 # SQLAlchemy to use said connection.
@@ -141,13 +145,12 @@ postgresql_my = factories.postgresql('postgresql_nooproc')
 # More or less follows steps here:
 # https://medium.com/@geoffreykoh/fun-with-fixtures-for-database-applications-8253eaf1a6d
 # pylint: disable=W0621
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def setup_database(postgresql_my):
-
     def dbcreator():
         return postgresql_my.cursor().connection
 
-    engine = create_engine('postgresql+psycopg2://', creator=dbcreator)
+    engine = create_engine("postgresql+psycopg2://", creator=dbcreator)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -167,7 +170,7 @@ def setup_database(postgresql_my):
 # Monkeypatches get_db_read_replica
 # to return this mocked db instance.
 # pylint: disable=W0621
-@pytest.fixture(scope='function')
+@pytest.fixture(scope="function")
 def postgres_mock_db(monkeypatch, setup_database):
     # A mock Session, with __enter__ and __exit
     # methods so we can follow the standard
@@ -176,8 +179,10 @@ def postgres_mock_db(monkeypatch, setup_database):
     class MockSession:
         def __enter__(self):
             return setup_database
+
         def __exit__(self, type, value, tb):
             pass
+
         def scoped_session(self):
             return setup_database
 
@@ -188,13 +193,12 @@ def postgres_mock_db(monkeypatch, setup_database):
             return MockSession()
 
     mock = MockDb()
+
     def get_db_read_replica():
         return mock
 
     monkeypatch.setattr(
-        src.utils.db_session,
-        'get_db_read_replica',
-        get_db_read_replica
+        src.utils.db_session, "get_db_read_replica", get_db_read_replica
     )
 
     return mock

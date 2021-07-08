@@ -12,7 +12,7 @@ def populate_mock_db(db, test_tracks, date):
             block = Block(
                 blockhash=blockhash,
                 number=i,
-                parenthash='0x01',
+                parenthash="0x01",
                 is_current=(i == 0),
             )
             track = Track(
@@ -22,12 +22,12 @@ def populate_mock_db(db, test_tracks, date):
                 is_current=track_meta.get("is_current", True),
                 is_delete=track_meta.get("is_delete", False),
                 owner_id=300,
-                route_id='',
+                route_id="",
                 track_segments=[],
                 genre=track_meta.get("genre", ""),
                 updated_at=track_meta.get("updated_at", date),
                 created_at=track_meta.get("created_at", date),
-                is_unlisted=track_meta.get("is_unlisted", False)
+                is_unlisted=track_meta.get("is_unlisted", False),
             )
             # add block and then flush before
             # adding track, bc track.blocknumber foreign key
@@ -42,34 +42,28 @@ def test_get_genre_metrics(app):
     with app.app_context():
         db = get_db()
 
-    test_tracks = [
-        {"genre": "Electronic"},
-        {"genre": "Pop"},
-        {"genre": "Electronic"}
-    ]
+    test_tracks = [{"genre": "Electronic"}, {"genre": "Pop"}, {"genre": "Electronic"}]
 
     date = datetime(2020, 10, 4, 10, 35, 0)
-    before_date = (date + timedelta(hours=-1))
+    before_date = date + timedelta(hours=-1)
     populate_mock_db(db, test_tracks, date)
 
-    args = {
-        'start_time': before_date
-    }
+    args = {"start_time": before_date}
 
     with db.scoped_session() as session:
         metrics = _get_genre_metrics(session, args)
 
-    assert metrics[0]['name'] == "Electronic"
-    assert metrics[0]['count'] == 2
-    assert metrics[1]['name'] == "Pop"
-    assert metrics[1]['count'] == 1
+    assert metrics[0]["name"] == "Electronic"
+    assert metrics[0]["count"] == 2
+    assert metrics[1]["name"] == "Pop"
+    assert metrics[1]["count"] == 1
 
 
 def test_get_genre_metrics_for_month(app):
     """Tests that genre metrics can be queried over a large time range"""
     date = datetime(2020, 10, 4, 10, 35, 0)
-    long_before_date = (date + timedelta(days=-12))
-    before_date = (date + timedelta(days=-1))
+    long_before_date = date + timedelta(days=-12)
+    before_date = date + timedelta(days=-1)
 
     with app.app_context():
         db = get_db()
@@ -82,26 +76,22 @@ def test_get_genre_metrics_for_month(app):
     ]
     populate_mock_db(db, test_tracks, date)
 
-    args = {
-        'start_time': before_date
-    }
+    args = {"start_time": before_date}
 
     with db.scoped_session() as session:
         metrics = _get_genre_metrics(session, args)
 
-    assert metrics[0]['name'] == "Electronic"
-    assert metrics[0]['count'] == 2
-    assert metrics[1]['name'] == "Pop"
-    assert metrics[1]['count'] == 1
+    assert metrics[0]["name"] == "Electronic"
+    assert metrics[0]["count"] == 2
+    assert metrics[1]["name"] == "Pop"
+    assert metrics[1]["count"] == 1
 
-    args2 = {
-        'start_time': long_before_date
-    }
+    args2 = {"start_time": long_before_date}
 
     with db.scoped_session() as session:
         metrics = _get_genre_metrics(session, args2)
 
-    assert metrics[0]['name'] == "Electronic"
-    assert metrics[0]['count'] == 3
-    assert metrics[1]['name'] == "Pop"
-    assert metrics[1]['count'] == 1
+    assert metrics[0]["name"] == "Electronic"
+    assert metrics[0]["count"] == 3
+    assert metrics[1]["name"] == "Pop"
+    assert metrics[1]["count"] == 1
