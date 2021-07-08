@@ -91,7 +91,6 @@ def get_sol_tx_info(solana_client, tx_sig):
 # Cache the latest value in redis
 def cache_latest_tx_redis(solana_client, redis, tx):
     try:
-        logger.error(f"index_solana_plays.py | Caching: {tx}")
         tx_sig = tx['signature']
         tx_slot = tx['slot']
         pickle_and_set(redis, latest_sol_play_tx_key, {'signature': tx_sig, 'slot': tx_slot})
