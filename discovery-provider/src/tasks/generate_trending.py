@@ -1,25 +1,29 @@
-import logging # pylint: disable=C0302
+import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
 from urllib.parse import unquote
 from sqlalchemy import func, desc
 
 from src.models import AggregatePlays, Track, RepostType, Follow, SaveType, Play
 from src.queries import response_name_constants
-from src.queries.query_helpers import \
-    get_karma, get_repost_counts, get_save_counts, get_genre_list
+from src.queries.query_helpers import (
+    get_karma,
+    get_repost_counts,
+    get_save_counts,
+    get_genre_list,
+)
 
 logger = logging.getLogger(__name__)
 
-trending_cache_hits_key = 'trending_cache_hits'
-trending_cache_miss_key = 'trending_cache_miss'
-trending_cache_total_key = 'trending_cache_total'
+trending_cache_hits_key = "trending_cache_hits"
+trending_cache_miss_key = "trending_cache_miss"
+trending_cache_total_key = "trending_cache_total"
 
 
 time_delta_map = {
     "year": timedelta(weeks=52),
     "month": timedelta(days=30),
     "week": timedelta(weeks=1),
-    "day": timedelta(days=1)
+    "day": timedelta(days=1),
 }
 
 # Returns listens counts for tracks, subject to time and
@@ -41,10 +45,7 @@ def get_listen_counts(session, time, genre, limit, offset, net_multiplier=1):
         if not delta:
             logger.warning(f"Invalid time passed to get_listen_counts: {time}")
             return base_query
-        return (base_query
-                .filter(
-                    Play.created_at > datetime.now() - delta
-                ))
+        return base_query.filter(Play.created_at > datetime.now() - delta)
 
     # Adds a genre filter
     # on the base query, if applicable.
@@ -59,34 +60,27 @@ def get_listen_counts(session, time, genre, limit, offset, net_multiplier=1):
         # string to account for umbrella genres
         # like 'Electronic
         genre_list = get_genre_list(genre)
-        return (base_query
-                .filter(Track.genre.in_(genre_list))
-               )
+        return base_query.filter(Track.genre.in_(genre_list))
 
     # Construct base query
     if time:
         # If we want to query plays by time, use the plays table directly
-        base_query = (
-            session
-            .query(Play.play_item_id, func.count(Play.id).label('count'), Track.created_at)
-            .join(Track, Track.track_id == Play.play_item_id)
-        )
+        base_query = session.query(
+            Play.play_item_id, func.count(Play.id).label("count"), Track.created_at
+        ).join(Track, Track.track_id == Play.play_item_id)
     else:
         # Otherwise, it's safe to just query over the aggregate plays table (all time)
-        base_query = (
-            session
-            .query(AggregatePlays.play_item_id.label('id'), AggregatePlays.count.label('count'), Track.created_at)
-            .join(Track, Track.track_id == AggregatePlays.play_item_id)
-        )
+        base_query = session.query(
+            AggregatePlays.play_item_id.label("id"),
+            AggregatePlays.count.label("count"),
+            Track.created_at,
+        ).join(Track, Track.track_id == AggregatePlays.play_item_id)
 
-    base_query = (
-        base_query
-        .filter(
-            Track.is_current == True,
-            Track.is_delete == False,
-            Track.is_unlisted == False,
-            Track.stem_of == None
-        )
+    base_query = base_query.filter(
+        Track.is_current == True,
+        Track.is_delete == False,
+        Track.is_unlisted == False,
+        Track.stem_of == None,
     )
 
     if time:
@@ -97,26 +91,25 @@ def get_listen_counts(session, time, genre, limit, offset, net_multiplier=1):
     base_query = with_genre_filter(base_query, genre)
 
     # Add limit + offset + sort
-    base_query = (base_query
-                  .order_by(desc('count'))
-                  .limit(limit * net_multiplier)
-                  .offset(offset))
+    base_query = (
+        base_query.order_by(desc("count")).limit(limit * net_multiplier).offset(offset)
+    )
 
     listens = base_query.all()
 
     # Format the results
-    listens = [{
-        "track_id": listen[0],
-        "listens": listen[1],
-        "created_at": listen[2]
-    } for listen in listens]
+    listens = [
+        {"track_id": listen[0], "listens": listen[1], "created_at": listen[2]}
+        for listen in listens
+    ]
     return listens
+
 
 def generate_trending(session, time, genre, limit, offset, strategy):
     score_params = strategy.get_score_params()
-    xf = score_params['xf']
-    pt = score_params['pt']
-    nm = score_params['nm'] if 'nm' in score_params else 1
+    xf = score_params["xf"]
+    pt = score_params["pt"]
+    nm = score_params["nm"] if "nm" in score_params else 1
 
     # Get listen counts
     listen_counts = get_listen_counts(session, time, genre, limit, offset, nm)
@@ -139,8 +132,9 @@ def generate_trending(session, time, genre, limit, offset, strategy):
     }
 
     # Query repost count with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
-    track_repost_counts_for_time = \
-        get_repost_counts(session, False, True, track_ids, None, None, time)
+    track_repost_counts_for_time = get_repost_counts(
+        session, False, True, track_ids, None, None, time
+    )
 
     # Generate track_id --> windowed_repost_count mapping
     track_repost_counts_for_time = {
@@ -152,38 +146,35 @@ def generate_trending(session, time, genre, limit, offset, strategy):
     # Query follower info for each track owner
     # Query each track owner
     track_owners_query = (
-        session.query(Track.track_id, Track.owner_id)
-        .filter
-        (
+        session.query(Track.track_id, Track.owner_id).filter(
             Track.is_current == True,
             Track.is_unlisted == False,
             Track.stem_of == None,
-            Track.track_id.in_(track_ids)
+            Track.track_id.in_(track_ids),
         )
     ).all()
 
     # Generate track_id <-> owner_id mapping
-    track_owner_dict = {track_id: owner_id for (track_id, owner_id) in track_owners_query}
+    track_owner_dict = dict(track_owners_query)
     # Generate list of owner ids
     track_owner_list = [owner_id for (track_id, owner_id) in track_owners_query]
 
-
     # build dict of owner_id --> follower_count
     follower_counts = (
-        session.query(
-            Follow.followee_user_id,
-            func.count(Follow.followee_user_id)
-        )
+        session.query(Follow.followee_user_id, func.count(Follow.followee_user_id))
         .filter(
             Follow.is_current == True,
             Follow.is_delete == False,
-            Follow.followee_user_id.in_(track_owner_list)
+            Follow.followee_user_id.in_(track_owner_list),
         )
         .group_by(Follow.followee_user_id)
         .all()
     )
-    follower_count_dict = \
-            {user_id: follower_count for (user_id, follower_count) in follower_counts if follower_count > pt}
+    follower_count_dict = {
+        user_id: follower_count
+        for (user_id, follower_count) in follower_counts
+        if follower_count > pt
+    }
 
     # Query save counts
     save_counts = get_save_counts(session, False, True, track_ids, None)
@@ -195,8 +186,10 @@ def generate_trending(session, time, genre, limit, offset, strategy):
     }
 
     # Query save counts with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
-    save_counts_for_time = get_save_counts(session, False, True, track_ids, None, None, time)
-        # Generate track_id --> windowed_save_count mapping
+    save_counts_for_time = get_save_counts(
+        session, False, True, track_ids, None, None, time
+    )
+    # Generate track_id --> windowed_save_count mapping
     track_save_counts_for_time = {
         save_item_id: save_count
         for (save_item_id, save_count, save_type) in save_counts_for_time
@@ -204,23 +197,31 @@ def generate_trending(session, time, genre, limit, offset, strategy):
     }
 
     karma_query = get_karma(session, tuple(track_ids), None, False, xf)
-    karma_counts_for_id = {track_id: karma for (track_id, karma) in karma_query}
+    karma_counts_for_id = dict(karma_query)
 
     trending_tracks = []
     for track_entry in listen_counts:
         track_id = track_entry[response_name_constants.track_id]
 
         # Populate repost counts
-        track_entry[response_name_constants.repost_count] = track_repost_counts.get(track_id, 0)
+        track_entry[response_name_constants.repost_count] = track_repost_counts.get(
+            track_id, 0
+        )
 
         # Populate repost counts with respect to time
-        track_entry[response_name_constants.windowed_repost_count] = track_repost_counts_for_time.get(track_id, 0)
+        track_entry[
+            response_name_constants.windowed_repost_count
+        ] = track_repost_counts_for_time.get(track_id, 0)
 
         # Populate save counts
-        track_entry[response_name_constants.save_count] = track_save_counts.get(track_id, 0)
+        track_entry[response_name_constants.save_count] = track_save_counts.get(
+            track_id, 0
+        )
 
         # Populate save counts with respect to time
-        track_entry[response_name_constants.windowed_save_count] = track_save_counts_for_time.get(track_id, 0)
+        track_entry[
+            response_name_constants.windowed_save_count
+        ] = track_save_counts_for_time.get(track_id, 0)
 
         # Populate owner follower count
         owner_id = track_owner_dict[track_id]
@@ -233,9 +234,9 @@ def generate_trending(session, time, genre, limit, offset, strategy):
             # datetime needs to be in isoformat for json.dumps() in `update_trending_cache()` to
             # properly process the dp response and add to redis cache
             # timespec = specifies additional components of the time to include
-            track_entry[response_name_constants.created_at] = (
-                track_created_at_dict[track_id].isoformat(timespec='seconds')
-            )
+            track_entry[response_name_constants.created_at] = track_created_at_dict[
+                track_id
+            ].isoformat(timespec="seconds")
         else:
             track_entry[response_name_constants.created_at] = None
 
@@ -244,5 +245,5 @@ def generate_trending(session, time, genre, limit, offset, strategy):
         trending_tracks.append(track_entry)
 
     final_resp = {}
-    final_resp['listen_counts'] = trending_tracks
+    final_resp["listen_counts"] = trending_tracks
     return final_resp

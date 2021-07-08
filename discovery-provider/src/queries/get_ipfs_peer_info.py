@@ -4,16 +4,16 @@ from src.utils.ipfs_lib import IPFSClient
 from src.utils.config import shared_config
 
 # Convert key to snake case
-pattern = re.compile(r'(?<!^)(?=[A-Z])')
-ipfs_client = IPFSClient(
-    shared_config["ipfs"]["host"], shared_config["ipfs"]["port"]
-)
+pattern = re.compile(r"(?<!^)(?=[A-Z])")
+ipfs_client = IPFSClient(shared_config["ipfs"]["host"], shared_config["ipfs"]["port"])
+
 
 def convert_to_snake_case(value):
-    if value == 'ID':
-        return 'id'
+    if value == "ID":
+        return "id"
 
-    return pattern.sub('_', value).lower()
+    return pattern.sub("_", value).lower()
+
 
 def get_ipfs_peer_info():
     # Convert IPFS object into serializable json object

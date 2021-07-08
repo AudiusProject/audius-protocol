@@ -37,7 +37,5 @@ cov_html/*
 
 build/
 
-.vscode/
-
 # redis dumps
 *_dump

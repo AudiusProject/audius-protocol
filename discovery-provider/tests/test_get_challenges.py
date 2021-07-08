@@ -8,6 +8,7 @@ from src.models import (
 )
 from src.queries.get_challenges import get_challenges
 
+
 def setup_db(session):
     blocks = [Block(blockhash="0x1", number=1, parenthash="", is_current=True)]
     challenges = [
@@ -78,15 +79,9 @@ def setup_db(session):
             amount=5,
             step_count=2,
         ),
-        Challenge(
-            id="trending_1", type=ChallengeType.trending, active=True, amount=5
-        ),
-        Challenge(
-            id="trending_2", type=ChallengeType.trending, active=True, amount=5
-        ),
-        Challenge(
-            id="trending_3", type=ChallengeType.trending, active=True, amount=5
-        ),
+        Challenge(id="trending_1", type=ChallengeType.trending, active=True, amount=5),
+        Challenge(id="trending_2", type=ChallengeType.trending, active=True, amount=5),
+        Challenge(id="trending_3", type=ChallengeType.trending, active=True, amount=5),
     ]
     user_challenges = [
         # Finished the first challenge, disbursed

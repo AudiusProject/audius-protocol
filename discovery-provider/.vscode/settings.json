@@ -1,0 +1,15 @@
+{
+  // With this setup, we get linting via pylint, typechecking via mypy,
+  // and formatting via black.
+  "python.linting.pylintEnabled": true, // This enables basic linting
+  "python.linting.mypyEnabled": true, // This gives us typing
+  "python.linting.lintOnSave": true, // lint on save
+  "python.linting.maxNumberOfProblems": 1000, // set high max errors
+  "python.linting.pylintCategorySeverity.convention": "Warning",
+  "python.linting.pylintCategorySeverity.refactor": "Warning",
+  "python.pythonPath": "/usr/bin/python3",
+  "python.formatting.provider": "black", // This gives us autoforatting
+  "editor.formatOnSave": true,
+  "python.analysis.typeCheckingMode": "basic",
+  "python.languageServer": "Pylance"
+}

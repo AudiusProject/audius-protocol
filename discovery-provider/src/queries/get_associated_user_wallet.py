@@ -23,7 +23,7 @@ def get_associated_user_wallet(args):
             session.query(AssociatedWallet.wallet)
             .filter(AssociatedWallet.is_current == True)
             .filter(AssociatedWallet.is_delete == False)
-            .filter(AssociatedWallet.user_id == args.get('user_id'))
+            .filter(AssociatedWallet.user_id == args.get("user_id"))
             .all()
         )
         return [wallet for [wallet] in user_wallet]

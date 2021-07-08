@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 # (note that connections have their isolation level wiped before being returned
 # to the conn pool: https://docs.sqlalchemy.org/en/14/core/connections.html
 def vacuum_matviews(db):
-    logger.info(f"index_materialized_views.py | Beginning vacuum")
+    logger.info("index_materialized_views.py | Beginning vacuum")
     vacuum_start = time.time()
 
     engine = db._engine
@@ -20,12 +20,15 @@ def vacuum_matviews(db):
         connection.execute("VACUUM ANALYZE playlist_lexeme_dict")
         connection.execute("VACUUM ANALYZE album_lexeme_dict")
 
-    logger.info(f"index_materialized_views.py | vacuumed in {time.time() - vacuum_start} sec.")
+    logger.info(
+        f"index_materialized_views.py | vacuumed in {time.time() - vacuum_start} sec."
+    )
+
 
 def update_views(self, db):
     with db.scoped_session() as session:
         start_time = time.time()
-        logger.info('index_materialized_views.py | Updating materialized views')
+        logger.info("index_materialized_views.py | Updating materialized views")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY user_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY track_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY playlist_lexeme_dict")
@@ -51,16 +54,20 @@ def update_materialized_views(self):
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("materialized_view_lock", timeout=60*10)
+    update_lock = redis.lock("materialized_view_lock", timeout=60 * 10)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             update_views(self, db)
         else:
-            logger.info("index_materialized_views.py | Failed to acquire update_materialized_views")
+            logger.info(
+                "index_materialized_views.py | Failed to acquire update_materialized_views"
+            )
     except Exception as e:
-        logger.error("index_materialized_views.py | Fatal error in main loop", exc_info=True)
+        logger.error(
+            "index_materialized_views.py | Fatal error in main loop", exc_info=True
+        )
         raise e
     finally:
         if have_lock:

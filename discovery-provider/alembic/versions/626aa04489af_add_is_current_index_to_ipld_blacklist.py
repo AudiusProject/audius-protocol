@@ -9,17 +9,22 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision = '626aa04489af'
-down_revision = '042c55d0efda'
+revision = "626aa04489af"
+down_revision = "042c55d0efda"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.create_index(op.f('is_current_ipld_blacklist_blocks_idx'),
-                    'ipld_blacklist_blocks', ['is_current'], unique=False)
+    op.create_index(
+        op.f("is_current_ipld_blacklist_blocks_idx"),
+        "ipld_blacklist_blocks",
+        ["is_current"],
+        unique=False,
+    )
 
 
 def downgrade():
-    op.drop_index(op.f('is_current_ipld_blacklist_blocks_idx'),
-                  table_name='ipld_blacklist_blocks')
+    op.drop_index(
+        op.f("is_current_ipld_blacklist_blocks_idx"), table_name="ipld_blacklist_blocks"
+    )

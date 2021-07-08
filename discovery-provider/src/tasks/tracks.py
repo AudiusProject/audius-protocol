@@ -14,18 +14,27 @@ from src.utils.indexing_errors import IndexingError
 logger = logging.getLogger(__name__)
 
 track_event_types_lookup = {
-    'new_track': 'NewTrack',
-    'update_track': 'UpdateTrack',
-    'delete_track': 'TrackDeleted'
+    "new_track": "NewTrack",
+    "update_track": "UpdateTrack",
+    "delete_track": "TrackDeleted",
 }
 
 track_event_types_arr = [
-    track_event_types_lookup['new_track'],
-    track_event_types_lookup['update_track'],
-    track_event_types_lookup['delete_track']
+    track_event_types_lookup["new_track"],
+    track_event_types_lookup["update_track"],
+    track_event_types_lookup["delete_track"],
 ]
 
-def track_state_update(self, update_task, session, track_factory_txs, block_number, block_timestamp, block_hash):
+
+def track_state_update(
+    self,
+    update_task,
+    session,
+    track_factory_txs,
+    block_number,
+    block_timestamp,
+    block_hash,
+):
     """Return int representing number of Track model state changes found in transaction."""
     num_total_changes = 0
 
@@ -43,23 +52,30 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
     for tx_receipt in track_factory_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
         for event_type in track_event_types_arr:
-            track_events_tx = getattr(track_contract.events, event_type)().processReceipt(tx_receipt)
-            processedEntries = 0 # if record does not get added, do not count towards num_total_changes
+            track_events_tx = getattr(
+                track_contract.events, event_type
+            )().processReceipt(tx_receipt)
+            processedEntries = 0  # if record does not get added, do not count towards num_total_changes
             for entry in track_events_tx:
                 event_args = entry["args"]
-                track_id = event_args._trackId if '_trackId' in event_args else event_args._id
+                track_id = (
+                    event_args._trackId if "_trackId" in event_args else event_args._id
+                )
                 track_ids.add(track_id)
                 blockhash = update_task.web3.toHex(entry.blockHash)
 
                 if track_id not in track_events:
                     track_entry = lookup_track_record(
-                        update_task, session, entry, track_id, block_number, blockhash, txhash
+                        update_task,
+                        session,
+                        entry,
+                        track_id,
+                        block_number,
+                        blockhash,
+                        txhash,
                     )
 
-                    track_events[track_id] = {
-                        "track": track_entry,
-                        "events": []
-                    }
+                    track_events[track_id] = {"track": track_entry, "events": []}
 
                 try:
                     parsed_track = parse_track_event(
@@ -69,7 +85,8 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
                         entry,
                         event_type,
                         track_events[track_id]["track"],
-                        block_timestamp)
+                        block_timestamp,
+                    )
 
                     # If track record object is None, it has a blacklisted metadata CID
                     if parsed_track is not None:
@@ -77,16 +94,20 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
                         track_events[track_id]["track"] = parsed_track
                         processedEntries += 1
                 except Exception as e:
-                    logger.info(f"Error in parse track transaction")
+                    logger.info("Error in parse track transaction")
                     blockhash = update_task.web3.toHex(block_hash)
-                    raise IndexingError('track', block_number, blockhash, txhash, str(e))
+                    raise IndexingError(
+                        "track", block_number, blockhash, txhash, str(e)
+                    ) from e
 
             num_total_changes += processedEntries
 
-    logger.info(f"index.py | tracks.py | [track indexing] There are {num_total_changes} events processed.")
+    logger.info(
+        f"index.py | tracks.py | [track indexing] There are {num_total_changes} events processed."
+    )
 
     for track_id, value_obj in track_events.items():
-        if value_obj['events']:
+        if value_obj["events"]:
             logger.info(f"index.py | tracks.py | Adding {value_obj['track']}")
             invalidate_old_track(session, track_id)
             session.add(value_obj["track"])
@@ -94,11 +115,11 @@ def track_state_update(self, update_task, session, track_factory_txs, block_numb
     return num_total_changes, track_ids
 
 
-def lookup_track_record(update_task, session, entry, event_track_id, block_number, block_hash, txhash):
+def lookup_track_record(
+    update_task, session, entry, event_track_id, block_number, block_hash, txhash
+):
     # Check if track record exists
-    track_exists = (
-        session.query(Track).filter_by(track_id=event_track_id).count() > 0
-    )
+    track_exists = session.query(Track).filter_by(track_id=event_track_id).count() > 0
 
     track_record = None
     if track_exists:
@@ -113,11 +134,7 @@ def lookup_track_record(update_task, session, entry, event_track_id, block_numbe
         session.expunge(track_record)
         make_transient(track_record)
     else:
-        track_record = Track(
-            track_id=event_track_id,
-            is_current=True,
-            is_delete=False
-        )
+        track_record = Track(track_id=event_track_id, is_current=True, is_delete=False)
 
     # update block related fields regardless of type
     track_record.blocknumber = block_number
@@ -127,9 +144,7 @@ def lookup_track_record(update_task, session, entry, event_track_id, block_numbe
 
 
 def invalidate_old_track(session, track_id):
-    track_exists = (
-        session.query(Track).filter_by(track_id=track_id).count() > 0
-    )
+    track_exists = session.query(Track).filter_by(track_id=track_id).count() > 0
 
     if not track_exists:
         return
@@ -145,7 +160,9 @@ def invalidate_old_track(session, track_id):
 
 
 def update_stems_table(session, track_record, track_metadata):
-    if (not "stem_of" in track_metadata) or (not isinstance(track_metadata["stem_of"], dict)):
+    if (not "stem_of" in track_metadata) or (
+        not isinstance(track_metadata["stem_of"], dict)
+    ):
         return
     parent_track_id = track_metadata["stem_of"].get("parent_track_id")
     if not isinstance(parent_track_id, int):
@@ -170,8 +187,7 @@ def update_remixes_table(session, track_record, track_metadata):
                 parent_track_id = track.get("parent_track_id")
                 if isinstance(parent_track_id, int):
                     remix = Remix(
-                        parent_track_id=parent_track_id,
-                        child_track_id=child_track_id
+                        parent_track_id=parent_track_id, child_track_id=child_track_id
                     )
                     session.add(remix)
 
@@ -183,31 +199,28 @@ def time_method(func):
         func(*args, **kargs)
         tock = time.perf_counter()
         elapsed = tock - tick
-        logger.info(
-            f"TIME_METHOD Function={func.__name__} Elapsed={elapsed:0.6f}s"
-        )
+        logger.info(f"TIME_METHOD Function={func.__name__} Elapsed={elapsed:0.6f}s")
+
     return wrapper
 
 
 @time_method
 def update_track_routes_table(session, track_record, track_metadata):
     # Check if the title is staying the same, and if so, return early
-    if track_record.title == track_metadata['title']:
+    if track_record.title == track_metadata["title"]:
         return
 
     # Get the title slug, and set the new slug to that
     # (will check for conflicts later)
-    new_track_slug_title = (
-        helpers.create_track_slug(track_metadata['title'])
-    )
+    new_track_slug_title = helpers.create_track_slug(track_metadata["title"])
     new_track_slug = new_track_slug_title
 
     # Find the current route for the track
     prev_track_route_record = (
-        session
-        .query(TrackRoute)
-        .filter(TrackRoute.track_id == track_record.track_id,
-                TrackRoute.is_current == True)  # noqa: E712
+        session.query(TrackRoute)
+        .filter(
+            TrackRoute.track_id == track_record.track_id, TrackRoute.is_current == True
+        )  # noqa: E712
         .one_or_none()
     )
 
@@ -220,10 +233,11 @@ def update_track_routes_table(session, track_record, track_metadata):
 
     # Check for collisions by slug titles, and get the max collision_id
     max_collision_id = (
-        session
-        .query(functions.max(TrackRoute.collision_id))
-        .filter(TrackRoute.title_slug == new_track_slug_title,
-                TrackRoute.owner_id == track_record.owner_id)
+        session.query(functions.max(TrackRoute.collision_id))
+        .filter(
+            TrackRoute.title_slug == new_track_slug_title,
+            TrackRoute.owner_id == track_record.owner_id,
+        )
         .one_or_none()
     )[0]
 
@@ -232,11 +246,11 @@ def update_track_routes_table(session, track_record, track_metadata):
     # with an existing route when the collision_id is appended to its title_slug
     if new_track_slug[-1].isdigit():
         collision_count = (
-            session
-            .query(functions.count(TrackRoute.slug))
+            session.query(functions.count(TrackRoute.slug))
             .filter(
                 TrackRoute.slug == new_track_slug,
-                TrackRoute.owner_id == track_record.owner_id)
+                TrackRoute.owner_id == track_record.owner_id,
+            )
             .one_or_none()
         )[0]
 
@@ -250,8 +264,8 @@ def update_track_routes_table(session, track_record, track_metadata):
         # then we need to append the collision number to the slug
         new_collision_id += 1
         new_track_slug = helpers.create_track_slug(
-            track_metadata["title"],
-            new_collision_id)
+            track_metadata["title"], new_collision_id
+        )
 
         # Check for new collisions after making the new slug
         # In rare cases the user may have track names that end in numbers that
@@ -273,11 +287,11 @@ def update_track_routes_table(session, track_record, track_metadata):
         #
         # This may be expensive with many collisions, but should be rare.
         collision_count = (
-            session
-            .query(functions.count(TrackRoute.slug))
+            session.query(functions.count(TrackRoute.slug))
             .filter(
                 TrackRoute.slug == new_track_slug,
-                TrackRoute.owner_id == track_record.owner_id)
+                TrackRoute.owner_id == track_record.owner_id,
+            )
             .one_or_none()
         )[0]
         has_collisions = collision_count > 0
@@ -300,8 +314,8 @@ def update_track_routes_table(session, track_record, track_metadata):
 
 
 def parse_track_event(
-        self, session, update_task, entry, event_type, track_record, block_timestamp
-    ):
+    self, session, update_task, entry, event_type, track_record, block_timestamp
+):
     event_args = entry["args"]
     # Just use block_timestamp as integer
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
@@ -315,7 +329,9 @@ def parse_track_event(
             bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
         )
         track_metadata_multihash = multihash.to_b58_string(buf)
-        logger.info(f"index.py | tracks.py | track metadata ipld : {track_metadata_multihash}")
+        logger.info(
+            f"index.py | tracks.py | track metadata ipld : {track_metadata_multihash}"
+        )
 
         # If the IPLD is blacklisted, do not keep processing the current entry
         # continue with the next entry in the update_track_events list
@@ -337,16 +353,12 @@ def parse_track_event(
         )
 
         track_metadata = update_task.ipfs_client.get_metadata(
-            track_metadata_multihash,
-            track_metadata_format,
-            creator_node_endpoint
+            track_metadata_multihash, track_metadata_format, creator_node_endpoint
         )
 
         update_track_routes_table(session, track_record, track_metadata)
         track_record = populate_track_record_metadata(
-            track_record,
-            track_metadata,
-            handle
+            track_record, track_metadata, handle
         )
         track_record.metadata_multihash = track_metadata_multihash
 
@@ -360,7 +372,9 @@ def parse_track_event(
                 )
                 return None
 
-            logger.warning(f"index.py | tracks.py | Processing track cover art {track_record.cover_art}")
+            logger.warning(
+                f"index.py | tracks.py | Processing track cover art {track_record.cover_art}"
+            )
             track_record.cover_art_sizes = track_record.cover_art
             track_record.cover_art = None
 
@@ -374,7 +388,9 @@ def parse_track_event(
             bytes.fromhex(upd_track_metadata_digest), upd_track_metadata_hash_fn
         )
         upd_track_metadata_multihash = multihash.to_b58_string(update_buf)
-        logger.info(f"index.py | tracks.py | update track metadata ipld : {upd_track_metadata_multihash}")
+        logger.info(
+            f"index.py | tracks.py | update track metadata ipld : {upd_track_metadata_multihash}"
+        )
 
         # If the IPLD is blacklisted, do not keep processing the current entry
         # continue with the next entry in the update_track_events list
@@ -396,16 +412,12 @@ def parse_track_event(
         )
 
         track_metadata = update_task.ipfs_client.get_metadata(
-            upd_track_metadata_multihash,
-            track_metadata_format,
-            creator_node_endpoint
+            upd_track_metadata_multihash, track_metadata_format, creator_node_endpoint
         )
 
         update_track_routes_table(session, track_record, track_metadata)
         track_record = populate_track_record_metadata(
-            track_record,
-            track_metadata,
-            handle
+            track_record, track_metadata, handle
         )
         track_record.metadata_multihash = upd_track_metadata_multihash
 
@@ -420,7 +432,9 @@ def parse_track_event(
                 )
                 return None
 
-            logger.info(f"index.py | tracks.py | Processing track cover art {track_record.cover_art}")
+            logger.info(
+                f"index.py | tracks.py | Processing track cover art {track_record.cover_art}"
+            )
             track_record.cover_art_sizes = track_record.cover_art
             track_record.cover_art = None
 
@@ -474,16 +488,20 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
 
     if "download" in track_metadata:
         track_record.download = {
-            "is_downloadable": track_metadata["download"].get("is_downloadable") == True,
-            "requires_follow": track_metadata["download"].get("requires_follow") == True,
+            "is_downloadable": track_metadata["download"].get("is_downloadable")
+            == True,
+            "requires_follow": track_metadata["download"].get("requires_follow")
+            == True,
             "cid": track_metadata["download"].get("cid", None),
         }
     else:
         track_record.download = {
             "is_downloadable": False,
             "requires_follow": False,
-            "cid": None
+            "cid": None,
         }
 
-    track_record.route_id = helpers.create_track_route_id(track_metadata["title"], handle)
+    track_record.route_id = helpers.create_track_route_id(
+        track_metadata["title"], handle
+    )
     return track_record

@@ -7,20 +7,26 @@ from src.queries.get_trending_tracks import TRENDING_TTL_SEC
 
 logger = logging.getLogger(__name__)
 
-request_cache_path = '/v1/full/tracks/trending'
+request_cache_path = "/v1/full/tracks/trending"
+
 
 def get_time_trending(cache_args, time, limit, strategy):
-    time_params = {**cache_args, 'time':time}
+    time_params = {**cache_args, "time": time}
 
     path = request_cache_path
     if strategy.version != DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS]:
         path += f"/{strategy.version.value}"
 
     time_cache_key = extract_key(path, time_params.items())
-    time_trending = use_redis_cache(time_cache_key, TRENDING_TTL_SEC, lambda: get_trending(time_params, strategy))
-    time_trending_track_ids = [{"track_id": track['track_id']} for track in time_trending]
+    time_trending = use_redis_cache(
+        time_cache_key, TRENDING_TTL_SEC, lambda: get_trending(time_params, strategy)
+    )
+    time_trending_track_ids = [
+        {"track_id": track["track_id"]} for track in time_trending
+    ]
     time_trending_track_ids = time_trending_track_ids[:limit]
     return time_trending_track_ids
+
 
 def get_trending_ids(args, strategy):
     """
@@ -37,16 +43,16 @@ def get_trending_ids(args, strategy):
     """
 
     cache_args = {}
-    limit = args['limit']
+    limit = args["limit"]
     if "genre" in args:
-        cache_args['genre'] = args["genre"]
+        cache_args["genre"] = args["genre"]
 
-    week_trending_track_ids = get_time_trending(cache_args, 'week', limit, strategy)
-    month_trending_track_ids = get_time_trending(cache_args, 'month', limit, strategy)
-    year_trending_track_ids = get_time_trending(cache_args, 'year', limit, strategy)
+    week_trending_track_ids = get_time_trending(cache_args, "week", limit, strategy)
+    month_trending_track_ids = get_time_trending(cache_args, "month", limit, strategy)
+    year_trending_track_ids = get_time_trending(cache_args, "year", limit, strategy)
 
     return {
         "week": week_trending_track_ids,
         "month": month_trending_track_ids,
-        "year": year_trending_track_ids
+        "year": year_trending_track_ids,
     }

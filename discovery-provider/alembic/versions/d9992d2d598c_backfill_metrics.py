@@ -13,8 +13,8 @@ from alembic import context, op
 
 
 # revision identifiers, used by Alembic.
-revision = 'd9992d2d598c'
-down_revision = '29864cb80469'
+revision = "d9992d2d598c"
+down_revision = "29864cb80469"
 branch_labels = None
 depends_on = None
 
@@ -27,7 +27,8 @@ def upgrade():
         return
 
     connection = op.get_bind()
-    connection.execute('''
+    connection.execute(
+        """
     begin;
         -- ================== Daily totals ==================
         DELETE FROM "aggregate_daily_total_users_metrics" WHERE "timestamp" < '2021-04-23';
@@ -1847,12 +1848,14 @@ def upgrade():
         INSERT INTO "aggregate_monthly_app_name_metrics" ("timestamp", "application_name", "count", "created_at", "updated_at") VALUES ('2021-04-01', 'viberoom', '16081', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
     commit;
-    ''')
+    """
+    )
 
 
 def downgrade():
     connection = op.get_bind()
-    connection.execute('''
+    connection.execute(
+        """
     begin;
         DELETE FROM "aggregate_daily_total_users_metrics" WHERE "timestamp" < '2021-04-23';
         DELETE FROM "aggregate_daily_unique_users_metrics" WHERE "timestamp" < '2021-04-23';
@@ -1861,4 +1864,5 @@ def downgrade():
         DELETE FROM "aggregate_daily_app_name_metrics" where "timestamp" < '2021-04-23';
         DELETE FROM "aggregate_monthly_app_name_metrics" where "timestamp" < '2021-05-01'; 
     commit;
-    ''')
+    """
+    )
