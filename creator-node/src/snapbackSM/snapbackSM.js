@@ -485,8 +485,11 @@ class SnapbackSM {
   async determineNewReplicaSet ({ primary, secondary1, secondary2, wallet, unhealthyReplicasSet, healthyNodes, replicaSetNodesToUserClockStatusesMap }) {
     let response = { newPrimary: null, newSecondary1: null, newSecondary2: null, issueReconfig: false }
 
+    const currentReplicaSet = [primary, secondary1, secondary2]
+    const healthyReplicaSet = new Set(currentReplicaSet.map(node => !unhealthyReplicasSet.has(node)))
     const newReplicaNodes = await this.selectRandomReplicaSetNodes({
-      unhealthyReplicasSet,
+      healthyReplicaSet,
+      numberOfUnhealthyReplicas: unhealthyReplicasSet.size,
       healthyNodes,
       wallet
     })
@@ -538,19 +541,20 @@ class SnapbackSM {
    *
    * If an insufficient amount of new replica set nodes are chosen, this method will throw an error.
    * @param {Object} param
-   * @param {Set<string>} param.unhealthyReplicasSet a set of the unhealthy replica set endpoints
+   * @param {Set<string>} param.healthyReplicasSet a set of the healthy replica set endpoints
+   * @param {Set<string>} param.numberOfUnhealthyReplicas the number of unhealthy replica set endpoints
    * @param {string[]} param.healthyNodes an array of all the healthy nodes available on the network
    * @param {string} param.wallet the wallet of the current user
    * @returns a string[] of the new replica set nodes
    */
-  async selectRandomReplicaSetNodes ({ unhealthyReplicasSet, healthyNodes, wallet }) {
+  async selectRandomReplicaSetNodes ({ healthyReplicaSet, numberOfUnhealthyReplicas, healthyNodes, wallet }) {
     let newReplicaNodesSet = new Set()
     let selectNewReplicaSetAttemptCounter = 0
-    while (newReplicaNodesSet.size < unhealthyReplicasSet.size && selectNewReplicaSetAttemptCounter++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS) {
+    while (newReplicaNodesSet.size < numberOfUnhealthyReplicas && selectNewReplicaSetAttemptCounter++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS) {
       let randomHealthyNode = _.sample(healthyNodes)
 
-      // If node is already present in set, keep finding a unique healthy node
-      if (newReplicaNodesSet.has(randomHealthyNode)) continue
+      // If node is already present in new replica set or is part of the exiting replica set, keep finding a unique healthy node
+      if (newReplicaNodesSet.has(randomHealthyNode) || healthyReplicaSet.has(randomHealthyNode)) continue
 
       // Check to make sure that the newly selected secondary does not have existing user state
       try {
@@ -562,7 +566,7 @@ class SnapbackSM {
       }
     }
 
-    if (newReplicaNodesSet.size < unhealthyReplicasSet.size) {
+    if (newReplicaNodesSet.size < numberOfUnhealthyReplicas) {
       throw new Error('[selectRandomReplicaSetNode] Not enough healthy nodes found to issue new replica set')
     }
 
