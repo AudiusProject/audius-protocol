@@ -9,6 +9,16 @@ class WormholeClient {
     this.WormholeContract = new this.web3.eth.Contract(this.contractABI, this.contractAddress)
   }
 
+  // Get the name of the contract
+  async nonces (wallet) {
+    // Pass along a unique param so the nonce value is always not cached
+    const nonce = await this.WormholeContract.methods.nonces(wallet).call({
+      _audiusBustCache: Date.now()
+    })
+    const number = this.web3.utils.toBN(nonce).toNumber()
+    return number
+  }
+
   /* ------- SETTERS ------- */
 
   async lockAssets (

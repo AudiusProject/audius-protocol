@@ -1,3 +1,5 @@
+const bs58 = require('bs58')
+const { toBuffer } = require('ethereumjs-util')
 const { Base, Services } = require('./base')
 const CreatorNodeService = require('../services/creatorNode/index')
 const Utils = require('../utils')
@@ -404,9 +406,9 @@ class Account extends Base {
     const currentBlock = await web3.eth.getBlock(currentBlockNumber)
     // 1 hour, sufficiently far in future
     const deadline = currentBlock.timestamp + (60 * 60 * 1)
-
-    const recipient = Buffer.from(solanaAccount, 'hex')
-    const nonce = await this.ethContracts.AudiusTokenClient.nonces(fromAccount)
+    const solanaB58 = bs58.decode(solanaAccount).toString('hex')
+    const recipient = toBuffer(`0x${solanaB58}`)
+    const nonce = await this.ethContracts.WormholeClient.nonces(fromAccount)
     const refundDust = false
 
     const digest = getLockAssetsDigest(
