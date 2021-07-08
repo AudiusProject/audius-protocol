@@ -251,7 +251,7 @@ function* fetchFollowerUsers(action) {
     offset: action.offset
   })
 
-  const followerIds = yield call(followAndCacheUsers, followers)
+  const followerIds = yield call(cacheUsers, followers)
   yield put(
     profileActions.fetchFollowUsersSucceeded(
       FollowType.FOLLOWERS,
@@ -273,7 +273,7 @@ function* fetchFollowees(action) {
     offset: action.offset
   })
 
-  const followerIds = yield call(followAndCacheUsers, followees)
+  const followerIds = yield call(cacheUsers, followees)
   yield put(
     profileActions.fetchFollowUsersSucceeded(
       FollowType.FOLLOWEES,
@@ -293,7 +293,8 @@ function* fetchFolloweeFollows(action) {
     action.limit,
     action.offset
   )
-  const followerIds = yield call(followAndCacheUsers, followeeFollows)
+
+  const followerIds = yield call(cacheUsers, followeeFollows)
   yield put(
     profileActions.fetchFollowUsersSucceeded(
       FollowType.FOLLOWEE_FOLLOWS,
@@ -304,8 +305,12 @@ function* fetchFolloweeFollows(action) {
   )
 }
 
-function* followAndCacheUsers(followers) {
-  const users = yield processAndCacheUsers(followers)
+function* cacheUsers(users) {
+  const currentUserId = yield select(getUserId)
+  // Filter out the current user from the list to cache
+  yield processAndCacheUsers(
+    users.filter(user => user.user_id !== currentUserId)
+  )
   return users.map(f => ({ id: f.user_id }))
 }
 

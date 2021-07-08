@@ -78,7 +78,7 @@ export function updateCurrentUserFollows(follow = false) {
   return { type: UPDATE_CURRENT_USER_FOLLOWS, follow }
 }
 
-export function fetchFollowUsers(followerGroup, limit = 22, offset = 0) {
+export function fetchFollowUsers(followerGroup, limit = 15, offset = 0) {
   return { type: FETCH_FOLLOW_USERS, followerGroup, offset, limit }
 }
 
