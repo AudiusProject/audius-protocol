@@ -42,10 +42,9 @@ RUN chmod +x scripts
 RUN mkdir -p ./build/contracts
 COPY --from=contracts /usr/src/app/build/contracts/ ./build/contracts/
 
-RUN ipfs init --profile server
 RUN bash scripts/init-db.sh
 
 ARG git_sha
 ENV GIT_SHA=$git_sha
 
-CMD ["sh", "scripts/start.sh"]
+CMD ["bash", "scripts/start.sh"]
