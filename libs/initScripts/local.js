@@ -101,6 +101,7 @@ const run = async () => {
 
       case 'register-discprov':
         const serviceCount = args[3]
+        if (serviceCount === undefined) throw new Error('register-discprov requires a service # as the second arg')
         await _registerDiscProv(ethAccounts, parseInt(serviceCount))
         break
 
@@ -108,6 +109,18 @@ const run = async () => {
         const serviceCount = args[3]
         if (serviceCount === undefined) throw new Error('register-cnode requires a service # as the second arg')
         await _registerCnode(ethAccounts, parseInt(serviceCount))
+        break
+      }
+      case 'deregister-cnode': {
+        const serviceCount = args[3]
+        if (serviceCount === undefined) throw new Error('deregister-cnode requires a service # as the second arg')
+        await _deregisterCnode(ethAccounts, parseInt(serviceCount))
+        break
+      }
+
+      case 'print-accounts': {
+        const numAccounts = args[3] || 20
+        await _printEthContractAccounts(ethAccounts, numAccounts)
         break
       }
 
@@ -404,6 +417,26 @@ const _registerCnode = async (ethAccounts, serviceNumber) => {
   const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
   const endpoint = makeCreatorNodeEndpoint(serviceNumber)
   await registerLocalService(audiusLibs, contentNodeType, endpoint, amountOfAuds)
+}
+
+const _deregisterCnode = async (ethAccounts, serviceNumber) => {
+  const audiusLibs = await initAudiusLibs(true, null, ethAccounts[serviceNumber])
+  const endpoint = makeCreatorNodeEndpoint(serviceNumber)
+  await deregisterLocalService(audiusLibs, contentNodeType, endpoint)
+}
+
+const _printEthContractAccounts = async (ethAccounts, numAccounts = 20) => {
+  let ganacheEthAccounts = await getEthContractAccounts()
+  const accts = []
+  for (let i = 0; i < numAccounts; i += 1) {
+    let addr = ethAccounts[i]
+    let privateKey = ganacheEthAccounts['private_keys'][addr.toLowerCase()]
+    accts.push({
+      address: ethAccounts[i],
+      privateKey
+    })
+  }
+  console.log(JSON.stringify(accts))
 }
 
 // NOTE - newly selected wallet is the ethAccount with index 10 + current service number
