@@ -613,11 +613,13 @@ class SnapbackSM {
           /**
            * If either secondary has a Sync success rate for user below threshold, add it to `unhealthyReplicas` list
            */
-          const [sec1UserSyncSuccessRate, sec2UserSyncSuccessRate] = await SecondarySyncHealthTracker.computeUserSecondarySyncSuccessRates(
-            nodeUser.wallet, secondary1, secondary2
+          const userSecondarySyncMetrics = await SecondarySyncHealthTracker.computeUserSecondarySyncSuccessRates(
+            nodeUser.wallet, [secondary1, secondary2]
           )
+          const sec1UserSyncSuccessRate = userSecondarySyncMetrics[secondary1]['SuccessRate']
+          const sec2UserSyncSuccessRate = userSecondarySyncMetrics[secondary2]['SuccessRate']
 
-          // If success rate for either secondary falls under threshold -> mark as unhealthy
+          // If SyncRequest success rate for user to either secondary falls under threshold -> mark as unhealthy
           if (sec1UserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent && !unhealthyReplicas.includes(secondary1)) {
             unhealthyReplicas.push(secondary1)
           }
