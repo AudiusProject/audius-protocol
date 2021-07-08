@@ -6,7 +6,9 @@ from src.queries.queries import parse_bool_param
 from src.queries.get_health import get_health, get_latest_ipld_indexed_block
 from src.queries.get_sol_plays import get_latest_sol_plays
 from src.api_helpers import success_response
-from src.utils import helpers
+from src.utils import helpers, redis_connection
+from src.utils.redis_cache import get_pickled_key
+from src.utils.redis_constants import latest_sol_play_tx_key
 
 logger = logging.getLogger(__name__)
 
@@ -87,11 +89,18 @@ def sol_play_check():
        limit: number of latest plays to return
     """
     limit = request.args.get("limit", type=int)
+    redis = redis_connection.get_redis()
 
-    latest_sol_plays = get_latest_sol_plays(limit)
+    latest_db_sol_plays = get_latest_sol_plays(limit)
+    latest_cached_sol_tx = get_pickled_key(redis, latest_sol_play_tx_key)
+    response = {
+        'chain_tx': latest_cached_sol_tx,
+        'db_info': latest_db_sol_plays
+    }
+    logger.error(response)
 
     return success_response(
-        latest_sol_plays,
+        response,
         200,
         sign_response=False
     )
