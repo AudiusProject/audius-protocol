@@ -35,8 +35,6 @@ const DISCOVERY_NODE_ALLOW_LIST = new Set([
   'https://discoveryprovider.audius7.prod-us-west-2.staked.cloud',
   'https://discoveryprovider.audius.prod-us-west-2.staked.cloud',
   'https://discoveryprovider.audius4.prod-us-west-2.staked.cloud',
-  'https://discovery-a.mainnet.audius.radar.tech',
-  'https://discovery-d.mainnet.audius.radar.tech',
   'https://discoveryprovider.audius6.prod-us-west-2.staked.cloud',
   'https://discoveryprovider.audius1.prod-us-west-2.staked.cloud',
   'https://discoveryprovider.audius2.prod-us-west-2.staked.cloud',
