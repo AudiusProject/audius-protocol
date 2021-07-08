@@ -25,7 +25,10 @@ fi
 ./scripts/dev-server.sh &
 sleep 20 # wait for migrations to finish
 
-celery -A src.worker.celery worker --loglevel info &
+if [ -z "$audius_no_workers" ]; then
+    celery -A src.worker.celery worker --loglevel info &
+fi
+
 celery -A src.worker.celery beat --loglevel info &
 
 wait
