@@ -157,3 +157,7 @@
 .userIcon path {
   fill: var(--static-white);
 }
+
+.minDelgationAmount {
+  margin-left: 4px;
+}

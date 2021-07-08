@@ -76,9 +76,10 @@ const DelegateStakeModal: React.FC<DelegateStakeModalProps> = ({
   } = useModalControls()
 
   const onDelegate = useCallback(() => {
-    // TODO: validate each field
-    onOpenConfirmation()
-  }, [onOpenConfirmation])
+    if (min.lte(stakingBN) && max.gte(stakingBN)) {
+      onOpenConfirmation()
+    }
+  }, [min, max, stakingBN, onOpenConfirmation])
 
   const { status, delegateStake, error } = useDelegateStake(!isConfirmationOpen)
 

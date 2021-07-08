@@ -91,7 +91,7 @@ const DelegatesModal: React.FC<DelegatesModalProps> = ({
       onClose={onClose}
     >
       {data.map(d => (
-        <div onClick={() => onRowClick(d)} className={styles.modalRow}>
+        <div key={d.address} onClick={() => onRowClick(d)} className={styles.modalRow}>
           {renderRow(d)}
         </div>
       ))}
