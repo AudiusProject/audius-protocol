@@ -5,6 +5,7 @@ from src.utils import db_session
 
 logger = logging.getLogger(__name__)
 
+
 def get_associated_user_id(args):
     """
     Returns a user_id the associated wallet
@@ -22,7 +23,7 @@ def get_associated_user_id(args):
             session.query(AssociatedWallet.user_id)
             .filter(AssociatedWallet.is_current == True)
             .filter(AssociatedWallet.is_delete == False)
-            .filter(AssociatedWallet.wallet == args.get('wallet'))
+            .filter(AssociatedWallet.wallet == args.get("wallet"))
             .first()
         )
         return user_id[0] if user_id else None

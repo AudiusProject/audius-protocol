@@ -8,9 +8,12 @@ import src.utils.multihash
 from src.utils.helpers import remove_test_file
 from tests.utils import query_creator_by_name, to_bytes
 
-@pytest.mark.skip(reason="user contract functions changed, skipping now to unblock dependent work until fixed")
+
+@pytest.mark.skip(
+    reason="user contract functions changed, skipping now to unblock dependent work until fixed"
+)
 def test_index_operations(app, client, celery_app, contracts):
-    """ Confirm indexing of creator operations results in expected state change """
+    """Confirm indexing of creator operations results in expected state change"""
     test_file = "tests/res/test_audio_file.mp3"
     creator_metadata_json_file = "tests/res/test_creator_metadata.json"
     track_metadata_json_file = "tests/res/test_track_metadata.json"
@@ -34,8 +37,8 @@ def test_index_operations(app, client, celery_app, contracts):
         "wallet": web3.eth.defaultAccount,
         "is_creator": 1,
         "name": random_creator_name,
-        "profile_picture": '0x1a5a5d47bfca6be2872d8076920683a3ae112b455a7a444be5ebb84471b16c4e',
-        "cover_photo": '0x1a5a5d47bfca6be2872d8076920683a3ae112b455a7a444be5ebb84471b16c4e',
+        "profile_picture": "0x1a5a5d47bfca6be2872d8076920683a3ae112b455a7a444be5ebb84471b16c4e",
+        "cover_photo": "0x1a5a5d47bfca6be2872d8076920683a3ae112b455a7a444be5ebb84471b16c4e",
         "bio": "Leslie David Baker",
         "location": "San Francisco",
     }
@@ -55,20 +58,18 @@ def test_index_operations(app, client, celery_app, contracts):
     # Add creator to blockchain
     newcreator_tx_hash = user_factory_contract.functions.addUser(
         metadata_decoded_multihash["digest"],
-        to_bytes(creator_metadata['handle'], 16),
-        to_bytes(creator_metadata['name']),
-        to_bytes(creator_metadata['location']),
-        to_bytes(creator_metadata['bio']),
-        to_bytes(creator_metadata['profile_picture']),
-        to_bytes(creator_metadata['cover_photo']),
-        True
+        to_bytes(creator_metadata["handle"], 16),
+        to_bytes(creator_metadata["name"]),
+        to_bytes(creator_metadata["location"]),
+        to_bytes(creator_metadata["bio"]),
+        to_bytes(creator_metadata["profile_picture"]),
+        to_bytes(creator_metadata["cover_photo"]),
+        True,
     ).transact()
 
     # parse chain transaction results
     txReceipt = web3.eth.waitForTransactionReceipt(newcreator_tx_hash)
-    txNewUserInfo = user_factory_contract.events.NewUser().processReceipt(
-        txReceipt
-    )
+    txNewUserInfo = user_factory_contract.events.NewUser().processReceipt(txReceipt)
     newCreatorArgs = txNewUserInfo[0].args
 
     # get creator id
