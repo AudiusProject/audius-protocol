@@ -5,6 +5,7 @@ from src.app import eth_abi_values
 from src.tasks.celery_app import celery
 from src.models import UserBalance, User, AssociatedWallet
 from src.queries.get_balances import does_user_balance_need_refresh, REDIS_PREFIX
+from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
 
 logger = logging.getLogger(__name__)
 audius_token_registry_key = bytes("Token", "utf-8")
@@ -216,6 +217,7 @@ def update_user_balances_task(self):
             refresh_user_ids(redis, db, token_inst, delegate_manager_inst, staking_inst, eth_web3)
 
             end_time = time.time()
+            redis.set(user_balances_refresh_last_completion_redis_key, int(end_time))
             logger.info(f"cache_user_balance.py | Finished cache_user_balance in {end_time - start_time} seconds")
         else:
             logger.info("cache_user_balance.py | Failed to acquire lock")

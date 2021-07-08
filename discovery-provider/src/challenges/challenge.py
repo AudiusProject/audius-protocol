@@ -15,7 +15,7 @@ def fetch_user_challenges(session, challenge_id, user_ids):
             ).all()
 
 class ChallengeUpdater(ABC):
-    """`ChallengeUpdater` is an abstract class which provides challenge specific logic 
+    """`ChallengeUpdater` is an abstract class which provides challenge specific logic
     to an instance of a `ChallengeManager`. The only required override is update_user_challenges
     """
     @abstractmethod
@@ -26,7 +26,7 @@ class ChallengeUpdater(ABC):
         """
 
     def on_after_challenge_creation(self, session, user_ids):
-        """Optional method to do some work after the `ChallengeManager` creates new challenges. 
+        """Optional method to do some work after the `ChallengeManager` creates new challenges.
         If a challenge is backed by it's own table, for instance, create those rows here.
         """
 
@@ -42,7 +42,7 @@ class ChallengeManager:
     """
 
     def __init__(self, challenge_id, updater):
-        self._challenge_id = challenge_id
+        self.challenge_id = challenge_id
         self._did_init = False
         self._updater = updater
         self._starting_block = None
@@ -70,7 +70,7 @@ class ChallengeManager:
         user_ids = list(map(lambda x: x["user_id"], event_metadatas))
 
         # Gets all user challenges,
-        existing_user_challenges = fetch_user_challenges(session, self._challenge_id, user_ids)
+        existing_user_challenges = fetch_user_challenges(session, self.challenge_id, user_ids)
 
         # Create users that need challenges still
         existing_user_ids = {challenge.user_id for challenge in existing_user_challenges}
@@ -95,13 +95,13 @@ class ChallengeManager:
         session.add_all(new_user_challenges)
 
     def get_challenge_state(self, session, user_ids):
-        user_challenges = fetch_user_challenges(session, self._challenge_id, user_ids)
+        user_challenges = fetch_user_challenges(session, self.challenge_id, user_ids)
         return {user_challenge.user_id: user_challenge for user_challenge in user_challenges}
 
     # Helpers
 
     def _init_challenge(self, session):
-        challenge = session.query(Challenge).filter(Challenge.id == self._challenge_id).first()
+        challenge = session.query(Challenge).filter(Challenge.id == self.challenge_id).first()
         if not challenge:
             raise Exception('No matching challenge!')
         self._starting_block = challenge.starting_block
@@ -110,7 +110,7 @@ class ChallengeManager:
 
     def _create_new_challenges(self, user_ids):
         return [UserChallenge(
-            challenge_id=self._challenge_id,
+            challenge_id=self.challenge_id,
             user_id=user_id,
             specifier=self._updater.generate_specifier(user_id),
             is_complete=False,

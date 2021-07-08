@@ -61,7 +61,7 @@ program
   )
   .option(
     '-nd, --num-dn <number>',
-    'number of discovery ndoes',
+    'number of discovery nodes',
     NUM_DISCOVERY_NODES.toString()
   )
   .action(async opts => {
@@ -119,7 +119,10 @@ program
       const serviceName = findService(service)
       const setupCommand = findCommand(command)
 
-      if (serviceName === Service.CREATOR_NODE ||  serviceName === Service.DISCOVERY_PROVIDER) {
+      if (
+        serviceName === Service.CREATOR_NODE ||
+        serviceName === Service.DISCOVERY_PROVIDER
+      ) {
         const serviceNumber = parseInt(opts.instanceNum)
         if (serviceNumber < 1) {
           throw new Error(

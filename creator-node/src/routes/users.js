@@ -189,6 +189,9 @@ module.exports = function (app) {
    */
   app.post('/users/batch_clock_status', handleResponse(async (req, res) => {
     const { walletPublicKeys } = req.body
+    const walletPublicKeysSet = new Set(walletPublicKeys)
+
+    // Fetch clock values for input wallets
     const cnodeUsers = await models.CNodeUser.findAll({
       where: {
         walletPublicKey: {
@@ -196,11 +199,22 @@ module.exports = function (app) {
         }
       }
     })
-    return successResponse({
-      users: cnodeUsers.map(cnodeUser => ({
+
+    // For found users, return the clock value
+    let users = cnodeUsers.map(cnodeUser => {
+      walletPublicKeysSet.delete(cnodeUser.walletPublicKey)
+      return {
         walletPublicKey: cnodeUser.walletPublicKey,
         clock: cnodeUser.clock
-      }))
+      }
     })
+
+    // If there are any remaining wallets, default to -1
+    const remainingWalletPublicKeys = Array.from(walletPublicKeysSet)
+    remainingWalletPublicKeys.forEach(wallet => {
+      users.push({ walletPublicKey: wallet, clock: -1 })
+    })
+
+    return successResponse({ users })
   }))
 }

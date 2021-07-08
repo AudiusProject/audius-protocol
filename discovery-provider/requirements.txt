@@ -3,7 +3,7 @@ web3==5.8.0
 Flask==1.0.4
 psycopg2==2.8.5
 SQLAlchemy==1.2.5
-alembic==1.0.0
+alembic==1.4.3
 celery[redis]==4.2.0
 redis==3.2.0
 pytest==6.0.1

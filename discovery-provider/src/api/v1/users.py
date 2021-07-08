@@ -3,7 +3,8 @@ from src.api.v1.playlists import get_tracks_for_playlist
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from flask_restx import Resource, Namespace, fields, reqparse
 from src.api.v1.models.common import favorite
-from src.api.v1.models.users import user_model, user_model_full, associated_wallets, encoded_user_id, user_replica_set
+from src.api.v1.models.users import user_model, user_model_full, associated_wallets, encoded_user_id, \
+    user_replica_set, challenge_response
 
 from src.queries.get_saves import get_saves
 from src.queries.get_users import get_users
@@ -19,12 +20,14 @@ from src.queries.get_users_cnode import get_users_cnode, ReplicaType
 
 from src.api.v1.helpers import abort_not_found, decode_with_abort, extend_activity, extend_favorite, extend_track, \
     extend_user, format_limit, format_offset, get_current_user_id, make_full_response, make_response, search_parser, success_response, abort_bad_request_param, \
-    get_default_max, encode_int_id
+    get_default_max, encode_int_id, extend_challenge_response
 from .models.tracks import track, track_full
 from .models.activities import activity_model, activity_model_full
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 from src.queries.get_top_genre_users import get_top_genre_users
+from src.queries.get_challenges import get_challenges
+from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)
 
@@ -700,3 +703,30 @@ class UsersByContentNode(Resource):
             users = get_users_cnode(cnode_url, ReplicaType.ALL)
 
         return success_response(users)
+
+get_challenges_route_parser = reqparse.RequestParser()
+get_challenges_route_parser.add_argument('show_historical', required=False, type=bool, default=False)
+get_challenges_response = make_response('get_challenges', ns, fields.List(fields.Nested(challenge_response)))
+@ns.route("/<string:user_id>/challenges")
+class GetChallenges(Resource):
+    @ns.doc(
+        id="""The users's ID""",
+        params={'show_historical': 'Whether to show challenges that are inactive but completed'},
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @ns.marshal_with(get_challenges_response)
+    @cache(ttl_sec=5)
+    def get(self, user_id: str):
+        args = get_challenges_route_parser.parse_args()
+        show_historical = args.get('show_historical')
+        decoded_id = decode_with_abort(user_id, ns)
+        db = get_db_read_replica()
+
+        with db.scoped_session() as session:
+            challenges = get_challenges(decoded_id, show_historical, session)
+            challenges = list(map(extend_challenge_response, challenges))
+            return success_response(challenges)

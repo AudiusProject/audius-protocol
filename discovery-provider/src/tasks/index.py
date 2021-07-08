@@ -3,8 +3,8 @@ import concurrent.futures
 
 from sqlalchemy import func
 from src.app import contract_addresses
-from src.models import Block, User, Track, Repost, Follow, Playlist, \
-    Save, URSMContentNode, AssociatedWallet, SkippedTransaction
+from src.models import AssociatedWallet, Block, Follow, Playlist, Repost,\
+    Save, SkippedTransaction, Track, TrackRoute, URSMContentNode, User
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
 from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
@@ -476,6 +476,11 @@ def revert_blocks(self, db, revert_blocks_list):
             revert_associated_wallets = (
                 session.query(AssociatedWallet).filter(AssociatedWallet.blockhash == revert_hash).all()
             )
+            revert_track_routes = (
+                session.query(TrackRoute)
+                .filter(TrackRoute.blockhash == revert_hash)
+                .all()
+            )
 
             # Revert all of above transactions
             for save_to_revert in revert_save_entries:
@@ -609,6 +614,20 @@ def revert_blocks(self, db, revert_blocks_list):
                 # Remove outdated associated wallets
                 logger.info(f"Reverting associated Wallet: {user_id}")
                 session.delete(associated_wallets_to_revert)
+
+            for track_route_to_revert in revert_track_routes:
+                track_id = track_route_to_revert.track_id
+                previous_track_route_entry = (
+                    session.query(TrackRoute)
+                    .filter(TrackRoute.track_id == track_id,
+                            TrackRoute.blocknumber < revert_block_number)
+                    .order_by(TrackRoute.blocknumber.desc())
+                    .first()
+                )
+                if previous_track_route_entry:
+                    previous_track_route_entry.is_current = True
+                logger.info(f"Reverting track route {track_route_to_revert}")
+                session.delete(track_route_to_revert)
 
             # Remove outdated block entry
             session.query(Block).filter(Block.blockhash == revert_hash).delete()

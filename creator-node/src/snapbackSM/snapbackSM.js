@@ -781,7 +781,7 @@ class SnapbackSM {
       stage: 'BEGIN processStateMachineOperation()',
       vals: {
         currentModuloSlice: this.currentModuloSlice,
-        moduloBase: this.ModuloBase
+        moduloBase: this.moduloBase
       },
       time: Date.now()
     }]
@@ -1000,7 +1000,7 @@ class SnapbackSM {
         stage: 'END processStateMachineOperation()',
         vals: {
           currentModuloSlice: this.currentModuloSlice,
-          moduloBase: this.ModuloBase,
+          moduloBase: this.moduloBase,
           numSyncRequestsEnqueued,
           numUpdateReplicaOpsIssued
         },
@@ -1011,9 +1011,9 @@ class SnapbackSM {
     } catch (e) {
       decisionTree.push({ stage: 'processStateMachineOperation Error', vals: e.message, time: Date.now() })
     } finally {
-      // Increment and adjust current slice by this.ModuloBase
+      // Increment and adjust current slice by this.moduloBase
       this.currentModuloSlice += 1
-      this.currentModuloSlice = this.currentModuloSlice % this.ModuloBase
+      this.currentModuloSlice = this.currentModuloSlice % this.moduloBase
 
       // Log decision tree
       try {
