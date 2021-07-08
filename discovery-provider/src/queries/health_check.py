@@ -107,8 +107,8 @@ def sol_play_check():
         latest_created_at = latest_db_play['created_at']
         drift = (datetime.now() - latest_created_at).total_seconds()
 
-    # Error if max drift was provided and the drift is greater than max_drift
-    error = max_drift and drift > max_drift
+        # Error if max drift was provided and the drift is greater than max_drift
+        error = max_drift and drift > max_drift
 
     return success_response(
         response,

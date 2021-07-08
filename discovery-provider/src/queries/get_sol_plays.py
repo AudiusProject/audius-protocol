@@ -33,8 +33,7 @@ def get_latest_sol_plays(limit=10):
     db = get_db_read_replica()
 
     # Cap max returned db entries
-    if limit > 100:
-        limit = 100
+    limit = min(limit, 100)
 
     sol_plays = None
     with db.scoped_session() as session:
