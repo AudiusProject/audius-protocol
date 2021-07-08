@@ -2,7 +2,6 @@ import concurrent.futures
 import datetime
 import logging
 import time
-import pickle
 
 import base58
 from sqlalchemy import desc
