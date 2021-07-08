@@ -100,6 +100,11 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
         logger.info(
             f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}"
         )
+        meta = tx_info['result']['meta']
+        error = meta['err']
+        if error:
+            logger.info(f"index_solana_plays.py | Skipping error transaction from chain {tx_info}")
+            return
         if is_valid_tx(tx_info["result"]["transaction"]["message"]["accountKeys"]):
             audius_program_index = tx_info["result"]["transaction"]["message"][
                 "accountKeys"].index(TRACK_LISTEN_PROGRAM)
