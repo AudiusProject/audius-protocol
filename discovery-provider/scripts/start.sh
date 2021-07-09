@@ -23,7 +23,7 @@ if [ -z "$audius_db_url" ]; then
         chown -R postgres:postgres /db
         chmod 700 /db
         sudo -u postgres pg_ctl init -D /db
-        echo "host all all 0.0.0.0/0 trust" >>/db/pg_hba.conf
+        echo "host all all 0.0.0.0/0 md5" >>/db/pg_hba.conf
         echo "listen_addresses = '*'" >>/db/postgresql.conf
         sudo -u postgres pg_ctl start -D /db
         sudo -u postgres createdb audius_discovery
@@ -31,8 +31,10 @@ if [ -z "$audius_db_url" ]; then
         sudo -u postgres pg_ctl start -D /db
     fi
 
-    export audius_db_url=postgresql+psycopg2://postgres:postgres@localhost:5432/audius_discovery
-    export audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@localhost:5432/audius_discovery
+    sudo -u postgres psql -c "ALTER USER postgres PASSWORD '${postgres_password:-postgres}';"
+
+    export audius_db_url="postgresql+psycopg2://postgres:${postgres_password:-postgres}@localhost:5432/audius_discovery"
+    export audius_db_url_read_replica="postgresql+psycopg2://postgres:${postgres_password:-postgres}@localhost:5432/audius_discovery"
     export WAIT_HOSTS="localhost:5432"
     /wait
 fi

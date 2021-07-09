@@ -19,7 +19,9 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add redis && \
     apk add sudo && \
     apk add go-ipfs && \
+    apk add libpq=11.12-r0 && \
     apk add postgresql=11.12-r0 && \
+    apk add postgresql-client=11.12-r0 && \
     apk add postgresql-contrib=11.12-r0 && \
     apk add postgresql-libs=11.12-r0 && \
     apk add python3 && \
@@ -37,8 +39,6 @@ COPY . .
 COPY scripts/wait /wait
 RUN chmod +x /wait
 
-RUN adduser --disabled-password postgres
-
 # Permission scripts directory
 RUN chmod +x scripts
 
@@ -46,7 +46,6 @@ RUN mkdir -p ./build/contracts
 COPY --from=contracts /usr/src/app/build/contracts/ ./build/contracts/
 
 RUN bash scripts/init-db.sh
-RUN ipfs init --profile server
 
 ARG git_sha
 ENV GIT_SHA=$git_sha
