@@ -393,23 +393,31 @@ jobs:
               -H "Content-Type: application/json" \
               --data '{"type":"TXT","name":"'"$DNS_NAME"'","content":"\"dnslink=/ipfs/'"$CID"'\"","ttl":1,"proxied":false}'
 
-  deploy-release:
+  deploy-release-candidate:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/python:2.7-jessie
+      - image: circleci/node:10.13
     steps:
       - checkout
-      - run:
-          name: install-awscli
-          command: sudo pip install awscli
       - attach_workspace:
           at: ./
       - run:
-          name: Deploy to S3
+          name: update-npm
+          command: 'sudo npm install -g npm@latest'
+      - run:
+          name: install wrangler
+          command: 'npm install @cloudflare/wrangler'
+      - run:
+          name: Deploy to Cloudflare
           command: |
-            aws s3 sync --exclude "*.map" --exclude ./resources/apple-app-site-association --exclude robots.txt --exclude "sitemaps/*" build-production s3://release.audius.co --delete --cache-control max-age=604800
-            aws s3 cp s3://release.audius.co/index.html s3://release.audius.co/index.html --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --metadata-directive REPLACE --acl public-read
-            aws s3 cp ./resources/apple-app-site-association s3://release.audius.co --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
+            cd scripts/workers-site
+            npm i
+            cd ../../
+            mv build-production build
+            cp ./resources/apple-app-site-association build
+            cp ./robots.txt build
+            echo ${GA_ACCESS_TOKEN} | npx wrangler secret put GA_ACCESS_TOKEN --env release
+            npx wrangler publish --env release
 
   deploy-production-s3:
     working_directory: ~/audius-client
@@ -707,15 +715,14 @@ workflows:
             branches:
               only: /^master$/
 
-      - deploy-release:
+      - deploy-release-candidate:
           context: Audius Client
           requires:
             - init
-            - test-staging
             - build-production
           filters:
             branches:
-              only: /(^master)|(^hotfix.*)|(^release.*)$/
+              only: /(^hotfix.*)|(^release.*)$/
 
       # Allow hotfix to go to staging on command
       - hold-staging:

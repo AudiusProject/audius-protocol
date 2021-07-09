@@ -10,6 +10,10 @@ entry-point = "./scripts/workers-site"
 name = "audius-staging"
 vars = { ENVIRONMENT = "staging", GA = "https://general-admission.staging.audius.co", SITEMAP = "http://staging.audius.co.s3-website-us-west-1.amazonaws.com" }
 
+[env.release]
+name = "audius-release-candidate"
+vars = { ENVIRONMENT = "production", GA = "https://general-admission.audius.co", SITEMAP = "http://audius.co.s3-website-us-west-1.amazonaws.com" }
+
 [env.production]
 name = "audius"
 vars = { ENVIRONMENT = "production", GA = "https://general-admission.audius.co", SITEMAP = "http://audius.co.s3-website-us-west-1.amazonaws.com" }
