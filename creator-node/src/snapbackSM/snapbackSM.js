@@ -366,9 +366,8 @@ class SnapbackSM {
    * @param {string[]} unhealthyReplicas array of endpoints of current replica set nodes that are unhealthy
    * @param {string[]} healthyNodes array of healthy Content Node endpoints used for selecting new replica set
    * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
-   * @param {Object[]} potentialSyncRequests array of { primary, secondary1, secondary2, user_id, wallet, endpoint (the endpoint to perform a sync to) }
   */
-  async issueUpdateReplicaSetOp (userId, wallet, primary, secondary1, secondary2, unhealthyReplicas, healthyNodes, replicaSetNodesToUserClockStatusesMap, potentialSyncRequests) {
+  async issueUpdateReplicaSetOp (userId, wallet, primary, secondary1, secondary2, unhealthyReplicas, healthyNodes, replicaSetNodesToUserClockStatusesMap) {
     this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=[${unhealthyReplicas}]`)
 
     const unhealthyReplicasSet = new Set(unhealthyReplicas)
@@ -425,16 +424,24 @@ class SnapbackSM {
 
       response.issuedReconfig = true
 
-      // // Sync data from existing primary to new secondary
-      let newNodeUser = {
-        primary: newPrimary,
-        secondary1: newSecondary1,
-        secondary2: newSecondary2,
-        user_id: userId,
-        wallet
-      }
-      potentialSyncRequests.push({ ...newNodeUser, endpoint: newSecondary1 })
-      potentialSyncRequests.push({ ...newNodeUser, endpoint: newSecondary2 })
+      // Enqueue a sync for new primary to new secondaries. If there is no diff, then this is a no-op.
+      await this.enqueueSync({
+        userWallet: wallet,
+        primaryEndpoint: newPrimary,
+        secondaryEndpoint: newSecondary1,
+        syncType: SyncType.Manual,
+        immediate: true
+      })
+
+      await this.enqueueSync({
+        userWallet: wallet,
+        primaryEndpoint: newPrimary,
+        secondaryEndpoint: newSecondary2,
+        syncType: SyncType.Manual,
+        immediate: true
+      })
+
+      this.peerSetManager.removeWalletFromUnhealthyPrimaryMap(newPrimary, wallet)
     } catch (e) {
       const errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} failed at phase=${phase} reconfiguring to spIds=[${newReplicaSetSPIds}]: ${e.toString()}\n${e.stack}`
       response.errorMsg = errorMsg
@@ -689,11 +696,11 @@ class SnapbackSM {
    *
    * @param {Array} userReplicaSets array of objects of schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
    *      `endpoint` field indicates secondary on which to issue SyncRequest
-   * @param {Object} secondaryNodesToUserClockStatusesMap map(secondaryNode => map(userWallet => secondaryClockValue))
+   * @param {Object} replicaSetNodesToUserClockStatusesMap map(replica set node => map(userWallet => clockValue))
    * @returns {Number} number of sync requests issued
    * @returns {Array} array of all SyncRequest errors
    */
-  async issueSyncRequests (userReplicaSets, secondaryNodesToUserClockStatusesMap) {
+  async issueSyncRequests (userReplicaSets, replicaSetNodesToUserClockStatusesMap) {
     // TODO ensure all syncRequests are for users with primary == self
 
     // Retrieve clock values for all users on this node, which is their primary
@@ -713,7 +720,7 @@ class SnapbackSM {
 
         // Determine if secondary requires a sync by comparing clock values against primary (this node)
         const userPrimaryClockVal = userPrimaryClockValues[wallet]
-        const userSecondaryClockVal = secondaryNodesToUserClockStatusesMap[secondary][wallet]
+        const userSecondaryClockVal = replicaSetNodesToUserClockStatusesMap[secondary][wallet]
         const syncRequired = !userSecondaryClockVal || (userPrimaryClockVal > userSecondaryClockVal)
 
         if (syncRequired) {
@@ -857,7 +864,7 @@ class SnapbackSM {
 
               if (replica === primary) {
                 // If the current replica is the primary, perform a second health check.
-                // If the primary is unhealthy, add to `unhealthyReplicas`
+                // and determine if the primary is truly unhealthy
                 addToUnhealthyReplicas = !this.peerSetManager.isPrimaryHealthy(primary, wallet)
               } else {
                 // Else, if the clock value is not present for the given replica and wallet
@@ -910,56 +917,6 @@ class SnapbackSM {
         })
       }
 
-      /**
-       * Issue all required replica set updates
-       * TODO move to chunked parallel (maybe?) + wrap each in try-catch to not halt on single error
-       */
-      let numUpdateReplicaOpsIssued = 0
-      try {
-        // Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
-        // Note: sync checks are disabled because there should not be any syncs occurring for a particular user
-        // on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
-        // There will be an explicit clock value check on the newly selected replica set nodes instead.
-        const { services: healthyServicesMap } = await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
-          performSyncCheck: false
-        })
-
-        const healthyNodes = Object.keys(healthyServicesMap)
-        if (healthyNodes.length === 0) throw new Error('Auto-selecting Content Nodes returned an empty list of healthy nodes.')
-
-        const errors = []
-        for await (const userInfo of requiredUpdateReplicaSetOps) {
-          const { errorMsg, issuedReconfig } = await this.issueUpdateReplicaSetOp(
-            userInfo.user_id,
-            userInfo.wallet,
-            userInfo.primary,
-            userInfo.secondary1,
-            userInfo.secondary2,
-            userInfo.unhealthyReplicas,
-            healthyNodes,
-            replicaSetNodesToUserWalletsMap,
-            potentialSyncRequests
-          )
-
-          if (errorMsg) errors.push(errorMsg)
-          if (issuedReconfig) numUpdateReplicaOpsIssued++
-        }
-        if (errors.length > 0) throw new Error(`issueUpdateReplicaSetOp() failed for subset of users: [${errors.toString()}]`)
-
-        decisionTree.push({
-          stage: 'issueUpdateReplicaSetOp() Success',
-          vals: { numUpdateReplicaOpsIssued },
-          time: Date.now()
-        })
-      } catch (e) {
-        decisionTree.push({
-          stage: 'issueUpdateReplicaSetOp() Error',
-          vals: e.message,
-          time: Date.now()
-        })
-        throw new Error('processStateMachineOperation():issueUpdateReplicaSetOp() Error')
-      }
-
       // Issue all required sync requests
       let numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors
       try {
@@ -995,6 +952,55 @@ class SnapbackSM {
           },
           time: Date.now()
         })
+      }
+
+      /**
+       * Issue all required replica set updates
+       * TODO move to chunked parallel (maybe?) + wrap each in try-catch to not halt on single error
+       */
+      let numUpdateReplicaOpsIssued = 0
+      try {
+        // Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
+        // Note: sync checks are disabled because there should not be any syncs occurring for a particular user
+        // on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
+        // There will be an explicit clock value check on the newly selected replica set nodes instead.
+        const { services: healthyServicesMap } = await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
+          performSyncCheck: false
+        })
+
+        const healthyNodes = Object.keys(healthyServicesMap)
+        if (healthyNodes.length === 0) throw new Error('Auto-selecting Content Nodes returned an empty list of healthy nodes.')
+
+        const errors = []
+        for await (const userInfo of requiredUpdateReplicaSetOps) {
+          const { errorMsg, issuedReconfig } = await this.issueUpdateReplicaSetOp(
+            userInfo.user_id,
+            userInfo.wallet,
+            userInfo.primary,
+            userInfo.secondary1,
+            userInfo.secondary2,
+            userInfo.unhealthyReplicas,
+            healthyNodes,
+            replicaSetNodesToUserWalletsMap
+          )
+
+          if (errorMsg) errors.push(errorMsg)
+          if (issuedReconfig) numUpdateReplicaOpsIssued++
+        }
+        if (errors.length > 0) throw new Error(`issueUpdateReplicaSetOp() failed for subset of users: [${errors.toString()}]`)
+
+        decisionTree.push({
+          stage: 'issueUpdateReplicaSetOp() Success',
+          vals: { numUpdateReplicaOpsIssued },
+          time: Date.now()
+        })
+      } catch (e) {
+        decisionTree.push({
+          stage: 'issueUpdateReplicaSetOp() Error',
+          vals: e.message,
+          time: Date.now()
+        })
+        throw new Error('processStateMachineOperation():issueUpdateReplicaSetOp() Error')
       }
 
       decisionTree.push({
