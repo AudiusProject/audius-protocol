@@ -2,11 +2,11 @@ const assert = require('assert')
 
 const PeerSetManager = require('../src/snapbackSM/peerSetManager')
 
-describe('test peerSetManager()', () => {
-  const peerSetManager = new PeerSetManager({
-    discoveryProviderEndpoint: 'https://discovery_endpoint.audius.co',
-    creatorNodeEndpoint: 'https://content_node_endpoint.audius.co'
-  })
+describe('test peerSetManager', () => {
+  let peerSetManager
+
+  const primaryEndpoint = 'http://primary.audius.co'
+  const wallet = '0x4749a62b82983fdcf19ce328ef2a7f7ec8915fe'
 
   const baseVerboseHealthCheckResp = {
     version: '0.3.37',
@@ -44,7 +44,14 @@ describe('test peerSetManager()', () => {
     storagePathUsed: 59253436416
   }
 
-  it('should throw error if storage path vars are improper', () => {
+  beforeEach(() => {
+    peerSetManager = new PeerSetManager({
+      discoveryProviderEndpoint: 'https://discovery_endpoint.audius.co',
+      creatorNodeEndpoint: 'https://content_node_endpoint.audius.co'
+    })
+  })
+
+  it('[determinePeerHealth] should throw error if storage path vars are improper', () => {
     let verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
@@ -69,7 +76,7 @@ describe('test peerSetManager()', () => {
     }
   })
 
-  it('should throw error if memory vars are improper', () => {
+  it('[determinePeerHealth] should throw error if memory vars are improper', () => {
     let verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
@@ -95,7 +102,7 @@ describe('test peerSetManager()', () => {
     }
   })
 
-  it('should throw error if the file descriptors are improper', () => {
+  it('[determinePeerHealth] should throw error if the file descriptors are improper', () => {
     let verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
@@ -119,7 +126,7 @@ describe('test peerSetManager()', () => {
     }
   })
 
-  it('should throw error if latest sync history vars are improper', () => {
+  it('[determinePeerHealth] should throw error if latest sync history vars are improper', () => {
     let verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
@@ -152,7 +159,7 @@ describe('test peerSetManager()', () => {
     }
   })
 
-  it('should throw error if rolling sync history vars are improper', () => {
+  it('[determinePeerHealth] should throw error if rolling sync history vars are improper', () => {
     let verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
@@ -185,11 +192,46 @@ describe('test peerSetManager()', () => {
     }
   })
 
-  it('should pass if verbose health check resp is proper', () => {
+  it('[determinePeerHealth] should pass if verbose health check resp is proper', () => {
     try {
       peerSetManager.determinePeerHealth(baseVerboseHealthCheckResp)
     } catch (e) {
       assert.fail(`Should have succeeded: ${e.toString()}`)
     }
+  })
+
+  it('[isPrimaryHealthy] should mark primary as healthy if responds with 200 from health check', () => {
+    // Mock method
+    peerSetManager.isNodeHealthy = () => { return true }
+
+    const isHealthy = peerSetManager.isPrimaryHealthy(primaryEndpoint, wallet)
+
+    assert.strictEqual(isHealthy, true)
+    assert.strictEqual(peerSetManager.unhealthyPrimaryToWalletMap[primaryEndpoint], undefined)
+  })
+
+  it('[isPrimaryHealthy] should mark primary as healthy if responds with 500 from health check and has not been visited yet', () => {
+    // Mock method
+    peerSetManager.isNodeHealthy = () => { return false }
+
+    const isHealthy = peerSetManager.isPrimaryHealthy(primaryEndpoint, wallet)
+
+    assert.strictEqual(isHealthy, true)
+    assert.ok(peerSetManager.unhealthyPrimaryToWalletMap[primaryEndpoint].has(wallet))
+  })
+
+  it('[isPrimaryHealthy] should mark primary as unhealthy if responds with 500 from health check and has been visited', () => {
+    // Mock method
+    peerSetManager.isNodeHealthy = () => { return false }
+
+    let isHealthy = peerSetManager.isPrimaryHealthy(primaryEndpoint, wallet)
+
+    assert.strictEqual(isHealthy, true)
+    assert.ok(peerSetManager.unhealthyPrimaryToWalletMap[primaryEndpoint].has(wallet))
+
+    isHealthy = peerSetManager.isPrimaryHealthy(primaryEndpoint, wallet)
+
+    assert.strictEqual(isHealthy, false)
+    assert.ok(peerSetManager.unhealthyPrimaryToWalletMap[primaryEndpoint].has(wallet))
   })
 })

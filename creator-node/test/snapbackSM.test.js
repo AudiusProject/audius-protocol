@@ -205,6 +205,63 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(snapback.highestReconfigModeEnabled, RECONFIG_MODES.RECONFIG_DISABLED.key)
   })
 
+  it('[determineNewReplicaSet] if the mode enabled does not cover the reconfig type, do not issue reconfig', async function () {
+    nodeConfig.set('snapbackHighestReconfigMode', 'RECONFIG_DISABLED')
+
+    // Create SnapbackSM instance
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    // Mock `selectRandomReplicaSetNodes` to return the healthy nodes
+    snapback.selectRandomReplicaSetNodes = async () => { return healthyNodes }
+
+    nock(constants.primaryEndpoint)
+      .persist()
+      .get(() => true)
+      .reply(500)
+
+    nock(constants.secondary1Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: { clockValue: 10 } })
+
+    nock(constants.secondary2Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: { clockValue: 10 } })
+
+    nock(constants.healthyNode1Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: healthCheckVerboseResponse })
+
+    nock(constants.healthyNode2Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: healthCheckVerboseResponse })
+
+    nock(constants.healthyNode3Endpoint)
+      .persist()
+      .get(() => true)
+      .reply(200, { data: healthCheckVerboseResponse })
+
+    const { newPrimary, newSecondary1, newSecondary2, issueReconfig } = await snapback.determineNewReplicaSet({
+      primary: constants.primaryEndpoint,
+      secondary1: constants.secondary1Endpoint,
+      secondary2: constants.secondary2Endpoint,
+      wallet: constants.wallet,
+      unhealthyReplicasSet: new Set([constants.primaryEndpoint, constants.secondary1Endpoint]),
+      healthyNodes,
+      replicaSetNodesToUserClockStatusesMap
+    })
+
+    // Check to make sure that the new replica set is what we expect it to be
+    assert.strictEqual(newPrimary, constants.secondary2Endpoint)
+    assert.ok(healthyNodes.includes(newSecondary1))
+    assert.ok(healthyNodes.includes(newSecondary2))
+    assert.strictEqual(issueReconfig, false)
+    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
+  })
+
   it('[determineNewReplicaSet] if entire replica set is unhealthy, return falsy replica set', async function () {
     // Create SnapbackSM instance
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
@@ -462,63 +519,6 @@ describe('test SnapbackSM', function () {
     assert.ok(snapback.enabledReconfigModes.has('ONE_SECONDARY'))
     assert.ok(snapback.enabledReconfigModes.has('MULTIPLE_SECONDARIES'))
     assert.ok(snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
-  })
-
-  it('[determineNewReplicaSet] if the mode enabled does not cover the reconfig type, do not issue reconfig', async function () {
-    nodeConfig.set('snapbackHighestReconfigMode', 'RECONFIG_DISABLED')
-
-    // Create SnapbackSM instance
-    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
-
-    // Mock `selectRandomReplicaSetNodes` to return the healthy nodes
-    snapback.selectRandomReplicaSetNodes = async () => { return healthyNodes }
-
-    nock(constants.primaryEndpoint)
-      .persist()
-      .get(() => true)
-      .reply(500)
-
-    nock(constants.secondary1Endpoint)
-      .persist()
-      .get(() => true)
-      .reply(200, { data: { clockValue: 10 } })
-
-    nock(constants.secondary2Endpoint)
-      .persist()
-      .get(() => true)
-      .reply(200, { data: { clockValue: 10 } })
-
-    nock(constants.healthyNode1Endpoint)
-      .persist()
-      .get(() => true)
-      .reply(200, { data: healthCheckVerboseResponse })
-
-    nock(constants.healthyNode2Endpoint)
-      .persist()
-      .get(() => true)
-      .reply(200, { data: healthCheckVerboseResponse })
-
-    nock(constants.healthyNode3Endpoint)
-      .persist()
-      .get(() => true)
-      .reply(200, { data: healthCheckVerboseResponse })
-
-    const { newPrimary, newSecondary1, newSecondary2, issueReconfig } = await snapback.determineNewReplicaSet({
-      primary: constants.primaryEndpoint,
-      secondary1: constants.secondary1Endpoint,
-      secondary2: constants.secondary2Endpoint,
-      wallet: constants.wallet,
-      unhealthyReplicasSet: new Set([constants.primaryEndpoint, constants.secondary1Endpoint]),
-      healthyNodes,
-      replicaSetNodesToUserClockStatusesMap
-    })
-
-    // Check to make sure that the new replica set is what we expect it to be
-    assert.strictEqual(newPrimary, constants.secondary2Endpoint)
-    assert.ok(healthyNodes.includes(newSecondary1))
-    assert.ok(healthyNodes.includes(newSecondary2))
-    assert.strictEqual(issueReconfig, false)
-    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
   })
 
   it('[issueUpdateReplicaSetOp] if when `this.endpointToSPIdMap` is used and it does not have an spId for an endpoint, do not issue reconfig', async function () {
