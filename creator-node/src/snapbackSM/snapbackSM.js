@@ -720,7 +720,8 @@ class SnapbackSM {
         // on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
         // There will be an explicit clock value check on the newly selected replica set nodes instead.
         const { services: healthyServicesMap } = await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
-          performSyncCheck: false
+          performSyncCheck: false,
+          log: false
         })
 
         const healthyNodes = Object.keys(healthyServicesMap)
