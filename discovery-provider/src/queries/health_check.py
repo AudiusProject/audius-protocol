@@ -4,8 +4,11 @@ from flask import Blueprint, request
 from src.queries.get_latest_play import get_latest_play
 from src.queries.queries import parse_bool_param
 from src.queries.get_health import get_health, get_latest_ipld_indexed_block
+from src.queries.get_sol_plays import get_latest_sol_plays
 from src.api_helpers import success_response
-from src.utils import helpers
+from src.utils import helpers, redis_connection
+from src.utils.redis_cache import get_pickled_key
+from src.utils.redis_constants import latest_sol_play_tx_key
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +78,42 @@ def play_check():
 
     return success_response(
         latest_play,
+        500 if error else 200,
+        sign_response=False
+    )
+
+# Health check for latest play stored in the db
+@bp.route("/sol_play_check", methods=["GET"])
+def sol_play_check():
+    """
+       limit: number of latest plays to return
+       max_drift: maximum duration in seconds between `now` and the
+       latest recorded play record to be considered healthy
+    """
+    limit = request.args.get("limit", type=int, default=20)
+    max_drift = request.args.get("max_drift", type=int)
+    redis = redis_connection.get_redis()
+
+    latest_db_sol_plays = get_latest_sol_plays(limit)
+    latest_cached_sol_tx = get_pickled_key(redis, latest_sol_play_tx_key)
+
+    response = {
+        'chain_tx': latest_cached_sol_tx,
+        'db_info': latest_db_sol_plays
+    }
+
+    error = None
+
+    if latest_db_sol_plays:
+        latest_db_play = latest_db_sol_plays[0]
+        latest_created_at = latest_db_play['created_at']
+        drift = (datetime.now() - latest_created_at).total_seconds()
+
+        # Error if max drift was provided and the drift is greater than max_drift
+        error = max_drift and drift > max_drift
+
+    return success_response(
+        response,
         500 if error else 200,
         sign_response=False
     )
