@@ -43,7 +43,9 @@ module.exports = function (app) {
           await redis.setex(`failedTx:${reqBodySHA}`, 60 /* seconds */ * 60 /* minutes */ * 24 /* hours */, JSON.stringify(req.body))
 
           req.logger.error('Error in transaction:', e.message, reqBodySHA)
-          return errorResponseServerError(`Something caused the transaction to fail for payload ${reqBodySHA}`)
+          return errorResponseServerError(
+            `Something caused the transaction to fail for payload ${reqBodySHA}, ${e.message}`
+          )
         }
       }
 
