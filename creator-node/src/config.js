@@ -560,7 +560,7 @@ const config = convict({
     doc: 'Minimum percent of failed Syncs for a user on a secondary for the secondary to be considered healthy for that user',
     format: 'nat',
     env: 'minimumSecondaryUserSyncSuccessPercent',
-    default: 75
+    default: 50
   }
 
   /**

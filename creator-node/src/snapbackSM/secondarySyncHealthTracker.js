@@ -77,16 +77,12 @@ const Utils = {
 
   _parseSecondaryFromRedisKey (key) {
     return key.split(':::')[1]
-  }
-}
-
-const Setters = {
-  async recordSuccess (secondary, wallet, syncType) {
-    await Setters._recordSyncRequestOutcome(secondary, wallet, syncType, true)
   },
 
-  async recordFailure (secondary, wallet, syncType) {
-    await Setters._recordSyncRequestOutcome(secondary, wallet, syncType, false)
+  _parseRedisKeyIntoComponents (key) {
+    const components = key.split(':::')
+    const [, secondary, wallet, syncType, outcome, date] = components
+    return { secondary, wallet, syncType, outcome, date }
   },
 
   async _recordSyncRequestOutcome (secondary, wallet, syncType, success = true) {
@@ -106,6 +102,16 @@ const Setters = {
     } catch (e) {
       logger.error(`SecondarySyncHealthTracker:_recordSyncRequestOutcome Error || ${e.message}`)
     }
+  }
+}
+
+const Setters = {
+  async recordSuccess (secondary, wallet, syncType) {
+    await Utils._recordSyncRequestOutcome(secondary, wallet, syncType, true)
+  },
+
+  async recordFailure (secondary, wallet, syncType) {
+    await Utils._recordSyncRequestOutcome(secondary, wallet, syncType, false)
   }
 }
 
@@ -130,24 +136,23 @@ const Getters = {
     // Aggregate all daily SyncRequest outcome counts by secondary
     for (let [key, count] of Object.entries(userSecondarySyncHealthOutcomes)) {
       count = parseInt(count)
-      const secondary = Utils._parseSecondaryFromRedisKey(key)
+      const { secondary, outcome } = Utils._parseRedisKeyIntoComponents(key)
 
       if (!(secondary in secondarySyncMetrics)) {
         // This case can be hit for old secondaries that have been cycled out of user's replica set - these can be safely skipped
         continue
       }
 
-      if (key.includes('Success')) {
+      if (outcome === Outcomes.SUCCESS) {
         secondarySyncMetrics[secondary]['SuccessCount'] += count
-      } else if (key.includes('Failure')) {
+      } else if (outcome === Outcomes.FAILURE) {
         secondarySyncMetrics[secondary]['FailureCount'] += count
-      } else {
-        // All keys should contain 'Success' or 'Failure' - ignore any keys that don't
       }
+      // All keys should contain 'Success' or 'Failure' - ignore any keys that don't
     }
 
     // For each secondary, compute and store SuccessRate
-    Object.keys(secondarySyncMetrics).map(secondary => {
+    Object.keys(secondarySyncMetrics).forEach(secondary => {
       const { SuccessCount: successCount, FailureCount: failureCount } = secondarySyncMetrics[secondary]
       secondarySyncMetrics[secondary]['SuccessRate'] = (failureCount === 0) ? 1 : (successCount / failureCount)
     })
