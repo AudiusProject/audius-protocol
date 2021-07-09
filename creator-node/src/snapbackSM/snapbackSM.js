@@ -282,6 +282,8 @@ class SnapbackSM {
    * @dev - TODO what happens if this DB call fails?
    */
   async getUserPrimaryClockValues (wallets) {
+    // TODO: this will potentially fail bc if a wallet is not found -> undefined rather than -1
+    // -----> domino effect: will mark sync as fail (see line 1099)
     // Query DB for all cnodeUsers with walletPublicKey in `wallets` arg array
     const cnodeUsers = await models.CNodeUser.findAll({
       where: {
@@ -493,7 +495,7 @@ class SnapbackSM {
     let response = { newPrimary: null, newSecondary1: null, newSecondary2: null, issueReconfig: false }
 
     const currentReplicaSet = [primary, secondary1, secondary2]
-    const healthyReplicaSet = new Set(currentReplicaSet.map(node => !unhealthyReplicasSet.has(node)))
+    const healthyReplicaSet = new Set(currentReplicaSet.filter(node => !unhealthyReplicasSet.has(node)))
     const newReplicaNodes = await this.selectRandomReplicaSetNodes({
       healthyReplicaSet,
       numberOfUnhealthyReplicas: unhealthyReplicasSet.size,
