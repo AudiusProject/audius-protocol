@@ -110,7 +110,12 @@ describe('Test Health Check Verbose', function () {
     config.set('serviceLongitude', '-122.4194')
     config.set('maxStorageUsedPercent', 95)
 
-    const res = await healthCheckVerbose({}, mockLogger, sequelizeMock, getMonitorsMock, 2)
+    const serviceRegistryMock = {
+      snapbackSM: {
+        highestReconfigModeEnabled: 'RECONFIG_DISABLED'
+      }
+    }
+    const res = await healthCheckVerbose(serviceRegistryMock, mockLogger, sequelizeMock, getMonitorsMock, 2)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -144,7 +149,8 @@ describe('Test Health Check Verbose', function () {
       dailySyncSuccessCount: 5,
       dailySyncFailCount: 0,
       latestSyncSuccessTimestamp: '2021-06-08T21:29:34.231Z',
-      latestSyncFailTimestamp: ''
+      latestSyncFailTimestamp: '',
+      currentSnapbackReconfigMode: 'RECONFIG_DISABLED'
     })
   })
 })
