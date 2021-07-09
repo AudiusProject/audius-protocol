@@ -52,6 +52,8 @@ class SnapbackSM {
     this.MaxManualRequestSyncJobConcurrency = this.nodeConfig.get('maxManualRequestSyncJobConcurrency')
     this.MaxRecurringRequestSyncJobConcurrency = this.nodeConfig.get('maxRecurringRequestSyncJobConcurrency')
 
+    this.MinimumSecondaryUserSyncSuccessPercent = this.nodeConfig.get('minimumSecondaryUserSyncSuccessPercent') / 100
+
     // Throw an error if running as creator node and no libs are provided
     if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint)) {
       throw new Error('Missing required configs - cannot start')
@@ -584,16 +586,22 @@ class SnapbackSM {
        * Else, if the current node is a secondary, only issue reconfig requests.
        *
        * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
-       * TODO make this more readable -> maybe two separate loops? need to ensure mutual exclusivity
        */
       for (const nodeUser of nodeUsers) {
         const { primary, secondary1, secondary2 } = nodeUser
-
         let unhealthyReplicas = []
+
+        /**
+         * If this node is primary for user, check both secondaries for health
+         * Enqueue SyncRequests against healthy secondaries, and enqueue UpdateReplicaSetOps against unhealthy secondaries
+         */
         if (primary === this.endpoint) {
           // filter out false-y values to account for incomplete replica sets
           const secondaries = ([secondary1, secondary2]).filter(Boolean)
 
+          /**
+           * If either secondary is in `unhealthyPeers` list, add it to `unhealthyReplicas` list
+           */
           for (const secondary of secondaries) {
             if (unhealthyPeers.has(secondary)) {
               unhealthyReplicas.push(secondary)
@@ -602,9 +610,34 @@ class SnapbackSM {
             }
           }
 
+          /**
+           * If either secondary has a Sync success rate for user below threshold, add it to `unhealthyReplicas` list
+           */
+          const userSecondarySyncMetrics = await SecondarySyncHealthTracker.computeUserSecondarySyncSuccessRates(
+            nodeUser.wallet, [secondary1, secondary2]
+          )
+          const sec1UserSyncSuccessRate = userSecondarySyncMetrics[secondary1]['SuccessRate']
+          const sec2UserSyncSuccessRate = userSecondarySyncMetrics[secondary2]['SuccessRate']
+
+          // If SyncRequest success rate for user to either secondary falls under threshold -> mark as unhealthy
+          if (sec1UserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent && !unhealthyReplicas.includes(secondary1)) {
+            unhealthyReplicas.push(secondary1)
+          }
+          if (sec2UserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent && !unhealthyReplicas.includes(secondary2)) {
+            unhealthyReplicas.push(secondary2)
+          }
+
+          /**
+           * If any unhealthy replicas found for user, enqueue an updateReplicaSetOp for later processing
+           */
           if (unhealthyReplicas.length > 0) {
             requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
           }
+
+          /**
+           * If this node is secondary for user, check both secondaries for health and enqueue SyncRequests against healthy secondaries
+           * Ignore unhealthy secondaries for now
+           */
         } else {
           // filter out false-y values to account for incomplete replica sets
           let replicas = ([primary, secondary1, secondary2]).filter(Boolean)

@@ -126,14 +126,9 @@ const config = convict({
     default: null
   },
 
-  maxExportClockValueRange: {
-    doc: 'Maximum range of clock values to export at once to prevent process OOM',
-    format: Number,
-    env: 'maxExportClockValueRange',
-    default: 10000
-  },
-
-  // Rate limit configs
+  /**
+   * Rate limit configs
+   */
   endpointRateLimits: {
     doc: `A serialized objects of rate limits with the form {
       <req.path>: {
@@ -273,32 +268,6 @@ const config = convict({
     default: -1
   },
 
-  // Sync configs
-  nodeSyncFileSaveMaxConcurrency: {
-    doc: 'Max concurrency of saveFileForMultihashToFS calls inside nodesync',
-    format: 'nat',
-    env: 'nodeSyncFileSaveMaxConcurrency',
-    default: 10
-  },
-  syncQueueMaxConcurrency: {
-    doc: 'Max concurrency of SyncQueue',
-    format: 'nat',
-    env: 'syncQueueMaxConcurrency',
-    default: 50
-  },
-  issueAndWaitForSecondarySyncRequestsPollingDurationMs: {
-    doc: 'Duration for which to poll secondaries for content replication in `issueAndWaitForSecondarySyncRequests` function',
-    format: 'nat',
-    env: 'issueAndWaitForSecondarySyncRequestsPollingDurationMs',
-    default: 5000 // 5000ms = 5s (prod default)
-  },
-  enforceWriteQuorum: {
-    doc: 'Boolean flag indicating whether or not primary should reject write on 2/3 replication across replica set',
-    format: Boolean,
-    env: 'enforceWriteQuorum',
-    default: false
-  },
-
   // wallet information
   delegateOwnerWallet: {
     doc: 'wallet address',
@@ -391,12 +360,6 @@ const config = convict({
     env: 'userMetadataNodeUrl',
     default: ''
   },
-  debounceTime: {
-    doc: 'sync debounce time in ms',
-    format: 'nat',
-    env: 'debounceTime',
-    default: 0 // 0ms
-  },
   dataRegistryAddress: {
     doc: 'data contracts registry address',
     format: String,
@@ -421,8 +384,6 @@ const config = convict({
     env: 'creatorNodeEndpoint',
     default: null
   },
-
-  // Service selection
   discoveryProviderWhitelist: {
     doc: 'Whitelisted discovery providers to select from (comma-separated)',
     format: String,
@@ -446,30 +407,6 @@ const config = convict({
     format: 'nat',
     env: 'rehydrateMaxConcurrency',
     default: 10
-  },
-  snapbackDevModeEnabled: {
-    doc: 'TEST ONLY. DO NOT CONFIGURE MANUALLY. Disables automatic secondary sync issuing in order to test SnapbackSM.',
-    format: 'BooleanCustom',
-    env: 'snapbackDevModeEnabled',
-    default: false
-  },
-  snapbackReconfigEnabled: {
-    doc: 'Enables replica set reconfiguration or not. Currently enabled for dev mode, disabled for prod.',
-    format: 'BooleanCustom',
-    env: 'snapbackReconfigEnabled',
-    default: false
-  },
-  snapbackModuloBase: {
-    doc: 'The modulo base to segment users by on snapback. Will process `1/snapbackModuloBase` users at some snapback interval',
-    format: 'nat',
-    env: 'snapbackModuloBase',
-    default: 24
-  },
-  snapbackJobInterval: {
-    doc: 'Interval [ms] that snapbackSM jobs are fired; 1 hour',
-    format: 'nat',
-    env: 'snapbackJobInterval',
-    default: 3600000
   },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
@@ -501,6 +438,69 @@ const config = convict({
     env: 'enableRehydrate',
     default: true
   },
+
+  /** sync / snapback configs */
+
+  debounceTime: {
+    doc: 'sync debounce time in ms',
+    format: 'nat',
+    env: 'debounceTime',
+    default: 0 // 0ms
+  },
+  maxExportClockValueRange: {
+    doc: 'Maximum range of clock values to export at once to prevent process OOM',
+    format: Number,
+    env: 'maxExportClockValueRange',
+    default: 10000
+  },
+  nodeSyncFileSaveMaxConcurrency: {
+    doc: 'Max concurrency of saveFileForMultihashToFS calls inside nodesync',
+    format: 'nat',
+    env: 'nodeSyncFileSaveMaxConcurrency',
+    default: 10
+  },
+  syncQueueMaxConcurrency: {
+    doc: 'Max concurrency of SyncQueue',
+    format: 'nat',
+    env: 'syncQueueMaxConcurrency',
+    default: 50
+  },
+  issueAndWaitForSecondarySyncRequestsPollingDurationMs: {
+    doc: 'Duration for which to poll secondaries for content replication in `issueAndWaitForSecondarySyncRequests` function',
+    format: 'nat',
+    env: 'issueAndWaitForSecondarySyncRequestsPollingDurationMs',
+    default: 5000 // 5000ms = 5s (prod default)
+  },
+  enforceWriteQuorum: {
+    doc: 'Boolean flag indicating whether or not primary should reject write on 2/3 replication across replica set',
+    format: Boolean,
+    env: 'enforceWriteQuorum',
+    default: false
+  },
+  snapbackDevModeEnabled: {
+    doc: 'TEST ONLY. DO NOT CONFIGURE MANUALLY. Disables automatic secondary sync issuing in order to test SnapbackSM.',
+    format: 'BooleanCustom',
+    env: 'snapbackDevModeEnabled',
+    default: false
+  },
+  snapbackReconfigEnabled: {
+    doc: 'Enables replica set reconfiguration or not. Currently enabled for dev mode, disabled for prod.',
+    format: 'BooleanCustom',
+    env: 'snapbackReconfigEnabled',
+    default: false
+  },
+  snapbackModuloBase: {
+    doc: 'The modulo base to segment users by on snapback. Will process `1/snapbackModuloBase` users at some snapback interval',
+    format: 'nat',
+    env: 'snapbackModuloBase',
+    default: 24
+  },
+  snapbackJobInterval: {
+    doc: 'Interval [ms] that snapbackSM jobs are fired; 1 hour',
+    format: 'nat',
+    env: 'snapbackJobInterval',
+    default: 3600000
+  },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
     format: 'nat',
@@ -513,8 +513,6 @@ const config = convict({
     env: 'maxRecurringRequestSyncJobConcurrency',
     default: 5
   },
-
-  // peerSetManager configs
   peerHealthCheckRequestTimeout: {
     doc: 'Timeout [ms] for checking health check route',
     format: 'nat',
@@ -552,14 +550,23 @@ const config = convict({
     default: 5000
   },
   minimumSuccessfulSyncCountPercentage: {
-    doc: 'Minimum percentage of failed syncs to be considered unhealthy',
+    doc: 'Minimum percentage of failed syncs to be considered healthy',
     format: 'nat',
     env: 'minimumSuccessfulSyncCountPercentage',
     // TODO: Update to higher percentage when higher threshold of syncs are passing
     default: 0
+  },
+  minimumSecondaryUserSyncSuccessPercent: {
+    doc: 'Minimum percent of failed Syncs for a user on a secondary for the secondary to be considered healthy for that user',
+    format: 'nat',
+    env: 'minimumSecondaryUserSyncSuccessPercent',
+    default: 50
   }
 
-  // unsupported options at the moment
+  /**
+   * unsupported options at the moment
+   */
+
   // awsBucket: {
   //   doc: 'AWS S3 bucket to upload files to',
   //   format: String,
