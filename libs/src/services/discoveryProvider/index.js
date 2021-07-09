@@ -180,17 +180,6 @@ class DiscoveryProvider {
   }
 
   /**
-   * Gets a list of remixable tracks (tracks that have stems available)
-   *
-   * @param {number} limit
-   * @returns {(Array)} tracks
-   */
-  async getRemixableTracks (limit, withUsers = false) {
-    const req = Requests.getRemixableTracks(limit, withUsers)
-    return this._makeRequest(req)
-  }
-
-  /**
    * Gets all stems for a given trackId as an array of tracks.
    * @param {number} trackId
    * @returns {(Array)} track

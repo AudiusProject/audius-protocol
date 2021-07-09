@@ -604,31 +604,33 @@ class FullTrackStems(Resource):
         return success_response(stems)
 
 track_remixables_route_parser = reqparse.RequestParser()
-track_remixables_route_parser.add_argument('limit', required=False, type=int)
+track_remixables_route_parser.add_argument("user_id", required=False)
+track_remixables_route_parser.add_argument("limit", required=False, type=int)
+track_remixables_route_parser.add_argument("with_users", required=False, type=bool)
 @ns.route("/remixables")
 class RemixableTracks(Resource):
     @record_metrics
     @ns.doc(
         id="""Remixable Tracks""",
         params={
-            'limit': 'Number of remixable tracks to fetch',
+            "user_id": "User ID",
+            "limit": "Number of remixable tracks to fetch",
+            "with_users": "Boolean to include user info with tracks"
         },
         responses={
-            200: 'Success',
-            400: 'Bad request',
-            500: 'Server error'
+            200: "Success",
+            400: "Bad request",
+            500: "Server error"
         }
     )
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=5)
     def get(self):
         args = track_remixables_route_parser.parse_args()
-        limit = get_default_max(args.get('limit'), 25, 100)
-        current_user_id = get_current_user_id(args)
-
         args = {
-            'current_user_id': current_user_id,
-            'limit': limit,
+            "current_user_id": get_current_user_id(args),
+            "limit": get_default_max(args.get("limit"), 25, 100),
+            "with_users": args.get("with_users", False),
         }
         tracks = get_remixable_tracks(args)
         return success_response(tracks)
