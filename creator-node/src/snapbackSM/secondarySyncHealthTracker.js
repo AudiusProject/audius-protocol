@@ -75,10 +75,6 @@ const Utils = {
     return `${prefix}:::${secondary}:::${wallet}:::${syncType}:::${date}:::${outcome}`
   },
 
-  _parseSecondaryFromRedisKey (key) {
-    return key.split(':::')[1]
-  },
-
   _parseRedisKeyIntoComponents (key) {
     const components = key.split(':::')
     const [, secondary, wallet, syncType, outcome, date] = components
