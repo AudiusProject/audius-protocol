@@ -307,7 +307,7 @@ const ManageService: React.FC<ManageServiceProps> = (
                   onClick={onClick}
                   textClassName={styles.btnText}
                   iconClassName={styles.btnIcon}
-                  text={messages.claim.toUpperCase()}
+                  text={messages.claim}
                   type={ButtonType.GREEN}
                 />
                 <ConfirmTransactionModal
