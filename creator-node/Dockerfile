@@ -5,18 +5,23 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --loglevel verbose
 
-FROM node:14.16-alpine
+FROM alpine:3.13
 
 WORKDIR /usr/src/app
 COPY --from=builder /app/node_modules ./node_modules
 
-RUN apk update && \
-    apk add postgresql && \
-    apk add postgresql-contrib && \
+RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
+    apk update && \
+    apk add libpq=11.12-r0 && \
+    apk add postgresql=11.12-r0 && \
+    apk add postgresql-client=11.12-r0 && \
+    apk add postgresql-contrib=11.12-r0 && \
+    apk add postgresql-libs=11.12-r0 && \
     apk add redis && \
     apk add bash && \
     apk add sudo && \
-    apk add go-ipfs --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+    apk add go-ipfs && \
+    apk add nodejs # version 14.16.1
 
 COPY . .
 
@@ -25,7 +30,6 @@ COPY . .
 COPY scripts/wait /usr/bin/wait
 RUN chmod +x /usr/bin/wait
 
-RUN ipfs init --profile server
 RUN bash scripts/init-db.sh
 
 VOLUME "/file_storage"
@@ -36,5 +40,4 @@ EXPOSE 8000
 ARG git_sha
 ENV GIT_SHA=$git_sha
 
-#CMD ["sh", "-c", "/usr/bin/wait && exec node src/index.js"]
 CMD ["sh", "scripts/start.sh"]
