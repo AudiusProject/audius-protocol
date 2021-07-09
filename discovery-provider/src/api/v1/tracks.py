@@ -53,6 +53,7 @@ from src.queries.get_reposters_for_track import get_reposters_for_track
 from src.queries.get_savers_for_track import get_savers_for_track
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
 from src.queries.get_stems_of import get_stems_of
+from src.queries.get_remixable_tracks import get_remixable_tracks
 from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_trending_ids import get_trending_ids
@@ -602,6 +603,35 @@ class FullTrackStems(Resource):
         stems = list(map(stem_from_track, stems))
         return success_response(stems)
 
+track_remixables_route_parser = reqparse.RequestParser()
+track_remixables_route_parser.add_argument('limit', required=False, type=int)
+@ns.route("/remixables")
+class RemixableTracks(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Remixable Tracks""",
+        params={
+            'limit': 'Number of remixable tracks to fetch',
+        },
+        responses={
+            200: 'Success',
+            400: 'Bad request',
+            500: 'Server error'
+        }
+    )
+    @ns.marshal_with(tracks_response)
+    @cache(ttl_sec=5)
+    def get(self):
+        args = track_remixables_route_parser.parse_args()
+        limit = get_default_max(args.get('limit'), 25, 100)
+        current_user_id = get_current_user_id(args)
+
+        args = {
+            'current_user_id': current_user_id,
+            'limit': limit,
+        }
+        tracks = get_remixable_tracks(args)
+        return success_response(tracks)
 
 remixes_response = make_full_response(
     "remixes_response_full", full_ns, fields.Nested(remixes_response_model)

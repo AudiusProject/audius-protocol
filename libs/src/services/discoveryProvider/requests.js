@@ -78,6 +78,16 @@ module.exports.getRandomTracks = (genre, limit, exclusionList, time) => {
   return req
 }
 
+module.exports.getRemixableTracks = (limit, withUsers = false) => {
+  return {
+    endpoint: `tracks/remixables`,
+    queryParams: {
+      limit,
+      with_users: withUsers
+    }
+  }
+}
+
 module.exports.getStemsForTrack = (trackId) => {
   const req = {
     endpoint: `stems/${trackId}`,
