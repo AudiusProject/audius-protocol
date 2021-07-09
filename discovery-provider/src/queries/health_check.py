@@ -102,6 +102,8 @@ def sol_play_check():
         'db_info': latest_db_sol_plays
     }
 
+    error = None
+
     if latest_db_sol_plays:
         latest_db_play = latest_db_sol_plays[0]
         latest_created_at = latest_db_play['created_at']
