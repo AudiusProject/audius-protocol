@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --loglevel verbose
 
-FROM node:10.16-alpine
+FROM alpine:3.10
 
 WORKDIR /usr/src/app
 COPY --from=builder /app/node_modules ./node_modules
@@ -15,7 +15,8 @@ RUN apk update && \
     apk add postgresql-contrib && \
     apk add redis && \
     apk add bash && \
-    apk add sudo
+    apk add sudo && \
+    apk add nodejs
 
 COPY . .
 
