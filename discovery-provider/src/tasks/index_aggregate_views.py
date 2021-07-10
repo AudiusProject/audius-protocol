@@ -9,7 +9,7 @@ AGGREGATE_USER = 'aggregate_user'
 AGGREGATE_TRACK = 'aggregate_track'
 AGGREGATE_PLAYLIST = 'aggregate_playlist'
 
-DEFAULT_UPDATE_TIMEOUT = 60
+DEFAULT_UPDATE_TIMEOUT = 120
 
 def update_view(mat_view_name, db):
     with db.scoped_session() as session:

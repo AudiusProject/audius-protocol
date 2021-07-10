@@ -399,15 +399,15 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "update_aggregate_user": {
                 "task": "update_aggregate_user",
-                "schedule": timedelta(seconds=30)
+                "schedule": timedelta(seconds=60)
             },
             "update_aggregate_track": {
                 "task": "update_aggregate_track",
-                "schedule": timedelta(seconds=30)
+                "schedule": timedelta(seconds=60)
             },
             "update_aggregate_playlist": {
                 "task": "update_aggregate_playlist",
-                "schedule": timedelta(seconds=30)
+                "schedule": timedelta(seconds=60)
             },
             "index_challenges": {
                 "task": "index_challenges",
