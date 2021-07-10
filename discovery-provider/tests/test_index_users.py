@@ -1,5 +1,5 @@
 from datetime import datetime
-from src.models import AssociatedWallet
+from src.models import AssociatedWallet, UserEvents
 from src.tasks.users import lookup_user_record, parse_user_event
 from src.utils.db_session import get_db
 from src.utils.user_event_constants import user_event_types_lookup
@@ -157,6 +157,10 @@ ipfs_client = IPFSClient(
                     {"type": "explore_playlist", "playlist_id": "feeling-lucky"},
                     {"type": "playlist", "playlist_id": 503},
                 ]
+            },
+            "events": {
+                "referrer": 2,
+                "is_mobile_user": True,
             },
             "user_id": 1,
         }
@@ -444,3 +448,11 @@ def test_index_users(app):
         )
         for wallet in associated_wallets:
             assert wallet in ipfs_associated_wallets
+
+        user_events = (
+            session.query(UserEvents)
+            .filter_by(user_id=user_record.user_id, is_current=True)
+            .first()
+        )
+        assert user_events.referrer == 2
+        assert user_events.is_mobile_user == True

@@ -1,10 +1,11 @@
 import logging
 from datetime import datetime
+from typing import TypedDict
 from eth_account.messages import defunct_hash_message
-from sqlalchemy.orm.session import make_transient
+from sqlalchemy.orm.session import Session, make_transient
 from src.app import contract_addresses
 from src.utils import helpers
-from src.models import User, AssociatedWallet
+from src.models import User, UserEvents, AssociatedWallet
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.metadata import user_metadata_format
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
@@ -314,6 +315,14 @@ def parse_user_event(
             ):
                 user_record.playlist_library = ipfs_metadata["playlist_library"]
 
+            if "events" in ipfs_metadata:
+                update_user_events(
+                    session,
+                    user_record,
+                    ipfs_metadata["events"],
+                )
+
+
     # All incoming profile photos intended to be a directory
     # Any write to profile_picture field is replaced by profile_picture_sizes
     if user_record.profile_picture:
@@ -411,6 +420,47 @@ def update_user_associated_wallets(
     except Exception as e:
         logger.error(
             f"index.py | users.py | Fatal updating user associated wallets while indexing {e}",
+            exc_info=True,
+        )
+
+
+class UserEventsMetadata(TypedDict):
+    referrer: int
+    is_mobile_user: bool
+
+
+def update_user_events(
+    session: Session,
+    user_record: User,
+    events: UserEventsMetadata
+) -> None:
+    """Updates the user events table"""
+    try:
+        if not isinstance(events, dict):
+            # There is something wrong with events, don't process it
+            return
+
+        # Mark existing UserEvents entries as not current
+        session.query(UserEvents).filter_by(user_id=user_record.user_id).update(
+            {"is_current": False}
+        )
+
+        user_events = UserEvents(
+            user_id=user_record.user_id,
+            is_current=True,
+            blocknumber=user_record.blocknumber,
+            blockhash=user_record.blockhash,
+        )
+        for event, value in events.items():
+            if event == 'referrer':
+                user_events.referrer = value
+            elif event == 'is_mobile_user':
+                user_events.is_mobile_user = value
+        session.add(user_events)
+
+    except Exception as e:
+        logger.error(
+            f"index.py | users.py | Fatal updating user events while indexing {e}",
             exc_info=True,
         )
 

@@ -15,6 +15,7 @@ from src.models import (
     TrackRoute,
     URSMContentNode,
     User,
+    UserEvents
 )
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
@@ -603,6 +604,11 @@ def revert_blocks(self, db, revert_blocks_list):
                 .filter(AssociatedWallet.blockhash == revert_hash)
                 .all()
             )
+            revert_user_events = (
+                session.query(UserEvents)
+                .filter(UserEvents.blockhash == revert_hash)
+                .all()
+            )
             revert_track_routes = (
                 session.query(TrackRoute)
                 .filter(TrackRoute.blockhash == revert_hash)
@@ -750,6 +756,27 @@ def revert_blocks(self, db, revert_blocks_list):
                 # Remove outdated associated wallets
                 logger.info(f"Reverting associated Wallet: {user_id}")
                 session.delete(associated_wallets_to_revert)
+
+            for user_events_to_revert in revert_user_events:
+                user_id = user_events_to_revert.user_id
+                previous_user_events_entry = (
+                    session.query(UserEvents)
+                    .filter(UserEvents.user_id == user_id)
+                    .filter(UserEvents.blocknumber < revert_block_number)
+                    .order_by(UserEvents.blocknumber.desc())
+                    .first()
+                )
+                if previous_user_events_entry:
+                    session.query(UserEvents).filter(
+                        UserEvents.user_id == user_id
+                    ).filter(
+                        UserEvents.blocknumber
+                        == previous_user_events_entry.blocknumber
+                    ).update(
+                        {"is_current": True}
+                    )
+                logger.info(f"Reverting user events: {user_events_to_revert}")
+                session.delete(user_events_to_revert)
 
             for track_route_to_revert in revert_track_routes:
                 track_id = track_route_to_revert.track_id
