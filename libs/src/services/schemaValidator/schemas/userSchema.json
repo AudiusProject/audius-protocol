@@ -46,6 +46,9 @@
                 },
                 "playlist_library": {
                     "$ref": "#/definitions/PlaylistLibrary"
+                },
+                "events": {
+                    "$ref": "#/definitions/Events"
                 }
             },
             "required": [
@@ -186,6 +189,18 @@
                             }
                         ]
                     }
+                }
+            }
+        },
+        "Events": {
+            "type": ["object", "null"],
+            "default": null,
+            "properties": {
+                "referrer": {
+                    "type": "integer"
+                },
+                "is_mobile_user": {
+                    "type": "boolean"
                 }
             }
         }
