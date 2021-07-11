@@ -28,6 +28,7 @@ export const withTimeout = async (
   return res
 }
 
+// use discovery node from libs to fetch data
 export const fetchWithLibs = async (req: {
   endpoint: string
   queryParams?: object
