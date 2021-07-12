@@ -42,6 +42,7 @@ jobs:
 
   build-staging:
     working_directory: ~/protocol-dashboard
+    resource_class: large
     docker:
       - image: circleci/node:10.13
     steps:
@@ -79,7 +80,6 @@ jobs:
     working_directory: ~/protocol-dashboard
     docker:
       - image: circleci/node:10.13
-    resource_class: large
     steps:
       - attach_workspace:
           at: ./
