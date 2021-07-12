@@ -620,36 +620,31 @@ class SnapbackSM {
    * Issues SyncRequests for every (user, secondary) pair if needed
    * Only issues requests if primary clock value is greater than secondary clock value
    *
-   * @param {Array} userReplicaSets array of objects of schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
+   * @param {Object[]} userReplicaSets array of objects of schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
    *      `endpoint` field indicates secondary on which to issue SyncRequest
    * @param {Object} replicaSetNodesToUserClockStatusesMap map(replica set node => map(userWallet => clockValue))
    * @returns {Number} number of sync requests issued
-   * @returns {Array} array of all SyncRequest errors
+   * @returns {Object[]} array of all SyncRequest errors
    */
-  async issueSyncRequests (userReplicaSets, replicaSetNodesToUserClockStatusesMap) {
+  async issueSyncRequestsToSecondaries (userReplicaSets, replicaSetNodesToUserClockStatusesMap) {
     // TODO ensure all syncRequests are for users with primary == self
 
     // Retrieve clock values for all users on this node, which is their primary
-    const userWallets = userReplicaSets.map(user => user.wallet)
-    const userPrimaryClockValues = await this.getUserPrimaryClockValues(userWallets)
-
     let numSyncRequestsRequired = 0
     let numSyncRequestsEnqueued = 0
     let enqueueSyncRequestErrors = []
 
-    // TODO change to chunked parallel
     await Promise.all(userReplicaSets.map(async (user) => {
       try {
-        const { wallet, endpoint: secondary } = user
+        const { wallet, primary, endpoint: secondary } = user
 
         // TODO - throw on null wallet (is this needed?)
 
         // Determine if secondary requires a sync by comparing clock values against primary (this node)
-        const userPrimaryClockVal = userPrimaryClockValues[wallet]
+        const userPrimaryClockVal = replicaSetNodesToUserClockStatusesMap[primary][wallet]
         const userSecondaryClockVal = replicaSetNodesToUserClockStatusesMap[secondary][wallet]
-        const syncRequired = !userSecondaryClockVal || (userPrimaryClockVal > userSecondaryClockVal)
 
-        if (syncRequired) {
+        if (userPrimaryClockVal > userSecondaryClockVal) {
           numSyncRequestsRequired += 1
 
           await this.enqueueSync({
@@ -662,7 +657,7 @@ class SnapbackSM {
           numSyncRequestsEnqueued += 1
         }
       } catch (e) {
-        enqueueSyncRequestErrors.push(`issueSyncRequest() Error for user ${JSON.stringify(user)} - ${e.message}`)
+        enqueueSyncRequestErrors.push(`issueSyncRequestsToSecondaries() Error for user ${JSON.stringify(user)} - ${e.message}`)
       }
     }))
 
@@ -845,7 +840,7 @@ class SnapbackSM {
       // Issue all required sync requests
       let numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors
       try {
-        const resp = await this.issueSyncRequests(potentialSyncRequests, replicaSetNodesToUserClockStatusesMap)
+        const resp = await this.issueSyncRequestsToSecondaries(potentialSyncRequests, replicaSetNodesToUserClockStatusesMap)
         numSyncRequestsRequired = resp.numSyncRequestsRequired
         numSyncRequestsEnqueued = resp.numSyncRequestsEnqueued
         enqueueSyncRequestErrors = resp.enqueueSyncRequestErrors
