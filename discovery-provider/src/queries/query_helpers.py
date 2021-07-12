@@ -1191,11 +1191,11 @@ def decayed_score(score, created_at, peak=5, nominal_timestamp=14 * 24 * 60 * 60
     Returns:
         A SQLAlchemy expression representing decayed score (score * multipler)
         where multipler is represented by:
-        max(0.2, 5 ^ 1 - min(time_ago / nominal_timestamp, 1))
+        peak ^ 1 - min(time_ago / nominal_timestamp, 1)
     """
-    return score * func.greatest(
-        func.pow(5, 1 - func.least(seconds_ago(created_at) / nominal_timestamp, 1)), 0.2
-    )
+    decay_exponent = 1 - func.least(seconds_ago(created_at) / nominal_timestamp, 1) # goes from 1 -> 0
+    decay_value = func.pow(peak, decay_exponent) / peak # decay slope value
+    return score * decay_value
 
 
 def filter_to_playlist_mood(session, mood, query, correlation):
