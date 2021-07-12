@@ -704,7 +704,7 @@ class SnapbackSM {
       const replicaSetNodesToUserWalletsMap = this.peerSetManager.buildReplicaSetNodesToUserWalletsMap(nodeUsers)
       decisionTree.push({
         stage: 'buildReplicaSetNodesToUserWalletsMap() Success',
-        vals: { numSecondaryNodes: Object.keys(replicaSetNodesToUserWalletsMap).length },
+        vals: { numReplicaSetNodes: Object.keys(replicaSetNodesToUserWalletsMap).length },
         time: Date.now()
       })
 
