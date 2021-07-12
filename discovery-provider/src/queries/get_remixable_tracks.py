@@ -1,5 +1,4 @@
 from sqlalchemy import desc
-from sqlalchemy.sql.elements import Null
 from src.models import Track, Stem
 from src.queries.query_helpers import create_save_repost_count_subquery, \
     populate_track_metadata, add_users_to_tracks, decayed_score
