@@ -169,7 +169,7 @@ def get_tracks_by_routes(routes: list):
             .join(TrackRoute,
                   and_(TrackRoute.track_id == Track.track_id,
                        TrackRoute.owner_id == Track.owner_id))
-            # .filter(User.is_current)
+            .filter(User.is_current)
             .filter(or_(*filters))
         )
         print(str(tracks_query))

@@ -21,18 +21,36 @@ def populate_tracks(db):
             },
             {
                 "track_id": 3,
-                "owner_id": 4,
+                "owner_id": 1287289,
                 "release_date": "Wed Dec 18 2019 12:00:00 GMT-0800",
                 "created_at": datetime(2020, 5, 17)
             },
             {
                 "track_id": 4,
-                "owner_id": 4,
+                "owner_id": 1287289,
                 "release_date": "",
                 "created_at": datetime(2018, 5, 19)
             },
             {
                 "track_id": 5,
+                "owner_id": 1287289,
+                "release_date": "garbage-should-not-parse",
+                "created_at": datetime(2018, 5, 20)
+            },
+            {
+                "track_id": 6,
+                "owner_id": 4,
+                "release_date": "Wed Dec 18 2019 12:00:00 GMT-0800",
+                "created_at": datetime(2020, 5, 17)
+            },
+            {
+                "track_id": 7,
+                "owner_id": 4,
+                "release_date": "",
+                "created_at": datetime(2018, 5, 19)
+            },
+            {
+                "track_id": 8,
                 "owner_id": 4,
                 "release_date": "garbage-should-not-parse",
                 "created_at": datetime(2018, 5, 20)
@@ -49,15 +67,18 @@ def populate_tracks(db):
             },
             {
                 "slug": "different-track",
-                "owner_id": 4
+                "owner_id": 4,
+                "track_id": 6,
             },
             {
                 "slug": "track-1",
-                "owner_id": 4
+                "owner_id": 4,
+                "track_id": 7,
             },
             {
                 "slug": "track-2",
                 "owner_id": 4,
+                "track_id": 8,
             },
         ],
         'users': [
@@ -94,6 +115,7 @@ def test_get_tracks_by_date(app):
 
 
 def test_get_tracks_by_slugs(app):
+    """Test getting tracks by their slug for route resolution"""
     with app.app_context():
         db = get_db()
 
