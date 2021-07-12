@@ -84,6 +84,7 @@ export type Operator = {
   delegators: Array<Delegate>
   delegatedTotal: BN
   totalStakedFor: BN
+  minDelegationAmount: BN
 } & User
 
 // Transaction

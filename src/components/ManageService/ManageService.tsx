@@ -1,11 +1,14 @@
 import React, { useCallback } from 'react'
 import { Utils } from '@audius/libs'
+import BN from 'bn.js'
 import clsx from 'clsx'
 import styles from './ManageService.module.css'
+import DisplayAudio from 'components/DisplayAudio'
 import Paper from 'components/Paper'
 import UpdateStakeModal from 'components/UpdateStakeModal'
 import RegisterServiceModal from 'components/RegisterServiceModal'
 import OperatorCutModal from 'components/OperatorCutModal'
+import MinimumDelegationAmountModal from 'components/MinimumDelegationAmountModal'
 import TransactionStatus from 'components/TransactionStatus'
 import {
   useAccount,
@@ -18,8 +21,15 @@ import { useModalControls } from 'utils/hooks'
 import { accountPage } from 'utils/routes'
 
 import Button, { ButtonType } from 'components/Button'
-import { IconArrowWhite, IconValidationCheck, IconUser } from '@audius/stems'
+import {
+  IconArrowWhite,
+  IconValidationCheck,
+  IconUser,
+  IconMinimum,
+  IconDeployerCut
+} from '@audius/stems'
 import { usePushRoute } from 'utils/effects'
+import { TICKER } from 'utils/consts'
 import { useMakeClaim } from 'store/actions/makeClaim'
 import ConfirmTransactionModal, {
   StandaloneBox
@@ -35,10 +45,11 @@ const messages = {
   decrease: 'Decrease Stake',
   deployerCut: 'Deployer Cut',
   activeServices: 'Active Services',
+  minimunDelegationAmount: 'Minimum Delegation Amount',
   change: 'Change',
   manage: 'Manage',
   view: 'View',
-  claim: 'MAKE CLAIM'
+  claim: 'Make Claim'
 }
 
 interface ManageServiceProps {
@@ -117,12 +128,45 @@ const DeployerCut = ({
   const { isOpen, onClick, onClose } = useModalControls()
   return (
     <div className={clsx({ [className!]: !!className })}>
-      <IconValidationCheck className={clsx(styles.actionIcon)} />
+      <div className={clsx(styles.actionIcon, styles.userWrapper)}>
+        <IconDeployerCut className={clsx(styles.deployerCutIcon)} />
+      </div>
       {`${messages.deployerCut} ${cut}%`}
       <span className={styles.actionText} onClick={onClick}>
         {messages.change}
       </span>
       <OperatorCutModal cut={cut} isOpen={isOpen} onClose={onClose} />
+    </div>
+  )
+}
+
+const MinimumDelegationAmount = ({
+  className,
+  minimumDelegationAmount
+}: {
+  className?: string
+  minimumDelegationAmount: BN
+}) => {
+  const { isOpen, onClick, onClose } = useModalControls()
+  return (
+    <div className={clsx({ [className!]: !!className })}>
+      <div className={clsx(styles.actionIcon, styles.userWrapper)}>
+        <IconMinimum className={clsx(styles.userIcon)} />
+      </div>
+      {messages.minimunDelegationAmount}
+      <DisplayAudio
+        className={styles.minDelgationAmount}
+        amount={minimumDelegationAmount}
+        label={TICKER}
+      />
+      <span className={styles.actionText} onClick={onClick}>
+        {messages.change}
+      </span>
+      <MinimumDelegationAmountModal
+        minimumDelegationAmount={minimumDelegationAmount}
+        isOpen={isOpen}
+        onClose={onClose}
+      />
     </div>
   )
 }
@@ -243,7 +287,7 @@ const ManageService: React.FC<ManageServiceProps> = (
     makeClaim(accountUser.wallet)
   }, [accountUser, makeClaim])
 
-  const makeClaimBox = <StandaloneBox> {`Make Claim`} </StandaloneBox>
+  const makeClaimBox = <StandaloneBox> {messages.claim} </StandaloneBox>
 
   return (
     <Paper
@@ -300,6 +344,12 @@ const ManageService: React.FC<ManageServiceProps> = (
               <DeployerCut
                 className={styles.accountAction}
                 cut={(accountUser as Operator).serviceProvider.deployerCut}
+              />
+              <MinimumDelegationAmount
+                className={styles.accountAction}
+                minimumDelegationAmount={
+                  (accountUser as Operator).minDelegationAmount
+                }
               />
               {(accountUser as Operator).delegators.length > 0 && (
                 <Delegators

@@ -4,10 +4,12 @@ import React from 'react'
 import BN from 'bn.js'
 import { formatWei } from 'utils/format'
 import { TICKER } from 'utils/consts'
+import DisplayAudio from 'components/DisplayAudio'
 
 type DelegationStatsChipProps = {
   className?: string
   deployerCut: number
+  minDelegation: BN
   delegated: BN
   delegators: number
   isLoading: boolean
@@ -16,6 +18,7 @@ type DelegationStatsChipProps = {
 const messages = {
   deployerCut: 'Deployer Cut',
   delegators: 'Delegators',
+  minDelegation: 'Min Delegation',
   delegated: `Delegated ${TICKER}`
 }
 
@@ -27,6 +30,7 @@ const DelegationStatsChip = ({
   deployerCut,
   delegated,
   delegators,
+  minDelegation,
   isLoading
 }: DelegationStatsChipProps) => {
   return (
@@ -38,6 +42,10 @@ const DelegationStatsChip = ({
       isLoading={isLoading}
     >
       <InlineStat label={messages.deployerCut} value={`${deployerCut}%`} />
+      <InlineStat
+        label={messages.minDelegation}
+        value={<DisplayAudio amount={minDelegation} />}
+      />
       <InlineStat label={messages.delegators} value={delegators.toString()} />
     </StatsChip>
   )
