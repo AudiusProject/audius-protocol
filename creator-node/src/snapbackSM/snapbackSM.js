@@ -845,7 +845,6 @@ class SnapbackSM {
           replicas = replicas.filter(replica => replica !== this.endpoint)
 
           for (const replica of replicas) {
-            // potentialSyncRequests.push({ ...nodeUser, endpoint: replica })
             if (unhealthyPeers.has(replica)) {
               let addToUnhealthyReplicas = true
 
