@@ -42,6 +42,8 @@ class PeerSetManager {
   /**
    * Performs a health check on the peer set
    * @param {Object[]} nodeUsers array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
+   * @param {boolean?} [performSimpleCheck=false] flag to dictate whether or not to check health check response to
+   *  determine node health
    * @returns the unhealthy peers in a Set
    *
    * @note consider returning healthy set?
