@@ -7,6 +7,7 @@ export const TOP_ALBUMS_URL = 'https://download.audius.co/static-resources/top-a
 export const TOP_PLAYLISTS_URL = 'https://download.audius.co/static-resources/top-playlists.png'
 export const MOST_LOVED_URL = 'https://download.audius.co/static-resources/most-loved.png'
 export const FEELING_LUCKY_URL = 'https://download.audius.co/static-resources/feeling-lucky.png'
+export const REMIXABLES = 'https://download.audius.co/static-resources/remixables.jpeg'
 export const UNDERGROUND_TRENDING_URL = 'https://download.audius.co/static-resources/underground-trending.png'
 export const USER_NODE_IPFS_GATEWAY = 'https://usermetadata.audius.co/ipfs/'
 
@@ -72,4 +73,9 @@ export const exploreMap: { [key: string]: ExploreInfoType } = {
     description: 'A purely random collection of tracks from Audius',
     image: FEELING_LUCKY_URL
   },
+  'remixables': {
+    title: 'Remixables',
+    description: 'Popular tracks with remixes & stems you can use in your own tracks',
+    image: REMIXABLES
+  }
 }
