@@ -484,9 +484,6 @@ class SnapbackSM {
       wallet
     })
 
-    // Note: for v0, only issue reconfigs if only 1 secondary is unhealthy. Else, just log out the tentative
-    // new replica set to be assigned.
-
     let newPrimary
     if (unhealthyReplicasSet.size === 1) {
       if (unhealthyReplicasSet.has(primary)) {
@@ -561,41 +558,6 @@ class SnapbackSM {
     }
 
     return Array.from(newReplicaNodesSet)
-  }
-
-  /**
-   * In the case that the primary is in `unhealthyReplicasSet`, attempt last ditch effort to hit the health
-   * check verbose route to see if it responds with a 200. If so, mark the primary as healthy. We do this as to not eagerly
-   * move user data off of a primary as this is an expensive operation we do not want to frequently perform.
-   *
-   * Additionally, check the secondaries clock values. If the values are null, add the secondaries to the unhealthy set.
-   *
-   * @param {Object} param
-   * @param {Set<string>} unhealthyReplicasSet set of current replica set endpoints that are unhealthy
-   * @param {string} primary endpoint of the current primary node on replica set
-   * @param {string} secondary1 endpoint of the current first secondary node on replica set
-   * @param {string} secondary2 endpoint of the current second secondary node on replica set
-   * @param {string} wallet wallet address of user id
-   * @param {Object} secondariesToClockMap mapping of { secondary endpoint : clock value }. The return response from `fetchClockValues()`
-   * @returns {Set<string>} updated set of unhealthy replica set endpoints
-   */
-  async finalizeUnhealthyReplicaSet ({ unhealthyReplicasSet, primary, secondary1, secondary2, wallet, secondariesToClockMap }) {
-    let updatedUnhealthyReplicasSet = new Set(unhealthyReplicasSet)
-    // TODO: Should we query this multiple times??
-    if (updatedUnhealthyReplicasSet.has(primary)) {
-      try {
-        await this.peerSetManager.queryVerboseHealthCheck(primary)
-        updatedUnhealthyReplicasSet.delete(primary)
-      } catch (e) { /* Swallow error */ }
-    }
-
-    // Fetch the clock values for the secondaries. This map is only used in the case that only the primary is unhealthy.
-    // However, if after `maxClockFetchAttempts` that a clock value cannot be retrieved, we should mark the secondary as unhealthy
-    // TODO: should we though? maybe the clock check could just be flakey.
-    if (!secondariesToClockMap[secondary1]) { updatedUnhealthyReplicasSet.add(secondary1) }
-    if (!secondariesToClockMap[secondary2]) { updatedUnhealthyReplicasSet.add(secondary2) }
-
-    return updatedUnhealthyReplicasSet
   }
 
   /**
