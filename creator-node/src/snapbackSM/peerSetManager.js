@@ -57,7 +57,8 @@ class PeerSetManager {
     const unhealthyPeers = new Set()
 
     for await (const peer of peerSet) {
-      if (!this.isNodeHealthy(peer, performSimpleCheck)) {
+      const isHealthy = await this.isNodeHealthy(peer, performSimpleCheck)
+      if (!isHealthy) {
         unhealthyPeers.add(peer)
       }
     }
