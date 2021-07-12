@@ -587,16 +587,19 @@ class SnapbackSM {
         timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT
       }
 
-      let userClockValuesResp
+      let userClockValuesResp, errorMsg
       let userClockFetchAttempts = 0
       while (userClockFetchAttempts++ < maxUserClockFetchAttempts) {
         try {
           userClockValuesResp = (await axios(axiosReqParams)).data.data.users
         } catch (e) {
+          errorMsg = e
           /* Swallow error */
         }
       }
-      if (!userClockValuesResp) throw new Error('Could not fetch clock values for users across replica set')
+      if (!userClockValuesResp) {
+        throw new Error(`Could not fetch clock values for users across replica set${errorMsg ? ': ' + errorMsg.toString() : ''}`)
+      }
 
       userClockValuesResp.forEach(userClockValueResp => {
         const { walletPublicKey, clock } = userClockValueResp
