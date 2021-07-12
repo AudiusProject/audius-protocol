@@ -329,7 +329,8 @@ class Track extends Base {
       const {
         metadataMultihash,
         metadataFileUUID,
-        transcodedTrackUUID
+        transcodedTrackUUID,
+        transcodedTrackCID
       } = await this.creatorNode.uploadTrackContent(
         trackFile,
         coverArtFile,
@@ -356,7 +357,7 @@ class Track extends Base {
         txReceipt.blockNumber,
         transcodedTrackUUID
       )
-      return { blockHash: txReceipt.blockHash, blockNumber: txReceipt.blockNumber, trackId, error: false }
+      return { blockHash: txReceipt.blockHash, blockNumber: txReceipt.blockNumber, trackId, transcodedTrackCID, error: false }
     } catch (e) {
       return {
         error: e.message,
