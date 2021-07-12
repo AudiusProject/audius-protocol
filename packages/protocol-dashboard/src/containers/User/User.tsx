@@ -140,6 +140,10 @@ const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
                 (user as Operator | undefined)?.serviceProvider.deployerCut ?? 0
               }
               delegated={inboundDelegation.amount ?? Utils.toBN('0')}
+              minDelegation={
+                (user as Operator | undefined)?.minDelegationAmount ??
+                Utils.toBN('0')
+              }
               delegators={
                 (user as Operator | undefined)?.delegators.length ?? 0
               }

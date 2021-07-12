@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { ReactNode } from 'react'
 import clsx from 'clsx'
 import styles from './InlineStat.module.css'
 
@@ -11,7 +11,7 @@ const InlineStat = ({
   value
 }: {
   label: string
-  value: string
+  value: ReactNode
   className?: string
 }) => {
   return (

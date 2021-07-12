@@ -17,12 +17,12 @@
 
 .title {
   font-family: var(--font-family);
-  
+
   font-weight: var(--font-bold);
   font-size: var(--font-xl);
   margin: 0px;
 
-  color: #BEC5E0;
+  color: var(--neutral);
 
   margin-bottom: 20px;
 }
@@ -47,13 +47,12 @@
 
 .btnContainer .registerBtnText {
   font-family: var(--font-family);
-  
+
   font-weight: var(--font-bold);
   font-size: var(--font-m);
   text-transform: uppercase;
   color: var(--static-white);
 }
-
 
 /* increase and decrease btns */
 .increaseBtn {
@@ -70,6 +69,7 @@
   margin: 0px;
 }
 
+.btnText,
 .stakeBtnText {
   text-transform: uppercase;
 }
@@ -80,26 +80,25 @@
 
 .btnContainer .modifyStakeBtn {
   padding: 12px 16px;
-  background: #696D88;
+  background: var(--neutral-light-5);
   box-shadow: 0px 5px 5px rgba(36, 36, 56, 0.15);
   border-radius: 8px;
 }
 
-.btnContainer  .modifyStakeBtn.disabledBtn {
-  background: #3F415B;
+.btnContainer .modifyStakeBtn.disabledBtn {
+  background: var(--neutral-light-8);
   box-shadow: none;
 }
 
-.btnContainer  .modifyStakeBtn.disabledBtn:hover {
-  background: #3F415B !important;
+.btnContainer .modifyStakeBtn.disabledBtn:hover {
+  background: var(--neutral-light-8) !important;
   box-shadow: none !important;
 }
 
-.btnContainer  .modifyStakeBtn.disabledBtn:active {
-  background: #3F415B !important;
+.btnContainer .modifyStakeBtn.disabledBtn:active {
+  background: var(--neutral-light-8) !important;
   box-shadow: none !important;
 }
-
 
 /* Bottom Section */
 .actionsContainer {
@@ -117,10 +116,10 @@
   display: inline-flex;
   align-items: center;
   font-family: var(--font-family);
-  
+
   font-weight: var(--font-medium);
   font-size: var(--font-m);
-  color: #BEC5E0;
+  color: var(--neutral);
 }
 
 .accountAction:last-child {
@@ -143,7 +142,7 @@
   height: 20px;
   width: 20px;
   border-radius: 50%;
-  background: linear-gradient(315deg, #7652CC 2.04%, #B05CE6 100%);
+  background: linear-gradient(315deg, #7652cc 2.04%, #b05ce6 100%);
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -154,6 +153,15 @@
   width: 12px;
 }
 
+.deployerCutIcon {
+  height: 16px;
+  width: 16px;
+}
+
 .userIcon path {
   fill: var(--static-white);
+}
+
+.minDelgationAmount {
+  margin-left: 4px;
 }
