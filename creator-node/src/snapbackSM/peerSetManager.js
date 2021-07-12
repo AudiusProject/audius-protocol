@@ -298,6 +298,33 @@ class PeerSetManager {
   }
 
   /**
+   * Converts provided array of SyncRequests to issue to a map(replica set node => userWallets[]) for easier access
+   *
+   * @param {Array} nodeUsers array of objects with schema { user_id, wallet, primary, secondary1, secondary2 }
+   * @returns {Object} map of replica set endpoint strings to array of wallet strings of users with that node as part of replica set
+   */
+  buildReplicaSetNodesToUserWalletsMap (nodeUsers) {
+    const replicaSetNodesToUserWalletsMap = {}
+
+    nodeUsers.forEach(userInfo => {
+      const { wallet, primary, secondary1, secondary2 } = userInfo
+      const replicaSet = [primary, secondary1, secondary2]
+
+      replicaSet.forEach(node => {
+        if (!replicaSetNodesToUserWalletsMap[node]) {
+          replicaSetNodesToUserWalletsMap[node] = []
+        }
+
+        replicaSetNodesToUserWalletsMap[node].push(wallet)
+      })
+    })
+
+    return replicaSetNodesToUserWalletsMap
+  }
+
+  // ============== `this.unhealthyPrimaryToWalletMap` functions ==============
+
+  /**
    * Perform a simple health check to see if a primary is truly unhealthy. If the primary returns a
    * non-200 response, potentially mark as unhealthy for the given wallet address, depending on if the
    * primary has been marked as unhealthy in an earlier iteration for that given wallet.

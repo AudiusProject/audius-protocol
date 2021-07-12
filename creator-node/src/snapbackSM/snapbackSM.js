@@ -23,6 +23,9 @@ const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 100
 // The number of nodes in a replica set
 const NUMBER_OF_REPLICA_SET_NODES = 3
 
+// Timeout for fetching batch clock values
+const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 3000
+
 // Describes the type of sync operation
 const SyncType = Object.freeze({
   Recurring: 'RECURRING' /** scheduled background sync to keep secondaries up to date */,
@@ -561,31 +564,6 @@ class SnapbackSM {
   }
 
   /**
-   * Converts provided array of SyncRequests to issue to a map(replica set node => userWallets[]) for easier access
-   *
-   * @param {Array} nodeUsers array of objects with schema { user_id, wallet, primary, secondary1, secondary2 }
-   * @returns {Object} map of replica set endpoint strings to array of wallet strings of users with that node as part of replica set
-   */
-  buildReplicaSetNodesToUserWalletsMap (nodeUsers) {
-    const replicaSetNodesToUserWalletsMap = {}
-
-    nodeUsers.forEach(userInfo => {
-      const { wallet, primary, secondary1, secondary2 } = userInfo
-      const replicaSet = [primary, secondary1, secondary2]
-
-      replicaSet.forEach(node => {
-        if (!replicaSetNodesToUserWalletsMap[node]) {
-          replicaSetNodesToUserWalletsMap[node] = []
-        }
-
-        replicaSetNodesToUserWalletsMap[node].push(wallet)
-      })
-    })
-
-    return replicaSetNodesToUserWalletsMap
-  }
-
-  /**
    * Given map(replica set node => userWallets[]), retrieves clock values for every (node, userWallet) pair
    *
    * @returns {Object} map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
@@ -605,10 +583,10 @@ class SnapbackSM {
         baseURL: replicaSetNode,
         url: '/users/batch_clock_status',
         method: 'post',
-        data: { 'walletPublicKeys': replicaSetNodeUserWallets }
+        data: { 'walletPublicKeys': replicaSetNodeUserWallets },
+        timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT
       }
 
-      // TODO: convert to axios-retry, wrap in try-catch
       let userClockValuesResp
       let userClockFetchAttempts = 0
       while (userClockFetchAttempts++ < maxUserClockFetchAttempts) {
@@ -720,7 +698,7 @@ class SnapbackSM {
       }
 
       // Build map of <replica set node : [array of wallets that are on this replica set node]>
-      const replicaSetNodesToUserWalletsMap = this.buildReplicaSetNodesToUserWalletsMap(nodeUsers)
+      const replicaSetNodesToUserWalletsMap = this.peerSetManager.buildReplicaSetNodesToUserWalletsMap(nodeUsers)
       decisionTree.push({
         stage: 'buildReplicaSetNodesToUserWalletsMap() Success',
         vals: { numSecondaryNodes: Object.keys(replicaSetNodesToUserWalletsMap).length },
