@@ -439,22 +439,21 @@ class SnapbackSM {
    * Logic to determine the new replica set. Used in reconfig op.
    *
    * The logic below is as follows:
-   * 1. If the entire replica set is unhealthy, do not issue reconfig and return early
-   * 2. Select the unhealthy replica set nodes size worth of healthy nodes to prepare for issuing reconfig
-   * 3. Depending the number and type of unhealthy nodes in `unhealthyReplicaSet`, issue reconfig:
+   * 1. Select the unhealthy replica set nodes size worth of healthy nodes to prepare for issuing reconfig
+   * 2. Depending the number and type of unhealthy nodes in `unhealthyReplicaSet`, issue reconfig depending on if the reconfig mode is enabled:
    *  - if one secondary is unhealthy -> {primary: current primary, secondary1: the healthy secondary, secondary2: new healthy node}
    *  - if two secondaries are unhealthy -> {primary: current primary, secondary1: new healthy node, secondary2: new healthy node}
    *  - ** if one primary is unhealthy -> {primary: higher clock value of the two secondaries, secondary1: the healthy secondary, secondary2: new healthy node}
    *  - ** if one primary and one secondary are unhealthy -> {primary: the healthy secondary, secondary1: new healthy node, secondary2: new healthy node}
-   *  - if entire replica set is unhealthy -> (do not issue reconfig) {primary: null, secondary1: null, secondary2: null}
+   *  - if entire replica set is unhealthy -> {primary: null, secondary1: null, secondary2: null, issueReconfig: false}
    *
    * ** - If in the case a primary is ever unhealthy, we do not want to pre-emptively issue a reconfig and cycle out the primary. If a
-   * primary is ever unhealthy, mark for that wallet in `this.unhealthyPrimaryToWalletMap` that for this current iteration, this primary
+   * primary is ever unhealthy, mark for that wallet in `this.peerSetManager.unhealthyPrimaryToWalletMap` that for this current iteration, this primary
    * is unhealthy. If by `this.moduloBase` iterations later that the primary is still unhealthy and has been marked as visited for that
    * wallet, issue a reconfig for that primary.
    *
-   * Also, there is the notion of `issueReconfig`. This value is used to determine whether or not to issue a reconfig based on
-   * the value of `this.highestReconfigModeEnabled` and the type of reconfig that needs to be issued. See `RECONFIG_MODE_KEYS` variable
+   * Also, there is the notion of `issueReconfig` flag. This value is used to determine whether or not to issue a reconfig based on
+   * the value of `this.highestReconfigModeEnabled` and the type of reconfig that needs to be issued. See `RECONFIG_MODE` variable
    * for more information.
    *
    * @param {Object} param
