@@ -24,6 +24,7 @@
   "rateLimitingReqLimit": 50000,
   "rateLimitingAuthLimit": 5000,
   "rateLimitingTwitterLimit": 5000,
+  "rateLimitingTikTokLimit": 5000,
   "rateLimitingListensPerTrackPerHour": 10,
   "rateLimitingListensPerIPPerHour": 20,
   "rateLimitingListensPerTrackPerDay": 40,

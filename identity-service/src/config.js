@@ -186,6 +186,12 @@ const config = convict({
     env: 'rateLimitingTwitterLimit',
     default: null
   },
+  rateLimitingTikTokLimit: {
+    doc: 'TikTok requests per hour rate limit',
+    format: 'nat',
+    env: 'rateLimitingTikTokLimit',
+    default: null
+  },
   rateLimitingListensPerTrackPerHour: {
     doc: 'Listens per track per user per Hour',
     format: 'nat',
