@@ -1,5 +1,5 @@
 const axios = require("axios");
-const cors = require('cors')
+const cors = require("cors");
 const config = require("../config.js");
 
 const {
@@ -10,6 +10,8 @@ const {
 
 /**
  * This file contains the TikTok endpoints for oauth
+ *
+ * See: https://developers.tiktok.com/doc/login-kit-web
  */
 module.exports = function (app) {
   app.get(
@@ -23,19 +25,19 @@ module.exports = function (app) {
       url += `?client_key=${config.get("tikTokAPIKey")}`;
       url += "&scope=user.info.basic,share.sound.create";
       url += "&response_type=code";
-      url += `&redirect_uri=https://audius.co`;
+      url += `&redirect_uri=${config.get("tikTokAuthOrigin")}`;
       url += "&state=" + csrfState;
 
       res.redirect(url);
     })
   );
 
-  const accessTokenCorsOptions =  {   
+  const accessTokenCorsOptions = {
     credentials: true,
-    origin: config.get("tikTokAuthOrigin")
-  }
+    origin: config.get("tikTokAuthOrigin"),
+  };
 
-  app.options("/tiktok/access_token", cors(accessTokenCorsOptions))
+  app.options("/tiktok/access_token", cors(accessTokenCorsOptions));
   app.post(
     "/tiktok/access_token",
     cors(accessTokenCorsOptions),
