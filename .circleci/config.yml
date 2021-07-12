@@ -79,6 +79,7 @@ jobs:
     working_directory: ~/protocol-dashboard
     docker:
       - image: circleci/node:10.13
+    resource_class: large
     steps:
       - attach_workspace:
           at: ./
@@ -126,6 +127,7 @@ jobs:
     working_directory: ~/protocol-dashboard
     docker:
       - image: circleci/node:10.13
+    resource_class: large
     steps:
       - checkout
       - attach_workspace:
