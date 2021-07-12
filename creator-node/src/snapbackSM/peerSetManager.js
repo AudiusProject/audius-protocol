@@ -298,14 +298,17 @@ class PeerSetManager {
   }
 
   /**
-   * Perform a simple health check to see if a primary is truly unhealthy.
+   * Perform a simple health check to see if a primary is truly unhealthy. If the primary returns a
+   * non-200 response, potentially mark as unhealthy for the given wallet address, depending on if the
+   * primary has been marked as unhealthy in an earlier iteration for that given wallet.
    * @param {string} primary primary endpoint
    * @param {string} wallet user wallet
    * @returns boolean of whether primary is healthy or not
    */
-  isPrimaryHealthy (primary, wallet) {
+  async isPrimaryHealthyForUser (primary, wallet) {
     // Check to see if the primary is healthy
-    if (!this.isNodeHealthy(primary, true)) {
+    const isHealthy = await this.isNodeHealthy(primary, true)
+    if (!isHealthy) {
       if (this.walletInUnhealthyPrimaryMap(primary, wallet)) {
         // If this primary-wallet pair has been visited before, mark primary for that user as unhealthy
         return false

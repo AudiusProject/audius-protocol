@@ -867,7 +867,7 @@ class SnapbackSM {
               if (replica === primary) {
                 // If the current replica is the primary, perform a second health check.
                 // and determine if the primary is truly unhealthy
-                addToUnhealthyReplicas = !this.peerSetManager.isPrimaryHealthy(primary, wallet)
+                addToUnhealthyReplicas = !(await this.peerSetManager.isPrimaryHealthyForUser(primary, wallet))
               } else {
                 // Else, if the clock value is not present for the given replica and wallet
                 // If the secondary clock value is not found, add to `unhealthyReplicas`
