@@ -1,18 +1,18 @@
-from sqlalchemy.sql.elements import and_
-from src.models.models import (
-    Challenge,
-    ChallengeDisbursement,
-    User,
-    UserBalance,
-    UserChallenge,
-)
-from typing import NewType, TypedDict, List, Tuple
-from src.utils.config import shared_config
+from typing import List, Tuple
+
 from web3 import Web3
 from web3.auto import w3
 from eth_account.messages import encode_defunct
 
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql.elements import and_
+from src.models.models import (
+    Challenge,
+    ChallengeDisbursement,
+    User,
+    UserChallenge,
+)
+from src.utils.config import shared_config
 
 
 class Attestation:
