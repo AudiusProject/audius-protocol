@@ -45,7 +45,7 @@
     "start:dev": "npm run configure-local-env && env-cmd -f .env.development.local npm start",
     "start:stage": "env-cmd -f .env.stage npm start",
     "start:prod": "env-cmd -f .env.prod npm start",
-    "build": "react-scripts build",
+    "build": "react-scripts --max_old_space_size=8192 build",
     "build:stage": "env-cmd -f .env.stage npm run build && node ./scripts/rerouteLegacy.js stage",
     "build:prod": "env-cmd -f .env.prod npm run build && node ./scripts/rerouteLegacy.js",
     "test": "react-scripts test",
