@@ -16,15 +16,18 @@ export async function hasPermissions(
   }
 }
 
-export async function awaitSetup(this: AudiusClient): Promise<void> {
-  return new Promise(resolve => {
-    let checkLoginStatusInterval: number = window.setInterval(() => {
-      if (this.isSetup) {
-        clearInterval(checkLoginStatusInterval)
-        resolve()
-      }
-    }, 100)
+export function onSetup(this: AudiusClient) {
+  this.isSetupPromise = new Promise(resolve => {
+    this._setupPromiseResolve = resolve
   })
+}
+
+export function onSetupFinished(this: AudiusClient) {
+  if (this._setupPromiseResolve) this._setupPromiseResolve()
+}
+
+export async function awaitSetup(this: AudiusClient): Promise<void> {
+  return this.isSetupPromise
 }
 
 export async function getEthBlockNumber(this: AudiusClient) {
