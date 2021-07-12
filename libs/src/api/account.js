@@ -3,6 +3,7 @@ const { toBuffer } = require('ethereumjs-util')
 const { Base, Services } = require('./base')
 const CreatorNodeService = require('../services/creatorNode/index')
 const Utils = require('../utils')
+const { AuthHeaders } = require('../constants')
 const {
   getPermitDigest, sign, getLockAssetsDigest
 } = require('../utils/signatures')
@@ -488,6 +489,22 @@ class Account extends Base {
   async sendTokens (owner, address, relayer, amount) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     return this.ethContracts.AudiusTokenClient.transferFrom(owner, address, relayer, amount)
+  }
+
+  /**
+   * Updates the minimum delegation amount for a user in identity
+   * NOTE: Requests eth account signature
+   */
+  async updateMinimumDelegationAmount (amount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
+    const message = `Click sign to authenticate with identity service: ${unixTs}`
+    const signature = await this.ethWeb3Manager.sign(message)
+    const wallet = this.ethWeb3Manager.getWalletAddress()
+    return this.identityService.updateMinimumDelegationAmount(wallet, amount, {
+      [AuthHeaders.MESSAGE]: message,
+      [AuthHeaders.SIGNATURE]: signature
+    })
   }
 }
 
