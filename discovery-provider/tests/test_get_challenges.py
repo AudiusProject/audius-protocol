@@ -1,5 +1,4 @@
 from datetime import datetime
-from sqlalchemy.sql.sqltypes import DateTime
 from src.models.models import User
 from src.utils.db_session import get_db
 from src.models import (
@@ -22,7 +21,7 @@ def setup_db(session):
             is_current=True,
             wallet="0xFakeWallet",
             created_at=datetime.now(),
-            updated_at=datetime.now()
+            updated_at=datetime.now(),
         )
     ]
     challenges = [

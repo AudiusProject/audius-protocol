@@ -1,20 +1,17 @@
 import pytest
 
-from src.queries.attestation import (
-    Attestation,
-    ChallengeAlreadyDisbursed,
-    ChallengeIncomplete,
-    InvalidOracle,
-    MissingChallenges,
-    get_attestation,
-)
-from tests.test_get_challenges import setup_db
-from src.utils.db_session import get_db
-from src.utils.config import shared_config
-
 from web3 import Web3
 from web3.auto import w3
 from eth_account.messages import encode_defunct
+
+from src.queries.attestation import (
+    AttestationError,
+    get_attestation,
+)
+from src.utils.db_session import get_db
+from src.utils.config import shared_config
+
+from tests.test_get_challenges import setup_db
 
 
 def test_get_attestation(app):
@@ -54,7 +51,7 @@ def test_get_attestation(app):
             assert recovered_pubkey == config_owner_wallet
 
             # Test no matching user challenge
-            with pytest.raises(MissingChallenges):
+            with pytest.raises(AttestationError):
                 get_attestation(
                     session,
                     user_id=1,
@@ -64,7 +61,7 @@ def test_get_attestation(app):
                 )
 
             # Test challenge not finished
-            with pytest.raises(ChallengeIncomplete):
+            with pytest.raises(AttestationError):
                 get_attestation(
                     session,
                     user_id=1,
@@ -74,7 +71,7 @@ def test_get_attestation(app):
                 )
 
             # Test challenge already disbursed
-            with pytest.raises(ChallengeAlreadyDisbursed):
+            with pytest.raises(AttestationError):
                 get_attestation(
                     session,
                     user_id=1,
@@ -84,7 +81,7 @@ def test_get_attestation(app):
                 )
 
             # Test with bad bot oracle
-            with pytest.raises(InvalidOracle):
+            with pytest.raises(AttestationError):
                 get_attestation(
                     session,
                     user_id=1,
