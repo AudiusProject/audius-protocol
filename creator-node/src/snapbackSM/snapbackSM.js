@@ -359,6 +359,7 @@ class SnapbackSM {
 
     const unhealthyReplicasSet = new Set(unhealthyReplicas)
     let response = { errorMsg: null, issuedReconfig: false }
+    let newReplicaSetEndpoints = []
     let newReplicaSetSPIds = []
     let phase = ''
     try {
@@ -374,17 +375,15 @@ class SnapbackSM {
         replicaSetNodesToUserClockStatusesMap
       })
 
-      this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} updating replica set=[${primary},${secondary1},${secondary2}] to new replica set=[${newPrimary},${newSecondary1},${newSecondary2}] issueReconfig=${issueReconfig}`)
-
       // If snapback is not enabled, print the tentative new replica set, but do not issue a reconfig.
       if (!issueReconfig) {
-        this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} issuing reconfig disabled. Skipping reconfig.`)
+        this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} issuing reconfig disabled=${issueReconfig}. Skipping reconfig.`)
         return response
       }
 
       // Create new array of replica set spIds and write to URSM
       phase = issueUpdateReplicaSetOpPhases.UPDATE_URSM_REPLICA_SET
-      const newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
+      newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
       newReplicaSetEndpoints.forEach(endpt => {
         if (this.peerSetManager.endpointToSPIdMap[endpt]) newReplicaSetSPIds.push(this.peerSetManager.endpointToSPIdMap[endpt])
       })
@@ -392,16 +391,10 @@ class SnapbackSM {
       // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
       // selected as part of the new replica set, do not issue reconfig
       if (newReplicaSetSPIds.length !== NUMBER_OF_REPLICA_SET_NODES) {
-        response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set spIds=[${newReplicaSetSPIds}]. Skipping reconfig.`
+        response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}]. Skipping reconfig.`
         this.logError(response.errorMsg)
         return response
       }
-
-      newReplicaSetSPIds = [
-        this.peerSetManager.endpointToSPIdMap[newPrimary],
-        this.peerSetManager.endpointToSPIdMap[newSecondary1],
-        this.peerSetManager.endpointToSPIdMap[newSecondary2]
-      ]
 
       await this.audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
         userId,
@@ -412,11 +405,13 @@ class SnapbackSM {
       response.issuedReconfig = true
 
       // Enqueue a sync for new primary to new secondaries. If there is no diff, then this is a no-op.
+      // TODO: this fn performs a web request to enqueue a sync. this is not necessary for enqueuing syncs for the local node.
+      // Add some logic to check if current node has a sync to be enqueued, and if so, locally add sync without a network request.
       await this.enqueueSync({
         userWallet: wallet,
         primaryEndpoint: newPrimary,
         secondaryEndpoint: newSecondary1,
-        syncType: SyncType.Manual,
+        syncType: SyncType.Recurring,
         immediate: true
       })
 
@@ -424,13 +419,15 @@ class SnapbackSM {
         userWallet: wallet,
         primaryEndpoint: newPrimary,
         secondaryEndpoint: newSecondary2,
-        syncType: SyncType.Manual,
+        syncType: SyncType.Recurring,
         immediate: true
       })
 
       this.peerSetManager.removeWalletFromUnhealthyPrimaryMap(newPrimary, wallet)
+
+      this.log(`[issueUpdateReplicaSetOp] Success! userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}]`)
     } catch (e) {
-      const errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} failed at phase=${phase} reconfiguring to spIds=[${newReplicaSetSPIds}]: ${e.toString()}\n${e.stack}`
+      const errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} failed at phase=${phase} reconfiguring to new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}]: ${e.toString()}\n${e.stack}`
       response.errorMsg = errorMsg
       return response
     }
