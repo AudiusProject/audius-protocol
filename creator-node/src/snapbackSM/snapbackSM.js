@@ -40,54 +40,39 @@ const issueUpdateReplicaSetOpPhases = Object.freeze({
 // The `key` of the reconfig states is used to identify the current reconfig mode.
 // The `value` of the reconfig states is used in the superset logic of determining which type of
 // reconfig is enabled.
-const RECONFIG_MODE_KEYS = [
-  // Reconfiguration is entirely disabled
-  'RECONFIG_DISABLED',
-  // Reconfiguration is enabled only if one secondary is unhealthy
-  'ONE_SECONDARY',
-  // Reconfiguration is enabled for one secondary and multiple secondaries (currently two secondaries)
-  'MULTIPLE_SECONDARIES',
-  // Reconfiguration is enabled for one secondary, multiple secondaries, a primary, and a primary and one secondary
-  'PRIMARY_AND_OR_SECONDARIES',
-  // Reconfiguration is enabled for one secondary, multiple secondaries, a primary, and a primary and one secondary,
-  // and entire replica set
-  // Note: this mode will probably be disabled.
-  'ENTIRE_REPLICA_SET'
-]
-
-/*
-  `RECONFIG_MODES` will look like:
+const RECONFIG_MODES = Object.freeze(
   {
+    // Reconfiguration is entirely disabled
     RECONFIG_DISABLED: {
       key: 'RECONFIG_DISABLED',
       value: 0
     },
+    // Reconfiguration is enabled only if one secondary is unhealthy
     ONE_SECONDARY: {
       key: 'ONE_SECONDARY',
       value: 1
     },
+    // Reconfiguration is enabled for one secondary and multiple secondaries (currently two secondaries)
     MULTIPLE_SECONDARIES: {
       key: 'MULTIPLE_SECONDARIES',
       value: 2
     },
+    // Reconfiguration is enabled for one secondary, multiple secondaries, a primary, and a primary and one secondary
     PRIMARY_AND_OR_SECONDARIES: {
       key: 'PRIMARY_AND_OR_SECONDARIES',
       value: 3
     },
+    // Reconfiguration is enabled for one secondary, multiple secondaries, a primary, and a primary and one secondary,
+    // and entire replica set
+    // Note: this mode will probably be disabled.
     ENTIRE_REPLICA_SET: {
       key: 'ENTIRE_REPLICA_SET',
       value: 4
     }
   }
-*/
-let RECONFIG_MODES = {}
-RECONFIG_MODE_KEYS.forEach((mode, i) => {
-  RECONFIG_MODES[mode] = {
-    key: mode,
-    value: i
-  }
-})
-RECONFIG_MODES = Object.freeze(RECONFIG_MODES)
+)
+
+const RECONFIG_MODE_KEYS = Object.keys(RECONFIG_MODES)
 
 /*
   SnapbackSM aka Snapback StateMachine
