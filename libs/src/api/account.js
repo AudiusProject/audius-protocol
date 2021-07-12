@@ -500,8 +500,8 @@ class Account extends Base {
     const signature = await this.ethWeb3Manager.sign(message)
     const wallet = this.ethWeb3Manager.getWalletAddress()
     return this.identityService.updateMinimumDelegationAmount(wallet, amount, {
-      [AuthHeaders.Message]: message,
-      [AuthHeaders.Signature]: signature
+      [AuthHeaders.MESSAGE]: message,
+      [AuthHeaders.SIGNATURE]: signature
     })
   }
 }
