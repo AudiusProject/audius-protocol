@@ -31,14 +31,17 @@ class Attest(Resource):
         decoded_user_id = decode_with_abort(user_id, ns)
         db = get_db_read_replica()
         with db.scoped_session() as session:
-            try: 
-                attestation_res = get_attestation(
+            try:
+                owner_wallet, signature = get_attestation(
                     session,
                     user_id=decoded_user_id,
                     oracle_address=oracle_address,
                     specifier=specifier,
                     challenge_id=challenge_id,
                 )
-                return success_response(attestation_res)
+
+                return success_response(
+                    {"owner_wallet": owner_wallet, "attestation": signature}
+                )
             except Exception as e:
                 abort(500, e)
