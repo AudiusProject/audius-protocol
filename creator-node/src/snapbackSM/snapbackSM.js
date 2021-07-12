@@ -565,10 +565,13 @@ class SnapbackSM {
 
   /**
    * Given map(replica set node => userWallets[]), retrieves clock values for every (node, userWallet) pair
+   * @param {Object} replicaSetNodesToUserWalletsMap map of <replica set node : wallets>
+   * @param {Set<string>} unhealthyPeers set of unhealthy peer endpoints
+   * @param {number?} [maxUserClockFetchAttempts=10] max number of attempts to fetch clock values
    *
    * @returns {Object} map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
    */
-  async retrieveClockStatusesForUsersAcrossReplicaSet (replicaSetNodesToUserWalletsMap, maxUserClockFetchAttempts = 10) {
+  async retrieveClockStatusesForUsersAcrossReplicaSet (replicaSetNodesToUserWalletsMap, unhealthyPeers, maxUserClockFetchAttempts = 10) {
     const replicaSetNodesToUserClockValuesMap = {}
 
     const replicaSetNodes = Object.keys(replicaSetNodesToUserWalletsMap)
@@ -594,11 +597,12 @@ class SnapbackSM {
           userClockValuesResp = (await axios(axiosReqParams)).data.data.users
         } catch (e) {
           errorMsg = e
-          /* Swallow error */
         }
       }
+
       if (!userClockValuesResp) {
-        throw new Error(`Could not fetch clock values for users across replica set${errorMsg ? ': ' + errorMsg.toString() : ''}`)
+        this.logError(`[retrieveClockStatusesForUsersAcrossReplicaSet] Could not fetch clock values for wallets=${replicaSetNodeUserWallets} on replica node=${replicaSetNode} ${errorMsg ? ': ' + errorMsg.toString() : ''}`)
+        unhealthyPeers.add(replicaSetNode)
       }
 
       userClockValuesResp.forEach(userClockValueResp => {
@@ -606,7 +610,7 @@ class SnapbackSM {
         try {
           replicaSetNodesToUserClockValuesMap[replicaSetNode][walletPublicKey] = clock
         } catch (e) {
-          // TODO: should we be throwing if the map could not be updated for 1 user? should we skip?
+          // TODO: would this ever error actually?
           this.log(`Error updating replicaSetNodesToUserClockValuesMap for wallet ${walletPublicKey} to clock ${clock}`)
           throw e
         }
@@ -695,34 +699,6 @@ class SnapbackSM {
         throw new Error(`processStateMachineOperation():getNodeUsers()/sliceUsers() Error: ${e.toString()}`)
       }
 
-      // Build map of <replica set node : [array of wallets that are on this replica set node]>
-      const replicaSetNodesToUserWalletsMap = this.peerSetManager.buildReplicaSetNodesToUserWalletsMap(nodeUsers)
-      decisionTree.push({
-        stage: 'buildReplicaSetNodesToUserWalletsMap() Success',
-        vals: { numReplicaSetNodes: Object.keys(replicaSetNodesToUserWalletsMap).length },
-        time: Date.now()
-      })
-
-      // Retrieve clock statuses for all users and their current replica sets
-      let replicaSetNodesToUserClockStatusesMap
-      try {
-        replicaSetNodesToUserClockStatusesMap = await this.retrieveClockStatusesForUsersAcrossReplicaSet(
-          replicaSetNodesToUserWalletsMap
-        )
-        decisionTree.push({
-          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Success',
-          vals: replicaSetNodesToUserClockStatusesMap,
-          time: Date.now()
-        })
-      } catch (e) {
-        decisionTree.push({
-          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
-          vals: e.message,
-          time: Date.now()
-        })
-        throw new Error('processStateMachineOperation():retrieveClockStatusesForUsersAcrossReplicaSet() Error')
-      }
-
       let unhealthyPeers
       try {
         unhealthyPeers = await this.peerSetManager.getUnhealthyPeers(nodeUsers)
@@ -737,6 +713,35 @@ class SnapbackSM {
       } catch (e) {
         decisionTree.push({ stage: 'processStateMachineOperation():getUnhealthyPeers() Error', vals: e.message, time: Date.now() })
         throw new Error(`processStateMachineOperation():getUnhealthyPeers() Error: ${e.toString()}`)
+      }
+
+      // Build map of <replica set node : [array of wallets that are on this replica set node]>
+      const replicaSetNodesToUserWalletsMap = this.peerSetManager.buildReplicaSetNodesToUserWalletsMap(nodeUsers)
+      decisionTree.push({
+        stage: 'buildReplicaSetNodesToUserWalletsMap() Success',
+        vals: { numReplicaSetNodes: Object.keys(replicaSetNodesToUserWalletsMap).length },
+        time: Date.now()
+      })
+
+      // Retrieve clock statuses for all users and their current replica sets
+      let replicaSetNodesToUserClockStatusesMap
+      try {
+        replicaSetNodesToUserClockStatusesMap = await this.retrieveClockStatusesForUsersAcrossReplicaSet(
+          replicaSetNodesToUserWalletsMap,
+          unhealthyPeers
+        )
+        decisionTree.push({
+          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Success',
+          vals: replicaSetNodesToUserClockStatusesMap,
+          time: Date.now()
+        })
+      } catch (e) {
+        decisionTree.push({
+          stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Error',
+          vals: e.message,
+          time: Date.now()
+        })
+        throw new Error('processStateMachineOperation():retrieveClockStatusesForUsersAcrossReplicaSet() Error')
       }
 
       // Lists to aggregate all required ReplicaSetUpdate ops and potential SyncRequest ops
@@ -782,14 +787,10 @@ class SnapbackSM {
             if (unhealthyPeers.has(replica)) {
               let addToUnhealthyReplicas = true
 
+              // If the current replica is the primary, perform a second health check.
+              // and determine if the primary is truly unhealthy
               if (replica === primary) {
-                // If the current replica is the primary, perform a second health check.
-                // and determine if the primary is truly unhealthy
                 addToUnhealthyReplicas = !(await this.peerSetManager.isPrimaryHealthyForUser(primary, wallet))
-              } else {
-                // Else, if the clock value is not present for the given replica and wallet
-                // If the secondary clock value is not found, add to `unhealthyReplicas`
-                addToUnhealthyReplicas = !!replicaSetNodesToUserWalletsMap[replica][wallet]
               }
 
               if (addToUnhealthyReplicas) unhealthyReplicas.push(replica)
