@@ -23,7 +23,7 @@ from src.models import (
 )
 from src.utils import helpers, redis_connection
 from src.queries.get_unpopulated_users import get_unpopulated_users
-from src.queries.get_balances import get_balances, enqueue_balance_refresh
+from src.queries.get_balances import get_balances
 
 logger = logging.getLogger(__name__)
 
@@ -111,10 +111,6 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
 def populate_user_metadata(
     session, user_ids, users, current_user_id, with_track_save_count=False
 ):
-    # Always enqueue balance refresh for current user
-    if current_user_id:
-        enqueue_balance_refresh(redis, [current_user_id])
-
     aggregate_user = (
         session.query(
             AggregateUser.user_id,
@@ -210,8 +206,7 @@ def populate_user_metadata(
             current_user_followee_follow_counts
         )
 
-    is_verified_ids_set = {user["user_id"] for user in users if user["is_verified"]}
-    balance_dict = get_balances(session, redis, user_ids, is_verified_ids_set)
+    balance_dict = get_balances(session, user_ids)
 
     for user in users:
         user_id = user["user_id"]

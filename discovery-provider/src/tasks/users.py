@@ -9,7 +9,6 @@ from src.models import User, UserEvents, AssociatedWallet
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.metadata import user_metadata_format
 from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
-from src.queries.get_balances import enqueue_balance_refresh
 from src.utils.indexing_errors import IndexingError
 from src.challenges.challenge_event import ChallengeEvent
 
@@ -412,10 +411,6 @@ def update_user_associated_wallets(
                     blockhash=user_record.blockhash,
                 )
                 session.add(associated_wallet_entry)
-
-        is_updated_wallets = set(previous_wallets) != added_associated_wallets
-        if is_updated_wallets:
-            enqueue_balance_refresh(update_task.redis, [user_record.user_id])
     except Exception as e:
         logger.error(
             f"index.py | users.py | Fatal updating user associated wallets while indexing {e}",
