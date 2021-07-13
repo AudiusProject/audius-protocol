@@ -567,7 +567,7 @@ class SnapbackSM {
    * @param {Set<string>} unhealthyPeers set of unhealthy peer endpoints
    * @param {number?} [maxUserClockFetchAttempts=10] max number of attempts to fetch clock values
    *
-   * @returns {Object} map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
+   * @returns {Object} map of peer endpoints to (map of user wallet strings to clock value of replica set node for user)
    */
   async retrieveClockStatusesForUsersAcrossReplicaSet (replicaSetNodesToUserWalletsMap, unhealthyPeers, maxUserClockFetchAttempts = 10) {
     const replicaSetNodesToUserClockValuesMap = {}
