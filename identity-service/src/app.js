@@ -199,7 +199,7 @@ class App {
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/twitter/', twitterRequestRateLimiter)
 
-   const tikTokRequestRateLimiter = getRateLimiter({ prefix: 'tikTokLimiter', max: config.get('rateLimitingTikTokLimit') })
+    const tikTokRequestRateLimiter = getRateLimiter({ prefix: 'tikTokLimiter', max: config.get('rateLimitingTikTokLimit') })
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/tiktok/', tikTokRequestRateLimiter)
 
