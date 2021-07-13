@@ -10,6 +10,7 @@
   "logLevel": "debug",
   "redisHost": "localhost",
   "redisPort": 4379,
+
   "rateLimitingAudiusUserReqLimit": 3000,
   "rateLimitingUserReqLimit": 3000,
   "rateLimitingMetadataReqLimit": 3000,
@@ -18,6 +19,7 @@
   "rateLimitingBatchCidsExistLimit": 1,
   "URSMRequestForSignatureReqLimit": 30,
   "endpointRateLimits": "{\"/image_upload\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/users\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/users/login\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/users/login/challenge\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/users/logout\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/users/batch_clock_status\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/track_content\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/tracks/metadata\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/tracks\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/audius_users/metadata\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/audius_users\":{\"post\":[{\"expiry\":60,\"max\":100}]},\"/sync\":{\"post\":[{\"expiry\":60,\"max\":500}]},\"/vector_clock_sync\":{\"post\":[{\"expiry\":60,\"max\":500}]}}",
+
   "maxAudioFileSizeBytes":1000000000,
   "maxMemoryFileSizeBytes":50000000,
   "serviceLatitude": "",
@@ -42,7 +44,8 @@
   "dataNetworkId": "",
   "userMetadataNodeUrl": "http://docker.for.mac.localhost:4000",
   "rehydrateMaxConcurrency": 10,
+  "creatorNodeEndpoint": "",
+
   "nodeSyncFileSaveMaxConcurrency": 10,
-  "syncQueueMaxConcurrency": 50,
-  "creatorNodeEndpoint": ""
+  "syncQueueMaxConcurrency": 50
 }

@@ -164,6 +164,9 @@
     "register": [
       "cd libs/; node initScripts/local.js register-cnode #"
     ],
+    "deregister": [
+      "cd libs/; node initScripts/local.js deregister-cnode #"
+    ],
     "update-delegate-wallet": [
       "cd libs/; node initScripts/local.js update-cnode-config #"
     ],
@@ -203,6 +206,11 @@
   "distribute": {
     "up": [
       "node libs/initScripts/local.js distribute"
+    ]
+  },
+  "account": {
+    "up": [
+      "node libs/initScripts/local.js print-accounts"
     ]
   },
   "init-repos": {

@@ -238,7 +238,7 @@ module.exports = coreIntegration = async ({
 
   if (enableFaultInjection) {
     // Create a MadDog instance, responsible for taking down nodes
-    const m = new MadDog(numCreatorNodes)
+    const m = new MadDog({ numCreatorNodes })
     m.start()
   }
 
