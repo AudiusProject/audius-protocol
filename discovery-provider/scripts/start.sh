@@ -60,15 +60,13 @@ if [ -z "$audius_db_url" ]; then
     /wait
 fi
 
-exec 3>&1 # create fd 3 which redirects to stdout (see https://unix.stackexchange.com/a/640404/408588)
-
-./scripts/dev-server.sh 2>&1 | tee >&3 | logger &
+./scripts/dev-server.sh 2>&1 | tee >(cat >&2) | logger &
 sleep 20 # wait for migrations to finish
 
 if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-    celery -A src.worker.celery worker --loglevel info 2>&1 | tee >&3 | logger &
+    celery -A src.worker.celery worker --loglevel info 2>&1 | tee >(cat >&2) | logger &
 fi
 
-celery -A src.worker.celery beat --loglevel info 2>&1 | tee >&3 | logger &
+celery -A src.worker.celery beat --loglevel info 2>&1 | tee >(cat >&2) | logger &
 
 wait
