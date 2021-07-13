@@ -853,7 +853,7 @@ class SnapbackSM {
           vals: {
             numSyncRequestsRequired,
             numSyncRequestsEnqueued,
-            numIssueSyncRequestErrors: enqueueSyncRequestErrors.length,
+            numEnqueueSyncRequestErrors: enqueueSyncRequestErrors.length,
             enqueueSyncRequestErrors
           },
           time: Date.now()
@@ -865,7 +865,7 @@ class SnapbackSM {
             error: e.message,
             numSyncRequestsRequired,
             numSyncRequestsEnqueued,
-            numIssueSyncRequestErrors: (enqueueSyncRequestErrors ? enqueueSyncRequestErrors.length : null),
+            numEnqueueSyncRequestErrors: enqueueSyncRequestErrors.length,
             enqueueSyncRequestErrors
           },
           time: Date.now()
