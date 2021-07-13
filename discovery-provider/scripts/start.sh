@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ -n "$LOGGLY_TOKEN" ]]; then
-    LOGGLY_TAGS=$(echo $LOGGLY_TAGS | python -c "print(' '.join(f'tag=\\\\\"{i}\\\\\"' for i in input().split(',')))")
+    LOGGLY_TAGS=$(echo $LOGGLY_TAGS | python3 -c "print(' '.join(f'tag=\\\\\"{i}\\\\\"' for i in input().split(',')))")
     mkdir -p /var/spool/rsyslog
     mkdir -p /etc/rsyslog.d
     cat >/etc/rsyslog.d/22-loggly.conf <<EOF
