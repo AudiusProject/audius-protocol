@@ -130,9 +130,7 @@ class SnapbackSM {
 
     // The set of modes enabled for reconfig ops
     // e.x.: 'PRIMARY_AND_SECONDARY' is the reconfig mode -> 'RECONFIG_DISABLED', 'ONE_SECONDARY', 'MULTIPLE_SECONDARIES', 'PRIMARY_AND_SECONDARY' enabled
-    this.enabledReconfigModes = new Set(RECONFIG_MODE_KEYS.filter(mode =>
-      RECONFIG_MODES[mode].value <= RECONFIG_MODES[this.highestReconfigModeEnabled].value
-    ))
+    this.enabledReconfigModes = this.generateEnabledReconfigModesSet()
   }
 
   /**
@@ -732,7 +730,6 @@ class SnapbackSM {
         )
         decisionTree.push({
           stage: 'retrieveClockStatusesForUsersAcrossReplicaSet() Success',
-          vals: replicaSetNodesToUserClockStatusesMap,
           time: Date.now()
         })
       } catch (e) {
@@ -830,13 +827,13 @@ class SnapbackSM {
 
         decisionTree.push({
           stage: `updateEndpointToSpIdMap() Error`,
-          vals: {
-            endpointToSPIdMapSize: Object.keys(this.peerSetManager.endpointToSPIdMap).length,
-            error: e.message
-          },
+          vals: { error: e.message },
           time: Date.now()
         })
       }
+
+      // Reset the enabled modes set to the currently highest enabled mode
+      this.enabledReconfigModes = this.generateEnabledReconfigModesSet()
 
       // Issue all required sync requests
       let numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors
@@ -1190,6 +1187,12 @@ class SnapbackSM {
   getHighestReconfigModeEnabled () {
     return RECONFIG_MODE_KEYS.includes(this.nodeConfig.get('snapbackHighestReconfigMode'))
       ? this.nodeConfig.get('snapbackHighestReconfigMode') : RECONFIG_MODES.RECONFIG_DISABLED.key
+  }
+
+  generateEnabledReconfigModesSet () {
+    return new Set(RECONFIG_MODE_KEYS.filter(mode =>
+      RECONFIG_MODES[mode].value <= RECONFIG_MODES[this.highestReconfigModeEnabled].value
+    ))
   }
 }
 
