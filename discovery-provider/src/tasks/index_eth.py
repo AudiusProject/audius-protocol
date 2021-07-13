@@ -2,11 +2,6 @@ import time
 import logging
 from web3 import Web3
 from web3.providers.rpc import HTTPProvider
-
-# We use tqdm library to render a nice progress bar in the console
-# https://pypi.org/project/tqdm/
-from tqdm import tqdm
-
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.eth_indexing.event_scanner import EventScanner
@@ -15,23 +10,6 @@ from src.utils.helpers import load_eth_abi_values
 from src.tasks.cache_user_balance import get_token_address
 
 logger = logging.getLogger(__name__)
-
-# todo
-# determine which events we care about (all audio token events?)
-# load abi programmatically
-# use env var for audio token address
-# implement database event scanner state
-# discuss chain reorg safety blocks number/constant
-
-"""
-fetch all events of a certain types
-    what events do we care about:
-        - ...
-        - ...
-handle minor eth chain reorganisations in (near) real-time data
-
-disable the default `http_retry_request_middleware` on your provider for Web3
-"""
 
 CHAIN_REORG_SAFETY_BLOCKS = 10
 
@@ -45,7 +23,6 @@ provider.middlewares.clear()  # type: ignore
 web3 = Web3(provider)
 
 # Prepare stub ERC-20 contract object
-# abi = json.loads(ABI)
 eth_abi_values = load_eth_abi_values()
 ERC20 = web3.eth.contract(abi=eth_abi_values["AudiusToken"]["abi"])
 
@@ -78,39 +55,21 @@ def index_eth_transfer_events(db, redis):
     # Note that our chain reorg safety blocks cannot go negative
     start_block = max(since_block, 0)
     end_block = scanner.get_suggested_scan_end_block()
-    blocks_to_scan = end_block - start_block
+    if start_block > end_block:
+        return
 
-    print(f"Scanning events from blocks {start_block} - {end_block}")
-
-    # Render a progress bar in the console
+    logger.info(f"Scanning events from blocks {start_block} - {end_block}")
     start = time.time()
-    with tqdm(total=blocks_to_scan) as progress_bar:
 
-        def _update_progress(
-            current, current_block_timestamp, chunk_size, events_count
-        ):
-            if current_block_timestamp:
-                formatted_time = current_block_timestamp.strftime("%d-%m-%Y")
-            else:
-                formatted_time = "no block time available"
-            progress_bar.set_description(
-                f"Current block: {current} ({formatted_time}), blocks in a scan batch: {chunk_size} , \
-                    events processed in a batch {events_count}"
-            )
-            progress_bar.update(chunk_size)
-
-        # Run the scan
-        result, total_chunks_scanned = scanner.scan(
-            start_block, end_block, progress_callback=_update_progress
-        )
+    # Run the scan
+    result, total_chunks_scanned = scanner.scan(start_block, end_block)
 
     logger.info(
         "Reached end block for eth transfer events... saving events to database"
     )
     state.save()
-
     duration = time.time() - start
-    print(
+    logger.info(
         f"Scanned total {len(result)} Transfer events, in {duration} seconds, \
             total {total_chunks_scanned} chunk scans performed"
     )

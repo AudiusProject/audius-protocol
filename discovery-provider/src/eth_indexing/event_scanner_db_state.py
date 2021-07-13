@@ -141,6 +141,8 @@ class EventScannerDBState(EventScannerState):
                 session.query(User.user_id)
                 .outerjoin(AssociatedWallet, User.user_id == AssociatedWallet.user_id)
                 .filter(User.is_current == True)
+                .filter(AssociatedWallet.is_current == True)
+                .filter(AssociatedWallet.is_delete == False)
                 .filter(
                     or_(
                         User.wallet.in_(transfer_event_wallets),

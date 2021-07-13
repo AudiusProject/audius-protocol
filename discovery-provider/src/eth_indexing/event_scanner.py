@@ -1,7 +1,7 @@
 import datetime
 import time
 import logging
-from typing import Tuple, Optional, Callable, Iterable, Union, Type
+from typing import Tuple, Iterable, Union, Type
 
 from web3 import Web3
 from web3.contract import Contract, ContractEvent
@@ -61,6 +61,7 @@ class EventScanner:
         """
         :param web3: Web3 instantiated with provider url
         :param contract: Contract
+        :param state: state manager to keep tracks of last scanned block and persisting events to db
         :param event_type: web3 Event we scan
         :param filters: Filters passed to get_logs e.g. { "address": <token-address> }
         """
@@ -97,7 +98,7 @@ class EventScanner:
         """Purge old data in the case of blockchain reorganisation."""
         self.state.delete_potentially_forked_data(after_block)
 
-    def scan_chunk(self, start_block, end_block) -> Tuple[int, datetime.datetime, list]:
+    def scan_chunk(self, start_block, end_block) -> Tuple[int, list]:
         """Read and process events between to block numbers.
 
         Dynamically decrease the size of the chunk if the case JSON-RPC server pukes out.
@@ -129,7 +130,7 @@ class EventScanner:
 
         # Do `n` retries on `eth_get_logs`,
         # throttle down block range if needed
-        end_block, events = _retry_web3_call(  # type: ignore
+        end_block, events = _retry_web3_call(
             _fetch_events, start_block=start_block, end_block=end_block
         )
 
@@ -152,8 +153,7 @@ class EventScanner:
             processed = self.state.process_event(block_when, evt)
             all_processed.append(processed)
 
-        end_block_timestamp = get_block_when(end_block)
-        return end_block, end_block_timestamp, all_processed
+        return end_block, all_processed
 
     def estimate_next_chunk_size(self, current_chuck_size: int, event_found_count: int):
         """Try to figure out optimal chunk size
@@ -189,24 +189,18 @@ class EventScanner:
         start_block,
         end_block,
         start_chunk_size=START_CHUNK_SIZE,
-        progress_callback=Optional[Callable],
     ) -> Tuple[list, int]:
         """Perform a token balances scan.
 
         Assumes all balances in the database are valid before start_block (no forks sneaked in).
 
         :param start_block: The first block included in the scan
-
         :param end_block: The last block included in the scan
-
         :param start_chunk_size: How many blocks we try to fetch over JSON-RPC on the first attempt
-
         :param progress_callback: If this is an UI application, update the progress of the scan
 
         :return: [All processed events, number of chunks used]
         """
-
-        assert start_block <= end_block
 
         current_block = start_block
 
@@ -236,7 +230,7 @@ class EventScanner:
             )
 
             start = time.time()
-            actual_end_block, end_block_timestamp, new_entries = self.scan_chunk(
+            actual_end_block, new_entries = self.scan_chunk(
                 current_block, estimated_end_block
             )
 
@@ -245,15 +239,6 @@ class EventScanner:
 
             last_scan_duration = int(time.time() - start)
             all_processed += new_entries
-
-            # Print progress bar
-            if progress_callback:
-                progress_callback(
-                    current_block,
-                    end_block_timestamp,
-                    chunk_size,
-                    len(new_entries),
-                )
 
             # Try to guess how many blocks to fetch over `eth_get_logs` API next time
             chunk_size = self.estimate_next_chunk_size(chunk_size, len(new_entries))
@@ -266,13 +251,13 @@ class EventScanner:
         return all_processed, total_chunks_scanned
 
 
-def _retry_web3_call(
+def _retry_web3_call(  # type: ignore
     func,
     start_block,
     end_block,
     retries=MAX_REQUEST_RETRIES,
     delay=REQUEST_RETRY_SECONDS,
-) -> Union[Tuple[int, list], None]:
+) -> Tuple[int, list]:  # type: ignore
     """A custom retry loop to throttle down block range.
 
     If our JSON-RPC server cannot serve all incoming `eth_get_logs` in a single request,
@@ -312,7 +297,6 @@ def _retry_web3_call(
             else:
                 logger.warning("Out of retries")
                 raise
-    return None
 
 
 def _fetch_events_for_all_contracts(
