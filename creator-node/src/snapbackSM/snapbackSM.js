@@ -836,7 +836,7 @@ class SnapbackSM {
    *
    * Polls secondary for MaxSyncMonitoringDurationInMs
    */
-  async additionalSyncIsRequired (userWallet, primaryClockValue, secondaryUrl, syncType) {
+  async additionalSyncIsRequired (userWallet, primaryClockValue = -1, secondaryUrl, syncType) {
     const MaxExportClockValueRange = this.nodeConfig.get('maxExportClockValueRange')
     const logMsgString = `additionalSyncIsRequired (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 
