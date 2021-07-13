@@ -8,6 +8,7 @@ from src.utils.redis_metrics import record_metrics
 
 bp = Blueprint("search_queries", __name__)
 
+
 def validate_search_args(args):
     searchStr = args.get("query")
     if not searchStr:
@@ -16,9 +17,9 @@ def validate_search_args(args):
     kind = args.get("kind", "all")
     if kind not in SearchKind.__members__:
         return api_helpers.error_response(
-            "Invalid value for parameter 'kind' must be in %s" % [
-                k.name for k in SearchKind],
-            400
+            "Invalid value for parameter 'kind' must be in %s"
+            % [k.name for k in SearchKind],
+            400,
         )
     return None
 
@@ -42,7 +43,7 @@ def search_full():
         "with_users": False,
         "limit": limit,
         "offset": offset,
-        "only_downloadable": False
+        "only_downloadable": False,
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)
@@ -69,7 +70,7 @@ def search_autocomplete():
         "with_users": False,
         "limit": limit,
         "offset": offset,
-        "only_downloadable": False
+        "only_downloadable": False,
     }
     resp = search(search_args)
     return api_helpers.success_response(resp)

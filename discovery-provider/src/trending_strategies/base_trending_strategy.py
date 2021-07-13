@@ -1,5 +1,9 @@
 from abc import ABC, abstractmethod
-from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
+from src.trending_strategies.trending_type_and_version import (
+    TrendingType,
+    TrendingVersion,
+)
+
 
 class BaseTrendingStrategy(ABC):
     def __init__(self, trending_type, version):

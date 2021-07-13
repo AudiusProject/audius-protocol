@@ -5,6 +5,7 @@ from src.utils import db_session
 
 logger = logging.getLogger(__name__)
 
+
 def get_genre_metrics(args):
     """
     Returns metrics for track genres over the provided bucket
@@ -25,30 +26,20 @@ def get_genre_metrics(args):
 
 def _get_genre_metrics(session, args):
     metrics_query = (
-        session.query(
-            Track.genre,
-            func.count(Track.track_id).label('count')
-        )
+        session.query(Track.genre, func.count(Track.track_id).label("count"))
         .filter(
             Track.genre != None,
-            Track.genre != '',
+            Track.genre != "",
             Track.is_current == True,
-            Track.created_at > args.get('start_time'),
+            Track.created_at > args.get("start_time"),
         )
-        .group_by(
-            Track.genre
-        )
-        .order_by(
-            desc('count')
-        )
-        .limit(args.get('limit'))
-        .offset(args.get('offset'))
+        .group_by(Track.genre)
+        .order_by(desc("count"))
+        .limit(args.get("limit"))
+        .offset(args.get("offset"))
     )
 
     metrics = metrics_query.all()
-    genres = [{
-        'name': m[0],
-        'count': m[1]
-    } for m in metrics]
+    genres = [{"name": m[0], "count": m[1]} for m in metrics]
 
     return genres

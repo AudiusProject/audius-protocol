@@ -8,15 +8,16 @@ from src.challenges.challenge_event import ChallengeEvent
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)
-REDIS_QUEUE_PREFIX = 'challenges-event-queue'
+REDIS_QUEUE_PREFIX = "challenges-event-queue"
 
 
 class ChallengeEventBus:
     """`ChallengeEventBus` supports:
-        - dispatching challenge events to a Redis queue
-        - registering challenge managers to listen to the events.
-        - consuming items from the Redis queue
+    - dispatching challenge events to a Redis queue
+    - registering challenge managers to listen to the events.
+    - consuming items from the Redis queue
     """
+
     def __init__(self, redis):
         self._listeners = defaultdict(lambda: [])
         self._redis = redis
@@ -51,10 +52,12 @@ class ChallengeEventBus:
             event_user_dict = defaultdict(lambda: [])
             for event_dict in events_dicts:
                 event_type = event_dict["event"]
-                event_user_dict[event_type].append({
-                    "user_id": event_dict["user_id"],
-                    "block_number": event_dict["block_number"]
-                })
+                event_user_dict[event_type].append(
+                    {
+                        "user_id": event_dict["user_id"],
+                        "block_number": event_dict["block_number"],
+                    }
+                )
 
             for (event_type, event_dicts) in event_user_dict.items():
                 listeners = self._listeners[event_type]
@@ -65,18 +68,16 @@ class ChallengeEventBus:
         except Exception as e:
             logger.warning(f"ChallengeEventBus: error processing from Redis: {e}")
             return 0
+
     # Helpers
 
     def _event_to_json(self, event, block_number, user_id):
-        event_dict = {
-            "event": event,
-            "user_id": user_id,
-            "block_number": block_number
-        }
+        event_dict = {"event": event, "user_id": user_id, "block_number": block_number}
         return json.dumps(event_dict)
 
     def _json_to_event(self, event_json):
         return json.loads(event_json)
+
 
 def setup_challenge_bus():
     redis = get_redis()

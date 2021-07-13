@@ -1,12 +1,8 @@
 const {
   PublicKey,
   SystemProgram,
-  SYSVAR_RENT_PUBKEY,
-  Keypair
+  SYSVAR_RENT_PUBKEY
 } = require('@solana/web3.js')
-const {
-  Token
-} = require('@solana/spl-token')
 const BN = require('bn.js')
 const borsh = require('borsh')
 const bs58 = require('bs58')
@@ -34,7 +30,7 @@ const createTokenAccountInstructionSchema = new Map([
 /**
  * Gets the back account address for a user given their ethAddress
  * @param {string} ethAddress
- * @param {string} claimableTokenPDA
+ * @param {PublicKey} claimableTokenPDA
  * @param {PublicKey} solanaTokenProgramKey
  * @returns
  */
@@ -58,30 +54,6 @@ const getBankAccountAddress = async (
     /* programId / owner */ solanaTokenProgramKey
   )
   return accountToGenerate
-}
-
-/**
- * Gets user bank account information (e.g. balance, ownership, etc.)
- * @param {string} bankAccountAddress
- * @param {PublicKey} mintKey
- * @param {PublicKey} solanaTokenProgramKey
- * @param {Connection} connection
- * @returns {AccountInfo}
- */
-const getBankAccountInfo = async (
-  bankAccountAddress,
-  mintKey,
-  solanaTokenProgramKey,
-  connection
-) => {
-  const token = new Token(
-    connection,
-    mintKey,
-    solanaTokenProgramKey,
-    Keypair.generate()
-  )
-  const info = await token.getAccountInfo(bankAccountAddress)
-  return info
 }
 
 /**
@@ -203,6 +175,5 @@ const createUserBankFrom = async ({
 
 module.exports = {
   getBankAccountAddress,
-  getBankAccountInfo,
   createUserBankFrom
 }

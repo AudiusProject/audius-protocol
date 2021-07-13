@@ -21,18 +21,21 @@ from sqlalchemy.orm import sessionmaker
 from src.models import Track
 
 # revision identifiers, used by Alembic.
-revision = 'c8d2be7dcccc'
-down_revision = 'd9992d2d598c'
+revision = "c8d2be7dcccc"
+down_revision = "d9992d2d598c"
 branch_labels = None
 depends_on = None
 
-class jsonb_array_length(GenericFunction): # pylint: disable=too-many-ancestors
-    name = 'jsonb_array_length'
+
+class jsonb_array_length(GenericFunction):  # pylint: disable=too-many-ancestors
+    name = "jsonb_array_length"
     type = Integer
 
-@compiles(jsonb_array_length, 'postgresql')
+
+@compiles(jsonb_array_length, "postgresql")
 def compile_jsonb_array_length(element, compiler, **kw):
     return "%s(%s)" % (element.name, compiler.process(element.clauses))
+
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +43,9 @@ Session = sessionmaker()
 CUTOFF_DATE = datetime.fromtimestamp(1621456065)
 FMT = "segment%03d.ts"
 
+
 def fix_segments(segments):
-    '''
+    """
     Fixes segments from a string sorted %03d order to a proper integer based order.
 
     Currently, we observe incorrect segment orders of
@@ -55,7 +59,7 @@ def fix_segments(segments):
     This method takes in a list of segments and re orders them, returning the proper order.
     It does this by replicating a sort on the %03d naming schema and captures the indexes that move
     when that happens and then uses that relationship to back out what the original order should be.
-    '''
+    """
     fixed_segments = [None] * len(segments)
     # Produce tuples for the total length of segments (number, actual segment name), e.g. (0, segment000.ts)
     tuples = [(i, FMT % i) for i in range(0, len(segments))]
@@ -77,10 +81,10 @@ def fix_segments(segments):
 
 
 def unfix_segments(segments):
-    '''
+    """
     Un-fixes segments (for down migration).
     Identical to fix_segments, except proper_index and i are swapped to revert the change.
-    '''
+    """
     unfixed_segments = [None] * len(segments)
     tuples = [(i, FMT % i) for i in range(0, len(segments))]
     sorted_tuples = sorted(tuples, key=lambda x: x[1])
@@ -99,16 +103,13 @@ def upgrade():
     bind = op.get_bind()
     session = Session(bind=bind)
 
-    target_tracks_query = (
-        session.query(Track)
-        .filter(
-            Track.is_current == True,
-            Track.created_at < CUTOFF_DATE,
-            jsonb_array_length(Track.track_segments) > 1000
-        )
+    target_tracks_query = session.query(Track).filter(
+        Track.is_current == True,
+        Track.created_at < CUTOFF_DATE,
+        jsonb_array_length(Track.track_segments) > 1000,
     )
     target_tracks = target_tracks_query.all()
-    if (len(target_tracks) > 2000):
+    if len(target_tracks) > 2000:
         # Something is wrong here, we should not have this many. Back out.
         return
 
@@ -122,16 +123,13 @@ def downgrade():
     bind = op.get_bind()
     session = Session(bind=bind)
 
-    target_tracks_query = (
-        session.query(Track)
-        .filter(
-            Track.is_current == True,
-            Track.created_at < CUTOFF_DATE,
-            jsonb_array_length(Track.track_segments) > 1000
-        )
+    target_tracks_query = session.query(Track).filter(
+        Track.is_current == True,
+        Track.created_at < CUTOFF_DATE,
+        jsonb_array_length(Track.track_segments) > 1000,
     )
     target_tracks = target_tracks_query.all()
-    if (len(target_tracks) > 2000):
+    if len(target_tracks) > 2000:
         # Something is wrong here, we should not have this many. Back out.
         return
 

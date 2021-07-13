@@ -1,5 +1,6 @@
 from flask import current_app
 
+
 def get_db():
     """Connect to the configured database. The connection
     is unique for each request and will be reused if this is called

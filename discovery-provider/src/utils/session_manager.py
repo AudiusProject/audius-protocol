@@ -14,7 +14,7 @@ class SessionManager:
         self._session_factory = sessionmaker(bind=self._engine)
         # Attach a listener for new engine connection.
         # See https://docs.sqlalchemy.org/en/14/core/event.html
-        listen(self._engine, 'connect', self.on_connect)
+        listen(self._engine, "connect", self.on_connect)
 
     def on_connect(self, dbapi_conn, connection_record):
         """

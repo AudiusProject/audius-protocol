@@ -6,9 +6,21 @@ from flask import request
 
 from src import exceptions
 from src.queries import response_name_constants
-from src.models import User, Track, Repost, RepostType, Follow, \
-    Playlist, Save, SaveType, Remix, AggregatePlays,  \
-    AggregateUser, AggregateTrack, AggregatePlaylist
+from src.models import (
+    User,
+    Track,
+    Repost,
+    RepostType,
+    Follow,
+    Playlist,
+    Save,
+    SaveType,
+    Remix,
+    AggregatePlays,
+    AggregateUser,
+    AggregateTrack,
+    AggregatePlaylist,
+)
 from src.utils import helpers, redis_connection
 from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.get_balances import get_balances, enqueue_balance_refresh
@@ -29,41 +41,40 @@ minOffset = 0
 
 # Used when generating genre list to special case Electronic tunes
 electronic_sub_genres = [
-    'Techno',
-    'Trap',
-    'House',
-    'Tech House',
-    'Deep House',
-    'Disco',
-    'Electro',
-    'Jungle',
-    'Progressive House',
-    'Hardstyle',
-    'Glitch Hop',
-    'Trance',
-    'Future Bass',
-    'Future House',
-    'Tropical House',
-    'Downtempo',
-    'Drum & Bass',
-    'Dubstep',
-    'Jersey Club',
+    "Techno",
+    "Trap",
+    "House",
+    "Tech House",
+    "Deep House",
+    "Disco",
+    "Electro",
+    "Jungle",
+    "Progressive House",
+    "Hardstyle",
+    "Glitch Hop",
+    "Trance",
+    "Future Bass",
+    "Future House",
+    "Tropical House",
+    "Downtempo",
+    "Drum & Bass",
+    "Dubstep",
+    "Jersey Club",
 ]
 
 ######## HELPERS ########
 
 
 def get_current_user_id(required=True):
-    user_id_header = 'X-User-ID'
+    user_id_header = "X-User-ID"
     uid = request.headers.get(user_id_header)
     try:
         if uid:
             uid = int(uid)
-    except ValueError:
-        raise exceptions.ArgumentError("must be valid integer")
+    except ValueError as e:
+        raise exceptions.ArgumentError("must be valid integer") from e
     if required and not uid:
-        raise exceptions.ArgumentError(
-            "Need to include valid X-User-ID header")
+        raise exceptions.ArgumentError("Need to include valid X-User-ID header")
 
     return uid
 
@@ -73,20 +84,19 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
     if not sort:
         return base_query
 
-    params = sort.split(',')
+    params = sort.split(",")
     try:
-        params = {param[0]: param[1]
-                  for param in [p.split(':') for p in params]}
-    except IndexError:
+        params = {param[0]: param[1] for param in [p.split(":") for p in params]}
+    except IndexError as e:
         raise exceptions.ArgumentError(
-            "Need to specify :asc or :desc on all parameters")
+            "Need to specify :asc or :desc on all parameters"
+        ) from e
     order_bys = []
     for field in params.keys():
         if field not in whitelist_sort_params:
-            raise exceptions.ArgumentError(
-                'Parameter %s is invalid in sort' % field)
+            raise exceptions.ArgumentError("Parameter %s is invalid in sort" % field)
         attr = getattr(model, field)
-        if params[field] == 'desc':
+        if params[field] == "desc":
             attr = attr.desc()
         else:
             attr = attr.asc()
@@ -98,7 +108,9 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
 # given list of user ids and corresponding users, populates each user object with:
 #   track_count, playlist_count, album_count, follower_count, followee_count, repost_count
 #   if current_user_id available, populates does_current_user_follow, followee_follows
-def populate_user_metadata(session, user_ids, users, current_user_id, with_track_save_count=False):
+def populate_user_metadata(
+    session, user_ids, users, current_user_id, with_track_save_count=False
+):
     # Always enqueue balance refresh for current user
     if current_user_id:
         enqueue_balance_refresh(redis, [current_user_id])
@@ -112,11 +124,9 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
             AggregateUser.follower_count,
             AggregateUser.following_count,
             AggregateUser.repost_count,
-            AggregateUser.track_save_count
+            AggregateUser.track_save_count,
         )
-        .filter(
-            AggregateUser.user_id.in_(user_ids)
-        )
+        .filter(AggregateUser.user_id.in_(user_ids))
         .all()
     )
 
@@ -129,8 +139,9 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
             response_name_constants.follower_count: follower_count,
             response_name_constants.followee_count: following_count,
             response_name_constants.repost_count: repost_count,
-            response_name_constants.track_save_count: track_save_count
-        } for (
+            response_name_constants.track_save_count: track_save_count,
+        }
+        for (
             user_id,
             track_count,
             playlist_count,
@@ -138,26 +149,22 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
             follower_count,
             following_count,
             repost_count,
-            track_save_count
+            track_save_count,
         ) in aggregate_user
     }
 
     # build dict of user id --> track blocknumber
     track_blocknumbers = (
-        session.query(
-            Track.owner_id,
-            func.max(Track.blocknumber)
-        )
+        session.query(Track.owner_id, func.max(Track.blocknumber))
         .filter(
             Track.is_current == True,
             Track.is_delete == False,
-            Track.owner_id.in_(user_ids)
+            Track.owner_id.in_(user_ids),
         )
         .group_by(Track.owner_id)
         .all()
     )
-    track_blocknumber_dict = {user_id: track_blocknumber for (
-        user_id, track_blocknumber) in track_blocknumbers}
+    track_blocknumber_dict = dict(track_blocknumbers)
 
     current_user_followed_user_ids = {}
     current_user_followee_follow_count_dict = {}
@@ -169,12 +176,13 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
                 Follow.is_current == True,
                 Follow.is_delete == False,
                 Follow.followee_user_id.in_(user_ids),
-                Follow.follower_user_id == current_user_id
+                Follow.follower_user_id == current_user_id,
             )
             .all()
         )
         current_user_followed_user_ids = {
-            r[0]: True for r in current_user_followed_user_ids}
+            r[0]: True for r in current_user_followed_user_ids
+        }
 
         # build dict of user id --> followee follow count
         current_user_followees = (
@@ -182,27 +190,25 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
             .filter(
                 Follow.is_current == True,
                 Follow.is_delete == False,
-                Follow.follower_user_id == current_user_id
+                Follow.follower_user_id == current_user_id,
             )
             .subquery()
         )
 
         current_user_followee_follow_counts = (
-            session.query(
-                Follow.followee_user_id,
-                func.count(Follow.followee_user_id)
-            )
+            session.query(Follow.followee_user_id, func.count(Follow.followee_user_id))
             .filter(
                 Follow.is_current == True,
                 Follow.is_delete == False,
                 Follow.follower_user_id.in_(current_user_followees),
-                Follow.followee_user_id.in_(user_ids)
+                Follow.followee_user_id.in_(user_ids),
             )
             .group_by(Follow.followee_user_id)
             .all()
         )
-        current_user_followee_follow_count_dict = {user_id: followee_follow_count for (
-            user_id, followee_follow_count) in current_user_followee_follow_counts}
+        current_user_followee_follow_count_dict = dict(
+            current_user_followee_follow_counts
+        )
 
     is_verified_ids_set = {user["user_id"] for user in users if user["is_verified"]}
     balance_dict = get_balances(session, redis, user_ids, is_verified_ids_set)
@@ -210,30 +216,44 @@ def populate_user_metadata(session, user_ids, users, current_user_id, with_track
     for user in users:
         user_id = user["user_id"]
         user_balance = balance_dict.get(user_id, {})
-        user[response_name_constants.track_count] = count_dict.get(
-            user_id, {}).get(response_name_constants.track_count, 0)
-        user[response_name_constants.playlist_count] = count_dict.get(
-            user_id, {}).get(response_name_constants.playlist_count, 0)
-        user[response_name_constants.album_count] = count_dict.get(
-            user_id, {}).get(response_name_constants.album_count, 0)
-        user[response_name_constants.follower_count] = count_dict.get(
-            user_id, {}).get(response_name_constants.follower_count, 0)
-        user[response_name_constants.followee_count] = count_dict.get(
-            user_id, {}).get(response_name_constants.followee_count, 0)
-        user[response_name_constants.repost_count] = count_dict.get(
-            user_id, {}).get(response_name_constants.repost_count, 0)
+        user[response_name_constants.track_count] = count_dict.get(user_id, {}).get(
+            response_name_constants.track_count, 0
+        )
+        user[response_name_constants.playlist_count] = count_dict.get(user_id, {}).get(
+            response_name_constants.playlist_count, 0
+        )
+        user[response_name_constants.album_count] = count_dict.get(user_id, {}).get(
+            response_name_constants.album_count, 0
+        )
+        user[response_name_constants.follower_count] = count_dict.get(user_id, {}).get(
+            response_name_constants.follower_count, 0
+        )
+        user[response_name_constants.followee_count] = count_dict.get(user_id, {}).get(
+            response_name_constants.followee_count, 0
+        )
+        user[response_name_constants.repost_count] = count_dict.get(user_id, {}).get(
+            response_name_constants.repost_count, 0
+        )
         user[response_name_constants.track_blocknumber] = track_blocknumber_dict.get(
-            user_id, -1)
+            user_id, -1
+        )
         if with_track_save_count:
             user[response_name_constants.track_save_count] = count_dict.get(
-                user_id, {}).get(response_name_constants.track_save_count, 0)
+                user_id, {}
+            ).get(response_name_constants.track_save_count, 0)
         # current user specific
-        user[response_name_constants.does_current_user_follow] = current_user_followed_user_ids.get(
-            user_id, False)
-        user[response_name_constants.current_user_followee_follow_count] = current_user_followee_follow_count_dict.get(
-            user_id, 0)
-        user[response_name_constants.balance] = user_balance.get("owner_wallet_balance", '0')
-        user[response_name_constants.associated_wallets_balance] = user_balance.get("associated_wallets_balance", '0')
+        user[
+            response_name_constants.does_current_user_follow
+        ] = current_user_followed_user_ids.get(user_id, False)
+        user[
+            response_name_constants.current_user_followee_follow_count
+        ] = current_user_followee_follow_count_dict.get(user_id, 0)
+        user[response_name_constants.balance] = user_balance.get(
+            "owner_wallet_balance", "0"
+        )
+        user[response_name_constants.associated_wallets_balance] = user_balance.get(
+            "associated_wallets_balance", "0"
+        )
 
     return users
 
@@ -242,17 +262,18 @@ def get_track_play_count_dict(session, track_ids):
     if not track_ids:
         return {}
     query = text(
-        f"""
+        """
         select play_item_id, count
         from aggregate_plays
         where play_item_id in :ids
         """
     )
-    query = query.bindparams(bindparam('ids', expanding=True))
+    query = query.bindparams(bindparam("ids", expanding=True))
 
     track_play_counts = session.execute(query, {"ids": track_ids}).fetchall()
     track_play_dict = dict(track_play_counts)
     return track_play_dict
+
 
 # given list of track ids and corresponding tracks, populates each track object with:
 #   repost_count, save_count
@@ -264,7 +285,7 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
         session.query(
             AggregateTrack.track_id,
             AggregateTrack.repost_count,
-            AggregateTrack.save_count
+            AggregateTrack.save_count,
         )
         .filter(
             AggregateTrack.track_id.in_(track_ids),
@@ -275,12 +296,9 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
     count_dict = {
         track_id: {
             response_name_constants.repost_count: repost_count,
-            response_name_constants.save_count: save_count
-        } for (
-            track_id,
-            repost_count,
-            save_count
-        ) in counts
+            response_name_constants.save_count: save_count,
+        }
+        for (track_id, repost_count, save_count) in counts
     }
 
     play_count_dict = get_track_play_count_dict(session, track_ids)
@@ -294,20 +312,17 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
     if current_user_id:
         # has current user reposted any of requested track ids
         user_reposted = (
-            session.query(
-                Repost.repost_item_id
-            )
+            session.query(Repost.repost_item_id)
             .filter(
                 Repost.is_current == True,
                 Repost.is_delete == False,
                 Repost.repost_item_id.in_(track_ids),
                 Repost.repost_type == RepostType.track,
-                Repost.user_id == current_user_id
+                Repost.user_id == current_user_id,
             )
             .all()
         )
-        user_reposted_track_dict = {
-            repost[0]: True for repost in user_reposted}
+        user_reposted_track_dict = {repost[0]: True for repost in user_reposted}
 
         # has current user saved any of requested track ids
         user_saved_tracks_query = (
@@ -317,91 +332,84 @@ def populate_track_metadata(session, track_ids, tracks, current_user_id):
                 Save.is_delete == False,
                 Save.user_id == current_user_id,
                 Save.save_item_id.in_(track_ids),
-                Save.save_type == SaveType.track
+                Save.save_type == SaveType.track,
             )
             .all()
         )
-        user_saved_track_dict = {
-            save[0]: True for save in user_saved_tracks_query}
+        user_saved_track_dict = {save[0]: True for save in user_saved_tracks_query}
 
         # Get current user's followees.
-        followees = (
-            session.query(Follow.followee_user_id)
-            .filter(
-                Follow.follower_user_id == current_user_id,
-                Follow.is_current == True,
-                Follow.is_delete == False
-            )
+        followees = session.query(Follow.followee_user_id).filter(
+            Follow.follower_user_id == current_user_id,
+            Follow.is_current == True,
+            Follow.is_delete == False,
         )
 
         # build dict of track id --> followee reposts
-        followee_track_reposts = (
-            session.query(Repost)
-            .filter(
-                Repost.is_current == True,
-                Repost.is_delete == False,
-                Repost.repost_item_id.in_(track_ids),
-                Repost.repost_type == RepostType.track,
-                Repost.user_id.in_(followees)
-            )
+        followee_track_reposts = session.query(Repost).filter(
+            Repost.is_current == True,
+            Repost.is_delete == False,
+            Repost.repost_item_id.in_(track_ids),
+            Repost.repost_type == RepostType.track,
+            Repost.user_id.in_(followees),
         )
-        followee_track_reposts = helpers.query_result_to_list(
-            followee_track_reposts)
+        followee_track_reposts = helpers.query_result_to_list(followee_track_reposts)
         for track_repost in followee_track_reposts:
             if track_repost["repost_item_id"] not in followee_track_repost_dict:
                 followee_track_repost_dict[track_repost["repost_item_id"]] = []
             followee_track_repost_dict[track_repost["repost_item_id"]].append(
-                track_repost)
+                track_repost
+            )
 
         # Build dict of track id --> followee saves.
-        followee_track_saves = (
-            session.query(Save)
-            .filter(
-                Save.is_current == True,
-                Save.is_delete == False,
-                Save.save_item_id.in_(track_ids),
-                Save.save_type == SaveType.track,
-                Save.user_id.in_(followees)
-            )
+        followee_track_saves = session.query(Save).filter(
+            Save.is_current == True,
+            Save.is_delete == False,
+            Save.save_item_id.in_(track_ids),
+            Save.save_type == SaveType.track,
+            Save.user_id.in_(followees),
         )
-        followee_track_saves = helpers.query_result_to_list(
-            followee_track_saves)
+        followee_track_saves = helpers.query_result_to_list(followee_track_saves)
         for track_save in followee_track_saves:
             if track_save["save_item_id"] not in followee_track_save_dict:
                 followee_track_save_dict[track_save["save_item_id"]] = []
-            followee_track_save_dict[track_save["save_item_id"]].append(
-                track_save)
+            followee_track_save_dict[track_save["save_item_id"]].append(track_save)
 
     for track in tracks:
         track_id = track["track_id"]
-        track[response_name_constants.repost_count] = count_dict.get(
-            track_id, {}).get(response_name_constants.repost_count, 0)
-        track[response_name_constants.save_count] = count_dict.get(
-            track_id, {}).get(response_name_constants.save_count, 0)
-        track[response_name_constants.play_count] = play_count_dict.get(
-            track_id, 0)
+        track[response_name_constants.repost_count] = count_dict.get(track_id, {}).get(
+            response_name_constants.repost_count, 0
+        )
+        track[response_name_constants.save_count] = count_dict.get(track_id, {}).get(
+            response_name_constants.save_count, 0
+        )
+        track[response_name_constants.play_count] = play_count_dict.get(track_id, 0)
         # current user specific
-        track[response_name_constants.followee_reposts] = followee_track_repost_dict.get(
-            track_id, [])
+        track[
+            response_name_constants.followee_reposts
+        ] = followee_track_repost_dict.get(track_id, [])
         track[response_name_constants.followee_saves] = followee_track_save_dict.get(
-            track_id, [])
-        track[response_name_constants.has_current_user_reposted] = user_reposted_track_dict.get(
-            track_id, False)
-        track[response_name_constants.has_current_user_saved] = user_saved_track_dict.get(
-            track['track_id'], False)
+            track_id, []
+        )
+        track[
+            response_name_constants.has_current_user_reposted
+        ] = user_reposted_track_dict.get(track_id, False)
+        track[
+            response_name_constants.has_current_user_saved
+        ] = user_saved_track_dict.get(track["track_id"], False)
 
         # Populate the remix_of tracks w/ the parent track's user and if that user saved/reposted the child
-        if response_name_constants.remix_of in track and \
-            type(track[response_name_constants.remix_of]) is dict and \
-                track["track_id"] in remixes:
-            remix_tracks = track[response_name_constants.remix_of].get(
-                "tracks")
+        if (
+            response_name_constants.remix_of in track
+            and type(track[response_name_constants.remix_of]) is dict
+            and track["track_id"] in remixes
+        ):
+            remix_tracks = track[response_name_constants.remix_of].get("tracks")
             if remix_tracks and type(remix_tracks) is list:
                 for remix_track in remix_tracks:
                     parent_track_id = remix_track.get("parent_track_id")
                     if parent_track_id in remixes[track["track_id"]]:
-                        remix_track.update(
-                            remixes[track["track_id"]][parent_track_id])
+                        remix_track.update(remixes[track["track_id"]][parent_track_id])
         else:
             track[response_name_constants.remix_of] = None
 
@@ -433,33 +441,27 @@ def get_track_remix_metadata(session, tracks, current_user_id):
     remix_query = []
     for track in tracks:
         if response_name_constants.remix_of in track:
-            track_ids_with_remix.append(track['track_id'])
+            track_ids_with_remix.append(track["track_id"])
 
     if track_ids_with_remix:
         # Fetch the remix parent track's user and if that user has saved/favorited the child track
         remix_query = (
             session.query(
-                Track.owner_id.label('track_owner_id'),
-                Remix.parent_track_id.label('parent_track_id'),
-                Remix.child_track_id.label('child_track_id'),
-                Save.is_current.label('has_remix_author_saved'),
-                Repost.is_current.label('has_remix_author_reposted'),
-                User
+                Track.owner_id.label("track_owner_id"),
+                Remix.parent_track_id.label("parent_track_id"),
+                Remix.child_track_id.label("child_track_id"),
+                Save.is_current.label("has_remix_author_saved"),
+                Repost.is_current.label("has_remix_author_reposted"),
+                User,
             )
             .join(
                 Remix,
                 and_(
                     Remix.parent_track_id == Track.track_id,
-                    Remix.child_track_id.in_(track_ids_with_remix)
-                )
+                    Remix.child_track_id.in_(track_ids_with_remix),
+                ),
             )
-            .join(
-                User,
-                and_(
-                    User.user_id == Track.owner_id,
-                    User.is_current == True
-                )
-            )
+            .join(User, and_(User.user_id == Track.owner_id, User.is_current == True))
             .outerjoin(
                 Save,
                 and_(
@@ -467,8 +469,8 @@ def get_track_remix_metadata(session, tracks, current_user_id):
                     Save.save_type == SaveType.track,
                     Save.is_current == True,
                     Save.is_delete == False,
-                    Save.user_id == Track.owner_id
-                )
+                    Save.user_id == Track.owner_id,
+                ),
             )
             .outerjoin(
                 Repost,
@@ -477,13 +479,10 @@ def get_track_remix_metadata(session, tracks, current_user_id):
                     Repost.user_id == Track.owner_id,
                     Repost.repost_type == RepostType.track,
                     Repost.is_current == True,
-                    Repost.is_delete == False
-                )
+                    Repost.is_delete == False,
+                ),
             )
-            .filter(
-                Track.is_current == True,
-                Track.is_unlisted == False
-            )
+            .filter(Track.is_current == True, Track.is_unlisted == False)
             .all()
         )
 
@@ -501,47 +500,70 @@ def get_track_remix_metadata(session, tracks, current_user_id):
     # build `populated_users` as a map of userId -> json user
     if remix_parent_owners:
         [remix_parent_owner_ids, remix_parent_owners] = list(
-            zip(*[[k, remix_parent_owners[k]] for k in remix_parent_owners]))
-        remix_parent_owners = helpers.query_result_to_list(
-            list(remix_parent_owners))
-        populated_remix_parent_users = populate_user_metadata(session, list(
-            remix_parent_owner_ids), remix_parent_owners, current_user_id)
+            zip(
+                *[
+                    [k, remix_parent_owner]
+                    for k, remix_parent_owner in remix_parent_owners.items()
+                ]
+            )
+        )
+        remix_parent_owners = helpers.query_result_to_list(list(remix_parent_owners))
+        populated_remix_parent_users = populate_user_metadata(
+            session, list(remix_parent_owner_ids), remix_parent_owners, current_user_id
+        )
         for user in populated_remix_parent_users:
-            populated_users[user['user_id']] = user
+            populated_users[user["user_id"]] = user
 
     # Build a dict of child track id => parent track id => { user, has_remix_author_saved, has_remix_author_reposted }
     for remix_relationship in remix_query:
-        [track_owner_id, parent_track_id, child_track_id, has_remix_author_saved,
-         has_remix_author_reposted, _] = remix_relationship
+        [
+            track_owner_id,
+            parent_track_id,
+            child_track_id,
+            has_remix_author_saved,
+            has_remix_author_reposted,
+            _,
+        ] = remix_relationship
         if not child_track_id in remixes:
             remixes[child_track_id] = {
                 parent_track_id: {
-                    response_name_constants.has_remix_author_saved: bool(has_remix_author_saved),
-                    response_name_constants.has_remix_author_reposted: bool(has_remix_author_reposted),
-                    'user': populated_users[track_owner_id]
+                    response_name_constants.has_remix_author_saved: bool(
+                        has_remix_author_saved
+                    ),
+                    response_name_constants.has_remix_author_reposted: bool(
+                        has_remix_author_reposted
+                    ),
+                    "user": populated_users[track_owner_id],
                 }
             }
         else:
             remixes[child_track_id][parent_track_id] = {
-                response_name_constants.has_remix_author_saved: bool(has_remix_author_saved),
-                response_name_constants.has_remix_author_reposted: bool(has_remix_author_reposted),
-                'user': populated_users[track_owner_id]
+                response_name_constants.has_remix_author_saved: bool(
+                    has_remix_author_saved
+                ),
+                response_name_constants.has_remix_author_reposted: bool(
+                    has_remix_author_reposted
+                ),
+                "user": populated_users[track_owner_id],
             }
 
     return remixes
+
 
 # given list of playlist ids and corresponding playlists, populates each playlist object with:
 #   repost_count, save_count
 #   if current_user_id available, populates followee_reposts, has_current_user_reposted, has_current_user_saved
 
 
-def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, save_types, current_user_id):
+def populate_playlist_metadata(
+    session, playlist_ids, playlists, repost_types, save_types, current_user_id
+):
     # build dict of playlist id --> repost & save count
     counts = (
         session.query(
             AggregatePlaylist.playlist_id,
             AggregatePlaylist.repost_count,
-            AggregatePlaylist.save_count
+            AggregatePlaylist.save_count,
         )
         .filter(
             AggregatePlaylist.playlist_id.in_(playlist_ids),
@@ -552,12 +574,9 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
     count_dict = {
         playlist_id: {
             response_name_constants.repost_count: repost_count,
-            response_name_constants.save_count: save_count
-        } for (
-            playlist_id,
-            repost_count,
-            save_count
-        ) in counts
+            response_name_constants.save_count: save_count,
+        }
+        for (playlist_id, repost_count, save_count) in counts
     }
 
     user_reposted_playlist_dict = {}
@@ -573,12 +592,13 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
                 Repost.is_delete == False,
                 Repost.repost_item_id.in_(playlist_ids),
                 Repost.repost_type.in_(repost_types),
-                Repost.user_id == current_user_id
+                Repost.user_id == current_user_id,
             )
             .all()
         )
         user_reposted_playlist_dict = {
-            r[0]: True for r in current_user_playlist_reposts}
+            r[0]: True for r in current_user_playlist_reposts
+        }
 
         # has current user saved any of requested playlist ids
         user_saved_playlists_query = (
@@ -588,12 +608,13 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
                 Save.is_delete == False,
                 Save.user_id == current_user_id,
                 Save.save_item_id.in_(playlist_ids),
-                Save.save_type.in_(save_types)
+                Save.save_type.in_(save_types),
             )
             .all()
         )
         user_saved_playlist_dict = {
-            save[0]: True for save in user_saved_playlists_query}
+            save[0]: True for save in user_saved_playlists_query
+        }
 
         # Get current user's followees.
         followee_user_ids = (
@@ -601,7 +622,7 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
             .filter(
                 Follow.follower_user_id == current_user_id,
                 Follow.is_current == True,
-                Follow.is_delete == False
+                Follow.is_delete == False,
             )
             .all()
         )
@@ -614,18 +635,19 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
                 Repost.is_delete == False,
                 Repost.repost_item_id.in_(playlist_ids),
                 Repost.repost_type.in_(repost_types),
-                Repost.user_id.in_(followee_user_ids)
+                Repost.user_id.in_(followee_user_ids),
             )
             .all()
         )
         followee_playlist_reposts = helpers.query_result_to_list(
-            followee_playlist_reposts)
+            followee_playlist_reposts
+        )
         for playlist_repost in followee_playlist_reposts:
             if playlist_repost["repost_item_id"] not in followee_playlist_repost_dict:
-                followee_playlist_repost_dict[playlist_repost["repost_item_id"]] = [
-                ]
+                followee_playlist_repost_dict[playlist_repost["repost_item_id"]] = []
             followee_playlist_repost_dict[playlist_repost["repost_item_id"]].append(
-                playlist_repost)
+                playlist_repost
+            )
 
         # Build dict of playlist id --> followee saves.
         followee_playlist_saves = (
@@ -635,64 +657,69 @@ def populate_playlist_metadata(session, playlist_ids, playlists, repost_types, s
                 Save.is_delete == False,
                 Save.save_item_id.in_(playlist_ids),
                 Save.save_type.in_(save_types),
-                Save.user_id.in_(followee_user_ids)
+                Save.user_id.in_(followee_user_ids),
             )
             .all()
         )
-        followee_playlist_saves = helpers.query_result_to_list(
-            followee_playlist_saves)
+        followee_playlist_saves = helpers.query_result_to_list(followee_playlist_saves)
         for playlist_save in followee_playlist_saves:
             if playlist_save["save_item_id"] not in followee_playlist_save_dict:
                 followee_playlist_save_dict[playlist_save["save_item_id"]] = []
             followee_playlist_save_dict[playlist_save["save_item_id"]].append(
-                playlist_save)
+                playlist_save
+            )
 
     track_ids = []
     for playlist in playlists:
-        for track in playlist['playlist_contents']['track_ids']:
-            track_ids.append(track['track'])
+        for track in playlist["playlist_contents"]["track_ids"]:
+            track_ids.append(track["track"])
     play_count_dict = get_track_play_count_dict(session, track_ids)
 
     for playlist in playlists:
         playlist_id = playlist["playlist_id"]
         playlist[response_name_constants.repost_count] = count_dict.get(
-            playlist_id, {}).get(response_name_constants.repost_count, 0)
+            playlist_id, {}
+        ).get(response_name_constants.repost_count, 0)
         playlist[response_name_constants.save_count] = count_dict.get(
-            playlist_id, {}).get(response_name_constants.save_count, 0)
+            playlist_id, {}
+        ).get(response_name_constants.save_count, 0)
 
         total_play_count = 0
-        for track in playlist['playlist_contents']['track_ids']:
-            total_play_count += play_count_dict.get(track['track'], 0)
+        for track in playlist["playlist_contents"]["track_ids"]:
+            total_play_count += play_count_dict.get(track["track"], 0)
         playlist[response_name_constants.total_play_count] = total_play_count
 
         # current user specific
-        playlist[response_name_constants.followee_reposts] = followee_playlist_repost_dict.get(
-            playlist_id, [])
-        playlist[response_name_constants.followee_saves] = followee_playlist_save_dict.get(
-            playlist_id, [])
-        playlist[response_name_constants.has_current_user_reposted] = \
-            user_reposted_playlist_dict.get(playlist_id, False)
-        playlist[response_name_constants.has_current_user_saved] = user_saved_playlist_dict.get(
-            playlist_id, False)
+        playlist[
+            response_name_constants.followee_reposts
+        ] = followee_playlist_repost_dict.get(playlist_id, [])
+        playlist[
+            response_name_constants.followee_saves
+        ] = followee_playlist_save_dict.get(playlist_id, [])
+        playlist[
+            response_name_constants.has_current_user_reposted
+        ] = user_reposted_playlist_dict.get(playlist_id, False)
+        playlist[
+            response_name_constants.has_current_user_saved
+        ] = user_saved_playlist_dict.get(playlist_id, False)
 
     return playlists
 
+
 def get_repost_counts_query(
-        session,
-        query_by_user_flag,
-        query_repost_type_flag,
-        filter_ids,
-        repost_types,
-        max_block_number=None
-    ):
+    session,
+    query_by_user_flag,
+    query_repost_type_flag,
+    filter_ids,
+    repost_types,
+    max_block_number=None,
+):
     query_col = Repost.user_id if query_by_user_flag else Repost.repost_item_id
 
     repost_counts_query = None
     if query_repost_type_flag:
         repost_counts_query = session.query(
-            query_col,
-            func.count(query_col),
-            Repost.repost_type
+            query_col, func.count(query_col), Repost.repost_type
         )
     else:
         repost_counts_query = session.query(
@@ -701,14 +728,11 @@ def get_repost_counts_query(
         )
 
     repost_counts_query = repost_counts_query.filter(
-        Repost.is_current == True,
-        Repost.is_delete == False
+        Repost.is_current == True, Repost.is_delete == False
     )
 
     if filter_ids is not None:
-        repost_counts_query = repost_counts_query.filter(
-            query_col.in_(filter_ids)
-        )
+        repost_counts_query = repost_counts_query.filter(query_col.in_(filter_ids))
     if repost_types:
         repost_counts_query = repost_counts_query.filter(
             Repost.repost_type.in_(repost_types)
@@ -716,13 +740,10 @@ def get_repost_counts_query(
 
     if query_repost_type_flag:
         repost_counts_query = repost_counts_query.group_by(
-            query_col,
-            Repost.repost_type
+            query_col, Repost.repost_type
         )
     else:
-        repost_counts_query = repost_counts_query.group_by(
-            query_col
-        )
+        repost_counts_query = repost_counts_query.group_by(query_col)
 
     if max_block_number:
         repost_counts_query = repost_counts_query.filter(
@@ -731,21 +752,28 @@ def get_repost_counts_query(
 
     return repost_counts_query
 
+
 # Gets the repost count for users or tracks with the filters specified in the params.
 # The time param {day, week, month, year} is used in generate_trending to create a windowed time frame for repost counts
 
 
 def get_repost_counts(
+    session,
+    query_by_user_flag,
+    query_repost_type_flag,
+    filter_ids,
+    repost_types,
+    max_block_number=None,
+    time=None,
+):
+    repost_counts_query = get_repost_counts_query(
         session,
         query_by_user_flag,
         query_repost_type_flag,
         filter_ids,
         repost_types,
-        max_block_number=None,
-        time=None
-    ):
-    repost_counts_query = get_repost_counts_query(
-        session, query_by_user_flag, query_repost_type_flag, filter_ids, repost_types, max_block_number)
+        max_block_number,
+    )
 
     if time is not None:
         interval = "NOW() - interval '1 {}'".format(time)
@@ -758,55 +786,40 @@ def get_repost_counts(
 def get_karma(session, ids, time=None, is_playlist=False, xf=False):
     """Gets the total karma for provided ids (track or playlist)"""
 
-    repost_type = (RepostType.playlist if is_playlist else RepostType.track)
-    save_type = (SaveType.playlist if is_playlist else SaveType.track)
+    repost_type = RepostType.playlist if is_playlist else RepostType.track
+    save_type = SaveType.playlist if is_playlist else SaveType.track
 
-    reposters = (
-        session.query(
-            Repost.user_id.label('user_id'),
-            Repost.repost_item_id.label('item_id')
-        )
-        .filter(
-            Repost.repost_item_id.in_(ids),
-            Repost.is_delete == False,
-            Repost.is_current == True,
-            Repost.repost_type == repost_type
-        )
+    reposters = session.query(
+        Repost.user_id.label("user_id"), Repost.repost_item_id.label("item_id")
+    ).filter(
+        Repost.repost_item_id.in_(ids),
+        Repost.is_delete == False,
+        Repost.is_current == True,
+        Repost.repost_type == repost_type,
     )
 
-    savers = (
-        session.query(
-            Save.user_id.label('user_id'),
-            Save.save_item_id.label('item_id')
-        )
-        .filter(
-            Save.save_item_id.in_(ids),
-            Save.is_current == True,
-            Save.is_delete == False,
-            Save.save_type == save_type
-        )
+    savers = session.query(
+        Save.user_id.label("user_id"), Save.save_item_id.label("item_id")
+    ).filter(
+        Save.save_item_id.in_(ids),
+        Save.is_current == True,
+        Save.is_delete == False,
+        Save.save_type == save_type,
     )
     if time is not None:
         interval = "NOW() - interval '1 {}'".format(time)
-        savers = savers.filter(
-            Save.created_at >= text(interval)
-        )
-        reposters = reposters.filter(
-            Repost.created_at >= text(interval)
-        )
+        savers = savers.filter(Save.created_at >= text(interval))
+        reposters = reposters.filter(Repost.created_at >= text(interval))
 
     saves_and_reposts = reposters.union_all(savers).subquery()
     if xf:
         saves_and_reposts = (
             session.query(
-                saves_and_reposts.c.user_id.label('user_id'),
-                saves_and_reposts.c.item_id.label('item_id')
+                saves_and_reposts.c.user_id.label("user_id"),
+                saves_and_reposts.c.item_id.label("item_id"),
             )
             .select_from(saves_and_reposts)
-            .join(
-                User,
-                saves_and_reposts.c.user_id == User.user_id
-            )
+            .join(User, saves_and_reposts.c.user_id == User.user_id)
             .filter(
                 User.cover_photo != None,
                 User.profile_picture != None,
@@ -815,19 +828,10 @@ def get_karma(session, ids, time=None, is_playlist=False, xf=False):
         ).subquery()
 
     query = (
-        session.query(
-            saves_and_reposts.c.item_id,
-            func.count(Follow.followee_user_id)
-        )
+        session.query(saves_and_reposts.c.item_id, func.count(Follow.followee_user_id))
         .select_from(saves_and_reposts)
-        .join(
-            Follow,
-            saves_and_reposts.c.user_id == Follow.followee_user_id
-        )
-        .filter(
-            Follow.is_current == True,
-            Follow.is_delete == False
-        )
+        .join(Follow, saves_and_reposts.c.user_id == Follow.followee_user_id)
+        .filter(Follow.is_current == True, Follow.is_delete == False)
         .group_by(saves_and_reposts.c.item_id)
     )
 
@@ -835,21 +839,19 @@ def get_karma(session, ids, time=None, is_playlist=False, xf=False):
 
 
 def get_save_counts_query(
-        session,
-        query_by_user_flag,
-        query_save_type_flag,
-        filter_ids,
-        save_types,
-        max_block_number=None
-    ):
+    session,
+    query_by_user_flag,
+    query_save_type_flag,
+    filter_ids,
+    save_types,
+    max_block_number=None,
+):
     query_col = Save.user_id if query_by_user_flag else Save.save_item_id
 
     save_counts_query = None
     if query_save_type_flag:
         save_counts_query = session.query(
-            query_col,
-            func.count(query_col),
-            Save.save_type
+            query_col, func.count(query_col), Save.save_type
         )
     else:
         save_counts_query = session.query(
@@ -858,28 +860,18 @@ def get_save_counts_query(
         )
 
     save_counts_query = save_counts_query.filter(
-        Save.is_current == True,
-        Save.is_delete == False
+        Save.is_current == True, Save.is_delete == False
     )
 
     if filter_ids is not None:
-        save_counts_query = save_counts_query.filter(
-            Save.save_item_id.in_(filter_ids)
-        )
+        save_counts_query = save_counts_query.filter(Save.save_item_id.in_(filter_ids))
     if save_types:
-        save_counts_query = save_counts_query.filter(
-            Save.save_type.in_(save_types)
-        )
+        save_counts_query = save_counts_query.filter(Save.save_type.in_(save_types))
 
     if query_save_type_flag:
-        save_counts_query = save_counts_query.group_by(
-            query_col,
-            Save.save_type
-        )
+        save_counts_query = save_counts_query.group_by(query_col, Save.save_type)
     else:
-        save_counts_query = save_counts_query.group_by(
-            query_col
-        )
+        save_counts_query = save_counts_query.group_by(query_col)
 
     if max_block_number:
         save_counts_query = save_counts_query.filter(
@@ -889,52 +881,47 @@ def get_save_counts_query(
     return save_counts_query
 
 
-
 # Gets the save count for users or tracks with the filters specified in the params.
 # The time param {day, week, month, year} is used in generate_trending to create a windowed time frame for save counts
 def get_save_counts(
+    session,
+    query_by_user_flag,
+    query_save_type_flag,
+    filter_ids,
+    save_types,
+    max_block_number=None,
+    time=None,
+):
+    save_counts_query = get_save_counts_query(
         session,
         query_by_user_flag,
         query_save_type_flag,
         filter_ids,
         save_types,
-        max_block_number=None,
-        time=None
-    ):
-    save_counts_query = get_save_counts_query(
-        session, query_by_user_flag, query_save_type_flag, filter_ids, save_types, max_block_number)
+        max_block_number,
+    )
 
     if time is not None:
         interval = "NOW() - interval '1 {}'".format(time)
-        save_counts_query = save_counts_query.filter(
-            Save.created_at >= text(interval)
-        )
+        save_counts_query = save_counts_query.filter(Save.created_at >= text(interval))
     return save_counts_query.all()
 
+
 def get_follower_count_dict(session, user_ids, max_block_number=None):
-    follower_counts = (
-        session.query(
-            Follow.followee_user_id,
-            func.count(Follow.followee_user_id)
-        )
-        .filter(
-            Follow.is_current == True,
-            Follow.is_delete == False,
-            Follow.followee_user_id.in_(user_ids)
-        )
+    follower_counts = session.query(
+        Follow.followee_user_id, func.count(Follow.followee_user_id)
+    ).filter(
+        Follow.is_current == True,
+        Follow.is_delete == False,
+        Follow.followee_user_id.in_(user_ids),
     )
 
     if max_block_number:
-        follower_counts = follower_counts.filter(
-            Follow.blocknumber <= max_block_number)
+        follower_counts = follower_counts.filter(Follow.blocknumber <= max_block_number)
 
-    follower_counts = (
-        follower_counts.group_by(Follow.followee_user_id).all()
-    )
+    follower_counts = follower_counts.group_by(Follow.followee_user_id).all()
 
-    follower_count_dict = \
-        {user_id: follower_count for (
-            user_id, follower_count) in follower_counts}
+    follower_count_dict = dict(follower_counts)
     return follower_count_dict
 
 
@@ -974,24 +961,24 @@ def get_pagination_vars():
         max(request.args.get("limit", default=defaultLimit, type=int), minLimit),
         maxLimit,
     )
-    offset = max(request.args.get(
-        "offset", default=defaultOffset, type=int), minOffset)
+    offset = max(request.args.get("offset", default=defaultOffset, type=int), minOffset)
     return (limit, offset)
 
 
 def paginate_query(query_obj, apply_offset=True, include_count=False):
     (limit, offset) = get_pagination_vars()
     modified_query = query_obj.limit(limit)
-    modified_query = modified_query.offset(
-        offset) if apply_offset else modified_query
+    modified_query = modified_query.offset(offset) if apply_offset else modified_query
     if include_count:
         return (modified_query, query_obj.count())
     return modified_query
 
-def add_query_pagination(query_obj, limit, offset, apply_offset=True, include_count=False):
+
+def add_query_pagination(
+    query_obj, limit, offset, apply_offset=True, include_count=False
+):
     modified_query = query_obj.limit(limit)
-    modified_query = modified_query.offset(
-        offset) if apply_offset else modified_query
+    modified_query = modified_query.offset(offset) if apply_offset else modified_query
     if include_count:
         return (modified_query, query_obj.count())
     return modified_query
@@ -1000,7 +987,7 @@ def add_query_pagination(query_obj, limit, offset, apply_offset=True, include_co
 def get_genre_list(genre):
     genre_list = []
     genre_list.append(genre)
-    if genre == 'Electronic':
+    if genre == "Electronic":
         genre_list = genre_list + electronic_sub_genres
     return genre_list
 
@@ -1011,13 +998,13 @@ def get_users_by_id(session, user_ids, current_user_id=None):
     if not current_user_id:
         current_user_id = get_current_user_id(required=False)
     # bundle peripheral info into user results
-    populated_users = populate_user_metadata(
-        session, user_ids, users, current_user_id)
+    populated_users = populate_user_metadata(session, user_ids, users, current_user_id)
     user_map = {}
     for user in populated_users:
-        user_map[user['user_id']] = user
+        user_map[user["user_id"]] = user
 
     return user_map
+
 
 # Given an array of tracks and/or playlists, return an array of unique user ids
 
@@ -1025,10 +1012,10 @@ def get_users_by_id(session, user_ids, current_user_id=None):
 def get_users_ids(results):
     user_ids = []
     for result in results:
-        if 'playlist_owner_id' in result:
+        if "playlist_owner_id" in result:
             user_ids.append(int(result["playlist_owner_id"]))
-        elif 'owner_id' in result:
-            user_ids.append(int(result['owner_id']))
+        elif "owner_id" in result:
+            user_ids.append(int(result["owner_id"]))
     # Remove duplicate user ids
     user_ids = list(set(user_ids))
     return user_ids
@@ -1068,25 +1055,22 @@ def create_save_repost_count_subquery(session, type):
     # a combined count for each
     subquery = (
         session.query(
-            Save.save_item_id.label('id'),
-            (func.count(Save.save_item_id) +
-             func.count(reposts_count_subquery.c.repost_item_id))
-            .label('count')
+            Save.save_item_id.label("id"),
+            (
+                func.count(Save.save_item_id)
+                + func.count(reposts_count_subquery.c.repost_item_id)
+            ).label("count"),
         )
         # Join against reposts filtering to matching ids.
         # Inner-join drops no-match ids.
         .join(
             reposts_count_subquery,
-            Save.save_item_id == reposts_count_subquery.c.repost_item_id
+            Save.save_item_id == reposts_count_subquery.c.repost_item_id,
         )
         .filter(
-            Save.is_current == True,
-            Save.is_delete == False,
-            Save.save_type == type
+            Save.is_current == True, Save.is_delete == False, Save.save_type == type
         )
-        .group_by(
-            Save.save_item_id
-        )
+        .group_by(Save.save_item_id)
         .subquery()
     )
     return subquery
@@ -1111,18 +1095,13 @@ def create_save_count_subquery(session, type):
     """
     subquery = (
         session.query(
-            Save.save_item_id.label('id'),
-            func.count(Save.save_item_id).label(
-                response_name_constants.save_count)
+            Save.save_item_id.label("id"),
+            func.count(Save.save_item_id).label(response_name_constants.save_count),
         )
         .filter(
-            Save.is_current == True,
-            Save.is_delete == False,
-            Save.save_type == type
+            Save.is_current == True, Save.is_delete == False, Save.save_type == type
         )
-        .group_by(
-            Save.save_item_id
-        )
+        .group_by(Save.save_item_id)
         .subquery()
     )
     return subquery
@@ -1147,18 +1126,17 @@ def create_repost_count_subquery(session, type):
     """
     subquery = (
         session.query(
-            Repost.repost_item_id.label('id'),
+            Repost.repost_item_id.label("id"),
             func.count(Repost.repost_item_id).label(
-                response_name_constants.repost_count)
+                response_name_constants.repost_count
+            ),
         )
         .filter(
             Repost.is_current == True,
             Repost.is_delete == False,
-            Repost.repost_type == type
+            Repost.repost_type == type,
         )
-        .group_by(
-            Repost.repost_item_id
-        )
+        .group_by(Repost.repost_item_id)
         .subquery()
     )
     return subquery
@@ -1179,18 +1157,16 @@ def create_followee_playlists_subquery(session, current_user_id):
         .filter(
             Follow.follower_user_id == current_user_id,
             Follow.is_current == True,
-            Follow.is_delete == False
+            Follow.is_delete == False,
         )
         .subquery()
     )
     followee_playlists_subquery = (
-        session.query(
-            Playlist
-        )
+        session.query(Playlist)
         .select_from(Playlist)
         .join(
             followee_user_ids_subquery,
-            Playlist.playlist_owner_id == followee_user_ids_subquery.c.followee_user_id
+            Playlist.playlist_owner_id == followee_user_ids_subquery.c.followee_user_id,
         )
         .subquery()
     )
@@ -1199,7 +1175,7 @@ def create_followee_playlists_subquery(session, current_user_id):
 
 def seconds_ago(timestamp):
     """Gets the number of seconds ago `timestamp` was from now as a SqlAlchemy expression."""
-    return func.extract('epoch', (func.now() - timestamp))
+    return func.extract("epoch", (func.now() - timestamp))
 
 
 def decayed_score(score, created_at, peak=5, nominal_timestamp=14 * 24 * 60 * 60):
@@ -1215,15 +1191,11 @@ def decayed_score(score, created_at, peak=5, nominal_timestamp=14 * 24 * 60 * 60
     Returns:
         A SQLAlchemy expression representing decayed score (score * multipler)
         where multipler is represented by:
-        max(0.2, 5 ^ 1 - min(time_ago / nominal_timestamp, 1))
+        peak ^ 1 - min(time_ago / nominal_timestamp, 1)
     """
-    return score * func.greatest(
-        func.pow(
-            5,
-            1 - func.least(seconds_ago(created_at) / nominal_timestamp, 1)
-        ),
-        0.2
-    )
+    decay_exponent = 1 - func.least(seconds_ago(created_at) / nominal_timestamp, 1) # goes from 1 -> 0
+    decay_value = func.pow(peak, decay_exponent) / peak # decay slope value
+    return score * decay_value
 
 
 def filter_to_playlist_mood(session, mood, query, correlation):
@@ -1247,12 +1219,10 @@ def filter_to_playlist_mood(session, mood, query, correlation):
     if not mood:
         return query
 
-    tracks_subquery = (
-        session.query(
-            func.jsonb_array_elements(
-                correlation.c.playlist_contents['track_ids']
-            ).op('->>')('track').cast(Integer)
-        )
+    tracks_subquery = session.query(
+        func.jsonb_array_elements(correlation.c.playlist_contents["track_ids"])
+        .op("->>")("track")
+        .cast(Integer)
     )
 
     if correlation is not None:
@@ -1264,36 +1234,29 @@ def filter_to_playlist_mood(session, mood, query, correlation):
     # Query for the most common mood in a playlist
     dominant_mood_subquery = (
         session.query(
-            Track.mood.label('mood'),
-            func.max(Track.track_id).label('latest'),
-            func.count(Track.mood).label('cnt')
+            Track.mood.label("mood"),
+            func.max(Track.track_id).label("latest"),
+            func.count(Track.mood).label("cnt"),
         )
         .filter(
             Track.is_current == True,
             Track.is_delete == False,
-            Track.track_id.in_(tracks_subquery)
+            Track.track_id.in_(tracks_subquery),
         )
         .group_by(Track.mood)
-        .order_by(desc('cnt'), desc('latest'))
+        .order_by(desc("cnt"), desc("latest"))
         .limit(1)
         .subquery()
     )
 
     # Match the provided mood against the dominant mood for playlists
-    mood_exists_query = (
-        session.query(
-            dominant_mood_subquery.c.mood
-        )
-        .filter(
-            func.lower(dominant_mood_subquery.c.mood) == func.lower(mood)
-        )
+    mood_exists_query = session.query(dominant_mood_subquery.c.mood).filter(
+        func.lower(dominant_mood_subquery.c.mood) == func.lower(mood)
     )
 
     # Filter playlist query to those that have the most common mood checking that
     # there `exists` such a playlist with the dominant mood
-    return query.filter(
-        mood_exists_query.exists()
-    )
+    return query.filter(mood_exists_query.exists())
 
 
 def add_users_to_tracks(session, tracks, current_user_id=None):
@@ -1312,6 +1275,6 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
     user_id_list = get_users_ids(tracks)
     users = get_users_by_id(session, user_id_list, current_user_id)
     for track in tracks:
-        user = users[track['owner_id']]
+        user = users[track["owner_id"]]
         if user:
-            track['user'] = user
+            track["user"] = user
