@@ -160,7 +160,7 @@ def refresh_user_ids(
             redis.incrby(REDIS_ETH_BALANCE_COUNTER_KEY, len(to_remove))
 
 
-def get_token_contract(eth_web3, shared_config):
+def get_token_address(eth_web3, shared_config):
     eth_registry_address = eth_web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
     )
@@ -172,6 +172,12 @@ def get_token_contract(eth_web3, shared_config):
     token_address = eth_registry_instance.functions.getContract(
         audius_token_registry_key
     ).call()
+
+    return token_address
+
+
+def get_token_contract(eth_web3, shared_config):
+    token_address = get_token_address(eth_web3, shared_config)
 
     audius_token_instance = eth_web3.eth.contract(
         address=token_address, abi=eth_abi_values["AudiusToken"]["abi"]
