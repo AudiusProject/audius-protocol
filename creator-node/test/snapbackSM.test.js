@@ -203,6 +203,10 @@ describe('test SnapbackSM', function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     assert.strictEqual(snapback.highestReconfigModeEnabled, RECONFIG_MODES.RECONFIG_DISABLED.key)
+    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
+    assert.ok(!snapback.enabledReconfigModes.has('ONE_SECONDARY'))
+    assert.ok(!snapback.enabledReconfigModes.has('MULTIPLE_SECONDARIES'))
+    assert.ok(!snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
   })
 
   it('[determineNewReplicaSet] if the mode enabled does not cover the reconfig type, do not issue reconfig', async function () {
