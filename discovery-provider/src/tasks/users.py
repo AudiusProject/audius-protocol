@@ -316,16 +316,12 @@ def parse_user_event(
             ):
                 user_record.playlist_library = ipfs_metadata["playlist_library"]
 
-            if (
-                "events" in ipfs_metadata
-                and ipfs_metadata["events"]
-            ):
+            if "events" in ipfs_metadata and ipfs_metadata["events"]:
                 update_user_events(
                     session,
                     user_record,
                     ipfs_metadata["events"],
                 )
-
 
     # All incoming profile photos intended to be a directory
     # Any write to profile_picture field is replaced by profile_picture_sizes
@@ -434,9 +430,7 @@ class UserEventsMetadata(TypedDict):
 
 
 def update_user_events(
-    session: Session,
-    user_record: User,
-    events: UserEventsMetadata
+    session: Session, user_record: User, events: UserEventsMetadata
 ) -> None:
     """Updates the user events table"""
     try:
@@ -445,9 +439,9 @@ def update_user_events(
             return
 
         # Mark existing UserEvents entries as not current
-        session.query(UserEvents).filter_by(user_id=user_record.user_id, is_current=True).update(
-            {"is_current": False}
-        )
+        session.query(UserEvents).filter_by(
+            user_id=user_record.user_id, is_current=True
+        ).update({"is_current": False})
 
         user_events = UserEvents(
             user_id=user_record.user_id,
@@ -456,10 +450,10 @@ def update_user_events(
             blockhash=user_record.blockhash,
         )
         for event, value in events.items():
-            if event == 'referrer':
-                user_events.referrer = cast(Column[int], value)
-            elif event == 'is_mobile_user':
-                user_events.is_mobile_user = cast(Column[bool], value)
+            if event == "referrer" and isinstance(value, int):
+                user_events.referrer = value
+            elif event == "is_mobile_user" and isinstance(value, bool):
+                user_events.is_mobile_user = value
         session.add(user_events)
 
     except Exception as e:
