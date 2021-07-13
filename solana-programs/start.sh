@@ -43,10 +43,12 @@
     sed -i "s/$cur_address/$track_listen_count_address/g" src/lib.rs
 
     cd ../cli
+    # Initialize track listen count entities
     signer_group=$(cargo run create-signer-group | grep -Po '(?<=account ).*')
     valid_signer=$(cargo run create-valid-signer "$signer_group" "$address" | grep -Po '(?<=account ).*')
     owner_wallet=$(cat ~/.config/solana/id.json)
 
+    # Deploy wAUDIO token
     token=$(spl-token create-token | cat | head -n 1 | cut -d' ' -f3)
     token_account=$(spl-token create-account $token | cat | head -n 1 | cut -d' ' -f3)
     spl-token mint $token 100
