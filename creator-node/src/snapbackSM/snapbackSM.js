@@ -127,12 +127,8 @@ class SnapbackSM {
     // The interval when SnapbackSM is fired for state machine jobs
     this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
 
-    // The highest level of reconfig ops allowed. If the passed in mode is not one of the enabled modes, default to `RECONFIG_DISABLED`
-    this.highestReconfigModeEnabled = this.getHighestReconfigModeEnabled()
-
-    // The set of modes enabled for reconfig ops
-    // e.x.: 'PRIMARY_AND_SECONDARY' is the reconfig mode -> 'RECONFIG_DISABLED', 'ONE_SECONDARY', 'MULTIPLE_SECONDARIES', 'PRIMARY_AND_SECONDARY' enabled
-    this.enabledReconfigModes = this.generateEnabledReconfigModesSet()
+    // Initialize the set of enabledReconfigModes
+    this.enabledReconfigModes = this.computeEnabledReconfigModes()
   }
 
   /**
@@ -842,8 +838,9 @@ class SnapbackSM {
       // Setup the mapping of Content Node endpoint to service provider id. Used in reconfig
       try {
         await this.peerSetManager.updateEndpointToSpIdMap(this.audiusLibs.ethContracts)
-        // Reset `this.highestReconfigModeEnabled` to the enabled mode
-        this.highestReconfigModeEnabled = this.getHighestReconfigModeEnabled()
+
+        // Re-generate enabledReconfigModes
+        this.enabledReconfigModes = this.computeEnabledReconfigModes()
 
         decisionTree.push({
           stage: `updateEndpointToSpIdMap() Success`,
@@ -854,7 +851,9 @@ class SnapbackSM {
         })
       } catch (e) {
         // If unable to initialize `endpointToSpIdMap`, disable reconfig
-        this.highestReconfigModeEnabled = RECONFIG_MODES.RECONFIG_DISABLED.key
+        this.enabledReconfigModes = this.computeEnabledReconfigModes({
+          override: RECONFIG_MODES.RECONFIG_DISABLED.key
+        })
 
         decisionTree.push({
           stage: `updateEndpointToSpIdMap() Error`,
@@ -862,9 +861,6 @@ class SnapbackSM {
           time: Date.now()
         })
       }
-
-      // Reset the enabled modes set to the currently highest enabled mode
-      this.enabledReconfigModes = this.generateEnabledReconfigModesSet()
 
       // Issue all required sync requests
       let numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors
@@ -1215,16 +1211,31 @@ class SnapbackSM {
     return this.enabledReconfigModes.has(mode)
   }
 
-  // Returns the reconfig mode enabled from config. If value is urecognizable, default to `RECONFIG_DISABLED`
-  getHighestReconfigModeEnabled () {
-    return RECONFIG_MODE_KEYS.includes(this.nodeConfig.get('snapbackHighestReconfigMode'))
-      ? this.nodeConfig.get('snapbackHighestReconfigMode') : RECONFIG_MODES.RECONFIG_DISABLED.key
-  }
+  /**
+   * e.x.: 'PRIMARY_AND_SECONDARY' is the reconfig mode -> 'RECONFIG_DISABLED', 'ONE_SECONDARY', 'MULTIPLE_SECONDARIES', 'PRIMARY_AND_SECONDARY' enabled
+   */
+  computeEnabledReconfigModes ({ override }) {
+    let highestEnabledReconfigMode
 
-  generateEnabledReconfigModesSet () {
-    return new Set(RECONFIG_MODE_KEYS.filter(mode =>
-      RECONFIG_MODES[mode].value <= RECONFIG_MODES[this.highestReconfigModeEnabled].value
+    // Set mode to override if provided
+    if (override) {
+      highestEnabledReconfigMode = highestEnabledModeOverride
+
+      // Else, set mode to config var, defaulting to RECONFIG_DISABLED if invalid
+    } else {
+      highestEnabledReconfigMode = (
+        RECONFIG_MODE_KEYS.includes(this.nodeConfig.get('snapbackHighestReconfigMode'))
+        ? this.nodeConfig.get('snapbackHighestReconfigMode')
+        : RECONFIG_MODES.RECONFIG_DISABLED.key
+      )
+    }
+
+    // All modes with lower rank than `highestEnabledReconfigMode` should be enabled
+    const enabledReconfigModesSet = new Set(RECONFIG_MODE_KEYS.filter(mode =>
+      RECONFIG_MODES[mode].value <= RECONFIG_MODES[highestEnabledReconfigMode].value
     ))
+
+    return enabledReconfigModesSet
   }
 }
 
