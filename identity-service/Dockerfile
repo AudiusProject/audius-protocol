@@ -16,6 +16,7 @@ RUN apk update && \
     apk add redis && \
     apk add bash && \
     apk add sudo && \
+    apk add rsyslog && \
     apk add nodejs
 
 COPY . .
