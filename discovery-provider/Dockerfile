@@ -28,9 +28,29 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add python3-dev && \
     apk add py3-pip && \
     apk add py3-wheel && \
+    apk add rsyslog && \
     apk add --virtual .build-deps gcc musl-dev postgresql-dev=11.12-r0 && \
     python3 -m pip install -r requirements.txt --no-cache-dir && \
     apk --purge del .build-deps
+
+# versions
+# alpine-sdk 1.0-r0
+# linux-headers 5.7.8-r0
+# bash 5.1.0-r0
+# libffi-dev 3.3-r2
+# redis 6.0.14-r0
+# sudo 1.9.5p2-r0
+# go-ipfs 0.8.0-r0
+# python3 3.8.10-r0
+# python3-dev 3.8.10-r0
+# py3-pip 20.3.4-r0
+# py3-wheel 0.36.2-r0
+
+# libpq 11.12-r0
+# postgresql 11.12-r0
+# postgresql-client 11.12-r0
+# postgresql-contrib 11.12-r0
+# postgresql-libs 11.12-r0
 
 COPY . .
 

@@ -1,5 +1,26 @@
 #!/bin/bash
 
+if [[ -n "$LOGGLY_TOKEN" ]]; then
+    LOGGLY_TAGS=$(echo $LOGGLY_TAGS | python -c "print(' '.join(f'tag=\\\\\"{i}\\\\\"' for i in input().split(',')))")
+    mkdir -p /var/spool/rsyslog
+    mkdir -p /etc/rsyslog.d
+    cat >/etc/rsyslog.d/22-loggly.conf <<EOF
+\$WorkDirectory /var/spool/rsyslog # where to place spool files
+\$ActionQueueFileName fwdRule1   # unique name prefix for spool files
+\$ActionQueueMaxDiskSpace 1g    # 1gb space limit (use as much as possible)
+\$ActionQueueSaveOnShutdown on   # save messages to disk on shutdown
+\$ActionQueueType LinkedList    # run asynchronously
+\$ActionResumeRetryCount -1    # infinite retries if host is down
+
+template(name="LogglyFormat" type="string"
+ string="<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [$LOGGLY_TOKEN@41058 $LOGGLY_TAGS] %msg%\n")
+
+# Send messages to Loggly over TCP using the template.
+action(type="omfwd" protocol="tcp" target="logs-01.loggly.com" port="514" template="LogglyFormat")
+EOF
+    rsyslogd
+fi
+
 if [ -z "$audius_ipfs_host" ]; then
     if [ -z "$(ls -A /root/.ipfs)" ]; then
         ipfs init --profile server
@@ -39,13 +60,15 @@ if [ -z "$audius_db_url" ]; then
     /wait
 fi
 
-./scripts/dev-server.sh &
+exec 3>&1 # create fd 3 which redirects to stdout (see https://unix.stackexchange.com/a/640404/408588)
+
+./scripts/dev-server.sh | tee >&3 | logger &
 sleep 20 # wait for migrations to finish
 
 if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-    celery -A src.worker.celery worker --loglevel info &
+    celery -A src.worker.celery worker --loglevel info | tee >&3 | logger &
 fi
 
-celery -A src.worker.celery beat --loglevel info &
+celery -A src.worker.celery beat --loglevel info | tee >&3 | logger &
 
 wait
