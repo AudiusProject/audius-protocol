@@ -507,15 +507,14 @@ class SnapbackSM {
           return
         }
 
-        // Short-circuit on null wallet
-        if (!wallet) {
-          this.logError(`issueSyncRequests || Cannot process null wallet`)
-          return
-        }
-
         // Determine if secondary requires a sync by comparing clock values against primary (self)
-        const userPrimaryClockVal = userPrimaryClockValues[wallet] || -1
-        const userSecondaryClockVal = secondaryNodesToUserClockStatusesMap[secondary][wallet] || -1
+        // Default to -1 if null/undefined
+        const userPrimaryClockVal = (userPrimaryClockValues[wallet] == null) ? -1 : userPrimaryClockValues[wallet]
+        const userSecondaryClockVal = (
+          secondaryNodesToUserClockStatusesMap[secondary][wallet] == null
+            ? -1
+            : secondaryNodesToUserClockStatusesMap[secondary][wallet]
+        )
 
         if (userPrimaryClockVal > userSecondaryClockVal) {
           numSyncRequestsRequired += 1
@@ -932,8 +931,9 @@ class SnapbackSM {
      */
     this.syncDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint)
 
-    // primaryClockValue is used in additionalSyncIsRequired() call below
-    const primaryClockValue = (await this.getUserPrimaryClockValues([userWallet]))[userWallet] || -1
+    // primaryClockValue is used in additionalSyncIsRequired() call below; default to -1 if null/undefined
+    let primaryClockValue = (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
+    primaryClockValue = (primaryClockValue == null) ? -1 : primaryClockValue
 
     this.log(`------------------Process SYNC | User ${userWallet} | Secondary: ${secondaryEndpoint} | Primary clock value ${primaryClockValue} | type: ${syncType} | jobID: ${id} ------------------`)
 
