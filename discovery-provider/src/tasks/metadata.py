@@ -41,4 +41,5 @@ user_metadata_format = {
     "associated_wallets": None,
     "collectibles": None,
     "playlist_library": None,
+    "events": None,
 }
