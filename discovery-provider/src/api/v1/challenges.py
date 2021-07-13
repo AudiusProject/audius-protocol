@@ -34,7 +34,7 @@ get_challenges_response = make_response(
 )
 
 
-@ns.route("/challenges/undisbursed")
+@ns.route("/undisbursed")
 class GetUndisbursedChallenges(Resource):
     @ns.doc(
         params={

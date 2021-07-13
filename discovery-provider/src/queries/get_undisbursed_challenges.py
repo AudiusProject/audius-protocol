@@ -161,8 +161,8 @@ def get_undisbursed_challenges(
 
     limit = DEFAULT_LIMIT
 
-    if args["completed_blocknumber"] is not None:
-        limit = min(MAX_LIMIT, args["completed_blocknumber"])
+    if args["limit"] is not None:
+        limit = min(MAX_LIMIT, args["limit"])
     aggregate_undisbursed_challenges_query = (
         aggregate_undisbursed_challenges_query.limit(limit)
     )
