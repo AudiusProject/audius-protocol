@@ -449,7 +449,7 @@ class SnapbackSM {
    * wallet, issue a reconfig for that primary.
    *
    * Also, there is the notion of `issueReconfig` flag. This value is used to determine whether or not to issue a reconfig based on
-   * the value of `this.highestReconfigModeEnabled` and the type of reconfig that needs to be issued. See `RECONFIG_MODE` variable
+   * the value of `this.highestEnabledReconfigMode` and the type of reconfig that needs to be issued. See `RECONFIG_MODE` variable
    * for more information.
    *
    * @param {Object} param
@@ -1218,14 +1218,14 @@ class SnapbackSM {
 
     // Set mode to override if provided
     if (override) {
-      highestEnabledReconfigMode = highestEnabledModeOverride
+      highestEnabledReconfigMode = override
 
       // Else, set mode to config var, defaulting to RECONFIG_DISABLED if invalid
     } else {
       highestEnabledReconfigMode = (
         RECONFIG_MODE_KEYS.includes(this.nodeConfig.get('snapbackHighestReconfigMode'))
-        ? this.nodeConfig.get('snapbackHighestReconfigMode')
-        : RECONFIG_MODES.RECONFIG_DISABLED.key
+          ? this.nodeConfig.get('snapbackHighestReconfigMode')
+          : RECONFIG_MODES.RECONFIG_DISABLED.key
       )
     }
 
