@@ -51,7 +51,10 @@
       "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/mnt\" audius/solana-programs > solana-program-config.json",
       "cd solana-programs/; cp solana-program-config.json ../identity-service"
     ],
-    "down": []
+    "down": [
+      "docker container stop solana || true",
+      "docker container rm solana || true"
+    ]
   },
   "ipfs": {
     "up": [
