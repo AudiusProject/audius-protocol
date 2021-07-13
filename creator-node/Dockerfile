@@ -21,6 +21,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add bash && \
     apk add sudo && \
     apk add go-ipfs && \
+    apk add rsyslog && \
     apk add nodejs # version 14.16.1
 
 COPY . .
