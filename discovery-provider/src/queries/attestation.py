@@ -16,6 +16,8 @@ from src.utils.config import shared_config
 
 
 class Attestation:
+    """Represents DN attesting to a user completing a given challenge"""
+
     def __init__(
         self,
         *,
@@ -33,7 +35,7 @@ class Attestation:
 
     def stringify(self):
         # Format:
-        # recipient + "_" + amount + "_" + ID (challengeId + specifier) + "_" + bot_oracle
+        # recipient + "_" + amount + "_" + ID (challengeId + specifier) + "_" + oracle_address
         return "_".join(
             [
                 self.user_address,
@@ -82,6 +84,10 @@ def get_attestation(
     oracle_address: str,
     specifier: str,
 ):
+    """
+    Returns a owner_wallet, signed_attestation tuple,
+    or throws an error explaining why the attestation was
+    not able to be created."""
     if not user_id or not challenge_id or not oracle_address:
         raise AttestationError(INVALID_INPUT)
 

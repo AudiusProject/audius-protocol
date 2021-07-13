@@ -1,5 +1,6 @@
-from src.queries.attestation import get_attestation
 from flask_restx import Resource, Namespace, fields, reqparse, abort
+
+from src.queries.attestation import get_attestation
 from src.utils.redis_cache import cache
 from src.api.v1.helpers import decode_with_abort, make_response, success_response
 from src.utils.db_session import get_db_read_replica
@@ -21,7 +22,10 @@ attest_parser.add_argument("specifier", required=True)
 
 @ns.route(attest_route)
 class Attest(Resource):
+    """Produces an attestation that a given user has completed a challenge, or errors."""
+
     @ns.marshal_with(attestation_response)
+    @ns.expect(attest_parser)
     @cache(ttl_sec=5)
     def get(self, challenge_id: str):
         args = attest_parser.parse_args(strict=True)
@@ -44,4 +48,5 @@ class Attest(Resource):
                     {"owner_wallet": owner_wallet, "attestation": signature}
                 )
             except Exception as e:
-                abort(500, e)
+                abort(400, e)
+                return None

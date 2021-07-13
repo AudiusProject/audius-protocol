@@ -80,7 +80,7 @@ def test_get_attestation(app):
                     specifier="1",
                 )
 
-            # Test with bad bot oracle
+            # Test with bad AAO
             with pytest.raises(AttestationError):
                 get_attestation(
                     session,
