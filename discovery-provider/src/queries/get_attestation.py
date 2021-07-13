@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Tuple
 
 from web3 import Web3
 from web3.auto import w3
@@ -95,8 +95,8 @@ def get_attestation(
     if not is_valid_oracle(oracle_address):
         raise AttestationError(INVALID_ORACLE)
 
-    challenges_and_disbursements: List[
-        Tuple[UserChallenge, Challenge, ChallengeDisbursement]
+    challenges_and_disbursements: Tuple[
+        UserChallenge, Challenge, ChallengeDisbursement
     ] = (
         session.query(UserChallenge, Challenge, ChallengeDisbursement)
         .join(Challenge, Challenge.id == UserChallenge.challenge_id)
@@ -116,12 +116,12 @@ def get_attestation(
         )
     ).one_or_none()
 
-    if not len(challenges_and_disbursements) == 1:
+    if not challenges_and_disbursements:
         raise AttestationError(MISSING_CHALLENGES)
     user_challenge, challenge, disbursement = (
-        challenges_and_disbursements[0][0],
-        challenges_and_disbursements[0][1],
-        challenges_and_disbursements[0][2],
+        challenges_and_disbursements[0],
+        challenges_and_disbursements[1],
+        challenges_and_disbursements[2],
     )
     if not user_challenge.is_complete:
         raise AttestationError(CHALLENGE_INCOMPLETE)
