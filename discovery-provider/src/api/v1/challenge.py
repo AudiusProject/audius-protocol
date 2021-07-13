@@ -1,6 +1,6 @@
 from flask_restx import Resource, Namespace, fields, reqparse, abort
 
-from src.queries.attestation import get_attestation
+from src.queries.get_attestation import AttestationError, get_attestation
 from src.utils.redis_cache import cache
 from src.api.v1.helpers import decode_with_abort, make_response, success_response
 from src.utils.db_session import get_db_read_replica
@@ -47,6 +47,6 @@ class Attest(Resource):
                 return success_response(
                     {"owner_wallet": owner_wallet, "attestation": signature}
                 )
-            except Exception as e:
+            except AttestationError as e:
                 abort(400, e)
                 return None

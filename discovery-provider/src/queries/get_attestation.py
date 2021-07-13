@@ -33,7 +33,7 @@ class Attestation:
         self.user_address = user_address
         self.challenge_specifier = challenge_specifier
 
-    def stringify(self):
+    def __repr__(self):
         # Format:
         # recipient + "_" + amount + "_" + ID (challengeId + specifier) + "_" + oracle_address
         return "_".join(
@@ -114,7 +114,7 @@ def get_attestation(
             UserChallenge.challenge_id == challenge_id,
             UserChallenge.specifier == specifier,
         )
-    ).all()
+    ).one_or_none()
 
     if not len(challenges_and_disbursements) == 1:
         raise AttestationError(MISSING_CHALLENGES)
@@ -138,7 +138,7 @@ def get_attestation(
         .one_or_none()
     )
     if not user_eth_address:
-        raise AttestationError(MISSING_CHALLENGES)
+        raise Exception("Unexpectedly missing eth_address")
     user_eth_address = str(user_eth_address[0])
 
     attestation = Attestation(
@@ -150,6 +150,6 @@ def get_attestation(
     )
 
     signed_attestation: str = sign_attestation(
-        attestation.stringify(), shared_config["delegate"]["private_key"]
+        repr(attestation), shared_config["delegate"]["private_key"]
     )
     return (shared_config["delegate"]["owner_wallet"], signed_attestation)

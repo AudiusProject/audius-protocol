@@ -4,7 +4,7 @@ from web3 import Web3
 from web3.auto import w3
 from eth_account.messages import encode_defunct
 
-from src.queries.attestation import (
+from src.queries.get_attestation import (
     AttestationError,
     get_attestation,
 )
