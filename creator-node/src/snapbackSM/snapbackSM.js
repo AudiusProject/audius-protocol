@@ -412,16 +412,14 @@ class SnapbackSM {
         userWallet: wallet,
         primaryEndpoint: newPrimary,
         secondaryEndpoint: newSecondary1,
-        syncType: SyncType.Recurring,
-        immediate: true
+        syncType: SyncType.Recurring
       })
 
       await this.enqueueSync({
         userWallet: wallet,
         primaryEndpoint: newPrimary,
         secondaryEndpoint: newSecondary2,
-        syncType: SyncType.Recurring,
-        immediate: true
+        syncType: SyncType.Recurring
       })
 
       this.peerSetManager.removeWalletFromUnhealthyPrimaryMap(newPrimary, wallet)
@@ -625,8 +623,7 @@ class SnapbackSM {
    * @param {Object[]} userReplicaSets array of objects of schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
    *      `endpoint` field indicates secondary on which to issue SyncRequest
    * @param {Object} replicaSetNodesToUserClockStatusesMap map(replica set node => map(userWallet => clockValue))
-   * @returns {Number} number of sync requests issued
-   * @returns {Object[]} array of all SyncRequest errors
+   * @returns {Object} number of syncs required, enqueued, and errors if any
    */
   async issueSyncRequestsToSecondaries (userReplicaSets, replicaSetNodesToUserClockStatusesMap) {
     // TODO ensure all syncRequests are for users with primary == self
@@ -849,7 +846,7 @@ class SnapbackSM {
         }
 
         decisionTree.push({
-          stage: 'issueSyncRequests() Success',
+          stage: 'issueSyncRequestsToSecondaries() Success',
           vals: {
             numSyncRequestsRequired,
             numSyncRequestsEnqueued,
@@ -860,7 +857,7 @@ class SnapbackSM {
         })
       } catch (e) {
         decisionTree.push({
-          stage: 'issueSyncRequests() Error',
+          stage: 'issueSyncRequestsToSecondaries() Error',
           vals: {
             error: e.message,
             numSyncRequestsRequired,
