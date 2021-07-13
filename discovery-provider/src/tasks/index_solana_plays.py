@@ -430,7 +430,7 @@ def process_solana_plays(solana_client, redis):
 def index_solana_plays(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
-    # Custom Task definition can be found in src/__init__.py
+    # Custom Task definition can be found in src/app.py
     redis = index_solana_plays.redis
     solana_client = index_solana_plays.solana_client
     # Define lock acquired boolean
