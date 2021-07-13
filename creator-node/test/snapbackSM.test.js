@@ -203,10 +203,10 @@ describe('test SnapbackSM', function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     assert.strictEqual(snapback.highestReconfigModeEnabled, RECONFIG_MODES.RECONFIG_DISABLED.key)
-    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
-    assert.ok(!snapback.enabledReconfigModes.has('ONE_SECONDARY'))
-    assert.ok(!snapback.enabledReconfigModes.has('MULTIPLE_SECONDARIES'))
-    assert.ok(!snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
+    assert.ok(snapback.enabledReconfigModesSet.has('RECONFIG_DISABLED'))
+    assert.ok(!snapback.enabledReconfigModesSet.has('ONE_SECONDARY'))
+    assert.ok(!snapback.enabledReconfigModesSet.has('MULTIPLE_SECONDARIES'))
+    assert.ok(!snapback.enabledReconfigModesSet.has('PRIMARY_AND_OR_SECONDARIES'))
   })
 
   it('[determineNewReplicaSet] if the mode enabled does not cover the reconfig type, do not issue reconfig', async function () {
@@ -263,7 +263,7 @@ describe('test SnapbackSM', function () {
     assert.ok(healthyNodes.includes(newSecondary1))
     assert.ok(healthyNodes.includes(newSecondary2))
     assert.strictEqual(issueReconfig, false)
-    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
+    assert.ok(snapback.enabledReconfigModesSet.has('RECONFIG_DISABLED'))
   })
 
   it('[determineNewReplicaSet] if entire replica set is unhealthy, return falsy replica set', async function () {
@@ -343,8 +343,8 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(newSecondary1, constants.secondary1Endpoint)
     assert.ok(healthyNodes.includes(newSecondary2))
     assert.strictEqual(issueReconfig, true)
-    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
-    assert.ok(snapback.enabledReconfigModes.has('ONE_SECONDARY'))
+    assert.ok(snapback.enabledReconfigModesSet.has('RECONFIG_DISABLED'))
+    assert.ok(snapback.enabledReconfigModesSet.has('ONE_SECONDARY'))
   })
 
   it('[determineNewReplicaSet] if both secondaries are unhealthy, return two new secondaries ', async function () {
@@ -399,9 +399,9 @@ describe('test SnapbackSM', function () {
     assert.ok(healthyNodes.includes(newSecondary1))
     assert.ok(healthyNodes.includes(newSecondary2))
     assert.strictEqual(issueReconfig, true)
-    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
-    assert.ok(snapback.enabledReconfigModes.has('ONE_SECONDARY'))
-    assert.ok(snapback.enabledReconfigModes.has('MULTIPLE_SECONDARIES'))
+    assert.ok(snapback.enabledReconfigModesSet.has('RECONFIG_DISABLED'))
+    assert.ok(snapback.enabledReconfigModesSet.has('ONE_SECONDARY'))
+    assert.ok(snapback.enabledReconfigModesSet.has('MULTIPLE_SECONDARIES'))
   })
 
   it('[determineNewReplicaSet] if one primary is unhealthy, return a secondary promoted to primary, existing secondary1, and new secondary2', async function () {
@@ -459,10 +459,10 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(newSecondary1, constants.secondary2Endpoint)
     assert.ok(healthyNodes.includes(newSecondary2))
     assert.strictEqual(issueReconfig, true)
-    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
-    assert.ok(snapback.enabledReconfigModes.has('ONE_SECONDARY'))
-    assert.ok(snapback.enabledReconfigModes.has('MULTIPLE_SECONDARIES'))
-    assert.ok(snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
+    assert.ok(snapback.enabledReconfigModesSet.has('RECONFIG_DISABLED'))
+    assert.ok(snapback.enabledReconfigModesSet.has('ONE_SECONDARY'))
+    assert.ok(snapback.enabledReconfigModesSet.has('MULTIPLE_SECONDARIES'))
+    assert.ok(snapback.enabledReconfigModesSet.has('PRIMARY_AND_OR_SECONDARIES'))
   })
 
   it('[determineNewReplicaSet] if primary+secondary are unhealthy, return a secondary promoted to a primary, and 2 new secondaries', async function () {
@@ -519,10 +519,10 @@ describe('test SnapbackSM', function () {
     assert.ok(healthyNodes.includes(newSecondary1))
     assert.ok(healthyNodes.includes(newSecondary2))
     assert.strictEqual(issueReconfig, true)
-    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
-    assert.ok(snapback.enabledReconfigModes.has('ONE_SECONDARY'))
-    assert.ok(snapback.enabledReconfigModes.has('MULTIPLE_SECONDARIES'))
-    assert.ok(snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
+    assert.ok(snapback.enabledReconfigModesSet.has('RECONFIG_DISABLED'))
+    assert.ok(snapback.enabledReconfigModesSet.has('ONE_SECONDARY'))
+    assert.ok(snapback.enabledReconfigModesSet.has('MULTIPLE_SECONDARIES'))
+    assert.ok(snapback.enabledReconfigModesSet.has('PRIMARY_AND_OR_SECONDARIES'))
   })
 
   it('[issueUpdateReplicaSetOp] if when `this.endpointToSPIdMap` is used and it does not have an spId for an endpoint, do not issue reconfig', async function () {
@@ -620,36 +620,36 @@ describe('test SnapbackSM', function () {
     let snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     assert.strictEqual(snapback.highestReconfigModeEnabled, 'PRIMARY_AND_OR_SECONDARIES')
-    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
-    assert.ok(snapback.enabledReconfigModes.has('ONE_SECONDARY'))
-    assert.ok(snapback.enabledReconfigModes.has('MULTIPLE_SECONDARIES'))
-    assert.ok(snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
+    assert.ok(snapback.enabledReconfigModesSet.has('RECONFIG_DISABLED'))
+    assert.ok(snapback.enabledReconfigModesSet.has('ONE_SECONDARY'))
+    assert.ok(snapback.enabledReconfigModesSet.has('MULTIPLE_SECONDARIES'))
+    assert.ok(snapback.enabledReconfigModesSet.has('PRIMARY_AND_OR_SECONDARIES'))
 
     nodeConfig.set('snapbackHighestReconfigMode', 'MULTIPLE_SECONDARIES')
     snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     assert.strictEqual(snapback.highestReconfigModeEnabled, 'MULTIPLE_SECONDARIES')
-    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
-    assert.ok(snapback.enabledReconfigModes.has('ONE_SECONDARY'))
-    assert.ok(snapback.enabledReconfigModes.has('MULTIPLE_SECONDARIES'))
-    assert.ok(!snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
+    assert.ok(snapback.enabledReconfigModesSet.has('RECONFIG_DISABLED'))
+    assert.ok(snapback.enabledReconfigModesSet.has('ONE_SECONDARY'))
+    assert.ok(snapback.enabledReconfigModesSet.has('MULTIPLE_SECONDARIES'))
+    assert.ok(!snapback.enabledReconfigModesSet.has('PRIMARY_AND_OR_SECONDARIES'))
 
     nodeConfig.set('snapbackHighestReconfigMode', 'ONE_SECONDARY')
     snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     assert.strictEqual(snapback.highestReconfigModeEnabled, 'ONE_SECONDARY')
-    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
-    assert.ok(snapback.enabledReconfigModes.has('ONE_SECONDARY'))
-    assert.ok(!snapback.enabledReconfigModes.has('MULTIPLE_SECONDARIES'))
-    assert.ok(!snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
+    assert.ok(snapback.enabledReconfigModesSet.has('RECONFIG_DISABLED'))
+    assert.ok(snapback.enabledReconfigModesSet.has('ONE_SECONDARY'))
+    assert.ok(!snapback.enabledReconfigModesSet.has('MULTIPLE_SECONDARIES'))
+    assert.ok(!snapback.enabledReconfigModesSet.has('PRIMARY_AND_OR_SECONDARIES'))
 
     nodeConfig.set('snapbackHighestReconfigMode', 'RECONFIG_DISABLED')
     snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     assert.strictEqual(snapback.highestReconfigModeEnabled, 'RECONFIG_DISABLED')
-    assert.ok(snapback.enabledReconfigModes.has('RECONFIG_DISABLED'))
-    assert.ok(!snapback.enabledReconfigModes.has('ONE_SECONDARY'))
-    assert.ok(!snapback.enabledReconfigModes.has('MULTIPLE_SECONDARIES'))
-    assert.ok(!snapback.enabledReconfigModes.has('PRIMARY_AND_OR_SECONDARIES'))
+    assert.ok(snapback.enabledReconfigModesSet.has('RECONFIG_DISABLED'))
+    assert.ok(!snapback.enabledReconfigModesSet.has('ONE_SECONDARY'))
+    assert.ok(!snapback.enabledReconfigModesSet.has('MULTIPLE_SECONDARIES'))
+    assert.ok(!snapback.enabledReconfigModesSet.has('PRIMARY_AND_OR_SECONDARIES'))
   })
 })
