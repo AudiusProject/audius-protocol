@@ -1,9 +1,8 @@
 import logging
 from datetime import datetime
-from typing import TypedDict, cast
+from typing import TypedDict
 from eth_account.messages import defunct_hash_message
 from sqlalchemy.orm.session import Session, make_transient
-from sqlalchemy.sql.schema import Column
 from src.app import contract_addresses
 from src.utils import helpers
 from src.models import User, UserEvents, AssociatedWallet
