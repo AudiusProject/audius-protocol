@@ -200,36 +200,36 @@ describe('test peerSetManager', () => {
     }
   })
 
-  it('[isPrimaryHealthy] should mark primary as healthy if responds with 200 from health check', () => {
+  it('[isPrimaryHealthyForUser] should mark primary as healthy if responds with 200 from health check', async () => {
     // Mock method
-    peerSetManager.isNodeHealthy = () => { return true }
+    peerSetManager.isNodeHealthy = async () => { return true }
 
-    const isHealthy = peerSetManager.isPrimaryHealthy(primaryEndpoint, wallet)
+    const isHealthy = await peerSetManager.isPrimaryHealthyForUser(primaryEndpoint, wallet)
 
     assert.strictEqual(isHealthy, true)
     assert.strictEqual(peerSetManager.unhealthyPrimaryToWalletMap[primaryEndpoint], undefined)
   })
 
-  it('[isPrimaryHealthy] should mark primary as healthy if responds with 500 from health check and has not been visited yet', () => {
+  it('[isPrimaryHealthyForUser] should mark primary as healthy if responds with 500 from health check and has not been visited yet', async () => {
     // Mock method
-    peerSetManager.isNodeHealthy = () => { return false }
+    peerSetManager.isNodeHealthy = async () => { return false }
 
-    const isHealthy = peerSetManager.isPrimaryHealthy(primaryEndpoint, wallet)
+    const isHealthy = await peerSetManager.isPrimaryHealthyForUser(primaryEndpoint, wallet)
 
     assert.strictEqual(isHealthy, true)
     assert.ok(peerSetManager.unhealthyPrimaryToWalletMap[primaryEndpoint].has(wallet))
   })
 
-  it('[isPrimaryHealthy] should mark primary as unhealthy if responds with 500 from health check and has been visited', () => {
+  it('[isPrimaryHealthyForUser] should mark primary as unhealthy if responds with 500 from health check and has been visited', async () => {
     // Mock method
-    peerSetManager.isNodeHealthy = () => { return false }
+    peerSetManager.isNodeHealthy = async () => { return false }
 
-    let isHealthy = peerSetManager.isPrimaryHealthy(primaryEndpoint, wallet)
+    let isHealthy = await peerSetManager.isPrimaryHealthyForUser(primaryEndpoint, wallet)
 
     assert.strictEqual(isHealthy, true)
     assert.ok(peerSetManager.unhealthyPrimaryToWalletMap[primaryEndpoint].has(wallet))
 
-    isHealthy = peerSetManager.isPrimaryHealthy(primaryEndpoint, wallet)
+    isHealthy = await peerSetManager.isPrimaryHealthyForUser(primaryEndpoint, wallet)
 
     assert.strictEqual(isHealthy, false)
     assert.ok(peerSetManager.unhealthyPrimaryToWalletMap[primaryEndpoint].has(wallet))
