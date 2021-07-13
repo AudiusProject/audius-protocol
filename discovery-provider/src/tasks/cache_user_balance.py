@@ -4,7 +4,10 @@ from sqlalchemy import and_
 from src.app import eth_abi_values
 from src.tasks.celery_app import celery
 from src.models import UserBalance, User, AssociatedWallet
-from src.queries.get_balances import does_user_balance_need_refresh, REDIS_PREFIX
+from src.queries.get_balances import (
+    does_user_balance_need_refresh,
+    REDIS_USER_BALANCE_REFRESH_KEY,
+)
 from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
 
 logger = logging.getLogger(__name__)
@@ -41,7 +44,7 @@ def refresh_user_ids(
     redis, db, token_contract, delegate_manager_contract, staking_contract, eth_web3
 ):
     # List users in Redis set, balances decoded as strings
-    redis_user_ids = redis.smembers(REDIS_PREFIX)
+    redis_user_ids = redis.smembers(REDIS_USER_BALANCE_REFRESH_KEY)
     redis_user_ids = [int(user_id.decode()) for user_id in redis_user_ids]
 
     if not redis_user_ids:
@@ -155,7 +158,7 @@ def refresh_user_ids(
             f"cache_user_balance.py | Got balances for {len(user_query)} users, removing from Redis."
         )
         if to_remove:
-            redis.srem(REDIS_PREFIX, *to_remove)
+            redis.srem(REDIS_USER_BALANCE_REFRESH_KEY, *to_remove)
             # Add the count of the balances
             redis.incrby(REDIS_ETH_BALANCE_COUNTER_KEY, len(to_remove))
 

@@ -13,7 +13,7 @@ BALANCE_REFRESH_SEC_NONEMPTY_USER = 15 * 60
 # How stale of a zero user balance we tolerate before refreshing
 BALANCE_REFRESH_SEC_EMPTY_USER = 1 * 60 * 60
 
-REDIS_PREFIX = "USER_BALANCE_REFRESH"
+REDIS_USER_BALANCE_REFRESH_KEY = "USER_BALANCE_REFRESH"
 
 
 def does_user_balance_need_refresh(user_balance, is_priority_user=True):
@@ -48,7 +48,7 @@ def enqueue_balance_refresh(redis, user_ids):
     # unsafe to call redis.sadd w/ empty array
     if not user_ids:
         return
-    redis.sadd(REDIS_PREFIX, *user_ids)
+    redis.sadd(REDIS_USER_BALANCE_REFRESH_KEY, *user_ids)
 
 
 def get_balances(session, user_ids):

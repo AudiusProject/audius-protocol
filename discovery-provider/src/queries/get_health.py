@@ -18,7 +18,9 @@ from src.utils.redis_constants import (
     challenges_last_processed_event_redis_key,
     user_balances_refresh_last_completion_redis_key,
 )
-
+from src.queries.get_balances import REDIS_USER_BALANCE_REFRESH_KEY
+from src.utils.helpers import redis_get_or_restore
+from src.eth_indexing.event_scanner_db_state import eth_indexing_last_scanned_block_key
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
@@ -197,7 +199,17 @@ def get_health(args, use_redis_cache=True):
     user_balances_age_sec = get_elapsed_time_redis(
         redis, user_balances_refresh_last_completion_redis_key
     )
-
+    num_users_in_balance_refresh_queue = len(
+        redis.smembers(REDIS_USER_BALANCE_REFRESH_KEY)
+    )
+    last_scanned_block_for_balance_refresh = redis_get_or_restore(
+        redis, eth_indexing_last_scanned_block_key
+    )
+    last_scanned_block_for_balance_refresh = (
+        int(last_scanned_block_for_balance_refresh)
+        if last_scanned_block_for_balance_refresh
+        else None
+    )
     # Get system information monitor values
     sys_info = monitors.get_monitors(
         [
@@ -227,6 +239,8 @@ def get_health(args, use_redis_cache=True):
         "trending_playlists_age_sec": trending_playlists_age_sec,
         "challenge_last_event_age_sec": challenge_events_age_sec,
         "user_balances_age_sec": user_balances_age_sec,
+        "num_users_in_balance_refresh_queue": num_users_in_balance_refresh_queue,
+        "last_scanned_block_for_balance_refresh": last_scanned_block_for_balance_refresh,
         "number_of_cpus": number_of_cpus,
         **sys_info,
     }
