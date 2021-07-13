@@ -850,9 +850,7 @@ class SnapbackSM {
         })
       } catch (e) {
         // Disable reconfig after failed `updateEndpointToSpIDMap()` call
-        this.updateEnabledReconfigModesSet({
-          override: RECONFIG_MODES.RECONFIG_DISABLED.key
-        })
+        this.updateEnabledReconfigModesSet(/* override */ RECONFIG_MODES.RECONFIG_DISABLED.key)
 
         decisionTree.push({
           stage: `updateEndpointToSpIdMap() Error`,
@@ -1213,7 +1211,7 @@ class SnapbackSM {
   /**
    * e.x.: 'PRIMARY_AND_SECONDARY' is the reconfig mode -> 'RECONFIG_DISABLED', 'ONE_SECONDARY', 'MULTIPLE_SECONDARIES', 'PRIMARY_AND_SECONDARY' enabled
    */
-  updateEnabledReconfigModesSet ({ override }) {
+  updateEnabledReconfigModesSet (override) {
     let highestEnabledReconfigMode
 
     // Set mode to override if provided
