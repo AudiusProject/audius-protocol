@@ -8,7 +8,6 @@ types-requests==2.25.0
 
 # web3 used to be 5.11.0 but due to a build issue in docker, downgraded to 5.8.0
 web3==5.18.0
-tqdm==4.61.2
 Flask==1.0.4
 psycopg2==2.8.5
 SQLAlchemy==1.2.5

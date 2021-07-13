@@ -30,9 +30,6 @@ MIN_SCAN_CHUNK_SIZE = 10
 MAX_CHUNK_SCAN_SIZE = 10000
 # Factor how was we increase chunk size if no results found
 CHUNK_SIZE_INCREASE = 2
-# Factor how fast we decreasw the chunk size if results are found
-# (slow down scan after starting to get hits)
-# CHUNK_SIZE_DECREASE = 0.5
 # initial number of blocks to scan, this number will increase/decrease as a function of whether transfer events have been found within the range of blocks scanned
 START_CHUNK_SIZE = 20
 # how many blocks from tail of chain we want to scan to
@@ -93,10 +90,6 @@ class EventScanner:
 
     def get_last_scanned_block(self) -> int:
         return self.state.get_last_scanned_block()
-
-    def delete_potentially_forked_block_data(self, after_block: int):
-        """Purge old data in the case of blockchain reorganisation."""
-        self.state.delete_potentially_forked_data(after_block)
 
     def scan_chunk(self, start_block, end_block) -> Tuple[int, list]:
         """Read and process events between to block numbers.
@@ -161,9 +154,7 @@ class EventScanner:
         Our scanner might need to scan the whole blockchain for all events
 
         * We want to minimize API calls over empty blocks
-
         * We want to make sure that one scan chunk does not try to process too many entries once, as we try to control commit buffer size and potentially asynchronous busy loop
-
         * Do not overload node serving JSON-RPC API by asking data for too many events at a time
 
         Currently Ethereum JSON-API does not have an API to tell when a first event occured in a blockchain
@@ -214,8 +205,6 @@ class EventScanner:
 
         while current_block <= end_block:
 
-            self.state.start_chunk(current_block, chunk_size)
-
             # Print some diagnostics to logs to try to fiddle with real world JSON-RPC API performance
             estimated_end_block = min(
                 current_block + chunk_size, self.get_suggested_scan_end_block()
@@ -246,7 +235,7 @@ class EventScanner:
             # Set where the next chunk starts
             current_block = current_end + 1
             total_chunks_scanned += 1
-            self.state.end_chunk(min(current_end, self.get_suggested_scan_end_block()))
+            self.state.save(min(current_end, self.get_suggested_scan_end_block()))
 
         return all_processed, total_chunks_scanned
 

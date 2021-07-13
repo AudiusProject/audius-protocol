@@ -5,7 +5,7 @@ from web3.providers.rpc import HTTPProvider
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.eth_indexing.event_scanner import EventScanner
-from src.eth_indexing.event_scanner_db_state import EventScannerDBState
+from src.eth_indexing.event_scanner_state import EventScannerState
 from src.utils.helpers import load_eth_abi_values
 from src.tasks.cache_user_balance import get_token_address
 
@@ -31,7 +31,7 @@ AUDIO_CHECKSUM_ADDRESS = get_token_address(web3, shared_config)
 
 def index_eth_transfer_events(db, redis):
     # Restore/create our persistent state
-    state = EventScannerDBState(db, redis)
+    state = EventScannerState(db, redis)
     state.restore()
 
     scanner = EventScanner(
@@ -50,7 +50,6 @@ def index_eth_transfer_events(db, redis):
     # Scan from [last block scanned] - [latest ethereum block]
     # (with a potentially offset from the tail to attempt to avoid blocks not mined yet)
     since_block = state.get_last_scanned_block() - CHAIN_REORG_SAFETY_BLOCKS
-    scanner.delete_potentially_forked_block_data(since_block)
 
     # Note that our chain reorg safety blocks cannot go negative
     start_block = max(since_block, 0)
@@ -67,7 +66,7 @@ def index_eth_transfer_events(db, redis):
     logger.info(
         "Reached end block for eth transfer events... saving events to database"
     )
-    state.save()
+    state.save(end_block)
     duration = time.time() - start
     logger.info(
         f"Scanned total {len(result)} Transfer events, in {duration} seconds, \
