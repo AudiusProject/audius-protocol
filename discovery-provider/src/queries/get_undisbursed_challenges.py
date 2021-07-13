@@ -1,9 +1,6 @@
-from typing import Optional
-from collections import defaultdict
-
 # TODO: remove this once we upgrade pylint
 # pylint: disable=E0611
-from typing import List, TypedDict
+from typing import List, TypedDict, Optional
 from sqlalchemy import and_, asc
 from src.models import UserChallenge, Challenge, ChallengeType, ChallengeDisbursement
 
