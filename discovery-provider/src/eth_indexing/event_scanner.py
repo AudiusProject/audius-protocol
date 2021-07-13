@@ -1,7 +1,8 @@
 import datetime
 import time
 import logging
-from typing import Tuple, Iterable, Union, Type
+from typing import Tuple, Iterable, Union, Type, TypedDict, Any
+from sqlalchemy import or_
 
 from web3 import Web3
 from web3.contract import Contract, ContractEvent
@@ -13,11 +14,14 @@ from web3._utils.filters import construct_event_filter_params
 from web3._utils.events import get_event_data
 from eth_abi.codec import ABICodec
 
-
-from src.eth_indexing.event_scanner_state import EventScannerState
+from src.models.models import AssociatedWallet, User
+from src.utils.helpers import redis_set_and_dump, redis_get_or_restore
+from src.queries.get_balances import enqueue_balance_refresh
 
 
 logger = logging.getLogger(__name__)
+
+eth_indexing_last_scanned_block_key = "eth_indexing_last_scanned_block"
 
 # How many times we try to re-attempt a failed JSON-RPC call
 MAX_REQUEST_RETRIES = 30
@@ -34,6 +38,16 @@ CHUNK_SIZE_INCREASE = 2
 START_CHUNK_SIZE = 20
 # how many blocks from tail of chain we want to scan to
 ETH_BLOCK_TAIL_OFFSET = 1
+# the block number to start with if first time scanning
+# this should be the first block during and after which $AUDIO transfer events started occurring
+MIN_SCAN_START_BLOCK = 0
+
+
+class TransferEvent(TypedDict):
+    logIndex: int
+    transactionHash: Any
+    blockNumber: int
+    args: Any
 
 
 class EventScanner:
@@ -49,13 +63,16 @@ class EventScanner:
 
     def __init__(
         self,
+        db,
+        redis,
         web3: Web3,
         contract: Type[Contract],
-        state: EventScannerState,
         event_type: Type[ContractEvent],
         filters: dict,
     ):
         """
+        :param db: database handle
+        :param redis: redis handle
         :param web3: Web3 instantiated with provider url
         :param contract: Contract
         :param state: state manager to keep tracks of last scanned block and persisting events to db
@@ -64,11 +81,33 @@ class EventScanner:
         """
 
         self.logger = logger
+        self.db = db
+        self.redis = redis
         self.contract = contract
         self.web3 = web3
-        self.state = state
         self.event_type = event_type
         self.filters = filters
+        self.last_scanned_block = MIN_SCAN_START_BLOCK
+        # self.state = EventScannerState(db, redis)
+        # self.state.restore()
+
+    def restore(self):
+        """Restore the last scan state from redis."""
+        restored = redis_get_or_restore(self.redis, eth_indexing_last_scanned_block_key)
+        self.last_scanned_block = int(restored) if restored else MIN_SCAN_START_BLOCK
+        logger.info(f"Restored last scanned block ({self.last_scanned_block})")
+
+    def save(self, block_number: int):
+        """Save at the end of each chunk of blocks, so we can resume in the case of a crash or CTRL+C
+        Next time the scanner is started we will resume from this block
+        """
+        self.last_scanned_block = block_number
+        logger.info(f"Saving last scanned block ({self.last_scanned_block}) to redis")
+        redis_set_and_dump(
+            self.redis,
+            eth_indexing_last_scanned_block_key,
+            str(self.last_scanned_block),
+        )
 
     def get_block_timestamp(self, block_num) -> Union[datetime.datetime, None]:
         """Get Ethereum block timestamp"""
@@ -89,7 +128,53 @@ class EventScanner:
         return self.web3.eth.blockNumber - ETH_BLOCK_TAIL_OFFSET
 
     def get_last_scanned_block(self) -> int:
-        return self.state.get_last_scanned_block()
+        """The number of the last block we have stored."""
+        return self.last_scanned_block
+
+    def process_event(self, block_when: datetime.datetime, event: TransferEvent) -> str:
+        """Record a ERC-20 transfer in our database."""
+        # Events are keyed by their transaction hash and log index
+        # One transaction may contain multiple events
+        # and each one of those gets their own log index
+
+        # event_name = event.event # "Transfer"
+        log_index = event["logIndex"]  # Log index within the block
+        # transaction_index = event.transactionIndex  # Transaction index within the block
+        txhash = event["transactionHash"].hex()  # Transaction hash
+        block_number = event["blockNumber"]
+
+        # Convert ERC-20 Transfer event to our internal format
+        args = event["args"]
+        transfer = {
+            "from": args["from"],
+            "to": args["to"],
+            "value": args["value"]
+            / 1e18,  # divide by 10^18 to get correct transfer value
+            "timestamp": block_when,
+        }
+
+        # add user ids from the transfer event into the balance refresh queue
+        transfer_event_wallets = [transfer["from"].lower(), transfer["to"].lower()]
+        with self.db.scoped_session() as session:
+            result = (
+                session.query(User.user_id)
+                .outerjoin(AssociatedWallet, User.user_id == AssociatedWallet.user_id)
+                .filter(User.is_current == True)
+                .filter(AssociatedWallet.is_current == True)
+                .filter(AssociatedWallet.is_delete == False)
+                .filter(
+                    or_(
+                        User.wallet.in_(transfer_event_wallets),
+                        AssociatedWallet.wallet.in_(transfer_event_wallets),
+                    )
+                )
+                .all()
+            )
+            user_ids = [user_id for [user_id] in result]
+            enqueue_balance_refresh(self.redis, user_ids)
+
+        # Return a pointer that allows us to look up this event later if needed
+        return f"{block_number}-{txhash}-{log_index}"
 
     def scan_chunk(self, start_block, end_block) -> Tuple[int, list]:
         """Read and process events between to block numbers.
@@ -143,7 +228,7 @@ class EventScanner:
             block_when = get_block_when(block_number)
 
             logger.debug(f'Processing event {evt["event"]}, block:{evt["blockNumber"]}')
-            processed = self.state.process_event(block_when, evt)
+            processed = self.process_event(block_when, evt)
             all_processed.append(processed)
 
         return end_block, all_processed
@@ -235,7 +320,7 @@ class EventScanner:
             # Set where the next chunk starts
             current_block = current_end + 1
             total_chunks_scanned += 1
-            self.state.save(min(current_end, self.get_suggested_scan_end_block()))
+            self.save(min(current_end, self.get_suggested_scan_end_block()))
 
         return all_processed, total_chunks_scanned
 

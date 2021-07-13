@@ -20,7 +20,7 @@ from src.utils.redis_constants import (
 )
 from src.queries.get_balances import REDIS_USER_BALANCE_REFRESH_KEY
 from src.utils.helpers import redis_get_or_restore
-from src.eth_indexing.event_scanner_state import eth_indexing_last_scanned_block_key
+from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
