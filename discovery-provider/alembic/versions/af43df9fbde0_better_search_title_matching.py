@@ -10,15 +10,16 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'af43df9fbde0'
-down_revision = '90021fba7f4a'
+revision = "af43df9fbde0"
+down_revision = "90021fba7f4a"
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
     connection = op.get_bind()
-    connection.execute('''
+    connection.execute(
+        """
 
     DROP MATERIALIZED VIEW IF EXISTS user_lexeme_dict;
     DROP INDEX IF EXISTS user_words_idx;
@@ -194,7 +195,7 @@ def upgrade():
     CREATE INDEX album_user_name_idx ON album_lexeme_dict USING gin(user_name gin_trgm_ops);
     CREATE INDEX album_user_handle_idx ON album_lexeme_dict(handle);
     CREATE UNIQUE INDEX album_row_number_idx ON album_lexeme_dict(row_number);
-    '''
+    """
     )
 
 

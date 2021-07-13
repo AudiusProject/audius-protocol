@@ -12,18 +12,13 @@ import src.utils.db_session
 # Test fixture to mock a postgres database using an in-memory alternative
 @pytest.fixture()
 def db_mock(monkeypatch):
-    db = src.utils.session_manager.SessionManager(
-        'sqlite://',
-        {}
-    )
+    db = src.utils.session_manager.SessionManager("sqlite://", {})
 
     def get_db_read_replica():
         return db
 
     monkeypatch.setattr(
-        src.utils.db_session,
-        'get_db_read_replica',
-        get_db_read_replica
+        src.utils.db_session, "get_db_read_replica", get_db_read_replica
     )
 
     return db
@@ -37,11 +32,7 @@ def web3_mock(monkeypatch):
     def get_web3():
         return web3
 
-    monkeypatch.setattr(
-        src.utils.web3_provider,
-        'get_web3',
-        get_web3
-    )
+    monkeypatch.setattr(src.utils.web3_provider, "get_web3", get_web3)
     return web3
 
 
@@ -53,11 +44,7 @@ def redis_mock(monkeypatch):
     def get_redis():
         return redis
 
-    monkeypatch.setattr(
-        src.utils.redis_connection,
-        'get_redis',
-        get_redis
-    )
+    monkeypatch.setattr(src.utils.redis_connection, "get_redis", get_redis)
     return redis
 
 
@@ -69,9 +56,5 @@ def get_monitors_mock(monkeypatch):
     def get_monitors(monitors):
         return mock_get_monitors()
 
-    monkeypatch.setattr(
-        src.monitors.monitors,
-        'get_monitors',
-        get_monitors
-    )
+    monkeypatch.setattr(src.monitors.monitors, "get_monitors", get_monitors)
     return mock_get_monitors

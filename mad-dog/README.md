@@ -13,6 +13,12 @@
 
 **Note:** If tests fail, sometimes running `npm i` in `/libs` and relinking packages will help. Or, bring up a fresh set of local services.
 
+Serveral tests rely on the [`pumba`](https://github.com/alexei-led/pumba), a chaos testing tool for Docker  
+**Pumba Installation**  
+`sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba`  
+`chmod +x /usr/local/bin/pumba`
+
+
 ### Running Tests
 **Run all the tests in test suite**: 
 - `npm run start <test name>`

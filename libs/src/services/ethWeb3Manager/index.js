@@ -27,6 +27,14 @@ class EthWeb3Manager {
 
   getWalletAddress () { return this.ownerWallet.toLowerCase() }
 
+  /**
+   * Signs provided string data (should be timestamped).
+   * @param {string} data
+   */
+  async sign (data) {
+    return this.web3.eth.personal.sign(this.web3.utils.fromUtf8(data), this.getWalletAddress())
+  }
+
   async sendTransaction (
     contractMethod,
     contractAddress = null,

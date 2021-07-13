@@ -59,7 +59,7 @@ class CreatorNodeSelection extends ServiceSelection {
    * 5. Select a primary and numberOfNodes-1 number of secondaries (most likely 2) from backups
    * @param {boolean?} performSyncCheck whether or not to check whether the nodes need syncs before selection
    */
-  async select (performSyncCheck = true) {
+  async select (performSyncCheck = true, log = true) {
     // Reset decision tree and backups
     this.decisionTree = []
     this.clearBackups()
@@ -91,7 +91,9 @@ class CreatorNodeSelection extends ServiceSelection {
       val: { primary, secondaries: secondaries.toString(), services: Object.keys(servicesMap).toString() }
     })
 
-    console.info('CreatorNodeSelection - final decision tree state', this.decisionTree)
+    if (log) {
+      console.info('CreatorNodeSelection - final decision tree state', this.decisionTree)
+    }
     return { primary, secondaries, services: servicesMap }
   }
 

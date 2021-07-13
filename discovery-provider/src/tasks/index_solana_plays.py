@@ -21,7 +21,7 @@ TX_SIGNATURES_RESIZE_LENGTH = 10
 
 logger = logging.getLogger(__name__)
 
-'''
+"""
 Parse signed data message from each transaction submitted to
 Audius TrackListenCount program
 
@@ -37,7 +37,9 @@ pub struct TrackData {
     /// timestamp as nonce
     pub timestamp: UnixTimestamp,
 }
-'''
+"""
+
+
 def parse_instruction_data(data):
     decoded = base58.b58decode(data)[1:]
 
@@ -49,27 +51,32 @@ def parse_instruction_data(data):
     try:
         user_id = int(decoded[user_id_start:user_id_end])
     except ValueError:
-        logger.error(f"Failed to parse user_id from {decoded[user_id_start:user_id_end]}", exc_info=True)
+        logger.error(
+            f"Failed to parse user_id from {decoded[user_id_start:user_id_end]}",
+            exc_info=True,
+        )
 
-    track_id_length = int.from_bytes(decoded[user_id_end:user_id_end + 4],
-                                     "little")
+    track_id_length = int.from_bytes(decoded[user_id_end : user_id_end + 4], "little")
     track_id_start, track_id_end = user_id_end + 4, user_id_end + 4 + track_id_length
     track_id = int(decoded[track_id_start:track_id_end])
 
-    source_length = int.from_bytes(decoded[track_id_end:track_id_end + 4],
-                                   "little")
+    source_length = int.from_bytes(decoded[track_id_end : track_id_end + 4], "little")
     source_start, source_end = track_id_end + 4, track_id_end + 4 + source_length
 
     # Source is not expected to be null, but may be
     source = None
     try:
-        source = str(decoded[source_start:source_end], 'utf-8')
+        source = str(decoded[source_start:source_end], "utf-8")
     except ValueError:
-        logger.error(f"Failed to parse source from {decoded[source_start:source_end]}", exc_info=True)
+        logger.error(
+            f"Failed to parse source from {decoded[source_start:source_end]}",
+            exc_info=True,
+        )
 
-    timestamp = int.from_bytes(decoded[source_end:source_end + 8], "little")
+    timestamp = int.from_bytes(decoded[source_end : source_end + 8], "little")
 
     return user_id, track_id, source, timestamp
+
 
 # Retry 5x until a tx 'result' is found with valid contents
 # If not found, move forward
@@ -81,42 +88,52 @@ def get_sol_tx_info(solana_client, tx_sig):
             if tx_info["result"] is not None:
                 return tx_info
         except Exception as e:
-            logger.error(f"index_solana_plays.py | Error fetching tx {tx_sig}, {e}", exc_info=True)
+            logger.error(
+                f"index_solana_plays.py | Error fetching tx {tx_sig}, {e}",
+                exc_info=True,
+            )
         retries -= 1
         logger.error(f"index_solana_plays.py | Retrying tx fetch: {tx_sig}")
+
 
 # Check for both SECP and SignerGroup
 # Ensures that a signature recovery was performed within the expected SignerGroup
 def is_valid_tx(account_keys):
     if SECP_PROGRAM in account_keys and SIGNER_GROUP in account_keys:
         return True
-    logger.error(f"index_solana_plays.py | Failed to find {SECP_PROGRAM} or {SIGNER_GROUP} in {account_keys}")
+    logger.error(
+        f"index_solana_plays.py | Failed to find {SECP_PROGRAM} or {SIGNER_GROUP} in {account_keys}"
+    )
     return False
+
 
 def parse_sol_play_transaction(session, solana_client, tx_sig):
     try:
         tx_info = get_sol_tx_info(solana_client, tx_sig)
-        logger.info(
-            f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}"
-        )
+        logger.info(f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}")
         if is_valid_tx(tx_info["result"]["transaction"]["message"]["accountKeys"]):
             audius_program_index = tx_info["result"]["transaction"]["message"][
-                "accountKeys"].index(TRACK_LISTEN_PROGRAM)
+                "accountKeys"
+            ].index(TRACK_LISTEN_PROGRAM)
             for instruction in tx_info["result"]["transaction"]["message"][
-                    "instructions"]:
+                "instructions"
+            ]:
                 if instruction["programIdIndex"] == audius_program_index:
-                    tx_slot = tx_info['result']['slot']
+                    tx_slot = tx_info["result"]["slot"]
                     user_id, track_id, source, timestamp = parse_instruction_data(
-                        instruction["data"])
+                        instruction["data"]
+                    )
                     created_at = datetime.datetime.utcfromtimestamp(timestamp)
 
-                    logger.info("index_solana_plays.py | "
-                                f"user_id: {user_id} "
-                                f"track_id: {track_id} "
-                                f"source: {source} "
-                                f"created_at: {created_at} "
-                                f"slot: {tx_slot} "
-                                f"sig: {tx_sig}")
+                    logger.info(
+                        "index_solana_plays.py | "
+                        f"user_id: {user_id} "
+                        f"track_id: {track_id} "
+                        f"source: {source} "
+                        f"created_at: {created_at} "
+                        f"slot: {tx_slot} "
+                        f"sig: {tx_sig}"
+                    )
 
                     session.add(
                         Play(
@@ -125,13 +142,17 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
                             created_at=created_at,
                             source=source,
                             slot=tx_slot,
-                            signature=tx_sig
+                            signature=tx_sig,
                         )
                     )
         else:
-            logger.info(f"index_solana_plays.py | tx={tx_sig} Failed to find SECP_PROGRAM")
+            logger.info(
+                f"index_solana_plays.py | tx={tx_sig} Failed to find SECP_PROGRAM"
+            )
     except Exception as e:
-        logger.error(f"index_solana_plays.py | Error processing {tx_sig}, {e}", exc_info=True)
+        logger.error(
+            f"index_solana_plays.py | Error processing {tx_sig}, {e}", exc_info=True
+        )
 
 
 # Query the highest traversed solana slot
@@ -152,22 +173,21 @@ def get_latest_slot(db):
     if latest_slot is None:
         latest_slot = 0
 
-    logger.info(
-        f"index_solana_plays.py | returning {latest_slot} for highest slot"
-    )
+    logger.info(f"index_solana_plays.py | returning {latest_slot} for highest slot")
     return latest_slot
+
 
 # Query a tx signature and confirm its existence
 def get_tx_in_db(session, tx_sig):
     exists = False
-    tx_sig_db_count = (session.query(Play).filter(
-        Play.signature == tx_sig)).count()
+    tx_sig_db_count = (session.query(Play).filter(Play.signature == tx_sig)).count()
     exists = tx_sig_db_count > 0
     logger.info(f"index_solana_plays.py | {tx_sig} exists={exists}")
     return exists
 
+
 # pylint: disable=W0105
-'''
+"""
 Processing of plays through the Solana TrackListenCount program is handled differently
 than the original indexing layer
 
@@ -244,7 +264,9 @@ It is important to note that we also limit the maximum size of tx_batches to ens
 does not grow unbounded over time and new discovery providers are able to safely recover all information.
 This is performed by simply slicing the tx_batches array and discarding the newest transactions until an intersection
 is found - these limiting parameters are defined as TX_SIGNATURES_MAX_BATCHES, TX_SIGNATURES_RESIZE_LENGTH
-'''
+"""
+
+
 def process_solana_plays(solana_client):
     try:
         base58.b58decode(TRACK_LISTEN_PROGRAM)
@@ -259,8 +281,7 @@ def process_solana_plays(solana_client):
 
     # Highest currently processed slot in the DB
     latest_processed_slot = get_latest_slot(db)
-    logger.info(
-        f"index_solana_plays.py | latest used slot: {latest_processed_slot}")
+    logger.info(f"index_solana_plays.py | latest used slot: {latest_processed_slot}")
 
     # Loop exit condition
     intersection_found = False
@@ -290,20 +311,21 @@ def process_solana_plays(solana_client):
         else:
             with db.scoped_session() as read_session:
                 for tx in transactions_array:
-                    tx_sig = tx['signature']
-                    tx_slot = tx['slot']
+                    tx_sig = tx["signature"]
+                    tx_slot = tx["slot"]
                     logger.info(
                         f"index_solana_plays.py | Processing tx, sig={tx_sig} slot={tx_slot}"
                     )
-                    if tx['slot'] > latest_processed_slot:
+                    if tx["slot"] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
-                    elif tx['slot'] <= latest_processed_slot:
+                    elif tx["slot"] <= latest_processed_slot:
                         # Check the tx signature for any txs in the latest batch,
                         # and if not present in DB, add to processing
                         logger.info(
                             f"index_solana_plays.py | Latest slot re-traversal\
     slot={tx_slot}, sig={tx_sig},\
-    latest_processed_slot(db)={latest_processed_slot}")
+    latest_processed_slot(db)={latest_processed_slot}"
+                        )
                         exists = get_tx_in_db(read_session, tx_sig)
                         if exists:
                             # Exit loop and set terminal condition since this tx has been found in DB
@@ -311,9 +333,8 @@ def process_solana_plays(solana_client):
                             # subsequent transactions in this batch have already been processed
                             intersection_found = True
                             break
-                        else:
-                            # Ensure this transaction is still processed
-                            transaction_signature_batch.append(tx_sig)
+                        # Otherwise, ensure this transaction is still processed
+                        transaction_signature_batch.append(tx_sig)
                 # Restart processing at the end of this transaction signature batch
                 last_tx = transactions_array[-1]
                 last_tx_signature = last_tx["signature"]
@@ -323,9 +344,15 @@ def process_solana_plays(solana_client):
 
                 # Ensure processing does not grow unbounded
                 if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:
-                    logger.info(f"index_solana_plays.py | slicing tx_sigs from {len(transaction_signatures)} entries")
-                    transaction_signatures = transaction_signatures[-TX_SIGNATURES_RESIZE_LENGTH:]
-                    logger.info(f"index_solana_plays.py | sliced tx_sigs to {len(transaction_signatures)} entries")
+                    logger.info(
+                        f"index_solana_plays.py | slicing tx_sigs from {len(transaction_signatures)} entries"
+                    )
+                    transaction_signatures = transaction_signatures[
+                        -TX_SIGNATURES_RESIZE_LENGTH:
+                    ]
+                    logger.info(
+                        f"index_solana_plays.py | sliced tx_sigs to {len(transaction_signatures)} entries"
+                    )
 
                 # Reset batch state
                 transaction_signature_batch = []
@@ -333,7 +360,9 @@ def process_solana_plays(solana_client):
             f"index_solana_plays.py | intersection_found={intersection_found}, last_tx_signature={last_tx_signature}"
         )
 
-    logger.info(f"index_solana_plays.py | {transaction_signatures}, {len(transaction_signatures)} entries")
+    logger.info(
+        f"index_solana_plays.py | {transaction_signatures}, {len(transaction_signatures)} entries"
+    )
 
     transaction_signatures.reverse()
 
@@ -348,12 +377,12 @@ def process_solana_plays(solana_client):
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             with db.scoped_session() as session:
                 parse_sol_tx_futures = {
-                    executor.submit(parse_sol_play_transaction, session,
-                                    solana_client, tx_sig): tx_sig
+                    executor.submit(
+                        parse_sol_play_transaction, session, solana_client, tx_sig
+                    ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
-                for future in concurrent.futures.as_completed(
-                        parse_sol_tx_futures):
+                for future in concurrent.futures.as_completed(parse_sol_tx_futures):
                     try:
                         # No return value expected here so we just ensure all futures are resolved
                         future.result()
@@ -366,6 +395,7 @@ def process_solana_plays(solana_client):
         logger.info(
             f"index_solana_plays.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
         )
+
 
 ######## CELERY TASKS ########
 @celery.task(name="index_solana_plays", bind=True)
@@ -390,10 +420,7 @@ def index_solana_plays(self):
         else:
             logger.info("index_solana_plays.py | Failed to acquire lock")
     except Exception as e:
-        logger.error(
-            "index_solana_plays.py | Fatal error in main loop",
-            exc_info=True
-        )
+        logger.error("index_solana_plays.py | Fatal error in main loop", exc_info=True)
         raise e
     finally:
         if have_lock:

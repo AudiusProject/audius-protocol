@@ -27,48 +27,46 @@ def get_app_names(args):
         app_names = (
             session.query(
                 AppNameMetrics.application_name,
-                func.sum(AppNameMetrics.count).label('count'),
-                func.count(AppNameMetrics.ip.distinct())
+                func.sum(AppNameMetrics.count).label("count"),
+                func.count(AppNameMetrics.ip.distinct()),
             )
-            .filter(
-                AppNameMetrics.timestamp > args.get('start_time')
-            )
+            .filter(AppNameMetrics.timestamp > args.get("start_time"))
             .group_by(AppNameMetrics.application_name)
-            .order_by(desc('count'), asc(AppNameMetrics.application_name))
-            .limit(args.get('limit'))
-            .offset(args.get('offset'))
+            .order_by(desc("count"), asc(AppNameMetrics.application_name))
+            .limit(args.get("limit"))
+            .offset(args.get("offset"))
             .all()
         )
 
-        names = [{
-            'name': app_name[0],
-            'count': app_name[1],
-            'unique_count': app_name[2]
-        } for app_name in app_names]
+        names = [
+            {"name": app_name[0], "count": app_name[1], "unique_count": app_name[2]}
+            for app_name in app_names
+        ]
 
-        if args.get('include_unknown', False):
-            existing_count = reduce(lambda x, y: x + y['count'], names, 0)
-            existing_unique_count = reduce(lambda x, y: x + y['unique_count'], names, 0)
+        if args.get("include_unknown", False):
+            existing_count = reduce(lambda x, y: x + y["count"], names, 0)
+            existing_unique_count = reduce(lambda x, y: x + y["unique_count"], names, 0)
             total_requests = (
                 session.query(
-                    func.sum(RouteMetrics.count).label('count'),
-                    func.count(RouteMetrics.ip.distinct())
+                    func.sum(RouteMetrics.count).label("count"),
+                    func.count(RouteMetrics.ip.distinct()),
                 )
-                .filter(
-                    RouteMetrics.timestamp > args.get('start_time')
-                )
+                .filter(RouteMetrics.timestamp > args.get("start_time"))
                 .first()
             )
             unknown_count = total_requests[0] - existing_count
             unique_count = total_requests[1] - existing_unique_count
             # Insert unique counts "in order" (desc by count)
             for i, name in enumerate(names[:]):
-                if unknown_count > name['count'] or i == len(names):
-                    names.insert(i, {
-                        'name': 'unknown',
-                        'count': unknown_count,
-                        'unique_count': unique_count
-                    })
+                if unknown_count > name["count"] or i == len(names):
+                    names.insert(
+                        i,
+                        {
+                            "name": "unknown",
+                            "count": unknown_count,
+                            "unique_count": unique_count,
+                        },
+                    )
                     break
 
         return names

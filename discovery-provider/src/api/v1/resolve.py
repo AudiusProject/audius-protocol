@@ -8,10 +8,10 @@ from src.utils import db_session
 
 logger = logging.getLogger(__name__)
 
-ns = Namespace('resolve', description='Audius Cannonical URL resolver')
+ns = Namespace("resolve", description="Audius Cannonical URL resolver")
 
 resolve_route_parser = reqparse.RequestParser()
-resolve_route_parser.add_argument('url', required=True)
+resolve_route_parser.add_argument("url", required=True)
 
 
 @ns.route("")  # Root, no "/"
@@ -20,11 +20,9 @@ class Resolve(Resource):
     @ns.doc(
         id="""Resolve""",
         params={
-            'url': 'URL to resolve. Either fully formed URL (https://audius.co) or just the absolute path'
+            "url": "URL to resolve. Either fully formed URL (https://audius.co) or just the absolute path"
         },
-        responses={
-            302: 'Internal redirect'
-        }
+        responses={302: "Internal redirect"},
     )
     def get(self):
         """
@@ -37,7 +35,7 @@ class Resolve(Resource):
         args = resolve_route_parser.parse_args()
         url = args.get("url")
         if not url:
-            abort_bad_request_param('url', ns)
+            abort_bad_request_param("url", ns)
         try:
             db = db_session.get_db_read_replica()
             with db.scoped_session() as session:

@@ -15,9 +15,7 @@ def test_creator_endpoint(app, client):
         db = get_db()
 
     with db.scoped_session() as session:
-        query_results = (
-            session.query(models.User).order_by(models.User.user_id).all()
-        )
+        query_results = session.query(models.User).order_by(models.User.user_id).all()
         num_query_results = len(query_results)
         assert num_users_from_endpoint == num_query_results
 
@@ -35,7 +33,9 @@ def test_config_values(app, client, celery_app, contracts):
             val = item[1]
             if app.config[section][key] != val:
                 if TEST_CONFIG_OVERRIDE.get(section):
-                    assert app.config[section][key] == TEST_CONFIG_OVERRIDE[section][key]
+                    assert (
+                        app.config[section][key] == TEST_CONFIG_OVERRIDE[section][key]
+                    )
                     continue
                 envvar = f"audius_{section}_{key}"
                 if os.environ.get(envvar):
@@ -44,7 +44,7 @@ def test_config_values(app, client, celery_app, contracts):
 
             assert app.config[section][key] == val
 
-    if os.environ.get('audius_redis_url'):
-        assert celery_app.celery.conf["broker_url"] == os.environ['audius_redis_url']
+    if os.environ.get("audius_redis_url"):
+        assert celery_app.celery.conf["broker_url"] == os.environ["audius_redis_url"]
     else:
         assert celery_app.celery.conf["broker_url"] == TEST_BROKER_URL

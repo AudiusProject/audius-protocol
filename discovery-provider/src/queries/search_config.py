@@ -42,8 +42,6 @@ def set_search_similarity(cursor):
     https://stackoverflow.com/a/11250001/11435157
     """
     try:
-        cursor.execute(
-            f"SET pg_trgm.similarity_threshold = {min_search_similarity}"
-        )
+        cursor.execute(f"SET pg_trgm.similarity_threshold = {min_search_similarity}")
     except Exception as e:
         logger.error(f"Unable to set similarity_threshold: {e}")
