@@ -166,7 +166,7 @@ const Getters = {
       const pattern = Utils._getRedisKeyPattern(filters)
       return Utils._getMetricsMatchingPattern(pattern)
     } catch (e) {
-      logger.error(`secondarySyncHealthTracker - getSyncRequestOutcomeMetrics() Error || ${e.message}`)
+      logger.error(`SecondarySyncHealthTracker - getSyncRequestOutcomeMetrics() Error || ${e.message}`)
       return {}
     }
   }
