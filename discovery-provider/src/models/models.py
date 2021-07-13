@@ -23,6 +23,7 @@ from sqlalchemy import (
     Index,
     func,
 )
+from sqlalchemy.sql.sqltypes import Float
 from src.model_validator import ModelValidator
 
 
@@ -967,6 +968,36 @@ id={self.id},\
 blocknumber={self.blocknumber},\
 blockhash={self.blockhash},\
 txhash={self.txhash},\
+created_at={self.created_at},\
+updated_at={self.updated_at})>"
+
+
+class EthTransferEvent(Base):
+    __tablename__ = "eth_transfer_events"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    blocknumber = Column(Integer, nullable=False)
+    txhash = Column(String, nullable=False)
+    logindex = Column(Integer, nullable=False)
+    tx_from = Column(String, nullable=False)
+    tx_to = Column(String, nullable=False)
+    tx_timestamp = Column(DateTime, nullable=False)
+    value = Column(Float, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
+
+    def __repr__(self):
+        return f"<EthTransferEvent(\
+id={self.id},\
+blocknumber={self.blocknumber},\
+txhash={self.txhash},\
+logindex={self.logindex},\
+tx_from={self.tx_from},\
+tx_to={self.tx_to},\
+tx_timestamp={self.tx_timestamp},\
+value={self.value},\
 created_at={self.created_at},\
 updated_at={self.updated_at})>"
 
