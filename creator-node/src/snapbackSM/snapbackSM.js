@@ -127,8 +127,7 @@ class SnapbackSM {
     // The interval when SnapbackSM is fired for state machine jobs
     this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
 
-    // Initialize the set of enabledReconfigModes
-    this.enabledReconfigModes = this.computeEnabledReconfigModes()
+    this.updateEnabledReconfigModesSet()
   }
 
   /**
@@ -839,8 +838,8 @@ class SnapbackSM {
       try {
         await this.peerSetManager.updateEndpointToSpIdMap(this.audiusLibs.ethContracts)
 
-        // Re-generate enabledReconfigModes
-        this.enabledReconfigModes = this.computeEnabledReconfigModes()
+        // update enabledReconfigModesSet after successful `updateEndpointToSpIDMap()` call
+        this.updateEnabledReconfigModesSet()
 
         decisionTree.push({
           stage: `updateEndpointToSpIdMap() Success`,
@@ -850,8 +849,8 @@ class SnapbackSM {
           time: Date.now()
         })
       } catch (e) {
-        // If unable to initialize `endpointToSpIdMap`, disable reconfig
-        this.enabledReconfigModes = this.computeEnabledReconfigModes({
+        // Disable reconfig after failed `updateEndpointToSpIDMap()` call
+        this.updateEnabledReconfigModesSet({
           override: RECONFIG_MODES.RECONFIG_DISABLED.key
         })
 
@@ -1208,13 +1207,13 @@ class SnapbackSM {
 
   isReconfigModeEnabled (mode) {
     if (mode === RECONFIG_MODES.RECONFIG_DISABLED) return false
-    return this.enabledReconfigModes.has(mode)
+    return this.enabledReconfigModesSet.has(mode)
   }
 
   /**
    * e.x.: 'PRIMARY_AND_SECONDARY' is the reconfig mode -> 'RECONFIG_DISABLED', 'ONE_SECONDARY', 'MULTIPLE_SECONDARIES', 'PRIMARY_AND_SECONDARY' enabled
    */
-  computeEnabledReconfigModes ({ override }) {
+  updateEnabledReconfigModesSet ({ override }) {
     let highestEnabledReconfigMode
 
     // Set mode to override if provided
@@ -1235,7 +1234,9 @@ class SnapbackSM {
       RECONFIG_MODES[mode].value <= RECONFIG_MODES[highestEnabledReconfigMode].value
     ))
 
-    return enabledReconfigModesSet
+    // Update class variables for external access
+    this.highestEnabledReconfigMode = highestEnabledReconfigMode
+    this.enabledReconfigModesSet = enabledReconfigModesSet
   }
 }
 
