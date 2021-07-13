@@ -1,8 +1,8 @@
-from src.models.models import EthTransferEvent, User
+from src.models.models import AssociatedWallet, EthTransferEvent, User
 import time
 import logging
 import datetime
-from sqlalchemy import desc
+from sqlalchemy import desc, or_
 from typing import TypedDict, Any
 from src.eth_indexing.event_scanner_state import EventScannerState
 from src.utils.helpers import redis_set_and_dump, redis_get_or_restore
@@ -135,12 +135,17 @@ class EventScannerDBState(EventScannerState):
         }
 
         # add user ids from the transfer event into the balance refresh queue
+        transfer_event_wallets = [transfer["from"].lower(), transfer["to"].lower()]
         with self.db.scoped_session() as session:
             result = (
                 session.query(User.user_id)
+                .outerjoin(AssociatedWallet, User.user_id == AssociatedWallet.user_id)
                 .filter(User.is_current == True)
                 .filter(
-                    User.wallet.in_([transfer["from"].lower(), transfer["to"].lower()])
+                    or_(
+                        User.wallet.in_(transfer_event_wallets),
+                        AssociatedWallet.wallet.in_(transfer_event_wallets),
+                    )
                 )
                 .all()
             )
