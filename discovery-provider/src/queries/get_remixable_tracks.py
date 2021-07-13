@@ -15,6 +15,7 @@ def get_remixable_tracks(args):
         # Subquery to get current tracks that have stems
         remixable_tracks_subquery = (
             session.query(Track)
+                .select_from(Track)
                 .join(Stem, Stem.parent_track_id == Track.track_id)
                 .filter(
                     Track.is_current == True,
@@ -51,13 +52,12 @@ def get_remixable_tracks(args):
 
         tracks = []
         for result in results:
-            track = result[0]
-            score = result[2]
+            track = result[0:-2]
+            score = result[-1]
             track = helpers.tuple_to_model_dictionary(track, Track)
             track["score"] = score
             tracks.append(track)
 
-        # tracks = helpers.query_result_to_list()
         track_ids = list(map(lambda track: track["track_id"], tracks))
 
         # Get user specific data for tracks
