@@ -1,8 +1,9 @@
 import logging
 from datetime import datetime
-from typing import TypedDict
+from typing import TypedDict, cast
 from eth_account.messages import defunct_hash_message
 from sqlalchemy.orm.session import Session, make_transient
+from sqlalchemy.sql.schema import Column
 from src.app import contract_addresses
 from src.utils import helpers
 from src.models import User, UserEvents, AssociatedWallet
@@ -315,7 +316,10 @@ def parse_user_event(
             ):
                 user_record.playlist_library = ipfs_metadata["playlist_library"]
 
-            if "events" in ipfs_metadata:
+            if (
+                "events" in ipfs_metadata
+                and ipfs_metadata["events"]
+            ):
                 update_user_events(
                     session,
                     user_record,
@@ -441,7 +445,7 @@ def update_user_events(
             return
 
         # Mark existing UserEvents entries as not current
-        session.query(UserEvents).filter_by(user_id=user_record.user_id).update(
+        session.query(UserEvents).filter_by(user_id=user_record.user_id, is_current=True).update(
             {"is_current": False}
         )
 
@@ -453,9 +457,9 @@ def update_user_events(
         )
         for event, value in events.items():
             if event == 'referrer':
-                user_events.referrer = value
+                user_events.referrer = cast(Column[int], value)
             elif event == 'is_mobile_user':
-                user_events.is_mobile_user = value
+                user_events.is_mobile_user = cast(Column[bool], value)
         session.add(user_events)
 
     except Exception as e:
