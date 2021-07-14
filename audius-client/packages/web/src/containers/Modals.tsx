@@ -11,6 +11,7 @@ import EmbedModal from 'containers/embed-modal/EmbedModal'
 import FirstUploadModal from 'containers/first-upload-modal/FirstUploadModal'
 import PasswordResetModal from 'containers/password-reset/PasswordResetModal'
 import ServiceSelectionModal from 'containers/service-selection/ServiceSelectionModal'
+import ShareSoundToTikTokModal from 'containers/share-sound-to-tiktok-modal/ShareSoundToTikTokModal'
 import ConnectedMobileOverflowModal from 'containers/track-overflow-modal/ConnectedMobileOverflowModal'
 import UnfollowConfirmationModal from 'containers/unfollow-confirmation-modal/UnfollowConfirmationModal'
 import UnloadDialog from 'containers/unload-dialog/UnloadDialog'
@@ -46,6 +47,7 @@ const Modals = () => {
           <ConnectedUserListModal />
           <AppCTAModal />
           <TierExplainerModal />
+          <ShareSoundToTikTokModal />
         </>
       )}
 

@@ -1,16 +1,20 @@
 import React, { useCallback } from 'react'
 
-import { Button, ButtonType, IconTwitterBird } from '@audius/stems'
+import { Button, ButtonType, IconTikTok, IconTwitterBird } from '@audius/stems'
 import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 
 import backgroundPlaceholder from 'assets/img/1-Concert-3-1.jpg'
 import { ReactComponent as IconShare } from 'assets/img/iconShare.svg'
 import Toast from 'components/toast/Toast'
 import { MountPlacement, ComponentPlacement } from 'components/types'
+import { useFlag } from 'containers/remote-config/hooks'
+import { open as openTikTokModal } from 'containers/share-sound-to-tiktok-modal/store/slice'
 import User from 'models/User'
 import AudiusBackend from 'services/AudiusBackend'
 import { Name } from 'services/analytics'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { FeatureFlags } from 'services/remote-config'
 import { useRecord, make } from 'store/analytics/actions'
 import { copyLinkToClipboard } from 'utils/clipboardUtil'
 import {
@@ -33,8 +37,8 @@ type UploadType = 'Track' | 'Tracks' | 'Album' | 'Playlist' | 'Remix'
 type ContinuePage = 'Track' | 'Profile' | 'Album' | 'Playlist' | 'Remix'
 
 type ShareBannerProps = {
-  type: UploadType
   isHidden: boolean
+  type: UploadType
   upload: UploadPageState
   user: User
 }
@@ -44,6 +48,7 @@ const messages = {
     `Your ${type} ${type === 'Tracks' ? 'Are' : 'Is'} Live!`,
   description: 'Now it’s time to spread the word and share it with your fans!',
   share: 'Share With Your Fans',
+  shareToTikTok: 'Share Sound to TikTok',
   copy: (page: ContinuePage) => `Copy Link to ${page}`,
   copiedToClipboard: 'Copied to Clipboard'
 }
@@ -130,8 +135,12 @@ const getShareTextUrl = async (
 // The toast appears for copy link
 const TOAST_DELAY = 3000
 
-const ShareBanner = ({ type, user, isHidden, upload }: ShareBannerProps) => {
+const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
+  const dispatch = useDispatch()
   const record = useRecord()
+  const { isEnabled: isShareSoundToTikTokEnabled } = useFlag(
+    FeatureFlags.SHARE_SOUND_TO_TIKTOK
+  )
 
   const onClickTwitter = useCallback(async () => {
     const { url, text } = await getShareTextUrl(type, user, upload)
@@ -143,6 +152,24 @@ const ShareBanner = ({ type, user, isHidden, upload }: ShareBannerProps) => {
       })
     )
   }, [type, user, upload, record])
+
+  const onClickTikTok = useCallback(async () => {
+    // Sharing to TikTok is currently only enabled for single track uploads
+    const track = upload.tracks[0]
+    if (track.metadata.download?.cid) {
+      dispatch(
+        openTikTokModal({
+          track: {
+            id: track.metadata.track_id,
+            title: track.metadata.title,
+            cid: track.metadata.download.cid,
+            duration: track.metadata.duration
+          }
+        })
+      )
+    }
+    record(make(Name.TRACK_UPLOAD_SHARE_SOUND_TO_TIKTOK, {}))
+  }, [upload, record, dispatch])
 
   const onCopy = useCallback(async () => {
     const { url } = await getShareTextUrl(type, user, upload, false)
@@ -166,14 +193,30 @@ const ShareBanner = ({ type, user, isHidden, upload }: ShareBannerProps) => {
     >
       <div className={styles.title}>{messages.title(type)}</div>
       <div className={styles.description}>{messages.description}</div>
-      <Button
-        onClick={onClickTwitter}
-        className={styles.button}
-        textClassName={styles.buttonText}
-        type={ButtonType.WHITE}
-        text={messages.share}
-        leftIcon={<IconTwitterBird />}
-      />
+      <div className={styles.buttonContainer}>
+        <Button
+          onClick={onClickTwitter}
+          className={cn(styles.button, styles.buttonTwitter)}
+          textClassName={styles.buttonText}
+          type={ButtonType.WHITE}
+          text={messages.share}
+          leftIcon={<IconTwitterBird />}
+        />
+        {type === 'Track' && isShareSoundToTikTokEnabled && (
+          <Button
+            onClick={onClickTikTok}
+            className={cn(styles.button, styles.buttonTikTok)}
+            textClassName={styles.buttonText}
+            type={ButtonType.WHITE}
+            text={
+              <div className={styles.buttonTextTikTok}>
+                <IconTikTok />
+                <span>{messages.shareToTikTok}</span>
+              </div>
+            }
+          />
+        )}
+      </div>
       <div className={styles.copyLinkWrapper} onClick={onCopy}>
         <Toast
           useCaret={false}

@@ -42,23 +42,22 @@
 }
 
 .button {
-  margin: auto;
+  margin: 0 16px;
   margin-bottom: 24px;
   height: 64px !important;
   min-height: 64px;
   width: 400px !important;
-  transition: all .14s ease-in-out !important;
+  transition: all 0.14s ease-in-out !important;
 }
 
-.button svg {
+.buttonTwitter svg {
   height: 32px !important;
   width: 32px !important;
 }
 
-.button svg path {
+.buttonTwitter svg path {
   fill: var(--static-twitter-blue) !important;
 }
-
 
 .button .buttonText {
   color: var(--static-twitter-blue);
@@ -67,6 +66,16 @@
   letter-spacing: 0;
   line-height: 14px;
   text-align: center;
+}
+
+.button .buttonTextTikTok {
+  color: black;
+  display: flex;
+  align-items: center;
+}
+
+.button .buttonTextTikTok svg {
+  margin-right: 8px;
 }
 
 .copyLinkWrapper {
@@ -81,13 +90,13 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  transition: all ease-in-out .07s;
+  transition: all ease-in-out 0.07s;
   transform: scale3d(1, 1, 1);
   backface-visibility: hidden;
   cursor: pointer;
 }
 
-.copyLinkContainer:hover{
+.copyLinkContainer:hover {
   text-decoration: underline;
   text-decoration-color: var(--static-white);
   transform: scale3d(1.02, 1.02, 1.02);
@@ -107,7 +116,6 @@
   fill: var(--static-white);
 }
 
-
 .copyText {
   color: var(--static-white);
   font-size: var(--font-l);
@@ -124,4 +132,9 @@
   display: flex;
   justify-content: center;
   padding: 0px;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
 }

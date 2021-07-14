@@ -5,7 +5,8 @@ export enum FeatureFlags {
   USE_TRACK_CONTENT_POLLING = 'use_track_content_polling',
   USE_RESUMABLE_TRACK_UPLOAD = 'use_resumable_track_upload',
   PLAYLIST_UPDATES_ENABLED = 'playlist_updates_enabled',
-  CREATE_WAUDIO_USER_BANK_ON_SIGN_UP = 'create_waudio_user_bank_on_sign_up'
+  CREATE_WAUDIO_USER_BANK_ON_SIGN_UP = 'create_waudio_user_bank_on_sign_up',
+  SHARE_SOUND_TO_TIKTOK = 'share_sound_to_tiktok'
 }
 
 /**
@@ -17,7 +18,8 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.SOLANA_LISTEN_ENABLED]: false,
   [FeatureFlags.USE_RESUMABLE_TRACK_UPLOAD]: false,
   [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: false,
-  [FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP]: false
+  [FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP]: false,
+  [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: true
 }
 
 export enum FeatureFlagCohortType {
@@ -44,7 +46,8 @@ export const flagCohortType: {
   // Create wAudio user bank on sign up is a session id experiment because it only impacts
   // unauthenticated sessions during sign up
   [FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP]:
-    FeatureFlagCohortType.SESSION_ID
+    FeatureFlagCohortType.SESSION_ID,
+  [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: FeatureFlagCohortType.USER_ID
 }
 
 export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId'
