@@ -90,7 +90,7 @@ def setup_challenges(app):
             session.add_all(user_challenges)
 
 
-def test_handle_event(app):
+def test_undisbursed_challenges(app):
     setup_challenges(app)
 
     with app.app_context():

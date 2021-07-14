@@ -20,7 +20,9 @@ class ChallengeUpdater(ABC):
     """
 
     @abstractmethod
-    def update_user_challenges(self, session, event, user_challenges_metadata, step_count):
+    def update_user_challenges(
+        self, session, event, user_challenges_metadata, step_count
+    ):
         """This is the main required method to fill out when implementing a new challenge.
         Given an event type, a list of existing user challenges, and the base challenge type,
         update the given user_challenges.
@@ -71,7 +73,7 @@ class ChallengeManager:
             return
 
         user_ids = list(map(lambda x: x["user_id"], event_metadatas))
-        user_id_metadatas = { x["user_id"]: x for x in event_metadatas}
+        user_id_metadatas = {x["user_id"]: x for x in event_metadatas}
 
         # Gets all user challenges,
         existing_user_challenges = fetch_user_challenges(
@@ -98,19 +100,19 @@ class ChallengeManager:
         # Update all the challenges
         to_update = in_progress_challenges + new_user_challenges
         user_challenges_metadata = [
-            (user_challenge, user_id_metadatas[user_challenge.user_id]) for user_challenge in to_update]
+            (user_challenge, user_id_metadatas[user_challenge.user_id])
+            for user_challenge in to_update
+        ]
         self._updater.update_user_challenges(
             session, event_type, user_challenges_metadata, self._step_count
         )
 
-        logger.debug(
-            f"Updated challenges from event [{event_type}]: [{to_update}]")
+        logger.debug(f"Updated challenges from event [{event_type}]: [{to_update}]")
         # Only add the new ones
         session.add_all(new_user_challenges)
 
     def get_challenge_state(self, session, user_ids):
-        user_challenges = fetch_user_challenges(
-            session, self.challenge_id, user_ids)
+        user_challenges = fetch_user_challenges(session, self.challenge_id, user_ids)
         return {
             user_challenge.user_id: user_challenge for user_challenge in user_challenges
         }
@@ -119,8 +121,7 @@ class ChallengeManager:
 
     def _init_challenge(self, session):
         challenge = (
-            session.query(Challenge).filter(
-                Challenge.id == self.challenge_id).first()
+            session.query(Challenge).filter(Challenge.id == self.challenge_id).first()
         )
         if not challenge:
             raise Exception("No matching challenge!")

@@ -1,9 +1,9 @@
-from typing import List, TypedDict, Optional
+from typing import List, Tuple, TypedDict, Optional
 from sqlalchemy import and_, asc
 from src.models import UserChallenge, Challenge, ChallengeDisbursement
 
 
-class ChallengeResponse(TypedDict):
+class UndisbursedChallengeResponse(TypedDict):
     challenge_id: str
     user_id: int
     specifier: str
@@ -13,7 +13,7 @@ class ChallengeResponse(TypedDict):
 
 def to_challenge_response(
     user_challenge: UserChallenge, challenge: Challenge
-) -> ChallengeResponse:
+) -> UndisbursedChallengeResponse:
     return {
         "challenge_id": challenge.id,
         "user_id": user_challenge.user_id,
@@ -34,13 +34,13 @@ MAX_LIMIT = 500
 DEFAULT_LIMIT = 100
 
 
-# Gets undispbursed challenges
+# Gets undisbursed challenges
 # returning a list of challenge responses
 def get_undisbursed_challenges(
     session, args: UndisbursedChallengesArgs
-) -> List[ChallengeResponse]:
+) -> List[UndisbursedChallengeResponse]:
     undisbursed_challenges_query = (
-        session.query(UserChallenge)
+        session.query(UserChallenge, Challenge)
         .outerjoin(
             ChallengeDisbursement,
             and_(
@@ -51,7 +51,7 @@ def get_undisbursed_challenges(
         )
         .outerjoin(
             Challenge,
-            and_(Challenge.id == UserChallenge.challenge_id),
+            Challenge.id == UserChallenge.challenge_id,
         )
         .filter(
             # Check that there is no matching challenge disburstment
@@ -89,14 +89,13 @@ def get_undisbursed_challenges(
             args["offset"]
         )
 
-    undisbursed_challenges: List[UserChallenge] = undisbursed_challenges_query.all()
+    undisbursed_challenges: List[
+        Tuple[UserChallenge, Challenge]
+    ] = undisbursed_challenges_query.all()
 
-    all_challenges: List[Challenge] = (session.query(Challenge)).all()
-    all_challenges_map = {challenge.id: challenge for challenge in all_challenges}
-
-    undisbursed_challenges_response: List[ChallengeResponse] = [
-        to_challenge_response(challenge, all_challenges_map[challenge.challenge_id])
-        for challenge in undisbursed_challenges
+    undisbursed_challenges_response: List[UndisbursedChallengeResponse] = [
+        to_challenge_response(user_challenge, challenge)
+        for user_challenge, challenge in undisbursed_challenges
     ]
 
     return undisbursed_challenges_response
