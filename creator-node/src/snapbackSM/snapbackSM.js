@@ -360,6 +360,7 @@ class SnapbackSM {
     let newReplicaSetEndpoints = []
     let newReplicaSetSPIds = []
     let phase = ''
+
     try {
       // Generate new replica set
       phase = issueUpdateReplicaSetOpPhases.DETERMINE_NEW_REPLICA_SET
@@ -375,11 +376,9 @@ class SnapbackSM {
 
       newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
 
-      this.log(`[issueUpdateReplicaSetOp] Tentative reconfig: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}]`)
-
-      // If snapback is not enabled, print the tentative new replica set, but do not issue a reconfig.
+      // If snapback is not enabled, Log reconfig op without issuing.
       if (!issueReconfig) {
-        this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} issuing reconfig disabled=${issueReconfig}. Skipping reconfig.`)
+        this.log(`[issueUpdateReplicaSetOp] Reconfig [DISABLED]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}]`)
         return response
       }
 
@@ -422,9 +421,9 @@ class SnapbackSM {
         syncType: SyncType.Recurring
       })
 
-      this.log(`[issueUpdateReplicaSetOp] Success! userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}]`)
+      this.log(`[issueUpdateReplicaSetOp] Reconfig [SUCCESS]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}]`)
     } catch (e) {
-      const errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} failed at phase=${phase} reconfiguring to new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}]: ${e.toString()}\n${e.stack}`
+      const errorMsg = `[issueUpdateReplicaSetOp] Reconfig [ERROR]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}\n${e.stack}`
       response.errorMsg = errorMsg
       return response
     }
