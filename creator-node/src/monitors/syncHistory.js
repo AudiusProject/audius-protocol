@@ -14,7 +14,7 @@ const get30DayRollingSyncSuccessCount = async () => {
 
   while (date <= rollingWindowEndDate) { // eslint-disable-line no-unmodified-loop-condition
     const redisDateKeySuffix = date.toISOString().split('T')[0] // ex.: "2021-05-04"
-    const { success } = SyncHistoryAggregator.getPerWalletSyncData({}, redisDateKeySuffix)
+    const { success } = SyncHistoryAggregator.getPerWalletSyncData(redisDateKeySuffix, {})
     rollingSyncSuccessCount += success
 
     // Set the date to the next day
@@ -38,7 +38,7 @@ const get30DayRollingSyncFailCount = async () => {
 
   while (date <= rollingWindowEndDate) { // eslint-disable-line no-unmodified-loop-condition
     const redisDateKeySuffix = date.toISOString().split('T')[0] // ex.: "2021-05-04"
-    const { fail } = SyncHistoryAggregator.getPerWalletSyncData({}, redisDateKeySuffix)
+    const { fail } = SyncHistoryAggregator.getPerWalletSyncData(redisDateKeySuffix, {})
     rollingSyncFailCount += fail
 
     // Set the date to the next day

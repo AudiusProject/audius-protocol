@@ -334,7 +334,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         logger.info(redisKey, `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey}`)
 
         // track that sync for this user was successful
-        await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey, {})
+        await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey)
       } catch (e) {
         logger.error(redisKey, `Transaction failed for cnodeUser wallet ${fetchedWalletPublicKey}`, e)
 
@@ -357,7 +357,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     errorObj = e
 
     for (let wallet of walletPublicKeys) {
-      await SyncHistoryAggregator.recordSyncFail(wallet, {})
+      await SyncHistoryAggregator.recordSyncFail(wallet)
     }
   } finally {
     // Release all redis locks

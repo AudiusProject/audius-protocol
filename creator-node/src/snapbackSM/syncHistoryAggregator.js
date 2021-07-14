@@ -177,7 +177,7 @@ class SyncHistoryAggregator {
    * @returns an object of the current day's aggregate sync count like
    *     {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
    */
-  static async getPerWalletSyncData (logContext = {}, date = new Date().toISOString().split('T')[0]) {
+  static async getPerWalletSyncData (date = new Date().toISOString().split('T')[0], logContext = {}) {
     const logger = genericLogger.child(logContext)
     let perWalletSyncData = {
       success: null,
@@ -185,7 +185,7 @@ class SyncHistoryAggregator {
     }
 
     try {
-      const { success, fail } = SyncHistoryAggregator.getUniqueSyncKeys()
+      const { success, fail } = SyncHistoryAggregator.getUniqueSyncKeys(date)
 
       const perWalletSyncSuccess = await redisClient.scard(success)
       const perWalletSyncFail = await redisClient.scard(fail)
