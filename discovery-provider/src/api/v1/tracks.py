@@ -633,6 +633,7 @@ class FullRemixableTracks(Resource):
             "with_users": args.get("with_users", False),
         }
         tracks = get_remixable_tracks(args)
+        tracks = list(map(extend_track, tracks))
         return success_response(tracks)
 
 remixes_response = make_full_response(

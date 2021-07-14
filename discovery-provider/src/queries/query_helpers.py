@@ -1178,7 +1178,7 @@ def seconds_ago(timestamp):
     return func.extract("epoch", (func.now() - timestamp))
 
 
-def decayed_score(score, created_at, peak=5, nominal_timestamp=14 * 24 * 60 * 60):
+def decayed_score(score, created_at, peak=1000, nominal_timestamp=60 * 24 * 60 * 60):
     """
     Creates a decaying (over time) version of the provided `score`. The returned
     value is score * a multiplier determined by `peak` and `nominal_timestamp`.

@@ -7,8 +7,8 @@ const {
   errorResponseBadRequest,
   errorResponse: formatResponse,
   sendResponse
-} = require("../apiHelpers")
-const models = require("../models")
+} = require('../apiHelpers')
+const models = require('../models')
 
 const protocolRouter = express.Router()
 
@@ -72,7 +72,6 @@ protocolRouter.post('/:wallet/delegation/minimum', serviceProviderAuthMiddleware
     wallet,
     minimumDelegationAmount: minimumDelegationAmount
   })
-
 }))
 
 module.exports = function (app) {
