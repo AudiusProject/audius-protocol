@@ -49,12 +49,12 @@ const get30DayRollingSyncFailCount = async () => {
 }
 
 const getDailySyncSuccessCount = async () => {
-  const { success } = await SyncHistoryAggregator.getAggregateSyncData()
+  const { success } = await SyncHistoryAggregator.getPerWalletSyncData()
   return success
 }
 
 const getDailySyncFailCount = async () => {
-  const { fail } = await SyncHistoryAggregator.getAggregateSyncData()
+  const { fail } = await SyncHistoryAggregator.getPerWalletSyncData()
   return fail
 }
 
