@@ -6,11 +6,18 @@ from src.models import Block, IPLDBlacklistBlock
 from src.monitors import monitors, monitor_names
 from src.utils import helpers, redis_connection, web3_provider, db_session
 from src.utils.config import shared_config
-from src.utils.redis_constants import latest_block_redis_key, \
-    latest_block_hash_redis_key, most_recent_indexed_block_hash_redis_key, most_recent_indexed_block_redis_key, \
-    most_recent_indexed_ipld_block_redis_key, most_recent_indexed_ipld_block_hash_redis_key, \
-    trending_tracks_last_completion_redis_key, trending_playlists_last_completion_redis_key, \
-    challenges_last_processed_event_redis_key
+from src.utils.redis_constants import (
+    latest_block_redis_key,
+    latest_block_hash_redis_key,
+    most_recent_indexed_block_hash_redis_key,
+    most_recent_indexed_block_redis_key,
+    most_recent_indexed_ipld_block_redis_key,
+    most_recent_indexed_ipld_block_hash_redis_key,
+    trending_tracks_last_completion_redis_key,
+    trending_playlists_last_completion_redis_key,
+    challenges_last_processed_event_redis_key,
+    user_balances_refresh_last_completion_redis_key,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -19,53 +26,63 @@ number_of_cpus = os.cpu_count()
 
 disc_prov_version = helpers.get_discovery_provider_version()
 
-default_healthy_block_diff = int(
-    shared_config["discprov"]["healthy_block_diff"])
+default_healthy_block_diff = int(shared_config["discprov"]["healthy_block_diff"])
 default_indexing_interval_seconds = int(
-    shared_config["discprov"]["block_processing_interval_sec"])
+    shared_config["discprov"]["block_processing_interval_sec"]
+)
+
 
 def get_elapsed_time_redis(redis, redis_key):
     last_seen = redis.get(redis_key)
     elapsed_time_in_sec = (int(time.time()) - int(last_seen)) if last_seen else None
     return elapsed_time_in_sec
 
+
 # Returns DB block state & diff
 def _get_db_block_state():
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
         # Fetch latest block from DB
-        db_block_query = session.query(Block).filter(
-            Block.is_current == True).all()
+        db_block_query = session.query(Block).filter(Block.is_current == True).all()
         assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
         return helpers.model_to_dictionary(db_block_query[0])
 
+
 # Returns number of and info on open db connections
 def _get_db_conn_state():
-    conn_state = monitors.get_monitors([
-        MONITORS[monitor_names.database_connections],
-        MONITORS[monitor_names.database_connection_info],
-        MONITORS[monitor_names.database_index_count],
-        MONITORS[monitor_names.database_index_info]
-    ])
+    conn_state = monitors.get_monitors(
+        [
+            MONITORS[monitor_names.database_connections],
+            MONITORS[monitor_names.database_connection_info],
+            MONITORS[monitor_names.database_index_count],
+            MONITORS[monitor_names.database_index_info],
+        ]
+    )
 
     return conn_state, False
+
 
 # Returns the most current block in ipld blocks table and its associated block hash
 def _get_db_ipld_block_state():
     ipld_block_number = 0
-    ipld_block_hash = ''
+    ipld_block_hash = ""
 
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
-        db_ipld_block_query = session.query(IPLDBlacklistBlock).filter(
-            IPLDBlacklistBlock.is_current == True
-        ).all()
-        assert len(db_ipld_block_query) == 1, "Expected SINGLE row in IPLD Blocks table marked as current"
+        db_ipld_block_query = (
+            session.query(IPLDBlacklistBlock)
+            .filter(IPLDBlacklistBlock.is_current == True)
+            .all()
+        )
+        assert (
+            len(db_ipld_block_query) == 1
+        ), "Expected SINGLE row in IPLD Blocks table marked as current"
 
         ipld_block_number = db_ipld_block_query[0].number
         ipld_block_hash = db_ipld_block_query[0].blockhash
 
     return ipld_block_number, ipld_block_hash
+
 
 # Get the max blocknumber and blockhash indexed in ipld blacklist table. Uses redis cache by default.
 def get_latest_ipld_indexed_block(use_redis_cache=True):
@@ -84,13 +101,16 @@ def get_latest_ipld_indexed_block(use_redis_cache=True):
             latest_indexed_ipld_block_num = int(latest_indexed_ipld_block_num)
 
     if latest_indexed_ipld_block_num is None or latest_indexed_ipld_block_hash is None:
-        latest_indexed_ipld_block_num, latest_indexed_ipld_block_hash = _get_db_ipld_block_state()
+        (
+            latest_indexed_ipld_block_num,
+            latest_indexed_ipld_block_hash,
+        ) = _get_db_ipld_block_state()
 
         # If there are no entries in the table, default to these values
         if latest_indexed_ipld_block_num is None:
             latest_indexed_ipld_block_num = 0
         if latest_indexed_ipld_block_hash is None:
-            latest_indexed_ipld_block_hash = ''
+            latest_indexed_ipld_block_hash = ""
 
     return latest_indexed_ipld_block_num, latest_indexed_ipld_block_hash
 
@@ -118,8 +138,11 @@ def get_health(args, use_redis_cache=True):
     qs_healthy_block_diff = args.get("healthy_block_diff")
 
     # If healthy block diff is given in url and positive, override config value
-    healthy_block_diff = qs_healthy_block_diff if qs_healthy_block_diff is not None \
-        and qs_healthy_block_diff >= 0 else default_healthy_block_diff
+    healthy_block_diff = (
+        qs_healthy_block_diff
+        if qs_healthy_block_diff is not None and qs_healthy_block_diff >= 0
+        else default_healthy_block_diff
+    )
 
     latest_block_num = None
     latest_block_hash = None
@@ -128,19 +151,18 @@ def get_health(args, use_redis_cache=True):
 
     if use_redis_cache:
         # get latest blockchain state from redis cache, or fallback to chain if None
-        latest_block_num, latest_block_hash = get_latest_chain_block_set_if_nx(redis, web3)
+        latest_block_num, latest_block_hash = get_latest_chain_block_set_if_nx(
+            redis, web3
+        )
 
         # get latest db state from redis cache
-        latest_indexed_block_num = redis.get(
-            most_recent_indexed_block_redis_key)
+        latest_indexed_block_num = redis.get(most_recent_indexed_block_redis_key)
         if latest_indexed_block_num is not None:
             latest_indexed_block_num = int(latest_indexed_block_num)
 
-        latest_indexed_block_hash = redis.get(
-            most_recent_indexed_block_hash_redis_key)
+        latest_indexed_block_hash = redis.get(most_recent_indexed_block_hash_redis_key)
         if latest_indexed_block_hash is not None:
-            latest_indexed_block_hash = latest_indexed_block_hash.decode(
-                "utf-8")
+            latest_indexed_block_hash = latest_indexed_block_hash.decode("utf-8")
 
     # fetch latest blockchain state from web3 if:
     # we explicitly don't want to use redis cache or
@@ -154,27 +176,42 @@ def get_health(args, use_redis_cache=True):
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
     # value from redis cache is None
-    if not use_redis_cache or latest_indexed_block_num is None or latest_indexed_block_hash is None:
+    if (
+        not use_redis_cache
+        or latest_indexed_block_num is None
+        or latest_indexed_block_hash is None
+    ):
         db_block_state = _get_db_block_state()
         latest_indexed_block_num = db_block_state["number"] or 0
         latest_indexed_block_hash = db_block_state["blockhash"]
 
-    trending_tracks_age_sec = get_elapsed_time_redis(redis, trending_tracks_last_completion_redis_key)
-    trending_playlists_age_sec = get_elapsed_time_redis(redis, trending_playlists_last_completion_redis_key)
-    challenge_events_age_sec = get_elapsed_time_redis(redis, challenges_last_processed_event_redis_key)
+    trending_tracks_age_sec = get_elapsed_time_redis(
+        redis, trending_tracks_last_completion_redis_key
+    )
+    trending_playlists_age_sec = get_elapsed_time_redis(
+        redis, trending_playlists_last_completion_redis_key
+    )
+    challenge_events_age_sec = get_elapsed_time_redis(
+        redis, challenges_last_processed_event_redis_key
+    )
+    user_balances_age_sec = get_elapsed_time_redis(
+        redis, user_balances_refresh_last_completion_redis_key
+    )
 
     # Get system information monitor values
-    sys_info = monitors.get_monitors([
-        MONITORS[monitor_names.database_size],
-        MONITORS[monitor_names.database_connections],
-        MONITORS[monitor_names.total_memory],
-        MONITORS[monitor_names.used_memory],
-        MONITORS[monitor_names.filesystem_size],
-        MONITORS[monitor_names.filesystem_used],
-        MONITORS[monitor_names.received_bytes_per_sec],
-        MONITORS[monitor_names.transferred_bytes_per_sec],
-        MONITORS[monitor_names.redis_total_memory]
-    ])
+    sys_info = monitors.get_monitors(
+        [
+            MONITORS[monitor_names.database_size],
+            MONITORS[monitor_names.database_connections],
+            MONITORS[monitor_names.total_memory],
+            MONITORS[monitor_names.used_memory],
+            MONITORS[monitor_names.filesystem_size],
+            MONITORS[monitor_names.filesystem_used],
+            MONITORS[monitor_names.received_bytes_per_sec],
+            MONITORS[monitor_names.transferred_bytes_per_sec],
+            MONITORS[monitor_names.redis_total_memory],
+        ]
+    )
 
     health_results = {
         "web": {
@@ -183,14 +220,15 @@ def get_health(args, use_redis_cache=True):
         },
         "db": {
             "number": latest_indexed_block_num,
-            "blockhash": latest_indexed_block_hash
+            "blockhash": latest_indexed_block_hash,
         },
         "git": os.getenv("GIT_SHA"),
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
         "challenge_last_event_age_sec": challenge_events_age_sec,
+        "user_balances_age_sec": user_balances_age_sec,
         "number_of_cpus": number_of_cpus,
-        **sys_info
+        **sys_info,
     }
 
     block_difference = abs(
@@ -213,6 +251,7 @@ def get_health(args, use_redis_cache=True):
 
     return health_results, False
 
+
 def get_latest_chain_block_set_if_nx(redis=None, web3=None):
     """
     Retrieves the latest block number and blockhash from redis if the keys exist.
@@ -228,11 +267,13 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
     latest_block_hash = None
 
     if redis is None or web3 is None:
-        raise Exception(f"Invalid arguments for get_latest_chain_block_set_if_nx")
+        raise Exception("Invalid arguments for get_latest_chain_block_set_if_nx")
 
     # also check for 'eth' attribute in web3 which means it's initialized and connected to a provider
-    if not hasattr(web3, 'eth'):
-        raise Exception(f"Invalid web3 argument for get_latest_chain_block_set_if_nx, web3 is not initialized")
+    if not hasattr(web3, "eth"):
+        raise Exception(
+            "Invalid web3 argument for get_latest_chain_block_set_if_nx, web3 is not initialized"
+        )
 
     stored_latest_block_num = redis.get(latest_block_redis_key)
     if stored_latest_block_num is not None:
@@ -250,9 +291,21 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
         # if we had attempted to use redis cache and the values weren't there, set the values now
         try:
             # ex sets expiration time and nx only sets if key doesn't exist in redis
-            redis.set(latest_block_redis_key, latest_block_num, ex=default_indexing_interval_seconds, nx=True)
-            redis.set(latest_block_hash_redis_key, latest_block_hash, ex=default_indexing_interval_seconds, nx=True)
+            redis.set(
+                latest_block_redis_key,
+                latest_block_num,
+                ex=default_indexing_interval_seconds,
+                nx=True,
+            )
+            redis.set(
+                latest_block_hash_redis_key,
+                latest_block_hash,
+                ex=default_indexing_interval_seconds,
+                nx=True,
+            )
         except Exception as e:
-            logger.error(f"Could not set values in redis for get_latest_chain_block_set_if_nx: {e}")
+            logger.error(
+                f"Could not set values in redis for get_latest_chain_block_set_if_nx: {e}"
+            )
 
     return latest_block_num, latest_block_hash

@@ -12,8 +12,8 @@ from src.challenges.create_new_challenges import create_new_challenges
 
 
 # revision identifiers, used by Alembic.
-revision = '436c10e54758'
-down_revision = 'c43d19f0f04a'
+revision = "436c10e54758"
+down_revision = "c43d19f0f04a"
 branch_labels = None
 depends_on = None
 
@@ -28,7 +28,8 @@ def upgrade():
     session.commit()
     session.close()
 
-    connection.execute('''
+    connection.execute(
+        """
         -- There is a single broken user with two rows marked is_current; fix them first
         update users 
         set is_current = false
@@ -75,7 +76,8 @@ def upgrade():
             ) as current_step_count
         from challenge_profile_completion as c;
 
-    ''')
+    """
+    )
     # ### end Alembic commands ###
 
 

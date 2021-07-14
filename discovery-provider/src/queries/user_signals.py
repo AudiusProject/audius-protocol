@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint("user_signals", __name__)
 
+
 @bp.route("/user_signals", methods=["GET"])
 @cache(ttl_sec=30, cache_prefix_override=internal_api_cache_prefix)
 def user_signals():

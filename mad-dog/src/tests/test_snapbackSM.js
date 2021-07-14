@@ -1,5 +1,4 @@
 const path = require('path')
-const axios = require('axios')
 const ServiceCommands = require('@audius/service-commands')
 const { logger } = require('../logger.js')
 const {
@@ -72,5 +71,6 @@ const snapbackSMParallelSyncTest = async ({
 }
 
 module.exports = {
+  monitorAllUsersSyncStatus,
   snapbackSMParallelSyncTest
 }

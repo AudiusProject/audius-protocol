@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 bp = Blueprint("block_confirmation", __name__)
 
+
 @bp.route("/block_confirmation", methods=["GET"])
 def block_confirmation():
     blockhash = request.args.get("blockhash")

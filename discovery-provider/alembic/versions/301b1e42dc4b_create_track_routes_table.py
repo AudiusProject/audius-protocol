@@ -32,7 +32,7 @@ def upgrade():
         sa.Column("blocknumber", sa.Integer(), nullable=False, index=False),
         sa.Column("txhash", sa.String(), nullable=False, index=False),
         sa.PrimaryKeyConstraint("owner_id", "slug"),
-        sa.Index("track_id", "is_current")
+        sa.Index("track_id", "is_current"),
     )
     bind = op.get_bind()
     session = Session(bind=bind)

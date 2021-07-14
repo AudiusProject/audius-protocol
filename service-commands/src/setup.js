@@ -51,10 +51,11 @@ const execShellCommand = (command, service, { verbose }) => {
 
     console.log(`${command}`)
     const proc = exec(command, { maxBuffer: 1024 * 1024 })
-
+    let output = ''
     // Stream the stdout
     proc.stdout.on('data', data => {
       verbose && process.stdout.write(`${data}`)
+      output += data
     })
 
     // Stream the stderr
@@ -74,7 +75,7 @@ const execShellCommand = (command, service, { verbose }) => {
         return
       }
 
-      resolve()
+      resolve(output)
     })
   })
 }
@@ -87,9 +88,12 @@ const execShellCommand = (command, service, { verbose }) => {
  */
 const execShellCommands = async (commands, service, { verbose }) => {
   try {
+    const commandOutputs = []
     for (const command of commands) {
-      await execShellCommand(command, service, { verbose })
+      const output = await execShellCommand(command, service, { verbose })
+      commandOutputs.push(output)
     }
+    return commandOutputs
   } catch (e) {
     console.error(e)
     process.exit(1)
@@ -106,6 +110,7 @@ const SetupCommand = Object.freeze({
   DOWN: 'down',
   RESTART: 'restart',
   REGISTER: 'register',
+  DEREGISTER: 'deregister',
   UPDATE_DELEGATE_WALLET: 'update-delegate-wallet',
   HEALTH_CHECK: 'health-check',
   UNSET_SHELL_ENV: 'unset-shell-env',
@@ -139,6 +144,7 @@ const Service = Object.freeze({
   USER_METADATA_NODE: 'user-metadata-node',
   IDENTITY_SERVICE: 'identity-service',
   DISTRIBUTE: 'distribute',
+  ACCOUNT: 'account',
   INIT_REPOS: 'init-repos',
   USER_REPLICA_SET_MANAGER: 'user-replica-set-manager'
 })
@@ -197,7 +203,7 @@ const runSetupCommand = async (
 
   while (attemptsRemaining > 0) {
     try {
-      await execShellCommands(command, service, { verbose })
+      const outputs = await execShellCommands(command, service, { verbose })
       if (waitSec) {
         console.log(`Waiting ${waitSec} seconds...`.happy)
         await new Promise(resolve => {
@@ -208,7 +214,7 @@ const runSetupCommand = async (
       console.log(
         `${service} - ${setupCommand} | executed in ${durationSeconds}s`.info
       )
-      return
+      return outputs
     } catch (err) {
       console.error(`Got error: [${err}]`.error)
       attemptsRemaining -= 1
@@ -304,12 +310,16 @@ const discoveryNodeUp = async () => {
   const sequential = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
-    [Service.DISCOVERY_PROVIDER, SetupCommand.UP],
-    [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
+    [Service.DISCOVERY_PROVIDER, SetupCommand.UP, { serviceNumber: 1 }],
+    [
+      Service.DISCOVERY_PROVIDER,
+      SetupCommand.HEALTH_CHECK,
+      { serviceNumber: 1 }
+    ],
     [
       Service.DISCOVERY_PROVIDER,
       SetupCommand.REGISTER,
-      { ...options, retries: 2 }
+      { ...options, retries: 2, serviceNumber: 1 }
     ]
   ]
 
@@ -353,12 +363,20 @@ const discoveryNodeWebServerUp = async () => {
   const sequential = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
-    [Service.DISCOVERY_PROVIDER, SetupCommand.UP_WEB_SERVER],
-    [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
+    [
+      Service.DISCOVERY_PROVIDER,
+      SetupCommand.UP_WEB_SERVER,
+      { serviceNumber: 1 }
+    ],
+    [
+      Service.DISCOVERY_PROVIDER,
+      SetupCommand.HEALTH_CHECK,
+      { serviceNumber: 1 }
+    ],
     [
       Service.DISCOVERY_PROVIDER,
       SetupCommand.REGISTER,
-      { ...options, retries: 2 }
+      { ...options, retries: 2, serviceNumber: 1 }
     ]
   ]
 
@@ -377,6 +395,100 @@ const discoveryNodeWebServerUp = async () => {
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
   console.log(`Services brought up in ${durationSeconds}s`.info)
+}
+
+
+/**
+ * Brings up all services relevant to the creator node
+ * @returns {Promise<void>}
+ */
+const creatorNodeUp = async (serviceNumber) => {
+  console.log(
+    "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
+      .error
+  )
+
+  const options = { verbose: true }
+  const sequential = [
+    [
+      Service.CREATOR_NODE,
+      SetupCommand.UPDATE_DELEGATE_WALLET,
+      { ...options, serviceNumber: serviceNumber }
+    ],
+    [
+      Service.CREATOR_NODE,
+      SetupCommand.UP,
+      { ...options, serviceNumber: serviceNumber, waitSec: 10 }
+    ],
+    [
+      Service.CREATOR_NODE,
+      SetupCommand.HEALTH_CHECK,
+      { ...options, serviceNumber: serviceNumber }
+    ],
+    [
+      Service.CREATOR_NODE,
+      SetupCommand.REGISTER,
+      { ...options, serviceNumber: serviceNumber }
+    ]
+  ]
+
+  const start = Date.now()
+
+  // Run sequential ops
+  for (const s of sequential) {
+    await runSetupCommand(...s)
+  }
+
+  const durationSeconds = Math.abs((Date.now() - start) / 1000)
+  console.log(`Creator Node Services num:${serviceNumber} brought up in ${durationSeconds}s`.info)
+}
+
+/**
+ * Deregisters a creator node
+ * @returns {Promise<void>}
+ */
+ const deregisterCreatorNode = async (serviceNumber) => {
+  console.log(
+    "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
+      .error
+  )
+
+  const options = { verbose: true }
+  const sequential = [
+    [
+      Service.CREATOR_NODE,
+      SetupCommand.DEREGISTER,
+      { ...options, serviceNumber: serviceNumber }
+    ]
+  ]
+
+  const start = Date.now()
+
+  // Run sequential ops
+  for (const s of sequential) {
+    await runSetupCommand(...s)
+  }
+
+  const durationSeconds = Math.abs((Date.now() - start) / 1000)
+  console.log(`Deregister Creator Node Service num:${serviceNumber} in ${durationSeconds}s`.info)
+}
+
+/**
+ * Distributes 200k tokens to all wallets
+ * @returns {Promise<void>}
+ */
+const distribute = async () => {
+  await runSetupCommand(Service.DISTRIBUTE, SetupCommand.UP)
+}
+
+/**
+ * Fetches the eth accounts
+ * @returns {Promise<void>}
+ */
+ const getAccounts = async () => {
+  const outputs = await runSetupCommand(Service.ACCOUNT, SetupCommand.UP)
+  const accountsSubstring = outputs[0].substring(outputs[0].lastIndexOf('[{"'),outputs[0].length-1);
+  return JSON.parse(accountsSubstring)
 }
 
 /**
@@ -425,7 +537,7 @@ const identityServiceUp = async () => {
  * Brings up an entire Audius Protocol stack.
  * @param {*} config. currently supports up to 4 Creator Nodes.
  */
-const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1  }) => {
+const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1 }) => {
   console.log(
     "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
@@ -475,7 +587,11 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1  }) => {
       return [
         ...acc,
         [Service.DISCOVERY_PROVIDER, SetupCommand.UP, { serviceNumber: cur }],
-        [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK, { serviceNumber: cur }],
+        [
+          Service.DISCOVERY_PROVIDER,
+          SetupCommand.HEALTH_CHECK,
+          { serviceNumber: cur }
+        ],
         [
           Service.DISCOVERY_PROVIDER,
           SetupCommand.REGISTER,
@@ -491,7 +607,11 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1  }) => {
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
     ...discoveryNodesCommands,
     [Service.USER_METADATA_NODE, SetupCommand.UNSET_SHELL_ENV],
-    [Service.USER_METADATA_NODE, SetupCommand.UP_UM, { ...options, waitSec: 10 }],
+    [
+      Service.USER_METADATA_NODE,
+      SetupCommand.UP_UM,
+      { ...options, waitSec: 10 }
+    ],
     [Service.USER_METADATA_NODE, SetupCommand.HEALTH_CHECK],
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
@@ -523,6 +643,10 @@ module.exports = {
   getServiceURL,
   getContentNodeContainerName,
   allUp,
+  distribute,
+  getAccounts,
+  creatorNodeUp,
+  deregisterCreatorNode,
   discoveryNodeUp,
   discoveryNodeWebServerUp,
   identityServiceUp,

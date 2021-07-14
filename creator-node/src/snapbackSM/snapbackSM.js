@@ -52,6 +52,8 @@ class SnapbackSM {
     this.MaxManualRequestSyncJobConcurrency = this.nodeConfig.get('maxManualRequestSyncJobConcurrency')
     this.MaxRecurringRequestSyncJobConcurrency = this.nodeConfig.get('maxRecurringRequestSyncJobConcurrency')
 
+    this.MinimumSecondaryUserSyncSuccessPercent = this.nodeConfig.get('minimumSecondaryUserSyncSuccessPercent') / 100
+
     // Throw an error if running as creator node and no libs are provided
     if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint)) {
       throw new Error('Missing required configs - cannot start')
@@ -213,13 +215,13 @@ class SnapbackSM {
 
   /**
    * Given wallets array, queries DB and returns a map of all users with
-   *    those wallets and their clock values
+   *    those wallets and their clock values, or -1 if wallet not found
    *
-   * @dev - TODO what happens if this DB call fails?
+   * @returns map(wallet -> clock val)
    */
   async getUserPrimaryClockValues (wallets) {
     // Query DB for all cnodeUsers with walletPublicKey in `wallets` arg array
-    const cnodeUsers = await models.CNodeUser.findAll({
+    const cnodeUsersFromDB = await models.CNodeUser.findAll({
       where: {
         walletPublicKey: {
           [models.Sequelize.Op.in]: wallets
@@ -227,11 +229,14 @@ class SnapbackSM {
       }
     })
 
-    // Convert cnodeUsers array to map (wallet => clock)
-    const cnodeUserClockValuesMap = cnodeUsers.reduce((o, k) => {
-      o[k.walletPublicKey] = k.clock
-      return o
-    }, {})
+    // Initialize clock values for all users to -1
+    const cnodeUserClockValuesMap = {}
+    wallets.forEach(wallet => { cnodeUserClockValuesMap[wallet] = -1 })
+
+    // Populate clock values into map with DB data
+    cnodeUsersFromDB.forEach(cnodeUser => {
+      cnodeUserClockValuesMap[cnodeUser.walletPublicKey] = cnodeUser.clock
+    })
 
     return cnodeUserClockValuesMap
   }
@@ -473,7 +478,7 @@ class SnapbackSM {
   }
 
   /**
-   * Issues SyncRequests for every (user, secondary) pair if needed
+   * Issues SyncRequests for every user from primary (this node) to secondary if needed
    * Only issues requests if primary clock value is greater than secondary clock value
    *
    * @param {Array} userReplicaSets array of objects of schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
@@ -483,8 +488,6 @@ class SnapbackSM {
    * @returns {Array} array of all SyncRequest errors
    */
   async issueSyncRequests (userReplicaSets, secondaryNodesToUserClockStatusesMap) {
-    // TODO ensure all syncRequests are for users with primary == self
-
     // Retrieve clock values for all users on this node, which is their primary
     const userWallets = userReplicaSets.map(user => user.wallet)
     const userPrimaryClockValues = await this.getUserPrimaryClockValues(userWallets)
@@ -496,16 +499,19 @@ class SnapbackSM {
     // TODO change to chunked parallel
     await Promise.all(userReplicaSets.map(async (user) => {
       try {
-        const { wallet, endpoint: secondary } = user
+        const { wallet, primary, secondary1, secondary2, endpoint: secondary } = user
 
-        // TODO - throw on null wallet (is this needed?)
+        // Short-circuit if primary is not self - this function is meant to be called from primary to secondaries only
+        if (primary !== this.endpoint) {
+          this.logError(`issueSyncRequests || Can only be called by user's primary. User ${wallet} - replicaset [${primary}, ${secondary1}, ${secondary2}].`)
+          return
+        }
 
-        // Determine if secondary requires a sync by comparing clock values against primary (this node)
+        // Determine if secondary requires a sync by comparing clock values against primary (self)
         const userPrimaryClockVal = userPrimaryClockValues[wallet]
         const userSecondaryClockVal = secondaryNodesToUserClockStatusesMap[secondary][wallet]
-        const syncRequired = !userSecondaryClockVal || (userPrimaryClockVal > userSecondaryClockVal)
 
-        if (syncRequired) {
+        if (userPrimaryClockVal > userSecondaryClockVal) {
           numSyncRequestsRequired += 1
 
           await this.enqueueSync({
@@ -517,6 +523,8 @@ class SnapbackSM {
 
           numSyncRequestsEnqueued += 1
         }
+
+        // Swallow error without short-circuiting other processing
       } catch (e) {
         enqueueSyncRequestErrors.push(`issueSyncRequest() Error for user ${JSON.stringify(user)} - ${e.message}`)
       }
@@ -584,16 +592,22 @@ class SnapbackSM {
        * Else, if the current node is a secondary, only issue reconfig requests.
        *
        * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
-       * TODO make this more readable -> maybe two separate loops? need to ensure mutual exclusivity
        */
       for (const nodeUser of nodeUsers) {
         const { primary, secondary1, secondary2 } = nodeUser
-
         let unhealthyReplicas = []
+
+        /**
+         * If this node is primary for user, check both secondaries for health
+         * Enqueue SyncRequests against healthy secondaries, and enqueue UpdateReplicaSetOps against unhealthy secondaries
+         */
         if (primary === this.endpoint) {
           // filter out false-y values to account for incomplete replica sets
           const secondaries = ([secondary1, secondary2]).filter(Boolean)
 
+          /**
+           * If either secondary is in `unhealthyPeers` list, add it to `unhealthyReplicas` list
+           */
           for (const secondary of secondaries) {
             if (unhealthyPeers.has(secondary)) {
               unhealthyReplicas.push(secondary)
@@ -602,9 +616,34 @@ class SnapbackSM {
             }
           }
 
+          /**
+           * If either secondary has a Sync success rate for user below threshold, add it to `unhealthyReplicas` list
+           */
+          const userSecondarySyncMetrics = await SecondarySyncHealthTracker.computeUserSecondarySyncSuccessRates(
+            nodeUser.wallet, [secondary1, secondary2]
+          )
+          const sec1UserSyncSuccessRate = userSecondarySyncMetrics[secondary1]['SuccessRate']
+          const sec2UserSyncSuccessRate = userSecondarySyncMetrics[secondary2]['SuccessRate']
+
+          // If SyncRequest success rate for user to either secondary falls under threshold -> mark as unhealthy
+          if (sec1UserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent && !unhealthyReplicas.includes(secondary1)) {
+            unhealthyReplicas.push(secondary1)
+          }
+          if (sec2UserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent && !unhealthyReplicas.includes(secondary2)) {
+            unhealthyReplicas.push(secondary2)
+          }
+
+          /**
+           * If any unhealthy replicas found for user, enqueue an updateReplicaSetOp for later processing
+           */
           if (unhealthyReplicas.length > 0) {
             requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
           }
+
+          /**
+           * If this node is secondary for user, check both secondaries for health and enqueue SyncRequests against healthy secondaries
+           * Ignore unhealthy secondaries for now
+           */
         } else {
           // filter out false-y values to account for incomplete replica sets
           let replicas = ([primary, secondary1, secondary2]).filter(Boolean)
@@ -720,7 +759,8 @@ class SnapbackSM {
         // on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
         // There will be an explicit clock value check on the newly selected replica set nodes instead.
         const { services: healthyServicesMap } = await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
-          performSyncCheck: false
+          performSyncCheck: false,
+          log: false
         })
 
         const healthyNodes = Object.keys(healthyServicesMap)
@@ -790,7 +830,7 @@ class SnapbackSM {
    *
    * Polls secondary for MaxSyncMonitoringDurationInMs
    */
-  async additionalSyncIsRequired (userWallet, primaryClockValue, secondaryUrl, syncType) {
+  async additionalSyncIsRequired (userWallet, primaryClockValue = -1, secondaryUrl, syncType) {
     const MaxExportClockValueRange = this.nodeConfig.get('maxExportClockValueRange')
     const logMsgString = `additionalSyncIsRequired (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 

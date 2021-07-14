@@ -1,4 +1,5 @@
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
+const authMiddleware = require('../authMiddleware')
 const models = require('../models')
 
 module.exports = function (app) {
@@ -31,10 +32,9 @@ module.exports = function (app) {
     } else return successResponse()
   }))
 
-  app.post('/social_handles', handleResponse(async (req, res, next) => {
-    let { handle, twitterHandle, instagramHandle, website, donation } = req.body
-    if (!handle) return errorResponseBadRequest('Please provide handle')
-
+  app.post('/social_handles', authMiddleware, handleResponse(async (req, res, next) => {
+    let { twitterHandle, instagramHandle, website, donation } = req.body
+    const handle = req.user.handle
     const socialHandles = await models.SocialHandles.findOne({
       where: { handle }
     })
@@ -44,7 +44,7 @@ module.exports = function (app) {
       'twitterProfile.screen_name': twitterHandle,
       verified: true
     } })
-    if (twitterUser) { handle = twitterHandle }
+    if (twitterUser) { twitterHandle = handle }
 
     if (socialHandles) {
       await socialHandles.update({

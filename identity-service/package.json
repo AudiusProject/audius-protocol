@@ -29,6 +29,7 @@
     "bull": "^3.11.0",
     "bunyan": "^1.8.12",
     "convict": "^5.1.0",
+    "cookie-parser": "^1.4.5",
     "cors": "^2.8.4",
     "death": "^1.1.0",
     "eth-sig-util": "^2.2.0",

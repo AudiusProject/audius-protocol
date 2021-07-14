@@ -10,15 +10,25 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'cf614359625e'
-down_revision = 'a11eb3450985'
+revision = "cf614359625e"
+down_revision = "a11eb3450985"
 branch_labels = None
 depends_on = None
 
+
 def upgrade():
-  op.add_column('tracks', sa.Column('is_unlisted', sa.Boolean(), server_default='false', nullable=False))
-  op.add_column('tracks', sa.Column('field_visibility', postgresql.JSONB(astext_type=sa.Text()), nullable=True))
+    op.add_column(
+        "tracks",
+        sa.Column("is_unlisted", sa.Boolean(), server_default="false", nullable=False),
+    )
+    op.add_column(
+        "tracks",
+        sa.Column(
+            "field_visibility", postgresql.JSONB(astext_type=sa.Text()), nullable=True
+        ),
+    )
+
 
 def downgrade():
-  op.drop_column('tracks', 'is_unlisted')
-  op.drop_column('tracks', 'field_visibility')
+    op.drop_column("tracks", "is_unlisted")
+    op.drop_column("tracks", "field_visibility")

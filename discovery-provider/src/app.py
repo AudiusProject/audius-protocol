@@ -19,8 +19,16 @@ from flask_cors import CORS
 
 from src import exceptions
 from src import api_helpers
-from src.queries import queries, search, search_queries, health_check, notifications, \
-    block_confirmation, skipped_transactions, user_signals
+from src.queries import (
+    queries,
+    search,
+    search_queries,
+    health_check,
+    notifications,
+    block_confirmation,
+    skipped_transactions,
+    user_signals,
+)
 from src.api.v1 import api as api_v1
 from src.utils import helpers
 from src.challenges.create_new_challenges import create_new_challenges
@@ -31,6 +39,7 @@ from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.challenges.challenge_event_bus import setup_challenge_bus
+from src.challenges.challenge_manager_registry import setup_challenge_registry
 
 SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
@@ -57,9 +66,7 @@ logger = logging.getLogger(__name__)
 
 
 def init_contracts():
-    registry_address = web3.toChecksumAddress(
-        shared_config["contracts"]["registry"]
-    )
+    registry_address = web3.toChecksumAddress(shared_config["contracts"]["registry"])
     registry_instance = web3.eth.contract(
         address=registry_address, abi=abi_values["Registry"]["abi"]
     )
@@ -81,7 +88,8 @@ def init_contracts():
         bytes("SocialFeatureFactory", "utf-8")
     ).call()
     social_feature_factory_inst = web3.eth.contract(
-        address=social_feature_factory_address, abi=abi_values["SocialFeatureFactory"]["abi"]
+        address=social_feature_factory_address,
+        abi=abi_values["SocialFeatureFactory"]["abi"],
     )
 
     playlist_factory_address = registry_instance.functions.getContract(
@@ -95,21 +103,24 @@ def init_contracts():
         bytes("UserLibraryFactory", "utf-8")
     ).call()
     user_library_factory_inst = web3.eth.contract(
-        address=user_library_factory_address, abi=abi_values["UserLibraryFactory"]["abi"]
+        address=user_library_factory_address,
+        abi=abi_values["UserLibraryFactory"]["abi"],
     )
 
     ipld_blacklist_factory_address = registry_instance.functions.getContract(
         bytes("IPLDBlacklistFactory", "utf-8")
     ).call()
     ipld_blacklist_factory_inst = web3.eth.contract(
-        address=user_library_factory_address, abi=abi_values["UserLibraryFactory"]["abi"]
+        address=user_library_factory_address,
+        abi=abi_values["UserLibraryFactory"]["abi"],
     )
 
     user_replica_set_manager_address = registry_instance.functions.getContract(
         bytes("UserReplicaSetManager", "utf-8")
     ).call()
     user_replica_set_manager_inst = web3.eth.contract(
-        address=user_replica_set_manager_address, abi=abi_values["UserReplicaSetManager"]["abi"]
+        address=user_replica_set_manager_address,
+        abi=abi_values["UserReplicaSetManager"]["abi"],
     )
 
     contract_address_dict = {
@@ -120,7 +131,7 @@ def init_contracts():
         "playlist_factory": playlist_factory_address,
         "user_library_factory": user_library_factory_address,
         "ipld_blacklist_factory": ipld_blacklist_factory_address,
-        "user_replica_set_manager": user_replica_set_manager_address
+        "user_replica_set_manager": user_replica_set_manager_address,
     }
 
     return (
@@ -135,8 +146,10 @@ def init_contracts():
         contract_address_dict,
     )
 
+
 def create_app(test_config=None):
     return create(test_config)
+
 
 def create_celery(test_config=None):
     # pylint: disable=W0603
@@ -175,10 +188,11 @@ def create_celery(test_config=None):
         user_library_factory,
         ipld_blacklist_factory,
         user_replica_set_manager,
-        contract_addresses
+        contract_addresses,
     ) = init_contracts()
 
     return create(test_config, mode="celery")
+
 
 def create(test_config=None, mode="app"):
     arg_type = type(mode)
@@ -203,7 +217,9 @@ def create(test_config=None, mode="app"):
     configure_flask(test_config, app, mode)
 
     if mode == "app":
-        helpers.configure_flask_app_logging(app, shared_config["discprov"]["loglevel_flask"])
+        helpers.configure_flask_app_logging(
+            app, shared_config["discprov"]["loglevel_flask"]
+        )
         return app
 
     if mode == "celery":
@@ -218,20 +234,19 @@ def create(test_config=None, mode="app"):
 def register_exception_handlers(flask_app):
     # catch exceptions thrown by us and propagate error message through
     @flask_app.errorhandler(exceptions.Base)
-    def handle_audius_error(error): # pylint: disable=W0612
+    def handle_audius_error(error):  # pylint: disable=W0612
         logger.exception("Audius-derived exception")
         return api_helpers.error_response(str(error), 400)
 
     # show a common error message for exceptions not thrown by us
     @flask_app.errorhandler(Exception)
-    def handle_exception(_error): # pylint: disable=W0612
+    def handle_exception(_error):  # pylint: disable=W0612
         logger.exception("Non Audius-derived exception")
         return api_helpers.error_response(["Something caused the server to crash."])
 
     @flask_app.errorhandler(404)
-    def handle_404(_error): # pylint: disable=W0612
+    def handle_404(_error):  # pylint: disable=W0612
         return api_helpers.error_response(["Route does not exist"], 404)
-
 
 
 def configure_flask(test_config, app, mode="app"):
@@ -246,6 +261,7 @@ def configure_flask(test_config, app, mode="app"):
                 # ISO-8601 timestamp format
                 return o.strftime("%Y-%m-%dT%H:%M:%S Z")
             return JSONEncoder.default(self, o)
+
     app.json_encoder = TimestampJSONEncoder
 
     database_url = app.config["db"]["url"]
@@ -290,6 +306,7 @@ def configure_flask(test_config, app, mode="app"):
     )
 
     app.challenge_bus = setup_challenge_bus()
+    app.challenge_registry = setup_challenge_registry()
 
     # Register route blueprints
     register_exception_handlers(app)
@@ -315,8 +332,7 @@ def configure_flask(test_config, app, mode="app"):
 
 def configure_celery(flask_app, celery, test_config=None):
     database_url = shared_config["db"]["url"]
-    engine_args_literal = ast.literal_eval(
-        shared_config["db"]["engine_args_literal"])
+    engine_args_literal = ast.literal_eval(shared_config["db"]["engine_args_literal"])
     redis_url = shared_config["redis"]["url"]
 
     if test_config is not None:
@@ -326,19 +342,29 @@ def configure_celery(flask_app, celery, test_config=None):
 
     ipld_interval = int(shared_config["discprov"]["blacklist_block_indexing_interval"])
     # default is 5 seconds
-    indexing_interval_sec = int(shared_config["discprov"]["block_processing_interval_sec"])
+    indexing_interval_sec = int(
+        shared_config["discprov"]["block_processing_interval_sec"]
+    )
 
     # Update celery configuration
     celery.conf.update(
-        imports=["src.tasks.index", "src.tasks.index_blacklist",
-                 "src.tasks.index_plays", "src.tasks.index_metrics",
-                 "src.tasks.index_materialized_views",
-                 "src.tasks.index_network_peers", "src.tasks.index_trending",
-                 "src.tasks.cache_user_balance", "src.monitors.monitoring_queue",
-                 "src.tasks.cache_trending_playlists", "src.tasks.index_solana_plays",
-                 "src.tasks.index_aggregate_views", "src.tasks.index_challenges",
-                 "src.tasks.index_user_bank"
-                 ],
+        imports=[
+            "src.tasks.index",
+            "src.tasks.index_blacklist",
+            "src.tasks.index_plays",
+            "src.tasks.index_metrics",
+            "src.tasks.index_materialized_views",
+            "src.tasks.vacuum_db",
+            "src.tasks.index_network_peers",
+            "src.tasks.index_trending",
+            "src.tasks.cache_user_balance",
+            "src.monitors.monitoring_queue",
+            "src.tasks.cache_trending_playlists",
+            "src.tasks.index_solana_plays",
+            "src.tasks.index_aggregate_views",
+            "src.tasks.index_challenges",
+            "index_user_bank",
+        ],
         beat_schedule={
             "update_discovery_provider": {
                 "task": "update_discovery_provider",
@@ -350,68 +376,72 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "update_play_count": {
                 "task": "update_play_count",
-                "schedule": timedelta(seconds=60)
+                "schedule": timedelta(seconds=60),
             },
             "update_metrics": {
                 "task": "update_metrics",
-                "schedule": crontab(minute=0, hour="*")
+                "schedule": crontab(minute=0, hour="*"),
             },
             "aggregate_metrics": {
                 "task": "aggregate_metrics",
-                "schedule": timedelta(minutes=METRICS_INTERVAL)
+                "schedule": timedelta(minutes=METRICS_INTERVAL),
             },
             "synchronize_metrics": {
                 "task": "synchronize_metrics",
-                "schedule": timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL)
+                "schedule": timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL),
             },
             "update_materialized_views": {
                 "task": "update_materialized_views",
-                "schedule": timedelta(seconds=300)
+                "schedule": timedelta(seconds=300),
+            },
+            "vacuum_db": {
+                "task": "vacuum_db",
+                "schedule": timedelta(days=1),
             },
             "update_network_peers": {
                 "task": "update_network_peers",
-                "schedule": timedelta(seconds=30)
+                "schedule": timedelta(seconds=30),
             },
             "index_trending": {
                 "task": "index_trending",
-                "schedule": crontab(minute=15, hour="*")
+                "schedule": crontab(minute=15, hour="*"),
             },
             "update_user_balances": {
                 "task": "update_user_balances",
-                "schedule": timedelta(seconds=60)
+                "schedule": timedelta(seconds=60),
             },
             "monitoring_queue": {
                 "task": "monitoring_queue",
-                "schedule": timedelta(seconds=60)
+                "schedule": timedelta(seconds=60),
             },
             "cache_trending_playlists": {
                 "task": "cache_trending_playlists",
-                "schedule": timedelta(minutes=30)
+                "schedule": timedelta(minutes=30),
             },
             "index_solana_plays": {
                 "task": "index_solana_plays",
-                "schedule": timedelta(seconds=5)
+                "schedule": timedelta(seconds=5),
             },
             "update_aggregate_user": {
                 "task": "update_aggregate_user",
-                "schedule": timedelta(seconds=30)
+                "schedule": timedelta(seconds=30),
             },
             "update_aggregate_track": {
                 "task": "update_aggregate_track",
-                "schedule": timedelta(seconds=30)
+                "schedule": timedelta(seconds=30),
             },
             "update_aggregate_playlist": {
                 "task": "update_aggregate_playlist",
-                "schedule": timedelta(seconds=30)
+                "schedule": timedelta(seconds=30),
             },
             "index_user_bank": {
                 "task": "index_user_bank",
-                "schedule": timedelta(seconds=5)
+                "schedule": timedelta(seconds=5),
             },
             "index_challenges": {
                 "task": "index_challenges",
-                "schedule": timedelta(seconds=5)
-            }
+                "schedule": timedelta(seconds=5),
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -420,7 +450,7 @@ def configure_celery(flask_app, celery, test_config=None):
 
     # Initialize DB object for celery task context
     db = SessionManager(database_url, engine_args_literal)
-    logger.info('Database instance initialized!')
+    logger.info("Database instance initialized!")
     # Initialize IPFS client for celery task context
     ipfs_client = IPFSClient(
         shared_config["ipfs"]["host"], shared_config["ipfs"]["port"]
@@ -441,7 +471,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("solana_plays_lock")
     redis_inst.delete("index_challenges")
     redis_inst.delete("user_bank_lock")
-    logger.info('Redis instance initialized!')
+    logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object
     class DatabaseTask(Task):

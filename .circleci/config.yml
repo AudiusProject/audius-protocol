@@ -98,7 +98,7 @@ jobs:
           name: content-node repo init
           command: |
             source ~/.bash_profile
-            nvm install v10.16
+            nvm install v14.16
             cd creator-node/
             npm install
       - save_cache:
@@ -169,6 +169,8 @@ jobs:
           # https://support.circleci.com/hc/en-us/articles/360045268074-Build-Fails-with-Too-long-with-no-output-exceeded-10m0s-context-deadline-exceeded-
           no_output_timeout: 30m
           command: |
+            sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba
+            sudo chmod +x /usr/local/bin/pumba
             set -e
             export PROTOCOL_DIR=/home/circleci/project
             source ~/.bash_profile
@@ -364,7 +366,7 @@ jobs:
   test-creator-node:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.16.3
+      - image: circleci/node:14.16  
       - image: ipfs/go-ipfs:release
       - image: circleci/postgres:11.1
         environment:
@@ -413,7 +415,7 @@ jobs:
 
   test-discovery-provider:
     docker:
-      - image: circleci/python:3.7-stretch-node-browsers-legacy
+      - image: circleci/python:3.8-node-browsers
         # Discovery provider dependencies
       - image: circleci/postgres:11.1
         environment:
@@ -476,7 +478,7 @@ jobs:
             export audius_ipfs_port=5001
             export audius_redis_url=redis://localhost:6379/0
             export audius_delegate_owner_wallet=0x1D9c77BcfBfa66D37390BF2335f0140979a6122B
-            export audius_delegate_private_key=0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19ca
+            export audius_delegate_private_key=0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19cad
             export audius_web3_port=8555
             ./scripts/circle-ci.sh
 

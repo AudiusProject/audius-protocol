@@ -37,6 +37,6 @@ def test_ipfs(app):
     remove_test_file(json_file)
 
     # Confirm retrieved metadata object state
-    for key in test_metadata_object:
+    for key, val in test_metadata_object.items():
         assert key in ipfs_metadata
-        assert test_metadata_object[key] == ipfs_metadata[key]
+        assert val == ipfs_metadata[key]

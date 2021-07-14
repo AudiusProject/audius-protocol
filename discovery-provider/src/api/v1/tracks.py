@@ -4,16 +4,44 @@ from flask import redirect
 from flask_restx import Resource, Namespace, fields, reqparse, inputs
 from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
-from src.api.v1.helpers import abort_not_found, decode_with_abort,  \
-    extend_track, make_full_response, make_response, search_parser, extend_user, get_default_max, \
-    trending_parser, full_trending_parser, success_response, abort_bad_request_param, to_dict, \
-    format_offset, format_limit, stem_from_track, get_current_user_id, get_encoded_track_id, \
-    abort_bad_path_param
-from .models.tracks import track, track_full, stem_full, remixes_response as remixes_response_model
+from src.api.v1.helpers import (
+    abort_not_found,
+    decode_with_abort,
+    extend_track,
+    make_full_response,
+    make_response,
+    search_parser,
+    extend_user,
+    get_default_max,
+    trending_parser,
+    full_trending_parser,
+    success_response,
+    abort_bad_request_param,
+    to_dict,
+    format_offset,
+    format_limit,
+    stem_from_track,
+    get_current_user_id,
+    get_encoded_track_id,
+    abort_bad_path_param,
+)
+from .models.tracks import (
+    track,
+    track_full,
+    stem_full,
+    remixes_response as remixes_response_model,
+)
 from src.queries.search_queries import SearchKind, search
-from src.utils.redis_cache import cache, extract_key, use_redis_cache, get_trending_cache_key
-from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory, DEFAULT_TRENDING_VERSIONS
-from src.trending_strategies.trending_type_and_version import TrendingType, TrendingVersion
+from src.utils.redis_cache import cache
+
+from src.trending_strategies.trending_strategy_factory import (
+    TrendingStrategyFactory,
+    DEFAULT_TRENDING_VERSIONS,
+)
+from src.trending_strategies.trending_type_and_version import (
+    TrendingType,
+    TrendingVersion,
+)
 from flask.globals import request
 from src.utils.redis_metrics import record_metrics
 from src.api.v1.models.users import user_model_full
@@ -21,12 +49,17 @@ from src.queries.get_reposters_for_track import get_reposters_for_track
 from src.queries.get_savers_for_track import get_savers_for_track
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
 from src.queries.get_stems_of import get_stems_of
+from src.queries.get_remixable_tracks import get_remixable_tracks
 from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_remix_track_parents import get_remix_track_parents
 from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_trending import get_full_trending, get_trending
 from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
-from src.queries.get_recommended_tracks import get_recommended_tracks, get_full_recommended_tracks, DEFAULT_RECOMMENDED_LIMIT
+from src.queries.get_recommended_tracks import (
+    get_recommended_tracks,
+    get_full_recommended_tracks,
+    DEFAULT_RECOMMENDED_LIMIT,
+)
 from src.queries.get_underground_trending import get_underground_trending
 
 logger = logging.getLogger(__name__)
@@ -35,27 +68,30 @@ trending_strategy_factory = TrendingStrategyFactory()
 
 # Models & namespaces
 
-ns = Namespace('tracks', description='Track related operations')
-full_ns = Namespace('tracks', description='Full track operations')
+ns = Namespace("tracks", description="Track related operations")
+full_ns = Namespace("tracks", description="Full track operations")
 
 track_response = make_response("track_response", ns, fields.Nested(track))
 full_track_response = make_full_response(
-    "full_track_response", full_ns, fields.Nested(track_full))
+    "full_track_response", full_ns, fields.Nested(track_full)
+)
 
 tracks_response = make_response(
-    "tracks_response", ns, fields.List(fields.Nested(track)))
+    "tracks_response", ns, fields.List(fields.Nested(track))
+)
 full_tracks_response = make_full_response(
     "full_tracks_response", full_ns, fields.List(fields.Nested(track_full))
 )
 
 # Get single track
 
+
 def get_single_track(track_id, current_user_id, endpoint_ns):
     args = {
         "id": [track_id],
         "with_users": True,
         "filter_deleted": True,
-        "current_user_id": current_user_id
+        "current_user_id": current_user_id,
     }
     tracks = get_tracks(args)
     if not tracks:
@@ -63,16 +99,13 @@ def get_single_track(track_id, current_user_id, endpoint_ns):
     single_track = extend_track(tracks[0])
     return success_response(single_track)
 
+
 def get_unlisted_track(track_id, url_title, handle, current_user_id, endpoint_ns):
     args = {
-        "identifiers": [{
-            "handle": handle,
-            "url_title": url_title,
-            "id": track_id
-        }],
+        "identifiers": [{"handle": handle, "url_title": url_title, "id": track_id}],
         "filter_deleted": False,
         "with_users": True,
-        "current_user_id": current_user_id
+        "current_user_id": current_user_id,
     }
     tracks = get_tracks_including_unlisted(args)
     if not tracks:
@@ -80,18 +113,17 @@ def get_unlisted_track(track_id, url_title, handle, current_user_id, endpoint_ns
     single_track = extend_track(tracks[0])
     return success_response(single_track)
 
-TRACK_ROUTE = '/<string:track_id>'
+
+TRACK_ROUTE = "/<string:track_id>"
+
+
 @ns.route(TRACK_ROUTE)
 class Track(Resource):
     @record_metrics
     @ns.doc(
         id="""Get Track""",
-        params={'track_id': 'A Track ID'},
-        responses={
-            200: 'Success',
-            400: 'Bad request',
-            500: 'Server error'
-        }
+        params={"track_id": "A Track ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(track_response)
     @cache(ttl_sec=5)
@@ -100,11 +132,13 @@ class Track(Resource):
         decoded_id = decode_with_abort(track_id, ns)
         return get_single_track(decoded_id, None, ns)
 
+
 full_track_parser = reqparse.RequestParser()
-full_track_parser.add_argument('handle')
-full_track_parser.add_argument('url_title')
-full_track_parser.add_argument('show_unlisted', type=inputs.boolean)
-full_track_parser.add_argument('user_id')
+full_track_parser.add_argument("handle")
+full_track_parser.add_argument("url_title")
+full_track_parser.add_argument("show_unlisted", type=inputs.boolean)
+full_track_parser.add_argument("user_id")
+
 
 @full_ns.route(TRACK_ROUTE)
 class FullTrack(Resource):
@@ -118,11 +152,13 @@ class FullTrack(Resource):
         if args.get("show_unlisted"):
             url_title, handle = args.get("url_title"), args.get("handle")
             if not (url_title and handle):
-                full_ns.abort(
-                    400, "Unlisted tracks require url_title and handle")
-            return get_unlisted_track(decoded_id, url_title, handle, current_user_id, full_ns)
+                full_ns.abort(400, "Unlisted tracks require url_title and handle")
+            return get_unlisted_track(
+                decoded_id, url_title, handle, current_user_id, full_ns
+            )
 
         return get_single_track(decoded_id, current_user_id, full_ns)
+
 
 # Stream
 
@@ -136,14 +172,14 @@ class TrackStream(Resource):
     @record_metrics
     @ns.doc(
         id="""Stream Track""",
-        params={'track_id': 'A Track ID'},
+        params={"track_id": "A Track ID"},
         responses={
-            200: 'Success',
-            216: 'Partial content',
-            400: 'Bad request',
-            416: 'Content range invalid',
-            500: 'Server error'
-        }
+            200: "Success",
+            216: "Partial content",
+            400: "Bad request",
+            416: "Content range invalid",
+            500: "Server error",
+        },
     )
     @cache(ttl_sec=5, transform=tranform_stream_cache)
     def get(self, track_id):
@@ -158,17 +194,20 @@ class TrackStream(Resource):
         creator_nodes = get_track_user_creator_node(args)
         if creator_nodes is None:
             abort_not_found(track_id, ns)
-        creator_nodes = creator_nodes.split(',')
+        creator_nodes = creator_nodes.split(",")
         if not creator_nodes:
             abort_not_found(track_id, ns)
 
         primary_node = creator_nodes[0]
-        stream_url = urljoin(primary_node, 'tracks/stream/{}'.format(track_id))
+        stream_url = urljoin(primary_node, "tracks/stream/{}".format(track_id))
 
         return stream_url
 
+
 track_search_result = make_response(
-    "track_search", ns, fields.List(fields.Nested(track)))
+    "track_search", ns, fields.List(fields.Nested(track))
+)
+
 
 @ns.route("/search")
 class TrackSearchResult(Resource):
@@ -176,14 +215,10 @@ class TrackSearchResult(Resource):
     @ns.doc(
         id="""Search Tracks""",
         params={
-            'query': 'Search Query',
-            'only_downloadable': 'Return only downloadable tracks'
+            "query": "Search Query",
+            "only_downloadable": "Return only downloadable tracks",
         },
-        responses={
-            200: 'Success',
-            400: 'Bad request',
-            500: 'Server error'
-        }
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(track_search_result)
     @ns.expect(search_parser)
@@ -193,7 +228,7 @@ class TrackSearchResult(Resource):
         args = search_parser.parse_args()
         query = args["query"]
         if not query:
-            abort_bad_request_param('query', ns)
+            abort_bad_request_param("query", ns)
         search_args = {
             "query": query,
             "kind": SearchKind.tracks.name,
@@ -202,7 +237,7 @@ class TrackSearchResult(Resource):
             "with_users": True,
             "limit": 10,
             "offset": 0,
-            "only_downloadable": args["only_downloadable"]
+            "only_downloadable": args["only_downloadable"],
         }
         response = search(search_args)
         tracks = response["tracks"]
@@ -229,152 +264,212 @@ class TrackSearchResult(Resource):
 # `get_trending_tracks.py`, which caches the scored tracks before they are populated (keyed by genre + time).
 # With this second cache, each user_id can reuse on the same cached list of tracks, and then populate them uniquely.
 
-@ns.route("/trending", defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name}, strict_slashes=False)
+
+@ns.route(
+    "/trending",
+    defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
+    strict_slashes=False,
+)
 @ns.route("/trending/<string:version>")
 class Trending(Resource):
     @record_metrics
     @ns.doc(
         id="""Trending Tracks""",
         params={
-            'genre': 'Trending tracks for a specified genre',
-            'time': 'Trending tracks over a specified time range (week, month, allTime)'
+            "genre": "Trending tracks for a specified genre",
+            "time": "Trending tracks over a specified time range (week, month, allTime)",
         },
-        responses={
-            200: 'Success',
-            400: 'Bad request',
-            500: 'Server error'
-        }
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self, version):
         """Gets the top 100 trending (most popular) tracks on Audius"""
-        trending_track_versions = trending_strategy_factory.get_versions_for_type(TrendingType.TRACKS).keys()
-        version_list = list(filter(lambda v: v.name == version, trending_track_versions))
+        trending_track_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.TRACKS
+        ).keys()
+        version_list = list(
+            filter(lambda v: v.name == version, trending_track_versions)
+        )
         if not version_list:
-            abort_bad_path_param('version', ns)
+            abort_bad_path_param("version", ns)
 
         args = trending_parser.parse_args()
-        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
+        strategy = trending_strategy_factory.get_strategy(
+            TrendingType.TRACKS, version_list[0]
+        )
         trending_tracks = get_trending(args, strategy)
         return success_response(trending_tracks)
 
-@full_ns.route("/trending", defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name}, strict_slashes=False)
+
+@full_ns.route(
+    "/trending",
+    defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
+    strict_slashes=False,
+)
 @full_ns.route("/trending/<string:version>")
 class FullTrending(Resource):
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
-        trending_track_versions = trending_strategy_factory.get_versions_for_type(TrendingType.TRACKS).keys()
-        version_list = list(filter(lambda v: v.name == version, trending_track_versions))
+        trending_track_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.TRACKS
+        ).keys()
+        version_list = list(
+            filter(lambda v: v.name == version, trending_track_versions)
+        )
         if not version_list:
-            abort_bad_path_param('version', full_ns)
+            abort_bad_path_param("version", full_ns)
 
         args = full_trending_parser.parse_args()
-        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
+        strategy = trending_strategy_factory.get_strategy(
+            TrendingType.TRACKS, version_list[0]
+        )
         trending_tracks = get_full_trending(request, args, strategy)
         return success_response(trending_tracks)
 
-underground_trending_parser = reqparse.RequestParser()
-underground_trending_parser.add_argument('limit', required=False)
-underground_trending_parser.add_argument('offset', required=False)
-underground_trending_parser.add_argument('user_id', required=False)
 
-@full_ns.route("/trending/underground", defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.UNDERGROUND_TRACKS].name}, strict_slashes=False)
+underground_trending_parser = reqparse.RequestParser()
+underground_trending_parser.add_argument("limit", required=False)
+underground_trending_parser.add_argument("offset", required=False)
+underground_trending_parser.add_argument("user_id", required=False)
+
+
+@full_ns.route(
+    "/trending/underground",
+    defaults={
+        "version": DEFAULT_TRENDING_VERSIONS[TrendingType.UNDERGROUND_TRACKS].name
+    },
+    strict_slashes=False,
+)
 @full_ns.route("/trending/underground/<string:version>")
 class FullUndergroundTrending(Resource):
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
-        underground_trending_versions = trending_strategy_factory.get_versions_for_type(TrendingType.UNDERGROUND_TRACKS).keys()
-        version_list = list(filter(lambda v: v.name == version, underground_trending_versions))
+        underground_trending_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.UNDERGROUND_TRACKS
+        ).keys()
+        version_list = list(
+            filter(lambda v: v.name == version, underground_trending_versions)
+        )
         if not version_list:
-            abort_bad_path_param('version', full_ns)
+            abort_bad_path_param("version", full_ns)
 
         args = underground_trending_parser.parse_args()
-        strategy = trending_strategy_factory.get_strategy(TrendingType.UNDERGROUND_TRACKS, version_list[0])
+        strategy = trending_strategy_factory.get_strategy(
+            TrendingType.UNDERGROUND_TRACKS, version_list[0]
+        )
         trending_tracks = get_underground_trending(request, args, strategy)
         return success_response(trending_tracks)
 
+
 # Get recommended tracks for a genre and exclude tracks in the exclusion list
 recommended_track_parser = reqparse.RequestParser()
-recommended_track_parser.add_argument('genre', required=False)
-recommended_track_parser.add_argument('limit', type=int, required=False)
-recommended_track_parser.add_argument('exclusion_list', type=int, action='append', required=False)
-recommended_track_parser.add_argument('time', required=False)
+recommended_track_parser.add_argument("genre", required=False)
+recommended_track_parser.add_argument("limit", type=int, required=False)
+recommended_track_parser.add_argument(
+    "exclusion_list", type=int, action="append", required=False
+)
+recommended_track_parser.add_argument("time", required=False)
 
-@ns.route("/recommended", defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name}, strict_slashes=False)
+
+@ns.route(
+    "/recommended",
+    defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
+    strict_slashes=False,
+)
 @ns.route("/recommended/<string:version>")
 class RecommendedTrack(Resource):
     @record_metrics
     @ns.doc(
         id="""Recommended Tracks""",
         params={
-            'genre': 'Recommended trending tracks for a specified genre',
-            'limit': 'Number of recommended tracks to fetch',
-            'exclusion_list': 'List of track ids to exclude',
-            'time': 'Trending tracks over a specified time range (week, month, allTime)'
+            "genre": "Recommended trending tracks for a specified genre",
+            "limit": "Number of recommended tracks to fetch",
+            "exclusion_list": "List of track ids to exclude",
+            "time": "Trending tracks over a specified time range (week, month, allTime)",
         },
-        responses={
-            200: 'Success',
-            400: 'Bad request',
-            500: 'Server error'
-        }
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(tracks_response)
     @cache(ttl_sec=TRENDING_TTL_SEC)
     def get(self, version):
-        trending_track_versions = trending_strategy_factory.get_versions_for_type(TrendingType.TRACKS).keys()
-        version_list = list(filter(lambda v: v.name == version, trending_track_versions))
+        trending_track_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.TRACKS
+        ).keys()
+        version_list = list(
+            filter(lambda v: v.name == version, trending_track_versions)
+        )
         if not version_list:
-            abort_bad_path_param('version', ns)
+            abort_bad_path_param("version", ns)
 
         args = recommended_track_parser.parse_args()
         limit = format_limit(args, default_limit=DEFAULT_RECOMMENDED_LIMIT)
-        args['limit'] = max(TRENDING_LIMIT, limit)
-        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
+        args["limit"] = max(TRENDING_LIMIT, limit)
+        strategy = trending_strategy_factory.get_strategy(
+            TrendingType.TRACKS, version_list[0]
+        )
         recommended_tracks = get_recommended_tracks(args, strategy)
         return success_response(recommended_tracks[:limit])
 
-full_recommended_track_parser = recommended_track_parser.copy()
-full_recommended_track_parser.add_argument('user_id', required=False)
 
-@full_ns.route("/recommended", defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name}, strict_slashes=False)
+full_recommended_track_parser = recommended_track_parser.copy()
+full_recommended_track_parser.add_argument("user_id", required=False)
+
+
+@full_ns.route(
+    "/recommended",
+    defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
+    strict_slashes=False,
+)
 @full_ns.route("/recommended/<string:version>")
 class FullRecommendedTrack(Resource):
     @record_metrics
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
-        trending_track_versions = trending_strategy_factory.get_versions_for_type(TrendingType.TRACKS).keys()
-        version_list = list(filter(lambda v: v.name == version, trending_track_versions))
+        trending_track_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.TRACKS
+        ).keys()
+        version_list = list(
+            filter(lambda v: v.name == version, trending_track_versions)
+        )
         if not version_list:
-            abort_bad_path_param('version', full_ns)
+            abort_bad_path_param("version", full_ns)
 
         args = full_recommended_track_parser.parse_args()
         limit = format_limit(args, default_limit=DEFAULT_RECOMMENDED_LIMIT)
-        args['limit'] = max(TRENDING_LIMIT, limit)
-        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
+        args["limit"] = max(TRENDING_LIMIT, limit)
+        strategy = trending_strategy_factory.get_strategy(
+            TrendingType.TRACKS, version_list[0]
+        )
         full_recommended_tracks = get_full_recommended_tracks(request, args, strategy)
         return success_response(full_recommended_tracks[:limit])
 
 
 trending_ids_route_parser = reqparse.RequestParser()
-trending_ids_route_parser.add_argument('limit', required=False, type=int, default=10)
-trending_ids_route_parser.add_argument('genre', required=False, type=str)
+trending_ids_route_parser.add_argument("limit", required=False, type=int, default=10)
+trending_ids_route_parser.add_argument("genre", required=False, type=str)
 
-track_id = full_ns.model('track_id', { "id": fields.String(required=True) })
-trending_times_ids = full_ns.model('trending_times_ids', {
+track_id = full_ns.model("track_id", {"id": fields.String(required=True)})
+trending_times_ids = full_ns.model(
+    "trending_times_ids",
+    {
         "week": fields.List(fields.Nested(track_id)),
         "month": fields.List(fields.Nested(track_id)),
-        "year": fields.List(fields.Nested(track_id))
-})
+        "year": fields.List(fields.Nested(track_id)),
+    },
+)
 trending_ids_response = make_response(
-    "trending_ids_response",
-    full_ns,
-    fields.Nested(trending_times_ids)
+    "trending_ids_response", full_ns, fields.Nested(trending_times_ids)
 )
 
-@full_ns.route("/trending/ids", defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name}, strict_slashes=False)
+
+@full_ns.route(
+    "/trending/ids",
+    defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
+    strict_slashes=False,
+)
 @full_ns.route("/trending/ids/<string:version>")
 class FullTrendingIds(Resource):
     @record_metrics
@@ -382,39 +477,45 @@ class FullTrendingIds(Resource):
     @ns.doc(
         id="""Trending Tracks Ids""",
         params={
-            'genre': 'Track genre',
-            'limit': 'Limit',
+            "genre": "Track genre",
+            "limit": "Limit",
         },
-        responses={
-            200: 'Success',
-            400: 'Bad request',
-            500: 'Server error'
-        }
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(trending_ids_response)
     def get(self, version):
         """Gets the track ids of the top trending tracks on Audius based on the trending version"""
-        trending_track_versions = trending_strategy_factory.get_versions_for_type(TrendingType.TRACKS).keys()
-        version_list = list(filter(lambda v: v.name == version, trending_track_versions))
+        trending_track_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.TRACKS
+        ).keys()
+        version_list = list(
+            filter(lambda v: v.name == version, trending_track_versions)
+        )
         if not version_list:
-            abort_bad_path_param('version', full_ns)
+            abort_bad_path_param("version", full_ns)
 
         args = trending_ids_route_parser.parse_args()
-        strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS, version_list[0])
+        strategy = trending_strategy_factory.get_strategy(
+            TrendingType.TRACKS, version_list[0]
+        )
         trending_ids = get_trending_ids(args, strategy)
         res = {
             "week": list(map(get_encoded_track_id, trending_ids["week"])),
             "month": list(map(get_encoded_track_id, trending_ids["month"])),
-            "year": list(map(get_encoded_track_id, trending_ids["year"]))
+            "year": list(map(get_encoded_track_id, trending_ids["year"])),
         }
         return success_response(res)
 
+
 track_favorites_route_parser = reqparse.RequestParser()
-track_favorites_route_parser.add_argument('user_id', required=False)
-track_favorites_route_parser.add_argument('limit', required=False, type=int)
-track_favorites_route_parser.add_argument('offset', required=False, type=int)
+track_favorites_route_parser.add_argument("user_id", required=False)
+track_favorites_route_parser.add_argument("limit", required=False, type=int)
+track_favorites_route_parser.add_argument("offset", required=False, type=int)
 track_favorites_response = make_full_response(
-    "track_favorites_response_full", full_ns, fields.List(fields.Nested(user_model_full)))
+    "track_favorites_response_full",
+    full_ns,
+    fields.List(fields.Nested(user_model_full)),
+)
 
 
 @full_ns.route("/<string:track_id>/favorites")
@@ -422,31 +523,23 @@ class FullTrackFavorites(Resource):
     @full_ns.expect(track_favorites_route_parser)
     @full_ns.doc(
         id="""Get Users that Favorited a Track""",
-        params={
-            'user_id': 'A User ID',
-            'limit': 'Limit',
-            'offset': 'Offset'
-        },
-        responses={
-            200: 'Success',
-            400: 'Bad request',
-            500: 'Server error'
-        }
+        params={"user_id": "A User ID", "limit": "Limit", "offset": "Offset"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(track_favorites_response)
     @cache(ttl_sec=5)
     def get(self, track_id):
         args = track_favorites_route_parser.parse_args()
         decoded_id = decode_with_abort(track_id, full_ns)
-        limit = get_default_max(args.get('limit'), 10, 100)
-        offset = get_default_max(args.get('offset'), 0)
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
         current_user_id = get_current_user_id(args)
 
         args = {
-            'save_track_id': decoded_id,
-            'current_user_id': current_user_id,
-            'limit': limit,
-            'offset': offset
+            "save_track_id": decoded_id,
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
         }
         users = get_savers_for_track(args)
         users = list(map(extend_user, users))
@@ -455,48 +548,46 @@ class FullTrackFavorites(Resource):
 
 
 track_reposts_route_parser = reqparse.RequestParser()
-track_reposts_route_parser.add_argument('user_id', required=False)
-track_reposts_route_parser.add_argument('limit', required=False, type=int)
-track_reposts_route_parser.add_argument('offset', required=False, type=int)
+track_reposts_route_parser.add_argument("user_id", required=False)
+track_reposts_route_parser.add_argument("limit", required=False, type=int)
+track_reposts_route_parser.add_argument("offset", required=False, type=int)
 track_reposts_response = make_full_response(
-    "track_reposts_response_full", full_ns, fields.List(fields.Nested(user_model_full)))
+    "track_reposts_response_full", full_ns, fields.List(fields.Nested(user_model_full))
+)
+
+
 @full_ns.route("/<string:track_id>/reposts")
 class FullTrackReposts(Resource):
     @full_ns.expect(track_reposts_route_parser)
     @full_ns.doc(
         id="""Get Users that Reposted a Track""",
-        params={
-            'user_id': 'A User ID',
-            'limit': 'Limit',
-            'offset': 'Offset'
-        },
-        responses={
-            200: 'Success',
-            400: 'Bad request',
-            500: 'Server error'
-        }
+        params={"user_id": "A User ID", "limit": "Limit", "offset": "Offset"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(track_reposts_response)
     @cache(ttl_sec=5)
     def get(self, track_id):
         args = track_reposts_route_parser.parse_args()
         decoded_id = decode_with_abort(track_id, full_ns)
-        limit = get_default_max(args.get('limit'), 10, 100)
-        offset = get_default_max(args.get('offset'), 0)
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
         current_user_id = get_current_user_id(args)
 
         args = {
-            'repost_track_id': decoded_id,
-            'current_user_id': current_user_id,
-            'limit': limit,
-            'offset': offset
+            "repost_track_id": decoded_id,
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
         }
         users = get_reposters_for_track(args)
         users = list(map(extend_user, users))
         return success_response(users)
 
+
 track_stems_response = make_full_response(
-    "stems_response", full_ns, fields.List(fields.Nested(stem_full)))
+    "stems_response", full_ns, fields.List(fields.Nested(stem_full))
+)
+
 
 @full_ns.route("/<string:track_id>/stems")
 class FullTrackStems(Resource):
@@ -508,13 +599,46 @@ class FullTrackStems(Resource):
         stems = list(map(stem_from_track, stems))
         return success_response(stems)
 
+track_remixables_route_parser = reqparse.RequestParser()
+track_remixables_route_parser.add_argument("user_id", required=False)
+track_remixables_route_parser.add_argument("limit", required=False, type=int)
+track_remixables_route_parser.add_argument("with_users", required=False, type=bool)
+@full_ns.route("/remixables")
+class RemixableTracks(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Remixable Tracks""",
+        params={
+            "user_id": "User ID",
+            "limit": "Number of remixable tracks to fetch",
+            "with_users": "Boolean to include user info with tracks"
+        },
+        responses={
+            200: "Success",
+            400: "Bad request",
+            500: "Server error"
+        }
+    )
+    @full_ns.marshal_with(tracks_response)
+    @cache(ttl_sec=5)
+    def get(self):
+        args = track_remixables_route_parser.parse_args()
+        args = {
+            "current_user_id": get_current_user_id(args),
+            "limit": get_default_max(args.get("limit"), 25, 100),
+            "with_users": args.get("with_users", False),
+        }
+        tracks = get_remixable_tracks(args)
+        return success_response(tracks)
 
 remixes_response = make_full_response(
-    "remixes_response_full", full_ns, fields.Nested(remixes_response_model))
+    "remixes_response_full", full_ns, fields.Nested(remixes_response_model)
+)
 remixes_parser = reqparse.RequestParser()
-remixes_parser.add_argument('user_id', required=False)
-remixes_parser.add_argument('limit', required=False, default=10)
-remixes_parser.add_argument('offset', required=False, default=0)
+remixes_parser.add_argument("user_id", required=False)
+remixes_parser.add_argument("limit", required=False, default=10)
+remixes_parser.add_argument("offset", required=False, default=0)
+
 
 @full_ns.route("/<string:track_id>/remixes")
 class FullRemixesRoute(Resource):
@@ -530,18 +654,21 @@ class FullRemixesRoute(Resource):
             "track_id": decoded_id,
             "current_user_id": current_user_id,
             "limit": format_limit(request_args),
-            "offset": format_offset(request_args)
+            "offset": format_offset(request_args),
         }
         response = get_remixes_of(args)
         response["tracks"] = list(map(extend_track, response["tracks"]))
         return success_response(response)
 
+
 remixing_response = make_full_response(
-    "remixing_response", full_ns, fields.List(fields.Nested(track_full)))
+    "remixing_response", full_ns, fields.List(fields.Nested(track_full))
+)
 remixing_parser = reqparse.RequestParser()
-remixing_parser.add_argument('user_id', required=False)
-remixing_parser.add_argument('limit', required=False, default=10)
-remixing_parser.add_argument('offset', required=False, default=0)
+remixing_parser.add_argument("user_id", required=False)
+remixing_parser.add_argument("limit", required=False, default=10)
+remixing_parser.add_argument("offset", required=False, default=0)
+
 
 @full_ns.route("/<string:track_id>/remixing")
 class FullRemixingRoute(Resource):
@@ -557,7 +684,7 @@ class FullRemixingRoute(Resource):
             "track_id": decoded_id,
             "current_user_id": current_user_id,
             "limit": format_limit(request_args),
-            "offset": format_offset(request_args)
+            "offset": format_offset(request_args),
         }
         tracks = get_remix_track_parents(args)
         tracks = list(map(extend_track, tracks))

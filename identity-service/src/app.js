@@ -1,5 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const mailgun = require('mailgun-js')
 const Redis = require('ioredis')
@@ -148,7 +149,10 @@ class App {
   setMiddleware () {
     this.express.use(loggingMiddleware)
     this.express.use(bodyParser.json({ limit: '1mb' }))
-    this.express.use(cors())
+    this.express.use(cookieParser())
+    this.express.use(cors({
+      preflightContinue: true
+    }))
   }
 
   // Create rate limits for listens on a per track per user basis and per track per ip basis
@@ -194,6 +198,10 @@ class App {
     const twitterRequestRateLimiter = getRateLimiter({ prefix: 'twitterLimiter', max: config.get('rateLimitingTwitterLimit') })
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use('/twitter/', twitterRequestRateLimiter)
+
+    const tikTokRequestRateLimiter = getRateLimiter({ prefix: 'tikTokLimiter', max: config.get('rateLimitingTikTokLimit') })
+    // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
+    this.express.use('/tiktok/', tikTokRequestRateLimiter)
 
     const ONE_HOUR_IN_SECONDS = 60 * 60
     const [listenCountHourlyLimiter, listenCountHourlyIPLimiter] = this._createRateLimitsForListenCounts('Hour', ONE_HOUR_IN_SECONDS)
