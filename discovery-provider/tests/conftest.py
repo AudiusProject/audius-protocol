@@ -223,5 +223,6 @@ def run_around_tests(app):
             session.query(models.Follow).delete()
             session.query(models.Playlist).delete()
             session.query(models.Track).delete()
+            session.query(models.User).delete()
             session.query(models.Block).delete()
             session.commit()
