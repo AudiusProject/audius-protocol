@@ -8,7 +8,7 @@ class UndisbursedChallengeResponse(TypedDict):
     user_id: int
     specifier: str
     amount: str
-    completed_blocknumber: int
+    completed_blocknumber: Optional[int]
 
 
 def to_challenge_response(

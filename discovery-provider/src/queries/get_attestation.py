@@ -139,12 +139,12 @@ def get_attestation(
     )
     if not user_eth_address:
         raise Exception("Unexpectedly missing eth_address")
-    user_eth_address = str(user_eth_address[0])
+    user_address = str(user_eth_address[0])
 
     attestation = Attestation(
         amount=challenge.amount,
         oracle_address=oracle_address,
-        user_address=user_eth_address,
+        user_address=user_address,
         challenge_id=challenge.id,
         challenge_specifier=user_challenge.specifier,
     )

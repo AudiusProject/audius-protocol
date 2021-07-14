@@ -1,7 +1,7 @@
 from functools import reduce
 from collections import defaultdict
 
-from typing import List, DefaultDict, TypedDict, Tuple
+from typing import List, DefaultDict, Optional, TypedDict, Tuple, cast
 from sqlalchemy import and_
 from src.models import UserChallenge, Challenge, ChallengeType, ChallengeDisbursement
 
@@ -13,34 +13,43 @@ class ChallengeResponse(TypedDict):
     is_complete: bool
     is_active: bool  # need this
     is_disbursed: bool  # need this
-    current_step_count: int
-    max_steps: int
+    current_step_count: Optional[int]
+    max_steps: Optional[int]
     challenge_type: str
 
 
 def rollup_aggregates(
-    user_challenges: List[UserChallenge], challenge: Challenge
+    user_challenges: List[UserChallenge], parent_challenge: Challenge
 ) -> ChallengeResponse:
     num_complete = reduce(
-        lambda acc, cur: acc + 1 if cur.is_complete else acc, user_challenges, 0
+        lambda acc, cur: cast(int, acc) + 1 if cur.is_complete else acc,
+        user_challenges,
+        0,
     )
-    is_complete = num_complete >= challenge.step_count
+
+    # The parent challenge should have a step count, otherwise, we can just
+    # say it's complete.
+    if parent_challenge.step_count:
+        is_complete = num_complete >= parent_challenge.step_count
+    else:
+        is_complete = True
+
     response_dict: ChallengeResponse = {
-        "challenge_id": challenge.id,
+        "challenge_id": parent_challenge.id,
         "user_id": user_challenges[0].user_id,
         "specifier": "",
         "is_complete": is_complete,
         "current_step_count": num_complete,
-        "max_steps": challenge.step_count,
-        "challenge_type": challenge.type,
-        "is_active": challenge.active,
+        "max_steps": parent_challenge.step_count,
+        "challenge_type": parent_challenge.type,
+        "is_active": parent_challenge.active,
         "is_disbursed": False,  # This doesn't indicate anything for aggregate challenges
     }
     return response_dict
 
 
 def to_challenge_response(
-    user_challenge: UserChallenge, challenge: Challenge, is_disbursed: bool
+    user_challenge: UserChallenge, challenge: Challenge, disbursement: ChallengeDisbursement
 ) -> ChallengeResponse:
     return {
         "challenge_id": challenge.id,
@@ -51,7 +60,7 @@ def to_challenge_response(
         "max_steps": challenge.step_count,
         "challenge_type": challenge.type,
         "is_active": challenge.active,
-        "is_disbursed": is_disbursed is not None,
+        "is_disbursed": disbursement is not None,
     }
 
 
