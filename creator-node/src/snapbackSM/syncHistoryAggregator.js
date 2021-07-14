@@ -25,8 +25,9 @@ class SyncHistoryAggregator {
    * Records a sync success
    * @param {Object} logContext the log context taken off of the Express req object
    */
-  static async recordSyncSuccess (logContext = {}) {
+  static async recordSyncSuccess (wallet, logContext = {}) {
     await SyncHistoryAggregator.recordSyncData({
+      wallet,
       state: SYNC_STATES.success,
       timeOfEvent: new Date().toISOString(), // ex: "2021-05-28T01:05:20.294Z"
       logContext
@@ -37,8 +38,9 @@ class SyncHistoryAggregator {
    * Records a sync fail
    * @param {Object} logContext the log context taken off of the Express req object
    */
-  static async recordSyncFail (logContext = {}) {
+  static async recordSyncFail (wallet, logContext = {}) {
     await SyncHistoryAggregator.recordSyncData({
+      wallet,
       state: SYNC_STATES.fail,
       timeOfEvent: new Date().toISOString(), // ex: "2021-05-28T01:05:20.294Z"
       logContext
@@ -52,10 +54,12 @@ class SyncHistoryAggregator {
    * @param {enum} state SYNC_STATUS.success or SYNC_STATUS.fail
    * @param {String} timeOfEvent date in structure MM-DD-YYYYTHH:MM:SS:sssZ
    */
-  static async recordSyncData ({ state, timeOfEvent, logContext }) {
+  static async recordSyncData ({ state, timeOfEvent, logContext, wallet }) {
     const logger = genericLogger.child(logContext)
 
     try {
+      if (!wallet) throw new Error(`Invalid wallet passed into syncHistoryAggregator#recordSyncData`)
+
       if (!SYNC_STATES.hasOwnProperty(state)) {
         throw new Error(`Invalid state='${state}'. Must either be '${SYNC_STATES.success}' or '${SYNC_STATES.fail}'`)
       }
@@ -73,6 +77,12 @@ class SyncHistoryAggregator {
 
       const latestSyncKeyTTL = await this.getKeyTTL(latestSyncKeys[state])
       await redisClient.set(latestSyncKeys[state], timeOfEvent, 'EX', latestSyncKeyTTL)
+
+      // Update per wallet success/fail sync data
+      const syncByWalletKeys = SyncHistoryAggregator.getUniqueSyncKeys()
+      const perWalletSyncKeyTTL = await this.getKeyTTL(syncByWalletKeys[state])
+      await redisClient.sadd(syncByWalletKeys[state], wallet)
+      await redisClient.expire(syncByWalletKeys[state], perWalletSyncKeyTTL)
 
       logger.info(`SyncHistoryAggregator - Successfully tracked ${state} sync at ${timeOfEvent}`)
     } catch (e) {
@@ -161,6 +171,35 @@ class SyncHistoryAggregator {
   }
 
   /**
+   * Returns the number of unique users with successful and fail syncs that day. Will be `null` if a sync with those
+   * states have not been triggered.
+   * @param {Object?} logContext the log context off of the Express req object
+   * @returns an object of the current day's aggregate sync count like
+   *     {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
+   */
+  static async getPerWalletSyncData (logContext = {}, date = new Date().toISOString().split('T')[0]) {
+    const logger = genericLogger.child(logContext)
+    let perWalletSyncData = {
+      success: null,
+      fail: null
+    }
+
+    try {
+      const { success, fail } = SyncHistoryAggregator.getUniqueSyncKeys()
+
+      const perWalletSyncSuccess = await redisClient.scard(success)
+      const perWalletSyncFail = await redisClient.scard(fail)
+
+      perWalletSyncData.success = perWalletSyncSuccess
+      perWalletSyncData.fail = perWalletSyncFail
+    } catch (e) {
+      logger.error(`syncHistoryAggregator - getPerWalletSyncData() error - ${e.toString()}`)
+    }
+    // Structure: {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
+    return perWalletSyncData
+  }
+
+  /**
    * Retrieves the redis keys used for storing aggregate sync counts
    * @param {string?} date string with the structure YYYY-MM-DD. defaulted to today's date
    * @returns an object of the `success` and `fail` redis keys for the aggregate sync count
@@ -169,6 +208,21 @@ class SyncHistoryAggregator {
     const prefix = `aggregateSync:::${date}`
 
     // ex: aggregateSync:::2021-06-01:::success
+    return {
+      success: `${prefix}:::${SYNC_STATES.success}`,
+      fail: `${prefix}:::${SYNC_STATES.fail}`
+    }
+  }
+
+  /**
+   * Retreives the redis keys used for storing wallets for syncs that succeeded or failed
+   * @param {string?} date string with the structure YYYY-MM-DD. defaulted to today's date
+   * @returns an object of the `succes` and `fail` redis keys for sync status by wallet
+   */
+  static getUniqueSyncKeys (date = new Date().toISOString().split('T')[0]) {
+    const prefix = `uniqueSync:::${date}`
+
+    // ex: uniqueSync:::2021-06-1:::success
     return {
       success: `${prefix}:::${SYNC_STATES.success}`,
       fail: `${prefix}:::${SYNC_STATES.fail}`

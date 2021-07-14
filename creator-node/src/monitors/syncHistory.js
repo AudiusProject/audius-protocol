@@ -1,4 +1,3 @@
-const redisClient = require('../redis')
 const SyncHistoryAggregator = require('../snapbackSM/syncHistoryAggregator')
 
 const get30DayRollingSyncSuccessCount = async () => {
@@ -15,10 +14,8 @@ const get30DayRollingSyncSuccessCount = async () => {
 
   while (date <= rollingWindowEndDate) { // eslint-disable-line no-unmodified-loop-condition
     const redisDateKeySuffix = date.toISOString().split('T')[0] // ex.: "2021-05-04"
-    const { success: syncSuccessCountKey } = SyncHistoryAggregator.getAggregateSyncKeys(redisDateKeySuffix)
-
-    const syncSuccessCount = await getSyncCount(syncSuccessCountKey)
-    rollingSyncSuccessCount += syncSuccessCount
+    const { success } = SyncHistoryAggregator.getPerWalletSyncData({}, redisDateKeySuffix)
+    rollingSyncSuccessCount += success
 
     // Set the date to the next day
     date.setDate(date.getDate() + 1)
@@ -41,10 +38,8 @@ const get30DayRollingSyncFailCount = async () => {
 
   while (date <= rollingWindowEndDate) { // eslint-disable-line no-unmodified-loop-condition
     const redisDateKeySuffix = date.toISOString().split('T')[0] // ex.: "2021-05-04"
-    const { fail: syncFailCountKey } = SyncHistoryAggregator.getAggregateSyncKeys(redisDateKeySuffix)
-
-    const syncFailCount = await getSyncCount(syncFailCountKey)
-    rollingSyncFailCount += syncFailCount
+    const { fail } = SyncHistoryAggregator.getPerWalletSyncData({}, redisDateKeySuffix)
+    rollingSyncFailCount += fail
 
     // Set the date to the next day
     date.setDate(date.getDate() + 1)
@@ -71,16 +66,6 @@ const getLatestSyncSuccessTimestamp = async () => {
 const getLatestSyncFailTimestamp = async () => {
   const { fail } = await SyncHistoryAggregator.getLatestSyncData()
   return fail
-}
-
-/**
- * Get sync count given key param
- * @param {string} key redis key for sync success or fail count
- * @returns the number of successful or failed sync attempts or 0
- */
-const getSyncCount = async key => {
-  let syncCount = await redisClient.get(key)
-  return parseInt(syncCount) || 0
 }
 
 module.exports = {
