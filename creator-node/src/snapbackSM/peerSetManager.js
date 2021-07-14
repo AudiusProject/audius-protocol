@@ -50,6 +50,7 @@ class PeerSetManager {
    * @returns the unhealthy peers in a Set
    *
    * @note consider returning healthy set?
+   * TODO - add retry logic to node requests
    */
   async getUnhealthyPeers (nodeUsers, performSimpleCheck = false) {
     // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)

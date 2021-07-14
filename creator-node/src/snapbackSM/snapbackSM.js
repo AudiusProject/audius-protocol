@@ -591,6 +591,7 @@ class SnapbackSM {
         }
       }
 
+      // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
       if (!userClockValuesResp) {
         this.logError(`[retrieveClockStatusesForUsersAcrossReplicaSet] Could not fetch clock values for wallets=${replicaSetNodeUserWallets} on replica node=${replicaSetNode} ${errorMsg ? ': ' + errorMsg.toString() : ''}`)
         unhealthyPeers.add(replicaSetNode)
@@ -621,8 +622,6 @@ class SnapbackSM {
    * @returns {Object} number of syncs required, enqueued, and errors if any
    */
   async issueSyncRequestsToSecondaries (userReplicaSets, replicaSetNodesToUserClockStatusesMap) {
-    // TODO ensure all syncRequests are for users with primary == self
-
     // Retrieve clock values for all users on this node, which is their primary
     let numSyncRequestsRequired = 0
     let numSyncRequestsEnqueued = 0
@@ -906,10 +905,12 @@ class SnapbackSM {
        */
       let numUpdateReplicaOpsIssued = 0
       try {
-        // Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
-        // Note: sync checks are disabled because there should not be any syncs occurring for a particular user
-        // on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
-        // There will be an explicit clock value check on the newly selected replica set nodes instead.
+        /**
+         * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
+         * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
+         * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
+         * There will be an explicit clock value check on the newly selected replica set nodes instead.
+         */
         const { services: healthyServicesMap } = await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
           performSyncCheck: false,
           log: false
@@ -1213,7 +1214,11 @@ class SnapbackSM {
   }
 
   /**
-   * e.x.: 'PRIMARY_AND_SECONDARY' is the reconfig mode -> 'RECONFIG_DISABLED', 'ONE_SECONDARY', 'MULTIPLE_SECONDARIES', 'PRIMARY_AND_SECONDARY' enabled
+   * Updates `enabledReconfigModesSet` and `highestEnabledReconfigMode`.
+   * Uses `override` if provided, else uses config var.
+   * `enabledReconfigModesSet` contains every mode with rank <= `highestEnabledReconfigMode`
+   *   - e.g. `highestEnabledReconfigMode = 'PRIMARY_AND_SECONDARY'
+   *      `enabledReconfigModesSet = { 'RECONFIG_DISABLED', 'ONE_SECONDARY', 'MULTIPLE_SECONDARIES', 'PRIMARY_AND_SECONDARY' }
    */
   updateEnabledReconfigModesSet (override) {
     let highestEnabledReconfigMode
