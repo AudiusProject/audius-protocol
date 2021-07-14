@@ -113,7 +113,7 @@ const getCreatorNodeSigner = async (endpoint) => {
     method: 'get',
     baseURL: endpoint,
     url: '/health_check'
-  })).data.signer
+  })).data.data.spOwnerWallet
 }
 
 const maxIndexingTimeout = 15000
