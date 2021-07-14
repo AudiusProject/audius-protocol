@@ -10,7 +10,7 @@ class IndexingError(Exception):
     """
 
     def __init__(self, type, blocknumber, blockhash, txhash, message):
-        super(IndexingError, self).__init__(message)
+        super().__init__(message)
         self.type = type
         self.blocknumber = blocknumber
         self.blockhash = blockhash

@@ -30,7 +30,7 @@ const createTokenAccountInstructionSchema = new Map([
 /**
  * Gets the back account address for a user given their ethAddress
  * @param {string} ethAddress
- * @param {string} claimableTokenPDA
+ * @param {PublicKey} claimableTokenPDA
  * @param {PublicKey} solanaTokenProgramKey
  * @returns
  */

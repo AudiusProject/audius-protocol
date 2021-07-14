@@ -3,8 +3,10 @@ from src.app import contract_addresses
 from src.models import IPLDBlacklistBlock, BlacklistedIPLD
 from src.tasks.celery_app import celery
 from src.tasks.ipld_blacklist import ipld_blacklist_state_update
-from src.utils.redis_constants import most_recent_indexed_ipld_block_redis_key, \
-    most_recent_indexed_ipld_block_hash_redis_key
+from src.utils.redis_constants import (
+    most_recent_indexed_ipld_block_redis_key,
+    most_recent_indexed_ipld_block_hash_redis_key,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -17,12 +19,17 @@ default_padded_start_hash = (
 )
 default_config_start_hash = "0x0"
 
+
 def initialize_blacklist_blocks_table_if_necessary(db):
     target_blockhash = None
-    target_blockhash = update_ipld_blacklist_task.shared_config["discprov"]["start_block"]
+    target_blockhash = update_ipld_blacklist_task.shared_config["discprov"][
+        "start_block"
+    ]
     target_block = update_ipld_blacklist_task.web3.eth.getBlock(target_blockhash, True)
     with db.scoped_session() as session:
-        current_block_query_result = session.query(IPLDBlacklistBlock).filter_by(is_current=True)
+        current_block_query_result = session.query(IPLDBlacklistBlock).filter_by(
+            is_current=True
+        )
         if current_block_query_result.count() == 0:
             blocks_query_result = session.query(IPLDBlacklistBlock)
             assert (
@@ -35,7 +42,10 @@ def initialize_blacklist_blocks_table_if_necessary(db):
                 is_current=True,
             )
 
-            if target_block.number == 0 or target_blockhash == default_config_start_hash:
+            if (
+                target_block.number == 0
+                or target_blockhash == default_config_start_hash
+            ):
                 block_model.number = None
 
             session.add(block_model)
@@ -46,15 +56,19 @@ def initialize_blacklist_blocks_table_if_necessary(db):
 
     return target_blockhash
 
+
 def get_latest_blacklist_block(db):
     latest_block = None
-    block_processing_window = \
-        int(update_ipld_blacklist_task.shared_config["discprov"]["blacklist_block_processing_window"])
+    block_processing_window = int(
+        update_ipld_blacklist_task.shared_config["discprov"][
+            "blacklist_block_processing_window"
+        ]
+    )
     with db.scoped_session() as session:
-        current_block_query = session.query(IPLDBlacklistBlock).filter_by(is_current=True)
-        assert (
-            current_block_query.count() == 1
-        ), "Expected SINGLE row marked as current"
+        current_block_query = session.query(IPLDBlacklistBlock).filter_by(
+            is_current=True
+        )
+        assert current_block_query.count() == 1, "Expected SINGLE row marked as current"
 
         current_block_query_results = current_block_query.all()
         current_block = current_block_query_results[0]
@@ -65,18 +79,24 @@ def get_latest_blacklist_block(db):
 
         target_latest_block_number = current_block_number + block_processing_window
 
-        latest_block_from_chain = update_ipld_blacklist_task.web3.eth.getBlock('latest', True)
+        latest_block_from_chain = update_ipld_blacklist_task.web3.eth.getBlock(
+            "latest", True
+        )
         latest_block_number_from_chain = latest_block_from_chain.number
 
-        if target_latest_block_number > latest_block_number_from_chain:
-            target_latest_block_number = latest_block_number_from_chain
+        target_latest_block_number = min(
+            target_latest_block_number, latest_block_number_from_chain
+        )
 
         logger.info(
             f"IPLDBLACKLIST | get_latest_blacklist_block | "
             f"current={current_block_number} target={target_latest_block_number}"
         )
-        latest_block = update_ipld_blacklist_task.web3.eth.getBlock(target_latest_block_number, True)
+        latest_block = update_ipld_blacklist_task.web3.eth.getBlock(
+            target_latest_block_number, True
+        )
     return latest_block
+
 
 def index_blocks(self, db, blocks_list):
     redis = update_ipld_blacklist_task.redis
@@ -93,7 +113,9 @@ def index_blocks(self, db, blocks_list):
 
         # Handle each block in a distinct transaction
         with db.scoped_session() as session:
-            current_block_query = session.query(IPLDBlacklistBlock).filter_by(is_current=True)
+            current_block_query = session.query(IPLDBlacklistBlock).filter_by(
+                is_current=True
+            )
 
             block_model = IPLDBlacklistBlock(
                 blockhash=update_ipld_blacklist_task.web3.toHex(block.hash),
@@ -117,10 +139,15 @@ def index_blocks(self, db, blocks_list):
             for tx in block.transactions:
                 tx_hash = update_ipld_blacklist_task.web3.toHex(tx["hash"])
                 tx_target_contract_address = tx["to"]
-                tx_receipt = update_ipld_blacklist_task.web3.eth.getTransactionReceipt(tx_hash)
+                tx_receipt = update_ipld_blacklist_task.web3.eth.getTransactionReceipt(
+                    tx_hash
+                )
 
                 # Handle ipld blacklist operations
-                if tx_target_contract_address == contract_addresses["ipld_blacklist_factory"]:
+                if (
+                    tx_target_contract_address
+                    == contract_addresses["ipld_blacklist_factory"]
+                ):
                     logger.info(
                         f"IPLDBlacklistFactory operation, contract addr from block: {tx_target_contract_address}"
                         f" tx from block - {tx}, receipt - {tx_receipt}, "
@@ -129,10 +156,17 @@ def index_blocks(self, db, blocks_list):
                     ipld_blacklist_factory_txs.append(tx_receipt)
 
             if ipld_blacklist_factory_txs:
-                logger.warning(f'ipld_blacklist_factory_txs {ipld_blacklist_factory_txs}')
+                logger.warning(
+                    f"ipld_blacklist_factory_txs {ipld_blacklist_factory_txs}"
+                )
 
             ipld_blacklist_state_update(
-                self, update_ipld_blacklist_task, session, ipld_blacklist_factory_txs, block_number, block_timestamp
+                self,
+                update_ipld_blacklist_task,
+                session,
+                ipld_blacklist_factory_txs,
+                block_number,
+                block_timestamp,
             )
 
         # Add the block number of the most recently processed ipld block to redis
@@ -158,15 +192,17 @@ def revert_blocks(self, db, revert_blocks_list):
                 parent_hash = default_config_start_hash
 
             # Update newly current block row and outdated row (indicated by current block's parent hash)
-            session.query(IPLDBlacklistBlock).filter(IPLDBlacklistBlock.blockhash == parent_hash).update(
-                {"is_current": True}
-            )
-            session.query(IPLDBlacklistBlock).filter(IPLDBlacklistBlock.blockhash == revert_hash).update(
-                {"is_current": False}
-            )
+            session.query(IPLDBlacklistBlock).filter(
+                IPLDBlacklistBlock.blockhash == parent_hash
+            ).update({"is_current": True})
+            session.query(IPLDBlacklistBlock).filter(
+                IPLDBlacklistBlock.blockhash == revert_hash
+            ).update({"is_current": False})
 
             revert_ipld_blacklist_entries = (
-                session.query(BlacklistedIPLD).filter(BlacklistedIPLD.blockhash == revert_hash).all()
+                session.query(BlacklistedIPLD)
+                .filter(BlacklistedIPLD.blockhash == revert_hash)
+                .all()
             )
 
             for ipld_blacklist_to_revert in revert_ipld_blacklist_entries:
@@ -186,7 +222,9 @@ def revert_blocks(self, db, revert_blocks_list):
                 session.delete(ipld_blacklist_to_revert)
 
             # Remove outdated block entry
-            session.query(IPLDBlacklistBlock).filter(IPLDBlacklistBlock.blockhash == revert_hash).delete()
+            session.query(IPLDBlacklistBlock).filter(
+                IPLDBlacklistBlock.blockhash == revert_hash
+            ).delete()
 
 
 ######## CELERY TASKS ########

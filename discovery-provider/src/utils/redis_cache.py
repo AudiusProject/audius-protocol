@@ -4,6 +4,7 @@ import pickle
 from flask.globals import request
 from src.utils import redis_connection
 from src.utils.query_params import stringify_query_params
+
 logger = logging.getLogger(__name__)
 
 # Redis Key Convention:
@@ -13,6 +14,7 @@ internal_api_cache_prefix = "INTERNAL_API"
 cache_prefix = "API_V1_ROUTE"
 default_ttl_sec = 60
 
+
 def extract_key(path, arg_items, cache_prefix_override=None):
     # filter out query-params with 'None' values
     filtered_arg_items = filter(lambda x: x[1] is not None, arg_items)
@@ -20,6 +22,7 @@ def extract_key(path, arg_items, cache_prefix_override=None):
     prefix = cache_prefix_override if cache_prefix_override else cache_prefix
     key = f"{prefix}:{path}:{req_args}"
     return key
+
 
 def get_pickled_key(redis, key):
     cached_value = redis.get(key)
@@ -34,9 +37,11 @@ def get_pickled_key(redis, key):
     logger.info(f"Redis Cache - miss {key}")
     return None
 
+
 def pickle_and_set(redis, key, obj, ttl=None):
     serialized = pickle.dumps(obj)
     redis.set(key, serialized, ttl)
+
 
 def use_redis_cache(key, ttl_sec, work_func):
     """Attempts to return value by key, otherwise caches and returns `work_func`"""
@@ -47,6 +52,7 @@ def use_redis_cache(key, ttl_sec, work_func):
     to_cache = work_func()
     pickle_and_set(redis, key, to_cache, ttl_sec)
     return to_cache
+
 
 def cache(**kwargs):
     """
@@ -83,13 +89,17 @@ def cache(**kwargs):
     """
     ttl_sec = kwargs["ttl_sec"] if "ttl_sec" in kwargs else default_ttl_sec
     transform = kwargs["transform"] if "transform" in kwargs else None
-    cache_prefix_override = kwargs["cache_prefix_override"] if "cache_prefix_override" in kwargs else None
+    cache_prefix_override = (
+        kwargs["cache_prefix_override"] if "cache_prefix_override" in kwargs else None
+    )
     redis = redis_connection.get_redis()
 
     def outer_wrap(func):
         @functools.wraps(func)
         def inner_wrap(*args, **kwargs):
-            has_user_id = 'user_id' in request.args and request.args['user_id'] is not None
+            has_user_id = (
+                "user_id" in request.args and request.args["user_id"] is not None
+            )
             key = extract_key(request.path, request.args.items(), cache_prefix_override)
             if not has_user_id:
                 cached_resp = redis.get(key)
@@ -116,7 +126,9 @@ def cache(**kwargs):
             serialized = pickle.dumps(response)
             redis.set(key, serialized, ttl_sec)
             return transform(response)
+
         return inner_wrap
+
     return outer_wrap
 
 
@@ -131,16 +143,17 @@ def get_track_id_cache_key(id):
 def get_playlist_id_cache_key(id):
     return "playlist:id:{}".format(id)
 
+
 def get_sp_id_key(id):
     return "sp:id:{}".format(id)
+
 
 def remove_cached_user_ids(redis, user_ids):
     try:
         user_keys = list(map(get_user_id_cache_key, user_ids))
         redis.delete(*user_keys)
     except Exception as e:
-        logger.error(
-            "Unable to remove cached users: %s", e, exc_info=True)
+        logger.error("Unable to remove cached users: %s", e, exc_info=True)
 
 
 def remove_cached_track_ids(redis, track_ids):
@@ -148,18 +161,18 @@ def remove_cached_track_ids(redis, track_ids):
         track_keys = list(map(get_track_id_cache_key, track_ids))
         redis.delete(*track_keys)
     except Exception as e:
-        logger.error(
-            "Unable to remove cached tracks: %s", e, exc_info=True)
+        logger.error("Unable to remove cached tracks: %s", e, exc_info=True)
+
 
 def remove_cached_playlist_ids(redis, playlist_ids):
     try:
         playlist_keys = list(map(get_playlist_id_cache_key, playlist_ids))
         redis.delete(*playlist_keys)
     except Exception as e:
-        logger.error(
-            "Unable to remove cached playlists: %s", e, exc_info=True)
+        logger.error("Unable to remove cached playlists: %s", e, exc_info=True)
+
 
 def get_trending_cache_key(request_items, request_path):
-    request_items.pop('limit', None)
-    request_items.pop('offset', None)
+    request_items.pop("limit", None)
+    request_items.pop("offset", None)
     return extract_key(request_path, request_items.items())

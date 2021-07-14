@@ -1,3 +1,5 @@
+from datetime import datetime
+from src.models.models import User
 from src.utils.db_session import get_db
 from src.models import (
     Challenge,
@@ -8,8 +10,20 @@ from src.models import (
 )
 from src.queries.get_challenges import get_challenges
 
+
 def setup_db(session):
     blocks = [Block(blockhash="0x1", number=1, parenthash="", is_current=True)]
+    users = [
+        User(
+            blockhash="0x1",
+            blocknumber=1,
+            user_id=1,
+            is_current=True,
+            wallet="0xFakeWallet",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+    ]
     challenges = [
         Challenge(
             id="boolean_challenge_1",
@@ -78,15 +92,9 @@ def setup_db(session):
             amount=5,
             step_count=2,
         ),
-        Challenge(
-            id="trending_1", type=ChallengeType.trending, active=True, amount=5
-        ),
-        Challenge(
-            id="trending_2", type=ChallengeType.trending, active=True, amount=5
-        ),
-        Challenge(
-            id="trending_3", type=ChallengeType.trending, active=True, amount=5
-        ),
+        Challenge(id="trending_1", type=ChallengeType.trending, active=True, amount=5),
+        Challenge(id="trending_2", type=ChallengeType.trending, active=True, amount=5),
+        Challenge(id="trending_3", type=ChallengeType.trending, active=True, amount=5),
     ]
     user_challenges = [
         # Finished the first challenge, disbursed
@@ -172,6 +180,8 @@ def setup_db(session):
     session.query(Challenge).delete()
     session.commit()
     session.add_all(blocks)
+    session.commit()
+    session.add_all(users)
     session.commit()
     session.add_all(challenges)
     session.commit()

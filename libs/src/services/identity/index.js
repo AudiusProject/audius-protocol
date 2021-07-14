@@ -325,6 +325,22 @@ class IdentityService {
     })
   }
 
+  async getMinimumDelegationAmount (wallet) {
+    return this._makeRequest({
+      url: `/protocol/${wallet}/delegation/minimum`,
+      method: 'get'
+    })
+  }
+
+  async updateMinimumDelegationAmount (wallet, minimumDelegationAmount, signedData) {
+    return this._makeRequest({
+      url: `/protocol/${wallet}/delegation/minimum`,
+      method: 'post',
+      headers: signedData,
+      data: { minimumDelegationAmount }
+    })
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest (axiosRequestObj) {

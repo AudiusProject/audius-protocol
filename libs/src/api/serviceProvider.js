@@ -78,7 +78,8 @@ class ServiceProvider extends Base {
     whitelist = null,
     blacklist = null,
     performSyncCheck = true,
-    timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT
+    timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT,
+    log = true
   }) {
     const creatorNodeSelection = new CreatorNodeSelection({
       creatorNode: this.creatorNode,
@@ -89,7 +90,7 @@ class ServiceProvider extends Base {
       timeout
     })
 
-    const { primary, secondaries, services } = await creatorNodeSelection.select(performSyncCheck)
+    const { primary, secondaries, services } = await creatorNodeSelection.select(performSyncCheck, log)
     return { primary, secondaries, services }
   }
 

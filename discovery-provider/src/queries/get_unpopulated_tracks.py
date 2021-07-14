@@ -1,4 +1,4 @@
-import logging # pylint: disable=C0302
+import logging  # pylint: disable=C0302
 import pickle
 
 from src.utils import redis_connection
@@ -9,7 +9,8 @@ from src.utils.redis_cache import get_track_id_cache_key
 logger = logging.getLogger(__name__)
 
 # Cache unpopulated tracks for 5 min
-ttl_sec = 5*60
+ttl_sec = 5 * 60
+
 
 def get_cached_tracks(track_ids):
     redis_track_id_keys = map(get_track_id_cache_key, track_ids)
@@ -33,12 +34,14 @@ def get_cached_tracks(track_ids):
 def set_tracks_in_cache(tracks):
     redis = redis_connection.get_redis()
     for track in tracks:
-        key = get_track_id_cache_key(track['track_id'])
+        key = get_track_id_cache_key(track["track_id"])
         serialized = pickle.dumps(track)
         redis.set(key, serialized, ttl_sec)
 
 
-def get_unpopulated_tracks(session, track_ids, filter_deleted=False, filter_unlisted=True):
+def get_unpopulated_tracks(
+    session, track_ids, filter_deleted=False, filter_unlisted=True
+):
     """
     Fetches tracks by checking the redis cache first then
     going to DB and writes to cache if not present
@@ -56,19 +59,20 @@ def get_unpopulated_tracks(session, track_ids, filter_deleted=False, filter_unli
     if has_all_tracks_cached:
         res = cached_tracks_results
         if filter_deleted:
-            res = list(filter(lambda track: not track['is_delete'], res))
+            res = list(filter(lambda track: not track["is_delete"], res))
         if filter_unlisted:
-            res = list(filter(lambda track: not track['is_unlisted'], res))
+            res = list(filter(lambda track: not track["is_unlisted"], res))
         return res
 
     # Create a dict of cached tracks
     cached_tracks = {}
     for cached_track in cached_tracks_results:
         if cached_track:
-            cached_tracks[cached_track['track_id']] = cached_track
+            cached_tracks[cached_track["track_id"]] = cached_track
 
     track_ids_to_fetch = filter(
-        lambda track_id: track_id not in cached_tracks, track_ids)
+        lambda track_id: track_id not in cached_tracks, track_ids
+    )
 
     tracks_query = (
         session.query(Track)
@@ -84,7 +88,7 @@ def get_unpopulated_tracks(session, track_ids, filter_deleted=False, filter_unli
 
     tracks = tracks_query.all()
     tracks = helpers.query_result_to_list(tracks)
-    queried_tracks = {track['track_id']: track for track in tracks}
+    queried_tracks = {track["track_id"]: track for track in tracks}
 
     # cache tracks for future use
     set_tracks_in_cache(tracks)
@@ -92,9 +96,9 @@ def get_unpopulated_tracks(session, track_ids, filter_deleted=False, filter_unli
     tracks_response = []
     for track_id in track_ids:
         if track_id in cached_tracks:
-            if filter_unlisted and cached_tracks[track_id]['is_unlisted']:
+            if filter_unlisted and cached_tracks[track_id]["is_unlisted"]:
                 continue
-            if filter_deleted and cached_tracks[track_id]['is_delete']:
+            if filter_deleted and cached_tracks[track_id]["is_delete"]:
                 continue
             tracks_response.append(cached_tracks[track_id])
         elif track_id in queried_tracks:

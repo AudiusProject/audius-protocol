@@ -1,9 +1,15 @@
 import logging
-from src.models import AggregateDailyUniqueUsersMetrics, AggregateDailyTotalUsersMetrics, \
-    AggregateMonthlyUniqueUsersMetrics, AggregateMonthlyTotalUsersMetrics, \
-    AggregateDailyAppNameMetrics, AggregateMonthlyAppNameMetrics
+from src.models import (
+    AggregateDailyUniqueUsersMetrics,
+    AggregateDailyTotalUsersMetrics,
+    AggregateMonthlyUniqueUsersMetrics,
+    AggregateMonthlyTotalUsersMetrics,
+    AggregateDailyAppNameMetrics,
+    AggregateMonthlyAppNameMetrics,
+)
 
 logger = logging.getLogger(__name__)
+
 
 def update_historical_daily_route_metrics(db, metrics):
     with db.scoped_session() as session:
@@ -14,13 +20,13 @@ def update_historical_daily_route_metrics(db, metrics):
                 .first()
             )
             if day_unique_record:
-                day_unique_record.count = values['unique_count']
-                day_unique_record.summed_count = values['summed_unique_count']
+                day_unique_record.count = values["unique_count"]
+                day_unique_record.summed_count = values["summed_unique_count"]
             else:
                 day_unique_record = AggregateDailyUniqueUsersMetrics(
                     timestamp=day,
-                    count=values['unique_count'],
-                    summed_count=values['summed_unique_count']
+                    count=values["unique_count"],
+                    summed_count=values["summed_unique_count"],
                 )
             session.add(day_unique_record)
 
@@ -30,13 +36,13 @@ def update_historical_daily_route_metrics(db, metrics):
                 .first()
             )
             if day_total_record:
-                day_total_record.count = values['total_count']
+                day_total_record.count = values["total_count"]
             else:
                 day_total_record = AggregateDailyTotalUsersMetrics(
-                    timestamp=day,
-                    count=values['total_count']
+                    timestamp=day, count=values["total_count"]
                 )
             session.add(day_total_record)
+
 
 def update_historical_monthly_route_metrics(db, metrics):
     with db.scoped_session() as session:
@@ -47,13 +53,13 @@ def update_historical_monthly_route_metrics(db, metrics):
                 .first()
             )
             if month_unique_record:
-                month_unique_record.count = values['unique_count']
-                month_unique_record.summed_count = values['summed_unique_count']
+                month_unique_record.count = values["unique_count"]
+                month_unique_record.summed_count = values["summed_unique_count"]
             else:
                 month_unique_record = AggregateMonthlyUniqueUsersMetrics(
                     timestamp=month,
-                    count=values['unique_count'],
-                    summed_count=values['summed_unique_count']
+                    count=values["unique_count"],
+                    summed_count=values["summed_unique_count"],
                 )
             session.add(month_unique_record)
 
@@ -63,13 +69,13 @@ def update_historical_monthly_route_metrics(db, metrics):
                 .first()
             )
             if month_total_record:
-                month_total_record.count = values['total_count']
+                month_total_record.count = values["total_count"]
             else:
                 month_total_record = AggregateMonthlyTotalUsersMetrics(
-                    timestamp=month,
-                    count=values['total_count']
+                    timestamp=month, count=values["total_count"]
                 )
             session.add(month_total_record)
+
 
 def update_historical_daily_app_metrics(db, metrics):
     with db.scoped_session() as session:
@@ -85,11 +91,10 @@ def update_historical_daily_app_metrics(db, metrics):
                     day_record.count = count
                 else:
                     day_record = AggregateDailyAppNameMetrics(
-                        timestamp=day,
-                        application_name=app,
-                        count=count
+                        timestamp=day, application_name=app, count=count
                     )
                 session.add(day_record)
+
 
 def update_historical_monthly_app_metrics(db, metrics):
     with db.scoped_session() as session:
@@ -105,8 +110,6 @@ def update_historical_monthly_app_metrics(db, metrics):
                     month_record.count = count
                 else:
                     month_record = AggregateMonthlyAppNameMetrics(
-                        timestamp=month,
-                        application_name=app,
-                        count=count
+                        timestamp=month, application_name=app, count=count
                     )
                 session.add(month_record)

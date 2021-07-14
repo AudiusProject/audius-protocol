@@ -22,6 +22,7 @@ const {
 const verifyUserReplicaSetStatus = async (
   userId,
   libs,
+  contentNodeEndpointToInfoMapping,
   replicaSetUpdaterAddress = null
 ) =>
 {
@@ -124,7 +125,7 @@ const verifyUserReplicaSets = async(executeAll) => {
     // Retrieve user id if known from walletIndexToUserIdMap
     // NOTE - It might be easier to just create a map of wallets instead of using 'index'
     const userId = walletIndexToUserIdMap[i]
-    await verifyUserReplicaSetStatus(userId, libs)
+    await verifyUserReplicaSetStatus(userId, libs, contentNodeEndpointToInfoMapping)
   })
 }
 
@@ -322,5 +323,7 @@ const userReplicaSetManagerTest = async ({
 }
 
 module.exports = {
+  verifyUserReplicaSets,
+  verifyUserReplicaSetStatus,
   userReplicaSetManagerTest
 }

@@ -7,35 +7,31 @@ from tests.utils import populate_mock_db
 
 def populate_tracks(db):
     test_entities = {
-        'tracks': [
+        "tracks": [
             {
                 "track_id": 1,
                 "owner_id": 1287289,
                 "release_date": "Fri Dec 20 2019 12:00:00 GMT-0800",
-                "created_at": datetime(2018, 5, 17)
+                "created_at": datetime(2018, 5, 17),
             },
-            {
-                "track_id": 2,
-                "owner_id": 1287289,
-                "created_at": datetime(2018, 5, 18)
-            },
+            {"track_id": 2, "owner_id": 1287289, "created_at": datetime(2018, 5, 18)},
             {
                 "track_id": 3,
                 "owner_id": 1287289,
                 "release_date": "Wed Dec 18 2019 12:00:00 GMT-0800",
-                "created_at": datetime(2020, 5, 17)
+                "created_at": datetime(2020, 5, 17),
             },
             {
                 "track_id": 4,
                 "owner_id": 1287289,
                 "release_date": "",
-                "created_at": datetime(2018, 5, 19)
+                "created_at": datetime(2018, 5, 19),
             },
             {
                 "track_id": 5,
                 "owner_id": 1287289,
                 "release_date": "garbage-should-not-parse",
-                "created_at": datetime(2018, 5, 20)
+                "created_at": datetime(2018, 5, 20),
             },
             {
                 "track_id": 6,
@@ -99,12 +95,9 @@ def test_get_tracks_by_date(app):
     populate_tracks(db)
 
     with db.scoped_session() as session:
-        tracks = _get_tracks(session, {
-            "user_id": 1287289,
-            "offset": 0,
-            "limit": 10,
-            "sort": "date"
-        })
+        tracks = _get_tracks(
+            session, {"user_id": 1287289, "offset": 0, "limit": 10, "sort": "date"}
+        )
 
         assert len(tracks) == 5
         assert tracks[0]["track_id"] == 1
