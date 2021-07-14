@@ -32,6 +32,7 @@ import SearchBarState from 'containers/search-bar/store/types'
 import SearchPageState from 'containers/search-page/store/types'
 import ServiceSelectionReducer from 'containers/service-selection/store/slice'
 import SettingsPageState from 'containers/settings-page/store/types'
+import { ShareSoundToTikTokModalState } from 'containers/share-sound-to-tiktok-modal/store/types'
 import SignOnPageState from 'containers/sign-on/store/types'
 import { SmartCollectionState } from 'containers/smart-collection/store/slice'
 import TrackPageState from 'containers/track-page/store/types'
@@ -105,31 +106,32 @@ export type AppState = {
   // Global
   application: {
     ui: {
+      appCTAModal: ReturnType<typeof AppCTAModalReducer>
+      averageColor: ReturnType<typeof averageColor>
+      browserPushPermissionConfirmation: BrowserPushPermissionConfirmationModalState
+      cookieBanner: CookieBannerState
       createPlaylistModal: CreatePlaylistModalState
       editPlaylistModal: EditPlaylistModalState
       editTrackModal: EditTrackModalState
-      theme: ThemeState
-      scrollLock: ScrollLockState
-      cookieBanner: CookieBannerState
-      setAsArtistPickConfirmation: SetAsArtistPickConfirmationState
       embedModal: EmbedModalState
-      mobileOverflowModal: MobileOverflowModalState
-      mobileKeyboard: MobileKeyboardState
-      userListModal: UserListModalState
-      firstUploadModal: FirstUploadModalState
-      browserPushPermissionConfirmation: BrowserPushPermissionConfirmationModalState
-      remixSettingsModal: ReturnType<typeof RemixSettingsModalReducer>
-      visualizer: ReturnType<typeof VisualizerReducer>
-      stemsUpload: ReturnType<typeof StemsUploadReducer>
-      appCTAModal: ReturnType<typeof AppCTAModalReducer>
-      musicConfetti: ReturnType<typeof MusicConfetti>
-      mobileUploadDrawer: ReturnType<typeof MobileUploadDrawer>
       enablePushNotificationsDrawer: ReturnType<
         typeof EnablePushNotificationsDrawer
       >
-      averageColor: ReturnType<typeof averageColor>
+      firstUploadModal: FirstUploadModalState
+      mobileKeyboard: MobileKeyboardState
+      mobileOverflowModal: MobileOverflowModalState
+      mobileUploadDrawer: ReturnType<typeof MobileUploadDrawer>
       modals: ReturnType<typeof modals>
+      musicConfetti: ReturnType<typeof MusicConfetti>
+      remixSettingsModal: ReturnType<typeof RemixSettingsModalReducer>
       rewardsUI: ReturnType<typeof rewardsUI>
+      scrollLock: ScrollLockState
+      setAsArtistPickConfirmation: SetAsArtistPickConfirmationState
+      shareSoundToTikTokModal: ShareSoundToTikTokModalState
+      stemsUpload: ReturnType<typeof StemsUploadReducer>
+      theme: ThemeState
+      userListModal: UserListModalState
+      visualizer: ReturnType<typeof VisualizerReducer>
     }
     pages: {
       explore: ExplorePageState

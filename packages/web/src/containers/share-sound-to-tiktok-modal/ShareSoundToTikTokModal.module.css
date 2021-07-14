@@ -1,0 +1,47 @@
+.modalBody {
+  overflow: hidden;
+  height: 216px;
+  max-width: 528px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  margin: 0px 16px;
+  padding: 20px 0px;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+}
+
+.titleContainer svg {
+  height: 24px;
+  width: 24px;
+  margin-right: 8px;
+}
+
+.modalContent {
+  display: flex;
+  padding: 16px;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: space-around;
+  font-weight: var(--font-medium);
+}
+
+.errorMessage {
+  color: var(--accent-red);
+}
+
+.button {
+  display: flex;
+  align-items: center;
+}
+
+.button svg {
+  margin-left: 8px;
+}

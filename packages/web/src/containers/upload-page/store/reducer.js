@@ -54,6 +54,14 @@ const actionsMap = {
     newState.completionId = action.id
     newState.uploadType = null
     newState.stems = []
+
+    // Update the upload tracks with resulting CID, id, duration, etc. This is used for TikTok sharing
+    if (action.trackMetadatas) {
+      newState.tracks = state.tracks.map((t, i) => ({
+        ...t,
+        metadata: action.trackMetadatas[i]
+      }))
+    }
     return newState
   },
   [UPLOAD_TRACKS_FAILED](state, action) {

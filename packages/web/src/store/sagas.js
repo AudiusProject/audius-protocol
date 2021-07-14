@@ -26,6 +26,7 @@ import searchBarSagas from 'containers/search-bar/store/sagas'
 import searchPageSagas from 'containers/search-page/store/sagas'
 import serviceSelectionSagas from 'containers/service-selection/store/sagas'
 import settingsSagas from 'containers/settings-page/store/sagas'
+import shareSoundToTikTokModalSagas from 'containers/share-sound-to-tiktok-modal/store/sagas'
 import signOnSaga from 'containers/sign-on/store/sagas'
 import smartCollectionPageSagas from 'containers/smart-collection/store/sagas'
 import trackSagas from 'containers/track-page/store/sagas'
@@ -63,39 +64,39 @@ export default function* rootSaga() {
   yield fork(setupBackend)
   const sagas = [].concat(
     // Config
-    confirmerSagas(),
-    backendSagas(),
     analyticsSagas(),
+    backendSagas(),
+    confirmerSagas(),
     cookieBannerSagas(),
-    routingSagas(),
     reachabilitySagas(),
+    routingSagas(),
 
     // Account
     accountSagas(),
     playlistLibrarySagas(),
 
     // Pages
-    feedPageSagas(),
-    trendingPageSagas(),
-    explorePageSagas(),
-    exploreCollectionsPageSagas(),
-    savedSagas(),
-    historySagas(),
-    searchPageSagas(),
-    searchBarSagas(),
-    uploadSagas(),
-    profileSagas(),
-    socialSagas(),
-    dashboardSagas(),
-    signOnSaga(),
     collectionSagas(),
-    trackSagas(),
+    dashboardSagas(),
+    exploreCollectionsPageSagas(),
+    explorePageSagas(),
+    feedPageSagas(),
+    historySagas(),
     notificationSagas(),
-    serviceSelectionSagas(),
     passwordResetSagas(),
+    profileSagas(),
+    savedSagas(),
+    searchBarSagas(),
+    searchPageSagas(),
+    serviceSelectionSagas(),
     settingsSagas(),
+    signOnSaga(),
+    socialSagas(),
+    trackSagas(),
+    trendingPageSagas(),
     trendingPlaylistSagas(),
     trendingUndergroundSagas(),
+    uploadSagas(),
 
     // Cache
     coreCacheSagas(),
@@ -111,23 +112,24 @@ export default function* rootSaga() {
     walletSagas(),
 
     // Application
-    scrollLockSagas(),
-    themeSagas(),
-    repostPageSagas(),
-    favoritePageSagas(),
-    followingPageSagas(),
-    followersPageSagas(),
-    notificationUsersPageSagas(),
-    userListModalSagas(),
-    smartCollectionPageSagas(),
-    firstUploadModalSagas(),
     addToPlaylistSagas(),
-    remixSettingsModalSagas(),
-    stemUploadSagas(),
-    remixesSagas(),
     deletedSagas(),
-    tokenDashboardSagas(),
     enablePushNotificationsSagas(),
+    favoritePageSagas(),
+    firstUploadModalSagas(),
+    followersPageSagas(),
+    followingPageSagas(),
+    notificationUsersPageSagas(),
+    remixesSagas(),
+    remixSettingsModalSagas(),
+    repostPageSagas(),
+    scrollLockSagas(),
+    shareSoundToTikTokModalSagas(),
+    smartCollectionPageSagas(),
+    stemUploadSagas(),
+    themeSagas(),
+    tokenDashboardSagas(),
+    userListModalSagas(),
 
     // Remote config
     remoteConfigSagas(),
