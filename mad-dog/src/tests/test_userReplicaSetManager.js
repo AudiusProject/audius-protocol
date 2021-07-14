@@ -38,10 +38,10 @@ const verifyUserReplicaSetStatus = async (
     if (!replicaSetUpdateSigner) {
       replicaSetUpdateSigner = libs.getWalletAddress()
     }
-    let queriedReplicaSetUpdateSigner = usrQueryInfo.replica_set_update_signer.toLowerCase()
-    let expectedUpdaterFound = replicaSetUpdateSigner === queriedReplicaSetUpdateSigner
-    if (!expectedUpdaterFound) {
-      throw new Error('Invalid replica set updater found')
+    const signers = await getAllSigners(usrQueryInfo)
+    let queriedReplicaSetUpdateSigners = signers.map(signer => signer.toLowerCase())
+    if (!queriedReplicaSetUpdateSigners.some(signer => signer === replicaSetUpdateSigner)) {
+      throw new Error(`Invalid replica set updater found: Replica set Signer ${replicaSetUpdateSigner} not in queried allowed signers: ${queriedReplicaSetUpdateSigners.join(', ')}`)
     }
 
     // Deconstruct the comma separated value of enpdoint1,endoint2,endpoint3
@@ -101,6 +101,19 @@ const getLatestIndexedBlock = async (endpoint) => {
     baseURL: endpoint,
     url: '/health_check'
   })).data.latest_indexed_block
+}
+
+const getAllSigners = async (user) => {
+  const cnEndpoints = user.creator_node_endpoint.split(',').filter(Boolean)
+  return Promise.all(cnEndpoints.map(getCreatorNodeSigner))
+}
+
+const getCreatorNodeSigner = async (endpoint) => {
+  return (await axios({
+    method: 'get',
+    baseURL: endpoint,
+    url: '/health_check'
+  })).data.signer
 }
 
 const maxIndexingTimeout = 15000

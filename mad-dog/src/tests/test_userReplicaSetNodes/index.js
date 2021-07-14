@@ -10,7 +10,7 @@ const { uploadTracksforUsers } = require('../../utils/uploadTracksForUsers')
  */
 const userReplicaSetNodes = async ({
   numUsers = 10,
-  numCreatorNodes = 10,
+  numCreatorNodes = 5,
   iterations,
   executeAll,
   executeOne
@@ -38,10 +38,9 @@ const userReplicaSetNodes = async ({
     // Upload tracks to users
     await uploadTracksforUsers({ executeAll, executeOne, walletIndexToUserIdMap })
 
-    const deregisteredCreatorNodeId = await deregisterRandomCreatorNode(creatorNodeIDToInfoMapping)
-
-    await new Promise(resolve => setTimeout(resolve, 10 * 1000))
-    await verifyValidCNs(executeOne, executeAll, deregisteredCreatorNodeId, walletIndexToUserIdMap, creatorNodeIDToInfoMapping)
+    // const deregisteredCreatorNodeId = await deregisterRandomCreatorNode(creatorNodeIDToInfoMapping)
+    // await new Promise(resolve => setTimeout(resolve, 10 * 1000))
+    // await verifyValidCNs(executeOne, executeAll, deregisteredCreatorNodeId, walletIndexToUserIdMap, creatorNodeIDToInfoMapping)
 
     // Create a MadDog instance, responsible for taking down 1 node
     const {
