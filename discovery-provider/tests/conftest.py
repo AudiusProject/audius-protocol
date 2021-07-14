@@ -10,10 +10,8 @@ import alembic
 import alembic.config
 from src.app import create_app, create_celery
 from src.utils import helpers
-from src.utils.db_session import get_db
 from src.models import Base
 from src.utils.redis_connection import get_redis
-from src import models
 import src
 
 DB_URL = "postgresql+psycopg2://postgres:postgres@localhost/test_audius_discovery"
