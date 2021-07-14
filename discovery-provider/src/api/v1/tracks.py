@@ -32,12 +32,8 @@ from .models.tracks import (
     remixes_response as remixes_response_model,
 )
 from src.queries.search_queries import SearchKind, search
-from src.utils.redis_cache import (
-    cache,
-    extract_key,
-    use_redis_cache,
-    get_trending_cache_key,
-)
+from src.utils.redis_cache import cache
+
 from src.trending_strategies.trending_strategy_factory import (
     TrendingStrategyFactory,
     DEFAULT_TRENDING_VERSIONS,

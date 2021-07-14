@@ -11,5 +11,6 @@
   "python.formatting.provider": "black", // This gives us autoforatting
   "editor.formatOnSave": true,
   "python.analysis.typeCheckingMode": "basic",
-  "python.languageServer": "Pylance"
+  "python.languageServer": "Pylance",
+  "editor.tabSize": 4
 }

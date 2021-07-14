@@ -264,15 +264,15 @@ class SnapbackSM {
 
   /**
    * Given wallets array, queries DB and returns a map of all users with
-   *    those wallets and their clock values
+   *    those wallets and their clock values, or -1 if wallet not found
    *
-   * @dev - TODO what happens if this DB call fails?
+   * @returns map(wallet -> clock val)
    */
   async getUserPrimaryClockValues (wallets) {
     // TODO: this will potentially fail bc if a wallet is not found -> undefined rather than -1
     // -----> domino effect: will mark sync as fail (see line 1099)
     // Query DB for all cnodeUsers with walletPublicKey in `wallets` arg array
-    const cnodeUsers = await models.CNodeUser.findAll({
+    const cnodeUsersFromDB = await models.CNodeUser.findAll({
       where: {
         walletPublicKey: {
           [models.Sequelize.Op.in]: wallets
@@ -280,11 +280,14 @@ class SnapbackSM {
       }
     })
 
-    // Convert cnodeUsers array to map (wallet => clock)
-    const cnodeUserClockValuesMap = cnodeUsers.reduce((o, k) => {
-      o[k.walletPublicKey] = k.clock
-      return o
-    }, {})
+    // Initialize clock values for all users to -1
+    const cnodeUserClockValuesMap = {}
+    wallets.forEach(wallet => { cnodeUserClockValuesMap[wallet] = -1 })
+
+    // Populate clock values into map with DB data
+    cnodeUsersFromDB.forEach(cnodeUser => {
+      cnodeUserClockValuesMap[cnodeUser.walletPublicKey] = cnodeUser.clock
+    })
 
     return cnodeUserClockValuesMap
   }
@@ -618,7 +621,7 @@ class SnapbackSM {
   }
 
   /**
-   * Issues SyncRequests for every (user, secondary) pair if needed
+   * Issues SyncRequests for every user from primary (this node) to secondary if needed
    * Only issues requests if primary clock value is greater than secondary clock value
    *
    * @param {Object[]} userReplicaSets array of objects of schema { user_id, wallet, primary, secondary1, secondary2, endpoint }
@@ -636,9 +639,13 @@ class SnapbackSM {
 
     await Promise.all(userReplicaSets.map(async (user) => {
       try {
-        const { wallet, primary, endpoint: secondary } = user
+        const { wallet, primary, secondary1, secondary2, endpoint: secondary } = user
 
-        // TODO - throw on null wallet (is this needed?)
+        // Short-circuit if primary is not self - this function is meant to be called from primary to secondaries only
+        if (primary !== this.endpoint) {
+          this.logError(`issueSyncRequests || Can only be called by user's primary. User ${wallet} - replicaset [${primary}, ${secondary1}, ${secondary2}].`)
+          return
+        }
 
         // Determine if secondary requires a sync by comparing clock values against primary (this node)
         const userPrimaryClockVal = replicaSetNodesToUserClockStatusesMap[primary][wallet]
@@ -656,6 +663,8 @@ class SnapbackSM {
 
           numSyncRequestsEnqueued += 1
         }
+
+        // Swallow error without short-circuiting other processing
       } catch (e) {
         enqueueSyncRequestErrors.push(`issueSyncRequestsToSecondaries() Error for user ${JSON.stringify(user)} - ${e.message}`)
       }
@@ -986,7 +995,7 @@ class SnapbackSM {
    *
    * Polls secondary for MaxSyncMonitoringDurationInMs
    */
-  async additionalSyncIsRequired (userWallet, primaryClockValue, secondaryUrl, syncType) {
+  async additionalSyncIsRequired (userWallet, primaryClockValue = -1, secondaryUrl, syncType) {
     const MaxExportClockValueRange = this.nodeConfig.get('maxExportClockValueRange')
     const logMsgString = `additionalSyncIsRequired (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 
