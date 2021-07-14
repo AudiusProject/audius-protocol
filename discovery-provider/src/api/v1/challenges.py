@@ -98,6 +98,7 @@ class GetUndisbursedChallenges(Resource):
                 {
                     "user_id": decoded_id,
                     "limit": args["limit"],
+                    "offset": args["offset"],
                     "completed_blocknumber": args["completed_blocknumber"],
                 },
             )
