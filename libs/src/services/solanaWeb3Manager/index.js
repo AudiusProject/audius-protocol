@@ -83,7 +83,7 @@ class SolanaWeb3Manager {
   /**
    * Generates a program derived address
    */
-  async generateProgramDerivedAddress(mintKey, programKey) {
+  async generateProgramDerivedAddress (mintKey, programKey) {
     let res = await solanaWeb3.PublicKey.findProgramAddress(
       [mintKey.toBytes().slice(0, 32)],
       programKey
