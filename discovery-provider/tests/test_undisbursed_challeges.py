@@ -1,13 +1,12 @@
 from src.models import Challenge, UserChallenge, ChallengeType
 from src.utils.db_session import get_db
 from src.queries.get_undisbursed_challenges import get_undisbursed_challenges
-from tests.utils import populate_mock_db_blocks, clean_up_db
+from tests.utils import populate_mock_db_blocks
 
 
 def setup_challenges(app):
     with app.app_context():
         db = get_db()
-        clean_up_db(db)
         populate_mock_db_blocks(db, 99, 110)
         challenges = [
             Challenge(
@@ -101,14 +100,22 @@ def test_handle_event(app):
 
         # Test that all undisbursed challenges are returned in order
         undisbursed = get_undisbursed_challenges(
-            session, {"user_id": None, "limit": 10, "completed_blocknumber": 99}
+            session,
+            {"user_id": None, "limit": 10, "offset": 0, "completed_blocknumber": 99},
         )
 
         expected = [
             {
                 "challenge_id": "test_challenge_3",
                 "user_id": 6,
-                "specifier": "",
+                "specifier": "6",
+                "amount": "5",
+                "completed_blocknumber": 100,
+            },
+            {
+                "challenge_id": "test_challenge_3",
+                "user_id": 6,
+                "specifier": "7",
                 "amount": "5",
                 "completed_blocknumber": 100,
             },
@@ -131,23 +138,32 @@ def test_handle_event(app):
 
         # Test that it filters correctly by user_id
         undisbursed = get_undisbursed_challenges(
-            session, {"user_id": 6, "limit": 10, "completed_blocknumber": 99}
+            session,
+            {"user_id": 6, "limit": 10, "offset": 0, "completed_blocknumber": 99},
         )
 
         expected = [
             {
                 "challenge_id": "test_challenge_3",
                 "user_id": 6,
-                "specifier": "",
+                "specifier": "6",
                 "amount": "5",
                 "completed_blocknumber": 100,
-            }
+            },
+            {
+                "challenge_id": "test_challenge_3",
+                "user_id": 6,
+                "specifier": "7",
+                "amount": "5",
+                "completed_blocknumber": 100,
+            },
         ]
         assert expected == undisbursed
 
         # Test that it filters correctly by user_id & completed blocknumber
         undisbursed = get_undisbursed_challenges(
-            session, {"user_id": 6, "limit": 10, "completed_blocknumber": 101}
+            session,
+            {"user_id": 6, "limit": 10, "offset": 0, "completed_blocknumber": 101},
         )
 
         expected = []

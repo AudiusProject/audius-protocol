@@ -29,6 +29,7 @@ class ProfileChallengeUpdater(ChallengeUpdater):
     def update_user_challenges(
         self, session, event, user_challenges_metadata, step_count
     ):
+        # Destruct the list of user challenges from the list of tuples of (user_challenge, event_metadata)
         user_challenges, _ = [list(t) for t in zip(*user_challenges_metadata)]
 
         user_ids = [user_challenge.user_id for user_challenge in user_challenges]

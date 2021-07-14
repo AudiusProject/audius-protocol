@@ -14,7 +14,7 @@ undisbursed_challenge = ns.model(
     {
         "challenge_id": fields.String(required=True),
         "user_id": fields.String(required=True),
-        "specifier": fields.String(),  # Not required for aggregates
+        "specifier": fields.String(),
         "amount": fields.String(required=True),
         "completed_blocknumber": fields.Integer(required=True),
     },

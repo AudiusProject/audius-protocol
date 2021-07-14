@@ -10,8 +10,10 @@ import alembic
 import alembic.config
 from src.app import create_app, create_celery
 from src.utils import helpers
+from src.utils.db_session import get_db
 from src.models import Base
 from src.utils.redis_connection import get_redis
+from src import models
 import src
 
 DB_URL = "postgresql+psycopg2://postgres:postgres@localhost/test_audius_discovery"
@@ -202,3 +204,24 @@ def postgres_mock_db(monkeypatch, setup_database):
     )
 
     return mock
+
+
+@pytest.fixture(autouse=True)
+def run_around_tests(app):
+    yield
+    # Clean up DB tables after each test
+    # Create application for testing
+    with app.app_context():
+        db = get_db()
+        with db.scoped_session() as session:
+            session.query(models.ChallengeDisbursement).delete()
+            session.query(models.ProfileCompletionChallenge).delete()
+            session.query(models.UserChallenge).delete()
+            session.query(models.Challenge).delete()
+            session.query(models.Save).delete()
+            session.query(models.Repost).delete()
+            session.query(models.Follow).delete()
+            session.query(models.Playlist).delete()
+            session.query(models.Track).delete()
+            session.query(models.Block).delete()
+            session.commit()

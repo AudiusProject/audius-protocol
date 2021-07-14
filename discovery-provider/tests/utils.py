@@ -1,3 +1,4 @@
+import pytest
 from datetime import datetime
 from src import models
 from src.utils import helpers
@@ -52,28 +53,6 @@ def populate_mock_db_blocks(db, min, max):
             )
             session.add(block)
             session.flush()
-
-
-def clean_up_db(db):
-    """
-    Deletes all rows in session
-
-    Args:
-        db - sqlalchemy db session
-    """
-    with db.scoped_session() as session:
-        session.query(models.ChallengeDisbursement).delete()
-        session.query(models.ProfileCompletionChallenge).delete()
-        session.query(models.UserChallenge).delete()
-        session.query(models.Challenge).delete()
-        session.query(models.Save).delete()
-        session.query(models.Repost).delete()
-        session.query(models.Follow).delete()
-        session.query(models.Playlist).delete()
-        session.query(models.Track).delete()
-        session.query(models.Block).delete()
-        session.commit()
-
 
 def populate_mock_db(db, entities):
     """

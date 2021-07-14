@@ -22,6 +22,7 @@ ns = Namespace("challenges", description="Challenge related operations")
 
 get_undisbursed_challenges_route_parser = reqparse.RequestParser()
 get_undisbursed_challenges_route_parser.add_argument("limit", required=False, type=int)
+get_undisbursed_challenges_route_parser.add_argument("offset", required=False, type=int)
 get_undisbursed_challenges_route_parser.add_argument(
     "completed_blocknumber", required=False, type=int
 )
@@ -39,7 +40,8 @@ class GetUndisbursedChallenges(Resource):
     @ns.doc(
         params={
             "limit": "The maximum number of response challenges",
-            "completed_blocknumber": "Starting blocknumber to retrieve completed undispursed challenges",
+            "offset": "The number of challenges to intially skip in the query",
+            "completed_blocknumber": "Starting blocknumber to retrieve completed undisbursed challenges",
         },
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
