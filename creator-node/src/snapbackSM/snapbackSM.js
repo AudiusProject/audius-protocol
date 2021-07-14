@@ -264,8 +264,6 @@ class SnapbackSM {
    * @returns map(wallet -> clock val)
    */
   async getUserPrimaryClockValues (wallets) {
-    // TODO: this will potentially fail bc if a wallet is not found -> undefined rather than -1
-    // -----> domino effect: will mark sync as fail (see line 1099)
     // Query DB for all cnodeUsers with walletPublicKey in `wallets` arg array
     const cnodeUsersFromDB = await models.CNodeUser.findAll({
       where: {
@@ -420,8 +418,6 @@ class SnapbackSM {
         secondaryEndpoint: newSecondary2,
         syncType: SyncType.Recurring
       })
-
-      this.peerSetManager.removeWalletFromUnhealthyPrimaryMap(newPrimary, wallet)
 
       this.log(`[issueUpdateReplicaSetOp] Success! userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}]`)
     } catch (e) {
@@ -757,7 +753,7 @@ class SnapbackSM {
        * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
        */
       for (const nodeUser of nodeUsers) {
-        const { primary, secondary1, secondary2, wallet } = nodeUser
+        const { primary, secondary1, secondary2 } = nodeUser
 
         let unhealthyReplicas = []
 
@@ -821,7 +817,7 @@ class SnapbackSM {
               // If the current replica is the primary, perform a second health check.
               // and determine if the primary is truly unhealthy
               if (replica === primary) {
-                addToUnhealthyReplicas = !(await this.peerSetManager.isPrimaryHealthyForUser(primary, wallet))
+                addToUnhealthyReplicas = !(await this.peerSetManager.isPrimaryHealthy(primary))
               }
 
               if (addToUnhealthyReplicas) unhealthyReplicas.push(replica)

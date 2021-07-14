@@ -6,7 +6,6 @@ describe('test peerSetManager', () => {
   let peerSetManager
 
   const primaryEndpoint = 'http://primary.audius.co'
-  const wallet = '0x4749a62b82983fdcf19ce328ef2a7f7ec8915fe'
 
   const baseVerboseHealthCheckResp = {
     version: '0.3.37',
@@ -200,38 +199,66 @@ describe('test peerSetManager', () => {
     }
   })
 
-  it('[isPrimaryHealthyForUser] should mark primary as healthy if responds with 200 from health check', async () => {
+  it('[isPrimaryHealthy] should mark primary as healthy if responds with 200 from health check', async () => {
     // Mock method
     peerSetManager.isNodeHealthy = async () => { return true }
 
-    const isHealthy = await peerSetManager.isPrimaryHealthyForUser(primaryEndpoint, wallet)
+    const isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, true)
-    assert.strictEqual(peerSetManager.unhealthyPrimaryToWalletMap[primaryEndpoint], undefined)
+    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], undefined)
   })
 
-  it('[isPrimaryHealthyForUser] should mark primary as healthy if responds with 500 from health check and has not been visited yet', async () => {
+  it('[isPrimaryHealthy] should mark primary as healthy if responds with 500 from health check and has not been visited yet', async () => {
     // Mock method
     peerSetManager.isNodeHealthy = async () => { return false }
 
-    const isHealthy = await peerSetManager.isPrimaryHealthyForUser(primaryEndpoint, wallet)
+    const isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, true)
-    assert.ok(peerSetManager.unhealthyPrimaryToWalletMap[primaryEndpoint].has(wallet))
+    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], 1)
   })
 
-  it('[isPrimaryHealthyForUser] should mark primary as unhealthy if responds with 500 from health check and has been visited', async () => {
+  it('[isPrimaryHealthy] should mark primary as unhealthy if responds with 500 from health check and has been visited the max number of times', async () => {
     // Mock method
     peerSetManager.isNodeHealthy = async () => { return false }
 
-    let isHealthy = await peerSetManager.isPrimaryHealthyForUser(primaryEndpoint, wallet)
+    let isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, true)
-    assert.ok(peerSetManager.unhealthyPrimaryToWalletMap[primaryEndpoint].has(wallet))
+    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], 1)
 
-    isHealthy = await peerSetManager.isPrimaryHealthyForUser(primaryEndpoint, wallet)
+    isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
+
+    assert.strictEqual(isHealthy, true)
+    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], 2)
+
+    let i = 0
+    // If this number if greater than the max, the counter stops at the max
+    const numTimesUnhealthy = 14
+    while (i++ < numTimesUnhealthy) {
+      isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
+    }
 
     assert.strictEqual(isHealthy, false)
-    assert.ok(peerSetManager.unhealthyPrimaryToWalletMap[primaryEndpoint].has(wallet))
+    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], 10)
+  })
+
+  it('[isPrimaryHealthy] removes primary from map if it goes from unhealthy and back to healthy', async () => {
+    // Mock method
+    peerSetManager.isNodeHealthy = async () => { return false }
+
+    let isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
+
+    assert.strictEqual(isHealthy, true)
+    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], 1)
+
+    //  Mock again
+    peerSetManager.isNodeHealthy = async () => { return true }
+
+    isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
+
+    assert.strictEqual(isHealthy, true)
+    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], undefined)
   })
 })

@@ -11,6 +11,9 @@ const MINIMUM_DAILY_SYNC_COUNT = config.get('minimumDailySyncCount')
 const MINIMUM_ROLLING_SYNC_COUNT = config.get('minimumRollingSyncCount')
 const MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE = config.get('minimumSuccessfulSyncCountPercentage') / 100
 
+// The max number of times a primary can fail a health check before being marked as unhealthy
+const MAX_TIMES_PRIMARY_CAN_BE_UNHEALTHY = 10
+
 class PeerSetManager {
   constructor ({ discoveryProviderEndpoint, creatorNodeEndpoint }) {
     this.discoveryProviderEndpoint = discoveryProviderEndpoint
@@ -22,10 +25,10 @@ class PeerSetManager {
 
       Schema:
       {
-        {string} endpoint - the endpoint of the primary: {Set<string>} set of wallets for which the primary has been unhealthy for
+        {string} endpoint - the endpoint of the primary: {number} number of times a primary failed a health check
       }
     */
-    this.unhealthyPrimaryToWalletMap = {}
+    this.primaryToNumberFailedHealthChecksPerformed = {}
 
     // Mapping of Content Node endpoint to its service provider ID
     this.endpointToSPIdMap = {}
@@ -326,51 +329,45 @@ class PeerSetManager {
 
   /**
    * Perform a simple health check to see if a primary is truly unhealthy. If the primary returns a
-   * non-200 response, potentially mark as unhealthy for the given wallet address, depending on if the
-   * primary has been marked as unhealthy in an earlier iteration for that given wallet.
+   * non-200 response, count it by using the map. If the health check has failed for a primary over
+   * `MAX_TIMES_PRIMARY_CAN_BE_UNHEALTHY` times, return as unhealthy. Else, increment the counter.
+   *
+   * If the primary is healthy, reset the counter in the map and return as healthy.
    * @param {string} primary primary endpoint
-   * @param {string} wallet user wallet
    * @returns boolean of whether primary is healthy or not
    */
-  async isPrimaryHealthyForUser (primary, wallet) {
-    // Check to see if the primary is healthy
+  async isPrimaryHealthy (primary) {
     const isHealthy = await this.isNodeHealthy(primary, true)
     if (!isHealthy) {
-      if (this.walletInUnhealthyPrimaryMap(primary, wallet)) {
-        // If this primary-wallet pair has been visited before, mark primary for that user as unhealthy
+      const numTimesUnhealthy = this.getNumberOfFailedHealthChecks(primary)
+
+      if (numTimesUnhealthy === MAX_TIMES_PRIMARY_CAN_BE_UNHEALTHY) {
         return false
       } else {
-        // Else, mark as visited and the current primary-wallet pair as healthy for the time being
-        this.addWalletToUnhealthyPrimaryMap(primary, wallet)
+        this.incrementFailedHealthCheckCounter(primary)
         return true
       }
     }
 
-    // The primary-wallet is healthy. Remove from map and mark as healthy
-    this.removeWalletFromUnhealthyPrimaryMap(primary, wallet)
+    this.removePrimaryFromUnhealthyPrimaryMap(primary)
     return true
   }
 
-  walletInUnhealthyPrimaryMap (primary, wallet) {
-    if (this.unhealthyPrimaryToWalletMap[primary] && this.unhealthyPrimaryToWalletMap[primary].has(wallet)) {
-      return true
-    }
-    return false
+  getNumberOfFailedHealthChecks (primary) {
+    return this.primaryToNumberFailedHealthChecksPerformed[primary]
+      ? this.primaryToNumberFailedHealthChecksPerformed[primary] : 0
   }
 
-  addWalletToUnhealthyPrimaryMap (primary, wallet) {
-    if (!this.unhealthyPrimaryToWalletMap[primary]) {
-      this.unhealthyPrimaryToWalletMap[primary] = new Set([wallet])
+  incrementFailedHealthCheckCounter (primary) {
+    if (!this.primaryToNumberFailedHealthChecksPerformed[primary]) {
+      this.primaryToNumberFailedHealthChecksPerformed[primary] = 1
     } else {
-      this.unhealthyPrimaryToWalletMap[primary].add(wallet)
+      this.primaryToNumberFailedHealthChecksPerformed[primary]++
     }
   }
 
-  removeWalletFromUnhealthyPrimaryMap (primary, wallet) {
-    if (this.walletInUnhealthyPrimaryMap(primary, wallet)) {
-      this.unhealthyPrimaryToWalletMap[primary].delete(wallet)
-    }
+  removePrimaryFromUnhealthyPrimaryMap (primary) {
+    delete this.primaryToNumberFailedHealthChecksPerformed[primary]
   }
 }
-
 module.exports = PeerSetManager
