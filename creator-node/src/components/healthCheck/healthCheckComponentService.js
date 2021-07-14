@@ -112,7 +112,7 @@ const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, 
 
   let currentSnapbackReconfigMode
   if (snapbackSM) {
-    currentSnapbackReconfigMode = snapbackSM.highestReconfigModeEnabled
+    currentSnapbackReconfigMode = snapbackSM.highestEnabledReconfigMode
   }
 
   const response = {

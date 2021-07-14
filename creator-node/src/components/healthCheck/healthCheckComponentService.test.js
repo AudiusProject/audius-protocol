@@ -115,7 +115,7 @@ describe('Test Health Check Verbose', function () {
 
     const serviceRegistryMock = {
       snapbackSM: {
-        highestReconfigModeEnabled: 'RECONFIG_DISABLED'
+        highestEnabledReconfigMode: 'RECONFIG_DISABLED'
       }
     }
     const res = await healthCheckVerbose(serviceRegistryMock, mockLogger, sequelizeMock, getMonitorsMock, 2)
