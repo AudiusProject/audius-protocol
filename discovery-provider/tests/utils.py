@@ -1,4 +1,3 @@
-import pytest
 from datetime import datetime
 from src import models
 from src.utils import helpers
@@ -53,6 +52,7 @@ def populate_mock_db_blocks(db, min, max):
             )
             session.add(block)
             session.flush()
+
 
 def populate_mock_db(db, entities):
     """
