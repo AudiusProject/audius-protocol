@@ -75,7 +75,7 @@ cat <<EOF
     "validSigner": "$valid_signer",
     "signerGroup": "$signer_group",
     "feePayerWallet": $(cat feepayer.json),
-    "feePayerWalletPubkey": $feepayer_pubkey,
+    "feePayerWalletPubkey": "$feepayer_pubkey",
     "ownerWallet": "$owner_wallet",
     "endpoint": "$SOLANA_HOST",
     "signerPrivateKey": "$priv_key",
