@@ -373,6 +373,10 @@ class SnapbackSM {
         replicaSetNodesToUserClockStatusesMap
       })
 
+      newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
+
+      this.log(`[issueUpdateReplicaSetOp] Tentative reconfig: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}]`)
+
       // If snapback is not enabled, print the tentative new replica set, but do not issue a reconfig.
       if (!issueReconfig) {
         this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} issuing reconfig disabled=${issueReconfig}. Skipping reconfig.`)
@@ -381,7 +385,6 @@ class SnapbackSM {
 
       // Create new array of replica set spIds and write to URSM
       phase = issueUpdateReplicaSetOpPhases.UPDATE_URSM_REPLICA_SET
-      newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
       newReplicaSetEndpoints.forEach(endpt => {
         if (this.peerSetManager.endpointToSPIdMap[endpt]) newReplicaSetSPIds.push(this.peerSetManager.endpointToSPIdMap[endpt])
       })
