@@ -23,6 +23,13 @@ def setup_challenges(app):
                 active=True,
                 starting_block=100,
             ),
+            Challenge(
+                id="test_challenge_3",
+                type=ChallengeType.aggregate,
+                amount=5,
+                active=True,
+                starting_block=100,
+            ),
         ]
         user_challenges = [
             UserChallenge(
@@ -94,7 +101,7 @@ def test_handle_event(app):
             session,
             "test_event",
             [
-                {"user_id": 1, "block_number": 99},
+                {"user_id": 1, "block_number": 99, "extra": {}},
             ],
         )
         session.flush()
@@ -121,13 +128,13 @@ def test_handle_event(app):
             session,
             "test_event",
             [
-                {"user_id": 1, "block_number": 100},
-                {"user_id": 2, "block_number": 100},
-                {"user_id": 3, "block_number": 100},
+                {"user_id": 1, "block_number": 100, "extra": {}},
+                {"user_id": 2, "block_number": 100, "extra": {}},
+                {"user_id": 3, "block_number": 100, "extra": {}},
                 # Attempt to add id 6 twice to
                 # ensure that it doesn't cause a collision
-                {"user_id": 6, "block_number": 100},
-                {"user_id": 6, "block_number": 100},
+                {"user_id": 6, "block_number": 100, "extra": {}},
+                {"user_id": 6, "block_number": 100, "extra": {}},
             ],
         )
         session.flush()
@@ -186,3 +193,23 @@ def test_handle_event(app):
             },
         ]
         assert expected == res_dicts
+
+
+# For aggregate challenges, need to test:
+# - Multiple events with the same user_id but diff specifiers get created
+# - Multiple events with the same specifier get deduped
+# - If we've maxed the # of challenges, don't create any more
+# - Inactive challenges don't get added?
+# - Test block # for an already complete challenge doesn't change if it's part of this flow
+
+# What about for long lived challenges?
+
+def test_aggregates(app):
+
+    setup_challenges(app)
+
+    with app.app_context():
+        db = get_db()
+
+    with db.scoped_session() as session:
+
