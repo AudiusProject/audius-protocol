@@ -79,15 +79,15 @@ class SyncHistoryAggregator {
       await redisClient.set(latestSyncKeys[state], timeOfEvent, 'EX', latestSyncKeyTTL)
 
       // Update per wallet success/fail sync data
-      const syncByWalletKeys = SyncHistoryAggregator.getUniqueSyncKeys()
-      const perWalletSyncKeyTTL = await this.getKeyTTL(syncByWalletKeys[state])
-      await redisClient.sadd(syncByWalletKeys[state], wallet)
-      await redisClient.expire(syncByWalletKeys[state], perWalletSyncKeyTTL)
+      const dailyWalletSyncKey = SyncHistoryAggregator.getUniqueSyncKeys()
+      const dailyWalletSyncKeyTTL = await this.getKeyTTL(dailyWalletSyncKey[state])
+      await redisClient.sadd(dailyWalletSyncKey[state], wallet)
+      await redisClient.expire(dailyWalletSyncKey[state], dailyWalletSyncKeyTTL)
 
-      logger.info(`SyncHistoryAggregator - Successfully tracked ${state} sync at ${timeOfEvent}`)
+      logger.info(`SyncHistoryAggregator - Successfully tracked ${state} sync for wallet ${wallet} at ${timeOfEvent}`)
     } catch (e) {
       // Only log error to not block any main thread
-      logger.error(`SyncHistoryAggregator - Failed to track ${state} sync at ${timeOfEvent}: ${e.toString()}`)
+      logger.error(`SyncHistoryAggregator - Failed to track ${state} sync for wallet ${wallet} at ${timeOfEvent}: ${e.toString()}`)
     }
   }
 
@@ -177,7 +177,7 @@ class SyncHistoryAggregator {
    * @returns an object of the current day's aggregate sync count like
    *     {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
    */
-  static async getPerWalletSyncData (date = new Date().toISOString().split('T')[0], logContext = {}) {
+  static async getDailyWalletSyncData (date = new Date().toISOString().split('T')[0], logContext = {}) {
     const logger = genericLogger.child(logContext)
     let perWalletSyncData = {
       success: null,
@@ -193,7 +193,7 @@ class SyncHistoryAggregator {
       perWalletSyncData.success = perWalletSyncSuccess
       perWalletSyncData.fail = perWalletSyncFail
     } catch (e) {
-      logger.error(`syncHistoryAggregator - getPerWalletSyncData() error - ${e.toString()}`)
+      logger.error(`syncHistoryAggregator - getDailyWalletSyncData() error - ${e.toString()}`)
     }
     // Structure: {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
     return perWalletSyncData
