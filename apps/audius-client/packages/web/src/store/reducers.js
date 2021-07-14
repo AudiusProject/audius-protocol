@@ -33,6 +33,7 @@ import searchBar from 'containers/search-bar/store/reducer'
 import search from 'containers/search-page/store/reducer'
 import serviceSelection from 'containers/service-selection/store/slice'
 import settings from 'containers/settings-page/store/reducer'
+import shareSoundToTikTokModal from 'containers/share-sound-to-tiktok-modal/store/slice'
 import signOn from 'containers/sign-on/store/reducer'
 import smartCollection from 'containers/smart-collection/store/slice'
 import track from 'containers/track-page/store/reducer'
@@ -124,49 +125,50 @@ const createRootReducer = routeHistory =>
 
     application: combineReducers({
       ui: combineReducers({
-        editPlaylistModal,
+        appCTAModal,
+        averageColor,
+        browserPushPermissionConfirmation,
+        cookieBanner,
         createPlaylistModal,
+        editPlaylistModal,
         editTrackModal,
         embedModal,
-        theme,
-        scrollLock,
-        cookieBanner,
-        setAsArtistPickConfirmation,
-        browserPushPermissionConfirmation,
-        mobileOverflowModal,
-        mobileKeyboard,
-        userListModal,
-        firstUploadModal,
-        visualizer,
-        remixSettingsModal,
-        stemsUpload,
-        appCTAModal,
-        musicConfetti,
-        mobileUploadDrawer,
         enablePushNotificationsDrawer,
-        averageColor,
+        firstUploadModal,
+        mobileKeyboard,
+        mobileOverflowModal,
+        mobileUploadDrawer,
         modals,
-        rewardsUI
+        musicConfetti,
+        remixSettingsModal,
+        rewardsUI,
+        scrollLock,
+        setAsArtistPickConfirmation,
+        shareSoundToTikTokModal,
+        stemsUpload,
+        theme,
+        userListModal,
+        visualizer
       }),
       pages: combineReducers({
+        addToPlaylist,
+        deleted,
+        deletePlaylistConfirmation,
         explore,
         exploreCollections,
-        smartCollection,
-        settings,
-        reposts,
         favorites,
-        following,
         followers,
+        following,
         notificationUsers,
-        unfollowConfirmation,
-        deletePlaylistConfirmation,
-        addToPlaylist,
-        remixes,
-        deleted,
         nowPlaying,
+        remixes,
+        reposts,
+        settings,
+        smartCollection,
         tokenDashboard,
         trendingPlaylists,
-        trendingUnderground
+        trendingUnderground,
+        unfollowConfirmation
       })
     })
   })

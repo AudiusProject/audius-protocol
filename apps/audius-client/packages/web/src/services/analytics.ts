@@ -63,6 +63,7 @@ export enum Name {
   TRACK_UPLOAD_COMPLETE_UPLOAD = 'Track Upload: Complete Upload',
   TRACK_UPLOAD_COPY_LINK = 'Track Upload: Copy Link',
   TRACK_UPLOAD_SHARE_WITH_FANS = 'Track Upload: Share with your fans',
+  TRACK_UPLOAD_SHARE_SOUND_TO_TIKTOK = 'Track Upload: Share sound to TikTok',
   TRACK_UPLOAD_VIEW_TRACK_PAGE = 'Track Upload: View Track page',
   TRACK_UPLOAD_SUCCESS = 'Track Upload: Success',
   TRACK_UPLOAD_FAILURE = 'Track Upload: Failure',
@@ -442,6 +443,9 @@ type TrackUploadShareWithFans = {
   uploadType: string
   text: string
 }
+type TrackUploadShareSoundToTikTok = {
+  eventName: Name.TRACK_UPLOAD_SHARE_SOUND_TO_TIKTOK
+}
 type TrackUploadViewTrackPage = {
   eventName: Name.TRACK_UPLOAD_VIEW_TRACK_PAGE
   uploadType: string
@@ -781,6 +785,7 @@ export type AllTrackingEvents =
   | TrackUploadFailure
   | TrackUploadCopyLink
   | TrackUploadShareWithFans
+  | TrackUploadShareSoundToTikTok
   | TrackUploadViewTrackPage
   | TrendingChangeView
   | TrendingPaginate
