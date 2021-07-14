@@ -8,3 +8,14 @@ attestation = ns.model(
         "attestation": fields.String(required=True),
     },
 )
+
+undisbursed_challenge = ns.model(
+    "undisbursed_challenge",
+    {
+        "challenge_id": fields.String(required=True),
+        "user_id": fields.String(required=True),
+        "specifier": fields.String(required=True),
+        "amount": fields.String(required=True),
+        "completed_blocknumber": fields.Integer(required=True),
+    },
+)
