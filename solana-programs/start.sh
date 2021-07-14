@@ -7,6 +7,7 @@
 
     solana-keygen new -s --no-bip39-passphrase
     solana-keygen new -s --no-bip39-passphrase -o feepayer.json
+    feepayer_pubkey=$(solana-keygen pubkey feepayer.json)
 
     while test $(solana balance feepayer.json | sed 's/\(\.\| \).*//') -lt 10; do
         solana airdrop 1 feepayer.json # adjust this number if running against a different endpoint
@@ -74,6 +75,7 @@ cat <<EOF
     "validSigner": "$valid_signer",
     "signerGroup": "$signer_group",
     "feePayerWallet": $(cat feepayer.json),
+    "feePayerWalletPubkey": $feepayer_pubkey,
     "ownerWallet": "$owner_wallet",
     "endpoint": "$SOLANA_HOST",
     "signerPrivateKey": "$priv_key",
