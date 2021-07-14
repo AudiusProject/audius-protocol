@@ -20,8 +20,8 @@ class PeerSetManager {
     this.creatorNodeEndpoint = creatorNodeEndpoint
 
     /* We do not want to eagerly cycle off the primary when issuing reconfigs if necessary, as the primary may
-      have data that the secondaries lack. In this case, wait until `this.moduloBase` iterations for the
-      primary to potentially become healthy again. This map is used to track visited primaries for particular wallets.
+      have data that the secondaries lack. This map is used to track the primary and the number of times it has
+      failed a health check.
 
       Schema:
       {

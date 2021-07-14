@@ -442,16 +442,13 @@ class SnapbackSM {
    *  - if two secondaries are unhealthy -> {primary: current primary, secondary1: new healthy node, secondary2: new healthy node}
    *  - ** if one primary is unhealthy -> {primary: higher clock value of the two secondaries, secondary1: the healthy secondary, secondary2: new healthy node}
    *  - ** if one primary and one secondary are unhealthy -> {primary: the healthy secondary, secondary1: new healthy node, secondary2: new healthy node}
-   *  - if entire replica set is unhealthy -> {primary: null, secondary1: null, secondary2: null, issueReconfig: false}
+   *  - if entire replica set is unhealthy -> {primary: null, secondary1: null, secondary2: null, eissueReconfig: false}
    *
-   * ** - If in the case a primary is ever unhealthy, we do not want to pre-emptively issue a reconfig and cycle out the primary. If a
-   * primary is ever unhealthy, mark for that wallet in `this.peerSetManager.unhealthyPrimaryToWalletMap` that for this current iteration, this primary
-   * is unhealthy. If by `this.moduloBase` iterations later that the primary is still unhealthy and has been marked as visited for that
-   * wallet, issue a reconfig for that primary.
+   * ** - If in the case a primary is ever unhealthy, we do not want to pre-emptively issue a reconfig and cycle out the primary. See
+   * `peerSetManager` instance variable for more information.
    *
-   * Also, there is the notion of `issueReconfig` flag. This value is used to determine whether or not to issue a reconfig based on
-   * the value of `this.highestEnabledReconfigMode` and the type of reconfig that needs to be issued. See `RECONFIG_MODE` variable
-   * for more information.
+   * Also, there is the notion of `issueReconfig` flag. This value is used to determine whether or not to issue a reconfig based on the
+   * curretly enabled reconfig mode. See `RECONFIG_MODE` variable for more information.
    *
    * @param {Object} param
    * @param {string} param.primary current user's primary endpoint
