@@ -16,6 +16,7 @@ export const getRouteOnExit = state => state.signOn.routeOnExit
 export const getAccountReady = state => state.signOn.accountReady
 export const getStartedSignOnProcess = state =>
   state.signOn.startedSignOnProcess
+export const getReferrer = state => state.signOn.referrer
 
 export const getFollowIds = state => state.signOn.followArtists.selectedUserIds
 export const getSuggestedFollowIds = state => {

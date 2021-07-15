@@ -50,6 +50,9 @@ export const REMOVE_FOLLOW_ARTISTS = 'SIGN_ON/REMOVE_FOLLOW_ARTISTS'
 
 export const SEND_WELCOME_EMAIL = 'SIGN_ON/SEND_WELCOME_EMAIL'
 
+export const FETCH_REFERRER = 'SIGN_ON/FETCH_REFERRER'
+export const SET_REFERRER = 'SIGN_ON/SET_REFERRER'
+
 /**
  * Sets athe value for a field in the sign on state
  * @param {string} field the field to be set
@@ -311,4 +314,23 @@ export const updateRouteOnExit = route => ({
 export const sendWelcomeEmail = name => ({
   type: SEND_WELCOME_EMAIL,
   name
+})
+
+/**
+ * Fetches the referring user given their handle
+ * @param {string} handle
+ *  the handle captured by the ?ref=<handle> search param
+ */
+export const fetchReferrer = handle => ({
+  type: FETCH_REFERRER,
+  handle
+})
+
+/**
+ * Sets the user id of the referrer who invited this user signing up
+ * @param {ID} userId
+ */
+export const setReferrer = userId => ({
+  type: SET_REFERRER,
+  userId
 })

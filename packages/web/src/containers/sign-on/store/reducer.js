@@ -33,7 +33,8 @@ import {
   UPDATE_ROUTE_ON_COMPLETION,
   UPDATE_ROUTE_ON_EXIT,
   ADD_FOLLOW_ARTISTS,
-  REMOVE_FOLLOW_ARTISTS
+  REMOVE_FOLLOW_ARTISTS,
+  SET_REFERRER
 } from './actions'
 import { Pages, FollowArtistsCategory } from './types'
 
@@ -71,7 +72,8 @@ const initialState = {
     selectedCategory: FollowArtistsCategory.FEATURED,
     categories: {},
     selectedUserIds: []
-  }
+  },
+  referrer: null
 }
 
 const actionsMap = {
@@ -393,6 +395,12 @@ const actionsMap = {
     return {
       ...state,
       routeOnExit: action.route
+    }
+  },
+  [SET_REFERRER](state, action) {
+    return {
+      ...state,
+      referrer: action.userId
     }
   }
 }
