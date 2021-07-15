@@ -24,7 +24,7 @@ const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 100
 const NUMBER_OF_REPLICA_SET_NODES = 3
 
 // Timeout for fetching batch clock values
-const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 3000
+const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 20000 // 20s
 
 // Describes the type of sync operation
 const SyncType = Object.freeze({

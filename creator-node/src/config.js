@@ -561,6 +561,12 @@ const config = convict({
     format: 'nat',
     env: 'minimumSecondaryUserSyncSuccessPercent',
     default: 50
+  },
+  maxNumberHoursPrimaryRemainsUnhealthy: {
+    doc: 'The max number of hours since first failed health check that a primary can still be marked as healthy',
+    format: 'nat',
+    env: 'maxNumberHoursPrimaryRemainsUnhealthy',
+    default: 24
   }
 
   /**

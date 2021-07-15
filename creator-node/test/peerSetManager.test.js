@@ -206,52 +206,45 @@ describe('test peerSetManager', () => {
     const isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, true)
-    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], undefined)
+    assert.strictEqual(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint], undefined)
   })
 
   it('[isPrimaryHealthy] should mark primary as healthy if responds with 500 from health check and has not been visited yet', async () => {
-    // Mock method
     peerSetManager.isNodeHealthy = async () => { return false }
 
     const isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, true)
-    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], 1)
+    assert.ok(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
   })
 
-  it('[isPrimaryHealthy] should mark primary as unhealthy if responds with 500 from health check and has been visited the max number of times', async () => {
-    // Mock method
+  it('[isPrimaryHealthy] should mark primary as unhealthy if responds with 500 from health check and the primary has surpassed the allowed threshold time to be unhealthy', async () => {
+    // Set `maxNumberHoursPrimaryRemainsUnhealthy` to 0 to mock threshold going over
+    peerSetManager = new PeerSetManager({
+      discoveryProviderEndpoint: 'https://discovery_endpoint.audius.co',
+      creatorNodeEndpoint: 'https://content_node_endpoint.audius.co',
+      maxNumberHoursPrimaryRemainsUnhealthy: 0
+    })
     peerSetManager.isNodeHealthy = async () => { return false }
 
     let isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, true)
-    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], 1)
+    assert.ok(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
 
     isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
-    assert.strictEqual(isHealthy, true)
-    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], 2)
-
-    let i = 0
-    // If this number if greater than the max, the counter stops at the max
-    const numTimesUnhealthy = 14
-    while (i++ < numTimesUnhealthy) {
-      isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
-    }
-
     assert.strictEqual(isHealthy, false)
-    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], 10)
+    assert.ok(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
   })
 
   it('[isPrimaryHealthy] removes primary from map if it goes from unhealthy and back to healthy', async () => {
-    // Mock method
     peerSetManager.isNodeHealthy = async () => { return false }
 
     let isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, true)
-    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], 1)
+    assert.ok(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
 
     //  Mock again
     peerSetManager.isNodeHealthy = async () => { return true }
@@ -259,6 +252,6 @@ describe('test peerSetManager', () => {
     isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
 
     assert.strictEqual(isHealthy, true)
-    assert.strictEqual(peerSetManager.primaryToNumberFailedHealthChecksPerformed[primaryEndpoint], undefined)
+    assert.ok(!peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
   })
 })
