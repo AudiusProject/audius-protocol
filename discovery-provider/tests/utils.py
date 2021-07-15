@@ -33,6 +33,27 @@ def to_bytes(val, length=32):
     return bytes(val, "utf-8")
 
 
+def populate_mock_db_blocks(db, min, max):
+    """
+    Helper function to populate the mock DB with blocks
+
+    Args:
+        db - sqlalchemy db session
+        min - min block number
+        max - max block number
+    """
+    with db.scoped_session() as session:
+        for i in range(min, max):
+            block = models.Block(
+                blockhash=hex(i),
+                number=i,
+                parenthash="0x01",
+                is_current=(i == 0),
+            )
+            session.add(block)
+            session.flush()
+
+
 def populate_mock_db(db, entities):
     """
     Helper function to populate the mock DB with tracks, users, plays, and follows

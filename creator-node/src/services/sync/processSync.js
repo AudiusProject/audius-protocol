@@ -332,6 +332,9 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         await redisLock.removeLock(redisKey)
 
         logger.info(redisKey, `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey}`)
+
+        // track that sync for this user was successful
+        await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey)
       } catch (e) {
         logger.error(redisKey, `Transaction failed for cnodeUser wallet ${fetchedWalletPublicKey}`, e)
 
@@ -341,8 +344,6 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         throw new Error(e)
       }
     }
-
-    await SyncHistoryAggregator.recordSyncSuccess()
   } catch (e) {
     // two conditions where we wipe the state on the secondary
     // if the clock values somehow becomes corrupted, wipe the records before future re-syncs
@@ -355,7 +356,9 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     }
     errorObj = e
 
-    await SyncHistoryAggregator.recordSyncFail()
+    for (let wallet of walletPublicKeys) {
+      await SyncHistoryAggregator.recordSyncFail(wallet)
+    }
   } finally {
     // Release all redis locks
     for (let wallet of walletPublicKeys) {

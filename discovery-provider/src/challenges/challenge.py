@@ -4,7 +4,7 @@ from src.models import Challenge, UserChallenge
 
 logger = logging.getLogger(__name__)
 
-## DB Accessors
+# DB Accessors
 def fetch_user_challenges(session, challenge_id, user_ids):
     return (
         session.query(UserChallenge).filter(
@@ -20,7 +20,9 @@ class ChallengeUpdater(ABC):
     """
 
     @abstractmethod
-    def update_user_challenges(self, session, event, user_challenges, step_count):
+    def update_user_challenges(
+        self, session, event, user_challenges_metadata, step_count
+    ):
         """This is the main required method to fill out when implementing a new challenge.
         Given an event type, a list of existing user challenges, and the base challenge type,
         update the given user_challenges.
@@ -71,6 +73,7 @@ class ChallengeManager:
             return
 
         user_ids = list(map(lambda x: x["user_id"], event_metadatas))
+        user_id_metadatas = {x["user_id"]: x for x in event_metadatas}
 
         # Gets all user challenges,
         existing_user_challenges = fetch_user_challenges(
@@ -96,8 +99,12 @@ class ChallengeManager:
 
         # Update all the challenges
         to_update = in_progress_challenges + new_user_challenges
+        user_challenges_metadata = [
+            (user_challenge, user_id_metadatas[user_challenge.user_id])
+            for user_challenge in to_update
+        ]
         self._updater.update_user_challenges(
-            session, event_type, to_update, self._step_count
+            session, event_type, user_challenges_metadata, self._step_count
         )
 
         logger.debug(f"Updated challenges from event [{event_type}]: [{to_update}]")
