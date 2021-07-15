@@ -219,11 +219,11 @@ describe('test peerSetManager', () => {
   })
 
   it('[isPrimaryHealthy] should mark primary as unhealthy if responds with 500 from health check and the primary has surpassed the allowed threshold time to be unhealthy', async () => {
-    // Set `maxNumberHoursPrimaryRemainsUnhealthy` to 0 to mock threshold going over
+    // Set `maxNumberSecondsPrimaryRemainsUnhealthy` to 0 to mock threshold going over
     peerSetManager = new PeerSetManager({
       discoveryProviderEndpoint: 'https://discovery_endpoint.audius.co',
       creatorNodeEndpoint: 'https://content_node_endpoint.audius.co',
-      maxNumberHoursPrimaryRemainsUnhealthy: 0
+      maxNumberSecondsPrimaryRemainsUnhealthy: 0
     })
     peerSetManager.isNodeHealthy = async () => { return false }
 

@@ -13,10 +13,10 @@ const MINIMUM_ROLLING_SYNC_COUNT = config.get('minimumRollingSyncCount')
 const MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE = config.get('minimumSuccessfulSyncCountPercentage') / 100
 
 // Used in determining primary health
-const MAX_NUMBER_HOURS_PRIMARY_REMAINS_UNHEALTHY = config.get('maxNumberHoursPrimaryRemainsUnhealthy')
+const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get('maxNumberSecondsPrimaryRemainsUnhealthy')
 
 class PeerSetManager {
-  constructor ({ discoveryProviderEndpoint, creatorNodeEndpoint, maxNumberHoursPrimaryRemainsUnhealthy }) {
+  constructor ({ discoveryProviderEndpoint, creatorNodeEndpoint, maxNumberSecondsPrimaryRemainsUnhealthy }) {
     this.discoveryProviderEndpoint = discoveryProviderEndpoint
     this.creatorNodeEndpoint = creatorNodeEndpoint
 
@@ -35,8 +35,8 @@ class PeerSetManager {
     this.endpointToSPIdMap = {}
 
     // Max number of hours a primary may be unhealthy for since the first time it was seen as unhealthy
-    this.maxNumberHoursPrimaryRemainsUnhealthy = isNaN(parseInt(maxNumberHoursPrimaryRemainsUnhealthy))
-      ? MAX_NUMBER_HOURS_PRIMARY_REMAINS_UNHEALTHY : maxNumberHoursPrimaryRemainsUnhealthy
+    this.maxNumberSecondsPrimaryRemainsUnhealthy = isNaN(parseInt(maxNumberSecondsPrimaryRemainsUnhealthy))
+      ? MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY : maxNumberSecondsPrimaryRemainsUnhealthy
   }
 
   log (msg) {
@@ -336,7 +336,7 @@ class PeerSetManager {
   /**
    * Perform a simple health check to see if a primary is truly unhealthy. If the primary returns a
    * non-200 response, track the timestamp in the map. If the health check has failed for a primary over
-   * `this.maxNumberHoursPrimaryRemainsUnhealthy` hours, return as unhealthy. Else, keep track of the timestamp
+   * `this.maxNumberSecondsPrimaryRemainsUnhealthy`, return as unhealthy. Else, keep track of the timestamp
    * of the visit if not already tracked.
    *
    * If the primary is healthy, reset the counter in the map and return as healthy.
@@ -352,8 +352,8 @@ class PeerSetManager {
       if (failedTimestamp) {
         // Generate the date of the failed timestamp + max hours threshold
         let failedTimestampPlusThreshold = new Date(failedTimestamp)
-        failedTimestampPlusThreshold.setHours(
-          failedTimestamp.getHours() + this.maxNumberHoursPrimaryRemainsUnhealthy
+        failedTimestampPlusThreshold.setSeconds(
+          failedTimestamp.getSeconds() + this.maxNumberSecondsPrimaryRemainsUnhealthy
         )
 
         // Determine if the failed timestamp + max hours threshold surpasses our allowed time threshold
