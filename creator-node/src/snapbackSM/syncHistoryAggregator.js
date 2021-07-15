@@ -190,11 +190,8 @@ class SyncHistoryAggregator {
       const perWalletSyncSuccess = await redisClient.scard(success)
       const perWalletSyncFail = await redisClient.scard(fail)
 
-      console.log({ perWalletSyncSuccess, perWalletSyncFail })
-
       perWalletSyncData.success = perWalletSyncSuccess
       perWalletSyncData.fail = perWalletSyncFail
-      console.log('perWalletSyncData', perWalletSyncData)
     } catch (e) {
       logger.error(`syncHistoryAggregator - getDailyWalletSyncData() error - ${e.toString()}`)
     }
@@ -224,7 +221,6 @@ class SyncHistoryAggregator {
    */
   static getUniqueSyncKeys (date = new Date().toISOString().split('T')[0]) {
     const prefix = `uniqueSync:::${date}`
-    console.log('getUniqueSyncKeys key', prefix, date)
 
     // ex: uniqueSync:::2021-06-1:::success
     return {

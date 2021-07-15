@@ -23,7 +23,6 @@ const _getRollingSyncCount = async (status, days) => {
   while (date <= rollingWindowEndDate) { // eslint-disable-line no-unmodified-loop-condition
     const redisDateKeySuffix = date.toISOString().split('T')[0] // ex.: "2021-05-04"
     const resp = await SyncHistoryAggregator.getDailyWalletSyncData(redisDateKeySuffix)
-    console.log('30 day rolling', resp)
     rollingSyncStatusCount += parseInt(resp[status], 10) || 0
 
     // Set the date to the next day
