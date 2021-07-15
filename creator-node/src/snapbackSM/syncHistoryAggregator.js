@@ -53,12 +53,13 @@ class SyncHistoryAggregator {
    * @param {Object} param
    * @param {enum} state SYNC_STATUS.success or SYNC_STATUS.fail
    * @param {String} timeOfEvent date in structure MM-DD-YYYYTHH:MM:SS:sssZ
+   * @param {String} wallet wallet to record the sync status of
    */
   static async recordSyncData ({ state, timeOfEvent, logContext, wallet }) {
     const logger = genericLogger.child(logContext)
 
     try {
-      if (!wallet) throw new Error(`Invalid wallet passed into syncHistoryAggregator#recordSyncData`)
+      if (!wallet) throw new Error(`Required parameter wallet not passed into syncHistoryAggregator#recordSyncData`)
 
       if (!SYNC_STATES.hasOwnProperty(state)) {
         throw new Error(`Invalid state='${state}'. Must either be '${SYNC_STATES.success}' or '${SYNC_STATES.fail}'`)
@@ -68,19 +69,19 @@ class SyncHistoryAggregator {
       const aggregateSyncKeys = SyncHistoryAggregator.getAggregateSyncKeys()
 
       // Get the TTL if the key exists for the number of `state` syncs, and update the value by 1
-      const aggregateSyncKeyStateTTL = await this.getKeyTTL(aggregateSyncKeys[state])
+      const aggregateSyncKeyStateTTL = await SyncHistoryAggregator.getKeyTTL(aggregateSyncKeys[state])
       await redisClient.incr(aggregateSyncKeys[state])
       await redisClient.expire(aggregateSyncKeys[state], aggregateSyncKeyStateTTL)
 
       // Update latest sync data
       const latestSyncKeys = SyncHistoryAggregator.getLatestSyncKeys()
 
-      const latestSyncKeyTTL = await this.getKeyTTL(latestSyncKeys[state])
+      const latestSyncKeyTTL = await SyncHistoryAggregator.getKeyTTL(latestSyncKeys[state])
       await redisClient.set(latestSyncKeys[state], timeOfEvent, 'EX', latestSyncKeyTTL)
 
       // Update per wallet success/fail sync data
       const dailyWalletSyncKey = SyncHistoryAggregator.getUniqueSyncKeys()
-      const dailyWalletSyncKeyTTL = await this.getKeyTTL(dailyWalletSyncKey[state])
+      const dailyWalletSyncKeyTTL = await SyncHistoryAggregator.getKeyTTL(dailyWalletSyncKey[state])
       await redisClient.sadd(dailyWalletSyncKey[state], wallet)
       await redisClient.expire(dailyWalletSyncKey[state], dailyWalletSyncKeyTTL)
 
@@ -151,8 +152,8 @@ class SyncHistoryAggregator {
   static async getLatestSyncData (logContext = {}) {
     const logger = genericLogger.child(logContext)
     let currentLatestSyncData = {
-      success: null,
-      fail: null
+      success: 0,
+      fail: 0
     }
 
     try {
@@ -173,6 +174,7 @@ class SyncHistoryAggregator {
   /**
    * Returns the number of unique users with successful and fail syncs that day. Will be `null` if a sync with those
    * states have not been triggered.
+   * @param {string?} date string with the structure YYYY-MM-DD. defaulted to today's date
    * @param {Object?} logContext the log context off of the Express req object
    * @returns an object of the current day's aggregate sync count like
    *     {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
@@ -246,3 +248,4 @@ class SyncHistoryAggregator {
 }
 
 module.exports = SyncHistoryAggregator
+module.exports.SYNC_STATES = SYNC_STATES

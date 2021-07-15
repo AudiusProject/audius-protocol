@@ -1,13 +1,14 @@
 const SyncHistoryAggregator = require('../snapbackSM/syncHistoryAggregator')
+const { SYNC_STATES } = require('../snapbackSM/syncHistoryAggregator')
 
 /**
  * Get the total number of syncs that met 'status' per wallet per day for the given number of days
- * @param {String} status Either 'success' or 'fail'
+ * @param {String} status Valid state from SYNC_STATES
  * @param {Number} days number of historical days to get data for
  * @returns {Number} number of syncs per wallet per day that met the status
  */
 const _getRollingSyncCount = async (status, days) => {
-  if (status !== 'success' && status !== 'fail') throw new Error('Invalid status for _getRollingSyncCount: must be "success" or "fail"')
+  if (status !== SYNC_STATES.success && status !== SYNC_STATES.fail) throw new Error('Invalid status for _getRollingSyncCount: must be valid state from SYNC_STATES')
 
   // Get the start and end dates of the rolling window
   const today = new Date()
@@ -33,11 +34,11 @@ const _getRollingSyncCount = async (status, days) => {
 }
 
 const get30DayRollingSyncSuccessCount = async () => {
-  return _getRollingSyncCount('success', 30)
+  return _getRollingSyncCount(SYNC_STATES.success, 30)
 }
 
 const get30DayRollingSyncFailCount = async () => {
-  return _getRollingSyncCount('fail', 30)
+  return _getRollingSyncCount(SYNC_STATES.fail, 30)
 }
 
 const getDailySyncSuccessCount = async () => {
