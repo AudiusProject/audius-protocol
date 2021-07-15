@@ -5,7 +5,7 @@ import {
   replace as replaceRoute,
   goBack
 } from 'connected-react-router'
-import { UnregisterCallback } from 'history'
+import { Location, UnregisterCallback } from 'history'
 import { sampleSize } from 'lodash'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
@@ -120,6 +120,13 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
         }
       }
     })
+
+    const referrerHandle = new URLSearchParams(this.props.location.search).get(
+      'ref'
+    )
+    if (referrerHandle) {
+      this.props.fetchReferrer(referrerHandle)
+    }
 
     const closeModalHotkey = setupHotkeys({
       27 /* Escape */: () => {
@@ -475,6 +482,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
     onSignIn: (email: string, password: string) =>
       dispatch(signOnAction.signIn(email, password)),
     fetchFollowArtists: () => dispatch(signOnAction.fetchAllFollowArtists()),
+    fetchReferrer: (handle: string) =>
+      dispatch(signOnAction.fetchReferrer(handle)),
     signUp: (email: string, password: string, handle: string) =>
       dispatch(signOnAction.signUp(email, password, handle)),
     setTwitterProfile: (

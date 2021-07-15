@@ -53,7 +53,7 @@ import {
 import { isMobile, isElectron } from 'utils/clientUtil'
 import { waitForValue } from 'utils/sagaHelpers'
 
-import mobileSagas from './mobileSagas'
+import mobileSagas, { setHasSignedInOnMobile } from './mobileSagas'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -76,13 +76,10 @@ function* onFetchAccount(account) {
   }
 
   yield fork(AudiusBackend.updateUserLocationTimezone)
-  yield fork(AudiusBackend.updateUserEvent, {
-    hasSignedInNativeMobile: !!NATIVE_MOBILE
-  })
   if (NATIVE_MOBILE) {
+    yield fork(setHasSignedInOnMobile, account)
     new SignedIn(account).send()
   }
-
   // Add playlists that might not have made it into the user's library.
   // This could happen if the user creates a new playlist and then leaves their session.
   yield fork(addPlaylistsNotInLibrary)
