@@ -190,8 +190,11 @@ class SyncHistoryAggregator {
       const perWalletSyncSuccess = await redisClient.scard(success)
       const perWalletSyncFail = await redisClient.scard(fail)
 
+      console.log({ perWalletSyncSuccess, perWalletSyncFail })
+
       perWalletSyncData.success = perWalletSyncSuccess
       perWalletSyncData.fail = perWalletSyncFail
+      console.log('perWalletSyncData', perWalletSyncData)
     } catch (e) {
       logger.error(`syncHistoryAggregator - getDailyWalletSyncData() error - ${e.toString()}`)
     }
