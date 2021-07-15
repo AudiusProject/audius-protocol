@@ -566,7 +566,8 @@ const config = convict({
     doc: 'The max number of seconds since first failed health check that a primary can still be marked as healthy',
     format: 'nat',
     env: 'maxNumberSecondsPrimaryRemainsUnhealthy',
-    default: 24
+    // 24 hours in seconds
+    default: 86400
   }
 
   /**
