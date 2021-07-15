@@ -34,14 +34,16 @@ const verifyUserReplicaSetStatus = async (
     let usrQueryInfo = await getUser(libs, userId)
 
     // Validate the latest updater indexed into discovery node matches expected value
-    let replicaSetUpdateSigner = replicaSetUpdaterAddress
+    let queriedReplicaSetUpdateSigner = usrQueryInfo.replica_set_update_signer.toLowerCase()
+
+    let validReplicaSetUpdateSigner = [replicaSetUpdaterAddress]
     if (!replicaSetUpdateSigner) {
-      replicaSetUpdateSigner = libs.getWalletAddress()
+      const signers = await getAllSigners(usrQueryInfo)
+      validReplicaSetUpdateSigner = [libs.getWalletAddress(), ...signers]
     }
-    const signers = await getAllSigners(usrQueryInfo)
-    let queriedReplicaSetUpdateSigners = signers.map(signer => signer.toLowerCase())
-    if (!queriedReplicaSetUpdateSigners.some(signer => signer === replicaSetUpdateSigner)) {
-      throw new Error(`Invalid replica set updater found: Replica set Signer ${replicaSetUpdateSigner} not in queried allowed signers: ${queriedReplicaSetUpdateSigners.join(', ')}`)
+    validReplicaSetUpdateSigner = validReplicaSetUpdateSigner.map(signer => signer.toLowerCase())
+    if (!validReplicaSetUpdateSigner.some(signer => signer === queriedReplicaSetUpdateSigner)) {
+      throw new Error(`Invalid replica set updater found: Replica Set Signer ${queriedReplicaSetUpdateSigner} not in allowed signers: ${validReplicaSetUpdateSigner.join(', ')}`)
     }
 
     // Deconstruct the comma separated value of enpdoint1,endoint2,endpoint3
