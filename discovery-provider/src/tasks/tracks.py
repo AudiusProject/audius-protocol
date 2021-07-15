@@ -2,7 +2,6 @@ import logging
 import time
 import functools
 from datetime import datetime
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import null, functions
 from src.app import contract_addresses
