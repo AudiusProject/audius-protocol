@@ -39,6 +39,7 @@ export const EXPLORE_FEELING_LUCKY_PAGE = '/explore/feeling-lucky'
 export const EXPLORE_MOOD_PLAYLISTS_PAGE = '/explore/:mood'
 export const TRENDING_PLAYLISTS_PAGE = '/explore/playlists'
 export const TRENDING_UNDERGROUND_PAGE = '/explore/underground'
+export const EXPLORE_REMIXABLES_PAGE = '/explore/remixables'
 
 export const SAVED_PAGE = '/favorites'
 export const FAVORITES_PAGE = '/favorites'

@@ -141,6 +141,7 @@ import {
   PROFILE_PAGE_PLAYLISTS,
   PROFILE_PAGE_REPOSTS,
   TRENDING_UNDERGROUND_PAGE,
+  EXPLORE_REMIXABLES_PAGE,
   CHECK_PAGE,
   getPathname,
   TRENDING_PLAYLISTS_PAGE_LEGACY
@@ -600,6 +601,15 @@ class App extends Component {
                 render={() => (
                   <TrendingUndergroundPage
                     containerRef={this.state.mainContent}
+                  />
+                )}
+              />
+              <Route
+                exact
+                path={EXPLORE_REMIXABLES_PAGE}
+                render={() => (
+                  <SmartCollectionPage
+                    variant={SmartCollectionVariant.REMIXABLES}
                   />
                 )}
               />

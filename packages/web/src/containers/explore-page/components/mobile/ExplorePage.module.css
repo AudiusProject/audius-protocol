@@ -69,6 +69,21 @@
   flex-basis: calc(50% - 8px);
 }
 
+.tripleHeaderSectionTenTile > *:nth-child(5n + 1),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 2),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 3),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 8) {
+  flex-basis: 100%;
+}
+
+.tripleHeaderSectionTenTile > *:nth-child(5n + 4),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 5),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 6),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 7),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 9),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 10) {
+  flex-basis: calc(50% - 8px);
+}
 
 .spin {
   padding-top: 40%;
