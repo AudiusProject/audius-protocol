@@ -21,6 +21,7 @@ def get_remixable_tracks(args):
                     Track.is_unlisted == False,
                     Track.is_delete == False
                 )
+                .distinct(Track.track_id)
                 .subquery()
         )
 
@@ -47,7 +48,16 @@ def get_remixable_tracks(args):
             .limit(limit)
         )
 
-        tracks = helpers.query_result_to_list(query.all())
+        results = query.all()
+
+        tracks = []
+        for result in results:
+            track = result[0:-2]
+            score = result[-1]
+            track = helpers.tuple_to_model_dictionary(track, Track)
+            track["score"] = score
+            tracks.append(track)
+
         track_ids = list(map(lambda track: track["track_id"], tracks))
 
         # Get user specific data for tracks
