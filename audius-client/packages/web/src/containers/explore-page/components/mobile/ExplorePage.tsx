@@ -35,6 +35,7 @@ import {
 } from 'containers/explore-page/store/types'
 import CardLineup from 'containers/lineup/CardLineup'
 import { useMainPageHeader } from 'containers/nav/store/context'
+import { useFlag } from 'containers/remote-config/hooks'
 import useTabs from 'hooks/useTabs/useTabs'
 import {
   UserCollection,
@@ -42,6 +43,7 @@ import {
   Variant as CollectionVariant
 } from 'models/Collection'
 import User from 'models/User'
+import { FeatureFlags } from 'services/remote-config'
 import { Status } from 'store/types'
 import {
   playlistPage,
@@ -133,6 +135,7 @@ const ExplorePage = ({
   formatProfileCardSecondaryText,
   goToRoute
 }: ExplorePageProps) => {
+  const { isEnabled: remixablesEnabled } = useFlag(FeatureFlags.REMIXABLES)
   useMainPageHeader()
 
   const justForYouTiles = justForYou.map(
@@ -249,7 +252,12 @@ const ExplorePage = ({
         title={messages.justForYou}
         description={messages.justForYouDescription}
       >
-        <div className={cn(styles.section, styles.tripleHeaderSection)}>
+        <div
+          className={cn(styles.section, {
+            [styles.tripleHeaderSection]: !remixablesEnabled,
+            [styles.tripleHeaderSectionTenTile]: remixablesEnabled
+          })}
+        >
           {justForYouTiles}
         </div>
       </TabBodyHeader>,
@@ -283,7 +291,14 @@ const ExplorePage = ({
         )}
       </TabBodyHeader>
     ]
-  }, [playlistCards, profileCards, justForYouTiles, lifestyleTiles, status])
+  }, [
+    playlistCards,
+    profileCards,
+    justForYouTiles,
+    lifestyleTiles,
+    status,
+    remixablesEnabled
+  ])
 
   const initialTab = useSelector(getTab)
   const dispatch = useDispatch()

@@ -1,11 +1,12 @@
 import Collection from 'models/Collection'
 import FeedFilter from 'models/FeedFilter'
-import Track from 'models/Track'
+import Track, { TrackMetadata } from 'models/Track'
 import { ID } from 'models/common/Identifiers'
 import AudiusBackend, {
   IDENTITY_SERVICE,
   AuthHeaders
 } from 'services/AudiusBackend'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 
 type CollectionWithScore = Collection & { score: number }
 
@@ -97,6 +98,23 @@ class Explore {
         (track: Track) => !listens[track.track_id]
       )
       return notListenedToTracks.slice(0, limit)
+    } catch (e) {
+      console.error(e)
+      return []
+    }
+  }
+
+  static async getRemixables(
+    currentUserId: ID,
+    limit = 25
+  ): Promise<TrackMetadata[]> {
+    try {
+      const tracks = await apiClient.getRemixables({
+        limit,
+        currentUserId
+      })
+
+      return tracks
     } catch (e) {
       console.error(e)
       return []

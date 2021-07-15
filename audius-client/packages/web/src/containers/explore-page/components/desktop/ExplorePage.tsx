@@ -28,11 +28,13 @@ import {
   BEST_NEW_RELEASES,
   UNDER_THE_RADAR,
   MOST_LOVED,
+  REMIXABLES,
   FEELING_LUCKY
 } from 'containers/smart-collection/smartCollections'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
 import { UserCollection, Variant as CollectionVariant } from 'models/Collection'
 import User from 'models/User'
+import { FeatureFlags, getFeatureEnabled } from 'services/remote-config'
 import { Status } from 'store/types'
 import { BASE_URL, EXPLORE_PAGE, stripBaseUrl } from 'utils/route'
 
@@ -59,6 +61,7 @@ export const justForYou = [
   BEST_NEW_RELEASES,
   UNDER_THE_RADAR,
   TOP_ALBUMS,
+  ...(getFeatureEnabled(FeatureFlags.REMIXABLES) ? [REMIXABLES] : []),
   MOST_LOVED,
   FEELING_LUCKY
 ]

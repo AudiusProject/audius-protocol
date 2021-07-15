@@ -56,6 +56,7 @@ const FULL_ENDPOINT_MAP = {
   trendingPlaylists: (experiment: string | null) =>
     experiment ? `/playlists/trending/${experiment}` : '/playlists/trending',
   recommended: '/tracks/recommended',
+  remixables: '/tracks/remixables',
   following: (userId: OpaqueID) => `/users/${userId}/following`,
   followers: (userId: OpaqueID) => `/users/${userId}/followers`,
   trackRepostUsers: (trackId: OpaqueID) => `/tracks/${trackId}/reposts`,
@@ -122,6 +123,11 @@ type GetTrendingIdsArgs = {
 type GetRecommendedArgs = {
   genre: Nullable<string>
   exclusionList: number[]
+  currentUserId: Nullable<ID>
+}
+
+type GetRemixablesArgs = {
+  limit?: number
   currentUserId: Nullable<ID>
 }
 
@@ -435,6 +441,27 @@ class AudiusAPIClient {
     const adapted = recommendedResponse.data
       .map(adapter.makeTrack)
       .filter(removeNullable)
+    return adapted
+  }
+
+  async getRemixables({ limit = 25, currentUserId }: GetRemixablesArgs) {
+    this._assertInitialized()
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    const params = {
+      limit,
+      user_id: encodedCurrentUserId || undefined,
+      with_users: true
+    }
+    const remixablesResponse: Nullable<APIResponse<
+      APITrack[]
+    >> = await this._getResponse(FULL_ENDPOINT_MAP.remixables, params)
+
+    if (!remixablesResponse) return []
+
+    const adapted = remixablesResponse.data
+      .map(adapter.makeTrack)
+      .filter(removeNullable)
+
     return adapted
   }
 
