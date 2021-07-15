@@ -36,6 +36,7 @@ class SyncHistoryAggregator {
 
   /**
    * Records a sync fail
+   * @param {String} wallet wallet to record the sync status of
    * @param {Object} logContext the log context taken off of the Express req object
    */
   static async recordSyncFail (wallet, logContext = {}) {
@@ -183,8 +184,8 @@ class SyncHistoryAggregator {
   static async getDailyWalletSyncData (date = new Date().toISOString().split('T')[0], logContext = {}) {
     const logger = genericLogger.child(logContext)
     let perWalletSyncData = {
-      success: null,
-      fail: null
+      success: 0,
+      fail: 0
     }
 
     try {
