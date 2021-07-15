@@ -9,7 +9,9 @@ from src.models import Challenge, UserChallenge
 logger = logging.getLogger(__name__)
 
 # DB Accessors
-def fetch_user_challenges(session: Session, challenge_id: str, specifiers: List[str]):
+def fetch_user_challenges(
+    session: Session, challenge_id: str, specifiers: List[str]
+) -> List[UserChallenge]:
     return (
         session.query(UserChallenge).filter(
             UserChallenge.challenge_id == challenge_id,
@@ -134,7 +136,7 @@ class ChallengeManager:
         specifiers: List[str] = [e["specifier"] for e in events_with_specifiers]
 
         # Gets all user challenges,
-        existing_user_challenges: List[UserChallenge] = fetch_user_challenges(
+        existing_user_challenges = fetch_user_challenges(
             session, self.challenge_id, specifiers
         )
 

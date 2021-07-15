@@ -1,14 +1,16 @@
 from typing import Dict, List
 import redis
 from sqlalchemy.orm.session import Session
+
 from src.models import Challenge, UserChallenge, ChallengeType
 from src.utils.db_session import get_db
 from src.challenges.challenge import ChallengeManager, ChallengeUpdater
 from src.utils.helpers import model_to_dictionary
-from tests.utils import populate_mock_db_blocks
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.utils.config import shared_config
 from src.queries.get_challenges import get_challenges
+
+from tests.utils import populate_mock_db_blocks
 
 
 def setup_challenges(app):
@@ -36,14 +38,6 @@ def setup_challenges(app):
                 amount=5,
                 step_count=5,
                 active=True,
-                starting_block=100,
-            ),
-            Challenge(
-                id="test_challenge_4",
-                type=ChallengeType.aggregate,
-                amount=5,
-                step_count=5,
-                active=False,
                 starting_block=100,
             ),
         ]
@@ -208,17 +202,6 @@ def test_handle_event(app):
             },
         ]
         assert expected == res_dicts
-
-
-# For aggregate challenges, need to test:
-# - Multiple events with the same user_id but diff specifiers get created
-# - Multiple events with the same specifier get deduped
-# - If we've maxed the # of challenges, don't create any more
-# - Test rolling it up
-# - Inactive challenges don't get added?
-# - Test block # for an already complete challenge doesn't change if it's part of this flow
-
-# What about for long lived challenges?
 
 
 class AggregateUpdater(ChallengeUpdater):
