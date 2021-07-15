@@ -58,6 +58,7 @@ try {
   REACT_APP_RECAPTCHA_SITE_KEY=${REACT_APP_RECAPTCHA_SITE_KEY}
 
   REACT_APP_OPENSEA_API_URL=${REACT_APP_OPENSEA_API_URL}
+  REACT_APP_B_ITEMS_URL=
   `
 
   // Note .env.dev.local takes precidence over .env.dev
