@@ -20,9 +20,6 @@ const SyncMonitoringRetryDelayMs = 15000
 // Max number of attempts to select new replica set in reconfig
 const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 100
 
-// The number of nodes in a replica set
-const NUMBER_OF_REPLICA_SET_NODES = 3
-
 // Timeout for fetching batch clock values
 const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 20000 // 20s
 
@@ -384,16 +381,15 @@ class SnapbackSM {
 
       // Create new array of replica set spIds and write to URSM
       phase = issueUpdateReplicaSetOpPhases.UPDATE_URSM_REPLICA_SET
-      newReplicaSetEndpoints.forEach(endpt => {
-        if (this.peerSetManager.endpointToSPIdMap[endpt]) newReplicaSetSPIds.push(this.peerSetManager.endpointToSPIdMap[endpt])
-      })
-
-      // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
-      // selected as part of the new replica set, do not issue reconfig
-      if (newReplicaSetSPIds.length !== NUMBER_OF_REPLICA_SET_NODES) {
-        response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}]. Skipping reconfig.`
-        this.logError(response.errorMsg)
-        return response
+      for (let endpt of newReplicaSetEndpoints) {
+        // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
+        // selected as part of the new replica set, do not issue reconfig
+        if (!this.peerSetManager.endpointToSPIdMap[endpt]) {
+          this.logError(response.errorMsg)
+          response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}]. Skipping reconfig.`
+          return response
+        }
+        newReplicaSetSPIds.push(this.peerSetManager.endpointToSPIdMap[endpt])
       }
 
       await this.audiusLibs.contracts.UserReplicaSetManagerClient.updateReplicaSet(
