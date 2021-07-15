@@ -221,6 +221,7 @@ class SyncHistoryAggregator {
    */
   static getUniqueSyncKeys (date = new Date().toISOString().split('T')[0]) {
     const prefix = `uniqueSync:::${date}`
+    console.log('getUniqueSyncKeys key', prefix, date)
 
     // ex: uniqueSync:::2021-06-1:::success
     return {
