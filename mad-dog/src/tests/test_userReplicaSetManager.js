@@ -37,7 +37,7 @@ const verifyUserReplicaSetStatus = async (
     let queriedReplicaSetUpdateSigner = usrQueryInfo.replica_set_update_signer.toLowerCase()
 
     let validReplicaSetUpdateSigner = [replicaSetUpdaterAddress]
-    if (!replicaSetUpdateSigner) {
+    if (!replicaSetUpdaterAddress) {
       const signers = await getAllSigners(usrQueryInfo)
       validReplicaSetUpdateSigner = [libs.getWalletAddress(), ...signers]
     }
