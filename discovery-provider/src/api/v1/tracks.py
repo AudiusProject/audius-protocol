@@ -133,6 +133,41 @@ class Track(Resource):
         return get_single_track(decoded_id, None, ns)
 
 
+track_slug_parser = reqparse.RequestParser()
+track_slug_parser.add_argument("handle", required=True)
+track_slug_parser.add_argument("slug", required=True)
+
+
+@ns.route("/")
+class TrackBySlug(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Track By Handle and Slug""",
+        params={"handle": "A User's handle", "slug": "The track's slug"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(track_response)
+    @cache(ttl_sec=5)
+    def get(self):
+        args = full_track_slug_parser.parse_args()
+        slug, handle = args.get("slug"), args.get("handle")
+        if not (slug and handle):
+            full_ns.abort(400, "Missing required param slug or handle")
+        tracks = get_tracks(
+            {
+                "handle": handle,
+                "slug": slug,
+                "with_users": True,
+                "filter_deleted": True,
+                "limit": 1,
+                "offset": 0,
+            }
+        )
+        if not tracks:
+            abort_not_found(f"{handle}/{slug}", full_ns)
+        return success_response(extend_track(tracks[0]))
+
+
 full_track_parser = reqparse.RequestParser()
 full_track_parser.add_argument("handle")
 full_track_parser.add_argument("url_title")
@@ -158,6 +193,36 @@ class FullTrack(Resource):
             )
 
         return get_single_track(decoded_id, current_user_id, full_ns)
+
+
+full_track_slug_parser = reqparse.RequestParser()
+full_track_slug_parser.add_argument("handle", required=True)
+full_track_slug_parser.add_argument("slug", required=True)
+
+
+@full_ns.route("/")
+class FullTrackBySlug(Resource):
+    @record_metrics
+    @full_ns.marshal_with(full_track_response)
+    @cache(ttl_sec=5)
+    def get(self):
+        args = full_track_slug_parser.parse_args()
+        slug, handle = args.get("slug"), args.get("handle")
+        if not (slug and handle):
+            full_ns.abort(400, "Missing required param slug or handle")
+        tracks = get_tracks(
+            {
+                "handle": handle,
+                "slug": slug,
+                "with_users": True,
+                "filter_deleted": True,
+                "limit": 1,
+                "offset": 0,
+            }
+        )
+        if not tracks:
+            abort_not_found(f"{handle}/{slug}", full_ns)
+        return success_response(extend_track(tracks[0]))
 
 
 # Stream
@@ -599,10 +664,13 @@ class FullTrackStems(Resource):
         stems = list(map(stem_from_track, stems))
         return success_response(stems)
 
+
 track_remixables_route_parser = reqparse.RequestParser()
 track_remixables_route_parser.add_argument("user_id", required=False)
 track_remixables_route_parser.add_argument("limit", required=False, type=int)
 track_remixables_route_parser.add_argument("with_users", required=False, type=bool)
+
+
 @full_ns.route("/remixables")
 class RemixableTracks(Resource):
     @record_metrics
@@ -611,13 +679,9 @@ class RemixableTracks(Resource):
         params={
             "user_id": "User ID",
             "limit": "Number of remixable tracks to fetch",
-            "with_users": "Boolean to include user info with tracks"
+            "with_users": "Boolean to include user info with tracks",
         },
-        responses={
-            200: "Success",
-            400: "Bad request",
-            500: "Server error"
-        }
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(tracks_response)
     @cache(ttl_sec=5)
@@ -630,6 +694,7 @@ class RemixableTracks(Resource):
         }
         tracks = get_remixable_tracks(args)
         return success_response(tracks)
+
 
 remixes_response = make_full_response(
     "remixes_response_full", full_ns, fields.Nested(remixes_response_model)

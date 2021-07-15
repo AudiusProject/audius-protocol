@@ -75,10 +75,14 @@ def _get_tracks(session, args):
                 "track_id",
             ]
             base_query = parse_sort_param(base_query, Track, whitelist_params)
+    if "slug" in args:
+        slug = args.get("slug")
+        base_query = base_query.join(
+            TrackRoute, TrackRoute.track_id == Track.track_id
+        ).filter(TrackRoute.slug == slug)
 
     query_results = add_query_pagination(base_query, args["limit"], args["offset"])
     tracks = helpers.query_result_to_list(query_results.all())
-
     return tracks
 
 
@@ -148,44 +152,4 @@ def get_tracks(args):
                 user = users[track["owner_id"]]
                 if user:
                     track["user"] = user
-
     return tracks
-
-
-def get_track_id_by_slug(handle: str, slug: str):
-    db = get_db_read_replica()
-    with db.scoped_session() as session:
-        route = (
-            session.query(TrackRoute)
-            .join(User, User.user_id == TrackRoute.owner_id)
-            .filter(User.is_current, TrackRoute.is_current)
-            .filter(TrackRoute.slug == slug)
-            .filter(User.handle_lc == handle.lower())
-        ).one()
-        return route.track_id
-
-
-def get_tracks_by_routes(routes: list):
-    db = get_db_read_replica()
-
-    filters = []
-    for route in routes:
-        filters.append(and_(
-            TrackRoute.slug == route["slug"],
-            User.handle_lc == route["handle"].lower()
-        ))
-
-    with db.scoped_session() as session:
-        tracks_query = (
-            session.query(Track, TrackRoute)
-            .join(User, Track.owner_id == User.user_id)
-            .join(TrackRoute,
-                  and_(TrackRoute.track_id == Track.track_id,
-                       TrackRoute.owner_id == Track.owner_id))
-            .filter(User.is_current)
-            .filter(or_(*filters))
-        )
-        print(str(tracks_query))
-        tracks = tracks_query.all()
-        print(tracks)
-        return tracks
