@@ -56,12 +56,19 @@
 
     echo "Creating UserBank accounts..."
     cd ../claimable-tokens/program
+    cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
     cargo build-bpf
     claimable_token_address=$(solana program deploy target/deploy/claimable_tokens.so --output json | jq -r '.programId')
     if [ -z "$claimable_token_address" ]; then
         echo "failed to deploy UserBank"
         exit 1
     fi
+    sed -i "s/$cur_address/$claimable_token_address/g" src/lib.rs
+
+    cd ../cli
+    cargo build
+    generate_pda_output=$(cargo run generate-base-pda "$token" "$claimable_token_address")
+    echo $generate_pda_output
 
 } >&2
 
