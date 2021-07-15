@@ -1,7 +1,8 @@
-from src.models.models import ChallengeType
-from alembic.versions.c8d2be7dcccc_repair_poorly_sorted_tracks import Session
-from typing import Counter, Dict, Tuple, TypedDict, List, Optional, cast
 import logging
+from typing import Counter, Dict, Tuple, TypedDict, List, Optional, cast
+from sqlalchemy.orm.session import Session
+from sqlalchemy import func
+from src.models.models import ChallengeType
 from abc import ABC, abstractmethod
 from src.models import Challenge, UserChallenge
 
@@ -35,7 +36,6 @@ class ChallengeUpdater(ABC):
     to an instance of a `ChallengeManager`. The only required override is update_user_challenges
     """
 
-    @abstractmethod
     def update_user_challenges(
         self,
         session: Session,
@@ -43,19 +43,22 @@ class ChallengeUpdater(ABC):
         user_challenges: List[UserChallenge],
         step_count,
     ):
-        """This is the main required method to fill out when implementing a new challenge.
+        """This is usually the main required method to fill out when implementing a new challenge.
         Given an event type, a list of existing user challenges, and the base challenge type,
         update the given user_challenges.
+
+        In the case of aggregate challenges, where UserChallenges are created in an
+        already completed state, we this method can be left as is.
         """
 
-    def on_after_challenge_creation(self, session, user_ids: List[FullEventMetadata]):
+    def on_after_challenge_creation(self, session, metadatas: List[FullEventMetadata]):
         """Optional method to do some work after the `ChallengeManager` creates new challenges.
         If a challenge is backed by it's own table, for instance, create those rows here.
         """
 
-    def generate_specifier(self, user_id: int, extra: Dict):
+    def generate_specifier(self, user_id: int, extra: Dict) -> str:
         """Optional method to provide a custom specifier for a challenge, given a user_id"""
-        return user_id
+        return str(user_id)
 
     def should_create_new_challenge(
         self, event: str, user_id: int, extra: Dict
@@ -152,9 +155,22 @@ class ChallengeManager:
             # For aggregate challenges, only create them
             # if we haven't maxed out completion yet, and
             # we haven't overriden this via should_create_new_challenge
-            challenges_per_user = Counter([e.user_id for e in existing_user_challenges])
+
+            # Get *all* UserChallenges per user
+            user_ids = list({e["user_id"] for e in event_metadatas})
+            all_user_challenges: List[Tuple[int, int]] = (
+                session.query(
+                    UserChallenge.user_id, func.count(UserChallenge.specifier)
+                )
+                .filter(
+                    UserChallenge.challenge_id == self.challenge_id,
+                    UserChallenge.user_id.in_(user_ids),
+                )
+                .group_by(UserChallenge.user_id)
+            ).all()
+            challenges_per_user = dict(all_user_challenges)
             for new_metadata in new_challenge_metadata:
-                completion_count = challenges_per_user[new_metadata["user_id"]]
+                completion_count = challenges_per_user.get(new_metadata["user_id"], 0)
                 if self._step_count and completion_count >= self._step_count:
                     continue
                 if not self._updater.should_create_new_challenge(
@@ -164,6 +180,7 @@ class ChallengeManager:
                 to_create_metadata.append(new_metadata)
         else:
             to_create_metadata = new_challenge_metadata
+
         new_user_challenges = [
             self._create_new_challenge(metadata["user_id"], metadata["specifier"])
             for metadata in to_create_metadata
@@ -195,11 +212,16 @@ class ChallengeManager:
         # Only add the new ones
         session.add_all(new_user_challenges)
 
-    def get_challenge_state(self, session, user_ids):
-        user_challenges = fetch_user_challenges(session, self.challenge_id, user_ids)
-        return {
-            user_challenge.user_id: user_challenge for user_challenge in user_challenges
+    def get_challenge_state(
+        self, session: Session, specifiers: List[str]
+    ) -> List[UserChallenge]:
+        user_challenges = fetch_user_challenges(session, self.challenge_id, specifiers)
+        # Re-sort them
+        specifier_map = {
+            user_challenge.specifier: user_challenge
+            for user_challenge in user_challenges
         }
+        return [specifier_map[s] for s in specifiers]
 
     # Helpers
 
@@ -219,6 +241,8 @@ class ChallengeManager:
             challenge_id=self.challenge_id,
             user_id=user_id,
             specifier=specifier,
-            is_complete=False,
+            is_complete=(
+                self._challenge_type == ChallengeType.aggregate
+            ),  # Aggregates are made in completed state
             current_step_count=0,
         )
