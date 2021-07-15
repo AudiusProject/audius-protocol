@@ -1,6 +1,7 @@
 import { ReactComponent as IconExploreFeelingLucky } from 'assets/img/iconExploreFeelingLucky.svg'
 import { ReactComponent as IconExploreMostLoved } from 'assets/img/iconExploreMostLoved.svg'
 import { ReactComponent as IconExploreNewReleases } from 'assets/img/iconExploreNewReleases.svg'
+import { ReactComponent as IconExploreRemixables } from 'assets/img/iconExploreRemixables.svg'
 import { ReactComponent as IconExploreRotation } from 'assets/img/iconExploreRotation.svg'
 import { ReactComponent as IconExploreUnderRadar } from 'assets/img/iconExploreUnderRadar.svg'
 import { SmartCollection, Variant } from 'models/Collection'
@@ -9,7 +10,8 @@ import {
   EXPLORE_BEST_NEW_RELEASES_PAGE,
   EXPLORE_UNDER_THE_RADAR_PAGE,
   EXPLORE_MOST_LOVED_PAGE,
-  EXPLORE_FEELING_LUCKY_PAGE
+  EXPLORE_FEELING_LUCKY_PAGE,
+  EXPLORE_REMIXABLES_PAGE
 } from 'utils/route'
 
 import { SmartCollectionVariant } from './types'
@@ -54,6 +56,17 @@ export const MOST_LOVED: SmartCollection = {
   link: EXPLORE_MOST_LOVED_PAGE
 }
 
+export const REMIXABLES: SmartCollection = {
+  variant: Variant.SMART,
+  playlist_name: 'Remixables',
+  description:
+    'Popular tracks with remixes & stems you can use in your own tracks.',
+  gradient: 'linear-gradient(137.65deg, #FF00F5 -5.01%, #00D1FF 110.47%)',
+  shadow: 'rgba(87,170,255,0.35)',
+  icon: IconExploreRemixables,
+  link: EXPLORE_REMIXABLES_PAGE
+}
+
 export const FEELING_LUCKY: SmartCollection = {
   variant: Variant.SMART,
   playlist_name: 'Feeling Lucky?',
@@ -69,5 +82,6 @@ export const SMART_COLLECTION_MAP = {
   [SmartCollectionVariant.BEST_NEW_RELEASES]: BEST_NEW_RELEASES,
   [SmartCollectionVariant.UNDER_THE_RADAR]: UNDER_THE_RADAR,
   [SmartCollectionVariant.MOST_LOVED]: MOST_LOVED,
-  [SmartCollectionVariant.FEELING_LUCKY]: FEELING_LUCKY
+  [SmartCollectionVariant.FEELING_LUCKY]: FEELING_LUCKY,
+  [SmartCollectionVariant.REMIXABLES]: REMIXABLES
 }
