@@ -360,6 +360,7 @@ class SnapbackSM {
     let newReplicaSetEndpoints = []
     let newReplicaSetSPIds = []
     let phase = ''
+
     try {
       // Generate new replica set
       phase = issueUpdateReplicaSetOpPhases.DETERMINE_NEW_REPLICA_SET
@@ -375,11 +376,9 @@ class SnapbackSM {
 
       newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
 
-      this.log(`[issueUpdateReplicaSetOp] Tentative reconfig: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}]`)
-
-      // If snapback is not enabled, print the tentative new replica set, but do not issue a reconfig.
+      // If snapback is not enabled, Log reconfig op without issuing.
       if (!issueReconfig) {
-        this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} issuing reconfig disabled=${issueReconfig}. Skipping reconfig.`)
+        this.log(`[issueUpdateReplicaSetOp] Reconfig [DISABLED]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}]`)
         return response
       }
 
@@ -422,9 +421,9 @@ class SnapbackSM {
         syncType: SyncType.Recurring
       })
 
-      this.log(`[issueUpdateReplicaSetOp] Success! userId=${userId} wallet=${wallet} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}]`)
+      this.log(`[issueUpdateReplicaSetOp] Reconfig [SUCCESS]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}]`)
     } catch (e) {
-      const errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} failed at phase=${phase} reconfiguring to new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}]: ${e.toString()}\n${e.stack}`
+      const errorMsg = `[issueUpdateReplicaSetOp] Reconfig [ERROR]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}\n${e.stack}`
       response.errorMsg = errorMsg
       return response
     }
@@ -591,6 +590,7 @@ class SnapbackSM {
         }
       }
 
+      // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
       if (!userClockValuesResp) {
         this.logError(`[retrieveClockStatusesForUsersAcrossReplicaSet] Could not fetch clock values for wallets=${replicaSetNodeUserWallets} on replica node=${replicaSetNode} ${errorMsg ? ': ' + errorMsg.toString() : ''}`)
         unhealthyPeers.add(replicaSetNode)
@@ -621,8 +621,6 @@ class SnapbackSM {
    * @returns {Object} number of syncs required, enqueued, and errors if any
    */
   async issueSyncRequestsToSecondaries (userReplicaSets, replicaSetNodesToUserClockStatusesMap) {
-    // TODO ensure all syncRequests are for users with primary == self
-
     // Retrieve clock values for all users on this node, which is their primary
     let numSyncRequestsRequired = 0
     let numSyncRequestsEnqueued = 0
@@ -906,10 +904,12 @@ class SnapbackSM {
        */
       let numUpdateReplicaOpsIssued = 0
       try {
-        // Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
-        // Note: sync checks are disabled because there should not be any syncs occurring for a particular user
-        // on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
-        // There will be an explicit clock value check on the newly selected replica set nodes instead.
+        /**
+         * Fetch all the healthy nodes while disabling sync checks to select nodes for new replica set
+         * Note: sync checks are disabled because there should not be any syncs occurring for a particular user
+         * on a new replica set. Also, the sync check logic is coupled with a user state on the userStateManager.
+         * There will be an explicit clock value check on the newly selected replica set nodes instead.
+         */
         const { services: healthyServicesMap } = await this.audiusLibs.ServiceProvider.autoSelectCreatorNodes({
           performSyncCheck: false,
           log: false
@@ -1213,7 +1213,11 @@ class SnapbackSM {
   }
 
   /**
-   * e.x.: 'PRIMARY_AND_SECONDARY' is the reconfig mode -> 'RECONFIG_DISABLED', 'ONE_SECONDARY', 'MULTIPLE_SECONDARIES', 'PRIMARY_AND_SECONDARY' enabled
+   * Updates `enabledReconfigModesSet` and `highestEnabledReconfigMode`.
+   * Uses `override` if provided, else uses config var.
+   * `enabledReconfigModesSet` contains every mode with rank <= `highestEnabledReconfigMode`
+   *   - e.g. `highestEnabledReconfigMode = 'PRIMARY_AND_SECONDARY'
+   *      `enabledReconfigModesSet = { 'RECONFIG_DISABLED', 'ONE_SECONDARY', 'MULTIPLE_SECONDARIES', 'PRIMARY_AND_SECONDARY' }
    */
   updateEnabledReconfigModesSet (override) {
     let highestEnabledReconfigMode

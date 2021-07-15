@@ -55,6 +55,7 @@ class PeerSetManager {
    * @returns the unhealthy peers in a Set
    *
    * @note consider returning healthy set?
+   * TODO - add retry logic to node requests
    */
   async getUnhealthyPeers (nodeUsers, performSimpleCheck = false) {
     // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
@@ -306,7 +307,7 @@ class PeerSetManager {
   }
 
   /**
-   * Converts provided array of SyncRequests to issue to a map(replica set node => userWallets[]) for easier access
+   * Converts provided array of nodeUser info to issue to a map(replica set node => userWallets[]) for easier access
    *
    * @param {Array} nodeUsers array of objects with schema { user_id, wallet, primary, secondary1, secondary2 }
    * @returns {Object} map of replica set endpoint strings to array of wallet strings of users with that node as part of replica set
