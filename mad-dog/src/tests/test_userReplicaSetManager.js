@@ -34,14 +34,16 @@ const verifyUserReplicaSetStatus = async (
     let usrQueryInfo = await getUser(libs, userId)
 
     // Validate the latest updater indexed into discovery node matches expected value
-    let replicaSetUpdateSigner = replicaSetUpdaterAddress
-    if (!replicaSetUpdateSigner) {
-      replicaSetUpdateSigner = libs.getWalletAddress()
-    }
     let queriedReplicaSetUpdateSigner = usrQueryInfo.replica_set_update_signer.toLowerCase()
-    let expectedUpdaterFound = replicaSetUpdateSigner === queriedReplicaSetUpdateSigner
-    if (!expectedUpdaterFound) {
-      throw new Error('Invalid replica set updater found')
+
+    let validReplicaSetUpdateSigner = [replicaSetUpdaterAddress]
+    if (!replicaSetUpdaterAddress) {
+      const signers = await getAllSigners(usrQueryInfo)
+      validReplicaSetUpdateSigner = [libs.getWalletAddress(), ...signers]
+    }
+    validReplicaSetUpdateSigner = validReplicaSetUpdateSigner.map(signer => signer.toLowerCase())
+    if (!validReplicaSetUpdateSigner.some(signer => signer === queriedReplicaSetUpdateSigner)) {
+      throw new Error(`Invalid replica set updater found: Replica Set Signer ${queriedReplicaSetUpdateSigner} not in allowed signers: ${validReplicaSetUpdateSigner.join(', ')}`)
     }
 
     // Deconstruct the comma separated value of enpdoint1,endoint2,endpoint3
@@ -101,6 +103,19 @@ const getLatestIndexedBlock = async (endpoint) => {
     baseURL: endpoint,
     url: '/health_check'
   })).data.latest_indexed_block
+}
+
+const getAllSigners = async (user) => {
+  const cnEndpoints = user.creator_node_endpoint.split(',').filter(Boolean)
+  return Promise.all(cnEndpoints.map(getCreatorNodeSigner))
+}
+
+const getCreatorNodeSigner = async (endpoint) => {
+  return (await axios({
+    method: 'get',
+    baseURL: endpoint,
+    url: '/health_check'
+  })).data.data.spOwnerWallet
 }
 
 const maxIndexingTimeout = 15000
