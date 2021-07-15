@@ -80,6 +80,7 @@ class SyncHistoryAggregator {
       await redisClient.set(latestSyncKeys[state], timeOfEvent, 'EX', latestSyncKeyTTL)
 
       // Update per wallet success/fail sync data
+      // Each daily wallet key stores a set of wallets, representing each unique user with a sync in that state that day
       const dailyWalletSyncKey = SyncHistoryAggregator.getUniqueSyncKeys()
       const dailyWalletSyncKeyTTL = await SyncHistoryAggregator.getKeyTTL(dailyWalletSyncKey[state])
       await redisClient.sadd(dailyWalletSyncKey[state], wallet)
@@ -189,6 +190,7 @@ class SyncHistoryAggregator {
     try {
       const { success, fail } = SyncHistoryAggregator.getUniqueSyncKeys(date)
 
+      // redis SCARD returns set cardinality (number of elements) in set
       const perWalletSyncSuccess = await redisClient.scard(success)
       const perWalletSyncFail = await redisClient.scard(fail)
 
@@ -197,7 +199,7 @@ class SyncHistoryAggregator {
     } catch (e) {
       logger.error(`syncHistoryAggregator - getDailyWalletSyncData() error - ${e.toString()}`)
     }
-    // Structure: {success: <YYYY-MM-DDTHH:MM:SS:sssZ>, fail: <YYYY-MM-DDTHH:MM:SS:sssZ>}
+    // Structure: {success: <int>, fail: <int>}
     return perWalletSyncData
   }
 
