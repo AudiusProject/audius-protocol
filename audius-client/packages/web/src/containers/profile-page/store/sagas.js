@@ -1,3 +1,4 @@
+import { merge } from 'lodash'
 import { delay } from 'redux-saga'
 import {
   call,
@@ -320,35 +321,58 @@ function* watchUpdateProfile() {
 
 export function* updateProfileAsync(action) {
   yield call(waitForBackendSetup)
-  action.metadata.bio = squashNewLines(action.metadata.bio)
+  let metadata = { ...action.metadata }
+  metadata.bio = squashNewLines(metadata.bio)
 
   const accountUserId = yield select(getUserId)
   yield put(
     cacheActions.update(Kind.USERS, [
-      { id: accountUserId, metadata: { name: action.metadata.name } }
+      { id: accountUserId, metadata: { name: metadata.name } }
     ])
   )
-  yield call(confirmUpdateProfile, action.metadata.user_id, action.metadata)
 
-  const creator = action.metadata
-  if (action.metadata.updatedCoverPhoto) {
-    action.metadata._cover_photo_sizes[DefaultSizes.OVERRIDE] =
-      action.metadata.updatedCoverPhoto.url
+  // Get existing metadata and combine with it
+  const gateways = getCreatorNodeIPFSGateways(metadata.creator_node_endpoint)
+  const cid = metadata.metadata_multihash ?? null
+  if (cid) {
+    try {
+      const metadataFromIPFS = yield call(
+        fetchCID,
+        cid,
+        gateways,
+        /* cache */ false,
+        /* asUrl */ false
+      )
+      metadata = merge(metadataFromIPFS, metadata)
+    } catch (e) {
+      // Although we failed to fetch the existing user metadata, this should only
+      // happen if the user's account data is unavailable across the whole network.
+      // In favor of availability, we write anyway.
+      console.error(e)
+    }
+  }
+
+  yield call(confirmUpdateProfile, metadata.user_id, metadata)
+
+  const creator = metadata
+  if (metadata.updatedCoverPhoto) {
+    metadata._cover_photo_sizes[DefaultSizes.OVERRIDE] =
+      metadata.updatedCoverPhoto.url
   }
   if (creator.updatedProfilePicture) {
-    action.metadata._profile_picture_sizes[DefaultSizes.OVERRIDE] =
-      action.metadata.updatedProfilePicture.url
+    metadata._profile_picture_sizes[DefaultSizes.OVERRIDE] =
+      metadata.updatedProfilePicture.url
   }
 
   yield put(
     cacheActions.update(Kind.USERS, [
       {
         id: creator.user_id,
-        metadata: action.metadata
+        metadata: metadata
       }
     ])
   )
-  yield put(profileActions.updateProfileSucceeded(action.metadata.user_id))
+  yield put(profileActions.updateProfileSucceeded(metadata.user_id))
 }
 
 function* confirmUpdateProfile(userId, metadata) {
