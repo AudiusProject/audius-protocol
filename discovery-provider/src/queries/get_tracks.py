@@ -27,6 +27,14 @@ def _get_tracks(session, args):
         Track.is_current == True, Track.is_unlisted == False, Track.stem_of == None
     )
 
+    # Note that if slug is included, we should only get one track
+    # The user ID filter should also be included
+    if "slug" in args:
+        slug = args.get("slug")
+        base_query = base_query.join(
+            TrackRoute, TrackRoute.track_id == Track.track_id
+        ).filter(TrackRoute.slug == slug)
+
     # Conditionally process an array of tracks
     if "id" in args:
         track_id_list = args.get("id")
@@ -75,11 +83,6 @@ def _get_tracks(session, args):
                 "track_id",
             ]
             base_query = parse_sort_param(base_query, Track, whitelist_params)
-    if "slug" in args:
-        slug = args.get("slug")
-        base_query = base_query.join(
-            TrackRoute, TrackRoute.track_id == Track.track_id
-        ).filter(TrackRoute.slug == slug)
 
     query_results = add_query_pagination(base_query, args["limit"], args["offset"])
     tracks = helpers.query_result_to_list(query_results.all())
