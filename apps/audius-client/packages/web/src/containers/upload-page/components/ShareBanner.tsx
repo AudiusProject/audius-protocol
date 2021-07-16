@@ -10,6 +10,7 @@ import Toast from 'components/toast/Toast'
 import { MountPlacement, ComponentPlacement } from 'components/types'
 import { useFlag } from 'containers/remote-config/hooks'
 import { open as openTikTokModal } from 'containers/share-sound-to-tiktok-modal/store/slice'
+import { useModalState } from 'hooks/useModalState'
 import User from 'models/User'
 import AudiusBackend from 'services/AudiusBackend'
 import { Name } from 'services/analytics'
@@ -138,6 +139,7 @@ const TOAST_DELAY = 3000
 const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
   const dispatch = useDispatch()
   const record = useRecord()
+  const [_, setIsTikTokModalOpen] = useModalState('ShareSoundToTikTok')
   const { isEnabled: isShareSoundToTikTokEnabled } = useFlag(
     FeatureFlags.SHARE_SOUND_TO_TIKTOK
   )
@@ -167,9 +169,10 @@ const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
           }
         })
       )
+      setIsTikTokModalOpen(true)
     }
     record(make(Name.TRACK_UPLOAD_SHARE_SOUND_TO_TIKTOK, {}))
-  }, [upload, record, dispatch])
+  }, [upload, record, dispatch, setIsTikTokModalOpen])
 
   const onCopy = useCallback(async () => {
     const { url } = await getShareTextUrl(type, user, upload, false)

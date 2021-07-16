@@ -16,7 +16,6 @@ export type Track = {
 
 export type ShareSoundToTikTokModalState = {
   isAuthenticated: boolean
-  isOpen: boolean
   track?: Track
   status: Status
 }
