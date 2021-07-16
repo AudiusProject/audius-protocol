@@ -44,13 +44,13 @@
       "cd eth-contracts/; npm run ganache-q"
     ]
   },
-  "solana-programs": {
+ "solana-programs": {
     "path": "solana-programs",
     "up": [
-      "docker run -d --network audius_dev --entrypoint='' --name solana solanalabs/solana:beta sh -c 'solana-test-validator --gossip-host solana'",
+      "docker run -d --name solana --publish 8899:8899/tcp --network audius_dev --entrypoint='' solanalabs/solana:beta sh -c 'solana-test-validator --gossip-host solana'",
       "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/mnt\" audius/solana-programs > solana-program-config.json",
       "cd solana-programs/; cp solana-program-config.json ../identity-service",
-      "cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
+      "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
     ],
     "down": [
       "docker container stop solana || true",
