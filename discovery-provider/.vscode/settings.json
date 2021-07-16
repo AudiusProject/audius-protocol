@@ -1,6 +1,7 @@
 {
   // With this setup, we get linting via pylint, typechecking via mypy,
-  // and formatting via black.
+  // and formatting via black. Comments are allowed b/c
+  // vscode understands this as a special 'JSON with Comments' file.
   "python.linting.pylintEnabled": true, // This enables basic linting
   "python.linting.mypyEnabled": true, // This gives us typing
   "python.linting.lintOnSave": true, // lint on save
@@ -8,7 +9,7 @@
   "python.linting.pylintCategorySeverity.convention": "Warning",
   "python.linting.pylintCategorySeverity.refactor": "Warning",
   "python.pythonPath": "/usr/bin/python3",
-  "python.formatting.provider": "black", // This gives us autoforatting
+  "python.formatting.provider": "black", // This gives us autoformatting
   "editor.formatOnSave": true,
   "python.analysis.typeCheckingMode": "off",
   "python.languageServer": "Pylance",

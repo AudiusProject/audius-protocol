@@ -50,7 +50,7 @@ class ChallengeUpdater(ABC):
         update the given user_challenges.
 
         In the case of aggregate challenges, where UserChallenges are created in an
-        already completed state, we this method can be left as is.
+        already completed state, this method can be left as is.
         """
 
     def on_after_challenge_creation(self, session, metadatas: List[FullEventMetadata]):
