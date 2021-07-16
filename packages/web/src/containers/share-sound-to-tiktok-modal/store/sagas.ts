@@ -3,6 +3,7 @@ import { takeEvery, put, call, select } from 'redux-saga/effects'
 import { show as showConfetti } from 'containers/music-confetti/store/slice'
 import User from 'models/User'
 import { getAccountUser } from 'store/account/selectors'
+import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 
 import { getIsAuthenticated } from './selectors'
 import {
@@ -31,7 +32,7 @@ function* handleShare(action: ReturnType<typeof share>) {
     const { data } = yield call(
       window.audiusLibs.File.fetchCID,
       action.payload.cid,
-      [`${creator_node_endpoint}/ipfs/`],
+      getCreatorNodeIPFSGateways(creator_node_endpoint),
       () => {}
     )
     track = data
