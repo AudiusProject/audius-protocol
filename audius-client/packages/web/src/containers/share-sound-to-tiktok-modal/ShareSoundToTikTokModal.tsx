@@ -10,12 +10,13 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useModalState } from 'hooks/useModalState'
 import { useTikTokAuth } from 'hooks/useTikTokAuth'
 import { Nullable } from 'utils/typeUtils'
 
 import styles from './ShareSoundToTikTokModal.module.css'
-import { getStatus, getIsOpen, getTrack } from './store/selectors'
-import { authenticated, close, setStatus, share } from './store/slice'
+import { getStatus, getTrack } from './store/selectors'
+import { authenticated, setStatus, share } from './store/slice'
 import { Status } from './store/types'
 
 enum FileRequirementError {
@@ -41,9 +42,9 @@ const fileRequirementErrorMessages = {
 }
 
 const ShareSoundToTikTokModal = () => {
+  const [isOpen, setIsOpen] = useModalState('ShareSoundToTikTok')
   const dispatch = useDispatch()
 
-  const isOpen = useSelector(getIsOpen)
   const track = useSelector(getTrack)
   const status = useSelector(getStatus)
 
@@ -101,7 +102,7 @@ const ShareSoundToTikTokModal = () => {
       return (
         <Button
           className={styles.button}
-          onClick={() => dispatch(close())}
+          onClick={() => setIsOpen(false)}
           text={messages.completeButton}
         />
       )
@@ -136,7 +137,7 @@ const ShareSoundToTikTokModal = () => {
           <div>{messages.title}</div>
         </div>
       }
-      onClose={() => dispatch(close())}
+      onClose={() => setIsOpen(false)}
       allowScroll={false}
       bodyClassName={styles.modalBody}
       headerContainerClassName={styles.modalHeader}

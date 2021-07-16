@@ -20,7 +20,7 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.USE_RESUMABLE_TRACK_UPLOAD]: false,
   [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: false,
   [FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP]: false,
-  [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: true,
+  [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: false,
   [FeatureFlags.REMIXABLES]: false
 }
 
