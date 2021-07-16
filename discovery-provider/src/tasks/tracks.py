@@ -2,6 +2,7 @@ import logging
 import time
 import functools
 from datetime import datetime
+from typing import Optional
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import null, functions
 from src.app import contract_addresses
@@ -209,16 +210,27 @@ def add_old_style_route(session, track_record, track_metadata):
     """Temporary method to add the old style routes to the track_routes db while we
     transition the client to use the new routing API.
     """
-    try:
-        # Use create_track_route_id() since the regex replace is slightly different
-        new_track_slug_title = helpers.create_track_route_id(
-            track_metadata["title"], ""
-        )
-        # Remove "/"
-        new_track_slug_title = new_track_slug_title[1:]
-        # Append ID
-        new_track_slug_title = f"{new_track_slug_title}-{track_record.track_id}"
+    # Check if the title is staying the same, and if so, return early
+    if track_record.title == track_metadata["title"]:
+        return
+    # Use create_track_route_id() since the regex replace is slightly different
+    new_track_slug_title = helpers.create_track_route_id(track_metadata["title"], "")
+    # Remove "/"
+    new_track_slug_title = new_track_slug_title[1:]
+    # Append ID
+    new_track_slug_title = f"{new_track_slug_title}-{track_record.track_id}"
 
+    # Check to make sure the route doesn't exist
+    existing_track_route = (
+        session.query(TrackRoute)
+        .filter(
+            TrackRoute.slug == new_track_slug_title,
+            TrackRoute.owner_id == track_record.owner_id,
+        )
+        .one_or_none()
+    )
+
+    if existing_track_route is None:
         # Add the new track route
         new_track_route = TrackRoute()
         new_track_route.slug = new_track_slug_title
@@ -236,11 +248,9 @@ def add_old_style_route(session, track_record, track_metadata):
 
         # Commit this so it gets in before the new route creation
         session.commit()
-    except Exception as e:
-        # Some integrity errors might occur if this collides with an existing track.
-        # Should be rare, and we shouldn't stop indexing when that happens.
+    else:
         logger.error(
-            f"Could not add old route for track_id={track_record.track_id}. Error={e}"
+            f"Cannot add 'old-style' track_route to Track={track_record} as the route already exists: {existing_track_route}"
         )
 
 
@@ -283,25 +293,38 @@ def update_track_routes_table(session, track_record, track_metadata):
         .one_or_none()
     )[0]
 
-    collision_count = 0
+    existing_track_route: Optional[TrackRoute] = None
     # If the new track_slug ends in a digit, there's a possibility it collides
     # with an existing route when the collision_id is appended to its title_slug
     if new_track_slug[-1].isdigit():
-        collision_count = (
-            session.query(functions.count(TrackRoute.slug))
+        existing_track_route = (
+            session.query(TrackRoute)
             .filter(
                 TrackRoute.slug == new_track_slug,
                 TrackRoute.owner_id == track_record.owner_id,
             )
             .one_or_none()
-        )[0]
+        )
 
     new_collision_id = 0
-    has_collisions = collision_count > 0
+    has_collisions = existing_track_route is not None
+
     if max_collision_id is not None:
         has_collisions = True
         new_collision_id = max_collision_id
     while has_collisions:
+        # If the collision is for the same track_id, just make that route current
+        if (
+            existing_track_route is not None
+            and existing_track_route.track_id == track_record.track_id
+        ):
+            existing_track_route.is_current = True
+            # Might not even have a current route yet if using the old-style route
+            if prev_track_route_record is not None:
+                prev_track_route_record.is_current = False
+            session.commit()
+            return
+
         # If there is an existing track by the user with that slug,
         # then we need to append the collision number to the slug
         new_collision_id += 1
@@ -328,15 +351,15 @@ def update_track_routes_table(session, track_record, track_metadata):
         #       - Use collision_id: 1, slug: 'track-1-1'
         #
         # This may be expensive with many collisions, but should be rare.
-        collision_count = (
-            session.query(functions.count(TrackRoute.slug))
+        existing_track_route = (
+            session.query(TrackRoute)
             .filter(
                 TrackRoute.slug == new_track_slug,
                 TrackRoute.owner_id == track_record.owner_id,
             )
             .one_or_none()
-        )[0]
-        has_collisions = collision_count > 0
+        )
+        has_collisions = existing_track_route is not None
 
     # Add the new track route
     new_track_route = TrackRoute()
@@ -458,6 +481,7 @@ def parse_track_event(
             upd_track_metadata_multihash, track_metadata_format, creator_node_endpoint
         )
 
+        add_old_style_route(session, track_record, track_metadata)
         update_track_routes_table(session, track_record, track_metadata)
         track_record = populate_track_record_metadata(
             track_record, track_metadata, handle
