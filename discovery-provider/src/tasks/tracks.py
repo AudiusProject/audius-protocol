@@ -208,7 +208,7 @@ def time_method(func):
 @time_method
 def add_old_style_route(session, track_record, track_metadata):
     """Temporary method to add the old style routes to the track_routes db while we
-    transition the client to use the new routing API.
+    transition the clients to use the new routing API.
     """
     # Check if the title is staying the same, and if so, return early
     if track_record.title == track_metadata["title"]:
@@ -409,6 +409,7 @@ def parse_track_event(
             track_metadata_multihash, track_metadata_format, creator_node_endpoint
         )
 
+        # Note: These will commit the session
         add_old_style_route(session, track_record, track_metadata)
         update_track_routes_table(session, track_record, track_metadata)
         track_record = populate_track_record_metadata(
@@ -469,6 +470,7 @@ def parse_track_event(
             upd_track_metadata_multihash, track_metadata_format, creator_node_endpoint
         )
 
+        # Note: These will commit the session
         add_old_style_route(session, track_record, track_metadata)
         update_track_routes_table(session, track_record, track_metadata)
         track_record = populate_track_record_metadata(
