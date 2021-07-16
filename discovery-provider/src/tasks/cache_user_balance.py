@@ -1,11 +1,17 @@
+from redis import Redis
+from src.utils.session_manager import SessionManager
 import logging
 import time
 from sqlalchemy import and_
 from src.app import eth_abi_values
 from src.tasks.celery_app import celery
-from src.models import UserBalance, User, AssociatedWallet
+from src.models import UserBalance, User, AssociatedWallet, UserBankAccount
 from src.queries.get_balances import does_user_balance_need_refresh, REDIS_PREFIX
 from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
+from typing import Tuple, TypedDict, List, Optional, Dict
+from spl.token.client import Token
+from solana.publickey import PublicKey
+from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
 audius_token_registry_key = bytes("Token", "utf-8")
@@ -13,6 +19,20 @@ audius_staking_registry_key = bytes("StakingProxy", "utf-8")
 audius_delegate_manager_registry_key = bytes("DelegateManager", "utf-8")
 
 REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
+
+USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
+WAUDIO_PROGRAM_ADDRESS = shared_config["solana"]["waudio_program_address"]
+WAUDIO_MINT_ADDRESS = shared_config["solana"]["waudio_mint_address"]
+USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
+WAUDIO_PROGRAM_PUBKEY = PublicKey(WAUDIO_PROGRAM_ADDRESS) if USER_BANK_ADDRESS else None
+WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS) if WAUDIO_MINT_ADDRESS else None
+
+
+class UserWalletMetadata(TypedDict):
+    owner_wallet: str
+    associated_wallets: Optional[List[str]]
+    bank_account: Optional[str]
+
 
 # *Explanation of user balance caching*
 # In an effort to minimize eth calls, we look up users embedded in track metadata once per user,
@@ -31,14 +51,20 @@ REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
 #        a) new (created_at == updated_at)
 #        b) not new, but stale: last updated prior to (now - threshold)
 #     we look up said users, adding User_Balance rows, and removing them from Redis.
+#     we check if they have associated_wallets and update those balances as well
+#     we check if they have a user_bank_account and update that balance as well
 #     Users with zero balance are refreshed at a slower rate than users with a non-zero balance.
 #
 #     enqueued User Ids in Redis that are *not* ready to be refreshed yet are left in the queue
 #     for later.
-
-
 def refresh_user_ids(
-    redis, db, token_contract, delegate_manager_contract, staking_contract, eth_web3
+    redis: Redis,
+    db: SessionManager,
+    token_contract,
+    delegate_manager_contract,
+    staking_contract,
+    eth_web3,
+    solana_client,
 ):
     # List users in Redis set, balances decoded as strings
     redis_user_ids = redis.smembers(REDIS_PREFIX)
@@ -52,7 +78,7 @@ def refresh_user_ids(
     )
 
     with db.scoped_session() as session:
-        query = (
+        query: List[UserBalance] = (
             (session.query(UserBalance))
             .filter(UserBalance.user_id.in_(redis_user_ids))
             .all()
@@ -77,7 +103,7 @@ def refresh_user_ids(
         needs_refresh_map = {user.user_id: user for user in needs_refresh}
 
         # Grab the users & associated_wallets we need to refresh
-        user_query = (
+        user_associated_query: List[Tuple[int, str, str]] = (
             session.query(User.user_id, User.wallet, AssociatedWallet.wallet)
             .outerjoin(
                 AssociatedWallet,
@@ -93,25 +119,48 @@ def refresh_user_ids(
             )
             .all()
         )
-        user_id_wallets = {}
-        for user in user_query:
+
+        user_bank_accounts_query: List[Tuple[int, str]] = (
+            session.query(User.user_id, UserBankAccount.bank_account)
+            .join(UserBankAccount, UserBankAccount.ethereum_address == User.wallet)
+            .filter(
+                User.user_id.in_(needs_refresh_map.keys()),
+                User.is_current == True,
+            )
+            .all()
+        )
+        user_id_bank_accounts = {user[0]: user[1] for user in user_bank_accounts_query}
+
+        user_id_metadata: Dict[int, UserWalletMetadata] = {}
+
+        for user in user_associated_query:
             user_id, user_wallet, associated_wallet = user
-            if not user_id in user_id_wallets:
-                user_id_wallets[user_id] = {"owner_wallet": user_wallet}
+            if not user_id in user_id_metadata:
+                user_id_metadata[user_id] = {
+                    "owner_wallet": user_wallet,
+                    "associated_wallets": None,
+                    "bank_account": None,
+                }
+                if user_id in user_id_bank_accounts:
+                    user_id_metadata[user_id]["bank_account"] = user_id_bank_accounts[
+                        user_id
+                    ]
             if associated_wallet:
-                if not "associated_wallets" in user_id_wallets[user_id]:
-                    user_id_wallets[user_id]["associated_wallets"] = [associated_wallet]
+                if user_id_metadata[user_id]["associated_wallets"] is None:
+                    user_id_metadata[user_id]["associated_wallets"] = [
+                        associated_wallet
+                    ]
                 else:
-                    user_id_wallets[user_id]["associated_wallets"].append(
+                    user_id_metadata[user_id]["associated_wallets"].append(
                         associated_wallet
                     )
 
         logger.info(
-            f"cache_user_balance.py | fetching for {len(user_query)} users: {needs_refresh_map.keys()}"
+            f"cache_user_balance.py | fetching for {len(user_associated_query)} users: {needs_refresh_map.keys()}"
         )
 
         # Fetch balances
-        for user_id, wallets in user_id_wallets.items():
+        for user_id, wallets in user_id_metadata.items():
             try:
                 owner_wallet = wallets["owner_wallet"]
                 owner_wallet = eth_web3.toChecksumAddress(owner_wallet)
@@ -119,8 +168,9 @@ def refresh_user_ids(
                     owner_wallet
                 ).call()
                 associated_balance = 0
+                waudio_balance = 0
 
-                if "associated_wallets" in wallets:
+                if wallets["associated_wallets"] is not None:
                     for wallet in wallets["associated_wallets"]:
                         wallet = eth_web3.toChecksumAddress(wallet)
                         balance = token_contract.functions.balanceOf(wallet).call()
@@ -135,11 +185,29 @@ def refresh_user_ids(
                         associated_balance += (
                             balance + delegation_balance + stake_balance
                         )
+                if wallets["bank_account"] is not None:
+                    if WAUDIO_MINT_PUBKEY is None or WAUDIO_PROGRAM_PUBKEY is None:
+                        logger.error(
+                            f"cache_user_balance.py | Missing required SPL configuration"
+                        )
+                    else:
+                        waudio_token = Token(
+                            conn=solana_client,
+                            pubkey=WAUDIO_MINT_PUBKEY,
+                            program_id=WAUDIO_PROGRAM_PUBKEY,
+                            payer=[],  # not making any txs so payer is not required
+                        )
+
+                        bal_info = waudio_token.get_balance(
+                            PublicKey(wallets["bank_account"])
+                        )
+                        waudio_balance = bal_info["result"]["value"]["amount"]
 
                 # update the balance on the user model
                 user_balance = needs_refresh_map[user_id]
                 user_balance.balance = owner_wallet_balance
                 user_balance.associated_wallets_balance = associated_balance
+                user_balance.waudio = waudio_balance
 
             except Exception as e:
                 logger.error(
@@ -152,7 +220,7 @@ def refresh_user_ids(
         # Remove the fetched balances from Redis set
         to_remove = [user.user_id for user in needs_refresh]
         logger.info(
-            f"cache_user_balance.py | Got balances for {len(user_query)} users, removing from Redis."
+            f"cache_user_balance.py | Got balances for {len(to_remove)} users, removing from Redis."
         )
         if to_remove:
             redis.srem(REDIS_PREFIX, *to_remove)
@@ -228,6 +296,7 @@ def update_user_balances_task(self):
     redis = update_user_balances_task.redis
     eth_web3 = update_user_balances_task.eth_web3
     shared_config = update_user_balances_task.shared_config
+    solana_client = update_user_balances_task.solana_client
 
     have_lock = False
     update_lock = redis.lock("update_user_balances_lock", timeout=7200)
@@ -245,7 +314,13 @@ def update_user_balances_task(self):
             staking_inst = get_staking_contract(eth_web3, shared_config)
             token_inst = get_token_contract(eth_web3, shared_config)
             refresh_user_ids(
-                redis, db, token_inst, delegate_manager_inst, staking_inst, eth_web3
+                redis,
+                db,
+                token_inst,
+                delegate_manager_inst,
+                staking_inst,
+                eth_web3,
+                solana_client,
             )
 
             end_time = time.time()
