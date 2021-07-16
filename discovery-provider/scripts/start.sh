@@ -60,7 +60,12 @@ if [ -z "$audius_db_url" ]; then
     /wait
 fi
 
-./scripts/dev-server.sh 2>&1 | tee >(cat >&2) | logger &
+if [[ "$dev" == "true" ]]; then
+    ./scripts/dev-server.sh 2>&1 | tee >(cat >&2) | logger &
+else
+    ./scripts/prod-server.sh 2>&1 | tee >(cat >&2) | logger &
+fi
+
 sleep 20 # wait for migrations to finish
 
 if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
