@@ -68,8 +68,8 @@ def refresh_user_ids(
     solana_client,
 ):
     # List users in Redis set, balances decoded as strings
-    redis_user_ids = redis.smembers(REDIS_PREFIX)
-    redis_user_ids = [int(user_id.decode()) for user_id in redis_user_ids]
+    redis_refresh_user_ids = redis.smembers(REDIS_PREFIX)
+    redis_user_ids = [int(user_id.decode()) for user_id in redis_refresh_user_ids]
 
     if not redis_user_ids:
         return
@@ -89,7 +89,7 @@ def refresh_user_ids(
         # not be present in the db, so make those
         not_present_set = set(redis_user_ids) - {user.user_id for user in query}
         new_balances = [
-            UserBalance(user_id=user_id, balance=0, associated_wallets_balance=0)
+            UserBalance(user_id=user_id, balance="0", associated_wallets_balance="0")
             for user_id in not_present_set
         ]
         if new_balances:
@@ -147,14 +147,13 @@ def refresh_user_ids(
                         user_id
                     ]
             if associated_wallet:
-                if user_id_metadata[user_id]["associated_wallets"] is None:
+                user_associated_wallet = user_id_metadata[user_id]["associated_wallets"]
+                if user_associated_wallet is not None:
+                    user_associated_wallet.append(associated_wallet)
+                else:
                     user_id_metadata[user_id]["associated_wallets"] = [
                         associated_wallet
                     ]
-                else:
-                    user_id_metadata[user_id]["associated_wallets"].append(
-                        associated_wallet
-                    )
 
         logger.info(
             f"cache_user_balance.py | fetching for {len(user_associated_query)} users: {needs_refresh_map.keys()}"
@@ -207,8 +206,8 @@ def refresh_user_ids(
                 # update the balance on the user model
                 user_balance = needs_refresh_map[user_id]
                 user_balance.balance = owner_wallet_balance
-                user_balance.associated_wallets_balance = associated_balance
-                user_balance.waudio = waudio_balance
+                user_balance.associated_wallets_balance = str(associated_balance)
+                user_balance.waudio = str(waudio_balance)
 
             except Exception as e:
                 logger.error(
