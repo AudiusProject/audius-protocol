@@ -180,7 +180,7 @@ def extend_track(track):
     if "user" in track:
         track["user"] = extend_user(track["user"])
         if "slug" in track:
-            track["permalink"] = f'{track["user"]["handle_lc"]}/{track["slug"]}'
+            track["permalink"] = f'{track["user"]["handle"]}/{track["slug"]}'
     track["id"] = track_id
     track["user_id"] = owner_id
     if "followee_saves" in track:

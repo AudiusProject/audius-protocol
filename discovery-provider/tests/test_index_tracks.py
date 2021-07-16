@@ -444,12 +444,15 @@ def test_index_tracks(mock_index_task, app):
             and route.track_id == 1
             and route.slug == "real-magic-bassy-flip"
         ], "Old route should be marked as current again"
-        assert len(
-            [
-                route
-                for route in track_routes
-                if route.is_current == True and route.track_id == 1
-            ]
+        assert (
+            len(
+                [
+                    route
+                    for route in track_routes
+                    if route.is_current == True and route.track_id == 1
+                ]
+            )
+            == 1
         ), "Only one route should be marked as current"
 
         # ================== Test Delete Track Event ==================
