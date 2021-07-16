@@ -313,18 +313,6 @@ def update_track_routes_table(session, track_record, track_metadata):
         has_collisions = True
         new_collision_id = max_collision_id
     while has_collisions:
-        # If the collision is for the same track_id, just make that route current
-        if (
-            existing_track_route is not None
-            and existing_track_route.track_id == track_record.track_id
-        ):
-            existing_track_route.is_current = True
-            # Might not even have a current route yet if using the old-style route
-            if prev_track_route_record is not None:
-                prev_track_route_record.is_current = False
-            session.commit()
-            return
-
         # If there is an existing track by the user with that slug,
         # then we need to append the collision number to the slug
         new_collision_id += 1
