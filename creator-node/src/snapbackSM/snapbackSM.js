@@ -121,9 +121,9 @@ class SnapbackSM {
     })
 
     // The interval when SnapbackSM is fired for state machine jobs
-    this.snapbackJobInterval = 10000 // this.nodeConfig.get('snapbackJobInterval') // ms
+    this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
 
-    this.updateEnabledReconfigModesSet(/* override */ RECONFIG_MODES.RECONFIG_DISABLED.key)
+    this.updateEnabledReconfigModesSet()
   }
 
   /**
@@ -357,11 +357,16 @@ class SnapbackSM {
     let newReplicaSetEndpoints = []
     let newReplicaSetSPIds = []
     let phase = ''
-
     try {
       // Generate new replica set
       phase = issueUpdateReplicaSetOpPhases.DETERMINE_NEW_REPLICA_SET
-      const { newPrimary, newSecondary1, newSecondary2, issueReconfig } = await this.determineNewReplicaSet({
+      const {
+        newPrimary,
+        newSecondary1,
+        newSecondary2,
+        issueReconfig,
+        reconfigType
+      } = await this.determineNewReplicaSet({
         wallet,
         secondary1,
         secondary2,
@@ -375,7 +380,7 @@ class SnapbackSM {
 
       // If snapback is not enabled, Log reconfig op without issuing.
       if (!issueReconfig) {
-        this.log(`[issueUpdateReplicaSetOp] Reconfig [DISABLED]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}]`)
+        this.log(`[issueUpdateReplicaSetOp] Reconfig [DISABLED]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`)
         return response
       }
 
@@ -386,7 +391,7 @@ class SnapbackSM {
         // selected as part of the new replica set, do not issue reconfig
         if (!this.peerSetManager.endpointToSPIdMap[endpt]) {
           this.logError(response.errorMsg)
-          response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}]. Skipping reconfig.`
+          response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}]. Skipping reconfig.`
           return response
         }
         newReplicaSetSPIds.push(this.peerSetManager.endpointToSPIdMap[endpt])
@@ -417,7 +422,7 @@ class SnapbackSM {
         syncType: SyncType.Recurring
       })
 
-      this.log(`[issueUpdateReplicaSetOp] Reconfig [SUCCESS]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}]`)
+      this.log(`[issueUpdateReplicaSetOp] Reconfig [SUCCESS]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`)
     } catch (e) {
       const errorMsg = `[issueUpdateReplicaSetOp] Reconfig [ERROR]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}\n${e.stack}`
       response.errorMsg = errorMsg
@@ -462,7 +467,7 @@ class SnapbackSM {
    * }
    */
   async determineNewReplicaSet ({ primary, secondary1, secondary2, wallet, unhealthyReplicasSet, healthyNodes, replicaSetNodesToUserClockStatusesMap }) {
-    let response = { newPrimary: null, newSecondary1: null, newSecondary2: null, issueReconfig: false }
+    let response = { newPrimary: null, newSecondary1: null, newSecondary2: null, issueReconfig: false, reconfigType: null }
 
     const currentReplicaSet = [primary, secondary1, secondary2]
     const healthyReplicaSet = new Set(currentReplicaSet.filter(node => !unhealthyReplicasSet.has(node)))
@@ -485,6 +490,7 @@ class SnapbackSM {
         response.newSecondary1 = currentHealthySecondary
         response.newSecondary2 = newReplicaNodes[0]
         response.issueReconfig = this.isReconfigModeEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
+        response.reconfigType = RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
       } else {
         // If one secondary is unhealthy, select a new secondary
         const currentHealthySecondary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
@@ -492,16 +498,19 @@ class SnapbackSM {
         response.newSecondary1 = currentHealthySecondary
         response.newSecondary2 = newReplicaNodes[0]
         response.issueReconfig = this.isReconfigModeEnabled(RECONFIG_MODES.ONE_SECONDARY.key)
+        response.reconfigType = RECONFIG_MODES.ONE_SECONDARY.key
       }
     } else if (unhealthyReplicasSet.size === 2) {
       if (unhealthyReplicasSet.has(primary)) {
         // If primary + secondary is unhealthy, use other healthy secondary as primary and 2 random secondaries
         response.newPrimary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
         response.issueReconfig = this.isReconfigModeEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
+        response.reconfigType = RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
       } else {
         // If both secondaries are unhealthy, keep original primary and select two random secondaries
         response.newPrimary = primary
         response.issueReconfig = this.isReconfigModeEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key)
+        response.reconfigType = RECONFIG_MODES.MULTIPLE_SECONDARIES.key
       }
       response.newSecondary1 = newReplicaNodes[0]
       response.newSecondary2 = newReplicaNodes[1]
@@ -682,7 +691,7 @@ class SnapbackSM {
       let nodeUsers
       try {
         nodeUsers = await this.peerSetManager.getNodeUsers()
-        // nodeUsers = this.sliceUsers(nodeUsers)
+        nodeUsers = this.sliceUsers(nodeUsers)
 
         decisionTree.push({ stage: 'getNodeUsers() and sliceUsers() Success', vals: { nodeUsersLength: nodeUsers.length }, time: Date.now() })
       } catch (e) {
@@ -763,10 +772,10 @@ class SnapbackSM {
           /**
            * If either secondary is in `unhealthyPeers` list, add it to `unhealthyReplicas` list
            */
+          const userSecondarySyncMetrics = await SecondarySyncHealthTracker.computeUserSecondarySyncSuccessRates(
+            nodeUser.wallet, secondaries
+          )
           for (const secondary of secondaries) {
-            const userSecondarySyncMetrics = await SecondarySyncHealthTracker.computeUserSecondarySyncSuccessRates(
-              nodeUser.wallet, [secondary]
-            )
             const secUserSyncSuccessRate = userSecondarySyncMetrics[secondary]['SuccessRate']
             if (secUserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent || unhealthyPeers.has(secondary)) {
               unhealthyReplicas.push(secondary)
@@ -825,7 +834,7 @@ class SnapbackSM {
         await this.peerSetManager.updateEndpointToSpIdMap(this.audiusLibs.ethContracts)
 
         // update enabledReconfigModesSet after successful `updateEndpointToSpIDMap()` call
-        // this.updateEnabledReconfigModesSet()
+        this.updateEnabledReconfigModesSet()
 
         decisionTree.push({
           stage: `updateEndpointToSpIdMap() Success`,
@@ -955,7 +964,7 @@ class SnapbackSM {
 
       // Log decision tree
       try {
-        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree, null, 2)}`)
+        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree)}`)
       } catch (e) {
         this.logError(`Error printing processStateMachineOperation Decision Tree ${decisionTree}`)
       }
