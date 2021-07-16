@@ -3,25 +3,24 @@ import datetime
 import logging
 import re
 import time
+from typing import Tuple, Optional
 from sqlalchemy import desc, and_
-from spl.token.client import Token
 from solana.publickey import PublicKey
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.solana import get_address_pair
-from src.models import User, UserBankTransaction, UserBankAccount, UserBalance
-from typing import Tuple, TypedDict, List, Optional, Dict
-from src.queries.get_balances import get_balances, enqueue_balance_refresh
+from src.models import User, UserBankTransaction, UserBankAccount
+from src.queries.get_balances import enqueue_balance_refresh
 
 logger = logging.getLogger(__name__)
 
 # Populate values used in UserBank indexing from config
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
 WAUDIO_PROGRAM_ADDRESS = shared_config["solana"]["waudio_program_address"]
-WAUDIO_MINT_ADDRESS = shared_config["solana"]["waudio_mint_address"]
 USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
-WAUDIO_PROGRAM_PUBKEY = PublicKey(WAUDIO_PROGRAM_ADDRESS) if USER_BANK_ADDRESS else None
-WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS) if WAUDIO_MINT_ADDRESS else None
+WAUDIO_PROGRAM_PUBKEY = (
+    PublicKey(WAUDIO_PROGRAM_ADDRESS) if WAUDIO_PROGRAM_ADDRESS else None
+)
 
 # Static SPL Token Program ID
 SPL_TOKEN_ID = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
@@ -186,7 +185,7 @@ def process_user_bank_txs():
 
     # Exit if required configs are not found
     if not WAUDIO_PROGRAM_PUBKEY or not USER_BANK_KEY:
-        logger.info(f"index_user_bank.py | Missing required configuration - exiting.")
+        logger.info("index_user_bank.py | Missing required configuration - exiting.")
         return
 
     latest_processed_slot = get_highest_user_bank_tx_slot(db)
@@ -238,9 +237,8 @@ def process_user_bank_txs():
                         if exists:
                             intersection_found = True
                             break
-                        else:
-                            # Ensure this transaction is still processed
-                            transaction_signature_batch.append(tx_sig)
+                        # Ensure this transaction is still processed
+                        transaction_signature_batch.append(tx_sig)
 
                 # Restart processing at the end of this transaction signature batch
                 last_tx = transactions_array[-1]

@@ -1,16 +1,17 @@
-from redis import Redis
-from src.utils.session_manager import SessionManager
 import logging
 import time
+from typing import Tuple, TypedDict, List, Optional, Dict
+from redis import Redis
 from sqlalchemy import and_
+from spl.token.client import Token
+from solana.publickey import PublicKey
+
+from src.utils.session_manager import SessionManager
 from src.app import eth_abi_values
 from src.tasks.celery_app import celery
 from src.models import UserBalance, User, AssociatedWallet, UserBankAccount
 from src.queries.get_balances import does_user_balance_need_refresh, REDIS_PREFIX
 from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
-from typing import Tuple, TypedDict, List, Optional, Dict
-from spl.token.client import Token
-from solana.publickey import PublicKey
 from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
@@ -20,11 +21,11 @@ audius_delegate_manager_registry_key = bytes("DelegateManager", "utf-8")
 
 REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
 
-USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
 WAUDIO_PROGRAM_ADDRESS = shared_config["solana"]["waudio_program_address"]
 WAUDIO_MINT_ADDRESS = shared_config["solana"]["waudio_mint_address"]
-USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
-WAUDIO_PROGRAM_PUBKEY = PublicKey(WAUDIO_PROGRAM_ADDRESS) if USER_BANK_ADDRESS else None
+WAUDIO_PROGRAM_PUBKEY = (
+    PublicKey(WAUDIO_PROGRAM_ADDRESS) if WAUDIO_PROGRAM_ADDRESS else None
+)
 WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS) if WAUDIO_MINT_ADDRESS else None
 
 
@@ -188,7 +189,7 @@ def refresh_user_ids(
                 if wallets["bank_account"] is not None:
                     if WAUDIO_MINT_PUBKEY is None or WAUDIO_PROGRAM_PUBKEY is None:
                         logger.error(
-                            f"cache_user_balance.py | Missing required SPL configuration"
+                            "cache_user_balance.py | Missing required SPL configuration"
                         )
                     else:
                         waudio_token = Token(
@@ -228,7 +229,7 @@ def refresh_user_ids(
             redis.incrby(REDIS_ETH_BALANCE_COUNTER_KEY, len(to_remove))
 
 
-def get_token_contract(eth_web3, shared_config):
+def get_token_contract(eth_web3):
     eth_registry_address = eth_web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
     )
@@ -248,7 +249,7 @@ def get_token_contract(eth_web3, shared_config):
     return audius_token_instance
 
 
-def get_delegate_manager_contract(eth_web3, shared_config):
+def get_delegate_manager_contract(eth_web3):
     eth_registry_address = eth_web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
     )
@@ -268,7 +269,7 @@ def get_delegate_manager_contract(eth_web3, shared_config):
     return delegate_manager_instance
 
 
-def get_staking_contract(eth_web3, shared_config):
+def get_staking_contract(eth_web3):
     eth_registry_address = eth_web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
     )
@@ -295,7 +296,6 @@ def update_user_balances_task(self):
     db = update_user_balances_task.db
     redis = update_user_balances_task.redis
     eth_web3 = update_user_balances_task.eth_web3
-    shared_config = update_user_balances_task.shared_config
     solana_client = update_user_balances_task.solana_client
 
     have_lock = False
@@ -307,12 +307,10 @@ def update_user_balances_task(self):
         if have_lock:
             start_time = time.time()
 
-            token_inst = get_token_contract(eth_web3, shared_config)
-            delegate_manager_inst = get_delegate_manager_contract(
-                eth_web3, shared_config
-            )
-            staking_inst = get_staking_contract(eth_web3, shared_config)
-            token_inst = get_token_contract(eth_web3, shared_config)
+            token_inst = get_token_contract(eth_web3)
+            delegate_manager_inst = get_delegate_manager_contract(eth_web3)
+            staking_inst = get_staking_contract(eth_web3)
+            token_inst = get_token_contract(eth_web3)
             refresh_user_ids(
                 redis,
                 db,
