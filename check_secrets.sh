@@ -15,4 +15,4 @@ git secrets --register-aws
 git secrets --add '.*[a-z0-9]*.rds.amazonaws.com:[0-9]*\/.*'
 
 # scan the repository
-git secrets --scan
+git secrets --scan --cached
