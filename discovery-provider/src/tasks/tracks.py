@@ -250,7 +250,8 @@ def add_old_style_route(session, track_record, track_metadata):
         session.commit()
     else:
         logger.error(
-            f"Cannot add 'old-style' track_route to Track={track_record} as the route already exists: {existing_track_route}"
+            f"Cannot add 'old-style' track_route to Track={track_record}\
+            as the route already exists: {existing_track_route}"
         )
 
 
