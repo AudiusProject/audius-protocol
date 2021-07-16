@@ -545,7 +545,7 @@ jobs:
   test-solana-programs:
     docker:
       # specify the version you desire here
-      - image: cimg/rust:1.55.0-nightly
+      - image: cimg/rust:1.52.1
     parameters:
       force:
         type: boolean
