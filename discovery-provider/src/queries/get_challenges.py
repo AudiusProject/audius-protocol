@@ -49,7 +49,9 @@ def rollup_aggregates(
 
 
 def to_challenge_response(
-    user_challenge: UserChallenge, challenge: Challenge, disbursement: ChallengeDisbursement
+    user_challenge: UserChallenge,
+    challenge: Challenge,
+    disbursement: ChallengeDisbursement,
 ) -> ChallengeResponse:
     return {
         "challenge_id": challenge.id,

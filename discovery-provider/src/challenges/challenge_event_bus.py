@@ -1,6 +1,7 @@
 import json
 import logging
-from flask import current_app
+from typing import Dict
+from sqlalchemy.orm.session import Session
 from src.utils.redis_connection import get_redis
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.challenge_event import ChallengeEvent
@@ -26,16 +27,23 @@ class ChallengeEventBus:
         """Registers a listener (`ChallengeEventManager`) to listen for a particular event type."""
         self._listeners[event].append(listener)
 
-    def dispatch(self, session, event, block_number, user_id):
+    def dispatch(
+        self,
+        session: Session,
+        event: str,
+        block_number: int,
+        user_id: int,
+        extra: Dict = {},
+    ):
         """Dispatches an event + block_number + user_id to Redis queue"""
         try:
-            event_json = self._event_to_json(event, block_number, user_id)
+            event_json = self._event_to_json(event, block_number, user_id, extra)
             logger.info(f"ChallengeEventBus: dispatch {event_json}")
             self._redis.rpush(REDIS_QUEUE_PREFIX, event_json)
         except Exception as e:
             logger.warning(f"ChallengeEventBus: error enqueuing to Redis: {e}")
 
-    def process_events(self, session, max_events=1000):
+    def process_events(self, session: Session, max_events=1000):
         """Dequeues `max_events` from Redis queue and processes them, forwarding to listening ChallengeManagers.
         Returns the number of events it's processed.
         """
@@ -48,7 +56,7 @@ class ChallengeEventBus:
             events_dicts = list(map(self._json_to_event, events_json))
 
             # Consolidate event types for processing
-            # map of {"event_type": [{ user_id: number, block_number: number }]}}
+            # map of {"event_type": [{ user_id: number, block_number: number, extra: {} }]}}
             event_user_dict = defaultdict(lambda: [])
             for event_dict in events_dicts:
                 event_type = event_dict["event"]
@@ -56,6 +64,9 @@ class ChallengeEventBus:
                     {
                         "user_id": event_dict["user_id"],
                         "block_number": event_dict["block_number"],
+                        "extra": event_dict.get(  # use .get to be safe since prior versions didn't have `extra`
+                            "extra", {}
+                        ),
                     }
                 )
 
@@ -71,8 +82,13 @@ class ChallengeEventBus:
 
     # Helpers
 
-    def _event_to_json(self, event, block_number, user_id):
-        event_dict = {"event": event, "user_id": user_id, "block_number": block_number}
+    def _event_to_json(self, event: str, block_number: int, user_id: int, extra: Dict):
+        event_dict = {
+            "event": event,
+            "user_id": user_id,
+            "block_number": block_number,
+            "extra": extra,
+        }
         return json.dumps(event_dict)
 
     def _json_to_event(self, event_json):

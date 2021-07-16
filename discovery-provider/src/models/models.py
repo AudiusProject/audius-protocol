@@ -1013,6 +1013,7 @@ class UserChallenge(Base):
         return f"<UserChallenge(\
 challenge_id={self.challenge_id},\
 user_id={self.user_id},\
+specifier={self.specifier},\
 is_complete={self.is_complete},\
 completed_blocknumber={self.completed_blocknumber},\
 current_step_count={self.current_step_count})>"
