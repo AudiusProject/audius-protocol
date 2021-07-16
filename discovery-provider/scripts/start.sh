@@ -60,13 +60,18 @@ if [ -z "$audius_db_url" ]; then
     /wait
 fi
 
+if [ "$audius_db_run_migrations" != false ]; then
+    echo "Running alembic migrations"
+    export PYTHONPATH='.'
+    alembic upgrade head
+    echo "Finished running migrations"
+fi
+
 if [[ "$dev" == "true" ]]; then
     ./scripts/dev-server.sh 2>&1 | tee >(cat >&2) | logger &
 else
     ./scripts/prod-server.sh 2>&1 | tee >(cat >&2) | logger &
 fi
-
-sleep 20 # wait for migrations to finish
 
 if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
     celery -A src.worker.celery worker --loglevel info 2>&1 | tee >(cat >&2) | logger &
