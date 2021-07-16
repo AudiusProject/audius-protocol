@@ -121,9 +121,9 @@ class SnapbackSM {
     })
 
     // The interval when SnapbackSM is fired for state machine jobs
-    this.snapbackJobInterval = this.nodeConfig.get('snapbackJobInterval') // ms
+    this.snapbackJobInterval = 10000 // this.nodeConfig.get('snapbackJobInterval') // ms
 
-    this.updateEnabledReconfigModesSet()
+    this.updateEnabledReconfigModesSet(/* override */ RECONFIG_MODES.RECONFIG_DISABLED.key)
   }
 
   /**
@@ -576,8 +576,9 @@ class SnapbackSM {
         timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT
       }
 
-      let userClockValuesResp, errorMsg
+      let userClockValuesResp = []
       let userClockFetchAttempts = 0
+      let errorMsg
       while (userClockFetchAttempts++ < maxUserClockFetchAttempts) {
         try {
           userClockValuesResp = (await axios(axiosReqParams)).data.data.users
@@ -587,7 +588,7 @@ class SnapbackSM {
       }
 
       // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
-      if (!userClockValuesResp) {
+      if (userClockValuesResp.length === 0) {
         this.logError(`[retrieveClockStatusesForUsersAcrossReplicaSet] Could not fetch clock values for wallets=${replicaSetNodeUserWallets} on replica node=${replicaSetNode} ${errorMsg ? ': ' + errorMsg.toString() : ''}`)
         unhealthyPeers.add(replicaSetNode)
       }
@@ -681,7 +682,7 @@ class SnapbackSM {
       let nodeUsers
       try {
         nodeUsers = await this.peerSetManager.getNodeUsers()
-        nodeUsers = this.sliceUsers(nodeUsers)
+        // nodeUsers = this.sliceUsers(nodeUsers)
 
         decisionTree.push({ stage: 'getNodeUsers() and sliceUsers() Success', vals: { nodeUsersLength: nodeUsers.length }, time: Date.now() })
       } catch (e) {
@@ -763,28 +764,15 @@ class SnapbackSM {
            * If either secondary is in `unhealthyPeers` list, add it to `unhealthyReplicas` list
            */
           for (const secondary of secondaries) {
-            if (unhealthyPeers.has(secondary)) {
+            const userSecondarySyncMetrics = await SecondarySyncHealthTracker.computeUserSecondarySyncSuccessRates(
+              nodeUser.wallet, [secondary]
+            )
+            const secUserSyncSuccessRate = userSecondarySyncMetrics[secondary]['SuccessRate']
+            if (secUserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent || unhealthyPeers.has(secondary)) {
               unhealthyReplicas.push(secondary)
             } else {
               potentialSyncRequests.push({ ...nodeUser, endpoint: secondary })
             }
-          }
-
-          /**
-           * If either secondary has a Sync success rate for user below threshold, add it to `unhealthyReplicas` list
-           */
-          const userSecondarySyncMetrics = await SecondarySyncHealthTracker.computeUserSecondarySyncSuccessRates(
-            nodeUser.wallet, [secondary1, secondary2]
-          )
-          const sec1UserSyncSuccessRate = userSecondarySyncMetrics[secondary1]['SuccessRate']
-          const sec2UserSyncSuccessRate = userSecondarySyncMetrics[secondary2]['SuccessRate']
-
-          // If SyncRequest success rate for user to either secondary falls under threshold -> mark as unhealthy
-          if (sec1UserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent && !unhealthyReplicas.includes(secondary1)) {
-            unhealthyReplicas.push(secondary1)
-          }
-          if (sec2UserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent && !unhealthyReplicas.includes(secondary2)) {
-            unhealthyReplicas.push(secondary2)
           }
 
           /**
@@ -837,7 +825,7 @@ class SnapbackSM {
         await this.peerSetManager.updateEndpointToSpIdMap(this.audiusLibs.ethContracts)
 
         // update enabledReconfigModesSet after successful `updateEndpointToSpIDMap()` call
-        this.updateEnabledReconfigModesSet()
+        // this.updateEnabledReconfigModesSet()
 
         decisionTree.push({
           stage: `updateEndpointToSpIdMap() Success`,
@@ -967,7 +955,7 @@ class SnapbackSM {
 
       // Log decision tree
       try {
-        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree)}`)
+        this.log(`processStateMachineOperation Decision Tree ${JSON.stringify(decisionTree, null, 2)}`)
       } catch (e) {
         this.logError(`Error printing processStateMachineOperation Decision Tree ${decisionTree}`)
       }
