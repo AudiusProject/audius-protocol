@@ -6,6 +6,7 @@ from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.eth_indexing.event_scanner import EventScanner
 from src.utils.helpers import load_eth_abi_values
+from src.utils.redis_constants import index_eth_last_completion_redis_key
 from src.tasks.cache_user_balance import get_token_address
 
 logger = logging.getLogger(__name__)
@@ -23,18 +24,19 @@ web3 = Web3(provider)
 
 # Prepare stub ERC-20 contract object
 eth_abi_values = load_eth_abi_values()
-ERC20 = web3.eth.contract(abi=eth_abi_values["AudiusToken"]["abi"])
+AUDIO_TOKEN_CONTRACT = web3.eth.contract(abi=eth_abi_values["AudiusToken"]["abi"])
 
 AUDIO_CHECKSUM_ADDRESS = get_token_address(web3, shared_config)
 
-
+# This implementation follows the example outlined in the link below
+# https://web3py.readthedocs.io/en/stable/examples.html#advanced-example-fetching-all-token-transfer-events
 def index_eth_transfer_events(db, redis):
     scanner = EventScanner(
         db=db,
         redis=redis,
         web3=web3,
-        contract=ERC20,
-        event_type=ERC20.events.Transfer,
+        contract=AUDIO_TOKEN_CONTRACT,
+        event_type=AUDIO_TOKEN_CONTRACT.events.Transfer,
         filters={"address": AUDIO_CHECKSUM_ADDRESS},
     )
     scanner.restore()
@@ -52,6 +54,9 @@ def index_eth_transfer_events(db, redis):
     start_block = max(since_block, 0)
     end_block = scanner.get_suggested_scan_end_block()
     if start_block > end_block:
+        logger.info(
+            f"Start block ({start_block}) cannot be greater then end block ({end_block})"
+        )
         return
 
     logger.info(f"Scanning events from blocks {start_block} - {end_block}")
@@ -83,11 +88,15 @@ def index_eth(self):
     # Define redis lock object
     update_lock = redis.lock("index_eth_lock", blocking_timeout=25)
     try:
-        # Attempt to acquire lock - do not block if unable to acquire
-        have_lock = update_lock.acquire(blocking=False)
+        # Attempt to acquire lock
+        have_lock = update_lock.acquire(blocking=True)
         if have_lock:
             logger.info(f"index_eth.py | {self.request.id} | Acquired index_eth_lock")
+
             index_eth_transfer_events(db, redis)
+
+            end_time = time.time()
+            redis.set(index_eth_last_completion_redis_key, int(end_time))
             logger.info(
                 f"index_eth.py | {self.request.id} | Processing complete within session"
             )

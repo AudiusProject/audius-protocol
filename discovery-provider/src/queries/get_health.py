@@ -17,6 +17,7 @@ from src.utils.redis_constants import (
     trending_playlists_last_completion_redis_key,
     challenges_last_processed_event_redis_key,
     user_balances_refresh_last_completion_redis_key,
+    index_eth_last_completion_redis_key,
 )
 from src.queries.get_balances import REDIS_USER_BALANCE_REFRESH_KEY
 from src.utils.helpers import redis_get_or_restore
@@ -205,6 +206,9 @@ def get_health(args, use_redis_cache=True):
     last_scanned_block_for_balance_refresh = redis_get_or_restore(
         redis, eth_indexing_last_scanned_block_key
     )
+    index_eth_age_sec = get_elapsed_time_redis(
+        redis, index_eth_last_completion_redis_key
+    )
     last_scanned_block_for_balance_refresh = (
         int(last_scanned_block_for_balance_refresh)
         if last_scanned_block_for_balance_refresh
@@ -241,6 +245,7 @@ def get_health(args, use_redis_cache=True):
         "user_balances_age_sec": user_balances_age_sec,
         "num_users_in_balance_refresh_queue": num_users_in_balance_refresh_queue,
         "last_scanned_block_for_balance_refresh": last_scanned_block_for_balance_refresh,
+        "index_eth_age_sec": index_eth_age_sec,
         "number_of_cpus": number_of_cpus,
         **sys_info,
     }

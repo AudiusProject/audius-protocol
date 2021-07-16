@@ -14,7 +14,7 @@ from web3._utils.filters import construct_event_filter_params
 from web3._utils.events import get_event_data
 from eth_abi.codec import ABICodec
 
-from src.models.models import AssociatedWallet, User
+from src.models.models import AssociatedWallet, EthBlock, User
 from src.utils.helpers import redis_set_and_dump, redis_get_or_restore
 from src.queries.get_balances import enqueue_balance_refresh
 
@@ -40,7 +40,7 @@ START_CHUNK_SIZE = 20
 ETH_BLOCK_TAIL_OFFSET = 1
 # the block number to start with if first time scanning
 # this should be the first block during and after which $AUDIO transfer events started occurring
-MIN_SCAN_START_BLOCK = 0
+MIN_SCAN_START_BLOCK = 11103292
 
 
 class TransferEvent(TypedDict):
@@ -88,26 +88,40 @@ class EventScanner:
         self.event_type = event_type
         self.filters = filters
         self.last_scanned_block = MIN_SCAN_START_BLOCK
-        # self.state = EventScannerState(db, redis)
-        # self.state.restore()
 
     def restore(self):
-        """Restore the last scan state from redis."""
+        """Restore the last scan state from redis.
+        If value not found in redis, restore from database."""
         restored = redis_get_or_restore(self.redis, eth_indexing_last_scanned_block_key)
+        if not restored:
+            with self.db.scoped_session() as session:
+                result = session.query(EthBlock.last_scanned_block).first()
+                restored = result[0] if result else restored
         self.last_scanned_block = int(restored) if restored else MIN_SCAN_START_BLOCK
-        logger.info(f"Restored last scanned block ({self.last_scanned_block})")
+        logger.info(
+            f"event_scanner.py | Restored last scanned block ({self.last_scanned_block})"
+        )
 
     def save(self, block_number: int):
         """Save at the end of each chunk of blocks, so we can resume in the case of a crash or CTRL+C
         Next time the scanner is started we will resume from this block
         """
         self.last_scanned_block = block_number
-        logger.info(f"Saving last scanned block ({self.last_scanned_block}) to redis")
+        logger.info(
+            f"event_scanner.py | Saving last scanned block ({self.last_scanned_block}) to redis"
+        )
         redis_set_and_dump(
             self.redis,
             eth_indexing_last_scanned_block_key,
             str(self.last_scanned_block),
         )
+        with self.db.scoped_session() as session:
+            record = session.query(EthBlock).first()
+            if record:
+                record.last_scanned_block = self.last_scanned_block
+            else:
+                record = EthBlock(last_scanned_block=self.last_scanned_block)
+            session.add(record)
 
     def get_block_timestamp(self, block_num) -> Union[datetime.datetime, None]:
         """Get Ethereum block timestamp"""
@@ -131,13 +145,14 @@ class EventScanner:
         """The number of the last block we have stored."""
         return self.last_scanned_block
 
-    def process_event(self, block_when: datetime.datetime, event: TransferEvent) -> str:
+    def process_event(
+        self, block_timestamp: datetime.datetime, event: TransferEvent
+    ) -> str:
         """Record a ERC-20 transfer in our database."""
         # Events are keyed by their transaction hash and log index
         # One transaction may contain multiple events
         # and each one of those gets their own log index
 
-        # event_name = event.event # "Transfer"
         log_index = event["logIndex"]  # Log index within the block
         # transaction_index = event.transactionIndex  # Transaction index within the block
         txhash = event["transactionHash"].hex()  # Transaction hash
@@ -148,9 +163,8 @@ class EventScanner:
         transfer = {
             "from": args["from"],
             "to": args["to"],
-            "value": args["value"]
-            / 1e18,  # divide by 10^18 to get correct transfer value
-            "timestamp": block_when,
+            "value": args["value"],
+            "timestamp": block_timestamp,
         }
 
         # add user ids from the transfer event into the balance refresh queue
@@ -179,7 +193,7 @@ class EventScanner:
     def scan_chunk(self, start_block, end_block) -> Tuple[int, list]:
         """Read and process events between to block numbers.
 
-        Dynamically decrease the size of the chunk if the case JSON-RPC server pukes out.
+        Dynamically decrease the size of the chunk in case the JSON-RPC server pukes out.
 
         :return: tuple(actual end block number, when this block was mined, processed events)
         """
@@ -189,7 +203,7 @@ class EventScanner:
 
         # Cache block timestamps to reduce some RPC overhead
         # Real solution might include smarter models around block
-        def get_block_when(block_num):
+        def get_block_mined_timestamp(block_num):
             if block_num not in block_timestamps:
                 block_timestamps[block_num] = get_block_timestamp(block_num)
             return block_timestamps[block_num]
@@ -197,13 +211,13 @@ class EventScanner:
         all_processed = []
 
         # Callable that takes care of the underlying web3 call
-        def _fetch_events(_start_block, _end_block):
+        def _fetch_events(from_block, to_block):
             return _fetch_events_for_all_contracts(
                 self.web3,
                 self.event_type,
                 self.filters,
-                from_block=_start_block,
-                to_block=_end_block,
+                from_block=from_block,
+                to_block=to_block,
             )
 
         # Do `n` retries on `eth_get_logs`,
@@ -225,10 +239,12 @@ class EventScanner:
 
             # Get UTC time when this event happened (block mined timestamp)
             # from our in-memory cache
-            block_when = get_block_when(block_number)
+            block_timestamp = get_block_mined_timestamp(block_number)
 
-            logger.debug(f'Processing event {evt["event"]}, block:{evt["blockNumber"]}')
-            processed = self.process_event(block_when, evt)
+            logger.debug(
+                f'event_scanner.py | Processing event {evt["event"]}, block:{evt["blockNumber"]}'
+            )
+            processed = self.process_event(block_timestamp, evt)
             all_processed.append(processed)
 
         return end_block, all_processed
@@ -266,14 +282,11 @@ class EventScanner:
         end_block,
         start_chunk_size=START_CHUNK_SIZE,
     ) -> Tuple[list, int]:
-        """Perform a token balances scan.
-
-        Assumes all balances in the database are valid before start_block (no forks sneaked in).
+        """Perform a token events scan.
 
         :param start_block: The first block included in the scan
         :param end_block: The last block included in the scan
         :param start_chunk_size: How many blocks we try to fetch over JSON-RPC on the first attempt
-        :param progress_callback: If this is an UI application, update the progress of the scan
 
         :return: [All processed events, number of chunks used]
         """
@@ -295,7 +308,7 @@ class EventScanner:
                 current_block + chunk_size, self.get_suggested_scan_end_block()
             )
             logger.debug(
-                "Scanning token transfers for blocks: %d - %d, chunk size %d, last chunk scan took %f, last logs found %d",
+                "event_scanner.py | Scanning token transfers for blocks: %d - %d, chunk size %d, last chunk scan took %f, last logs found %d",
                 current_block,
                 estimated_end_block,
                 chunk_size,
@@ -356,7 +369,7 @@ def _retry_web3_call(  # type: ignore
             if i < retries - 1:
                 # Give some more verbose info than the default middleware
                 logger.warning(
-                    "Retrying events for block range %d - %d (%d) failed with %s, retrying in %s seconds",
+                    "event_scanner.py | Retrying events for block range %d - %d (%d) failed with %s, retrying in %s seconds",
                     start_block,
                     end_block,
                     end_block - start_block,
@@ -369,7 +382,7 @@ def _retry_web3_call(  # type: ignore
                 time.sleep(delay)
                 continue
             else:
-                logger.warning("Out of retries")
+                logger.warning("event_scanner.py | Out of retries")
                 raise
 
 
@@ -414,7 +427,8 @@ def _fetch_events_for_all_contracts(
     )
 
     logger.debug(
-        "Querying eth_get_logs with the following parameters: %s", event_filter_params
+        "event_scanner.py | Querying eth_get_logs with the following parameters: %s",
+        event_filter_params,
     )
 
     # Call JSON-RPC API on your Ethereum node.
@@ -427,8 +441,6 @@ def _fetch_events_for_all_contracts(
         # Convert raw JSON-RPC log result to human readable event by using ABI data
         # More information how processLog works here
         # https://github.com/ethereum/web3.py/blob/fbaf1ad11b0c7fac09ba34baff2c256cffe0a148/web3/_utils/events.py#L200
-        evt = get_event_data(codec, abi, log)
-        # Note: This was originally yield,
-        # but deferring the timeout exception caused the throttle logic not to work
-        all_events.append(evt)
+        event = get_event_data(codec, abi, log)
+        all_events.append(event)
     return all_events
