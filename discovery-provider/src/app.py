@@ -363,7 +363,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_solana_plays",
             "src.tasks.index_aggregate_views",
             "src.tasks.index_challenges",
-            "index_user_bank",
+            "src.tasks.index_user_bank",
         ],
         beat_schedule={
             "update_discovery_provider": {
