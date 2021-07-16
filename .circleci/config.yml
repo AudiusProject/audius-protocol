@@ -555,7 +555,7 @@ jobs:
       - unless:
           condition: << parameters.force >>
           steps:
-            - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
+            - run: ./diff.sh solana-programs || (echo "no diff" && circleci-agent step halt)
 
       - run:
           name: Setup solana
