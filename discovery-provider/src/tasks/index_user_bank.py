@@ -2,14 +2,14 @@ import concurrent.futures
 import datetime
 import logging
 import re
-from sqlalchemy.orm.session import Session
-import time
 from typing import Tuple, Optional
+import time
+from redis import Redis
+from sqlalchemy.orm.session import Session
 from sqlalchemy import desc, and_
 from solana.publickey import PublicKey
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
-from src.utils.session_manager import SessionManager
 from src.utils.solana import get_address_pair, SPL_TOKEN_ID_PK
 from src.models import User, UserBankTransaction, UserBankAccount
 from src.queries.get_balances import enqueue_balance_refresh
@@ -37,7 +37,7 @@ TX_SIGNATURES_RESIZE_LENGTH = 3
 # Recover ethereum public key from bytes array
 # Message formatted as follows:
 # EthereumAddress = [214, 237, 135, 129, 143, 240, 221, 138, 97, 84, 199, 236, 234, 175, 81, 23, 114, 209, 118, 39]
-def parse_eth_address_from_msg(msg):
+def parse_eth_address_from_msg(msg: str):
     logger.error(f"index_user_bank.py {msg}")
     res = re.findall(r"\[.*?\]", msg)
     # Remove brackets
@@ -74,7 +74,7 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
     return exists
 
 
-def refresh_user_balance(session, redis, user_bank_acct):
+def refresh_user_balance(session: Session, redis: Redis, user_bank_acct: str):
     user_id: Optional[Tuple[int, None]] = (
         session.query(User.user_id)
         .join(
@@ -95,7 +95,9 @@ def refresh_user_balance(session, redis, user_bank_acct):
         enqueue_balance_refresh(redis, [user_id[0]])
 
 
-def process_user_bank_tx_details(session, redis, tx_info, tx_sig, timestamp):
+def process_user_bank_tx_details(
+    session: Session, redis: Redis, tx_info, tx_sig, timestamp
+):
     meta = tx_info["result"]["meta"]
     error = meta["err"]
     if error:
