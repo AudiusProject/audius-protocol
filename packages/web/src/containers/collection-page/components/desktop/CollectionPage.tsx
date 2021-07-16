@@ -242,7 +242,10 @@ const CollectionPage = ({
                 playingIndex={playingIndex}
                 dataSource={dataSource}
                 allowReordering={
-                  userId === playlistOwnerId && allowReordering && !isAlbum
+                  userId !== null &&
+                  userId === playlistOwnerId &&
+                  allowReordering &&
+                  !isAlbum
                 }
                 onClickRow={onClickRow}
                 onClickFavorite={onClickSave}
