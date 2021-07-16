@@ -522,6 +522,12 @@ const config = convict({
     env: 'recaptchaServiceKey',
     default: ''
   },
+  hCaptchaSecret: {
+    doc: 'The secret for hCaptcha account verification',
+    format: String,
+    env: 'hCaptchaSecret',
+    default: ''
+  },
   cognitoAPISecret: {
     doc: 'API Secret for Congnito',
     format: String,

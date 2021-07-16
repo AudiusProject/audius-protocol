@@ -2,7 +2,7 @@ from src.models import Challenge, UserChallenge, ChallengeType
 from src.utils.db_session import get_db
 from src.challenges.challenge import ChallengeManager, ChallengeUpdater
 from src.utils.helpers import model_to_dictionary
-
+from tests.utils import populate_mock_db_blocks
 
 def setup_challenges(app):
     with app.app_context():
@@ -38,6 +38,7 @@ def setup_challenges(app):
                 specifier="2",
                 is_complete=True,
                 current_step_count=3,
+                completed_blocknumber=100,
             ),
             UserChallenge(
                 challenge_id="test_challenge_1",
@@ -68,12 +69,12 @@ def setup_challenges(app):
 
 
 class TestUpdater(ChallengeUpdater):
-    def update_user_challenges(self, session, event, user_challenges, step_count):
-        for user_challenge in user_challenges:
+    def update_user_challenges(self, session, event, user_challenges_metadata, step_count):
+        for user_challenge, event_metadata in user_challenges_metadata:
             user_challenge.current_step_count += 1
             if user_challenge.current_step_count >= step_count:
                 user_challenge.is_complete = True
-        return user_challenges
+                user_challenge.completed_blocknumber = event_metadata['block_number']
 
 
 def test_handle_event(app):
@@ -81,6 +82,8 @@ def test_handle_event(app):
 
     with app.app_context():
         db = get_db()
+
+    populate_mock_db_blocks(db, 99, 110)
 
     with db.scoped_session() as session:
 
@@ -109,6 +112,7 @@ def test_handle_event(app):
             "specifier": "1",
             "is_complete": False,
             "current_step_count": 1,
+            "completed_blocknumber": None
         }
         assert model_to_dictionary(actual) == expected
 
@@ -142,6 +146,7 @@ def test_handle_event(app):
                 "specifier": "1",
                 "is_complete": False,
                 "current_step_count": 2,
+                "completed_blocknumber": None
             },
             # Should be unchanged b/c it was already complete
             {
@@ -150,6 +155,7 @@ def test_handle_event(app):
                 "specifier": "2",
                 "is_complete": True,
                 "current_step_count": 3,
+                "completed_blocknumber": 100
             },
             # Should be newly complete
             {
@@ -158,6 +164,7 @@ def test_handle_event(app):
                 "specifier": "3",
                 "is_complete": True,
                 "current_step_count": 3,
+                "completed_blocknumber": 100
             },
             # Should be untouched bc user 5 wasn't included
             {
@@ -166,6 +173,7 @@ def test_handle_event(app):
                 "specifier": "5",
                 "is_complete": False,
                 "current_step_count": 2,
+                "completed_blocknumber": None
             },
             # Should have created a brand new user 6
             {
@@ -174,6 +182,7 @@ def test_handle_event(app):
                 "specifier": "6",
                 "is_complete": False,
                 "current_step_count": 1,
+                "completed_blocknumber": None
             },
         ]
         assert expected == res_dicts

@@ -604,7 +604,7 @@ track_remixables_route_parser.add_argument("user_id", required=False)
 track_remixables_route_parser.add_argument("limit", required=False, type=int)
 track_remixables_route_parser.add_argument("with_users", required=False, type=bool)
 @full_ns.route("/remixables")
-class RemixableTracks(Resource):
+class FullRemixableTracks(Resource):
     @record_metrics
     @full_ns.doc(
         id="""Remixable Tracks""",
@@ -619,7 +619,7 @@ class RemixableTracks(Resource):
             500: "Server error"
         }
     )
-    @full_ns.marshal_with(tracks_response)
+    @full_ns.marshal_with(full_track_response)
     @cache(ttl_sec=5)
     def get(self):
         args = track_remixables_route_parser.parse_args()
@@ -629,6 +629,7 @@ class RemixableTracks(Resource):
             "with_users": args.get("with_users", False),
         }
         tracks = get_remixable_tracks(args)
+        tracks = list(map(extend_track, tracks))
         return success_response(tracks)
 
 remixes_response = make_full_response(

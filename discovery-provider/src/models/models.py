@@ -1008,6 +1008,7 @@ class UserChallenge(Base):
     user_id = Column(Integer, nullable=False)
     specifier = Column(String, nullable=False)
     is_complete = Column(Boolean, nullable=False)
+    completed_blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=True)
     current_step_count = Column(Integer)
 
     PrimaryKeyConstraint(challenge_id, specifier)
@@ -1017,6 +1018,7 @@ class UserChallenge(Base):
 challenge_id={self.challenge_id},\
 user_id={self.user_id},\
 is_complete={self.is_complete},\
+completed_blocknumber={self.completed_blocknumber},\
 current_step_count={self.current_step_count})>"
 
 
