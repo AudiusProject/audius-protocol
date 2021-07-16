@@ -75,7 +75,6 @@ class SolanaWeb3Manager {
 
     this.claimableTokenProgramAddress = claimableTokenProgramAddress
     this.claimableTokenProgramKey = new PublicKey(claimableTokenProgramAddress)
-    console.log(`initializing.. ${this.mintKey}, ${this.claimableTokenProgramKey}, ${claimableTokenPDA}`)
     this.claimableTokenPDA = claimableTokenPDA || (
       await this.generateProgramDerivedAddress(
         this.mintKey,
@@ -83,24 +82,16 @@ class SolanaWeb3Manager {
       )
     )
     this.claimableTokenPDAKey = new PublicKey(this.claimableTokenPDA)
-    console.log(`initializing.. ${this.claimableTokenPDAKey}, ${this.claimableTokenProgramKey}`)
   }
 
   /**
    * Generates a program derived address
    */
   async generateProgramDerivedAddress (mintKey, programKey) {
-    console.log(mintKey)
-    console.log(programKey)
-    console.log(`generateProgramDerivedAddress ${mintKey.toBytes().slice(0, 32)}, ${programKey}`)
-    console.log(solanaWeb3.PublicKey.findProgramAddress)
-    window.PublicKey = this.solanaWeb3.PublicKey
-    window.solanaWeb3 = this.solanaWeb3
     let res = await this.solanaWeb3.PublicKey.findProgramAddress(
       [mintKey.toBytes().slice(0, 32)],
       programKey
     )
-    console.log(res)
     return res[0].toString()
   }
 

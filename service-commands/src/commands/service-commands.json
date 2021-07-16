@@ -47,7 +47,7 @@
   "solana-programs": {
     "path": "solana-programs",
     "up": [
-      "docker run -d --network audius_dev --entrypoint='' --name solana solanalabs/solana:beta sh -c 'solana-test-validator --gossip-host solana'",
+      "docker run -d --network audius_dev --entrypoint='' --name solana solanalabs/solana:beta sh -c 'solana-test-validator --gossip-host solana' -p 8899:8899",
       "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/mnt\" audius/solana-programs > solana-program-config.json",
       "cd solana-programs/; cp solana-program-config.json ../identity-service",
       "cd solana-programs/; cp solana-program-config.json ~/.audius"

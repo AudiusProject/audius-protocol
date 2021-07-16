@@ -279,7 +279,7 @@ fn main() -> anyhow::Result<()> {
         )
         .arg(fee_payer_arg().global(true))
         .subcommands(vec![
-            SubCommand::with_name("send-to") 
+            SubCommand::with_name("send-to")
                 .args(&[
                     Arg::with_name("recipient")
                         .value_name("ETHEREUM_ADDRESS")
@@ -334,6 +334,18 @@ fn main() -> anyhow::Result<()> {
                     .takes_value(true)
                     .required(true)
                     .help("Mint of tokens that hold at associated account."),
+            ]),
+            SubCommand::with_name("generate-base-pda").args(&[
+                Arg::with_name("mint")
+                    .value_name("MINT_ADDRESS")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Token mint account"),
+                Arg::with_name("program_id")
+                    .value_name("PROGRAM_ID")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Program Id address"),
             ])
                 .help("Receives balance of account that associated with Ethereum address and specific mint."),
         ])
@@ -415,6 +427,22 @@ fn main() -> anyhow::Result<()> {
 
             balance(config, eth_address, mint).context("Failed to execute `balance` command")?
         }
+        ("generate-base-pda", Some(args)) => {
+            let base_account = (|| -> anyhow::Result<_> {
+                let mint = pubkey_of(args, "mint").unwrap();
+                let program_id = pubkey_of(args, "program_id").unwrap();
+                println!("Recieved mint {:?}", mint);
+                println!("Recieved program_id {:?}", program_id);
+                let program_base_address = Pubkey::find_program_address(
+                    &[&mint.to_bytes()[..32]],
+                    &program_id
+                );
+                println!("Recieved program_base_address {:?}", program_base_address);
+
+                Ok(program_base_address)
+            })()
+            .context("Preparing parameters for execution command `send to`")?;
+       }
         _ => unreachable!(),
     }
     Ok(())
