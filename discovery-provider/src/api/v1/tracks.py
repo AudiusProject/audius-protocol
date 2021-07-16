@@ -198,6 +198,7 @@ class FullTrack(Resource):
 full_track_slug_parser = reqparse.RequestParser()
 full_track_slug_parser.add_argument("handle", required=True)
 full_track_slug_parser.add_argument("slug", required=True)
+full_track_slug_parser.add_argument("user_id")
 
 
 @full_ns.route("/")
@@ -208,6 +209,7 @@ class FullTrackBySlug(Resource):
     def get(self):
         args = full_track_slug_parser.parse_args()
         slug, handle = args.get("slug"), args.get("handle")
+        current_user_id = get_current_user_id(args)
         if not (slug and handle):
             full_ns.abort(400, "Missing required param slug or handle")
         tracks = get_tracks(
@@ -218,6 +220,7 @@ class FullTrackBySlug(Resource):
                 "filter_deleted": True,
                 "limit": 1,
                 "offset": 0,
+                "current_user_id": current_user_id,
             }
         )
         if not tracks:
