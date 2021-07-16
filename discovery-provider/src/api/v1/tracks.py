@@ -164,7 +164,7 @@ class TrackBySlug(Resource):
             }
         )
         if not tracks:
-            abort_not_found(f"{handle}/{slug}", full_ns)
+            abort_not_found(f"{handle}/{slug}", ns)
         return success_response(extend_track(tracks[0]))
 
 
