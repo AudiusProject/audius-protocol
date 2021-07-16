@@ -51,7 +51,15 @@ def upgrade():
         op.f("idx_user_bank_eth_address"),
         "user_bank_accounts",
         ["ethereum_address"],
-        unique=True,
+        unique=False,
+    )
+
+    # idx_user_bank_txs_slots slots
+    op.create_index(
+        op.f("idx_user_bank_txs_slot"),
+        "user_bank_txs",
+        ["slot"],
+        unique=False,
     )
 
 

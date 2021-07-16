@@ -2,15 +2,18 @@ import concurrent.futures
 import datetime
 import logging
 import re
+from sqlalchemy.orm.session import Session
 import time
 from typing import Tuple, Optional
 from sqlalchemy import desc, and_
 from solana.publickey import PublicKey
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
-from src.utils.solana import get_address_pair
+from src.utils.session_manager import SessionManager
+from src.utils.solana import get_address_pair, SPL_TOKEN_ID_PK
 from src.models import User, UserBankTransaction, UserBankAccount
 from src.queries.get_balances import enqueue_balance_refresh
+from src.tasks.index_solana_plays import get_sol_tx_info
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +24,6 @@ USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
 WAUDIO_PROGRAM_PUBKEY = (
     PublicKey(WAUDIO_PROGRAM_ADDRESS) if WAUDIO_PROGRAM_ADDRESS else None
 )
-
-# Static SPL Token Program ID
-SPL_TOKEN_ID = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
@@ -51,19 +51,18 @@ def parse_eth_address_from_msg(msg):
 
 
 # Return highest user bank slot that has been processed
-def get_highest_user_bank_tx_slot(db):
+def get_highest_user_bank_tx_slot(session: Session):
     slot = MIN_SLOT
-    with db.scoped_session() as session:
-        tx_query = (
-            session.query(UserBankTransaction).order_by(desc(UserBankTransaction.slot))
-        ).first()
-        if tx_query:
-            slot = tx_query.slot
+    tx_query = (
+        session.query(UserBankTransaction.slot).order_by(desc(UserBankTransaction.slot))
+    ).first()
+    if tx_query:
+        slot = tx_query[0]
     return slot
 
 
 # Query a tx signature and confirm its existence
-def get_tx_in_db(session, tx_sig):
+def get_tx_in_db(session: Session, tx_sig: str) -> bool:
     exists = False
     tx_sig_db_count = (
         session.query(UserBankTransaction).filter(
@@ -73,24 +72,6 @@ def get_tx_in_db(session, tx_sig):
     exists = tx_sig_db_count > 0
     # logger.info(f"index_user_bank.py | {tx_sig} exists={exists}")
     return exists
-
-
-# Retry 5x until a tx 'result' is found with valid contents
-# If not found, move forward
-def get_sol_tx_info(solana_client, tx_sig):
-    retries = 5
-    while retries > 0:
-        try:
-            tx_info = solana_client.get_confirmed_transaction(tx_sig)
-            if tx_info["result"] is not None:
-                return tx_info
-        except Exception as e:
-            logger.error(
-                f"index_user_bank.py | Error fetching tx {tx_sig}, {e}", exc_info=True
-            )
-        retries -= 1
-        logger.error(f"index_user_bank.py | Retrying tx fetch: {tx_sig}")
-    raise Exception(f"Failed fetching {tx_sig}, exit loop")
 
 
 def refresh_user_balance(session, redis, user_bank_acct):
@@ -106,10 +87,11 @@ def refresh_user_balance(session, redis, user_bank_acct):
         .filter(User.is_current == True)
         .one_or_none()
     )
-    logger.info(f"index_user_bank.py | Refresh user_id = {user_id}, {user_bank_acct}")
     # Only refresh if this is a known account within audius
     if user_id:
-        logger.info(f"submit user to queue: {user_id[0]}")
+        logger.info(
+            f"index_user_bank.py | Refresh user_id = {user_id}, {user_bank_acct}"
+        )
         enqueue_balance_refresh(redis, [user_id[0]])
 
 
@@ -129,7 +111,7 @@ def process_user_bank_tx_details(session, redis, tx_info, tx_sig, timestamp):
             logger.info(f"index_user_bank.py | {public_key_str}")
             # Rederive address based on user public key
             _, derived_address = get_address_pair(
-                WAUDIO_PROGRAM_PUBKEY, public_key_bytes, USER_BANK_KEY, SPL_TOKEN_ID
+                WAUDIO_PROGRAM_PUBKEY, public_key_bytes, USER_BANK_KEY, SPL_TOKEN_ID_PK
             )
             bank_acct = str(derived_address[0])
             # Confirm expected address is present in transaction
@@ -160,7 +142,7 @@ def process_user_bank_tx_details(session, redis, tx_info, tx_sig, timestamp):
             refresh_user_balance(session, redis, acct_2)
 
 
-def parse_user_bank_transaction(session, solana_client, tx_sig, redis):
+def parse_user_bank_transaction(session: Session, solana_client, tx_sig, redis):
     tx_info = get_sol_tx_info(solana_client, tx_sig)
     tx_slot = tx_info["result"]["slot"]
     timestamp = tx_info["result"]["blockTime"]
@@ -185,24 +167,24 @@ def process_user_bank_txs():
 
     # Exit if required configs are not found
     if not WAUDIO_PROGRAM_PUBKEY or not USER_BANK_KEY:
-        logger.info("index_user_bank.py | Missing required configuration - exiting.")
+        logger.error(
+            f"index_user_bank.py | Missing required configuration"
+            f"WAUDIO_PROGRAM_PUBKEY: {WAUDIO_PROGRAM_PUBKEY} USER_BANK_KEY: {USER_BANK_KEY}- exiting."
+        )
         return
-
-    latest_processed_slot = get_highest_user_bank_tx_slot(db)
-    logger.info(f"index_user_bank.py | high tx = {latest_processed_slot}")
 
     # List of signatures that will be populated as we traverse recent operations
     transaction_signatures = []
-
-    # Current batch of transactions
-    transaction_signature_batch = []
 
     last_tx_signature = None
 
     # Loop exit condition
     intersection_found = False
 
+    # Query for solana transactions until an intersection is found
     with db.scoped_session() as session:
+        latest_processed_slot = get_highest_user_bank_tx_slot(session)
+        logger.info(f"index_user_bank.py | high tx = {latest_processed_slot}")
         while not intersection_found:
             transactions_history = solana_client.get_confirmed_signature_for_address2(
                 USER_BANK_ADDRESS, before=last_tx_signature, limit=100
@@ -214,6 +196,8 @@ def process_user_bank_txs():
                     f"index_user_bank.py | No transactions found before {last_tx_signature}"
                 )
             else:
+                # Current batch of transactions
+                transaction_signature_batch = []
                 for tx_info in transactions_array:
                     tx_sig = tx_info["signature"]
                     tx_slot = tx_info["slot"]
@@ -251,22 +235,21 @@ def process_user_bank_txs():
                 # Ensure processing does not grow unbounded
                 if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:
                     prev_len = len(transaction_signatures)
+                    # Only take the oldest transaction from the transaction_signatures array
+                    # transaction_signatures is sorted from newest to oldest
                     transaction_signatures = transaction_signatures[
                         -TX_SIGNATURES_RESIZE_LENGTH:
                     ]
                     logger.info(
-                        f"index_user_bank.py | sliced tx_sigs frmo {prev_len} to {len(transaction_signatures)} entries"
+                        f"index_user_bank.py | sliced tx_sigs from {prev_len} to {len(transaction_signatures)} entries"
                     )
-
-                # Reset batch state
-                transaction_signature_batch = []
 
     # Reverse batches aggregated so oldest transactions are processed first
     transaction_signatures.reverse()
 
     num_txs_processed = 0
     for tx_sig_batch in transaction_signatures:
-        # logger.error(f"index_user_bank.py | processing {tx_sig_batch}")
+        logger.info(f"index_user_bank.py | processing {tx_sig_batch}")
         batch_start_time = time.time()
         # Process each batch in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:

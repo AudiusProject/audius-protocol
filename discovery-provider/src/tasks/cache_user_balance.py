@@ -5,6 +5,7 @@ from redis import Redis
 from sqlalchemy import and_
 from spl.token.client import Token
 from solana.publickey import PublicKey
+from solana.rpc.api import Client
 
 from src.utils.session_manager import SessionManager
 from src.app import eth_abi_values
@@ -65,7 +66,7 @@ def refresh_user_ids(
     delegate_manager_contract,
     staking_contract,
     eth_web3,
-    solana_client,
+    waudio_token,
 ):
     # List users in Redis set, balances decoded as strings
     redis_refresh_user_ids = redis.smembers(REDIS_PREFIX)
@@ -186,18 +187,11 @@ def refresh_user_ids(
                             balance + delegation_balance + stake_balance
                         )
                 if wallets["bank_account"] is not None:
-                    if WAUDIO_MINT_PUBKEY is None or WAUDIO_PROGRAM_PUBKEY is None:
+                    if waudio_token is None:
                         logger.error(
-                            "cache_user_balance.py | Missing required SPL configuration"
+                            "cache_user_balance.py | Missing Required SPL Confirguration"
                         )
                     else:
-                        waudio_token = Token(
-                            conn=solana_client,
-                            pubkey=WAUDIO_MINT_PUBKEY,
-                            program_id=WAUDIO_PROGRAM_PUBKEY,
-                            payer=[],  # not making any txs so payer is not required
-                        )
-
                         bal_info = waudio_token.get_balance(
                             PublicKey(wallets["bank_account"])
                         )
@@ -288,6 +282,19 @@ def get_staking_contract(eth_web3):
     return staking_instance
 
 
+def get_audio_token(solana_client: Client):
+    if WAUDIO_MINT_PUBKEY is None or WAUDIO_PROGRAM_PUBKEY is None:
+        logger.error("cache_user_balance.py | Missing Required SPL Confirguration")
+        return None
+    waudio_token = Token(
+        conn=solana_client,
+        pubkey=WAUDIO_MINT_PUBKEY,
+        program_id=WAUDIO_PROGRAM_PUBKEY,
+        payer=[],  # not making any txs so payer is not required
+    )
+    return waudio_token
+
+
 @celery.task(name="update_user_balances", bind=True)
 def update_user_balances_task(self):
     """Caches user Audio balances, in wei."""
@@ -310,6 +317,7 @@ def update_user_balances_task(self):
             delegate_manager_inst = get_delegate_manager_contract(eth_web3)
             staking_inst = get_staking_contract(eth_web3)
             token_inst = get_token_contract(eth_web3)
+            waudio_token = get_audio_token(solana_client)
             refresh_user_ids(
                 redis,
                 db,
@@ -317,7 +325,7 @@ def update_user_balances_task(self):
                 delegate_manager_inst,
                 staking_inst,
                 eth_web3,
-                solana_client,
+                waudio_token,
             )
 
             end_time = time.time()
