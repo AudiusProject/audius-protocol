@@ -124,7 +124,7 @@ ipfs_client = IPFSClient(
         },
         multihash2: {
             "owner_id": 1,
-            "title": "real magic bassy flip 1",
+            "title": "real magic bassy flip 2",
             "length": None,
             "cover_art": None,
             "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
@@ -307,11 +307,44 @@ def test_index_tracks(mock_index_task, app):
 
         # Check that track routes are updated appropriately
         track_routes = session.query(TrackRoute).filter(TrackRoute.track_id == 1).all()
-        assert len(track_routes) == 2
-        assert track_routes[0].is_current is False
-        assert track_routes[0].slug == "real-magic-bassy-flip"
-        assert track_routes[1].is_current is True
-        assert track_routes[1].slug == "real-magic-bassy-flip-1"
+        # Should have the two routes created on track creation as well as two more for the update
+        assert len(track_routes) == 4, "Has four total routes after a track name update"
+        assert (
+            len(
+                [
+                    route
+                    for route in track_routes
+                    if route.is_current is True
+                    and route.slug == "real-magic-bassy-flip-2"
+                ]
+            )
+            == 1
+        ), "The current route is 'real-magic-bassy-flip-2'"
+        assert (
+            len([route for route in track_routes if route.is_current is False]) == 3
+        ), "Three routes are marked non-current"
+        assert (
+            len(
+                [
+                    route
+                    for route in track_routes
+                    if route.slug == "real-magic-bassy-flip-2-1"
+                    or route.slug == "real-magic-bassy-flip-1"
+                ]
+            )
+            == 2
+        ), "Has both of the 'old-style' routes"
+        assert (
+            len(
+                [
+                    route
+                    for route in track_routes
+                    if route.slug == "real-magic-bassy-flip-2"
+                    or route.slug == "real-magic-bassy-flip"
+                ]
+            )
+            == 2
+        ), "Has both of the 'new-style' routes"
 
         # ============== Test Track Route Collisions ===================
 
@@ -324,7 +357,7 @@ def test_index_tracks(mock_index_task, app):
             update_task,
             session,
             entry,
-            2,  # event track id
+            40,  # event track id
             block_number,
             block_hash,
             "0x",  # txhash
@@ -341,12 +374,15 @@ def test_index_tracks(mock_index_task, app):
         )
 
         # Check that track routes are assigned appropriately
-        track_routes = session.query(TrackRoute).filter(TrackRoute.track_id == 2).all()
-        assert len(track_routes) == 1
-        assert track_routes[0].is_current is True
-        assert track_routes[0].title_slug == "real-magic-bassy-flip"
-        assert track_routes[0].slug == "real-magic-bassy-flip-2"
-        assert track_routes[0].collision_id == 2
+        track_routes = session.query(TrackRoute).filter(TrackRoute.track_id == 40).all()
+        assert [
+            route
+            for route in track_routes
+            if route.slug == "real-magic-bassy-flip-3"
+            and route.collision_id == 3
+            and route.is_current is True
+            and route.title_slug == "real-magic-bassy-flip"
+        ], "New route should be current and go to collision id 3"
 
         # Another "real-magic-bassy-flip", which should find collision id 2 and
         # easily jump to collision id 3 and not need fallback logic
@@ -356,7 +392,7 @@ def test_index_tracks(mock_index_task, app):
             update_task,
             session,
             entry,
-            3,  # event track id
+            30,  # event track id
             block_number,
             block_hash,
             "0x",  # txhash
@@ -373,12 +409,15 @@ def test_index_tracks(mock_index_task, app):
         )
 
         # Check that track routes are assigned appropriately
-        track_routes = session.query(TrackRoute).filter(TrackRoute.track_id == 3).all()
-        assert len(track_routes) == 1
-        assert track_routes[0].is_current is True
-        assert track_routes[0].title_slug == "real-magic-bassy-flip"
-        assert track_routes[0].slug == "real-magic-bassy-flip-3"
-        assert track_routes[0].collision_id == 3
+        track_routes = session.query(TrackRoute).filter(TrackRoute.track_id == 30).all()
+        assert [
+            route
+            for route in track_routes
+            if route.is_current is True
+            and route.title_slug == "real-magic-bassy-flip"
+            and route.slug == "real-magic-bassy-flip-4"
+            and route.collision_id == 4
+        ], "New route should be current and go to collision id 4"
 
         # ================== Test Revert TrackRoute ===================
 
@@ -397,12 +436,24 @@ def test_index_tracks(mock_index_task, app):
 
         track_routes = session.query(TrackRoute).all()
 
-        # That old route should now be marked as is_current, and in fact should
-        # be the only remaining route
-        assert len(track_routes) == 1
-        assert track_routes[0].is_current is True
-        assert track_routes[0].track_id == 1
-        assert track_routes[0].slug == "real-magic-bassy-flip"
+        # That old route should now be marked as is_current
+        assert [
+            route
+            for route in track_routes
+            if route.is_current == True
+            and route.track_id == 1
+            and route.slug == "real-magic-bassy-flip"
+        ], "Old route should be marked as current again"
+        assert (
+            len(
+                [
+                    route
+                    for route in track_routes
+                    if route.is_current == True and route.track_id == 1
+                ]
+            )
+            == 1
+        ), "Only one route should be marked as current"
 
         # ================== Test Delete Track Event ==================
         event_type, entry = get_delete_track_event()

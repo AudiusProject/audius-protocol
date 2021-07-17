@@ -9,10 +9,13 @@ def test_resolve_track_url(app):
     with app.test_request_context():
         db = get_db()
         with db.scoped_session() as session:
-            url = "https://audius.co/urbanbankai/mb-shola-vivienne-%22westwood%22-87325"
+            url = 'https://audius.co/urbanbankai/mb-shola-vivienne-"westwood"-87325'
             resolved_url = resolve_url(session, url)
 
-            assert resolved_url == "/v1/tracks/799Yv"
+            assert (
+                resolved_url
+                == "/v1/tracks/?slug=mb-shola-vivienne-%22westwood%22-87325&handle=urbanbankai"
+            )
 
 
 def test_resolve_playlist_url(app):
@@ -31,10 +34,13 @@ def test_resolve_non_fully_qualified_url(app):
     with app.test_request_context():
         db = get_db()
         with db.scoped_session() as session:
-            url = "/urbanbankai/mb-shola-vivienne-%22westwood%22-87325"
+            url = '/urbanbankai/mb-shola-vivienne-"westwood"-87325'
             resolved_url = resolve_url(session, url)
 
-            assert resolved_url == "/v1/tracks/799Yv"
+            assert (
+                resolved_url
+                == "/v1/tracks/?slug=mb-shola-vivienne-%22westwood%22-87325&handle=urbanbankai"
+            )
 
 
 def test_resolve_user_url(app):
