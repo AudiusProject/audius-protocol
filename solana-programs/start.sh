@@ -46,6 +46,10 @@
     signer_group=$(cargo run create-signer-group | grep -Po '(?<=account ).*')
     valid_signer=$(cargo run create-valid-signer "$signer_group" "$address" | grep -Po '(?<=account ).*')
     owner_wallet=$(cat ~/.config/solana/id.json)
+
+    token=$(spl-token create-token | cat | head -n 1 | cut -d' ' -f3)
+    token_account=$(spl-token create-account $token | cat | head -n 1 | cut -d' ' -f3)
+    spl-token mint $token 100
 } >&2
 
 cd ..
@@ -60,5 +64,7 @@ cat <<EOF
     "ownerWallet": "$owner_wallet",
     "endpoint": "$SOLANA_HOST",
     "signerPrivateKey": "$priv_key"
+    "splToken": "$token",
+    "splTokenAccount": "$token_account"
 }
 EOF
