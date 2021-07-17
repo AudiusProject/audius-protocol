@@ -8,6 +8,7 @@ import { MonitorPayload, ServiceMonitorType } from './serviceMonitoring'
 export const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
 export enum Name {
+  // Account creation
   // When the user opens the create account page
   CREATE_ACCOUNT_OPEN = 'Create Account: Open',
   // When the user continues past the email page
@@ -27,8 +28,11 @@ export enum Name {
   // When the user continues past the entire signup modal
   CREATE_ACCOUNT_FINISH = 'Create Account: Finish',
 
+  // Sign in
   SIGN_IN_OPEN = 'Sign In: Open',
   SIGN_IN_FINISH = 'Sign In: Finish',
+
+  // Settings
   SETTINGS_CHANGE_THEME = 'Settings: Change Theme',
   SETTINGS_START_TWITTER_OAUTH = 'Settings: Start Twitter OAuth',
   SETTINGS_COMPLETE_TWITTER_OAUTH = 'Settings: Complete Twitter OAuth',
@@ -36,27 +40,42 @@ export enum Name {
   SETTINGS_COMPLETE_INSTAGRAM_OAUTH = 'Settings: Complete Instagram OAuth',
   SETTINGS_RESEND_ACCOUNT_RECOVERY = 'Settings: Resend Account Recovery',
   SETTINGS_LOG_OUT = 'Settings: Log Out',
+
+  // Visualizer
   VISUALIZER_OPEN = 'Visualizer: Open',
   VISUALIZER_CLOSE = 'Visualizer: Close',
+
+  // Profile completion
   ACCOUNT_HEALTH_METER_FULL = 'Account Health: Meter Full',
   ACCOUNT_HEALTH_UPLOAD_COVER_PHOTO = 'Account Health: Upload Cover Photo',
   ACCOUNT_HEALTH_UPLOAD_PROFILE_PICTURE = 'Account Health: Upload Profile Picture',
   ACCOUNT_HEALTH_DOWNLOAD_DESKTOP = 'Account Health: Download Desktop',
   ACCOUNT_HEALTH_CLICK_APP_CTA_BANNER = 'Account Health: App CTA Banner',
+
+  // Social actions
   SHARE = 'Share',
   REPOST = 'Repost',
   UNDO_REPOST = 'Undo Repost',
   FAVORITE = 'Favorite',
   UNFAVORITE = 'Unfavorite',
   ARTIST_PICK_SELECT_TRACK = 'Artist Pick: Select Track',
+  FOLLOW = 'Follow',
+  UNFOLLOW = 'Unfollow',
+
+  // Playlist creation
   PLAYLIST_ADD = 'Playlist: Add To Playlist',
   PLAYLIST_OPEN_CREATE = 'Playlist: Open Create Playlist',
   PLAYLIST_START_CREATE = 'Playlist: Start Create Playlist',
   PLAYLIST_COMPLETE_CREATE = 'Playlist: Complete Create Playlist',
   PLAYLIST_MAKE_PUBLIC = 'Playlist: Make Public',
+
   DELETE = 'Delete',
+
+  // Embed
   EMBED_OPEN = 'Embed: Open modal',
   EMBED_COPY = 'Embed: Copy',
+
+  // Upload
   TRACK_UPLOAD_OPEN = 'Track Upload: Open',
   TRACK_UPLOAD_START_UPLOADING = 'Track Upload: Start Upload',
   TRACK_UPLOAD_TRACK_UPLOADING = 'Track Upload: Track Uploading',
@@ -67,60 +86,90 @@ export enum Name {
   TRACK_UPLOAD_VIEW_TRACK_PAGE = 'Track Upload: View Track page',
   TRACK_UPLOAD_SUCCESS = 'Track Upload: Success',
   TRACK_UPLOAD_FAILURE = 'Track Upload: Failure',
+  TWEET_FIRST_UPLOAD = 'Tweet First Upload',
+
+  // Trending
   TRENDING_CHANGE_VIEW = 'Trending: Change view',
   TRENDING_PAGINATE = 'Trending: Fetch next page',
+
+  // Feed
   FEED_CHANGE_VIEW = 'Feed: Change view',
   FEED_PAGINATE = 'Feed: Fetch next page',
+
+  // Notifications
   NOTIFICATIONS_OPEN = 'Notifications: Open',
   NOTIFICATIONS_CLICK_TILE = 'Notifications: Clicked Tile',
   NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE = 'Notifications: Clicked Milestone Twitter Share',
   NOTIFICATIONS_CLICK_REMIX_CREATE_TWITTER_SHARE = 'Notifications: Clicked Remix Create Twitter Share',
   NOTIFICATIONS_CLICK_REMIX_COSIGN_TWITTER_SHARE = 'Notifications: Clicked Remix Co-Sign Twitter Share',
   NOTIFICATIONS_TOGGLE_SETTINGS = 'Notifications: Toggle Setting',
+  BROWSER_NOTIFICATION_SETTINGS = 'Browser Push Notification',
+
+  // Profile page
   PROFILE_PAGE_TAB_CLICK = 'Profile Page: Tab Click',
   PROFILE_PAGE_SORT = 'Profile Page: Sort',
   PROFILE_PAGE_CLICK_INSTAGRAM = 'Profile Page: Go To Instagram',
   PROFILE_PAGE_CLICK_TWITTER = 'Profile Page: Go To Twitter',
   PROFILE_PAGE_CLICK_WEBSITE = 'ProfilePage: Go To Website',
   PROFILE_PAGE_CLICK_DONATION = 'ProfilePage: Go To Donation',
+
+  // Track page
   TRACK_PAGE_DOWNLOAD = 'Track Page: Download',
   TRACK_PAGE_PLAY_MORE = 'Track Page: Play More By This Artist',
+
+  // Playback
   PLAYBACK_PLAY = 'Playback: Play',
   PLAYBACK_PAUSE = 'Playback: Pause',
-  FOLLOW = 'Follow',
-  UNFOLLOW = 'Unfollow',
+  // A listen is when we record against the backend vs. a play which is a UI action
+  LISTEN = 'Listen',
+
+  // Navigation
+  PAGE_VIEW = 'Page View',
+  ON_FIRST_PAGE = 'nav-on-first-page',
+  NOT_ON_FIRST_PAGE = 'nav-not-on-first-page',
   LINK_CLICKING = 'Link Click',
   TAG_CLICKING = 'Tag Click',
+
+  // Search
   SEARCH_SEARCH = 'Search: Search',
   SEARCH_TAG_SEARCH = 'Search: Tag Search',
   SEARCH_MORE_RESULTS = 'Search: More Results',
   SEARCH_RESULT_SELECT = 'Search: Result Select',
   SEARCH_TAB_CLICK = 'Search: Tab Click',
-  LISTEN = 'Listen',
+
+  // Errors
   ERROR_PAGE = 'Error Page',
   NOT_FOUND_PAGE = 'Not Found Page',
-  PAGE_VIEW = 'Page View',
-  ON_FIRST_PAGE = 'nav-on-first-page',
-  NOT_ON_FIRST_PAGE = 'nav-not-on-first-page',
-  BROWSER_NOTIFICATION_SETTINGS = 'Browser Push Notification',
-  TWEET_FIRST_UPLOAD = 'Tweet First Upload',
+
+  // System
   WEB_VITALS = 'Web Vitals',
   PERFORMANCE = 'Performance',
   DISCOVERY_PROVIDER_SELECTION = 'Discovery Provider Selection',
   CREATOR_NODE_SELECTION = 'Creator Node Selection',
+
+  // Remixes
   STEM_COMPLETE_UPLOAD = 'Stem: Complete Upload',
   STEM_DELETE = 'Stem: Delete',
   REMIX_NEW_REMIX = 'Remix: New Remix',
   REMIX_COSIGN = 'Remix: CoSign',
   REMIX_COSIGN_INDICATOR = 'Remix: CoSign Indicator',
   REMIX_HIDE = 'Remix: Hide',
+
+  // $AUDIO
   SEND_AUDIO_REQUEST = 'Send $AUDIO: Request',
   SEND_AUDIO_SUCCESS = 'Send $AUDIO: Success',
   SEND_AUDIO_FAILURE = 'Send $AUDIO: Failure',
 
   // Service monitoring
   SERVICE_MONITOR_REQUEST = 'Service Monitor: Request',
-  SERVICE_MONITOR_HEALTH_CHECK = 'Service Monitor: Status'
+  SERVICE_MONITOR_HEALTH_CHECK = 'Service Monitor: Status',
+
+  // Playlist library
+  PLAYLIST_LIBRARY_REORDER = 'Playlist Library: Reorder',
+  // When an update is available in the playlist library
+  PLAYLIST_LIBRARY_HAS_UPDATE = 'Playlist Library: Has Update',
+  // When a user clicks on a playlist in the library
+  PLAYLIST_LIBRARY_CLICKED = 'Playlist Library: Clicked'
 }
 
 type PageView = {
@@ -735,6 +784,23 @@ type ServiceMonitorHealthCheck = {
   type: ServiceMonitorType
 } & MonitorPayload
 
+type PlaylistLibraryReorder = {
+  eventName: Name.PLAYLIST_LIBRARY_REORDER
+  // Whether or not the reorder contains newly created temp playlists
+  containsTemporaryPlaylists: boolean
+}
+
+type PlaylistLibraryHasUpdate = {
+  eventName: Name.PLAYLIST_LIBRARY_HAS_UPDATE
+  count: number
+}
+
+type PlaylistLibraryClicked = {
+  eventName: Name.PLAYLIST_LIBRARY_CLICKED
+  playlistId: ID
+  hasUpdate: boolean
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -839,3 +905,6 @@ export type AllTrackingEvents =
   | SendAudioFailure
   | ServiceMonitorRequest
   | ServiceMonitorHealthCheck
+  | PlaylistLibraryReorder
+  | PlaylistLibraryHasUpdate
+  | PlaylistLibraryClicked
