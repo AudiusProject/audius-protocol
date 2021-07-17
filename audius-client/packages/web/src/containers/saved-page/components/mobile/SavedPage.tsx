@@ -26,6 +26,8 @@ import useTabs from 'hooks/useTabs/useTabs'
 import User from 'models/User'
 import { ID, UID } from 'models/common/Identifiers'
 import { Lineup } from 'models/common/Lineup'
+import { Name } from 'services/analytics'
+import { make, useRecord } from 'store/analytics/actions'
 import { QueueItem } from 'store/queue/types'
 import { Status } from 'store/types'
 import { albumPage, TRENDING_PAGE, playlistPage } from 'utils/route'
@@ -269,9 +271,11 @@ const PlaylistCardLineup = ({
   const {
     isEnabled: arePlaylistUpdatesEnabled
   } = useArePlaylistUpdatesEnabled()
+  const record = useRecord()
 
   const filteredPlaylists = getFilteredPlaylists(playlists || [])
   const playlistCards = filteredPlaylists.map(playlist => {
+    const hasUpdate = playlistUpdates.includes(playlist.playlist_id)
     return (
       <Card
         key={playlist.playlist_id}
@@ -284,8 +288,6 @@ const PlaylistCardLineup = ({
           playlist.playlist_contents.track_ids.length
         )}
         onClick={() => {
-          updatePlaylistLastViewedAt(playlist.playlist_id)
-
           goToRoute(
             playlistPage(
               playlist.ownerHandle,
@@ -293,11 +295,15 @@ const PlaylistCardLineup = ({
               playlist.playlist_id
             )
           )
+          updatePlaylistLastViewedAt(playlist.playlist_id)
+          record(
+            make(Name.PLAYLIST_LIBRARY_CLICKED, {
+              playlistId: playlist.playlist_id,
+              hasUpdate
+            })
+          )
         }}
-        updateDot={
-          !!arePlaylistUpdatesEnabled &&
-          playlistUpdates.includes(playlist.playlist_id)
-        }
+        updateDot={!!arePlaylistUpdatesEnabled && hasUpdate}
       />
     )
   })

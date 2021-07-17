@@ -7,6 +7,7 @@ import {
 import { version } from '../../../../package.json'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 
 const TRACK_LIMIT = 10000
 
@@ -26,6 +27,9 @@ export const identify = (
   options?: Record<string, any>,
   callback?: () => void
 ) => {
+  if (!IS_PRODUCTION_BUILD) {
+    console.info('Segment | identify', handle, traits, options)
+  }
   if (NATIVE_MOBILE) {
     const message = new SetAnalyticsUser(handle, traits)
     message.send()
@@ -48,6 +52,9 @@ export const track = (
   options?: Record<string, any>,
   callback?: () => void
 ) => {
+  if (!IS_PRODUCTION_BUILD) {
+    console.info('Segment | track', event, properties, options)
+  }
   // stop tracking analytics after we reach session limit
   if (trackCounter++ >= TRACK_LIMIT) return
 

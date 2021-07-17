@@ -1,6 +1,7 @@
 import {
   all,
   call,
+  fork,
   put,
   select,
   takeEvery,
@@ -17,12 +18,14 @@ import {
 } from 'models/PlaylistLibrary'
 import User from 'models/User'
 import { ID } from 'models/common/Identifiers'
+import { Name } from 'services/analytics'
 import { AccountCollection } from 'store/account/reducer'
 import {
   getAccountNavigationPlaylists,
   getAccountUser,
   getPlaylistLibrary
 } from 'store/account/selectors'
+import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as cacheActions from 'store/cache/actions'
 import { getResult } from 'store/confirmer/selectors'
@@ -94,8 +97,13 @@ function* watchUpdatePlaylistLibrary() {
       })
     } else {
       // Otherwise, just write the profile update
-      yield call(updateProfileAsync, { metadata: account })
+      yield fork(updateProfileAsync, { metadata: account })
     }
+
+    const event = make(Name.PLAYLIST_LIBRARY_REORDER, {
+      containsTemporaryPlaylists: containsTemps
+    })
+    yield put(event)
   })
 }
 
