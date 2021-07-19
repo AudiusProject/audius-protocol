@@ -17,6 +17,6 @@ borsh = "0.9.0"
 anyhow = "1.0.40"
 claimable-tokens = { path="../program", features = [ "no-entrypoint" ] }
 spl-token = { git="https://github.com/solana-labs/solana-program-library", features = [ "no-entrypoint" ] }
-libsecp256k1 = "0.3.5"
+libsecp256k1 = "0.5.0"
 spl-associated-token-account = "1.0.2"
 hex = "0.4.3"
