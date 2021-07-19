@@ -1,7 +1,7 @@
 """Recreate track_routes table
 
 Revision ID: 534987cb0355
-Revises: 80271bf86c56
+Revises: 6cf091d52869
 Create Date: 2021-07-15 04:48:03.272800
 
 """

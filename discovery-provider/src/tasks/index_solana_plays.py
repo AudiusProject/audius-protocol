@@ -82,8 +82,7 @@ def parse_instruction_data(data):
 
 # Retry 5x until a tx 'result' is found with valid contents
 # If not found, move forward
-def get_sol_tx_info(solana_client, tx_sig):
-    retries = 5
+def get_sol_tx_info(solana_client, tx_sig, retries=5):
     while retries > 0:
         try:
             tx_info = solana_client.get_confirmed_transaction(tx_sig)

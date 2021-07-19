@@ -47,6 +47,8 @@ from .models import (
     UserChallenge,
 )
 from .track_route import TrackRoute
+from .user_bank import UserBankTransaction
+from .user_bank import UserBankAccount
 from .user_events import UserEvents
 
 __all__ = [
@@ -97,5 +99,7 @@ __all__ = [
     "User",
     "UserBalance",
     "UserChallenge",
+    "UserBankTransaction",
+    "UserBankAccount",
     "UserEvents",
 ]
