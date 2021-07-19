@@ -1,4 +1,4 @@
-import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
+import { call, put, take, fork, select, takeEvery } from 'redux-saga/effects'
 
 import {
   setBrowserNotificationPermission,
@@ -6,6 +6,7 @@ import {
   setBrowserNotificationSettingsOn
 } from 'containers/settings-page/store/actions'
 import * as uploadActions from 'containers/upload-page/store/actions'
+import AudioManager from 'services/AudioManager'
 import AudiusBackend from 'services/AudiusBackend'
 import {
   getAudiusAccount,
@@ -17,7 +18,8 @@ import {
   clearAudiusAccountUser
 } from 'services/LocalStorage'
 import { SignedIn } from 'services/native-mobile-interface/lifecycle'
-import { setUserId } from 'services/remote-config/Provider'
+import { FeatureFlags } from 'services/remote-config'
+import { getFeatureEnabled, setUserId } from 'services/remote-config/Provider'
 import { setSentryUser } from 'services/sentry'
 import * as accountActions from 'store/account/reducer'
 import {
@@ -30,7 +32,11 @@ import {
   getAccountToCache
 } from 'store/account/selectors'
 import { identify } from 'store/analytics/actions'
-import { open as openBrowserPushPermissionModal } from 'store/application/ui/browserPushPermissionConfirmation/actions'
+import {
+  getModalIsOpen,
+  setVisibility
+} from 'store/application/ui/modals/slice'
+import { confirmTransferAudioToWAudio } from 'store/audio-manager/slice'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as cacheActions from 'store/cache/actions'
 import { retrieveCollections } from 'store/cache/collections/utils'
@@ -83,6 +89,50 @@ function* onFetchAccount(account) {
   // Add playlists that might not have made it into the user's library.
   // This could happen if the user creates a new playlist and then leaves their session.
   yield fork(addPlaylistsNotInLibrary)
+
+  yield fork(initAudioChecks)
+}
+
+/**
+ * Opens the Modal for user confirmation of transfering audio to waudio
+ */
+function* requestTransferAudioToWAudio() {
+  // Wait for any other modals to close
+  let modalIsOpen = yield select(getModalIsOpen)
+  while (modalIsOpen) {
+    yield take(setVisibility.type)
+    modalIsOpen = yield select(getModalIsOpen)
+  }
+  // Put an action to show modal
+  yield put(setVisibility({ modal: 'ConfirmAudioToWAudio', visible: true }))
+
+  // Take the action on result of modal
+  yield take(confirmTransferAudioToWAudio.type)
+  return true
+}
+
+function* initAudioChecks() {
+  if (getFeatureEnabled(FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD)) {
+    try {
+      const audiusManager = new AudioManager({
+        requestTransferAudioToWAudio
+      })
+
+      yield call(audiusManager.getInitState)
+      yield call(audiusManager.updateState)
+    } catch (error) {
+      yield put(
+        errorActions.handleError({
+          message: 'Error in Init Audio Checks',
+          shouldRedirect: false,
+          shouldReport: true,
+          additionalInfo: { errorMessage: error.message },
+          level: errorActions.Level.Critical
+        })
+      )
+    }
+    yield put(setVisibility({ modal: 'ConfirmAudioToWAudio', visible: false }))
+  }
 }
 
 export function* fetchAccountAsync(action) {
@@ -178,6 +228,11 @@ function* reCacheAccount(action) {
   setAudiusAccount(account)
 }
 
+const setBrowerPushPermissionConfirmationModal = setVisibility({
+  modal: 'BrowserPushPermissionConfirmation',
+  visible: true
+})
+
 /**
  * Determine if the push notification modal should appear
  */
@@ -187,7 +242,7 @@ export function* showPushNotificationConfirmation() {
   if (!account) return
   const browserPermission = yield call(fetchBrowserPushNotifcationStatus)
   if (browserPermission === Permission.DEFAULT) {
-    yield put(openBrowserPushPermissionModal())
+    yield put(setBrowerPushPermissionConfirmationModal)
   } else if (browserPermission === Permission.GRANTED) {
     if (isPushManagerAvailable) {
       const subscription = yield call(getPushManagerBrowserSubscription)
@@ -196,7 +251,7 @@ export function* showPushNotificationConfirmation() {
         subscription.endpoint
       )
       if (!enabled) {
-        yield put(openBrowserPushPermissionModal())
+        yield put(setBrowerPushPermissionConfirmationModal)
       }
     } else if (isSafariPushAvailable) {
       try {
@@ -206,7 +261,7 @@ export function* showPushNotificationConfirmation() {
           safariPushBrowser.deviceToken
         )
         if (!enabled) {
-          yield put(openBrowserPushPermissionModal())
+          yield put(setBrowerPushPermissionConfirmationModal)
         }
       } catch (err) {
         console.log(err)

@@ -18,7 +18,7 @@ import {
   getUserName
 } from 'store/account/selectors'
 import { make, TrackEvent } from 'store/analytics/actions'
-import { open as openBrowserPushPermissionModal } from 'store/application/ui/browserPushPermissionConfirmation/actions'
+import { setVisibility } from 'store/application/ui/modals/slice'
 import { setTheme } from 'store/application/ui/theme/actions'
 import { getTheme } from 'store/application/ui/theme/selectors'
 import { AppState } from 'store/types'
@@ -252,7 +252,12 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setBrowserNotificationPermission: (permission: Permission) =>
       dispatch(settingPageActions.setBrowserNotificationPermission(permission)),
     openBrowserPushPermissionModal: () =>
-      dispatch(openBrowserPushPermissionModal()),
+      dispatch(
+        setVisibility({
+          modal: 'BrowserPushPermissionConfirmation',
+          visible: true
+        })
+      ),
     toggleNotificationSetting: (
       notificationType: BrowserNotificationSetting,
       isOn: boolean

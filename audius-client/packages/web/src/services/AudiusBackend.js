@@ -2463,6 +2463,19 @@ class AudiusBackend {
       receipt1.blockNumber < receipt2.blockNumber ? 1 : -1
     )[0]
   }
+
+  /**
+   * Transfers the user's ERC20 AUDIO into SPL WAUDIO to their solana user bank account
+   * @param {BN} balance The amount of AUDIO to be transferred
+   */
+  static async transferAudioToWAudio(balance) {
+    await waitForLibsInit()
+    const userBank = await audiusLibs.solanaWeb3Manager.getUserBank()
+    await audiusLibs.Account.permitAndSendTokensViaWormhole(
+      balance,
+      userBank.toString()
+    )
+  }
 }
 
 export default AudiusBackend

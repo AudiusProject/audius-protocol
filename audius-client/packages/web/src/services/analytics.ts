@@ -160,6 +160,11 @@ export enum Name {
   SEND_AUDIO_SUCCESS = 'Send $AUDIO: Success',
   SEND_AUDIO_FAILURE = 'Send $AUDIO: Failure',
 
+  // AUDIO Manager
+  TRANSFER_AUDIO_TO_WAUDIO_REQUEST = 'TRANSFER_AUDIO_TO_WAUDIO_REQUEST',
+  TRANSFER_AUDIO_TO_WAUDIO_SUCCESS = 'TRANSFER_AUDIO_TO_WAUDIO_SUCCESS',
+  TRANSFER_AUDIO_TO_WAUDIO_FAILURE = 'TRANSFER_AUDIO_TO_WAUDIO_FAILURE',
+
   // Service monitoring
   SERVICE_MONITOR_REQUEST = 'Service Monitor: Request',
   SERVICE_MONITOR_HEALTH_CHECK = 'Service Monitor: Status',
@@ -774,6 +779,21 @@ type SendAudioFailure = {
   error: string
 }
 
+type TransferAudioToWAudioRequest = {
+  eventName: Name.TRANSFER_AUDIO_TO_WAUDIO_REQUEST
+  from: WalletAddress
+}
+
+type TransferAudioToWAudioSuccess = {
+  eventName: Name.TRANSFER_AUDIO_TO_WAUDIO_SUCCESS
+  from: WalletAddress
+}
+
+type TransferAudioToWAudioFailure = {
+  eventName: Name.TRANSFER_AUDIO_TO_WAUDIO_FAILURE
+  from: WalletAddress
+}
+
 type ServiceMonitorRequest = {
   eventName: Name.SERVICE_MONITOR_REQUEST
   type: ServiceMonitorType
@@ -908,3 +928,6 @@ export type AllTrackingEvents =
   | PlaylistLibraryReorder
   | PlaylistLibraryHasUpdate
   | PlaylistLibraryClicked
+  | TransferAudioToWAudioRequest
+  | TransferAudioToWAudioSuccess
+  | TransferAudioToWAudioFailure

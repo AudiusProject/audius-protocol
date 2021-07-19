@@ -50,6 +50,7 @@ import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
 import averageColor from 'store/application/ui/average-color/slice'
 import modals from 'store/application/ui/modals/slice'
 import StemsUploadReducer from 'store/application/ui/stemsUpload/slice'
+import { AudioManagerState } from 'store/audio-manager/slice'
 import UserCacheState from 'store/cache/users/types'
 import PlayerReducer from 'store/player/slice'
 import PlaylistLibraryReducer from 'store/playlist-library/slice'
@@ -57,7 +58,6 @@ import QueueReducer from 'store/queue/slice'
 import tokenDashboard from 'store/token-dashboard/slice'
 import wallet from 'store/wallet/slice'
 
-import { BrowserPushPermissionConfirmationModalState } from './application/ui/browserPushPermissionConfirmation/types'
 import { CookieBannerState } from './application/ui/cookieBanner/types'
 import { CreatePlaylistModalState } from './application/ui/createPlaylistModal/types'
 import { EditPlaylistModalState } from './application/ui/editPlaylistModal/slice'
@@ -102,13 +102,13 @@ export type AppState = {
 
   // Wallet
   wallet: ReturnType<typeof wallet>
+  audioManager: AudioManagerState
 
   // Global
   application: {
     ui: {
       appCTAModal: ReturnType<typeof AppCTAModalReducer>
       averageColor: ReturnType<typeof averageColor>
-      browserPushPermissionConfirmation: BrowserPushPermissionConfirmationModalState
       cookieBanner: CookieBannerState
       createPlaylistModal: CreatePlaylistModalState
       editPlaylistModal: EditPlaylistModalState
