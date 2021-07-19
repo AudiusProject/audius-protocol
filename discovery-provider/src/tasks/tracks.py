@@ -2,7 +2,7 @@ import logging
 import time
 import functools
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import null, functions
 from src.app import contract_addresses
@@ -49,6 +49,7 @@ def track_state_update(
     track_contract = update_task.web3.eth.contract(
         address=contract_addresses["track_factory"], abi=track_abi
     )
+    pending_track_routes = List[TrackRoute]
     track_events = {}
     for tx_receipt in track_factory_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
@@ -87,6 +88,7 @@ def track_state_update(
                         event_type,
                         track_events[track_id]["track"],
                         block_timestamp,
+                        pending_track_routes,
                     )
 
                     # If track record object is None, it has a blacklisted metadata CID
@@ -206,7 +208,7 @@ def time_method(func):
 
 
 @time_method
-def add_old_style_route(session, track_record, track_metadata):
+def add_old_style_route(session, track_record, track_metadata, pending_track_routes):
     """Temporary method to add the old style routes to the track_routes db while we
     transition the clients to use the new routing API.
     """
@@ -221,14 +223,24 @@ def add_old_style_route(session, track_record, track_metadata):
     new_track_slug_title = f"{new_track_slug_title}-{track_record.track_id}"
 
     # Check to make sure the route doesn't exist
-    existing_track_route = (
-        session.query(TrackRoute)
-        .filter(
-            TrackRoute.slug == new_track_slug_title,
-            TrackRoute.owner_id == track_record.owner_id,
-        )
-        .one_or_none()
+    existing_track_route = next(
+        (
+            route
+            for route in pending_track_routes
+            if route.slug == new_track_slug_title
+            and route.owner_id == track_record.owner_id
+        ),
+        None,
     )
+    if existing_track_route is None:
+        existing_track_route = (
+            session.query(TrackRoute)
+            .filter(
+                TrackRoute.slug == new_track_slug_title,
+                TrackRoute.owner_id == track_record.owner_id,
+            )
+            .one_or_none()
+        )
 
     if existing_track_route is None:
         # Add the new track route
@@ -246,8 +258,8 @@ def add_old_style_route(session, track_record, track_metadata):
         new_track_route.txhash = track_record.txhash
         session.add(new_track_route)
 
-        # Commit this so it gets in before the new route creation
-        session.commit()
+        # Add to in-memory store to make sure we don't try to add it twice
+        pending_track_routes.append(new_track_route)
     else:
         logger.error(
             f"Cannot add 'old-style' track_route to Track={track_record}\
@@ -256,7 +268,9 @@ def add_old_style_route(session, track_record, track_metadata):
 
 
 @time_method
-def update_track_routes_table(session, track_record, track_metadata):
+def update_track_routes_table(
+    session, track_record, track_metadata, pending_track_routes
+):
     """Creates the route for the given track and commits it to the track_routes table"""
 
     # Check if the title is staying the same, and if so, return early
@@ -269,13 +283,25 @@ def update_track_routes_table(session, track_record, track_metadata):
     new_track_slug = new_track_slug_title
 
     # Find the current route for the track
-    prev_track_route_record = (
-        session.query(TrackRoute)
-        .filter(
-            TrackRoute.track_id == track_record.track_id, TrackRoute.is_current == True
-        )  # noqa: E712
-        .one_or_none()
+    # Check the pending track route updates first
+    prev_track_route_record = next(
+        (
+            route
+            for route in pending_track_routes
+            if route.is_current and route.track_id == track_record.track_id
+        ),
+        None,
     )
+    # Then query the DB if necessary
+    if prev_track_route_record is None:
+        prev_track_route_record = (
+            session.query(TrackRoute)
+            .filter(
+                TrackRoute.track_id == track_record.track_id,
+                TrackRoute.is_current == True,
+            )  # noqa: E712
+            .one_or_none()
+        )
 
     if prev_track_route_record is not None:
         if prev_track_route_record.title_slug == new_track_slug_title:
@@ -285,27 +311,51 @@ def update_track_routes_table(session, track_record, track_metadata):
         prev_track_route_record.is_current = False
 
     # Check for collisions by slug titles, and get the max collision_id
-    max_collision_id = (
-        session.query(functions.max(TrackRoute.collision_id))
-        .filter(
-            TrackRoute.title_slug == new_track_slug_title,
-            TrackRoute.owner_id == track_record.owner_id,
-        )
-        .one_or_none()
-    )[0]
+    max_collision_id: Optional[int] = None
+    # Check pending updates first
+    for route in pending_track_routes:
+        if (
+            route.title_slug == new_track_slug_title
+            and route.owner_id == track_record.owner_id
+        ):
+            max_collision_id = (
+                route.collision_id
+                if max_collision_id is None
+                else max(max_collision_id, route.collision_id)
+            )
+    # Check DB if necessary
+    if max_collision_id is None:
+        max_collision_id = (
+            session.query(functions.max(TrackRoute.collision_id))
+            .filter(
+                TrackRoute.title_slug == new_track_slug_title,
+                TrackRoute.owner_id == track_record.owner_id,
+            )
+            .one_or_none()
+        )[0]
 
     existing_track_route: Optional[TrackRoute] = None
     # If the new track_slug ends in a digit, there's a possibility it collides
     # with an existing route when the collision_id is appended to its title_slug
     if new_track_slug[-1].isdigit():
-        existing_track_route = (
-            session.query(TrackRoute)
-            .filter(
-                TrackRoute.slug == new_track_slug,
-                TrackRoute.owner_id == track_record.owner_id,
-            )
-            .one_or_none()
+        existing_track_route = next(
+            (
+                route
+                for route in pending_track_routes
+                if route.slug == new_track_slug
+                and route.owner_id == track_record.owner_id
+            ),
+            None,
         )
+        if existing_track_route is None:
+            existing_track_route = (
+                session.query(TrackRoute)
+                .filter(
+                    TrackRoute.slug == new_track_slug,
+                    TrackRoute.owner_id == track_record.owner_id,
+                )
+                .one_or_none()
+            )
 
     new_collision_id = 0
     has_collisions = existing_track_route is not None
@@ -340,14 +390,24 @@ def update_track_routes_table(session, track_record, track_metadata):
         #       - Use collision_id: 1, slug: 'track-1-1'
         #
         # This may be expensive with many collisions, but should be rare.
-        existing_track_route = (
-            session.query(TrackRoute)
-            .filter(
-                TrackRoute.slug == new_track_slug,
-                TrackRoute.owner_id == track_record.owner_id,
-            )
-            .one_or_none()
+        existing_track_route = next(
+            (
+                route
+                for route in pending_track_routes
+                if route.slug == new_track_slug
+                and route.owner_id == track_record.owner_id
+            ),
+            None,
         )
+        if existing_track_route is None:
+            existing_track_route = (
+                session.query(TrackRoute)
+                .filter(
+                    TrackRoute.slug == new_track_slug,
+                    TrackRoute.owner_id == track_record.owner_id,
+                )
+                .one_or_none()
+            )
         has_collisions = existing_track_route is not None
 
     # Add the new track route
@@ -363,12 +423,19 @@ def update_track_routes_table(session, track_record, track_metadata):
     new_track_route.txhash = track_record.txhash
     session.add(new_track_route)
 
-    # Make sure to commit so we don't add the same route twice
-    session.commit()
+    # Add to pending track routes so we don't add the same route twice
+    pending_track_routes.append(new_track_route)
 
 
 def parse_track_event(
-    self, session, update_task, entry, event_type, track_record, block_timestamp
+    self,
+    session,
+    update_task,
+    entry,
+    event_type,
+    track_record,
+    block_timestamp,
+    pending_track_routes,
 ):
     event_args = entry["args"]
     # Just use block_timestamp as integer
@@ -410,9 +477,10 @@ def parse_track_event(
             track_metadata_multihash, track_metadata_format, creator_node_endpoint
         )
 
-        # Note: These will commit the session
-        add_old_style_route(session, track_record, track_metadata)
-        update_track_routes_table(session, track_record, track_metadata)
+        add_old_style_route(session, track_record, track_metadata, pending_track_routes)
+        update_track_routes_table(
+            session, track_record, track_metadata, pending_track_routes
+        )
         track_record = populate_track_record_metadata(
             track_record, track_metadata, handle
         )
@@ -471,9 +539,10 @@ def parse_track_event(
             upd_track_metadata_multihash, track_metadata_format, creator_node_endpoint
         )
 
-        # Note: These will commit the session
-        add_old_style_route(session, track_record, track_metadata)
-        update_track_routes_table(session, track_record, track_metadata)
+        add_old_style_route(session, track_record, track_metadata, pending_track_routes)
+        update_track_routes_table(
+            session, track_record, track_metadata, pending_track_routes
+        )
         track_record = populate_track_record_metadata(
             track_record, track_metadata, handle
         )
