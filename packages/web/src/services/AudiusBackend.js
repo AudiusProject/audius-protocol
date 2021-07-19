@@ -2306,6 +2306,27 @@ class AudiusBackend {
     }
   }
 
+  static async updateHCaptchaScore(token) {
+    await waitForLibsInit()
+    const account = audiusLibs.Account.getCurrentUser()
+    if (!account) return
+
+    try {
+      const { data, signature } = await AudiusBackend.signData()
+      await fetch(`${IDENTITY_SERVICE}/score`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          [AuthHeaders.Message]: data,
+          [AuthHeaders.Signature]: signature
+        },
+        body: JSON.stringify({ token })
+      })
+    } catch (err) {
+      console.error(err.message)
+    }
+  }
+
   /**
    * Retrieves the claim distribution amount
    * @returns {BN} amount The claim amount
