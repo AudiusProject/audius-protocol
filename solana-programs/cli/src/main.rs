@@ -15,7 +15,7 @@ use clap::{
     SubCommand,
 };
 use hex::FromHex;
-use secp256k1::SecretKey;
+use libsecp256k1::SecretKey;
 use solana_clap_utils::{
     input_parsers::pubkey_of,
     input_validators::{is_keypair, is_pubkey, is_url},
