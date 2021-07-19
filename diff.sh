@@ -22,6 +22,7 @@ REPOS="
     discovery-provider
     e2e-tests
     identity-service
+    solana-programs
 "
 
 declare -a diff_repos

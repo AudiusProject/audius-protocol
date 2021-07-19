@@ -4,7 +4,7 @@ use audius_eth_registry::*;
 use borsh::BorshDeserialize;
 use rand::rngs::ThreadRng;
 use rand::{thread_rng, Rng};
-use secp256k1::{PublicKey, SecretKey};
+use libsecp256k1::{PublicKey, SecretKey};
 use sha3::Digest;
 use solana_program::{hash::Hash, instruction::Instruction, pubkey::Pubkey, system_instruction};
 

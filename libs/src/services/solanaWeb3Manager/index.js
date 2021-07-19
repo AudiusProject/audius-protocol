@@ -70,14 +70,29 @@ class SolanaWeb3Manager {
     this.solanaTokenAddress = solanaTokenAddress
     this.solanaTokenKey = new PublicKey(solanaTokenAddress)
 
-    this.claimableTokenPDA = claimableTokenPDA
-    this.claimableTokenPDAKey = new PublicKey(claimableTokenPDA)
-
     this.feePayerAddress = feePayerAddress
     this.feePayerKey = new PublicKey(feePayerAddress)
 
     this.claimableTokenProgramAddress = claimableTokenProgramAddress
     this.claimableTokenProgramKey = new PublicKey(claimableTokenProgramAddress)
+    this.claimableTokenPDA = claimableTokenPDA || (
+      await this.generateProgramDerivedAddress(
+        this.mintKey,
+        this.claimableTokenProgramKey
+      )
+    )
+    this.claimableTokenPDAKey = new PublicKey(this.claimableTokenPDA)
+  }
+
+  /**
+   * Generates a program derived address
+   */
+  async generateProgramDerivedAddress (mintKey, programKey) {
+    let res = await this.solanaWeb3.PublicKey.findProgramAddress(
+      [mintKey.toBytes().slice(0, 32)],
+      programKey
+    )
+    return res[0].toString()
   }
 
   /**

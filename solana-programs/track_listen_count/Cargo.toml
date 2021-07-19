@@ -12,14 +12,14 @@ arrayref = "0.3.6"
 num-derive = "0.3"
 num-traits = "0.2"
 num_enum = "0.5.1"
-solana-program = "1.7.4"
+solana-program = "1.7.6"
 thiserror = "1.0"
 borsh = "0.9.0"
 audius_eth_registry = { path = "../audius_eth_registry", features = [ "no-entrypoint" ] }
 
 [dev-dependencies]
-solana-program-test = "1.7.4"
-solana-sdk = "1.7.4"
+solana-program-test = "1.6.1"
+solana-sdk = "1.7.6"
 libsecp256k1 = { version = "0.3.5" }
 rand = { version = "0.8.3" }
 sha3 = { version = "0.9.1" }
