@@ -759,7 +759,9 @@ class CreatorNode {
             if (!total) total = progressEvent.total
             console.info(`Upload in progress: ${progressEvent.loaded} / ${total}`)
             onProgress(progressEvent.loaded, total)
-          }
+          },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity
         }
       )
       if (resp.data && resp.data.error) {
