@@ -113,8 +113,8 @@ const onLimitReached = (req, res, options) => {
  * A generic endpoint rate limiter
  * @param {object} config
  * @param {string} config.prefix redis cache key prefix
- * @param {number?} config.max maximum number of requests
- * @param {expiry?} config.expiry time period of the rate limiter
+ * @param {number?} config.max maximum number of requests in time period
+ * @param {expiry?} config.expiry time period (seconds) of the rate limiter
  * @param {(req: Request) => string?} config.keyGenerator redis cache
  *  key suffix (can use the request object)
  * @param {boolean?} config.skip if true, limiter is avoided
