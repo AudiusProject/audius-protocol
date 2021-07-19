@@ -273,9 +273,9 @@ contract('Governance.sol', async (accounts) => {
    */
   beforeEach(async () => {
     // Transfer 1000 tokens to stakerAccount1, stakerAccount2, and delegatorAccount1
-    await token.transfer(stakerAccount1, defaultStakeAmount, { from: proxyDeployerAddress })
-    await token.transfer(stakerAccount2, defaultStakeAmount, { from: proxyDeployerAddress })
-    await token.transfer(delegatorAccount1, defaultStakeAmount, { from: proxyDeployerAddress })
+    await token.transfer(stakerAccount1, defaultStakeAmount, { from: tokenOwnerAddress })
+    await token.transfer(stakerAccount2, defaultStakeAmount, { from: tokenOwnerAddress })
+    await token.transfer(delegatorAccount1, defaultStakeAmount, { from: tokenOwnerAddress })
 
     // Record initial staker account token balance
     const initialBalance = await token.balanceOf(stakerAccount1)
@@ -3043,6 +3043,48 @@ contract('Governance.sol', async (accounts) => {
         _lib.abiEncode(['address', 'uint256'], [governance.address, 1000]),
         { from: guardianAddress }
       )
+    })
+
+    it('Token transfer via governance', async () => {
+      assert.isTrue((await token.balanceOf(governance.address)).isZero())
+
+      await token.transfer(governance.address, 100, { from: tokenOwnerAddress })
+
+      assert.isTrue((await token.balanceOf(governance.address)).eq(_lib.toBN(100)))
+
+      const recieverAcct = accounts[34]
+      assert.isTrue((await token.balanceOf(recieverAcct)).isZero())
+
+      // transfer tokens via governance to user acct
+      await governance.guardianExecuteTransaction(
+        tokenRegKey,
+        callValue0,
+        'transfer(address,uint256)',
+        _lib.abiEncode(['address', 'uint256'], [recieverAcct, 50]),
+        { from: guardianAddress }
+      )
+
+      // confirm balances
+      assert.isTrue((await token.balanceOf(governance.address)).eq(_lib.toBN(50)))
+      assert.isTrue((await token.balanceOf(recieverAcct)).eq(_lib.toBN(50)))
+
+      // deploy test contract
+      const testContract = await TestContract.new()
+      await testContract.initialize()
+      assert.isTrue((await token.balanceOf(testContract.address)).isZero())
+
+      // transfer tokens via governance to contract
+      await governance.guardianExecuteTransaction(
+        tokenRegKey,
+        callValue0,
+        'transfer(address,uint256)',
+        _lib.abiEncode(['address', 'uint256'], [testContract.address, 50]),
+        { from: guardianAddress }
+      )
+
+      // confirm balances
+      assert.isTrue((await token.balanceOf(governance.address)).isZero())
+      assert.isTrue((await token.balanceOf(testContract.address)).eq(_lib.toBN(50)))
     })
 
     it.skip('TODO - Upgrade token', async () => {
