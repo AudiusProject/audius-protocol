@@ -38,7 +38,7 @@ TX_SIGNATURES_RESIZE_LENGTH = 3
 # Message formatted as follows:
 # EthereumAddress = [214, 237, 135, 129, 143, 240, 221, 138, 97, 84, 199, 236, 234, 175, 81, 23, 114, 209, 118, 39]
 def parse_eth_address_from_msg(msg: str):
-    logger.error(f"index_user_bank.py {msg}")
+    logger.info(f"index_user_bank.py {msg}")
     res = re.findall(r"\[.*?\]", msg)
     # Remove brackets
     inner_res = res[0][1:-1]
@@ -53,7 +53,7 @@ def parse_eth_address_from_msg(msg: str):
 # Return highest user bank slot that has been processed
 def get_highest_user_bank_tx_slot(session: Session):
     slot = MIN_SLOT
-    tx_query = (
+    tx_query: Tuple[int, None] = (
         session.query(UserBankTransaction.slot).order_by(desc(UserBankTransaction.slot))
     ).first()
     if tx_query:
@@ -132,7 +132,7 @@ def process_user_bank_tx_details(
                         f"index_user_bank.py | Found known account: {public_key_str}, {bank_acct}"
                     )
             except ValueError as e:
-                logger.info(e)
+                logger.error(e)
         elif "Transfer" in msg:
             # Accounts to refresh balance
             acct_1 = account_keys[1]
@@ -292,7 +292,7 @@ def index_user_bank(self):
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("user_bank_lock", timeout=25)
+    update_lock = redis.lock("user_bank_lock", timeout=10 * 60)
 
     try:
         # Attempt to acquire lock - do not block if unable to acquire
