@@ -191,12 +191,8 @@ def refresh_user_ids(
         )
         if lazy_refresh_user_ids:
             redis.srem(LAZY_REFRESH_REDIS_PREFIX, *lazy_refresh_user_ids)
-            # Add the count of the balances
-            redis.incrby(REDIS_ETH_BALANCE_COUNTER_KEY, len(lazy_refresh_user_ids))
         if immediate_refresh_user_ids:
             redis.srem(IMMEDIATE_REFRESH_REDIS_PREFIX, *immediate_refresh_user_ids)
-            # Add the count of the balances
-            redis.incrby(REDIS_ETH_BALANCE_COUNTER_KEY, len(immediate_refresh_user_ids))
 
 
 def get_token_address(eth_web3, shared_config):

@@ -17,7 +17,7 @@ from eth_abi.codec import ABICodec
 
 from src.models.models import AssociatedWallet, EthBlock, User
 from src.utils.helpers import redis_set_and_dump, redis_get_or_restore
-from src.queries.get_balances import enqueue_balance_refresh
+from src.queries.get_balances import enqueue_immediate_balance_refresh
 
 
 logger = logging.getLogger(__name__)
@@ -186,7 +186,7 @@ class EventScanner:
                 .all()
             )
             user_ids = [user_id for [user_id] in result]
-            enqueue_balance_refresh(self.redis, user_ids)
+            enqueue_immediate_balance_refresh(self.redis, user_ids)
 
         # Return a pointer that allows us to look up this event later if needed
         return f"{block_number}-{txhash}-{log_index}"
@@ -388,7 +388,11 @@ def _retry_web3_call(  # type: ignore
 
 
 def _fetch_events_for_all_contracts(
-    web3, event_type, argument_filters: dict, from_block: BlockIdentifier, to_block: BlockIdentifier
+    web3,
+    event_type,
+    argument_filters: dict,
+    from_block: BlockIdentifier,
+    to_block: BlockIdentifier,
 ) -> Iterable:
     """Get events using eth_get_logs API.
 
