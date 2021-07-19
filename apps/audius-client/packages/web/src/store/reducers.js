@@ -46,7 +46,6 @@ import visualizer from 'containers/visualizer/store/slice'
 import account from 'store/account/reducer'
 import appCTAModal from 'store/application/ui/app-cta-modal/slice'
 import averageColor from 'store/application/ui/average-color/slice'
-import browserPushPermissionConfirmation from 'store/application/ui/browserPushPermissionConfirmation/reducer'
 import cookieBanner from 'store/application/ui/cookieBanner/reducer'
 import createPlaylistModal from 'store/application/ui/createPlaylistModal/reducer'
 import editPlaylistModal from 'store/application/ui/editPlaylistModal/slice'
@@ -59,6 +58,7 @@ import setAsArtistPickConfirmation from 'store/application/ui/setAsArtistPickCon
 import stemsUpload from 'store/application/ui/stemsUpload/slice'
 import theme from 'store/application/ui/theme/reducer'
 import userListModal from 'store/application/ui/userListModal/slice'
+import audioManager from 'store/audio-manager/slice'
 import backend from 'store/backend/reducer'
 import collectionsReducer from 'store/cache/collections/reducer'
 import { asCache } from 'store/cache/reducer'
@@ -122,12 +122,12 @@ const createRootReducer = routeHistory =>
 
     // Wallet
     wallet,
+    audioManager,
 
     application: combineReducers({
       ui: combineReducers({
         appCTAModal,
         averageColor,
-        browserPushPermissionConfirmation,
         cookieBanner,
         createPlaylistModal,
         editPlaylistModal,
