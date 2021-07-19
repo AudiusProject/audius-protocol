@@ -53,7 +53,7 @@ def parse_eth_address_from_msg(msg: str):
 # Return highest user bank slot that has been processed
 def get_highest_user_bank_tx_slot(session: Session):
     slot = MIN_SLOT
-    tx_query: Tuple[int, None] = (
+    tx_query = (
         session.query(UserBankTransaction.slot).order_by(desc(UserBankTransaction.slot))
     ).first()
     if tx_query:
