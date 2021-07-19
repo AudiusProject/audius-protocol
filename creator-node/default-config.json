@@ -12,7 +12,7 @@
   "redisPort": 4379,
 
   "rateLimitingAudiusUserReqLimit": 3000,
-  "rateLimitingUserReqLimit": 3000,
+  "rateLimitingUserReqLimit": 60000,
   "rateLimitingMetadataReqLimit": 3000,
   "rateLimitingImageReqLimit": 6000,
   "rateLimitingTrackReqLimit": 6000,
