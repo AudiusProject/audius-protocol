@@ -19,3 +19,8 @@
 .topLevelPage.darkerBackground {
   background: var(--notification-background-active);
 }
+
+.topLevelPage.hideTopAndBottom {
+  top: 0px;
+  z-index: 16;
+}

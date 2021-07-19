@@ -8,8 +8,10 @@ import { Dispatch } from 'redux'
 import * as settingPageActions from 'containers/settings-page/store/actions'
 import { getBrowserNotificationSettings } from 'containers/settings-page/store/selectors'
 import { subscribeBrowserPushNotifications } from 'store/account/reducer'
-import { close as closeModal } from 'store/application/ui/browserPushPermissionConfirmation/actions'
-import { getIsOpen } from 'store/application/ui/browserPushPermissionConfirmation/selectors'
+import {
+  setVisibility,
+  getModalVisibility
+} from 'store/application/ui/modals/slice'
 import { AppState } from 'store/types'
 import {
   isPushManagerAvailable,
@@ -149,7 +151,7 @@ const ConnectedBrowserPushConfirmationModal = ({
 
 function mapStateToProps(state: AppState) {
   return {
-    isOpen: getIsOpen(state),
+    isOpen: getModalVisibility(state, 'BrowserPushPermissionConfirmation'),
     browserNotificationSettings: getBrowserNotificationSettings(state)
   }
 }
@@ -164,7 +166,13 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(settingPageActions.setBrowserNotificationEnabled(enabled)),
     setNotificationSettings: (settings: object) =>
       dispatch(settingPageActions.setNotificationSettings(settings)),
-    onClose: () => dispatch(closeModal())
+    onClose: () =>
+      dispatch(
+        setVisibility({
+          modal: 'BrowserPushPermissionConfirmation',
+          visible: false
+        })
+      )
   }
 }
 

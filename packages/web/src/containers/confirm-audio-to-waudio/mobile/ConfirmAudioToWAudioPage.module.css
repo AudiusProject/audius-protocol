@@ -1,0 +1,73 @@
+.body {
+  padding: 32px 46px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100vh;
+}
+
+.bodyText {
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-l);
+  line-height: 26px;
+  text-align: center;
+  color: var(--neutral);
+}
+
+.header {
+  font-weight: var(--font-demi-bold);
+  font-size: 22px;
+  line-height: 26px;
+  text-align: center;
+  color: var(--secondary);
+
+  margin-bottom: 16px;
+}
+
+.moreInfo {
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-m);
+  line-height: 30px;
+  text-align: center;
+  color: var(--neutral-light-4);
+  cursor: pointer;
+  margin: 8px auto 32px;
+}
+
+.moreInfo:hover,
+.moreInfo:active {
+  color: var(--neutral);
+  text-decoration: underline !important;
+}
+
+.btn {
+  max-width: 142px;
+  margin: 0px auto;
+}
+
+.btn .btnText {
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+}
+
+.loadingTitle {
+  margin-bottom: 32px;
+}
+
+.loadingBody {
+  margin-bottom: 24px;
+}
+
+.loadingSpinner {
+  height: 32px;
+}
+
+.loadingSpinner g path {
+  fill: var(--secondary);
+  stroke: var(--secondary) !important;
+}
+
+.raisedHandEmoji {
+  margin-right: 4px;
+}
+
