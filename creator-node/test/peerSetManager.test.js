@@ -2,11 +2,10 @@ const assert = require('assert')
 
 const PeerSetManager = require('../src/snapbackSM/peerSetManager')
 
-describe('test peerSetManager()', () => {
-  const peerSetManager = new PeerSetManager({
-    discoveryProviderEndpoint: 'https://discovery_endpoint.audius.co',
-    creatorNodeEndpoint: 'https://content_node_endpoint.audius.co'
-  })
+describe('test peerSetManager', () => {
+  let peerSetManager
+
+  const primaryEndpoint = 'http://primary.audius.co'
 
   const baseVerboseHealthCheckResp = {
     version: '0.3.37',
@@ -44,7 +43,14 @@ describe('test peerSetManager()', () => {
     storagePathUsed: 59253436416
   }
 
-  it('should throw error if storage path vars are improper', () => {
+  beforeEach(() => {
+    peerSetManager = new PeerSetManager({
+      discoveryProviderEndpoint: 'https://discovery_endpoint.audius.co',
+      creatorNodeEndpoint: 'https://content_node_endpoint.audius.co'
+    })
+  })
+
+  it('[determinePeerHealth] should throw error if storage path vars are improper', () => {
     let verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
@@ -69,7 +75,7 @@ describe('test peerSetManager()', () => {
     }
   })
 
-  it('should throw error if memory vars are improper', () => {
+  it('[determinePeerHealth] should throw error if memory vars are improper', () => {
     let verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
@@ -95,7 +101,7 @@ describe('test peerSetManager()', () => {
     }
   })
 
-  it('should throw error if the file descriptors are improper', () => {
+  it('[determinePeerHealth] should throw error if the file descriptors are improper', () => {
     let verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
@@ -119,7 +125,7 @@ describe('test peerSetManager()', () => {
     }
   })
 
-  it('should throw error if latest sync history vars are improper', () => {
+  it('[determinePeerHealth] should throw error if latest sync history vars are improper', () => {
     let verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
@@ -152,7 +158,7 @@ describe('test peerSetManager()', () => {
     }
   })
 
-  it('should throw error if rolling sync history vars are improper', () => {
+  it('[determinePeerHealth] should throw error if rolling sync history vars are improper', () => {
     let verboseHealthCheckResp = {
       ...baseVerboseHealthCheckResp
     }
@@ -185,11 +191,67 @@ describe('test peerSetManager()', () => {
     }
   })
 
-  it('should pass if verbose health check resp is proper', () => {
+  it('[determinePeerHealth] should pass if verbose health check resp is proper', () => {
     try {
       peerSetManager.determinePeerHealth(baseVerboseHealthCheckResp)
     } catch (e) {
       assert.fail(`Should have succeeded: ${e.toString()}`)
     }
+  })
+
+  it('[isPrimaryHealthy] should mark primary as healthy if responds with 200 from health check', async () => {
+    // Mock method
+    peerSetManager.isNodeHealthy = async () => { return true }
+
+    const isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
+
+    assert.strictEqual(isHealthy, true)
+    assert.strictEqual(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint], undefined)
+  })
+
+  it('[isPrimaryHealthy] should mark primary as healthy if responds with 500 from health check and has not been visited yet', async () => {
+    peerSetManager.isNodeHealthy = async () => { return false }
+
+    const isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
+
+    assert.strictEqual(isHealthy, true)
+    assert.ok(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
+  })
+
+  it('[isPrimaryHealthy] should mark primary as unhealthy if responds with 500 from health check and the primary has surpassed the allowed threshold time to be unhealthy', async () => {
+    // Set `maxNumberSecondsPrimaryRemainsUnhealthy` to 0 to mock threshold going over
+    peerSetManager = new PeerSetManager({
+      discoveryProviderEndpoint: 'https://discovery_endpoint.audius.co',
+      creatorNodeEndpoint: 'https://content_node_endpoint.audius.co',
+      maxNumberSecondsPrimaryRemainsUnhealthy: 0
+    })
+    peerSetManager.isNodeHealthy = async () => { return false }
+
+    let isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
+
+    assert.strictEqual(isHealthy, true)
+    assert.ok(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
+
+    isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
+
+    assert.strictEqual(isHealthy, false)
+    assert.ok(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
+  })
+
+  it('[isPrimaryHealthy] removes primary from map if it goes from unhealthy and back to healthy', async () => {
+    peerSetManager.isNodeHealthy = async () => { return false }
+
+    let isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
+
+    assert.strictEqual(isHealthy, true)
+    assert.ok(peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
+
+    //  Mock again
+    peerSetManager.isNodeHealthy = async () => { return true }
+
+    isHealthy = await peerSetManager.isPrimaryHealthy(primaryEndpoint)
+
+    assert.strictEqual(isHealthy, true)
+    assert.ok(!peerSetManager.primaryToEarliestFailedHealthCheckTimestamp[primaryEndpoint])
   })
 })

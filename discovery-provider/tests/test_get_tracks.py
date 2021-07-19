@@ -5,11 +5,7 @@ from src.utils.db_session import get_db
 from tests.utils import populate_mock_db
 
 
-def test_get_tracks_by_date(app):
-    """Test getting tracks ordering by date"""
-    with app.app_context():
-        db = get_db()
-
+def populate_tracks(db):
     test_entities = {
         "tracks": [
             {
@@ -37,10 +33,60 @@ def test_get_tracks_by_date(app):
                 "release_date": "garbage-should-not-parse",
                 "created_at": datetime(2018, 5, 20),
             },
+            {
+                "track_id": 6,
+                "owner_id": 4,
+                "release_date": "Wed Dec 18 2019 12:00:00 GMT-0800",
+                "created_at": datetime(2020, 5, 17),
+            },
+            {
+                "track_id": 7,
+                "owner_id": 4,
+                "release_date": "",
+                "created_at": datetime(2018, 5, 19),
+            },
+            {
+                "track_id": 8,
+                "owner_id": 4,
+                "release_date": "garbage-should-not-parse",
+                "created_at": datetime(2018, 5, 20),
+            },
+        ],
+        "track_routes": [
+            {"slug": "track-1", "owner_id": 1287289},
+            {"slug": "track-2", "owner_id": 1287289},
+            {
+                "slug": "different-track",
+                "owner_id": 4,
+                "track_id": 6,
+            },
+            {
+                "slug": "track-1",
+                "owner_id": 4,
+                "track_id": 7,
+            },
+            {
+                "slug": "track-2",
+                "owner_id": 4,
+                "track_id": 8,
+            },
+        ],
+        "users": [
+            {"user_id": 1287289, "handle": "some-test-user"},
+            {"user_id": 4, "handle": "some-other-user"},
         ],
     }
 
     populate_mock_db(db, test_entities)
+
+
+def test_get_tracks_by_date(app):
+    """Test getting tracks ordering by date"""
+
+    with app.app_context():
+        db = get_db()
+
+    populate_tracks(db)
 
     with db.scoped_session() as session:
         tracks = _get_tracks(
@@ -53,3 +99,42 @@ def test_get_tracks_by_date(app):
         assert tracks[2]["track_id"] == 5
         assert tracks[3]["track_id"] == 4
         assert tracks[4]["track_id"] == 2
+
+        assert tracks[0]["slug"] == "track-1"
+        assert tracks[4]["slug"] == "track-2"
+
+
+def test_get_track_by_handle_slug(app):
+    """Test getting track by user handle and slug for route resolution"""
+    with app.app_context():
+        db = get_db()
+
+        populate_tracks(db)
+
+        with db.scoped_session() as session:
+            tracks = _get_tracks(
+                session,
+                {
+                    "user_id": 1287289,
+                    "slug": "track-1",
+                    "offset": 0,
+                    "limit": 10,
+                },
+            )
+
+            assert len(tracks) == 1
+            assert tracks[0]["owner_id"] == 1287289
+            assert tracks[0]["slug"] == "track-1"
+
+            tracks = _get_tracks(
+                session,
+                {
+                    "user_id": 4,
+                    "slug": "track-1",
+                    "offset": 0,
+                    "limit": 10,
+                },
+            )
+            assert len(tracks) == 1
+            assert tracks[0]["owner_id"] == 4
+            assert tracks[0]["slug"] == "track-1"

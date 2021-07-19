@@ -55,7 +55,7 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign =
  * @param {function} getAggregateSyncData fn to get the latest daily sync count (success, fail, triggered)
  * @param {function} getLatestSyncData fn to get the timestamps of the most recent sync (success, fail)
  */
-const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors, numberOfCPUs, getAggregateSyncData, getLatestSyncData) => {
+const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, getMonitors, numberOfCPUs, getAggregateSyncData, getLatestSyncData) => {
   const basicHealthCheck = await healthCheck({ libs }, logger, sequelize)
 
   // Location information
@@ -63,7 +63,13 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
   const latitude = config.get('serviceLatitude')
   const longitude = config.get('serviceLongitude')
 
+  // Storage information
   const maxStorageUsedPercent = config.get('maxStorageUsedPercent')
+
+  // SnapbackSM information
+  const snapbackJobInterval = config.get('snapbackJobInterval')
+  const snapbackModuloBase = config.get('snapbackModuloBase')
+  const snapbackDevModeEnabled = config.get('snapbackDevModeEnabled')
 
   // System information
   const [
@@ -104,6 +110,11 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     MONITORS.LATEST_SYNC_FAIL_TIMESTAMP
   ])
 
+  let currentSnapbackReconfigMode
+  if (snapbackSM) {
+    currentSnapbackReconfigMode = snapbackSM.highestEnabledReconfigMode
+  }
+
   const response = {
     ...basicHealthCheck,
     country,
@@ -128,7 +139,11 @@ const healthCheckVerbose = async ({ libs } = {}, logger, sequelize, getMonitors,
     dailySyncSuccessCount,
     dailySyncFailCount,
     latestSyncSuccessTimestamp,
-    latestSyncFailTimestamp
+    latestSyncFailTimestamp,
+    currentSnapbackReconfigMode,
+    snapbackDevModeEnabled,
+    snapbackModuloBase,
+    snapbackJobInterval
   }
 
   return response

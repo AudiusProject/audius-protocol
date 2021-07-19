@@ -97,35 +97,56 @@ def is_fqdn(endpoint_str):
     return False
 
 
-# relationships_to_include is a list of table names that have relationships to be added
-# and returned in the model_dict
-def query_result_to_list(query_result, relationships_to_include=None):
+def query_result_to_list(query_result):
     results = []
     for row in query_result:
-        results.append(model_to_dictionary(row, None, relationships_to_include))
+        results.append(model_to_dictionary(row, None))
     return results
 
 
-# Convert a SQLAlchemy model row to a dictionary object and add any relationships
-# objects inside the return dictionary
-#
-# relationships_to_include is a list of table names that have relationships to be added
-# and returned in the model_dict
-def model_to_dictionary(db_model_obj, exclude_keys=None, relationships_to_include=None):
-    """Converts the given SQLAlchemy model object into a dictionary."""
+def model_to_dictionary(model, exclude_keys=None):
+    """Converts the given SQLAlchemy model into a dictionary, primarily used
+    for serialization to JSON.
+
+    - Includes columns, relationships, and properties decorated with
+    `@property` (useful for calculated values from relationships).
+    - Excludes the keys in `exclude_keys` and the keys in the given model's
+    `exclude_keys` property or attribute.
+    - Excludes any property or attribute with a leading underscore.
+    """
     model_dict = {}
+
+    columns = model.__table__.columns.keys()
+    relationships = model.__mapper__.relationships.keys()
+    properties = []
+    for key in list(set(dir(model)) - set(columns) - set(relationships)):
+        if hasattr(type(model), key):
+            attr = getattr(type(model), key)
+            if not callable(attr) and isinstance(attr, property):
+                properties.append(key)
+
     if exclude_keys is None:
         exclude_keys = []
+    if hasattr(model, "exclude_keys"):
+        exclude_keys.extend(model.exclude_keys)
 
-    # make sure exclude_keys are actual fields
-    possible_keys = db_model_obj.__table__.columns.keys()
-    assert set(exclude_keys).issubset(set(possible_keys))
+    assert set(exclude_keys).issubset(set(properties).union(columns))
 
-    for column_name in possible_keys:
-        if column_name in exclude_keys:
-            continue
+    for key in columns:
+        if key not in exclude_keys and not key.startswith("_"):
+            model_dict[key] = getattr(model, key)
 
-        model_dict[column_name] = getattr(db_model_obj, column_name)
+    for key in properties:
+        if key not in exclude_keys and not key.startswith("_"):
+            model_dict[key] = getattr(model, key)
+
+    for key in relationships:
+        if key not in exclude_keys and not key.startswith("_"):
+            attr = getattr(model, key)
+            if isinstance(attr, list):
+                model_dict[key] = query_result_to_list(attr)
+            else:
+                model_dict[key] = model_to_dictionary(attr)
 
     return model_dict
 

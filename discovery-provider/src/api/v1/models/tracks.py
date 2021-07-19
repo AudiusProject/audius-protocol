@@ -90,6 +90,7 @@ track = ns.model(
         # on `track_full` for more details
         "downloadable": fields.Boolean,
         "play_count": fields.Integer(required=True),
+        "permalink": fields.String,
     },
 )
 

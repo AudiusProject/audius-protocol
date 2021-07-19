@@ -17,7 +17,7 @@ before(async function () {
 })
 
 it('should call getTrack on invalid value and return empty', async function () {
-  let track = await audiusInstance.contracts.TrackFactoryClient.getTrack(-1)
+  let track = await audiusInstance.contracts.TrackFactoryClient.getTrack(0)
   assert.strictEqual(track.multihashDigest, helpers.constants['0x0'])
 })
 

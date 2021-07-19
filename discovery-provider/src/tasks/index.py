@@ -767,7 +767,7 @@ def revert_blocks(self, db, revert_blocks_list):
                         TrackRoute.track_id == track_id,
                         TrackRoute.blocknumber < revert_block_number,
                     )
-                    .order_by(TrackRoute.blocknumber.desc())
+                    .order_by(TrackRoute.blocknumber.desc(), TrackRoute.slug.asc())
                     .first()
                 )
                 if previous_track_route_entry:

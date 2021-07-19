@@ -408,6 +408,12 @@ const config = convict({
     env: 'rehydrateMaxConcurrency',
     default: 10
   },
+  snapbackHighestReconfigMode: {
+    doc: 'Depending on the reconfig op, issue a reconfig or not. See snapbackSM.js for the modes.',
+    format: String,
+    env: 'snapbackHighestReconfigMode',
+    default: 'RECONFIG_DISABLED'
+  },
   devMode: {
     doc: 'Used to differentiate production vs dev mode for node',
     format: 'BooleanCustom',
@@ -483,12 +489,6 @@ const config = convict({
     env: 'snapbackDevModeEnabled',
     default: false
   },
-  snapbackReconfigEnabled: {
-    doc: 'Enables replica set reconfiguration or not. Currently enabled for dev mode, disabled for prod.',
-    format: 'BooleanCustom',
-    env: 'snapbackReconfigEnabled',
-    default: false
-  },
   snapbackModuloBase: {
     doc: 'The modulo base to segment users by on snapback. Will process `1/snapbackModuloBase` users at some snapback interval',
     format: 'nat',
@@ -561,6 +561,13 @@ const config = convict({
     format: 'nat',
     env: 'minimumSecondaryUserSyncSuccessPercent',
     default: 50
+  },
+  maxNumberSecondsPrimaryRemainsUnhealthy: {
+    doc: 'The max number of seconds since first failed health check that a primary can still be marked as healthy',
+    format: 'nat',
+    env: 'maxNumberSecondsPrimaryRemainsUnhealthy',
+    // 24 hours in seconds
+    default: 86400
   }
 
   /**

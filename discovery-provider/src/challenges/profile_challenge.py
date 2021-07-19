@@ -1,4 +1,5 @@
 from collections import Counter
+from typing import List
 from src.models import (
     ProfileCompletionChallenge,
     User,
@@ -7,7 +8,11 @@ from src.models import (
     Follow,
     Save,
 )
-from src.challenges.challenge import ChallengeManager, ChallengeUpdater
+from src.challenges.challenge import (
+    ChallengeManager,
+    ChallengeUpdater,
+    FullEventMetadata,
+)
 from src.challenges.challenge_event import ChallengeEvent
 
 REPOST_THRESHOLD = 1
@@ -26,11 +31,7 @@ class ProfileChallengeUpdater(ChallengeUpdater):
     - favorites > threshold
     """
 
-    def update_user_challenges(
-        self, session, event, user_challenges_metadata, step_count
-    ):
-        # Destruct the list of user challenges from the list of tuples of (user_challenge, event_metadata)
-        user_challenges, _ = [list(t) for t in zip(*user_challenges_metadata)]
+    def update_user_challenges(self, session, event, user_challenges, step_count):
 
         user_ids = [user_challenge.user_id for user_challenge in user_challenges]
         partial_completions = get_profile_completion_challenges(session, user_ids)
@@ -52,7 +53,7 @@ class ProfileChallengeUpdater(ChallengeUpdater):
             self._handle_favorite(session, partial_completions)
 
         # Update the user_challenges
-        for user_challenge, event_metadata in user_challenges_metadata:
+        for user_challenge in user_challenges:
             matching_partial_challenge = completion_map[user_challenge.user_id]
             # Update step count
             user_challenge.current_step_count = self._get_steps_complete(
@@ -60,13 +61,11 @@ class ProfileChallengeUpdater(ChallengeUpdater):
             )
             # Update completion
             user_challenge.is_complete = user_challenge.current_step_count == step_count
-            if user_challenge.is_complete:
-                user_challenge.completed_blocknumber = event_metadata["block_number"]
 
-    def on_after_challenge_creation(self, session, user_ids):
+    def on_after_challenge_creation(self, session, metadatas: List[FullEventMetadata]):
         profile_completion_challenges = [
             ProfileCompletionChallenge(
-                user_id=user_id,
+                user_id=metadata["user_id"],
                 profile_description=False,
                 profile_name=False,
                 profile_picture=False,
@@ -75,7 +74,7 @@ class ProfileChallengeUpdater(ChallengeUpdater):
                 reposts=False,
                 favorites=False,
             )
-            for user_id in user_ids
+            for metadata in metadatas
         ]
         session.add_all(profile_completion_challenges)
 
