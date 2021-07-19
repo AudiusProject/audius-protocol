@@ -10,6 +10,7 @@ export type Modals =
   | 'TransferAudioMobileWarning'
   | 'MobileConnectWalletsDrawer'
   | 'ShareSoundToTikTok'
+  | 'HCaptcha'
 
 type InitialModalsState = { [modal in Modals]: boolean }
 
@@ -20,7 +21,8 @@ const initialState: InitialModalsState = {
   APIRewardsExplainer: false,
   TransferAudioMobileWarning: false,
   MobileConnectWalletsDrawer: false,
-  ShareSoundToTikTok: false
+  ShareSoundToTikTok: false,
+  HCaptcha: false
 }
 
 const slice = createSlice({
