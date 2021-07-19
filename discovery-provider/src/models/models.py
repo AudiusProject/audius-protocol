@@ -252,7 +252,7 @@ class Track(Base):
     field_visibility = Column(postgresql.JSONB, nullable=True)
     stem_of = Column(postgresql.JSONB, nullable=True)
 
-    _routes = relationship(
+    _routes = relationship(  # type: ignore
         "TrackRoute",
         primaryjoin="and_(\
             remote(Track.track_id) == foreign(TrackRoute.track_id),\
