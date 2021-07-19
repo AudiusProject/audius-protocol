@@ -1,47 +1,9 @@
 # Compose file to run the discovery backend stack (web server and celery workers)
 version: '3'
 services:
-  celery-worker:
-    build: ../.
-    restart: always
-    command: sh -c '/wait && exec celery -A src.worker.celery worker --loglevel info'
-    env_file:
-      - .env
-    environment:
-      - audius_redis_url=redis://${COMPOSE_PROJECT_NAME}_redis-server_1:6379/00
-      - audius_db_url=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
-      - audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
-      - audius_ipfs_host=${COMPOSE_PROJECT_NAME}-ipfs-node
-      - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432,${COMPOSE_PROJECT_NAME}_redis-server_1:6379, ${COMPOSE_PROJECT_NAME}-ipfs-node:5001
-    depends_on:
-      - discovery-provider-db
-      - redis-server
-    volumes:
-      - '../.:/audius-discovery-provider'
-    networks:
-      - audius_dev
-  celery-beat:
-    build: ../.
-    restart: always
-    command: sh -c '/wait && exec celery -A src.worker.celery beat --loglevel info'
-    env_file:
-      - .env
-    environment:
-      - audius_redis_url=redis://${COMPOSE_PROJECT_NAME}_redis-server_1:6379/00
-      - audius_db_url=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
-      - audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
-      - audius_ipfs_host=${COMPOSE_PROJECT_NAME}-ipfs-node
-      - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432,${COMPOSE_PROJECT_NAME}_redis-server_1:6379, ${COMPOSE_PROJECT_NAME}-ipfs-node:5001
-    depends_on:
-      - celery-worker
-    volumes:
-      - '../.:/audius-discovery-provider'
-    networks:
-      - audius_dev
   web-server:
     build: ../.
     restart: always
-    command: sh -c '/wait && ls && exec ./scripts/dev-server.sh'
     ports:
       - '${audius_server_port}:${audius_server_port}'
     env_file:
@@ -52,9 +14,11 @@ services:
       - audius_db_url=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
       - audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
       - audius_ipfs_host=${COMPOSE_PROJECT_NAME}-ipfs-node
+      - dev=true
       - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432,${COMPOSE_PROJECT_NAME}_redis-server_1:6379, ${COMPOSE_PROJECT_NAME}-ipfs-node:5001
     depends_on:
-      - discovery-provider-db 
+      - discovery-provider-db
+      - redis-server
     volumes:
       - '../.:/audius-discovery-provider'
     networks:
