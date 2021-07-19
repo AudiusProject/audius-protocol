@@ -23,7 +23,7 @@ from src.models import (
 )
 from src.utils import helpers, redis_connection
 from src.queries.get_unpopulated_users import get_unpopulated_users
-from src.queries.get_balances import get_balances
+from src.queries.get_balances import get_balances, enqueue_lazy_balance_refresh
 
 logger = logging.getLogger(__name__)
 
@@ -111,6 +111,10 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
 def populate_user_metadata(
     session, user_ids, users, current_user_id, with_track_save_count=False
 ):
+    # Always enqueue balance refresh for current user
+    if current_user_id:
+        enqueue_lazy_balance_refresh(redis, [current_user_id])
+
     aggregate_user = (
         session.query(
             AggregateUser.user_id,
@@ -1188,8 +1192,10 @@ def decayed_score(score, created_at, peak=1000, nominal_timestamp=60 * 24 * 60 *
         where multipler is represented by:
         peak ^ 1 - min(time_ago / nominal_timestamp, 1)
     """
-    decay_exponent = 1 - func.least(seconds_ago(created_at) / nominal_timestamp, 1) # goes from 1 -> 0
-    decay_value = func.pow(peak, decay_exponent) / peak # decay slope value
+    decay_exponent = 1 - func.least(
+        seconds_ago(created_at) / nominal_timestamp, 1
+    )  # goes from 1 -> 0
+    decay_value = func.pow(peak, decay_exponent) / peak  # decay slope value
     return score * decay_value
 
 
