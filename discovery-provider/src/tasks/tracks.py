@@ -49,6 +49,7 @@ def track_state_update(
     track_contract = update_task.web3.eth.contract(
         address=contract_addresses["track_factory"], abi=track_abi
     )
+    pending_track_routes = List[TrackRoute]
     track_events = {}
     for tx_receipt in track_factory_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
@@ -87,6 +88,7 @@ def track_state_update(
                         event_type,
                         track_events[track_id]["track"],
                         block_timestamp,
+                        pending_track_routes,
                     )
 
                     # If track record object is None, it has a blacklisted metadata CID
@@ -205,15 +207,8 @@ def time_method(func):
     return wrapper
 
 
-pending_track_routes: List[TrackRoute] = []
-
-
-def reset_pending_updates():
-    pending_track_routes.clear()
-
-
 @time_method
-def add_old_style_route(session, track_record, track_metadata):
+def add_old_style_route(session, track_record, track_metadata, pending_track_routes):
     """Temporary method to add the old style routes to the track_routes db while we
     transition the clients to use the new routing API.
     """
@@ -273,7 +268,9 @@ def add_old_style_route(session, track_record, track_metadata):
 
 
 @time_method
-def update_track_routes_table(session, track_record, track_metadata):
+def update_track_routes_table(
+    session, track_record, track_metadata, pending_track_routes
+):
     """Creates the route for the given track and commits it to the track_routes table"""
 
     # Check if the title is staying the same, and if so, return early
@@ -431,7 +428,14 @@ def update_track_routes_table(session, track_record, track_metadata):
 
 
 def parse_track_event(
-    self, session, update_task, entry, event_type, track_record, block_timestamp
+    self,
+    session,
+    update_task,
+    entry,
+    event_type,
+    track_record,
+    block_timestamp,
+    pending_track_routes,
 ):
     event_args = entry["args"]
     # Just use block_timestamp as integer
@@ -473,9 +477,10 @@ def parse_track_event(
             track_metadata_multihash, track_metadata_format, creator_node_endpoint
         )
 
-        # Note: These will commit the session
-        add_old_style_route(session, track_record, track_metadata)
-        update_track_routes_table(session, track_record, track_metadata)
+        add_old_style_route(session, track_record, track_metadata, pending_track_routes)
+        update_track_routes_table(
+            session, track_record, track_metadata, pending_track_routes
+        )
         track_record = populate_track_record_metadata(
             track_record, track_metadata, handle
         )
@@ -534,9 +539,10 @@ def parse_track_event(
             upd_track_metadata_multihash, track_metadata_format, creator_node_endpoint
         )
 
-        # Note: These will commit the session
-        add_old_style_route(session, track_record, track_metadata)
-        update_track_routes_table(session, track_record, track_metadata)
+        add_old_style_route(session, track_record, track_metadata, pending_track_routes)
+        update_track_routes_table(
+            session, track_record, track_metadata, pending_track_routes
+        )
         track_record = populate_track_record_metadata(
             track_record, track_metadata, handle
         )
