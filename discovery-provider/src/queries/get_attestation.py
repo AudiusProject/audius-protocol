@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from web3 import Web3
+from web3 import HTTPProvider, Web3
 from web3.auto import w3
 from eth_account.messages import encode_defunct
 
@@ -13,7 +13,7 @@ from src.models.models import (
     UserChallenge,
 )
 from src.utils.config import shared_config
-
+from src.utils.helpers import load_eth_abi_values
 
 class Attestation:
     """Represents DN attesting to a user completing a given challenge"""
@@ -61,10 +61,27 @@ class AttestationError(Exception):
     pass
 
 
+eth_abi_values = load_eth_abi_values()
+REWARDS_CONTRACT_ABI = eth_abi_values["EthRewardsManager"]["abi"]
+
+eth_web3 = Web3(HTTPProvider(shared_config["web3"]["eth_provider_url"]))
+eth_registry_address = eth_web3.toChecksumAddress(
+    shared_config["eth_contracts"]["registry"]
+)
+eth_registry_instance = eth_web3.eth.contract(
+    address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+)
+eth_rewards_manager_address = eth_registry_instance.functions.getContract(
+    bytes("EthRewardsManagerProxy", "utf-8")
+).call()
+
+
 def is_valid_oracle(address: str):
-    # TODO: flesh this out, refresh oracle addresses [AUD-729]
-    default_oracle_address = shared_config["discprov"]["default_oracle_address"]
-    return address == default_oracle_address
+    eth_rewards_manager_instance = eth_web3.eth.contract(
+        address=eth_rewards_manager_address, abi=REWARDS_CONTRACT_ABI
+    )
+    oracle_addresses = eth_rewards_manager_instance.functions.getAntiAbuseOracleAddresses().call()
+    return address in oracle_addresses
 
 
 def sign_attestation(attestation_str: str, private_key: str):
