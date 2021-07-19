@@ -2,7 +2,7 @@ import logging
 import time
 import functools
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import null, functions
 from src.app import contract_addresses
@@ -205,6 +205,13 @@ def time_method(func):
     return wrapper
 
 
+pending_track_routes: List[TrackRoute] = []
+
+
+def reset_pending_updates():
+    pending_track_routes.clear()
+
+
 @time_method
 def add_old_style_route(session, track_record, track_metadata):
     """Temporary method to add the old style routes to the track_routes db while we
@@ -221,14 +228,24 @@ def add_old_style_route(session, track_record, track_metadata):
     new_track_slug_title = f"{new_track_slug_title}-{track_record.track_id}"
 
     # Check to make sure the route doesn't exist
-    existing_track_route = (
-        session.query(TrackRoute)
-        .filter(
-            TrackRoute.slug == new_track_slug_title,
-            TrackRoute.owner_id == track_record.owner_id,
-        )
-        .one_or_none()
+    existing_track_route = next(
+        (
+            route
+            for route in pending_track_routes
+            if route.slug == new_track_slug_title
+            and route.owner_id == track_record.owner_id
+        ),
+        None,
     )
+    if existing_track_route is None:
+        existing_track_route = (
+            session.query(TrackRoute)
+            .filter(
+                TrackRoute.slug == new_track_slug_title,
+                TrackRoute.owner_id == track_record.owner_id,
+            )
+            .one_or_none()
+        )
 
     if existing_track_route is None:
         # Add the new track route
@@ -246,8 +263,8 @@ def add_old_style_route(session, track_record, track_metadata):
         new_track_route.txhash = track_record.txhash
         session.add(new_track_route)
 
-        # Commit this so it gets in before the new route creation
-        session.commit()
+        # Add to in-memory store to make sure we don't try to add it twice
+        pending_track_routes.append(new_track_route)
     else:
         logger.error(
             f"Cannot add 'old-style' track_route to Track={track_record}\
@@ -269,13 +286,25 @@ def update_track_routes_table(session, track_record, track_metadata):
     new_track_slug = new_track_slug_title
 
     # Find the current route for the track
-    prev_track_route_record = (
-        session.query(TrackRoute)
-        .filter(
-            TrackRoute.track_id == track_record.track_id, TrackRoute.is_current == True
-        )  # noqa: E712
-        .one_or_none()
+    # Check the pending track route updates first
+    prev_track_route_record = next(
+        (
+            route
+            for route in pending_track_routes
+            if route.is_current and route.track_id == track_record.track_id
+        ),
+        None,
     )
+    # Then query the DB if necessary
+    if prev_track_route_record is None:
+        prev_track_route_record = (
+            session.query(TrackRoute)
+            .filter(
+                TrackRoute.track_id == track_record.track_id,
+                TrackRoute.is_current == True,
+            )  # noqa: E712
+            .one_or_none()
+        )
 
     if prev_track_route_record is not None:
         if prev_track_route_record.title_slug == new_track_slug_title:
@@ -285,27 +314,51 @@ def update_track_routes_table(session, track_record, track_metadata):
         prev_track_route_record.is_current = False
 
     # Check for collisions by slug titles, and get the max collision_id
-    max_collision_id = (
-        session.query(functions.max(TrackRoute.collision_id))
-        .filter(
-            TrackRoute.title_slug == new_track_slug_title,
-            TrackRoute.owner_id == track_record.owner_id,
-        )
-        .one_or_none()
-    )[0]
+    max_collision_id: Optional[int] = None
+    # Check pending updates first
+    for route in pending_track_routes:
+        if (
+            route.title_slug == new_track_slug_title
+            and route.owner_id == track_record.owner_id
+        ):
+            max_collision_id = (
+                route.collision_id
+                if max_collision_id is None
+                else max(max_collision_id, route.collision_id)
+            )
+    # Check DB if necessary
+    if max_collision_id is None:
+        max_collision_id = (
+            session.query(functions.max(TrackRoute.collision_id))
+            .filter(
+                TrackRoute.title_slug == new_track_slug_title,
+                TrackRoute.owner_id == track_record.owner_id,
+            )
+            .one_or_none()
+        )[0]
 
     existing_track_route: Optional[TrackRoute] = None
     # If the new track_slug ends in a digit, there's a possibility it collides
     # with an existing route when the collision_id is appended to its title_slug
     if new_track_slug[-1].isdigit():
-        existing_track_route = (
-            session.query(TrackRoute)
-            .filter(
-                TrackRoute.slug == new_track_slug,
-                TrackRoute.owner_id == track_record.owner_id,
-            )
-            .one_or_none()
+        existing_track_route = next(
+            (
+                route
+                for route in pending_track_routes
+                if route.slug == new_track_slug
+                and route.owner_id == track_record.owner_id
+            ),
+            None,
         )
+        if existing_track_route is None:
+            existing_track_route = (
+                session.query(TrackRoute)
+                .filter(
+                    TrackRoute.slug == new_track_slug,
+                    TrackRoute.owner_id == track_record.owner_id,
+                )
+                .one_or_none()
+            )
 
     new_collision_id = 0
     has_collisions = existing_track_route is not None
@@ -340,14 +393,24 @@ def update_track_routes_table(session, track_record, track_metadata):
         #       - Use collision_id: 1, slug: 'track-1-1'
         #
         # This may be expensive with many collisions, but should be rare.
-        existing_track_route = (
-            session.query(TrackRoute)
-            .filter(
-                TrackRoute.slug == new_track_slug,
-                TrackRoute.owner_id == track_record.owner_id,
-            )
-            .one_or_none()
+        existing_track_route = next(
+            (
+                route
+                for route in pending_track_routes
+                if route.slug == new_track_slug
+                and route.owner_id == track_record.owner_id
+            ),
+            None,
         )
+        if existing_track_route is None:
+            existing_track_route = (
+                session.query(TrackRoute)
+                .filter(
+                    TrackRoute.slug == new_track_slug,
+                    TrackRoute.owner_id == track_record.owner_id,
+                )
+                .one_or_none()
+            )
         has_collisions = existing_track_route is not None
 
     # Add the new track route
@@ -363,8 +426,8 @@ def update_track_routes_table(session, track_record, track_metadata):
     new_track_route.txhash = track_record.txhash
     session.add(new_track_route)
 
-    # Make sure to commit so we don't add the same route twice
-    session.commit()
+    # Add to pending track routes so we don't add the same route twice
+    pending_track_routes.append(new_track_route)
 
 
 def parse_track_event(

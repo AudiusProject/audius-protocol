@@ -430,8 +430,10 @@ def test_index_tracks(mock_index_task, app):
         )
         assert track_route
 
+        # Make sure the blocks are committed
+        session.commit()
         revert_blocks(mock_index_task, db, [second_block])
-
+        # Commit the revert
         session.commit()
 
         track_routes = session.query(TrackRoute).all()

@@ -18,7 +18,7 @@ from src.models import (
     UserEvents,
 )
 from src.tasks.celery_app import celery
-from src.tasks.tracks import track_state_update
+from src.tasks.tracks import reset_pending_updates, track_state_update
 from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.playlists import playlist_state_update
@@ -484,6 +484,7 @@ def index_blocks(self, db, blocks_list):
 
                 track_lexeme_state_changed = user_state_changed or track_state_changed
                 session.commit()
+                reset_pending_updates()
                 logger.info(
                     f"index.py | session commmited to db for block=${block_number}"
                 )
