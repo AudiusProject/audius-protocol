@@ -210,7 +210,7 @@ def populate_user_metadata(
             current_user_followee_follow_counts
         )
 
-    balance_dict = get_balances(session, user_ids)
+    balance_dict = get_balances(session, redis, user_ids)
 
     for user in users:
         user_id = user["user_id"]
