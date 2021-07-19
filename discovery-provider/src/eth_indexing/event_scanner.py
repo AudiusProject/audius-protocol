@@ -7,6 +7,7 @@ from sqlalchemy import or_
 from web3 import Web3
 from web3.contract import Contract, ContractEvent
 from web3.exceptions import BlockNotFound
+from web3.types import BlockIdentifier
 
 # Currently this method is not exposed over official web3 API,
 # but we need it to construct eth_get_logs parameters
@@ -387,7 +388,7 @@ def _retry_web3_call(  # type: ignore
 
 
 def _fetch_events_for_all_contracts(
-    web3, event_type, argument_filters: dict, from_block: int, to_block: int
+    web3, event_type, argument_filters: dict, from_block: BlockIdentifier, to_block: BlockIdentifier
 ) -> Iterable:
     """Get events using eth_get_logs API.
 
@@ -433,7 +434,7 @@ def _fetch_events_for_all_contracts(
 
     # Call JSON-RPC API on your Ethereum node.
     # get_logs() returns raw AttributedDict entries
-    logs = web3.eth.get_logs(event_filter_params)
+    logs = web3.eth.getLogs(event_filter_params)
 
     # Convert raw binary data to Python proxy objects as described by ABI
     all_events = []

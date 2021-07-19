@@ -1,5 +1,7 @@
 import time
 import logging
+# from typing import Optional
+# from eth_typing import URI
 from web3 import Web3
 from web3.providers.rpc import HTTPProvider
 from src.tasks.celery_app import celery
@@ -13,7 +15,10 @@ logger = logging.getLogger(__name__)
 
 CHAIN_REORG_SAFETY_BLOCKS = 10
 
-provider = HTTPProvider(shared_config["web3"]["eth_provider_url"])
+# provider_url: Optional[URI] = shared_config["web3"]["eth_provider_url"]
+# provider = HTTPProvider(provider_url)
+
+provider = HTTPProvider(shared_config["web3"]["eth_provider_url"])  # type: ignore
 
 # Remove the default JSON-RPC retry middleware
 # as it correctly cannot handle eth_getLogs block range
