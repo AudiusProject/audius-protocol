@@ -363,6 +363,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_solana_plays",
             "src.tasks.index_aggregate_views",
             "src.tasks.index_challenges",
+            "src.tasks.index_eth",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -436,6 +437,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "index_challenges": {
                 "task": "index_challenges",
                 "schedule": timedelta(seconds=5),
+            },
+            "index_eth": {
+                "task": "index_eth",
+                "schedule": timedelta(seconds=10),
             },
         },
         task_serializer="json",

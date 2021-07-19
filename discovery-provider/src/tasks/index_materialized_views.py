@@ -48,7 +48,7 @@ def update_views(self, db):
 def update_materialized_views(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
-    # Custom Task definition can be found in src/__init__.py
+    # Custom Task definition can be found in src/app.py
     db = update_materialized_views.db
     redis = update_materialized_views.redis
     # Define lock acquired boolean

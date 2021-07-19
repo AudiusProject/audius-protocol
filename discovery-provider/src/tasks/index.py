@@ -809,7 +809,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 def update_task(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
-    # Custom Task definition can be found in src/__init__.py
+    # Custom Task definition can be found in src/app.py
     db = update_task.db
     web3 = update_task.web3
     redis = update_task.redis

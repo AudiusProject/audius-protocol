@@ -217,7 +217,7 @@ def get_track_plays(self, db, lock):
 def update_play_count(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
-    # Custom Task definition can be found in src/__init__.py
+    # Custom Task definition can be found in src/app.py
     db = update_play_count.db
     redis = update_play_count.redis
 

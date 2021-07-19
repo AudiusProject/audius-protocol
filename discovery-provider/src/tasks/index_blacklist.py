@@ -234,7 +234,7 @@ def revert_blocks(self, db, revert_blocks_list):
 def update_ipld_blacklist_task(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
-    # Custom Task definition can be found in src/__init__.py
+    # Custom Task definition can be found in src/app.py
     db = update_ipld_blacklist_task.db
     web3 = update_ipld_blacklist_task.web3
     redis = update_ipld_blacklist_task.redis
