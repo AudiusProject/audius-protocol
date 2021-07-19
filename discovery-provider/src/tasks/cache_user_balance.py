@@ -1,12 +1,11 @@
 import logging
 import time
-import random
-from redis import Redis
 from typing import List, Set
-
-from src.utils.session_manager import SessionManager
+from redis import Redis
 from sqlalchemy.orm.session import Session
 from sqlalchemy import and_
+
+from src.utils.session_manager import SessionManager
 from src.app import eth_abi_values
 from src.tasks.celery_app import celery
 from src.models import UserBalance, User, AssociatedWallet
