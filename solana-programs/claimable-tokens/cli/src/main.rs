@@ -51,11 +51,11 @@ fn eth_address_of(matches: &ArgMatches<'_>, name: &str) -> anyhow::Result<Ethere
         .map_err(|op: Vec<u8>| anyhow!("Address len must be 20, but current is {}", op.len()))
 }
 
-fn eth_seckey_of(matches: &ArgMatches<'_>, name: &str) -> anyhow::Result<secp256k1::SecretKey> {
+fn eth_seckey_of(matches: &ArgMatches<'_>, name: &str) -> anyhow::Result<libsecp256k1::SecretKey> {
     let mut value = value_t!(matches.value_of(name), String)?;
     handle_hex_prefix(&mut value);
     let decoded_pk = &hex::decode(value.as_str())?;
-    let sk = secp256k1::SecretKey::parse_slice(decoded_pk)?;
+    let sk = libsecp256k1::SecretKey::parse_slice(decoded_pk)?;
     Ok(sk)
 }
 
@@ -87,14 +87,14 @@ fn token_account_initialized(config: &Config, key: &Pubkey) -> bool {
 
 fn transfer(
     config: Config,
-    secret_key: secp256k1::SecretKey,
+    secret_key: libsecp256k1::SecretKey,
     mint: Pubkey,
     recipient: Option<Pubkey>,
     amount: f64,
 ) -> anyhow::Result<()> {
     let mut instructions = vec![];
 
-    let eth_pubkey = secp256k1::PublicKey::from_secret_key(&secret_key);
+    let eth_pubkey = libsecp256k1::PublicKey::from_secret_key(&secret_key);
     let eth_address = construct_eth_pubkey(&eth_pubkey);
     let pair = get_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
 
