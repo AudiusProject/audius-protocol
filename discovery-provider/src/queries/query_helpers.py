@@ -23,7 +23,7 @@ from src.models import (
 )
 from src.utils import helpers, redis_connection
 from src.queries.get_unpopulated_users import get_unpopulated_users
-from src.queries.get_balances import get_balances, enqueue_lazy_balance_refresh
+from src.queries.get_balances import get_balances
 
 logger = logging.getLogger(__name__)
 

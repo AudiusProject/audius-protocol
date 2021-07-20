@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime, timedelta
-from typing import List, Optional, Set
+from typing import List
 from redis import Redis
 from sqlalchemy.orm.session import Session
 from src.models import UserBalance
