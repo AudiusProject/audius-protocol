@@ -2,17 +2,15 @@ const { userReqLimiter } = require('./reqLimiter')
 const { getSPInfo, verifyRequesterIsValidSP } = require('./components/replicaSet/URSMRegistrationComponentService')
 
 /*
-	if ((route == 'batch_clock' or route == 'individual clock')) {
-		try {
-			isValidSP
-			next()
-		} catch (E) {
-			// probably not a valid SP. this is ok
-		}
-	}
-	rateLimit()
-	next()
-
+if ((route == 'batch_clock' or route == 'individual clock')) {
+  try {
+    isValidSP()
+    next()
+  } catch (E) {
+    // probably not a valid SP. this is ok
+  }
+}
+rateLimit()
 */
 
 // For the clock fetching routes, if the requester if from a valid SP, do not enforce
