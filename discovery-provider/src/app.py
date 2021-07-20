@@ -440,6 +440,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "index_eth": {
                 "task": "index_eth",
                 "schedule": timedelta(seconds=10),
+            },
             "index_oracles": {
                 "task": "index_oracles",
                 "schedule": timedelta(minutes=5),
