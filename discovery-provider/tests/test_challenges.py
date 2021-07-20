@@ -1,5 +1,5 @@
-import redis
 from typing import Dict, List
+import redis
 from sqlalchemy.orm.session import Session
 
 from tests.test_get_challenges import DefaultUpdater
