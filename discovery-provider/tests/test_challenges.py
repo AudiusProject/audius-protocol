@@ -1,6 +1,9 @@
-from typing import Dict, List
 import redis
+from typing import Dict, List
 from sqlalchemy.orm.session import Session
+
+from tests.test_get_challenges import DefaultUpdater
+from tests.utils import populate_mock_db_blocks
 
 from src.models import Challenge, UserChallenge, ChallengeType
 from src.utils.db_session import get_db
@@ -9,8 +12,6 @@ from src.utils.helpers import model_to_dictionary
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.utils.config import shared_config
 from src.queries.get_challenges import get_challenges
-
-from tests.utils import populate_mock_db_blocks
 
 
 def setup_challenges(app):
@@ -80,6 +81,8 @@ def setup_challenges(app):
         ]
 
         with db.scoped_session() as session:
+            # Wipe any existing challenges in the DB from running migrations, etc
+            session.query(Challenge).delete()
             session.add_all(challenges)
             session.flush()
             session.add_all(user_challenges)
@@ -236,6 +239,12 @@ def test_aggregates(app):
         agg_challenge.process(session, "test_event", [])
         TEST_EVENT = "TEST_EVENT"
 
+        bus.register_listener(
+            TEST_EVENT, ChallengeManager("test_challenge_1", DefaultUpdater())
+        )
+        bus.register_listener(
+            TEST_EVENT, ChallengeManager("test_challenge_2", DefaultUpdater())
+        )
         # - Multiple events with the same user_id but diff specifiers get created
         bus.register_listener(TEST_EVENT, agg_challenge)
         bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 2})
@@ -244,7 +253,7 @@ def test_aggregates(app):
         state = agg_challenge.get_challenge_state(session, ["1-2", "1-3"])
         assert len(state) == 2
         # Also make sure the thing is incomplete
-        res = get_challenges(1, False, session)
+        res = get_challenges(1, False, session, bus)
         agg_chal = {c["challenge_id"]: c for c in res}["test_challenge_3"]
         assert agg_chal["is_complete"] == False
 
@@ -276,7 +285,7 @@ def test_aggregates(app):
         assert len(get_user_challenges()) == 5
 
         # Test get_challenges
-        res = get_challenges(1, False, session)
+        res = get_challenges(1, False, session, bus)
         agg_chal = {c["challenge_id"]: c for c in res}["test_challenge_3"]
         assert agg_chal["is_complete"] == True
         # Assert all user challenges have proper finishing block #

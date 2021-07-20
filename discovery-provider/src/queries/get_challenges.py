@@ -1,8 +1,10 @@
 from functools import reduce
 from collections import defaultdict
-
-from typing import List, DefaultDict, Optional, TypedDict, Tuple, cast
+from typing import List, DefaultDict, Optional, TypedDict, Tuple, cast, Dict
 from sqlalchemy import and_
+from sqlalchemy.orm import Session
+
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import UserChallenge, Challenge, ChallengeType, ChallengeDisbursement
 
 
@@ -16,6 +18,7 @@ class ChallengeResponse(TypedDict):
     current_step_count: Optional[int]
     max_steps: Optional[int]
     challenge_type: str
+    metadata: Dict
 
 
 def rollup_aggregates(
@@ -44,6 +47,7 @@ def rollup_aggregates(
         "challenge_type": parent_challenge.type,
         "is_active": parent_challenge.active,
         "is_disbursed": False,  # This doesn't indicate anything for aggregate challenges
+        "metadata": {},
     }
     return response_dict
 
@@ -52,6 +56,7 @@ def to_challenge_response(
     user_challenge: UserChallenge,
     challenge: Challenge,
     disbursement: ChallengeDisbursement,
+    metadata: Dict,
 ) -> ChallengeResponse:
     return {
         "challenge_id": challenge.id,
@@ -63,14 +68,15 @@ def to_challenge_response(
         "challenge_type": challenge.type,
         "is_active": challenge.active,
         "is_disbursed": disbursement is not None,
+        "metadata": metadata,
     }
 
 
 def create_empty_user_challenges(
-    user_id: int, challenges: List[Challenge]
+    user_id: int, challenges: List[Challenge], metadatas: List[Dict]
 ) -> List[ChallengeResponse]:
     user_challenges: List[ChallengeResponse] = []
-    for challenge in challenges:
+    for i, challenge in enumerate(challenges):
         user_challenge: ChallengeResponse = {
             "challenge_id": challenge.id,
             "user_id": user_id,
@@ -81,9 +87,36 @@ def create_empty_user_challenges(
             "challenge_type": challenge.type,
             "is_active": challenge.active,
             "is_disbursed": False,
+            "metadata": metadatas[i],
         }
         user_challenges.append(user_challenge)
     return user_challenges
+
+
+def get_challenges_metadata(
+    session: Session,
+    event_bus: ChallengeEventBus,
+    challenges: List[UserChallenge],
+) -> List[Dict]:
+    # Break it up into map per challenge type
+    challenge_map: Dict[str, List[str]] = defaultdict(lambda: [])
+    specifier_metadata_map: Dict[str, Dict] = {}
+    for challenge in challenges:
+        challenge_map[challenge.challenge_id].append(challenge.specifier)
+
+    for challenge_type, specifiers in challenge_map.items():
+        manager = event_bus.get_manager(challenge_type)
+        metadatas = manager.get_metadata(session, specifiers)
+        for i, specifier in enumerate(specifiers):
+            metadata = metadatas[i]
+            specifier_metadata_map[specifier] = metadata
+
+    # Finally, re-sort the metadata
+    return [specifier_metadata_map[c.specifier] for c in challenges]
+
+
+def get_empty_metadata(event_bus: ChallengeEventBus, challenges: List[Challenge]):
+    return [event_bus.get_manager(c.id).get_default_metadata() for c in challenges]
 
 
 # gets challenges, returning:
@@ -91,7 +124,10 @@ def create_empty_user_challenges(
 # - for active, non-hidden challenges, returns default state
 # - ignores inactive + completed, unless show_historical is true
 def get_challenges(
-    user_id: int, show_historical: bool, session
+    user_id: int,
+    show_historical: bool,
+    session: Session,
+    event_bus: ChallengeEventBus,
 ) -> List[ChallengeResponse]:
     challenges_and_disbursements: List[Tuple[UserChallenge, ChallengeDisbursement]] = (
         session.query(UserChallenge, ChallengeDisbursement)
@@ -126,6 +162,10 @@ def get_challenges(
     aggregate_user_challenges_map: DefaultDict[str, List[UserChallenge]] = defaultdict(
         lambda: []
     )
+    # Get extra metadata
+    existing_metadata = get_challenges_metadata(
+        session, event_bus, existing_user_challenges
+    )
     for i, user_challenge in enumerate(existing_user_challenges):
         parent_challenge = all_challenges_map[user_challenge.challenge_id]
         if parent_challenge.type == ChallengeType.aggregate:
@@ -144,7 +184,10 @@ def get_challenges(
                 continue
             regular_user_challenges.append(
                 to_challenge_response(
-                    user_challenge, parent_challenge, disbursements[i]
+                    user_challenge,
+                    parent_challenge,
+                    disbursements[i],
+                    existing_metadata[i],
                 )
             )
 
@@ -167,7 +210,10 @@ def get_challenges(
         for challenge in active_non_hidden_challenges
         if challenge.id not in existing_challenge_ids
     ]
-    empty_challenges = create_empty_user_challenges(user_id, needs_user_challenge)
+    empty_metadata = get_empty_metadata(event_bus, needs_user_challenge)
+    empty_challenges = create_empty_user_challenges(
+        user_id, needs_user_challenge, empty_metadata
+    )
 
     combined = regular_user_challenges + rolled_up + empty_challenges
     return combined
