@@ -457,7 +457,7 @@ def synchronize_all_node_metrics(self, db):
 def update_metrics(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
-    # Custom Task definition can be found in src/__init__.py
+    # Custom Task definition can be found in src/app.py
     db = update_metrics.db
     redis = update_metrics.redis
 
@@ -494,7 +494,7 @@ def update_metrics(self):
 def aggregate_metrics(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
-    # Custom Task definition can be found in src/__init__.py
+    # Custom Task definition can be found in src/app.py
     db = aggregate_metrics.db
     redis = aggregate_metrics.redis
 
@@ -532,7 +532,7 @@ def aggregate_metrics(self):
 def synchronize_metrics(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
-    # Custom Task definition can be found in src/__init__.py
+    # Custom Task definition can be found in src/app.py
     db = synchronize_metrics.db
     redis = synchronize_metrics.redis
 

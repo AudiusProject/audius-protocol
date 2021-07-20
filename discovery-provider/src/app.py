@@ -361,6 +361,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_solana_plays",
             "src.tasks.index_aggregate_views",
             "src.tasks.index_challenges",
+            "src.tasks.index_eth",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -435,6 +436,10 @@ def configure_celery(flask_app, celery, test_config=None):
                 "task": "index_challenges",
                 "schedule": timedelta(seconds=5),
             },
+            "index_eth": {
+                "task": "index_eth",
+                "schedule": timedelta(seconds=10),
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -463,6 +468,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("synchronize_metrics_lock")
     redis_inst.delete("solana_plays_lock")
     redis_inst.delete("index_challenges")
+    redis_inst.delete("index_eth")
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object
