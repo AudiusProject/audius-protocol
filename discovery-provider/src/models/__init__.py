@@ -47,6 +47,7 @@ from .models import (
     UserChallenge,
 )
 from .track_route import TrackRoute
+from .user_events import UserEvents
 
 __all__ = [
     "AggregateDailyAppNameMetrics",
@@ -96,4 +97,5 @@ __all__ = [
     "User",
     "UserBalance",
     "UserChallenge",
+    "UserEvents",
 ]

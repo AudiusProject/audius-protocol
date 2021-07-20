@@ -1,8 +1,10 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime
+from typing import cast
 from sqlalchemy import func, desc, Integer
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.sql.functions import GenericFunction
+from sqlalchemy.sql.type_api import TypeEngine
 from src.models import Playlist, Save, SaveType, RepostType, Follow, AggregateUser
 from src.tasks.generate_trending import time_delta_map
 from src.trending_strategies.trending_type_and_version import TrendingType
@@ -34,7 +36,7 @@ from src.api.v1.helpers import (
 
 class jsonb_array_length(GenericFunction):  # pylint: disable=too-many-ancestors
     name = "jsonb_array_length"
-    type = Integer
+    type = cast(TypeEngine, Integer)
 
 
 @compiles(jsonb_array_length, "postgresql")

@@ -57,6 +57,24 @@ const config = convict({
     env: 'logLevel',
     default: 'info'
   },
+  tikTokAPIKey: {
+    doc: 'TikTok API key',
+    format: String,
+    env: 'tikTokAPIKey',
+    default: null
+  },
+  tikTokAPISecret: {
+    doc: 'TikTok API Secret',
+    format: String,
+    env: 'tikTokAPISecret',
+    default: null
+  },
+  tikTokAuthOrigin: {
+    doc: 'The CORS allowed origin set on the /tikTok/access_token route',
+    format: String,
+    env: 'tikTokAuthOrigin',
+    default: null
+  },
   twitterAPIKey: {
     doc: 'Twitter API key',
     format: String,
@@ -166,6 +184,12 @@ const config = convict({
     doc: 'Twitter requests per hour rate limit',
     format: 'nat',
     env: 'rateLimitingTwitterLimit',
+    default: null
+  },
+  rateLimitingTikTokLimit: {
+    doc: 'TikTok requests per hour rate limit',
+    format: 'nat',
+    env: 'rateLimitingTikTokLimit',
     default: null
   },
   rateLimitingListensPerTrackPerHour: {
@@ -496,6 +520,12 @@ const config = convict({
     doc: 'The service key for Google recaptcha v3 API',
     format: String,
     env: 'recaptchaServiceKey',
+    default: ''
+  },
+  hCaptchaSecret: {
+    doc: 'The secret for hCaptcha account verification',
+    format: String,
+    env: 'hCaptchaSecret',
     default: ''
   },
   cognitoAPISecret: {

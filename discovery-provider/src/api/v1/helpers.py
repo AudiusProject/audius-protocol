@@ -1,5 +1,5 @@
 import logging
-from typing import Dict
+from typing import Dict, Optional, cast
 from src import api_helpers
 from src.utils.config import shared_config
 from hashids import Hashids
@@ -17,11 +17,11 @@ HASH_SALT = "azowernasdfoia"
 hashids = Hashids(min_length=5, salt=HASH_SALT)
 
 
-def encode_int_id(id):
-    return hashids.encode(id)
+def encode_int_id(id: int):
+    return cast(str, hashids.encode(id))
 
 
-def decode_string_id(id):
+def decode_string_id(id: str) -> Optional[int]:
     # Returns a tuple
     decoded = hashids.decode(id)
     if not len(decoded):
@@ -179,6 +179,8 @@ def extend_track(track):
     owner_id = encode_int_id(track["owner_id"])
     if "user" in track:
         track["user"] = extend_user(track["user"])
+        if "slug" in track:
+            track["permalink"] = f'/{track["user"]["handle"]}/{track["slug"]}'
     track["id"] = track_id
     track["user_id"] = owner_id
     if "followee_saves" in track:
@@ -305,11 +307,11 @@ def abort_not_found(identifier, namespace):
     namespace.abort(404, "Oh no! Resource for ID {} not found.".format(identifier))
 
 
-def decode_with_abort(identifier, namespace):
+def decode_with_abort(identifier: str, namespace) -> int:
     decoded = decode_string_id(identifier)
     if decoded is None:
         namespace.abort(404, "Invalid ID: '{}'.".format(identifier))
-    return decoded
+    return cast(int, decoded)
 
 
 def make_response(name, namespace, modelType):

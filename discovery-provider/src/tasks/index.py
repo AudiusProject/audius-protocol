@@ -15,6 +15,7 @@ from src.models import (
     TrackRoute,
     URSMContentNode,
     User,
+    UserEvents,
 )
 from src.tasks.celery_app import celery
 from src.tasks.tracks import track_state_update
@@ -603,6 +604,11 @@ def revert_blocks(self, db, revert_blocks_list):
                 .filter(AssociatedWallet.blockhash == revert_hash)
                 .all()
             )
+            revert_user_events_entries = (
+                session.query(UserEvents)
+                .filter(UserEvents.blockhash == revert_hash)
+                .all()
+            )
             revert_track_routes = (
                 session.query(TrackRoute)
                 .filter(TrackRoute.blockhash == revert_hash)
@@ -751,6 +757,8 @@ def revert_blocks(self, db, revert_blocks_list):
                 logger.info(f"Reverting associated Wallet: {user_id}")
                 session.delete(associated_wallets_to_revert)
 
+            revert_user_events(session, revert_user_events_entries, revert_block_number)
+
             for track_route_to_revert in revert_track_routes:
                 track_id = track_route_to_revert.track_id
                 previous_track_route_entry = (
@@ -759,7 +767,7 @@ def revert_blocks(self, db, revert_blocks_list):
                         TrackRoute.track_id == track_id,
                         TrackRoute.blocknumber < revert_block_number,
                     )
-                    .order_by(TrackRoute.blocknumber.desc())
+                    .order_by(TrackRoute.blocknumber.desc(), TrackRoute.slug.asc())
                     .first()
                 )
                 if previous_track_route_entry:
@@ -776,6 +784,24 @@ def revert_blocks(self, db, revert_blocks_list):
             rebuild_track_index = rebuild_track_index or bool(revert_track_entries)
             rebuild_user_index = rebuild_user_index or bool(revert_user_entries)
     # TODO - if we enable revert, need to set the most_recent_indexed_block_redis_key key in redis
+
+
+def revert_user_events(session, revert_user_events_entries, revert_block_number):
+    for user_events_to_revert in revert_user_events_entries:
+        user_id = user_events_to_revert.user_id
+        previous_user_events_entry = (
+            session.query(UserEvents)
+            .filter(UserEvents.user_id == user_id)
+            .filter(UserEvents.blocknumber < revert_block_number)
+            .order_by(UserEvents.blocknumber.desc())
+            .first()
+        )
+        if previous_user_events_entry:
+            session.query(UserEvents).filter(UserEvents.user_id == user_id).filter(
+                UserEvents.blocknumber == previous_user_events_entry.blocknumber
+            ).update({"is_current": True})
+        logger.info(f"Reverting user events: {user_events_to_revert}")
+        session.delete(user_events_to_revert)
 
 
 ######## CELERY TASKS ########

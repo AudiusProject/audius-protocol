@@ -1,15 +1,18 @@
 from collections import Counter
+from typing import List
 from src.models import (
     ProfileCompletionChallenge,
-    Challenge,
     User,
     AggregateUser,
     Repost,
-    UserChallenge,
     Follow,
     Save,
 )
-from src.challenges.challenge import ChallengeManager, ChallengeUpdater
+from src.challenges.challenge import (
+    ChallengeManager,
+    ChallengeUpdater,
+    FullEventMetadata,
+)
 from src.challenges.challenge_event import ChallengeEvent
 
 REPOST_THRESHOLD = 1
@@ -29,6 +32,7 @@ class ProfileChallengeUpdater(ChallengeUpdater):
     """
 
     def update_user_challenges(self, session, event, user_challenges, step_count):
+
         user_ids = [user_challenge.user_id for user_challenge in user_challenges]
         partial_completions = get_profile_completion_challenges(session, user_ids)
         completion_map = {
@@ -58,10 +62,10 @@ class ProfileChallengeUpdater(ChallengeUpdater):
             # Update completion
             user_challenge.is_complete = user_challenge.current_step_count == step_count
 
-    def on_after_challenge_creation(self, session, user_ids):
+    def on_after_challenge_creation(self, session, metadatas: List[FullEventMetadata]):
         profile_completion_challenges = [
             ProfileCompletionChallenge(
-                user_id=user_id,
+                user_id=metadata["user_id"],
                 profile_description=False,
                 profile_name=False,
                 profile_picture=False,
@@ -70,7 +74,7 @@ class ProfileChallengeUpdater(ChallengeUpdater):
                 reposts=False,
                 favorites=False,
             )
-            for user_id in user_ids
+            for metadata in metadatas
         ]
         session.add_all(profile_completion_challenges)
 

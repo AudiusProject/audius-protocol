@@ -7,7 +7,7 @@ from jsonschema import ValidationError
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import validates
+from sqlalchemy.orm import relationship, validates
 from sqlalchemy.sql import null
 from sqlalchemy import (
     Column,
@@ -252,6 +252,19 @@ class Track(Base):
     field_visibility = Column(postgresql.JSONB, nullable=True)
     stem_of = Column(postgresql.JSONB, nullable=True)
 
+    _routes = relationship(  # type: ignore
+        "TrackRoute",
+        primaryjoin="and_(\
+            remote(Track.track_id) == foreign(TrackRoute.track_id),\
+            TrackRoute.is_current)",
+        lazy="joined",
+        viewonly=True,
+    )
+
+    @property
+    def slug(self):
+        return self._routes[0].slug if self._routes else ""
+
     PrimaryKeyConstraint(is_current, track_id, blockhash, txhash)
 
     ModelValidator.init_model_schemas("Track")
@@ -294,7 +307,8 @@ class Track(Base):
             f"download={self.download},"
             f"updated_at={self.updated_at},"
             f"created_at={self.created_at},"
-            f"stem_of={self.stem_of}"
+            f"stem_of={self.stem_of},"
+            f"slug={self.slug}"
             ")>"
         )
 
@@ -1004,6 +1018,7 @@ class UserChallenge(Base):
     user_id = Column(Integer, nullable=False)
     specifier = Column(String, nullable=False)
     is_complete = Column(Boolean, nullable=False)
+    completed_blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=True)
     current_step_count = Column(Integer)
 
     PrimaryKeyConstraint(challenge_id, specifier)
@@ -1012,7 +1027,9 @@ class UserChallenge(Base):
         return f"<UserChallenge(\
 challenge_id={self.challenge_id},\
 user_id={self.user_id},\
+specifier={self.specifier},\
 is_complete={self.is_complete},\
+completed_blocknumber={self.completed_blocknumber},\
 current_step_count={self.current_step_count})>"
 
 

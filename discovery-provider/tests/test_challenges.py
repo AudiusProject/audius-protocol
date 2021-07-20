@@ -1,7 +1,16 @@
+from typing import Dict, List
+import redis
+from sqlalchemy.orm.session import Session
+
 from src.models import Challenge, UserChallenge, ChallengeType
 from src.utils.db_session import get_db
 from src.challenges.challenge import ChallengeManager, ChallengeUpdater
 from src.utils.helpers import model_to_dictionary
+from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.utils.config import shared_config
+from src.queries.get_challenges import get_challenges
+
+from tests.utils import populate_mock_db_blocks
 
 
 def setup_challenges(app):
@@ -23,6 +32,14 @@ def setup_challenges(app):
                 active=True,
                 starting_block=100,
             ),
+            Challenge(
+                id="test_challenge_3",
+                type=ChallengeType.aggregate,
+                amount=5,
+                step_count=5,
+                active=True,
+                starting_block=100,
+            ),
         ]
         user_challenges = [
             UserChallenge(
@@ -38,6 +55,7 @@ def setup_challenges(app):
                 specifier="2",
                 is_complete=True,
                 current_step_count=3,
+                completed_blocknumber=100,
             ),
             UserChallenge(
                 challenge_id="test_challenge_1",
@@ -73,7 +91,6 @@ class TestUpdater(ChallengeUpdater):
             user_challenge.current_step_count += 1
             if user_challenge.current_step_count >= step_count:
                 user_challenge.is_complete = True
-        return user_challenges
 
 
 def test_handle_event(app):
@@ -81,6 +98,8 @@ def test_handle_event(app):
 
     with app.app_context():
         db = get_db()
+
+    populate_mock_db_blocks(db, 99, 110)
 
     with db.scoped_session() as session:
 
@@ -91,7 +110,7 @@ def test_handle_event(app):
             session,
             "test_event",
             [
-                {"user_id": 1, "block_number": 99},
+                {"user_id": 1, "block_number": 99, "extra": {}},
             ],
         )
         session.flush()
@@ -109,6 +128,7 @@ def test_handle_event(app):
             "specifier": "1",
             "is_complete": False,
             "current_step_count": 1,
+            "completed_blocknumber": None,
         }
         assert model_to_dictionary(actual) == expected
 
@@ -117,13 +137,13 @@ def test_handle_event(app):
             session,
             "test_event",
             [
-                {"user_id": 1, "block_number": 100},
-                {"user_id": 2, "block_number": 100},
-                {"user_id": 3, "block_number": 100},
+                {"user_id": 1, "block_number": 100, "extra": {}},
+                {"user_id": 2, "block_number": 100, "extra": {}},
+                {"user_id": 3, "block_number": 100, "extra": {}},
                 # Attempt to add id 6 twice to
                 # ensure that it doesn't cause a collision
-                {"user_id": 6, "block_number": 100},
-                {"user_id": 6, "block_number": 100},
+                {"user_id": 6, "block_number": 100, "extra": {}},
+                {"user_id": 6, "block_number": 100, "extra": {}},
             ],
         )
         session.flush()
@@ -142,6 +162,7 @@ def test_handle_event(app):
                 "specifier": "1",
                 "is_complete": False,
                 "current_step_count": 2,
+                "completed_blocknumber": None,
             },
             # Should be unchanged b/c it was already complete
             {
@@ -150,6 +171,7 @@ def test_handle_event(app):
                 "specifier": "2",
                 "is_complete": True,
                 "current_step_count": 3,
+                "completed_blocknumber": 100,
             },
             # Should be newly complete
             {
@@ -158,6 +180,7 @@ def test_handle_event(app):
                 "specifier": "3",
                 "is_complete": True,
                 "current_step_count": 3,
+                "completed_blocknumber": 100,
             },
             # Should be untouched bc user 5 wasn't included
             {
@@ -166,6 +189,7 @@ def test_handle_event(app):
                 "specifier": "5",
                 "is_complete": False,
                 "current_step_count": 2,
+                "completed_blocknumber": None,
             },
             # Should have created a brand new user 6
             {
@@ -174,6 +198,88 @@ def test_handle_event(app):
                 "specifier": "6",
                 "is_complete": False,
                 "current_step_count": 1,
+                "completed_blocknumber": None,
             },
         ]
         assert expected == res_dicts
+
+
+class AggregateUpdater(ChallengeUpdater):
+    def update_user_challenges(
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count,
+    ):
+        pass
+
+    def generate_specifier(self, user_id: int, extra: Dict) -> str:
+        return f"{user_id}-{extra['referred_id']}"
+
+
+REDIS_URL = shared_config["redis"]["url"]
+
+
+def test_aggregates(app):
+
+    setup_challenges(app)
+
+    with app.app_context():
+        db = get_db()
+
+    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+
+    with db.scoped_session() as session:
+        bus = ChallengeEventBus(redis_conn)
+        agg_challenge = ChallengeManager("test_challenge_3", AggregateUpdater())
+        agg_challenge.process(session, "test_event", [])
+        TEST_EVENT = "TEST_EVENT"
+
+        # - Multiple events with the same user_id but diff specifiers get created
+        bus.register_listener(TEST_EVENT, agg_challenge)
+        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 2})
+        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 3})
+        bus.process_events(session)
+        state = agg_challenge.get_challenge_state(session, ["1-2", "1-3"])
+        assert len(state) == 2
+        # Also make sure the thing is incomplete
+        res = get_challenges(1, False, session)
+        agg_chal = {c["challenge_id"]: c for c in res}["test_challenge_3"]
+        assert agg_chal["is_complete"] == False
+
+        # - Multiple events with the same specifier get deduped
+        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 4})
+        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 4})
+        bus.process_events(session)
+        state = agg_challenge.get_challenge_state(session, ["1-4"])
+        assert len(state) == 1
+
+        # - If we've maxed the # of challenges, don't create any more
+        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 5})
+        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 6})
+        bus.process_events(session)
+
+        def get_user_challenges():
+            return (
+                session.query(UserChallenge)
+                .filter(
+                    UserChallenge.challenge_id == "test_challenge_3",
+                    UserChallenge.user_id == 1,
+                )
+                .all()
+            )
+
+        assert len(get_user_challenges()) == 5
+        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 7})
+        bus.process_events(session)
+        assert len(get_user_challenges()) == 5
+
+        # Test get_challenges
+        res = get_challenges(1, False, session)
+        agg_chal = {c["challenge_id"]: c for c in res}["test_challenge_3"]
+        assert agg_chal["is_complete"] == True
+        # Assert all user challenges have proper finishing block #
+        user_challenges = get_user_challenges()
+        for uc in user_challenges:
+            assert uc.completed_blocknumber == 100

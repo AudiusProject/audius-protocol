@@ -33,6 +33,27 @@ def to_bytes(val, length=32):
     return bytes(val, "utf-8")
 
 
+def populate_mock_db_blocks(db, min, max):
+    """
+    Helper function to populate the mock DB with blocks
+
+    Args:
+        db - sqlalchemy db session
+        min - min block number
+        max - max block number
+    """
+    with db.scoped_session() as session:
+        for i in range(min, max):
+            block = models.Block(
+                blockhash=hex(i),
+                number=i,
+                parenthash="0x01",
+                is_current=(i == 0),
+            )
+            session.add(block)
+            session.flush()
+
+
 def populate_mock_db(db, entities):
     """
     Helper function to populate the mock DB with tracks, users, plays, and follows
@@ -48,6 +69,7 @@ def populate_mock_db(db, entities):
         follows = entities.get("follows", [])
         reposts = entities.get("reposts", [])
         saves = entities.get("saves", [])
+        track_routes = entities.get("track_routes", [])
         num_blocks = max(len(tracks), len(users), len(follows))
 
         for i in range(num_blocks):
@@ -112,6 +134,7 @@ def populate_mock_db(db, entities):
                 user_id=user_meta.get("user_id", i),
                 is_current=True,
                 handle=user_meta.get("handle", i),
+                handle_lc=user_meta.get("handle", i).lower(),
                 wallet=user_meta.get("wallet", i),
                 profile_picture=user_meta.get("profile_picture"),
                 profile_picture_sizes=user_meta.get("profile_picture_sizes"),
@@ -165,3 +188,16 @@ def populate_mock_db(db, entities):
                 created_at=save_meta.get("created_at", datetime.now()),
             )
             session.add(save)
+        for i, route_meta in enumerate(track_routes):
+            route = models.TrackRoute(
+                slug=route_meta.get("slug", ""),
+                title_slug=route_meta.get("title_slug", ""),
+                blockhash=hex(i),
+                blocknumber=route_meta.get("blocknumber", i),
+                owner_id=route_meta.get("owner_id", i + 1),
+                track_id=route_meta.get("track_id", i + 1),
+                is_current=route_meta.get("is_current", True),
+                txhash=route_meta.get("txhash", ""),
+                collision_id=route_meta.get("collision_id", 0),
+            )
+            session.add(route)

@@ -9,6 +9,9 @@ contracts.env
 # Python cache
 __pycache__/
 
+# Mypy cache
+.mypy_cache
+
 # Virtualenv generated info
 venv/
 
