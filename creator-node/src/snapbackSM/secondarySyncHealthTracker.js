@@ -173,13 +173,16 @@ const Getters = {
 }
 
 const SecondarySyncHealthTracker = {
+  Outcomes,
+
   // Record SyncRequestOutcomes
   recordSuccess: Setters.recordSuccess,
   recordFailure: Setters.recordFailure,
 
   // Retrieve SyncRequestOutcomes
   computeUserSecondarySyncSuccessRates: Getters.computeUserSecondarySyncSuccessRates,
-  getSyncRequestOutcomeMetrics: Getters.getSyncRequestOutcomeMetrics
+  getSyncRequestOutcomeMetrics: Getters.getSyncRequestOutcomeMetrics,
+
 }
 
 module.exports = SecondarySyncHealthTracker
