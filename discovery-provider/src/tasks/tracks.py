@@ -49,7 +49,7 @@ def track_state_update(
     track_contract = update_task.web3.eth.contract(
         address=contract_addresses["track_factory"], abi=track_abi
     )
-    pending_track_routes = List[TrackRoute]
+    pending_track_routes: List[TrackRoute] = []
     track_events = {}
     for tx_receipt in track_factory_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
