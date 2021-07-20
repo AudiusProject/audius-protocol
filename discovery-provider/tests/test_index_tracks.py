@@ -181,6 +181,7 @@ def test_index_tracks(mock_index_task, app):
         db = get_db()
 
     update_task = UpdateTask(ipfs_client, web3)
+    pending_track_routes = []
 
     with db.scoped_session() as session:
         # ================== Test New Track Event ==================
@@ -236,6 +237,7 @@ def test_index_tracks(mock_index_task, app):
             event_type,  # String that should one of user_event_types_lookup
             track_record,  # User ORM instance
             block_timestamp,  # Used to update the user.updated_at field
+            pending_track_routes,
         )
 
         # updated_at should be updated every parse_track_event
@@ -302,7 +304,14 @@ def test_index_tracks(mock_index_task, app):
 
         event_type, entry = get_update_track_event()
         parse_track_event(
-            None, session, update_task, entry, event_type, track_record, block_timestamp
+            None,
+            session,
+            update_task,
+            entry,
+            event_type,
+            track_record,
+            block_timestamp,
+            pending_track_routes,
         )
 
         # Check that track routes are updated appropriately
@@ -371,6 +380,7 @@ def test_index_tracks(mock_index_task, app):
             event_type,
             track_record_dupe,
             block_timestamp,
+            pending_track_routes,
         )
 
         # Check that track routes are assigned appropriately
@@ -406,6 +416,7 @@ def test_index_tracks(mock_index_task, app):
             event_type,
             track_record_dupe,
             block_timestamp,
+            pending_track_routes,
         )
 
         # Check that track routes are assigned appropriately
@@ -430,8 +441,11 @@ def test_index_tracks(mock_index_task, app):
         )
         assert track_route
 
+        # Make sure the blocks are committed
+        session.commit()
+        pending_track_routes.clear()
         revert_blocks(mock_index_task, db, [second_block])
-
+        # Commit the revert
         session.commit()
 
         track_routes = session.query(TrackRoute).all()
@@ -466,6 +480,7 @@ def test_index_tracks(mock_index_task, app):
             event_type,  # String that should one of user_event_types_lookup
             track_record,  # User ORM instance
             block_timestamp,  # Used to update the user.updated_at field
+            pending_track_routes,
         )
 
         # updated_at should be updated every parse_track_event

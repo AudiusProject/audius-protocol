@@ -1,0 +1,22 @@
+[package]
+name = "claimable-tokens-cli"
+version = "0.1.0"
+authors = ["Attic Lab team"]
+description = "CLI tools for transfer fund from associated ethereum account to another one"
+edition = "2018"
+
+[dependencies]
+clap = "2.33.3"
+solana-cli-config = "1.7.0"
+solana-clap-utils = "1.7.0"
+solana-logger = "1.7.0"
+solana-client = "1.7.0"
+solana-sdk = "1.7.0"
+solana-program = "1.5.14"
+borsh = "0.9.0"
+anyhow = "1.0.40"
+claimable-tokens = { path="../program", features = [ "no-entrypoint" ] }
+spl-token = { git="https://github.com/solana-labs/solana-program-library", features = [ "no-entrypoint" ] }
+libsecp256k1 = "0.5.0"
+spl-associated-token-account = "1.0.2"
+hex = "0.4.3"
