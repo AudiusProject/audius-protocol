@@ -1,7 +1,6 @@
-import threading
-from typing import Callable, Tuple
+from typing import Tuple
 
-from web3 import HTTPProvider, Web3
+from web3 import Web3
 from web3.auto import w3
 from eth_account.messages import encode_defunct
 
@@ -13,8 +12,14 @@ from src.models.models import (
     User,
     UserChallenge,
 )
+from src.utils.redis_connection import get_redis
 from src.utils.config import shared_config
-from src.utils.helpers import load_eth_abi_values
+from src.utils.helpers import redis_get_or_restore
+from src.tasks.index_oracles import (
+    oracle_addresses_key,
+    get_oracle_addresses_from_chain,
+)
+
 
 class Attestation:
     """Represents DN attesting to a user completing a given challenge"""
@@ -62,43 +67,13 @@ class AttestationError(Exception):
     pass
 
 
-eth_abi_values = load_eth_abi_values()
-REWARDS_CONTRACT_ABI = eth_abi_values["EthRewardsManager"]["abi"]
-
-eth_web3 = Web3(HTTPProvider(shared_config["web3"]["eth_provider_url"]))
-eth_registry_address = eth_web3.toChecksumAddress(
-    shared_config["eth_contracts"]["registry"]
-)
-eth_registry_instance = eth_web3.eth.contract(
-    address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
-)
-eth_rewards_manager_address = eth_registry_instance.functions.getContract(
-    bytes("EthRewardsManagerProxy", "utf-8")
-).call()
-eth_rewards_manager_instance = eth_web3.eth.contract(
-    address=eth_rewards_manager_address, abi=REWARDS_CONTRACT_ABI
-)
-
-ORACLE_CHECK_INTERVAL_SECONDS = 60
-oracle_addresses = []
-
-def get_oracle_addresses_from_chain():
-    global oracle_addresses
-    oracle_addresses = eth_rewards_manager_instance.functions.getAntiAbuseOracleAddresses().call()
-
-def set_interval(func: Callable, sec: int):
-    t = None
-    def func_wrapper():
-        set_interval(func, sec)
-        func()
-        t.cancel()
-    t = threading.Timer(sec, func_wrapper)
-    t.start()
-
-get_oracle_addresses_from_chain()
-set_interval(get_oracle_addresses_from_chain, ORACLE_CHECK_INTERVAL_SECONDS)
-
 def is_valid_oracle(address: str) -> bool:
+    redis = get_redis()
+    oracle_addresses = redis_get_or_restore(redis, oracle_addresses_key)
+    if not oracle_addresses:
+        oracle_addresses = get_oracle_addresses_from_chain(redis)
+    else:
+        oracle_addresses = oracle_addresses.decode().split(",")
     return address in oracle_addresses
 
 
