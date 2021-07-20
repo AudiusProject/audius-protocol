@@ -23,6 +23,7 @@ import {
   INTIMATE_PLAYLISTS
 } from 'containers/explore-page/collections'
 import { ExploreCollectionsVariant } from 'containers/explore-page/store/types'
+import { useFlag } from 'containers/remote-config/hooks'
 import {
   HEAVY_ROTATION,
   BEST_NEW_RELEASES,
@@ -34,7 +35,7 @@ import {
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
 import { UserCollection, Variant as CollectionVariant } from 'models/Collection'
 import User from 'models/User'
-import { FeatureFlags, getFeatureEnabled } from 'services/remote-config'
+import { FeatureFlags } from 'services/remote-config'
 import { Status } from 'store/types'
 import { BASE_URL, EXPLORE_PAGE, stripBaseUrl } from 'utils/route'
 
@@ -61,7 +62,7 @@ export const justForYou = [
   BEST_NEW_RELEASES,
   UNDER_THE_RADAR,
   TOP_ALBUMS,
-  ...(getFeatureEnabled(FeatureFlags.REMIXABLES) ? [REMIXABLES] : []),
+  REMIXABLES,
   MOST_LOVED,
   FEELING_LUCKY
 ]
@@ -114,6 +115,7 @@ const ExplorePage = ({
     },
     [goToRoute]
   )
+  const { isEnabled: remixablesEnabled } = useFlag(FeatureFlags.REMIXABLES)
 
   return (
     <Page
@@ -129,6 +131,13 @@ const ExplorePage = ({
         layout={Layout.TWO_COLUMN_DYNAMIC_WITH_DOUBLE_LEADING_ELEMENT}
       >
         {justForYou.map(i => {
+          if (
+            i.variant === CollectionVariant.SMART &&
+            i.playlist_name === REMIXABLES.playlist_name &&
+            !remixablesEnabled
+          ) {
+            return null
+          }
           const title =
             i.variant === CollectionVariant.SMART ? i.playlist_name : i.title
           const subtitle =
