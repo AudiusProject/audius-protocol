@@ -88,7 +88,7 @@ def index_eth(self):
     have_lock = False
 
     # Define redis lock object
-    update_lock = redis.lock("index_eth_lock", blocking_timeout=25)
+    update_lock = redis.lock("index_eth_lock")
     try:
         # Attempt to acquire lock
         have_lock = update_lock.acquire(blocking=False)
