@@ -52,7 +52,6 @@ const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }
     nodeEndpointFromSPFactory
   })
 
-  // if node is already on ursm, dont
   /**
    * Short-circuit if L2 record already matches L1 record (i.e. delegateOwnerWallets match)
    */
@@ -152,14 +151,12 @@ const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }
 }
 
 const getSPInfo = async ({ audiusLibs, spID, reqTimestamp, reqSignature }) => {
-  // passed in from request
   if (!spID || !reqTimestamp || !reqSignature) {
     throw new ErrorBadRequest('Must provide all required query parameters: spID, timestamp, signature')
   }
 
   spID = parseInt(spID)
 
-  // fetch data from sp for the requested spId
   /**
      * Fetch node info from L1 ServiceProviderFactory for spID
      */
@@ -193,7 +190,6 @@ const verifyRequesterIsValidSP = async ({
   delegateOwnerWalletFromSPFactory,
   nodeEndpointFromSPFactory
 }) => {
-  // check to see if the spId passed in is valid
   /**
    * Reject if node is not registered as valid SP on L1 ServiceProviderFactory
    */
@@ -205,7 +201,6 @@ const verifyRequesterIsValidSP = async ({
     throw new ErrorBadRequest(`SpID ${spID} is not registered as valid SP on L1 ServiceProviderFactory`)
   }
 
-  // check if requester is a valid sp
   /**
    * Confirm request was signed by delegate owner wallet registered on L1 for spID, given request signature artifacts
    */

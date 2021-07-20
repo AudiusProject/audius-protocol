@@ -50,7 +50,7 @@ async function ensureValidSPRequesterMiddleware (req, res, next) {
     } catch (e) {
       // A non-SP requester query will hit this catch block. This is okay; just continue
       // with the rate limit and other middlewares as expected.
-      req.logger.debug(`Requester is not a valid SP. Continuing with rate limit: ${e.toString()}\n${e.stack}`)
+      req.logger.debug(`Requester is not a valid SP. Continuing with rate limit: ${e.toString()}`)
     }
   }
 

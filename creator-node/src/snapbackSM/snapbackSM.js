@@ -665,7 +665,6 @@ class SnapbackSM {
         if (userPrimaryClockVal > userSecondaryClockVal) {
           numSyncRequestsRequired += 1
 
-          // keep track of these stats + clock values -> if seen multiple times exit
           await this.enqueueSync({
             userWallet: wallet,
             secondaryEndpoint: secondary,
