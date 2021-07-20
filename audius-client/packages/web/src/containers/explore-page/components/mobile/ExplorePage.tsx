@@ -36,6 +36,7 @@ import {
 import CardLineup from 'containers/lineup/CardLineup'
 import { useMainPageHeader } from 'containers/nav/store/context'
 import { useFlag } from 'containers/remote-config/hooks'
+import { REMIXABLES } from 'containers/smart-collection/smartCollections'
 import useTabs from 'hooks/useTabs/useTabs'
 import {
   UserCollection,
@@ -140,6 +141,13 @@ const ExplorePage = ({
 
   const justForYouTiles = justForYou.map(
     (t: SmartCollection | ExploreCollection) => {
+      if (
+        t.variant === CollectionVariant.SMART &&
+        t.playlist_name === REMIXABLES.playlist_name &&
+        !remixablesEnabled
+      ) {
+        return null
+      }
       const Icon = t.icon ? t.icon : React.Fragment
       if (t.variant === CollectionVariant.SMART) {
         return (

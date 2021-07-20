@@ -15,8 +15,9 @@ import {
   flagCohortType
 } from 'services/remote-config/FeatureFlags'
 import { getAccountUser } from 'store/account/selectors'
-import { AppState } from 'store/types'
 import { useSelector } from 'utils/reducer'
+
+import { isRemoteConfigLoaded } from './selectors'
 
 /**
  * Hooks into updates for a given feature flag.
@@ -24,9 +25,7 @@ import { useSelector } from 'utils/reducer'
  * @param flag
  */
 export const useFlag = (flag: FeatureFlags) => {
-  const configLoaded = useSelector(
-    (state: AppState) => state.remoteConfig.remoteConfigLoaded
-  )
+  const configLoaded = useSelector(isRemoteConfigLoaded)
   const userIdFlag = flagCohortType[flag] === FeatureFlagCohortType.USER_ID
   const hasAccount = useSelector(getAccountUser)
   const shouldRecompute = userIdFlag ? hasAccount : true
@@ -45,9 +44,7 @@ export function useRemoteVar(key: BooleanKeys): boolean
 export function useRemoteVar(
   key: AllRemoteConfigKeys
 ): boolean | string | number | null {
-  const configLoaded = useSelector(
-    (state: AppState) => state.remoteConfig.remoteConfigLoaded
-  )
+  const configLoaded = useSelector(isRemoteConfigLoaded)
   // eslint complains about configLoaded as part of the deps array
   // eslint-disable-next-line
   const remoteVar = useMemo(() => getRemoteVar(key), [key, configLoaded])
