@@ -55,7 +55,7 @@ class CreatorNode {
       baseURL: endpoint,
       timeout
     }
-    baseReq = params && Object.keys(params).length > 0 ? { baseReq, params } : baseReq
+    baseReq = params && Object.keys(params).length > 0 ? { ...baseReq, params } : baseReq
 
     try {
       const { data: body } = await axios(baseReq)
