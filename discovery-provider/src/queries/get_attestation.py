@@ -14,7 +14,6 @@ from src.models.models import (
 )
 from src.utils.redis_connection import get_redis
 from src.utils.config import shared_config
-from src.utils.helpers import redis_get_or_restore
 from src.tasks.index_oracles import (
     oracle_addresses_key,
     get_oracle_addresses_from_chain,
@@ -69,11 +68,11 @@ class AttestationError(Exception):
 
 def is_valid_oracle(address: str) -> bool:
     redis = get_redis()
-    oracle_addresses = redis_get_or_restore(redis, oracle_addresses_key)
-    if not oracle_addresses:
-        oracle_addresses = get_oracle_addresses_from_chain(redis)
-    else:
+    oracle_addresses = redis.get(oracle_addresses_key)
+    if oracle_addresses:
         oracle_addresses = oracle_addresses.decode().split(",")
+    else:
+        oracle_addresses = get_oracle_addresses_from_chain(redis)
     return address in oracle_addresses
 
 

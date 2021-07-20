@@ -3,12 +3,11 @@ from typing import List
 from web3 import Web3, HTTPProvider
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
-from src.utils.helpers import load_eth_abi_values, redis_set_and_dump
+from src.utils.helpers import load_eth_abi_values
 
 logger = logging.getLogger(__name__)
 
 oracle_addresses_key = "oracle_addresses"
-ORACLE_CHECK_INTERVAL_SECONDS = 60
 
 eth_abi_values = load_eth_abi_values()
 REWARDS_CONTRACT_ABI = eth_abi_values["EthRewardsManager"]["abi"]
@@ -33,7 +32,7 @@ def get_oracle_addresses_from_chain(redis) -> List[str]:
     oracle_addresses = (
         eth_rewards_manager_instance.functions.getAntiAbuseOracleAddresses().call()
     )
-    redis_set_and_dump(redis, oracle_addresses_key, ",".join(oracle_addresses))
+    redis.set(oracle_addresses_key, ",".join(oracle_addresses))
     return oracle_addresses
 
 
