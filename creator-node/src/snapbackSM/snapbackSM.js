@@ -10,6 +10,7 @@ const SyncDeDuplicator = require('./snapbackDeDuplicator')
 const PeerSetManager = require('./peerSetManager')
 const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
+const { generateTimestampAndSignature } = require('../apiSigning')
 
 // Maximum number of time to wait for a sync operation, 6 minutes by default
 const MaxSyncMonitoringDurationInMs = 360000 // ms
@@ -22,6 +23,9 @@ const MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS = 100
 
 // Timeout for fetching batch clock values
 const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 20000 // 20s
+
+// Timeout for fetching a clock value for a singular user
+const CLOCK_STATUS_REQUEST_TIMEOUT_MS = 2000 // 2s
 
 // Describes the type of sync operation
 const SyncType = Object.freeze({
@@ -88,6 +92,7 @@ class SnapbackSM {
 
     this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
     this.spID = this.nodeConfig.get('spID')
+    this.delegatePrivateKey = this.nodeConfig.get('delegatePrivateKey')
     this.snapbackDevModeEnabled = this.nodeConfig.get('snapbackDevModeEnabled')
 
     this.MaxManualRequestSyncJobConcurrency = this.nodeConfig.get('maxManualRequestSyncJobConcurrency')
@@ -96,7 +101,7 @@ class SnapbackSM {
     this.MinimumSecondaryUserSyncSuccessPercent = this.nodeConfig.get('minimumSecondaryUserSyncSuccessPercent') / 100
 
     // Throw an error if running as creator node and no libs are provided
-    if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint)) {
+    if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint || !this.delegatePrivateKey)) {
       throw new Error('Missing required configs - cannot start')
     }
 
@@ -543,7 +548,12 @@ class SnapbackSM {
 
       // Check to make sure that the newly selected secondary does not have existing user state
       try {
-        const clockValue = await CreatorNode.getClockValue(randomHealthyNode, wallet)
+        const { timestamp, signature } = generateTimestampAndSignature({ spID: this.spID }, this.delegatePrivateKey)
+        const clockValue = await CreatorNode.getClockValue(randomHealthyNode, wallet, CLOCK_STATUS_REQUEST_TIMEOUT_MS, {
+          spID: this.spID,
+          timestamp,
+          signature
+        })
         if (clockValue === -1) { newReplicaNodesSet.add(randomHealthyNode) }
       } catch (e) {
         // Something went wrong in checking clock value. Reselect another secondary.
@@ -576,13 +586,19 @@ class SnapbackSM {
       replicaSetNodesToUserClockValuesMap[replicaSetNode] = {}
 
       const replicaSetNodeUserWallets = replicaSetNodesToUserWalletsMap[replicaSetNode]
+      const { timestamp, signature } = generateTimestampAndSignature({ spID: this.spID }, this.delegatePrivateKey)
 
       const axiosReqParams = {
         baseURL: replicaSetNode,
         url: '/users/batch_clock_status',
         method: 'post',
         data: { 'walletPublicKeys': replicaSetNodeUserWallets },
-        timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT
+        timeout: BATCH_CLOCK_STATUS_REQUEST_TIMEOUT,
+        params: {
+          spID: this.spID,
+          timestamp,
+          signature
+        }
       }
 
       let userClockValuesResp = []
@@ -649,6 +665,7 @@ class SnapbackSM {
         if (userPrimaryClockVal > userSecondaryClockVal) {
           numSyncRequestsRequired += 1
 
+          // keep track of these stats + clock values -> if seen multiple times exit
           await this.enqueueSync({
             userWallet: wallet,
             secondaryEndpoint: secondary,
