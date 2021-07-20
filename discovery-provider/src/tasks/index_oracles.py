@@ -20,15 +20,15 @@ eth_registry_address = eth_web3.toChecksumAddress(
 eth_registry_instance = eth_web3.eth.contract(
     address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
 )
-eth_rewards_manager_address = eth_registry_instance.functions.getContract(
-    bytes("EthRewardsManagerProxy", "utf-8")
-).call()
-eth_rewards_manager_instance = eth_web3.eth.contract(
-    address=eth_rewards_manager_address, abi=REWARDS_CONTRACT_ABI
-)
 
 
 def get_oracle_addresses_from_chain(redis) -> List[str]:
+    eth_rewards_manager_address = eth_registry_instance.functions.getContract(
+        bytes("EthRewardsManagerProxy", "utf-8")
+    ).call()
+    eth_rewards_manager_instance = eth_web3.eth.contract(
+        address=eth_rewards_manager_address, abi=REWARDS_CONTRACT_ABI
+    )
     oracle_addresses = (
         eth_rewards_manager_instance.functions.getAntiAbuseOracleAddresses().call()
     )
