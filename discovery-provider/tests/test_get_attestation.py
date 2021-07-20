@@ -1,5 +1,5 @@
 import pytest
-
+import redis
 from web3 import Web3
 from web3.auto import w3
 from eth_account.messages import encode_defunct
@@ -10,9 +10,12 @@ from src.queries.get_attestation import (
 )
 from src.utils.db_session import get_db
 from src.utils.config import shared_config
+from src.tasks.index_oracles import oracle_addresses_key
 
 from tests.test_get_challenges import setup_db
 
+REDIS_URL = shared_config["redis"]["url"]
+redis_handle = redis.Redis.from_url(url=REDIS_URL)
 
 def test_get_attestation(app):
     with app.app_context():
@@ -23,9 +26,11 @@ def test_get_attestation(app):
             # Tests:
             # - Happy path
             # - No user_challenge
+            # - Challenge not finished
             # - No disbursement
             # - Invalid oracle
-            oracle_address: str = shared_config["discprov"]["default_oracle_address"]
+            oracle_address = "0xFakePublicKey"
+            redis_handle.set(oracle_addresses_key, oracle_address)
 
             delegate_owner_wallet, signature = get_attestation(
                 session,
