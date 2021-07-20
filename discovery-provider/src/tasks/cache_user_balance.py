@@ -1,10 +1,19 @@
 import logging
 import time
+from typing import List, Set
+from redis import Redis
+from sqlalchemy.orm.session import Session
 from sqlalchemy import and_
+
+from src.utils.session_manager import SessionManager
 from src.app import eth_abi_values
 from src.tasks.celery_app import celery
 from src.models import UserBalance, User, AssociatedWallet
-from src.queries.get_balances import does_user_balance_need_refresh, REDIS_PREFIX
+from src.queries.get_balances import (
+    does_user_balance_need_refresh,
+    IMMEDIATE_REFRESH_REDIS_PREFIX,
+    LAZY_REFRESH_REDIS_PREFIX,
+)
 from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
 
 logger = logging.getLogger(__name__)
@@ -13,6 +22,30 @@ audius_staking_registry_key = bytes("StakingProxy", "utf-8")
 audius_delegate_manager_registry_key = bytes("DelegateManager", "utf-8")
 
 REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
+
+
+def get_lazy_refresh_user_ids(redis: Redis, session: Session) -> List[int]:
+    redis_user_ids = redis.smembers(LAZY_REFRESH_REDIS_PREFIX)
+    user_ids = [int(user_id.decode()) for user_id in redis_user_ids]
+
+    user_balances = (
+        (session.query(UserBalance)).filter(UserBalance.user_id.in_(user_ids)).all()
+    )
+
+    # Filter only user_balances that still need refresh
+    needs_refresh: Set[int] = {
+        user.user_id
+        for user in list(filter(does_user_balance_need_refresh, user_balances))
+    }
+
+    # return user id of needs_refresh
+    return list(needs_refresh)
+
+
+def get_immediate_refresh_user_ids(redis: Redis) -> List[int]:
+    redis_user_ids = redis.smembers(IMMEDIATE_REFRESH_REDIS_PREFIX)
+    return [int(user_id.decode()) for user_id in redis_user_ids]
+
 
 # *Explanation of user balance caching*
 # In an effort to minimize eth calls, we look up users embedded in track metadata once per user,
@@ -35,46 +68,32 @@ REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
 #
 #     enqueued User Ids in Redis that are *not* ready to be refreshed yet are left in the queue
 #     for later.
-
-
 def refresh_user_ids(
-    redis, db, token_contract, delegate_manager_contract, staking_contract, eth_web3
+    redis: Redis,
+    db: SessionManager,
+    token_contract,
+    delegate_manager_contract,
+    staking_contract,
+    eth_web3,
 ):
-    # List users in Redis set, balances decoded as strings
-    redis_user_ids = redis.smembers(REDIS_PREFIX)
-    redis_user_ids = [int(user_id.decode()) for user_id in redis_user_ids]
-
-    if not redis_user_ids:
-        return
-
-    logger.info(
-        f"cache_user_balance.py | Starting refresh with {len(redis_user_ids)} user_ids: {redis_user_ids}"
-    )
-
     with db.scoped_session() as session:
-        query = (
-            (session.query(UserBalance))
-            .filter(UserBalance.user_id.in_(redis_user_ids))
-            .all()
+        lazy_refresh_user_ids = get_lazy_refresh_user_ids(redis, session)
+        immediate_refresh_user_ids = get_immediate_refresh_user_ids(redis)
+
+        logger.info(
+            f"cache_user_balance.py | Starting refresh with {len(lazy_refresh_user_ids)} "
+            f"lazy refresh user_ids: {lazy_refresh_user_ids} and {len(immediate_refresh_user_ids)} "
+            f"immediate refresh user_ids: {immediate_refresh_user_ids}"
         )
+        all_user_ids = lazy_refresh_user_ids + immediate_refresh_user_ids
+        user_ids = list(set(all_user_ids))
 
-        # Balances from current user lookup may
-        # not be present in the db, so make those
-        not_present_set = set(redis_user_ids) - {user.user_id for user in query}
-        new_balances = [
-            UserBalance(user_id=user_id, balance=0, associated_wallets_balance=0)
-            for user_id in not_present_set
-        ]
-        if new_balances:
-            session.add_all(new_balances)
-            logger.info(f"cache_user_balance.py | adding new users: {not_present_set}")
-
-        # Filter only user_balances that still need refresh
-        needs_refresh = list(filter(does_user_balance_need_refresh, query))
-        needs_refresh += new_balances
-
-        # map user_id -> user_balance
-        needs_refresh_map = {user.user_id: user for user in needs_refresh}
+        existing_user_balances: List[UserBalance] = (
+            (session.query(UserBalance)).filter(UserBalance.user_id.in_(user_ids)).all()
+        )
+        user_balances = {
+            user.user_id: user for user in existing_user_balances
+        }
 
         # Grab the users & associated_wallets we need to refresh
         user_query = (
@@ -88,7 +107,7 @@ def refresh_user_ids(
                 ),
             )
             .filter(
-                User.user_id.in_(needs_refresh_map.keys()),
+                User.user_id.in_(user_ids),
                 User.is_current == True,
             )
             .all()
@@ -107,7 +126,7 @@ def refresh_user_ids(
                     )
 
         logger.info(
-            f"cache_user_balance.py | fetching for {len(user_query)} users: {needs_refresh_map.keys()}"
+            f"cache_user_balance.py | fetching for {len(user_query)} users: {user_ids}"
         )
 
         # Fetch balances
@@ -137,9 +156,9 @@ def refresh_user_ids(
                         )
 
                 # update the balance on the user model
-                user_balance = needs_refresh_map[user_id]
+                user_balance = user_balances[user_id]
                 user_balance.balance = owner_wallet_balance
-                user_balance.associated_wallets_balance = associated_balance
+                user_balance.associated_wallets_balance = str(associated_balance)
 
             except Exception as e:
                 logger.error(
@@ -150,17 +169,16 @@ def refresh_user_ids(
         session.commit()
 
         # Remove the fetched balances from Redis set
-        to_remove = [user.user_id for user in needs_refresh]
         logger.info(
             f"cache_user_balance.py | Got balances for {len(user_query)} users, removing from Redis."
         )
-        if to_remove:
-            redis.srem(REDIS_PREFIX, *to_remove)
-            # Add the count of the balances
-            redis.incrby(REDIS_ETH_BALANCE_COUNTER_KEY, len(to_remove))
+        if lazy_refresh_user_ids:
+            redis.srem(LAZY_REFRESH_REDIS_PREFIX, *lazy_refresh_user_ids)
+        if immediate_refresh_user_ids:
+            redis.srem(IMMEDIATE_REFRESH_REDIS_PREFIX, *immediate_refresh_user_ids)
 
 
-def get_token_contract(eth_web3, shared_config):
+def get_token_address(eth_web3, shared_config):
     eth_registry_address = eth_web3.toChecksumAddress(
         shared_config["eth_contracts"]["registry"]
     )
@@ -172,6 +190,12 @@ def get_token_contract(eth_web3, shared_config):
     token_address = eth_registry_instance.functions.getContract(
         audius_token_registry_key
     ).call()
+
+    return token_address
+
+
+def get_token_contract(eth_web3, shared_config):
+    token_address = get_token_address(eth_web3, shared_config)
 
     audius_token_instance = eth_web3.eth.contract(
         address=token_address, abi=eth_abi_values["AudiusToken"]["abi"]

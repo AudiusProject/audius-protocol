@@ -141,7 +141,7 @@ def connect_peers(self, peers_list):
 def update_network_peers(self):
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
-    # Custom Task definition can be found in src/__init__.py
+    # Custom Task definition can be found in src/app.py
     redis = update_network_peers.redis
     ipfs_client = update_network_peers.ipfs_client
     # Define lock acquired boolean

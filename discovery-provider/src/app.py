@@ -39,7 +39,6 @@ from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.challenges.challenge_event_bus import setup_challenge_bus
-from src.challenges.challenge_manager_registry import setup_challenge_registry
 
 SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
@@ -306,7 +305,6 @@ def configure_flask(test_config, app, mode="app"):
     )
 
     app.challenge_bus = setup_challenge_bus()
-    app.challenge_registry = setup_challenge_registry()
 
     # Register route blueprints
     register_exception_handlers(app)
@@ -363,6 +361,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_solana_plays",
             "src.tasks.index_aggregate_views",
             "src.tasks.index_challenges",
+            "src.tasks.index_eth",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -437,6 +436,10 @@ def configure_celery(flask_app, celery, test_config=None):
                 "task": "index_challenges",
                 "schedule": timedelta(seconds=5),
             },
+            "index_eth": {
+                "task": "index_eth",
+                "schedule": timedelta(seconds=10),
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -465,6 +468,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("synchronize_metrics_lock")
     redis_inst.delete("solana_plays_lock")
     redis_inst.delete("index_challenges")
+    redis_inst.delete("index_eth")
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object

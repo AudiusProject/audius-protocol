@@ -1,0 +1,27 @@
+[package]
+name = "claimable-tokens"
+version = "0.1.0"
+edition = "2018"
+
+[features]
+no-entrypoint = []
+test-bpf = []
+
+[dependencies]
+num-derive = "0.3.3"
+num-traits = "0.2.14"
+num_enum = "0.5.1"
+solana-program = "1.7.0"
+thiserror = "1.0.25"
+borsh = "0.9.0"
+bs58 = "0.4.0"
+spl-token = { git="https://github.com/solana-labs/solana-program-library", features = [ "no-entrypoint" ] }
+
+[dev-dependencies]
+solana-program-test = "1.7.0"
+solana-sdk = "1.7.0"
+libsecp256k1 = { version = "0.3.5" }
+rand = { version = "0.8.3" }
+
+[lib]
+crate-type = ["cdylib", "lib"]
