@@ -91,7 +91,7 @@ def index_eth(self):
     update_lock = redis.lock("index_eth_lock", blocking_timeout=25)
     try:
         # Attempt to acquire lock
-        have_lock = update_lock.acquire(blocking=True)
+        have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.info(f"index_eth.py | {self.request.id} | Acquired index_eth_lock")
 

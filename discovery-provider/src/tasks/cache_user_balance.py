@@ -32,15 +32,11 @@ def get_lazy_refresh_user_ids(redis: Redis, session: Session) -> List[int]:
         (session.query(UserBalance)).filter(UserBalance.user_id.in_(user_ids)).all()
     )
 
-    # Balances from current user lookup may not be present in the db
-    not_present_set = set(user_ids) - {user.user_id for user in user_balances}
-
     # Filter only user_balances that still need refresh
     needs_refresh: Set[int] = {
         user.user_id
         for user in list(filter(does_user_balance_need_refresh, user_balances))
     }
-    needs_refresh.update(not_present_set)
 
     # return user id of needs_refresh
     return list(needs_refresh)
@@ -95,21 +91,8 @@ def refresh_user_ids(
         existing_user_balances: List[UserBalance] = (
             (session.query(UserBalance)).filter(UserBalance.user_id.in_(user_ids)).all()
         )
-
-        # Balances from current user lookup may
-        # not be present in the db, so make those
-        not_present_set = set(all_user_ids) - {
-            user.user_id for user in existing_user_balances
-        }
-        new_balances = [
-            UserBalance(user_id=user_id, balance="0", associated_wallets_balance="0")
-            for user_id in not_present_set
-        ]
-        if new_balances:
-            session.add_all(new_balances)
-
         user_balances = {
-            user.user_id: user for user in (existing_user_balances + new_balances)
+            user.user_id: user for user in existing_user_balances
         }
 
         # Grab the users & associated_wallets we need to refresh

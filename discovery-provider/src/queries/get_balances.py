@@ -46,8 +46,7 @@ def enqueue_immediate_balance_refresh(redis: Redis, user_ids: List[int]):
 def get_balances(
     session: Session,
     redis: Redis,
-    user_ids: List[int],
-    is_verified_ids_set: Optional[Set[int]] = None,
+    user_ids: List[int]
 ):
     """Gets user balances.
     Returns mapping { user_id: balance }
@@ -86,13 +85,11 @@ def get_balances(
         if does_user_balance_need_refresh(user_balance)
     ]
 
-    verified_ids_set = is_verified_ids_set if is_verified_ids_set else set()
     # Enqueue new balances to Redis refresh queue
     # 1. All users who need a new balance
     # 2. All users who need a balance refresh
-    # 3. All verified users (priority)
     enqueue_lazy_balance_refresh(
-        redis, list(needs_balance_set.union(verified_ids_set)) + needs_refresh
+        redis, list(needs_balance_set) + needs_refresh
     )
 
     return result

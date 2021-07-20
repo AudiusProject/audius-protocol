@@ -111,10 +111,6 @@ def parse_sort_param(base_query, model, whitelist_sort_params):
 def populate_user_metadata(
     session, user_ids, users, current_user_id, with_track_save_count=False
 ):
-    # Always enqueue balance refresh for current user
-    if current_user_id:
-        enqueue_lazy_balance_refresh(redis, [current_user_id])
-
     aggregate_user = (
         session.query(
             AggregateUser.user_id,
