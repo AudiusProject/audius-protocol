@@ -1,4 +1,5 @@
-from typing import Tuple
+import threading
+from typing import Callable, Tuple
 
 from web3 import HTTPProvider, Web3
 from web3.auto import w3
@@ -74,13 +75,30 @@ eth_registry_instance = eth_web3.eth.contract(
 eth_rewards_manager_address = eth_registry_instance.functions.getContract(
     bytes("EthRewardsManagerProxy", "utf-8")
 ).call()
+eth_rewards_manager_instance = eth_web3.eth.contract(
+    address=eth_rewards_manager_address, abi=REWARDS_CONTRACT_ABI
+)
 
+ORACLE_CHECK_INTERVAL_SECONDS = 60
+oracle_addresses = []
 
-def is_valid_oracle(address: str):
-    eth_rewards_manager_instance = eth_web3.eth.contract(
-        address=eth_rewards_manager_address, abi=REWARDS_CONTRACT_ABI
-    )
+def get_oracle_addresses_from_chain():
+    global oracle_addresses
     oracle_addresses = eth_rewards_manager_instance.functions.getAntiAbuseOracleAddresses().call()
+
+def set_interval(func: Callable, sec: int):
+    t = None
+    def func_wrapper():
+        set_interval(func, sec)
+        func()
+        t.cancel()
+    t = threading.Timer(sec, func_wrapper)
+    t.start()
+
+get_oracle_addresses_from_chain()
+set_interval(get_oracle_addresses_from_chain, ORACLE_CHECK_INTERVAL_SECONDS)
+
+def is_valid_oracle(address: str) -> bool:
     return address in oracle_addresses
 
 
