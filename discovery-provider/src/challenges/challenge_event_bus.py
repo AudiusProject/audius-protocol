@@ -1,5 +1,7 @@
 import json
 import logging
+from flask import current_app
+from src.challenges.challenge import ChallengeManager
 from typing import Dict
 from sqlalchemy.orm.session import Session
 from src.utils.redis_connection import get_redis
@@ -17,15 +19,23 @@ class ChallengeEventBus:
     - dispatching challenge events to a Redis queue
     - registering challenge managers to listen to the events.
     - consuming items from the Redis queue
+    - fetching the manager for a given challenge
     """
 
     def __init__(self, redis):
         self._listeners = defaultdict(lambda: [])
         self._redis = redis
+        self._managers = {}
 
-    def register_listener(self, event, listener):
+    def register_listener(self, event: str, listener: ChallengeManager):
         """Registers a listener (`ChallengeEventManager`) to listen for a particular event type."""
         self._listeners[event].append(listener)
+        if not listener.challenge_id in self._managers:
+            self._managers[listener.challenge_id] = listener
+
+    def get_manager(self, challenge_id: str) -> ChallengeManager:
+        """Gets a manager for a given challenge_id"""
+        return self._managers[challenge_id]
 
     def dispatch(
         self,
@@ -108,3 +118,7 @@ def setup_challenge_bus():
     bus.register_listener(ChallengeEvent.favorite, profile_challenge_manager)
 
     return bus
+
+
+def get_event_bus():
+    return current_app.challenge_bus

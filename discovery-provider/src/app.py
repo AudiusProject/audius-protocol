@@ -39,7 +39,6 @@ from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.challenges.challenge_event_bus import setup_challenge_bus
-from src.challenges.challenge_manager_registry import setup_challenge_registry
 
 SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
@@ -306,7 +305,6 @@ def configure_flask(test_config, app, mode="app"):
     )
 
     app.challenge_bus = setup_challenge_bus()
-    app.challenge_registry = setup_challenge_registry()
 
     # Register route blueprints
     register_exception_handlers(app)

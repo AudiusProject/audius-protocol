@@ -1,4 +1,9 @@
 from datetime import datetime
+from typing import List
+import redis
+from sqlalchemy.orm import Session
+from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.challenges.challenge import ChallengeManager, ChallengeUpdater
 from src.models.models import User
 from src.utils.db_session import get_db
 from src.models import (
@@ -9,6 +14,23 @@ from src.models import (
     Block,
 )
 from src.queries.get_challenges import get_challenges
+from src.utils.config import shared_config
+
+
+REDIS_URL = shared_config["redis"]["url"]
+DEFAULT_EVENT = ""
+
+
+class DefaultUpdater(ChallengeUpdater):
+    pass
+
+
+class NumericCustomUpdater(ChallengeUpdater):
+    def get_default_metadata(self):
+        return {"default_state": True}
+
+    def get_metadata(self, session: Session, specifiers: List[str]):
+        return [{"special_metadata": s} for s in specifiers]
 
 
 def setup_db(session):
@@ -189,15 +211,41 @@ def setup_db(session):
     session.commit()
     session.add_all(disbursements)
 
+    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    bus = ChallengeEventBus(redis_conn)
+    challenge_types = [
+        "boolean_challenge_1",
+        "boolean_challenge_2",
+        "boolean_challenge_3",
+        "boolean_challenge_4",
+        "boolean_challenge_5",
+        "boolean_challenge_6",
+        "trending_challenge_1",
+        "aggregate_challenge_1",
+        "aggregate_challenge_2",
+        "aggregate_challenge_3",
+        "trending_1",
+        "trending_2",
+        "trending_3",
+    ]
+    for ct in challenge_types:
+        bus.register_listener(
+            DEFAULT_EVENT,
+            ChallengeManager(ct, DefaultUpdater()),
+        )
+    return bus
+
 
 def test_get_challenges(app):
     with app.app_context():
         db = get_db()
         with db.scoped_session() as session:
-            setup_db(session)
+            bus = setup_db(session)
+
+            # Setup registry
 
             # Try to get the challenges, not historical
-            res = get_challenges(1, False, session)
+            res = get_challenges(1, False, session, bus)
 
             # We don't care about the order of the challenges returned
             # so make a map
@@ -271,7 +319,7 @@ def test_get_challenges(app):
             assert chal_trend_1["is_complete"]
 
             # Try to get the challenges, this time historical
-            res = get_challenges(1, True, session)
+            res = get_challenges(1, True, session, bus)
 
             # The only difference is that we should have shown
             # inactive but complete challenges
@@ -281,3 +329,81 @@ def test_get_challenges(app):
             assert historical["is_active"] == False
             assert historical["is_complete"]
             assert historical["is_disbursed"] == False
+
+
+def setup_extra_metadata_test(session):
+    blocks = [Block(blockhash="0x1", number=1, parenthash="", is_current=True)]
+    users = [
+        User(
+            blockhash="0x1",
+            blocknumber=1,
+            user_id=1,
+            is_current=True,
+            wallet="0xFakeWallet",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+        )
+    ]
+    challenges = [
+        # Test numeric challenges
+        # Numeric 1 with default extra data, no completion
+        Challenge(
+            id="numeric_1",
+            type=ChallengeType.numeric,
+            active=True,
+            amount=5,
+            step_count=5,
+        ),
+        # Numeric 2 with some extra data
+        Challenge(
+            id="numeric_2",
+            type=ChallengeType.numeric,
+            active=True,
+            amount=5,
+            step_count=5,
+        ),
+    ]
+
+    user_challenges = [
+        UserChallenge(
+            challenge_id="numeric_2",
+            user_id=1,
+            specifier="1",
+            is_complete=False,
+            current_step_count=5,
+        ),
+    ]
+
+    session.query(Challenge).delete()
+    session.commit()
+    session.add_all(blocks)
+    session.commit()
+    session.add_all(users)
+    session.commit()
+    session.add_all(challenges)
+    session.commit()
+    session.add_all(user_challenges)
+    session.commit()
+
+    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    bus = ChallengeEventBus(redis_conn)
+    bus.register_listener(
+        DEFAULT_EVENT, ChallengeManager("numeric_1", NumericCustomUpdater())
+    )
+    bus.register_listener(
+        DEFAULT_EVENT, ChallengeManager("numeric_2", NumericCustomUpdater())
+    )
+    return bus
+
+
+def test_extra_metadata(app):
+    with app.app_context():
+        db = get_db()
+        with db.scoped_session() as session:
+            bus = setup_extra_metadata_test(session)
+
+            res = get_challenges(1, False, session, bus)
+            challenge_1 = [r for r in res if r["challenge_id"] == "numeric_1"][0]
+            challenge_2 = [r for r in res if r["challenge_id"] == "numeric_2"][0]
+            assert challenge_1["metadata"] == {"default_state": True}
+            assert challenge_2["metadata"] == {"special_metadata": "1"}

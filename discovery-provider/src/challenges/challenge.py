@@ -71,6 +71,14 @@ class ChallengeUpdater(ABC):
         """
         return True
 
+    def get_metadata(self, session: Session, specifiers: List[str]) -> List[Dict]:
+        """Optional method to provide any extra metadata required for client to properly display a challenge."""
+        return [{} for s in specifiers]
+
+    def get_default_metadata(self) -> Dict:
+        """Optional method to provide default metadata for an challenge with no progress."""
+        return {}
+
 
 class ChallengeManager:
     """`ChallengeManager` is responsible for handling shared logic between updating different challenges.
@@ -224,6 +232,14 @@ class ChallengeManager:
             for user_challenge in user_challenges
         }
         return [specifier_map[s] for s in specifiers]
+
+    def get_metadata(self, session: Session, specifiers: List[str]) -> List[Dict]:
+        """Gets additional metadata to render the challenge if needed."""
+        return self._updater.get_metadata(session, specifiers)
+
+    def get_default_metadata(self):
+        """Gets default metadata for an challenge with no progress."""
+        return self._updater.get_default_metadata()
 
     # Helpers
 
