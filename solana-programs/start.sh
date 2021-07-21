@@ -47,7 +47,10 @@
     # Initialize track listen count entities
     signer_group=$(cargo run create-signer-group | grep -Po '(?<=account ).*')
     valid_signer=$(cargo run create-valid-signer "$signer_group" "$address" | grep -Po '(?<=account ).*')
+
+    # Export owner wallet information
     owner_wallet=$(cat ~/.config/solana/id.json)
+    owner_wallet_pubkey=$(solana-keygen pubkey)
 
     # Deploy wAUDIO token
     token=$(spl-token create-token | cat | head -n 1 | cut -d' ' -f3)
@@ -84,6 +87,7 @@ cat <<EOF
     "feePayerWallet": $(cat feepayer.json),
     "feePayerWalletPubkey": "$feepayer_pubkey",
     "ownerWallet": "$owner_wallet",
+    "ownerWalletPubkey": "$owner_wallet_pubkey",
     "endpoint": "$SOLANA_HOST",
     "signerPrivateKey": "$priv_key",
     "splToken": "$token",
