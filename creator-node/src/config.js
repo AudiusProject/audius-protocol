@@ -2,8 +2,7 @@ const axios = require('axios')
 const convict = require('convict')
 const fs = require('fs')
 
-const { logger } = require('./logging')
-
+// can't import logger here due to possible circular dependency, use console
 
 // Custom boolean format used to ensure that empty string '' is evaluated as false
 // https://github.com/mozilla/node-convict/issues/380
@@ -637,7 +636,7 @@ const asyncConfig = async () => {
     if (!config.get('serviceLatitude')) config.set('serviceLatitude', lat)
     if (!config.get('serviceLongitude')) config.set('serviceLongitude', long)
   } catch (e) {
-    logger.error(`config.js:asyncConfig(): Failed to retrieve IP info || ${e.message}`)
+    console.error(`config.js:asyncConfig(): Failed to retrieve IP info || ${e.message}`)
   }
 }
 
