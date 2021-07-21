@@ -138,7 +138,7 @@ track_slug_parser.add_argument("handle", required=True)
 track_slug_parser.add_argument("slug", required=True)
 
 
-@ns.route("/")
+@ns.route("")
 class TrackBySlug(Resource):
     @record_metrics
     @ns.doc(
@@ -201,7 +201,7 @@ full_track_slug_parser.add_argument("slug", required=True)
 full_track_slug_parser.add_argument("user_id")
 
 
-@full_ns.route("/")
+@full_ns.route("")
 class FullTrackBySlug(Resource):
     @record_metrics
     @full_ns.marshal_with(full_track_response)
