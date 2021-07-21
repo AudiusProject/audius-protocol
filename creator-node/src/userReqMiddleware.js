@@ -1,5 +1,9 @@
 const { userReqLimiter } = require('./reqLimiter')
-const { getSPInfo, verifyRequesterIsValidSP } = require('./components/replicaSet/URSMRegistrationComponentService')
+const {
+  getSPInfo,
+  verifyRequesterIsValidSP,
+  validateSPId
+} = require('./components/replicaSet/URSMRegistrationComponentService')
 
 /*
 if ((route == 'batch_clock' or route == 'individual clock')) {
@@ -27,14 +31,13 @@ async function ensureValidSPRequesterMiddleware (req, res, next) {
       const {
         ownerWalletFromSPFactory,
         delegateOwnerWalletFromSPFactory,
-        nodeEndpointFromSPFactory,
-        parsedSpID: spID
-      } = await getSPInfo({ audiusLibs: libs, spID: req.query.spID, reqTimestamp: timestamp, reqSignature: signature })
+        nodeEndpointFromSPFactory
+      } = await getSPInfo(libs, req.query.spID)
 
       // Verify SP request is valid
       await verifyRequesterIsValidSP({
         audiusLibs: libs,
-        spID,
+        spID: req.query.spID,
         reqTimestamp: timestamp,
         reqSignature: signature,
         ownerWalletFromSPFactory,
@@ -42,7 +45,7 @@ async function ensureValidSPRequesterMiddleware (req, res, next) {
         nodeEndpointFromSPFactory
       })
 
-      req.logger.info(`Requester SP=${spID} is valid. Skipping rate limit.`)
+      req.logger.info(`Requester SP=${req.query.spID} is valid. Skipping rate limit.`)
 
       return next()
     } catch (e) {
