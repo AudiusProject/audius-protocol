@@ -77,8 +77,7 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
  * 1. do the prep work to save the file to the local file system including
  * creating directories, changing IPFS gateway urls before calling _saveFileForMultihashToFS
  * 2. attempt to fetch the CID from a variety of sources
- * 3. throws error if failure, couldn't find the file or file contents don't match CID;
- *    returns expectedStoragePath if successful
+ * 3. throws error on content retrieval or content verification failure
  * @param {Object} serviceRegistry
  * @param {Object} logger
  * @param {String} multihash IPFS cid
@@ -287,7 +286,6 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     }
 
     _printDecisionTreeObj(decisionTree, logger)
-    return expectedStoragePath
   } catch (e) {
     decisionTree.push({ stage: `saveFileForMultihashToFS error`, vals: e.message, time: Date.now() })
     _printDecisionTreeObj(decisionTree, logger)

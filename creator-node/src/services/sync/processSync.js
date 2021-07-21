@@ -7,6 +7,74 @@ const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 
+// TODO move to configvar
+const CIDFailureThreshold = 10
+
+/**
+ * TODO consider moving to separate file
+ * TODO document
+ */
+ const CIDFailureCountManager = {
+  /**
+   * map of CID -> (int) failure count
+   */
+  CIDFailureCounts: {},
+
+  resetCIDFailureCount: (CID) => {
+    this.CIDFailureCounts[CID] = 0
+  },
+
+  incrementCIDFailureCount: (CID) => {
+    if (CID in this.CIDFailureCounts) {
+      this.CIDFailureCounts[CID] += 1
+    } else {
+      this.CIDFailureCounts[CID] = 1
+    }
+  },
+
+  getCIDFailureCount: (CID) => {
+    return this.CIDFailureCounts[CID] || 0
+  },
+
+  CIDFailureCountIsBelowThreshold: (CID, threshold) => {
+    return (this.getCIDFailureCount(CID) < threshold)
+  }
+}
+
+/**
+ * TODO document, change name
+ * maybe move to separate file?
+ */
+async function saveFileForMultihashToFSWrapper({
+  serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null, CIDsToSkip
+}) {
+  try {
+    await saveFileForMultihashToFS(serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage)
+
+    // Reset CID failure count on success
+    CIDFailureCountManager.resetCIDFailureCount(multihash)
+
+    // If saveFileForMultihashToFS throws, it is because of failed content retrieval or verification
+  } catch (e) {
+    // Increment CID failure count
+    CIDFailureCountManager.incrementCIDFailureCount(multihash)
+
+    // If CID failure count is below threshold, throw an error to reject Sync op (base case)
+    if (CIDFailureCountManager.CIDFailureCountIsBelowThreshold(multihash, CIDFailureThreshold)) {
+      throw new Error(e)
+
+      // If threshold met, sync should skip CID, record it as skipped, and continue successfully
+    } else {
+      // Mark CID for skipping
+      CIDsToSkip.add(multihash)
+
+      // TODO do we need to modify CIDFailureCount state?
+
+      // TODO log
+    }
+  }
+}
+
 /**
  * This function is only run on secondaries, to export and sync data from a user's primary.
  *
@@ -264,13 +332,24 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         const trackFiles = fetchedCNodeUser.files.filter(file => models.File.TrackTypes.includes(file.type))
         const nonTrackFiles = fetchedCNodeUser.files.filter(file => models.File.NonTrackTypes.includes(file.type))
 
+        // TODO document
+        const CIDsToSkip = new Set()
+
         // Save all track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
           const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
           logger.info(redisKey, `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${i + FileSaveMaxConcurrency} out of total ${trackFiles.length}...`)
 
+          // TODO doucment - Promise.all will reject if any internal Promise rejects
           await Promise.all(trackFilesSlice.map(
-            trackFile => saveFileForMultihashToFS(serviceRegistry, logger, trackFile.multihash, trackFile.storagePath, userReplicaSet)
+            trackFile => saveFileForMultihashToFSWrapper({
+              serviceRegistry,
+              logger,
+              multihash: trackFile.multihash,
+              expectedStoragePath: trackFile.storagePath,
+              gatewaysToTry: userReplicaSet,
+              CIDsToSkip
+            })
           ))
         }
         logger.info(redisKey, 'Saved all track files to disk.')
@@ -287,9 +366,24 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
                 // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
                 // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
                 if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-                  return saveFileForMultihashToFS(serviceRegistry, logger, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName)
+                  return saveFileForMultihashToFSWrapper({
+                    serviceRegistry,
+                    logger,
+                    multihash: nonTrackFile.multihash,
+                    expectedStoragePath: nonTrackFile.storagePath,
+                    gatewaysToTry: userReplicaSet,
+                    fileNameForImage: nonTrackFile.fileName,
+                    CIDsToSkip
+                  })
                 } else {
-                  return saveFileForMultihashToFS(serviceRegistry, logger, nonTrackFile.multihash, nonTrackFile.storagePath, userReplicaSet)
+                  return saveFileForMultihashToFSWrapper({
+                    serviceRegistry,
+                    logger,
+                    multihash: nonTrackFile.multihash,
+                    expectedStoragePath: nonTrackFile.storagePath,
+                    gatewaysToTry: userReplicaSet,
+                    CIDsToSkip
+                  })
                 }
               }
             }
@@ -303,11 +397,14 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         })), { transaction })
         logger.info(redisKey, 'Saved all ClockRecord entries to DB')
 
-        await models.File.bulkCreate(nonTrackFiles.map(file => ({
-          ...file,
-          trackBlockchainId: null,
-          cnodeUserUUID
-        })), { transaction })
+        await models.File.bulkCreate(nonTrackFiles.map(file => {
+          if (CIDsToSkip.has(file.multihash)) { file.skipped = true }
+          return {
+            ...file,
+            trackBlockchainId: null,
+            cnodeUserUUID
+          }
+        }), { transaction })
         logger.info(redisKey, 'Saved all non-track File entries to DB')
 
         await models.Track.bulkCreate(fetchedCNodeUser.tracks.map(track => ({
@@ -316,10 +413,13 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         })), { transaction })
         logger.info(redisKey, 'Saved all Track entries to DB')
 
-        await models.File.bulkCreate(trackFiles.map(trackFile => ({
-          ...trackFile,
-          cnodeUserUUID
-        })), { transaction })
+        await models.File.bulkCreate(trackFiles.map(trackFile => {
+          if (CIDsToSkip.has(trackFile.multihash)) { trackFile.skipped = true }
+          return {
+            ...trackFile,
+            cnodeUserUUID
+          }
+        }), { transaction })
         logger.info(redisKey, 'Saved all track File entries to DB')
 
         await models.AudiusUser.bulkCreate(fetchedCNodeUser.audiusUsers.map(audiusUser => ({

@@ -53,6 +53,11 @@ module.exports = (sequelize, DataTypes) => {
     clock: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    skipped: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   }, {
     indexes: [
