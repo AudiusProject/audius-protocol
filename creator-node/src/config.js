@@ -2,6 +2,9 @@ const axios = require('axios')
 const convict = require('convict')
 const fs = require('fs')
 
+const { logger } = require('./logging')
+
+
 // Custom boolean format used to ensure that empty string '' is evaluated as false
 // https://github.com/mozilla/node-convict/issues/380
 convict.addFormat({
@@ -625,13 +628,17 @@ config.validate()
 
 // Retrieves and populates IP info configs
 const asyncConfig = async () => {
-  const ipinfo = await axios.get('https://ipinfo.io')
-  const country = ipinfo.data.country
-  const [lat, long] = ipinfo.data.loc.split(',')
+  try {
+    const ipinfo = await axios.get('https://ipinfo.io')
+    const country = ipinfo.data.country
+    const [lat, long] = ipinfo.data.loc.split(',')
 
-  if (!config.get('serviceCountry')) config.set('serviceCountry', country)
-  if (!config.get('serviceLatitude')) config.set('serviceLatitude', lat)
-  if (!config.get('serviceLongitude')) config.set('serviceLongitude', long)
+    if (!config.get('serviceCountry')) config.set('serviceCountry', country)
+    if (!config.get('serviceLatitude')) config.set('serviceLatitude', lat)
+    if (!config.get('serviceLongitude')) config.set('serviceLongitude', long)
+  } catch (e) {
+    logger.error(`config.js:asyncConfig(): Failed to retrieve IP info || ${e.message}`)
+  }
 }
 
 config.asyncConfig = asyncConfig
