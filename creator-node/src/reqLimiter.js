@@ -124,7 +124,8 @@ const getRateLimiter = ({
   max,
   expiry,
   keyGenerator = req => req.ip,
-  skip
+  // Default to forcing rate limit by returning false
+  skip = () => { return false }
 }) => {
   return rateLimit({
     store: new RedisStore({
