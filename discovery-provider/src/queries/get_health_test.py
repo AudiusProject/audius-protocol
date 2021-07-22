@@ -1,4 +1,5 @@
 import os
+from time import time
 from unittest.mock import MagicMock
 from hexbytes import HexBytes
 from src.utils.redis_constants import (
@@ -383,7 +384,7 @@ def test_get_health_challenge_events_max_drift(web3_mock, redis_mock, db_mock):
     web3_mock.eth.getBlock = getBlock
 
     # Set up redis state
-    redis_mock.set(challenges_last_processed_event_redis_key, "50")
+    redis_mock.set(challenges_last_processed_event_redis_key, int(time() - 50))
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -397,8 +398,8 @@ def test_get_health_challenge_events_max_drift(web3_mock, redis_mock, db_mock):
             )
         )
 
-    args = {"challenge_events_age_max_drift": 51}
+    args = {"challenge_events_age_max_drift": 49}
     health_results, error = get_health(args)
 
     assert error == True
-    assert health_results["challenge_last_event_age_sec"] == 50
+    assert health_results["challenge_last_event_age_sec"] < int(time() - 49)
