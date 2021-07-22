@@ -88,6 +88,7 @@ def setup_challenges(app):
             session.add_all(user_challenges)
 
 
+# TODO: Add extras here
 class TestUpdater(ChallengeUpdater):
     def update_user_challenges(self, session, event, user_challenges, step_count):
         for user_challenge in user_challenges:

@@ -20,7 +20,6 @@ def index_challenges_task(self):
     redis = index_challenges_task.redis
     event_bus = index_challenges_task.challenge_event_bus
     have_lock = False
-    redis = index_challenges_task.redis
     update_lock = redis.lock("index_challenges", timeout=7200)
     try:
         have_lock = update_lock.acquire(blocking=False)

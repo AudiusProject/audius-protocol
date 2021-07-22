@@ -6,6 +6,7 @@ from typing import Dict
 from sqlalchemy.orm.session import Session
 from src.utils.redis_connection import get_redis
 from src.challenges.profile_challenge import profile_challenge_manager
+from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
 from src.challenges.challenge_event import ChallengeEvent
 
 from collections import defaultdict
@@ -116,6 +117,8 @@ def setup_challenge_bus():
     bus.register_listener(ChallengeEvent.repost, profile_challenge_manager)
     bus.register_listener(ChallengeEvent.follow, profile_challenge_manager)
     bus.register_listener(ChallengeEvent.favorite, profile_challenge_manager)
+    # listen_streak_challenge_manager listeners
+    bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
 
     return bus
 

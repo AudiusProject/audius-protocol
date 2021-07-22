@@ -5,5 +5,12 @@
 		"amount": "5",
 		"active": true,
 		"step_count": 7
+	},
+	{
+		"id": "listen_streak",
+		"type": "numeric",
+		"amount": "5",
+		"active": true,
+		"step_count": 7
 	}
 ]
