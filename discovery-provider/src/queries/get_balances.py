@@ -1,63 +1,61 @@
 import logging
 from datetime import datetime, timedelta
+from typing import List
+from redis import Redis
+from sqlalchemy.orm.session import Session
 from src.models import UserBalance
 
 logger = logging.getLogger(__name__)
 
-# How stale of current_user or verified user balance we will tolerate before refreshing.
-BALANCE_REFRESH_SEC_PRIORITY_USER = 60
-
-# How stale of a non-zero user balance we tolerate before refreshing
-BALANCE_REFRESH_SEC_NONEMPTY_USER = 15 * 60
-
 # How stale of a zero user balance we tolerate before refreshing
-BALANCE_REFRESH_SEC_EMPTY_USER = 1 * 60 * 60
+BALANCE_REFRESH = 12 * 60 * 60
 
-REDIS_PREFIX = "USER_BALANCE_REFRESH"
+LAZY_REFRESH_REDIS_PREFIX = "USER_BALANCE_REFRESH_LAZY"
+IMMEDIATE_REFRESH_REDIS_PREFIX = "USER_BALANCE_REFRESH_IMMEDIATE"
 
 
-def does_user_balance_need_refresh(user_balance, is_priority_user=True):
+def does_user_balance_need_refresh(user_balance: UserBalance) -> bool:
     """Returns whether a given user_balance needs update.
     Very heuristic-y:
         - If we've never updated before (new balance entry), update now
-        - If we're the current_user, update on the shortest interval
-        - If we're not the current user but we have some balance, update on medium interval
-        - If we're not the current user and we have no balance, update on slowest interval
+        - If the balance has not been updated in BALANCE_REFRESH seconds
     """
 
     if user_balance.updated_at == user_balance.created_at:
         return True
 
-    threshold = None
-    if is_priority_user:
-        threshold = BALANCE_REFRESH_SEC_PRIORITY_USER
-    elif (
-        int(user_balance.balance) > 0
-        or int(user_balance.associated_wallets_balance) > 0
-    ):
-        threshold = BALANCE_REFRESH_SEC_NONEMPTY_USER
-    else:
-        threshold = BALANCE_REFRESH_SEC_EMPTY_USER
-
-    delta = timedelta(seconds=threshold)
+    delta = timedelta(seconds=BALANCE_REFRESH)
     needs_refresh = user_balance.updated_at < (datetime.now() - delta)
     return needs_refresh
 
 
-def enqueue_balance_refresh(redis, user_ids):
+def enqueue_lazy_balance_refresh(redis: Redis, user_ids: List[int]):
     # unsafe to call redis.sadd w/ empty array
     if not user_ids:
         return
-    redis.sadd(REDIS_PREFIX, *user_ids)
+    redis.sadd(LAZY_REFRESH_REDIS_PREFIX, *user_ids)
 
 
-def get_balances(session, redis, user_ids, is_verified_ids_set=None):
+def enqueue_immediate_balance_refresh(redis: Redis, user_ids: List[int]):
+    # unsafe to call redis.sadd w/ empty array
+    if not user_ids:
+        return
+    redis.sadd(IMMEDIATE_REFRESH_REDIS_PREFIX, *user_ids)
+
+
+def get_balances(
+    session: Session,
+    redis: Redis,
+    user_ids: List[int]
+):
     """Gets user balances.
     Returns mapping { user_id: balance }
     Enqueues in Redis user balances requiring refresh.
     """
     # Find user balances
-    query = (session.query(UserBalance)).filter(UserBalance.user_id.in_(user_ids)).all()
+    query: List[UserBalance] = (
+        (session.query(UserBalance)).filter(UserBalance.user_id.in_(user_ids)).all()
+    )
 
     # Construct result dict from query result
     result = {
@@ -84,16 +82,14 @@ def get_balances(session, redis, user_ids, is_verified_ids_set=None):
     needs_refresh = [
         user_balance.user_id
         for user_balance in query
-        if does_user_balance_need_refresh(user_balance, False)
+        if does_user_balance_need_refresh(user_balance)
     ]
 
-    verified_ids_set = is_verified_ids_set if is_verified_ids_set else set()
     # Enqueue new balances to Redis refresh queue
     # 1. All users who need a new balance
     # 2. All users who need a balance refresh
-    # 3. All verified users (priority)
-    enqueue_balance_refresh(
-        redis, list(needs_balance_set.union(verified_ids_set)) + needs_refresh
+    enqueue_lazy_balance_refresh(
+        redis, list(needs_balance_set) + needs_refresh
     )
 
     return result
