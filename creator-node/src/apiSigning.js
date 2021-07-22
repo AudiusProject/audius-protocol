@@ -87,34 +87,6 @@ const sortKeys = x => {
 }
 
 /**
- * Fetch node info from L1 ServiceProviderFactory for spID
- * @param {Object} audiusLibs audius libs instance
- * @param {number} spID spId of the service provider currently observed
- * @returns data pertaining to the sp with the spID provided provided
- */
-const getSPInfo = async (audiusLibs, spID) => {
-  spID = validateSPId(spID)
-
-  const spRecordFromSPFactory = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
-    'content-node',
-    spID
-  )
-
-  let {
-    owner: ownerWalletFromSPFactory,
-    delegateOwnerWallet: delegateOwnerWalletFromSPFactory,
-    endpoint: nodeEndpointFromSPFactory
-  } = spRecordFromSPFactory
-  delegateOwnerWalletFromSPFactory = delegateOwnerWalletFromSPFactory.toLowerCase()
-
-  return {
-    ownerWalletFromSPFactory,
-    delegateOwnerWalletFromSPFactory,
-    nodeEndpointFromSPFactory
-  }
-}
-
-/**
  * Wrapper fn to perform basic validation that the requester is a valid SP and that the request came
  * from the SP node itself. Uses the {spID, timestamp} as the input data to recover.
  * @param {Object} data
@@ -130,13 +102,22 @@ const verifyRequesterIsValidSP = async ({
   audiusLibs,
   spID,
   reqTimestamp,
-  reqSignature,
-  ownerWalletFromSPFactory,
-  delegateOwnerWalletFromSPFactory,
-  nodeEndpointFromSPFactory
+  reqSignature
 }) => {
   validateSPSignatureInfo(reqTimestamp, reqSignature)
   spID = validateSPId(spID)
+
+  const spRecordFromSPFactory = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
+    'content-node',
+    spID
+  )
+
+  let {
+    owner: ownerWalletFromSPFactory,
+    delegateOwnerWallet: delegateOwnerWalletFromSPFactory,
+    endpoint: nodeEndpointFromSPFactory
+  } = spRecordFromSPFactory
+  delegateOwnerWalletFromSPFactory = delegateOwnerWalletFromSPFactory.toLowerCase()
 
   if (!ownerWalletFromSPFactory || !delegateOwnerWalletFromSPFactory) {
     throw new Error(`Missing fields: ownerWallet=${ownerWalletFromSPFactory}, delegateOwnerWallet=${delegateOwnerWalletFromSPFactory}`)
@@ -202,7 +183,5 @@ module.exports = {
   sortKeys,
   MAX_SIGNATURE_AGE_MS,
   signatureHasExpired,
-  verifyRequesterIsValidSP,
-  getSPInfo,
-  validateSPId
+  verifyRequesterIsValidSP
 }
