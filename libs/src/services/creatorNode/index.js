@@ -610,13 +610,7 @@ class CreatorNode {
     let type = primary === endpoint ? 'primary' : 'secondary'
 
     try {
-      const clockValue = await CreatorNode.getClockValue(endpoint, user.wallet, timeout,
-        {
-          spID: 9,
-          timestamp: '2021-07-21T04:15:51.118Z',
-          signature: '0x062596446bf89373445ebbedcad6262f9c4789ac53e524ab94fec923fefc5a2a0d182114b35b997f839dd344e6aef689f688bdda9e602442461333ad2f60c40c1c'
-        }
-      )
+      const clockValue = await CreatorNode.getClockValue(endpoint, user.wallet, timeout)
       return {
         type,
         endpoint,
