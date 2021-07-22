@@ -1,8 +1,8 @@
+import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { PopupMenuItem } from 'components/general/PopupMenu'
 import * as embedModalActions from 'containers/embed-modal/store/actions'
 import { PlayableType, ID } from 'models/common/Identifiers'
 import { ShareSource, FavoriteSource, RepostSource } from 'services/analytics'

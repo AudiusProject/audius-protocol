@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useRef } from 'react'
 
 import cn from 'classnames'
 import PropTypes from 'prop-types'
@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 import { ReactComponent as AudiusLogoHorizontal } from 'assets/img/audiusLogoHorizontal.svg'
 import { ReactComponent as IconNotification } from 'assets/img/iconNotification.svg'
 import NavButton from 'containers/nav/desktop/NavButton'
-import NavIconPopover from 'containers/nav/desktop/NavIconPopover'
+import NavPopupMenu from 'containers/nav/desktop/NavPopupMenu'
 import NotificationPanel from 'containers/notification/NotificationPanel'
 import { useRemoteVar } from 'containers/remote-config/hooks'
 import Theme from 'models/Theme'
@@ -25,6 +25,7 @@ const NavHeader = ({
   goToRoute,
   isElectron
 }) => {
+  const notificationPanelAnchorRef = useRef()
   const logoVariant = useRemoteVar(StringKeys.AUDIUS_LOGO_VARIANT)
   const logoVariantClickTarget = useRemoteVar(
     StringKeys.AUDIUS_LOGO_VARIANT_CLICK_TARGET
@@ -57,8 +58,9 @@ const NavHeader = ({
       </div>
       {account ? (
         <div className={styles.headerIconContainer}>
-          <NavIconPopover />
+          <NavPopupMenu />
           <div
+            ref={notificationPanelAnchorRef}
             onClick={toggleNotificationPanel}
             className={cn(styles.headerIconWrapper, styles.iconNotification, {
               [styles.active]: notificationCount > 0,
@@ -73,6 +75,7 @@ const NavHeader = ({
             </div>
           ) : null}
           <NotificationPanel
+            anchorRef={notificationPanelAnchorRef}
             isElectron={isElectron}
             toggleNotificationPanel={toggleNotificationPanel}
           />

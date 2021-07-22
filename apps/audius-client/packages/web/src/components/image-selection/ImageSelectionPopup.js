@@ -1,11 +1,11 @@
 import React, { useState, useCallback, useRef } from 'react'
 
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, Popup } from '@audius/stems'
+import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
 import TabSlider from 'components/data-entry/TabSlider'
-import Popup from 'components/general/Popup'
 import Dropzone from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
 import RandomImage from 'services/RandomImage'
@@ -117,6 +117,7 @@ const RandomPage = ({ onSelect }) => {
  * A popup that lets a user upload artwork or select a random image.
  */
 const ImageSelectionPopup = ({
+  anchorRef,
   className,
   isVisible,
   error,
@@ -133,10 +134,12 @@ const ImageSelectionPopup = ({
 
   return (
     <Popup
-      className={className}
+      anchorRef={anchorRef}
+      className={cn(styles.popup, className)}
       isVisible={isVisible}
       onClose={handleClose}
       onAfterClose={onAfterClose}
+      showHeader={true}
       title={messages.addImage}
     >
       <TabSlider
