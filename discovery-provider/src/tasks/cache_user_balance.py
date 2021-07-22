@@ -318,7 +318,6 @@ def update_user_balances_task(self):
     redis = update_user_balances_task.redis
     eth_web3 = update_user_balances_task.eth_web3
     solana_client = update_user_balances_task.solana_client
-    shared_config = update_user_balances_task.shared_config
 
     have_lock = False
     update_lock = redis.lock("update_user_balances_lock", timeout=7200)
@@ -331,7 +330,7 @@ def update_user_balances_task(self):
 
             delegate_manager_inst = get_delegate_manager_contract(eth_web3)
             staking_inst = get_staking_contract(eth_web3)
-            token_inst = get_token_contract(eth_web3, shared_config)
+            token_inst = get_token_contract(eth_web3, update_user_balances_task.shared_config)
             waudio_token = get_audio_token(solana_client)
             refresh_user_ids(
                 redis,
