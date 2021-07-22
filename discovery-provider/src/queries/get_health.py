@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-from typing import Dict, Optional, Tuple, TypedDict
+from typing import Dict, Optional, Tuple, TypedDict, cast
 
 from src.models import Block, IPLDBlacklistBlock
 from src.monitors import monitors, monitor_names
@@ -146,7 +146,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     verbose = args.get("verbose")
     enforce_block_diff = args.get("enforce_block_diff")
-    qs_healthy_block_diff = args.get("healthy_block_diff")
+    qs_healthy_block_diff = cast(Optional[int], args.get("healthy_block_diff"))
     challenge_events_age_max_drift = args.get("challenge_events_age_max_drift")
 
     # If healthy block diff is given in url and positive, override config value
@@ -263,9 +263,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         **sys_info,
     }
 
-    block_difference = abs(
-        health_results["web"]["blocknumber"] - health_results["db"]["number"]
-    )
+    block_difference = abs(latest_block_num - latest_indexed_block_num)
     health_results["block_difference"] = block_difference
     health_results["maximum_healthy_block_difference"] = default_healthy_block_diff
     health_results.update(disc_prov_version)
