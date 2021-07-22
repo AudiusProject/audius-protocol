@@ -1,3 +1,4 @@
+const { Utils: LibsUtils } = require('@audius/libs')
 const Web3 = require('web3')
 const web3 = new Web3()
 
@@ -85,11 +86,123 @@ const sortKeys = x => {
   return Object.keys(x).sort().reduce((o, k) => ({ ...o, [k]: sortKeys(x[k]) }), {})
 }
 
+/**
+ * Fetch node info from L1 ServiceProviderFactory for spID
+ * @param {Object} audiusLibs audius libs instance
+ * @param {number} spID spId of the service provider currently observed
+ * @returns data pertaining to the sp with the spID provided provided
+ */
+const getSPInfo = async (audiusLibs, spID) => {
+  spID = validateSPId(spID)
+
+  const spRecordFromSPFactory = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
+    'content-node',
+    spID
+  )
+
+  let {
+    owner: ownerWalletFromSPFactory,
+    delegateOwnerWallet: delegateOwnerWalletFromSPFactory,
+    endpoint: nodeEndpointFromSPFactory
+  } = spRecordFromSPFactory
+  delegateOwnerWalletFromSPFactory = delegateOwnerWalletFromSPFactory.toLowerCase()
+
+  return {
+    ownerWalletFromSPFactory,
+    delegateOwnerWalletFromSPFactory,
+    nodeEndpointFromSPFactory
+  }
+}
+
+/**
+ * Wrapper fn to perform basic validation that the requester is a valid SP and that the request came
+ * from the SP node itself. Uses the {spID, timestamp} as the input data to recover.
+ * @param {Object} data
+ * @param {Object} data.audiusLibs
+ * @param {number} data.spID the spID of the node to verify
+ * @param {string} data.reqTimestamp the timestamp from the request body
+ * @param {string} data.reqSignature the signature from the request body
+ * @param {string} data.ownerWalletFromSPFactory the ownerWallet of the node to verify
+ * @param {string} data.delegateOwnerWalletFromSPFactory the delegateWallet of the node to verify
+ * @param {string} data.nodeEndpointFromSPFactory the endpoint of the node to verify
+ */
+const verifyRequesterIsValidSP = async ({
+  audiusLibs,
+  spID,
+  reqTimestamp,
+  reqSignature,
+  ownerWalletFromSPFactory,
+  delegateOwnerWalletFromSPFactory,
+  nodeEndpointFromSPFactory
+}) => {
+  validateSPSignatureInfo(reqTimestamp, reqSignature)
+  spID = validateSPId(spID)
+
+  if (!ownerWalletFromSPFactory || !delegateOwnerWalletFromSPFactory) {
+    throw new Error(`Missing fields: ownerWallet=${ownerWalletFromSPFactory}, delegateOwnerWallet=${delegateOwnerWalletFromSPFactory}`)
+  }
+
+  /**
+   * Reject if node is not registered as valid SP on L1 ServiceProviderFactory
+   */
+  if (
+    LibsUtils.isZeroAddress(ownerWalletFromSPFactory) ||
+    LibsUtils.isZeroAddress(delegateOwnerWalletFromSPFactory) ||
+    !nodeEndpointFromSPFactory
+  ) {
+    throw new Error(`SpID ${spID} is not registered as valid SP on L1 ServiceProviderFactory or missing field endpoint=${nodeEndpointFromSPFactory}`)
+  }
+
+  /**
+   * Confirm request was signed by delegate owner wallet registered on L1 for spID, given request signature artifacts
+   */
+  let requesterWalletRecoveryObj = { spID, timestamp: reqTimestamp }
+  let recoveredDelegateOwnerWallet = (recoverWallet(requesterWalletRecoveryObj, reqSignature)).toLowerCase()
+  if (delegateOwnerWalletFromSPFactory !== recoveredDelegateOwnerWallet) {
+    throw new Error(
+      'Request for signature must be signed by delegate owner wallet registered on L1 for spID'
+    )
+  }
+}
+
+/**
+ * Validates the request query params used for verifying sp.
+ * @param {string} reqTimestamp the timestamp off of the req query params
+ * @param {string} reqSignature the signature off of the req query params
+ */
+function validateSPSignatureInfo (reqTimestamp, reqSignature) {
+  if (!reqTimestamp || !reqSignature) {
+    throw new Error('Must provide all required query parameters: timestamp, signature')
+  }
+}
+
+/**
+ * Validates the request query param spID
+ * @param {string} spID
+ * @returns a parsed spID
+ */
+function validateSPId (spID) {
+  if (!spID) {
+    throw new Error('Must provide all required query parameters: spID')
+  }
+
+  spID = parseInt(spID)
+
+  if (isNaN(spID) || spID < 0) {
+    throw new Error(`Provided spID is not a valid id. spID=${spID}`)
+  }
+
+  return spID
+}
+
 module.exports = {
   generateTimestampAndSignature,
   generateListenTimestampAndSignature,
   recoverWallet,
   sortKeys,
   MAX_SIGNATURE_AGE_MS,
-  signatureHasExpired
+  signatureHasExpired,
+  verifyRequesterIsValidSP,
+  getSPInfo,
+  validateSPId
 }

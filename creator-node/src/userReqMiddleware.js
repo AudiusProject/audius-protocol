@@ -1,9 +1,5 @@
 const { userReqLimiter } = require('./reqLimiter')
-const {
-  getSPInfo,
-  verifyRequesterIsValidSP,
-  validateSPId
-} = require('./components/replicaSet/URSMRegistrationComponentService')
+const { getSPInfo, verifyRequesterIsValidSP } = require('./apiSigning.js')
 
 /*
 if ((route == 'batch_clock' or route == 'individual clock')) {

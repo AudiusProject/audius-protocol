@@ -2,14 +2,19 @@ const axios = require('axios')
 const { promisify } = require('util')
 const crypto = require('crypto')
 const randomBytes = promisify(crypto.randomBytes)
-const { Utils: LibsUtils } = require('@audius/libs')
 
 const {
   parseCNodeResponse,
   ErrorServerError,
   ErrorBadRequest
 } = require('../../apiHelpers')
-const { recoverWallet, signatureHasExpired } = require('../../apiSigning')
+const {
+  recoverWallet,
+  signatureHasExpired,
+  verifyRequesterIsValidSP,
+  getSPInfo,
+  validateSPId
+} = require('../../apiSigning')
 
 /**
  * This function is part of the L2 UserReplicaSetManager contract (URSM) chain of trust node registration flow.
@@ -149,108 +154,6 @@ const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }
   }
 }
 
-/**
- * Fetch node info from L1 ServiceProviderFactory for spID
- * @param {Object} audiusLibs audius libs instance
- * @param {number} spID spId of the service provider currently observed
- * @returns data pertaining to the sp with the spID provided provided
- */
-const getSPInfo = async (audiusLibs, spID) => {
-  spID = validateSPId(spID)
-
-  const spRecordFromSPFactory = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
-    'content-node',
-    spID
-  )
-
-  let {
-    owner: ownerWalletFromSPFactory,
-    delegateOwnerWallet: delegateOwnerWalletFromSPFactory,
-    endpoint: nodeEndpointFromSPFactory
-  } = spRecordFromSPFactory
-  delegateOwnerWalletFromSPFactory = delegateOwnerWalletFromSPFactory.toLowerCase()
-
-  return {
-    ownerWalletFromSPFactory,
-    delegateOwnerWalletFromSPFactory,
-    nodeEndpointFromSPFactory
-  }
-}
-
-// Wrapper fn to perform basic validation that the requester is a valid SP and that the request
-// came from the SP itself
-const verifyRequesterIsValidSP = async ({
-  audiusLibs,
-  spID,
-  reqTimestamp,
-  reqSignature,
-  ownerWalletFromSPFactory,
-  delegateOwnerWalletFromSPFactory,
-  nodeEndpointFromSPFactory
-}) => {
-  validateSPSignatureInfo(reqTimestamp, reqSignature)
-  spID = validateSPId(spID)
-
-  if (!ownerWalletFromSPFactory || !delegateOwnerWalletFromSPFactory) {
-    throw new ErrorBadRequest(`Missing fields: ownerWallet=${ownerWalletFromSPFactory}, delegateOwnerWallet=${delegateOwnerWalletFromSPFactory}`)
-  }
-
-  /**
-   * Reject if node is not registered as valid SP on L1 ServiceProviderFactory
-   */
-  if (
-    LibsUtils.isZeroAddress(ownerWalletFromSPFactory) ||
-    LibsUtils.isZeroAddress(delegateOwnerWalletFromSPFactory) ||
-    !nodeEndpointFromSPFactory
-  ) {
-    throw new ErrorBadRequest(`SpID ${spID} is not registered as valid SP on L1 ServiceProviderFactory or missing field endpoint=${nodeEndpointFromSPFactory}`)
-  }
-
-  /**
-   * Confirm request was signed by delegate owner wallet registered on L1 for spID, given request signature artifacts
-   */
-  let requesterWalletRecoveryObj = { spID, timestamp: reqTimestamp }
-  let recoveredDelegateOwnerWallet = (recoverWallet(requesterWalletRecoveryObj, reqSignature)).toLowerCase()
-  if (delegateOwnerWalletFromSPFactory !== recoveredDelegateOwnerWallet) {
-    throw new ErrorBadRequest(
-      'Request for signature must be signed by delegate owner wallet registered on L1 for spID'
-    )
-  }
-}
-
-/**
- * Validates the request query params used for verifying sp.
- * @param {string} reqTimestamp the timestamp off of the req query params
- * @param {string} reqSignature the signature off of the req query params
- */
-function validateSPSignatureInfo (reqTimestamp, reqSignature) {
-  if (!reqTimestamp || !reqSignature) {
-    throw new ErrorBadRequest('Must provide all required query parameters: timestamp, signature')
-  }
-}
-
-/**
- * Validates the request query param spID
- * @param {string} spID
- * @returns a parsed spID
- */
-function validateSPId (spID) {
-  if (!spID) {
-    throw new ErrorBadRequest('Must provide all required query parameters: spID')
-  }
-
-  spID = parseInt(spID)
-
-  if (isNaN(spID) || spID < 0) {
-    throw new ErrorBadRequest(`Provided spID is not a valid id. spID=${spID}`)
-  }
-
-  return spID
-}
-
 module.exports = {
-  respondToURSMRequestForSignature,
-  verifyRequesterIsValidSP,
-  getSPInfo,
-  validateSPId
+  respondToURSMRequestForSignature
 }
