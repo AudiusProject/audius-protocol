@@ -1,18 +1,6 @@
 const { userReqLimiter } = require('./reqLimiter')
 const { getSPInfo, verifyRequesterIsValidSP } = require('./apiSigning.js')
 
-/*
-if ((route == 'batch_clock' or route == 'individual clock')) {
-  try {
-    isValidSP()
-    next()
-  } catch (E) {
-    // probably not a valid SP. this is ok
-  }
-}
-rateLimit()
-*/
-
 // For the clock fetching routes, if the requester if from a valid SP, do not enforce
 // a rate limit as we do not want to rate limit SPs checking other SPs for clock values.
 // The clock fetching routes are used in issuing potential reconfig ops.
@@ -23,14 +11,12 @@ async function ensureValidSPRequesterMiddleware (req, res, next) {
 
   if (path.includes('/users/clock_status') || path.includes('/users/batch_clock_status')) {
     try {
-      // Get valid SP info using libs
       const {
         ownerWalletFromSPFactory,
         delegateOwnerWalletFromSPFactory,
         nodeEndpointFromSPFactory
       } = await getSPInfo(libs, req.query.spID)
 
-      // Verify SP request is valid
       await verifyRequesterIsValidSP({
         audiusLibs: libs,
         spID: req.query.spID,
