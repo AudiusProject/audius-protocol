@@ -9,6 +9,7 @@ const DBManager = require('../../dbManager')
 
 // TODO move to configvar
 const CIDFailureThreshold = 10
+const MaxCIDSkipPercent = 0.25
 
 /**
  * TODO consider moving to separate file
@@ -46,8 +47,9 @@ const CIDFailureThreshold = 10
  * maybe move to separate file?
  */
 async function saveFileForMultihashToFSWrapper({
-  serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null, CIDsToSkip
+  serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null
 }) {
+  let skipped = false
   try {
     await saveFileForMultihashToFS(serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage)
 
@@ -65,14 +67,15 @@ async function saveFileForMultihashToFSWrapper({
 
       // If threshold met, sync should skip CID, record it as skipped, and continue successfully
     } else {
-      // Mark CID for skipping
-      CIDsToSkip.add(multihash)
-
       // TODO do we need to modify CIDFailureCount state?
 
       // TODO log
+
+      skipped = true
     }
   }
+
+  return skipped
 }
 
 /**
@@ -342,14 +345,19 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
 
           // TODO doucment - Promise.all will reject if any internal Promise rejects
           await Promise.all(trackFilesSlice.map(
-            trackFile => saveFileForMultihashToFSWrapper({
-              serviceRegistry,
-              logger,
-              multihash: trackFile.multihash,
-              expectedStoragePath: trackFile.storagePath,
-              gatewaysToTry: userReplicaSet,
-              CIDsToSkip
-            })
+            async (trackFile) => {
+              const skipped = await saveFileForMultihashToFSWrapper({
+                serviceRegistry,
+                logger,
+                multihash: trackFile.multihash,
+                expectedStoragePath: trackFile.storagePath,
+                gatewaysToTry: userReplicaSet
+              })
+
+              if (skipped) {
+                CIDsToSkip.add(trackFile.multihash)
+              }
+            }
           ))
         }
         logger.info(redisKey, 'Saved all track files to disk.')
@@ -359,37 +367,50 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
           const nonTrackFilesSlice = nonTrackFiles.slice(i, i + FileSaveMaxConcurrency)
           logger.info(redisKey, `NonTrackFiles saveFileForMultihashToFS - processing files ${i} to ${i + FileSaveMaxConcurrency} out of total ${nonTrackFiles.length}...`)
           await Promise.all(nonTrackFilesSlice.map(
-            nonTrackFile => {
+            async (nonTrackFile) => {
               // Skip over directories since there's no actual content to sync
               // The files inside the directory are synced separately
               if (nonTrackFile.type !== 'dir') {
+                let skipped
+                const multihash = nonTrackFile.multihash
+
                 // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
                 // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
                 if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-                  return saveFileForMultihashToFSWrapper({
+                  skipped = await saveFileForMultihashToFSWrapper({
                     serviceRegistry,
                     logger,
-                    multihash: nonTrackFile.multihash,
+                    multihash,
                     expectedStoragePath: nonTrackFile.storagePath,
                     gatewaysToTry: userReplicaSet,
                     fileNameForImage: nonTrackFile.fileName,
                     CIDsToSkip
                   })
                 } else {
-                  return saveFileForMultihashToFSWrapper({
+                  skipped = await saveFileForMultihashToFSWrapper({
                     serviceRegistry,
                     logger,
-                    multihash: nonTrackFile.multihash,
+                    multihash,
                     expectedStoragePath: nonTrackFile.storagePath,
                     gatewaysToTry: userReplicaSet,
                     CIDsToSkip
                   })
+                }
+
+                if (skipped) {
+                  CIDsToSkip.add(nonTrackFile.multihash)
                 }
               }
             }
           ))
         }
         logger.info(redisKey, 'Saved all non-track files to disk.')
+
+        // Reject sync if skipped CIDs percent exceeds max allowed
+        const numCIDs = trackFiles.length + nonTrackFiles.length
+        if (numCIDs > 0 && CIDsToSkip.size / numCIDs >= MaxCIDSkipPercent) {
+          throw new Error('TODO')
+        }
 
         await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
           ...clockRecord,

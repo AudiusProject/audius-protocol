@@ -163,7 +163,7 @@ class SnapbackSM {
 
         await utils.timeout(this.snapbackJobInterval)
 
-        await this.stateMachineQueue.add({ starttime: Date.now() })
+        await this.stateMachineQueue.add({ startTime: Date.now() })
 
         done()
       }
