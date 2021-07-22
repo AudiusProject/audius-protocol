@@ -85,5 +85,6 @@ challenge_response = ns.model(
         "current_step_count": fields.Integer(),
         "max_steps": fields.Integer(),
         "challenge_type": fields.String(required=True),
+        "metadata": fields.Raw(required=True)
     },
 )
