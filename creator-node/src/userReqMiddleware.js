@@ -45,8 +45,6 @@ async function ensureValidSPRequesterMiddleware (req, res, next) {
         nodeEndpointFromSPFactory
       })
 
-      req.logger.info(`Requester SP=${req.query.spID} is valid. Skipping rate limit.`)
-
       return next()
     } catch (e) {
       // A non-SP requester query will hit this catch block. This is okay; just continue
