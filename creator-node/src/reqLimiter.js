@@ -3,6 +3,7 @@ const rateLimit = require('express-rate-limit')
 const config = require('./config.js')
 const RedisStore = require('rate-limit-redis')
 const client = require('./redis.js')
+const { verifyRequesterIsValidSP } = require('./apiSigning.js')
 
 let endpointRateLimits = {}
 try {
@@ -42,7 +43,31 @@ const userReqLimiter = rateLimit({
     expiry: 60 * 60 // one hour in seconds
   }),
   max: config.get('rateLimitingUserReqLimit'), // max requests per hour
-  keyGenerator: ipKeyGenerator
+  keyGenerator: ipKeyGenerator,
+  skip: async (req) => {
+    const { libs } = req.app.get('serviceRegistry')
+    let { timestamp, signature } = req.query
+    const path = req.originalUrl
+
+    if (path.includes('/users/clock_status') || path.includes('/users/batch_clock_status')) {
+      try {
+        await verifyRequesterIsValidSP({
+          audiusLibs: libs,
+          spID: req.query.spID,
+          reqTimestamp: timestamp,
+          reqSignature: signature
+        })
+
+        return true
+      } catch (e) {
+        // A non-SP requester query will hit this catch block. This is okay; just continue
+        // with the rate limit and other middlewares as expected.
+        req.logger.debug(`Requester is not a valid SP. Continuing with rate limit: ${e.toString()}`)
+      }
+    }
+
+    return false
+  }
 })
 
 const trackReqLimiter = rateLimit({

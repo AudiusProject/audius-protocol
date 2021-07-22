@@ -6,9 +6,9 @@ const DiskManager = require('./diskManager')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { logger, loggingMiddleware } = require('./logging')
 const { userNodeMiddleware } = require('./userNodeMiddleware')
-const { ensureValidSPRequesterMiddleware } = require('./userReqMiddleware')
 const { readOnlyMiddleware } = require('./middlewares/readOnly/readOnlyMiddleware')
 const {
+  userReqLimiter,
   trackReqLimiter,
   audiusUserReqLimiter,
   metadataReqLimiter,
@@ -32,7 +32,7 @@ app.use(readOnlyMiddleware)
 app.use(cors())
 
 // Rate limit routes
-app.use('/users/', ensureValidSPRequesterMiddleware)
+app.use('/users/', userReqLimiter)
 app.use('/track*', trackReqLimiter)
 app.use('/audius_user/', audiusUserReqLimiter)
 app.use('/metadata', metadataReqLimiter)
