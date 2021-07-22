@@ -1,7 +1,7 @@
 """user bank updates
 
 Revision ID: 273b8bcef694
-Revises: 534987cb0355
+Revises: 2e02a681aeaa
 Create Date: 2021-06-22 17:22:00.102134
 
 """
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 # revision identifiers, used by Alembic.
 revision = "273b8bcef694"
-down_revision = "534987cb0355"
+down_revision = "2e02a681aeaa"
 branch_labels = None
 depends_on = None
 
