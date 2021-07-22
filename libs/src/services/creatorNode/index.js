@@ -604,6 +604,7 @@ class CreatorNode {
    * @param {Object} param
    * @param {Object} param.user user metadata object from userStateManager
    * @param {string} param.endpoint the Content Node endpoint to check the clock value for
+   * @param {number?} [param.timeout=1000] the max time allotted for a clock request; defaulted to 1000ms
    */
   async _clockValueRequest ({ user, endpoint, timeout = 1000 }) {
     const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
