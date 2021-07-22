@@ -40,21 +40,25 @@ const {
 const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }, logger, spID, reqTimestamp, reqSignature) => {
   spID = validateSPId(spID)
 
-  const {
-    ownerWalletFromSPFactory,
-    delegateOwnerWalletFromSPFactory,
-    nodeEndpointFromSPFactory
-  } = await getSPInfo(audiusLibs, spID)
+  let ownerWalletFromSPFactory, delegateOwnerWalletFromSPFactory, nodeEndpointFromSPFactory
+  try {
+    const spInfo = await getSPInfo(audiusLibs, spID)
+    ownerWalletFromSPFactory = spInfo.ownerWalletFromSPFactory
+    delegateOwnerWalletFromSPFactory = spInfo.delegateOwnerWalletFromSPFactory
+    nodeEndpointFromSPFactory = spInfo.nodeEndpointFromSPFactory
 
-  await verifyRequesterIsValidSP({
-    audiusLibs,
-    spID,
-    reqTimestamp,
-    reqSignature,
-    ownerWalletFromSPFactory,
-    delegateOwnerWalletFromSPFactory,
-    nodeEndpointFromSPFactory
-  })
+    await verifyRequesterIsValidSP({
+      audiusLibs,
+      spID,
+      reqTimestamp,
+      reqSignature,
+      ownerWalletFromSPFactory,
+      delegateOwnerWalletFromSPFactory,
+      nodeEndpointFromSPFactory
+    })
+  } catch (e) {
+    throw new ErrorBadRequest(e.message)
+  }
 
   /**
    * Short-circuit if L2 record already matches L1 record (i.e. delegateOwnerWallets match)
