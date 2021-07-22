@@ -2,10 +2,10 @@ import logging
 import time
 from typing import Tuple, TypedDict, List, Optional, Dict, Set
 from redis import Redis
-from sqlalchemy import and_
 from spl.token.client import Token
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
+from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
 
 from src.utils.session_manager import SessionManager
@@ -136,7 +136,7 @@ def refresh_user_ids(
             session.query(User.user_id, UserBankAccount.bank_account)
             .join(UserBankAccount, UserBankAccount.ethereum_address == User.wallet)
             .filter(
-                User.user_id.in_(needs_refresh_map.keys()),
+                User.user_id.in_(user_ids),
                 User.is_current == True,
             )
             .all()
@@ -167,7 +167,7 @@ def refresh_user_ids(
                     ]
 
         logger.info(
-            f"cache_user_balance.py | fetching for {len(user_query)} users: {user_ids}"
+            f"cache_user_balance.py | fetching for {len(user_associated_query)} users: {user_ids}"
         )
 
         # Fetch balances
@@ -223,7 +223,7 @@ def refresh_user_ids(
 
         # Remove the fetched balances from Redis set
         logger.info(
-            f"cache_user_balance.py | Got balances for {len(to_remove)} users, removing from Redis."
+            f"cache_user_balance.py | Got balances for {len(user_associated_query)} users, removing from Redis."
         )
         if lazy_refresh_user_ids:
             redis.srem(LAZY_REFRESH_REDIS_PREFIX, *lazy_refresh_user_ids)
@@ -231,9 +231,9 @@ def refresh_user_ids(
             redis.srem(IMMEDIATE_REFRESH_REDIS_PREFIX, *immediate_refresh_user_ids)
 
 
-def get_token_address(eth_web3, shared_config):
+def get_token_address(eth_web3, config):
     eth_registry_address = eth_web3.toChecksumAddress(
-        shared_config["eth_contracts"]["registry"]
+        config["eth_contracts"]["registry"]
     )
 
     eth_registry_instance = eth_web3.eth.contract(
@@ -247,8 +247,8 @@ def get_token_address(eth_web3, shared_config):
     return token_address
 
 
-def get_token_contract(eth_web3, shared_config):
-    token_address = get_token_address(eth_web3, shared_config)
+def get_token_contract(eth_web3, config):
+    token_address = get_token_address(eth_web3, config)
 
     audius_token_instance = eth_web3.eth.contract(
         address=token_address, abi=eth_abi_values["AudiusToken"]["abi"]
@@ -318,6 +318,7 @@ def update_user_balances_task(self):
     redis = update_user_balances_task.redis
     eth_web3 = update_user_balances_task.eth_web3
     solana_client = update_user_balances_task.solana_client
+    shared_config = update_user_balances_task.shared_config
 
     have_lock = False
     update_lock = redis.lock("update_user_balances_lock", timeout=7200)
@@ -328,10 +329,9 @@ def update_user_balances_task(self):
         if have_lock:
             start_time = time.time()
 
-            token_inst = get_token_contract(eth_web3)
             delegate_manager_inst = get_delegate_manager_contract(eth_web3)
             staking_inst = get_staking_contract(eth_web3)
-            token_inst = get_token_contract(eth_web3)
+            token_inst = get_token_contract(eth_web3, shared_config)
             waudio_token = get_audio_token(solana_client)
             refresh_user_ids(
                 redis,

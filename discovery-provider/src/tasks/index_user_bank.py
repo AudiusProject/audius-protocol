@@ -12,7 +12,7 @@ from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.solana import get_address_pair, SPL_TOKEN_ID_PK
 from src.models import User, UserBankTransaction, UserBankAccount
-from src.queries.get_balances import enqueue_balance_refresh
+from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.tasks.index_solana_plays import get_sol_tx_info
 
 logger = logging.getLogger(__name__)
@@ -92,7 +92,7 @@ def refresh_user_balance(session: Session, redis: Redis, user_bank_acct: str):
         logger.info(
             f"index_user_bank.py | Refresh user_id = {user_id}, {user_bank_acct}"
         )
-        enqueue_balance_refresh(redis, [user_id[0]])
+        enqueue_immediate_balance_refresh(redis, [user_id[0]])
 
 
 def process_user_bank_tx_details(
