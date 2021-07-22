@@ -1,10 +1,10 @@
 import { useContext } from 'react'
 
+import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { PopupMenuItem } from 'components/general/PopupMenu'
 import { ToastContext } from 'components/toast/ToastContext'
 import { requestOpen as openAddToPlaylist } from 'containers/add-to-playlist/store/actions'
 import { getCollectionId } from 'containers/collection-page/store/selectors'

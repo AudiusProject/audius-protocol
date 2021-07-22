@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { MutableRefObject } from 'react'
 
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -14,13 +14,16 @@ import {
 import { NotificationType } from 'containers/notification/store/types'
 import { ID } from 'models/common/Identifiers'
 import { AppState } from 'store/types'
+import { Nullable } from 'utils/typeUtils'
 
 import Announcement from './Announcement'
 import NotificationBlock, { USER_LENGTH_LIMIT } from './NotificationBlock'
+
 type OwnProps = {
   notification: any
-  panelRef: any
-  scrollRef: any
+  overflowMenuRef: MutableRefObject<Nullable<HTMLElement>>
+  panelRef: MutableRefObject<Nullable<HTMLDivElement>>
+  scrollRef: MutableRefObject<Nullable<HTMLDivElement>>
   toggleNotificationPanel: () => void
   goToRoute: (route: string) => void
   markAsRead: (notificationId: string) => void
@@ -71,13 +74,14 @@ const NotificationItem = (props: NotificationItemProps) => {
       errorMessage={`Could not render notification ${notification.id}`}
     >
       <NotificationBlock
-        timeLabel={timeLabel}
-        setNotificationUsers={props.setNotificationUsers}
-        toggleNotificationPanel={props.toggleNotificationPanel}
         goToRoute={props.goToRoute}
         markAsRead={props.markAsRead}
-        notification={notification}
         menuProps={menuProps}
+        notification={notification}
+        overflowMenuRef={props.overflowMenuRef}
+        setNotificationUsers={props.setNotificationUsers}
+        timeLabel={timeLabel}
+        toggleNotificationPanel={props.toggleNotificationPanel}
       />
     </ErrorWrapper>
   )

@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
 
+import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { PopupMenuItem } from 'components/general/PopupMenu'
 import { NotificationType } from 'containers/notification/store/types'
 import { getBrowserNotificationSettings } from 'containers/settings-page/store/selectors'
 import { AppState } from 'store/types'

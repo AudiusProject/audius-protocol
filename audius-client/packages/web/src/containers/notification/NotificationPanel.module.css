@@ -1,24 +1,12 @@
-.modalContainer {
-  width: 360px;
-  border-radius: 8px;
-  background-color: var(--white);
-  box-shadow: 0 16px 20px -5px var(--notification-panel-box-shadow);
-  padding: 0px !important;
-}
-
-.modalContainer :global(.ant-modal-body) {
-  padding: 0px;
-}
-
-.modalContainer :global(.ant-modal-content) {
-  background-color: transparent;
-  border-radius: 8px;
+.popup {
+  padding: 0;
+  border: none;
 }
 
 .panelContainer {
+  width: 428px;
   display: inline-flex;
   flex-direction: column;
-  width: 100%;
   border-radius: 8px;
   background-color: var(--white);
   padding: 0px;
@@ -58,18 +46,18 @@
   font-weight: var(--font-demi-bold);
   letter-spacing: 0.21px;
   opacity: 1;
-  transform: scale3d(1,1,1);
-  transition: all .07s ease-in-out !important;
+  transform: scale3d(1, 1, 1);
+  transition: all 0.07s ease-in-out !important;
 }
 
 .markAllRead:hover {
   opacity: 0.8;
-  transform: scale3d(1.02,1.02,1.02);
+  transform: scale3d(1.02, 1.02, 1.02);
 }
 
 .markAllRead:active {
   opacity: 1;
-  transform: scale3d(1,1,1);
+  transform: scale3d(1, 1, 1);
 }
 
 .content {
@@ -208,9 +196,7 @@
   text-decoration: underline;
 }
 
-
 /* Notification Markdown */
-
 
 .notification .body {
   user-select: none;
@@ -221,35 +207,36 @@
   line-height: 19px;
 }
 
-.notification .body h1, 
+.notification .body h1,
 .notification .body h2,
 .notification .body h3,
 .notification .body h4,
 .notification .body h5,
-.notification .body h6 { 
+.notification .body h6 {
   margin-bottom: 12px;
   font-weight: var(--font-bold);
 }
 
-.notification .body h1 { 
+.notification .body h1 {
   font-size: var(--font-2xl);
 }
-.notification .body h2 { 
+.notification .body h2 {
   font-size: var(--font-xl);
 }
-.notification .body h3 { 
+.notification .body h3 {
   font-size: var(--font-l);
 }
-.notification .body h4 { 
+.notification .body h4 {
   font-size: var(--font-m);
 }
-.notification .body h5 { 
+.notification .body h5 {
   font-size: var(--font-s);
 }
-.notification .body h6 { 
+.notification .body h6 {
   font-size: var(--font-xs);
 }
-.notification .body p {}
+.notification .body p {
+}
 
 .notification .body strong {
   font-weight: var(--font-bold);
@@ -265,9 +252,10 @@
 .notification .body ul {
   list-style-type: none;
 }
-.notification .body ul > li {}
+.notification .body ul > li {
+}
 .notification .body ul > li:before {
-  content: "-";
+  content: '-';
   margin-right: 4px;
 }
 

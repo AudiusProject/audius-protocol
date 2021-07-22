@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 
 import { Button, IconCamera, ButtonType } from '@audius/stems'
 import cn from 'classnames'
@@ -31,6 +31,7 @@ const ImageSelectionButton = ({
   onAfterClose,
   onSelect
 }) => {
+  const anchorRef = useRef()
   const [showModal, setShowModal] = useState(false)
 
   const closeModal = () => {
@@ -57,6 +58,7 @@ const ImageSelectionButton = ({
       {includePopup ? (
         <>
           <Button
+            ref={anchorRef}
             className={cn(styles.button, buttonClassName, {
               [styles.hide]: showModal
             })}
@@ -66,6 +68,7 @@ const ImageSelectionButton = ({
             onClick={handleClick}
           />
           <ImageSelectionPopup
+            anchorRef={anchorRef}
             className={styles.popup}
             error={error}
             isVisible={showModal}

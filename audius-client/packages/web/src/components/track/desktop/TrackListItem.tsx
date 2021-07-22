@@ -158,7 +158,7 @@ const TrackListItem = ({
         </div>
         {deleted ? <div className={styles.more} style={{ width: 16 }} /> : null}
         {!disableActions && !deleted ? (
-          <Menu menu={menu} className={cn(styles.more)}>
+          <Menu menu={menu}>
             {(ref, triggerPopup) => (
               <div className={cn(styles.menuContainer)}>
                 <IconKebabHorizontal

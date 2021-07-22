@@ -1,9 +1,9 @@
 import React from 'react'
 
+import { PopupMenu, PopupMenuProps } from '@audius/stems'
 import cn from 'classnames'
 
 import IconButton from 'components/general/IconButton'
-import { PopupMenu, PopupMenuProps } from 'components/general/PopupMenu'
 
 import styles from './PopupMenuIconButton.module.css'
 
@@ -14,25 +14,18 @@ type PopupMenuIconButtonProps = {
 } & Omit<PopupMenuProps, 'renderTrigger'>
 
 export const PopupMenuIconButton = (props: PopupMenuIconButtonProps) => {
-  const {
-    disabled,
-    icon,
-    iconClassName,
-    popupClassName,
-    ...popupMenuProps
-  } = props
+  const { disabled, icon, iconClassName, ...popupMenuProps } = props
 
   const style = {
     [styles.disabled]: disabled
   }
   return (
     <PopupMenu
-      popupClassName={cn(styles.popup, style, popupClassName)}
       {...popupMenuProps}
       renderTrigger={(ref, triggerPopup) => (
         <IconButton
           ref={ref}
-          className={cn(styles.icon, iconClassName)}
+          className={cn(styles.icon, style, iconClassName)}
           icon={icon}
           disabled={disabled}
           onClick={triggerPopup}

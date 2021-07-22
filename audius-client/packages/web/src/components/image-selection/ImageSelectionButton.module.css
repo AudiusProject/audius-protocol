@@ -28,10 +28,6 @@
   pointer-events: none;
 }
 
-.popup {
-  position: absolute;
-}
-
 .wrapper:hover .noPopup.hide {
   opacity: 1;
   cursor: pointer;

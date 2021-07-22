@@ -1,10 +1,11 @@
-import React from 'react'
+import React, { forwardRef } from 'react'
 
 import {
   PopupMenu,
   PopupMenuItem,
-  PopupMenuProps
-} from 'components/general/PopupMenu'
+  PopupMenuProps,
+  PopupPosition
+} from '@audius/stems'
 
 import CollectionMenu, {
   OwnProps as CollectionMenuProps
@@ -23,22 +24,22 @@ export type MenuOptionType =
 
 export type MenuProps = {
   children: PopupMenuProps['renderTrigger']
-  className?: string
   menu: Omit<MenuOptionType, 'children'>
   onClose?: () => void
+  zIndex?: number
 }
 
-const Menu = (props: MenuProps) => {
-  const { className, menu, onClose } = props
+const Menu = forwardRef<HTMLElement, MenuProps>((props, ref) => {
+  const { menu, onClose, zIndex } = props
 
   const renderMenu = (items: PopupMenuItem[]) => (
     <PopupMenu
       items={items}
       onClose={onClose}
-      position='bottomRight'
+      position={PopupPosition.BOTTOM_RIGHT}
+      ref={ref}
       renderTrigger={props.children}
-      popupClassName={className}
-      zIndex={menu.type === 'notification' ? 10000 : 12}
+      zIndex={zIndex}
     />
   )
 
@@ -63,7 +64,7 @@ const Menu = (props: MenuProps) => {
     )
   }
   return null
-}
+})
 
 Menu.defaultProps = {
   menu: {

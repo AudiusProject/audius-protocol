@@ -1,3 +1,8 @@
+.popup {
+  width: 360px;
+  text-align: center;
+}
+
 /* Dropzone page */
 
 .dropzonePage {
@@ -113,11 +118,11 @@
 .terms .term {
   transition: all 0.07s ease-in-out;
   cursor: pointer;
-  border-bottom: 1px solid rgba(0,0,0,0);
+  border-bottom: 1px solid rgba(0, 0, 0, 0);
 }
 
 .terms .term:hover {
-  border-bottom: 1px solid var(--secondary);    
+  border-bottom: 1px solid var(--secondary);
 }
 
 .terms .comma {
