@@ -1,58 +1,50 @@
-.popup {
+.icon {
+  border-radius: 4px;
+  border: 1px solid var(--neutral-light-6);
   cursor: pointer;
   user-select: none;
   font-size: var(--font-xs);
   background-color: var(--white);
 }
 
-.popup path {
+.icon path {
   fill: var(--neutral-light-4);
 }
 
-.popup:hover {
-  border-radius: 4px;
-}
-
-.popup:hover path {
+.icon:hover path {
   fill: var(--white);
 }
 
-.popup svg {
+.icon svg {
   /* Scale the animation on the icon rather than the svg */
   transform: none !important;
 }
 
-.popup.disabled {
+.icon.disabled {
   cursor: default;
 }
 
-.popup.disabled:hover svg {
+.icon.disabled:hover svg {
   background: var(--white);
 }
 
-.popup.disabled path,
-.popup.disabled:hover path {
+.icon.disabled path,
+.icon.disabled:hover path {
   fill: var(--neutral-light-4);
 }
 
-.popup:hover .icon {
+.icon:hover {
   background: var(--secondary);
   border: 1px solid var(--secondary-dark-2);
   transform: scale(1.07);
 }
 
-.popup:active .icon {
+.icon:active {
   transform: scale(0.95);
 }
 
-.popup.disabled:hover .icon {
+.icon.disabled:hover {
   background: none;
   border: 1px solid var(--neutral-light-6);
   transform: none;
-}
-
-.icon {
-  border-radius: 4px;
-  border: 1px solid var(--neutral-light-6);
-  overflow: hidden;
 }
