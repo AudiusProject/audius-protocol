@@ -171,8 +171,8 @@ const Getters = {
     }
   },
 
-  getSecondaryUserSyncFailureCountForToday (secondary, wallet, syncType) {
-    const resp = this.getSyncRequestOutcomeMetrics({
+  async getSecondaryUserSyncFailureCountForToday (secondary, wallet, syncType) {
+    const resp = await this.getSyncRequestOutcomeMetrics({
       secondary,
       wallet,
       syncType,
@@ -180,12 +180,12 @@ const Getters = {
       /* date defaults to today */
     })
 
-    const keys = Object.keys(resp)
+    const entries = Object.entries(resp)
 
-    if (keys.length === 0) {
+    if (entries.length === 0) {
       return 0
     } else {
-      return resp[keys[0]]
+      return parseInt(entries[0][1])
     }
   }
 }
@@ -193,14 +193,14 @@ const Getters = {
 const SecondarySyncHealthTracker = {
   Outcomes,
 
-  // Record SyncRequestOutcomes
+  // Setters
   recordSuccess: Setters.recordSuccess,
   recordFailure: Setters.recordFailure,
 
-  // Retrieve SyncRequestOutcomes
+  // Getters
   computeUserSecondarySyncSuccessRates: Getters.computeUserSecondarySyncSuccessRates,
-  getSyncRequestOutcomeMetrics: Getters.getSyncRequestOutcomeMetrics
-
+  getSyncRequestOutcomeMetrics: Getters.getSyncRequestOutcomeMetrics,
+  getSecondaryUserSyncFailureCountForToday: Getters.getSecondaryUserSyncFailureCountForToday
 }
 
 module.exports = SecondarySyncHealthTracker
