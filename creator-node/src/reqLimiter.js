@@ -46,14 +46,14 @@ const userReqLimiter = rateLimit({
   keyGenerator: ipKeyGenerator,
   skip: async (req) => {
     const { libs } = req.app.get('serviceRegistry')
-    let { timestamp, signature } = req.query
+    let { timestamp, signature, spID } = req.query
     const path = req.originalUrl
 
     if (path.includes('/users/clock_status') || path.includes('/users/batch_clock_status')) {
       try {
         await verifyRequesterIsValidSP({
           audiusLibs: libs,
-          spID: req.query.spID,
+          spID,
           reqTimestamp: timestamp,
           reqSignature: signature
         })
