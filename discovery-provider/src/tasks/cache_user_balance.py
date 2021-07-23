@@ -66,12 +66,15 @@ def get_immediate_refresh_user_ids(redis: Redis) -> List[int]:
 # *Explanation of user balance caching*
 # In an effort to minimize eth calls, we look up users embedded in track metadata once per user,
 # and current users (logged in dapp users, who might be changing their balance) on an interval.
+# Balance is tracked for both mainnet ethereum AUDIO and mainnet solana wAUDIO 
 #
 # - In populate_user_metadata, look up User_Balance entry in db.
 #       If it doesn't exist, return 0, persist a User_Balance row with 0,
 #       & enqueue in Redis the user ID for later balance lookup.
 # - On track get endpoints, if current_user exists, enqueue balance lookup
 #       in Redis.
+# - In Solana UserBank indexing (index_user_bank.py) any transfer operation enqueues
+#       a refresh for both the sender and reciever UserBank addresses
 #
 # In this recurring task:
 #   - Get all enqueued user balance refresh requests. These are stored in a set, so
@@ -82,9 +85,8 @@ def get_immediate_refresh_user_ids(redis: Redis) -> List[int]:
 #     we look up said users, adding User_Balance rows, and removing them from Redis.
 #     we check if they have associated_wallets and update those balances as well
 #     we check if they have a user_bank_account and update that balance as well
-#     Users with zero balance are refreshed at a slower rate than users with a non-zero balance.
-#
-#     enqueued User Ids in Redis that are *not* ready to be refreshed yet are left in the queue
+#     
+#     Enqueued User Ids in Redis that are *not* ready to be refreshed yet are left in the queue
 #     for later.
 def refresh_user_ids(
     redis: Redis,
@@ -115,7 +117,7 @@ def refresh_user_ids(
         }
 
         # Grab the users & associated_wallets we need to refresh
-        user_associated_query: List[Tuple[int, str, str]] = (
+        user_associated_wallet_query: List[Tuple[int, str, str]] = (
             session.query(User.user_id, User.wallet, AssociatedWallet.wallet)
             .outerjoin(
                 AssociatedWallet,
@@ -141,11 +143,13 @@ def refresh_user_ids(
             )
             .all()
         )
-        user_id_bank_accounts = {user[0]: user[1] for user in user_bank_accounts_query}
+        user_id_bank_accounts = dict(user_bank_accounts_query)
 
+        # Combine query results for user bank, associated wallets,
+        # and primary owner wallet into a single metadata list
         user_id_metadata: Dict[int, UserWalletMetadata] = {}
 
-        for user in user_associated_query:
+        for user in user_associated_wallet_query:
             user_id, user_wallet, associated_wallet = user
             if not user_id in user_id_metadata:
                 user_id_metadata[user_id] = {
@@ -167,7 +171,7 @@ def refresh_user_ids(
                     ]
 
         logger.info(
-            f"cache_user_balance.py | fetching for {len(user_associated_query)} users: {user_ids}"
+            f"cache_user_balance.py | fetching for {len(user_associated_wallet_query)} users: {user_ids}"
         )
 
         # Fetch balances
@@ -223,7 +227,7 @@ def refresh_user_ids(
 
         # Remove the fetched balances from Redis set
         logger.info(
-            f"cache_user_balance.py | Got balances for {len(user_associated_query)} users, removing from Redis."
+            f"cache_user_balance.py | Got balances for {len(user_associated_wallet_query)} users, removing from Redis."
         )
         if lazy_refresh_user_ids:
             redis.srem(LAZY_REFRESH_REDIS_PREFIX, *lazy_refresh_user_ids)
