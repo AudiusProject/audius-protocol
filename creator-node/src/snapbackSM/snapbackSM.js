@@ -1110,12 +1110,7 @@ class SnapbackSM {
       syncType
     )
 
-    /**
-     * Re-enqueue sync if required
-     *
-     * TODO can infinite loop on failing sync ops, but should not block any users as
-     *    it enqueues job to the end of the queue
-     */
+    // Re-enqueue sync if required
     if (additionalSyncIsRequired) {
       await this.enqueueSync({
         userWallet,
