@@ -44,7 +44,7 @@ class ChallengeUpdater(ABC):
         event: str,
         user_challenges: List[UserChallenge],
         step_count,
-        extras: List[Dict],
+        event_metadatas: List[FullEventMetadata],
     ):
         """This is usually the main required method to fill out when implementing a new challenge.
         Given an event type, a list of existing user challenges, and the base challenge type,
@@ -208,11 +208,8 @@ class ChallengeManager:
         ]
         to_update = in_progress_challenges + new_user_challenges
 
-        # Get a list of extra dictionaries from the events
-        extras = [events_with_specifiers_map[challenge.specifier]["extra"] for challenge in to_update]
-
         self._updater.update_user_challenges(
-            session, event_type, to_update, self._step_count, extras
+            session, event_type, to_update, self._step_count, events_with_specifiers
         )
 
         # Add block # to newly completed challenges

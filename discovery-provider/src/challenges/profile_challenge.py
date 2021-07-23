@@ -31,7 +31,7 @@ class ProfileChallengeUpdater(ChallengeUpdater):
     - favorites > threshold
     """
 
-    def update_user_challenges(self, session, event, user_challenges, step_count):
+    def update_user_challenges(self, session, event, user_challenges, step_count, event_metadatas):
 
         user_ids = [user_challenge.user_id for user_challenge in user_challenges]
         partial_completions = get_profile_completion_challenges(session, user_ids)

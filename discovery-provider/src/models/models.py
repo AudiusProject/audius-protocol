@@ -1099,7 +1099,7 @@ class ListenStreakChallenge(Base):
     __tablename__ = "challenge_listen_streak"
 
     user_id = Column(Integer, nullable=False, primary_key=True)
-    last_listen_date = Column(DateTime, nullable=False)
+    last_listen_date = Column(DateTime)
     listen_streak = Column(Integer, nullable=False)
 
     def __repr__(self):

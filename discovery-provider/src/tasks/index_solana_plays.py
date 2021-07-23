@@ -173,7 +173,7 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
                         ChallengeEvent.track_listen,
                         tx_slot,
                         user_id,
-                        { "created_at": created_at },
+                        { "created_at": created_at.timestamp() },
                     )
         else:
             logger.info(
