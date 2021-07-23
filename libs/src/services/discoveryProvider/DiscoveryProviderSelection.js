@@ -139,7 +139,8 @@ class DiscoveryProviderSelection extends ServiceSelection {
           totalStorage: data.data.filesystem_size,
           usedStorage: data.data.filesystem_used,
           receivedBytesPerSec: data.received_bytes_per_sec,
-          transferredBytesPerSec: data.transferred_bytes_per_sec
+          transferredBytesPerSec: data.transferred_bytes_per_sec,
+          challengeLastEventAgeSec: data.challenge_last_event_age_sec
         })
       } catch (e) {
         // Swallow errors -- this method should not throw generally
