@@ -49,6 +49,9 @@ const userReqLimiter = rateLimit({
     let { timestamp, signature, spID } = req.query
     const path = req.originalUrl
 
+    // If any of the necessary variables are not present, continue with rate limit
+    if (!timestamp || !signature || !spID || !libs) { return false }
+
     if (path.includes('/users/clock_status') || path.includes('/users/batch_clock_status')) {
       try {
         await verifyRequesterIsValidSP({

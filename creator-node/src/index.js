@@ -39,11 +39,7 @@ const getMode = () => {
 const startApp = async () => {
   logger.info('Configuring service...')
 
-  try {
-    await config.asyncConfig()
-  } catch (e) {
-    logger.warn(`Unable to retrieve ip info. Skipping: ${e}`)
-  }
+  await config.asyncConfig()
 
   // fail if delegateOwnerWallet & delegatePrivateKey not present
   const delegateOwnerWallet = config.get('delegateOwnerWallet')
