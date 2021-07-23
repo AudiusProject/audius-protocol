@@ -25,6 +25,7 @@ def version():
 # Health check for server, db, and redis. Consumes latest block data from redis instead of chain.
 # Optional boolean "verbose" flag to output db connection info.
 # Optional boolean "enforce_block_diff" flag to error on unhealthy blockdiff.
+# Optional int flag to check challenge events age max drift
 # NOTE - can extend this in future to include ganache connectivity, how recently a block
 #   has been added (ex. if it's been more than 30 minutes since last block), etc.
 @bp.route("/health_check", methods=["GET"])
@@ -33,6 +34,9 @@ def health_check():
         "verbose": parse_bool_param(request.args.get("verbose")),
         "healthy_block_diff": request.args.get("healthy_block_diff", type=int),
         "enforce_block_diff": parse_bool_param(request.args.get("enforce_block_diff")),
+        "challenge_events_age_max_drift": request.args.get(
+            "challenge_events_age_max_drift", type=int
+        ),
     }
 
     (health_results, error) = get_health(args)
@@ -74,9 +78,9 @@ def play_check():
 @bp.route("/sol_play_check", methods=["GET"])
 def sol_play_check():
     """
-       limit: number of latest plays to return
-       max_drift: maximum duration in seconds between `now` and the
-       latest recorded play record to be considered healthy
+    limit: number of latest plays to return
+    max_drift: maximum duration in seconds between `now` and the
+    latest recorded play record to be considered healthy
     """
     limit = request.args.get("limit", type=int, default=20)
     max_drift = request.args.get("max_drift", type=int)
@@ -85,26 +89,20 @@ def sol_play_check():
     latest_db_sol_plays = get_latest_sol_plays(limit)
     latest_cached_sol_tx = get_pickled_key(redis, latest_sol_play_tx_key)
 
-    response = {
-        'chain_tx': latest_cached_sol_tx,
-        'db_info': latest_db_sol_plays
-    }
+    response = {"chain_tx": latest_cached_sol_tx, "db_info": latest_db_sol_plays}
 
     error = None
 
     if latest_db_sol_plays:
         latest_db_play = latest_db_sol_plays[0]
-        latest_created_at = latest_db_play['created_at']
+        latest_created_at = latest_db_play["created_at"]
         drift = (datetime.now() - latest_created_at).total_seconds()
 
         # Error if max drift was provided and the drift is greater than max_drift
         error = max_drift and drift > max_drift
 
-    return success_response(
-        response,
-        500 if error else 200,
-        sign_response=False
-    )
+    return success_response(response, 500 if error else 200, sign_response=False)
+
 
 @bp.route("/ipld_block_check", methods=["GET"])
 def ipld_block_check():
