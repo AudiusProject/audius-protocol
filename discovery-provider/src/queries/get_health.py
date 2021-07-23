@@ -275,17 +275,16 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         if error:
             return health_results, error
 
-    is_unhealthy = False
-
-    if enforce_block_diff and block_difference > healthy_block_diff:
-        is_unhealthy = True
-
-    if (
+    unhealthy_blocks = bool(
+        enforce_block_diff
+        and block_difference > healthy_block_diff
+    )
+    unhealthy_challenges = bool(
         challenge_events_age_max_drift
         and challenge_events_age_sec
         and challenge_events_age_sec > challenge_events_age_max_drift
-    ):
-        is_unhealthy = True
+    )
+    is_unhealthy = unhealthy_blocks or unhealthy_challenges
 
     return health_results, is_unhealthy
 
