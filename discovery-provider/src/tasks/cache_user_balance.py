@@ -66,7 +66,7 @@ def get_immediate_refresh_user_ids(redis: Redis) -> List[int]:
 # *Explanation of user balance caching*
 # In an effort to minimize eth calls, we look up users embedded in track metadata once per user,
 # and current users (logged in dapp users, who might be changing their balance) on an interval.
-# Balance is tracked for both mainnet ethereum AUDIO and mainnet solana wAUDIO 
+# Balance is tracked for both mainnet ethereum AUDIO and mainnet solana wAUDIO
 #
 # - In populate_user_metadata, look up User_Balance entry in db.
 #       If it doesn't exist, return 0, persist a User_Balance row with 0,
@@ -85,7 +85,7 @@ def get_immediate_refresh_user_ids(redis: Redis) -> List[int]:
 #     we look up said users, adding User_Balance rows, and removing them from Redis.
 #     we check if they have associated_wallets and update those balances as well
 #     we check if they have a user_bank_account and update that balance as well
-#     
+#
 #     Enqueued User Ids in Redis that are *not* ready to be refreshed yet are left in the queue
 #     for later.
 def refresh_user_ids(
