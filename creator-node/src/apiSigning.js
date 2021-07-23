@@ -94,9 +94,6 @@ const sortKeys = x => {
  * @param {number} data.spID the spID of the node to verify
  * @param {string} data.reqTimestamp the timestamp from the request body
  * @param {string} data.reqSignature the signature from the request body
- * @param {string} data.ownerWalletFromSPFactory the ownerWallet of the node to verify
- * @param {string} data.delegateOwnerWalletFromSPFactory the delegateWallet of the node to verify
- * @param {string} data.nodeEndpointFromSPFactory the endpoint of the node to verify
  */
 const verifyRequesterIsValidSP = async ({
   audiusLibs,
