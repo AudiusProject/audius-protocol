@@ -570,6 +570,12 @@ const config = convict({
     env: 'maxNumberSecondsPrimaryRemainsUnhealthy',
     // 24 hours in seconds
     default: 86400
+  },
+  secondaryUserSyncDailyFailureCountThreshold: {
+    doc: 'Max number of sync failures for a secondary for a user per day before stopping further SyncRequest issuance',
+    format: 'nat',
+    env: 'secondaryUserSyncDailyFailureCountThreshold',
+    default: 10
   }
 
   /**

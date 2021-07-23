@@ -169,6 +169,24 @@ const Getters = {
       logger.error(`SecondarySyncHealthTracker - getSyncRequestOutcomeMetrics() Error || ${e.message}`)
       return {}
     }
+  },
+
+  getSecondaryUserSyncFailureCountForToday (secondary, wallet, syncType) {
+    const resp = this.getSyncRequestOutcomeMetrics({
+      secondary,
+      wallet,
+      syncType,
+      outcome: Outcomes.FAILURE
+      /* date defaults to today */
+    })
+
+    const keys = Object.keys(resp)
+
+    if (keys.length === 0) {
+      return 0
+    } else {
+      return resp[keys[0]]
+    }
   }
 }
 
@@ -181,7 +199,7 @@ const SecondarySyncHealthTracker = {
 
   // Retrieve SyncRequestOutcomes
   computeUserSecondarySyncSuccessRates: Getters.computeUserSecondarySyncSuccessRates,
-  getSyncRequestOutcomeMetrics: Getters.getSyncRequestOutcomeMetrics,
+  getSyncRequestOutcomeMetrics: Getters.getSyncRequestOutcomeMetrics
 
 }
 
