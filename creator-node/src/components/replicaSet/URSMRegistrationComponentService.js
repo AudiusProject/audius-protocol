@@ -38,12 +38,12 @@ const {
 const respondToURSMRequestForSignature = async ({ libs: audiusLibs, nodeConfig }, logger, spID, reqTimestamp, reqSignature) => {
   let ownerWalletFromSPFactory, delegateOwnerWalletFromSPFactory, nodeEndpointFromSPFactory
   try {
-    await verifyRequesterIsValidSP({
+    ({ ownerWalletFromSPFactory, delegateOwnerWalletFromSPFactory, nodeEndpointFromSPFactory, spID } = await verifyRequesterIsValidSP({
       audiusLibs,
       spID,
       reqTimestamp,
       reqSignature
-    })
+    }))
   } catch (e) {
     throw new ErrorBadRequest(e.message)
   }

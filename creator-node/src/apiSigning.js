@@ -141,6 +141,13 @@ const verifyRequesterIsValidSP = async ({
       'Request for signature must be signed by delegate owner wallet registered on L1 for spID'
     )
   }
+
+  return {
+    ownerWalletFromSPFactory,
+    delegateOwnerWalletFromSPFactory,
+    nodeEndpointFromSPFactory,
+    spID
+  }
 }
 
 /**
