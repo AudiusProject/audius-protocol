@@ -1,3 +1,5 @@
+from src.challenges.challenge_event_bus import setup_challenge_bus
+
 # Helper methods for testing indexing
 
 
@@ -21,6 +23,7 @@ class Web3:
 
 
 class UpdateTask:
-    def __init__(self, ipfs_client, web3):
+    def __init__(self, ipfs_client, web3, challenge_event_bus=setup_challenge_bus()):
         self.ipfs_client = ipfs_client
         self.web3 = web3
+        self.challenge_event_bus = challenge_event_bus

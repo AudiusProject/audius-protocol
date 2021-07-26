@@ -12,12 +12,17 @@ logger = logging.getLogger(__name__)
 def fetch_user_challenges(
     session: Session, challenge_id: str, specifiers: List[str]
 ) -> List[UserChallenge]:
-    return (
+    user_challenges = (
         session.query(UserChallenge).filter(
             UserChallenge.challenge_id == challenge_id,
             UserChallenge.specifier.in_(specifiers),
         )
     ).all()
+    # Re-sort them
+    specifier_map = {
+        user_challenge.specifier: user_challenge for user_challenge in user_challenges
+    }
+    return [specifier_map[s] for s in specifiers if s in specifier_map]
 
 
 class EventMetadata(TypedDict):
@@ -43,8 +48,9 @@ class ChallengeUpdater(ABC):
         session: Session,
         event: str,
         user_challenges: List[UserChallenge],
-        step_count,
+        step_count: Optional[int],
         event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
     ):
         """This is usually the main required method to fill out when implementing a new challenge.
         Given an event type, a list of existing user challenges, and the base challenge type,
@@ -193,7 +199,7 @@ class ChallengeManager:
             to_create_metadata = new_challenge_metadata
 
         new_user_challenges = [
-            self._create_new_challenge(metadata["user_id"], metadata["specifier"])
+            self._create_new_user_challenge(metadata["user_id"], metadata["specifier"])
             for metadata in to_create_metadata
         ]
         # Do any other custom work needed after creating a challenge event
@@ -209,7 +215,7 @@ class ChallengeManager:
         to_update = in_progress_challenges + new_user_challenges
 
         self._updater.update_user_challenges(
-            session, event_type, to_update, self._step_count, events_with_specifiers
+            session, event_type, to_update, self._step_count, events_with_specifiers, self._starting_block
         )
 
         # Add block # to newly completed challenges
@@ -227,13 +233,7 @@ class ChallengeManager:
     def get_challenge_state(
         self, session: Session, specifiers: List[str]
     ) -> List[UserChallenge]:
-        user_challenges = fetch_user_challenges(session, self.challenge_id, specifiers)
-        # Re-sort them
-        specifier_map = {
-            user_challenge.specifier: user_challenge
-            for user_challenge in user_challenges
-        }
-        return [specifier_map[s] for s in specifiers]
+        return fetch_user_challenges(session, self.challenge_id, specifiers)
 
     def get_metadata(self, session: Session, specifiers: List[str]) -> List[Dict]:
         """Gets additional metadata to render the challenge if needed."""
@@ -256,7 +256,7 @@ class ChallengeManager:
         self._challenge_type = challenge.type
         self._did_init = True
 
-    def _create_new_challenge(self, user_id: int, specifier: str):
+    def _create_new_user_challenge(self, user_id: int, specifier: str):
         return UserChallenge(
             challenge_id=self.challenge_id,
             user_id=user_id,

@@ -89,7 +89,9 @@ def setup_challenges(app):
 
 
 class TestUpdater(ChallengeUpdater):
-    def update_user_challenges(self, session, event, user_challenges, step_count, event_metadatas):
+    def update_user_challenges(
+        self, session, event, user_challenges, step_count, event_metadatas, starting_block
+    ):
         for user_challenge in user_challenges:
             user_challenge.current_step_count += 1
             if user_challenge.current_step_count >= step_count:
@@ -215,6 +217,7 @@ class AggregateUpdater(ChallengeUpdater):
         user_challenges: List[UserChallenge],
         step_count,
         event_metadatas,
+        starting_block,
     ):
         pass
 
