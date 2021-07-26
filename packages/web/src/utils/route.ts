@@ -100,7 +100,7 @@ export const AUDIUS_DISCORD_LINK = 'https://discord.gg/yNUg2e2'
 // Org Links
 export const AUDIUS_ORG = 'https://audius.org'
 export const AUDIUS_TEAM_LINK = 'https://audius.org/team'
-export const AUDIUS_DEV_STAKER_LINK = 'https://audius.org/developers'
+export const AUDIUS_DEV_STAKER_LINK = 'https://audius.org/protocol'
 
 export const AUDIUS_HOME_LINK = '/'
 export const AUDIUS_LISTENING_LINK = '/trending'
