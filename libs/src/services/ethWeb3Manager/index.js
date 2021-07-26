@@ -9,23 +9,36 @@ const GANACHE_GAS_PRICE = 39062500000 // ganache gas price is extremely high, so
 
 /** Singleton state-manager for Audius Eth Contracts */
 class EthWeb3Manager {
-  constructor (web3Config, identityService) {
+  constructor (web3Config, identityService, hedgehog) {
     if (!web3Config) throw new Error('web3Config object not passed in')
     if (!web3Config.providers) throw new Error('missing web3Config property: providers')
-    if (!web3Config.ownerWallet) throw new Error('missing web3Config property: ownerWallet')
 
     // MultiProvider implements a web3 provider with fallback.
     const provider = new MultiProvider(web3Config.providers)
 
     this.web3Config = web3Config
-    this.identityService = identityService
     this.web3 = new Web3(provider)
-    this.ownerWallet = web3Config.ownerWallet
+    this.identityService = identityService
+    this.hedgehog = hedgehog
+
+    if (this.web3Config.ownerWallet) {
+      this.ownerWallet = this.web3Config.ownerWallet
+    } else {
+      const storedWallet = this.hedgehog.getWallet()
+      if (storedWallet) {
+        this.ownerWallet = storedWallet
+      }
+    }
   }
 
   getWeb3 () { return this.web3 }
 
-  getWalletAddress () { return this.ownerWallet.toLowerCase() }
+  getWalletAddress () {
+    if (this.ownerWallet) {
+      return this.ownerWallet.toLowerCase()
+    }
+    throw new Error('Owner wallet not set')
+  }
 
   /**
    * Signs provided string data (should be timestamped).

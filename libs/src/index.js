@@ -138,7 +138,7 @@ class AudiusLibs {
    * @param {string} tokenAddress
    * @param {string} registryAddress
    * @param {string | Web3 | Array<string>} providers web3 provider endpoint(s)
-   * @param {string} ownerWallet
+   * @param {string?} ownerWallet optional owner wallet to establish who we are sending transactions on behalf of
    * @param {string?} claimDistributionContractAddress
    * @param {string?} wormholeContractAddress
    */
@@ -291,7 +291,8 @@ class AudiusLibs {
     if (this.ethWeb3Config) {
       this.ethWeb3Manager = new EthWeb3Manager(
         this.ethWeb3Config,
-        this.identityService
+        this.identityService,
+        this.hedgehog
       )
     }
     if (this.web3Config) {
