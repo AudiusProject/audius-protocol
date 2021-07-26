@@ -12,7 +12,12 @@ from src.models.models import (
     User,
     UserChallenge,
 )
+from src.utils.redis_connection import get_redis
 from src.utils.config import shared_config
+from src.tasks.index_oracles import (
+    oracle_addresses_key,
+    get_oracle_addresses_from_chain,
+)
 
 
 class Attestation:
@@ -61,10 +66,14 @@ class AttestationError(Exception):
     pass
 
 
-def is_valid_oracle(address: str):
-    # TODO: flesh this out, refresh oracle addresses [AUD-729]
-    default_oracle_address = shared_config["discprov"]["default_oracle_address"]
-    return address == default_oracle_address
+def is_valid_oracle(address: str) -> bool:
+    redis = get_redis()
+    oracle_addresses = redis.get(oracle_addresses_key)
+    if oracle_addresses:
+        oracle_addresses = oracle_addresses.decode().split(",")
+    else:
+        oracle_addresses = get_oracle_addresses_from_chain(redis)
+    return address in oracle_addresses
 
 
 def sign_attestation(attestation_str: str, private_key: str):

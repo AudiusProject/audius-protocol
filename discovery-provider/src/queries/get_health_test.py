@@ -1,4 +1,5 @@
 import os
+from time import time
 from unittest.mock import MagicMock
 from hexbytes import HexBytes
 from src.utils.redis_constants import (
@@ -6,6 +7,7 @@ from src.utils.redis_constants import (
     latest_block_redis_key,
     most_recent_indexed_block_hash_redis_key,
     most_recent_indexed_block_redis_key,
+    challenges_last_processed_event_redis_key,
 )
 from src.models import Block
 from src.queries.get_health import get_health
@@ -368,3 +370,36 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
     assert "maximum_healthy_block_difference" in health_results
     assert "version" in health_results
     assert "service" in health_results
+
+
+def test_get_health_challenge_events_max_drift(web3_mock, redis_mock, db_mock):
+    """Tests that the health check honors an unhealthy challenge events drift"""
+    # Set up web3 eth
+    def getBlock(_u1, _u2):  # unused
+        block = MagicMock()
+        block.number = 50
+        block.hash = HexBytes(b"\x50")
+        return block
+
+    web3_mock.eth.getBlock = getBlock
+
+    # Set up redis state
+    redis_mock.set(challenges_last_processed_event_redis_key, int(time() - 50))
+
+    # Set up db state
+    with db_mock.scoped_session() as session:
+        Block.__table__.create(db_mock._engine)
+        session.add(
+            Block(
+                blockhash="0x01",
+                number=1,
+                parenthash="0x01",
+                is_current=True,
+            )
+        )
+
+    args = {"challenge_events_age_max_drift": 49}
+    health_results, error = get_health(args)
+
+    assert error == True
+    assert health_results["challenge_last_event_age_sec"] < int(time() - 49)

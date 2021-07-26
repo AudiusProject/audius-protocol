@@ -14,7 +14,7 @@ def test_resolve_track_url(app):
 
             assert (
                 resolved_url
-                == "/v1/tracks/?slug=mb-shola-vivienne-%22westwood%22-87325&handle=urbanbankai"
+                == "/v1/tracks?slug=mb-shola-vivienne-%22westwood%22-87325&handle=urbanbankai"
             )
 
 
@@ -39,7 +39,7 @@ def test_resolve_non_fully_qualified_url(app):
 
             assert (
                 resolved_url
-                == "/v1/tracks/?slug=mb-shola-vivienne-%22westwood%22-87325&handle=urbanbankai"
+                == "/v1/tracks?slug=mb-shola-vivienne-%22westwood%22-87325&handle=urbanbankai"
             )
 
 

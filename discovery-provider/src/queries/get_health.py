@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+from typing import Dict, Optional, Tuple, TypedDict, cast
 
 from src.models import Block, IPLDBlacklistBlock
 from src.monitors import monitors, monitor_names
@@ -17,8 +18,14 @@ from src.utils.redis_constants import (
     trending_playlists_last_completion_redis_key,
     challenges_last_processed_event_redis_key,
     user_balances_refresh_last_completion_redis_key,
+    index_eth_last_completion_redis_key,
 )
-
+from src.queries.get_balances import (
+    LAZY_REFRESH_REDIS_PREFIX,
+    IMMEDIATE_REFRESH_REDIS_PREFIX,
+)
+from src.utils.helpers import redis_get_or_restore
+from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
@@ -115,27 +122,32 @@ def get_latest_ipld_indexed_block(use_redis_cache=True):
     return latest_indexed_ipld_block_num, latest_indexed_ipld_block_hash
 
 
-def get_health(args, use_redis_cache=True):
+class GetHealthArgs(TypedDict):
+    # If True, returns db connection information
+    verbose: Optional[bool]
+
+    # Determines the point at which a block difference is considered unhealthy
+    health_block_diff: Optional[int]
+    # If true and the block difference is unhealthy an error is returned
+    enforce_block_diff: Optional[bool]
+
+    # Number of seconds the challenge events are allowed to drift
+    challenge_events_age_max_drift: Optional[int]
+
+
+def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict, bool]:
     """
     Gets health status for the service
 
-    :param args: dictionary
-    :param args.verbose: bool
-        if True, returns db connection information
-    :param args.healthy_block_diff: int
-        determines the point at which a block difference is considered unhealthy
-    :param args.enforce_block_diff: bool
-        if true and the block difference is unhealthy an error is returned
-
-    :rtype: (dictionary, bool)
-    :return: tuple of health results and a boolean indicating an error
+    Returns a tuple of health results and a boolean indicating an error
     """
     redis = redis_connection.get_redis()
     web3 = web3_provider.get_web3()
 
     verbose = args.get("verbose")
     enforce_block_diff = args.get("enforce_block_diff")
-    qs_healthy_block_diff = args.get("healthy_block_diff")
+    qs_healthy_block_diff = cast(Optional[int], args.get("healthy_block_diff"))
+    challenge_events_age_max_drift = args.get("challenge_events_age_max_drift")
 
     # If healthy block diff is given in url and positive, override config value
     healthy_block_diff = (
@@ -197,7 +209,23 @@ def get_health(args, use_redis_cache=True):
     user_balances_age_sec = get_elapsed_time_redis(
         redis, user_balances_refresh_last_completion_redis_key
     )
-
+    num_users_in_lazy_balance_refresh_queue = len(
+        redis.smembers(LAZY_REFRESH_REDIS_PREFIX)
+    )
+    num_users_in_immediate_balance_refresh_queue = len(
+        redis.smembers(IMMEDIATE_REFRESH_REDIS_PREFIX)
+    )
+    last_scanned_block_for_balance_refresh = redis_get_or_restore(
+        redis, eth_indexing_last_scanned_block_key
+    )
+    index_eth_age_sec = get_elapsed_time_redis(
+        redis, index_eth_last_completion_redis_key
+    )
+    last_scanned_block_for_balance_refresh = (
+        int(last_scanned_block_for_balance_refresh)
+        if last_scanned_block_for_balance_refresh
+        else None
+    )
     # Get system information monitor values
     sys_info = monitors.get_monitors(
         [
@@ -227,13 +255,15 @@ def get_health(args, use_redis_cache=True):
         "trending_playlists_age_sec": trending_playlists_age_sec,
         "challenge_last_event_age_sec": challenge_events_age_sec,
         "user_balances_age_sec": user_balances_age_sec,
+        "num_users_in_lazy_balance_refresh_queue": num_users_in_lazy_balance_refresh_queue,
+        "num_users_in_immediate_balance_refresh_queue": num_users_in_immediate_balance_refresh_queue,
+        "last_scanned_block_for_balance_refresh": last_scanned_block_for_balance_refresh,
+        "index_eth_age_sec": index_eth_age_sec,
         "number_of_cpus": number_of_cpus,
         **sys_info,
     }
 
-    block_difference = abs(
-        health_results["web"]["blocknumber"] - health_results["db"]["number"]
-    )
+    block_difference = abs(latest_block_num - latest_indexed_block_num)
     health_results["block_difference"] = block_difference
     health_results["maximum_healthy_block_difference"] = default_healthy_block_diff
     health_results.update(disc_prov_version)
@@ -245,11 +275,18 @@ def get_health(args, use_redis_cache=True):
         if error:
             return health_results, error
 
-    # Return error on unhealthy block diff if requested.
-    if enforce_block_diff and health_results["block_difference"] > healthy_block_diff:
-        return health_results, True
+    unhealthy_blocks = bool(
+        enforce_block_diff
+        and block_difference > healthy_block_diff
+    )
+    unhealthy_challenges = bool(
+        challenge_events_age_max_drift
+        and challenge_events_age_sec
+        and challenge_events_age_sec > challenge_events_age_max_drift
+    )
+    is_unhealthy = unhealthy_blocks or unhealthy_challenges
 
-    return health_results, False
+    return health_results, is_unhealthy
 
 
 def get_latest_chain_block_set_if_nx(redis=None, web3=None):

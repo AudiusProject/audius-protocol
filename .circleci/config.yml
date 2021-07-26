@@ -545,7 +545,7 @@ jobs:
   test-solana-programs:
     docker:
       # specify the version you desire here
-      - image: cimg/rust:1.52.1
+      - image: cimg/rust:1.53.0
     parameters:
       force:
         type: boolean
@@ -555,7 +555,7 @@ jobs:
       - unless:
           condition: << parameters.force >>
           steps:
-            - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
+            - run: ./diff.sh solana-programs || (echo "no diff" && circleci-agent step halt)
 
       - run:
           name: Setup solana
@@ -564,8 +564,8 @@ jobs:
 
       - restore_cache:
           keys:
-            - audius-eth-registry-deps-{{ checksum "solana-programs/audius_eth_registry/Cargo.toml" }}
-            - audius-eth-registry-deps-
+            - audius-eth-registry-deps-2-{{ checksum "solana-programs/audius_eth_registry/Cargo.toml" }}
+            - audius-eth-registry-deps-2-
       - run:
           name: run audius eth registry tests
           command: |
@@ -576,7 +576,7 @@ jobs:
       - save_cache:
           paths:
             - solana-programs/audius_eth_registry/target
-          key: audius-eth-registry-deps-{{ checksum "solana-programs/audius_eth_registry/Cargo.toml" }}
+          key: audius-eth-registry-deps-2-{{ checksum "solana-programs/audius_eth_registry/Cargo.toml" }}
 
       # - restore_cache:
       #     keys:
