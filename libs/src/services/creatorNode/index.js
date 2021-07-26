@@ -759,7 +759,11 @@ class CreatorNode {
             if (!total) total = progressEvent.total
             console.info(`Upload in progress: ${progressEvent.loaded} / ${total}`)
             onProgress(progressEvent.loaded, total)
-          }
+          },
+          // Set content length headers (only applicable in server/node environments).
+          // See: https://github.com/axios/axios/issues/1362
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity
         }
       )
       if (resp.data && resp.data.error) {
