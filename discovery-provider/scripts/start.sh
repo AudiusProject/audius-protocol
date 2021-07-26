@@ -60,6 +60,8 @@ if [ -z "$audius_db_url" ]; then
     /wait
 fi
 
+docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 10
+
 if [ "$audius_db_run_migrations" != false ]; then
     echo "Running alembic migrations"
     export PYTHONPATH='.'

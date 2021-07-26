@@ -29,6 +29,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk add py3-pip && \
     apk add py3-wheel && \
     apk add rsyslog && \
+    apk add docker && \
     apk add --virtual .build-deps gcc musl-dev postgresql-dev=11.12-r0 && \
     python3 -m pip install -r requirements.txt --no-cache-dir && \
     apk --purge del .build-deps
