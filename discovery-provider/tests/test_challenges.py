@@ -254,7 +254,7 @@ def test_aggregates(app):
         bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 2})
         bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 3})
         bus.process_events(session)
-        state = agg_challenge.get_challenge_state(session, ["1-2", "1-3"])
+        state = agg_challenge.get_user_challenge_state(session, ["1-2", "1-3"])
         assert len(state) == 2
         # Also make sure the thing is incomplete
         res = get_challenges(1, False, session, bus)
@@ -265,7 +265,7 @@ def test_aggregates(app):
         bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 4})
         bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 4})
         bus.process_events(session)
-        state = agg_challenge.get_challenge_state(session, ["1-4"])
+        state = agg_challenge.get_user_challenge_state(session, ["1-4"])
         assert len(state) == 1
 
         # - If we've maxed the # of challenges, don't create any more

@@ -25,7 +25,7 @@ def create_new_challenges(session):
     new_challenges = list(
         filter(lambda c: c.get("id") not in existing_ids, challenges_dicts)
     )
-    logger.info(f"Adding challenges: {challenges_dicts}")
+    logger.info(f"Adding challenges: {new_challenges}")
 
     # Add all the new challenges
     for challenge_dict in new_challenges:
@@ -49,3 +49,4 @@ def create_new_challenges(session):
         if existing:
             existing.active = challenge_dict["active"]
             existing.amount = challenge_dict["amount"]
+            existing.step_count = challenge_dict["step_count"]

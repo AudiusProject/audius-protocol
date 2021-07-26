@@ -230,7 +230,7 @@ class ChallengeManager:
         # Only add the new ones
         session.add_all(new_user_challenges)
 
-    def get_challenge_state(
+    def get_user_challenge_state(
         self, session: Session, specifiers: List[str]
     ) -> List[UserChallenge]:
         return fetch_user_challenges(session, self.challenge_id, specifiers)
