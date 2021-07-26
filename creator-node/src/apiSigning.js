@@ -101,7 +101,10 @@ const verifyRequesterIsValidSP = async ({
   reqTimestamp,
   reqSignature
 }) => {
-  validateSPSignatureInfo(reqTimestamp, reqSignature)
+  if (!reqTimestamp || !reqSignature) {
+    throw new Error('Must provide all required query parameters: timestamp, signature')
+  }
+
   spID = validateSPId(spID)
 
   const spRecordFromSPFactory = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
@@ -147,17 +150,6 @@ const verifyRequesterIsValidSP = async ({
     delegateOwnerWalletFromSPFactory,
     nodeEndpointFromSPFactory,
     spID
-  }
-}
-
-/**
- * Validates the request query params used for verifying sp.
- * @param {string} reqTimestamp the timestamp off of the req query params
- * @param {string} reqSignature the signature off of the req query params
- */
-function validateSPSignatureInfo (reqTimestamp, reqSignature) {
-  if (!reqTimestamp || !reqSignature) {
-    throw new Error('Must provide all required query parameters: timestamp, signature')
   }
 }
 
