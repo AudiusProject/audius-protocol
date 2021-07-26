@@ -361,6 +361,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_solana_plays",
             "src.tasks.index_aggregate_views",
             "src.tasks.index_challenges",
+            "src.tasks.index_user_bank",
             "src.tasks.index_eth",
             "src.tasks.index_oracles",
         ],
@@ -433,6 +434,10 @@ def configure_celery(flask_app, celery, test_config=None):
                 "task": "update_aggregate_playlist",
                 "schedule": timedelta(seconds=30),
             },
+            "index_user_bank": {
+                "task": "index_user_bank",
+                "schedule": timedelta(seconds=5),
+            },
             "index_challenges": {
                 "task": "index_challenges",
                 "schedule": timedelta(seconds=5),
@@ -473,6 +478,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("synchronize_metrics_lock")
     redis_inst.delete("solana_plays_lock")
     redis_inst.delete("index_challenges")
+    redis_inst.delete("user_bank_lock")
     redis_inst.delete("index_eth")
     redis_inst.delete("index_oracles")
     logger.info("Redis instance initialized!")
