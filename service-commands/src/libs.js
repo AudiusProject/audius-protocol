@@ -702,6 +702,15 @@ function LibsWrapper (walletIndex = 0) {
       url: '/ipld_block_check'
     })).data.data.db.number
   }
+
+  this.updateUserStateManagerToChainData = async (userId) => {
+    const users = await this.libsInstance.discoveryProvider.getUsers(1, 0, [userId])
+    if (!users || !users[0]) throw new Error(`[updateUserStateManagerToChainData] Cannot update user because no current record exists for user id ${userId}`)
+
+    const metadata = users[0]
+
+    this.libsInstance.userStateManager.setCurrentUser(metadata)
+  }
 }
 
 module.exports = { LibsWrapper, Utils }
