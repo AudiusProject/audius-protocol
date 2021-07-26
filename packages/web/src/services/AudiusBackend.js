@@ -452,6 +452,7 @@ class AudiusBackend {
 
       AudiusBackend.sanityChecks(audiusLibs)
     } catch (err) {
+      console.log(err)
       libsError = err.message
     }
 
@@ -515,7 +516,6 @@ class AudiusBackend {
       !SOLANA_CLUSTER_ENDPOINT ||
       !WAUDIO_MINT_ADDRESS ||
       !SOLANA_TOKEN_ADDRESS ||
-      !CLAIMABLE_TOKEN_PDA ||
       !SOLANA_FEE_PAYER_ADDRESS ||
       !CLAIMABLE_TOKEN_PROGRAM_ADDRESS
     ) {
