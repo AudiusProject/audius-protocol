@@ -100,8 +100,8 @@ def test_get_tracks_by_date(app):
         assert tracks[3]["track_id"] == 4
         assert tracks[4]["track_id"] == 2
 
-        assert tracks[0]["slug"] == "track-1"
-        assert tracks[4]["slug"] == "track-2"
+        assert tracks[0]["permalink"] == "/some-test-user/track-1"
+        assert tracks[4]["permalink"] == "/some-test-user/track-2"
 
 
 def test_get_track_by_handle_slug(app):
@@ -124,7 +124,7 @@ def test_get_track_by_handle_slug(app):
 
             assert len(tracks) == 1
             assert tracks[0]["owner_id"] == 1287289
-            assert tracks[0]["slug"] == "track-1"
+            assert tracks[0]["permalink"] == "/some-test-user/track-1"
 
             tracks = _get_tracks(
                 session,
@@ -137,4 +137,4 @@ def test_get_track_by_handle_slug(app):
             )
             assert len(tracks) == 1
             assert tracks[0]["owner_id"] == 4
-            assert tracks[0]["slug"] == "track-1"
+            assert tracks[0]["permalink"] == "/some-other-user/track-1"
