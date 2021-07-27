@@ -51,6 +51,13 @@ def populate_tracks(db):
                 "release_date": "garbage-should-not-parse",
                 "created_at": datetime(2018, 5, 20),
             },
+            {
+                "track_id": 9,
+                "owner_id": 4,
+                "release_date": "Wed Dec 25 2019 12:00:00 GMT-0800",
+                "created_at": datetime(2018, 5, 20),
+                "is_unlisted": True,
+            },
         ],
         "track_routes": [
             {"slug": "track-1", "owner_id": 1287289},
@@ -69,6 +76,11 @@ def populate_tracks(db):
                 "slug": "track-2",
                 "owner_id": 4,
                 "track_id": 8,
+            },
+            {
+                "slug": "hidden-track",
+                "owner_id": 4,
+                "track_id": 9,
             },
         ],
         "users": [
@@ -138,3 +150,17 @@ def test_get_track_by_handle_slug(app):
             assert len(tracks) == 1
             assert tracks[0]["owner_id"] == 4
             assert tracks[0]["permalink"] == "/some-other-user/track-1"
+
+            # Get an unlisted track
+            tracks = _get_tracks(
+                session,
+                {
+                    "user_id": 4,
+                    "slug": "hidden-track",
+                    "offset": 0,
+                    "limit": 10,
+                },
+            )
+            assert len(tracks) == 1
+            assert tracks[0]["owner_id"] == 4
+            assert tracks[0]["permalink"] == "/some-other-user/hidden-track"
