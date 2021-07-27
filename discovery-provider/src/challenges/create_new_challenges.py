@@ -40,13 +40,14 @@ def create_new_challenges(session):
         challenges.append(challenge)
     session.add_all(challenges)
 
-    # Update any challenges whose active state / amount changed
+    # Update any challenges whose active state / amount / step count / starting block changed
     existing_challenge_map = {
         challenge.id: challenge for challenge in existing_challenges
     }
     for challenge_dict in challenges_dicts:
         existing = existing_challenge_map.get(challenge_dict["id"])
         if existing:
-            existing.active = challenge_dict["active"]
-            existing.amount = challenge_dict["amount"]
-            existing.step_count = challenge_dict["step_count"]
+            existing.active = challenge_dict.get("active")
+            existing.amount = challenge_dict.get("amount")
+            existing.step_count = challenge_dict.get("step_count")
+            existing.starting_block = challenge_dict.get("starting_block")
