@@ -276,26 +276,25 @@ module.exports = function (app) {
     minimumBalance = parseFloat(minimumBalance || config.get('solMinimumBalance'))
     let solanaFeePayerWallet = config.get('solanaFeePayerWallet')
 
-    let solanaFeePayerWalletSet = false
+    let solanaFeePayerPublicKey = null
     let balance = 0
 
     if (solanaFeePayerWallet) {
-      solanaFeePayerWalletSet = true
-      const publicKey = (new solanaWeb3.Account(solanaFeePayerWallet)).publicKey
-      balance = await solanaConnection.getBalance(publicKey)
+      solanaFeePayerPublicKey = (new solanaWeb3.Account(solanaFeePayerWallet)).publicKey
+      balance = await solanaConnection.getBalance(solanaFeePayerPublicKey)
     }
 
     if (balance > minimumBalance) {
       return successResponse({
         above_balance_minimum: true,
         balance,
-        solanaFeePayerWalletSet
+        solanaFeePayerPublicKey
       })
     } else {
       return errorResponseServerError({
         above_balance_minimum: false,
         balance,
-        solanaFeePayerWalletSet
+        solanaFeePayerPublicKey
       })
     }
   }))
