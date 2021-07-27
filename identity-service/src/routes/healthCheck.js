@@ -4,6 +4,8 @@ const { handleResponse, successResponse, errorResponseServerError } = require('.
 const { sequelize } = require('../models')
 const { getRelayerFunds, fundRelayerIfEmpty } = require('../relay/txRelay')
 const { getEthRelayerFunds } = require('../relay/ethTxRelay')
+const { solanaConnection } = require('../solana-client')
+const solanaWeb3 = require('@solana/web3.js')
 const Web3 = require('web3')
 const audiusLibsWrapper = require('../audiusLibsInstance')
 const {
@@ -267,6 +269,33 @@ module.exports = function (app) {
         ...balanceResponse
       })
     }
+  }))
+
+  app.get('/sol_balance_check', handleResponse(async (req, res) => {
+    const minimumBalance = parseFloat(req.query.minimumBalance || config.get('solMinimumBalance'))
+    const solanaFeePayerWallet = config.get('solanaFeePayerWallet')
+
+    let solanaFeePayerPublicKey = null
+    let balance = 0
+
+    if (solanaFeePayerWallet) {
+      solanaFeePayerPublicKey = (new solanaWeb3.Account(solanaFeePayerWallet)).publicKey
+      balance = await solanaConnection.getBalance(solanaFeePayerPublicKey)
+    }
+
+    if (balance > minimumBalance) {
+      return successResponse({
+        above_balance_minimum: true,
+        balance,
+        solanaFeePayerPublicKey
+      })
+    }
+
+    return errorResponseServerError({
+      above_balance_minimum: false,
+      balance,
+      solanaFeePayerPublicKey
+    })
   }))
 
   app.get('/notification_check', handleResponse(async (req, res) => {
