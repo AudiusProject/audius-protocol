@@ -36,13 +36,18 @@ def get_users_cnode(cnode_endpoint_string, replica_type=ReplicaType.PRIMARY):
                 "wallet",
                 ("creator_node_endpoints") [1] as "primary",
                 ("creator_node_endpoints") [2] as "secondary1",
-                ("creator_node_endpoints") [3] as "secondary2"
+                ("creator_node_endpoints") [3] as "secondary2",
+                "primary_id" as "primarySpID",
+                ("secondary_ids") [1] as "secondary1SpID",
+                ("secondary_ids") [2] as "secondary2SpID"
                 FROM
                 (
                     SELECT
                     "user_id",
                     "wallet",
-                    string_to_array("creator_node_endpoint", ',') as "creator_node_endpoints"
+                    string_to_array("creator_node_endpoint", ',') as "creator_node_endpoints",
+                    "primary_id",
+                    "secondary_ids"
                     FROM
                     "users"
                     WHERE

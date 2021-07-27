@@ -76,6 +76,9 @@ user_replica_set = ns.model(
         "primary": fields.String(required=False),
         "secondary1": fields.String(required=False),
         "secondary2": fields.String(required=False),
+        "primarySpID": fields.Integer(required=False),
+        "secondary1SpID": fields.Integer(required=False),
+        "secondary2SpID": fields.Integer(required=False),
     },
 )
 

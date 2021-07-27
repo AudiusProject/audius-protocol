@@ -739,6 +739,31 @@ class SnapbackSM {
         time: Date.now()
       })
 
+      // Setup the mapping of Content Node endpoint to service provider id
+      try {
+        await this.peerSetManager.updateEndpointToSpIdMap(this.audiusLibs.ethContracts)
+
+        // Update enabledReconfigModesSet after successful `updateEndpointToSpIDMap()` call
+        this.updateEnabledReconfigModesSet()
+
+        decisionTree.push({
+          stage: `updateEndpointToSpIdMap() Success`,
+          vals: {
+            endpointToSPIdMapSize: Object.keys(this.peerSetManager.endpointToSPIdMap).length
+          },
+          time: Date.now()
+        })
+      } catch (e) {
+        // Disable reconfig after failed `updateEndpointToSpIDMap()` call
+        this.updateEnabledReconfigModesSet(/* override */ RECONFIG_MODES.RECONFIG_DISABLED.key)
+
+        decisionTree.push({
+          stage: `updateEndpointToSpIdMap() Error`,
+          vals: { error: e.message },
+          time: Date.now()
+        })
+      }
+
       // Retrieve clock statuses for all users and their current replica sets
       let replicaSetNodesToUserClockStatusesMap
       try {
@@ -773,7 +798,7 @@ class SnapbackSM {
        * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
        */
       for (const nodeUser of nodeUsers) {
-        const { primary, secondary1, secondary2 } = nodeUser
+        const { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID } = nodeUser
 
         let unhealthyReplicas = []
 
@@ -781,23 +806,34 @@ class SnapbackSM {
          * If this node is primary for user, check both secondaries for health
          * Enqueue SyncRequests against healthy secondaries, and enqueue UpdateReplicaSetOps against unhealthy secondaries
          */
+
+        let replicaSetNodesToObserve = ([
+          { endpoint: secondary1, spId: secondary1SpID },
+          { endpoint: secondary2, spId: secondary2SpID }
+        ])
+
         if (primary === this.endpoint) {
           // filter out false-y values to account for incomplete replica sets
-          const secondaries = ([secondary1, secondary2]).filter(Boolean)
+          replicaSetNodesToObserve = replicaSetNodesToObserve.filter(entry => {
+            return !!(entry.secondary && entry.spId)
+          })
 
           /**
            * If either secondary is in `unhealthyPeers` list, add it to `unhealthyReplicas` list
            */
           const userSecondarySyncMetrics = await SecondarySyncHealthTracker.computeUserSecondarySyncSuccessRates(
-            nodeUser.wallet, secondaries
+            nodeUser.wallet, [secondary1, secondary2]
           )
-          for (const secondary of secondaries) {
-            const secUserSyncSuccessRate = userSecondarySyncMetrics[secondary]['SuccessRate']
-            if (secUserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent || unhealthyPeers.has(secondary)) {
-              this.log(`processStateMachineOperation(): Secondary ${secondary} for user ${nodeUser.wallet} has userSyncSuccessRate of ${secUserSyncSuccessRate}; failed to meet threshold of ${this.MinimumSecondaryUserSyncSuccessPercent} - found value ${secUserSyncSuccessRate}. Marking replica as unhealthy.`)
-              unhealthyReplicas.push(secondary)
+          for (const secondary of replicaSetNodesToObserve) {
+            const secUserSyncSuccessRate = userSecondarySyncMetrics[secondary.endpoint]['SuccessRate']
+            if (
+              secUserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent ||
+              unhealthyPeers.has(secondary.endpoint) ||
+              this.peerSetManager.endpointToSPIdMap[secondary.endpoint] !== secondary.spId
+            ) {
+              unhealthyReplicas.push(secondary.endpoint)
             } else {
-              potentialSyncRequests.push({ ...nodeUser, endpoint: secondary })
+              potentialSyncRequests.push({ ...nodeUser, endpoint: secondary.endpoint })
             }
           }
 
@@ -813,22 +849,29 @@ class SnapbackSM {
            * Ignore unhealthy secondaries for now
            */
         } else {
-          // filter out false-y values to account for incomplete replica sets
-          let replicas = ([primary, secondary1, secondary2]).filter(Boolean)
-          // filter out this endpoint
-          replicas = replicas.filter(replica => replica !== this.endpoint)
+          // filter out false-y values to account for incomplete replica sets and filter out the
+          // the self node
+          replicaSetNodesToObserve = [{ endpoint: primary, spId: primarySpID }, ...replicaSetNodesToObserve]
+          replicaSetNodesToObserve = replicaSetNodesToObserve.filter(entry => {
+            return !!(entry.endpoint && entry.spId) || entry.endpoint !== this.endpoint
+          })
 
-          for (const replica of replicas) {
-            if (unhealthyPeers.has(replica)) {
+          for (const replica of replicaSetNodesToObserve) {
+            if (unhealthyPeers.has(replica.endpoint)) {
               let addToUnhealthyReplicas = true
 
               // If the current replica is the primary, perform a second health check.
               // and determine if the primary is truly unhealthy
-              if (replica === primary) {
+              if (
+                replica.endpoint === primary &&
+                // If the map's spId does not match the query's spId, then regardless
+                // of the relationship of the node to the user, issue a reconfig for that node
+                this.peerSetManager.endpointToSPIdMap[replica.endpoint] === replica.spId
+              ) {
                 addToUnhealthyReplicas = !(await this.peerSetManager.isPrimaryHealthy(primary))
               }
 
-              if (addToUnhealthyReplicas) unhealthyReplicas.push(replica)
+              if (addToUnhealthyReplicas) unhealthyReplicas.push(replica.endpoint)
             }
           }
 
@@ -845,31 +888,6 @@ class SnapbackSM {
         },
         time: Date.now()
       })
-
-      // Setup the mapping of Content Node endpoint to service provider id. Used in reconfig
-      try {
-        await this.peerSetManager.updateEndpointToSpIdMap(this.audiusLibs.ethContracts)
-
-        // update enabledReconfigModesSet after successful `updateEndpointToSpIDMap()` call
-        this.updateEnabledReconfigModesSet()
-
-        decisionTree.push({
-          stage: `updateEndpointToSpIdMap() Success`,
-          vals: {
-            endpointToSPIdMapSize: Object.keys(this.peerSetManager.endpointToSPIdMap).length
-          },
-          time: Date.now()
-        })
-      } catch (e) {
-        // Disable reconfig after failed `updateEndpointToSpIDMap()` call
-        this.updateEnabledReconfigModesSet(/* override */ RECONFIG_MODES.RECONFIG_DISABLED.key)
-
-        decisionTree.push({
-          stage: `updateEndpointToSpIdMap() Error`,
-          vals: { error: e.message },
-          time: Date.now()
-        })
-      }
 
       // Issue all required sync requests
       let numSyncRequestsRequired, numSyncRequestsEnqueued, enqueueSyncRequestErrors
