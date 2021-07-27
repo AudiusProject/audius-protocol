@@ -50,6 +50,14 @@ module.exports.getTracks = (limit = 100, offset = 0, idsArray = null, targetUser
   return req
 }
 
+module.exports.getTracksByHandleAndSlug = (handle, slug) => {
+  return {
+    endpoint: 'tracks',
+    method: 'get',
+    queryParams: { handle, slug }
+  }
+}
+
 module.exports.getTracksIncludingUnlisted = (identifiers, withUsers = false) => {
   let req = {
     endpoint: 'tracks_including_unlisted',
