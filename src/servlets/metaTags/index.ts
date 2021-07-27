@@ -10,10 +10,9 @@ import {
   getCollection,
   getExploreInfo,
   getImageUrl,
-  getTrack,
+  getTrackByHandleAndSlug,
   getUser,
-  getUserByHandle,
-  shouldRedirectTrack
+  getUserByHandle
 } from '../utils/helpers'
 import { Context, MetaTagFormat, Playable } from './types'
 
@@ -33,11 +32,10 @@ const template = handlebars.compile(
     .toString()
 )
 
-const getTrackContext = async (id: number, canEmbed: boolean): Promise<Context> => {
-  if (!id) return getDefaultContext()
-  if (shouldRedirectTrack(id)) return getDefaultContext()
+const getTrackContext = async (handle: string, slug: string, canEmbed: boolean): Promise<Context> => {
+  if (!handle || !slug) return getDefaultContext()
   try {
-    const track = await getTrack(id)
+    const track = await getTrackByHandleAndSlug(handle, slug)
     const user = await getUser(track.owner_id)
     const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
 
@@ -131,10 +129,10 @@ const getUserContext = async (handle: string): Promise<Context> => {
   }
 }
 
-const getRemixesContext = async (id: number): Promise<Context> => {
-  if (!id) return getDefaultContext()
+const getRemixesContext = async (handle: string, slug: string): Promise<Context> => {
+  if (!handle || !slug) return getDefaultContext()
   try {
-    const track = await getTrack(id)
+    const track = await getTrackByHandleAndSlug(handle, slug)
     const user = await getUser(track.owner_id)
     const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
 
@@ -219,8 +217,8 @@ const getResponse = async (
   const id = title ? parseInt(title.split('-').slice(-1)[0], 10) : -1
   switch (format) {
     case MetaTagFormat.Track:
-      console.log('get track', req.path, id, userAgent)
-      context = await getTrackContext(id, canEmbed)
+      console.log('get track', req.path, handle, title, userAgent)
+      context = await getTrackContext(handle, title, canEmbed)
       break
     case MetaTagFormat.Collection:
       console.log('get collection', req.path, id, userAgent)
@@ -231,8 +229,8 @@ const getResponse = async (
       context = await getUserContext(handle)
       break
     case MetaTagFormat.Remixes:
-      console.log('get remixes', req.path, id, userAgent)
-      context = await getRemixesContext(id)
+      console.log('get remixes', req.path, handle, title, userAgent)
+      context = await getRemixesContext(handle, title)
       break
     case MetaTagFormat.Upload:
       console.log('get upload', req.path, userAgent)

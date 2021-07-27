@@ -21,6 +21,12 @@ export const getTrack = async (id: number): Promise<any> => {
   throw new Error(`Failed to get track ${id}`)
 }
 
+export const getTrackByHandleAndSlug = async (handle: string, slug: string): Promise<any> => {
+  const track = await libs.Track.getTracksByHandleAndSlug(handle, slug)
+  if (track && track.length > 0) return track[0]
+  throw new Error(`Failed to get track ${handle}/${slug}`)
+}
+
 export const getTracks = async (ids: number[]): Promise<any> => {
   const ts =  await libs.Track.getTracks(ids.length, 0, ids)
   if (ts) return ts
