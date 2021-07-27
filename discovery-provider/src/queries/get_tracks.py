@@ -34,12 +34,7 @@ def _get_tracks(session, args):
         ).filter(TrackRoute.slug == slug)
 
     # Only return unlisted tracks if slug and user_id are present
-    if (
-        not "include_unlisted" in args
-        or not args.get("include_unlisted")
-        or not "slug" in args
-        or not "user_id" in args
-    ):
+    if not "slug" in args or not "user_id" in args:
         base_query.filter(Track.is_unlisted == False)
 
     # Conditionally process an array of tracks

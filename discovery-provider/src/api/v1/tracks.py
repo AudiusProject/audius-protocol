@@ -161,7 +161,6 @@ class TrackBySlug(Resource):
                 "filter_deleted": True,
                 "limit": 1,
                 "offset": 0,
-                "include_unlisted": True,
             }
         )
         if not tracks:
@@ -222,7 +221,6 @@ class FullTrackBySlug(Resource):
                 "limit": 1,
                 "offset": 0,
                 "current_user_id": current_user_id,
-                "include_unlisted": True,
             }
         )
         if not tracks:
