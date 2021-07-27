@@ -188,5 +188,6 @@ async function createAndVerifyMessage (
   return signature
 }
 
+exports.solanaConnection = solanaConnection
 exports.createAndVerifyMessage = createAndVerifyMessage
 exports.getFeePayer = getFeePayer
