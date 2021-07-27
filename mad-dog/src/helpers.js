@@ -323,6 +323,10 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 const ensureReplicaSetSyncIsConsistent = async ({ i, libs, executeOne }) => {
   let primary, secondary1, secondary2, primaryClockValue, secondary1ClockValue, secondary2ClockValue
   const userId = libs.userId
+
+  // Make sure replica set is updated before monitoring sync status
+  await executeOne(i, libsWrapper => libsWrapper.updateUserStateManagerToChainData(userId))
+
   let synced = false
   const startTime = Date.now()
   while (!synced && Date.now() - startTime <= MAX_SYNC_TIMEOUT) {
