@@ -10,7 +10,7 @@
 		"id": "listen_streak",
 		"type": "numeric",
 		"amount": "5",
-		"active": true,
+		"active": false,
 		"step_count": 7
 	}
 ]

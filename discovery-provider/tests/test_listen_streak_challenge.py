@@ -10,6 +10,7 @@ from src.utils.config import shared_config
 
 REDIS_URL = shared_config["redis"]["url"]
 
+
 def create_play(offset: int) -> Play:
     return Play(
         id=offset,
@@ -22,12 +23,20 @@ def create_play(offset: int) -> Play:
         created_at=datetime.now() + timedelta(days=offset),
     )
 
+
 def dispatch_play(offset: int, session: Session, bus: ChallengeEventBus):
     play = create_play(offset)
     session.add(play)
     session.flush()
-    bus.dispatch(session, ChallengeEvent.track_listen, 1, 1, { "created_at": play.created_at.timestamp() })
+    bus.dispatch(
+        session,
+        ChallengeEvent.track_listen,
+        1,
+        1,
+        {"created_at": play.created_at.timestamp()},
+    )
     bus.process_events(session)
+
 
 def test_listen_streak_challenge(app):
     redis_conn = redis.Redis.from_url(url=REDIS_URL)
@@ -56,7 +65,9 @@ def test_listen_streak_challenge(app):
         bus = ChallengeEventBus(redis_conn)
 
         # Register events with the bus
-        bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
+        bus.register_listener(
+            ChallengeEvent.track_listen, listen_streak_challenge_manager
+        )
 
         session.add(block)
         session.flush()
