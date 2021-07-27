@@ -289,13 +289,13 @@ module.exports = function (app) {
       return successResponse({
         above_balance_minimum: true,
         balance,
-        solanaFeePayerWalletSet 
+        solanaFeePayerWalletSet
       })
     } else {
       return errorResponseServerError({
         above_balance_minimum: false,
         balance,
-        solanaFeePayerWalletSet 
+        solanaFeePayerWalletSet
       })
     }
   }))
