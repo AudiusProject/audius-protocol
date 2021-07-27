@@ -280,20 +280,23 @@ module.exports = function (app) {
 
     if (solanaFeePayerWallet) {
       solanaFeePayerPublicKey = (new solanaWeb3.Account(solanaFeePayerWallet)).publicKey
-      balance = (await solanaConnection.getBalance(solanaFeePayerPublicKey)) / (10 ** 9)
+      balance = await solanaConnection.getBalance(solanaFeePayerPublicKey)
     }
+
+    const sol = Math.floor(balance / (10 ** 9))
+    const lamports = balance % (10 ** 9)
 
     if (balance > minimumBalance) {
       return successResponse({
         above_balance_minimum: true,
-        balance,
+        balance: { sol, lamports },
         wallet: solanaFeePayerPublicKey ? solanaFeePayerPublicKey.toBase58() : null
       })
     }
 
     return errorResponseServerError({
       above_balance_minimum: false,
-      balance,
+      balance: { sol, lamports },
       wallet: solanaFeePayerPublicKey ? solanaFeePayerPublicKey.toBase58() : null
     })
   }))

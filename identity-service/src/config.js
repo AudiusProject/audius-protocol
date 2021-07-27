@@ -293,7 +293,7 @@ const config = convict({
     doc: 'Minimum SOL balance below which /sol_balance_check fails',
     format: Number,
     env: 'solMinimumBalance',
-    default: 1
+    default: 1000000000
   },
   mailgunApiKey: {
     doc: 'Mailgun API key used to send emails',
