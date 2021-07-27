@@ -272,9 +272,8 @@ module.exports = function (app) {
   }))
 
   app.get('/sol_balance_check', handleResponse(async (req, res) => {
-    let { minimumBalance } = req.query
-    minimumBalance = parseFloat(minimumBalance || config.get('solMinimumBalance'))
-    let solanaFeePayerWallet = config.get('solanaFeePayerWallet')
+    const minimumBalance = parseFloat(req.query.minimumBalance || config.get('solMinimumBalance'))
+    const solanaFeePayerWallet = config.get('solanaFeePayerWallet')
 
     let solanaFeePayerPublicKey = null
     let balance = 0
@@ -290,13 +289,13 @@ module.exports = function (app) {
         balance,
         solanaFeePayerPublicKey
       })
-    } else {
-      return errorResponseServerError({
-        above_balance_minimum: false,
-        balance,
-        solanaFeePayerPublicKey
-      })
     }
+
+    return errorResponseServerError({
+      above_balance_minimum: false,
+      balance,
+      solanaFeePayerPublicKey
+    })
   }))
 
   app.get('/notification_check', handleResponse(async (req, res) => {
