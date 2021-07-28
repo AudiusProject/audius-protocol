@@ -39,9 +39,9 @@ default_indexing_interval_seconds = int(
 )
 
 # min system requirement values
-min_number_of_cpus = 8  # 8 cpu
-min_total_memory = 15500000000  # 15.5 GB of RAM
-min_filesystem_size = 240000000000  # 240 GB of file system storage
+min_number_of_cpus: int = 8  # 8 cpu
+min_total_memory: int = 15500000000  # 15.5 GB of RAM
+min_filesystem_size: int = 240000000000  # 240 GB of file system storage
 
 
 def get_elapsed_time_redis(redis, redis_key):
@@ -275,9 +275,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     # Return error if system requirement check fails
     # divide by 10^-9 is conversion from bytes to gb
-    num_cpus = health_results["number_of_cpus"] or 0
-    total_memory = health_results["total_memory"] or 0
-    filesystem_size = health_results["filesystem_size"] or 0
+    num_cpus: int = health_results["number_of_cpus"] or 0
+    total_memory: int = health_results["total_memory"] or 0
+    filesystem_size: int = health_results["filesystem_size"] or 0
     if (
         num_cpus < min_number_of_cpus
         or total_memory < min_total_memory
