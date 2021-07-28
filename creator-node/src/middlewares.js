@@ -158,8 +158,8 @@ async function issueAndWaitForSecondarySyncRequests (req) {
   const pollingDurationMs = req.header('Polling-Duration-ms') || config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs')
   const enforceWriteQuorum = req.header('Enforce-Write-Quorum') || config.get('enforceWriteQuorum')
 
-  if (config.get('isUserMetadataNode') || config.get('snapbackDevModeEnabled')) {
-    req.logger.info(`issueAndWaitForSecondarySyncRequests - Cannot proceed due to isUserMetadataNode (${config.get('isUserMetadataNode')}) or snapbackDevModeEnabled ${config.get('snapbackDevModeEnabled')})`)
+  if (config.get('isUserMetadataNode') || config.get('manualSyncsDisabled')) {
+    req.logger.info(`issueAndWaitForSecondarySyncRequests - Cannot proceed due to isUserMetadataNode (${config.get('isUserMetadataNode')}) or manualSyncsDisabled ${config.get('manualSyncsDisabled')})`)
     return
   }
 
