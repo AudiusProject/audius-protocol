@@ -54,7 +54,7 @@ services:
       - audius_ipfs_host=${COMPOSE_PROJECT_NAME}-ipfs-node
       - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432,${COMPOSE_PROJECT_NAME}_redis-server_1:6379, ${COMPOSE_PROJECT_NAME}-ipfs-node:5001
     depends_on:
-      - discovery-provider-db 
+      - discovery-provider-db
     volumes:
       - '../.:/audius-discovery-provider'
     networks:

@@ -289,6 +289,12 @@ const config = convict({
     env: 'ethMinimumFunderBalance',
     default: 0.5
   },
+  solMinimumBalance: {
+    doc: 'Minimum SOL balance below which /sol_balance_check fails',
+    format: Number,
+    env: 'solMinimumBalance',
+    default: 1000000000
+  },
   mailgunApiKey: {
     doc: 'Mailgun API key used to send emails',
     format: String,
