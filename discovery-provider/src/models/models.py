@@ -2,7 +2,7 @@
 import logging
 import enum
 
-from typing import Any
+from typing import Dict, Any
 from jsonschema import ValidationError
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.dialects import postgresql
@@ -30,6 +30,8 @@ Base: Any = declarative_base()
 logger = logging.getLogger(__name__)
 
 # field_type is the sqlalchemy type from the model object
+
+
 def validate_field_helper(field, value, model, field_type):
     # TODO: need to write custom validator for these datetime fields as jsonschema
     # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use
@@ -876,6 +878,7 @@ class UserBalance(Base):
     # balance in Wei
     balance = Column(String, nullable=False)
     associated_wallets_balance = Column(String, nullable=False)
+    associated_spl_wallets_balance = Column(String, nullable=False)
 
     # wAudio balance
     waudio = Column(String, nullable=False)
@@ -885,8 +888,13 @@ class UserBalance(Base):
 user_id={self.user_id},\
 balance={self.balance},\
 associated_wallets_balance={self.associated_wallets_balance}\
+associated_spl_wallets_balance={self.associated_spl_wallets_balance}\
 waudio={self.waudio}>"
 
+
+class WalletChain(str, enum.Enum):
+    eth = "eth"
+    spl = "spl"
 
 class AssociatedWallet(Base):
     __tablename__ = "associated_wallets"
@@ -897,6 +905,7 @@ class AssociatedWallet(Base):
     id = Column(Integer, nullable=False, primary_key=True)
     user_id = Column(Integer, nullable=False, index=True)
     wallet = Column(String, nullable=False, index=True)
+    chain = Column(Enum(WalletChain), nullable=False)
 
     def __repr__(self):
         return f"<AssociatedWallet(blockhash={self.blockhash},\
@@ -905,7 +914,8 @@ is_current={self.is_current},\
 is_delete={self.is_delete},\
 id={self.id},\
 user_id={self.user_id},\
-wallet={self.wallet})>"
+wallet={self.wallet}\
+chain={self.chain})>"
 
 
 class AggregateUser(Base):
