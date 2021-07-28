@@ -69,7 +69,7 @@ const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, 
   // SnapbackSM information
   const snapbackJobInterval = config.get('snapbackJobInterval')
   const snapbackModuloBase = config.get('snapbackModuloBase')
-  const snapbackDevModeEnabled = config.get('snapbackDevModeEnabled')
+  const manualSyncsDisabled = config.get('manualSyncsDisabled')
 
   // System information
   const [
@@ -141,7 +141,7 @@ const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, 
     latestSyncSuccessTimestamp,
     latestSyncFailTimestamp,
     currentSnapbackReconfigMode,
-    snapbackDevModeEnabled,
+    manualSyncsDisabled,
     snapbackModuloBase,
     snapbackJobInterval
   }

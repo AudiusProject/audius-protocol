@@ -26,7 +26,7 @@ services:
       - delegateOwnerWallet=${delegateOwnerWallet}
       - delegatePrivateKey=${delegatePrivateKey}
       - creatorNodeEndpoint=${creatorNodeEndpoint}
-      - snapbackDevModeEnabled=${snapbackDevModeEnabled}
+      - manualSyncsDisabled=${manualSyncsDisabled}
       - devMode=${DEV_MODE}
       - spOwnerWallet=${spOwnerWallet}
       - isUserMetadataNode=${CREATOR_NODE_IS_USER_METADATA}
