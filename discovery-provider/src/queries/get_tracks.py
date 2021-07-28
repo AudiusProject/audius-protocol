@@ -7,6 +7,7 @@ from src.utils import helpers, redis_connection
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import (
     add_query_pagination,
+    add_users_to_tracks,
     get_pagination_vars,
     parse_sort_param,
     populate_track_metadata,
@@ -154,19 +155,11 @@ def get_tracks(args):
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
         if args.get("with_users", False):
-            users = list(map(lambda t: t["user"][0], tracks))
-            set_users_in_cache(users)
-            user_ids = get_users_ids(tracks)
-            # bundle peripheral info into user results
-            populated_users = populate_user_metadata(
-                session, user_ids, users, current_user_id
-            )
-            user_map = {}
-            for user in populated_users:
-                user_map[user["user_id"]] = user
-
-            for track in tracks:
-                user = user_map[track["owner_id"]]
-                if user:
-                    track["user"] = user
+            add_users_to_tracks(session, tracks, current_user_id)
+        else:
+            # Remove the user from the tracks
+            tracks = [
+                {key: val for key, val in dict.items() if key != "user"}
+                for dict in tracks
+            ]
     return tracks
