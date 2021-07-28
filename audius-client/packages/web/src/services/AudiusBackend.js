@@ -517,6 +517,7 @@ class AudiusBackend {
       !WAUDIO_MINT_ADDRESS ||
       !SOLANA_TOKEN_ADDRESS ||
       !SOLANA_FEE_PAYER_ADDRESS ||
+      !CLAIMABLE_TOKEN_PDA ||
       !CLAIMABLE_TOKEN_PROGRAM_ADDRESS
     ) {
       console.error('Missing solana configs')
