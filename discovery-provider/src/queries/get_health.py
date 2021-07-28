@@ -38,6 +38,10 @@ default_indexing_interval_seconds = int(
     shared_config["discprov"]["block_processing_interval_sec"]
 )
 
+# min system requirement values
+min_number_of_cpus = 8 # 8 cpu
+min_total_memory = 15500000000 # 15.5 GB of RAM
+min_filesystem_size = 240000000000 # 240 GB of file system storage
 
 def get_elapsed_time_redis(redis, redis_key):
     last_seen = redis.get(redis_key)
@@ -267,6 +271,18 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     health_results["block_difference"] = block_difference
     health_results["maximum_healthy_block_difference"] = default_healthy_block_diff
     health_results.update(disc_prov_version)
+
+    # Return error if system requirement check fails
+    # divide by 10^-9 is conversion from bytes to gb
+    if (
+            not health_results["number_of_cpus"] or health_results["number_of_cpus"] < min_number_of_cpus or 
+            not health_results["total_memory"] or health_results["total_memory"] < min_total_memory or 
+            not health_results["filesystem_size"] or health_results["filesystem_size"] < min_filesystem_size
+    ):
+        health_results["meets_min_requirements"] = False
+        # TODO - this will become strictly enforced in upcoming service versions and return with error
+    else:
+        health_results["meets_min_requirements"] = True
 
     if verbose:
         # DB connections check

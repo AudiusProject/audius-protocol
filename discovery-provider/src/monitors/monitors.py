@@ -164,6 +164,8 @@ def parse_value(monitor, value):
         value: string The value to parse
     """
     try:
+        if str(value) == 'None':
+            return None
         # pylint: disable=R1705
         if monitor[monitor_names.type] == "bool":
             return value == "True"
