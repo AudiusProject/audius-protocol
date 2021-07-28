@@ -95,6 +95,8 @@ class SnapbackSM {
 
     this.MinimumSecondaryUserSyncSuccessPercent = this.nodeConfig.get('minimumSecondaryUserSyncSuccessPercent') / 100
 
+    this.SecondaryUserSyncDailyFailureCountThreshold = this.nodeConfig.get('secondaryUserSyncDailyFailureCountThreshold')
+
     // Throw an error if running as creator node and no libs are provided
     if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint)) {
       throw new Error('Missing required configs - cannot start')
@@ -1049,11 +1051,9 @@ class SnapbackSM {
         secondaryUrl, userWallet, syncType
       )
 
-      const SecondaryUserSyncDailyFailureCountThreshold = this.nodeConfig.get('secondaryUserSyncDailyFailureCountThreshold')
-
-      if (secondaryUserSyncFailureCountToday > SecondaryUserSyncDailyFailureCountThreshold) {
+      if (secondaryUserSyncFailureCountToday > this.SecondaryUserSyncDailyFailureCountThreshold) {
         additionalSyncIsRequired = false
-        this.logError(`${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock} and has met SecondaryUserSyncDailyFailureCountThreshold (${SecondaryUserSyncDailyFailureCountThreshold}). Will not enqueue further syncRequests today.`)
+        this.logError(`${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock} and has met SecondaryUserSyncDailyFailureCountThreshold (${this.SecondaryUserSyncDailyFailureCountThreshold}). Will not enqueue further syncRequests today.`)
       } else {
         additionalSyncIsRequired = true
         this.logError(`${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest.`)
