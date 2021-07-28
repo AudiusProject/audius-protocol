@@ -34,6 +34,7 @@ def get_track_plays(self, db, lock):
         # more play counts from identity
         most_recent_play_date = (
             session.query(Play.updated_at)
+            .filter(Play.signature == None)
             .order_by(desc(Play.updated_at), desc(Play.id))
             .first()
         )
