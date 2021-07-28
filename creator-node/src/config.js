@@ -578,7 +578,7 @@ const config = convict({
     default: 10
   },
   maxSyncMonitoringDurationInMs: {
-    doc: '',
+    doc: 'Max duration that primary will monitor secondary for syncRequest completion',
     format: 'nat',
     env: 'maxSyncMonitoringDurationInMs',
     default: 300000 // 5min (prod default)
