@@ -70,17 +70,21 @@ if [ "$audius_db_run_migrations" != false ]; then
 fi
 
 if [[ "$dev" == "true" ]]; then
-    ./scripts/dev-server.sh 2>&1 | tee >(cat >&2) server.log | logger -t server &
-    if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        celery -A src.worker.celery worker --loglevel info 2>&1 | tee >(cat >&2) worker.log | logger -t worker &
+    ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) server.log &
+    if [[ "$audius_only_web_server" != "true" ]]; then
+        if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
+            celery -A src.worker.celery worker --loglevel info 2>&1 | tee >(logger -t worker) worker.log &
+        fi
+        celery -A src.worker.celery beat --loglevel info 2>&1 | tee >(logger -t beat) beat.log &
     fi
-    celery -A src.worker.celery beat --loglevel info 2>&1 | tee >(cat >&2) beat.log | logger -t beat &
 else
-    ./scripts/prod-server.sh 2>&1 | tee >(cat >&2) | logger -t server &
-    if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-        celery -A src.worker.celery worker --loglevel info 2>&1 | tee >(cat >&2) | logger -t worker &
+    ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
+    if [[ "$audius_only_web_server" != "true" ]]; then
+        if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
+            celery -A src.worker.celery worker --loglevel info 2>&1 | tee >(logger -t worker) &
+        fi
+        celery -A src.worker.celery beat --loglevel info 2>&1 | tee >(logger -t beat) &
     fi
-    celery -A src.worker.celery beat --loglevel info 2>&1 | tee >(cat >&2) | logger -t beat &
 fi
 
 wait
