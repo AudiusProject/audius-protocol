@@ -40,6 +40,7 @@ class UserWalletMetadata(TypedDict):
     associated_wallets: Optional[List[str]]
     bank_account: Optional[str]
 
+
 def get_lazy_refresh_user_ids(redis: Redis, session: Session) -> List[int]:
     redis_user_ids = redis.smembers(LAZY_REFRESH_REDIS_PREFIX)
     user_ids = [int(user_id.decode()) for user_id in redis_user_ids]
@@ -95,7 +96,7 @@ def refresh_user_ids(
     delegate_manager_contract,
     staking_contract,
     eth_web3,
-    waudio_token
+    waudio_token,
 ):
     with db.scoped_session() as session:
         lazy_refresh_user_ids = get_lazy_refresh_user_ids(redis, session)
@@ -112,13 +113,16 @@ def refresh_user_ids(
         existing_user_balances: List[UserBalance] = (
             (session.query(UserBalance)).filter(UserBalance.user_id.in_(user_ids)).all()
         )
-        user_balances = {
-            user.user_id: user for user in existing_user_balances
-        }
+        user_balances = {user.user_id: user for user in existing_user_balances}
 
         # Grab the users & associated_wallets we need to refresh
-        user_associated_wallet_query: List[Tuple[int, str, str]] = (
-            session.query(User.user_id, User.wallet, AssociatedWallet.wallet)
+        user_associated_wallet_query: List[Tuple[int, str, str, str]] = (
+            session.query(
+                User.user_id,
+                User.wallet,
+                AssociatedWallet.wallet,
+                AssociatedWallet.chain,
+            )
             .outerjoin(
                 AssociatedWallet,
                 and_(
@@ -149,8 +153,9 @@ def refresh_user_ids(
         # and primary owner wallet into a single metadata list
         user_id_metadata: Dict[int, UserWalletMetadata] = {}
 
+        user_id_wallets = {}
         for user in user_associated_wallet_query:
-            user_id, user_wallet, associated_wallet = user
+            user_id, user_wallet, associated_wallet, wallet_chain = user
             if not user_id in user_id_metadata:
                 user_id_metadata[user_id] = {
                     "owner_wallet": user_wallet,
@@ -162,13 +167,14 @@ def refresh_user_ids(
                         user_id
                     ]
             if associated_wallet:
-                user_associated_wallet = user_id_metadata[user_id]["associated_wallets"]
-                if user_associated_wallet is not None:
-                    user_associated_wallet.append(associated_wallet)
-                else:
-                    user_id_metadata[user_id]["associated_wallets"] = [
+                if not user_id_wallets[user_id]["associated_wallets"][wallet_chain]:
+                    user_id_wallets[user_id]["associated_wallets"][wallet_chain] = [
                         associated_wallet
                     ]
+                else:
+                    user_id_wallets[user_id]["associated_wallets"][wallet_chain].append(
+                        associated_wallet
+                    )
 
         logger.info(
             f"cache_user_balance.py | fetching for {len(user_associated_wallet_query)} users: {user_ids}"
@@ -184,22 +190,28 @@ def refresh_user_ids(
                 ).call()
                 associated_balance = 0
                 waudio_balance = 0
+                associated_spl_balance = 0
 
-                if wallets["associated_wallets"] is not None:
-                    for wallet in wallets["associated_wallets"]:
-                        wallet = eth_web3.toChecksumAddress(wallet)
-                        balance = token_contract.functions.balanceOf(wallet).call()
-                        delegation_balance = (
-                            delegate_manager_contract.functions.getTotalDelegatorStake(
+                if "associated_wallets" in wallets:
+                    if "eth" in wallets["associated_wallets"]:
+                        for wallet in wallets["associated_wallets"]["eth"]:
+                            wallet = eth_web3.toChecksumAddress(wallet)
+                            balance = token_contract.functions.balanceOf(wallet).call()
+                            delegation_balance = delegate_manager_contract.functions.getTotalDelegatorStake(
                                 wallet
                             ).call()
-                        )
-                        stake_balance = staking_contract.functions.totalStakedFor(
-                            wallet
-                        ).call()
-                        associated_balance += (
-                            balance + delegation_balance + stake_balance
-                        )
+                            stake_balance = staking_contract.functions.totalStakedFor(
+                                wallet
+                            ).call()
+                            associated_balance += (
+                                balance + delegation_balance + stake_balance
+                            )
+                    if "spl" in wallets["associated_wallets"]:
+                        for wallet in wallets["associated_wallets"]["spl"]:
+                            bal_info = waudio_token.get_balance(PublicKey(wallet))
+                            waudio_balance = bal_info["result"]["value"]["amount"]
+                            associated_spl_balance += waudio_balance
+
                 if wallets["bank_account"] is not None:
                     if waudio_token is None:
                         logger.error(
@@ -216,6 +228,9 @@ def refresh_user_ids(
                 user_balance.balance = owner_wallet_balance
                 user_balance.associated_wallets_balance = str(associated_balance)
                 user_balance.waudio = str(waudio_balance)
+                user_balance.associated_spl_wallets_balance = str(
+                    associated_spl_balance
+                )
 
             except Exception as e:
                 logger.error(
@@ -334,7 +349,9 @@ def update_user_balances_task(self):
 
             delegate_manager_inst = get_delegate_manager_contract(eth_web3)
             staking_inst = get_staking_contract(eth_web3)
-            token_inst = get_token_contract(eth_web3, update_user_balances_task.shared_config)
+            token_inst = get_token_contract(
+                eth_web3, update_user_balances_task.shared_config
+            )
             waudio_token = get_audio_token(solana_client)
             refresh_user_ids(
                 redis,

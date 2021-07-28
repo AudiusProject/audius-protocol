@@ -13,6 +13,8 @@ from src.utils.db_session import get_db
 from src.challenges.challenge_event_bus import get_event_bus
 from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
 
+block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
+
 
 def get_new_track_event():
     event_type = track_event_types_lookup["new_track"]
@@ -26,7 +28,7 @@ def get_new_track_event():
             "_multihashSize": 32,
         }
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": new_track_event})
+    return event_type, AttrDict({"blockHash": block_hash, "args": new_track_event})
 
 
 def get_new_track_event_dupe():
@@ -41,7 +43,7 @@ def get_new_track_event_dupe():
             "_multihashSize": 32,
         }
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": new_track_event})
+    return event_type, AttrDict({"blockHash": block_hash, "args": new_track_event})
 
 
 def get_update_track_event():
@@ -56,13 +58,13 @@ def get_update_track_event():
             "_multihashSize": 32,
         }
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": update_track_event})
+    return event_type, AttrDict({"blockHash": block_hash, "args": update_track_event})
 
 
 def get_delete_track_event():
     event_type = track_event_types_lookup["delete_track"]
     delete_track_event = AttrDict({"_trackId": 1})
-    return event_type, AttrDict({"blockHash": "0x", "args": delete_track_event})
+    return event_type, AttrDict({"blockHash": block_hash, "args": delete_track_event})
 
 
 multihash = helpers.multihash_digest_to_cid(
@@ -172,7 +174,6 @@ ipfs_client = IPFSClient(
         },
     }
 )
-web3 = Web3()
 
 # ========================================== Start Tests ==========================================
 @patch("src.tasks.index")

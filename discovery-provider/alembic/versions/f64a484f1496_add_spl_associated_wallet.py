@@ -1,7 +1,7 @@
 """add spl associated wallet
 
 Revision ID: f64a484f1496
-Revises: 2e02a681aeaa
+Revises: 273b8bcef694
 Create Date: 2021-07-21 15:58:05.108372
 
 """
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = 'f64a484f1496'
-down_revision = '2e02a681aeaa'
+revision = "f64a484f1496"
+down_revision = "273b8bcef694"
 branch_labels = None
 depends_on = None
 
@@ -26,7 +26,7 @@ def upgrade():
             nullable=False,
         ),
     )
-    wallet_chain = postgresql.ENUM('eth', 'spl', name='wallet_chain')
+    wallet_chain = postgresql.ENUM("eth", "spl", name="wallet_chain")
     wallet_chain.create(op.get_bind())
 
     op.add_column(
@@ -38,11 +38,11 @@ def upgrade():
             nullable=False,
         ),
     )
-    op.alter_column('associated_wallets', 'chain', server_default=None)
+    op.alter_column("associated_wallets", "chain", server_default=None)
 
 
 def downgrade():
     op.drop_column("user_balances", "associated_spl_wallets_balance")
     op.drop_column("associated_wallets", "chain")
-    wallet_chain = postgresql.ENUM('eth', 'spl', name='wallet_chain')
+    wallet_chain = postgresql.ENUM("eth", "spl", name="wallet_chain")
     wallet_chain.drop(op.get_bind())
