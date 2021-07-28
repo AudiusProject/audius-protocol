@@ -175,6 +175,22 @@ class SolanaWeb3Manager {
   }
 
   /**
+   * Gets the SPL waudio balance for a solana address in wei with 18 decimals
+   * @returns {BN | null}
+   */
+   async getWAudioBalance(solanaAddress) {
+    try {
+      const tokenAccount = await getAssociatedTokenAccountInfo(solanaAddress)
+      if (!tokenAccount) return null
+
+      // Multiply by 10^9 to maintain same decimals as eth $AUDIO
+      return tokenAccount.amount.mul(new BN("1".padEnd(10, "0")))
+    } catch (e) {
+      return null
+    }
+  }
+
+  /**
    * Transfers audio from the web3 provider's eth address
    * @param {string} recipientSolanaAddress
    *  Recipient solana address which is either a user bank, wAudio token account,
