@@ -461,7 +461,7 @@ def validate_signature(
         try:
             message = f"AudiusUserID:{user_id}"
             verify_key = VerifyKey(base58.b58decode(bytes(associated_wallet, "utf-8")))
-            # Verify raises an error is the message is tampered w/ else returns the original msg
+            # Verify raises an error if the message is tampered w/ else returns the original msg
             verify_key.verify(str.encode(message), HexEncoder.decode(signature))
             return True
         except Exception as e:

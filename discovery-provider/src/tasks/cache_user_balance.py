@@ -167,7 +167,7 @@ def refresh_user_ids(
                         user_id
                     ]
             if associated_wallet:
-                if not user_id_wallets[user_id]["associated_wallets"][wallet_chain]:
+                if not wallet_chain in user_id_wallets[user_id]["associated_wallets"]:
                     user_id_wallets[user_id]["associated_wallets"][wallet_chain] = [
                         associated_wallet
                     ]

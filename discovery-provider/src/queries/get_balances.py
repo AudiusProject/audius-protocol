@@ -43,19 +43,14 @@ def enqueue_immediate_balance_refresh(redis: Redis, user_ids: List[int]):
     redis.sadd(IMMEDIATE_REFRESH_REDIS_PREFIX, *user_ids)
 
 
-def get_balances(
-    session: Session,
-    redis: Redis,
-    user_ids: List[int]
-):
+def get_balances(session: Session, redis: Redis, user_ids: List[int]):
     """Gets user balances.
     Returns mapping { user_id: balance }
     Enqueues in Redis user balances requiring refresh.
     """
     # Find user balances
     query: List[UserBalance] = (
-        (session.query(UserBalance)).filter(
-            UserBalance.user_id.in_(user_ids)).all()
+        (session.query(UserBalance)).filter(UserBalance.user_id.in_(user_ids)).all()
     )
 
     # Construct result dict from query result
@@ -64,7 +59,11 @@ def get_balances(
             "owner_wallet_balance": user_balance.balance,
             "associated_wallets_balance": user_balance.associated_wallets_balance,
             "associated_spl_wallets_balance": user_balance.associated_spl_wallets_balance,
-            "total_balance": str(int(user_balance.balance) + int(user_balance.associated_wallets_balance) + (int(user_balance.associated_spl_wallets_balance) * 10**9))
+            "total_balance": str(
+                int(user_balance.balance)
+                + int(user_balance.associated_wallets_balance)
+                + (int(user_balance.associated_spl_wallets_balance) * 10 ** 9)
+            ),
         }
         for user_balance in query
     }
@@ -76,8 +75,12 @@ def get_balances(
 
     # Add new balances to result set
     no_balance_dict = {
-        user_id: {"owner_wallet_balance": "0", "associated_wallets_balance": "0",
-                  "associated_spl_wallets_balance": '0', 'total_balance': '0'}
+        user_id: {
+            "owner_wallet_balance": "0",
+            "associated_wallets_balance": "0",
+            "associated_spl_wallets_balance": "0",
+            "total_balance": "0",
+        }
         for user_id in needs_balance_set
     }
     result.update(no_balance_dict)
@@ -92,8 +95,6 @@ def get_balances(
     # Enqueue new balances to Redis refresh queue
     # 1. All users who need a new balance
     # 2. All users who need a balance refresh
-    enqueue_lazy_balance_refresh(
-        redis, list(needs_balance_set) + needs_refresh
-    )
+    enqueue_lazy_balance_refresh(redis, list(needs_balance_set) + needs_refresh)
 
     return result

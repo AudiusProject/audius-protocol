@@ -39,8 +39,8 @@ def get_associated_user_wallet(args: AssociatedUserWalletArgs) -> AssociatedUser
         eth_wallets: List[str] = []
         spl_wallets: List[str] = []
         for wallet, chain in user_wallet:
-            if chain == 'eth':
+            if chain == "eth":
                 eth_wallets.append(wallet)
-            elif chain == 'spl':
+            elif chain == "spl":
                 spl_wallets.append(wallet)
-        return {'eth': eth_wallets, 'spl': spl_wallets}
+        return {"eth": eth_wallets, "spl": spl_wallets}
