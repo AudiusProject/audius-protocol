@@ -11,11 +11,6 @@ from src.queries.query_helpers import (
     get_pagination_vars,
     parse_sort_param,
     populate_track_metadata,
-    get_users_ids,
-    populate_user_metadata,
-)
-from src.queries.get_unpopulated_users import (
-    set_users_in_cache,
 )
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 
