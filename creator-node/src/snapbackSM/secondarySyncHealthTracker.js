@@ -171,6 +171,10 @@ const Getters = {
     }
   },
 
+  /**
+   * Returns single int representing SyncRequestOutcome for secondary, wallet, syncType, date=today, and Outcome=Failure
+   * Only one redis key should exist for above params, but takes 1st value if multiple are found
+   */
   async getSecondaryUserSyncFailureCountForToday (secondary, wallet, syncType) {
     const resp = await this.getSyncRequestOutcomeMetrics({
       secondary,
