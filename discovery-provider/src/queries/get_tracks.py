@@ -11,7 +11,10 @@ from src.queries.query_helpers import (
     parse_sort_param,
     populate_track_metadata,
     get_users_ids,
-    get_users_by_id,
+    populate_user_metadata,
+)
+from src.queries.get_unpopulated_users import (
+    set_users_in_cache,
 )
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 
@@ -149,10 +152,19 @@ def get_tracks(args):
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
         if args.get("with_users", False):
-            user_id_list = get_users_ids(tracks)
-            users = get_users_by_id(session, user_id_list, current_user_id)
+            users = list(map(lambda t: t["user"][0], tracks))
+            set_users_in_cache(users)
+            user_ids = get_users_ids(tracks)
+            # bundle peripheral info into user results
+            populated_users = populate_user_metadata(
+                session, user_ids, users, current_user_id
+            )
+            user_map = {}
+            for user in populated_users:
+                user_map[user["user_id"]] = user
+
             for track in tracks:
-                user = users[track["owner_id"]]
+                user = user_map[track["owner_id"]]
                 if user:
                     track["user"] = user
     return tracks

@@ -261,7 +261,7 @@ class Track(Base):
         viewonly=True,
     )
 
-    _owner = relationship(
+    user = relationship(
         "User",
         primaryjoin="and_(\
             remote(Track.owner_id) == foreign(User.user_id),\
@@ -276,8 +276,8 @@ class Track(Base):
 
     @property
     def permalink(self):
-        if self._owner and self._owner[0].handle and self._slug:
-            return f"/{self._owner[0].handle}/{self._slug}"
+        if self.user and self.user[0].handle and self._slug:
+            return f"/{self.user[0].handle}/{self._slug}"
         return ""
 
     PrimaryKeyConstraint(is_current, track_id, blockhash, txhash)
