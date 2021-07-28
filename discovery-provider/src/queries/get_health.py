@@ -275,6 +275,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     # Return error if system requirement check fails
     # divide by 10^-9 is conversion from bytes to gb
+    # pylint: disable
     num_cpus: int = health_results["number_of_cpus"] or 0
     total_memory: int = health_results["total_memory"] or 0
     filesystem_size: int = health_results["filesystem_size"] or 0
@@ -287,6 +288,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # TODO - this will become strictly enforced in upcoming service versions and return with error
     else:
         health_results["meets_min_requirements"] = True
+    # pylint: enable
 
     if verbose:
         # DB connections check
