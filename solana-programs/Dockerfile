@@ -16,7 +16,7 @@ ENV PATH="/root/.cargo/bin:/root/.local/share/solana/install/active_release/bin:
 COPY audius_eth_registry audius_eth_registry
 COPY track_listen_count track_listen_count
 COPY cli cli
-COPY claimable_tokens claimable_tokens
+COPY claimable-tokens claimable-tokens
 
 RUN cd audius_eth_registry && \
     cargo build-bpf && \
@@ -24,7 +24,7 @@ RUN cd audius_eth_registry && \
     cargo build-bpf  && \
     cd ../cli && \
     cargo build && \
-    cd ../claimable_tokens/program && \
+    cd ../claimable-tokens/program && \
     cargo build-bpf && \
     cd ../cli && \
     cargo build
