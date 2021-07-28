@@ -485,10 +485,10 @@ const config = convict({
     env: 'enforceWriteQuorum',
     default: false
   },
-  snapbackDevModeEnabled: {
-    doc: 'TEST ONLY. DO NOT CONFIGURE MANUALLY. Disables automatic secondary sync issuing in order to test SnapbackSM.',
+  manualSyncsDisabled: {
+    doc: 'Disables issuing of manual syncs in order to test SnapbackSM Recurring Sync logic.',
     format: 'BooleanCustom',
-    env: 'snapbackDevModeEnabled',
+    env: 'manualSyncsDisabled',
     default: false
   },
   snapbackModuloBase: {
@@ -576,6 +576,12 @@ const config = convict({
     format: 'nat',
     env: 'secondaryUserSyncDailyFailureCountThreshold',
     default: 10
+  },
+  maxSyncMonitoringDurationInMs: {
+    doc: '',
+    format: 'nat',
+    env: 'maxSyncMonitoringDurationInMs',
+    default: 300000 // 5min (prod default)
   }
 
   /**

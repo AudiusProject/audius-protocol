@@ -12,9 +12,6 @@ const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
 
-// Maximum number of time to wait for a sync operation, 6 minutes by default
-const MaxSyncMonitoringDurationInMs = 360000 // ms
-
 // Retry delay between requests during monitoring
 const SyncMonitoringRetryDelayMs = 15000
 
@@ -93,7 +90,7 @@ class SnapbackSM {
     this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
     this.spID = this.nodeConfig.get('spID')
     this.delegatePrivateKey = this.nodeConfig.get('delegatePrivateKey')
-    this.snapbackDevModeEnabled = this.nodeConfig.get('snapbackDevModeEnabled')
+    this.manualSyncsDisabled = this.nodeConfig.get('manualSyncsDisabled')
 
     this.MaxManualRequestSyncJobConcurrency = this.nodeConfig.get('maxManualRequestSyncJobConcurrency')
     this.MaxRecurringRequestSyncJobConcurrency = this.nodeConfig.get('maxRecurringRequestSyncJobConcurrency')
@@ -101,6 +98,8 @@ class SnapbackSM {
     this.MinimumSecondaryUserSyncSuccessPercent = this.nodeConfig.get('minimumSecondaryUserSyncSuccessPercent') / 100
 
     this.SecondaryUserSyncDailyFailureCountThreshold = this.nodeConfig.get('secondaryUserSyncDailyFailureCountThreshold')
+
+    this.MaxSyncMonitoringDurationInMs = this.nodeConfig.get('maxSyncMonitoringDurationInMs')
 
     // Throw an error if running as creator node and no libs are provided
     if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint || !this.delegatePrivateKey)) {
@@ -207,7 +206,7 @@ class SnapbackSM {
     // Enqueue first state machine operation (the processor internally re-enqueues job on recurring interval)
     await this.stateMachineQueue.add({ startTime: Date.now() })
 
-    this.log(`SnapbackSM initialized in ${this.snapbackDevModeEnabled ? 'dev' : 'production'} mode. Added initial stateMachineQueue job; next job in ${this.snapbackJobInterval}ms`)
+    this.log(`SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; next job in ${this.snapbackJobInterval}ms`)
   }
 
   logDebug (msg) {
@@ -1014,7 +1013,7 @@ class SnapbackSM {
     const logMsgString = `additionalSyncIsRequired (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 
     const startTimeMs = Date.now()
-    const maxMonitoringTimeMs = startTimeMs + MaxSyncMonitoringDurationInMs
+    const maxMonitoringTimeMs = startTimeMs + this.MaxSyncMonitoringDurationInMs
 
     /**
      * Poll secondary for sync completion, up to `maxMonitoringTimeMs`
@@ -1074,18 +1073,7 @@ class SnapbackSM {
       // (1) secondary did not catch up to primary AND (2) secondary did not complete sync
     } else {
       await SecondarySyncHealthTracker.recordFailure(secondaryUrl, userWallet, syncType)
-
-      const secondaryUserSyncFailureCountToday = await SecondarySyncHealthTracker.getSecondaryUserSyncFailureCountToday(
-        secondaryUrl, userWallet, syncType
-      )
-
-      if (secondaryUserSyncFailureCountToday > this.SecondaryUserSyncDailyFailureCountThreshold) {
-        additionalSyncIsRequired = false
-        this.logError(`${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock} and has met SecondaryUserSyncDailyFailureCountThreshold (${this.SecondaryUserSyncDailyFailureCountThreshold}). Will not enqueue further syncRequests today.`)
-      } else {
-        additionalSyncIsRequired = true
-        this.logError(`${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest.`)
-      }
+      this.logError(`${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest.`)
     }
 
     return additionalSyncIsRequired
@@ -1122,12 +1110,25 @@ class SnapbackSM {
      */
     this.syncDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint)
 
+    /**
+     * Do not issue syncRequest if SecondaryUserSyncFailureCountForToday already exceeded threshold
+     */
+    const secondaryUserSyncFailureCountForToday = await SecondarySyncHealthTracker.getSecondaryUserSyncFailureCountForToday(
+      secondaryEndpoint, userWallet, syncType
+    )
+    if (secondaryUserSyncFailureCountForToday > this.SecondaryUserSyncDailyFailureCountThreshold) {
+      const logMsgString = `(${syncType}): wallet ${userWallet} secondary ${secondaryEndpoint}`
+      this.logError(`${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${this.SecondaryUserSyncDailyFailureCountThreshold}). Will not enqueue further syncRequests today.`)
+      return
+    }
+
     // primaryClockValue is used in additionalSyncIsRequired() call below
     const primaryClockValue = (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
 
     this.log(`------------------Process SYNC | User ${userWallet} | Secondary: ${secondaryEndpoint} | Primary clock value ${primaryClockValue} | type: ${syncType} | jobID: ${id} ------------------`)
 
     // Issue sync request to secondary
+    // TODO - handle scenario where axios request throws error
     await axios(syncRequestParameters)
 
     // Wait until has sync has completed (within time threshold)
@@ -1148,7 +1149,6 @@ class SnapbackSM {
       })
     }
 
-    // Exit when sync status is computed
     this.log(`------------------END Process SYNC | jobID: ${id}------------------`)
   }
 

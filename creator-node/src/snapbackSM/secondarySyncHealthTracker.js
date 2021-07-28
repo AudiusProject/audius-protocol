@@ -6,6 +6,8 @@
 const redisClient = require('../redis')
 const { logger } = require('../logging')
 
+const RedisKeyPrefix = 'SecondarySyncRequestOutcomes-Daily'
+
 const DailyRedisKeyExpirationSec = 90 /* days */ * 24 /* hr */ * 60 /* min */ * 60 /* s */
 
 const Outcomes = Object.freeze({
@@ -67,12 +69,10 @@ const Utils = {
    * Key pattern string can map to one or multiple keys
    */
   _getRedisKeyPattern ({ secondary = '*', wallet = '*', syncType = '*', outcome = '*', date = null }) {
-    const prefix = 'SecondarySyncRequestOutcomes-Daily'
-
     // format: YYYY-MM-DD
     date = date || new Date().toISOString().split('T')[0]
 
-    return `${prefix}:::${secondary}:::${wallet}:::${syncType}:::${date}:::${outcome}`
+    return `${RedisKeyPrefix}:::${secondary}:::${wallet}:::${syncType}:::${date}:::${outcome}`
   },
 
   _parseRedisKeyIntoComponents (key) {
