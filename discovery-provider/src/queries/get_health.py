@@ -275,14 +275,13 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     # Return error if system requirement check fails
     # divide by 10^-9 is conversion from bytes to gb
-    # pylint: disable=R0916
+    num_cpus = health_results["number_of_cpus"] or 0
+    total_memory = health_results["total_memory"] or 0
+    filesystem_size = health_results["filesystem_size"] or 0
     if (
-        not health_results["number_of_cpus"]
-        or int(health_results["number_of_cpus"]) < int(min_number_of_cpus)
-        or not health_results["total_memory"]
-        or int(health_results["total_memory"]) < int(min_total_memory)
-        or not health_results["filesystem_size"]
-        or int(health_results["filesystem_size"]) < int(min_filesystem_size)
+        num_cpus < min_number_of_cpus
+        or total_memory < min_total_memory
+        or filesystem_size < min_filesystem_size
     ):
         health_results["meets_min_requirements"] = False
         # TODO - this will become strictly enforced in upcoming service versions and return with error
