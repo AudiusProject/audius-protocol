@@ -54,7 +54,8 @@ def get_balances(
     """
     # Find user balances
     query: List[UserBalance] = (
-        (session.query(UserBalance)).filter(UserBalance.user_id.in_(user_ids)).all()
+        (session.query(UserBalance)).filter(
+            UserBalance.user_id.in_(user_ids)).all()
     )
 
     # Construct result dict from query result
@@ -62,6 +63,8 @@ def get_balances(
         user_balance.user_id: {
             "owner_wallet_balance": user_balance.balance,
             "associated_wallets_balance": user_balance.associated_wallets_balance,
+            "associated_spl_wallets_balance": user_balance.associated_spl_wallets_balance,
+            "total_balance": str(int(user_balance.balance) + int(user_balance.associated_wallets_balance) + (int(user_balance.associated_spl_wallets_balance) * 10**9))
         }
         for user_balance in query
     }
@@ -73,7 +76,8 @@ def get_balances(
 
     # Add new balances to result set
     no_balance_dict = {
-        user_id: {"owner_wallet_balance": "0", "associated_wallets_balance": "0"}
+        user_id: {"owner_wallet_balance": "0", "associated_wallets_balance": "0",
+                  "associated_spl_wallets_balance": '0', 'total_balance': '0'}
         for user_id in needs_balance_set
     }
     result.update(no_balance_dict)

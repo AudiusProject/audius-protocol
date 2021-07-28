@@ -660,7 +660,9 @@ class UserIdByAssociatedWallet(Resource):
         args = associated_wallet_route_parser.parse_args()
         user_id = decode_with_abort(args.get("id"), ns)
         wallets = get_associated_user_wallet({"user_id": user_id})
-        return success_response({"wallets": wallets})
+        return success_response(
+            {"wallets": wallets["eth"], "spl_wallets": wallets["spl"]}
+        )
 
 
 user_associated_wallet_route_parser = reqparse.RequestParser()
