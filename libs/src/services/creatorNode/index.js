@@ -45,15 +45,26 @@ class CreatorNode {
    * Pulls off the user's clock value from a creator node endpoint and the user's wallet address.
    * @param {string} endpoint content node endpoint
    * @param {string} wallet user wallet address
+   * @param {number} timeout max time alloted for clock request
+   * @param {Object?} [params={}] optional query string params
    */
-  static async getClockValue (endpoint, wallet, timeout) {
+  static async getClockValue (endpoint, wallet, timeout, params = {}) {
+    let baseReq = {
+      url: `/users/clock_status/${wallet}`,
+      method: 'get',
+      baseURL: endpoint
+    }
+
+    if (params && Object.keys(params.length > 0)) {
+      baseReq.params = params
+    }
+
+    if (timeout) {
+      baseReq.timeout = timeout
+    }
+
     try {
-      const { data: body } = await axios({
-        url: `/users/clock_status/${wallet}`,
-        method: 'get',
-        baseURL: endpoint,
-        timeout
-      })
+      const { data: body } = await axios(baseReq)
       return body.data.clockValue
     } catch (err) {
       throw new Error(`Failed to get clock value for endpoint: ${endpoint} and wallet: ${wallet} with ${err}`)
@@ -593,6 +604,7 @@ class CreatorNode {
    * @param {Object} param
    * @param {Object} param.user user metadata object from userStateManager
    * @param {string} param.endpoint the Content Node endpoint to check the clock value for
+   * @param {number?} [param.timeout=1000] the max time allotted for a clock request; defaulted to 1000ms
    */
   async _clockValueRequest ({ user, endpoint, timeout = 1000 }) {
     const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
@@ -759,7 +771,11 @@ class CreatorNode {
             if (!total) total = progressEvent.total
             console.info(`Upload in progress: ${progressEvent.loaded} / ${total}`)
             onProgress(progressEvent.loaded, total)
-          }
+          },
+          // Set content length headers (only applicable in server/node environments).
+          // See: https://github.com/axios/axios/issues/1362
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity
         }
       )
       if (resp.data && resp.data.error) {
