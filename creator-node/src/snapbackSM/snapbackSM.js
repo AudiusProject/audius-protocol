@@ -554,12 +554,7 @@ class SnapbackSM {
 
       // Check to make sure that the newly selected secondary does not have existing user state
       try {
-        const { timestamp, signature } = generateTimestampAndSignature({ spID: this.spID }, this.delegatePrivateKey)
-        const clockValue = await CreatorNode.getClockValue(randomHealthyNode, wallet, CLOCK_STATUS_REQUEST_TIMEOUT_MS, {
-          spID: this.spID,
-          timestamp,
-          signature
-        })
+        const clockValue = await this._retrieveClockValueForUserFromReplica(randomHealthyNode, wallet)
         if (clockValue === -1) { newReplicaNodesSet.add(randomHealthyNode) }
       } catch (e) {
         // Something went wrong in checking clock value. Reselect another secondary.
@@ -995,8 +990,25 @@ class SnapbackSM {
   }
 
   /**
+   * Make request to given replica to get its clock value for given user
+   * Signs request with spID to bypass rate limits
+   */
+  async _retrieveClockValueForUserFromReplica (replica, wallet) {
+    const spID = this.spID
+
+    const { timestamp, signature } = generateTimestampAndSignature({ spID }, this.delegatePrivateKey)
+
+    const clockValue = await CreatorNode.getClockValue(replica, wallet, CLOCK_STATUS_REQUEST_TIMEOUT_MS, {
+      spID, timestamp, signature
+    })
+
+    return clockValue
+  }
+
+  /**
    * Monitor an ongoing sync operation for a given secondaryUrl and user wallet
    * Return boolean indicating if an additional sync is required
+   * Record SyncRequest outcomes to SecondarySyncHealthTracker
    */
   async additionalSyncIsRequired (userWallet, primaryClockValue = -1, secondaryUrl, syncType) {
     const logMsgString = `additionalSyncIsRequired (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
@@ -1014,7 +1026,7 @@ class SnapbackSM {
 
     while (Date.now() < maxMonitoringTimeMs) {
       try {
-        const secondaryClockValue = await CreatorNode.getClockValue(secondaryUrl, userWallet)
+        const secondaryClockValue = await this._retrieveClockValueForUserFromReplica(secondaryUrl, userWallet)
         this.logDebug(`${logMsgString} secondaryClock ${secondaryClockValue}`)
 
         // Record starting and current clock values for secondary to determine future action
