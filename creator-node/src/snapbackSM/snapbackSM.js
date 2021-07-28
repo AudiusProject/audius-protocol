@@ -1073,6 +1073,7 @@ class SnapbackSM {
       // (1) secondary did not catch up to primary AND (2) secondary did not complete sync
     } else {
       await SecondarySyncHealthTracker.recordFailure(secondaryUrl, userWallet, syncType)
+      additionalSyncIsRequired = true
       this.logError(`${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest.`)
     }
 
@@ -1104,6 +1105,8 @@ class SnapbackSM {
     const userWallet = syncRequestParameters.data.wallet[0]
     const secondaryEndpoint = syncRequestParameters.baseURL
 
+    const logMsgString = `(${syncType}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
+
     /**
      * Remove sync from syncDeDuplicator once it moves to Active status, before processing
      * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting
@@ -1117,19 +1120,22 @@ class SnapbackSM {
       secondaryEndpoint, userWallet, syncType
     )
     if (secondaryUserSyncFailureCountForToday > this.SecondaryUserSyncDailyFailureCountThreshold) {
-      const logMsgString = `(${syncType}): wallet ${userWallet} secondary ${secondaryEndpoint}`
-      this.logError(`${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${this.SecondaryUserSyncDailyFailureCountThreshold}). Will not enqueue further syncRequests today.`)
+      this.logError(`${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${this.SecondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`)
       return
     }
 
     // primaryClockValue is used in additionalSyncIsRequired() call below
     const primaryClockValue = (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
 
-    this.log(`------------------Process SYNC | User ${userWallet} | Secondary: ${secondaryEndpoint} | Primary clock value ${primaryClockValue} | type: ${syncType} | jobID: ${id} ------------------`)
+    this.log(`------------------Process SYNC | ${logMsgString} | Primary clock value ${primaryClockValue} | jobID: ${id}------------------`)
 
     // Issue sync request to secondary
-    // TODO - handle scenario where axios request throws error
-    await axios(syncRequestParameters)
+    try {
+      await axios(syncRequestParameters)
+    } catch (e) {
+      // Axios request will throw on non-200 response -> swallow error to ensure below logic is executed
+      this.logError(`${logMsgString} || Error issuing sync request: ${e.message}`)
+    }
 
     // Wait until has sync has completed (within time threshold)
     const additionalSyncIsRequired = await this.additionalSyncIsRequired(
@@ -1149,7 +1155,7 @@ class SnapbackSM {
       })
     }
 
-    this.log(`------------------END Process SYNC | jobID: ${id}------------------`)
+    this.log(`------------------END Process SYNC | ${logMsgString} | jobID: ${id}------------------`)
   }
 
   /**
