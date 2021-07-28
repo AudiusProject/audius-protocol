@@ -143,6 +143,16 @@ class DiscoveryProvider {
   }
 
   /**
+   * Gets a particular track by its creator's handle and the track's URL slug
+   * @param {string} handle the handle of the owner of the track
+   * @param {string} slug the URL slug of the track, generally the title urlized
+   * @returns {Object} the requested track's metadata
+   */
+  async getTracksByHandleAndSlug (handle, slug) {
+    return this._makeRequest(Requests.getTracksByHandleAndSlug(handle, slug))
+  }
+
+  /**
    * @typedef {Object} getTracksIdentifier
    * @property {string} handle
    * @property {number} id

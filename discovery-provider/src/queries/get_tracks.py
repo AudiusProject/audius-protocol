@@ -26,9 +26,7 @@ redis = redis_connection.get_redis()
 def _get_tracks(session, args):
     # Create initial query
     base_query = session.query(Track)
-    base_query = base_query.filter(
-        Track.is_current == True, Track.is_unlisted == False, Track.stem_of == None
-    )
+    base_query = base_query.filter(Track.is_current == True, Track.stem_of == None)
 
     # Note that if slug is included, we should only get one track
     # The user ID filter should also be included
@@ -37,6 +35,10 @@ def _get_tracks(session, args):
         base_query = base_query.join(
             TrackRoute, TrackRoute.track_id == Track.track_id
         ).filter(TrackRoute.slug == slug)
+
+    # Only return unlisted tracks if slug and user_id are present
+    if not "slug" in args or not "user_id" in args:
+        base_query.filter(Track.is_unlisted == False)
 
     # Conditionally process an array of tracks
     if "id" in args:
