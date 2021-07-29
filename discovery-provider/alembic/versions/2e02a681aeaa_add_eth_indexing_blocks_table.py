@@ -1,7 +1,7 @@
 """add-eth-indexing-blocks-table
 
 Revision ID: 2e02a681aeaa
-Revises: 80271bf86c56
+Revises: 534987cb0355
 Create Date: 2021-07-16 10:56:11.926274
 
 """
