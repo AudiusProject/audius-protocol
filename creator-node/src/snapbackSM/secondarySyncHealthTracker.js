@@ -176,7 +176,7 @@ const Getters = {
    * Only one redis key should exist for above params, but takes 1st value if multiple are found
    */
   async getSecondaryUserSyncFailureCountForToday (secondary, wallet, syncType) {
-    const resp = await this.getSyncRequestOutcomeMetrics({
+    const resp = await Getters.getSyncRequestOutcomeMetrics({
       secondary,
       wallet,
       syncType,
