@@ -69,18 +69,14 @@ fi
 
 if [[ "$dev" == "true" ]]; then
     ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) server.log &
-    if [[ "$audius_only_web_server" != "true" ]]; then
-        if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-            celery -A src.worker.celery worker --loglevel info 2>&1 | tee >(logger -t worker) worker.log &
-        fi
+    if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
+        celery -A src.worker.celery worker --loglevel info 2>&1 | tee >(logger -t worker) worker.log &
         celery -A src.worker.celery beat --loglevel info 2>&1 | tee >(logger -t beat) beat.log &
     fi
 else
     ./scripts/prod-server.sh 2>&1 | tee >(logger -t server) &
-    if [[ "$audius_only_web_server" != "true" ]]; then
-        if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
-            celery -A src.worker.celery worker --loglevel info 2>&1 | tee >(logger -t worker) &
-        fi
+    if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
+        celery -A src.worker.celery worker --loglevel info 2>&1 | tee >(logger -t worker) &
         celery -A src.worker.celery beat --loglevel info 2>&1 | tee >(logger -t beat) &
     fi
 
