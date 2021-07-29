@@ -111,7 +111,7 @@ describe('Test Health Check Verbose', function () {
     config.set('maxStorageUsedPercent', 95)
     config.set('snapbackJobInterval', 1000)
     config.set('snapbackModuloBase', 18)
-    config.set('snapbackDevModeEnabled', false)
+    config.set('manualSyncsDisabled', false)
 
     const serviceRegistryMock = {
       snapbackSM: {
@@ -154,7 +154,7 @@ describe('Test Health Check Verbose', function () {
       latestSyncSuccessTimestamp: '2021-06-08T21:29:34.231Z',
       latestSyncFailTimestamp: '',
       currentSnapbackReconfigMode: 'RECONFIG_DISABLED',
-      snapbackDevModeEnabled: false,
+      manualSyncsDisabled: false,
       snapbackModuloBase: 18,
       snapbackJobInterval: 1000
     })

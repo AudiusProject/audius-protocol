@@ -44,6 +44,7 @@ class ChallengeUpdater(ABC):
         event: str,
         user_challenges: List[UserChallenge],
         step_count,
+        event_metadatas: List[FullEventMetadata],
     ):
         """This is usually the main required method to fill out when implementing a new challenge.
         Given an event type, a list of existing user challenges, and the base challenge type,
@@ -206,8 +207,9 @@ class ChallengeManager:
             if not challenge.is_complete
         ]
         to_update = in_progress_challenges + new_user_challenges
+
         self._updater.update_user_challenges(
-            session, event_type, to_update, self._step_count
+            session, event_type, to_update, self._step_count, events_with_specifiers
         )
 
         # Add block # to newly completed challenges
