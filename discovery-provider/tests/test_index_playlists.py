@@ -5,6 +5,7 @@ from src.utils.db_session import get_db
 from src.utils.playlist_event_constants import playlist_event_types_lookup
 from src.utils import helpers
 from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
+from src.challenges.challenge_event_bus import get_event_bus
 
 # event_type: PlaylistCreated
 def get_playlist_created_event():
@@ -116,10 +117,10 @@ def test_index_playlist(app):
     """Tests that playlists are indexed correctly"""
     with app.app_context():
         db = get_db()
-
-    ipfs_client = IPFSClient({})
-    web3 = Web3()
-    update_task = UpdateTask(ipfs_client, web3)
+        ipfs_client = IPFSClient({})
+        web3 = Web3()
+        challenge_event_bus = get_event_bus()
+        update_task = UpdateTask(ipfs_client, web3, challenge_event_bus)
 
     with db.scoped_session() as session:
         # ================= Test playlist_created Event =================
