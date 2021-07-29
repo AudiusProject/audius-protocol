@@ -4,8 +4,8 @@ from src.tasks.playlists import parse_playlist_event, lookup_playlist_record
 from src.utils.db_session import get_db
 from src.utils.playlist_event_constants import playlist_event_types_lookup
 from src.utils import helpers
-from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
 from src.challenges.challenge_event_bus import get_event_bus
+from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
 
 # event_type: PlaylistCreated
 def get_playlist_created_event():

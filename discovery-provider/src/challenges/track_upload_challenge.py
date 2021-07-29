@@ -5,6 +5,7 @@ from src.models import Track, UserChallenge
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,
+    FullEventMetadata,
 )
 
 
@@ -19,6 +20,7 @@ class TrackUploadChallengeUpdater(ChallengeUpdater):
         event: str,
         user_challenges: List[UserChallenge],
         step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
         starting_block: Optional[int],
     ):
         if not starting_block:

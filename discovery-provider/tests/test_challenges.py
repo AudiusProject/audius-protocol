@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 import redis
 from sqlalchemy.orm.session import Session
 
@@ -7,7 +7,11 @@ from tests.utils import populate_mock_db_blocks
 
 from src.models import Challenge, UserChallenge, ChallengeType
 from src.utils.db_session import get_db
-from src.challenges.challenge import ChallengeManager, ChallengeUpdater
+from src.challenges.challenge import (
+    ChallengeManager,
+    ChallengeUpdater,
+    FullEventMetadata,
+)
 from src.utils.helpers import model_to_dictionary
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.utils.config import shared_config
@@ -90,12 +94,19 @@ def setup_challenges(app):
 
 class TestUpdater(ChallengeUpdater):
     def update_user_challenges(
-        self, session, event, user_challenges, step_count, event_metadatas, starting_block
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
     ):
         for user_challenge in user_challenges:
-            user_challenge.current_step_count += 1
-            if user_challenge.current_step_count >= step_count:
-                user_challenge.is_complete = True
+            if step_count is not None and user_challenge.current_step_count is not None:
+                user_challenge.current_step_count += 1
+                if user_challenge.current_step_count >= step_count:
+                    user_challenge.is_complete = True
 
 
 def test_handle_event(app):
@@ -215,9 +226,9 @@ class AggregateUpdater(ChallengeUpdater):
         session: Session,
         event: str,
         user_challenges: List[UserChallenge],
-        step_count,
-        event_metadatas,
-        starting_block,
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
     ):
         pass
 

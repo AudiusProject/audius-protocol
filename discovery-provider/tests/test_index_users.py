@@ -4,8 +4,8 @@ from src.tasks.users import lookup_user_record, parse_user_event
 from src.utils.db_session import get_db
 from src.utils.user_event_constants import user_event_types_lookup
 from src.utils import helpers
-from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
 from src.challenges.challenge_event_bus import get_event_bus
+from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
 
 
 def get_add_user_event():

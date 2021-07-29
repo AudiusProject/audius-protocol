@@ -1,9 +1,10 @@
 from collections import Counter
-from typing import List
+from typing import List, Optional
+from sqlalchemy.orm.session import Session
 from src.models import (
     ProfileCompletionChallenge,
+    UserChallenge,
     User,
-    AggregateUser,
     Repost,
     Follow,
     Save,
@@ -33,12 +34,12 @@ class ProfileChallengeUpdater(ChallengeUpdater):
 
     def update_user_challenges(
         self,
-        session,
-        event,
-        user_challenges,
-        step_count,
-        event_metadatas,
-        starting_block,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
     ):
 
         user_ids = [user_challenge.user_id for user_challenge in user_challenges]
