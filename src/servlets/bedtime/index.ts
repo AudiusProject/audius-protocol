@@ -2,7 +2,7 @@ import express from 'express'
 import { decodeHashId } from '../utils/hashids'
 
 import { getCollection, getTrack, getTracks, getUser, getUsers, shouldRedirectTrack } from '../utils/helpers'
-import { getCollectionPath, getCoverArt, getTrackPath } from './helpers'
+import { getCollectionPath, getCoverArt } from './helpers'
 import { BedtimeFormat, GetCollectionResponse, GetTracksResponse, TrackResponse } from './types'
 
 // Error Messages
@@ -18,7 +18,6 @@ const getTrackMetadata = async (trackId: number, ownerId: number | null): Promis
 
     const user = track.user
     const coverArt = getCoverArt(track, user)
-    const urlPath = getTrackPath({ ownerHandle: user.handle, title: track.title, id: track.track_id })
 
     return {
       title: track.title,
@@ -27,7 +26,7 @@ const getTrackMetadata = async (trackId: number, ownerId: number | null): Promis
       segments: track.track_segments,
       isVerified: user.is_verified,
       coverArt,
-      urlPath,
+      urlPath: track.permalnk,
       gateways: user.creator_node_endpoint,
       id: track.track_id
     }
@@ -67,7 +66,7 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
     handle: userMap[t.owner_id].handle,
     userName: userMap[t.owner_id].name,
     segments: t.track_segments,
-    urlPath: getTrackPath({ ownerHandle: userMap[t.owner_id].handle, title: t.title, id: t.track_id }),
+    urlPath: t.permalink,
     id: t.track_id,
     isVerified: userMap[t.owner_id].is_verified,
     gateways: userMap[t.owner_id].creator_node_endpoint
