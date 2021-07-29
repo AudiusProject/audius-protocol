@@ -20,5 +20,11 @@
 		"active": false,
 		"step_count": 3,
 		"starting_block": 30000000
+	},
+	{
+		"id": "connect-verified",
+		"type": "boolean",
+		"amount": "5",
+		"active": true
 	}
 ]
