@@ -18,6 +18,10 @@ from src.queries.get_balances import (
     LAZY_REFRESH_REDIS_PREFIX,
 )
 from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
+from src.utils.solana import (
+    SPL_TOKEN_ID_PK,
+    ASSOCIATED_TOKEN_PROGRAM_ID_PK,
+)
 from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
@@ -35,9 +39,14 @@ WAUDIO_PROGRAM_PUBKEY = (
 WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS) if WAUDIO_MINT_ADDRESS else None
 
 
+class AssociatedWallets(TypedDict):
+    eth: List[str]
+    spl: List[str]
+
+
 class UserWalletMetadata(TypedDict):
     owner_wallet: str
-    associated_wallets: Optional[List[str]]
+    associated_wallets: AssociatedWallets
     bank_account: Optional[str]
 
 
@@ -153,13 +162,12 @@ def refresh_user_ids(
         # and primary owner wallet into a single metadata list
         user_id_metadata: Dict[int, UserWalletMetadata] = {}
 
-        user_id_wallets = {}
         for user in user_associated_wallet_query:
             user_id, user_wallet, associated_wallet, wallet_chain = user
             if not user_id in user_id_metadata:
                 user_id_metadata[user_id] = {
                     "owner_wallet": user_wallet,
-                    "associated_wallets": None,
+                    "associated_wallets": {"eth": [], "spl": []},
                     "bank_account": None,
                 }
                 if user_id in user_id_bank_accounts:
@@ -167,14 +175,10 @@ def refresh_user_ids(
                         user_id
                     ]
             if associated_wallet:
-                if not wallet_chain in user_id_wallets[user_id]["associated_wallets"]:
-                    user_id_wallets[user_id]["associated_wallets"][wallet_chain] = [
-                        associated_wallet
-                    ]
-                else:
-                    user_id_wallets[user_id]["associated_wallets"][wallet_chain].append(
-                        associated_wallet
-                    )
+                if user_id in user_id_metadata:
+                    user_id_metadata[user_id]["associated_wallets"][
+                        wallet_chain
+                    ].append(associated_wallet)
 
         logger.info(
             f"cache_user_balance.py | fetching for {len(user_associated_wallet_query)} users: {user_ids}"
@@ -189,28 +193,39 @@ def refresh_user_ids(
                     owner_wallet
                 ).call()
                 associated_balance = 0
-                waudio_balance = 0
+                waudio_balance = "0"
                 associated_spl_balance = 0
 
                 if "associated_wallets" in wallets:
-                    if "eth" in wallets["associated_wallets"]:
-                        for wallet in wallets["associated_wallets"]["eth"]:
-                            wallet = eth_web3.toChecksumAddress(wallet)
-                            balance = token_contract.functions.balanceOf(wallet).call()
-                            delegation_balance = delegate_manager_contract.functions.getTotalDelegatorStake(
+                    for wallet in wallets["associated_wallets"]["eth"]:
+                        wallet = eth_web3.toChecksumAddress(wallet)
+                        balance = token_contract.functions.balanceOf(wallet).call()
+                        delegation_balance = (
+                            delegate_manager_contract.functions.getTotalDelegatorStake(
                                 wallet
                             ).call()
-                            stake_balance = staking_contract.functions.totalStakedFor(
-                                wallet
-                            ).call()
-                            associated_balance += (
-                                balance + delegation_balance + stake_balance
-                            )
-                    if "spl" in wallets["associated_wallets"]:
-                        for wallet in wallets["associated_wallets"]["spl"]:
-                            bal_info = waudio_token.get_balance(PublicKey(wallet))
-                            waudio_balance = bal_info["result"]["value"]["amount"]
-                            associated_spl_balance += waudio_balance
+                        )
+                        stake_balance = staking_contract.functions.totalStakedFor(
+                            wallet
+                        ).call()
+                        associated_balance += (
+                            balance + delegation_balance + stake_balance
+                        )
+                    for wallet in wallets["associated_wallets"]["spl"]:
+                        root_spl_account = PublicKey(wallet)
+                        derived_account, _ = PublicKey.find_program_address(
+                            [
+                                bytes(root_spl_account),
+                                bytes(SPL_TOKEN_ID_PK),
+                                bytes(WAUDIO_PROGRAM_PUBKEY),
+                            ],
+                            ASSOCIATED_TOKEN_PROGRAM_ID_PK,
+                        )
+                        bal_info = waudio_token.get_account_info(derived_account)
+                        associated_waudio_balance: str = bal_info["result"]["value"][
+                            "amount"
+                        ]
+                        associated_spl_balance += int(associated_waudio_balance)
 
                 if wallets["bank_account"] is not None:
                     if waudio_token is None:
@@ -227,7 +242,7 @@ def refresh_user_ids(
                 user_balance = user_balances[user_id]
                 user_balance.balance = owner_wallet_balance
                 user_balance.associated_wallets_balance = str(associated_balance)
-                user_balance.waudio = str(waudio_balance)
+                user_balance.waudio = waudio_balance
                 user_balance.associated_spl_wallets_balance = str(
                     associated_spl_balance
                 )
