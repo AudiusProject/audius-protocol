@@ -74,7 +74,7 @@ class ListenStreakChallengeUpdater(ChallengeUpdater):
 
 
 listen_streak_challenge_manager = ChallengeManager(
-    "listen_streak", ListenStreakChallengeUpdater()
+    "listen-streak", ListenStreakChallengeUpdater()
 )
 
 # Accessors

@@ -7,7 +7,7 @@
 		"step_count": 7
 	},
 	{
-		"id": "listen_streak",
+		"id": "listen-streak",
 		"type": "numeric",
 		"amount": "5",
 		"active": false,
