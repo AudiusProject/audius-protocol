@@ -273,8 +273,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     health_results["maximum_healthy_block_difference"] = default_healthy_block_diff
     health_results.update(disc_prov_version)
 
-    # Return error if system requirement check fails
-    # divide by 10^-9 is conversion from bytes to gb
+    # Check that this node meets the minimum system requirements
     num_cpus: int = cast(int, health_results["number_of_cpus"] or 0)
     total_memory: int = cast(int, health_results["total_memory"] or 0)
     filesystem_size: int = cast(int, health_results["filesystem_size"] or 0)
