@@ -483,6 +483,10 @@ def test_index_tracks(mock_index_task, app):
             pending_track_routes,
         )
 
+        # =================== Test track __repr___ ======================
+
+        print(track_record)
+
         # updated_at should be updated every parse_track_event
         assert track_record.is_delete == True
 

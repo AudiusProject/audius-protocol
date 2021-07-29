@@ -261,9 +261,24 @@ class Track(Base):
         viewonly=True,
     )
 
+    user = relationship(
+        "User",
+        primaryjoin="and_(\
+            remote(Track.owner_id) == foreign(User.user_id),\
+            User.is_current)",
+        lazy="joined",
+        viewonly=True,
+    )
+
     @property
-    def slug(self):
+    def _slug(self):
         return self._routes[0].slug if self._routes else ""
+
+    @property
+    def permalink(self):
+        if self.user and self.user[0].handle and self._slug:
+            return f"/{self.user[0].handle}/{self._slug}"
+        return ""
 
     PrimaryKeyConstraint(is_current, track_id, blockhash, txhash)
 
@@ -308,7 +323,7 @@ class Track(Base):
             f"updated_at={self.updated_at},"
             f"created_at={self.created_at},"
             f"stem_of={self.stem_of},"
-            f"slug={self.slug}"
+            f"permalink={self.permalink}"
             ")>"
         )
 
