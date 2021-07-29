@@ -22,7 +22,7 @@ from src.models import (
     AggregatePlaylist,
 )
 from src.utils import helpers, redis_connection
-from src.queries.get_unpopulated_users import get_unpopulated_users, set_users_in_cache
+from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.queries.get_balances import get_balances
 
 logger = logging.getLogger(__name__)
@@ -1269,18 +1269,9 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
 
     Returns: None
     """
-    user_ids = get_users_ids(tracks)
-    users = list(map(lambda t: t["user"][0], tracks))
-    set_users_in_cache(users)
-    # bundle peripheral info into user results
-    populated_users = populate_user_metadata(
-        session, user_ids, users, current_user_id
-    )
-    user_map = {}
-    for user in populated_users:
-        user_map[user["user_id"]] = user
-
+    user_id_list = get_users_ids(tracks)
+    users = get_users_by_id(session, user_id_list, current_user_id)
     for track in tracks:
-        user = user_map[track["owner_id"]]
+        user = users[track["owner_id"]]
         if user:
             track["user"] = user
