@@ -5,7 +5,7 @@ const { MONITORS } = require('../../monitors/monitors')
 
 const MIN_NUBMER_OF_CPUS = 8 // 8 cpu
 const MIN_TOTAL_MEMORY = 15500000000 // 15.5 GB of RAM
-const MIN_FILESYSTEM_SIZE = 240000000000 // 240 GB of file system storage
+const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
 
 /**
  * Perform a basic health check, returning the
