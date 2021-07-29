@@ -1,4 +1,4 @@
-import { Connection, PublicKey, Secp256k1Program, SystemProgram, SYSVAR_INSTRUCTIONS_PUBKEY, Transaction, TransactionInstruction } from "@solana/web3.js"
+import { Connection, PublicKey, Secp256k1Program, sendAndConfirmTransaction, SystemProgram, SYSVAR_INSTRUCTIONS_PUBKEY, Transaction, TransactionInstruction } from "@solana/web3.js"
 import BN from 'bn.js'
 
 /// Sender program account seed
@@ -161,7 +161,21 @@ async function verifyTransferSignature({
     secretKey: feePayerSecret
   })
 
-
+    const transactionSignature = await sendAndConfirmTransaction(
+      connection,
+      transaction,
+      [
+        {
+          publicKey: feePayer,
+          secretKey: feePayerSecret
+        }
+      ],
+      {
+        skipPreflight: true,
+        commitment: 'processed',
+        preflightCommitment: 'processed'
+      }
+    )
 
   // The data for the
   // Instructions:
