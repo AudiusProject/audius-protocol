@@ -11,7 +11,7 @@ const sign = (reference) => {
   return base64
 }
 
-const isSignatureMatch = (authorizationHeader, signature) => {
+const doesSignatureMatch = (authorizationHeader, signature) => {
   const apiKey = config.get('cognitoAPIKey')
   const expectedHeader = `Signature keyId="${apiKey}",algorithm="hmac-sha256",headers="(request-target) date digest",signature="${signature}"`
   return expectedHeader === authorizationHeader
@@ -27,7 +27,7 @@ const isWebhookValid = (headers, path) => {
 
   // sign string and compare with authorization header
   const signature = sign(toSign)
-  return isSignatureMatch(headers['Authorization'], signature)
+  return doesSignatureMatch(headers['Authorization'], signature)
 }
 
 module.exports = {

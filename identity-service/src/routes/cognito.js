@@ -3,10 +3,27 @@ const {
   successResponse,
   errorResponseServerError
 } = require('../apiHelpers')
+const { logger } = require('../logging')
 const models = require('../models')
+const authMiddleware = require('../authMiddleware')
 const cognitoFlowMiddleware = require('../cognitoFlowMiddleware')
+const { sign } = require('../utils/cognitoHelpers')
 
 module.exports = function (app) {
+  app.get('/cognito_signature', authMiddleware, handleResponse(async (req) => {
+    const { walletAddress, handle } = req.user
+    logger.info(`cognito_signature | Creating signature for: wallet '${walletAddress}', handle '${handle}'`)
+    try {
+      const signature = sign(handle)
+      return successResponse({ signature })
+    } catch (e) {
+      logger.error(e)
+      return errorResponseServerError({
+        message: e.message
+      })
+    }
+  }))
+
   /**
    * doc for webhook receiver implementation: https://docs.cognitohq.com/guides
    * cognito's webhook post request body will have the following format
