@@ -107,7 +107,7 @@ def get_attestation(
     specifier: str,
 ):
     """
-    Returns a owner_wallet, signed_attestation tuple,
+    Returns an (owner_wallet, signed_attestation, recovery_id) tuple,
     or throws an error explaining why the attestation was
     not able to be created."""
     if not user_id or not challenge_id or not oracle_address:
@@ -171,8 +171,12 @@ def get_attestation(
         challenge_specifier=user_challenge.specifier,
     )
 
-    attestation_bytes = attestation.get_attestation_bytes()
-    signed_attestation: str = sign_attestation(
-        attestation_bytes, shared_config["delegate"]["private_key"]
+    signed_attestation = sign_attestation(
+        repr(attestation), shared_config["delegate"]["private_key"]
     )
-    return (shared_config["delegate"]["owner_wallet"], signed_attestation)
+
+    return (
+        shared_config["delegate"]["owner_wallet"],
+        signed_attestation[0],
+        signed_attestation[1],
+    )

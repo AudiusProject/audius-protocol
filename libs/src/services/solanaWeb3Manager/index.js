@@ -88,9 +88,13 @@ class SolanaWeb3Manager {
   /**
    * Generates a program derived address
    */
-  async generateProgramDerivedAddress (mintKey, programKey) {
-    let res = await this.solanaWeb3.PublicKey.findProgramAddress(
-      [mintKey.toBytes().slice(0, 32)],
+  async generateProgramDerivedAddress (baseKey, programKey, seed) {
+    const seeds = [baseKey.toBytes().slice(0, 32)]
+    if (seed) {
+      seeds.push(seed)
+    }
+    const res = await this.solanaWeb3.PublicKey.findProgramAddress(
+      seeds,
       programKey
     )
     return res[0].toString()
