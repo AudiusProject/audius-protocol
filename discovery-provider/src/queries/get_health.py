@@ -275,9 +275,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     # Return error if system requirement check fails
     # divide by 10^-9 is conversion from bytes to gb
-    num_cpus: int = int(health_results["number_of_cpus"]) if health_results["number_of_cpus"] else 0
-    total_memory: int = int(health_results["total_memory"]) if health_results["total_memory"] else 0
-    filesystem_size: int = int(health_results["filesystem_size"]) if health_results["filesystem_size"] else 0
+    num_cpus: int = cast(int, health_results["number_of_cpus"] or 0)
+    total_memory: int = cast(int, health_results["total_memory"] or 0)
+    filesystem_size: int = cast(int, health_results["filesystem_size"] or 0)
     if (
         num_cpus < min_number_of_cpus
         or total_memory < min_total_memory
