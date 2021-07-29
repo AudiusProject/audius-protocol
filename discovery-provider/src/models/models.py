@@ -2,7 +2,7 @@
 import logging
 import enum
 
-from typing import Dict, Any
+from typing import Any
 from jsonschema import ValidationError
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.dialects import postgresql
@@ -895,6 +895,7 @@ waudio={self.waudio}>"
 class WalletChain(str, enum.Enum):
     eth = "eth"
     spl = "spl"
+
 
 class AssociatedWallet(Base):
     __tablename__ = "associated_wallets"

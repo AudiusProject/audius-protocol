@@ -1,8 +1,8 @@
 import logging
 
+from typing import Tuple, TypedDict, List
 from src.models import AssociatedWallet
 from src.utils import db_session
-from typing import Tuple, TypedDict, List
 
 logger = logging.getLogger(__name__)
 

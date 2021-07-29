@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
-import base58
 from typing import TypedDict
+import base58
 from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
@@ -470,6 +470,7 @@ def validate_signature(
                 exc_info=True,
             )
             return False
+    return False
 
 
 class UserEventsMetadata(TypedDict):
@@ -513,7 +514,9 @@ def update_user_events(
 
 def recover_user_id_hash(web3, user_id, signature):
     message_hash = defunct_hash_message(text=f"AudiusUserID:{user_id}")
-    wallet_address = web3.eth.account.recoverHash(message_hash, signature=signature)
+    wallet_address: str = web3.eth.account.recoverHash(
+        message_hash, signature=signature
+    )
     return wallet_address
 
 
