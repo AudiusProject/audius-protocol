@@ -362,6 +362,7 @@ HASH_SALT = "azowernasdfoia"
 
 hashids = Hashids(min_length=5, salt=HASH_SALT)
 
+
 def encode_int_id(id: int):
     return cast(str, hashids.encode(id))
 
@@ -421,14 +422,15 @@ def create_track_slug(title, track_id, collision_id=0):
     sanitized_title = re.sub(r"-+", "-", sanitized_title)
 
     sanitized_title = sanitized_title.lower()
-
-    if collision_id > 0:
-        sanitized_title = f"{sanitized_title}-{collision_id}"
-
     # This means that the entire title was sanitized away, use the id
     # for the slug.
     if not sanitized_title:
         sanitized_title = encode_int_id(track_id)
+
+    if collision_id > 0:
+        sanitized_title = f"{sanitized_title}-{collision_id}"
+
+    print(sanitized_title)
 
     return sanitized_title
 

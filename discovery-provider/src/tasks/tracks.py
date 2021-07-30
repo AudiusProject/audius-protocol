@@ -279,7 +279,7 @@ def update_track_routes_table(
 
     # Get the title slug, and set the new slug to that
     # (will check for conflicts later)
-    new_track_slug_title = helpers.create_track_slug(track_metadata["title"])
+    new_track_slug_title = helpers.create_track_slug(track_metadata["title"], track_record.track_id)
     new_track_slug = new_track_slug_title
 
     # Find the current route for the track
