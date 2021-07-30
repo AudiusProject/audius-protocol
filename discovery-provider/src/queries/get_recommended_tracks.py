@@ -1,7 +1,7 @@
 import logging  # pylint: disable=C0302
 import random
-
-from src.api.v1.helpers import extend_track, decode_string_id, to_dict
+from src.utils.helpers import decode_string_id
+from src.api.v1.helpers import extend_track, to_dict
 from src.queries.get_trending_tracks import get_trending_tracks, TRENDING_TTL_SEC
 from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
 

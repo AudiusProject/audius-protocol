@@ -1,4 +1,5 @@
 import logging
+from src.utils.helpers import encode_int_id
 from src.challenges.challenge_event_bus import get_event_bus
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
@@ -41,7 +42,6 @@ from src.api.v1.helpers import (
     success_response,
     abort_bad_request_param,
     get_default_max,
-    encode_int_id,
     extend_challenge_response,
 )
 from .models.tracks import track, track_full

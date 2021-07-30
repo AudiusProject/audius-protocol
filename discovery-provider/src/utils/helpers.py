@@ -1,14 +1,16 @@
 import datetime
 import logging
 import os
-import json
-from json.encoder import JSONEncoder
 import re
 import time
 import contextlib
+import json
+from json.encoder import JSONEncoder
+from typing import Optional, cast
 from urllib.parse import urljoin
 from functools import reduce
 import requests
+from hashids import Hashids
 from flask import g, request
 from jsonformatter import JsonFormatter
 from src import exceptions
@@ -355,11 +357,29 @@ def update_ipfs_peers_from_user_endpoint(update_task, cnode_url_list):
             logger.warning(f"Error connecting to {cnode_url}, {e}")
 
 
-# Constructs a track's route_id from an unsanitized title and handle.
-# Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
+HASH_MIN_LENGTH = 5
+HASH_SALT = "azowernasdfoia"
+
+hashids = Hashids(min_length=5, salt=HASH_SALT)
+
+
+def encode_int_id(id: int):
+    return cast(str, hashids.encode(id))
+
+
+def decode_string_id(id: str) -> Optional[int]:
+    # Returns a tuple
+    decoded = hashids.decode(id)
+    if not decoded:
+        return None
+    return decoded[0]
 
 
 def create_track_route_id(title, handle):
+    """
+    Constructs a track's route_id from an unsanitized title and handle.
+    Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
+    """
     # Strip out invalid character
     sanitized_title = re.sub(
         r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00", "", title
@@ -380,11 +400,14 @@ def create_track_route_id(title, handle):
     return f"{sanitized_handle}/{sanitized_title}"
 
 
-def create_track_slug(title, collision_id=0):
+def create_track_slug(title, track_id, collision_id=0):
     """Converts the title of a track into a URL-friendly 'slug'
 
     Strips special characters, replaces spaces with dashes, converts to
     lowercase, and appends a collision_id if non-zero.
+
+    If the sanitized title is entirely escaped (empty string), use the
+    hashed track_id.
 
     Example:
     (Title="My Awesome Track!", collision_id=2) => "my-awesome-track-2"
@@ -399,6 +422,10 @@ def create_track_slug(title, collision_id=0):
     sanitized_title = re.sub(r"-+", "-", sanitized_title)
 
     sanitized_title = sanitized_title.lower()
+    # This means that the entire title was sanitized away, use the id
+    # for the slug.
+    if not sanitized_title:
+        sanitized_title = encode_int_id(track_id)
 
     if collision_id > 0:
         sanitized_title = f"{sanitized_title}-{collision_id}"
