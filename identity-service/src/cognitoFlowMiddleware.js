@@ -25,7 +25,7 @@ async function cognitoFlowMiddleware (req, res, next) {
   }
 
   const timeDifferenceMilliseconds =
-    Date.now() - new Date(headers['Date']).getTime()
+  Date.now() - new Date(headers['date']).getTime()
   if (timeDifferenceMilliseconds > MAX_TIME_DRIFT_MILLISECONDS) {
     const errorResponse = errorResponseBadRequest(
       '[Error]: The cognito flow webhook timestamp is too old.'

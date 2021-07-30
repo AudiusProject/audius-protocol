@@ -44,8 +44,7 @@ module.exports = function (app) {
    * }
    */
   app.post('/cognito_webhook/flow', cognitoFlowMiddleware, handleResponse(async (req) => {
-    const body = req.body
-    const { id, event, data } = { body }
+    const { id, event, data } = req.body
 
     // if event is not of type status, meaning the event denotes of a step in the flow, but not the completion
     // then return 200 without further processing
@@ -55,6 +54,7 @@ module.exports = function (app) {
 
     try {
       // save cognito flow for user
+      logger.info(`Saving cognito flow result for user with handle '${handle}' (status: '${status}')`)
       await models.CognitoFlows.create({
         id,
         sessionId,

@@ -26,9 +26,9 @@ describe('test cognitoHelpers', () => {
   it('webhook validation returns true when webhook is valid', () => {
     // Example lifted from documentation https://docs.cognitohq.com/guides#verifying-webhook-signatures
     const headers = {
-      Date: 'Sat, 23 Jan 2021 21:43:14 GMT',
-      Digest: 'SHA-256=xZI8wiAi5crBdZt7l10plN7Q8bScB6r/OV5PjxjKtTw=',
-      Authorization: 'Signature keyId="live_key_deadbeefcafedeadbeefcafedeadbeef",algorithm="hmac-sha256",headers="(request-target) date digest",signature="PkvXq6CcH0d5HA7hiK5JWsA+e7G+7fuZPLtM2rMe4/8="'
+      date: 'Sat, 23 Jan 2021 21:43:14 GMT',
+      digest: 'SHA-256=xZI8wiAi5crBdZt7l10plN7Q8bScB6r/OV5PjxjKtTw=',
+      authorization: 'Signature keyId="live_key_deadbeefcafedeadbeefcafedeadbeef",algorithm="hmac-sha256",headers="(request-target) date digest",signature="PkvXq6CcH0d5HA7hiK5JWsA+e7G+7fuZPLtM2rMe4/8="'
     }
     assert.strictEqual(isWebhookValid(headers, '/webhook_receivers/flow'), true)
   })
