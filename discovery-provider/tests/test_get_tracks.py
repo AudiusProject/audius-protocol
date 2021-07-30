@@ -164,3 +164,10 @@ def test_get_track_by_handle_slug(app):
             assert len(tracks) == 1
             assert tracks[0]["owner_id"] == 4
             assert tracks[0]["permalink"] == "/some-other-user/hidden-track"
+
+            # Make sure unlisted tracks are hidden without slug
+            tracks = _get_tracks(
+                session,
+                {"user_id": 4, "id": [9], "offset": 0, "limit": 10},
+            )
+            assert len(tracks) == 0
