@@ -10,3 +10,4 @@ class ChallengeEvent(str, enum.Enum):
     follow = "follow"
     favorite = "favorite"
     track_listen = "track_listen"
+    track_upload = "track_upload"

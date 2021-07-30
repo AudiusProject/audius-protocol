@@ -75,16 +75,22 @@ def test_listen_streak_challenge(app):
 
         # Make sure plays increment the step count
         dispatch_play(0, session, bus)
-        state = listen_streak_challenge_manager.get_challenge_state(session, ["1"])[0]
+        state = listen_streak_challenge_manager.get_user_challenge_state(
+            session, ["1"]
+        )[0]
         assert state.current_step_count == 1 and not state.is_complete
 
         dispatch_play(1, session, bus)
-        state = listen_streak_challenge_manager.get_challenge_state(session, ["1"])[0]
+        state = listen_streak_challenge_manager.get_user_challenge_state(
+            session, ["1"]
+        )[0]
         assert state.current_step_count == 2 and not state.is_complete
 
         # Make sure the step count resets if the user missed a day
         dispatch_play(3, session, bus)
-        state = listen_streak_challenge_manager.get_challenge_state(session, ["1"])[0]
+        state = listen_streak_challenge_manager.get_user_challenge_state(
+            session, ["1"]
+        )[0]
         assert state.current_step_count == 1 and not state.is_complete
 
         # Add more plays to increment the step count
@@ -93,10 +99,14 @@ def test_listen_streak_challenge(app):
         dispatch_play(6, session, bus)
         dispatch_play(7, session, bus)
         dispatch_play(8, session, bus)
-        state = listen_streak_challenge_manager.get_challenge_state(session, ["1"])[0]
+        state = listen_streak_challenge_manager.get_user_challenge_state(
+            session, ["1"]
+        )[0]
         assert state.current_step_count == 6 and not state.is_complete
 
         # Make sure that is_complete is set when step count hits 7
         dispatch_play(9, session, bus)
-        state = listen_streak_challenge_manager.get_challenge_state(session, ["1"])[0]
+        state = listen_streak_challenge_manager.get_user_challenge_state(
+            session, ["1"]
+        )[0]
         assert state.current_step_count == 7 and state.is_complete == True

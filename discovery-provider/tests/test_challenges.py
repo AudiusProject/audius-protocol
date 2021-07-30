@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 import redis
 from sqlalchemy.orm.session import Session
 
@@ -7,7 +7,11 @@ from tests.utils import populate_mock_db_blocks
 
 from src.models import Challenge, UserChallenge, ChallengeType
 from src.utils.db_session import get_db
-from src.challenges.challenge import ChallengeManager, ChallengeUpdater
+from src.challenges.challenge import (
+    ChallengeManager,
+    ChallengeUpdater,
+    FullEventMetadata,
+)
 from src.utils.helpers import model_to_dictionary
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.utils.config import shared_config
@@ -89,11 +93,20 @@ def setup_challenges(app):
 
 
 class TestUpdater(ChallengeUpdater):
-    def update_user_challenges(self, session, event, user_challenges, step_count, event_metadatas):
+    def update_user_challenges(
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
+    ):
         for user_challenge in user_challenges:
-            user_challenge.current_step_count += 1
-            if user_challenge.current_step_count >= step_count:
-                user_challenge.is_complete = True
+            if step_count is not None and user_challenge.current_step_count is not None:
+                user_challenge.current_step_count += 1
+                if user_challenge.current_step_count >= step_count:
+                    user_challenge.is_complete = True
 
 
 def test_handle_event(app):
@@ -213,8 +226,9 @@ class AggregateUpdater(ChallengeUpdater):
         session: Session,
         event: str,
         user_challenges: List[UserChallenge],
-        step_count,
-        event_metadatas,
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
     ):
         pass
 
@@ -251,7 +265,7 @@ def test_aggregates(app):
         bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 2})
         bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 3})
         bus.process_events(session)
-        state = agg_challenge.get_challenge_state(session, ["1-2", "1-3"])
+        state = agg_challenge.get_user_challenge_state(session, ["1-2", "1-3"])
         assert len(state) == 2
         # Also make sure the thing is incomplete
         res = get_challenges(1, False, session, bus)
@@ -262,7 +276,7 @@ def test_aggregates(app):
         bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 4})
         bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 4})
         bus.process_events(session)
-        state = agg_challenge.get_challenge_state(session, ["1-4"])
+        state = agg_challenge.get_user_challenge_state(session, ["1-4"])
         assert len(state) == 1
 
         # - If we've maxed the # of challenges, don't create any more

@@ -3,14 +3,16 @@ import time
 import functools
 from datetime import datetime
 from typing import List, Optional
-from sqlalchemy.orm.session import make_transient
+from sqlalchemy.orm.session import make_transient, Session
 from sqlalchemy.sql import null, functions
 from src.app import contract_addresses
-from src.utils import multihash, helpers
 from src.models import Remix, Stem, Track, TrackRoute, User
 from src.tasks.metadata import track_metadata_format
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
+from src.utils import multihash, helpers
 from src.utils.indexing_errors import IndexingError
+from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +89,7 @@ def track_state_update(
                         entry,
                         event_type,
                         track_events[track_id]["track"],
+                        block_number,
                         block_timestamp,
                         pending_track_routes,
                     )
@@ -434,9 +437,11 @@ def parse_track_event(
     entry,
     event_type,
     track_record,
+    block_number,
     block_timestamp,
     pending_track_routes,
 ):
+    challenge_bus = update_task.challenge_event_bus
     event_args = entry["args"]
     # Just use block_timestamp as integer
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
@@ -504,6 +509,9 @@ def parse_track_event(
 
         update_stems_table(session, track_record, track_metadata)
         update_remixes_table(session, track_record, track_metadata)
+        dispatch_challenge_track_upload(
+            session, challenge_bus, block_number, track_record
+        )
 
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
@@ -576,6 +584,14 @@ def parse_track_event(
     track_record.updated_at = block_datetime
 
     return track_record
+
+
+def dispatch_challenge_track_upload(
+    session: Session, bus: ChallengeEventBus, block_number: int, track_record
+):
+    bus.dispatch(
+        session, ChallengeEvent.track_upload, block_number, track_record.owner_id
+    )
 
 
 def is_valid_json_field(metadata, field):

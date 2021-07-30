@@ -516,11 +516,11 @@ const config = convict({
     env: 'ethRelayerProdGasTier',
     default: 'fastestGweiHex'
   },
-  captchaScoreSecret: {
-    doc: 'The secret necessary to view user captcha scores',
+  scoreSecret: {
+    doc: 'The secret necessary to view user captcha and cognito flow scores',
     format: String,
-    env: 'captchaScoreSecret',
-    default: 'captcha_score_secret'
+    env: 'scoreSecret',
+    default: 'score_secret'
   },
   recaptchaServiceKey: {
     doc: 'The service key for Google recaptcha v3 API',
@@ -535,9 +535,15 @@ const config = convict({
     default: ''
   },
   cognitoAPISecret: {
-    doc: 'API Secret for Congnito',
+    doc: 'API Secret for Cognito',
     format: String,
     env: 'cognitoAPISecret',
+    default: ''
+  },
+  cognitoAPIKey: {
+    doc: 'API Key for Cognito',
+    format: String,
+    env: 'cognitoAPIKey',
     default: ''
   },
   solanaEndpoint: {
