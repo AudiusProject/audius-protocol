@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 import os
+from src.utils.db_session import get_db
 import pytest
 from sqlalchemy_utils import database_exists, drop_database, create_database
 from web3 import HTTPProvider, Web3
@@ -10,7 +11,7 @@ import alembic
 import alembic.config
 from src.app import create_app, create_celery
 from src.utils import helpers
-from src.models import Base
+from src.models import Base, Track, Block, TrackRoute
 from src.utils.redis_connection import get_redis
 import src
 
@@ -59,6 +60,12 @@ def app():
 
     # Create application for testing
     discovery_provider_app = create_app(TEST_CONFIG_OVERRIDE)
+    with discovery_provider_app.app_context():
+        db = get_db()
+        with db.scoped_session() as session:
+            session.query(TrackRoute).delete()
+            session.query(Track).delete()
+            session.query(Block).delete()
 
     yield discovery_provider_app
 
