@@ -161,6 +161,7 @@ const ConnectedTrackTile = memo(
             : OverflowAction.FAVORITE
           : null,
         OverflowAction.SHARE,
+        isOwner ? OverflowAction.SHARE_TO_TIKTOK : null,
         OverflowAction.ADD_TO_PLAYLIST,
         OverflowAction.VIEW_TRACK_PAGE,
         OverflowAction.VIEW_ARTIST_PAGE

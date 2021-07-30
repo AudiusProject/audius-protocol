@@ -52,8 +52,9 @@ export enum MessageType {
   PUSH_ROUTE = 'action/push-route',
 
   // OAuth
-  REQUEST_TWITTER_AUTH = 'request-twitter-auth',
   REQUEST_INSTAGRAM_AUTH = 'request-instagram-auth',
+  REQUEST_TIKTOK_AUTH = 'request-tiktok-auth',
+  REQUEST_TWITTER_AUTH = 'request-twitter-auth',
 
   // Lifecycle
   ENTER_FOREGROUND = 'action/enter-foreground',

@@ -839,14 +839,7 @@ function* uploadSingleTrack(track) {
     confirmerActions.requestConfirmation(
       `${track.metadata.title}`,
       function* () {
-        const {
-          blockHash,
-          blockNumber,
-          trackId,
-          transcodedTrackCID,
-          error,
-          phase
-        } = yield call(
+        const { blockHash, blockNumber, trackId, error, phase } = yield call(
           AudiusBackend.uploadTrack,
           track.file,
           track.metadata.artwork.file,
@@ -877,7 +870,7 @@ function* uploadSingleTrack(track) {
           throw new Error(`Could not confirm upload single track ${trackId}`)
         }
 
-        const trackResponse = yield apiClient.getTrack({
+        return yield apiClient.getTrack({
           id: trackId,
           currentUserId: userId,
           unlistedArgs: {
@@ -885,15 +878,6 @@ function* uploadSingleTrack(track) {
             handle
           }
         })
-
-        // We need access to the CID to download the file and share to TikTok.
-        // The api will not return the CID unless the track is marked as downloadable.
-        // Since the user uploaded the track, we can safely augment the track with the CID
-        // returned from the upload
-        return {
-          ...trackResponse,
-          download: { ...trackResponse.download, cid: transcodedTrackCID }
-        }
       },
       function* (confirmedTrack) {
         yield call(responseChan.put, { confirmedTrack })
