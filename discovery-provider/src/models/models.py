@@ -30,8 +30,6 @@ Base: Any = declarative_base()
 logger = logging.getLogger(__name__)
 
 # field_type is the sqlalchemy type from the model object
-
-
 def validate_field_helper(field, value, model, field_type):
     # TODO: need to write custom validator for these datetime fields as jsonschema
     # validates datetime in format 2018-11-13T20:20:39+00:00, not a format we use
