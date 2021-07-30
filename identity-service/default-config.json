@@ -60,7 +60,7 @@
   "timeout": 600000,
   "keepAliveTimeout": 5000,
   "headersTimeout": 60000,
-  "captchaScoreSecret": "captcha_score_secret",
+  "scoreSecret": "score_secret",
   "recaptchaServiceKey": "",
   "hCaptchaSecret": "",
   "solanaFeePayerWallet": "[]",
