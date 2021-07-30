@@ -82,6 +82,7 @@ export enum MessageType {
   // OAuth
   REQUEST_TWITTER_AUTH = 'request-twitter-auth',
   REQUEST_INSTAGRAM_AUTH = 'request-instagram-auth',
+  REQUEST_TIKTOK_AUTH = 'request-tiktok-auth',
 
   // Lifecycle
   ENTER_FOREGROUND = 'action/enter-foreground',
@@ -251,6 +252,8 @@ export const handleMessage = async (
       return dispatch(oauthActions.openPopup(message, Provider.TWITTER))
     case MessageType.REQUEST_INSTAGRAM_AUTH:
       return dispatch(oauthActions.openPopup(message, Provider.INSTAGRAM))
+    case MessageType.REQUEST_TIKTOK_AUTH:
+      return dispatch(oauthActions.openPopup(message, Provider.TIKTOK))
 
     // Lifecycle
     case MessageType.BACKEND_SETUP:
