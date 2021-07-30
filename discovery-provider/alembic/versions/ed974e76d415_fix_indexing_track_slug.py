@@ -6,14 +6,196 @@ Create Date: 2021-07-30 15:24:52.899198
 
 """
 from alembic import op
-from src.models import Block, Track, TrackRoute, SkippedTransaction
-from sqlalchemy import orm
+from typing import Any
+
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.orm import relationship
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Text,
+    PrimaryKeyConstraint,
+    func,
+    orm,
+)
 
 
 revision = "ed974e76d415"
 down_revision = "cb9aa46f1e46"
 branch_labels = None
 depends_on = None
+
+
+# Copies point in time models in case they change
+
+
+Base: Any = declarative_base()
+
+
+class BlockMixin:
+    # pylint: disable=property-with-parameters
+    @declared_attr
+    def __tablename__(self, cls):
+        return cls.__name__.lower()
+
+    blockhash = Column(String, primary_key=True)
+    number = Column(Integer, nullable=True, unique=True)
+    parenthash = Column(String)
+    is_current = Column(Boolean)
+
+
+# inherits from BlockMixin
+class Block(Base, BlockMixin):
+    __tablename__ = "blocks"
+
+    def __repr__(self):
+        return f"<Block(blockhash={self.blockhash},\
+parenthash={self.parenthash},number={self.number},\
+is_current={self.is_current})>"
+
+
+class Track(Base):
+    __tablename__ = "tracks"
+
+    blockhash = Column(String, ForeignKey("blocks.blockhash"), nullable=False)
+    blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
+    txhash = Column(String, default="", nullable=False)
+    track_id = Column(Integer, nullable=False)
+    is_current = Column(Boolean, nullable=False)
+    is_delete = Column(Boolean, nullable=False)
+    owner_id = Column(Integer, nullable=False)
+    route_id = Column(String, nullable=False)
+    title = Column(Text, nullable=True)
+    length = Column(Integer, nullable=True)
+    cover_art = Column(String, nullable=True)
+    cover_art_sizes = Column(String, nullable=True)
+    tags = Column(String, nullable=True)
+    genre = Column(String, nullable=True)
+    mood = Column(String, nullable=True)
+    credits_splits = Column(String, nullable=True)
+    remix_of = Column(postgresql.JSONB, nullable=True)
+    create_date = Column(String, nullable=True)
+    release_date = Column(String, nullable=True)
+    file_type = Column(String, nullable=True)
+    description = Column(String, nullable=True)
+    license = Column(String, nullable=True)
+    isrc = Column(String, nullable=True)
+    iswc = Column(String, nullable=True)
+    track_segments = Column(postgresql.JSONB, nullable=False)
+    metadata_multihash = Column(String, nullable=True)
+    download = Column(postgresql.JSONB, nullable=True)
+    updated_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    is_unlisted = Column(Boolean, nullable=False)
+    field_visibility = Column(postgresql.JSONB, nullable=True)
+    stem_of = Column(postgresql.JSONB, nullable=True)
+
+    @property
+    def _slug(self):
+        return self._routes[0].slug if self._routes else ""
+
+    @property
+    def permalink(self):
+        if self.user and self.user[0].handle and self._slug:
+            return f"/{self.user[0].handle}/{self._slug}"
+        return ""
+
+    PrimaryKeyConstraint(is_current, track_id, blockhash, txhash)
+
+    def __repr__(self):
+        return (
+            f"<Track("
+            f"blockhash={self.blockhash},"
+            f"blocknumber={self.blocknumber},"
+            f"txhash={self.txhash},"
+            f"track_id={self.track_id},"
+            f"is_current={self.is_current},"
+            f"is_delete={self.is_delete},"
+            f"owner_id={self.owner_id},"
+            f"route_id={self.route_id},"
+            f"title={self.title},"
+            f"length={self.length},"
+            f"cover_art={self.cover_art},"
+            f"cover_art_sizes={self.cover_art_sizes},"
+            f"tags={self.tags},"
+            f"genre={self.genre},"
+            f"mood={self.mood},"
+            f"credits_splits={self.credits_splits},"
+            f"remix_of={self.remix_of},"
+            f"create_date={self.create_date},"
+            f"release_date={self.release_date},"
+            f"file_type={self.file_type},"
+            f"description={self.description},"
+            f"license={self.license},"
+            f"isrc={self.isrc},"
+            f"iswc={self.iswc},"
+            f"track_segments={self.track_segments},"
+            f"metadata_multihash={self.metadata_multihash},"
+            f"download={self.download},"
+            f"updated_at={self.updated_at},"
+            f"created_at={self.created_at},"
+            f"stem_of={self.stem_of},"
+            f"permalink={self.permalink}"
+            ")>"
+        )
+
+
+class TrackRoute(Base):
+    __tablename__ = "track_routes"
+
+    # Actual URL slug for the track, includes collision_id
+    slug = Column(String, nullable=False)
+    # Just the title piece of the slug for the track, excludes collision_id
+    # Used for finding max collision_id needed for duplicate title_slugs
+    title_slug = Column(String, nullable=False)
+    collision_id = Column(Integer, nullable=False)
+    owner_id = Column(Integer, nullable=False)
+    track_id = Column(Integer, nullable=False)
+    is_current = Column(Boolean, nullable=False)
+    blockhash = Column(String, nullable=False)
+    blocknumber = Column(Integer, nullable=False)
+    txhash = Column(String, nullable=False)
+
+    PrimaryKeyConstraint(owner_id, slug)
+
+    def __repr__(self):
+        return f"<TrackRoute(\
+slug={self.slug},\
+title_slug={self.title_slug},\
+collision_id={self.collision_id},\
+owner_id={self.owner_id},\
+track_id={self.track_id},\
+is_current={self.is_current},\
+blockhash={self.blockhash},\
+blocknumber={self.blocknumber},\
+txhash={self.txhash})>"
+
+
+class SkippedTransaction(Base):
+    __tablename__ = "skipped_transactions"
+
+    id = Column(Integer, primary_key=True, nullable=False)
+    blocknumber = Column(Integer, nullable=False)
+    blockhash = Column(String, nullable=False)
+    txhash = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
+
+    def __repr__(self):
+        return f"<SkippedTransaction(\
+id={self.id},\
+blocknumber={self.blocknumber},\
+blockhash={self.blockhash},\
+txhash={self.txhash},\
+created_at={self.created_at},\
+updated_at={self.updated_at})>"
 
 
 def upgrade():
