@@ -1,7 +1,10 @@
 import logging
 from datetime import datetime
 from typing import TypedDict
+import base58
 from eth_account.messages import defunct_hash_message
+from nacl.encoding import HexEncoder
+from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session, make_transient
 from src.app import contract_addresses
 from src.utils import helpers
@@ -53,7 +56,8 @@ def user_state_update(
             user_events_tx = getattr(user_contract.events, event_type)().processReceipt(
                 tx_receipt
             )
-            processedEntries = 0  # if record does not get added, do not count towards num_total_changes
+            # if record does not get added, do not count towards num_total_changes
+            processedEntries = 0
             for entry in user_events_tx:
                 user_id = entry["args"]._userId
                 try:
@@ -159,6 +163,8 @@ def lookup_user_record(
 
 def invalidate_old_user(session, user_id):
     # Check if the userId is in the db
+    logger.info(f"index.py | invalid date user with id {user_id}")
+
     user_exists = session.query(User).filter_by(user_id=user_id).count() > 0
 
     if user_exists:
@@ -307,6 +313,16 @@ def parse_user_event(
                     update_task,
                     user_record,
                     ipfs_metadata["associated_wallets"],
+                    "eth",
+                )
+
+            if "associated_sol_wallets" in ipfs_metadata:
+                update_user_associated_wallets(
+                    session,
+                    update_task,
+                    user_record,
+                    ipfs_metadata["associated_sol_wallets"],
+                    "sol",
                 )
 
             if (
@@ -343,7 +359,7 @@ def parse_user_event(
 
 
 def update_user_associated_wallets(
-    session, update_task, user_record, associated_wallets
+    session, update_task, user_record, associated_wallets, chain
 ):
     """Updates the user associated wallets table"""
     try:
@@ -355,7 +371,12 @@ def update_user_associated_wallets(
 
         prev_user_associated_wallets_response = (
             session.query(AssociatedWallet.wallet)
-            .filter_by(user_id=user_record.user_id, is_current=True, is_delete=False)
+            .filter_by(
+                user_id=user_record.user_id,
+                is_current=True,
+                is_delete=False,
+                chain=chain,
+            )
             .all()
         )
 
@@ -364,9 +385,9 @@ def update_user_associated_wallets(
         ]
         added_associated_wallets = set()
 
-        session.query(AssociatedWallet).filter_by(user_id=user_record.user_id).update(
-            {"is_current": False}
-        )
+        session.query(AssociatedWallet).filter_by(
+            user_id=user_record.user_id, chain=chain
+        ).update({"is_current": False})
 
         # Verify the wallet signatures and create the user id to wallet associations
         for associated_wallet, wallet_metadata in associated_wallets.items():
@@ -374,25 +395,33 @@ def update_user_associated_wallets(
                 wallet_metadata["signature"], str
             ):
                 continue
-            signed_wallet = recover_user_id_hash(
-                update_task.web3, user_record.user_id, wallet_metadata["signature"]
+            is_valid_signature = validate_signature(
+                chain,
+                update_task.web3,
+                user_record.user_id,
+                associated_wallet,
+                wallet_metadata["signature"],
             )
 
-            if signed_wallet == associated_wallet:
+            if is_valid_signature:
                 # Check that the wallet doesn't already exist
                 wallet_exists = (
                     session.query(AssociatedWallet)
                     .filter_by(
-                        wallet=associated_wallet, is_current=True, is_delete=False
+                        wallet=associated_wallet,
+                        is_current=True,
+                        is_delete=False,
+                        chain=chain,
                     )
                     .count()
                     > 0
                 )
                 if not wallet_exists:
-                    added_associated_wallets.add(signed_wallet)
+                    added_associated_wallets.add(associated_wallet)
                     associated_wallet_entry = AssociatedWallet(
                         user_id=user_record.user_id,
                         wallet=associated_wallet,
+                        chain=chain,
                         is_current=True,
                         is_delete=False,
                         blocknumber=user_record.blocknumber,
@@ -406,6 +435,7 @@ def update_user_associated_wallets(
                 associated_wallet_entry = AssociatedWallet(
                     user_id=user_record.user_id,
                     wallet=previously_associated_wallet,
+                    chain=chain,
                     is_current=True,
                     is_delete=True,
                     blocknumber=user_record.blocknumber,
@@ -421,6 +451,28 @@ def update_user_associated_wallets(
             f"index.py | users.py | Fatal updating user associated wallets while indexing {e}",
             exc_info=True,
         )
+
+
+def validate_signature(
+    chain: str, web3, user_id: int, associated_wallet: str, signature: str
+):
+    if chain == "eth":
+        signed_wallet = recover_user_id_hash(web3, user_id, signature)
+        return signed_wallet == associated_wallet
+    if chain == "sol":
+        try:
+            message = f"AudiusUserID:{user_id}"
+            verify_key = VerifyKey(base58.b58decode(bytes(associated_wallet, "utf-8")))
+            # Verify raises an error if the message is tampered w/ else returns the original msg
+            verify_key.verify(str.encode(message), HexEncoder.decode(signature))
+            return True
+        except Exception as e:
+            logger.error(
+                f"index.py | users.py | Verifying SPL validation signature for user_id {user_id} {e}",
+                exc_info=True,
+            )
+            return False
+    return False
 
 
 class UserEventsMetadata(TypedDict):
@@ -464,7 +516,9 @@ def update_user_events(
 
 def recover_user_id_hash(web3, user_id, signature):
     message_hash = defunct_hash_message(text=f"AudiusUserID:{user_id}")
-    wallet_address = web3.eth.account.recoverHash(message_hash, signature=signature)
+    wallet_address: str = web3.eth.account.recoverHash(
+        message_hash, signature=signature
+    )
     return wallet_address
 
 

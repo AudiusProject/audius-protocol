@@ -24,3 +24,8 @@ def get_derived_address(base, hashed_eth_pk, spl_token_id):
 # NOTE: This is static and will not change
 SPL_TOKEN_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 SPL_TOKEN_ID_PK = PublicKey(SPL_TOKEN_ID)
+
+# Static SPL Associated Token Program ID
+# NOTE: This is static and will not change
+ASSOCIATED_TOKEN_PROGRAM_ID = "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+ASSOCIATED_TOKEN_PROGRAM_ID_PK = PublicKey(ASSOCIATED_TOKEN_PROGRAM_ID)

@@ -41,6 +41,9 @@
                 "associated_wallets": {
                     "$ref": "#/definitions/AssociatedWallets"
                 },
+                "associated_sol_wallets": {
+                    "$ref": "#/definitions/AssociatedSOLWallets"
+                },
                 "collectibles": {
                     "$ref": "#/definitions/Collectibles"
                 },
@@ -80,6 +83,18 @@
             "required": [],
             "$comment": "",
             "title": "AssociatedWallets"
+        },
+        "AssociatedSOLWallets": {
+            "type": ["object", "null"],
+            "default": null,
+            "patternProperties": {
+                "^[a-zA-Z0-9]{44}$": { "$ref": "#/definitions/WalletMetadata" }
+            },
+            "additionalProperties": false,
+            "properties": {},
+            "required": [],
+            "$comment": "",
+            "title": "AssociatedSOLWallets"
         },
         "WalletMetadata": {
             "type": ["object"],

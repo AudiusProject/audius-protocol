@@ -3,7 +3,11 @@ from .common import ns
 from .playlist_library import playlist_library
 
 associated_wallets = ns.model(
-    "associated_wallets", {"wallets": fields.List(fields.String, required=True)}
+    "associated_wallets",
+    {
+        "wallets": fields.List(fields.String, required=True),
+        "sol_wallets": fields.List(fields.String, required=True),
+    },
 )
 
 encoded_user_id = ns.model(
@@ -43,6 +47,8 @@ user_model_full = ns.clone(
     {
         "balance": fields.String(required=True),
         "associated_wallets_balance": fields.String(required=True),
+        "total_balance": fields.String(required=True),
+        "associated_sol_wallets_balance": fields.String(required=True),
         "blocknumber": fields.Integer(required=True),
         "wallet": fields.String(required=True),
         "created_at": fields.String(required=True),
@@ -85,6 +91,6 @@ challenge_response = ns.model(
         "current_step_count": fields.Integer(),
         "max_steps": fields.Integer(),
         "challenge_type": fields.String(required=True),
-        "metadata": fields.Raw(required=True)
+        "metadata": fields.Raw(required=True),
     },
 )
