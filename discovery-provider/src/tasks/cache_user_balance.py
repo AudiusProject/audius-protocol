@@ -11,7 +11,7 @@ from sqlalchemy.orm.session import Session
 from src.utils.session_manager import SessionManager
 from src.app import eth_abi_values
 from src.tasks.celery_app import celery
-from src.models import UserBalance, User, AssociatedWallet, UserBankAccount
+from src.models import UserBalance, User, AssociatedWallet, UserBankAccount, WalletChain
 from src.queries.get_balances import (
     does_user_balance_need_refresh,
     IMMEDIATE_REFRESH_REDIS_PREFIX,
@@ -177,6 +177,7 @@ def refresh_user_ids(
             if associated_wallet:
                 if user_id in user_id_metadata:
                     user_id_metadata[user_id]["associated_wallets"][
+                        # type: ignore
                         wallet_chain
                     ].append(associated_wallet)
 
@@ -212,20 +213,21 @@ def refresh_user_ids(
                             balance + delegation_balance + stake_balance
                         )
                     for wallet in wallets["associated_wallets"]["sol"]:
-                        root_sol_account = PublicKey(wallet)
-                        derived_account, _ = PublicKey.find_program_address(
-                            [
-                                bytes(root_sol_account),
-                                bytes(SPL_TOKEN_ID_PK),
-                                bytes(WAUDIO_PROGRAM_PUBKEY),
-                            ],
-                            ASSOCIATED_TOKEN_PROGRAM_ID_PK,
-                        )
-                        bal_info = waudio_token.get_account_info(derived_account)
-                        associated_waudio_balance: str = bal_info["result"]["value"][
-                            "amount"
-                        ]
-                        associated_sol_balance += int(associated_waudio_balance)
+                        if WAUDIO_PROGRAM_PUBKEY is not None:
+                            root_sol_account = PublicKey(wallet)
+                            derived_account, _ = PublicKey.find_program_address(
+                                [
+                                    bytes(root_sol_account),
+                                    bytes(SPL_TOKEN_ID_PK),
+                                    bytes(WAUDIO_PROGRAM_PUBKEY),
+                                ],
+                                ASSOCIATED_TOKEN_PROGRAM_ID_PK,
+                            )
+                            bal_info = waudio_token.get_account_info(derived_account)
+                            associated_waudio_balance: str = bal_info["result"][
+                                "value"
+                            ]["amount"]
+                            associated_sol_balance += int(associated_waudio_balance)
 
                 if wallets["bank_account"] is not None:
                     if waudio_token is None:

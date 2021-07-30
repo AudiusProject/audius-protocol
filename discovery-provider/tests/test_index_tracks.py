@@ -1,6 +1,7 @@
 import random
 from datetime import datetime
 from unittest.mock import patch
+from web3 import Web3
 from src.models import Block, TrackRoute, User
 from src.tasks.index import revert_blocks
 from src.tasks.tracks import (
@@ -11,7 +12,7 @@ from src.tasks.tracks import (
 from src.utils import helpers
 from src.utils.db_session import get_db
 from src.challenges.challenge_event_bus import get_event_bus
-from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
+from tests.index_helpers import AttrDict, IPFSClient, UpdateTask
 
 block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
 
@@ -212,7 +213,6 @@ def test_index_tracks(mock_index_task, app):
         assert track_record.owner_id == None
         assert track_record.is_delete == False
 
-        block_hash = f"0x{block_number}"
         # Create track's owner user before
         block = Block(blockhash=block_hash, number=block_number, is_current=True)
         session.add(block)
@@ -290,7 +290,6 @@ def test_index_tracks(mock_index_task, app):
         prev_block = session.query(Block).filter(Block.is_current == True).one()
         prev_block.is_current = False
         block_number += 1
-        block_hash = f"0x{block_number}"
         # Create a new block to test reverts later
         second_block = Block(blockhash=block_hash, number=block_number, is_current=True)
         session.add(second_block)

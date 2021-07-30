@@ -1,7 +1,7 @@
 """add sol associated wallet
 
 Revision ID: f64a484f1496
-Revises: cb9aa46f1e46
+Revises: ed974e76d415
 Create Date: 2021-07-21 15:58:05.108372
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "f64a484f1496"
-down_revision = "cb9aa46f1e46"
+down_revision = "ed974e76d415"
 branch_labels = None
 depends_on = None
 

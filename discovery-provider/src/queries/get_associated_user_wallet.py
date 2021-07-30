@@ -13,7 +13,7 @@ class AssociatedUserWalletArgs(TypedDict):
 
 class AssociatedUserWallet(TypedDict):
     eth: List[str]
-    spl: List[str]
+    sol: List[str]
 
 
 def get_associated_user_wallet(args: AssociatedUserWalletArgs) -> AssociatedUserWallet:
