@@ -368,7 +368,7 @@ def update_track_routes_table(
         # then we need to append the collision number to the slug
         new_collision_id += 1
         new_track_slug = helpers.create_track_slug(
-            track_metadata["title"], new_collision_id
+            track_metadata["title"], track_record.track_id, new_collision_id
         )
 
         # Check for new collisions after making the new slug

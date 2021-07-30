@@ -1,5 +1,6 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
+from src.utils.helpers import decode_string_id
 import redis
 from sqlalchemy import func
 
@@ -28,7 +29,6 @@ from src.api.v1.helpers import (
     format_offset,
     format_limit,
     to_dict,
-    decode_string_id,
 )
 from src.queries.get_trending_tracks import (
     make_trending_cache_key,

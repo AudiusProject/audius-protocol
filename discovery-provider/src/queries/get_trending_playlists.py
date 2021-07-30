@@ -1,5 +1,6 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime
+from src.utils.helpers import decode_string_id
 from typing import cast
 from sqlalchemy import func, desc, Integer
 from sqlalchemy.ext.compiler import compiles
@@ -30,7 +31,6 @@ from src.api.v1.helpers import (
     format_offset,
     format_limit,
     to_dict,
-    decode_string_id,
 )
 
 

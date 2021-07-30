@@ -489,5 +489,9 @@ def test_index_tracks(mock_index_task, app):
 
 def test_track_index_helpers():
     title = "#$*$(Strip\x00\x00\x00 !!@#*)&$(&#$%*Weird   + Characters"
-    assert helpers.create_track_slug(title, 0) == "strip-weird-characters"
-    assert helpers.create_track_slug(title, 3) == "strip-weird-characters-3"
+    assert helpers.create_track_slug(title, 1, 0) == "strip-weird-characters"
+    assert helpers.create_track_slug(title, 1, 3) == "strip-weird-characters-3"
+
+    title = "???"
+    assert helpers.create_track_slug(title, 15633, 0) == "LjEvV"
+    assert helpers.create_track_slug(title, 15633, 3) == "LjEvV-3"
