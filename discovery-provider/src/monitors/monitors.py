@@ -155,6 +155,7 @@ def get_monitor_redis_key(monitor):
     return f"{MONITORING_REDIS_PREFIX}:{monitor[monitor_names.name]}"
 
 
+# pylint: disable=R0911
 def parse_value(monitor, value):
     """
     Parses a string value into the corresponding type
@@ -164,6 +165,8 @@ def parse_value(monitor, value):
         value: string The value to parse
     """
     try:
+        if str(value) == 'None':
+            return None
         # pylint: disable=R1705
         if monitor[monitor_names.type] == "bool":
             return value == "True"
