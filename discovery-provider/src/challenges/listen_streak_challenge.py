@@ -23,6 +23,9 @@ class ListenStreakChallengeUpdater(ChallengeUpdater):
         event_metadatas: List[FullEventMetadata],
         starting_block: Optional[int],
     ):
+        if not step_count:
+            raise Exception("Expected a step count for listen streak challenge")
+
         user_ids = [user_challenge.user_id for user_challenge in user_challenges]
         partial_completions = get_listen_streak_challenges(session, user_ids)
         completion_map = {

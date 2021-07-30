@@ -23,8 +23,10 @@ class TrackUploadChallengeUpdater(ChallengeUpdater):
         event_metadatas: List[FullEventMetadata],
         starting_block: Optional[int],
     ):
-        if not starting_block:
-            raise Exception("Expected a starting block for track upload challenge")
+        if not step_count or not starting_block:
+            raise Exception(
+                "Expected a step count and starting block for track upload challenge"
+            )
 
         num_tracks_per_user = self._get_num_track_uploads_by_user(
             session,
