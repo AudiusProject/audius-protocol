@@ -10,7 +10,6 @@ from src.models import Block, Track, TrackRoute, SkippedTransaction
 from sqlalchemy import orm
 
 
-# revision identifiers, used by Alembic.
 revision = "ed974e76d415"
 down_revision = "cb9aa46f1e46"
 branch_labels = None
@@ -21,7 +20,6 @@ def upgrade():
     bind = op.get_bind()
     session = orm.Session(bind=bind)
 
-    # Create the blocks if non-existent
     blocks = [
         {
             "blocknumber": 22477107,
@@ -64,14 +62,13 @@ def upgrade():
     session.flush()
 
     tracks = [
-        # trackId - 470883, blocknumber - 22477107
         Track(
             track_id=470883,
             blocknumber=22477107,
             is_current=True,
             is_delete=False,
-            txhash="0xd16cd27f8635e84cbb6d02ecf6a5304bae998381cda1291d4cb690d9159196d9",  # TODO: Fill it out
-            blockhash="0x82ba068410ac71a70dfe95708b3c4ec08884355d8384423deb2337a6bcd64dd0",  # TODO: Fill it out
+            txhash="0xd16cd27f8635e84cbb6d02ecf6a5304bae998381cda1291d4cb690d9159196d9",
+            blockhash="0x82ba068410ac71a70dfe95708b3c4ec08884355d8384423deb2337a6bcd64dd0",
             owner_id=3538,
             route_id="",
             cover_art=None,
@@ -82,8 +79,8 @@ def upgrade():
             mood="Fiery",
             credits_splits=None,
             remix_of=None,
-            create_date="",  # TODO: get date
-            release_date="Fri Jul 30 2021 17:29:24 GMT+0200",  # TODO: check if converts
+            create_date=None,
+            release_date="Fri Jul 30 2021 17:29:24 GMT+0200",
             length=None,
             file_type=None,
             description=None,
@@ -121,8 +118,8 @@ def upgrade():
                 "requires_follow": False,
                 "cid": None,
             },
-            updated_at="July-30-2021 10:29:40",  # Get blocktimedate
-            created_at="July-30-2021 10:29:40",  # Get blocktimedate
+            updated_at="July-30-2021 10:29:40",
+            created_at="July-30-2021 10:29:40",
             is_unlisted=False,
             field_visibility={
                 "genre": True,
@@ -134,7 +131,6 @@ def upgrade():
             },
             stem_of=None,
         ),
-        # trackId - 470884, blocknumber - 22477427
         Track(
             track_id=470884,
             blocknumber=22477427,
@@ -152,8 +148,8 @@ def upgrade():
             mood="Fiery",
             credits_splits=None,
             remix_of=None,
-            create_date="",  # TODO: get date
-            release_date="Fri Jul 30 2021 16:55:42 GMT+0200",  # TODO: check if converts
+            create_date=None,
+            release_date="Fri Jul 30 2021 16:55:42 GMT+0200",
             length=None,
             file_type=None,
             description=None,
@@ -191,7 +187,7 @@ def upgrade():
                 "requires_follow": False,
                 "cid": None,
             },
-            updated_at="July-30-2021 10:56:20",  # Get blocktimedate
+            updated_at="July-30-2021 10:56:20",
             created_at="July-30-2021 10:56:20",
             is_unlisted=False,
             field_visibility={
@@ -204,7 +200,6 @@ def upgrade():
             },
             stem_of=None,
         ),
-        # trackId - 470892, blocknumber - 22477062
         Track(
             track_id=470892,
             blocknumber=22477062,
@@ -262,7 +257,7 @@ def upgrade():
                 "cid": None,
             },
             updated_at="July-30-2021 10:25:55",
-            created_at="July-30-2021 10:25:55",  # Get blocktimedate
+            created_at="July-30-2021 10:25:55",
             is_unlisted=False,
             field_visibility={
                 "genre": True,
@@ -274,7 +269,6 @@ def upgrade():
             },
             stem_of=None,
         ),
-        # trackId - 470911, blocknumber - 22477832
         Track(
             track_id=470911,
             blocknumber=22477832,
@@ -292,8 +286,8 @@ def upgrade():
             mood="Fiery",
             credits_splits=None,
             remix_of=None,
-            create_date="",  # TODO: get date
-            release_date="Fri Jul 30 2021 17:29:24 GMT+0200",  # TODO: check if converts
+            create_date=None,
+            release_date="Fri Jul 30 2021 17:29:24 GMT+0200",
             length=None,
             file_type=None,
             description=None,
@@ -410,5 +404,5 @@ def upgrade():
 
 
 def downgrade():
-    
+
     pass
