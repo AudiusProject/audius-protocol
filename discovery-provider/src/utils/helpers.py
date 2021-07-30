@@ -430,8 +430,6 @@ def create_track_slug(title, track_id, collision_id=0):
     if collision_id > 0:
         sanitized_title = f"{sanitized_title}-{collision_id}"
 
-    print(sanitized_title)
-
     return sanitized_title
 
 

@@ -25,6 +25,12 @@ def test_create_track_slug_bad_and_good_characters():
     assert create_track_slug(title, 15633, 3) == "f-3"
 
 
+def test_create_track_slug_good_and_bad_characters():
+    title = "f???"
+    assert create_track_slug(title, 15633, 0) == "f"
+    assert create_track_slug(title, 15633, 3) == "f-3"
+
+
 def test_create_track_slug_chinese():
     title = "听妈妈的话"
     assert create_track_slug(title, 15633, 0) == "听妈妈的话"
