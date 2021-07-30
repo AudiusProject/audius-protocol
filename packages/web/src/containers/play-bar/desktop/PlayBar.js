@@ -232,7 +232,7 @@ class PlayBar extends Component {
       reset,
       currentQueueItem: { track }
     } = this.props
-    if (track.genre === Genre.PODCASTS) {
+    if (track?.genre === Genre.PODCASTS) {
       const position = audio.getPosition()
       const newPosition = position - SKIP_DURATION_SEC
       seek(Math.max(0, newPosition))
@@ -257,7 +257,7 @@ class PlayBar extends Component {
       next,
       currentQueueItem: { track }
     } = this.props
-    if (track.genre === Genre.PODCASTS) {
+    if (track?.genre === Genre.PODCASTS) {
       const duration = audio.getDuration()
       const position = audio.getPosition()
       const newPosition = position + SKIP_DURATION_SEC
