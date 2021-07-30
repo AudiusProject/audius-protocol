@@ -7,6 +7,9 @@ import 'whatwg-fetch'
 import 'url-search-params-polyfill'
 
 import { IDENTITY_SERVICE } from 'services/AudiusBackend'
+import { RequestTikTokAuthMessage } from 'services/native-mobile-interface/oauth'
+
+const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 type useTikTokAuthOptions = {
   onError: (e: Error) => void
@@ -34,18 +37,34 @@ export const useTikTokAuth = ({
     if (accessToken && openId && !isExpired) {
       callback(accessToken, openId)
     } else {
-      getRequestToken(callback)
+      getRequestToken(callback, !!NATIVE_MOBILE)
     }
   }
 
-  const getRequestToken = (callback: WithAuthCallback) => {
-    const popup = openPopup()
+  const getRequestToken = async (
+    callback: WithAuthCallback,
+    isNativeMobile: boolean
+  ) => {
+    const authenticationUrl = `${IDENTITY_SERVICE}/tiktok`
 
-    if (popup) {
-      const authenticationUrl = `${IDENTITY_SERVICE}/tiktok`
+    if (isNativeMobile) {
+      const message = new RequestTikTokAuthMessage(authenticationUrl)
+      message.send()
+      const response = await message.receive()
 
-      popup.location.href = authenticationUrl
-      poll(popup, callback)
+      const { authorizationCode, csrfState } = response
+      if (authorizationCode && csrfState) {
+        getAccessToken(authorizationCode, csrfState, callback)
+      } else {
+        onError(new Error('Native mobile TikTok auth failed'))
+      }
+    } else {
+      const popup = openPopup()
+
+      if (popup) {
+        popup.location.href = authenticationUrl
+        poll(popup, callback)
+      }
     }
   }
 

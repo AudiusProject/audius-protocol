@@ -1,13 +1,17 @@
 import { takeEvery, put, call, select } from 'redux-saga/effects'
 
 import { show as showConfetti } from 'containers/music-confetti/store/slice'
-import User from 'models/User'
-import { getAccountUser } from 'store/account/selectors'
-import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { setVisibility } from 'store/application/ui/modals/slice'
+import { getTrack } from 'store/cache/tracks/selectors'
+import { AppState } from 'store/types'
+import { encodeHashId } from 'utils/route/hashIds'
 
-import { getIsAuthenticated } from './selectors'
+import { getIsAuthenticated, getTrack as getTrackToShare } from './selectors'
 import {
   authenticated,
+  open,
+  requestOpen,
   setIsAuthenticated,
   setStatus,
   share,
@@ -20,22 +24,43 @@ const TIKTOK_SHARE_SOUND_ENDPOINT =
 
 // Because the track blob cannot live in an action (not a POJO),
 // we are creating a singleton here to store it
-let track: Blob | null = null
+let trackBlob: Blob | null = null
 
-function* handleShare(action: ReturnType<typeof share>) {
+function* handleRequestOpen(action: ReturnType<typeof requestOpen>) {
+  const track = yield select((state: AppState) =>
+    getTrack(state, { id: action.payload.id })
+  )
+
+  yield put(
+    open({
+      track: {
+        id: track.track_id,
+        title: track.title,
+        duration: track.duration
+      }
+    })
+  )
+  yield put(setVisibility({ modal: 'ShareSoundToTikTok', visible: true }))
+}
+
+function* handleShare() {
   yield put(setStatus({ status: Status.SHARE_STARTED }))
-
-  // Fetch the track blob
-  const { creator_node_endpoint }: User = yield select(getAccountUser)
+  const { id } = yield select(getTrackToShare)
 
   try {
-    const { data } = yield call(
-      window.audiusLibs.File.fetchCID,
-      action.payload.cid,
-      getCreatorNodeIPFSGateways(creator_node_endpoint),
-      () => {}
+    // Fetch the track blob
+    const encodedTrackId = encodeHashId(id)
+
+    const response = yield call(
+      window.fetch,
+      apiClient.makeUrl(`/tracks/${encodedTrackId}/stream`)
     )
-    track = data
+
+    if (!response.ok) {
+      throw new Error('TikTok Share sound request unsuccessful')
+    }
+
+    trackBlob = yield response.blob()
 
     // If already authed with TikTok, start the upload
     const authenticated = yield select(getIsAuthenticated)
@@ -52,7 +77,7 @@ function* handleAuthenticated(action: ReturnType<typeof authenticated>) {
   yield put(setIsAuthenticated())
 
   // If track blob already downloaded, start the upload
-  if (track) {
+  if (trackBlob) {
     yield put(upload())
   }
 }
@@ -60,7 +85,7 @@ function* handleAuthenticated(action: ReturnType<typeof authenticated>) {
 function* handleUpload(action: ReturnType<typeof upload>) {
   // Upload the track blob to TikTok api
   const formData = new FormData()
-  formData.append('sound_file', track as Blob)
+  formData.append('sound_file', trackBlob as Blob)
 
   const openId = window.localStorage.getItem('tikTokOpenId')
   const accessToken = window.localStorage.getItem('tikTokAccessToken')
@@ -86,8 +111,12 @@ function* handleUpload(action: ReturnType<typeof upload>) {
     console.log(e)
     yield put(setStatus({ status: Status.SHARE_ERROR }))
   } finally {
-    track = null
+    trackBlob = null
   }
+}
+
+function* watchHandleRequestOpen() {
+  yield takeEvery(requestOpen, handleRequestOpen)
 }
 
 function* watchHandleShare() {
@@ -103,5 +132,10 @@ function* watchHandleUpload() {
 }
 
 export default function sagas() {
-  return [watchHandleShare, watchHandleAuthenticated, watchHandleUpload]
+  return [
+    watchHandleRequestOpen,
+    watchHandleShare,
+    watchHandleAuthenticated,
+    watchHandleUpload
+  ]
 }

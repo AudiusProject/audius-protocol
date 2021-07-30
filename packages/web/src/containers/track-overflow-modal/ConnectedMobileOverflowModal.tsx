@@ -15,6 +15,7 @@ import {
   Notification,
   NotificationType
 } from 'containers/notification/store/types'
+import { requestOpen as openTikTokModal } from 'containers/share-sound-to-tiktok-modal/store/slice'
 import { ID } from 'models/common/Identifiers'
 import {
   FollowSource,
@@ -70,6 +71,7 @@ const ConnectedMobileOverflowModal = ({
   title,
   isAlbum,
   shareTrack,
+  shareTrackToTikTok,
   shareCollection,
   repostTrack,
   unrepostTrack,
@@ -100,6 +102,7 @@ const ConnectedMobileOverflowModal = ({
     onFavorite,
     onUnfavorite,
     onShare,
+    onShareToTikTok,
     onAddToPlaylist,
     onEditPlaylist,
     onPublishPlaylist,
@@ -117,6 +120,7 @@ const ConnectedMobileOverflowModal = ({
     onFavorite?: () => void
     onUnfavorite?: () => void
     onShare?: () => void
+    onShareToTikTok?: () => void
     onAddToPlaylist?: () => void
     onEditPlaylist?: () => void
     onPublishPlaylist?: () => void
@@ -139,6 +143,7 @@ const ConnectedMobileOverflowModal = ({
           onFavorite: () => saveTrack(id as ID),
           onUnfavorite: () => unsaveTrack(id as ID),
           onShare: () => shareTrack(id as ID),
+          onShareToTikTok: () => shareTrackToTikTok(id as ID),
           onAddToPlaylist: () => addToPlaylist(id as ID, title),
           onVisitTrackPage: () => visitTrackPage(id as ID, handle, title),
           onVisitArtistPage: () => visitArtistPage(handle),
@@ -202,6 +207,7 @@ const ConnectedMobileOverflowModal = ({
       onFavorite={onFavorite}
       onUnfavorite={onUnfavorite}
       onShare={onShare}
+      onShareToTikTok={onShareToTikTok}
       onAddToPlaylist={onAddToPlaylist}
       onVisitTrackPage={onVisitTrackPage}
       onEditPlaylist={onEditPlaylist}
@@ -297,6 +303,8 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
     // Tracks
     shareTrack: (trackId: ID) =>
       dispatch(shareTrack(trackId, ShareSource.OVERFLOW)),
+    shareTrackToTikTok: (trackId: ID) =>
+      dispatch(openTikTokModal({ id: trackId })),
     repostTrack: (trackId: ID) =>
       dispatch(repostTrack(trackId, RepostSource.OVERFLOW)),
     unrepostTrack: (trackId: ID) =>

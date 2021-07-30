@@ -20,7 +20,7 @@ type ActionSheetModalProps = {
   title?: string
 }
 
-const MODAL_OFFSET_PIXELS = 41
+export const MODAL_OFFSET_PIXELS = 41
 
 // `ActionSheetModal` is a modal that presents a list of clickable rows with text
 // styled like an iOS Action Sheet.

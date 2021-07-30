@@ -9,6 +9,7 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { requestOpen as openAddToPlaylist } from 'containers/add-to-playlist/store/actions'
 import { getCollectionId } from 'containers/collection-page/store/selectors'
 import * as embedModalActions from 'containers/embed-modal/store/actions'
+import { requestOpen as openTikTokModal } from 'containers/share-sound-to-tiktok-modal/store/slice'
 import { ID, PlayableType } from 'models/common/Identifiers'
 import { newCollectionMetadata } from 'schemas'
 import {
@@ -44,6 +45,7 @@ const messages = {
   reposted: 'Reposted!',
   setArtistPick: 'Set as Artist Pick',
   share: 'Share',
+  shareToTikTok: 'Share to TikTok',
   undoRepost: 'Undo Repost',
   unfavorite: 'Unfavorite',
   unreposted: 'Un-Reposted!',
@@ -102,6 +104,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       openAddToPlaylistModal,
       openEditTrackModal,
       openEmbedModal,
+      openShareSoundToTikTokModal,
       repostTrack,
       saveTrack,
       setArtistPick,
@@ -181,6 +184,10 @@ const TrackMenu = (props: TrackMenuProps) => {
       text: messages.embed,
       onClick: () => openEmbedModal(trackId)
     }
+    const shareToTikTokMenuItem = {
+      text: messages.shareToTikTok,
+      onClick: () => openShareSoundToTikTokModal(trackId)
+    }
 
     const menu: { items: PopupMenuItem[] } = { items: [] }
 
@@ -218,6 +225,10 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (includeEmbed) {
       menu.items.push(embedMenuItem)
     }
+    if (trackId && isOwner && !isDeleted) {
+      menu.items.push(shareToTikTokMenuItem)
+    }
+
     return menu
   }
 
@@ -265,7 +276,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     openEditTrackModal: (trackId: ID) =>
       dispatch(editTrackModalActions.open(trackId)),
     openEmbedModal: (trackId: ID) =>
-      dispatch(embedModalActions.open(trackId, PlayableType.TRACK))
+      dispatch(embedModalActions.open(trackId, PlayableType.TRACK)),
+    openShareSoundToTikTokModal: (trackId: ID) =>
+      dispatch(openTikTokModal({ id: trackId }))
   }
 }
 
