@@ -116,9 +116,9 @@ def user_state_update(
         logger.info(f"index.py | users.py | Adding {value_obj['user']}")
         if value_obj["events"]:
             invalidate_old_user(session, user_id)
-            challenge_bus.dispatch(
-                session, ChallengeEvent.profile_update, block_number, user_id
-            )
+            # challenge_bus.dispatch(
+            #     session, ChallengeEvent.profile_update, block_number, user_id
+            # )
             session.add(value_obj["user"])
 
     return num_total_changes, user_ids
@@ -163,6 +163,8 @@ def lookup_user_record(
 
 def invalidate_old_user(session, user_id):
     # Check if the userId is in the db
+    logger.info(f"index.py | invalid date user with id {user_id}")
+
     user_exists = session.query(User).filter_by(user_id=user_id).count() > 0
 
     if user_exists:
@@ -314,13 +316,13 @@ def parse_user_event(
                     "eth",
                 )
 
-            if "associated_spl_wallets" in ipfs_metadata:
+            if "associated_sol_wallets" in ipfs_metadata:
                 update_user_associated_wallets(
                     session,
                     update_task,
                     user_record,
-                    ipfs_metadata["associated_spl_wallets"],
-                    "spl",
+                    ipfs_metadata["associated_sol_wallets"],
+                    "sol",
                 )
 
             if (
@@ -457,7 +459,7 @@ def validate_signature(
     if chain == "eth":
         signed_wallet = recover_user_id_hash(web3, user_id, signature)
         return signed_wallet == associated_wallet
-    if chain == "spl":
+    if chain == "sol":
         try:
             message = f"AudiusUserID:{user_id}"
             verify_key = VerifyKey(base58.b58decode(bytes(associated_wallet, "utf-8")))

@@ -44,7 +44,7 @@ windowed_save_count = "windowed_save_count"
 balance = "balance"
 total_balance = "total_balance"
 associated_wallets_balance = "associated_wallets_balance"
-associated_spl_wallets_balance = "associated_spl_wallets_balance"
+associated_sol_wallets_balance = "associated_sol_wallets_balance"
 
 # current user specific
 # boolean - does current user follow given user

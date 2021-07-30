@@ -39,7 +39,7 @@ user_metadata_format = {
     "location": None,
     "handle": None,
     "associated_wallets": None,
-    "associated_spl_wallets": None,
+    "associated_sol_wallets": None,
     "collectibles": None,
     "playlist_library": None,
     "events": None,

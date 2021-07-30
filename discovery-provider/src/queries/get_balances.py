@@ -58,11 +58,11 @@ def get_balances(session: Session, redis: Redis, user_ids: List[int]):
         user_balance.user_id: {
             "owner_wallet_balance": user_balance.balance,
             "associated_wallets_balance": user_balance.associated_wallets_balance,
-            "associated_spl_wallets_balance": user_balance.associated_spl_wallets_balance,
+            "associated_sol_wallets_balance": user_balance.associated_sol_wallets_balance,
             "total_balance": str(
                 int(user_balance.balance)
                 + int(user_balance.associated_wallets_balance)
-                + (int(user_balance.associated_spl_wallets_balance) * 10 ** 9)
+                + (int(user_balance.associated_sol_wallets_balance) * 10 ** 9)
             ),
         }
         for user_balance in query
@@ -78,7 +78,7 @@ def get_balances(session: Session, redis: Redis, user_ids: List[int]):
         user_id: {
             "owner_wallet_balance": "0",
             "associated_wallets_balance": "0",
-            "associated_spl_wallets_balance": "0",
+            "associated_sol_wallets_balance": "0",
             "total_balance": "0",
         }
         for user_id in needs_balance_set

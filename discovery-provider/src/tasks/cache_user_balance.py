@@ -41,7 +41,7 @@ WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS) if WAUDIO_MINT_ADDRESS else 
 
 class AssociatedWallets(TypedDict):
     eth: List[str]
-    spl: List[str]
+    sol: List[str]
 
 
 class UserWalletMetadata(TypedDict):
@@ -167,7 +167,7 @@ def refresh_user_ids(
             if not user_id in user_id_metadata:
                 user_id_metadata[user_id] = {
                     "owner_wallet": user_wallet,
-                    "associated_wallets": {"eth": [], "spl": []},
+                    "associated_wallets": {"eth": [], "sol": []},
                     "bank_account": None,
                 }
                 if user_id in user_id_bank_accounts:
@@ -194,7 +194,7 @@ def refresh_user_ids(
                 ).call()
                 associated_balance = 0
                 waudio_balance = "0"
-                associated_spl_balance = 0
+                associated_sol_balance = 0
 
                 if "associated_wallets" in wallets:
                     for wallet in wallets["associated_wallets"]["eth"]:
@@ -211,11 +211,11 @@ def refresh_user_ids(
                         associated_balance += (
                             balance + delegation_balance + stake_balance
                         )
-                    for wallet in wallets["associated_wallets"]["spl"]:
-                        root_spl_account = PublicKey(wallet)
+                    for wallet in wallets["associated_wallets"]["sol"]:
+                        root_sol_account = PublicKey(wallet)
                         derived_account, _ = PublicKey.find_program_address(
                             [
-                                bytes(root_spl_account),
+                                bytes(root_sol_account),
                                 bytes(SPL_TOKEN_ID_PK),
                                 bytes(WAUDIO_PROGRAM_PUBKEY),
                             ],
@@ -225,7 +225,7 @@ def refresh_user_ids(
                         associated_waudio_balance: str = bal_info["result"]["value"][
                             "amount"
                         ]
-                        associated_spl_balance += int(associated_waudio_balance)
+                        associated_sol_balance += int(associated_waudio_balance)
 
                 if wallets["bank_account"] is not None:
                     if waudio_token is None:
@@ -243,8 +243,8 @@ def refresh_user_ids(
                 user_balance.balance = owner_wallet_balance
                 user_balance.associated_wallets_balance = str(associated_balance)
                 user_balance.waudio = waudio_balance
-                user_balance.associated_spl_wallets_balance = str(
-                    associated_spl_balance
+                user_balance.associated_sol_wallets_balance = str(
+                    associated_sol_balance
                 )
 
             except Exception as e:

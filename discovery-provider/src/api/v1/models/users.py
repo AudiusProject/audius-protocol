@@ -6,7 +6,7 @@ associated_wallets = ns.model(
     "associated_wallets",
     {
         "wallets": fields.List(fields.String, required=True),
-        "spl_wallets": fields.List(fields.String, required=True),
+        "sol_wallets": fields.List(fields.String, required=True),
     },
 )
 
@@ -48,7 +48,7 @@ user_model_full = ns.clone(
         "balance": fields.String(required=True),
         "associated_wallets_balance": fields.String(required=True),
         "total_balance": fields.String(required=True),
-        "associated_spl_wallets_balance": fields.String(required=True),
+        "associated_sol_wallets_balance": fields.String(required=True),
         "blocknumber": fields.Integer(required=True),
         "wallet": fields.String(required=True),
         "created_at": fields.String(required=True),

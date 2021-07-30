@@ -148,7 +148,7 @@ ipfs_client = IPFSClient(
                     + "413011759fa6980ba5f55b0fc66d55122afd5497b5795992cf6749bbe06553abc1b"
                 },
             },
-            "associated_spl_wallets": {
+            "associated_sol_wallets": {
                 "A5PXrbJdeyqfJRqunnqdCfvuy3LD21Sh2D1SL1a48bkp": {
                     "signature": "5953cc8f46a564e09b98fb70b0b4d5afe99875955124487e958e2d68f8f5e70923"
                     + "ab01e0c59f576bba996cfa8945be48e54bb0f177aed782d022133a472cd501"
@@ -475,8 +475,8 @@ def test_index_users(app):
             assert associated_wallet.wallet in ipfs_associated_wallets
         assert len(associated_wallets) == len(ipfs_associated_wallets)
 
-        ipfs_associated_spl_wallets = ipfs_metadata["associated_spl_wallets"]
-        associated_spl_wallets = (
+        ipfs_associated_sol_wallets = ipfs_metadata["associated_sol_wallets"]
+        associated_sol_wallets = (
             session.query(AssociatedWallet)
             .filter_by(
                 user_id=user_record.user_id,
@@ -486,9 +486,9 @@ def test_index_users(app):
             )
             .all()
         )
-        for associated_wallet in associated_spl_wallets:
-            assert associated_wallet.wallet in ipfs_associated_spl_wallets
-        assert len(associated_spl_wallets) == len(ipfs_associated_spl_wallets)
+        for associated_wallet in associated_sol_wallets:
+            assert associated_wallet.wallet in ipfs_associated_sol_wallets
+        assert len(associated_sol_wallets) == len(ipfs_associated_sol_wallets)
 
         user_events = (
             session.query(UserEvents)

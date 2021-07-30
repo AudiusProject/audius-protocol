@@ -661,7 +661,7 @@ class UserIdByAssociatedWallet(Resource):
         user_id = decode_with_abort(args.get("id"), ns)
         wallets = get_associated_user_wallet({"user_id": user_id})
         return success_response(
-            {"wallets": wallets["eth"], "spl_wallets": wallets["spl"]}
+            {"wallets": wallets["eth"], "sol_wallets": wallets["sol"]}
         )
 
 

@@ -878,7 +878,7 @@ class UserBalance(Base):
     # balance in Wei
     balance = Column(String, nullable=False)
     associated_wallets_balance = Column(String, nullable=False)
-    associated_spl_wallets_balance = Column(String, nullable=False)
+    associated_sol_wallets_balance = Column(String, nullable=False)
 
     # wAudio balance
     waudio = Column(String, nullable=False)
@@ -888,13 +888,13 @@ class UserBalance(Base):
 user_id={self.user_id},\
 balance={self.balance},\
 associated_wallets_balance={self.associated_wallets_balance}\
-associated_spl_wallets_balance={self.associated_spl_wallets_balance}\
+associated_sol_wallets_balance={self.associated_sol_wallets_balance}\
 waudio={self.waudio}>"
 
 
 class WalletChain(str, enum.Enum):
     eth = "eth"
-    spl = "spl"
+    sol = "sol"
 
 
 class AssociatedWallet(Base):
@@ -1120,6 +1120,7 @@ profile_cover_photo={self.profile_cover_photo},\
 follows_complete={self.follows},\
 favorites_complete={self.favorites_complete},\
 reposts_complete={self.reposts})>"
+
 
 class ListenStreakChallenge(Base):
     __tablename__ = "challenge_listen_streak"

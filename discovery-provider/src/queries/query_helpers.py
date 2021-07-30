@@ -252,8 +252,8 @@ def populate_user_metadata(
         user[response_name_constants.associated_wallets_balance] = user_balance.get(
             "associated_wallets_balance", "0"
         )
-        user[response_name_constants.associated_spl_wallets_balance] = user_balance.get(
-            "associated_spl_wallets_balance", "0"
+        user[response_name_constants.associated_sol_wallets_balance] = user_balance.get(
+            "associated_sol_wallets_balance", "0"
         )
 
     return users

@@ -1,7 +1,7 @@
-"""add spl associated wallet
+"""add sol associated wallet
 
 Revision ID: f64a484f1496
-Revises: 273b8bcef694
+Revises: cb9aa46f1e46
 Create Date: 2021-07-21 15:58:05.108372
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "f64a484f1496"
-down_revision = "273b8bcef694"
+down_revision = "cb9aa46f1e46"
 branch_labels = None
 depends_on = None
 
@@ -20,20 +20,20 @@ def upgrade():
     op.add_column(
         "user_balances",
         sa.Column(
-            "associated_spl_wallets_balance",
+            "associated_sol_wallets_balance",
             sa.String(),
             server_default="0",
             nullable=False,
         ),
     )
-    wallet_chain = postgresql.ENUM("eth", "spl", name="wallet_chain")
+    wallet_chain = postgresql.ENUM("eth", "sol", name="wallet_chain")
     wallet_chain.create(op.get_bind())
 
     op.add_column(
         "associated_wallets",
         sa.Column(
             "chain",
-            sa.Enum("eth", "spl", name="wallet_chain"),
+            sa.Enum("eth", "sol", name="wallet_chain"),
             server_default="eth",
             nullable=False,
         ),
@@ -42,7 +42,7 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_column("user_balances", "associated_spl_wallets_balance")
+    op.drop_column("user_balances", "associated_sol_wallets_balance")
     op.drop_column("associated_wallets", "chain")
-    wallet_chain = postgresql.ENUM("eth", "spl", name="wallet_chain")
+    wallet_chain = postgresql.ENUM("eth", "sol", name="wallet_chain")
     wallet_chain.drop(op.get_bind())
