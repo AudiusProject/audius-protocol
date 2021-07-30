@@ -182,6 +182,7 @@ def test_index_tracks(mock_index_task, app):
     with app.app_context():
         db = get_db()
         challenge_event_bus = get_event_bus()
+        web3 = Web3()
         update_task = UpdateTask(ipfs_client, web3, challenge_event_bus)
 
     pending_track_routes = []

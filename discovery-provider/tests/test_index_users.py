@@ -2,10 +2,11 @@ from datetime import datetime
 from src.models import User, AssociatedWallet, UserEvents
 from src.tasks.users import lookup_user_record, parse_user_event
 from src.utils.db_session import get_db
+from src.challenges.challenge_event_bus import get_event_bus
 from src.utils.user_event_constants import user_event_types_lookup
 from src.utils import helpers
 from src.utils.redis_connection import get_redis
-from tests.index_helpers import AttrDict, IPFSClient, UpdateTask
+from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
 
 block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
 
@@ -192,6 +193,7 @@ def test_index_users(app):
     with app.app_context():
         db = get_db()
         redis = get_redis()
+        web3 = Web3()
         challenge_event_bus = get_event_bus()
         update_task = UpdateTask(ipfs_client, web3, challenge_event_bus, redis)
 
@@ -482,7 +484,7 @@ def test_index_users(app):
                 user_id=user_record.user_id,
                 is_current=True,
                 is_delete=False,
-                chain="spl",
+                chain="sol",
             )
             .all()
         )
