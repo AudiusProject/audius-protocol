@@ -116,9 +116,9 @@ def user_state_update(
         logger.info(f"index.py | users.py | Adding {value_obj['user']}")
         if value_obj["events"]:
             invalidate_old_user(session, user_id)
-            # challenge_bus.dispatch(
-            #     session, ChallengeEvent.profile_update, block_number, user_id
-            # )
+            challenge_bus.dispatch(
+                session, ChallengeEvent.profile_update, block_number, user_id
+            )
             session.add(value_obj["user"])
 
     return num_total_changes, user_ids
