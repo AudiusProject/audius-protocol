@@ -7,6 +7,7 @@ from sqlalchemy.orm.session import Session
 from src.utils.redis_connection import get_redis
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
+from src.challenges.track_upload_challenge import track_upload_challenge_manager
 from src.challenges.challenge_event import ChallengeEvent
 
 from collections import defaultdict
@@ -29,7 +30,7 @@ class ChallengeEventBus:
         self._managers = {}
 
     def register_listener(self, event: str, listener: ChallengeManager):
-        """Registers a listener (`ChallengeEventManager`) to listen for a particular event type."""
+        """Registers a listener (`ChallengeManager`) to listen for a particular event type."""
         self._listeners[event].append(listener)
         if not listener.challenge_id in self._managers:
             self._managers[listener.challenge_id] = listener
@@ -119,6 +120,8 @@ def setup_challenge_bus():
     bus.register_listener(ChallengeEvent.favorite, profile_challenge_manager)
     # listen_streak_challenge_manager listeners
     bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
+    # track_upload_challenge_manager listeners
+    bus.register_listener(ChallengeEvent.track_upload, track_upload_challenge_manager)
 
     return bus
 

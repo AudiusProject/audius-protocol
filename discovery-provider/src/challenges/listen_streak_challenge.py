@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge import (
@@ -7,7 +7,7 @@ from src.challenges.challenge import (
     ChallengeUpdater,
     FullEventMetadata,
 )
-from src.models.models import ListenStreakChallenge
+from src.models.models import ListenStreakChallenge, UserChallenge
 from src.challenges.challenge_event import ChallengeEvent
 
 
@@ -15,8 +15,17 @@ class ListenStreakChallengeUpdater(ChallengeUpdater):
     """Listening streak challenge"""
 
     def update_user_challenges(
-        self, session, event, user_challenges, step_count, event_metadatas
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
     ):
+        if not step_count:
+            raise Exception("Expected a step count for listen streak challenge")
+
         user_ids = [user_challenge.user_id for user_challenge in user_challenges]
         partial_completions = get_listen_streak_challenges(session, user_ids)
         completion_map = {

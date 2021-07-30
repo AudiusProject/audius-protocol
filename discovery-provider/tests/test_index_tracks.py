@@ -10,6 +10,7 @@ from src.tasks.tracks import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db
+from src.challenges.challenge_event_bus import get_event_bus
 from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
 
 
@@ -179,8 +180,9 @@ def test_index_tracks(mock_index_task, app):
     """Tests that tracks are indexed correctly"""
     with app.app_context():
         db = get_db()
+        challenge_event_bus = get_event_bus()
+        update_task = UpdateTask(ipfs_client, web3, challenge_event_bus)
 
-    update_task = UpdateTask(ipfs_client, web3)
     pending_track_routes = []
 
     with db.scoped_session() as session:
@@ -236,6 +238,7 @@ def test_index_tracks(mock_index_task, app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             track_record,  # User ORM instance
+            block_number,  # Used to forward to track uploads challenge
             block_timestamp,  # Used to update the user.updated_at field
             pending_track_routes,
         )
@@ -310,6 +313,7 @@ def test_index_tracks(mock_index_task, app):
             entry,
             event_type,
             track_record,
+            block_number,
             block_timestamp,
             pending_track_routes,
         )
@@ -379,6 +383,7 @@ def test_index_tracks(mock_index_task, app):
             entry,
             event_type,
             track_record_dupe,
+            block_number,
             block_timestamp,
             pending_track_routes,
         )
@@ -415,6 +420,7 @@ def test_index_tracks(mock_index_task, app):
             entry,
             event_type,
             track_record_dupe,
+            block_number,
             block_timestamp,
             pending_track_routes,
         )
@@ -479,6 +485,7 @@ def test_index_tracks(mock_index_task, app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             track_record,  # User ORM instance
+            block_number,  # Used to forward to track uploads challenge
             block_timestamp,  # Used to update the user.updated_at field
             pending_track_routes,
         )
