@@ -213,8 +213,11 @@ def test_index_tracks(mock_index_task, app):
         assert track_record.owner_id == None
         assert track_record.is_delete == False
 
+        updated_block_hash = f"0x{block_number}"
         # Create track's owner user before
-        block = Block(blockhash=block_hash, number=block_number, is_current=True)
+        block = Block(
+            blockhash=updated_block_hash, number=block_number, is_current=True
+        )
         session.add(block)
         session.flush()
 
@@ -222,7 +225,7 @@ def test_index_tracks(mock_index_task, app):
             is_current=True,
             user_id=entry.args._trackOwnerId,
             handle="ray",
-            blockhash=block_hash,
+            blockhash=updated_block_hash,
             blocknumber=block_number,
             creator_node_endpoint=(
                 "http://cn2_creator-node_1:4001,http://cn1_creator-node_1:4000,"
@@ -290,8 +293,11 @@ def test_index_tracks(mock_index_task, app):
         prev_block = session.query(Block).filter(Block.is_current == True).one()
         prev_block.is_current = False
         block_number += 1
+        updated_block_hash = f"0x{block_number}"
         # Create a new block to test reverts later
-        second_block = Block(blockhash=block_hash, number=block_number, is_current=True)
+        second_block = Block(
+            blockhash=updated_block_hash, number=block_number, is_current=True
+        )
         session.add(second_block)
         session.flush()
 
@@ -302,7 +308,7 @@ def test_index_tracks(mock_index_task, app):
             entry,
             1,  # event track id
             block_number,
-            block_hash,
+            updated_block_hash,
             "0x",  # txhash
         )
 
@@ -373,7 +379,7 @@ def test_index_tracks(mock_index_task, app):
             entry,
             40,  # event track id
             block_number,
-            block_hash,
+            updated_block_hash,
             "0x",  # txhash
         )
 
@@ -410,7 +416,7 @@ def test_index_tracks(mock_index_task, app):
             entry,
             30,  # event track id
             block_number,
-            block_hash,
+            updated_block_hash,
             "0x",  # txhash
         )
 
