@@ -158,13 +158,12 @@ const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
   const onClickTikTok = useCallback(async () => {
     // Sharing to TikTok is currently only enabled for single track uploads
     const track = upload.tracks[0]
-    if (track.metadata.download?.cid) {
+    if (track.metadata) {
       dispatch(
         openTikTokModal({
           track: {
             id: track.metadata.track_id,
             title: track.metadata.title,
-            cid: track.metadata.download.cid,
             duration: track.metadata.duration
           }
         })

@@ -17,7 +17,7 @@
 }
 
 .container.fullHeight {
-  max-height: 304px;
+  max-height: 496px;
   margin-bottom: 52px;
   opacity: 1;
 }
@@ -47,6 +47,7 @@
   height: 64px !important;
   min-height: 64px;
   width: 400px !important;
+  min-width: 400px;
   transition: all 0.14s ease-in-out !important;
 }
 
@@ -60,11 +61,11 @@
 }
 
 .button .buttonText {
+  max-width: 100%;
   color: var(--static-twitter-blue);
   font-size: var(--font-2xl);
   font-weight: var(--font-bold);
   letter-spacing: 0;
-  line-height: 14px;
   text-align: center;
 }
 
@@ -76,6 +77,7 @@
 
 .button .buttonTextTikTok svg {
   margin-right: 8px;
+  min-width: 32px;
 }
 
 .copyLinkWrapper {
@@ -83,7 +85,7 @@
   justify-content: center;
   align-items: center;
   margin: auto;
-  margin-bottom: 48px;
+  margin-bottom: 36px;
 }
 
 .copyLinkContainer {
@@ -136,5 +138,6 @@
 
 .buttonContainer {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
 }

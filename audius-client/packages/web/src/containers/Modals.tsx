@@ -35,6 +35,7 @@ const Modals = () => {
       <FirstUploadModal />
       <UnloadDialog />
       <RewardsModals />
+      <ShareSoundToTikTokModal />
 
       {!NATIVE_MOBILE && client !== Client.ELECTRON && (
         <BrowserPushConfirmationModal />
@@ -48,7 +49,6 @@ const Modals = () => {
           <ConnectedUserListModal />
           <AppCTAModal />
           <TierExplainerModal />
-          <ShareSoundToTikTokModal />
           <ConfirmAudioToWAudioModal />
         </>
       )}

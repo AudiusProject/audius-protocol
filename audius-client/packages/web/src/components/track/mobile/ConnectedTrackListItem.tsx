@@ -6,6 +6,7 @@ import { Dispatch } from 'redux'
 
 import { ID } from 'models/common/Identifiers'
 import { FavoriteSource, RepostSource } from 'services/analytics'
+import { getUserId } from 'store/account/selectors'
 import { open } from 'store/application/ui/mobileOverflowModal/actions'
 import {
   OverflowAction,
@@ -29,15 +30,18 @@ type DispatchProps = ReturnType<typeof mapDispatchToProps>
 type ConnectedTrackListItemProps = OwnProps & StateProps & DispatchProps
 
 const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
+  const isOwner = props.currentUserId === props.user?.user_id
+
   const onClickOverflow = () => {
     const overflowActions = [
       props.isReposted ? OverflowAction.UNREPOST : OverflowAction.REPOST,
       props.isSaved ? OverflowAction.UNFAVORITE : OverflowAction.FAVORITE,
       OverflowAction.SHARE,
+      isOwner ? OverflowAction.SHARE_TO_TIKTOK : null,
       OverflowAction.ADD_TO_PLAYLIST,
       OverflowAction.VIEW_TRACK_PAGE,
       OverflowAction.VIEW_ARTIST_PAGE
-    ]
+    ].filter(Boolean) as OverflowAction[]
     props.clickOverflow(props.trackId, overflowActions)
   }
 
@@ -52,7 +56,8 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
 
 function mapStateToProps(state: AppState, ownProps: OwnProps) {
   return {
-    user: getUserFromTrack(state, { id: ownProps.trackId })
+    user: getUserFromTrack(state, { id: ownProps.trackId }),
+    currentUserId: getUserId(state)
   }
 }
 
