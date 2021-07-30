@@ -52,13 +52,10 @@ def upgrade():
             .first()
         )
         if not block_query:
-            session.add(
-                Block(
-                    blockhash=block["blockhash"],
-                    number=block["blocknumber"],
-                    is_current=False,
-                )
-            )
+            # If the block is missing, do not continue
+            # This migration is a production hotfix
+            return
+
     session.flush()
 
     tracks = [
