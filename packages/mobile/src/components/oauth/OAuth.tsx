@@ -8,21 +8,25 @@ import {
   getUrl,
   getIsOpen,
   getMessageId,
-  getAuthProvider
+  getAuthProvider,
+  getMessageType
 } from '../../store/oauth/selectors'
 import { AppState } from '../../store'
 import { closePopup } from '../../store/oauth/actions'
 import { Provider } from '../../store/oauth/reducer'
 import { WebViewMessage } from 'react-native-webview/lib/WebViewTypes'
-import { MessageType } from '../../message'
 import { MessagePostingWebView } from '../../types/MessagePostingWebView'
 import { postMessage } from '../../utils/postMessage'
+
+const AUTH_RESPONSE = 'auth-response'
 
 const TWITTER_POLLER = `
 (function() {
   const exit = () => {
     window.ReactNativeWebView.postMessage(
-      JSON.stringify({})
+      JSON.stringify({
+        type: 'auth-response'
+      })
     )
   }
 
@@ -41,6 +45,7 @@ const TWITTER_POLLER = `
 
           window.ReactNativeWebView.postMessage(
             JSON.stringify({
+              type:  'auth-response',
               oauthToken,
               oauthVerifier
             })
@@ -62,7 +67,9 @@ const INSTAGRAM_POLLER = `
 (function() {
   const exit = () => {
     window.ReactNativeWebView.postMessage(
-      JSON.stringify({})
+      JSON.stringify({
+        type: 'auth-response'
+      })
     )
   }
 
@@ -78,7 +85,10 @@ const INSTAGRAM_POLLER = `
           if (!instagramCode) exit()
 
           window.ReactNativeWebView.postMessage(
-            JSON.stringify({ instagramCode })
+            JSON.stringify({ 
+              type:  'auth-response',
+              instagramCode
+            })
           )
         } else {
           exit()
@@ -93,6 +103,45 @@ const INSTAGRAM_POLLER = `
 })();
 `
 
+const TIKTOK_POLLER = `
+(function() {
+  const exit = () => {
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({
+        type: 'auth-response'
+      })
+    )
+  }
+
+  setInterval(() => {
+    try {
+      if (
+        !window.location.hostname.includes('tiktok.com')
+      ) {
+        const query = new URLSearchParams(window.location.search || '')
+
+        const authorizationCode = query.get('code')
+        const csrfState = query.get('state')
+        const error = query.get('error')
+        if (authorizationCode && csrfState) {
+          window.ReactNativeWebView.postMessage(
+            JSON.stringify({
+              type: 'auth-response',
+              authorizationCode,
+              csrfState,
+            })
+          )
+        } else {
+          exit()
+        }
+      }
+    } catch {
+      exit()
+    }
+  }, 500)
+})();
+`
+
 type OwnProps = {
   webRef: RefObject<MessagePostingWebView>
 }
@@ -101,61 +150,69 @@ type Props = OwnProps &
   ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
-const OAuth = ({ url, isOpen, messageId, webRef, provider, close }: Props) => {
+const OAuth = ({
+  url,
+  isOpen,
+  messageId,
+  messageType,
+  webRef,
+  provider,
+  close
+}: Props) => {
   // Handle messages coming from the web view
   const onMessageHandler = (event: NativeSyntheticEvent<WebViewMessage>) => {
     if (event.nativeEvent.data && webRef.current) {
-      const message = JSON.parse(event.nativeEvent.data)
-      if (provider === Provider.TWITTER) {
-        if (message.oauthToken && message.oauthVerifier) {
-          postMessage(webRef.current, {
-            type: MessageType.REQUEST_TWITTER_AUTH,
-            id: messageId,
-            oauthToken: message.oauthToken,
-            oauthVerifier: message.oauthVerifier
-          })
-        } else {
-          postMessage(webRef.current, {
-            type: MessageType.REQUEST_TWITTER_AUTH,
-            id: messageId
-          })
+      const data = JSON.parse(event.nativeEvent.data)
+
+      if (data.type === AUTH_RESPONSE) {
+        const payloadByProvider = {
+          [Provider.TWITTER]: (message: any) =>
+            message.oauthToken && message.oauthVerifier
+              ? {
+                  oauthToken: message.oauthToken,
+                  oauthVerifier: message.oauthVerifier
+                }
+              : {},
+          [Provider.INSTAGRAM]: (message: any) =>
+            message.instagramCode
+              ? {
+                  code: message.instagramCode
+                }
+              : {},
+          [Provider.TIKTOK]: (message: any) =>
+            message.authorizationCode && message.csrfState
+              ? {
+                  authorizationCode: message.authorizationCode,
+                  csrfState: message.csrfState
+                }
+              : {}
         }
-      } else if (provider === Provider.INSTAGRAM) {
-        if (message.instagramCode) {
-          postMessage(webRef.current, {
-            type: MessageType.REQUEST_INSTAGRAM_AUTH,
-            id: messageId,
-            code: message.instagramCode
-          })
-        } else {
-          postMessage(webRef.current, {
-            type: MessageType.REQUEST_INSTAGRAM_AUTH,
-            id: messageId
-          })
-        }
+
+        postMessage(webRef.current, {
+          type: messageType,
+          id: messageId,
+          ...payloadByProvider[provider as Provider](data)
+        })
+        close()
       }
     }
-    close()
   }
   const onClose = useCallback(() => {
-    if (provider === Provider.TWITTER && webRef.current) {
+    if (webRef.current) {
       postMessage(webRef.current, {
-        type: MessageType.REQUEST_TWITTER_AUTH,
-        id: messageId
-      })
-    }
-
-    if (provider === Provider.INSTAGRAM && webRef.current) {
-      postMessage(webRef.current, {
-        type: MessageType.REQUEST_INSTAGRAM_AUTH,
+        type: messageType,
         id: messageId
       })
     }
     close()
-  }, [webRef, messageId, close, provider])
+  }, [webRef, messageId, messageType, close])
 
-  const injected =
-    provider === Provider.INSTAGRAM ? INSTAGRAM_POLLER : TWITTER_POLLER
+  const injected = {
+    [Provider.TWITTER]: TWITTER_POLLER,
+    [Provider.INSTAGRAM]: INSTAGRAM_POLLER,
+    [Provider.TIKTOK]: TIKTOK_POLLER
+  }[provider as Provider]
+
   return (
     <Modal
       animationType='slide'
@@ -164,16 +221,11 @@ const OAuth = ({ url, isOpen, messageId, webRef, provider, close }: Props) => {
       presentationStyle='overFullScreen'
       hardwareAccelerated
     >
-      <View style={{ flex: 1, marginTop: 20 }}>
+      <View style={{ flex: 1, marginTop: 40 }}>
         <View
           style={{
-            height: 40,
-            flexDirection: 'row',
-            justifyContent: 'flex-start',
-            paddingTop: 6,
-            paddingLeft: 6,
-            paddingBottom: 6,
-            marginTop: 10
+            width: 75,
+            marginLeft: 8
           }}
         >
           <Button onPress={onClose} title='Close' />
@@ -194,6 +246,7 @@ const mapStateToProps = (state: AppState) => ({
   url: getUrl(state),
   isOpen: getIsOpen(state),
   messageId: getMessageId(state),
+  messageType: getMessageType(state),
   provider: getAuthProvider(state)
 })
 
