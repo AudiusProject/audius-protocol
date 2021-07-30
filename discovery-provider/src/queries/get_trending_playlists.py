@@ -1,6 +1,5 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime
-from src.utils.helpers import decode_string_id
 from typing import cast
 from sqlalchemy import func, desc, Integer
 from sqlalchemy.ext.compiler import compiles
@@ -10,6 +9,7 @@ from src.models import Playlist, Save, SaveType, RepostType, Follow, AggregateUs
 from src.tasks.generate_trending import time_delta_map
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.db_session import get_db_read_replica
+from src.utils.helpers import decode_string_id
 from src.queries.query_helpers import (
     get_repost_counts,
     get_karma,

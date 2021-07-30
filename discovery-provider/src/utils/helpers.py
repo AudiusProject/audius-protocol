@@ -1,16 +1,16 @@
 import datetime
 import logging
 import os
-import json
-from json.encoder import JSONEncoder
-from typing import Optional, cast
-from hashids import Hashids
 import re
 import time
 import contextlib
+import json
+from json.encoder import JSONEncoder
+from typing import Optional, cast
 from urllib.parse import urljoin
 from functools import reduce
 import requests
+from hashids import Hashids
 from flask import g, request
 from jsonformatter import JsonFormatter
 from src import exceptions
@@ -370,7 +370,7 @@ def encode_int_id(id: int):
 def decode_string_id(id: str) -> Optional[int]:
     # Returns a tuple
     decoded = hashids.decode(id)
-    if not len(decoded):
+    if not decoded:
         return None
     return decoded[0]
 
