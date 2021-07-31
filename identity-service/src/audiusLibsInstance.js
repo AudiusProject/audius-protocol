@@ -13,8 +13,12 @@ class AudiusLibsWrapper {
     const dataWeb3 = await AudiusLibs.Utils.configureWeb3(web3ProviderUrl, null, false)
     if (!dataWeb3) throw new Error('Web3 incorrectly configured')
 
+    const discoveryProviderWhitelist = config.get('discoveryProviderWhitelist')
+      ? new Set(config.get('discoveryProviderWhitelist').split(','))
+      : null
+
     let audiusInstance = new AudiusLibs({
-      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
+      discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
       ethWeb3Config: AudiusLibs.configEthWeb3(
         config.get('ethTokenAddress'),
         config.get('ethRegistryAddress'),

@@ -605,6 +605,12 @@ const config = convict({
     format: String,
     env: 'optimizelySdkKey',
     default: null
+  },
+  discoveryProviderWhitelist: {
+    doc: 'Whitelisted discovery providers to select from (comma-separated)',
+    format: String,
+    env: 'discoveryProviderWhitelist',
+    default: ''
   }
 })
 
