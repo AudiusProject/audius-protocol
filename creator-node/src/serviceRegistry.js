@@ -9,6 +9,7 @@ const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
 const SyncQueue = require('./services/sync/syncQueue')
+const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -41,6 +42,7 @@ class ServiceRegistry {
     this.snapbackSM = null
     this.URSMRegistrationManager = null
     this.syncQueue = null
+    this.skippedCIDsRetryQueue = null
 
     this.servicesInitialized = false
     this.servicesThatRequireServerInitialized = false
@@ -58,10 +60,14 @@ class ServiceRegistry {
 
     if (!config.get('isUserMetadataNode')) {
       this.libs = await this._initAudiusLibs()
+      this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(this.nodeConfig, this.libs)
+      await this.skippedCIDsRetryQueue.init()
     }
 
     // Intentionally not awaitted
     this.monitoringQueue.start()
+
+    await this.skippedCIDsRetryQueue.init()
 
     this.servicesInitialized = true
   }

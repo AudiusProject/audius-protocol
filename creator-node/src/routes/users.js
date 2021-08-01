@@ -159,16 +159,23 @@ module.exports = function (app) {
    * Also returns boolean indicating whether a sync is in progress
    */
   app.get('/users/clock_status/:walletPublicKey', handleResponse(async (req, res) => {
+    const redisClient = req.app.get('redisClient')
+
     let walletPublicKey = req.params.walletPublicKey
     walletPublicKey = walletPublicKey.toLowerCase()
 
+    const returnSkipInfo = !!req.query.returnSkipInfo
+
+    const response = {}
+
+    // Fetch clock value from DB
     const cnodeUser = await models.CNodeUser.findOne({
       where: { walletPublicKey }
     })
-
     const clockValue = (cnodeUser) ? cnodeUser.dataValues.clock : -1
+    response.clockValue = clockValue
 
-    const redisClient = req.app.get('redisClient')
+    // Determine if a sync is currently in progress for this user
     let syncInProgress = false
     try {
       const lockHeld = await redisClient.lock.getLock(
@@ -180,8 +187,24 @@ module.exports = function (app) {
     } catch (e) {
       // Swallow error, leave syncInProgress unset
     }
+    response.syncInProgress = syncInProgress
 
-    return successResponse({ clockValue, syncInProgress })
+    // Return CIDSkipInfo if requested
+    if (returnSkipInfo && cnodeUser) {
+      const CIDs = await models.File.findAll({
+        attributes: ['multihash', 'skipped'],
+        where: {
+          cnodeUserUUID: cnodeUser.cnodeUserUUID
+        }
+      })
+
+      const numCIDs = CIDs.length
+      const numSkippedCIDs = (CIDs.filter(CID => CID.skipped === true)).length
+
+      response.CIDSkipInfo = { numCIDs, numSkippedCIDs }
+    }
+
+    return successResponse(response)
   }))
 
   /**

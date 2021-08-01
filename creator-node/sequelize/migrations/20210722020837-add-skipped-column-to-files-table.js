@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
@@ -7,9 +7,14 @@ module.exports = {
       allowNull: false,
       defaultValue: false
     })
+    await queryInterface.addIndex('Files', ['skipped'], {
+      name: 'Files_skipped_idx',
+      using: 'btree',
+      concurrently: true
+    })
   },
 
   down: async (queryInterface, Sequelize) => {
     await queryInterface.removeColumn('Files', 'skipped')
   }
-};
+}

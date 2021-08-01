@@ -167,6 +167,53 @@ describe('test Tracks with mocked IPFS', function () {
   })
 
   // depends on "uploads /track_content"
+  it('Confirm /users/clock_status works with user and track', async function () {
+    const file = fs.readFileSync(testAudioFilePath)
+
+    ipfsMock.addFromFs.exactly(34)
+    ipfsMock.pin.add.exactly(34)
+    libsMock.User.getUsers.exactly(2)
+
+    const trackContentResp = await request(app)
+      .post('/track_content')
+      .attach('file', file, { filename: 'fname.mp3' })
+      .set('Content-Type', 'multipart/form-data')
+      .set('X-Session-ID', session.sessionToken)
+      .expect(200)
+
+    assert.deepStrictEqual(trackContentResp.body.data.track_segments[0].multihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackContentResp.body.data.track_segments.length, 32)
+    assert.deepStrictEqual(trackContentResp.body.data.source_file.includes('.mp3'), true)
+
+    // creates Audius track
+    const metadata = {
+      test: 'field1',
+      owner_id: 1,
+      track_segments: trackContentResp.body.data.track_segments
+    }
+
+    const trackMetadataResp = await request(app)
+      .post('/tracks/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .send({ metadata, sourceFile: trackContentResp.body.data.source_file })
+      .expect(200)
+
+    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+
+    const wallet = session.walletPublicKey
+
+    let resp = await request(app)
+      .get(`/users/clock_status/${wallet}`)
+      .expect(200)
+    assert.deepStrictEqual(resp.body.data, { clockValue: 34, syncInProgress: false })
+
+    resp = await request(app)
+      .get(`/users/clock_status/${wallet}?returnSkipInfo=true`)
+      .expect(200)
+    assert.deepStrictEqual(resp.body.data, { clockValue: 34, syncInProgress: false, CIDSkipInfo: { numCIDs: 34, numSkippedCIDs: 0 } })
+  })
+
+  // depends on "uploads /track_content"
   it('fails to create Audius track when segments not provided', async function () {
     const file = fs.readFileSync(testAudioFilePath)
 

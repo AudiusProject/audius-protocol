@@ -270,7 +270,8 @@ async function findCIDInNetwork (filePath, cid, logger, libs) {
 }
 
 /**
- * Get all creator nodes registered on chain from a cached redis value
+ * Fetch all CNodes registered on-chain from cache if present, else from chain
+ * Cached value expires in 30min
  */
 async function getAllRegisteredCNodes (libs) {
   const cacheKey = 'all_registered_cnodes'

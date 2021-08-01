@@ -76,6 +76,9 @@ module.exports = (sequelize, DataTypes) => {
       {
         unique: true,
         fields: ['cnodeUserUUID', 'clock']
+      },
+      {
+        fields: ['skipped']
       }
     ]
   })

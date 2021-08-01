@@ -7,34 +7,27 @@ const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
 
-// TODO move to configvar
-const CIDFailureThreshold = 10
-const MaxCIDSkipPercent = 0.25
-
 /**
- * TODO consider moving to separate file
- * TODO document
+ * Used by `processSync` to track CID failure counts
  */
- const CIDFailureCountManager = {
-  /**
-   * map of CID -> (int) failure count
-   */
+const CIDFailureCountManager = {
+  // map of CID -> (int) failure count
   CIDFailureCounts: {},
 
   resetCIDFailureCount: (CID) => {
-    this.CIDFailureCounts[CID] = 0
+    CIDFailureCountManager.CIDFailureCounts[CID] = 0
   },
 
   incrementCIDFailureCount: (CID) => {
-    if (CID in this.CIDFailureCounts) {
-      this.CIDFailureCounts[CID] += 1
+    if (CID in CIDFailureCountManager.CIDFailureCounts) {
+      CIDFailureCountManager.CIDFailureCounts[CID] += 1
     } else {
-      this.CIDFailureCounts[CID] = 1
+      CIDFailureCountManager.CIDFailureCounts[CID] = 1
     }
   },
 
   getCIDFailureCount: (CID) => {
-    return this.CIDFailureCounts[CID] || 0
+    return CIDFailureCountManager.CIDFailureCounts[CID] || 0
   },
 
   CIDFailureCountIsBelowThreshold: (CID, threshold) => {
@@ -43,15 +36,19 @@ const MaxCIDSkipPercent = 0.25
 }
 
 /**
- * TODO document, change name
- * maybe move to separate file?
+ * Wrapper around `saveFileForMultihash()` with CID failure count tracking
+ * Throws error if CID failure count is below threshold
+ * @returns {Boolean} skipped
  */
-async function saveFileForMultihashToFSWrapper({
-  serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null
+async function saveFileForMultihashToFSWrapper ({
+  serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null, CIDFailureThreshold
 }) {
   let skipped = false
+
   try {
-    await saveFileForMultihashToFS(serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage)
+    await saveFileForMultihashToFS(
+      serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage
+    )
 
     // Reset CID failure count on success
     CIDFailureCountManager.resetCIDFailureCount(multihash)
@@ -61,18 +58,19 @@ async function saveFileForMultihashToFSWrapper({
     // Increment CID failure count
     CIDFailureCountManager.incrementCIDFailureCount(multihash)
 
-    // If CID failure count is below threshold, throw an error to reject Sync op (base case)
+    // If CID failure count is below threshold, throw an error (base case)
     if (CIDFailureCountManager.CIDFailureCountIsBelowThreshold(multihash, CIDFailureThreshold)) {
       throw new Error(e)
 
-      // If threshold met, sync should skip CID, record it as skipped, and continue successfully
+      // If threshold met, sync should skip CID, indicate as skipped without erroring
     } else {
-      // TODO do we need to modify CIDFailureCount state?
-
-      // TODO log
-
       skipped = true
     }
+  }
+
+  // print mapping
+  for (const [k, v] of Object.entries(CIDFailureCountManager.CIDFailureCounts)) {
+    console.log(`SIDTEST CIDFAILURECOUNTS ${k}: ${v}`)
   }
 
   return skipped
@@ -94,6 +92,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
   const { nodeConfig, redis } = serviceRegistry
 
   const FileSaveMaxConcurrency = nodeConfig.get('nodeSyncFileSaveMaxConcurrency')
+  const CIDFailureThreshold = nodeConfig.get('CIDFailureThreshold')
 
   const start = Date.now()
   logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
@@ -343,7 +342,11 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
           const trackFilesSlice = trackFiles.slice(i, i + FileSaveMaxConcurrency)
           logger.info(redisKey, `TrackFiles saveFileForMultihashToFS - processing trackFiles ${i} to ${i + FileSaveMaxConcurrency} out of total ${trackFiles.length}...`)
 
-          // TODO doucment - Promise.all will reject if any internal Promise rejects
+          /**
+           * Fetch content for each CID + save to FS
+           * Error on failure to fetch content for CID, or skip it after repeated failures
+           * @notice will reject on single CID processing failure
+           */
           await Promise.all(trackFilesSlice.map(
             async (trackFile) => {
               const skipped = await saveFileForMultihashToFSWrapper({
@@ -351,7 +354,8 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
                 logger,
                 multihash: trackFile.multihash,
                 expectedStoragePath: trackFile.storagePath,
-                gatewaysToTry: userReplicaSet
+                gatewaysToTry: userReplicaSet,
+                CIDFailureThreshold
               })
 
               if (skipped) {
@@ -384,7 +388,8 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
                     expectedStoragePath: nonTrackFile.storagePath,
                     gatewaysToTry: userReplicaSet,
                     fileNameForImage: nonTrackFile.fileName,
-                    CIDsToSkip
+                    CIDsToSkip,
+                    CIDFailureThreshold
                   })
                 } else {
                   skipped = await saveFileForMultihashToFSWrapper({
@@ -393,7 +398,8 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
                     multihash,
                     expectedStoragePath: nonTrackFile.storagePath,
                     gatewaysToTry: userReplicaSet,
-                    CIDsToSkip
+                    CIDsToSkip,
+                    CIDFailureThreshold
                   })
                 }
 
@@ -406,12 +412,6 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         }
         logger.info(redisKey, 'Saved all non-track files to disk.')
 
-        // Reject sync if skipped CIDs percent exceeds max allowed
-        const numCIDs = trackFiles.length + nonTrackFiles.length
-        if (numCIDs > 0 && CIDsToSkip.size / numCIDs >= MaxCIDSkipPercent) {
-          throw new Error('TODO')
-        }
-
         await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
           ...clockRecord,
           cnodeUserUUID
@@ -419,7 +419,10 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         logger.info(redisKey, 'Saved all ClockRecord entries to DB')
 
         await models.File.bulkCreate(nonTrackFiles.map(file => {
-          if (CIDsToSkip.has(file.multihash)) { file.skipped = true }
+          file.fake = 'yes'
+          if (CIDsToSkip.has(file.multihash)) {
+            file.skipped = true
+          }
           return {
             ...file,
             trackBlockchainId: null,
@@ -435,7 +438,10 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         logger.info(redisKey, 'Saved all Track entries to DB')
 
         await models.File.bulkCreate(trackFiles.map(trackFile => {
-          if (CIDsToSkip.has(trackFile.multihash)) { trackFile.skipped = true }
+          trackFile.fake = 'nah'
+          if (CIDsToSkip.has(trackFile.multihash)) {
+            trackFile.skipped = true
+          }
           return {
             ...trackFile,
             cnodeUserUUID
