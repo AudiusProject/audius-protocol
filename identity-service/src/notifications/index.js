@@ -1,7 +1,6 @@
 const Bull = require('bull')
 const config = require('../config.js')
 const models = require('../models')
-const axios = require('axios')
 const fs = require('fs')
 const { logger } = require('../logging')
 const { indexMilestones } = require('./milestoneProcessing')
@@ -222,33 +221,20 @@ class NotificationProcessor {
 
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
-    // Query owners for tracks relevant to track listen counts
+    // Query owners for tracks relevant to track listen counts[]
     // Below can be toggled once milestones are calculated in discovery
     // let listenCounts = await calculateTrackListenMilestones()
-    let listenCounts = await calculateTrackListenMilestonesFromDiscovery(discoveryProvider)
+    const listenCounts = await calculateTrackListenMilestonesFromDiscovery(discoveryProvider)
     logger.info(`notifications main indexAll job - calculateTrackListenMilestonesFromDiscovery complete`)
 
-    let trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
+    const trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
 
     // These track_id get parameters will be used to retrieve track owner info
     // This is required since there is no guarantee that there are indeed notifications for this user
     // The owner info is then used to target listenCount milestone notifications
-    let params = new URLSearchParams()
-    trackIdOwnersToRequestList.forEach((x) => { params.append('track_id', x) })
-    params.append('min_block_number', minBlock)
-
-    let reqObj = {
-      method: 'get',
-      url: `${discoveryProvider.discoveryProviderEndpoint}/notifications`,
-      params,
-      timeout: 120000 // two minutes
-    }
-
-    let body = (await axios(reqObj)).data
-    let metadata = body.data.info
-    let notifications = body.data.notifications
-    let milestones = body.data.milestones
-    let owners = body.data.owners
+    // Timeout of 2 minutes
+    const timeout = 2 /* min */ * 60 /* sec */ * 10000 /* ms */
+    const { info: metadata, notifications, owners, milestones } = await discoveryProvider.getNotifications(minBlock, trackIdOwnersToRequestList, timeout)
     logger.info(`notifications main indexAll job - query notifications from discovery node complete`)
 
     // Use a single transaction
