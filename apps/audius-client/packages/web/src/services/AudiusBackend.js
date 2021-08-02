@@ -2314,7 +2314,7 @@ class AudiusBackend {
 
     try {
       const { data, signature } = await AudiusBackend.signData()
-      await fetch(`${IDENTITY_SERVICE}/score`, {
+      await fetch(`${IDENTITY_SERVICE}/score/hcaptcha`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
