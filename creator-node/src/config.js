@@ -583,10 +583,10 @@ const config = convict({
     env: 'maxSyncMonitoringDurationInMs',
     default: 300000 // 5min (prod default)
   },
-  CIDFailureThreshold: {
+  SyncMaxCIDFailureCountBeforeSkip: {
     doc: 'Max number of failures to retrieve CID before skipping over it during sync',
     format: 'nat',
-    env: 'CIDFailureThreshold',
+    env: 'SyncMaxCIDFailureCountBeforeSkip',
     default: 10
   },
   SkippedCIDsRetryQueueJobIntervalMs: {

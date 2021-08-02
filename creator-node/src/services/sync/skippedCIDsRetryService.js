@@ -13,7 +13,7 @@ const PROCESS_NAMES = Object.freeze({
 const LogPrefix = '[SkippedCIDsRetryQueue]'
 
 /**
- * TODO - consider moving queue/jobs off main process. Will require re-factoring of job processing
+ * TODO - consider moving queue/jobs off main process. Will require re-factoring of job processing / dependencies
  */
 class SkippedCIDsRetryQueue {
   constructor (nodeConfig, libs) {
@@ -39,8 +39,8 @@ class SkippedCIDsRetryQueue {
     // Clean up anything that might be still stuck in the queue on restart
     this.queue.empty()
 
-    const SkippedCIDsRetryQueueJobInterval = nodeConfig.get('skippedCIDsRetryQueueJobInterval')
-    const CIDMaxAgeMs = nodeConfig.get('skippedCIDRetryQueueMaxAgeHr') * 60 * 60 * 1000
+    const SkippedCIDsRetryQueueJobIntervalMs = nodeConfig.get('skippedCIDsRetryQueueJobIntervalMs')
+    const CIDMaxAgeMs = nodeConfig.get('skippedCIDRetryQueueMaxAgeHr') * 60 * 60 * 1000 // convert from Hr to Ms
 
     this.queue.process(
       PROCESS_NAMES.retrySkippedCIDs,
@@ -53,7 +53,7 @@ class SkippedCIDsRetryQueue {
         }
 
         // Re-enqueue job after some interval
-        await utils.timeout(SkippedCIDsRetryQueueJobInterval)
+        await utils.timeout(SkippedCIDsRetryQueueJobIntervalMs)
         await this.queue.add({ startTime: Date.now() })
       }
     )
@@ -76,8 +76,9 @@ class SkippedCIDsRetryQueue {
   async process (CIDMaxAgeMs, libs) {
     const startTimestampMs = Date.now()
     const oldestFileCreatedAtDate = new Date(startTimestampMs - CIDMaxAgeMs)
+    logger.info(`${LogPrefix} SIDTEST oldestFileCreatdAtDate ${oldestFileCreatedAtDate}`)
 
-    // Only process files with low age
+    // Only process files with createdAt >= oldest createdAt
     const skippedFiles = await models.File.findAll({
       where: {
         type: { [models.Sequelize.Op.ne]: 'dir' }, // skip over 'dir' type since there is no content to sync
@@ -87,11 +88,12 @@ class SkippedCIDsRetryQueue {
     })
 
     const registeredGateways = await utils.getAllRegisteredCNodes(libs)
-    logger.info(`${LogPrefix} REGISTERED GATEWAYS ${JSON.stringify(registeredGateways)}`)
+    logger.info(`${LogPrefix} SIDTEST - REGISTERED GATEWAYS ${JSON.stringify(registeredGateways)}`)
 
     // Intentionally run sequentially to minimize node load
     let savedCount = 0
     for await (const file of skippedFiles) {
+      // `saveFileForMultihashToFS()` will error on failure to retrieve/save
       try {
         await saveFileForMultihashToFS(serviceRegistry, logger, file.multihash, file.storagePath, registeredGateways, file.fileName)
         savedCount++

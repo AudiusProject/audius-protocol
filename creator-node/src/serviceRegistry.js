@@ -67,8 +67,6 @@ class ServiceRegistry {
     // Intentionally not awaitted
     this.monitoringQueue.start()
 
-    await this.skippedCIDsRetryQueue.init()
-
     this.servicesInitialized = true
   }
 
