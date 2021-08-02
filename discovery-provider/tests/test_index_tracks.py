@@ -1,6 +1,7 @@
 import random
 from datetime import datetime
 from unittest.mock import patch
+from web3 import Web3
 from src.models import Block, TrackRoute, User
 from src.tasks.index import revert_blocks
 from src.tasks.tracks import (
@@ -11,7 +12,9 @@ from src.tasks.tracks import (
 from src.utils import helpers
 from src.utils.db_session import get_db
 from src.challenges.challenge_event_bus import get_event_bus
-from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
+from tests.index_helpers import AttrDict, IPFSClient, UpdateTask
+
+block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
 
 
 def get_new_track_event():
@@ -26,7 +29,7 @@ def get_new_track_event():
             "_multihashSize": 32,
         }
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": new_track_event})
+    return event_type, AttrDict({"blockHash": block_hash, "args": new_track_event})
 
 
 def get_new_track_event_dupe():
@@ -41,7 +44,7 @@ def get_new_track_event_dupe():
             "_multihashSize": 32,
         }
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": new_track_event})
+    return event_type, AttrDict({"blockHash": block_hash, "args": new_track_event})
 
 
 def get_update_track_event():
@@ -56,13 +59,13 @@ def get_update_track_event():
             "_multihashSize": 32,
         }
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": update_track_event})
+    return event_type, AttrDict({"blockHash": block_hash, "args": update_track_event})
 
 
 def get_delete_track_event():
     event_type = track_event_types_lookup["delete_track"]
     delete_track_event = AttrDict({"_trackId": 1})
-    return event_type, AttrDict({"blockHash": "0x", "args": delete_track_event})
+    return event_type, AttrDict({"blockHash": block_hash, "args": delete_track_event})
 
 
 multihash = helpers.multihash_digest_to_cid(
@@ -172,7 +175,6 @@ ipfs_client = IPFSClient(
         },
     }
 )
-web3 = Web3()
 
 # ========================================== Start Tests ==========================================
 @patch("src.tasks.index")
@@ -181,6 +183,7 @@ def test_index_tracks(mock_index_task, app):
     with app.app_context():
         db = get_db()
         challenge_event_bus = get_event_bus()
+        web3 = Web3()
         update_task = UpdateTask(ipfs_client, web3, challenge_event_bus)
 
     pending_track_routes = []
@@ -210,9 +213,11 @@ def test_index_tracks(mock_index_task, app):
         assert track_record.owner_id == None
         assert track_record.is_delete == False
 
-        block_hash = f"0x{block_number}"
+        updated_block_hash = f"0x{block_number}"
         # Create track's owner user before
-        block = Block(blockhash=block_hash, number=block_number, is_current=True)
+        block = Block(
+            blockhash=updated_block_hash, number=block_number, is_current=True
+        )
         session.add(block)
         session.flush()
 
@@ -220,7 +225,7 @@ def test_index_tracks(mock_index_task, app):
             is_current=True,
             user_id=entry.args._trackOwnerId,
             handle="ray",
-            blockhash=block_hash,
+            blockhash=updated_block_hash,
             blocknumber=block_number,
             creator_node_endpoint=(
                 "http://cn2_creator-node_1:4001,http://cn1_creator-node_1:4000,"
@@ -288,9 +293,11 @@ def test_index_tracks(mock_index_task, app):
         prev_block = session.query(Block).filter(Block.is_current == True).one()
         prev_block.is_current = False
         block_number += 1
-        block_hash = f"0x{block_number}"
+        updated_block_hash = f"0x{block_number}"
         # Create a new block to test reverts later
-        second_block = Block(blockhash=block_hash, number=block_number, is_current=True)
+        second_block = Block(
+            blockhash=updated_block_hash, number=block_number, is_current=True
+        )
         session.add(second_block)
         session.flush()
 
@@ -301,7 +308,7 @@ def test_index_tracks(mock_index_task, app):
             entry,
             1,  # event track id
             block_number,
-            block_hash,
+            updated_block_hash,
             "0x",  # txhash
         )
 
@@ -372,7 +379,7 @@ def test_index_tracks(mock_index_task, app):
             entry,
             40,  # event track id
             block_number,
-            block_hash,
+            updated_block_hash,
             "0x",  # txhash
         )
 
@@ -409,7 +416,7 @@ def test_index_tracks(mock_index_task, app):
             entry,
             30,  # event track id
             block_number,
-            block_hash,
+            updated_block_hash,
             "0x",  # txhash
         )
 
@@ -496,9 +503,3 @@ def test_index_tracks(mock_index_task, app):
 
         # updated_at should be updated every parse_track_event
         assert track_record.is_delete == True
-
-
-def test_track_index_helpers():
-    title = "#$*$(Strip\x00\x00\x00 !!@#*)&$(&#$%*Weird   + Characters"
-    assert helpers.create_track_slug(title, 0) == "strip-weird-characters"
-    assert helpers.create_track_slug(title, 3) == "strip-weird-characters-3"

@@ -8,6 +8,7 @@ const {
   findAssociatedTokenAddress
 } = require('./tokenAccount')
 const { wAudioFromWeiAudio } = require('./wAudio')
+const Utils = require('../../utils')
 
 const { PublicKey } = solanaWeb3
 
@@ -169,6 +170,22 @@ class SolanaWeb3Manager {
         connection: this.connection
       })
       return res
+    } catch (e) {
+      return null
+    }
+  }
+
+  /**
+   * Gets the SPL waudio balance for a solana address in wei with 18 decimals
+   * @returns {BN | null}
+   */
+  async getWAudioBalance (solanaAddress) {
+    try {
+      const tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
+      if (!tokenAccount) return null
+
+      // Multiply by 10^9 to maintain same decimals as eth $AUDIO
+      return tokenAccount.amount.mul(Utils.toBN('1'.padEnd(10, '0')))
     } catch (e) {
       return null
     }

@@ -1,11 +1,14 @@
 import random
 from datetime import datetime
+from web3 import Web3
 from src.tasks.playlists import parse_playlist_event, lookup_playlist_record
 from src.utils.db_session import get_db
 from src.utils.playlist_event_constants import playlist_event_types_lookup
 from src.utils import helpers
 from src.challenges.challenge_event_bus import get_event_bus
-from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
+from tests.index_helpers import AttrDict, IPFSClient, UpdateTask
+
+block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
 
 # event_type: PlaylistCreated
 def get_playlist_created_event():
@@ -19,7 +22,9 @@ def get_playlist_created_event():
             "_trackIds": [],  # This is a list of numbers (track ids)
         }
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": playlist_created_event})
+    return event_type, AttrDict(
+        {"blockHash": block_hash, "args": playlist_created_event}
+    )
 
 
 # event_type: PlaylistNameUpdated
@@ -29,7 +34,7 @@ def get_playlist_name_updated_event():
         {"_playlistId": 1, "_updatedPlaylistName": "asdfg"}
     )
     return event_type, AttrDict(
-        {"blockHash": "0x", "args": playlist_name_updated_event}
+        {"blockHash": block_hash, "args": playlist_name_updated_event}
     )
 
 
@@ -44,7 +49,7 @@ def get_playlist_cover_photo_updated_event():
         }
     )
     return event_type, AttrDict(
-        {"blockHash": "0x", "args": playlist_cover_photo_updated_event}
+        {"blockHash": block_hash, "args": playlist_cover_photo_updated_event}
     )
 
 
@@ -55,7 +60,7 @@ def get_playlist_description_updated_event():
         {"_playlistId": 1, "_playlistDescription": "adf"}
     )
     return event_type, AttrDict(
-        {"blockHash": "0x", "args": playlist_description_updated_event}
+        {"blockHash": block_hash, "args": playlist_description_updated_event}
     )
 
 
@@ -65,7 +70,9 @@ def get_playlist_track_added_event(playlistId, addedTrackId):
     playlist_track_added_event = AttrDict(
         {"_playlistId": playlistId, "_addedTrackId": addedTrackId}
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": playlist_track_added_event})
+    return event_type, AttrDict(
+        {"blockHash": block_hash, "args": playlist_track_added_event}
+    )
 
 
 # event_type: PlaylistTracksOrdered
@@ -75,7 +82,7 @@ def get_playlist_tracks_ordered_event():
         {"_playlistId": 1, "_orderedTrackIds": [2, 1]}
     )
     return event_type, AttrDict(
-        {"blockHash": "0x", "args": playlist_tracks_ordered_event}
+        {"blockHash": block_hash, "args": playlist_tracks_ordered_event}
     )
 
 
@@ -90,7 +97,7 @@ def get_playlist_track_delete_event(playlistId, deletedTrackId, deletedTrackTime
         }
     )
     return event_type, AttrDict(
-        {"blockHash": "0x", "args": playlist_track_delete_event}
+        {"blockHash": block_hash, "args": playlist_track_delete_event}
     )
 
     # event_type: PlaylistPrivacyUpdated
@@ -102,7 +109,7 @@ def get_playlist_privacy_updated_event():
         {"_playlistId": 1, "_updatedIsPrivate": False}
     )
     return event_type, AttrDict(
-        {"blockHash": "0x", "args": playlist_privacy_updated_event}
+        {"blockHash": block_hash, "args": playlist_privacy_updated_event}
     )
 
 
@@ -110,7 +117,9 @@ def get_playlist_privacy_updated_event():
 def get_playlist_deleted_event():
     event_type = playlist_event_types_lookup["playlist_deleted"]
     playlist_deleted_event = AttrDict({"_playlistId": 1})
-    return event_type, AttrDict({"blockHash": "0x", "args": playlist_deleted_event})
+    return event_type, AttrDict(
+        {"blockHash": block_hash, "args": playlist_deleted_event}
+    )
 
 
 def test_index_playlist(app):

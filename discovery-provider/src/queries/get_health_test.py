@@ -313,6 +313,12 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
     """Tests that the health check returns verbose db stats"""
     get_monitors_mock.return_value = {
         "database_connections": 2,
+        "filesystem_size": 62725623808,
+        "filesystem_used": 50381168640,
+        "received_bytes_per_sec": 7942.038197103973,
+        "total_memory": 6237151232,
+        "used_memory": 3055149056,
+        "transferred_bytes_per_sec": 7340.780857447676,
         "database_connection_info": [
             {
                 "datname": "audius_discovery",

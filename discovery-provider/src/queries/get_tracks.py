@@ -34,7 +34,7 @@ def _get_tracks(session, args):
 
     # Only return unlisted tracks if slug and user_id are present
     if not "slug" in args or not "user_id" in args:
-        base_query.filter(Track.is_unlisted == False)
+        base_query = base_query.filter(Track.is_unlisted == False)
 
     # Conditionally process an array of tracks
     if "id" in args:

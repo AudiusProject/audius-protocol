@@ -71,7 +71,7 @@ describe('Test Health Check', function () {
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
     config.set('spID', 10)
 
-    const res = await healthCheck({ libs: libsMock }, mockLogger, sequelizeMock)
+    const res = await healthCheck({ libs: libsMock }, mockLogger, sequelizeMock, getMonitorsMock, 2)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -82,12 +82,16 @@ describe('Test Health Check', function () {
       spID: config.get('spID'),
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
-      isRegisteredOnURSM: false
+      isRegisteredOnURSM: false,
+      meetsMinRequirements: false,
+      numberOfCPUs: 2,
+      storagePathSize: 62725623808,
+      totalMemory: 6237151232
     })
   })
 
   it('Should handle no libs', async function () {
-    const res = await healthCheck({}, mockLogger, sequelizeMock)
+    const res = await healthCheck({}, mockLogger, sequelizeMock, getMonitorsMock, 2)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -98,8 +102,34 @@ describe('Test Health Check', function () {
       spID: config.get('spID'),
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
-      isRegisteredOnURSM: false
+      isRegisteredOnURSM: false,
+      meetsMinRequirements: false,
+      numberOfCPUs: 2,
+      storagePathSize: 62725623808,
+      totalMemory: 6237151232
     })
+  })
+
+  it('Should return "meetsMinRequirements" = false if system requirements arent met', async function () {
+    const res = await healthCheck({}, mockLogger, sequelizeMock, getMonitorsMock, 2)
+
+    assert.deepStrictEqual(res, {
+      ...version,
+      service: 'content-node',
+      healthy: true,
+      git: undefined,
+      selectedDiscoveryProvider: 'none',
+      spID: config.get('spID'),
+      spOwnerWallet: config.get('spOwnerWallet'),
+      creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
+      isRegisteredOnURSM: false,
+      meetsMinRequirements: false,
+      numberOfCPUs: 2,
+      storagePathSize: 62725623808,
+      totalMemory: 6237151232
+    })
+
+    assert.deepStrictEqual(res.meetsMinRequirements, false)
   })
 })
 
@@ -146,6 +176,7 @@ describe('Test Health Check Verbose', function () {
       receivedBytesPerSec: 776.7638177541248,
       transferredBytesPerSec: 269500,
       maxStorageUsedPercent: 95,
+      meetsMinRequirements: false,
       numberOfCPUs: 2,
       thirtyDayRollingSyncSuccessCount: 50,
       thirtyDayRollingSyncFailCount: 10,

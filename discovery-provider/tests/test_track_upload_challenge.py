@@ -19,8 +19,8 @@ def test_track_upload_challenge(app):
 
     today = date.today()
     block1 = Block(blockhash="0x1", number=1)
-    block2 = Block(blockhash="0x2", number=20000000)
-    block3 = Block(blockhash="0x3", number=20000001)
+    block2 = Block(blockhash="0x2", number=30000000)
+    block3 = Block(blockhash="0x3", number=30000001)
     user = User(
         blockhash="0x1",
         blocknumber=1,
@@ -48,7 +48,7 @@ def test_track_upload_challenge(app):
     )
     track2 = Track(
         blockhash="0x2",
-        blocknumber=20000000,
+        blocknumber=30000000,
         txhash="yzx",
         owner_id=1,
         track_id=2,
@@ -62,7 +62,7 @@ def test_track_upload_challenge(app):
     )
     track3 = Track(
         blockhash="0x3",
-        blocknumber=20000001,
+        blocknumber=30000001,
         txhash="zxy",
         owner_id=1,
         track_id=3,
@@ -76,7 +76,7 @@ def test_track_upload_challenge(app):
     )
     track4 = Track(
         blockhash="0x3",
-        blocknumber=20000001,
+        blocknumber=30000001,
         txhash="abc",
         owner_id=1,
         track_id=4,
@@ -116,7 +116,7 @@ def test_track_upload_challenge(app):
 
         # Process dummy event at block number when challenge is added
         session.add(track2)
-        bus.dispatch(session, ChallengeEvent.track_upload, 20000000, 1)
+        bus.dispatch(session, ChallengeEvent.track_upload, 30000000, 1)
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
             session, ["1"]
@@ -128,9 +128,9 @@ def test_track_upload_challenge(app):
 
         # Process two more dummy events to reach the step count (i.e. 3) for completion
         session.add(track3)
-        bus.dispatch(session, ChallengeEvent.track_upload, 20000001, 1)
+        bus.dispatch(session, ChallengeEvent.track_upload, 30000001, 1)
         session.add(track4)
-        bus.dispatch(session, ChallengeEvent.track_upload, 20000001, 1)
+        bus.dispatch(session, ChallengeEvent.track_upload, 30000001, 1)
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
             session, ["1"]

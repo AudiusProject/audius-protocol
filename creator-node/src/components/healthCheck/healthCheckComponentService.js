@@ -3,6 +3,10 @@ const config = require('../../config')
 const utils = require('../../utils.js')
 const { MONITORS } = require('../../monitors/monitors')
 
+const MIN_NUBMER_OF_CPUS = 8 // 8 cpu
+const MIN_TOTAL_MEMORY = 15500000000 // 15.5 GB of RAM
+const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
+
 /**
  * Perform a basic health check, returning the
  * currently selected discovery provider (if any),
@@ -10,10 +14,21 @@ const { MONITORS } = require('../../monitors/monitors')
  * @param {*} ServiceRegistry
  * @param {*} logger
  * @param {*} sequelize
+ * @param {*} getMonitors
+ * @param {number} numberOfCPUs the number of CPUs on this machine
  * @param {string?} randomBytesToSign optional bytes string to be included in response object
  *    and used in signature generation
  */
-const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign = null) => {
+const healthCheck = async ({ libs } = {}, logger, sequelize, getMonitors, numberOfCPUs, randomBytesToSign = null) => {
+  // System information
+  const [
+    totalMemory,
+    storagePathSize
+  ] = await getMonitors([
+    MONITORS.TOTAL_MEMORY,
+    MONITORS.STORAGE_PATH_SIZE
+  ])
+
   let response = {
     ...versionInfo,
     healthy: true,
@@ -22,7 +37,10 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign =
     creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
     spID: config.get('spID'),
     spOwnerWallet: config.get('spOwnerWallet'),
-    isRegisteredOnURSM: config.get('isRegisteredOnURSM')
+    isRegisteredOnURSM: config.get('isRegisteredOnURSM'),
+    numberOfCPUs,
+    totalMemory,
+    storagePathSize
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
@@ -41,6 +59,16 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign =
   // allows us to get auto restarts from liveness probes etc if the db connection is down
   await sequelize.query('SELECT 1')
 
+  if (
+    !response['numberOfCPUs'] || response['numberOfCPUs'] < MIN_NUBMER_OF_CPUS ||
+    !response['totalMemory'] || response['totalMemory'] < MIN_TOTAL_MEMORY ||
+    !response['storagePathSize'] || response['storagePathSize'] < MIN_FILESYSTEM_SIZE
+  ) {
+    response['meetsMinRequirements'] = false
+  } else {
+    response['meetsMinRequirements'] = true
+  }
+
   return response
 }
 
@@ -56,7 +84,7 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, randomBytesToSign =
  * @param {function} getLatestSyncData fn to get the timestamps of the most recent sync (success, fail)
  */
 const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, getMonitors, numberOfCPUs, getAggregateSyncData, getLatestSyncData) => {
-  const basicHealthCheck = await healthCheck({ libs }, logger, sequelize)
+  const basicHealthCheck = await healthCheck({ libs }, logger, sequelize, getMonitors, numberOfCPUs)
 
   // Location information
   const country = config.get('serviceCountry')
