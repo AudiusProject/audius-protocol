@@ -4,7 +4,7 @@
   "description": "Library for performing commands against services, including setup.",
   "main": "src/index.js",
   "scripts": {
-    "preinstall": "ln -f scripts/A ~/.local/bin"
+    "preinstall": "mkdir -p ~/.local/bin && ln -f scripts/A ~/.local/bin/A"
   },
   "dependencies": {
     "@audius/libs": "1.2.13",
