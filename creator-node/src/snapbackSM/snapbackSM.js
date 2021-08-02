@@ -956,10 +956,7 @@ class SnapbackSM {
 
       if (primary === this.endpoint) {
         // filter out false-y values to account for incomplete replica sets
-        replicaSetNodesToObserve = replicaSetNodesToObserve.filter(entry => {
-          console.log(entry.endpoint, entry.spId, !!(entry.endpoint && entry.spId))
-          return !!(entry.endpoint && entry.spId)
-        })
+        replicaSetNodesToObserve = replicaSetNodesToObserve.filter(entry => !!(entry.endpoint && entry.spId))
 
         /**
          * If either secondary is in `unhealthyPeers` list, add it to `unhealthyReplicas` list
@@ -967,7 +964,6 @@ class SnapbackSM {
         const userSecondarySyncMetrics = await this._computeUserSecondarySyncSuccessRates(nodeUser, [secondary1, secondary2])
         for (const secondary of replicaSetNodesToObserve) {
           const secUserSyncSuccessRate = userSecondarySyncMetrics[secondary.endpoint]['SuccessRate']
-          this.log(`OK.... ${secUserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent}, ${unhealthyPeers.has(secondary.endpoint)}, ${this.peerSetManager.endpointToSPIdMap[secondary.endpoint] !== secondary.spId}`)
           if (secUserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent ||
             unhealthyPeers.has(secondary.endpoint) ||
             this.peerSetManager.endpointToSPIdMap[secondary.endpoint] !== secondary.spId) {
@@ -997,15 +993,16 @@ class SnapbackSM {
         })
 
         for (const replica of replicaSetNodesToObserve) {
-          if (unhealthyPeers.has(replica.endpoint)) {
+          // If the map's spId does not match the query's spId, then regardless
+          // of the relationship of the node to the user, issue a reconfig for that node
+          if (this.peerSetManager.endpointToSPIdMap[replica.endpoint] !== replica.spId) {
+            unhealthyReplicas.push(replica.endpoint)
+          } else if (unhealthyPeers.has(replica.endpoint)) {
+            // Else, continue with conducting extra health check if the current observed node is a primary, and
+            // add to `unhealthyReplicas` if observed node is a secondary
             let addToUnhealthyReplicas = true
 
-            // If the current replica is the primary, perform a second health check.
-            // and determine if the primary is truly unhealthy
-            if (replica.endpoint === primary &&
-              // If the map's spId does not match the query's spId, then regardless
-              // of the relationship of the node to the user, issue a reconfig for that node
-              this.peerSetManager.endpointToSPIdMap[replica.endpoint] === replica.spId) {
+            if (replica.endpoint === primary) {
               addToUnhealthyReplicas = !(await this.peerSetManager.isPrimaryHealthy(primary))
             }
 
