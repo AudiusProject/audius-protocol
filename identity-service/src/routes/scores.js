@@ -17,7 +17,7 @@ module.exports = function (app) {
     if (!handle) return errorResponseBadRequest('Please provide handle')
 
     const captchaScores = await models.sequelize.query(
-      `select "Users"."blockchainUserId" as "userId", "BotScores"."recaptchaScore" as "score", "BotScores"."recaptchaContext" as "context"
+      `select "Users"."blockchainUserId" as "userId", "BotScores"."recaptchaScore" as "score", "BotScores"."recaptchaContext" as "context", "BotScores"."updatedAt" as "updatedAt"
       from 
         "Users" inner join "BotScores" on "Users"."walletAddress" = "BotScores"."walletAddress"
       where
