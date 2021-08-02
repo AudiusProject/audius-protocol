@@ -34,6 +34,7 @@ const userReplicaSetNodes = async ({
   }
 
   for (let iteration = 0; iteration < iterations; iteration++) {
+    logger.info('[Snapback CN Deregistering] Start')
     creatorNodeIDToInfoMapping = await setNumCreatorNodes(numCreatorNodes, executeOne)
 
     // Upload tracks to users
@@ -50,7 +51,6 @@ const userReplicaSetNodes = async ({
     while (attempts++ < MAX_ATTEMPTS_TO_VALIDATE_REPLICA_SET) {
       await new Promise(resolve => setTimeout(resolve, WAIT_INTERVAL_TO_UPDATE_REPLICA_SET_MS))
       try {
-        console.log(`[CN Deregistering] attempts: ${attempts}`)
         await verifyValidCNs(executeOne, executeAll, deregisteredCreatorNodeId, walletIndexToUserIdMap, creatorNodeIDToInfoMapping)
         passed = true
         break
@@ -61,9 +61,13 @@ const userReplicaSetNodes = async ({
 
     if (!passed) {
       return {
-        error: `[Deregistering] Error with verifying updated replica set: ${error.toString()}`
+        error: `[Snapback CN Deregistering] Error with verifying updated replica set: ${error.toString()}`
       }
     }
+
+    logger.info('[Snapback CN Deregistering] SUCCESS!')
+
+    logger.info('[Snapback CN Unavailability] Start')
 
     const {
       madDog,
@@ -76,7 +80,6 @@ const userReplicaSetNodes = async ({
     while (attempts++ < MAX_ATTEMPTS_TO_VALIDATE_REPLICA_SET) {
       await new Promise(resolve => setTimeout(resolve, WAIT_INTERVAL_TO_UPDATE_REPLICA_SET_MS))
       try {
-        logger.info(`[CN Unavailability] attempt ${attempts}`)
         await verifyValidCNs(executeOne, executeAll, removedCreatorNodeId, walletIndexToUserIdMap, creatorNodeIDToInfoMapping)
         passed = true
         break
@@ -87,11 +90,13 @@ const userReplicaSetNodes = async ({
 
     if (!passed) {
       return {
-        error: `[Unavailability] Error with verifying updated replica set: ${error.toString()}`
+        error: `[Snapback CN Unavailability] Error with verifying updated replica set: ${error.toString()}`
       }
     }
 
     madDog.stop()
+
+    logger.info('[Snapback CN Unavailability] SUCCESS!')
   }
 }
 
