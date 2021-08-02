@@ -778,10 +778,6 @@ describe('test nodesync', async function () {
         .persist()
         .get(uri => uri.includes('/export'))
         .reply(200, sampleExport)
-      nock(userMetadataURI)
-        .persist()
-        .get(uri => uri.includes('/ipfs'))
-        .reply(200, { data: Buffer.alloc(32) })
 
       // Confirm initial local state is empty
       let initialCNodeUserCount = await models.CNodeUser.count()
