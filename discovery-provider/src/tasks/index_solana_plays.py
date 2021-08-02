@@ -5,6 +5,8 @@ import time
 
 import base58
 from sqlalchemy import desc
+from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
@@ -126,6 +128,9 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
         )
         meta = tx_info['result']['meta']
         error = meta['err']
+
+        challenge_bus: ChallengeEventBus = index_solana_plays.challenge_event_bus
+
         if error:
             logger.info(f"index_solana_plays.py | Skipping error transaction from chain {tx_info}")
             return
@@ -162,6 +167,13 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
                             slot=tx_slot,
                             signature=tx_sig,
                         )
+                    )
+                    challenge_bus.dispatch(
+                        session,
+                        ChallengeEvent.track_listen,
+                        tx_slot,
+                        user_id,
+                        { "created_at": created_at.timestamp() },
                     )
         else:
             logger.info(

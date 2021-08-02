@@ -1,17 +1,12 @@
-import logging  # pylint: disable=C0302
+import logging
+from src.utils.helpers import decode_string_id  # pylint: disable=C0302
 
 from src.queries.get_trending_tracks import (
     get_trending_tracks,
     TRENDING_LIMIT,
     TRENDING_TTL_SEC,
 )
-from src.api.v1.helpers import (
-    extend_track,
-    format_offset,
-    format_limit,
-    to_dict,
-    decode_string_id,
-)
+from src.api.v1.helpers import extend_track, format_offset, format_limit, to_dict
 from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
 
 logger = logging.getLogger(__name__)

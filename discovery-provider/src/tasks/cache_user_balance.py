@@ -18,6 +18,10 @@ from src.queries.get_balances import (
     LAZY_REFRESH_REDIS_PREFIX,
 )
 from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
+from src.utils.solana import (
+    SPL_TOKEN_ID_PK,
+    ASSOCIATED_TOKEN_PROGRAM_ID_PK,
+)
 from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
@@ -35,10 +39,16 @@ WAUDIO_PROGRAM_PUBKEY = (
 WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS) if WAUDIO_MINT_ADDRESS else None
 
 
+class AssociatedWallets(TypedDict):
+    eth: List[str]
+    sol: List[str]
+
+
 class UserWalletMetadata(TypedDict):
     owner_wallet: str
-    associated_wallets: Optional[List[str]]
+    associated_wallets: AssociatedWallets
     bank_account: Optional[str]
+
 
 def get_lazy_refresh_user_ids(redis: Redis, session: Session) -> List[int]:
     redis_user_ids = redis.smembers(LAZY_REFRESH_REDIS_PREFIX)
@@ -95,7 +105,7 @@ def refresh_user_ids(
     delegate_manager_contract,
     staking_contract,
     eth_web3,
-    waudio_token
+    waudio_token,
 ):
     with db.scoped_session() as session:
         lazy_refresh_user_ids = get_lazy_refresh_user_ids(redis, session)
@@ -112,13 +122,16 @@ def refresh_user_ids(
         existing_user_balances: List[UserBalance] = (
             (session.query(UserBalance)).filter(UserBalance.user_id.in_(user_ids)).all()
         )
-        user_balances = {
-            user.user_id: user for user in existing_user_balances
-        }
+        user_balances = {user.user_id: user for user in existing_user_balances}
 
         # Grab the users & associated_wallets we need to refresh
-        user_associated_wallet_query: List[Tuple[int, str, str]] = (
-            session.query(User.user_id, User.wallet, AssociatedWallet.wallet)
+        user_associated_wallet_query: List[Tuple[int, str, str, str]] = (
+            session.query(
+                User.user_id,
+                User.wallet,
+                AssociatedWallet.wallet,
+                AssociatedWallet.chain,
+            )
             .outerjoin(
                 AssociatedWallet,
                 and_(
@@ -150,11 +163,11 @@ def refresh_user_ids(
         user_id_metadata: Dict[int, UserWalletMetadata] = {}
 
         for user in user_associated_wallet_query:
-            user_id, user_wallet, associated_wallet = user
+            user_id, user_wallet, associated_wallet, wallet_chain = user
             if not user_id in user_id_metadata:
                 user_id_metadata[user_id] = {
                     "owner_wallet": user_wallet,
-                    "associated_wallets": None,
+                    "associated_wallets": {"eth": [], "sol": []},
                     "bank_account": None,
                 }
                 if user_id in user_id_bank_accounts:
@@ -162,13 +175,10 @@ def refresh_user_ids(
                         user_id
                     ]
             if associated_wallet:
-                user_associated_wallet = user_id_metadata[user_id]["associated_wallets"]
-                if user_associated_wallet is not None:
-                    user_associated_wallet.append(associated_wallet)
-                else:
-                    user_id_metadata[user_id]["associated_wallets"] = [
-                        associated_wallet
-                    ]
+                if user_id in user_id_metadata:
+                    user_id_metadata[user_id]["associated_wallets"][
+                        wallet_chain  # type: ignore
+                    ].append(associated_wallet)
 
         logger.info(
             f"cache_user_balance.py | fetching for {len(user_associated_wallet_query)} users: {user_ids}"
@@ -183,10 +193,11 @@ def refresh_user_ids(
                     owner_wallet
                 ).call()
                 associated_balance = 0
-                waudio_balance = 0
+                waudio_balance = "0"
+                associated_sol_balance = 0
 
-                if wallets["associated_wallets"] is not None:
-                    for wallet in wallets["associated_wallets"]:
+                if "associated_wallets" in wallets:
+                    for wallet in wallets["associated_wallets"]["eth"]:
                         wallet = eth_web3.toChecksumAddress(wallet)
                         balance = token_contract.functions.balanceOf(wallet).call()
                         delegation_balance = (
@@ -200,6 +211,35 @@ def refresh_user_ids(
                         associated_balance += (
                             balance + delegation_balance + stake_balance
                         )
+                    for wallet in wallets["associated_wallets"]["sol"]:
+                        try:
+                            root_sol_account = PublicKey(wallet)
+                            derived_account, _ = PublicKey.find_program_address(
+                                [
+                                    bytes(root_sol_account),
+                                    bytes(SPL_TOKEN_ID_PK),
+                                    bytes(WAUDIO_PROGRAM_PUBKEY),  # type: ignore
+                                ],
+                                ASSOCIATED_TOKEN_PROGRAM_ID_PK,
+                            )
+                            bal_info = waudio_token.get_account_info(derived_account)
+                            associated_waudio_balance: str = bal_info["result"][
+                                "value"
+                            ]["amount"]
+                            associated_sol_balance += int(associated_waudio_balance)
+                        except Exception as e:
+                            logger.error(
+                                " ".join(
+                                    [
+                                        "cache_user_balance.py | Error fetching associated ",
+                                        "wallet balance for user %s, wallet %s: %s",
+                                    ]
+                                ),
+                                user_id,
+                                wallet,
+                                e,
+                            )
+
                 if wallets["bank_account"] is not None:
                     if waudio_token is None:
                         logger.error(
@@ -215,7 +255,10 @@ def refresh_user_ids(
                 user_balance = user_balances[user_id]
                 user_balance.balance = owner_wallet_balance
                 user_balance.associated_wallets_balance = str(associated_balance)
-                user_balance.waudio = str(waudio_balance)
+                user_balance.waudio = waudio_balance
+                user_balance.associated_sol_wallets_balance = str(
+                    associated_sol_balance
+                )
 
             except Exception as e:
                 logger.error(
@@ -334,7 +377,9 @@ def update_user_balances_task(self):
 
             delegate_manager_inst = get_delegate_manager_contract(eth_web3)
             staking_inst = get_staking_contract(eth_web3)
-            token_inst = get_token_contract(eth_web3, update_user_balances_task.shared_config)
+            token_inst = get_token_contract(
+                eth_web3, update_user_balances_task.shared_config
+            )
             waudio_token = get_audio_token(solana_client)
             refresh_user_ids(
                 redis,

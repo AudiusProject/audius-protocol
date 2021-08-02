@@ -143,6 +143,16 @@ class DiscoveryProvider {
   }
 
   /**
+   * Gets a particular track by its creator's handle and the track's URL slug
+   * @param {string} handle the handle of the owner of the track
+   * @param {string} slug the URL slug of the track, generally the title urlized
+   * @returns {Object} the requested track's metadata
+   */
+  async getTracksByHandleAndSlug (handle, slug) {
+    return this._makeRequest(Requests.getTracksByHandleAndSlug(handle, slug))
+  }
+
+  /**
    * @typedef {Object} getTracksIdentifier
    * @property {string} handle
    * @property {number} id
@@ -511,6 +521,16 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
+  async getNotifications (minBlockNumber, trackIds, timeout) {
+    const req = Requests.getNotifications(minBlockNumber, trackIds, timeout)
+    return this._makeRequest(req)
+  }
+
+  async getTrackListenMilestones (timeout = null) {
+    const req = Requests.getTrackListenMilestones(timeout)
+    return this._makeRequest(req)
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   // TODO(DM) - standardize this to axios like audius service and creator node
@@ -666,11 +686,12 @@ class DiscoveryProvider {
       headers['X-User-ID'] = currentUserId
     }
 
+    const timeout = requestObj.timeout || REQUEST_TIMEOUT_MS
     let axiosRequest = {
       url: requestUrl,
       headers: headers,
       method: (requestObj.method || 'get'),
-      timeout: REQUEST_TIMEOUT_MS
+      timeout
     }
 
     if (requestObj.method === 'post' && requestObj.data) {

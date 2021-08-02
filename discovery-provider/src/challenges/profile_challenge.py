@@ -1,9 +1,10 @@
 from collections import Counter
-from typing import List
+from typing import List, Optional
+from sqlalchemy.orm.session import Session
 from src.models import (
     ProfileCompletionChallenge,
+    UserChallenge,
     User,
-    AggregateUser,
     Repost,
     Follow,
     Save,
@@ -31,7 +32,15 @@ class ProfileChallengeUpdater(ChallengeUpdater):
     - favorites > threshold
     """
 
-    def update_user_challenges(self, session, event, user_challenges, step_count):
+    def update_user_challenges(
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
+    ):
 
         user_ids = [user_challenge.user_id for user_challenge in user_challenges]
         partial_completions = get_profile_completion_challenges(session, user_ids)
@@ -190,9 +199,3 @@ def get_user_dicts(session, user_ids):
         }
         for attr in res
     ]
-
-
-def get_aggregate_users(session, user_ids):
-    return (
-        session.query(AggregateUser).filter(AggregateUser.user_id.in_(user_ids)).all()
-    )

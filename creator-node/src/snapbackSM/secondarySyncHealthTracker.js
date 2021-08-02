@@ -6,6 +6,8 @@
 const redisClient = require('../redis')
 const { logger } = require('../logging')
 
+const RedisKeyPrefix = 'SecondarySyncRequestOutcomes-Daily'
+
 const DailyRedisKeyExpirationSec = 90 /* days */ * 24 /* hr */ * 60 /* min */ * 60 /* s */
 
 const Outcomes = Object.freeze({
@@ -67,12 +69,10 @@ const Utils = {
    * Key pattern string can map to one or multiple keys
    */
   _getRedisKeyPattern ({ secondary = '*', wallet = '*', syncType = '*', outcome = '*', date = null }) {
-    const prefix = 'SecondarySyncRequestOutcomes-Daily'
-
     // format: YYYY-MM-DD
     date = date || new Date().toISOString().split('T')[0]
 
-    return `${prefix}:::${secondary}:::${wallet}:::${syncType}:::${date}:::${outcome}`
+    return `${RedisKeyPrefix}:::${secondary}:::${wallet}:::${syncType}:::${date}:::${outcome}`
   },
 
   _parseRedisKeyIntoComponents (key) {
@@ -169,17 +169,42 @@ const Getters = {
       logger.error(`SecondarySyncHealthTracker - getSyncRequestOutcomeMetrics() Error || ${e.message}`)
       return {}
     }
+  },
+
+  /**
+   * Returns single int representing SyncRequestOutcome for secondary, wallet, syncType, date=today, and Outcome=Failure
+   * Only one redis key should exist for above params, but takes 1st value if multiple are found
+   */
+  async getSecondaryUserSyncFailureCountForToday (secondary, wallet, syncType) {
+    const resp = await this.getSyncRequestOutcomeMetrics({
+      secondary,
+      wallet,
+      syncType,
+      outcome: Outcomes.FAILURE
+      /* date defaults to today */
+    })
+
+    const entries = Object.entries(resp)
+
+    if (entries.length === 0) {
+      return 0
+    } else {
+      return parseInt(entries[0][1])
+    }
   }
 }
 
 const SecondarySyncHealthTracker = {
-  // Record SyncRequestOutcomes
+  Outcomes,
+
+  // Setters
   recordSuccess: Setters.recordSuccess,
   recordFailure: Setters.recordFailure,
 
-  // Retrieve SyncRequestOutcomes
+  // Getters
   computeUserSecondarySyncSuccessRates: Getters.computeUserSecondarySyncSuccessRates,
-  getSyncRequestOutcomeMetrics: Getters.getSyncRequestOutcomeMetrics
+  getSyncRequestOutcomeMetrics: Getters.getSyncRequestOutcomeMetrics,
+  getSecondaryUserSyncFailureCountForToday: Getters.getSecondaryUserSyncFailureCountForToday
 }
 
 module.exports = SecondarySyncHealthTracker

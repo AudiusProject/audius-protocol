@@ -5,5 +5,20 @@
 		"amount": "5",
 		"active": true,
 		"step_count": 7
+	},
+	{
+		"id": "listen-streak",
+		"type": "numeric",
+		"amount": "5",
+		"active": false,
+		"step_count": 7
+	},
+	{
+		"id": "track-upload",
+		"type": "numeric",
+		"amount": "5",
+		"active": false,
+		"step_count": 3,
+		"starting_block": 30000000
 	}
 ]

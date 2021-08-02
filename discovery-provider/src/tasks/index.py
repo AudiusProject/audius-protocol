@@ -59,7 +59,7 @@ default_config_start_hash = "0x0"
 zero_address = "0x0000000000000000000000000000000000000000"
 
 # The maximum number of skipped transactions allowed
-MAX_SKIPPED_TX = 5
+MAX_SKIPPED_TX = 100
 
 
 def get_contract_info_if_exists(self, address):

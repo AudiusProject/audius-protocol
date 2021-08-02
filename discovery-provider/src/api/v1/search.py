@@ -6,7 +6,6 @@ from src.api.v1.helpers import (
     success_response,
     format_offset,
     format_limit,
-    decode_string_id,
     extend_user,
     extend_track,
     extend_playlist,

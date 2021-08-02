@@ -50,6 +50,14 @@ module.exports.getTracks = (limit = 100, offset = 0, idsArray = null, targetUser
   return req
 }
 
+module.exports.getTracksByHandleAndSlug = (handle, slug) => {
+  return {
+    endpoint: 'tracks',
+    method: 'get',
+    queryParams: { handle, slug }
+  }
+}
+
 module.exports.getTracksIncludingUnlisted = (identifiers, withUsers = false) => {
   let req = {
     endpoint: 'tracks_including_unlisted',
@@ -359,5 +367,23 @@ module.exports.getURSMContentNodes = (ownerWallet) => {
     queryParams: {
       owner_wallet: ownerWallet
     }
+  }
+}
+
+module.exports.getNotifications = (minBlockNumber, trackIds, timeout) => {
+  return {
+    endpoint: 'notifications',
+    queryParams: {
+      min_block_number: minBlockNumber,
+      track_id: trackIds
+    },
+    timeout
+  }
+}
+
+module.exports.getTrackListenMilestones = (timout) => {
+  return {
+    endpoint: 'track_listen_milestones',
+    timout
   }
 }

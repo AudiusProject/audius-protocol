@@ -7,11 +7,10 @@ from src.utils import helpers, redis_connection
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import (
     add_query_pagination,
+    add_users_to_tracks,
     get_pagination_vars,
     parse_sort_param,
     populate_track_metadata,
-    get_users_ids,
-    get_users_by_id,
 )
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 
@@ -23,9 +22,7 @@ redis = redis_connection.get_redis()
 def _get_tracks(session, args):
     # Create initial query
     base_query = session.query(Track)
-    base_query = base_query.filter(
-        Track.is_current == True, Track.is_unlisted == False, Track.stem_of == None
-    )
+    base_query = base_query.filter(Track.is_current == True, Track.stem_of == None)
 
     # Note that if slug is included, we should only get one track
     # The user ID filter should also be included
@@ -34,6 +31,10 @@ def _get_tracks(session, args):
         base_query = base_query.join(
             TrackRoute, TrackRoute.track_id == Track.track_id
         ).filter(TrackRoute.slug == slug)
+
+    # Only return unlisted tracks if slug and user_id are present
+    if not "slug" in args or not "user_id" in args:
+        base_query = base_query.filter(Track.is_unlisted == False)
 
     # Conditionally process an array of tracks
     if "id" in args:
@@ -149,10 +150,11 @@ def get_tracks(args):
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
         if args.get("with_users", False):
-            user_id_list = get_users_ids(tracks)
-            users = get_users_by_id(session, user_id_list, current_user_id)
-            for track in tracks:
-                user = users[track["owner_id"]]
-                if user:
-                    track["user"] = user
+            add_users_to_tracks(session, tracks, current_user_id)
+        else:
+            # Remove the user from the tracks
+            tracks = [
+                {key: val for key, val in dict.items() if key != "user"}
+                for dict in tracks
+            ]
     return tracks

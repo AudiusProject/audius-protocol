@@ -6,6 +6,7 @@ from sqlalchemy import func
 from src.trending_strategies.trending_type_and_version import TrendingType
 
 from src.utils.db_session import get_db_read_replica
+from src.utils.helpers import decode_string_id
 from src.utils.redis_cache import use_redis_cache, get_trending_cache_key
 from src.models import (
     Track,
@@ -28,7 +29,6 @@ from src.api.v1.helpers import (
     format_offset,
     format_limit,
     to_dict,
-    decode_string_id,
 )
 from src.queries.get_trending_tracks import (
     make_trending_cache_key,

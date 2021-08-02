@@ -19,6 +19,7 @@ const USER_PROPS = [
   'location',
   'creator_node_endpoint',
   'associated_wallets',
+  'associated_sol_wallets',
   'collectibles',
   'playlist_library',
   'events'

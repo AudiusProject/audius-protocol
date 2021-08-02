@@ -1,4 +1,5 @@
 import logging
+from src.utils.helpers import encode_int_id
 from src.challenges.challenge_event_bus import get_event_bus
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
@@ -41,7 +42,6 @@ from src.api.v1.helpers import (
     success_response,
     abort_bad_request_param,
     get_default_max,
-    encode_int_id,
     extend_challenge_response,
 )
 from .models.tracks import track, track_full
@@ -660,7 +660,9 @@ class UserIdByAssociatedWallet(Resource):
         args = associated_wallet_route_parser.parse_args()
         user_id = decode_with_abort(args.get("id"), ns)
         wallets = get_associated_user_wallet({"user_id": user_id})
-        return success_response({"wallets": wallets})
+        return success_response(
+            {"wallets": wallets["eth"], "sol_wallets": wallets["sol"]}
+        )
 
 
 user_associated_wallet_route_parser = reqparse.RequestParser()
