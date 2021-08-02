@@ -23,7 +23,7 @@ class TrackUploadChallengeUpdater(ChallengeUpdater):
         event_metadatas: List[FullEventMetadata],
         starting_block: Optional[int],
     ):
-        if not step_count or not starting_block:
+        if step_count is None or starting_block is None:
             raise Exception(
                 "Expected a step count and starting block for track upload challenge"
             )
@@ -41,7 +41,10 @@ class TrackUploadChallengeUpdater(ChallengeUpdater):
                 user_challenge.user_id
             ]
             # Update completion
-            user_challenge.is_complete = user_challenge.current_step_count == step_count
+            user_challenge.is_complete = (
+                user_challenge.current_step_count is not None
+                and user_challenge.current_step_count >= step_count
+            )
 
     def _get_num_track_uploads_by_user(
         self, session: Session, user_challenges: List[UserChallenge], block_number: int
