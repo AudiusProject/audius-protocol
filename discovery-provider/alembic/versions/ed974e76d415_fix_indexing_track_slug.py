@@ -10,6 +10,7 @@ from typing import Any
 
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.sql import null
 from sqlalchemy.orm import relationship
 from sqlalchemy import (
     Column,
@@ -308,7 +309,7 @@ def upgrade():
                 "play_count": True,
                 "remixes": True,
             },
-            stem_of=None,
+            stem_of=null(),
         ),
         Track(
             track_id=470884,
@@ -377,7 +378,7 @@ def upgrade():
                 "play_count": True,
                 "remixes": True,
             },
-            stem_of=None,
+            stem_of=null(),
         ),
         Track(
             track_id=470892,
@@ -446,10 +447,10 @@ def upgrade():
                 "play_count": True,
                 "remixes": True,
             },
-            stem_of=None,
+            stem_of=null(),
         ),
         Track(
-            track_id=470911,
+            track_id=470910,
             blocknumber=22477832,
             is_current=True,
             is_delete=False,
@@ -515,7 +516,7 @@ def upgrade():
                 "play_count": True,
                 "remixes": True,
             },
-            stem_of=None,
+            stem_of=null(),
         ),
     ]
     session.add_all(tracks)
@@ -555,11 +556,11 @@ def upgrade():
             blockhash="0x8e5f3edd55d1c7f3d6484a8fb7d2a9d825fb53ecb446c8959dd3887fa999d2e7",
         ),
         TrackRoute(
-            slug="9boPo",
-            title_slug="9boPo",
+            slug="Nl2xw",
+            title_slug="Nl2xw",
             collision_id=0,
             owner_id=3538,
-            track_id=470911,
+            track_id=470910,
             is_current=True,
             blocknumber=22477832,
             txhash="0xda0b64477469390eaa3b17098c01f3e03e5b0e52959ffd493804538dda039a92",
