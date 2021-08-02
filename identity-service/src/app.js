@@ -240,22 +240,10 @@ class App {
         return req.body.senderAddress
       }
     })
-
-    // Helper to only run middleware on method post request
-    const checkPostRequest = (middleware) => {
-      return (req, res, next) => {
-        if (req.method.toLowerCase() === 'post') {
-          middleware(req, res, next)
-        } else {
-          next()
-        }
-      }
-    }
-
     this.express.use(
       '/eth_relay',
-      checkPostRequest(ethRelayWalletRateLimiter),
-      checkPostRequest(ethRelayIPRateLimiter)
+      ethRelayWalletRateLimiter,
+      ethRelayIPRateLimiter
     )
     this.express.use(getRateLimiterMiddleware())
   }
