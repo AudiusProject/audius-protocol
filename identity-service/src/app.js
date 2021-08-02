@@ -150,9 +150,24 @@ class App {
     this.express.use(loggingMiddleware)
     this.express.use(bodyParser.json({ limit: '1mb' }))
     this.express.use(cookieParser())
-    this.express.use(cors({
-      preflightContinue: true
-    }))
+
+    const corsWithExclusions = () => {
+      return (req, res, next) => {
+        // Need to exclude certain routes from the default CORS config
+        // because they need custom CORS config (set inline, see tiktok.js)
+        const excludedRoutes = [
+          '/tiktok/access_token'
+        ]
+
+        if (excludedRoutes.includes(req.originalUrl.toLowerCase())) {
+          next()
+        } else {
+          cors()(req, res, next)
+        }
+      }
+    }
+
+    this.express.use(corsWithExclusions())
   }
 
   // Create rate limits for listens on a per track per user basis and per track per ip basis
