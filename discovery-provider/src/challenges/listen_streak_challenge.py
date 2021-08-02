@@ -23,7 +23,7 @@ class ListenStreakChallengeUpdater(ChallengeUpdater):
         event_metadatas: List[FullEventMetadata],
         starting_block: Optional[int],
     ):
-        if not step_count:
+        if step_count is None:
             raise Exception("Expected a step count for listen streak challenge")
 
         user_ids = [user_challenge.user_id for user_challenge in user_challenges]
