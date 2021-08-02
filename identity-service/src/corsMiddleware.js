@@ -10,9 +10,9 @@ const corsMiddleware = () => {
   return (req, res, next) => {
     console.log(req.url)
     if (excludedRoutes.includes(req.url.toLowerCase())) {
-        next()
+      next()
     } else {
-        cors()(req, res, next)
+      cors()(req, res, next)
     }
   }
 }
