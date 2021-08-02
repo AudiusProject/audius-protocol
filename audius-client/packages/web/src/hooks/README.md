@@ -29,3 +29,6 @@ Portals a node out of its place in the dom hierarchy.
 
 ### `useHasChangedRoute`
 Wraps the react router `useLocation` hook to allow a function to be called on route changes
+
+### `useScript`
+Loads a script in the DOM given a source url
