@@ -521,6 +521,16 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
+  async getNotifications (minBlockNumber, trackIds, timeout) {
+    const req = Requests.getNotifications(minBlockNumber, trackIds, timeout)
+    return this._makeRequest(req)
+  }
+
+  async getTrackListenMilestones (timeout = null) {
+    const req = Requests.getTrackListenMilestones(timeout)
+    return this._makeRequest(req)
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   // TODO(DM) - standardize this to axios like audius service and creator node
@@ -676,11 +686,12 @@ class DiscoveryProvider {
       headers['X-User-ID'] = currentUserId
     }
 
+    const timeout = requestObj.timeout || REQUEST_TIMEOUT_MS
     let axiosRequest = {
       url: requestUrl,
       headers: headers,
       method: (requestObj.method || 'get'),
-      timeout: REQUEST_TIMEOUT_MS
+      timeout
     }
 
     if (requestObj.method === 'post' && requestObj.data) {
