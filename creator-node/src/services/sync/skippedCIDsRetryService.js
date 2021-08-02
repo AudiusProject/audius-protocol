@@ -63,7 +63,7 @@ class SkippedCIDsRetryQueue {
   async init () {
     try {
       await this.queue.add({ startTime: Date.now() })
-      logger.info(`${LogPrefix} Starting...`)
+      logger.info(`${LogPrefix} Successfully initialized. Enqueued initial job.`)
     } catch (e) {
       logger.error(`${LogPrefix} Failed to start`)
     }

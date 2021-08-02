@@ -583,19 +583,19 @@ const config = convict({
     env: 'maxSyncMonitoringDurationInMs',
     default: 300000 // 5min (prod default)
   },
-  SyncMaxCIDFailureCountBeforeSkip: {
+  syncMaxCIDFailureCountBeforeSkip: {
     doc: 'Max number of failures to retrieve CID before skipping over it during sync',
     format: 'nat',
-    env: 'SyncMaxCIDFailureCountBeforeSkip',
+    env: 'syncMaxCIDFailureCountBeforeSkip',
     default: 10
   },
-  SkippedCIDsRetryQueueJobIntervalMs: {
+  skippedCIDsRetryQueueJobIntervalMs: {
     doc: 'Interval (ms) for SkippedCIDsRetryQueue Job Processing',
     format: 'nat',
     env: 'skippedCIDsRetryQueueJobIntervalMs',
     default: 3600000 // 1hr in ms
   },
-  SkippedCIDRetryQueueMaxAgeHr: {
+  skippedCIDRetryQueueMaxAgeHr: {
     doc: 'Max age (hours) of skipped CIDs to retry in SkippedCIDsRetryQueue',
     format: 'nat',
     env: 'skippedCIDRetryQueueMaxAgeHr',

@@ -60,8 +60,6 @@ class ServiceRegistry {
 
     if (!config.get('isUserMetadataNode')) {
       this.libs = await this._initAudiusLibs()
-      this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(this.nodeConfig, this.libs)
-      await this.skippedCIDsRetryQueue.init()
     }
 
     // Intentionally not awaitted
@@ -94,7 +92,9 @@ class ServiceRegistry {
    * Specifically:
    *  - recover node L1 identity (requires node health check from server to return success)
    *  - initialize SnapbackSM service (requires node L1 identity)
+   *  - construct SyncQueue (requires node L1 identity)
    *  - register node on L2 URSM contract (requires node L1 identity)
+   *  - construct & init SkippedCIDsRetryQueue (requires SyncQueue)
    */
   async initServicesThatRequireServer () {
     if (config.get('isUserMetadataNode')) {
@@ -122,6 +122,10 @@ class ServiceRegistry {
     // L2URSMRegistration (requires L1 identity)
     // Retries indefinitely
     await this._registerNodeOnL2URSM()
+
+    // SkippedCIDsRetryQueue construction + init (requires SyncQueue)
+    this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(this.nodeConfig, this.libs)
+    await this.skippedCIDsRetryQueue.init()
 
     this.servicesThatRequireServerInitialized = true
     this.logInfo(`All services that require server successfully initialized!`)

@@ -89,7 +89,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
   const { nodeConfig, redis } = serviceRegistry
 
   const FileSaveMaxConcurrency = nodeConfig.get('nodeSyncFileSaveMaxConcurrency')
-  const SyncMaxCIDFailureCountBeforeSkip = nodeConfig.get('SyncMaxCIDFailureCountBeforeSkip')
+  const SyncMaxCIDFailureCountBeforeSkip = nodeConfig.get('syncMaxCIDFailureCountBeforeSkip')
 
   const start = Date.now()
   logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
