@@ -181,22 +181,6 @@
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ]
   },
-  "user-metadata-node": {
-    "protocol": "http",
-    "host": "cn-um_creator-node_1",
-    "port": 4099,
-    "up-um": [
-      "cd creator-node; . compose/env/unsetShellEnv.sh",
-      "cd creator-node; . compose/env/shellEnv.userMetadata.sh; docker-compose -f compose/docker-compose.yml up --build -d",
-      "cd creator-node; . compose/env/unsetShellEnv.sh"
-    ],
-    "down": [
-      "cd creator-node; . compose/env/shellEnv.userMetadata.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans"
-    ],
-    "unset-shell-env": [
-      "cd creator-node; . compose/env/unsetShellEnv.sh"
-    ]
-  },
   "identity-service": {
     "protocol": "http",
     "host": "audius-identity-service_identity-service_1",
