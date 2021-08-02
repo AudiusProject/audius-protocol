@@ -499,7 +499,7 @@ class SnapbackSM {
         response.newPrimary = newPrimary
         response.newSecondary1 = currentHealthySecondary
         response.newSecondary2 = newReplicaNodes[0]
-        response.issueReconfig = this.isReconfigModeEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
+        response.issueReconfig = this.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
         response.reconfigType = RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
       } else {
         // If one secondary is unhealthy, select a new secondary
@@ -507,19 +507,19 @@ class SnapbackSM {
         response.newPrimary = primary
         response.newSecondary1 = currentHealthySecondary
         response.newSecondary2 = newReplicaNodes[0]
-        response.issueReconfig = this.isReconfigModeEnabled(RECONFIG_MODES.ONE_SECONDARY.key)
+        response.issueReconfig = this.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key)
         response.reconfigType = RECONFIG_MODES.ONE_SECONDARY.key
       }
     } else if (unhealthyReplicasSet.size === 2) {
       if (unhealthyReplicasSet.has(primary)) {
         // If primary + secondary is unhealthy, use other healthy secondary as primary and 2 random secondaries
         response.newPrimary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
-        response.issueReconfig = this.isReconfigModeEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
+        response.issueReconfig = this.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
         response.reconfigType = RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
       } else {
         // If both secondaries are unhealthy, keep original primary and select two random secondaries
         response.newPrimary = primary
-        response.issueReconfig = this.isReconfigModeEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key)
+        response.issueReconfig = this.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key)
         response.reconfigType = RECONFIG_MODES.MULTIPLE_SECONDARIES.key
       }
       response.newSecondary1 = newReplicaNodes[0]
@@ -1273,7 +1273,12 @@ class SnapbackSM {
     throw new Error(`Secondary ${secondaryUrl} did not sync up to primary for user ${wallet} within ${timeoutMs}ms`)
   }
 
-  isReconfigModeEnabled (mode) {
+  /**
+   * Given the current snapback mode, determine if reconfig is enabled
+   * @param {string} mode current mode in snapback
+   * @returns boolean of whether or not reconfig is enabled
+   */
+  isReconfigEnabled (mode) {
     if (mode === RECONFIG_MODES.RECONFIG_DISABLED.key) return false
     return this.enabledReconfigModesSet.has(mode)
   }

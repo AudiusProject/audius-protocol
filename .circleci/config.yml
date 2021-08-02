@@ -194,6 +194,7 @@ jobs:
             docker ps
             export ipfsHost="localhost"
             export ipfsPort=6001
+            export snapbackHighestReconfigMode=PRIMARY_AND_OR_SECONDARIES
             npm run start test-ci verbose
 
   test-libs:
