@@ -221,7 +221,7 @@ class NotificationProcessor {
 
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
-    // Query owners for tracks relevant to track listen counts[]
+    // Query owners for tracks relevant to track listen counts
     // Below can be toggled once milestones are calculated in discovery
     // let listenCounts = await calculateTrackListenMilestones()
     const listenCounts = await calculateTrackListenMilestonesFromDiscovery(discoveryProvider)
