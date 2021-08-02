@@ -42,7 +42,6 @@
   "dataRegistryAddress": "",
   "dataProviderUrl": "http://docker.for.mac.localhost:8545",
   "dataNetworkId": "",
-  "userMetadataNodeUrl": "http://docker.for.mac.localhost:4000",
   "rehydrateMaxConcurrency": 10,
   "creatorNodeEndpoint": "",
 

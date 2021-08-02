@@ -56,10 +56,6 @@ class ServiceRegistry {
 
     await this.blacklistManager.init()
 
-    if (!config.get('isUserMetadataNode')) {
-      this.libs = await this._initAudiusLibs()
-    }
-
     // Intentionally not awaitted
     this.monitoringQueue.start()
 
@@ -93,10 +89,6 @@ class ServiceRegistry {
    *  - register node on L2 URSM contract (requires node L1 identity)
    */
   async initServicesThatRequireServer () {
-    if (config.get('isUserMetadataNode')) {
-      return
-    }
-
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
     // Retries indefinitely
     await this._recoverNodeL1Identity()
