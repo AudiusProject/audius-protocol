@@ -79,6 +79,16 @@ class Track extends Base {
   }
 
   /**
+   * Gets tracks by their slug and owner handle
+   * @param {string} handle the owner's handle
+   * @param {string} slug the track's slug, including collision identifiers
+   */
+  async getTracksByHandleAndSlug (handle, slug) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return this.discoveryProvider.getTracksByHandleAndSlug(handle, slug)
+  }
+
+  /**
    * @typedef {Object} getTracksIdentifier
    * @property {string} handle
    * @property {number} id

@@ -9,3 +9,5 @@ class ChallengeEvent(str, enum.Enum):
     repost = "repost"
     follow = "follow"
     favorite = "favorite"
+    track_listen = "track_listen"
+    track_upload = "track_upload"

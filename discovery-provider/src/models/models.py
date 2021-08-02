@@ -261,9 +261,24 @@ class Track(Base):
         viewonly=True,
     )
 
+    user = relationship(
+        "User",
+        primaryjoin="and_(\
+            remote(Track.owner_id) == foreign(User.user_id),\
+            User.is_current)",
+        lazy="joined",
+        viewonly=True,
+    )
+
     @property
-    def slug(self):
+    def _slug(self):
         return self._routes[0].slug if self._routes else ""
+
+    @property
+    def permalink(self):
+        if self.user and self.user[0].handle and self._slug:
+            return f"/{self.user[0].handle}/{self._slug}"
+        return ""
 
     PrimaryKeyConstraint(is_current, track_id, blockhash, txhash)
 
@@ -308,7 +323,7 @@ class Track(Base):
             f"updated_at={self.updated_at},"
             f"created_at={self.created_at},"
             f"stem_of={self.stem_of},"
-            f"slug={self.slug}"
+            f"permalink={self.permalink}"
             ")>"
         )
 
@@ -861,6 +876,7 @@ class UserBalance(Base):
     # balance in Wei
     balance = Column(String, nullable=False)
     associated_wallets_balance = Column(String, nullable=False)
+    associated_sol_wallets_balance = Column(String, nullable=False)
 
     # wAudio balance
     waudio = Column(String, nullable=False)
@@ -870,7 +886,13 @@ class UserBalance(Base):
 user_id={self.user_id},\
 balance={self.balance},\
 associated_wallets_balance={self.associated_wallets_balance}\
+associated_sol_wallets_balance={self.associated_sol_wallets_balance}\
 waudio={self.waudio}>"
+
+
+class WalletChain(str, enum.Enum):
+    eth = "eth"
+    sol = "sol"
 
 
 class AssociatedWallet(Base):
@@ -882,6 +904,7 @@ class AssociatedWallet(Base):
     id = Column(Integer, nullable=False, primary_key=True)
     user_id = Column(Integer, nullable=False, index=True)
     wallet = Column(String, nullable=False, index=True)
+    chain = Column(Enum(WalletChain), nullable=False)
 
     def __repr__(self):
         return f"<AssociatedWallet(blockhash={self.blockhash},\
@@ -890,7 +913,8 @@ is_current={self.is_current},\
 is_delete={self.is_delete},\
 id={self.id},\
 user_id={self.user_id},\
-wallet={self.wallet})>"
+wallet={self.wallet}\
+chain={self.chain})>"
 
 
 class AggregateUser(Base):
@@ -1094,3 +1118,17 @@ profile_cover_photo={self.profile_cover_photo},\
 follows_complete={self.follows},\
 favorites_complete={self.favorites_complete},\
 reposts_complete={self.reposts})>"
+
+
+class ListenStreakChallenge(Base):
+    __tablename__ = "challenge_listen_streak"
+
+    user_id = Column(Integer, nullable=False, primary_key=True)
+    last_listen_date = Column(DateTime)
+    listen_streak = Column(Integer, nullable=False)
+
+    def __repr__(self):
+        return f"<ListenStreakChallenge,\
+user_id={self.user_id},\
+last_listen_date={self.last_listen_date},\
+listen_streak={self.listen_streak})>"

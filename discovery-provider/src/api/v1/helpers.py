@@ -1,8 +1,8 @@
 import logging
-from typing import Dict, Optional, cast
+from src.utils.helpers import decode_string_id, encode_int_id
+from typing import Dict, cast
 from src import api_helpers
 from src.utils.config import shared_config
-from hashids import Hashids
 from flask_restx import fields, reqparse
 from datetime import datetime
 from .models.common import full_response
@@ -10,23 +10,6 @@ from src.queries.get_challenges import ChallengeResponse
 from src.models import ChallengeType
 
 logger = logging.getLogger(__name__)
-
-HASH_MIN_LENGTH = 5
-HASH_SALT = "azowernasdfoia"
-
-hashids = Hashids(min_length=5, salt=HASH_SALT)
-
-
-def encode_int_id(id: int):
-    return cast(str, hashids.encode(id))
-
-
-def decode_string_id(id: str) -> Optional[int]:
-    # Returns a tuple
-    decoded = hashids.decode(id)
-    if not len(decoded):
-        return None
-    return decoded[0]
 
 
 def make_image(endpoint, cid, width="", height=""):
@@ -179,8 +162,6 @@ def extend_track(track):
     owner_id = encode_int_id(track["owner_id"])
     if "user" in track:
         track["user"] = extend_user(track["user"])
-        if "slug" in track:
-            track["permalink"] = f'/{track["user"]["handle"]}/{track["slug"]}'
     track["id"] = track_id
     track["user_id"] = owner_id
     if "followee_saves" in track:

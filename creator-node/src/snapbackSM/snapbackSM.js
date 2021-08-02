@@ -12,9 +12,6 @@ const CreatorNode = require('@audius/libs/src/services/creatorNode')
 const SecondarySyncHealthTracker = require('./secondarySyncHealthTracker')
 const { generateTimestampAndSignature } = require('../apiSigning')
 
-// Maximum number of time to wait for a sync operation, 6 minutes by default
-const MaxSyncMonitoringDurationInMs = 360000 // ms
-
 // Retry delay between requests during monitoring
 const SyncMonitoringRetryDelayMs = 15000
 
@@ -93,12 +90,16 @@ class SnapbackSM {
     this.endpoint = this.nodeConfig.get('creatorNodeEndpoint')
     this.spID = this.nodeConfig.get('spID')
     this.delegatePrivateKey = this.nodeConfig.get('delegatePrivateKey')
-    this.snapbackDevModeEnabled = this.nodeConfig.get('snapbackDevModeEnabled')
+    this.manualSyncsDisabled = this.nodeConfig.get('manualSyncsDisabled')
 
     this.MaxManualRequestSyncJobConcurrency = this.nodeConfig.get('maxManualRequestSyncJobConcurrency')
     this.MaxRecurringRequestSyncJobConcurrency = this.nodeConfig.get('maxRecurringRequestSyncJobConcurrency')
 
     this.MinimumSecondaryUserSyncSuccessPercent = this.nodeConfig.get('minimumSecondaryUserSyncSuccessPercent') / 100
+
+    this.SecondaryUserSyncDailyFailureCountThreshold = this.nodeConfig.get('secondaryUserSyncDailyFailureCountThreshold')
+
+    this.MaxSyncMonitoringDurationInMs = this.nodeConfig.get('maxSyncMonitoringDurationInMs')
 
     // Throw an error if running as creator node and no libs are provided
     if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint || !this.delegatePrivateKey)) {
@@ -205,7 +206,11 @@ class SnapbackSM {
     // Enqueue first state machine operation (the processor internally re-enqueues job on recurring interval)
     await this.stateMachineQueue.add({ startTime: Date.now() })
 
-    this.log(`SnapbackSM initialized in ${this.snapbackDevModeEnabled ? 'dev' : 'production'} mode. Added initial stateMachineQueue job; next job in ${this.snapbackJobInterval}ms`)
+    this.log(`SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; next job in ${this.snapbackJobInterval}ms`)
+  }
+
+  logDebug (msg) {
+    logger.debug(`SnapbackSM DEBUG: ${msg}`)
   }
 
   log (msg) {
@@ -548,12 +553,7 @@ class SnapbackSM {
 
       // Check to make sure that the newly selected secondary does not have existing user state
       try {
-        const { timestamp, signature } = generateTimestampAndSignature({ spID: this.spID }, this.delegatePrivateKey)
-        const clockValue = await CreatorNode.getClockValue(randomHealthyNode, wallet, CLOCK_STATUS_REQUEST_TIMEOUT_MS, {
-          spID: this.spID,
-          timestamp,
-          signature
-        })
+        const clockValue = await this._retrieveClockValueForUserFromReplica(randomHealthyNode, wallet)
         if (clockValue === -1) { newReplicaNodesSet.add(randomHealthyNode) }
       } catch (e) {
         // Something went wrong in checking clock value. Reselect another secondary.
@@ -1011,75 +1011,96 @@ class SnapbackSM {
     )
   }
 
+  /*
+   * Make request to given replica to get its clock value for given user
+   * Signs request with spID to bypass rate limits
+   */
+  async _retrieveClockValueForUserFromReplica (replica, wallet) {
+    const spID = this.spID
+
+    const { timestamp, signature } = generateTimestampAndSignature({ spID }, this.delegatePrivateKey)
+
+    const clockValue = await CreatorNode.getClockValue(replica, wallet, CLOCK_STATUS_REQUEST_TIMEOUT_MS, {
+      spID, timestamp, signature
+    })
+
+    return clockValue
+  }
+
   /**
    * Monitor an ongoing sync operation for a given secondaryUrl and user wallet
    * Return boolean indicating if an additional sync is required
-   *
-   * Polls secondary for MaxSyncMonitoringDurationInMs
+   * Record SyncRequest outcomes to SecondarySyncHealthTracker
    */
   async additionalSyncIsRequired (userWallet, primaryClockValue = -1, secondaryUrl, syncType) {
-    const MaxExportClockValueRange = this.nodeConfig.get('maxExportClockValueRange')
     const logMsgString = `additionalSyncIsRequired (${syncType}): wallet ${userWallet} secondary ${secondaryUrl} primaryClock ${primaryClockValue}`
 
-    // Define axios request object for secondary clock status request
-    const clockStatusRequestParams = {
-      method: 'get',
-      baseURL: secondaryUrl,
-      url: `/users/clock_status/${userWallet}`,
-      responseType: 'json'
-    }
-
     const startTimeMs = Date.now()
-    const endTimeMs = startTimeMs + MaxSyncMonitoringDurationInMs
+    const maxMonitoringTimeMs = startTimeMs + this.MaxSyncMonitoringDurationInMs
 
-    let additionalSyncRequired = true
-    let maxExportRangeExceeded = false
-    while (Date.now() < endTimeMs) {
+    /**
+     * Poll secondary for sync completion, up to `maxMonitoringTimeMs`
+     */
+
+    let secondaryCaughtUpToPrimary = false
+    let initialSecondaryClock = null
+    let finalSecondaryClock = null
+
+    while (Date.now() < maxMonitoringTimeMs) {
       try {
-        const clockStatusResp = await axios(clockStatusRequestParams)
-        const { clockValue: secondaryClockValue } = clockStatusResp.data.data
+        const secondaryClockValue = await this._retrieveClockValueForUserFromReplica(secondaryUrl, userWallet)
+        this.logDebug(`${logMsgString} secondaryClock ${secondaryClockValue}`)
 
-        this.log(`${logMsgString} secondaryClock ${secondaryClockValue}`)
+        // Record starting and current clock values for secondary to determine future action
+        if (initialSecondaryClock === null) {
+          initialSecondaryClock = secondaryClockValue
+        }
+        finalSecondaryClock = secondaryClockValue
 
         /**
-         * One sync op can process at most MaxExportClockValueRange range
-         * A larger clock diff will require multiple syncs; short-circuit monitoring
+         * Stop monitoring if secondary has caught up to primary
+         * Note - secondaryClockValue can be greater than primaryClockValue if additional
+         *    data was written to primary after primaryClockValue was computed
          */
-        if (secondaryClockValue + MaxExportClockValueRange < primaryClockValue) {
-          this.log(`${logMsgString} secondaryClock ${secondaryClockValue} || MaxExportClockValueRange exceeded -> re-enqueuing sync`)
-          maxExportRangeExceeded = true
-          break
-
-          /**
-           * Stop monitoring once secondary has caught up
-           * Note - secondaryClockValue can be greater than primaryClockValue if additional
-           *    data was written to primary after primaryClockValue was computed
-           */
-        } else if (secondaryClockValue >= primaryClockValue) {
-          this.log(`${logMsgString} secondaryClock ${secondaryClockValue} || Sync completed in ${Date.now() - startTimeMs}ms`)
-          additionalSyncRequired = false
+        if (secondaryClockValue >= primaryClockValue) {
+          secondaryCaughtUpToPrimary = true
           break
         }
       } catch (e) {
-        this.log(`${logMsgString} || Error: ${e.message}`)
+        this.logError(`${logMsgString} || Error: ${e.message}`)
       }
 
       // Delay between retries
       await utils.timeout(SyncMonitoringRetryDelayMs, false)
     }
 
+    const monitoringTimeMs = Date.now() - startTimeMs
+
     /**
-     * As Primary for user, record syncRequest outcomes to all secondaries
-     * For now, ignore syncRequests where a secondary is behind by more than `MaxExportClockValueRange` as
-     *    primary doesn't currently have sufficient tracking
+     * As Primary for user, record SyncRequest outcomes to all secondaries
+     * Also check whether additional sync is required
      */
-    if (!additionalSyncRequired && !maxExportRangeExceeded) {
+    let additionalSyncIsRequired
+    if (secondaryCaughtUpToPrimary) {
       await SecondarySyncHealthTracker.recordSuccess(secondaryUrl, userWallet, syncType)
+      additionalSyncIsRequired = false
+      this.logDebug(`${logMsgString} || Sync completed in ${monitoringTimeMs}ms`)
+
+      // Secondary completed sync but is still behind primary since it was behind by more than max export range
+      // Since syncs are all-or-nothing, if secondary clock has increased at all, we know it successfully completed sync
+    } else if (finalSecondaryClock > initialSecondaryClock) {
+      await SecondarySyncHealthTracker.recordSuccess(secondaryUrl, userWallet, syncType)
+      additionalSyncIsRequired = true
+      this.log(`${logMsgString} || Secondary successfully synced from clock ${initialSecondaryClock} to ${finalSecondaryClock} but hasn't caught up to Primary. Enqueuing additional syncRequest.`)
+
+      // (1) secondary did not catch up to primary AND (2) secondary did not complete sync
     } else {
       await SecondarySyncHealthTracker.recordFailure(secondaryUrl, userWallet, syncType)
+      additionalSyncIsRequired = true
+      this.logError(`${logMsgString} || Secondary failed to progress from clock ${initialSecondaryClock}. Enqueuing additional syncRequest.`)
     }
 
-    return additionalSyncRequired
+    return additionalSyncIsRequired
   }
 
   /**
@@ -1107,35 +1128,48 @@ class SnapbackSM {
     const userWallet = syncRequestParameters.data.wallet[0]
     const secondaryEndpoint = syncRequestParameters.baseURL
 
+    const logMsgString = `(${syncType}) User ${userWallet} | Secondary: ${secondaryEndpoint}`
+
     /**
      * Remove sync from syncDeDuplicator once it moves to Active status, before processing
      * It is ok for two identical syncs to be present in Active and Waiting, just not two in Waiting
      */
     this.syncDeDuplicator.removeSync(syncType, userWallet, secondaryEndpoint)
 
+    /**
+     * Do not issue syncRequest if SecondaryUserSyncFailureCountForToday already exceeded threshold
+     */
+    const secondaryUserSyncFailureCountForToday = await SecondarySyncHealthTracker.getSecondaryUserSyncFailureCountForToday(
+      secondaryEndpoint, userWallet, syncType
+    )
+    if (secondaryUserSyncFailureCountForToday > this.SecondaryUserSyncDailyFailureCountThreshold) {
+      this.logError(`${logMsgString} || Secondary has already met SecondaryUserSyncDailyFailureCountThreshold (${this.SecondaryUserSyncDailyFailureCountThreshold}). Will not issue further syncRequests today.`)
+      return
+    }
+
     // primaryClockValue is used in additionalSyncIsRequired() call below
     const primaryClockValue = (await this.getUserPrimaryClockValues([userWallet]))[userWallet]
 
-    this.log(`------------------Process SYNC | User ${userWallet} | Secondary: ${secondaryEndpoint} | Primary clock value ${primaryClockValue} | type: ${syncType} | jobID: ${id} ------------------`)
+    this.log(`------------------Process SYNC | ${logMsgString} | Primary clock value ${primaryClockValue} | jobID: ${id}------------------`)
 
     // Issue sync request to secondary
-    await axios(syncRequestParameters)
+    try {
+      await axios(syncRequestParameters)
+    } catch (e) {
+      // Axios request will throw on non-200 response -> swallow error to ensure below logic is executed
+      this.logError(`${logMsgString} || Error issuing sync request: ${e.message}`)
+    }
 
     // Wait until has sync has completed (within time threshold)
-    const additionalSyncRequired = await this.additionalSyncIsRequired(
+    const additionalSyncIsRequired = await this.additionalSyncIsRequired(
       userWallet,
       primaryClockValue,
       secondaryEndpoint,
       syncType
     )
 
-    /**
-     * Re-enqueue sync if required
-     *
-     * TODO can infinite loop on failing sync ops, but should not block any users as
-     *    it enqueues job to the end of the queue
-     */
-    if (additionalSyncRequired) {
+    // Re-enqueue sync if required
+    if (additionalSyncIsRequired) {
       await this.enqueueSync({
         userWallet,
         primaryEndpoint: this.endpoint,
@@ -1144,8 +1178,7 @@ class SnapbackSM {
       })
     }
 
-    // Exit when sync status is computed
-    this.log(`------------------END Process SYNC | jobID: ${id}------------------`)
+    this.log(`------------------END Process SYNC | ${logMsgString} | jobID: ${id}------------------`)
   }
 
   /**

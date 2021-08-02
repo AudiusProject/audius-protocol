@@ -1,10 +1,15 @@
 from datetime import datetime
+from web3 import Web3
 from src.models import AssociatedWallet, UserEvents
 from src.tasks.users import lookup_user_record, parse_user_event
 from src.utils.db_session import get_db
+from src.challenges.challenge_event_bus import get_event_bus
 from src.utils.user_event_constants import user_event_types_lookup
 from src.utils import helpers
-from tests.index_helpers import AttrDict, IPFSClient, Web3, UpdateTask
+from src.utils.redis_connection import get_redis
+from tests.index_helpers import AttrDict, IPFSClient, UpdateTask
+
+block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
 
 
 def get_add_user_event():
@@ -16,13 +21,13 @@ def get_add_user_event():
             "_wallet": "0x82Fc85A842c9922A9Db9091Cf6573754Cd2D0F14",
         }
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": add_user_event})
+    return event_type, AttrDict({"blockHash": block_hash, "args": add_user_event})
 
 
 def get_update_bio_event():
     event_type = user_event_types_lookup["update_bio"]
     update_bio_event = AttrDict({"_userId": 1, "_bio": "change description"})
-    return event_type, AttrDict({"blockHash": "0x", "args": update_bio_event})
+    return event_type, AttrDict({"blockHash": block_hash, "args": update_bio_event})
 
 
 def get_update_multihash_event():
@@ -33,7 +38,9 @@ def get_update_multihash_event():
             "_multihashDigest": b"\x94uU\x06@\xa2\x93\xf1$d:\xe8m|rj\x02y\x93\xdf\x9bf?\xe7h\xb3y\xa6\x19\x0c\x81\xb0",
         }
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": update_multihash_event})
+    return event_type, AttrDict(
+        {"blockHash": block_hash, "args": update_multihash_event}
+    )
 
 
 def get_update_location_event():
@@ -45,7 +52,9 @@ def get_update_location_event():
             + b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
         }
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": update_location_event})
+    return event_type, AttrDict(
+        {"blockHash": block_hash, "args": update_location_event}
+    )
 
 
 def get_update_profile_photo_event():
@@ -57,7 +66,9 @@ def get_update_profile_photo_event():
             + b"\xa45\x19\x9d\xc6\x10g\x8dm\xe4\x15\x86|\x91\\r\xaa\x01\xab-",
         }
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": update_profile_photo_event})
+    return event_type, AttrDict(
+        {"blockHash": block_hash, "args": update_profile_photo_event}
+    )
 
 
 def get_update_cover_photo_event():
@@ -69,7 +80,9 @@ def get_update_cover_photo_event():
             + b"\x01\xe3j-\xd7\x11_\x84\xde%T\xd0\xcd\xc6",
         }
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": update_cover_photo_event})
+    return event_type, AttrDict(
+        {"blockHash": block_hash, "args": update_cover_photo_event}
+    )
 
 
 def get_update_name_event():
@@ -81,13 +94,15 @@ def get_update_name_event():
             + b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00",
         }
     )
-    return event_type, AttrDict({"blockHash": "0x", "args": update_name_event})
+    return event_type, AttrDict({"blockHash": block_hash, "args": update_name_event})
 
 
 def get_update_is_creator_event():
     event_type = user_event_types_lookup["update_is_creator"]
     update_is_creator_event = AttrDict({"_userId": 1, "_isCreator": True})
-    return event_type, AttrDict({"blockHash": "0x", "args": update_is_creator_event})
+    return event_type, AttrDict(
+        {"blockHash": block_hash, "args": update_is_creator_event}
+    )
 
 
 def get_update_creator_node_endpoint_event():
@@ -100,7 +115,7 @@ def get_update_creator_node_endpoint_event():
         }
     )
     return event_type, AttrDict(
-        {"blockHash": "0x", "args": update_creator_node_endpoint_event}
+        {"blockHash": block_hash, "args": update_creator_node_endpoint_event}
     )
 
 
@@ -135,6 +150,12 @@ ipfs_client = IPFSClient(
                     + "413011759fa6980ba5f55b0fc66d55122afd5497b5795992cf6749bbe06553abc1b"
                 },
             },
+            "associated_sol_wallets": {
+                "A5PXrbJdeyqfJRqunnqdCfvuy3LD21Sh2D1SL1a48bkp": {
+                    "signature": "5953cc8f46a564e09b98fb70b0b4d5afe99875955124487e958e2d68f8f5e70923"
+                    + "ab01e0c59f576bba996cfa8945be48e54bb0f177aed782d022133a472cd501"
+                },
+            },
             "collectibles": {
                 "73:::0x417cf58dc18edd17025689d13af2b85f403e130c": {},
                 "order": ["73:::0x417cf58dc18edd17025689d13af2b85f403e130c"],
@@ -166,15 +187,16 @@ ipfs_client = IPFSClient(
         }
     }
 )
-web3 = Web3()
 
 
 def test_index_users(app):
     """Tests that users are indexed correctly"""
     with app.app_context():
         db = get_db()
-
-    update_task = UpdateTask(ipfs_client, web3)
+        redis = get_redis()
+        web3 = Web3()
+        challenge_event_bus = get_event_bus()
+        update_task = UpdateTask(ipfs_client, web3, challenge_event_bus, redis)
 
     with db.scoped_session() as session:
         # ================== Test Add User Event ==================
@@ -424,6 +446,7 @@ def test_index_users(app):
             user_record,  # User ORM instance
             block_timestamp,  # Used to update the user.updated_at field
         )
+        session.flush()
 
         entry_multihash = helpers.multihash_digest_to_cid(entry.args._multihashDigest)
         ipfs_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
@@ -443,11 +466,32 @@ def test_index_users(app):
         ipfs_associated_wallets = ipfs_metadata["associated_wallets"]
         associated_wallets = (
             session.query(AssociatedWallet)
-            .filter_by(user_id=user_record.user_id, is_current=True, is_delete=False)
+            .filter_by(
+                user_id=user_record.user_id,
+                is_current=True,
+                is_delete=False,
+                chain="eth",
+            )
             .all()
         )
-        for wallet in associated_wallets:
-            assert wallet in ipfs_associated_wallets
+        for associated_wallet in associated_wallets:
+            assert associated_wallet.wallet in ipfs_associated_wallets
+        assert len(associated_wallets) == len(ipfs_associated_wallets)
+
+        ipfs_associated_sol_wallets = ipfs_metadata["associated_sol_wallets"]
+        associated_sol_wallets = (
+            session.query(AssociatedWallet)
+            .filter_by(
+                user_id=user_record.user_id,
+                is_current=True,
+                is_delete=False,
+                chain="sol",
+            )
+            .all()
+        )
+        for associated_wallet in associated_sol_wallets:
+            assert associated_wallet.wallet in ipfs_associated_sol_wallets
+        assert len(associated_sol_wallets) == len(ipfs_associated_sol_wallets)
 
         user_events = (
             session.query(UserEvents)

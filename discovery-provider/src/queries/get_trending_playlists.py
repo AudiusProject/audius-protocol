@@ -9,6 +9,7 @@ from src.models import Playlist, Save, SaveType, RepostType, Follow, AggregateUs
 from src.tasks.generate_trending import time_delta_map
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.db_session import get_db_read_replica
+from src.utils.helpers import decode_string_id
 from src.queries.query_helpers import (
     get_repost_counts,
     get_karma,
@@ -30,7 +31,6 @@ from src.api.v1.helpers import (
     format_offset,
     format_limit,
     to_dict,
-    decode_string_id,
 )
 
 
