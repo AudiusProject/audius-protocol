@@ -369,3 +369,21 @@ module.exports.getURSMContentNodes = (ownerWallet) => {
     }
   }
 }
+
+module.exports.getNotifications = (minBlockNumber, trackIds, timeout) => {
+  return {
+    endpoint: 'notifications',
+    queryParams: {
+      min_block_number: minBlockNumber,
+      track_id: trackIds
+    },
+    timeout
+  }
+}
+
+module.exports.getTrackListenMilestones = (timout) => {
+  return {
+    endpoint: 'track_listen_milestones',
+    timout
+  }
+}
