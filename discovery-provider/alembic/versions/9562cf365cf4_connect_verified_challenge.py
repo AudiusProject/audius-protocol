@@ -1,7 +1,7 @@
 """connect_verified_challenge
 
 Revision ID: 9562cf365cf4
-Revises: cb9aa46f1e46
+Revises: f64a484f1496
 Create Date: 2021-07-29 15:10:51.037940
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "9562cf365cf4"
-down_revision = "cb9aa46f1e46"
+down_revision = "f64a484f1496"
 branch_labels = None
 depends_on = None
 

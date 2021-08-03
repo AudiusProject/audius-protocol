@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta
+import logging
+from datetime import datetime
 import redis
 
 from src.models import User, Block
@@ -8,6 +9,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus, ChallengeEvent
 from src.utils.config import shared_config
 
 REDIS_URL = shared_config["redis"]["url"]
+logger = logging.getLogger(__name__)
 
 
 def test_listen_streak_challenge(app):
@@ -44,6 +46,7 @@ def test_listen_streak_challenge(app):
         session.add(block)
         session.flush()
         session.add(user)
+        session.flush()
 
         bus.dispatch(
             session,
@@ -53,8 +56,9 @@ def test_listen_streak_challenge(app):
             {},
         )
         bus.process_events(session)
+        session.flush()
 
-        state = connect_verified_challenge_manager.get_challenge_state(session, ["1"])[
-            0
-        ]
+        state = connect_verified_challenge_manager.get_user_challenge_state(
+            session, ["1"]
+        )[0]
         assert state.is_complete

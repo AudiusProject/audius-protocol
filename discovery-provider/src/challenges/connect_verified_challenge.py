@@ -1,16 +1,24 @@
-from collections import Counter
-from typing import List
+from typing import List, Optional
+from sqlalchemy.orm.session import Session
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,
+    FullEventMetadata,
 )
+from src.models.models import UserChallenge
 
 
 class ConnectVerifiedChallengeUpdater(ChallengeUpdater):
     """Updates a connect verified challenge."""
 
     def update_user_challenges(
-        self, session, event, user_challenges, step_count, event_metadatas
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
     ):
         # Update the user_challenges
         for user_challenge in user_challenges:
