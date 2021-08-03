@@ -10,6 +10,7 @@ This API allows you to bring services up and down and control your local audius 
 - `export` the environment variable `PROTOCOL_DIR` to point to the cloned `protocol` repo.
 
   set this in your shell config (`.bashrc`), e.g. `export PROTOCOL_DIR=/Users/hareeshnagaraj/Development/audius-protocol`
+  Also add `export PATH=$HOME/.local/bin:$PATH` to your shell config.
 - Execute `npm install` in `<service-commands>` (audius-tooling/service-commands)
 - Run the `<service-commands>/scripts/hosts.js` script with `sudo node hosts.js add`. This script will add mappings to your `/etc/hosts` file.
 
