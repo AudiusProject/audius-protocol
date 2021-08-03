@@ -56,6 +56,9 @@ class ServiceRegistry {
 
     await this.blacklistManager.init()
 
+    // init libs
+    this.libs = await this._initAudiusLibs()
+
     // Intentionally not awaitted
     this.monitoringQueue.start()
 
