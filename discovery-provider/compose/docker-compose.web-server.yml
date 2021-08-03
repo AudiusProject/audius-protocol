@@ -16,7 +16,7 @@ services:
       - FLASK_RUN_PORT=${audius_server_port}
       - audius_redis_url=redis://${COMPOSE_PROJECT_NAME}_redis-server_1:6379/00
       - audius_ipfs_host=${COMPOSE_PROJECT_NAME}-ipfs-node
-      - dev=true
+      - audius_discprov_dev_mode=true
       - audius_no_workers=true
       - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_redis-server_1:6379,${COMPOSE_PROJECT_NAME}-ipfs-node:5001
     depends_on:

@@ -14,7 +14,7 @@ services:
       - audius_db_url=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
       - audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
       - audius_ipfs_host=${COMPOSE_PROJECT_NAME}-ipfs-node
-      - dev=true
+      - audius_discprov_dev_mode=true
       - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432,${COMPOSE_PROJECT_NAME}_redis-server_1:6379, ${COMPOSE_PROJECT_NAME}-ipfs-node:5001
     depends_on:
       - discovery-provider-db

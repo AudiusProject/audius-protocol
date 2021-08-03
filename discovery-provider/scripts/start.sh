@@ -67,7 +67,7 @@ if [ "$audius_db_run_migrations" != false ]; then
     echo "Finished running migrations"
 fi
 
-if [[ "$dev" == "true" ]]; then
+if [[ "$audius_discprov_dev_mode" == "true" ]]; then
     ./scripts/dev-server.sh 2>&1 | tee >(logger -t server) server.log &
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
         celery -A src.worker.celery worker --loglevel info 2>&1 | tee >(logger -t worker) worker.log &
