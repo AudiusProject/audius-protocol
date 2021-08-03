@@ -100,20 +100,23 @@ class SkippedCIDsRetryQueue {
     }
 
     // Update DB entries for all previously-skipped files that were successfully saved to flip `skipped` flag
-    const savedFileUUIDs = savedFiles.map(savedFile => savedFile.fileUUID)
-    await models.File.update(
-      { skipped: false },
-      {
-        where: { fileUUID: savedFileUUIDs }
-      }
-    )
+    if (savedFiles.length) {
+      const savedFileUUIDs = savedFiles.map(savedFile => savedFile.fileUUID)
+      logger.info(`${LogPrefix} SIDTEST SAVEDFILEUUIDS ${savedFileUUIDs}`)
+      await models.File.update(
+        { skipped: false },
+        {
+          where: { fileUUID: savedFileUUIDs }
+        }
+      )
 
-    // Reset failure counts for successfully saved CIDs in CIDFailureCountManager
-    savedFiles.forEach(savedFile => {
-      CIDFailureCountManager.resetCIDFailureCount(savedFile.multihash)
-    })
+      // Reset failure counts for successfully saved CIDs in CIDFailureCountManager
+      savedFiles.forEach(savedFile => {
+        CIDFailureCountManager.resetCIDFailureCount(savedFile.multihash)
+      })
+    }
 
-    logger.info(`${LogPrefix} Completed run in ${Date.now() - startTimestampMs}ms. Processing files created >= ${oldestFileCreatedAtDate}. Successfully saved ${savedFileUUIDs.length} of total ${skippedFiles.length} processed.`)
+    logger.info(`${LogPrefix} Completed run in ${Date.now() - startTimestampMs}ms. Processing files created >= ${oldestFileCreatedAtDate}. Successfully saved ${savedFiles.length} of total ${skippedFiles.length} processed.`)
   }
 }
 
