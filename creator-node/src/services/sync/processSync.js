@@ -6,31 +6,7 @@ const { saveFileForMultihashToFS } = require('../../fileManager')
 const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
-
-/**
- * Used by `processSync()` to track CID failure counts
- * Records in-memory, state reset with each node restart (this is ok)
- */
-const CIDFailureCountManager = {
-  // map of CID -> (int) failure count
-  CIDFailureCounts: {},
-
-  resetCIDFailureCount: (CID) => {
-    CIDFailureCountManager.CIDFailureCounts[CID] = 0
-  },
-
-  incrementCIDFailureCount: (CID) => {
-    if (CID in CIDFailureCountManager.CIDFailureCounts) {
-      CIDFailureCountManager.CIDFailureCounts[CID] += 1
-    } else {
-      CIDFailureCountManager.CIDFailureCounts[CID] = 1
-    }
-  },
-
-  getCIDFailureCount: (CID) => {
-    return CIDFailureCountManager.CIDFailureCounts[CID] || 0
-  }
-}
+const CIDFailureCountManager = require('./CIDFailureCountManager')
 
 /**
  * Wrapper around `saveFileForMultihash()` with CID failure count tracking

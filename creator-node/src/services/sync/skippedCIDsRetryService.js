@@ -5,10 +5,7 @@ const { logger } = require('../../logging')
 const utils = require('../../utils')
 const { serviceRegistry } = require('../../serviceRegistry')
 const { saveFileForMultihashToFS } = require('../../fileManager')
-
-const PROCESS_NAMES = Object.freeze({
-  retrySkippedCIDs: 'retrySkippedCIDs'
-})
+const CIDFailureCountManager = require('./CIDFailureCountManager')
 
 const LogPrefix = '[SkippedCIDsRetryQueue]'
 
@@ -39,12 +36,10 @@ class SkippedCIDsRetryQueue {
     // Clean up anything that might be still stuck in the queue on restart
     this.queue.empty()
 
-    const SkippedCIDsRetryQueueJobIntervalMs = nodeConfig.get('skippedCIDsRetryQueueJobIntervalMs')
+    const SkippedCIDsRetryQueueJobIntervalMs = 5000 // nodeConfig.get('skippedCIDsRetryQueueJobIntervalMs')
     const CIDMaxAgeMs = nodeConfig.get('skippedCIDRetryQueueMaxAgeHr') * 60 * 60 * 1000 // convert from Hr to Ms
 
     this.queue.process(
-      PROCESS_NAMES.retrySkippedCIDs,
-      /* concurrency */ 1,
       async (job, done) => {
         try {
           await this.process(CIDMaxAgeMs, libs)
@@ -53,8 +48,10 @@ class SkippedCIDsRetryQueue {
         }
 
         // Re-enqueue job after some interval
-        await utils.timeout(SkippedCIDsRetryQueueJobIntervalMs)
+        await utils.timeout(SkippedCIDsRetryQueueJobIntervalMs, false)
         await this.queue.add({ startTime: Date.now() })
+
+        done()
       }
     )
   }
@@ -63,7 +60,7 @@ class SkippedCIDsRetryQueue {
   async init () {
     try {
       await this.queue.add({ startTime: Date.now() })
-      logger.info(`${LogPrefix} Successfully initialized. Enqueued initial job.`)
+      logger.info(`${LogPrefix} Successfully initialized and enqueued initial job.`)
     } catch (e) {
       logger.error(`${LogPrefix} Failed to start`)
     }
@@ -76,7 +73,6 @@ class SkippedCIDsRetryQueue {
   async process (CIDMaxAgeMs, libs) {
     const startTimestampMs = Date.now()
     const oldestFileCreatedAtDate = new Date(startTimestampMs - CIDMaxAgeMs)
-    logger.info(`${LogPrefix} SIDTEST oldestFileCreatdAtDate ${oldestFileCreatedAtDate}`)
 
     // Only process files with createdAt >= oldest createdAt
     const skippedFiles = await models.File.findAll({
@@ -87,22 +83,37 @@ class SkippedCIDsRetryQueue {
       }
     })
 
-    const registeredGateways = await utils.getAllRegisteredCNodes(libs)
-    logger.info(`${LogPrefix} SIDTEST - REGISTERED GATEWAYS ${JSON.stringify(registeredGateways)}`)
+    let registeredGateways = await utils.getAllRegisteredCNodes(libs)
+    registeredGateways = registeredGateways.map(nodeInfo => nodeInfo.endpoint)
 
     // Intentionally run sequentially to minimize node load
-    let savedCount = 0
+    const savedFiles = []
     for await (const file of skippedFiles) {
       // `saveFileForMultihashToFS()` will error on failure to retrieve/save
       try {
         await saveFileForMultihashToFS(serviceRegistry, logger, file.multihash, file.storagePath, registeredGateways, file.fileName)
-        savedCount++
+
+        savedFiles.push(file)
       } catch (e) {
         // No need to log anything here, erroring is the default behavior
       }
     }
 
-    logger.info(`${LogPrefix} Completed run in ${Date.now() - startTimestampMs}ms. Processed ${skippedFiles.length} files created >= ${oldestFileCreatedAtDate}. Successfully saved ${savedCount}.`)
+    // Update DB entries for all previously-skipped files that were successfully saved to flip `skipped` flag
+    const savedFileUUIDs = savedFiles.map(savedFile => savedFile.fileUUID)
+    await models.File.update(
+      { skipped: false },
+      {
+        where: { fileUUID: savedFileUUIDs }
+      }
+    )
+
+    // Reset failure counts for successfully saved CIDs in CIDFailureCountManager
+    savedFiles.forEach(savedFile => {
+      CIDFailureCountManager.resetCIDFailureCount(savedFile.multihash)
+    })
+
+    logger.info(`${LogPrefix} Completed run in ${Date.now() - startTimestampMs}ms. Processing files created >= ${oldestFileCreatedAtDate}. Successfully saved ${savedFileUUIDs.length} of total ${skippedFiles.length} processed.`)
   }
 }
 

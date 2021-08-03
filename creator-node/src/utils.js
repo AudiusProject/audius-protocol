@@ -272,6 +272,7 @@ async function findCIDInNetwork (filePath, cid, logger, libs) {
 /**
  * Fetch all CNodes registered on-chain from cache if present, else from chain
  * Cached value expires in 30min
+ * @returns {Object[]} array of SP objects with schema { owner, endpoint, spID, type, blockNumber, delegateOwnerWallet }
  */
 async function getAllRegisteredCNodes (libs) {
   const cacheKey = 'all_registered_cnodes'
