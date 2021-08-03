@@ -12,7 +12,7 @@ const WAIT_INTERVAL_TO_UPDATE_REPLICA_SET_MS = 20000
 /**
  * Tests that the user replica sets update when a node is deregistered or down
  */
-const userReplicaSetNodes = async ({
+const deregisterCN = async ({
   numUsers = 10,
   numCreatorNodes = 10,
   iterations,
@@ -30,17 +30,15 @@ const userReplicaSetNodes = async ({
       executeOne
     )
   } catch (e) {
-    return { error: `Issue with creating and upgrading users: ${e}` }
+    return { error: `[Snapback CN Deregistering] Issue with creating and upgrading users: ${e}` }
   }
 
+  logger.info('[Snapback CN Deregistering] Start')
   for (let iteration = 0; iteration < iterations; iteration++) {
-    logger.info('[Snapback CN Deregistering] Start')
     creatorNodeIDToInfoMapping = await setNumCreatorNodes(numCreatorNodes, executeOne)
 
     // Upload tracks to users
     await uploadTracksforUsers({ executeAll, executeOne, walletIndexToUserIdMap })
-
-    // TODO: Implement spID as source of truth feature before uncommenting deregistration test code
 
     const deregisteredCreatorNodeId = await deregisterRandomCreatorNode(creatorNodeIDToInfoMapping)
 
@@ -64,19 +62,45 @@ const userReplicaSetNodes = async ({
         error: `[Snapback CN Deregistering] Error with verifying updated replica set: ${error.toString()}`
       }
     }
+  }
 
-    logger.info('[Snapback CN Deregistering] SUCCESS!')
+  logger.info('[Snapback CN Deregistering] SUCCESS!')
+}
 
-    logger.info('[Snapback CN Unavailability] Start')
+const forceCNUnavailability = async ({
+  numUsers = 10,
+  numCreatorNodes = 10,
+  iterations,
+  executeAll,
+  executeOne
+}) => {
+  let creatorNodeIDToInfoMapping = {}
+  let walletIndexToUserIdMap = {}
+
+  // Creates and initialize users if user does not exist. Else, uses existing users.
+  try {
+    walletIndexToUserIdMap = await addAndUpgradeUsers(
+      numUsers,
+      executeAll,
+      executeOne
+    )
+  } catch (e) {
+    return { error: `[Snapback CN Unavailability] Issue with creating and upgrading users: ${e}` }
+  }
+
+  logger.info('[Snapback CN Unavailability] Start')
+
+  for (let iteration = 0; iteration < iterations; iteration++) {
+    creatorNodeIDToInfoMapping = await setNumCreatorNodes(numCreatorNodes, executeOne)
 
     const {
       madDog,
       removedCreatorNodeId
     } = await stopRandomCreatorNode(creatorNodeIDToInfoMapping)
 
-    error = null
-    attempts = 0
-    passed = false
+    let error = null
+    let attempts = 0
+    let passed = false
     while (attempts++ < MAX_ATTEMPTS_TO_VALIDATE_REPLICA_SET) {
       await new Promise(resolve => setTimeout(resolve, WAIT_INTERVAL_TO_UPDATE_REPLICA_SET_MS))
       try {
@@ -88,18 +112,19 @@ const userReplicaSetNodes = async ({
       }
     }
 
+    madDog.stop()
+
     if (!passed) {
       return {
         error: `[Snapback CN Unavailability] Error with verifying updated replica set: ${error.toString()}`
       }
     }
-
-    madDog.stop()
-
-    logger.info('[Snapback CN Unavailability] SUCCESS!')
   }
+
+  logger.info('[Snapback CN Unavailability] SUCCESS!')
 }
 
 module.exports = {
-  userReplicaSetNodes
+  deregisterCN,
+  forceCNUnavailability
 }
