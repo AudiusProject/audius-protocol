@@ -11,7 +11,7 @@ const {
   IpldBlacklistTest,
   userReplicaSetBlockSaturationTest,
   trackListenCountsTest,
-  userReplicaSetNodes
+  SnapbackReconfigTests
 } = require('./tests/')
 
 // Configuration.
@@ -256,16 +256,26 @@ async function main () {
         break
       }
       case 'test-ursm-nodes': {
-        const test = makeTest(
-          'userReplicaSetNodesTest',
-          userReplicaSetNodes,
+        const deregisterCNTest = makeTest(
+          'snapbackReconfigTestDeregisterCN',
+          SnapbackReconfigTests.deregisterCN,
           {
             numUsers: 8,
             numCreatorNodes: 10,
-            iterations: 3
+            iterations: 2
           }
         )
-        await testRunner([test])
+
+        const forceCNUnavailabilityTest = makeTest(
+          'snapbackReconfigTestForceCNUnavailability',
+          SnapbackReconfigTests.forceCNUnavailability,
+          {
+            numUsers: 8,
+            numCreatorNodes: 10,
+            iterations: 2
+          }
+        )
+        await testRunner([deregisterCNTest, forceCNUnavailabilityTest])
         break
       }
       case 'test-ci': {
