@@ -32,7 +32,7 @@ async function saveFileForMultihashToFSWrapper ({
     CIDFailureCountManager.incrementCIDFailureCount(multihash)
 
     // If CID failure count is below threshold, throw an error (base case)
-    if (CIDFailureCountManager.getCIDFailureCount(multihash) < SyncMaxCIDFailureCountBeforeSkip) {
+    if (CIDFailureCountManager.getCIDFailureCount(multihash) <= SyncMaxCIDFailureCountBeforeSkip) {
       throw new Error(e)
 
       // If threshold met, sync should skip CID, indicate as skipped without erroring

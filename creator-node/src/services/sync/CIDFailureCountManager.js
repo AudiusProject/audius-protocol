@@ -1,5 +1,5 @@
 /**
- * Used by `processSync()` to track CID failure counts
+ * Tracks CID failure counts
  * Records in-memory, state reset with each node restart (this is ok)
  */
 const CIDFailureCountManager = {

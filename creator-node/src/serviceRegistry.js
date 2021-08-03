@@ -124,7 +124,7 @@ class ServiceRegistry {
     await this._registerNodeOnL2URSM()
 
     // SkippedCIDsRetryQueue construction + init (requires SyncQueue)
-    this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(this.nodeConfig, this.libs)
+    this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(this.nodeConfig, this.libs, this)
     await this.skippedCIDsRetryQueue.init()
 
     this.servicesThatRequireServerInitialized = true

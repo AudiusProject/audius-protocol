@@ -3,7 +3,6 @@ const Bull = require('bull')
 const models = require('../../models')
 const { logger } = require('../../logging')
 const utils = require('../../utils')
-const { serviceRegistry } = require('../../serviceRegistry')
 const { saveFileForMultihashToFS } = require('../../fileManager')
 const CIDFailureCountManager = require('./CIDFailureCountManager')
 
@@ -13,9 +12,9 @@ const LogPrefix = '[SkippedCIDsRetryQueue]'
  * TODO - consider moving queue/jobs off main process. Will require re-factoring of job processing / dependencies
  */
 class SkippedCIDsRetryQueue {
-  constructor (nodeConfig, libs) {
-    if (!nodeConfig || !libs) {
-      throw new Error(`${LogPrefix} Cannot start without nodeConfig and libs`)
+  constructor (nodeConfig, libs, serviceRegistry) {
+    if (!nodeConfig || !libs || !serviceRegistry) {
+      throw new Error(`${LogPrefix} Cannot start without nodeConfig, libs, and serviceRegistry`)
     }
 
     this.queue = new Bull(
@@ -42,7 +41,7 @@ class SkippedCIDsRetryQueue {
     this.queue.process(
       async (job, done) => {
         try {
-          await this.process(CIDMaxAgeMs, libs)
+          await this.process(CIDMaxAgeMs, libs, serviceRegistry)
         } catch (e) {
           logger.error(`${LogPrefix} Failed to process job || Error: ${e.message}`)
         }
@@ -70,7 +69,7 @@ class SkippedCIDsRetryQueue {
    * Attempt to re-fetch all previously skipped files
    * Only process files with age <= maxAge
    */
-  async process (CIDMaxAgeMs, libs) {
+  async process (CIDMaxAgeMs, libs, serviceRegistry) {
     const startTimestampMs = Date.now()
     const oldestFileCreatedAtDate = new Date(startTimestampMs - CIDMaxAgeMs)
 
@@ -102,7 +101,6 @@ class SkippedCIDsRetryQueue {
     // Update DB entries for all previously-skipped files that were successfully saved to flip `skipped` flag
     if (savedFiles.length) {
       const savedFileUUIDs = savedFiles.map(savedFile => savedFile.fileUUID)
-      logger.info(`${LogPrefix} SIDTEST SAVEDFILEUUIDS ${savedFileUUIDs}`)
       await models.File.update(
         { skipped: false },
         {
