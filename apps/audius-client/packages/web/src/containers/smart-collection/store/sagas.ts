@@ -117,10 +117,24 @@ function* fetchRemixables() {
   const tracks: TrackMetadata[] = yield call(
     Explore.getRemixables,
     currentUserId,
-    COLLECTIONS_LIMIT
+    75 // limit
   )
 
-  const processedTracks: Track[] = yield call(processAndCacheTracks, tracks)
+  // Limit the number of times an artist can appear
+  const artistLimit = 3
+  const artistCount: Record<number, number> = {}
+
+  const filteredTracks = tracks.filter(trackMetadata => {
+    const id = trackMetadata.owner_id
+    if (!artistCount[id]) artistCount[id] = 0
+    artistCount[id]++
+    return artistCount[id] <= artistLimit
+  })
+
+  const processedTracks: Track[] = yield call(
+    processAndCacheTracks,
+    filteredTracks.slice(0, COLLECTIONS_LIMIT)
+  )
 
   const trackIds = processedTracks.map((track: Track) => ({
     time: track.created_at,
