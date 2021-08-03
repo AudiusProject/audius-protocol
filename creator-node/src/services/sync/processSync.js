@@ -13,7 +13,7 @@ const CIDFailureCountManager = require('./CIDFailureCountManager')
  * Throws error if CID failure count is below threshold, else returns boolean indicating saved or skipped
  * @returns {Boolean} skipped
  */
-async function saveFileForMultihashToFSWrapper ({
+async function skippableSaveFileForMultihashToFS ({
   serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null, SyncMaxCIDFailureCountBeforeSkip
 }) {
   let skipped = false
@@ -39,11 +39,6 @@ async function saveFileForMultihashToFSWrapper ({
     } else {
       skipped = true
     }
-  }
-
-  // print mapping
-  for (const [k, v] of Object.entries(CIDFailureCountManager.CIDFailureCounts)) {
-    console.log(`SIDTEST CIDFAILURECOUNTS ${k}: ${v}`)
   }
 
   return skipped
@@ -322,7 +317,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
            */
           await Promise.all(trackFilesSlice.map(
             async (trackFile) => {
-              const skipped = await saveFileForMultihashToFSWrapper({
+              const skipped = await skippableSaveFileForMultihashToFS({
                 serviceRegistry,
                 logger,
                 multihash: trackFile.multihash,
@@ -354,7 +349,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
                 // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
                 // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
                 if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-                  skipped = await saveFileForMultihashToFSWrapper({
+                  skipped = await skippableSaveFileForMultihashToFS({
                     serviceRegistry,
                     logger,
                     multihash,
@@ -365,7 +360,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
                     SyncMaxCIDFailureCountBeforeSkip
                   })
                 } else {
-                  skipped = await saveFileForMultihashToFSWrapper({
+                  skipped = await skippableSaveFileForMultihashToFS({
                     serviceRegistry,
                     logger,
                     multihash,

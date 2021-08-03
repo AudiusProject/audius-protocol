@@ -16,6 +16,8 @@ const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // D
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
+const SaveFileForMultihashToFSIPFSFallback = config.get('saveFileForMultihashToFSIPFSFallback')
+
 /**
  * Adds file to IPFS then saves file to disk under /multihash name
  */
@@ -213,7 +215,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     }
 
     // If file not found through gateways, check local ipfs node.
-    if (!fileFound) {
+    if (!fileFound && SaveFileForMultihashToFSIPFSFallback) {
       logger.debug(`checking if ${multihash} already available on local ipfs node`)
       try {
         decisionTree.push({ stage: 'About to retrieve file from local ipfs node with cat', vals: multihash, time: Date.now() })
@@ -237,7 +239,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     }
 
     // If file not already available on local ipfs node or via gateways, fetch from IPFS.
-    if (!fileFound) {
+    if (!fileFound && SaveFileForMultihashToFSIPFSFallback) {
       logger.debug(`Attempting to get ${multihash} from IPFS`)
       try {
         decisionTree.push({ stage: 'About to retrieve file from local ipfs node with get', vals: multihash, time: Date.now() })
@@ -263,8 +265,9 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
 
     // error if file was not found on any gateway or ipfs
     if (!fileFound) {
-      decisionTree.push({ stage: 'Failed to retrieve file for multihash after trying ipfs & other creator node gateways', vals: multihash, time: Date.now() })
-      throw new Error(`Failed to retrieve file for multihash ${multihash} after trying ipfs & other creator node gateways`)
+      const retrievalSourcesString = (SaveFileForMultihashToFSIPFSFallback) ? 'ipfs & other creator node gateways' : 'creator node gateways'
+      decisionTree.push({ stage: `Failed to retrieve file for multihash after trying ${retrievalSourcesString}`, vals: multihash, time: Date.now() })
+      throw new Error(`Failed to retrieve file for multihash ${multihash} after trying ${retrievalSourcesString}`)
     }
 
     // verify that the contents of the file match the file's cid

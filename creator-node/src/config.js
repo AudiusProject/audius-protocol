@@ -559,10 +559,16 @@ const config = convict({
     default: 0
   },
   minimumSecondaryUserSyncSuccessPercent: {
-    doc: 'Minimum percent of failed Syncs for a user on a secondary for the secondary to be considered healthy for that user',
+    doc: 'Minimum percent of successful Syncs for a user on a secondary for the secondary to be considered healthy for that user',
     format: 'nat',
     env: 'minimumSecondaryUserSyncSuccessPercent',
     default: 50
+  },
+  minimumFailedSyncRequestsBeforeReconfig: {
+    doc: 'Minimum number of failed SyncRequests before a Secondary will be cycled out of replica set by Primary',
+    format: 'nat',
+    env: 'minimumFailedSyncRequestsBeforeReconfig',
+    default: 20
   },
   maxNumberSecondsPrimaryRemainsUnhealthy: {
     doc: 'The max number of seconds since first failed health check that a primary can still be marked as healthy',
@@ -575,7 +581,7 @@ const config = convict({
     doc: 'Max number of sync failures for a secondary for a user per day before stopping further SyncRequest issuance',
     format: 'nat',
     env: 'secondaryUserSyncDailyFailureCountThreshold',
-    default: 10
+    default: 20
   },
   maxSyncMonitoringDurationInMs: {
     doc: 'Max duration that primary will monitor secondary for syncRequest completion',
@@ -600,6 +606,12 @@ const config = convict({
     format: 'nat',
     env: 'skippedCIDRetryQueueMaxAgeHr',
     default: 1440 // 2 months in hours
+  },
+  saveFileForMultihashToFSIPFSFallback: {
+    doc: 'Boolean indicating if `saveFileForMultihashToFS()` should fallback to IPFS retrieval if gateway retrieval fails',
+    format: 'BooleanCustom',
+    env: 'saveFileForMultihashToFSIPFSFallback',
+    default: true
   }
 
   /**

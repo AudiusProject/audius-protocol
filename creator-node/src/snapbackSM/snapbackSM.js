@@ -96,6 +96,7 @@ class SnapbackSM {
     this.MaxRecurringRequestSyncJobConcurrency = this.nodeConfig.get('maxRecurringRequestSyncJobConcurrency')
 
     this.MinimumSecondaryUserSyncSuccessPercent = this.nodeConfig.get('minimumSecondaryUserSyncSuccessPercent') / 100
+    this.MinimumFailedSyncRequestsBeforeReconfig = this.nodeConfig.get('minimumFailedSyncRequestsBeforeReconfig')
 
     this.SecondaryUserSyncDailyFailureCountThreshold = this.nodeConfig.get('secondaryUserSyncDailyFailureCountThreshold')
 
@@ -792,9 +793,14 @@ class SnapbackSM {
             nodeUser.wallet, secondaries
           )
           for (const secondary of secondaries) {
-            const secUserSyncSuccessRate = userSecondarySyncMetrics[secondary]['SuccessRate']
-            if (secUserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent || unhealthyPeers.has(secondary)) {
-              this.log(`processStateMachineOperation(): Secondary ${secondary} for user ${nodeUser.wallet} has userSyncSuccessRate of ${secUserSyncSuccessRate}; failed to meet threshold of ${this.MinimumSecondaryUserSyncSuccessPercent} - found value ${secUserSyncSuccessRate}. Marking replica as unhealthy.`)
+            if (unhealthyPeers.has(secondary)) {
+              this.log(`processStateMachineOperation(): Secondary ${secondary} for user ${nodeUser.wallet} in unhealthy peer set. Marking replica as unhealthy.`)
+              unhealthyReplicas.push(secondary)
+            }
+
+            const { successRate, successCount, failureCount } = userSecondarySyncMetrics[secondary]
+            if (failureCount >= this.MinimumFailedSyncRequestsBeforeReconfig && successRate < this.MinimumSecondaryUserSyncSuccessPercent) {
+              this.log(`processStateMachineOperation(): Secondary ${secondary} for user ${nodeUser.wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${this.MinimumSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`)
               unhealthyReplicas.push(secondary)
             } else {
               potentialSyncRequests.push({ ...nodeUser, endpoint: secondary })

@@ -1,4 +1,5 @@
 const Bull = require('bull')
+const _ = require('lodash')
 
 const models = require('../../models')
 const { logger } = require('../../logging')
@@ -35,7 +36,7 @@ class SkippedCIDsRetryQueue {
     // Clean up anything that might be still stuck in the queue on restart
     this.queue.empty()
 
-    const SkippedCIDsRetryQueueJobIntervalMs = 5000 // nodeConfig.get('skippedCIDsRetryQueueJobIntervalMs')
+    const SkippedCIDsRetryQueueJobIntervalMs = nodeConfig.get('skippedCIDsRetryQueueJobIntervalMs')
     const CIDMaxAgeMs = nodeConfig.get('skippedCIDRetryQueueMaxAgeHr') * 60 * 60 * 1000 // convert from Hr to Ms
 
     this.queue.process(
@@ -74,13 +75,16 @@ class SkippedCIDsRetryQueue {
     const oldestFileCreatedAtDate = new Date(startTimestampMs - CIDMaxAgeMs)
 
     // Only process files with createdAt >= oldest createdAt
-    const skippedFiles = await models.File.findAll({
+    let skippedFiles = await models.File.findAll({
       where: {
         type: { [models.Sequelize.Op.ne]: 'dir' }, // skip over 'dir' type since there is no content to sync
         skipped: true,
         createdAt: { [models.Sequelize.Op.gte]: oldestFileCreatedAtDate }
       }
     })
+
+    // Shuffle files to make sure processing doesn't repeatedly hang on same files
+    skippedFiles = _.shuffle(skippedFiles)
 
     let registeredGateways = await utils.getAllRegisteredCNodes(libs)
     registeredGateways = registeredGateways.map(nodeInfo => nodeInfo.endpoint)

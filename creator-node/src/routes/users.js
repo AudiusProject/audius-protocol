@@ -192,7 +192,7 @@ module.exports = function (app) {
     // Return CIDSkipInfo if requested
     if (returnSkipInfo && cnodeUser) {
       const CIDs = await models.File.findAll({
-        attributes: ['multihash', 'skipped'],
+        attributes: ['skipped'],
         where: {
           cnodeUserUUID: cnodeUser.cnodeUserUUID
         }
