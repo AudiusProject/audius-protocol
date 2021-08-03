@@ -19,14 +19,20 @@ const {
 const solanaRouter = express.Router()
 const connection = new Connection(solanaEndpoint)
 
+// Check that an instruction has all the necessary data
+const isValidInstruction = (instr) => {
+  if (!instr || !Array.isArray(instr.keys) || !instr.programId || !instr.data) return false
+  if (!instr.keys.every(key => !!key.pubkey)) return false
+  return true
+}
+
 solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
   const redis = req.app.get('redis')
-  const { recentBlockhash, secpInstruction, instruction } = req.body
+  const { recentBlockhash, secpInstruction, instruction = {}, instructions = [] } = req.body
 
   const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ secpInstruction, instruction })).digest('hex')
 
   try {
-    if (!instruction) return errorResponseBadRequest('Please provide transaction instruction')
     const tx = new Transaction({ recentBlockhash })
 
     if (secpInstruction) {
@@ -39,20 +45,21 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
       tx.add(secpTransactionInstruction)
     }
 
-    const keys = instruction.keys.map(key => ({
-      pubkey: new PublicKey(key.pubkey),
-      isSigner: key.isSigner,
-      isWritable: key.isWritable
-    }))
+    [instruction].concat(instructions).filter(isValidInstruction).forEach((instr) => {
+      const keys = instr.keys.map(key => ({
+        pubkey: new PublicKey(key.pubkey),
+        isSigner: key.isSigner,
+        isWritable: key.isWritable
+      }))
+      const txInstruction = new TransactionInstruction({
+        keys,
+        programId: new PublicKey(instr.programId),
+        data: Buffer.from(instr.data)
+      })
+      tx.add(txInstruction)
+    })
 
     const feePayerAccount = getFeePayer()
-
-    const txInstruction = new TransactionInstruction({
-      keys,
-      programId: new PublicKey(instruction.programId),
-      data: Buffer.from(instruction.data)
-    })
-    tx.add(txInstruction)
     tx.sign(feePayerAccount)
 
     const transactionSignature = await sendAndConfirmTransaction(
