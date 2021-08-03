@@ -1,7 +1,6 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
-const cors = require('cors')
 const mailgun = require('mailgun-js')
 const Redis = require('ioredis')
 const optimizelySDK = require('@optimizely/optimizely-sdk')
@@ -23,6 +22,7 @@ const {
   isIPWhitelisted,
   getIP
 } = require('./rateLimiter.js')
+const cors = require('./corsMiddleware')
 
 const DOMAIN = 'mail.audius.co'
 
@@ -150,9 +150,7 @@ class App {
     this.express.use(loggingMiddleware)
     this.express.use(bodyParser.json({ limit: '1mb' }))
     this.express.use(cookieParser())
-    this.express.use(cors({
-      preflightContinue: true
-    }))
+    this.express.use(cors())
   }
 
   // Create rate limits for listens on a per track per user basis and per track per ip basis
@@ -241,21 +239,10 @@ class App {
       }
     })
 
-    // Helper to only run middleware on method post request
-    const checkPostRequest = (middleware) => {
-      return (req, res, next) => {
-        if (req.method.toLowerCase() === 'post') {
-          middleware(req, res, next)
-        } else {
-          next()
-        }
-      }
-    }
-
     this.express.use(
       '/eth_relay',
-      checkPostRequest(ethRelayWalletRateLimiter),
-      checkPostRequest(ethRelayIPRateLimiter)
+      ethRelayWalletRateLimiter,
+      ethRelayIPRateLimiter
     )
     this.express.use(getRateLimiterMiddleware())
   }
