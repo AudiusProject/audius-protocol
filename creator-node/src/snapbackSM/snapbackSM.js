@@ -956,7 +956,7 @@ class SnapbackSM {
 
       if (primary === this.endpoint) {
         // filter out false-y values to account for incomplete replica sets
-        replicaSetNodesToObserve = replicaSetNodesToObserve.filter(entry => !!(entry.endpoint && entry.spId))
+        replicaSetNodesToObserve = replicaSetNodesToObserve.filter(entry => entry.endpoint && entry.spId)
 
         /**
          * If either secondary is in `unhealthyPeers` list, add it to `unhealthyReplicas` list
@@ -989,7 +989,7 @@ class SnapbackSM {
         // the self node
         replicaSetNodesToObserve = [{ endpoint: primary, spId: primarySpID }, ...replicaSetNodesToObserve]
         replicaSetNodesToObserve = replicaSetNodesToObserve.filter(entry => {
-          return !!(entry.endpoint && entry.spId) && entry.endpoint !== this.endpoint
+          return entry.endpoint && entry.spId && entry.endpoint !== this.endpoint
         })
 
         for (const replica of replicaSetNodesToObserve) {
