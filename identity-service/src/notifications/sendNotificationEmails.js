@@ -78,20 +78,24 @@ async function processEmailNotifications (expressApp, audiusLibs) {
         }
       }).map(x => x.blockchainUserId)
 
+      // can we not just use findAll here where:
+      // userId in usersCreatedBeforeAnnouncement, same type, same entityId, isViewed is false
+      // this way it's one DB call to get all relevant users for given announcement?
+      // if X is the number of relevant ids, then we have
+      // 1 db call and X iterations in loop vs. N db calls in N iterations with X of them
+      // check for query correctness
+      const relevantUserIdsForAnnouncement = await models.Notification.findAll({
+        attributes: ['userId'],
+        where: {
+          isViewed: false,
+          userId: { [models.Sequelize.Op.in]: usersCreatedBeforeAnnouncement },
+          type: notificationTypes.Announcement,
+          entityId: announcementEntityId
+        }
+      })
       const timeBeforeUserAnnouncementsLoop = Date.now()
       logger.debug(`processEmailNotifications | time before looping over users for announcement id ${id}, entity id ${announcementEntityId} | ${timeBeforeUserAnnouncementsLoop} | ${usersCreatedBeforeAnnouncement.length} users`)
-      for (var user of usersCreatedBeforeAnnouncement) {
-        let userNotificationQuery = await models.Notification.findOne({
-          where: {
-            isViewed: true,
-            userId: user,
-            type: notificationTypes.Announcement,
-            entityId: announcementEntityId
-          }
-        })
-        if (userNotificationQuery) {
-          continue
-        }
+      for (var user of relevantUserIdsForAnnouncement) {
         if (liveEmailUsers.includes(user)) {
           // As an added safety check, only process if the announcement was made in the last hour
           if (timeSinceAnnouncement < 1) {
