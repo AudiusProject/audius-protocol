@@ -1,44 +1,43 @@
 from __future__ import absolute_import
-import logging
+
 import ast
 import datetime
-from src.database_task import DatabaseTask
+import logging
 import time
 
-from web3 import HTTPProvider, Web3
-from werkzeug.middleware.proxy_fix import ProxyFix
-from sqlalchemy_utils import database_exists, create_database
-from sqlalchemy import exc
-from celery.schedules import timedelta, crontab
-from solana.rpc.api import Client
-
 import redis
+from celery.schedules import crontab, timedelta
 from flask import Flask
 from flask.json import JSONEncoder
 from flask_cors import CORS
+from solana.rpc.api import Client
+from sqlalchemy import exc
+from sqlalchemy_utils import create_database, database_exists
+from web3 import HTTPProvider, Web3
+from werkzeug.middleware.proxy_fix import ProxyFix
 
-from src import exceptions
-from src import api_helpers
+from src import api_helpers, exceptions
+from src.api.v1 import api as api_v1
+from src.challenges.challenge_event_bus import setup_challenge_bus
+from src.challenges.create_new_challenges import create_new_challenges
+from src.database_task import DatabaseTask
 from src.queries import (
+    block_confirmation,
+    health_check,
+    notifications,
     queries,
     search,
     search_queries,
-    health_check,
-    notifications,
-    block_confirmation,
     skipped_transactions,
     user_signals,
 )
-from src.api.v1 import api as api_v1
-from src.utils import helpers
-from src.challenges.create_new_challenges import create_new_challenges
-from src.utils.multi_provider import MultiProvider
-from src.utils.session_manager import SessionManager
-from src.utils.config import config_files, shared_config, ConfigIni
-from src.utils.ipfs_lib import IPFSClient
 from src.tasks import celery_app
+from src.utils import helpers
+from src.utils.config import ConfigIni, config_files, shared_config
+from src.utils.ipfs_lib import IPFSClient
+from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
-from src.challenges.challenge_event_bus import setup_challenge_bus
+from src.utils.session_manager import SessionManager
 
 SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 

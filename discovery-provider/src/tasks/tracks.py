@@ -1,19 +1,20 @@
-import logging
-from src.database_task import DatabaseTask
-import time
 import functools
+import logging
+import time
 from datetime import datetime
 from typing import List, Optional
-from sqlalchemy.orm.session import make_transient, Session
-from sqlalchemy.sql import null, functions
+
+from sqlalchemy.orm.session import make_transient
+from sqlalchemy.sql import functions, null
 from src.app import contract_addresses
-from src.models import Remix, Stem, Track, TrackRoute, User
-from src.tasks.metadata import track_metadata_format
-from src.tasks.ipld_blacklist import is_blacklisted_ipld
-from src.utils import multihash, helpers
-from src.utils.indexing_errors import IndexingError
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.database_task import DatabaseTask
+from src.models import Remix, Stem, Track, TrackRoute, User
+from src.tasks.ipld_blacklist import is_blacklisted_ipld
+from src.tasks.metadata import track_metadata_format
+from src.utils import helpers, multihash
+from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,7 @@
-from src.utils.session_manager import SessionManager
+from celery import Task
 from redis import Redis
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from celery import Task
+from src.utils.session_manager import SessionManager
 
 
 class DatabaseTask(Task):
@@ -16,8 +16,6 @@ class DatabaseTask(Task):
         eth_web3_provider=None,
         solana_client=None,
         challenge_event_bus=None,
-        *args,
-        **kwargs,
     ):
         self._db = db
         self._web3_provider = web3

@@ -1,6 +1,5 @@
-import logging
 import concurrent.futures
-from src.utils.session_manager import SessionManager
+import logging
 
 from sqlalchemy import func
 from src.app import contract_addresses
@@ -18,33 +17,34 @@ from src.models import (
     User,
     UserEvents,
 )
-from src.tasks.celery_app import celery
-from src.tasks.tracks import track_state_update
-from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
-from src.tasks.social_features import social_feature_state_update
-from src.tasks.playlists import playlist_state_update
-from src.tasks.user_library import user_library_state_update
-from src.tasks.user_replica_set import user_replica_set_state_update
-from src.utils.redis_constants import (
-    latest_block_redis_key,
-    latest_block_hash_redis_key,
-    most_recent_indexed_block_hash_redis_key,
-    most_recent_indexed_block_redis_key,
-)
-from src.utils.redis_cache import (
-    remove_cached_user_ids,
-    remove_cached_track_ids,
-    remove_cached_playlist_ids,
-)
-from src.queries.get_skipped_transactions import (
-    get_indexing_error,
-    set_indexing_error,
-    clear_indexing_error,
-)
 from src.queries.confirm_indexing_transaction_error import (
     confirm_indexing_transaction_error,
 )
+from src.queries.get_skipped_transactions import (
+    clear_indexing_error,
+    get_indexing_error,
+    set_indexing_error,
+)
+from src.tasks.celery_app import celery
+from src.tasks.playlists import playlist_state_update
+from src.tasks.social_features import social_feature_state_update
+from src.tasks.tracks import track_state_update
+from src.tasks.user_library import user_library_state_update
+from src.tasks.user_replica_set import user_replica_set_state_update
+from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
 from src.utils.indexing_errors import IndexingError
+from src.utils.redis_cache import (
+    remove_cached_playlist_ids,
+    remove_cached_track_ids,
+    remove_cached_user_ids,
+)
+from src.utils.redis_constants import (
+    latest_block_hash_redis_key,
+    latest_block_redis_key,
+    most_recent_indexed_block_hash_redis_key,
+    most_recent_indexed_block_redis_key,
+)
+from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 

@@ -1,16 +1,16 @@
 import json
 import logging
-from flask import current_app
-from src.challenges.challenge import ChallengeManager
 from typing import Dict
+from collections import defaultdict
+from flask import current_app
 from sqlalchemy.orm.session import Session
 from src.utils.redis_connection import get_redis
+from src.challenges.challenge import ChallengeManager
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
 from src.challenges.challenge_event import ChallengeEvent
 
-from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 REDIS_QUEUE_PREFIX = "challenges-event-queue"
@@ -42,7 +42,6 @@ class ChallengeEventBus:
 
     def dispatch(
         self,
-        session: Session,
         event: str,
         block_number: int,
         user_id: int,
@@ -61,7 +60,7 @@ class ChallengeEventBus:
         event: str,
         block_number: int,
         user_id: int,
-        extra: Dict = {},
+        extra: Dict = None,
     ):
         """Queues dispatching an event + block_number + user_id to Redis queue"""
         self._event_queue.append(
@@ -76,11 +75,10 @@ class ChallengeEventBus:
     def flush_event_queue(self):
         for event in self._event_queue:
             self.dispatch(
-                None,
                 event["event"],
                 event["block_number"],
                 event["user_id"],
-                event["extra"],
+                event["extra"] if event["extra"] else {},
             )
 
     def process_events(self, session: Session, max_events=1000):
