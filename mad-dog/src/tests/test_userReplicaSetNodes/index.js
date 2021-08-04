@@ -5,6 +5,7 @@ const stopRandomCreatorNode = require('./stopRandomCreatorNode.js')
 const setNumCreatorNodes = require('./setNumCreatorNodes.js')
 const { uploadTracksforUsers } = require('../../utils/uploadTracksForUsers')
 const { logger } = require('../../logger')
+const { delay } = require('../../helpers')
 
 const MAX_ATTEMPTS_TO_VALIDATE_REPLICA_SET = 20
 const WAIT_INTERVAL_TO_UPDATE_REPLICA_SET_MS = 20000
@@ -47,7 +48,7 @@ const deregisterCN = async ({
     let passed = false
     let error
     while (attempts++ < MAX_ATTEMPTS_TO_VALIDATE_REPLICA_SET) {
-      await new Promise(resolve => setTimeout(resolve, WAIT_INTERVAL_TO_UPDATE_REPLICA_SET_MS))
+      await delay(WAIT_INTERVAL_TO_UPDATE_REPLICA_SET_MS)
       try {
         await verifyValidCNs(executeOne, executeAll, deregisteredCreatorNodeId, walletIndexToUserIdMap, creatorNodeIDToInfoMapping)
         passed = true
@@ -102,7 +103,7 @@ const forceCNUnavailability = async ({
     let attempts = 0
     let passed = false
     while (attempts++ < MAX_ATTEMPTS_TO_VALIDATE_REPLICA_SET) {
-      await new Promise(resolve => setTimeout(resolve, WAIT_INTERVAL_TO_UPDATE_REPLICA_SET_MS))
+      await delay(WAIT_INTERVAL_TO_UPDATE_REPLICA_SET_MS)
       try {
         await verifyValidCNs(executeOne, executeAll, removedCreatorNodeId, walletIndexToUserIdMap, creatorNodeIDToInfoMapping)
         passed = true
