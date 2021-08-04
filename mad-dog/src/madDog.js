@@ -62,7 +62,7 @@ class MadDog {
       // Kill original process
       this.netemProcess.kill()
       // Set packet loss to 0% aka revert back to normal
-      exec(`pumba netem --tc-image gaiadocker/iproute2 loss -p 0 containers ${this.netemProcessService}`)
+      exec(`pumba netem --tc-image gaiadocker/iproute2 -d ${this.networkDownDurationSec}s loss -p 0 containers ${this.netemProcessService}`)
     }
     if (this.pauseProcess) this.pauseProcess.kill()
   }
