@@ -660,7 +660,7 @@ describe('test SnapbackSM', function () {
 
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
     snapback.peerSetManager.endpointToSPIdMap = {
-      'http://cnReregisteredAsSpId4.co': 4,
+      'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4,
       'http://cnWithSpId2.co': 2,
       'http://cnWithSpId3.co': 3
     }
@@ -670,7 +670,7 @@ describe('test SnapbackSM', function () {
     const nodeUsers = [{
       'user_id': 1,
       'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
-      'primary': 'http://cnReregisteredAsSpId4.co',
+      'primary': 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
       'secondary1': 'http://cnWithSpId2.co',
       'secondary2': 'http://cnWithSpId3.co',
       'primarySpID': 1,
@@ -683,7 +683,7 @@ describe('test SnapbackSM', function () {
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
 
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
-    assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://cnReregisteredAsSpId4.co')
+    assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://cnOriginallySpId3ReregisteredAsSpId4.co')
     assert.strictEqual(potentialSyncRequests.length, 0)
   })
 
@@ -696,7 +696,7 @@ describe('test SnapbackSM', function () {
         'http://cnWithSpId2.co': {
           SuccessRate: 100
         },
-        'http://cnReregisteredAsSpId4.co': {
+        'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
           SuccessRate: 100
         }
       }
@@ -706,7 +706,7 @@ describe('test SnapbackSM', function () {
     snapback.peerSetManager.endpointToSPIdMap = {
       'http://some_healthy_primary.co': 1,
       'http://cnWithSpId2.co': 2,
-      'http://cnReregisteredAsSpId4.co': 4
+      'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4
     }
 
     snapback.endpoint = 'http://some_healthy_primary.co'
@@ -716,7 +716,7 @@ describe('test SnapbackSM', function () {
       'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
       'primary': 'http://some_healthy_primary.co',
       'secondary1': 'http://cnWithSpId2.co',
-      'secondary2': 'http://cnReregisteredAsSpId4.co',
+      'secondary2': 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
       'primarySpID': 1,
       'secondary1SpID': 2,
       'secondary2SpID': 3
@@ -727,7 +727,7 @@ describe('test SnapbackSM', function () {
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
 
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
-    assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://cnReregisteredAsSpId4.co')
+    assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://cnOriginallySpId3ReregisteredAsSpId4.co')
     assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
   })
 
@@ -786,7 +786,7 @@ describe('test SnapbackSM', function () {
         'http://cnWithSpId2.co': {
           SuccessRate: 100
         },
-        'http://cnReregisteredAsSpId4.co': {
+        'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
           SuccessRate: 100
         }
       }
@@ -796,17 +796,17 @@ describe('test SnapbackSM', function () {
     snapback.peerSetManager.endpointToSPIdMap = {
       'http://some_healthy_primary.co': 1,
       'http://cnWithSpId2.co': 2,
-      'http://cnReregisteredAsSpId4.co': 4
+      'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4
     }
 
-    snapback.endpoint = 'http://cnReregisteredAsSpId4.co'
+    snapback.endpoint = 'http://cnOriginallySpId3ReregisteredAsSpId4.co'
 
     const nodeUsers = [{
       'user_id': 1,
       'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
       'primary': 'http://some_healthy_primary.co',
       'secondary1': 'http://cnWithSpId2.co',
-      'secondary2': 'http://cnReregisteredAsSpId4.co',
+      'secondary2': 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
       'primarySpID': 1,
       'secondary1SpID': 2,
       'secondary2SpID': 3
@@ -862,5 +862,91 @@ describe('test SnapbackSM', function () {
     // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
     assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://deregisteredCN.co')
     assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
+  })
+
+  // TODO: The below tests will become redundant when Discovery upgrades. Remove then.
+
+  it('[aggregateReconfigAndPotentialSyncOps] if Discovery Node does not respond with replica set spIds, the spId is mismatched, and the self node is the primary, do not issue reconfig', async function () {
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    // Mock these as very nodes that completed only successful syncs
+    snapback._computeUserSecondarySyncSuccessRates = async () => {
+      return {
+        'http://cnWithSpId2.co': {
+          SuccessRate: 100
+        },
+        'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
+          SuccessRate: 100
+        }
+      }
+    }
+
+    // Mock that one of the nodes got reregistered from spId 3 to spId 4
+    snapback.peerSetManager.endpointToSPIdMap = {
+      'http://some_healthy_primary.co': 1,
+      'http://cnWithSpId2.co': 2,
+      'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4
+    }
+
+    snapback.endpoint = 'http://some_healthy_primary.co'
+
+    const nodeUsers = [{
+      'user_id': 1,
+      'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
+      'primary': 'http://some_healthy_primary.co',
+      'secondary1': 'http://cnWithSpId2.co',
+      'secondary2': 'http://cnOriginallySpId3ReregisteredAsSpId4.co'
+    }]
+
+    const unhealthyPeers = new Set()
+
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+
+    // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
+    assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
+    assert.strictEqual(potentialSyncRequests.length, 2)
+    assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
+    assert.strictEqual(potentialSyncRequests[1].endpoint, 'http://cnOriginallySpId3ReregisteredAsSpId4.co')
+  })
+
+  it('[aggregateReconfigAndPotentialSyncOps] if Discovery Node does not respond with replica set spIds, the spId is mismatched, and the self node is a secondary, do not issue reconfig', async function () {
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    // Mock these as very nodes that completed only successful syncs
+    snapback._computeUserSecondarySyncSuccessRates = async () => {
+      return {
+        'http://cnWithSpId2.co': {
+          SuccessRate: 100
+        },
+        'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
+          SuccessRate: 100
+        }
+      }
+    }
+
+    // Mock that one of the nodes got reregistered from spId 3 to spId 4
+    snapback.peerSetManager.endpointToSPIdMap = {
+      'http://some_healthy_primary.co': 1,
+      'http://cnWithSpId2.co': 2,
+      'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4
+    }
+
+    snapback.endpoint = 'http://cnOriginallySpId3ReregisteredAsSpId4.co'
+
+    const nodeUsers = [{
+      'user_id': 1,
+      'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
+      'primary': 'http://some_healthy_primary.co',
+      'secondary1': 'http://cnWithSpId2.co',
+      'secondary2': 'http://cnOriginallySpId3ReregisteredAsSpId4.co'
+    }]
+
+    const unhealthyPeers = new Set()
+
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+
+    // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
+    assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
+    assert.strictEqual(potentialSyncRequests.length, 0)
   })
 })
