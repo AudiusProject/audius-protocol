@@ -1,5 +1,6 @@
 import logging
 import concurrent.futures
+from src.utils.session_manager import SessionManager
 
 from sqlalchemy import func
 from src.app import contract_addresses
@@ -69,7 +70,7 @@ def get_contract_info_if_exists(self, address):
     return None
 
 
-def initialize_blocks_table_if_necessary(db):
+def initialize_blocks_table_if_necessary(db: SessionManager):
     redis = update_task.redis
 
     target_blockhash = None
@@ -119,7 +120,7 @@ def initialize_blocks_table_if_necessary(db):
     return target_blockhash
 
 
-def get_latest_block(db):
+def get_latest_block(db: SessionManager):
     latest_block = None
     block_processing_window = int(
         update_task.shared_config["discprov"]["block_processing_window"]
@@ -487,6 +488,7 @@ def index_blocks(self, db, blocks_list):
                 logger.info(
                     f"index.py | session commmited to db for block=${block_number}"
                 )
+                update_task.challenge_event_bus.flush_event_queue()
                 if skip_tx_hash:
                     clear_indexing_error(redis)
                 if user_state_changed:

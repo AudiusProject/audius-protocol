@@ -1,4 +1,5 @@
 import logging
+from src.database_task import DatabaseTask
 import time
 import functools
 from datetime import datetime
@@ -282,7 +283,9 @@ def update_track_routes_table(
 
     # Get the title slug, and set the new slug to that
     # (will check for conflicts later)
-    new_track_slug_title = helpers.create_track_slug(track_metadata["title"], track_record.track_id)
+    new_track_slug_title = helpers.create_track_slug(
+        track_metadata["title"], track_record.track_id
+    )
     new_track_slug = new_track_slug_title
 
     # Find the current route for the track
@@ -433,7 +436,7 @@ def update_track_routes_table(
 def parse_track_event(
     self,
     session,
-    update_task,
+    update_task: DatabaseTask,
     entry,
     event_type,
     track_record,
@@ -509,9 +512,7 @@ def parse_track_event(
 
         update_stems_table(session, track_record, track_metadata)
         update_remixes_table(session, track_record, track_metadata)
-        dispatch_challenge_track_upload(
-            session, challenge_bus, block_number, track_record
-        )
+        dispatch_challenge_track_upload(challenge_bus, block_number, track_record)
 
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
@@ -587,11 +588,9 @@ def parse_track_event(
 
 
 def dispatch_challenge_track_upload(
-    session: Session, bus: ChallengeEventBus, block_number: int, track_record
+    bus: ChallengeEventBus, block_number: int, track_record
 ):
-    bus.dispatch(
-        session, ChallengeEvent.track_upload, block_number, track_record.owner_id
-    )
+    bus.queue_event(ChallengeEvent.track_upload, block_number, track_record.owner_id)
 
 
 def is_valid_json_field(metadata, field):

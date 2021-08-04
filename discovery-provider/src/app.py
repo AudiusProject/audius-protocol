@@ -2,13 +2,13 @@ from __future__ import absolute_import
 import logging
 import ast
 import datetime
+from src.database_task import DatabaseTask
 import time
 
 from web3 import HTTPProvider, Web3
 from werkzeug.middleware.proxy_fix import ProxyFix
 from sqlalchemy_utils import database_exists, create_database
 from sqlalchemy import exc
-from celery import Task
 from celery.schedules import timedelta, crontab
 from solana.rpc.api import Client
 
@@ -484,58 +484,25 @@ def configure_celery(flask_app, celery, test_config=None):
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object
-    class DatabaseTask(Task):
+    class WrappedDatabaseTask(DatabaseTask):
         def __init__(self, *args, **kwargs):
-            self._db = db
-            self._web3_provider = web3
-            self._abi_values = abi_values
-            self._shared_config = shared_config
-            self._ipfs_client = ipfs_client
-            self._redis = redis_inst
-            self._eth_web3_provider = eth_web3
-            self._solana_client = solana_client
-            self._challenge_event_bus = flask_app.challenge_bus
-
-        @property
-        def abi_values(self):
-            return self._abi_values
-
-        @property
-        def web3(self):
-            return self._web3_provider
-
-        @property
-        def db(self):
-            return self._db
-
-        @property
-        def shared_config(self):
-            return self._shared_config
-
-        @property
-        def ipfs_client(self):
-            return self._ipfs_client
-
-        @property
-        def redis(self):
-            return self._redis
-
-        @property
-        def eth_web3(self):
-            return self._eth_web3_provider
-
-        @property
-        def solana_client(self):
-            return self._solana_client
-
-        @property
-        def challenge_event_bus(self):
-            return self._challenge_event_bus
+            DatabaseTask.__init__(
+                self,
+                db=db,
+                web3=web3,
+                abi_values=abi_values,
+                shared_config=shared_config,
+                ipfs_client=ipfs_client,
+                redis=redis_inst,
+                eth_web3_provider=eth_web3,
+                solana_client=solana_client,
+                challenge_event_bus=flask_app.challenge_bus,
+            )
 
     celery.autodiscover_tasks(["src.tasks"], "index", True)
 
     # Subclassing celery task with discovery provider context
     # Provided through properties defined in 'DatabaseTask'
-    celery.Task = DatabaseTask
+    celery.Task = WrappedDatabaseTask
 
     celery.finalize()

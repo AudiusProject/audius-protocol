@@ -99,15 +99,21 @@ def get_sol_tx_info(solana_client, tx_sig, retries=5):
         logger.error(f"index_solana_plays.py | Retrying tx fetch: {tx_sig}")
     raise Exception(f"index_solana_plays.py | Failed to fetch {tx_sig}")
 
+
 # Cache the latest value in redis
 def cache_latest_tx_redis(solana_client, redis, tx):
     try:
-        tx_sig = tx['signature']
-        tx_slot = tx['slot']
-        pickle_and_set(redis, latest_sol_play_tx_key, {'signature': tx_sig, 'slot': tx_slot})
+        tx_sig = tx["signature"]
+        tx_slot = tx["slot"]
+        pickle_and_set(
+            redis, latest_sol_play_tx_key, {"signature": tx_sig, "slot": tx_slot}
+        )
     except Exception as e:
-        logger.error(f"index_solana_plays.py | Failed to cache latest transaction {tx}, {e}")
+        logger.error(
+            f"index_solana_plays.py | Failed to cache latest transaction {tx}, {e}"
+        )
         raise e
+
 
 # Check for both SECP and SignerGroup
 # Ensures that a signature recovery was performed within the expected SignerGroup
@@ -123,16 +129,16 @@ def is_valid_tx(account_keys):
 def parse_sol_play_transaction(session, solana_client, tx_sig):
     try:
         tx_info = get_sol_tx_info(solana_client, tx_sig)
-        logger.info(
-            f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}"
-        )
-        meta = tx_info['result']['meta']
-        error = meta['err']
+        logger.info(f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}")
+        meta = tx_info["result"]["meta"]
+        error = meta["err"]
 
         challenge_bus: ChallengeEventBus = index_solana_plays.challenge_event_bus
 
         if error:
-            logger.info(f"index_solana_plays.py | Skipping error transaction from chain {tx_info}")
+            logger.info(
+                f"index_solana_plays.py | Skipping error transaction from chain {tx_info}"
+            )
             return
         if is_valid_tx(tx_info["result"]["transaction"]["message"]["accountKeys"]):
             audius_program_index = tx_info["result"]["transaction"]["message"][
@@ -168,12 +174,11 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
                             signature=tx_sig,
                         )
                     )
-                    challenge_bus.dispatch(
-                        session,
+                    challenge_bus.queue_event(
                         ChallengeEvent.track_listen,
                         tx_slot,
                         user_id,
-                        { "created_at": created_at.timestamp() },
+                        {"created_at": created_at.timestamp()},
                     )
         else:
             logger.info(
@@ -296,6 +301,8 @@ does not grow unbounded over time and new discovery providers are able to safely
 This is performed by simply slicing the tx_batches array and discarding the newest transactions until an intersection
 is found - these limiting parameters are defined as TX_SIGNATURES_MAX_BATCHES, TX_SIGNATURES_RESIZE_LENGTH
 """
+
+
 def process_solana_plays(solana_client, redis):
     try:
         base58.b58decode(TRACK_LISTEN_PROGRAM)
