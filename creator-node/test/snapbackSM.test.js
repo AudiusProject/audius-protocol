@@ -646,18 +646,6 @@ describe('test SnapbackSM', function () {
   it('[aggregateReconfigAndPotentialSyncOps] if the self node is the secondary and a primary spId is different from what is on chain, issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
-    // Mock these as very nodes that completed only successful syncs
-    snapback._computeUserSecondarySyncSuccessRates = async () => {
-      return {
-        'http://cnWithSpId2.co': {
-          SuccessRate: 100
-        },
-        'http://cnWithSpId3.co': {
-          SuccessRate: 100
-        }
-      }
-    }
-
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
     snapback.peerSetManager.endpointToSPIdMap = {
       'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4,
@@ -780,18 +768,6 @@ describe('test SnapbackSM', function () {
   it('[aggregateReconfigAndPotentialSyncOps] if the self node (secondary) is the same as the SP with a different spId, do not issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
-    // Mock these as very nodes that completed only successful syncs
-    snapback._computeUserSecondarySyncSuccessRates = async () => {
-      return {
-        'http://cnWithSpId2.co': {
-          SuccessRate: 100
-        },
-        'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
-          SuccessRate: 100
-        }
-      }
-    }
-
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
     snapback.peerSetManager.endpointToSPIdMap = {
       'http://some_healthy_primary.co': 1,
@@ -911,18 +887,6 @@ describe('test SnapbackSM', function () {
 
   it('[aggregateReconfigAndPotentialSyncOps] if Discovery Node does not respond with replica set spIds, the spId is mismatched, and the self node is a secondary, do not issue reconfig', async function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
-
-    // Mock these as very nodes that completed only successful syncs
-    snapback._computeUserSecondarySyncSuccessRates = async () => {
-      return {
-        'http://cnWithSpId2.co': {
-          SuccessRate: 100
-        },
-        'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
-          SuccessRate: 100
-        }
-      }
-    }
 
     // Mock that one of the nodes got reregistered from spId 3 to spId 4
     snapback.peerSetManager.endpointToSPIdMap = {
