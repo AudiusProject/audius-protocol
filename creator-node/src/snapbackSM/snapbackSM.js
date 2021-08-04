@@ -979,13 +979,14 @@ class SnapbackSM {
 
     if (primary === this.endpoint) {
       // filter out false-y values to account for incomplete replica sets
-      replicaSetNodesToObserve = replicaSetNodesToObserve.filter(entry => entry.endpoint && entry.spId)
+      const secondariesInfo = replicaSetNodesToObserve.filter(entry => entry.endpoint && entry.spId)
+      const secondariesEndpoint = secondariesInfo.map(entry => entry.endpoint)
 
       /**
        * If either secondary is in `unhealthyPeers` list, add it to `unhealthyReplicas` list
        */
-      const userSecondarySyncMetrics = await this._computeUserSecondarySyncSuccessRates(nodeUser, [secondary1, secondary2])
-      for (const secondary of replicaSetNodesToObserve) {
+      const userSecondarySyncMetrics = await this._computeUserSecondarySyncSuccessRates(nodeUser, secondariesEndpoint)
+      for (const secondary of secondariesInfo) {
         const secUserSyncSuccessRate = userSecondarySyncMetrics[secondary.endpoint]['SuccessRate']
         if (secUserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent ||
           unhealthyPeers.has(secondary.endpoint) ||
