@@ -90,7 +90,7 @@ class MadDog {
     const service = serviceName || _.sample(this.services)
     didPause = true
     logger.info(`Pausing service: [${service}]`)
-    this.pauseProcess = exec(`pumba pause -d ${this.pauseDurationSec}s constainers ${service}`)
+    this.pauseProcess = exec(`pumba pause -d ${this.pauseDurationSec}s containers ${service}`)
     _setProcessLogs(this.pauseProcess)
     setTimeout(() => {
       logger.info(`Unpausing service: [${service}]`)
