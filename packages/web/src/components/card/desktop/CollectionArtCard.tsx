@@ -13,7 +13,7 @@ import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import RepostFavoritesStats, {
   Size
 } from 'components/repost-favorites-stats/RepostFavoritesStats'
-import Menu from 'containers/menu/Menu'
+import Menu, { MenuType } from 'containers/menu/Menu'
 import { useCollectionCoverArt } from 'hooks/useImageSize'
 import { ID } from 'models/common/Identifiers'
 import { SquareSizes } from 'models/common/ImageSizes'
@@ -124,7 +124,7 @@ const CollectionArtCard = g(
     if (image && setDidLoad) setDidLoad(index)
 
     const menu = {
-      type: is_album ? 'album' : 'playlist',
+      type: (is_album ? 'album' : 'playlist') as MenuType,
       handle,
       playlistId: playlist_id,
       playlistName: playlist_name,
@@ -150,12 +150,7 @@ const CollectionArtCard = g(
             wrapperClassName={styles.coverArt}
             image={isLoading ? '' : image}
           >
-            <Menu
-              // @ts-ignore
-              menu={menu}
-              onClose={() => setIsPerspectiveDisabled(false)}
-              className={styles.iconKebabHorizontalWrapper}
-            >
+            <Menu menu={menu} onClose={() => setIsPerspectiveDisabled(false)}>
               {(ref, triggerPopup) => (
                 <div
                   onClick={e => {
@@ -163,6 +158,7 @@ const CollectionArtCard = g(
                     setIsPerspectiveDisabled(true)
                     triggerPopup()
                   }}
+                  className={styles.iconKebabHorizontalWrapper}
                 >
                   <IconKebabHorizontal
                     className={styles.iconKebabHorizontal}
