@@ -262,8 +262,8 @@ def test_aggregates(app):
         )
         # - Multiple events with the same user_id but diff specifiers get created
         bus.register_listener(TEST_EVENT, agg_challenge)
-        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 2})
-        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 3})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 2})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 3})
         bus.process_events(session)
         state = agg_challenge.get_user_challenge_state(session, ["1-2", "1-3"])
         assert len(state) == 2
@@ -273,15 +273,15 @@ def test_aggregates(app):
         assert agg_chal["is_complete"] == False
 
         # - Multiple events with the same specifier get deduped
-        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 4})
-        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 4})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 4})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 4})
         bus.process_events(session)
         state = agg_challenge.get_user_challenge_state(session, ["1-4"])
         assert len(state) == 1
 
         # - If we've maxed the # of challenges, don't create any more
-        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 5})
-        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 6})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 5})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 6})
         bus.process_events(session)
 
         def get_user_challenges():
@@ -295,7 +295,7 @@ def test_aggregates(app):
             )
 
         assert len(get_user_challenges()) == 5
-        bus.dispatch(session, TEST_EVENT, 100, 1, {"referred_id": 7})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 7})
         bus.process_events(session)
         assert len(get_user_challenges()) == 5
 

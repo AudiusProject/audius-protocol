@@ -48,7 +48,7 @@ def test_profile_completion_challenge(app):
         session.add(user)
 
         # Process dummy event just to get this thing initted
-        bus.dispatch(session, ChallengeEvent.profile_update, 1, 1)
+        bus.dispatch(ChallengeEvent.profile_update, 1, 1)
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
 
@@ -68,7 +68,7 @@ def test_profile_completion_challenge(app):
         )
         session.add(repost)
         session.flush()
-        bus.dispatch(session, ChallengeEvent.repost, 1, 1)
+        bus.dispatch(ChallengeEvent.repost, 1, 1)
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
         assert state.current_step_count == 2 and not state.is_complete
@@ -86,7 +86,7 @@ def test_profile_completion_challenge(app):
         )
         session.add(save)
         session.flush()
-        bus.dispatch(session, ChallengeEvent.favorite, 1, 1)
+        bus.dispatch(ChallengeEvent.favorite, 1, 1)
         bus.process_events(session)
         session.flush()
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -104,7 +104,7 @@ def test_profile_completion_challenge(app):
         )
         session.add(follow)
         session.flush()
-        bus.dispatch(session, ChallengeEvent.follow, 1, 1)
+        bus.dispatch(ChallengeEvent.follow, 1, 1)
         bus.process_events(session)
         session.flush()
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
@@ -150,7 +150,7 @@ def test_profile_completion_challenge(app):
         ]
         session.add_all(follows)
         session.flush()
-        bus.dispatch(session, ChallengeEvent.follow, 1, 1)
+        bus.dispatch(ChallengeEvent.follow, 1, 1)
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
         assert state.current_step_count == 4 and not state.is_complete
@@ -160,7 +160,7 @@ def test_profile_completion_challenge(app):
             {"profile_picture": "profilepictureurl"}
         )
         session.flush()
-        bus.dispatch(session, ChallengeEvent.profile_update, 1, 1)
+        bus.dispatch(ChallengeEvent.profile_update, 1, 1)
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
         assert state.current_step_count == 5 and not state.is_complete
@@ -170,7 +170,7 @@ def test_profile_completion_challenge(app):
             {"bio": "profiledescription"}
         )
         session.flush()
-        bus.dispatch(session, ChallengeEvent.profile_update, 1, 1)
+        bus.dispatch(ChallengeEvent.profile_update, 1, 1)
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
         assert state.current_step_count == 6 and not state.is_complete
@@ -178,7 +178,7 @@ def test_profile_completion_challenge(app):
         # Undo it, ensure that our count goes down
         session.query(User).filter(User.user_id == 1).update({"bio": None})
         session.flush()
-        bus.dispatch(session, ChallengeEvent.profile_update, 1, 1)
+        bus.dispatch(ChallengeEvent.profile_update, 1, 1)
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
         assert state.current_step_count == 5 and not state.is_complete
@@ -188,7 +188,7 @@ def test_profile_completion_challenge(app):
             {"bio": "profiledescription", "cover_photo": "test_cover_photo"}
         )
         session.flush()
-        bus.dispatch(session, ChallengeEvent.profile_update, 1, 1)
+        bus.dispatch(ChallengeEvent.profile_update, 1, 1)
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
         assert state.current_step_count == 7 and state.is_complete == True
@@ -196,7 +196,7 @@ def test_profile_completion_challenge(app):
         # ensure that if we lose some data now that the thing is complete, we don't change the status of the challenge
         session.query(User).filter(User.user_id == 1).update({"cover_photo": None})
         session.flush()
-        bus.dispatch(session, ChallengeEvent.profile_update, 1, 1)
+        bus.dispatch(ChallengeEvent.profile_update, 1, 1)
         bus.process_events(session)
         state = profile_challenge_manager.get_user_challenge_state(session, ["1"])[0]
         assert state.current_step_count == 7 and state.is_complete == True

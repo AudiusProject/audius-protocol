@@ -29,7 +29,6 @@ def dispatch_play(offset: int, session: Session, bus: ChallengeEventBus):
     session.add(play)
     session.flush()
     bus.dispatch(
-        session,
         ChallengeEvent.track_listen,
         1,
         1,
