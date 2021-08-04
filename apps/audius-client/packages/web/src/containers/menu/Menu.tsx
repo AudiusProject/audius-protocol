@@ -22,6 +22,8 @@ export type MenuOptionType =
   | TrackMenuProps
   | NotificationMenuProps
 
+export type MenuType = MenuOptionType['type']
+
 export type MenuProps = {
   children: PopupMenuProps['renderTrigger']
   menu: Omit<MenuOptionType, 'children'>
