@@ -1,16 +1,44 @@
-import { Connection, PublicKey, Secp256k1Program, sendAndConfirmTransaction, SystemProgram, SYSVAR_INSTRUCTIONS_PUBKEY, Transaction, TransactionInstruction } from "@solana/web3.js"
-import BN from 'bn.js'
+import { Connection, Keypair, PublicKey, Secp256k1Program, sendAndConfirmTransaction, SystemProgram, SYSVAR_INSTRUCTIONS_PUBKEY, SYSVAR_RENT_PUBKEY, Transaction, TransactionInstruction } from "@solana/web3.js"
+import {ecdsaSign} from 'secp256k1'
+import {keccak_256} from 'js-sha3'
+const borsh = require('borsh')
+
+const BN = require('bn.js')
 
 /// Sender program account seed
 const SENDER_SEED_PREFIX = "S_"
+const VERIFY_TRANSFER_SEED_PREFIX = "V_"
 
 // 1 + 32 + 1 + (168 * 5)
 const VERIFIED_MESSAGES_LEN = 874
 
 // 3qvNmjbxmF9CDHzAEBvLSePRiMWtVcXPaRPiPtmrT29xkj
+// @ts-ignore
+window.bn = BN
+
+class VerifyTransferSignatureInstructionData {
+  id: string
+  constructor ({
+    transferId
+  }: {transferId: string}) {
+    this.id = transferId
+  }
+}
+
+const verifyTransferSignatureInstructionSchema = new Map([
+  [
+    VerifyTransferSignatureInstructionData,
+    {
+      kind: 'struct',
+      fields: [
+        ['id', 'string']
+      ]
+    }
+  ]
+])
 
 // TODO: this should work with *multiple* votes
-async function verifyTransferSignature({
+export async function verifyTransferSignature({
   rewardManagerProgramId,
   rewardManagerAccount,
   ethAddress,
@@ -19,11 +47,11 @@ async function verifyTransferSignature({
   feePayer,
   feePayerSecret, // Remove this :)
   attestationSignature,
-  spOwnerWallet,
   recoveryId,
   recipientEthAddress,
   tokenAmount,
   oracleAddress,
+  isBot = false
 }: {
   rewardManagerProgramId: PublicKey,
   rewardManagerAccount: PublicKey,
@@ -33,11 +61,11 @@ async function verifyTransferSignature({
   feePayer: PublicKey,
   feePayerSecret: Uint8Array,
   attestationSignature: string,
-  spOwnerWallet: string,
   recoveryId: number,
   recipientEthAddress: string,
   tokenAmount: number, // TODO: this should be a BN I think?
-  oracleAddress: string
+  oracleAddress: string,
+  isBot?: boolean
 }) {
   const connection = new Connection('https://api.devnet.solana.com')
   const encoder = new TextEncoder()
@@ -54,8 +82,11 @@ async function verifyTransferSignature({
     rewardManagerAccount,
     new Uint8Array([...encodedPrefix, ...ethAddressArr])
   )
+  console.log("DP1 Derived:")
+  console.log({derived: derivedSender.toString()})
 
-  const [messageHolderAccount, ] = await deriveMessageAccount(challengeId, specifier, rewardManagerProgramId)
+  const transferId = `${challengeId}:${specifier}`
+  const [rewardManagerAuthority, derivedMessageAccount,] = await deriveMessageAccount(transferId, rewardManagerProgramId, rewardManagerAccount)
 
   // TODO: create the instruction
 
@@ -63,104 +94,133 @@ async function verifyTransferSignature({
     ///
     ///   0. `[writable]` New or existing account storing verified messages
     ///   1. `[]` Reward manager
+    ///   1. `[]` Reward manager authority (NEW)
+    ///   1. `[]` fee payer (NEW)
     ///   2. `[]` Sender
-    ///   3. `[]` Sysvar instruction id
+    ///   2. `[]` sysvar rent (new)
+    ///   3. `[]` Sysvar instruction id (NEW)
   const verifyInstructionAccounts = [
     {
-      pubkey: messageHolderAccount,
+      pubkey: derivedMessageAccount,
       isSigner: false,
       isWritable: true
     },
     {
-      pubkey: rewardManagerProgramId,
+      pubkey: rewardManagerAccount,
       isSigner: false,
       isWritable: false
+    },
+    {
+      pubkey: rewardManagerAuthority,
+      isSigner: false,
+      isWritable: false
+    },
+    {
+      pubkey: feePayer,
+      isSigner: true,
+      isWritable: true
     },
     {
       pubkey: derivedSender,
       isSigner: false, // IDK?
       isWritable: false
-    }, {
+    },
+    {
+      pubkey: SYSVAR_RENT_PUBKEY,
+      isSigner: false,
+      isWritable: false
+    },
+    {
       pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
+      isSigner: false,
+      isWritable: false
+    },
+    {
+      pubkey: SystemProgram.programId,
       isSigner: false,
       isWritable: false
     }
   ]
 
-  // TODO: should we use a fixed rent amt?
-  const accountRent = await connection.getMinimumBalanceForRentExemption(VERIFIED_MESSAGES_LEN)
-  const createAccountInstruction = SystemProgram.createAccount({
-    fromPubkey: feePayer,
-    newAccountPubkey: messageHolderAccount,
-    lamports: accountRent,
-    space: VERIFIED_MESSAGES_LEN,
-    programId: rewardManagerProgramId
-  })
+  const instructionData = new VerifyTransferSignatureInstructionData({ transferId })
+  const serializedInstructionData = borsh.serialize(
+    verifyTransferSignatureInstructionSchema,
+    instructionData
+  )
+  const serializedInstructionEnum = Buffer.from(Uint8Array.of(
+    4,
+    ...serializedInstructionData
+  ))
 
   const verifyTransferSignatureInstruction = new TransactionInstruction({
     keys: verifyInstructionAccounts,
     programId: rewardManagerProgramId,
-    data: Buffer.from(Uint8Array.of(4))
+    data: serializedInstructionEnum
   })
 
-  // export type CreateSecp256k1InstructionWithEthAddressParams = {
-  //   ethAddress: Buffer | Uint8Array | Array<number> | string;
-  //   message: Buffer | Uint8Array | Array<number>;
-  //   signature: Buffer | Uint8Array | Array<number>;
-  //   recoveryId: number;
-  // };
 
-  // TODO: pull this out into a new function
-  const transferId = `${challengeId}::${specifier}}`
-  // attestation
-  const senderMessage = [
+  let senderMessage = (isBot ? [
+    recipientEthAddress,
+    tokenAmount,
+    transferId,
+  ]: [
     recipientEthAddress,
     tokenAmount,
     transferId,
     oracleAddress
-  ].join("_")
+  ]).join("_")
+
+  const messageHash = Buffer.from(keccak_256.update(senderMessage).digest())
+  const pkey = Uint8Array.from(new BN('864ca29f6d40bb740cdd94f07443c483ade0b43db351c263b980c513b98ca4e6', 'hex').toArray('be'))
+  const {signature, recid} = ecdsaSign(messageHash, pkey)
+
+  console.log({senderMessage})
+  console.log({signature, recid})
 
   const encodedSenderMessage = encoder.encode(senderMessage)
-  const encodedSignature = encoder.encode(attestationSignature)
+  // Perform signature manipulations:
+  // - remove the 0x prefix, and then lose the final byte
+  // ('1b', which is the recovery ID, and not desired by the `createInsturctionWithEthAddress` method)
+  let strippedSignature = attestationSignature.replace('0x', '')
+  strippedSignature = strippedSignature.slice(0, strippedSignature.length - 2)
+  console.log({strippedSignature})
+  const encodedSignature = Uint8Array.of(
+    ...new BN(strippedSignature, 'hex').toArray('be') // 0 pad to add length, but this seems wrong. Idk
+  )
+  console.log({encodedSignature})
+  console.log("len: " + encodedSignature.length)
 
   const secpInstruction = Secp256k1Program.createInstructionWithEthAddress({
-    ethAddress: spOwnerWallet,
+    ethAddress,
     message: encodedSenderMessage,
     signature: encodedSignature,
     recoveryId,
   })
 
+  console.log({secpInstruction})
+
   const instructions = [
-    createAccountInstruction,
     secpInstruction,
     verifyTransferSignatureInstruction
   ]
 
-
-
-  // export type TransactionCtorFields = {
-  //   /** A recent blockhash */
-  //   recentBlockhash?: Blockhash | null;
-  //   /** Optional nonce information used for offline nonce'd transactions */
-  //   nonceInfo?: NonceInformation | null;
-  //   /** The transaction fee payer */
-  //   feePayer?: PublicKey | null;
-  //   /** One or more signatures */
-  //   signatures?: Array<SignaturePubkeyPair>;
-  // };
-
   const {blockhash: recentBlockhash} = await connection.getRecentBlockhash()
   const transaction = new Transaction({
+    feePayer,
     recentBlockhash,
-    feePayer
   })
   transaction.add(...instructions)
+  console.log({feePayer, feePayerSecret})
   // Sign with the fee payer
   transaction.sign({
     publicKey: feePayer,
     secretKey: feePayerSecret
   })
+  const isVerified = transaction.verifySignatures()
+  console.log({isVerified})
+  console.log({sigs: transaction.signatures})
 
+  try {
     const transactionSignature = await sendAndConfirmTransaction(
       connection,
       transaction,
@@ -168,55 +228,30 @@ async function verifyTransferSignature({
         {
           publicKey: feePayer,
           secretKey: feePayerSecret
-        }
+        },
       ],
       {
-        skipPreflight: true,
+        skipPreflight: false,
         commitment: 'processed',
         preflightCommitment: 'processed'
       }
     )
+    return transactionSignature
+  } catch (e) {
+    console.error("SENT BUT ERROR")
+    console.error(e.message)
+    console.log({e})
+  }
 
-  // The data for the
-  // Instructions:
-  // TODO: only do it sometimes
-  // 1) create_account for verified messages
-  // 2)
 }
 
-// class VerifyTransferSignatureInstructionData {
-//   constructor({
-
-//   })
-// }
-
-
-// class CreateTokenAccountInstructionData {
-//   constructor ({
-//     ethAddress
-//   }) {
-//     this.hashed_eth_pk = ethAddress
-//   }
-// }
-
-// const createTokenAccountInstructionSchema = new Map([
-//   [
-//     CreateTokenAccountInstructionData,
-//     {
-//       kind: 'struct',
-//       fields: [
-//         ['hashed_eth_pk', [20]]
-//       ]
-//     }
-//   ]
-// ])
 // Derives the account for messages to live in
-const deriveMessageAccount = async (challengeId: string, specifier: string, rewardsProgramId: PublicKey) => {
-  const combined = `${challengeId}:${specifier}`
+const deriveMessageAccount = async (transferId: string, rewardsProgramId: PublicKey, rewardManager: PublicKey) => {
   const encoder = new TextEncoder()
-  const bytes = encoder.encode(combined)
-  // TODO: is there any reason to also have a pubkey here as the seed?
-  return PublicKey.findProgramAddress([bytes], rewardsProgramId)
+  const encodedPrefix = encoder.encode(VERIFY_TRANSFER_SEED_PREFIX)
+  const encodedTransferId = encoder.encode(transferId)
+  const seeds = Uint8Array.from([...encodedPrefix, ...encodedTransferId])
+  return findDerivedPair(rewardsProgramId, rewardManager, seeds)
 }
 
 const findProgramAddress = (programId: PublicKey, pubkey: PublicKey) => {
