@@ -989,7 +989,7 @@ class SnapbackSM {
         // the self node
         replicaSetNodesToObserve = [{ endpoint: primary, spId: primarySpID }, ...replicaSetNodesToObserve]
         replicaSetNodesToObserve = replicaSetNodesToObserve.filter(entry => {
-          return !!(entry.endpoint && entry.spId) || entry.endpoint !== this.endpoint
+          return !!(entry.endpoint && entry.spId) && entry.endpoint !== this.endpoint
         })
 
         for (const replica of replicaSetNodesToObserve) {
