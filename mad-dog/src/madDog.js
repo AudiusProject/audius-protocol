@@ -81,7 +81,7 @@ class MadDog {
     process.stdout.on('data', (data) => logger.info(`stdout: ${data}`))
     process.stderr.on('data', (data) => logger.error(`stderr: ${data}`))
     process.on('exit', (code) => {
-      if (code) logger.info(`child process exited with code ${code}`)
+      if (!isNaN(code)) logger.info(`child process exited with code ${code}`)
       process = null
     })
   }
