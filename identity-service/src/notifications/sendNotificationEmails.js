@@ -245,67 +245,34 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       let maxHourDifference = 2 // 1.5
       // Valid time found
       if (difference < maxHourDifference) {
-        logger.info(`processEmailNotifications | Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
-        if (!latestUserEmail) {
-          let sent = await renderAndSendNotificationEmail(
+        logger.info(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
+        // if email was never sent to user, or ~1 day has passed for daily frequency, or ~1 week has passed for weekly frequency, then send email
+        const isValidFrequency = ['daily', 'weekly'].includes(frequency)
+        const timeSinceEmail = moment.duration(currentUtcTime.diff(lastSentTimestamp)).asHours()
+        const timeThreshold = (frequency === 'daily' ? dayInHours : weekInHours) - 1
+        const shouldRenderAndSend = !latestUserEmail || (isValidFrequency && timeSinceEmail >= timeThreshold)
+        if (shouldRenderAndSend) {
+          if (latestUserEmail) {
+            logger.info(`processEmailNotifications | ${frequency === 'daily' ? 'Daily' : 'Weekly'} email to ${userId}, last email from ${lastSentTimestamp}`)
+          }
+          const startTime = frequency === 'daily' ? dayAgo : weekAgo
+          const sent = await renderAndSendNotificationEmail(
             userId,
             userEmail,
             appAnnouncements,
             frequency,
-            frequency === 'daily' ? dayAgo : weekAgo,
+            startTime,
             audiusLibs
           )
           if (!sent) { continue }
-          logger.info(`processEmailNotifications | First email for ${userId}, ${frequency}, ${currentUtcTime}`)
+          if (!latestUserEmail) {
+            logger.info(`First email for ${userId}, ${frequency}, ${currentUtcTime}`)
+          }
           await models.NotificationEmail.create({
             userId,
             emailFrequency: frequency,
             timestamp: currentUtcTime
           })
-        } else {
-          let timeSinceEmail = moment.duration(currentUtcTime.diff(lastSentTimestamp)).asHours()
-          if (frequency === 'daily') {
-            // If 1 day has passed, send email
-            if (timeSinceEmail >= (dayInHours - 1)) {
-              logger.info(`processEmailNotifications | Daily email to ${userId}, last email from ${lastSentTimestamp}`)
-              // Render email
-              let sent = await renderAndSendNotificationEmail(
-                userId,
-                userEmail,
-                appAnnouncements,
-                frequency,
-                dayAgo,
-                audiusLibs
-              )
-              if (!sent) { continue }
-
-              await models.NotificationEmail.create({
-                userId,
-                emailFrequency: frequency,
-                timestamp: currentUtcTime
-              })
-            }
-          } else if (frequency === 'weekly') {
-            // If ~1 week has passed, send email
-            if (timeSinceEmail >= (weekInHours - 1)) {
-              logger.info(`processEmailNotifications | Weekly email to ${userId}, last email from ${lastSentTimestamp}`)
-              // Render email
-              let sent = await renderAndSendNotificationEmail(
-                userId,
-                userEmail,
-                appAnnouncements,
-                frequency,
-                weekAgo,
-                audiusLibs
-              )
-              if (!sent) { continue }
-              await models.NotificationEmail.create({
-                userId,
-                emailFrequency: frequency,
-                timestamp: currentUtcTime
-              })
-            }
-          }
         }
       }
     }
