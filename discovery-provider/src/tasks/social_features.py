@@ -138,7 +138,7 @@ def social_feature_state_update(
 
     for follower_user_id, followee_user_ids in follow_state_changes.items():
         for followee_user_id in followee_user_ids:
-            invalidate_old_follow(follower_user_id, followee_user_id)
+            invalidate_old_follow(session, follower_user_id, followee_user_id)
             follow = followee_user_ids[followee_user_id]
             session.add(follow)
             dispatch_challenge_follow(challenge_bus, follow, block_number)
