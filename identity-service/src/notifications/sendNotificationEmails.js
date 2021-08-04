@@ -99,17 +99,17 @@ async function processEmailNotifications (expressApp, audiusLibs) {
         if (liveEmailUsers.includes(user)) {
           // As an added safety check, only process if the announcement was made in the last hour
           if (timeSinceAnnouncement < 1) {
-            logger.info(`Announcements - ${id} | Live user ${user}`)
+            logger.info(`processEmailNotifications | Announcements - ${id} | Live user ${user}`)
             liveUsersWithPendingAnnouncements.push(user)
           }
         } else if (dailyEmailUsers.includes(user)) {
           if (timeSinceAnnouncement < (dayInHours * 1.5)) {
-            logger.info(`Announcements - ${id} | Daily user ${user}, <1 day`)
+            logger.info(`processEmailNotifications | Announcements - ${id} | Daily user ${user}, <1 day`)
             dailyUsersWithPendingAnnouncements.push(user)
           }
         } else if (weeklyEmailUsers.includes(user)) {
           if (timeSinceAnnouncement < (weekInHours * 1.5)) {
-            logger.info(`Announcements - ${id} | Weekly user ${user}, <1 week`)
+            logger.info(`processEmailNotifications | Announcements - ${id} | Weekly user ${user}, <1 week`)
             weeklyUsersWithPendingAnnouncements.push(user)
           }
         }
@@ -199,7 +199,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       )
       let frequency = userSettings[0].emailFrequency
       if (frequency === 'off') {
-        logger.info(`Bypassing email for user ${userId}`)
+        logger.info(`processEmailNotifications | Bypassing email for user ${userId}`)
         continue
       }
       let currentUtcTime = moment.utc()
@@ -231,7 +231,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
           audiusLibs
         )
         if (!sent) { continue }
-        logger.info(`Live email to ${userId}, last email from ${lastSentTimestamp}`)
+        logger.info(`processEmailNotifications | Live email to ${userId}, last email from ${lastSentTimestamp}`)
         await models.NotificationEmail.create({
           userId,
           emailFrequency: frequency,
@@ -245,7 +245,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       let maxHourDifference = 2 // 1.5
       // Valid time found
       if (difference < maxHourDifference) {
-        logger.info(`Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
+        logger.info(`processEmailNotifications | Valid email period for user ${userId}, ${timezone}, ${difference} hrs since startOfDay`)
         if (!latestUserEmail) {
           let sent = await renderAndSendNotificationEmail(
             userId,
@@ -256,7 +256,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
             audiusLibs
           )
           if (!sent) { continue }
-          logger.info(`First email for ${userId}, ${frequency}, ${currentUtcTime}`)
+          logger.info(`processEmailNotifications | First email for ${userId}, ${frequency}, ${currentUtcTime}`)
           await models.NotificationEmail.create({
             userId,
             emailFrequency: frequency,
@@ -267,7 +267,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
           if (frequency === 'daily') {
             // If 1 day has passed, send email
             if (timeSinceEmail >= (dayInHours - 1)) {
-              logger.info(`Daily email to ${userId}, last email from ${lastSentTimestamp}`)
+              logger.info(`processEmailNotifications | Daily email to ${userId}, last email from ${lastSentTimestamp}`)
               // Render email
               let sent = await renderAndSendNotificationEmail(
                 userId,
@@ -288,7 +288,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
           } else if (frequency === 'weekly') {
             // If ~1 week has passed, send email
             if (timeSinceEmail >= (weekInHours - 1)) {
-              logger.info(`Weekly email to ${userId}, last email from ${lastSentTimestamp}`)
+              logger.info(`processEmailNotifications | Weekly email to ${userId}, last email from ${lastSentTimestamp}`)
               // Render email
               let sent = await renderAndSendNotificationEmail(
                 userId,
@@ -310,9 +310,9 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       }
     }
     const timeAfterUserEmailLoop = Date.now()
-    logger.debug(`renderAndSendNotificationEmail | after getEmailNotifications | ${timeAfterUserEmailLoop} | time elapsed is ${timeAfterUserEmailLoop - timeBeforeUserEmailLoop} | ${userInfo.length} users`)
+    logger.debug(`processEmailNotifications | time after looping over users to send notification email | ${timeAfterUserEmailLoop} | time elapsed is ${timeAfterUserEmailLoop - timeBeforeUserEmailLoop} | ${userInfo.length} users`)
   } catch (e) {
-    logger.error('Error processing email notifications')
+    logger.error('processEmailNotifications | Error processing email notifications')
     logger.error(e)
   }
 }
@@ -327,7 +327,7 @@ async function renderAndSendNotificationEmail (
   audiusLibs
 ) {
   try {
-    logger.info(`renderAndSendNotificationEmail ${userId}, ${userEmail}, ${frequency}, from ${startTime}`)
+    logger.info(`renderAndSendNotificationEmail | ${userId}, ${userEmail}, ${frequency}, from ${startTime}`)
 
     const timeBeforeEmailNotifications = Date.now()
     logger.debug(`renderAndSendNotificationEmail | before getEmailNotifications | ${timeBeforeEmailNotifications}`)
@@ -342,7 +342,7 @@ async function renderAndSendNotificationEmail (
 
     const emailSubject = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''} on Audius`
     if (notificationCount === 0) {
-      logger.info(`renderAndSendNotificationEmail - 0 notifications detected for user ${userId}, bypassing email`)
+      logger.info(`renderAndSendNotificationEmail | 0 notifications detected for user ${userId}, bypassing email`)
       return
     }
 
