@@ -130,12 +130,12 @@ const Service = Object.freeze({
   ALL: 'all',
   NETWORK: 'network',
   CONTRACTS: 'contracts',
-  ETH_CONTRACTS: 'eth-contracts',
-  SOLANA_PROGRAMS: 'solana-programs',
   IPFS: 'ipfs',
   IPFS_2: 'ipfs-2',
   IPFS_3: 'ipfs-3',
   IPFS_4: 'ipfs-4',
+  ETH_CONTRACTS: 'eth-contracts',
+  SOLANA_PROGRAMS: 'solana-programs',
   INIT_CONTRACTS_INFO: 'init-contracts-info',
   INIT_TOKEN_VERSIONS: 'init-token-versions',
   DISCOVERY_PROVIDER: 'discovery-provider',
@@ -145,7 +145,13 @@ const Service = Object.freeze({
   DISTRIBUTE: 'distribute',
   ACCOUNT: 'account',
   INIT_REPOS: 'init-repos',
-  USER_REPLICA_SET_MANAGER: 'user-replica-set-manager'
+  USER_REPLICA_SET_MANAGER: 'user-replica-set-manager',
+
+  // Wormhole specific configs
+  ETH_GANACHE_WORMHOLE: 'eth-ganache-wormhole',
+  SOLANA_TEST_VALIDATOR_WORMHOLE: 'solana-test-validator-wormhole',
+  ETH_CONTRACTS_WORMHOLE: 'eth-contracts-wormhole',
+  SOLANA_PROGRAMS_WORMHOLE: 'solana-programs'
 })
 
 // gets a service command, interpolating service names
@@ -536,21 +542,13 @@ const identityServiceUp = async () => {
  * Brings up an entire Audius Protocol stack.
  * @param {*} config. currently supports up to 4 Creator Nodes.
  */
-const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1 }) => {
+ const servicesUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1 }) => {
   console.log(
     "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
   )
 
   const options = { verbose: true }
-
-  const inParallel = [
-    [Service.IPFS, SetupCommand.UP, options],
-    [Service.IPFS_2, SetupCommand.UP, options],
-    [Service.CONTRACTS, SetupCommand.UP, options],
-    [Service.ETH_CONTRACTS, SetupCommand.UP, options],
-    [Service.SOLANA_PROGRAMS, SetupCommand.UP, options]
-  ]
 
   const creatorNodeCommands = _.range(1, numCreatorNodes + 1).reduce(
     (acc, cur) => {
@@ -602,13 +600,42 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1 }) => {
   )
 
   const sequential = [
-    [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
-    [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
     ...discoveryNodesCommands,
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
     [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
     [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
+  ]
+
+  const start = Date.now()
+
+  // Run sequential ops
+  for (const s of sequential) {
+    await runSetupCommand(...s)
+  }
+
+  const durationSeconds = Math.abs((Date.now() - start) / 1000)
+  console.log(`All services brought up in ${durationSeconds}s`.info)
+}
+
+/**
+ * Brings up an entire Audius Protocol stack.
+ * @param {*} config. currently supports up to 4 Creator Nodes.
+ */
+const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1 }) => {
+  console.log(
+    "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
+      .error
+  )
+
+  const options = { verbose: true }
+
+  const inParallel = [
+    [Service.IPFS, SetupCommand.UP, options],
+    [Service.IPFS_2, SetupCommand.UP, options],
+    [Service.CONTRACTS, SetupCommand.UP, options],
+    [Service.ETH_CONTRACTS, SetupCommand.UP, options],
+    [Service.SOLANA_PROGRAMS, SetupCommand.UP, options]
   ]
 
   const start = Date.now()
@@ -620,9 +647,7 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1 }) => {
   await Promise.all(inParallel.map(s => runSetupCommand(...s)))
 
   // Run sequential ops
-  for (const s of sequential) {
-    await runSetupCommand(...s)
-  }
+  await servicesUp({ numCreatorNodes, numDiscoveryNodes })
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
   console.log(`All services brought up in ${durationSeconds}s`.info)
@@ -635,6 +660,7 @@ module.exports = {
   getServiceURL,
   getContentNodeContainerName,
   allUp,
+  servicesUp,
   distribute,
   getAccounts,
   creatorNodeUp,

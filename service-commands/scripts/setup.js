@@ -1,5 +1,6 @@
 const ServiceCommands = require('../src/index')
 const { program } = require('commander')
+const { servicesUp } = require('../src/index')
 const {
   allUp,
   discoveryNodeUp,
@@ -139,6 +140,13 @@ program
       throw e
     }
   })
+
+program
+  .command('services up')
+  .description('Ups all of the services (non-chain/ipfs components) of the stack')
+  .action(async () => await servicesUp({
+    numCreatorNodes: NUM_CREATOR_NODES, numDiscoveryNodes: NUM_DISCOVERY_NODES }
+  ))
 
 program
   .command('discovery-node-stack up')

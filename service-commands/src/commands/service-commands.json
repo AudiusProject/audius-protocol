@@ -60,6 +60,40 @@
       "docker container rm solana || true"
     ]
   },
+  "eth-ganache-wormhole": {
+    "path": "eth-contracts",
+    "up": [
+      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100 --deterministic --time='1970-01-01T00:00:00+00:00'"
+    ],
+    "down": [
+      "cd eth-contracts/; npm run ganache-q"
+    ]
+  },
+  "eth-contracts-wormhole": {
+    "path": "eth-contracts",
+    "up": [
+      "echo 'Migrating eth contracts'",
+      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 9"
+    ]
+  },
+  "solana-test-validator-wormhole": {
+    "path": "solana-programs",
+    "up": [
+      "docker run -d --name solana -p 8899:8899/tcp -p 8001:8001/udp -p 8003:8003/udp -p 8004:8004/udp -p 8000:8000/udp -p 8002:8002/udp -p 8006:8006/udp -p 8007:8007/udp -p 8900:8900/tcp -p 9900:9900/tcp --network audius_dev --entrypoint='' -v \"$WORMHOLE_DIR:/mnt\" solanalabs/solana:v1.6.1 sh -c 'solana-test-validator --bpf-program Bridge1p5gheXUvJ6jGWGeCsgPKgnE3YgdGKRVCMY9o mnt/solana/bridge/target/deploy/bridge.so --bpf-program B6RHG3mfcckmrYN1UhmJzyS1XX3fZKbkeUcpJe9Sy3FE mnt/solana/modules/token_bridge/target/deploy/token_bridge.so --bpf-program CP1co2QMMoDPbsmV7PGcUTLFwyhgCgTXt25gLQ5LewE1 mnt/solana/bridge/target/deploy/cpi_poster.so'"
+    ],
+    "down": [
+      "docker container stop solana || true",
+      "docker container rm solana || true"
+    ]
+  },
+  "solana-programs-wormhole": {
+    "path": "solana-programs",
+    "up": [
+      "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/mnt\" audius/solana-programs-ray > solana-program-config.json",
+      "cd solana-programs/; cp solana-program-config.json ../identity-service",
+      "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
+    ]
+  },
   "ipfs": {
     "up": [
       "libs/scripts/ipfs.sh up local-ipfs-node"

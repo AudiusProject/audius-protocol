@@ -50,5 +50,9 @@
   "identity_service": {
     "env": "IDENTITY_SERVICE",
     "default": "http://localhost:7000"
+  },
+  "wormhole_dir": {
+    "default": "~/Documents/Audius/wormhole",
+    "env": "WORMHOLE_DIR"
   }
 }
