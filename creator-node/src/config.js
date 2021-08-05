@@ -344,23 +344,11 @@ const config = convict({
     env: 'spOwnerWalletIndex',
     default: 0
   },
-  isUserMetadataNode: {
-    doc: 'Flag indicating whether to run this node for user metadata (non creators) only',
-    format: Boolean,
-    env: 'isUserMetadataNode',
-    default: false
-  },
   isReadOnlyMode: {
     doc: 'Flag indicating whether to run this node in read only mode (no writes)',
     format: Boolean,
     env: 'isReadOnlyMode',
     default: false
-  },
-  userMetadataNodeUrl: {
-    doc: 'address for user metadata node',
-    format: String,
-    env: 'userMetadataNodeUrl',
-    default: ''
   },
   dataRegistryAddress: {
     doc: 'data contracts registry address',

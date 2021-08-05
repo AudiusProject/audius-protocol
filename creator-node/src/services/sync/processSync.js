@@ -179,11 +179,6 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
           myCnodeEndpoint
         })
 
-        // push user metadata node to user's replica set if defined
-        if (nodeConfig.get('userMetadataNodeUrl')) {
-          userReplicaSet.push(nodeConfig.get('userMetadataNodeUrl'))
-        }
-
         // filter out current node from user's replica set
         userReplicaSet = userReplicaSet.filter(url => url !== myCnodeEndpoint)
 

@@ -588,7 +588,6 @@ describe('test nodesync', async function () {
     let serviceRegistryMock
 
     const TEST_ENDPOINT = 'http://test-cn.co'
-    const userMetadataURI = config.get('userMetadataNodeUrl')
     const { pubKey } = testEthereumConstants
     const userWallets = [pubKey.toLowerCase()]
 
@@ -659,12 +658,6 @@ describe('test nodesync', async function () {
         .persist()
         .get(uri => uri.includes('/export'))
         .reply(200, sampleExport)
-
-      // Mock /ipfs gateway routes for saveFileForMultihashToFS
-      nock(userMetadataURI)
-        .persist()
-        .get(uri => uri.includes('/ipfs'))
-        .reply(200, { data: Buffer.alloc(32) })
 
       // Confirm no local user state before sync
       const initialCNodeUserCount = await models.CNodeUser.count()
@@ -792,10 +785,6 @@ describe('test nodesync', async function () {
         .persist()
         .get(uri => uri.includes('/export'))
         .reply(200, sampleExport)
-      nock(userMetadataURI)
-        .persist()
-        .get(uri => uri.includes('/ipfs'))
-        .reply(200, { data: Buffer.alloc(32) })
 
       // Confirm initial local state is empty
       let initialCNodeUserCount = await models.CNodeUser.count()

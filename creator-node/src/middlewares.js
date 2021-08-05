@@ -57,11 +57,6 @@ async function syncLockMiddleware (req, res, next) {
  */
 async function ensurePrimaryMiddleware (req, res, next) {
   const serviceRegistry = req.app.get('serviceRegistry')
-
-  if (config.get('isUserMetadataNode')) {
-    return next()
-  }
-
   const start = Date.now()
 
   if (!req.session || !req.session.wallet) {
@@ -158,8 +153,8 @@ async function issueAndWaitForSecondarySyncRequests (req) {
   const pollingDurationMs = req.header('Polling-Duration-ms') || config.get('issueAndWaitForSecondarySyncRequestsPollingDurationMs')
   const enforceWriteQuorum = req.header('Enforce-Write-Quorum') || config.get('enforceWriteQuorum')
 
-  if (config.get('isUserMetadataNode') || config.get('manualSyncsDisabled')) {
-    req.logger.info(`issueAndWaitForSecondarySyncRequests - Cannot proceed due to isUserMetadataNode (${config.get('isUserMetadataNode')}) or manualSyncsDisabled ${config.get('manualSyncsDisabled')})`)
+  if (config.get('manualSyncsDisabled')) {
+    req.logger.info(`issueAndWaitForSecondarySyncRequests - Cannot proceed due to manualSyncsDisabled ${config.get('manualSyncsDisabled')})`)
     return
   }
 
@@ -225,10 +220,6 @@ async function issueAndWaitForSecondarySyncRequests (req) {
  *    Bit of a chicken and egg problem here with timing of first time setup, but potential optimization here
  */
 async function getOwnEndpoint ({ libs }) {
-  if (config.get('isUserMetadataNode')) {
-    throw new Error('Not available for userMetadataNode')
-  }
-
   let creatorNodeEndpoint = config.get('creatorNodeEndpoint')
 
   if (!creatorNodeEndpoint) {
@@ -282,10 +273,6 @@ async function getOwnEndpoint ({ libs }) {
  */
 async function getCreatorNodeEndpoints ({ serviceRegistry, logger, wallet, blockNumber, ensurePrimary, myCnodeEndpoint }) {
   const { libs } = serviceRegistry
-
-  if (config.get('isUserMetadataNode')) {
-    throw new Error('Not available for userMetadataNode')
-  }
 
   logger.info(`Starting getCreatorNodeEndpoints for wallet ${wallet}`)
   const start = Date.now()

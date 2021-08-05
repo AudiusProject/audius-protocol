@@ -102,8 +102,8 @@ class SnapbackSM {
 
     this.MaxSyncMonitoringDurationInMs = this.nodeConfig.get('maxSyncMonitoringDurationInMs')
 
-    // Throw an error if running as creator node and no libs are provided
-    if (!this.nodeConfig.get('isUserMetadataNode') && (!this.audiusLibs || !this.spID || !this.endpoint || !this.delegatePrivateKey)) {
+    // Throw an error if no libs are provided
+    if (!this.audiusLibs || !this.spID || !this.endpoint || !this.delegatePrivateKey) {
       throw new Error('Missing required configs - cannot start')
     }
 
@@ -146,13 +146,6 @@ class SnapbackSM {
 
     // SyncDeDuplicator ensure a sync for a (syncType, userWallet, secondaryEndpoint) tuple is only enqueued once
     this.syncDeDuplicator = new SyncDeDuplicator()
-
-    // Short-circuit if (isUserMetadataNode = true)
-    const isUserMetadata = this.nodeConfig.get('isUserMetadataNode')
-    if (isUserMetadata) {
-      this.log(`SnapbackSM disabled for userMetadataNode. ${this.endpoint}, isUserMetadata=${isUserMetadata}`)
-      return
-    }
 
     /**
      * Initialize all queue processors
