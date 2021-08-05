@@ -1,5 +1,5 @@
 import logging
-from typing import Counter, Dict, Tuple, TypedDict, List, Optional, cast
+from typing import Counter, Dict, Set, Tuple, TypedDict, List, Optional, cast
 from sqlalchemy.orm.session import Session
 from sqlalchemy import func
 from src.models.models import ChallengeType
@@ -186,14 +186,18 @@ class ChallengeManager:
                 .group_by(UserChallenge.user_id)
             ).all()
             challenges_per_user = dict(all_user_challenges)
+            new_user_challenges_specifiers: Set[str] = set()
             for new_metadata in new_challenge_metadata:
-                completion_count = challenges_per_user.get(new_metadata["user_id"], 0)
+                completion_count = challenges_per_user.get(
+                    new_metadata["user_id"], 0
+                ) + len(new_user_challenges_specifiers)
                 if self._step_count and completion_count >= self._step_count:
                     continue
                 if not self._updater.should_create_new_challenge(
                     event_type, new_metadata["user_id"], new_metadata["extra"]
                 ):
                     continue
+                new_user_challenges_specifiers.add(new_metadata["specifier"])
                 to_create_metadata.append(new_metadata)
         else:
             to_create_metadata = new_challenge_metadata
@@ -215,7 +219,12 @@ class ChallengeManager:
         to_update = in_progress_challenges + new_user_challenges
 
         self._updater.update_user_challenges(
-            session, event_type, to_update, self._step_count, events_with_specifiers, self._starting_block
+            session,
+            event_type,
+            to_update,
+            self._step_count,
+            events_with_specifiers,
+            self._starting_block,
         )
 
         # Add block # to newly completed challenges
