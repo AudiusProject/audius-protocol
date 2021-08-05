@@ -1,6 +1,12 @@
-from typing import Dict
+from typing import Dict, List, Optional
 
-from src.challenges.challenge import ChallengeManager, ChallengeUpdater
+from sqlalchemy.orm.session import Session
+from src.challenges.challenge import (
+    ChallengeManager,
+    ChallengeUpdater,
+    FullEventMetadata,
+    UserChallenge,
+)
 
 
 class ReferralChallengeUpdater(ChallengeUpdater):
@@ -9,7 +15,17 @@ class ReferralChallengeUpdater(ChallengeUpdater):
 
 
 class ReferredChallengeUpdater(ChallengeUpdater):
-    pass
+    def update_user_challenges(
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
+    ):
+        for user_challenge in user_challenges:
+            user_challenge.is_complete = True
 
 
 referral_challenge_manager = ChallengeManager("referrals", ReferralChallengeUpdater())

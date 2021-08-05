@@ -130,6 +130,7 @@ def test_referral_challenge(app):
             .filter(
                 UserChallenge.user_id == referrer.user_id,
                 UserChallenge.challenge_id == "referrals",
+                UserChallenge.is_complete == True,
             )
             .all()
         )
@@ -137,7 +138,10 @@ def test_referral_challenge(app):
 
         challenges = (
             session.query(UserChallenge)
-            .filter(UserChallenge.challenge_id == "referred")
+            .filter(
+                UserChallenge.challenge_id == "referred",
+                UserChallenge.is_complete == True,
+            )
             .all()
         )
         assert len(challenges) == 10
