@@ -321,13 +321,35 @@ async function main () {
           }
         )
 
+        const deregisterCNTest = makeTest(
+          'snapbackReconfigTestDeregisterCN',
+          SnapbackReconfigTests.deregisterCN,
+          {
+            numUsers: 2,
+            numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
+            iterations: 2
+          }
+        )
+
+        const forceCNUnavailabilityTest = makeTest(
+          'snapbackReconfigTestForceCNUnavailability',
+          SnapbackReconfigTests.forceCNUnavailability,
+          {
+            numUsers: 2,
+            numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
+            iterations: 2
+          }
+        )
+
         const tests = [
           coreIntegrationTests,
           snapbackTest,
           ...blacklistTests,
           ursmTest,
           ursmBlockSaturationTest,
-          trackListenCountTest
+          trackListenCountTest,
+          deregisterCNTest,
+          forceCNUnavailabilityTest
         ]
 
         await testRunner(tests)
