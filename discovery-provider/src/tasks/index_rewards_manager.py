@@ -1,13 +1,12 @@
 import concurrent.futures
 import logging
 import time
-from typing import Callable, Optional, List, Dict, TypedDict, Any
+from typing import Callable, List, TypedDict
+from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from solana.rpc.api import Client
-from redis import Redis
 
 import base58
-from sqlalchemy import desc
 from src.models.models import User, UserChallenge
 from src.models import ChallengeDisbursement
 from src.tasks.celery_app import celery
@@ -103,7 +102,7 @@ def process_sol_rewards_transfer_instruction(
             REWARDS_MANAGER_PROGRAM
         )
         has_transfer_instruction = any(
-            [log == "Program log: Instruction: Transfer" for log in meta["logMessages"]]
+            log == "Program log: Instruction: Transfer" for log in meta["logMessages"]
         )
         if has_transfer_instruction:
             for instruction in instructions:
@@ -273,7 +272,8 @@ def get_transaction_signatures(
                         -TX_SIGNATURES_RESIZE_LENGTH:
                     ]
                     logger.info(
-                        f"index_rewards_manager.py | sliced tx_sigs from {prev_len} to {len(transaction_signatures)} entries"
+                        f"index_rewards_manager.py | sliced tx_sigs from \
+                            {prev_len} to {len(transaction_signatures)} entries"
                     )
 
     # Reverse batches aggregated so oldest transactions are processed first
