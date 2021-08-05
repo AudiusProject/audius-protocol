@@ -157,6 +157,7 @@ module.exports = function (app) {
   /**
    * Returns latest clock value stored in CNodeUsers entry given wallet, or -1 if no entry found
    * Also returns boolean indicating whether a sync is in progress
+   * Conditionally returns info on total and skipped CIDs for user
    */
   app.get('/users/clock_status/:walletPublicKey', handleResponse(async (req, res) => {
     const redisClient = req.app.get('redisClient')

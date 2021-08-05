@@ -44,7 +44,7 @@ class SkippedCIDsRetryQueue {
         try {
           await this.process(CIDMaxAgeMs, libs, serviceRegistry)
         } catch (e) {
-          logger.error(`${LogPrefix} Failed to process job || Error: ${e.message}`)
+          this.logError(`Failed to process job || Error: ${e.message}`)
         }
 
         // Re-enqueue job after some interval
@@ -56,13 +56,21 @@ class SkippedCIDsRetryQueue {
     )
   }
 
+  logInfo (msg) {
+    logger.info(`${LogPrefix} ${msg}`)
+  }
+
+  logError (msg) {
+    logger.error(`${LogPrefix} ${msg}`)
+  }
+
   // Add first job to queue
   async init () {
     try {
       await this.queue.add({ startTime: Date.now() })
-      logger.info(`${LogPrefix} Successfully initialized and enqueued initial job.`)
+      this.logInfo(`Successfully initialized and enqueued initial job.`)
     } catch (e) {
-      logger.error(`${LogPrefix} Failed to start`)
+      this.logError(`Failed to start`)
     }
   }
 
@@ -118,7 +126,7 @@ class SkippedCIDsRetryQueue {
       })
     }
 
-    logger.info(`${LogPrefix} Completed run in ${Date.now() - startTimestampMs}ms. Processing files created >= ${oldestFileCreatedAtDate}. Successfully saved ${savedFiles.length} of total ${skippedFiles.length} processed.`)
+    this.logInfo(`Completed run in ${Date.now() - startTimestampMs}ms. Processing files created >= ${oldestFileCreatedAtDate}. Successfully saved ${savedFiles.length} of total ${skippedFiles.length} processed.`)
   }
 }
 
