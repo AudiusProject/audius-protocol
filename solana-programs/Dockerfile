@@ -29,11 +29,11 @@ RUN cd audius_eth_registry && \
     cargo build-bpf && \
     cd ../cli && \
     cargo build && \ 
-    cd ../reward-manager/program && \
+    cd ../../reward-manager/program && \
     cargo build-bpf && \
     cd ../cli && \
     cargo build
 
 COPY start.sh ./
 
-CMD [ "sh", "-c", "sh start.sh" ]
+CMD [ "bash", "start.sh" ]
