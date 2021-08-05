@@ -20,5 +20,18 @@
 		"active": false,
 		"step_count": 3,
 		"starting_block": 30000000
+	},
+	{
+		"id": "referrals",
+		"type": "aggregate",
+		"amount": "5",
+		"active": false,
+		"step_count": 5
+	},
+	{
+		"id": "referred",
+		"type": "boolean",
+		"amount": "5",
+		"active": false
 	}
 ]

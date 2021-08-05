@@ -8,6 +8,10 @@ from src.utils.redis_connection import get_redis
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
+from src.challenges.referral_challenge import (
+    referral_challenge_manager,
+    referred_challenge_manager,
+)
 from src.challenges.challenge_event import ChallengeEvent
 
 from collections import defaultdict
@@ -122,6 +126,8 @@ def setup_challenge_bus():
     bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
     # track_upload_challenge_manager listeners
     bus.register_listener(ChallengeEvent.track_upload, track_upload_challenge_manager)
+    bus.register_listener(ChallengeEvent.referral_signup, referral_challenge_manager)
+    bus.register_listener(ChallengeEvent.referred_signup, referred_challenge_manager)
 
     return bus
 

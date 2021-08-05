@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from typing import TypedDict
 import base58
 from eth_account.messages import defunct_hash_message
@@ -336,6 +337,7 @@ def parse_user_event(
                     session,
                     user_record,
                     ipfs_metadata["events"],
+                    update_task.challenge_event_bus
                 )
 
     # All incoming profile photos intended to be a directory
@@ -481,7 +483,10 @@ class UserEventsMetadata(TypedDict):
 
 
 def update_user_events(
-    session: Session, user_record: User, events: UserEventsMetadata
+    session: Session,
+    user_record: User,
+    events: UserEventsMetadata,
+    bus: ChallengeEventBus,
 ) -> None:
     """Updates the user events table"""
     try:
@@ -503,6 +508,13 @@ def update_user_events(
         for event, value in events.items():
             if event == "referrer" and isinstance(value, int):
                 user_events.referrer = value
+                bus.dispatch(
+                    session,
+                    ChallengeEvent.referral_signup,
+                    user_record.blocknumber,
+                    value,
+                    {"referred_user_id": user_record.user_id},
+                )
             elif event == "is_mobile_user" and isinstance(value, bool):
                 user_events.is_mobile_user = value
         session.add(user_events)
