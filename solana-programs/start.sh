@@ -73,6 +73,19 @@
     generate_pda_output=$(cargo run generate-base-pda "$token" "$claimable_token_address")
     echo $generate_pda_output
 
+    echo "Creating RewardManager"
+    cd ../reward-manager/program
+    cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' src/lib.rs)
+    cargo build-bpf
+    rewards_manager_address=$(solana program deploy target/deploy/audius_reward_manager.so --output json | jq -r '.programId')
+    if [ -z "$rewards_manager_address" ]; then
+        echo "failed to deploy UserBank"
+        exit 1
+    fi
+    sed -i "s/$cur_address/$rewards_manager_address/g" src/lib.rs
+
+    cd ../reward-manager/cli
+    cargo build
 } >&2
 
 # Back up 2 directories to audius-protocol/solana-programs

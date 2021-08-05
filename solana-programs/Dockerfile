@@ -17,6 +17,7 @@ COPY audius_eth_registry audius_eth_registry
 COPY track_listen_count track_listen_count
 COPY cli cli
 COPY claimable-tokens claimable-tokens
+COPY reward-manager reward-manager
 
 RUN cd audius_eth_registry && \
     cargo build-bpf && \
@@ -27,8 +28,12 @@ RUN cd audius_eth_registry && \
     cd ../claimable-tokens/program && \
     cargo build-bpf && \
     cd ../cli && \
+    cargo build && 
+    cd ../reward-manager/program && \
+    cargo build-bpf && \
+    cd ../cli && \
     cargo build
 
 COPY start.sh ./
 
-CMD [ "sh", "-c", "cp -r /mnt/* ./; sh start.sh" ]
+CMD [ "sh", "-c", "sh start.sh" ]
