@@ -28,7 +28,7 @@ RUN cd audius_eth_registry && \
     cd ../claimable-tokens/program && \
     cargo build-bpf && \
     cd ../cli && \
-    cargo build && 
+    cargo build && \ 
     cd ../reward-manager/program && \
     cargo build-bpf && \
     cd ../cli && \
