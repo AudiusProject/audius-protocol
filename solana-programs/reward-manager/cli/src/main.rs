@@ -144,6 +144,7 @@ fn command_create_sender(
 
     println!("New sender account created: {:?}", derived_address);
     println!("Owner {:}", config.owner.pubkey());
+    println!("Using program ID {:}", &audius_reward_manager::id());
 
     let transaction = CustomTransaction {
         instructions: vec![create_sender(
@@ -285,6 +286,7 @@ fn command_verify_transfer_signature(
 
     let mut instructions = Vec::new();
     let decoded_secret = <[u8; 32]>::from_hex(signer_secret).expect(HEX_ETH_SECRET_DECODING_ERROR);
+    println!("Generated message {:?}", message);
     instructions.push(new_secp256k1_instruction_2_0(
         &secp256k1::SecretKey::parse(&decoded_secret)?,
         message.as_ref(),
