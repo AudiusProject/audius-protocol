@@ -337,7 +337,7 @@ def parse_user_event(
                     session,
                     user_record,
                     ipfs_metadata["events"],
-                    update_task.challenge_event_bus
+                    update_task.challenge_event_bus,
                 )
 
     # All incoming profile photos intended to be a directory
@@ -514,6 +514,12 @@ def update_user_events(
                     user_record.blocknumber,
                     value,
                     {"referred_user_id": user_record.user_id},
+                )
+                bus.dispatch(
+                    session,
+                    ChallengeEvent.referred_signup,
+                    user_record.blocknumber,
+                    user_record.user_id,
                 )
             elif event == "is_mobile_user" and isinstance(value, bool):
                 user_events.is_mobile_user = value
