@@ -792,7 +792,6 @@ describe('test SnapbackSM', function () {
 
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
 
-    // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
     assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
     assert.strictEqual(potentialSyncRequests.length, 0)
   })
@@ -835,7 +834,6 @@ describe('test SnapbackSM', function () {
 
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
 
-    // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
     assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://deregisteredCN.co')
     assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
   })
@@ -878,7 +876,6 @@ describe('test SnapbackSM', function () {
 
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
 
-    // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
     assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
     assert.strictEqual(potentialSyncRequests.length, 2)
     assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
@@ -909,7 +906,6 @@ describe('test SnapbackSM', function () {
 
     const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
 
-    // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
     assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
     assert.strictEqual(potentialSyncRequests.length, 0)
   })

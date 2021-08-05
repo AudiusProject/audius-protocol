@@ -927,13 +927,20 @@ class SnapbackSM {
     return clockValue
   }
 
-  /*
+  /**
    * For every node user, record sync requests to issue to secondaries if this node is primary
    *    and record replica set updates to issue for any unhealthy replicas
    *
    * Purpose for the if/else case is that if the current node is a primary, issue reconfig or sync requests.
    * Else, if the current node is a secondary, only issue reconfig requests.
    *
+   * @param {Object} nodeUser { primary, secondary1, secondary2, [primarySpID?], [secondary1SpID?], [secondary2SpID?], user_id, wallet}
+   * @param {Set<string>} unhealthyPeers set of unhealthy peers
+   * @returns
+   * {
+   *  requiredUpdateReplicaSetOps: {Object[]} array of {...nodeUsers, unhealthyReplicas: {string[]} endpoints of unhealthy rset nodes }
+   *  potentialSyncRequests: {Object[]} array of {...nodeUsers, endpoint: {string} endpoint to sync to }
+   * }
    * @notice this will issue sync to healthy secondary and update replica set away from unhealthy secondary
    */
   async aggregateReconfigAndPotentialSyncOps (nodeUsers, unhealthyPeers) {
@@ -946,12 +953,16 @@ class SnapbackSM {
       // If these spIds are undefined, it means that the Discovery Node does not have the latest code to return
       // these fields. Fallback to the original aggregation logic. If present, use the spIds to determine whether
       // reconfigs/syncs are necessary.
+      let subsetReplicaOps, subsetSyncReqs
       if (primarySpID && secondary1SpID && secondary2SpID) {
-        await this._aggregateOpsWithQueriedSpIds({ nodeUser, unhealthyPeers, requiredUpdateReplicaSetOps, potentialSyncRequests })
+        ({ requiredUpdateReplicaSetOps: subsetReplicaOps, potentialSyncRequests: subsetSyncReqs } = await this._aggregateOpsWithQueriedSpIds(nodeUser, unhealthyPeers))
       } else {
         // TODO: remove this else case once all the Discovery Nodes have upgraded and return the necessary replica set spIds
-        await this._aggregateOpsWithoutQueriedSpIds({ nodeUser, unhealthyPeers, requiredUpdateReplicaSetOps, potentialSyncRequests })
+        ({ requiredUpdateReplicaSetOps: subsetReplicaOps, potentialSyncRequests: subsetSyncReqs } = await this._aggregateOpsWithoutQueriedSpIds(nodeUser, unhealthyPeers))
       }
+
+      requiredUpdateReplicaSetOps = requiredUpdateReplicaSetOps.concat(subsetReplicaOps)
+      potentialSyncRequests = potentialSyncRequests.concat(subsetSyncReqs)
     }
 
     return { requiredUpdateReplicaSetOps, potentialSyncRequests }
@@ -961,12 +972,13 @@ class SnapbackSM {
    * Used to determine the `requiredUpdateReplicaSetOps` and `potentialSyncRequests` for a given nodeUser.
    * @param {Object} nodeUser { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID, user_id, wallet}
    * @param {Set<string>} unhealthyPeers set of unhealthy peers
-   * @param {Object[]} requiredUpdateReplicaSetOps array of {...nodeUsers, unhealthyReplicas: {string[]} endpoints of unhealthy rset nodes }
-   * @param {Object[]} potentialSyncRequests array of {...nodeUsers, endpoint: {string} endpoint to sync to }
    */
-  async _aggregateOpsWithQueriedSpIds ({ nodeUser, unhealthyPeers, requiredUpdateReplicaSetOps, potentialSyncRequests }) {
-    const { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID } = nodeUser
+  async _aggregateOpsWithQueriedSpIds (nodeUser, unhealthyPeers) {
+    let requiredUpdateReplicaSetOps = []
+    let potentialSyncRequests = []
     let unhealthyReplicas = []
+
+    const { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID } = nodeUser
 
     /**
      * If this node is primary for user, check both secondaries for health
@@ -979,7 +991,7 @@ class SnapbackSM {
 
     if (primary === this.endpoint) {
       // filter out false-y values to account for incomplete replica sets
-      const secondariesInfo = replicaSetNodesToObserve.filter(entry => entry.endpoint && entry.spId)
+      const secondariesInfo = replicaSetNodesToObserve.filter(entry => entry.endpoint)
       const secondariesEndpoint = secondariesInfo.map(entry => entry.endpoint)
 
       /**
@@ -1013,7 +1025,7 @@ class SnapbackSM {
       // the self node
       replicaSetNodesToObserve = [{ endpoint: primary, spId: primarySpID }, ...replicaSetNodesToObserve]
       replicaSetNodesToObserve = replicaSetNodesToObserve.filter(entry => {
-        return entry.endpoint && entry.spId && entry.endpoint !== this.endpoint
+        return entry.endpoint && entry.endpoint !== this.endpoint
       })
 
       for (const replica of replicaSetNodesToObserve) {
@@ -1038,6 +1050,8 @@ class SnapbackSM {
         requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
       }
     }
+
+    return { requiredUpdateReplicaSetOps, potentialSyncRequests }
   }
 
   /**
@@ -1050,9 +1064,12 @@ class SnapbackSM {
    *
    * @note this is for backwards compatibility. Once all the discovery nodes have upgraded, we can deprecate and remove this method.
    */
-  async _aggregateOpsWithoutQueriedSpIds ({ nodeUser, unhealthyPeers, requiredUpdateReplicaSetOps, potentialSyncRequests }) {
-    const { secondary1, secondary2, primary } = nodeUser
+  async _aggregateOpsWithoutQueriedSpIds (nodeUser, unhealthyPeers) {
+    let requiredUpdateReplicaSetOps = []
+    let potentialSyncRequests = []
     let unhealthyReplicas = []
+
+    const { secondary1, secondary2, primary } = nodeUser
 
     /**
      * If this node is primary for user, check both secondaries for health
@@ -1113,6 +1130,8 @@ class SnapbackSM {
         requiredUpdateReplicaSetOps.push({ ...nodeUser, unhealthyReplicas })
       }
     }
+
+    return { requiredUpdateReplicaSetOps, potentialSyncRequests }
   }
 
   // Wrapper fn
