@@ -87,7 +87,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
           entityId: announcementEntityId
         }
       })
-      const userIdSetToExcludeForAnnouncement = new Set(userIdsToExcludeForAnnouncement)
+      const userIdSetToExcludeForAnnouncement = new Set(userIdsToExcludeForAnnouncement.map(u => u.userId))
       const relevantUserIdsForAnnouncement = usersCreatedBeforeAnnouncement.filter(userId => !userIdSetToExcludeForAnnouncement.has(userId))
 
       const timeBeforeUserAnnouncementsLoop = Date.now()
@@ -227,7 +227,10 @@ async function processEmailNotifications (expressApp, audiusLibs) {
           lastSentTimestamp, // use lastSentTimestamp to get all new notifs
           audiusLibs
         )
-        if (!sent) { continue }
+        if (!sent) {
+          logger.info(`processEmailNotifications | Failed to send live email to ${userId}`)
+          continue
+        }
         logger.info(`processEmailNotifications | Live email to ${userId}, last email from ${lastSentTimestamp}`)
         await models.NotificationEmail.create({
           userId,
@@ -261,7 +264,11 @@ async function processEmailNotifications (expressApp, audiusLibs) {
             startTime,
             audiusLibs
           )
-          if (!sent) { continue }
+          if (!sent) {
+            const emailType = latestUserEmail ? frequency : 'first'
+            logger.info(`processEmailNotifications | Failed to send ${emailType} email to ${userId}`)
+            continue
+          }
           if (!latestUserEmail) {
             logger.info(`First email for ${userId}, ${frequency}, ${currentUtcTime}`)
           }
