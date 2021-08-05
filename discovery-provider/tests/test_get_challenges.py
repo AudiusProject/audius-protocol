@@ -193,7 +193,8 @@ def setup_db(session):
             challenge_id="boolean_challenge_1",
             user_id=1,
             amount=5,
-            block_number=1,
+            signature='1',
+            slot=1,
             specifier="1",
         )
     ]

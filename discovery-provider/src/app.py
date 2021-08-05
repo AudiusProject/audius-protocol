@@ -363,6 +363,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_user_bank",
             "src.tasks.index_eth",
             "src.tasks.index_oracles",
+            "src.tasks.index_rewards_manager",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -448,6 +449,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "index_oracles": {
                 "task": "index_oracles",
                 "schedule": timedelta(minutes=5),
+            },
+            "index_rewards_manager": {
+                "task": "index_rewards_manager",
+                "schedule": timedelta(minutes=1),
             },
         },
         task_serializer="json",
