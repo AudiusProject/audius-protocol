@@ -1,6 +1,7 @@
 .popup {
   padding: 0;
   border: none;
+  box-shadow: 0 4px 12px var(--notification-panel-box-shadow);
 }
 
 .panelContainer {

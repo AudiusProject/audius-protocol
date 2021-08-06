@@ -79,7 +79,8 @@ const NotificationPanel = ({
 }: NotificationPanelProps) => {
   const panelRef = useRef<Nullable<HTMLDivElement>>(null)
   const scrollRef = useRef<Nullable<HTMLDivElement>>(null)
-  const overflowMenuRef = useRef<Nullable<HTMLElement>>(null)
+  const overflowMenuRef = useRef<Nullable<HTMLDivElement>>(null)
+  const userListModalRef = useRef<Nullable<HTMLDivElement>>(null)
   const simpleBarId = 'notificationsPanelScroll'
   const getScrollParent = () => {
     const simpleBarElement = window.document.getElementById(simpleBarId)
@@ -105,9 +106,11 @@ const NotificationPanel = ({
       isVisible={panelIsOpen}
       checkIfClickInside={(target: EventTarget) => {
         if (target instanceof Element) {
-          return [anchorRef?.current, overflowMenuRef?.current].some(r =>
-            r?.contains(target)
-          )
+          return [
+            anchorRef?.current,
+            overflowMenuRef?.current,
+            userListModalRef?.current
+          ].some(r => r?.contains(target))
         }
         return false
       }}
@@ -162,6 +165,7 @@ const NotificationPanel = ({
                           toggleNotificationPanel={toggleNotificationPanel}
                           notification={notification}
                           overflowMenuRef={overflowMenuRef}
+                          userListModalRef={userListModalRef}
                           panelRef={panelRef}
                           scrollRef={scrollRef}
                           setNotificationModal={setNotificationModal}
