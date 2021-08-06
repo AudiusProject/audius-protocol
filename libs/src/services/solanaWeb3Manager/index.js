@@ -8,9 +8,11 @@ const {
   findAssociatedTokenAddress
 } = require('./tokenAccount')
 const { wAudioFromWeiAudio } = require('./wAudio')
+const { verifyTransferSignature, transfer } = require('./rewards')
 const Utils = require('../../utils')
 
 const { PublicKey } = solanaWeb3
+window.PublicKey = PublicKey
 
 /**
  * SolanaWeb3Manager acts as the interface to solana contracts from a client.
@@ -51,7 +53,10 @@ class SolanaWeb3Manager {
 
     this.solanaWeb3 = solanaWeb3
     this.splToken = splToken
+    window.verifyTransferSignature = verifyTransferSignature
+    window.transfer = transfer
   }
+
 
   async init () {
     const {
@@ -88,13 +93,9 @@ class SolanaWeb3Manager {
   /**
    * Generates a program derived address
    */
-  async generateProgramDerivedAddress (baseKey, programKey, seed) {
-    const seeds = [baseKey.toBytes().slice(0, 32)]
-    if (seed) {
-      seeds.push(seed)
-    }
-    const res = await this.solanaWeb3.PublicKey.findProgramAddress(
-      seeds,
+  async generateProgramDerivedAddress (mintKey, programKey) {
+    let res = await this.solanaWeb3.PublicKey.findProgramAddress(
+      [mintKey.toBytes().slice(0, 32)],
       programKey
     )
     return res[0].toString()
