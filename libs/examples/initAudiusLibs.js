@@ -33,7 +33,9 @@ async function initAudiusLibs (
         ethContractsConfig.audiusTokenAddress,
         ethContractsConfig.registryAddress,
         ethWeb3ProviderEndpoint,
-        ethWallet
+        ethWallet,
+        null,
+        '0xC045C7B6B976d24728872d2117073c893d0B09C2'
       ),
       discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(new Set(['http://docker.for.mac.localhost:5000'])),
       isServer,
@@ -49,7 +51,9 @@ async function initAudiusLibs (
         ethContractsConfig.audiusTokenAddress,
         ethContractsConfig.registryAddress,
         ethWeb3ProviderEndpoint,
-        ethContractsConfig.ownerWallet),
+        ethContractsConfig.ownerWallet,
+        null,
+        '0xC045C7B6B976d24728872d2117073c893d0B09C2'),
       creatorNodeConfig: AudiusLibs.configCreatorNode(creatorNodeEndpoint),
       discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
       identityServiceConfig: AudiusLibs.configIdentityService(identityServiceEndpoint),

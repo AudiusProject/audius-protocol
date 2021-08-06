@@ -151,7 +151,7 @@ const Service = Object.freeze({
   ETH_GANACHE_WORMHOLE: 'eth-ganache-wormhole',
   SOLANA_TEST_VALIDATOR_WORMHOLE: 'solana-test-validator-wormhole',
   ETH_CONTRACTS_WORMHOLE: 'eth-contracts-wormhole',
-  SOLANA_PROGRAMS_WORMHOLE: 'solana-programs'
+  SOLANA_PROGRAMS_WORMHOLE: 'solana-programs-wormhole'
 })
 
 // gets a service command, interpolating service names

@@ -4,6 +4,7 @@ const readline = require('readline')
 const initAudiusLibs = require('../examples/initAudiusLibs')
 const { distributeTokens } = require('./helpers/distributeTokens')
 const { setServiceVersion, addServiceType } = require('./helpers/version')
+const { initWormhole } = require('./helpers/initWormhole')
 const {
   registerLocalService,
   queryLocalServices,
@@ -97,6 +98,10 @@ const run = async () => {
 
       case 'setversion':
         await _initAllVersions(audiusLibs)
+        break
+
+      case 'initwormhole':
+        await initWormhole(audiusLibs)
         break
 
       case 'register-discprov':
