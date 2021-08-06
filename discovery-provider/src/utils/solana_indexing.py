@@ -121,7 +121,7 @@ def parse_instruction_data(data: str, instructionFormat: List[InstructionFormat]
             )
             start, end = last_end + type_len, last_end + type_len + instr_len
             decoded_value: bytes = decoded[start:end]
-            decoded_params[name] = str(decoded_value)
+            decoded_params[name] = str(decoded_value, "utf-8")
             last_end = end
         elif type == SolanaInstructionType.EthereumAddress:
             type_len = solanaInstructionSpace[type]

@@ -88,7 +88,6 @@ def process_sol_rewards_transfer_instruction(
     """
     try:
         tx_info = get_sol_tx_info(solana_client, tx_sig)
-        logger.info(f"index_rewards_manager.py | Got transaction: {tx_sig} | {tx_info}")
         result: TransactionInfoResult = tx_info["result"]
         meta = result["meta"]
         if meta["err"]:
@@ -107,7 +106,6 @@ def process_sol_rewards_transfer_instruction(
         if has_transfer_instruction:
             for instruction in instructions:
                 if instruction["programIdIndex"] == rewards_manager_program_index:
-                    logger.info(f"index_rewards_manager.py | instruction={tx_info}")
                     transfer_instruction_data = parse_transfer_instruction_data(
                         instruction["data"]
                     )
@@ -115,9 +113,6 @@ def process_sol_rewards_transfer_instruction(
                     eth_recipient = transfer_instruction_data["eth_recipient"]
                     id = transfer_instruction_data["id"]
                     challenge_id, specifier = parse_transfer_instruction_id(id)
-                    logger.info(
-                        f"index_rewards_manager.py | amount={amount} -- id={id} -- eth_recipient={eth_recipient}"
-                    )
 
                     user_query = (
                         session.query(User.user_id)
@@ -174,7 +169,6 @@ def get_latest_reward_disbursment_slot(session: Session):
     if latest_slot is None:
         latest_slot = 0
 
-    logger.info(f"index_rewards_manager.py | returning {latest_slot} for highest slot")
     return latest_slot
 
 
@@ -186,7 +180,6 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
         )
     ).count()
     exists = tx_sig_db_count > 0
-    logger.info(f"index_rewards_manager.py | {tx_sig} exists={exists}")
     return exists
 
 
@@ -215,7 +208,6 @@ def get_transaction_signatures(
     # Query for solana transactions until an intersection is found
     with db.scoped_session() as session:
         latest_processed_slot = get_latest_slot(session)
-        logger.info(f"index_rewards_manager.py | highest tx = {latest_processed_slot}")
         while not intersection_found:
             transactions_history = solana_client.get_confirmed_signature_for_address2(
                 program, before=last_tx_signature, limit=100
@@ -265,16 +257,11 @@ def get_transaction_signatures(
 
                 # Ensure processing does not grow unbounded
                 if len(transaction_signatures) > TX_SIGNATURES_MAX_BATCHES:
-                    prev_len = len(transaction_signatures)
                     # Only take the oldest transaction from the transaction_signatures array
                     # transaction_signatures is sorted from newest to oldest
                     transaction_signatures = transaction_signatures[
                         -TX_SIGNATURES_RESIZE_LENGTH:
                     ]
-                    logger.info(
-                        f"index_rewards_manager.py | sliced tx_sigs from \
-                            {prev_len} to {len(transaction_signatures)} entries"
-                    )
 
     # Reverse batches aggregated so oldest transactions are processed first
     transaction_signatures.reverse()
