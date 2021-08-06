@@ -21,6 +21,12 @@ def upgrade():
     connection = op.get_bind()
     connection.execute(
         """
+        -- Add the profile-completion challenge if not existing
+        INSERT INTO challenges (id, type, amount, active, step_count) VALUES ('profile-completion', 'numeric', '5', true, 7) ON CONFLICT DO NOTHING
+        """
+    )
+    connection.execute(
+        """
         -- There is a single broken user with two rows marked is_current; fix them first
         update users
         set is_current = false
