@@ -186,18 +186,21 @@ class ChallengeManager:
                 .group_by(UserChallenge.user_id)
             ).all()
             challenges_per_user = dict(all_user_challenges)
-            new_user_challenges_specifiers: Set[str] = set()
+            new_user_challenges_specifiers: Dict[int, Set[str]] = dict()
             for new_metadata in new_challenge_metadata:
-                completion_count = challenges_per_user.get(
-                    new_metadata["user_id"], 0
-                ) + len(new_user_challenges_specifiers)
+                user_id = new_metadata["user_id"]
+                if not new_user_challenges_specifiers.get(user_id):
+                    new_user_challenges_specifiers[user_id] = set()
+                completion_count = challenges_per_user.get(user_id, 0) + len(
+                    new_user_challenges_specifiers[user_id]
+                )
                 if self._step_count and completion_count >= self._step_count:
                     continue
                 if not self._updater.should_create_new_challenge(
-                    event_type, new_metadata["user_id"], new_metadata["extra"]
+                    event_type, user_id, new_metadata["extra"]
                 ):
                     continue
-                new_user_challenges_specifiers.add(new_metadata["specifier"])
+                new_user_challenges_specifiers[user_id].add(new_metadata["specifier"])
                 to_create_metadata.append(new_metadata)
         else:
             to_create_metadata = new_challenge_metadata
