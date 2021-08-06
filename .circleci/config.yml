@@ -681,11 +681,6 @@ workflows:
 
       - test-solana-programs:
           name: test-solana-programs
-      - docker-build-and-push:
-          name: build-solana-programs
-          repo: solana-programs
-          requires:
-            - test-solana-programs
 
       - test-mad-dog-e2e
 
