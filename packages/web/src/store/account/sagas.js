@@ -34,6 +34,7 @@ import {
 import { identify } from 'store/analytics/actions'
 import {
   getModalIsOpen,
+  getModalVisibility,
   setVisibility
 } from 'store/application/ui/modals/slice'
 import { confirmTransferAudioToWAudio } from 'store/audio-manager/slice'
@@ -131,7 +132,12 @@ function* initAudioChecks() {
         })
       )
     }
-    yield put(setVisibility({ modal: 'ConfirmAudioToWAudio', visible: false }))
+    const isModalOpen = yield select(getModalVisibility, 'ConfirmAudioToWAudio')
+    if (isModalOpen) {
+      yield put(
+        setVisibility({ modal: 'ConfirmAudioToWAudio', visible: false })
+      )
+    }
   }
 }
 
