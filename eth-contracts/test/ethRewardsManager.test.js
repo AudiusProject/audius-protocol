@@ -312,14 +312,15 @@ contract('EthRewardsManager', async (accounts) => {
 
     const tx = await ethRewardsManager.transferToSolana(1, { from: accounts[7] })
 
-    await expectEvent.inTransaction(tx.tx, MockWormhole, 'LogTokensLocked', {
-      targetChain: '1',
+    await expectEvent.inTransaction(tx.tx, MockWormhole, 'LogTokensTransferred', {
+      recipientChain: '1',
       tokenChain: '2',
       tokenDecimals: await token.decimals(),
       token: web3.utils.padLeft(token.address, 64).toLowerCase(),
       sender: web3.utils.padLeft(ethRewardsManager.address, 64).toLowerCase(),
       recipient: `0x${recipient.toString('hex')}`,
       amount: amount.toString(),
+      arbiterFee: '0',
       nonce: '1'
     })
 
@@ -352,14 +353,15 @@ contract('EthRewardsManager', async (accounts) => {
       { from: guardianAddress }
     )
 
-    await expectEvent.inTransaction(transferToSolanaTx.tx, MockWormhole, 'LogTokensLocked', {
-      targetChain: '1',
+    await expectEvent.inTransaction(transferToSolanaTx.tx, MockWormhole, 'LogTokensTransferred', {
+      recipientChain: '1',
       tokenChain: '2',
       tokenDecimals: await token.decimals(),
       token: web3.utils.padLeft(token.address, 64).toLowerCase(),
       sender: web3.utils.padLeft(ethRewardsManager.address, 64).toLowerCase(),
       recipient: `0x${recipient.toString('hex')}`,
       amount: RECURRING_COMMUNITY_FUNDING_AMOUNT.toString(),
+      arbiterFee: '0',
       nonce: '1'
     })
   })
