@@ -42,3 +42,8 @@ build/
 
 # redis dumps
 *_dump
+
+# logs
+beat.log
+worker.log
+server.log
