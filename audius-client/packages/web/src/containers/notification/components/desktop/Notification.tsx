@@ -21,7 +21,8 @@ import NotificationBlock, { USER_LENGTH_LIMIT } from './NotificationBlock'
 
 type OwnProps = {
   notification: any
-  overflowMenuRef: MutableRefObject<Nullable<HTMLElement>>
+  overflowMenuRef: MutableRefObject<Nullable<HTMLDivElement>>
+  userListModalRef: MutableRefObject<Nullable<HTMLDivElement>>
   panelRef: MutableRefObject<Nullable<HTMLDivElement>>
   scrollRef: MutableRefObject<Nullable<HTMLDivElement>>
   toggleNotificationPanel: () => void
@@ -79,6 +80,7 @@ const NotificationItem = (props: NotificationItemProps) => {
         menuProps={menuProps}
         notification={notification}
         overflowMenuRef={props.overflowMenuRef}
+        userListModalRef={props.userListModalRef}
         setNotificationUsers={props.setNotificationUsers}
         timeLabel={timeLabel}
         toggleNotificationPanel={props.toggleNotificationPanel}

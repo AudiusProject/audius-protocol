@@ -37,7 +37,8 @@ export type NotificationBlockProps = {
   menuProps: Omit<NotificationMenuProps, 'children'>
   notification: any
   onClick?: () => void
-  overflowMenuRef: MutableRefObject<Nullable<HTMLElement>>
+  overflowMenuRef: MutableRefObject<Nullable<HTMLDivElement>>
+  userListModalRef: MutableRefObject<Nullable<HTMLDivElement>>
   setNotificationUsers: (userIds: ID[], limit: number) => void
   timeLabel: string
   toggleNotificationPanel: () => void
@@ -46,7 +47,13 @@ export type NotificationBlockProps = {
 export const notificationOverflowMenuClassName = 'notificationOverflowMenu'
 
 const NotificationBlock = (props: NotificationBlockProps) => {
-  const { goToRoute, markAsRead, notification, toggleNotificationPanel } = props
+  const {
+    goToRoute,
+    markAsRead,
+    notification,
+    toggleNotificationPanel,
+    userListModalRef
+  } = props
   const record = useRecord()
 
   const {
@@ -200,6 +207,7 @@ const NotificationBlock = (props: NotificationBlockProps) => {
           )}
           onProfileClick={onProfileClick}
           userListModalVisible={userListModalVisible}
+          userListModalRef={userListModalRef}
           onOpenUserListModal={onOpenUserListModal}
           toggleNotificationPanel={props.toggleNotificationPanel}
           onCloseUserListModal={onCloseUserListModal}

@@ -66,7 +66,7 @@ const theme = {
 
   '--default-profile-picture-background': 'var(--neutral-light-6)',
 
-  '--notification-panel-box-shadow': 'rgba(17,17,34,0.15)',
+  '--notification-panel-box-shadow': 'rgba(0,0,0,0.25)',
   '--notification-border': 'rgba(133,129,153,0.2)',
   '--notification-background': '#32334D',
   '--notification-border-hover': 'rgba(133,129,153,0.2)',

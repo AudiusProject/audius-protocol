@@ -31,7 +31,7 @@ export type MenuProps = {
   zIndex?: number
 }
 
-const Menu = forwardRef<HTMLElement, MenuProps>((props, ref) => {
+const Menu = forwardRef<HTMLDivElement, MenuProps>((props, ref) => {
   const { menu, onClose, zIndex } = props
 
   const renderMenu = (items: PopupMenuItem[]) => (

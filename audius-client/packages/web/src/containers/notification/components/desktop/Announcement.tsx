@@ -10,6 +10,7 @@ import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHoriz
 import Menu from 'containers/menu/Menu'
 import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
+import zIndex from 'utils/zIndex'
 
 import styles from './Announcement.module.css'
 
@@ -103,7 +104,10 @@ const Announcement = ({
         <div className={styles.dateMenuContainer}>
           <span className={styles.date}>{displayTime}</span>
           <div className={styles.menuContainer} onClick={onMenuClick}>
-            <Menu menu={menuProps}>
+            <Menu
+              menu={menuProps}
+              zIndex={zIndex.NAVIGATOR_POPUP_OVERFLOW_POPUP}
+            >
               {(ref, triggerPopup) => (
                 <div className={styles.iconContainer} onClick={triggerPopup}>
                   <IconKebabHorizontal
