@@ -2,6 +2,7 @@ import React from 'react'
 
 import AddToPlaylistModal from 'containers/add-to-playlist/desktop/AddToPlaylistModal'
 import AppCTAModal from 'containers/app-cta-modal/AppCTAModal'
+import AudioBreakdownModal from 'containers/audio-rewards-page/components/modals/AudioBreakdownModal'
 import RewardsModals from 'containers/audio-rewards-page/components/modals/RewardsModals'
 import BrowserPushConfirmationModal from 'containers/browser-push-confirmation-modal/BrowserPushConfirmationModal'
 import ConfirmAudioToWAudioModal from 'containers/confirm-audio-to-waudio/desktop/ConfirmAudioToWAudioModal'
@@ -36,6 +37,7 @@ const Modals = () => {
       <UnloadDialog />
       <RewardsModals />
       <ShareSoundToTikTokModal />
+      <AudioBreakdownModal />
 
       {!NATIVE_MOBILE && client !== Client.ELECTRON && (
         <BrowserPushConfirmationModal />

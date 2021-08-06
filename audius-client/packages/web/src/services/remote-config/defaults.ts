@@ -52,5 +52,7 @@ export const remoteConfigBooleanDefaults: {
   [BooleanKeys.DISPLAY_WEB3_PROVIDER_WALLET_CONNECT]: true,
   [BooleanKeys.DISPLAY_WEB3_PROVIDER_BITSKI]: true,
   [BooleanKeys.DISPLAY_WEB3_PROVIDER_WALLET_LINK]: true,
+  [BooleanKeys.DISPLAY_SOLANA_WEB3_PROVIDER_PHANTOM]: true,
+  [BooleanKeys.DISPLAY_SOLANA_WEB3_PROVIDER_SOLLET]: true,
   [BooleanKeys.SKIP_ROLLOVER_NODES_SANITY_CHECK]: false
 }

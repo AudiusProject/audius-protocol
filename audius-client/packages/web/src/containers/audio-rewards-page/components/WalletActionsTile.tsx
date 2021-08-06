@@ -11,7 +11,7 @@ import {
   pressReceive,
   pressSend,
   pressConnectWallets,
-  getAssociatedWallets
+  getHasAssociatedWallets
 } from 'store/token-dashboard/slice'
 import { getAccountBalance, BNWei } from 'store/wallet/slice'
 import { useSelector } from 'utils/reducer'
@@ -33,8 +33,7 @@ export const WalletActions = ({ className }: { className?: string }) => {
   const onClickReceive = () => dispatch(pressReceive())
   const onClickSend = () => dispatch(pressSend())
   const onClickConnectWallets = () => dispatch(pressConnectWallets())
-  const { connectedWallets: wallets } = useSelector(getAssociatedWallets)
-  const hasMultipleWallets = (wallets?.length ?? 0) > 0
+  const hasMultipleWallets = useSelector(getHasAssociatedWallets)
 
   return (
     <div className={cn([styles.container, className])}>

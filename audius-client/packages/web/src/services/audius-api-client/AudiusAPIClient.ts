@@ -274,6 +274,7 @@ type GetAssociatedWalletsArgs = {
 
 export type AssociatedWalletsResponse = {
   wallets: string[]
+  sol_wallets: string[]
 }
 
 type GetAssociatedWalletUserIDArgs = {

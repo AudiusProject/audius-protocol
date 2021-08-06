@@ -9,20 +9,31 @@ import TokenHoverTooltip from './TokenHoverTooltip'
 
 type DisplayAudioProps = {
   amount: BNWei
+  showLabel?: boolean
   className?: string
+  tokenClassName?: string
 }
 
 const messages = {
   currency: '$AUDIO'
 }
 
-const DisplayAudio = ({ amount, className }: DisplayAudioProps) => {
+const DisplayAudio = ({
+  amount,
+  showLabel = true,
+  className,
+  tokenClassName
+}: DisplayAudioProps) => {
   return (
     <div className={cn({ [className!]: !!className })}>
       <TokenHoverTooltip balance={amount} parentMount>
-        <span className={styles.amount}>{formatWei(amount, true)}</span>
+        <span
+          className={cn(styles.amount, { [tokenClassName!]: !!tokenClassName })}
+        >
+          {formatWei(amount, true)}
+        </span>
       </TokenHoverTooltip>
-      <span className={styles.label}>{messages.currency}</span>
+      {showLabel && <span className={styles.label}>{messages.currency}</span>}
     </div>
   )
 }

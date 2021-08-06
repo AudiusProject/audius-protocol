@@ -28,6 +28,14 @@
 }
 
 .drawerTitle {
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+  line-height: 22px;
+  text-align: center;
+  color: var(--neutral);
+}
+
+.drawerGradientTitle {
   font-weight: 900;
   font-size: 28px;
   line-height: 49px;

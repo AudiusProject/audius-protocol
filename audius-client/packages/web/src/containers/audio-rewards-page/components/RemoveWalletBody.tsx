@@ -25,10 +25,10 @@ type RemoveWalletBodyProps = {
 
 const RemoveWalletBody = ({ className }: RemoveWalletBodyProps) => {
   const dispatch = useDispatch()
-  const { wallet } = useSelector(getRemoveWallet)
+  const { wallet, chain } = useSelector(getRemoveWallet)
   const onRemove = useCallback(() => {
-    if (wallet) dispatch(confirmRemoveWallet({ wallet }))
-  }, [dispatch, wallet])
+    if (wallet && chain) dispatch(confirmRemoveWallet({ wallet, chain }))
+  }, [dispatch, wallet, chain])
   const onIgnore = useCallback(() => dispatch(pressConnectWallets()), [
     dispatch
   ])
