@@ -9,6 +9,7 @@ import TabSlider from 'components/data-entry/TabSlider'
 import Dropzone from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
 import RandomImage from 'services/RandomImage'
+import zIndex from 'utils/zIndex'
 
 import styles from './ImageSelectionPopup.module.css'
 import { ImageSelectionProps, ImageSelectionDefaults } from './PropTypes'
@@ -141,6 +142,7 @@ const ImageSelectionPopup = ({
       onAfterClose={onAfterClose}
       showHeader={true}
       title={messages.addImage}
+      zIndex={zIndex.IMAGE_SELECTION_POPUP}
     >
       <TabSlider
         className={styles.slider}
