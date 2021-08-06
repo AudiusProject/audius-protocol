@@ -6,11 +6,13 @@ import { Dispatch } from 'redux'
 
 import { TrackTileProps } from 'components/track/types'
 import { setFavorite } from 'containers/favorites-page/store/actions'
+import { useFlag } from 'containers/remote-config/hooks'
 import { setRepost } from 'containers/reposts-page/store/actions'
 import { RepostType } from 'containers/reposts-page/store/types'
 import { FavoriteType } from 'models/Favorite'
 import { ID } from 'models/common/Identifiers'
 import { FavoriteSource, RepostSource, ShareSource } from 'services/analytics'
+import { FeatureFlags } from 'services/remote-config'
 import { getUserId } from 'store/account/selectors'
 import { open } from 'store/application/ui/mobileOverflowModal/actions'
 import {
@@ -75,6 +77,10 @@ const ConnectedTrackTile = memo(
     isTrending,
     showRankIcon
   }: ConnectedTrackTileProps) => {
+    const { isEnabled: isShareSoundToTikTokEnabled } = useFlag(
+      FeatureFlags.SHARE_SOUND_TO_TIKTOK
+    )
+
     const {
       is_delete,
       track_id,
@@ -161,7 +167,9 @@ const ConnectedTrackTile = memo(
             : OverflowAction.FAVORITE
           : null,
         OverflowAction.SHARE,
-        isOwner ? OverflowAction.SHARE_TO_TIKTOK : null,
+        isShareSoundToTikTokEnabled && isOwner
+          ? OverflowAction.SHARE_TO_TIKTOK
+          : null,
         OverflowAction.ADD_TO_PLAYLIST,
         OverflowAction.VIEW_TRACK_PAGE,
         OverflowAction.VIEW_ARTIST_PAGE
