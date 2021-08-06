@@ -1,11 +1,14 @@
-import BN from 'bn.js'
-import { put, call } from 'redux-saga/effects'
+import { put, call, fork, select } from 'redux-saga/effects'
 
 import User from 'models/User'
 import AudiusBackend from 'services/AudiusBackend'
 import { Name } from 'services/analytics'
 import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
+import {
+  getModalVisibility,
+  setVisibility
+} from 'store/application/ui/modals/slice'
 import { setState as setAudioManagerReduxState } from 'store/audio-manager/slice'
 import * as errorActions from 'store/errors/actions'
 import { Nullable } from 'utils/typeUtils'
@@ -62,7 +65,9 @@ class AudioManager {
 
   *updateStateMovAudioToWAudio() {
     const account: User = yield call(AudiusBackend.getAccount)
-    yield put(make(Name.SEND_AUDIO_REQUEST, { from: account?.wallet }))
+    yield put(
+      make(Name.TRANSFER_AUDIO_TO_WAUDIO_REQUEST, { from: account?.wallet })
+    )
 
     yield call(
       this.updateStatePhase,
@@ -76,18 +81,23 @@ class AudioManager {
       AudioManagerState.TransferringEthAudioInHedgehogToSPLBankAccount
     )
     try {
+      yield fork(this.closeTimeoutConfirmAudioToWAudioModal)
       yield call(this.transferAudioToWAudio)
       yield call(
         this.updateStatePhase,
         AudioManagerState.HasNoEthAudioInHedgehog
       )
-      yield put(make(Name.SEND_AUDIO_SUCCESS, { from: account?.wallet }))
+      yield put(
+        make(Name.TRANSFER_AUDIO_TO_WAUDIO_SUCCESS, { from: account?.wallet })
+      )
     } catch (error) {
       yield call(
         this.updateStatePhase,
         AudioManagerState.ErrorTransferringEthAudioInHedgehogToSPLBankAccount
       )
-      yield put(make(Name.SEND_AUDIO_FAILURE, { from: account?.wallet }))
+      yield put(
+        make(Name.TRANSFER_AUDIO_TO_WAUDIO_FAILURE, { from: account?.wallet })
+      )
 
       yield put(
         errorActions.handleError({
@@ -109,6 +119,20 @@ class AudioManager {
   async transferAudioToWAudio() {
     const balance = await walletClient.getCurrentBalance(true /** bustCache */)
     await AudiusBackend.transferAudioToWAudio(balance)
+  }
+
+  *closeTimeoutConfirmAudioToWAudioModal() {
+    const WAITING_TIMEOUT = 2 /* sec */ * 1000 /* ms */
+    const timeout = new Promise(resolve => setTimeout(resolve, WAITING_TIMEOUT))
+    yield timeout
+    const isModalOpen: ReturnType<typeof getModalVisibility> = yield select(
+      getModalVisibility,
+      'ConfirmAudioToWAudio'
+    )
+    if (isModalOpen)
+      yield put(
+        setVisibility({ modal: 'ConfirmAudioToWAudio', visible: false })
+      )
   }
 }
 
