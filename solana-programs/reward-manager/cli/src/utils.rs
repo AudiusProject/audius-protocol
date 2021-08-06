@@ -91,7 +91,7 @@ impl<'a> Transaction<'a> {
     }
 }
 
-pub fn sign_message(message: &[u8], signers: Vec<secp256k1::SecretKey>) -> Vec<Instruction> {
+pub fn sign_message(message: &[u8], signers: Vec<libsecp256k1::SecretKey>) -> Vec<Instruction> {
     let mut secp_instructions = Vec::new();
 
     for (index, signer) in signers.iter().enumerate() {
@@ -102,19 +102,19 @@ pub fn sign_message(message: &[u8], signers: Vec<secp256k1::SecretKey>) -> Vec<I
 }
 
 pub fn new_secp256k1_instruction_2_0(
-    priv_key: &secp256k1::SecretKey,
+    priv_key: &libsecp256k1::SecretKey,
     message_arr: &[u8],
     instruction_index: u8,
 ) -> Instruction {
-    let secp_pubkey = secp256k1::PublicKey::from_secret_key(priv_key);
+    let secp_pubkey = libsecp256k1::PublicKey::from_secret_key(priv_key);
     let eth_pubkey = construct_eth_pubkey(&secp_pubkey);
     let mut hasher = sha3::Keccak256::new();
     hasher.update(&message_arr);
     let message_hash = hasher.finalize();
     let mut message_hash_arr = [0u8; 32];
     message_hash_arr.copy_from_slice(&message_hash.as_slice());
-    let message = secp256k1::Message::parse(&message_hash_arr);
-    let (signature, recovery_id) = secp256k1::sign(&message, priv_key);
+    let message = libsecp256k1::Message::parse(&message_hash_arr);
+    let (signature, recovery_id) = libsecp256k1::sign(&message, priv_key);
     let signature_arr = signature.serialize();
     assert_eq!(signature_arr.len(), SIGNATURE_SERIALIZED_SIZE);
 

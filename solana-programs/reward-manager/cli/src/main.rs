@@ -145,6 +145,7 @@ fn command_create_sender(
     println!("New sender account created: {:?}", derived_address);
     println!("Owner {:}", config.owner.pubkey());
     println!("Using program ID {:}", &audius_reward_manager::id());
+    println!("Using RewardManager Account {:?}", &reward_manager);
 
     let transaction = CustomTransaction {
         instructions: vec![create_sender(
@@ -209,7 +210,7 @@ fn command_add_sender(
             .expect(HEX_ETH_SECRET_DECODING_ERROR);
 
         senders.push(Pubkey::from_str(&deserialized_sender_data.solana_key)?);
-        secrets.push(secp256k1::SecretKey::parse(&decoded_secret)?);
+        secrets.push(libsecp256k1::SecretKey::parse(&decoded_secret)?);
     }
 
     instructions.append(&mut sign_message(message_to_sign.as_ref(), secrets));
@@ -288,7 +289,7 @@ fn command_verify_transfer_signature(
     let decoded_secret = <[u8; 32]>::from_hex(signer_secret).expect(HEX_ETH_SECRET_DECODING_ERROR);
     println!("Generated message {:?}", message);
     instructions.push(new_secp256k1_instruction_2_0(
-        &secp256k1::SecretKey::parse(&decoded_secret)?,
+        &libsecp256k1::SecretKey::parse(&decoded_secret)?,
         message.as_ref(),
         instructions.len() as u8,
     ));
