@@ -103,7 +103,7 @@
 
     echo "Transferring funds to RewardsManager funds holder..."
     spl-token transfer $token 100000000 $reward_manager_token_account_key 
-}
+} >&2
 
 # Back up 2 directories to audius-protocol/solana-programs
 cd ../../
