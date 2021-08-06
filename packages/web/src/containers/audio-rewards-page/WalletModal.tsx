@@ -10,6 +10,7 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getAccountUser } from 'store/account/selectors'
 import {
   confirmSend,
+  getHasAssociatedWallets,
   getAssociatedWallets,
   getDiscordCode,
   getModalState,
@@ -75,8 +76,7 @@ const TitleWrapper = ({
 }
 
 const AddWalletTitle = () => {
-  const { connectedWallets: wallets } = useSelector(getAssociatedWallets)
-  const hasMultipleWallets = (wallets?.length ?? 0) > 0
+  const hasMultipleWallets = useSelector(getHasAssociatedWallets)
   return (
     <>
       {hasMultipleWallets

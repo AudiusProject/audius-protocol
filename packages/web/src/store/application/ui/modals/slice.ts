@@ -13,6 +13,7 @@ export type Modals =
   | 'HCaptcha'
   | 'ConfirmAudioToWAudio'
   | 'BrowserPushPermissionConfirmation'
+  | 'AudioBreakdown'
 
 type InitialModalsState = { [modal in Modals]: boolean }
 
@@ -26,7 +27,8 @@ const initialState: InitialModalsState = {
   ShareSoundToTikTok: false,
   HCaptcha: false,
   ConfirmAudioToWAudio: false,
-  BrowserPushPermissionConfirmation: false
+  BrowserPushPermissionConfirmation: false,
+  AudioBreakdown: false
 }
 
 const slice = createSlice({

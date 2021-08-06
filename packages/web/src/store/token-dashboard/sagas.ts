@@ -10,6 +10,7 @@ import apiClient, {
   AssociatedWalletsResponse
 } from 'services/audius-api-client/AudiusAPIClient'
 import { BooleanKeys, getRemoteVar } from 'services/remote-config'
+import walletClient from 'services/wallet-client/WalletClient'
 import connectWeb3Wallet, {
   loadWalletLink,
   loadBitski,
@@ -23,6 +24,7 @@ import { requestConfirmation } from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
 import { Kind } from 'store/types'
 import {
+  BNWei,
   send as walletSend,
   claimFailed,
   weiToString,
@@ -46,12 +48,14 @@ import {
   getSendData,
   setDiscordCode,
   setIsConnectingWallet,
+  setWalletAddedConfirmed,
   setAssociatedWallets,
   confirmRemoveWallet,
   ConfirmRemoveWalletAction,
   getAssociatedWallets,
   updateWalletError,
-  preloadWalletProviders
+  preloadWalletProviders,
+  Chain
 } from './slice'
 
 const CONNECT_WALLET_CONFIRMATION_UID = 'CONNECT_WALLET'
@@ -108,6 +112,33 @@ function* send() {
   yield put(setModalState({ modalState: sentState }))
 }
 
+function* fetchEthWalletInfo(wallets: string[]) {
+  const ethWalletBalances: {
+    address: string
+    balance: BNWei
+  }[] = yield call(walletClient.getEthWalletBalances, wallets)
+  // TODO: Fetch collectible count
+  const collectibleCounts = wallets.map(_ => 0)
+  return wallets.map((_, idx) => ({
+    ...ethWalletBalances[idx],
+    collectibleCount: collectibleCounts[idx]
+  }))
+}
+
+function* fetchSplWalletInfo(wallets: string[]) {
+  const splWalletBalances: {
+    address: string
+    balance: BNWei
+  }[] = yield call(walletClient.getSolWalletBalances, wallets)
+  // TODO: Fetch collectible count
+  const collectibleCounts = wallets.map(_ => 0)
+
+  return wallets.map((_, idx) => ({
+    ...splWalletBalances[idx],
+    collectibleCount: collectibleCounts[idx]
+  }))
+}
+
 function* fetchAccountAssociatedWallets() {
   const accountUserId: Nullable<ID> = yield select(getUserId)
   if (!accountUserId) return
@@ -116,8 +147,29 @@ function* fetchAccountAssociatedWallets() {
       userID: accountUserId
     }
   )
+  const ethWalletBalances: {
+    address: string
+    balance: BNWei
+    collectibleCount: number
+  }[] = yield fetchEthWalletInfo(associatedWallets.wallets)
+
+  const splWalletBalances: {
+    address: string
+    balance: BNWei
+    collectibleCount: number
+  }[] = yield fetchSplWalletInfo(associatedWallets.sol_wallets ?? [])
+
   yield put(
-    setAssociatedWallets({ associatedWallets: associatedWallets.wallets })
+    setAssociatedWallets({
+      associatedWallets: ethWalletBalances,
+      chain: Chain.Eth
+    })
+  )
+  yield put(
+    setAssociatedWallets({
+      associatedWallets: splWalletBalances,
+      chain: Chain.Sol
+    })
   )
 }
 
@@ -177,14 +229,22 @@ function* connectWallet() {
     const isWalletLinkEnabled = getRemoteVar(
       BooleanKeys.DISPLAY_WEB3_PROVIDER_WALLET_LINK
     ) as boolean
+    const isPhantomEnabled = getRemoteVar(
+      BooleanKeys.DISPLAY_SOLANA_WEB3_PROVIDER_PHANTOM
+    ) as boolean
+
+    const isSolletEnabled = getRemoteVar(
+      BooleanKeys.DISPLAY_SOLANA_WEB3_PROVIDER_SOLLET
+    ) as boolean
 
     // @ts-ignore: type web3Instance
     web3Instance = yield connectWeb3Wallet({
       isBitSkiEnabled,
       isWalletConnectEnabled,
-      isWalletLinkEnabled
+      isWalletLinkEnabled,
+      isPhantomEnabled,
+      isSolletEnabled
     })
-
     if (!web3Instance) {
       yield put(
         updateWalletError({
@@ -195,6 +255,243 @@ function* connectWallet() {
       return
     }
 
+    // Check if is solana instance
+    const provider = web3Instance._provider
+    if (provider === window.solana) {
+      yield call(connectPhantomWallet, provider)
+    } else if (provider?._providerUrl?.hostname.includes('sollet')) {
+      yield call(connectSolletWallet, provider)
+    } else {
+      yield call(connectEthWallet, web3Instance)
+    }
+  } catch (err) {
+    yield put(
+      updateWalletError({
+        errorMessage:
+          'An error occured while connecting a wallet with your account.'
+      })
+    )
+  }
+}
+
+function* connectSolletWallet(wallet: any) {
+  const connectingWallet: string = wallet.publicKey.toString()
+  const signMessage = async (encodedMessage: Uint8Array, encoding: string) => {
+    return wallet.sign(encodedMessage, encoding)
+  }
+  const disconnect = async () => {
+    if (wallet._publicKey) await wallet.disconnect()
+  }
+  yield connectSPLWallet(connectingWallet, signMessage, disconnect)
+}
+
+function* connectPhantomWallet(solana: any) {
+  const connectingWallet: string = solana.publicKey.toString()
+  const disconnect = async () => {
+    await solana.disconnect()
+  }
+  yield connectSPLWallet(connectingWallet, solana.signMessage, disconnect)
+}
+
+type SolanaSignMessage = (
+  encodedMessage: Uint8Array,
+  encoding: string
+) => Promise<{
+  publicKey: any
+  signature: any
+}>
+
+function* connectSPLWallet(
+  connectingWallet: string,
+  solanaSignMessage: SolanaSignMessage,
+  disconnect: () => Promise<void>
+) {
+  try {
+    const accountUserId: Nullable<ID> = yield select(getUserId)
+
+    const currentAssociatedWallets: ReturnType<typeof getAssociatedWallets> = yield select(
+      getAssociatedWallets
+    )
+
+    const associatedUserId: Nullable<ID> = yield apiClient.getAssociatedWalletUserId(
+      { address: connectingWallet }
+    )
+
+    if (
+      (currentAssociatedWallets?.connectedSolWallets ?? []).some(
+        wallet => wallet.address === connectingWallet
+      ) ||
+      associatedUserId !== null
+    ) {
+      // The wallet already exists in the associated wallets set
+      yield put(
+        updateWalletError({
+          errorMessage:
+            'This wallet has already been associated with an Audius account.'
+        })
+      )
+      return
+    }
+
+    const splWalletBalances: {
+      address: string
+      balance: BNWei
+    }[] = yield call(walletClient.getSolWalletBalances, [connectingWallet])
+    const walletBalance = splWalletBalances[0].balance
+
+    // TODO: Fetch collectible count
+    const collectibleCount = 0
+
+    yield put(
+      setIsConnectingWallet({
+        wallet: connectingWallet,
+        chain: Chain.Sol,
+        balance: walletBalance,
+        collectibleCount
+      })
+    )
+    const encodedMessage = new TextEncoder().encode(
+      `AudiusUserID:${accountUserId}`
+    )
+    const signedResponse: {
+      publicKey: any
+      signature: any
+    } = yield solanaSignMessage(encodedMessage, 'utf8')
+
+    const publicKey = signedResponse.publicKey.toString()
+    const signature = signedResponse.signature.toString('hex')
+
+    if (publicKey !== connectingWallet) {
+      yield put(
+        updateWalletError({
+          errorMessage:
+            'An error occured while connecting a wallet with your account.'
+        })
+      )
+      return
+    }
+
+    const userMetadata: ReturnType<typeof getAccountUser> = yield select(
+      getAccountUser
+    )
+    let updatedMetadata = newUserMetadata({ ...userMetadata })
+
+    if (
+      !updatedMetadata.creator_node_endpoint ||
+      !updatedMetadata.metadata_multihash
+    ) {
+      yield put(fetchServices())
+      const upgradedToCreator: boolean = yield call(upgradeToCreator)
+      if (!upgradedToCreator) {
+        yield call(disconnect)
+        yield put(
+          updateWalletError({
+            errorMessage:
+              'An error occured while connecting a wallet with your account.'
+          })
+        )
+        return
+      }
+      const updatedUserMetadata: ReturnType<typeof getAccountUser> = yield select(
+        getAccountUser
+      )
+      updatedMetadata = newUserMetadata({ ...updatedUserMetadata })
+    }
+
+    const currentWalletSignatures: Record<string, any> = yield call(
+      AudiusBackend.fetchUserAssociatedSolWallets,
+      updatedMetadata
+    )
+    updatedMetadata.associated_sol_wallets = {
+      ...(currentWalletSignatures || {}),
+      [connectingWallet]: { signature }
+    }
+
+    yield put(
+      requestConfirmation(
+        CONNECT_WALLET_CONFIRMATION_UID,
+        function* () {
+          const { blockHash, blockNumber } = yield call(
+            AudiusBackend.updateCreator,
+            updatedMetadata,
+            accountUserId
+          )
+
+          const confirmed: boolean = yield call(
+            confirmTransaction,
+            blockHash,
+            blockNumber
+          )
+          if (!confirmed) {
+            throw new Error(
+              `Could not confirm connect wallet for account user id ${accountUserId}`
+            )
+          }
+
+          const updatedWallets = updatedMetadata.associated_sol_wallets
+          return Object.keys(updatedWallets)
+        },
+        // @ts-ignore: remove when confirmer is typed
+        function* (updatedWallets: WalletAddress[]) {
+          // Update the user's balance w/ the new wallet
+          yield put(getBalance())
+          const splWalletBalances: {
+            address: string
+            balance: BNWei
+          }[] = yield call(walletClient.getSolWalletBalances, updatedWallets)
+          // TODO: Fetch collectible count
+          const collectibleCount = 0
+
+          yield put(
+            setWalletAddedConfirmed({
+              wallet: connectingWallet,
+              balance: walletBalance,
+              collectibleCount,
+              chain: Chain.Sol
+            })
+          )
+          const updatedCID: Nullable<string> = yield call(getAccountMetadataCID)
+          if (updatedCID) {
+            yield put(
+              cacheActions.update(Kind.USERS, [
+                {
+                  id: accountUserId,
+                  metadata: { metadata_multihash: updatedCID }
+                }
+              ])
+            )
+          }
+          // Disconnect the web3 instance because after we've linked, we no longer need it
+          yield call(disconnect)
+        },
+        function* () {
+          yield put(
+            updateWalletError({
+              errorMessage:
+                'An error occured while connecting a wallet with your account.'
+            })
+          )
+          // Disconnect the web3 instance in the event of an error, we no longer need it
+          yield call(disconnect)
+        }
+      )
+    )
+  } catch (error) {
+    console.error(error)
+    // Disconnect the web3 instance in the event of an error, we no longer need it
+    // if (solana.isConnected) yield call(solana.disconnect)
+    yield put(
+      updateWalletError({
+        errorMessage:
+          'An error occured while connecting a wallet with your account.'
+      })
+    )
+    yield call(disconnect)
+  }
+}
+
+function* connectEthWallet(web3Instance: any) {
+  try {
     const accounts: string[] = yield web3Instance.eth.getAccounts()
     const accountUserId: Nullable<ID> = yield select(getUserId)
     const connectingWallet = accounts[0]
@@ -208,13 +505,13 @@ function* connectWallet() {
     )
 
     if (
-      (currentAssociatedWallets?.connectedWallets ?? []).some(
-        wallet => wallet === connectingWallet
+      (currentAssociatedWallets?.connectedEthWallets ?? []).some(
+        wallet => wallet.address === connectingWallet
       ) ||
       associatedUserId !== null
     ) {
       yield disconnectWeb3(web3Instance)
-      // The wallet already exists in the assocaited wallets set
+      // The wallet already exists in the associated wallets set
       yield put(
         updateWalletError({
           errorMessage:
@@ -223,8 +520,21 @@ function* connectWallet() {
       )
       return
     }
-
-    yield put(setIsConnectingWallet({ wallet: connectingWallet }))
+    const walletBalances: {
+      address: string
+      balance: BNWei
+    }[] = yield call(walletClient.getEthWalletBalances, [connectingWallet])
+    const walletBalance = walletBalances[0].balance
+    // TODO: fetch collectible count
+    const collectibleCount = 0
+    yield put(
+      setIsConnectingWallet({
+        wallet: connectingWallet,
+        chain: Chain.Eth,
+        balance: walletBalance,
+        collectibleCount
+      })
+    )
     const signature: string = yield web3Instance.eth.personal.sign(
       `AudiusUserID:${accountUserId}`,
       accounts[0]
@@ -257,7 +567,7 @@ function* connectWallet() {
     }
 
     const currentWalletSignatures: Record<string, any> = yield call(
-      AudiusBackend.fetchUserAssociatedWallets,
+      AudiusBackend.fetchUserAssociatedEthWallets,
       updatedMetadata
     )
     updatedMetadata.associated_wallets = {
@@ -275,7 +585,7 @@ function* connectWallet() {
             accountUserId
           )
 
-          const confirmed = yield call(
+          const confirmed: boolean = yield call(
             confirmTransaction,
             blockHash,
             blockNumber
@@ -293,7 +603,18 @@ function* connectWallet() {
         function* (updatedWallets: WalletAddress[]) {
           // Update the user's balance w/ the new wallet
           yield put(getBalance())
-          yield put(setAssociatedWallets({ associatedWallets: updatedWallets }))
+          const walletBalances: {
+            address: string
+            balance: BNWei
+          }[] = yield call(walletClient.getEthWalletBalances, updatedWallets)
+          yield put(
+            setWalletAddedConfirmed({
+              wallet: connectingWallet,
+              balance: walletBalance,
+              collectibleCount,
+              chain: Chain.Eth
+            })
+          )
           const updatedCID: Nullable<string> = yield call(getAccountMetadataCID)
           if (updatedCID) {
             yield put(
@@ -335,28 +656,51 @@ function* connectWallet() {
 function* removeWallet(action: ConfirmRemoveWalletAction) {
   try {
     const removeWallet = action.payload.wallet
+    const removeChain = action.payload.chain
     const accountUserId: Nullable<ID> = yield select(getUserId)
     const userMetadata: ReturnType<typeof getAccountUser> = yield select(
       getAccountUser
     )
     const updatedMetadata = newUserMetadata({ ...userMetadata })
 
-    const currentAssociatedWallets: Record<string, any> = yield call(
-      AudiusBackend.fetchUserAssociatedWallets,
-      updatedMetadata
-    )
-    if (
-      currentAssociatedWallets &&
-      !(removeWallet in currentAssociatedWallets)
-    ) {
-      // The wallet already exists in the assocaited wallets set
-      yield put(updateWalletError({ errorMessage: 'Unable to remove wallet' }))
-      return
+    if (removeChain === Chain.Eth) {
+      const currentAssociatedWallets: Record<string, any> = yield call(
+        AudiusBackend.fetchUserAssociatedEthWallets,
+        updatedMetadata
+      )
+      if (
+        currentAssociatedWallets &&
+        !(removeWallet in currentAssociatedWallets)
+      ) {
+        // The wallet already removed from the associated wallets set
+        yield put(updateWalletError({ errorMessage: 'Wallet already removed' }))
+        return
+      }
+
+      updatedMetadata.associated_wallets = {
+        ...(currentAssociatedWallets || {})
+      }
+
+      delete updatedMetadata.associated_wallets[removeWallet]
+    } else if (removeChain === Chain.Sol) {
+      const currentAssociatedWallets: Record<string, any> = yield call(
+        AudiusBackend.fetchUserAssociatedSolWallets,
+        updatedMetadata
+      )
+      if (
+        currentAssociatedWallets &&
+        !(removeWallet in currentAssociatedWallets)
+      ) {
+        // The wallet already removed fromthe associated wallets set
+        yield put(updateWalletError({ errorMessage: 'Wallet already removed' }))
+        return
+      }
+
+      updatedMetadata.associated_sol_wallets = {
+        ...(currentAssociatedWallets || {})
+      }
+      delete updatedMetadata.associated_sol_wallets[removeWallet]
     }
-
-    updatedMetadata.associated_wallets = { ...(currentAssociatedWallets || {}) }
-
-    delete updatedMetadata.associated_wallets[removeWallet]
 
     yield put(
       requestConfirmation(
@@ -368,7 +712,7 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
             accountUserId
           )
 
-          const confirmed = yield call(
+          const confirmed: boolean = yield call(
             confirmTransaction,
             blockHash,
             blockNumber
@@ -384,7 +728,9 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
         function* () {
           // Update the user's balance w/ the new wallet
           yield put(getBalance())
-          yield put(removeWalletAction({ wallet: removeWallet }))
+          yield put(
+            removeWalletAction({ wallet: removeWallet, chain: removeChain })
+          )
           const updatedCID: Nullable<string> = yield call(getAccountMetadataCID)
           yield put(
             cacheActions.update(Kind.USERS, [

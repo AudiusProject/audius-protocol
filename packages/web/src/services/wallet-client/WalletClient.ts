@@ -44,7 +44,6 @@ class WalletClient {
           AudiusBackend.getAddressTotalStakedBalance(wallet, bustCache)
         )
       )
-      console.log({ balances, ws: associatedWallets.wallets })
 
       const totalBalance = balances.reduce(
         (sum, walletBalance) => sum.add(walletBalance),
@@ -54,6 +53,44 @@ class WalletClient {
     } catch (err) {
       console.log(err)
       return BN_ZERO
+    }
+  }
+
+  async getEthWalletBalances(
+    wallets: string[],
+    bustCache = false
+  ): Promise<{ address: string; balance: BNWei }[]> {
+    try {
+      const balances: { address: string; balance: BNWei }[] = await Promise.all(
+        wallets.map(async wallet => {
+          const balance = await AudiusBackend.getAddressTotalStakedBalance(
+            wallet,
+            bustCache
+          )
+          return { address: wallet, balance: balance as BNWei }
+        })
+      )
+      return balances
+    } catch (err) {
+      console.error(err)
+      return []
+    }
+  }
+
+  async getSolWalletBalances(
+    wallets: string[]
+  ): Promise<{ address: string; balance: BNWei }[]> {
+    try {
+      const balances: { address: string; balance: BNWei }[] = await Promise.all(
+        wallets.map(async wallet => {
+          const balance = await AudiusBackend.getAddressWAudioBalance(wallet)
+          return { address: wallet, balance: balance as BNWei }
+        })
+      )
+      return balances
+    } catch (err) {
+      console.error(err)
+      return []
     }
   }
 
