@@ -10,12 +10,14 @@ import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import DownloadButtons from 'containers/download-buttons/DownloadButtons'
+import { useFlag } from 'containers/remote-config/hooks'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useImageSize'
 import { FieldVisibility, Remix } from 'models/Track'
 import { ID } from 'models/common/Identifiers'
 import { SquareSizes, CoverArtSizes } from 'models/common/ImageSizes'
 import { Name } from 'services/analytics'
+import { FeatureFlags } from 'services/remote-config'
 import { make, useRecord } from 'store/analytics/actions'
 import { OverflowAction } from 'store/application/ui/mobileOverflowModal/types'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
@@ -138,6 +140,9 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
+  const { isEnabled: isShareSoundToTikTokEnabled } = useFlag(
+    FeatureFlags.SHARE_SOUND_TO_TIKTOK
+  )
   const image = useTrackCoverArt(
     trackId,
     coverArtSizes,
@@ -186,7 +191,9 @@ const TrackHeader = ({
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
       isUnlisted && !fieldVisibility.share ? null : OverflowAction.SHARE,
-      isOwner ? OverflowAction.SHARE_TO_TIKTOK : null,
+      isShareSoundToTikTokEnabled && isOwner
+        ? OverflowAction.SHARE_TO_TIKTOK
+        : null,
       OverflowAction.ADD_TO_PLAYLIST,
       isFollowing
         ? OverflowAction.UNFOLLOW_ARTIST
