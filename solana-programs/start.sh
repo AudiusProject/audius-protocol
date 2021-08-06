@@ -1,4 +1,6 @@
 {
+    solana -V
+
     eth_account=$(python -c "from web3.auto import w3; a = w3.eth.account.create(); print(a.address[2:], a.privateKey.hex()[2:])")
     address=$(echo $eth_account | cut -d' ' -f1)
     priv_key=$(echo $eth_account | cut -d' ' -f2)
@@ -100,9 +102,12 @@
     reward_manager_token_account_key="$(echo $init_reward_output | awk '{print $11}')"
     echo "Reward manager account key: $reward_manager_account_key"
     echo "Reward manager token acct key: $reward_manager_token_account_key"
-
     echo "Transferring funds to RewardsManager funds holder..."
     spl-token transfer $token 100000000 $reward_manager_token_account_key 
+
+    echo "Testing create sender"
+    cargo run create-sender --eth-operator-address 0xF24936714293a0FaF39A022138aF58D874289132  --eth-sender-address 0xF24936714293a0FaF39A022138aF58D874289133 --reward-manager $reward_manager_account_key
+
 } >&2
 
 # Back up 2 directories to audius-protocol/solana-programs
@@ -125,6 +130,6 @@ cat <<EOF
     "claimableTokenAddress": "$claimable_token_address",
     "rewardsManagerAddress": "$rewards_manager_address",
     "rewardsManagerAccount": "$reward_manager_account_key",
-    "rewardsManagerTokenAccount": "$reward_manager_token_account_key",
+    "rewardsManagerTokenAccount": "$reward_manager_token_account_key"
 }
 EOF
