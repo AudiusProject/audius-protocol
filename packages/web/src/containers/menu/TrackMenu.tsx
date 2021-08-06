@@ -18,6 +18,7 @@ import {
   ShareSource,
   CreatePlaylistSource
 } from 'services/analytics'
+import { FeatureFlags, getFeatureEnabled } from 'services/remote-config'
 import { getAccountOwnedPlaylists } from 'store/account/selectors'
 import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
 import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
@@ -225,7 +226,12 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (includeEmbed) {
       menu.items.push(embedMenuItem)
     }
-    if (trackId && isOwner && !isDeleted) {
+    if (
+      getFeatureEnabled(FeatureFlags.SHARE_SOUND_TO_TIKTOK) &&
+      trackId &&
+      isOwner &&
+      !isDeleted
+    ) {
       menu.items.push(shareToTikTokMenuItem)
     }
 
