@@ -47,7 +47,7 @@ def setup(host, service, config):
         else:
             print("Warning no config specified")
 
-    if serivce == "creator-node":
+    if service == "creator-node":
         print("Starting creator-node...")
         subprocess.run(
             [
@@ -62,7 +62,7 @@ def setup(host, service, config):
             [
                 "ssh",
                 host,
-                f"audius-cli launch discovery {'--seed-job' if seed_job else ''} --configure-ipfs",
+                "audius-cli launch discovery --seed-job --configure-ipfs",
             ]
         )
     elif service == "remote-dev":
