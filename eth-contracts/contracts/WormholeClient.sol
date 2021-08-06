@@ -8,13 +8,13 @@ import "./InitializableV2.sol";
 
 
 interface Wormhole {
-    function lockAssets(
-        address asset,
+    function transferTokens(
+        address token,
         uint256 amount,
+        uint16 recipientChain,
         bytes32 recipient,
-        uint8 target_chain,
-        uint32 nonce,
-        bool refund_dust
+        uint256 arbiterFee,
+        uint32 nonce
     ) external;
 }
 
@@ -35,10 +35,10 @@ contract WormholeClient is InitializableV2 {
     // code below, in constructor, and in permit function adapted from the audited reference Uniswap implementation:
     // https://github.com/Uniswap/uniswap-v2-core/blob/master/contracts/UniswapV2ERC20.sol
     bytes32 public DOMAIN_SEPARATOR;
-    // keccak256("LockAssets(address from,uint256 amount,bytes32 recipient,uint8 targetChain,uint32 nonce,bool refundDust,uint256 deadline)");
+    // keccak256("TransferTokens(address from,uint256 amount,uint16 recipientChain,bytes32 recipient,uint256 artbiterFee,uint32 nonce,uint256 deadline)");
 
-    bytes32 public constant LOCK_ASSETS_TYPEHASH = (
-        0x32b9fa85e7487cf8e3430f4b773c7a862349025263595634cc74cb3036b9b130
+    bytes32 public constant TRANSFER_TOKENS_TYPEHASH = (
+        0xb5c18197d4070033d8a764555784c9c515ef8c35627dac4a9520d96403df3b35
     );
 
     mapping(address => uint32) public nonces;
@@ -95,16 +95,16 @@ contract WormholeClient is InitializableV2 {
      * @notice transfer `_amount` of tokens from sender to target account
      * @param from - account to transfer from
      * @param amount - amount of token to transfer
+     * @param recipientChain -  id of the chain to transfer to
      * @param recipient - foreign chain address of recipient
-     * @param targetChain -  id of the chain to transfer to
-     * @param refundDust - bool to refund dust
+     * @param arbiterFee - the amount to pay the arbiter
      */
-    function lockAssets(
+    function transferTokens(
         address from,
         uint256 amount,
+        uint16 recipientChain,
         bytes32 recipient,
-        uint8 targetChain,
-        bool refundDust,
+        uint256 arbiterFee,
         uint deadline,
         uint8 v,
         bytes32 r,
@@ -120,13 +120,13 @@ contract WormholeClient is InitializableV2 {
                 DOMAIN_SEPARATOR,
                 keccak256(
                     abi.encode(
-                        LOCK_ASSETS_TYPEHASH,
+                        TRANSFER_TOKENS_TYPEHASH,
                         from,
                         amount,
+                        recipientChain,
                         recipient,
-                        targetChain,
+			arbiterFee,
                         nonce,
-                        refundDust,
                         deadline
                     )
                 )
@@ -142,13 +142,14 @@ contract WormholeClient is InitializableV2 {
         transferToken.safeTransferFrom(from, address(this), amount);
         transferToken.approve(address(wormhole), amount);
 
-        wormhole.lockAssets(
+        wormhole.transferTokens(
             address(transferToken),
             amount,
+            recipientChain,
             recipient,
-            targetChain,
-            nonce,
-            refundDust
+	    arbiterFee,
+            nonce
         );
     }
 }
+	

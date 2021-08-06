@@ -310,16 +310,17 @@ contract('EthRewardsManager', async (accounts) => {
     await token.transfer(ethRewardsManager.address, amount, { from: tokenOwnerAddress })
     assert.equal((await token.balanceOf(ethRewardsManager.address)).toNumber(), amount)
 
-    const tx = await ethRewardsManager.transferToSolana(1, { from: accounts[7] })
+    const tx = await ethRewardsManager.transferToSolana(0, 1, { from: accounts[7] })
 
-    await expectEvent.inTransaction(tx.tx, MockWormhole, 'LogTokensLocked', {
-      targetChain: '1',
+    await expectEvent.inTransaction(tx.tx, MockWormhole, 'LogTokensTransferred', {
+      recipientChain: '1',
       tokenChain: '2',
       tokenDecimals: await token.decimals(),
       token: web3.utils.padLeft(token.address, 64).toLowerCase(),
       sender: web3.utils.padLeft(ethRewardsManager.address, 64).toLowerCase(),
       recipient: `0x${recipient.toString('hex')}`,
       amount: amount.toString(),
+      arbiterFee: '0',
       nonce: '1'
     })
 
@@ -347,19 +348,20 @@ contract('EthRewardsManager', async (accounts) => {
     const transferToSolanaTx = await governance.guardianExecuteTransaction(
       ethRewardsManagerProxyKey,
       callValue0,
-      'transferToSolana(uint32)',
-      _lib.abiEncode(['uint32'], [1]),
+      'transferToSolana(uint256,uint32)',
+      _lib.abiEncode(['uint256', 'uint32'], [0, 1]),
       { from: guardianAddress }
     )
 
-    await expectEvent.inTransaction(transferToSolanaTx.tx, MockWormhole, 'LogTokensLocked', {
-      targetChain: '1',
+    await expectEvent.inTransaction(transferToSolanaTx.tx, MockWormhole, 'LogTokensTransferred', {
+      recipientChain: '1',
       tokenChain: '2',
       tokenDecimals: await token.decimals(),
       token: web3.utils.padLeft(token.address, 64).toLowerCase(),
       sender: web3.utils.padLeft(ethRewardsManager.address, 64).toLowerCase(),
       recipient: `0x${recipient.toString('hex')}`,
       amount: RECURRING_COMMUNITY_FUNDING_AMOUNT.toString(),
+      arbiterFee: '0',
       nonce: '1'
     })
   })

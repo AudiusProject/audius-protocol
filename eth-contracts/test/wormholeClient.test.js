@@ -106,14 +106,14 @@ contract('WormholeClient', async (accounts) => {
     assert.equal(await wormholeClient.token(), token.address)
   })
 
-  it('lock assets', async () => {
+  it('transfer tokens', async () => {
     const amount = 100
     const chainId = 1 // in ganache, the chain ID the token initializes with is always 1
 
     const fromAcctPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
     const fromAcct = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
 
-    const relayerAcct = accounts[6] // account that calls lockAssets
+    const relayerAcct = accounts[6] // account that calls transferTokens
 
     const recipient = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
 
@@ -122,16 +122,16 @@ contract('WormholeClient', async (accounts) => {
 
     const nonce = (await wormholeClient.nonces(fromAcct)).toNumber()
     const deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25 // sufficiently far in future
-    const digest = _signatures.getLockAssetsDigest(
+    const digest = _signatures.getTransferTokensDigest(
       'AudiusWormholeClient',
       wormholeClient.address,
       chainId,
       {
         from: fromAcct,
         amount: amount,
+	recipientChain: 1,
         recipient,
-        targetChain: 1,
-        refundDust: true
+        arbiterFee: 0
       },
       nonce,
       deadline
@@ -141,12 +141,12 @@ contract('WormholeClient', async (accounts) => {
     const failingResult = _signatures.sign(digest, fromAcctPrivKey)
 
     await _lib.assertRevert(
-      wormholeClient.lockAssets(
+      wormholeClient.transferTokens(
         fromAcct,
         amount,
-        recipient,
         1,
-        true,
+        recipient,
+        0,
         0,
         workingResult.v,
         workingResult.r,
@@ -157,12 +157,12 @@ contract('WormholeClient', async (accounts) => {
     )
 
     await _lib.assertRevert(
-      wormholeClient.lockAssets(
+      wormholeClient.transferTokens(
         accounts[10],
         amount,
-        recipient,
         1,
-        true,
+        recipient,
+        0,
         deadline,
         failingResult.v,
         failingResult.r,
@@ -172,12 +172,12 @@ contract('WormholeClient', async (accounts) => {
       'Invalid signature'
     )
 
-    const tx = await wormholeClient.lockAssets(
+    const tx = await wormholeClient.transferTokens(
       fromAcct,
       amount,
-      recipient,
       1,
-      true,
+      recipient,
+      0,
       deadline,
       workingResult.v,
       workingResult.r,
@@ -185,14 +185,15 @@ contract('WormholeClient', async (accounts) => {
       { from: relayerAcct }
     )
 
-    await expectEvent.inTransaction(tx.tx, MockWormhole, 'LogTokensLocked', {
-      targetChain: '1',
+    await expectEvent.inTransaction(tx.tx, MockWormhole, 'LogTokensTransferred', {
+      recipientChain: '1',
       tokenChain: '2',
       tokenDecimals: await token.decimals(),
       token: web3.utils.padLeft(token.address, 64).toLowerCase(),
       sender: web3.utils.padLeft(wormholeClient.address, 64).toLowerCase(),
       recipient: `0x${recipient.toString('hex')}`,
       amount: amount.toString(),
+      arbiterFee: '0',
       nonce: nonce.toString()
     })
   })
