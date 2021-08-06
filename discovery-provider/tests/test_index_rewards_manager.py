@@ -1,5 +1,5 @@
-import pytest
 from unittest.mock import MagicMock
+import pytest
 import src
 from src.models import ChallengeDisbursement
 from src.tasks.index_rewards_manager import (
@@ -53,7 +53,9 @@ mock_tx_info = {
                     "instructions": [
                         {
                             "accounts": [0, 1, 6],
-                            "data": "6Tvirzk8jih7LmKk9jTesrZh8KkSo7qGfZJWP4yxBuegWSs3nE5RRNZkLVhGKKXB1ACu9Zhi7LcUV9bFUo27Y3A87jvC4FCRSJrCWZp3bYMBzJ2hyZXcVHLp3Pquzc8khJJJSQsPMm3KrBzxGjv93ZYbhrTh6XfLPJ",
+                            "data": "6Tvirzk8jih7LmKk9jTesrZh8KkSo7qGfZJWP4yxBuegWSs3nE5RRNZkLVhGKKXB1ACu9"
+                            + "Zhi7LcUV9bFUo27Y3A87jvC4FCRSJrCWZp3bYMBzJ2hyZXcVHLp3Pquzc8khJJJSQsPMm3KrBzxG"
+                            + "jv93ZYbhrTh6XfLPJ",
                             "programIdIndex": 9,
                         },
                         {"accounts": [1, 5, 6, 7], "data": "2", "programIdIndex": 8},
@@ -228,7 +230,9 @@ def get_sol_tx_info_mock(monkeypatch):
     return mock_get_sol_tx_info
 
 
-def test_process_sol_rewards_transfer_instruction(app, get_sol_tx_info_mock):
+def test_process_sol_rewards_transfer_instruction(
+    app, get_sol_tx_info_mock
+):  # pylint: disable=W0621
     get_sol_tx_info_mock.return_value = mock_tx_info
 
     with app.app_context():
