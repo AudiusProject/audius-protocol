@@ -79,7 +79,7 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
  * 1. do the prep work to save the file to the local file system including
  * creating directories, changing IPFS gateway urls before calling _saveFileForMultihashToFS
  * 2. attempt to fetch the CID from a variety of sources
- * 3. throws error on content retrieval or content verification failure
+ * 3. return boolean failure content retrieval or content verification failure
  * @param {Object} serviceRegistry
  * @param {Object} logger
  * @param {String} multihash IPFS cid
@@ -88,6 +88,7 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
  * @param {Array} gatewaysToTry List of gateway endpoints to try
  * @param {String?} fileNameForImage file name if the multihash is image in dir.
  *                  eg original.jpg or 150x150.jpg
+ * @return {Boolean} success indicator
  */
 async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
   const { ipfsLatest } = serviceRegistry
@@ -288,12 +289,16 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
       throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
     }
 
-    _printDecisionTreeObj(decisionTree, logger)
+    // If error, return boolean failure indicator + print logs
   } catch (e) {
     decisionTree.push({ stage: `saveFileForMultihashToFS error`, vals: e.message, time: Date.now() })
     _printDecisionTreeObj(decisionTree, logger)
-    throw new Error(`saveFileForMultihashToFS - ${e.message}`)
+
+    return false
   }
+
+  // If no error, return boolean success indicator
+  return true
 }
 
 const _printDecisionTreeObj = (decisionTree, logger) => {

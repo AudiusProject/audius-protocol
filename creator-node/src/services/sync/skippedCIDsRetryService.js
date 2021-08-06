@@ -1,11 +1,9 @@
 const Bull = require('bull')
-const _ = require('lodash')
 
 const models = require('../../models')
 const { logger } = require('../../logging')
 const utils = require('../../utils')
 const { saveFileForMultihashToFS } = require('../../fileManager')
-const CIDFailureCountManager = require('./CIDFailureCountManager')
 
 const LogPrefix = '[SkippedCIDsRetryQueue]'
 
@@ -88,45 +86,36 @@ class SkippedCIDsRetryQueue {
         type: { [models.Sequelize.Op.ne]: 'dir' }, // skip over 'dir' type since there is no content to sync
         skipped: true,
         createdAt: { [models.Sequelize.Op.gte]: oldestFileCreatedAtDate }
-      }
+      },
+      // Order by createdAt desc to make sure old, unavailable files do not repeatedly delay processing
+      order: [['createdAt', 'DESC']]
     })
-
-    // Shuffle files to make sure processing doesn't repeatedly hang on same files
-    skippedFiles = _.shuffle(skippedFiles)
 
     let registeredGateways = await utils.getAllRegisteredCNodes(libs)
     registeredGateways = registeredGateways.map(nodeInfo => nodeInfo.endpoint)
 
     // Intentionally run sequentially to minimize node load
-    const savedFiles = []
+    const savedFileUUIDs = []
     for await (const file of skippedFiles) {
-      // `saveFileForMultihashToFS()` will error on failure to retrieve/save
-      try {
-        await saveFileForMultihashToFS(serviceRegistry, logger, file.multihash, file.storagePath, registeredGateways, file.fileName)
-
-        savedFiles.push(file)
-      } catch (e) {
-        // No need to log anything here, erroring is the default behavior
+      // Returns boolean success indicator
+      const success = await saveFileForMultihashToFS(serviceRegistry, logger, file.multihash, file.storagePath, registeredGateways, file.fileName)
+      if (success) {
+        savedFileUUIDs.push(file.fileUUID)
       }
+      // Do nothing on failure, since that is the default behavior
     }
 
     // Update DB entries for all previously-skipped files that were successfully saved to flip `skipped` flag
-    if (savedFiles.length) {
-      const savedFileUUIDs = savedFiles.map(savedFile => savedFile.fileUUID)
+    if (savedFileUUIDs.length) {
       await models.File.update(
         { skipped: false },
         {
           where: { fileUUID: savedFileUUIDs }
         }
       )
-
-      // Reset failure counts for successfully saved CIDs in CIDFailureCountManager
-      savedFiles.forEach(savedFile => {
-        CIDFailureCountManager.resetCIDFailureCount(savedFile.multihash)
-      })
     }
 
-    this.logInfo(`Completed run in ${Date.now() - startTimestampMs}ms. Processing files created >= ${oldestFileCreatedAtDate}. Successfully saved ${savedFiles.length} of total ${skippedFiles.length} processed.`)
+    this.logInfo(`Completed run in ${Date.now() - startTimestampMs}ms. Processing files created >= ${oldestFileCreatedAtDate}. Successfully saved ${savedFileUUIDs.length} of total ${skippedFiles.length} processed.`)
   }
 }
 

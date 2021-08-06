@@ -6,43 +6,7 @@ const { saveFileForMultihashToFS } = require('../../fileManager')
 const { getOwnEndpoint, getCreatorNodeEndpoints } = require('../../middlewares')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const DBManager = require('../../dbManager')
-const CIDFailureCountManager = require('./CIDFailureCountManager')
-
-/**
- * Wrapper around `saveFileForMultihash()` with CID failure count tracking
- * Throws error if CID failure count is below threshold, else returns boolean indicating saved or skipped
- * @returns {Boolean} skipped
- */
-async function skippableSaveFileForMultihashToFS ({
-  serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null, SyncMaxCIDFailureCountBeforeSkip
-}) {
-  let skipped = false
-
-  try {
-    await saveFileForMultihashToFS(
-      serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage
-    )
-
-    // Reset CID failure count on success
-    CIDFailureCountManager.resetCIDFailureCount(multihash)
-
-    // If saveFileForMultihashToFS throws, it is because of failed content retrieval or verification
-  } catch (e) {
-    // Increment CID failure count
-    CIDFailureCountManager.incrementCIDFailureCount(multihash)
-
-    // If CID failure count is below threshold, throw an error (base case)
-    if (CIDFailureCountManager.getCIDFailureCount(multihash) <= SyncMaxCIDFailureCountBeforeSkip) {
-      throw new Error(e)
-
-      // If threshold met, sync should skip CID, indicate as skipped without erroring
-    } else {
-      skipped = true
-    }
-  }
-
-  return skipped
-}
+const UserSyncFailureCountManager = require('./UserSyncFailureCountManager')
 
 /**
  * This function is only run on secondaries, to export and sync data from a user's primary.
@@ -60,7 +24,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
   const { nodeConfig, redis } = serviceRegistry
 
   const FileSaveMaxConcurrency = nodeConfig.get('nodeSyncFileSaveMaxConcurrency')
-  const SyncMaxCIDFailureCountBeforeSkip = nodeConfig.get('syncMaxCIDFailureCountBeforeSkip')
+  const SyncRequestMaxUserFailureCountBeforeSkip = nodeConfig.get('syncRequestMaxUserFailureCountBeforeSkip')
 
   const start = Date.now()
   logger.info('begin nodesync for ', walletPublicKeys, 'time', start)
@@ -297,8 +261,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         const trackFiles = fetchedCNodeUser.files.filter(file => models.File.TrackTypes.includes(file.type))
         const nonTrackFiles = fetchedCNodeUser.files.filter(file => models.File.NonTrackTypes.includes(file.type))
 
-        // Record all CIDs that will be skipped during sync, used to set `File.skipped` DB field during DB write
-        const CIDsToSkip = new Set()
+        let numCIDsThatFailedSaveFileOp = 0
 
         // Save all track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
@@ -308,21 +271,18 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
           /**
            * Fetch content for each CID + save to FS
            * Error on failure to fetch content for CID, or skip it after repeated failures
-           * @notice will reject on single CID processing failure
+           * @notice `skippableSaveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
            */
           await Promise.all(trackFilesSlice.map(
             async (trackFile) => {
-              const skipped = await skippableSaveFileForMultihashToFS({
-                serviceRegistry,
-                logger,
-                multihash: trackFile.multihash,
-                expectedStoragePath: trackFile.storagePath,
-                gatewaysToTry: userReplicaSet,
-                SyncMaxCIDFailureCountBeforeSkip
-              })
+              const success = await saveFileForMultihashToFS(
+                serviceRegistry, logger, trackFile.multihash, trackFile.storagePath, userReplicaSet
+              )
 
-              if (skipped) {
-                CIDsToSkip.add(trackFile.multihash)
+              // If saveFile op failed, mark trackFile DB entry as skipped
+              if (!success) {
+                trackFile.skipped = true // defaults to false
+                numCIDsThatFailedSaveFileOp++
               }
             }
           ))
@@ -338,42 +298,53 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
               // Skip over directories since there's no actual content to sync
               // The files inside the directory are synced separately
               if (nonTrackFile.type !== 'dir') {
-                let skipped
                 const multihash = nonTrackFile.multihash
+
+                let success
 
                 // if it's an image file, we need to pass in the actual filename because the gateway request is /ipfs/Qm123/<filename>
                 // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
                 if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-                  skipped = await skippableSaveFileForMultihashToFS({
-                    serviceRegistry,
-                    logger,
-                    multihash,
-                    expectedStoragePath: nonTrackFile.storagePath,
-                    gatewaysToTry: userReplicaSet,
-                    fileNameForImage: nonTrackFile.fileName,
-                    CIDsToSkip,
-                    SyncMaxCIDFailureCountBeforeSkip
-                  })
+                  success = await saveFileForMultihashToFS(
+                    serviceRegistry, logger, multihash, nonTrackFile.storagePath, userReplicaSet, nonTrackFile.fileName
+                  )
                 } else {
-                  skipped = await skippableSaveFileForMultihashToFS({
-                    serviceRegistry,
-                    logger,
-                    multihash,
-                    expectedStoragePath: nonTrackFile.storagePath,
-                    gatewaysToTry: userReplicaSet,
-                    CIDsToSkip,
-                    SyncMaxCIDFailureCountBeforeSkip
-                  })
+                  success = await saveFileForMultihashToFS(
+                    serviceRegistry, logger, multihash, nonTrackFile.storagePath, userReplicaSet
+                  )
                 }
 
-                if (skipped) {
-                  CIDsToSkip.add(multihash)
+                // If saveFile op failed, mark trackFile DB entry as skipped
+                if (!success) {
+                  nonTrackFile.skipped = true // defaults to false
+                  numCIDsThatFailedSaveFileOp++
                 }
               }
             }
           ))
         }
         logger.info(redisKey, 'Saved all non-track files to disk.')
+
+        if (numCIDsThatFailedSaveFileOp > 0) {
+          const userSyncFailureCount = UserSyncFailureCountManager.incrementFailureCount(fetchedWalletPublicKey)
+
+          // Throw error if failure threshold not yet reached
+          if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
+            const errorMsg = `User Sync failed due to ${numCIDsThatFailedSaveFileOp} failing saveFileForMultihashToFS op. userSyncFailureCount = ${userSyncFailureCount} // SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}`
+            logger.error(redisKey, errorMsg)
+            throw new Error(errorMsg)
+
+            // If max failure threshold reached, continue with sync and reset failure count
+          } else {
+            // Reset falure count so subsequent user syncs will not always succeed & skip
+            UserSyncFailureCountManager.resetFailureCount(fetchedWalletPublicKey)
+
+            logger.info(redisKey, `User Sync continuing with ${numCIDsThatFailedSaveFileOp} skipped files, since SyncRequestMaxUserFailureCountBeforeSkip (${SyncRequestMaxUserFailureCountBeforeSkip}) reached.`)
+          }
+        } else {
+          // Reset failure count if all files were successfully saved
+          UserSyncFailureCountManager.resetFailureCount(fetchedWalletPublicKey)
+        }
 
         await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
           ...clockRecord,
@@ -382,9 +353,6 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         logger.info(redisKey, 'Saved all ClockRecord entries to DB')
 
         await models.File.bulkCreate(nonTrackFiles.map(file => {
-          if (CIDsToSkip.has(file.multihash)) {
-            file.skipped = true // defaults to false
-          }
           return {
             ...file,
             trackBlockchainId: null,
@@ -400,9 +368,6 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         logger.info(redisKey, 'Saved all Track entries to DB')
 
         await models.File.bulkCreate(trackFiles.map(trackFile => {
-          if (CIDsToSkip.has(trackFile.multihash)) {
-            trackFile.skipped = true // defaults to false
-          }
           return {
             ...trackFile,
             cnodeUserUUID
