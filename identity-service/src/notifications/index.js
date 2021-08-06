@@ -157,7 +157,7 @@ class NotificationProcessor {
         await this.redis.set(NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
       } catch (e) {
         error = e
-        logger.error(`processEmailNotifications - Problem with processing a emails: ${e}`)
+        logger.error(`processEmailNotifications - Problem with processing emails: ${e}`)
         this.errorHandler(e)
       }
       // Wait 10 minutes before re-running the job

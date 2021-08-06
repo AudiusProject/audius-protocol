@@ -11,3 +11,4 @@ class ChallengeEvent(str, enum.Enum):
     favorite = "favorite"
     track_listen = "track_listen"
     track_upload = "track_upload"
+    connect_verified = "connect_verified"

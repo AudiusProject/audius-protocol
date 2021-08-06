@@ -7,14 +7,20 @@ services:
   web-server:
     build: ../.
     restart: always
-    command: sh -c '/wait && ls && exec ./scripts/dev-server.sh'
     ports:
-      - '5000:5000'
+      - '${audius_server_port}:${audius_server_port}'
     env_file:
       - .env
     environment:
-      - WAIT_HOSTS=redis-server:6379,ipfs-node:5001
       - audius_db_run_migrations=false
+      - FLASK_RUN_PORT=${audius_server_port}
+      - audius_redis_url=redis://${COMPOSE_PROJECT_NAME}_redis-server_1:6379/00
+      - audius_ipfs_host=${COMPOSE_PROJECT_NAME}-ipfs-node
+      - audius_discprov_dev_mode=true
+      - audius_no_workers=true
+      - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_redis-server_1:6379,${COMPOSE_PROJECT_NAME}-ipfs-node:5001
+    depends_on:
+      - redis-server
     volumes:
       - '../.:/audius-discovery-provider'
     networks:
