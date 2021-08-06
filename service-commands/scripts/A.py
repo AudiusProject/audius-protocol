@@ -71,8 +71,33 @@ def setup(host, service, config):
                 "ssh",
                 host,
                 (
+                    "sudo apt update && "
+                    "sudo apt install apt-transport-https ca-certificates curl software-properties-common build-essential python-is-python2 git-secrets && "
+                    "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - && "
+                    "sudo sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable' && "
+                    "sudo apt update && "
+                    "sudo apt install docker-ce && "
+                    "sudo usermod -aG docker $(USER) && "
+                    'sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && '
+                    "sudo chmod +x /usr/local/bin/docker-compose && "
+                    "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash && "
+                    "source ~/.bashrc && "
+                    "nvm install 10.23.0 && "
                     "git clone https://github.com/AudiusProject/audius-protocol.git && "
-                    "cd audius-protocol"
+                    "git clone https://github.com/AudiusProject/audius-client.git && "
+                    "cd audius-protocol/service-commands && "
+                    "npm install && "
+                    "sudo node host.js add && "
+                    "node scripts/setup.js run init-repos up && "
+                    "cd ../libs && "
+                    "npm link && "
+                    "cd ../service-commands && "
+                    "npm link @audius/libs && "
+                    "cd ~/audius-client && "
+                    "npm install && "
+                    "npm link @audius/libs && "
+                    "echo 'Rebooting machine...' && "
+                    "reboot && "
                 ),
             ]
         )
