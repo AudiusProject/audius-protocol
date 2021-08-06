@@ -1,7 +1,7 @@
 import concurrent.futures
 import logging
 import time
-from typing import Callable, List, TypedDict
+from typing import Callable, List, TypedDict, Optional
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from solana.rpc.api import Client
@@ -13,6 +13,9 @@ from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.session_manager import SessionManager
 from src.utils.solana_indexing import (
+    ResultMeta,
+    TransactionMessage,
+    TransactionMessageInstruction,
     get_sol_tx_info,
     parse_instruction_data,
     InstructionFormat,
@@ -76,6 +79,25 @@ def parse_transfer_instruction_id(transfer_id: str) -> List[str]:
     return id_parts
 
 
+def get_valid_instruction(
+    tx_message: TransactionMessage, meta: ResultMeta
+) -> Optional[TransactionMessageInstruction]:
+    """Checks the transaction message for a transfer instruction and validates it"""
+    instructions = tx_message["instructions"]
+    rewards_manager_program_index = tx_message["accountKeys"].index(
+        REWARDS_MANAGER_PROGRAM
+    )
+    has_transfer_instruction = any(
+        log == "Program log: Instruction: Transfer" for log in meta["logMessages"]
+    )
+    if has_transfer_instruction:
+        for instruction in instructions:
+            if instruction["programIdIndex"] == rewards_manager_program_index:
+                return instruction
+
+    return None
+
+
 def process_sol_rewards_transfer_instruction(
     session: Session, solana_client: Client, tx_sig: str
 ):
@@ -96,56 +118,44 @@ def process_sol_rewards_transfer_instruction(
             )
             return
         tx_message = result["transaction"]["message"]
-        instructions = tx_message["instructions"]
-        rewards_manager_program_index = tx_message["accountKeys"].index(
-            REWARDS_MANAGER_PROGRAM
-        )
-        has_transfer_instruction = any(
-            log == "Program log: Instruction: Transfer" for log in meta["logMessages"]
-        )
-        if has_transfer_instruction:
-            for instruction in instructions:
-                if instruction["programIdIndex"] == rewards_manager_program_index:
-                    transfer_instruction_data = parse_transfer_instruction_data(
-                        instruction["data"]
-                    )
-                    amount = transfer_instruction_data["amount"]
-                    eth_recipient = transfer_instruction_data["eth_recipient"]
-                    id = transfer_instruction_data["id"]
-                    challenge_id, specifier = parse_transfer_instruction_id(id)
+        instruction = get_valid_instruction(tx_message, meta)
+        if instruction is not None:
+            transfer_instruction_data = parse_transfer_instruction_data(
+                instruction["data"]
+            )
+            amount = transfer_instruction_data["amount"]
+            eth_recipient = transfer_instruction_data["eth_recipient"]
+            id = transfer_instruction_data["id"]
+            challenge_id, specifier = parse_transfer_instruction_id(id)
 
-                    user_query = (
-                        session.query(User.user_id)
-                        .filter(User.wallet == eth_recipient)
-                        .first()
-                    )
-                    if user_query is None:
-                        raise Exception(
-                            f"No user found with eth address {eth_recipient}"
-                        )
-                    user_challenge = (
-                        session.query(UserChallenge.user_id)
-                        .filter(
-                            UserChallenge.challenge_id == challenge_id,
-                            UserChallenge.specifier == specifier,
-                        )
-                        .first()
-                    )
-                    if user_challenge is None:
-                        raise Exception(
-                            f"No user challenge found with challenge_id {challenge_id} and specifier {specifier}"
-                        )
+            user_query = (
+                session.query(User.user_id).filter(User.wallet == eth_recipient).first()
+            )
+            if user_query is None:
+                raise Exception(f"No user found with eth address {eth_recipient}")
+            user_challenge = (
+                session.query(UserChallenge.user_id)
+                .filter(
+                    UserChallenge.challenge_id == challenge_id,
+                    UserChallenge.specifier == specifier,
+                )
+                .first()
+            )
+            if user_challenge is None:
+                raise Exception(
+                    f"No user challenge found with challenge_id {challenge_id} and specifier {specifier}"
+                )
 
-                    session.add(
-                        ChallengeDisbursement(
-                            challenge_id=challenge_id,
-                            user_id=user_query[0],
-                            specifier=specifier,
-                            amount=str(amount),
-                            slot=result["slot"],
-                            signature=tx_sig,
-                        )
-                    )
+            session.add(
+                ChallengeDisbursement(
+                    challenge_id=challenge_id,
+                    user_id=user_query[0],
+                    specifier=specifier,
+                    amount=str(amount),
+                    slot=result["slot"],
+                    signature=tx_sig,
+                )
+            )
     except Exception as e:
         logger.error(
             f"index_rewards_manager.py | Error processing {tx_sig}, {e}", exc_info=True
