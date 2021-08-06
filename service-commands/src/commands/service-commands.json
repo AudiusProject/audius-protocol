@@ -52,7 +52,7 @@
       "docker run -d --name solana --publish 8899:8899/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.7.1 sh -c 'solana-test-validator --gossip-host solana'",
       "docker ps",
       "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop > solana-program-config.json",
-      "cd solana-programs/; cp solana-program-config.json ../identity-service",
+      "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service",
       "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
     ],
     "down": [
