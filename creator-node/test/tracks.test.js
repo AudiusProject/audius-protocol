@@ -202,15 +202,35 @@ describe('test Tracks with mocked IPFS', function () {
 
     const wallet = session.walletPublicKey
 
+    // Confirm /users/clock_status returns expected info
     let resp = await request(app)
       .get(`/users/clock_status/${wallet}`)
       .expect(200)
     assert.deepStrictEqual(resp.body.data, { clockValue: 34, syncInProgress: false })
 
+    // Confirm /users/clock_status returns expected info with returnSkipInfo flag
     resp = await request(app)
       .get(`/users/clock_status/${wallet}?returnSkipInfo=true`)
       .expect(200)
     assert.deepStrictEqual(resp.body.data, { clockValue: 34, syncInProgress: false, CIDSkipInfo: { numCIDs: 34, numSkippedCIDs: 0 } })
+
+    // Update track DB entries to be skipped
+    const numAffectedRows = (await models.File.update(
+      { skipped: true },
+      {
+        where: {
+          cnodeUserUUID: session.cnodeUserUUID,
+          type: 'track'
+        }
+      }
+    ))[0]
+    assert.strictEqual(numAffectedRows, 32)
+
+    // Confirm /users/clock_status returns expected info with returnSkipInfo flag when some entries are skipped
+    resp = await request(app)
+      .get(`/users/clock_status/${wallet}?returnSkipInfo=true`)
+      .expect(200)
+    assert.deepStrictEqual(resp.body.data, { clockValue: 34, syncInProgress: false, CIDSkipInfo: { numCIDs: 34, numSkippedCIDs: 32 } })
   })
 
   // depends on "uploads /track_content"

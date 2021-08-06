@@ -5,6 +5,7 @@ const { promisify } = require('util')
 const randomBytes = promisify(crypto.randomBytes)
 
 const models = require('../models')
+const sequelize = models.sequelize
 const { authMiddleware, syncLockMiddleware, ensureStorageMiddleware } = require('../middlewares')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 const sessionManager = require('../sessionManager')
@@ -192,15 +193,16 @@ module.exports = function (app) {
 
     // Return CIDSkipInfo if requested
     if (returnSkipInfo && cnodeUser) {
-      const CIDs = await models.File.findAll({
-        attributes: ['skipped'],
-        where: {
-          cnodeUserUUID: cnodeUser.cnodeUserUUID
-        }
-      })
+      const countsQuery = (await sequelize.query(`
+        select
+          count(*) as "numCIDs",
+          count(case when "skipped" = true then 1 else null end) as "numSkippedCIDs"
+        from "Files"
+        where "cnodeUserUUID" = :cnodeUserUUID
+      `, { replacements: { cnodeUserUUID: cnodeUser.cnodeUserUUID } }))[0][0]
 
-      const numCIDs = CIDs.length
-      const numSkippedCIDs = (CIDs.filter(CID => CID.skipped === true)).length
+      const numCIDs = parseInt(countsQuery.numCIDs)
+      const numSkippedCIDs = parseInt(countsQuery.numSkippedCIDs)
 
       response.CIDSkipInfo = { numCIDs, numSkippedCIDs }
     }
