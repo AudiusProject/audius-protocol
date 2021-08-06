@@ -1,5 +1,8 @@
+import { clusterApiUrl } from '@solana/web3.js'
 import Web3Modal, { IProviderOptions } from 'web3modal'
 
+import phantomIconPurpleSvg from 'assets/img/phantom-icon-purple.svg'
+import solletSvg from 'assets/img/sollet.svg'
 import walletLinkSvg from 'assets/img/wallet-link.svg'
 const CHAIN_ID = process.env.REACT_APP_ETH_NETWORK_ID
 const BITSKI_CLIENT_ID = process.env.REACT_APP_BITSKI_CLIENT_ID
@@ -9,10 +12,24 @@ const ETH_PROVIDER_URLS = (process.env.REACT_APP_ETH_PROVIDER_URL || '').split(
   ','
 )
 
+declare global {
+  interface Window {
+    solana: any
+  }
+}
+
 type Config = {
   isBitSkiEnabled: boolean
   isWalletConnectEnabled: boolean
   isWalletLinkEnabled: boolean
+  isPhantomEnabled: boolean
+  isSolletEnabled: boolean
+}
+
+class PassThrough {
+  constructor(...args: any) {
+    return args
+  }
 }
 
 export const loadWalletConnect = async () => {
@@ -32,6 +49,13 @@ export const loadWalletLink = async () => {
   return WalletLink
 }
 
+export const loadSolWallet = async () => {
+  const { default: SolWallet } = await import(
+    '@project-serum/sol-wallet-adapter'
+  )
+  return SolWallet
+}
+
 export const createSession = async (config: Config): Promise<any> => {
   try {
     const Web3 = window.Web3
@@ -39,6 +63,7 @@ export const createSession = async (config: Config): Promise<any> => {
     const WalletConnectProvider = await loadWalletConnect()
     const Bitski = await loadBitski()
     const WalletLink = await loadWalletLink()
+    const SolWallet = await loadSolWallet()
 
     const providerOptions: IProviderOptions = {}
     if (config.isBitSkiEnabled && BITSKI_CLIENT_ID && BITSKI_CALLBACK_URL) {
@@ -84,6 +109,60 @@ export const createSession = async (config: Config): Promise<any> => {
         }
       }
     }
+    if (config.isPhantomEnabled && window?.solana?.isPhantom) {
+      providerOptions['custom-phantom'] = {
+        display: {
+          logo: phantomIconPurpleSvg,
+          name: 'Phantom',
+          description: 'Connect solana account'
+        },
+        options: {},
+        package: PassThrough,
+        connector: async (...args: any) => {
+          try {
+            // Connect to solana web3
+            await window.solana.connect()
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            return window.solana
+          } catch (err) {
+            console.error(err)
+          }
+        }
+      }
+    }
+    if (config.isSolletEnabled) {
+      providerOptions['custom-sollet'] = {
+        display: {
+          logo: solletSvg,
+          name: 'Sollet',
+          description: 'Connect solana account'
+        },
+        options: {},
+        package: PassThrough,
+        connector: async (...args: any) => {
+          try {
+            // Connect to solana web3
+            const network = clusterApiUrl('devnet')
+            const providerUrl = 'https://www.sollet.io'
+            const wallet = new SolWallet(providerUrl, network)
+            const walletConnection: Promise<string> = new Promise(
+              (resolve, reject) => {
+                wallet.on('connect', publicKey => {
+                  resolve(publicKey.toBase58())
+                })
+              }
+            )
+            await wallet.connect()
+            const walletPk: string = await walletConnection
+            // @ts-ignore
+            window.wallet = wallet
+            return wallet
+          } catch (err) {
+            console.error(err)
+          }
+        }
+      }
+    }
 
     const web3Modal = new Web3Modal({ providerOptions })
 
@@ -92,11 +171,9 @@ export const createSession = async (config: Config): Promise<any> => {
     const web3 = new Web3(provider)
     return web3
   } catch (err) {
-    console.log({ err })
     if ('message' in err && err.message === 'Modal closed by user') {
-      console.log('cloed by user')
+      console.log('closed by user')
     }
-    console.log(err)
   }
 }
 

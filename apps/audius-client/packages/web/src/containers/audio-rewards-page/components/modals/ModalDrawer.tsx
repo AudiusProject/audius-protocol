@@ -17,6 +17,7 @@ type ModalDrawerProps = ModalProps &
  * pull this out later if it's more broadly useful.
  */
 const ModalDrawer = (props: ModalDrawerProps) => {
+  const gradientTitle = props.useGradientTitle ?? true
   if (isMobile()) {
     return (
       <Drawer
@@ -28,15 +29,20 @@ const ModalDrawer = (props: ModalDrawerProps) => {
       >
         <div className={styles.drawer}>
           <div className={styles.titleContainer}>
-            <span className={styles.drawerTitle}>{props.title}</span>
+            <span
+              className={cn({
+                [styles.drawerGradientTitle]: gradientTitle,
+                [styles.drawerTitle]: !gradientTitle
+              })}
+            >
+              {props.title}
+            </span>
           </div>
           {props.children}
         </div>
       </Drawer>
     )
   }
-
-  const gradientTitle = props.useGradientTitle ?? true
 
   return (
     <Modal

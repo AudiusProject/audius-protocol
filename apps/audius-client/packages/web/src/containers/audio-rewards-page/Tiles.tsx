@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
@@ -11,7 +11,7 @@ import MobileConnectWalletsDrawer from 'containers/mobile-connect-wallets-drawer
 import { useModalState } from 'hooks/useModalState'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import {
-  getAssociatedWallets,
+  getHasAssociatedWallets,
   pressConnectWallets,
   pressReceive,
   pressSend
@@ -37,7 +37,7 @@ const messages = {
   audio: '$AUDIO',
   manageWallets: 'Manage Wallets',
   connectWallets: 'Connect Other Wallets',
-  multipleWallets: 'Total $AUDIO across Wallets: '
+  totalAudio: 'Total $AUDIO'
 }
 
 export const LEARN_MORE_URL = 'http://blog.audius.co/posts/community-meet-audio'
@@ -53,45 +53,43 @@ export const Tile: React.FC<TileProps> = ({ className, children }) => {
 }
 
 export const BalanceTile = ({ className }: { className?: string }) => {
-  const balance = useSelector(getAccountBalance) ?? null
   const totalBalance: Nullable<BNWei> =
     useSelector(getAccountTotalBalance) ?? null
-  const { connectedWallets: wallets } = useSelector(getAssociatedWallets)
-  const hasMultipleWallets = (wallets?.length ?? 0) > 0
+  const hasMultipleWallets = useSelector(getHasAssociatedWallets)
+
+  const [, setOpen] = useModalState('AudioBreakdown')
+  const onClickOpen = useCallback(() => {
+    setOpen(true)
+  }, [setOpen])
 
   const wm = useWithMobileStyle(styles.mobile)
 
   return (
     <Tile className={wm(styles.balanceTile, className)}>
       <>
-        <TokenHoverTooltip balance={balance || (new BN(0) as BNWei)}>
+        <TokenHoverTooltip balance={totalBalance || (new BN(0) as BNWei)}>
           <div
             className={cn(styles.balanceAmount, {
-              [styles.hidden]: !balance
+              [styles.hidden]: !totalBalance
             })}
           >
-            {formatWei(balance || (new BN(0) as BNWei), true, 0)}
+            {formatWei(totalBalance || (new BN(0) as BNWei), true, 0)}
           </div>
         </TokenHoverTooltip>
         <div
           className={cn(styles.balance, {
-            [styles.hidden]: !balance
+            [styles.hidden]: !totalBalance
           })}
         >
-          {messages.audio}
+          {hasMultipleWallets ? (
+            <div onClick={onClickOpen}>
+              {messages.totalAudio}
+              <IconInfo className={styles.iconInfo} />
+            </div>
+          ) : (
+            messages.audio
+          )}
         </div>
-        {hasMultipleWallets && totalBalance && (
-          <div className={styles.multipleWalletsContainer}>
-            <span className={styles.multipleWalletsMessage}>
-              {messages.multipleWallets}
-            </span>
-            <TokenHoverTooltip balance={totalBalance}>
-              <span className={styles.totalBalance}>
-                {formatWei(totalBalance, true)}
-              </span>
-            </TokenHoverTooltip>
-          </div>
-        )}
       </>
     </Tile>
   )
@@ -133,8 +131,7 @@ export const WalletTile = ({ className }: { className?: string }) => {
     setOpen(false)
   }, [setOpen])
 
-  const { connectedWallets: wallets } = useSelector(getAssociatedWallets)
-  const hasMultipleWallets = (wallets?.length ?? 0) > 0
+  const hasMultipleWallets = useSelector(getHasAssociatedWallets)
 
   return (
     <Tile className={cn([styles.walletTile, className])}>

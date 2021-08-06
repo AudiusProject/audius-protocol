@@ -55,7 +55,7 @@
 
 .balanceBtn.balanceDisabled {
   opacity: 0.5;
-  background-color: hsla(0,0%,100%,.1);
+  background-color: hsla(0, 0%, 100%, 0.1);
 }
 
 /* Balance Tile */
@@ -94,7 +94,8 @@
   opacity: 0;
 }
 
-.balance, .multipleWalletsMessage {
+.balance,
+.multipleWalletsMessage {
   font-weight: var(--font-bold);
   font-size: var(--font-2xl);
   text-align: center;
@@ -102,6 +103,21 @@
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.5);
   text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.iconInfo {
+  height: 16px;
+  width: 16px;
+  margin-left: 4px;
+  margin-bottom: 2px;
+}
+
+.iconInfo:hover {
+  cursor: pointer;
+}
+
+.iconInfo path {
+  fill: rgba(255, 255, 255, 0.4);
 }
 
 .multipleWalletsContainer {
@@ -183,7 +199,7 @@
 }
 
 .explainerTile .vipDiscordDisabled {
-  background-color: hsla(0,0%,100%,.1);
+  background-color: hsla(0, 0%, 100%, 0.1);
 }
 
 .explainerTile .vipTextClassName {
@@ -219,7 +235,8 @@
   margin: 66px 64px 66px 102px;
 }
 
-.tokenHero svg, .tokenHero img {
+.tokenHero svg,
+.tokenHero img {
   width: 200px;
   height: 200px;
 }
