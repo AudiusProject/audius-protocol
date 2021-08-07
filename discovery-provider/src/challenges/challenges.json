@@ -24,14 +24,14 @@
 	{
 		"id": "referrals",
 		"type": "aggregate",
-		"amount": "5",
+		"amount": "1",
 		"active": false,
 		"step_count": 5
 	},
 	{
 		"id": "referred",
 		"type": "boolean",
-		"amount": "5",
+		"amount": "1",
 		"active": false
 	}
 ]
