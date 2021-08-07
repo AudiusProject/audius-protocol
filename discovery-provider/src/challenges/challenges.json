@@ -32,6 +32,12 @@
 		"id": "referred",
 		"type": "boolean",
 		"amount": "1",
+    "active": false
+  },
+  {
+		"id": "connect-verified",
+		"type": "boolean",
+		"amount": "10",
 		"active": false
 	}
 ]

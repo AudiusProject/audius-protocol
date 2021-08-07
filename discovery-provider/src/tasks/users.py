@@ -93,6 +93,7 @@ def user_state_update(
                         event_type,
                         user_events_lookup[user_id]["user"],
                         block_timestamp,
+                        challenge_bus,
                     )
                     if user_record is not None:
                         user_events_lookup[user_id]["events"].append(event_type)
@@ -191,6 +192,7 @@ def parse_user_event(
     event_type,
     user_record,
     block_timestamp,
+    challenge_bus,
 ):
     event_args = entry["args"]
 
@@ -247,6 +249,14 @@ def parse_user_event(
         user_record.is_creator = event_args._isCreator
     elif event_type == user_event_types_lookup["update_is_verified"]:
         user_record.is_verified = event_args._isVerified
+        if user_record.is_verified:
+            challenge_bus.dispatch(
+                session,
+                ChallengeEvent.connect_verified,
+                block_number,
+                user_record.user_id,
+            )
+
     elif event_type == user_event_types_lookup["update_creator_node_endpoint"]:
         # Ensure any user consuming the new UserReplicaSetManager contract does not process
         # legacy `creator_node_endpoint` changes

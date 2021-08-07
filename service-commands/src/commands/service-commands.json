@@ -49,10 +49,10 @@
  "solana-programs": {
     "path": "solana-programs",
     "up": [
-      "docker run -d --name solana --publish 8899:8899/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.6.10 sh -c 'solana-test-validator --gossip-host solana'",
+      "docker run -d --name solana --publish 8899:8899/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.7.1 sh -c 'solana-test-validator --gossip-host solana'",
       "docker ps",
-      "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/mnt\" audius/solana-programs > solana-program-config.json",
-      "cd solana-programs/; cp solana-program-config.json ../identity-service",
+      "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop > solana-program-config.json",
+      "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service",
       "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
     ],
     "down": [
@@ -176,22 +176,6 @@
     ],
     "update-delegate-wallet": [
       "cd libs/; node initScripts/local.js update-cnode-config #"
-    ],
-    "unset-shell-env": [
-      "cd creator-node; . compose/env/unsetShellEnv.sh"
-    ]
-  },
-  "user-metadata-node": {
-    "protocol": "http",
-    "host": "cn-um_creator-node_1",
-    "port": 4099,
-    "up-um": [
-      "cd creator-node; . compose/env/unsetShellEnv.sh",
-      "cd creator-node; . compose/env/shellEnv.userMetadata.sh; docker-compose -f compose/docker-compose.yml up --build -d",
-      "cd creator-node; . compose/env/unsetShellEnv.sh"
-    ],
-    "down": [
-      "cd creator-node; . compose/env/shellEnv.userMetadata.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
     "unset-shell-env": [
       "cd creator-node; . compose/env/unsetShellEnv.sh"
