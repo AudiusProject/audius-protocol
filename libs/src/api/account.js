@@ -5,7 +5,7 @@ const CreatorNodeService = require('../services/creatorNode/index')
 const Utils = require('../utils')
 const { AuthHeaders } = require('../constants')
 const {
-  getPermitDigest, sign, getLockAssetsDigest
+  getPermitDigest, sign, getTransferTokensDigest
 } = require('../utils/signatures')
 
 class Account extends Base {
@@ -386,17 +386,17 @@ class Account extends Base {
     const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
     await this.permitProxySendTokens(myWalletAddress, wormholeAddress, amount)
 
-    const lockAssetsTx = await this.lockAssetsForWormhole(
+    const transferTokensTx = await this.tranfersTokensViaWormhole(
       myWalletAddress, amount, solanaAccount, selectedEthWallet
     )
-    return lockAssetsTx
+    return transferTokensTx
   }
 
   /**
    * Locks assets owned by `fromAccount` into the Solana wormhole with a target
    * solanaAccount destination via the provided relayer wallet.
    */
-  async lockAssetsForWormhole (fromAccount, amount, solanaAccount, relayer) {
+  async tranfersTokensViaWormhole (fromAccount, amount, solanaAccount, relayer) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const web3 = this.ethWeb3Manager.getWeb3()
     const wormholeClientAddress = this.ethContracts.WormholeClient.contractAddress
@@ -410,9 +410,9 @@ class Account extends Base {
     const solanaB58 = bs58.decode(solanaAccount).toString('hex')
     const recipient = toBuffer(`0x${solanaB58}`)
     const nonce = await this.ethContracts.WormholeClient.nonces(fromAccount)
-    const refundDust = false
+    const arbiterFee = 0
 
-    const digest = getLockAssetsDigest(
+    const digest = getTransferTokensDigest(
       web3,
       'AudiusWormholeClient',
       wormholeClientAddress,
@@ -420,9 +420,9 @@ class Account extends Base {
       {
         from: fromAccount,
         amount,
+        recipientChain: chainId,
         recipient,
-        targetChain: chainId,
-        refundDust
+        arbiterFee
       },
       nonce,
       deadline
@@ -430,13 +430,12 @@ class Account extends Base {
     const myPrivateKey = this.web3Manager.getOwnerWalletPrivateKey()
     const signedDigest = sign(digest, myPrivateKey)
 
-    const tx = await this.ethContracts.WormholeClient.lockAssets(
+    const tx = await this.ethContracts.WormholeClient.transferTokens(
       fromAccount,
       amount,
-      recipient,
       chainId,
-      refundDust,
-      deadline,
+      recipient,
+      arbiterFee,
       signedDigest,
       relayer
     )
