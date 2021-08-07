@@ -125,7 +125,7 @@ contract WormholeClient is InitializableV2 {
                         amount,
                         recipientChain,
                         recipient,
-			arbiterFee,
+			            arbiterFee,
                         nonce,
                         deadline
                     )
@@ -147,7 +147,7 @@ contract WormholeClient is InitializableV2 {
             amount,
             recipientChain,
             recipient,
-	    arbiterFee,
+	        arbiterFee,
             nonce
         );
     }
