@@ -42,10 +42,7 @@ def get_remixable_tracks(args):
                     "score"
                 ),
             )
-            .join(
-                remixable_tracks_subquery,
-                remixable_tracks_subquery.c.track_id == Track.track_id,
-            )
+            .select_entity_from(remixable_tracks_subquery)
             .join(
                 count_subquery,
                 count_subquery.c["id"] == Track.track_id,
