@@ -560,7 +560,7 @@ jobs:
       - run:
           name: Setup solana
           command: |
-            curl -L 'https://github.com/solana-labs/solana/releases/download/v1.6.9/solana-release-x86_64-unknown-linux-gnu.tar.bz2' | tar jxf -
+            curl -L 'https://github.com/solana-labs/solana/releases/download/v1.7.8/solana-release-x86_64-unknown-linux-gnu.tar.bz2' | tar jxf -
 
       - restore_cache:
           keys:
@@ -571,6 +571,9 @@ jobs:
           command: |
             export PATH=$PWD/solana-release/bin:$PATH
             cd solana-programs/audius_eth_registry
+            cargo build-bpf
+            cargo test-bpf
+            cd ../claimable-tokens/program
             cargo build-bpf
             cargo test-bpf
       - save_cache:
