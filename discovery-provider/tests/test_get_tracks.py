@@ -1,15 +1,7 @@
 from datetime import datetime
-from src.queries.get_remixable_tracks import get_remixable_tracks
-from src.utils import helpers
 
-from sqlalchemy import desc
-from src.models import AggregateTrack, Stem, Track
+from src.queries.get_remixable_tracks import get_remixable_tracks
 from src.queries.get_tracks import _get_tracks
-from src.queries.query_helpers import (
-    add_users_to_tracks,
-    decayed_score,
-    populate_track_metadata,
-)
 from src.utils.db_session import get_db
 
 from tests.utils import populate_mock_db
@@ -210,4 +202,3 @@ def test_get_remixable_tracks(app):
         tracks = get_remixable_tracks({"with_users": True})
         assert len(tracks) == 2
         assert tracks[0]["user"]
-        print(tracks)
