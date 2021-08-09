@@ -7,6 +7,7 @@ import Explore from 'services/audius-backend/Explore'
 import { getAccountStatus, getUserId } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { processAndCacheTracks } from 'store/cache/tracks/utils'
+import { fetchUsers } from 'store/cache/users/sagas'
 import { getLuckyTracks } from 'store/recommendation/sagas'
 import { Status } from 'store/types'
 import { EXPLORE_PAGE } from 'utils/route'
@@ -140,6 +141,11 @@ function* fetchRemixables() {
     time: track.created_at,
     track: track.track_id
   }))
+
+  // Fetch the users for the tracks
+  // TODO: Remove when remixables query is updated
+  const userIds = processedTracks.map((track: Track) => track.owner_id)
+  yield call(fetchUsers, userIds)
 
   return {
     ...REMIXABLES,
