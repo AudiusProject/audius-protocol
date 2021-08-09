@@ -252,9 +252,20 @@ fn command_verify_transfer_signature(
     recipient_eth_address: String,
     amount: u64,
     bot_oracle_pubkey: Option<Pubkey>,
+    bot_oracle_secret: Option<String>,
+    include_oracle_verify: bool,
 ) -> CommandResult {
     let decoded_recipient_address =
         <[u8; 20]>::from_hex(recipient_eth_address).expect(HEX_ETH_ADDRESS_DECODING_ERROR);
+
+    let make_bot_message =  || {[
+            decoded_recipient_address.as_ref(),
+            b"_".as_ref(),
+            amount.to_le_bytes().as_ref(),
+            b"_".as_ref(),
+            &transfer_id.as_bytes(),
+        ]
+        .concat()};
 
     let message = if let Some(bot_oracle_pubkey) = bot_oracle_pubkey {
         let bot_oracle_account = config.rpc_client.get_account_data(&bot_oracle_pubkey)?;
@@ -274,15 +285,7 @@ fn command_verify_transfer_signature(
         .concat()
     } else {
         println!("Signing as bot oracle!");
-        // Bot oracle message
-        [
-            decoded_recipient_address.as_ref(),
-            b"_".as_ref(),
-            amount.to_le_bytes().as_ref(),
-            b"_".as_ref(),
-            &transfer_id.as_bytes(),
-        ]
-        .concat()
+        make_bot_message()
     };
 
     let mut instructions = Vec::new();
@@ -290,8 +293,8 @@ fn command_verify_transfer_signature(
     println!("Generated message {:?}", message);
     instructions.push(new_secp256k1_instruction_2_0(
         &libsecp256k1::SecretKey::parse(&decoded_secret)?,
-        message.as_ref(),
-        instructions.len() as u8,
+        &message,
+        0
     ));
 
     instructions.push(
@@ -300,9 +303,34 @@ fn command_verify_transfer_signature(
             &reward_manager_pubkey,
             &signer_pubkey,
             &config.fee_payer.pubkey(),
-            transfer_id
+            transfer_id.clone()
         )
     ?);
+
+    if include_oracle_verify {
+        println!("Including oracle verification instruction");
+        if let Some(oracle_secret) = bot_oracle_secret {
+            let bot_decoded_secret = <[u8; 32]>::from_hex(oracle_secret).expect(HEX_ETH_SECRET_DECODING_ERROR);
+            let bot_secp = new_secp256k1_instruction_2_0(
+                &libsecp256k1::SecretKey::parse(&bot_decoded_secret)?,
+                &make_bot_message(),
+                2
+            );
+            let bot_verify = verify_transfer_signature(
+                &audius_reward_manager::id(),
+                &reward_manager_pubkey,
+                &bot_oracle_pubkey.unwrap(),
+                &config.fee_payer.pubkey(),
+                transfer_id.clone()
+            )?;
+            instructions.push(bot_secp);
+            instructions.push(bot_verify);
+        } else {
+            panic!("Must pass oracle secret if include_oracle_verify flag is set!");
+        }
+    } else {
+        println!("Not including oracle verification instruction")
+    }
 
     let signers = vec![config.fee_payer.as_ref(), config.owner.as_ref()];
     let transaction = CustomTransaction {
@@ -559,7 +587,7 @@ fn main() {
                 .required(true)
                 .help("CSV file with senders Ethereum secret keys"),
             ))
-        .subcommand(SubCommand::with_name("verify-transfer-signature").about("Verify trasnfer signature")
+        .subcommand(SubCommand::with_name("verify-transfer-signature").about("Verify transfer signature")
             .arg(
                 Arg::with_name("reward_manager")
                     .long("reward-manager")
@@ -638,7 +666,23 @@ fn main() {
                     .value_name("ADDRESS")
                     .takes_value(true)
                     .help("Bot oracle reference (if it doesn't exist - the message will be signed as bot oracle"),
-            ))
+            )
+            .arg(
+                Arg::with_name("bot_oracle_secret")
+                .long("bot-oracle-secret")
+                .value_name("ETH_SECRET")
+                .validator(is_hex)
+                .required(false)
+                .takes_value(true)
+                .help("Bot oracle secret - only used if `include_oracle_verify` is true")
+            )
+            .arg(Arg::with_name("include_oracle_verify")
+                .long("include-oracle-verify")
+                .value_name("BOOL")
+                .required(false)
+                .takes_value(false)
+                .help("Whether to include the bot verify instruction in the transaction")
+        ))
         .subcommand(SubCommand::with_name("transfer").about("Make transfer")
             .arg(
                 Arg::with_name("reward_manager")
@@ -795,6 +839,8 @@ fn main() {
             let amount: f64 = value_t_or_exit!(arg_matches, "amount", f64);
             let amount = ui_amount_to_amount(amount, spl_token::native_mint::DECIMALS);
             let bot_oracle_pubkey = pubkey_of(arg_matches, "bot_oracle");
+            let include_oracle_verify = arg_matches.is_present("include_oracle_verify");
+            let bot_oracle_secret = value_t!(arg_matches, "bot_oracle_secret", String).ok();
 
             command_verify_transfer_signature(
                 &config,
@@ -805,6 +851,8 @@ fn main() {
                 String::from(recipient_eth_address.get(2..).unwrap()),
                 amount,
                 bot_oracle_pubkey,
+                bot_oracle_secret,
+                include_oracle_verify
             )
         }
         ("transfer", Some(arg_matches)) => {
