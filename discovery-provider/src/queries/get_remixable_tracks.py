@@ -38,16 +38,19 @@ def get_remixable_tracks(args):
             session.query(
                 Track,
                 count_subquery.c["count"],
-                decayed_score(
-                    count_subquery.c["count"], remixable_tracks_subquery.c.created_at
-                ).label("score"),
+                decayed_score(count_subquery.c["count"], Track.created_at).label(
+                    "score"
+                ),
             )
-            .select_from(remixable_tracks_subquery)
+            .join(
+                remixable_tracks_subquery,
+                remixable_tracks_subquery.c.track_id == Track.track_id,
+            )
             .join(
                 count_subquery,
-                count_subquery.c["id"] == remixable_tracks_subquery.c.track_id,
+                count_subquery.c["id"] == Track.track_id,
             )
-            .order_by(desc("score"), desc(remixable_tracks_subquery.c.track_id))
+            .order_by(desc("score"), desc(Track.track_id))
             .limit(limit)
         )
 
