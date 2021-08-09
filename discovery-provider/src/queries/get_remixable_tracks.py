@@ -68,7 +68,6 @@ def get_remixable_tracks(args):
 
         # Get user specific data for tracks
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
-        logger.warning(tracks)
 
         if args.get("with_users", False):
             add_users_to_tracks(session, tracks, current_user_id)

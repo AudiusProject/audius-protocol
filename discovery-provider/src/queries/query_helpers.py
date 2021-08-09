@@ -1263,6 +1263,7 @@ def filter_to_playlist_mood(session, mood, query, correlation):
 
 
 def add_users_to_tracks(session, tracks, current_user_id=None):
+    logger.warning(tracks)
     """
     Fetches the owners for the tracks and adds them to the track dict under the key 'user'
 
@@ -1279,9 +1280,7 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
     users = list(map(lambda t: t["user"][0], tracks))
     set_users_in_cache(users)
     # bundle peripheral info into user results
-    populated_users = populate_user_metadata(
-        session, user_ids, users, current_user_id
-    )
+    populated_users = populate_user_metadata(session, user_ids, users, current_user_id)
     user_map = {}
     for user in populated_users:
         user_map[user["user_id"]] = user
