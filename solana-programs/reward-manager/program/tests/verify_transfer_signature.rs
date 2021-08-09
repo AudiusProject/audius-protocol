@@ -418,6 +418,10 @@ async fn success_multiple_recovery_1_tx() {
                 x.address,
                 eth_oracle_address
             );
+            assert_eq!(
+                x.operator,
+                oracle_operator
+            );
         }
     }
 }
