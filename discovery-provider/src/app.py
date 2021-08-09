@@ -452,7 +452,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "index_rewards_manager": {
                 "task": "index_rewards_manager",
-                "schedule": timedelta(minutes=1),
+                "schedule": timedelta(seconds=5),
             },
         },
         task_serializer="json",
@@ -485,6 +485,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("user_bank_lock")
     redis_inst.delete("index_eth")
     redis_inst.delete("index_oracles")
+    redis_inst.delete("solana_rewards_manager")
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object

@@ -105,8 +105,8 @@ def parse_instruction_data(data: str, instructionFormat: List[InstructionFormat]
     last_end = 0
     decoded_params: Dict = {}
     for intr in instructionFormat:
-        name: str = intr["name"]
-        type: SolanaInstructionType = intr["type"]
+        name = intr["name"]
+        type = intr["type"]
 
         if type == SolanaInstructionType.u64:
             type_len = solanaInstructionSpace[type]

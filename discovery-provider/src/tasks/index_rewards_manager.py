@@ -35,6 +35,21 @@ TX_SIGNATURES_MAX_BATCHES = 20
 TX_SIGNATURES_RESIZE_LENGTH = 10
 
 
+def check_valid_rewards_manager_program():
+    try:
+        base58.b58decode(REWARDS_MANAGER_PROGRAM)
+        return True
+    except ValueError:
+        logger.error(
+            f"index_rewards_manager.py"
+            f"Invalid Rewards Manager program ({REWARDS_MANAGER_PROGRAM}) configured, exiting."
+        )
+        return False
+
+
+is_valid_rewards_manager_program = check_valid_rewards_manager_program()
+
+
 rewards_manager_transfer_instr: List[InstructionFormat] = [
     {"name": "amount", "type": SolanaInstructionType.u64},
     {"name": "id", "type": SolanaInstructionType.string},
@@ -49,7 +64,7 @@ class RewardsManagerTransfer(TypedDict):
 
 
 def parse_transfer_instruction_data(data: str) -> RewardsManagerTransfer:
-    """Parse Trasfer instruction data submitted to Audius Rewards Manager program
+    """Parse Transfer instruction data submitted to Audius Rewards Manager program
 
     Instruction struct:
     pub struct TransferArgs {
@@ -74,7 +89,7 @@ def parse_transfer_instruction_id(transfer_id: str) -> List[str]:
     id_parts = transfer_id.split(":")
     if len(id_parts) != 2:
         raise Exception(
-            f"Unable to parse tranfer instruction id into challenge_id and specifier {transfer_id}"
+            f"Unable to parse transfer instruction id into challenge_id and specifier {transfer_id}"
         )
     return id_parts
 
@@ -101,7 +116,7 @@ def get_valid_instruction(
 def process_sol_rewards_transfer_instruction(
     session: Session, solana_client: Client, tx_sig: str
 ):
-    """Fetches metadata for rewards tranfer transactions and creates Challege Disbursements
+    """Fetches metadata for rewards transfer transactions and creates Challege Disbursements
 
     Fetches the transaction metadata from solana using the tx signature
     Checks the metadata for a transfer instruction
@@ -119,43 +134,42 @@ def process_sol_rewards_transfer_instruction(
             return
         tx_message = result["transaction"]["message"]
         instruction = get_valid_instruction(tx_message, meta)
-        if instruction is not None:
-            transfer_instruction_data = parse_transfer_instruction_data(
-                instruction["data"]
-            )
-            amount = transfer_instruction_data["amount"]
-            eth_recipient = transfer_instruction_data["eth_recipient"]
-            id = transfer_instruction_data["id"]
-            challenge_id, specifier = parse_transfer_instruction_id(id)
+        if instruction is None:
+            return
+        transfer_instruction_data = parse_transfer_instruction_data(instruction["data"])
+        amount = transfer_instruction_data["amount"]
+        eth_recipient = transfer_instruction_data["eth_recipient"]
+        id = transfer_instruction_data["id"]
+        challenge_id, specifier = parse_transfer_instruction_id(id)
 
-            user_query = (
-                session.query(User.user_id).filter(User.wallet == eth_recipient).first()
+        user_query = (
+            session.query(User.user_id).filter(User.wallet == eth_recipient).first()
+        )
+        if user_query is None:
+            raise Exception(f"No user found with eth address {eth_recipient}")
+        user_challenge = (
+            session.query(UserChallenge.user_id)
+            .filter(
+                UserChallenge.challenge_id == challenge_id,
+                UserChallenge.specifier == specifier,
             )
-            if user_query is None:
-                raise Exception(f"No user found with eth address {eth_recipient}")
-            user_challenge = (
-                session.query(UserChallenge.user_id)
-                .filter(
-                    UserChallenge.challenge_id == challenge_id,
-                    UserChallenge.specifier == specifier,
-                )
-                .first()
+            .first()
+        )
+        if user_challenge is None:
+            raise Exception(
+                f"No user challenge found with challenge_id {challenge_id} and specifier {specifier}"
             )
-            if user_challenge is None:
-                raise Exception(
-                    f"No user challenge found with challenge_id {challenge_id} and specifier {specifier}"
-                )
 
-            session.add(
-                ChallengeDisbursement(
-                    challenge_id=challenge_id,
-                    user_id=user_query[0],
-                    specifier=specifier,
-                    amount=str(amount),
-                    slot=result["slot"],
-                    signature=tx_sig,
-                )
+        session.add(
+            ChallengeDisbursement(
+                challenge_id=challenge_id,
+                user_id=user_query[0],
+                specifier=specifier,
+                amount=str(amount),
+                slot=result["slot"],
+                signature=tx_sig,
             )
+        )
     except Exception as e:
         logger.error(
             f"index_rewards_manager.py | Error processing {tx_sig}, {e}", exc_info=True
@@ -278,7 +292,7 @@ def get_transaction_signatures(
     return transaction_signatures
 
 
-def process_transaction_signature(
+def process_transaction_signatures(
     solana_client: Client, db: SessionManager, transaction_signatures: List[str]
 ):
     """Concurrently processes the transactions to update the DB state for reward transfer instructions"""
@@ -314,15 +328,8 @@ def process_transaction_signature(
 
 def process_solana_rewards_manager(solana_client: Client, db: SessionManager):
     """Fetches the next set of reward manager transactions and updates the DB with Challenge Disbursements"""
-    try:
-        base58.b58decode(REWARDS_MANAGER_PROGRAM)
-    except ValueError:
-        logger.error(
-            f"index_rewards_manager.py"
-            f"Invalid Rewards Manager program ({REWARDS_MANAGER_PROGRAM}) configured, exiting."
-        )
+    if not is_valid_rewards_manager_program:
         return
-
     # List of signatures that will be populated as we traverse recent operations
     transaction_signatures = get_transaction_signatures(
         solana_client,
@@ -334,7 +341,7 @@ def process_solana_rewards_manager(solana_client: Client, db: SessionManager):
     )
     logger.info(f"index_rewards_manager.py | {transaction_signatures}")
 
-    process_transaction_signature(solana_client, db, transaction_signatures)
+    process_transaction_signatures(solana_client, db, transaction_signatures)
 
 
 ######## CELERY TASKS ########
@@ -347,9 +354,7 @@ def index_rewards_manager(self):
     # Define lock acquired boolean
     have_lock = False
     # Max duration of lock is 4hrs or 14400 seconds
-    update_lock = redis.lock(
-        "solana_rewards_manager", blocking_timeout=25, timeout=14400
-    )
+    update_lock = redis.lock("solana_rewards_manager", timeout=14400)
 
     try:
         # Attempt to acquire lock - do not block if unable to acquire
