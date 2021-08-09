@@ -20,7 +20,6 @@ const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
 const processSync = require('../src/services/sync/processSync')
 const { uploadTrack } = require('./lib/helpers')
-const utils = require('../src/utils')
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const sampleExportDummyCIDPath = path.resolve(__dirname, 'syncAssets/sampleExportDummyCID.json')
@@ -644,9 +643,6 @@ describe('test nodesync', async function () {
     })
 
     it('Syncs correctly from clean user state with mocked export object', async function () {
-      // Added to address non-determinism in tests
-      await utils.timeout(1000)
-
       // Unpack sample export data
       const sampleExport = JSON.parse(fs.readFileSync(sampleExportDummyCIDPath))
       const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
@@ -663,117 +659,114 @@ describe('test nodesync', async function () {
       const initialCNodeUserCount = await models.CNodeUser.count()
       assert.strictEqual(initialCNodeUserCount, 0)
 
-      // call process sync
-      await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
+      // wrap this inside a setTimeout here because there's some non-determism in the test harness
+      setTimeout(async function () {
+        // call process sync
+        await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
 
-      const exportedCnodeUser = {
-        walletPublicKey: cnodeUser.walletPublicKey,
-        lastLogin: cnodeUser.lastLogin,
-        latestBlockNumber: cnodeUser.latestBlockNumber,
-        clock: cnodeUser.clock,
-        createdAt: cnodeUser.createdAt
-      }
+        const exportedCnodeUser = {
+          walletPublicKey: cnodeUser.walletPublicKey,
+          lastLogin: cnodeUser.lastLogin,
+          latestBlockNumber: cnodeUser.latestBlockNumber,
+          clock: cnodeUser.clock,
+          createdAt: cnodeUser.createdAt
+        }
 
-      // verify CNodeUser
-      const localCNodeUser = stringifiedDateFields(await models.CNodeUser.findOne({
-        where: {
-          walletPublicKey: cnodeUser.walletPublicKey
-        },
-        raw: true
-      }))
-      assert.deepStrictEqual(
-        _.omit(localCNodeUser, ['cnodeUserUUID', 'updatedAt']),
-        exportedCnodeUser
-      )
-
-      const cnodeUserUUID = localCNodeUser.cnodeUserUUID
-
-      // verify AudiusUser
-      const localAudiusUser = stringifiedDateFields(await models.AudiusUser.findOne({
-        where: {
-          cnodeUserUUID,
-          clock: audiusUser.clock
-        },
-        raw: true
-      }))
-      assert.deepStrictEqual(
-        _.omit(localAudiusUser, ['cnodeUserUUID']),
-        _.omit(audiusUser, ['cnodeUserUUID'])
-      )
-
-      // TODO verify: expected files are all on disc
-
-      // verify clock records
-      for (let exportedRecord of clockRecords) {
-        const { clock, sourceTable, createdAt, updatedAt } = exportedRecord
-        const localRecord = stringifiedDateFields(await models.ClockRecord.findOne({
+        // verify CNodeUser
+        const localCNodeUser = stringifiedDateFields(await models.CNodeUser.findOne({
           where: {
-            clock,
-            cnodeUserUUID,
-            sourceTable,
-            createdAt,
-            updatedAt
+            walletPublicKey: cnodeUser.walletPublicKey
           },
           raw: true
         }))
         assert.deepStrictEqual(
-          _.omit(localRecord, ['cnodeUserUUID']),
-          _.omit(exportedRecord, ['cnodeUserUUID'])
+          _.omit(localCNodeUser, ['cnodeUserUUID', 'updatedAt']),
+          exportedCnodeUser
         )
-      }
 
-      // verify files
-      for (let exportedFile of files) {
-        const { fileUUID, multihash, clock } = exportedFile
-        const localFile = stringifiedDateFields(await models.File.findOne({
+        const cnodeUserUUID = localCNodeUser.cnodeUserUUID
+
+        // verify AudiusUser
+        const localAudiusUser = stringifiedDateFields(await models.AudiusUser.findOne({
           where: {
-            clock,
             cnodeUserUUID,
-            multihash,
-            fileUUID
+            clock: audiusUser.clock
           },
           raw: true
         }))
         assert.deepStrictEqual(
-          _.omit(localFile, ['cnodeUserUUID']),
-          _.omit(exportedFile, ['cnodeUserUUID'])
+          _.omit(localAudiusUser, ['cnodeUserUUID']),
+          _.omit(audiusUser, ['cnodeUserUUID'])
         )
-      }
 
-      // verify tracks
-      for (let exportedTrack of tracks) {
-        const { clock, blockchainId, metadataFileUUID } = exportedTrack
-        const localFile = stringifiedDateFields(await models.Track.findOne({
-          where: {
-            clock,
-            cnodeUserUUID,
-            blockchainId,
-            metadataFileUUID
-          },
-          raw: true
-        }))
-        assert.deepStrictEqual(
-          _.omit(localFile, ['cnodeUserUUID']),
-          _.omit(exportedTrack, ['cnodeUserUUID'])
-        )
-      }
+        // TODO verify: expected files are all on disc
 
-      // verify clockInfo
-      const localClockInfo = {
-        requestedClockRangeMin: 0,
-        requestedClockRangeMax: 0 + (maxExportClockValueRange - 1),
-        localClockMax: localCNodeUser.clock
-      }
-      assert.deepStrictEqual(localClockInfo, clockInfo)
+        // verify clock records
+        for (let exportedRecord of clockRecords) {
+          const { clock, sourceTable, createdAt, updatedAt } = exportedRecord
+          const localRecord = stringifiedDateFields(await models.ClockRecord.findOne({
+            where: {
+              clock,
+              cnodeUserUUID,
+              sourceTable,
+              createdAt,
+              updatedAt
+            },
+            raw: true
+          }))
+          assert.deepStrictEqual(
+            _.omit(localRecord, ['cnodeUserUUID']),
+            _.omit(exportedRecord, ['cnodeUserUUID'])
+          )
+        }
 
-      // Added to address non-determinism in tests
-      await utils.timeout(1000)
+        // verify files
+        for (let exportedFile of files) {
+          const { fileUUID, multihash, clock } = exportedFile
+          const localFile = stringifiedDateFields(await models.File.findOne({
+            where: {
+              clock,
+              cnodeUserUUID,
+              multihash,
+              fileUUID
+            },
+            raw: true
+          }))
+          assert.deepStrictEqual(
+            _.omit(localFile, ['cnodeUserUUID']),
+            _.omit(exportedFile, ['cnodeUserUUID'])
+          )
+        }
+
+        // verify tracks
+        for (let exportedTrack of tracks) {
+          const { clock, blockchainId, metadataFileUUID } = exportedTrack
+          const localFile = stringifiedDateFields(await models.Track.findOne({
+            where: {
+              clock,
+              cnodeUserUUID,
+              blockchainId,
+              metadataFileUUID
+            },
+            raw: true
+          }))
+          assert.deepStrictEqual(
+            _.omit(localFile, ['cnodeUserUUID']),
+            _.omit(exportedTrack, ['cnodeUserUUID'])
+          )
+        }
+
+        // verify clockInfo
+        const localClockInfo = {
+          requestedClockRangeMin: 0,
+          requestedClockRangeMax: 0 + (maxExportClockValueRange - 1),
+          localClockMax: localCNodeUser.clock
+        }
+        assert.deepStrictEqual(localClockInfo, clockInfo)
+      }, 1000)
     })
 
     it('Syncs correctly when cnodeUser data already exists locally', async function () {
-      // Added to address non-determinism in tests
-      await utils.timeout(1000)
-
       // Get the saved export
       const sampleExport = JSON.parse(fs.readFileSync(sampleExportDummyCIDFromClock2Path))
       const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
@@ -801,101 +794,101 @@ describe('test nodesync', async function () {
       assert.strictEqual(localCNodeUsersBeforeSync.length, 1)
       const localCNodeUserBeforeSync = stringifiedDateFields(localCNodeUsersBeforeSync[0])
 
-      // test: sync
-      await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
+      // wrap this inside a setTimeout here because there's some non-determism in the test harness
+      setTimeout(async function () {
+        // test: sync
+        await processSync(serviceRegistryMock, userWallets, TEST_ENDPOINT)
 
-      const exportedCnodeUser = {
-        walletPublicKey: cnodeUser.walletPublicKey,
-        lastLogin: cnodeUser.lastLogin,
-        latestBlockNumber: cnodeUser.latestBlockNumber,
-        clock: cnodeUser.clock,
-        createdAt: cnodeUser.createdAt
-      }
+        const exportedCnodeUser = {
+          walletPublicKey: cnodeUser.walletPublicKey,
+          lastLogin: cnodeUser.lastLogin,
+          latestBlockNumber: cnodeUser.latestBlockNumber,
+          clock: cnodeUser.clock,
+          createdAt: cnodeUser.createdAt
+        }
 
-      // verify CNodeUser
-      const localCNodeUser = stringifiedDateFields(await models.CNodeUser.findOne({
-        where: {
-          cnodeUserUUID,
-          walletPublicKey: cnodeUser.walletPublicKey
-        },
-        raw: true
-      }))
-      assert.deepStrictEqual(
-        _.omit(localCNodeUser, ['cnodeUserUUID', 'updatedAt']),
-        exportedCnodeUser
-      )
-
-      // verify AudiusUser
-      const localAudiusUser = undefined
-      assert.deepStrictEqual(localAudiusUser, audiusUser)
-
-      // TODO verify: expected files are all on disc
-
-      // verify clock records
-      for (let exportedRecord of clockRecords) {
-        const { clock, sourceTable, createdAt, updatedAt } = exportedRecord
-        const localRecord = stringifiedDateFields(await models.ClockRecord.findOne({
+        // verify CNodeUser
+        const localCNodeUser = stringifiedDateFields(await models.CNodeUser.findOne({
           where: {
-            clock,
             cnodeUserUUID,
-            sourceTable,
-            createdAt,
-            updatedAt
+            walletPublicKey: cnodeUser.walletPublicKey
           },
           raw: true
         }))
         assert.deepStrictEqual(
-          _.omit(localRecord, ['cnodeUserUUID']),
-          _.omit(exportedRecord, ['cnodeUserUUID'])
+          _.omit(localCNodeUser, ['cnodeUserUUID', 'updatedAt']),
+          exportedCnodeUser
         )
-      }
 
-      // verify files
-      for (let exportedFile of files) {
-        const { fileUUID, multihash, clock } = exportedFile
-        const localFile = stringifiedDateFields(await models.File.findOne({
-          where: {
-            clock,
-            cnodeUserUUID,
-            multihash,
-            fileUUID
-          },
-          raw: true
-        }))
-        assert.deepStrictEqual(
-          _.omit(localFile, ['cnodeUserUUID']),
-          _.omit(exportedFile, ['cnodeUserUUID'])
-        )
-      }
+        // verify AudiusUser
+        const localAudiusUser = undefined
+        assert.deepStrictEqual(localAudiusUser, audiusUser)
 
-      // verify tracks
-      for (let exportedTrack of tracks) {
-        const { clock, blockchainId, metadataFileUUID } = exportedTrack
-        const localFile = stringifiedDateFields(await models.Track.findOne({
-          where: {
-            clock,
-            cnodeUserUUID,
-            blockchainId,
-            metadataFileUUID
-          },
-          raw: true
-        }))
-        assert.deepStrictEqual(
-          _.omit(localFile, ['cnodeUserUUID']),
-          _.omit(exportedTrack, ['cnodeUserUUID'])
-        )
-      }
+        // TODO verify: expected files are all on disc
 
-      // verify clockInfo
-      const localClockInfo = {
-        requestedClockRangeMin: localCNodeUserBeforeSync.clock + 1,
-        requestedClockRangeMax: (localCNodeUserBeforeSync.clock + 1) + (maxExportClockValueRange - 1),
-        localClockMax: localCNodeUser.clock
-      }
-      assert.deepStrictEqual(localClockInfo, clockInfo)
+        // verify clock records
+        for (let exportedRecord of clockRecords) {
+          const { clock, sourceTable, createdAt, updatedAt } = exportedRecord
+          const localRecord = stringifiedDateFields(await models.ClockRecord.findOne({
+            where: {
+              clock,
+              cnodeUserUUID,
+              sourceTable,
+              createdAt,
+              updatedAt
+            },
+            raw: true
+          }))
+          assert.deepStrictEqual(
+            _.omit(localRecord, ['cnodeUserUUID']),
+            _.omit(exportedRecord, ['cnodeUserUUID'])
+          )
+        }
 
-      // Added to address non-determinism in tests
-      await utils.timeout(1000)
+        // verify files
+        for (let exportedFile of files) {
+          const { fileUUID, multihash, clock } = exportedFile
+          const localFile = stringifiedDateFields(await models.File.findOne({
+            where: {
+              clock,
+              cnodeUserUUID,
+              multihash,
+              fileUUID
+            },
+            raw: true
+          }))
+          assert.deepStrictEqual(
+            _.omit(localFile, ['cnodeUserUUID']),
+            _.omit(exportedFile, ['cnodeUserUUID'])
+          )
+        }
+
+        // verify tracks
+        for (let exportedTrack of tracks) {
+          const { clock, blockchainId, metadataFileUUID } = exportedTrack
+          const localFile = stringifiedDateFields(await models.Track.findOne({
+            where: {
+              clock,
+              cnodeUserUUID,
+              blockchainId,
+              metadataFileUUID
+            },
+            raw: true
+          }))
+          assert.deepStrictEqual(
+            _.omit(localFile, ['cnodeUserUUID']),
+            _.omit(exportedTrack, ['cnodeUserUUID'])
+          )
+        }
+
+        // verify clockInfo
+        const localClockInfo = {
+          requestedClockRangeMin: localCNodeUserBeforeSync.clock + 1,
+          requestedClockRangeMax: (localCNodeUserBeforeSync.clock + 1) + (maxExportClockValueRange - 1),
+          localClockMax: localCNodeUser.clock
+        }
+        assert.deepStrictEqual(localClockInfo, clockInfo)
+      }, 1000)
     })
   })
 })
