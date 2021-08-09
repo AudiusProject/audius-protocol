@@ -1,7 +1,12 @@
 import { UserCollectionMetadata, Variant } from 'models/Collection'
 import Favorite from 'models/Favorite'
 import Repost from 'models/Repost'
-import { Remix, StemTrackMetadata, UserTrackMetadata } from 'models/Track'
+import {
+  Remix,
+  StemTrackMetadata,
+  TrackMetadata,
+  UserTrackMetadata
+} from 'models/Track'
 import { UserMetadata } from 'models/User'
 import { ID } from 'models/common/Identifiers'
 import { StringWei } from 'store/wallet/slice'
@@ -111,6 +116,73 @@ const makeRemix = (remix: APIRemix): Remix | undefined => {
     parent_track_id: decodedTrackId,
     user
   }
+}
+
+export const makeUserlessTrack = (
+  track: APITrack | APISearchTrack
+): TrackMetadata | undefined => {
+  const decodedTrackId = decodeHashId(track.id)
+  const decodedOwnerId = decodeHashId(track.user_id)
+  if (!decodedTrackId || !decodedOwnerId) return undefined
+
+  const saves =
+    'followee_favorites' in track
+      ? track.followee_favorites?.map(makeFavorite).filter(removeNullable) ?? []
+      : []
+
+  const reposts =
+    'followee_reposts' in track
+      ? track.followee_reposts?.map(makeRepost).filter(removeNullable) ?? []
+      : []
+
+  const remixes =
+    track.remix_of.tracks?.map(makeRemix).filter(removeNullable) ?? []
+  const play_count = 'play_count' in track ? track.play_count : 0
+  const save_count = 'favorite_count' in track ? track.favorite_count : 0
+  const repost_count = 'repost_count' in track ? track.repost_count : 0
+  const has_current_user_reposted =
+    'has_current_user_reposted' in track
+      ? track.has_current_user_reposted
+      : false
+  const has_current_user_saved =
+    'has_current_user_saved' in track ? track.has_current_user_saved : false
+  const marshalled = {
+    ...track,
+    track_id: decodedTrackId,
+    owner_id: decodedOwnerId,
+    followee_saves: saves,
+    followee_reposts: reposts,
+    play_count,
+    save_count,
+    repost_count,
+    has_current_user_reposted,
+    has_current_user_saved,
+    remix_of:
+      remixes.length > 0
+        ? {
+            tracks: remixes
+          }
+        : null,
+
+    stem_of: track.stem_of.parent_track_id === null ? null : track.stem_of,
+
+    // Fields to prune
+    id: undefined,
+    user_id: undefined,
+    followee_favorites: undefined,
+    artwork: undefined,
+    downloadable: undefined,
+    favorite_count: undefined
+  }
+
+  delete marshalled.id
+  delete marshalled.user_id
+  delete marshalled.followee_favorites
+  delete marshalled.artwork
+  delete marshalled.downloadable
+  delete marshalled.favorite_count
+
+  return marshalled
 }
 
 export const makeTrack = (
