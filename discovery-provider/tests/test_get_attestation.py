@@ -1,8 +1,6 @@
 import pytest
 import redis
 from web3 import Web3
-from web3.auto import w3
-from eth_account.messages import encode_defunct
 from eth_keys import keys
 from eth_utils.conversions import to_bytes
 from hexbytes import HexBytes
