@@ -922,7 +922,7 @@ class SnapbackSM {
         const healthyNodes = Object.keys(healthyServicesMap)
         if (healthyNodes.length === 0) throw new Error('Auto-selecting Content Nodes returned an empty list of healthy nodes.')
 
-        const numIssueUpdateReplicaSetOpErrors = 0
+        let numIssueUpdateReplicaSetOpErrors = 0
         for await (const userInfo of requiredUpdateReplicaSetOps) {
           const { errorMsg, issuedReconfig } = await this.issueUpdateReplicaSetOp(
             userInfo.user_id,
