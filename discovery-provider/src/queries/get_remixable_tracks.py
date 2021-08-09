@@ -39,7 +39,7 @@ def get_remixable_tracks(args):
 
         query = (
             session.query(
-                remixable_tracks_subquery,
+                Track,
                 count_subquery.c["count"],
                 decayed_score(
                     count_subquery.c["count"], remixable_tracks_subquery.c.created_at
