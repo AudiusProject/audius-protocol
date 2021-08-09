@@ -58,6 +58,7 @@ def get_remixable_tracks(args):
 
         tracks = []
         for result in results:
+            logger.warning(result)
             track = result[0:-2]
             score = result[-1]
             track = helpers.tuple_to_model_dictionary(track, Track)
