@@ -34,7 +34,7 @@ module.exports = function (app) {
 
   const accessTokenCorsOptions = {
     credentials: true,
-    origin: config.get('tikTokAuthOrigin')
+    origin: true
   }
 
   app.options('/tiktok/access_token', cors(accessTokenCorsOptions))
