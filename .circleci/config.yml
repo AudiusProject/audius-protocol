@@ -583,7 +583,7 @@ jobs:
             - claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
             - claimable-token-deps-
       - run:
-          name: run audius eth registry tests
+          name: run claimable token tests
           command: |
             export PATH=$PWD/solana-release/bin:$PATH
             cd solana-programs/claimable-tokens/program
