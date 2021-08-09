@@ -38,7 +38,7 @@ const Section = ({
   className,
   children
 }: SectionProps) => {
-  const { isEnabled: remixablesEnabled } = useFlag(FeatureFlags.REMIXABLES)
+  const { isEnabled: remixablesEnabled } = useFlag(FeatureFlags.REMIXABLES_WEB)
   const [isExpanded, setIsExpanded] = useState(false)
   const expand = useCallback(() => {
     setIsExpanded(true)
