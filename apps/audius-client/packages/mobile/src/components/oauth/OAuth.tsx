@@ -116,7 +116,7 @@ const TIKTOK_POLLER = `
   setInterval(() => {
     try {
       if (
-        !window.location.hostname.includes('tiktok.com')
+        window.location.hostname.includes('audius.co')
       ) {
         const query = new URLSearchParams(window.location.search || '')
 
