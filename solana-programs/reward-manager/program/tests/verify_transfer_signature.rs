@@ -410,7 +410,14 @@ async fn success_multiple_recovery_1_tx() {
             );
         }
         if i == 3 {
-
+            assert_eq!(
+                x.message,
+                bot_oracle_msg
+            );
+            assert_eq!(
+                x.address,
+                eth_oracle_address
+            );
         }
     }
 }
