@@ -326,7 +326,7 @@ async function main () {
           SnapbackReconfigTests.deregisterCN,
           {
             numUsers: 2,
-            numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
+            numCreatorNodes: 10,
             iterations: 2
           }
         )
@@ -336,7 +336,7 @@ async function main () {
           SnapbackReconfigTests.forceCNUnavailability,
           {
             numUsers: 2,
-            numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
+            numCreatorNodes: 10,
             iterations: 2
           }
         )
