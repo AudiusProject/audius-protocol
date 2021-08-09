@@ -1,3 +1,4 @@
+import logging
 from sqlalchemy import desc
 from src.models import Track, Stem, AggregateTrack
 from src.queries.query_helpers import (
@@ -7,6 +8,8 @@ from src.queries.query_helpers import (
 )
 from src.utils.db_session import get_db_read_replica
 from src.utils import helpers
+
+logger = logging.getLogger(__name__)
 
 
 def get_remixable_tracks(args):
@@ -65,6 +68,7 @@ def get_remixable_tracks(args):
 
         # Get user specific data for tracks
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+        logger.warning(tracks)
 
         if args.get("with_users", False):
             add_users_to_tracks(session, tracks, current_user_id)
