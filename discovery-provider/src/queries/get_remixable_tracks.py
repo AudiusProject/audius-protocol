@@ -1,4 +1,5 @@
 from sqlalchemy import desc
+from sqlalchemy.orm import aliased
 from src.models import Track, Stem, AggregateTrack
 from src.queries.query_helpers import (
     populate_track_metadata,
@@ -28,6 +29,7 @@ def get_remixable_tracks(args):
             .distinct(Track.track_id)
             .subquery()
         )
+        track_alias = aliased(Track, remixable_tracks_subquery)
 
         count_subquery = session.query(
             AggregateTrack.track_id.label("id"),
@@ -36,18 +38,17 @@ def get_remixable_tracks(args):
 
         query = (
             session.query(
-                Track,
+                track_alias,
                 count_subquery.c["count"],
-                decayed_score(count_subquery.c["count"], Track.created_at).label(
+                decayed_score(count_subquery.c["count"], track_alias.created_at).label(
                     "score"
                 ),
             )
-            .select_entity_from(remixable_tracks_subquery)
             .join(
                 count_subquery,
-                count_subquery.c["id"] == Track.track_id,
+                count_subquery.c["id"] == track_alias.track_id,
             )
-            .order_by(desc("score"), desc(Track.track_id))
+            .order_by(desc("score"), desc(track_alias.track_id))
             .limit(limit)
         )
 
