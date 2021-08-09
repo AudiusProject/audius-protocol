@@ -12,6 +12,8 @@ const VERIFY_TRANSFER_SEED_PREFIX = "V_"
 const TRANSFER_PREFIX = "T_"
 const DECIMALS = 9
 
+const encoder = new TextEncoder()
+
 // 1 + 32 + 1 + (168 * 5)
 const VERIFIED_MESSAGES_LEN = 874
 
@@ -88,7 +90,6 @@ const createAmount = (amount: number) => {
 
 const constructAttestation = (isBot: boolean, recipientEthAddress: string, tokenAmount: number, transferId: string, oracleAddress: string) => {
   console.log("CONSTRUCTING!!!")
-  const encoder = new TextEncoder()
   const userBytes = ethAddressToArr(recipientEthAddress)
   const oracleBytes = ethAddressToArr(oracleAddress)
   const transferIdBytes = encoder.encode(transferId)
@@ -102,53 +103,37 @@ const constructAttestation = (isBot: boolean, recipientEthAddress: string, token
   return res
 }
 
-
-// TODO: this should work with *multiple* votes
-type AttestationMeta = {
-  ethAddress: string
-  attestationSignature: string
-}
-export async function verifyTransferSignature({
-  rewardManagerProgramId,
-  rewardManagerAccount,
-  ethAddress,
-  challengeId,
-  specifier,
-  feePayer,
-  feePayerSecret, // Remove this :)
-  attestationSignature,
-  recipientEthAddress,
-  tokenAmount,
-  oracleAddress,
-  isBot = false
-}: {
-  rewardManagerProgramId: PublicKey,
-  rewardManagerAccount: PublicKey,
-  ethAddress: string,
-  challengeId: string,
-  specifier: string,
-  feePayer: PublicKey,
-  feePayerSecret: Uint8Array,
-  attestationSignature: string,
-  recipientEthAddress: string,
-  tokenAmount: number, // TODO: this should be a BN I think?
-  oracleAddress: string,
-  isBot?: boolean
-}) {
-  const connection = new Connection('https://api.devnet.solana.com')
-  const encoder = new TextEncoder()
-  const encodedPrefix = encoder.encode(SENDER_SEED_PREFIX)
-
+const deriveSenderFromEthAddress = async (ethAddress: string, rewardManagerProgramId: PublicKey, rewardManagerAccount: PublicKey) => {
   const ethAddressArr = ethAddressToArr(ethAddress)
+  const encodedPrefix = encoder.encode(SENDER_SEED_PREFIX)
 
   const [, derivedSender, ] = await findDerivedPair(
     rewardManagerProgramId,
     rewardManagerAccount,
     new Uint8Array([...encodedPrefix, ...ethAddressArr])
   )
+  return derivedSender
+}
 
-  const transferId = constructTransferId(challengeId, specifier)
-  const [rewardManagerAuthority, derivedMessageAccount,] = await deriveMessageAccount(transferId, rewardManagerProgramId, rewardManagerAccount)
+const generateVerifySignatureInstruction = async ({
+  attestationMeta,
+  derivedMessageAccount,
+  rewardManagerAccount,
+  rewardManagerAuthority,
+  rewardManagerProgramId,
+  feePayer,
+  transferId
+}: {
+  attestationMeta: AttestationMeta,
+  derivedMessageAccount: PublicKey
+  rewardManagerAccount: PublicKey
+  rewardManagerAuthority: PublicKey
+  rewardManagerProgramId: PublicKey
+  feePayer: PublicKey
+  transferId: string
+}) => {
+  console.log({attestationMeta})
+  const derivedSender = await deriveSenderFromEthAddress(attestationMeta.ethAddress, rewardManagerProgramId, rewardManagerAccount)
 
   ///   Verify transfer signature
   ///
@@ -182,7 +167,7 @@ export async function verifyTransferSignature({
     },
     {
       pubkey: derivedSender,
-      isSigner: false, // IDK?
+      isSigner: false,
       isWritable: false
     },
     {
@@ -212,19 +197,34 @@ export async function verifyTransferSignature({
     ...serializedInstructionData
   ))
 
-  const verifyTransferSignatureInstruction = new TransactionInstruction({
+  return new TransactionInstruction({
     keys: verifyInstructionAccounts,
     programId: rewardManagerProgramId,
     data: serializedInstructionEnum
   })
+}
 
-
-  const encodedSenderMessage = constructAttestation(isBot, recipientEthAddress,tokenAmount, transferId, oracleAddress)
-
+const generateSecpInstruction = ({
+  attestationMeta,
+  isOracle,
+  recipientEthAddress,
+  tokenAmount,
+  transferId,
+  oracleAddress,
+  instructionIndex
+}: {
+  attestationMeta: AttestationMeta
+  isOracle: boolean
+  recipientEthAddress: string
+  tokenAmount: number
+  transferId: string
+  oracleAddress: string
+  instructionIndex: number
+}) => {
   // Perform signature manipulations:
   // - remove the 0x prefix, and then lose the final byte
   // ('1b', which is the recovery ID, and not desired by the `createInsturctionWithEthAddress` method)
-  let strippedSignature = attestationSignature.replace('0x', '')
+  let strippedSignature = attestationMeta.signature.replace('0x', '')
   const recoveryIdStr = strippedSignature.slice(strippedSignature.length - 2)
   const recoveryId = new BN(recoveryIdStr, 'hex').toNumber()
   strippedSignature = strippedSignature.slice(0, strippedSignature.length - 2)
@@ -232,17 +232,95 @@ export async function verifyTransferSignature({
     ...new BN(strippedSignature, 'hex').toArray('be') // 0 pad to add length, but this seems wrong. Idk
   )
 
-  const secpInstruction = Secp256k1Program.createInstructionWithEthAddress({
-    ethAddress,
+  const encodedSenderMessage = constructAttestation(isOracle, recipientEthAddress, tokenAmount, transferId, oracleAddress)
+
+  return Secp256k1Program.createInstructionWithEthAddress({
+    ethAddress: attestationMeta.ethAddress,
     message: encodedSenderMessage,
     signature: encodedSignature,
     recoveryId,
+    instructionIndex
   })
+}
 
-  const instructions = [
-    secpInstruction,
-    verifyTransferSignatureInstruction
-  ]
+type AttestationMeta = {
+  ethAddress: string
+  signature: string
+}
+
+export async function verifyTransferSignature({
+  rewardManagerProgramId,
+  rewardManagerAccount,
+  attestations,
+  oracleAttestation,
+  challengeId,
+  specifier,
+  feePayer,
+  feePayerSecret, // Remove this :)
+  recipientEthAddress,
+  tokenAmount,
+}: {
+  rewardManagerProgramId: PublicKey,
+  rewardManagerAccount: PublicKey,
+  attestations: AttestationMeta[]
+  oracleAttestation: AttestationMeta
+  challengeId: string,
+  specifier: string,
+  feePayer: PublicKey,
+  feePayerSecret: Uint8Array,
+  attestationSignature: string,
+  recipientEthAddress: string,
+  tokenAmount: number
+}) {
+  const connection = new Connection('https://api.devnet.solana.com')
+
+
+  const transferId = constructTransferId(challengeId, specifier)
+  const [rewardManagerAuthority, derivedMessageAccount,] = await deriveMessageAccount(transferId, rewardManagerProgramId, rewardManagerAccount)
+
+  // Add instructions from DN attestations
+  let instructions = await Promise.all((attestations.reduce((instructions, meta, i) => {
+    const verifyInstruction = generateVerifySignatureInstruction({
+      attestationMeta: meta,
+      derivedMessageAccount,
+      rewardManagerAccount,
+      rewardManagerProgramId,
+      rewardManagerAuthority,
+      transferId,
+      feePayer
+    })
+    const secpInstruction = Promise.resolve(generateSecpInstruction({
+      attestationMeta: meta,
+      isOracle: false,
+      recipientEthAddress,
+      oracleAddress: oracleAttestation.ethAddress,
+      tokenAmount,
+      transferId,
+      instructionIndex: 2 * i
+    }))
+    return [...instructions, secpInstruction, verifyInstruction]
+  }, [] as Promise<TransactionInstruction>[])))
+
+  // Add instructions from oracle
+  const oracleSecp = await generateSecpInstruction({
+    attestationMeta: oracleAttestation,
+    recipientEthAddress,
+    instructionIndex: instructions.length,
+    transferId,
+    isOracle: true,
+    tokenAmount, 
+    oracleAddress: oracleAttestation.ethAddress
+  })
+  const oracleTransfer = await generateVerifySignatureInstruction({
+    attestationMeta: oracleAttestation,
+    derivedMessageAccount,
+    rewardManagerAccount,
+    rewardManagerProgramId,
+    rewardManagerAuthority,
+    transferId,
+    feePayer
+  })
+  instructions = [...instructions, oracleSecp, oracleTransfer]
 
   const {blockhash: recentBlockhash} = await connection.getRecentBlockhash()
   const transaction = new Transaction({
@@ -305,7 +383,6 @@ export const transfer = async ({
   feePayerSecret: Uint8Array
   amount: number
 }) => {
-  const encoder = new TextEncoder()
   const transferId = constructTransferId(challengeId, specifier)
   const [rewardManagerAuthority, verifiedMessagesAccount,] = await deriveMessageAccount(transferId, rewardProgramId, rewardManagerAccount)
   const transferAccount = await deriveTransferAccount(transferId, rewardProgramId, rewardManagerAccount)
@@ -464,7 +541,6 @@ export const transfer = async ({
 }
 
 const deriveTransferAccount = async (transferId: string, rewardProgramId: PublicKey, rewardManager: PublicKey) => {
-  const encoder = new TextEncoder()
   const seed = Uint8Array.from([
     ...encoder.encode(TRANSFER_PREFIX),
     ...encoder.encode(transferId)
@@ -475,7 +551,6 @@ const deriveTransferAccount = async (transferId: string, rewardProgramId: Public
 
 // Derives the account for messages to live in
 const deriveMessageAccount = async (transferId: string, rewardsProgramId: PublicKey, rewardManager: PublicKey) => {
-  const encoder = new TextEncoder()
   const encodedPrefix = encoder.encode(VERIFY_TRANSFER_SEED_PREFIX)
   const encodedTransferId = encoder.encode(transferId)
   const seeds = Uint8Array.from([...encodedPrefix, ...encodedTransferId])
