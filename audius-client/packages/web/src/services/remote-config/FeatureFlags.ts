@@ -8,6 +8,7 @@ export enum FeatureFlags {
   CREATE_WAUDIO_USER_BANK_ON_SIGN_UP = 'create_waudio_user_bank_on_sign_up',
   SHARE_SOUND_TO_TIKTOK = 'share_sound_to_tiktok',
   REMIXABLES = 'remixables',
+  REMIXABLES_WEB = 'remixables-web',
   TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD = 'transfer_audio_to_waudio_on_load'
 }
 
@@ -23,6 +24,7 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP]: false,
   [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: false,
   [FeatureFlags.REMIXABLES]: false,
+  [FeatureFlags.REMIXABLES_WEB]: false,
   [FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD]: false
 }
 
@@ -53,6 +55,7 @@ export const flagCohortType: {
     FeatureFlagCohortType.SESSION_ID,
   [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.REMIXABLES]: FeatureFlagCohortType.USER_ID,
+  [FeatureFlags.REMIXABLES_WEB]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD]: FeatureFlagCohortType.USER_ID
 }
 

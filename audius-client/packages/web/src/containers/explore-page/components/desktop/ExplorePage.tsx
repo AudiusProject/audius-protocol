@@ -115,7 +115,7 @@ const ExplorePage = ({
     },
     [goToRoute]
   )
-  const { isEnabled: remixablesEnabled } = useFlag(FeatureFlags.REMIXABLES)
+  const { isEnabled: remixablesEnabled } = useFlag(FeatureFlags.REMIXABLES_WEB)
 
   return (
     <Page
