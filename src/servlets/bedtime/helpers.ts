@@ -39,16 +39,6 @@ const encodeUrlName = (name: string): string => {
   return encodeURIComponent(formatUrlName(name))
 }
 
-export const getTrackPath = ({
-  ownerHandle,
-  title,
-  id
-}: {
-  ownerHandle: string,
-  title: string,
-  id: number
-}) => `${encodeUrlName(ownerHandle)}/${encodeUrlName(title)}-${id}`
-
 export const getCollectionPath = ({ ownerHandle, isAlbum, name, id }: {
   ownerHandle: string,
   isAlbum: boolean,
