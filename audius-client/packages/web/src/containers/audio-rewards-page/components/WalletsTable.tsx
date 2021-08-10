@@ -8,7 +8,7 @@ import { ReactComponent as IconCopy } from 'assets/img/iconCopy.svg'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemoveTrack.svg'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Toast from 'components/toast/Toast'
-import { ComponentPlacement } from 'components/types'
+import { ComponentPlacement, MountPlacement } from 'components/types'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import {
   getAssociatedWallets,
@@ -77,19 +77,20 @@ const Wallet = ({
   const copyAddressToClipboard = useCallback(() => {
     copyToClipboard(address)
   }, [address])
-
+  const isCopyDisabled = isConfirmAdding || isConfirmRemoving
   return (
     <div className={cn(styles.copyContainer)} onClick={copyAddressToClipboard}>
       <div className={styles.addressContainer}>
         <Toast
           text={messages.copied}
-          disabled={isDisabled}
+          mount={MountPlacement.PARENT}
+          disabled={isCopyDisabled}
           requireAccount={false}
           delay={COPIED_TOAST_TIMEOUT}
           tooltipClassName={styles.copyTooltip}
           containerClassName={cn(styles.walletContainer, {
             [styles.removingWallet]: isConfirmRemoving,
-            [styles.disabled]: isDisabled
+            [styles.disabled]: isCopyDisabled
           })}
           placement={ComponentPlacement.TOP}
         >
@@ -102,7 +103,7 @@ const Wallet = ({
               )}
             </div>
             <span className={styles.walletText}>{displayAddress(address)}</span>
-            <IconCopy className={styles.iconCopy} />
+            {!isCopyDisabled && <IconCopy className={styles.iconCopy} />}
           </>
         </Toast>
       </div>
