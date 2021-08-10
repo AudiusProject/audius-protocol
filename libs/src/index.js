@@ -49,9 +49,10 @@ class AudiusLibs {
   /**
    * Configures an identity service wrapper
    * @param {string} url
+   * @param {boolean?} useHedgehogLocalStorage whether or not to read hedgehog entropy in local storage
    */
-  static configIdentityService (url) {
-    return { url }
+  static configIdentityService (url, useHedgehogLocalStorage = true) {
+    return { url, useHedgehogLocalStorage }
   }
 
   /**
@@ -282,7 +283,7 @@ class AudiusLibs {
     /** Identity Service */
     if (this.identityServiceConfig) {
       this.identityService = new IdentityService(this.identityServiceConfig.url, this.captcha)
-      this.hedgehog = new Hedgehog(this.identityService)
+      this.hedgehog = new Hedgehog(this.identityService, this.identityServiceConfig.useHedgehogLocalStorage)
     } else if (this.web3Config && !this.web3Config.useExternalWeb3) {
       throw new Error('Identity Service required for internal Web3')
     }

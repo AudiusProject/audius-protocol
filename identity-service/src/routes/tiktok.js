@@ -4,8 +4,7 @@ const config = require('../config.js')
 
 const {
   handleResponse,
-  successResponse,
-  errorResponseBadRequest
+  successResponse
 } = require('../apiHelpers')
 
 /**
@@ -42,8 +41,7 @@ module.exports = function (app) {
     '/tiktok/access_token',
     cors(accessTokenCorsOptions),
     handleResponse(async (req, res, next) => {
-      const { code, state } = req.body
-      const { csrfState } = req.cookies
+      const { code } = req.body
 
       // NOTE: sk - temporarily disabling csrf check for go live
       // if (!state || !csrfState || state !== csrfState) {

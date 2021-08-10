@@ -3,7 +3,7 @@
 use claimable_tokens::utils::program::{get_address_pair, EthereumAddress};
 use claimable_tokens::*;
 use rand::{thread_rng, Rng};
-use secp256k1::{PublicKey, SecretKey};
+use libsecp256k1::{PublicKey, SecretKey};
 use solana_program::{program_pack::Pack, pubkey::Pubkey, system_instruction};
 use solana_program_test::*;
 use solana_sdk::{
