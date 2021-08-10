@@ -416,7 +416,7 @@ const ConnectedPlaylistTile = memo(
           kind='track'
           id={track.track_id}
           isOwner={track.user.handle === userHandle}
-          link={fullTrackPage(track.user.handle, track.title, track.track_id)}
+          link={fullTrackPage(track.permalink)}
         >
           <TrackListItem
             index={i}

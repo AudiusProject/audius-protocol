@@ -66,8 +66,8 @@ export const SEARCH_CATEGORY_PAGE = '/search/:query/:category'
 export const SEARCH_PAGE = '/search/:query?'
 export const PLAYLIST_PAGE = '/:handle/playlist/:playlistName'
 export const ALBUM_PAGE = '/:handle/album/:albumName'
-export const TRACK_PAGE = '/:handle/:trackName'
-export const TRACK_REMIXES_PAGE = '/:handle/:trackName/remixes'
+export const TRACK_PAGE = '/:handle/:slug'
+export const TRACK_REMIXES_PAGE = '/:handle/:slug/remixes'
 export const PROFILE_PAGE = '/:handle'
 export const PROFILE_PAGE_TRACKS = '/:handle/tracks'
 export const PROFILE_PAGE_ALBUMS = '/:handle/albums'
@@ -207,18 +207,15 @@ export const findRoute = (pathname: string) => {
 }
 
 // Create full formed urls for routes.
-export const trackPage = (handle: string, title: string, id: ID) => {
-  return `/${encodeUrlName(handle)}/${encodeUrlName(title)}-${id}`
-}
-export const fullTrackPage = (handle: string, title: string, id: ID) => {
-  return `${BASE_URL}${trackPage(handle, title, id)}`
+export const fullTrackPage = (permalink: string) => {
+  return `${BASE_URL}${permalink}`
 }
 
-export const trackRemixesPage = (handle: string, title: string, id: ID) => {
-  return `${trackPage(handle, title, id)}/remixes`
+export const trackRemixesPage = (permalink: string) => {
+  return `${permalink}/remixes`
 }
-export const fullTrackRemixesPage = (handle: string, title: string, id: ID) => {
-  return `${fullTrackPage(handle, title, id)}/remixes`
+export const fullTrackRemixesPage = (permalink: string) => {
+  return `${fullTrackPage(permalink)}/remixes`
 }
 
 export const albumPage = (handle: string, title: string, id: ID) => {

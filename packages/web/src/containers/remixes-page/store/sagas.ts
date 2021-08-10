@@ -1,7 +1,8 @@
 import { takeEvery, call, put } from 'redux-saga/effects'
 
+import { TrackMetadata } from 'models/Track'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { retrieveTracks } from 'store/cache/tracks/utils'
+import { retrieveTrackByHandleAndSlug } from 'store/cache/tracks/utils/retrieveTracks'
 
 import tracksSagas from './lineups/tracks/sagas'
 import { fetchTrack, fetchTrackSucceeded } from './slice'
@@ -11,11 +12,14 @@ function* watchFetch() {
     action: ReturnType<typeof fetchTrack>
   ) {
     yield call(waitForBackendSetup)
-    const { trackId } = action.payload
+    const { handle, slug } = action.payload
 
-    yield call(retrieveTracks, { trackIds: [trackId] })
+    const track: TrackMetadata = yield call(retrieveTrackByHandleAndSlug, {
+      handle,
+      slug
+    })
 
-    yield put(fetchTrackSucceeded({ trackId }))
+    yield put(fetchTrackSucceeded({ trackId: track.track_id }))
   })
 }
 

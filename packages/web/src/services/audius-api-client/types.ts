@@ -118,6 +118,7 @@ export type APITrack = {
   is_delete: boolean
   cover_art: Nullable<string>
   play_count: number
+  permalink: string
 }
 
 export type APISearchTrack = Omit<

@@ -63,8 +63,7 @@ import {
   FAVORITING_USERS_ROUTE,
   REPOSTING_USERS_ROUTE,
   fullTrackPage,
-  trackRemixesPage,
-  trackPage
+  trackRemixesPage
 } from 'utils/route'
 import { parseTrackRoute, TrackRouteParams } from 'utils/route/trackRouteParser'
 import { getTrackPageTitle, getTrackPageDescription } from 'utils/seo'
@@ -115,7 +114,7 @@ class TrackPageProvider extends Component<
   componentDidMount() {
     const params = parseTrackRoute(this.props.pathname)
     // Go to 404 if the track id isn't parsed correctly or if should redirect
-    if (!params || shouldRedirectTrack(params.trackId)) {
+    if (!params || (params.trackId && shouldRedirectTrack(params.trackId))) {
       this.props.goToRoute(NOT_FOUND_PAGE)
       return
     }
@@ -167,24 +166,22 @@ class TrackPageProvider extends Component<
       const params = parseTrackRoute(pathname)
       if (params) {
         // Check if we are coming from a non-canonical route and replace route if necessary.
-        const { trackTitle, trackId, handle } = params
-        const newTrackTitle = formatUrlName(track.title)
-        if (trackTitle === null || handle === null) {
-          if (this.props.user) {
-            const newPath = trackPage(
-              this.props.user.handle,
-              newTrackTitle,
-              track.track_id
-            )
-            this.props.replaceRoute(newPath)
+        const { slug, handle } = params
+        if (slug === null || handle === null) {
+          if (track.permalink) {
+            this.props.replaceRoute(track.permalink)
           }
         } else {
-          // Check that the track name hasn't changed. If so, update url.
-          if (track.track_id === trackId) {
-            if (newTrackTitle !== trackTitle) {
-              const newPath = pathname.replace(trackTitle, newTrackTitle)
-              this.props.replaceRoute(newPath)
-            }
+          // Reroute to the most recent permalink if necessary
+          if (
+            pathname === this.state.pathname &&
+            prevProps.track?.track_id === track?.track_id &&
+            track.permalink &&
+            track.permalink !== pathname
+          ) {
+            // The path is going to change but don't re-fetch as we already have the track
+            this.setState({ pathname: track.permalink })
+            this.props.replaceRoute(track.permalink)
           }
         }
       }
@@ -201,7 +198,7 @@ class TrackPageProvider extends Component<
 
   fetchTracks = (params: NonNullable<TrackRouteParams>) => {
     const { track } = this.props
-    const { trackTitle, trackId, handle } = params
+    const { slug, trackId, handle } = params
 
     // Go to feed if the track is deleted
     if (track && track.track_id === trackId) {
@@ -211,8 +208,13 @@ class TrackPageProvider extends Component<
       }
     }
     this.props.reset()
-    this.props.setTrackId(trackId)
-    this.props.fetchTrack(trackId, trackTitle, handle, !!(trackTitle && handle))
+    if (trackId) {
+      this.props.setTrackId(trackId)
+    }
+    if (slug && handle) {
+      this.props.setTrackPermalink(`/${handle}/${slug}`)
+    }
+    this.props.fetchTrack(trackId, slug || '', handle || '', !!(slug && handle))
     if (handle) {
       this.setState({ ownerHandle: handle })
     }
@@ -326,11 +328,9 @@ class TrackPageProvider extends Component<
   }
 
   goToAllRemixesPage = () => {
-    const { track, user } = this.props
-    if (track && user) {
-      this.props.goToRoute(
-        trackRemixesPage(user.handle, track.title, track.track_id)
-      )
+    const { track } = this.props
+    if (track) {
+      this.props.goToRoute(trackRemixesPage(track.permalink))
     }
   }
 
@@ -406,10 +406,7 @@ class TrackPageProvider extends Component<
       duration: track ? formatSeconds(track.duration) : '',
       tags: track ? (track.tags || '').split(',').filter(Boolean) : []
     })
-    const canonicalUrl =
-      user && track
-        ? fullTrackPage(user.handle, track.title, track.track_id)
-        : ''
+    const canonicalUrl = user && track ? fullTrackPage(track.permalink) : ''
 
     // If the track has a remix parent and it's not deleted.
     const hasValidRemixParent =
@@ -508,21 +505,18 @@ function makeMapStateToProps() {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     fetchTrack: (
-      trackId: ID,
-      trackName: string | null,
-      ownerHandle: string | null,
+      trackId: number | null,
+      slug: string,
+      ownerHandle: string,
       canBeUnlisted: boolean
     ) =>
       dispatch(
-        trackPageActions.fetchTrack(
-          trackId,
-          trackName,
-          ownerHandle,
-          canBeUnlisted
-        )
+        trackPageActions.fetchTrack(trackId, slug, ownerHandle, canBeUnlisted)
       ),
     setTrackId: (trackId: number) =>
       dispatch(trackPageActions.setTrackId(trackId)),
+    setTrackPermalink: (permalink: string) =>
+      dispatch(trackPageActions.setTrackPermalink(permalink)),
     resetTrackPage: () => dispatch(trackPageActions.resetTrackPage()),
     makeTrackPublic: (trackId: ID) =>
       dispatch(trackPageActions.makeTrackPublic(trackId)),

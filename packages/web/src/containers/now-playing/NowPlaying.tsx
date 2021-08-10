@@ -56,11 +56,7 @@ import {
 } from 'store/social/tracks/actions'
 import { AppState } from 'store/types'
 import { Genre } from 'utils/genres'
-import {
-  pushUniqueRoute as pushRoute,
-  profilePage,
-  trackPage
-} from 'utils/route'
+import { pushUniqueRoute as pushRoute, profilePage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 import { withNullGuard } from 'utils/withNullGuard'
 
@@ -250,7 +246,7 @@ const NowPlaying = g(
 
     const goToTrackPage = () => {
       onClose()
-      goToRoute(trackPage(handle, title, track_id))
+      goToRoute(track.permalink)
     }
 
     const goToProfilePage = () => {

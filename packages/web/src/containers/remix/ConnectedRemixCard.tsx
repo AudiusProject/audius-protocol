@@ -11,7 +11,7 @@ import { SquareSizes } from 'models/common/ImageSizes'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUserFromTrack } from 'store/cache/users/selectors'
 import { AppState } from 'store/types'
-import { trackPage, profilePage } from 'utils/route'
+import { profilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
 type OwnProps = {
@@ -39,8 +39,8 @@ const ConnectedRemixCard = g(({ track, user, goToRoute }) => {
     SquareSizes.SIZE_480_BY_480
   )
   const goToTrackPage = useCallback(() => {
-    goToRoute(trackPage(user.handle, track.title, track.track_id))
-  }, [goToRoute, track, user])
+    goToRoute(track.permalink)
+  }, [goToRoute, track])
   const goToArtistPage = useCallback(() => {
     goToRoute(profilePage(user.handle))
   }, [goToRoute, user])

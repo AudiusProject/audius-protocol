@@ -52,7 +52,6 @@ import {
   HISTORY_PAGE,
   DASHBOARD_PAGE,
   UPLOAD_PAGE,
-  trackPage,
   fullTrackPage,
   profilePage,
   playlistPage,
@@ -161,16 +160,8 @@ const NavColumn = ({
     (full = false) => {
       if (currentQueueItem && currentQueueItem.user && currentQueueItem.track) {
         return full
-          ? fullTrackPage(
-              currentQueueItem.user.handle,
-              currentQueueItem.track.title,
-              currentQueueItem.track.track_id
-            )
-          : trackPage(
-              currentQueueItem.user.handle,
-              currentQueueItem.track.title,
-              currentQueueItem.track.track_id
-            )
+          ? fullTrackPage(currentQueueItem.track.permalink)
+          : currentQueueItem.track.permalink
       }
       return null
     },

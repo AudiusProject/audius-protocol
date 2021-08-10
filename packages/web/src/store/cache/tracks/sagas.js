@@ -29,7 +29,7 @@ import { fetchUsers } from 'store/cache/users/sagas'
 import { getUser } from 'store/cache/users/selectors'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
-import { Kind } from 'store/types'
+import { Kind, Status } from 'store/types'
 import { squashNewLines, formatUrlName } from 'utils/formatUtil'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { averageRgb } from 'utils/imageProcessingUtil'
@@ -84,6 +84,17 @@ function* fetchFirstSegments(entries) {
 function* watchAdd() {
   yield takeEvery(cacheActions.ADD_SUCCEEDED, function* (action) {
     if (action.kind === Kind.TRACKS) {
+      yield put(
+        trackActions.setPermalinkStatus(
+          action.entries
+            .filter(entry => !!entry.metadata.permalink)
+            .map(entry => ({
+              permalink: entry.metadata.permalink,
+              id: entry.id,
+              status: Status.SUCCESS
+            }))
+        )
+      )
       if (!NATIVE_MOBILE) {
         yield fork(fetchRepostInfo, action.entries)
         yield fork(fetchFirstSegments, action.entries)
@@ -156,13 +167,6 @@ function* editTrackAsync(action) {
       ...track._cover_art_sizes,
       [DefaultSizes.OVERRIDE]: track.artwork.url
     }
-  }
-
-  if (track?.remix_of?.tracks) {
-    const remixParentsUpdate = track.remix_of.tracks.map(t => ({
-      track_id: t.parent_track_id
-    }))
-    track._remix_parents = remixParentsUpdate
   }
 
   yield put(

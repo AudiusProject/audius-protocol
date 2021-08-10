@@ -59,7 +59,6 @@ import * as socialUsersActions from 'store/social/users/actions'
 import { AppState, Status, Kind } from 'store/types'
 import { formatUrlName } from 'utils/formatUtil'
 import {
-  trackPage,
   profilePage,
   NOT_FOUND_PAGE,
   REPOSTING_USERS_ROUTE,
@@ -449,7 +448,7 @@ class CollectionPage extends Component<
   }
 
   onClickTrackName = (record: TrackRecord) => {
-    this.props.goToRoute(trackPage(record.handle, record.name, record.track_id))
+    this.props.goToRoute(record.permalink)
   }
 
   onClickArtistName = (record: TrackRecord) => {

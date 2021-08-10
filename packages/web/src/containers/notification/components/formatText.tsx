@@ -11,11 +11,10 @@ import {
 import UserBadges from 'containers/user-badges/UserBadges'
 import { formatCount } from 'utils/formatUtil'
 import {
-  fullTrackPage,
   fullAlbumPage,
   fullPlaylistPage,
   fullProfilePage,
-  trackPage,
+  fullTrackPage,
   albumPage,
   playlistPage
 } from 'utils/route'
@@ -71,8 +70,7 @@ export const getAchievementText = (notification: any) => {
 
 const getEntityLink = (entity: any, fullRoute = false) => {
   if (entity.track_id) {
-    const getRoute = fullRoute ? fullTrackPage : trackPage
-    return getRoute(entity.user.handle, entity.title, entity.track_id)
+    return fullRoute ? fullTrackPage(entity.permalink) : entity.permalink
   } else if (entity.playlist_id && entity.is_album) {
     const getRoute = fullRoute ? fullAlbumPage : albumPage
     return getRoute(

@@ -2,6 +2,7 @@ export const SET_TRACK_RANK = 'TRACK_PAGE/SET_TRACK_RANK'
 export const GET_TRACK_RANKS = 'TRACK_PAGE/GET_TRACK_RANKS'
 export const RESET = 'TRACK_PAGE/RESET'
 export const SET_TRACK_ID = 'TRACK_PAGE/SET_TRACK_ID'
+export const SET_TRACK_PERMALINK = 'TRACK_PAGE/SET_TRACK_PERMALINK'
 export const MAKE_TRACK_PUBLIC = 'TRACK_PAGE/MAKE_TRACK_PUBLIC'
 export const SET_TRACK_TRENDING_RANKS = 'TRACK_PAGE/SET_TRACK_TRENDING_RANKS'
 
@@ -22,13 +23,17 @@ export const setTrackRank = (duration, rank) => ({
 })
 export const resetTrackPage = rank => ({ type: RESET })
 export const setTrackId = trackId => ({ type: SET_TRACK_ID, trackId })
+export const setTrackPermalink = permalink => ({
+  type: SET_TRACK_PERMALINK,
+  permalink
+})
 export const makeTrackPublic = trackId => ({ type: MAKE_TRACK_PUBLIC, trackId })
 
-export const fetchTrack = (trackId, trackName, ownerHandle, canBeUnlisted) => ({
+export const fetchTrack = (trackId, slug, handle, canBeUnlisted) => ({
   type: FETCH_TRACK,
   trackId,
-  trackName,
-  ownerHandle,
+  slug,
+  handle,
   canBeUnlisted
 })
 export const fetchTrackSucceeded = trackId => ({

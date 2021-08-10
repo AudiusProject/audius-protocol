@@ -10,9 +10,15 @@ import { AppState } from 'store/types'
 export const getBaseState = (state: AppState) => state.track
 
 export const getTrackId = (state: AppState) => getBaseState(state).trackId
+export const getTrackPermalink = (state: AppState) =>
+  getBaseState(state).trackPermalink
 export const getTrack = (state: AppState) => {
   const id = getTrackId(state)
-  return getCachedTrack(state, { id })
+  if (id) {
+    return getCachedTrack(state, { id })
+  }
+  const permalink = getTrackPermalink(state)
+  return getCachedTrack(state, { permalink })
 }
 
 export const getRemixParentTrack = (state: AppState) => {
