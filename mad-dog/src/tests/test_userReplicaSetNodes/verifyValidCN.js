@@ -10,16 +10,16 @@ const { getUser } = ServiceCommands
 const verifyCreatorNodeRemoved = async (executeAll, removedCnId, walletIndexToUserIdMap) => {
   const userReplicaSets = await executeAll(async (libs, i) => {
     const userId = walletIndexToUserIdMap[i]
-    let usrQueryInfo = await getUser(libs, userId)
+    const usrQueryInfo = await getUser(libs, userId)
     // Deconstruct the comma separated value of enpdoint1,endoint2,endpoint3
-    let replicaCNIDs = usrQueryInfo.creator_node_endpoint
-      .split(",")
+    const replicaCNIDs = usrQueryInfo.creator_node_endpoint
+      .split(',')
       .map(getIDfromEndpoint)
     return { userId: replicaCNIDs }
   })
 
   const replicaSets = userReplicaSets.reduce((acc, urs) => ({ ...acc, ...urs }), {})
-  for (let userId in replicaSets) {
+  for (const userId in replicaSets) {
     const replicaIds = replicaSets[userId]
     if (replicaIds.some(cnId => cnId === removedCnId)) {
       throw new Error(`User ID: ${userId} has replica set: ${replicaIds}, but CN ${removedCnId} should be removed`)
@@ -48,17 +48,16 @@ const verifyUserReplicaSets = async (executeAll, walletIndexToUserIdMap, content
  * Checks that the user's creator nodes are all synced w/ the user's data
  * @param {Function} executeOne Wrapper lib fn
  * @param {Function} executeAll Wrapper libs fn
- * @param {number} removedCNId ID of the removed creator node  
- * @param {Object} walletIndexToUserIdMap wallet index to user id mapping 
- * @param {Object} contentNodeIDToInfoMapping creator node id to serice provider info 
+ * @param {number} removedCNId ID of the removed creator node
+ * @param {Object} walletIndexToUserIdMap wallet index to user id mapping
+ * @param {Object} contentNodeIDToInfoMapping creator node id to serice provider info
  */
 const verifyValidCNs = async (executeOne, executeAll, removedCNId, walletIndexToUserIdMap, contentNodeIDToInfoMapping) => {
-
   // Check Discovery for all user's replica set to ensure the cn is removed
   await verifyCreatorNodeRemoved(executeAll, removedCNId, walletIndexToUserIdMap)
 
-  // Cross reference Discovery w/ the replcia set manager contract to 
-  // check that they are consistent 
+  // Cross reference Discovery w/ the replcia set manager contract to
+  // check that they are consistent
   await verifyUserReplicaSets(executeAll, walletIndexToUserIdMap, contentNodeIDToInfoMapping)
 
   // Ensure that all primary and seondary clock values for all users are the same
