@@ -3,6 +3,7 @@ import { asLineup } from 'store/lineup/reducer'
 
 import {
   SET_TRACK_ID,
+  SET_TRACK_PERMALINK,
   RESET,
   SET_TRACK_RANK,
   SET_TRACK_TRENDING_RANKS
@@ -28,6 +29,12 @@ const actionsMap = {
     return {
       ...state,
       trackId: action.trackId
+    }
+  },
+  [SET_TRACK_PERMALINK](state, action) {
+    return {
+      ...state,
+      trackPermalink: action.permalink
     }
   },
   [SET_TRACK_RANK](state, action) {

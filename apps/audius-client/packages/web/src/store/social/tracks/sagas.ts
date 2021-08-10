@@ -20,7 +20,6 @@ import { confirmTransaction } from 'store/confirmer/sagas'
 import * as socialActions from 'store/social/tracks/actions'
 import { Kind } from 'store/types'
 import { formatShareText } from 'utils/formatUtil'
-import { trackPage } from 'utils/route'
 import { waitForValue } from 'utils/sagaHelpers'
 import { share } from 'utils/share'
 import { makeKindId } from 'utils/uid'
@@ -612,7 +611,7 @@ function* watchShareTrack() {
     const { trackId } = action
     const track = yield select(getTrack, { id: trackId })
     const user = yield select(getUser, { id: track.owner_id })
-    const link = trackPage(user.handle, track.title, track.track_id)
+    const link = track.permalink
     share(link, formatShareText(track.title, user.name))
 
     const event = make(Name.SHARE, {

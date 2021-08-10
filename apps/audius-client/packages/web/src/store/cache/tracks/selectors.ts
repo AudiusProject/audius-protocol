@@ -5,19 +5,33 @@ import { Kind, AppState, Status } from 'store/types'
 
 export const getTrack = (
   state: AppState,
-  props: { id?: ID | null; uid?: UID | null }
+  props: { id?: ID | null; uid?: UID | null; permalink?: string | null }
 ) => {
+  if (
+    props.permalink &&
+    state.tracks.permalinks[props.permalink.toLowerCase()]
+  ) {
+    props.id = state.tracks.permalinks[props.permalink.toLowerCase()].id
+  }
   return getEntry(state, {
     ...props,
     kind: Kind.TRACKS
   })
 }
+export const getTrackByPermalink = (
+  state: AppState,
+  props: { permalink: string }
+) => state.tracks.permalinks[props.permalink] || null
 export const getStatus = (state: AppState, props: { id?: ID | null }) =>
   (props.id && state.tracks.statuses[props.id]) || null
 
 export const getTracks = (
   state: AppState,
-  props: { ids?: ID[] | null; uids?: UID[] | null }
+  props: {
+    ids?: ID[] | null
+    uids?: UID[] | null
+    permalinks?: string[] | null
+  }
 ) => {
   if (props && props.ids) {
     const tracks: { [id: number]: Track } = {}
@@ -34,6 +48,16 @@ export const getTracks = (
       const track = getTrack(state, { uid })
       if (track) {
         tracks[track.track_id] = track
+      }
+    })
+    return tracks
+  } else if (props && props.permalinks) {
+    const tracks: { [permalink: string]: Track } = {}
+    props.permalinks.forEach(permalink => {
+      const { id } = getTrackByPermalink(state, { permalink }) || {}
+      if (id) {
+        const track = getTrack(state, { id })
+        if (track) tracks[permalink] = track
       }
     })
     return tracks

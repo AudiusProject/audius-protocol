@@ -15,7 +15,7 @@ import { LineupSagas } from 'store/lineup/sagas'
 import { waitForValue } from 'utils/sagaHelpers'
 
 function* getTracks({ offset, limit, payload }) {
-  const { ownerHandle, trackId } = payload
+  const { ownerHandle, permalink } = payload
   const currentUserId = yield select(getUserId)
   const processed = yield call(retrieveUserTracks, {
     handle: ownerHandle,
@@ -29,13 +29,13 @@ function* getTracks({ offset, limit, payload }) {
   const track = yield call(
     waitForValue,
     getTrack,
-    { id: trackId },
+    { permalink },
     // Wait for the track to have a track_id (e.g. remix children could get fetched first)
     track => track.track_id
   )
   const lineup = [track]
 
-  const remixParentTrackId = track._remix_parents?.[0]?.track_id
+  const remixParentTrackId = track.remix_of?.tracks?.[0]?.parent_track_id
   if (remixParentTrackId) {
     const remixParentTrack = yield call(waitForValue, getTrack, {
       id: remixParentTrackId
@@ -47,7 +47,9 @@ function* getTracks({ offset, limit, payload }) {
     processed
       // Filter out any track that happens to be the hero track
       // or is the remix parent track.
-      .filter(t => t.track_id !== trackId && t.track_id !== remixParentTrackId)
+      .filter(
+        t => t.permalink !== permalink && t.track_id !== remixParentTrackId
+      )
       // Take only the first 5
       .slice(0, 5)
   )

@@ -78,11 +78,7 @@ const RemixesPage = g(
       <MobilePageContainer
         title={title}
         description={messages.getDescription(originalTrack.title, user.name)}
-        canonicalUrl={fullTrackRemixesPage(
-          user.handle,
-          originalTrack.title,
-          originalTrack.track_id
-        )}
+        canonicalUrl={fullTrackRemixesPage(originalTrack.permalink)}
         containerClassName={styles.container}
       >
         <div className={styles.tracksContainer}>

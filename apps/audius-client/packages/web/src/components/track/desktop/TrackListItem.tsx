@@ -10,7 +10,7 @@ import Menu from 'containers/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'containers/menu/TrackMenu'
 import { UID, ID } from 'models/common/Identifiers'
 import { EnhancedCollectionTrack } from 'store/cache/collections/selectors'
-import { trackPage, profilePage } from 'utils/route'
+import { profilePage } from 'utils/route'
 import { formatSeconds } from 'utils/timeUtil'
 
 import { TrackTileSize } from '../types'
@@ -74,8 +74,7 @@ const TrackListItem = ({
   const onClickTrackName = (e: MouseEvent) => {
     if (!disableActions && !deleted) {
       e.stopPropagation()
-      if (goToRoute)
-        goToRoute(trackPage(track.user.handle, track.title, track.track_id))
+      if (goToRoute) goToRoute(track.permalink)
     }
   }
 
@@ -109,6 +108,7 @@ const TrackListItem = ({
     isReposted: track.has_current_user_reposted,
     trackId: track.track_id,
     trackTitle: track.title,
+    trackPermalink: track.permalink,
     type: 'track'
   }
 

@@ -82,10 +82,10 @@ const RemixSettingsModal = ({
   const [url, setUrl] = useState<string | null>(null)
 
   useEffect(() => {
-    if (url === null && track && user && isOpen) {
-      setUrl(fullTrackPage(user.handle, track.title, track.track_id))
+    if (url === null && track && isOpen) {
+      setUrl(fullTrackPage(track.permalink))
     }
-  }, [isOpen, track, user, url, setUrl])
+  }, [isOpen, track, url, setUrl])
 
   useEffect(() => {
     if (!isOpen) setUrl(null)
