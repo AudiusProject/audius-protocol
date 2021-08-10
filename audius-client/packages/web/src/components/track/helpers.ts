@@ -7,6 +7,7 @@ export const getTrackWithFallback = (track: Track | null) => {
     track || {
       track_id: -1,
       title: '',
+      permalink: '',
       repost_count: 0,
       followee_reposts: [],
       followee_saves: [],

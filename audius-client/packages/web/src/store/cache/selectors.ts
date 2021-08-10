@@ -6,6 +6,7 @@ import { ID, UID } from 'models/common/Identifiers'
 import { Kind, AppState } from 'store/types'
 import { Uid } from 'utils/uid'
 
+import TracksCacheState from './tracks/types'
 import UsersCacheState from './users/types'
 
 /**
@@ -66,7 +67,7 @@ export function getEntry(
 }
 
 /**
- * Selects the tiemstamps fomr the cache.
+ * Selects the timestamps from the cache.
  * @param {AppState} state
  * @param {object} props { kind, ids }
  */
@@ -125,11 +126,11 @@ export function getCache(
 export function getCache(
   state: AppState,
   props: { kind: Kind.TRACKS }
-): Cache<Track>
+): TracksCacheState
 export function getCache(
   state: AppState,
   props: { kind: Kind }
-): Cache<Track> | Cache<Collection> | UsersCacheState
+): TracksCacheState | Cache<Collection> | UsersCacheState
 export function getCache(state: AppState, props: { kind: Kind }) {
   switch (props.kind) {
     case Kind.TRACKS:

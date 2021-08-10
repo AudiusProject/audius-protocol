@@ -16,11 +16,10 @@ import AudiusBackend from 'services/AudiusBackend'
 import { Name } from 'services/analytics'
 import { make, useRecord, TrackEvent } from 'store/analytics/actions'
 import {
-  fullTrackPage,
   fullAlbumPage,
   fullPlaylistPage,
   fullProfilePage,
-  trackPage,
+  fullTrackPage,
   albumPage,
   playlistPage
 } from 'utils/route'
@@ -34,8 +33,7 @@ export const getEntityLink = (
   fullRoute = false
 ) => {
   if ('track_id' in entity) {
-    const getRoute = fullRoute ? fullTrackPage : trackPage
-    return getRoute(entity.user.handle, entity.title, entity.track_id)
+    return fullRoute ? fullTrackPage(entity.permalink) : entity.permalink
   } else if (entity.playlist_id && entity.is_album) {
     const getRoute = fullRoute ? fullAlbumPage : albumPage
     return getRoute(
@@ -57,7 +55,7 @@ export const formatAchievementText = (
 ) => {
   const achievementText =
     achievement === Achievement.Listens ? 'Plays' : achievement
-  return `My ${type} ${name} has more than ${value} ${achievementText} on @AudiusProject #Audius 
+  return `My ${type} ${name} has more than ${value} ${achievementText} on @AudiusProject #Audius
 Check it out!`
 }
 

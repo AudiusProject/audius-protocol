@@ -14,13 +14,7 @@ import { getTierForUser } from 'containers/user-badges/utils'
 import { SquareSizes } from 'models/common/ImageSizes'
 import { Name } from 'services/analytics'
 import { make } from 'store/analytics/actions'
-import {
-  trackPage,
-  albumPage,
-  playlistPage,
-  profilePage,
-  getPathname
-} from 'utils/route'
+import { albumPage, playlistPage, profilePage, getPathname } from 'utils/route'
 
 import styles from './SearchBar.module.css'
 import { fetchSearch, cancelFetchSearch, clearSearch } from './store/actions'
@@ -95,9 +89,7 @@ class SearchBar extends Component {
       )
       if (selectedUser) return { kind: 'profile', id: selectedUser.user_id }
       const selectedTrack = this.props.search.tracks.find(
-        t =>
-          value ===
-          (t.user ? trackPage(t.user.handle, t.title, t.track_id) : '')
+        t => value === (t.user ? t.permalink : '')
       )
       if (selectedTrack) return { kind: 'track', id: selectedTrack.track_id }
       const selectedPlaylist = this.props.search.playlists.find(
@@ -157,9 +149,7 @@ class SearchBar extends Component {
           title: 'Tracks',
           children: this.props.search.tracks.map(track => {
             return {
-              key: track.user
-                ? trackPage(track.user.handle, track.title, track.track_id)
-                : '',
+              key: track.user ? track.permalink : '',
               primary: track.title,
               secondary: track.user ? track.user.name : '',
               id: track.track_id,

@@ -19,11 +19,10 @@ import { FeatureFlags } from 'services/remote-config'
 import { useRecord, make } from 'store/analytics/actions'
 import { copyLinkToClipboard } from 'utils/clipboardUtil'
 import {
-  fullTrackPage,
   fullAlbumPage,
   fullPlaylistPage,
   fullProfilePage,
-  trackPage,
+  fullTrackPage,
   profilePage,
   albumPage,
   playlistPage
@@ -74,22 +73,20 @@ const getShareTextUrl = async (
 ) => {
   switch (uploadType) {
     case 'Track': {
-      const { title } = upload.tracks[0].metadata
-      const getPage = fullUrl ? fullTrackPage : trackPage
-      const url = getPage(user.handle, title, upload.completionId)
+      const { title, permalink } = upload.tracks[0].metadata
+      const url = fullUrl ? fullTrackPage(permalink) : permalink
       return {
         text: `Check out my new track, ${title} on @AudiusProject #Audius`,
         url
       }
     }
     case 'Remix': {
-      const title = upload.tracks[0].metadata.title
+      const { permalink } = upload.tracks[0].metadata
       const parent_track_id =
         upload.tracks[0].metadata?.remix_of?.tracks[0].parent_track_id
       if (!parent_track_id) return { text: '', url: '' }
 
-      const getPage = fullUrl ? fullTrackPage : trackPage
-      const url = getPage(user.handle, title, upload.completionId)
+      const url = fullUrl ? fullTrackPage(permalink) : permalink
       const parentTrack = await apiClient.getTrack({ id: parent_track_id })
       if (!parentTrack) return { text: '', url: '' }
 

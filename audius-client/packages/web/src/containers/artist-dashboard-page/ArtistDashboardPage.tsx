@@ -22,7 +22,7 @@ import { getTheme } from 'store/application/ui/theme/selectors'
 import { Status, AppState } from 'store/types'
 import { formatCount } from 'utils/formatUtil'
 import lazyWithPreload from 'utils/lazyWithPreload'
-import { profilePage, trackPage, TRENDING_PAGE } from 'utils/route'
+import { profilePage, TRENDING_PAGE } from 'utils/route'
 import { withClassNullGuard } from 'utils/withNullGuard'
 
 import styles from './ArtistDashboardPage.module.css'
@@ -277,7 +277,7 @@ export class ArtistDashboardPage extends Component<
   onClickRow = (record: any) => {
     const { account, goToRoute } = this.props
     if (!account) return
-    goToRoute(trackPage(account.handle, record.name, record.track_id))
+    goToRoute(record.permalink)
   }
 
   onSetTrackOption = (trackId: ID) => {

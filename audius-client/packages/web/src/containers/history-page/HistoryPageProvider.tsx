@@ -20,7 +20,7 @@ import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import * as socialActions from 'store/social/tracks/actions'
 import { AppState, Status } from 'store/types'
-import { trackPage, profilePage } from 'utils/route'
+import { profilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import { HistoryPageProps as DesktopHistoryPageProps } from './components/desktop/HistoryPage'
@@ -190,7 +190,7 @@ const HistoryPage = g(props => {
 
   const onClickTrackName = useCallback(
     record => {
-      goToRoute(trackPage(record.handle, record.name, record.track_id))
+      goToRoute(record.permalink)
     },
     [goToRoute]
   )

@@ -17,6 +17,7 @@ interface PlayingTrackInfoProps {
   trackId: number
   isOwner: boolean
   trackTitle: string
+  trackPermalink: string
   profilePictureSizes: ProfilePictureSizes
   isVerified: boolean
   isTrackUnlisted: boolean
@@ -38,6 +39,7 @@ const PlayingTrackInfo: React.FC<PlayingTrackInfoProps> = ({
   trackId,
   isOwner,
   trackTitle,
+  trackPermalink,
   profilePictureSizes,
   artistUserId,
   artistName,
@@ -84,7 +86,7 @@ const PlayingTrackInfo: React.FC<PlayingTrackInfoProps> = ({
           isOwner={isOwner}
           kind='track'
           id={trackId}
-          link={fullTrackPage(artistHandle, trackTitle, trackId)}
+          link={fullTrackPage(trackPermalink)}
         >
           <animated.div style={trackSpringProps}>
             <div className={styles.trackTitle} onClick={onClickTrackTitle}>

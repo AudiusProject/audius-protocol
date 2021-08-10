@@ -4,11 +4,11 @@ import { parseTrackRoute } from './trackRouteParser'
 import { mockDecode } from '__mocks__/Hashids'
 
 describe('parseTrackRoute', () => {
-  it('can decode a track id route', () => {
+  it('can parse a handle/slug route', () => {
     const route = '/tartine/morning-buns-25'
-    const { trackTitle, trackId, handle } = parseTrackRoute(route)
-    expect(trackTitle).toEqual('morning-buns')
-    expect(trackId).toEqual(25)
+    const { slug, trackId, handle } = parseTrackRoute(route)
+    expect(slug).toEqual('morning-buns-25')
+    expect(trackId).toEqual(null)
     expect(handle).toEqual('tartine')
   })
 
@@ -16,23 +16,9 @@ describe('parseTrackRoute', () => {
     mockDecode.mockReturnValue([11845])
 
     const route = '/tracks/eP9k7'
-    const { trackTitle, trackId, handle } = parseTrackRoute(route)
-    expect(trackTitle).toEqual(null)
+    const { slug, trackId, handle } = parseTrackRoute(route)
+    expect(slug).toEqual(null)
     expect(trackId).toEqual(11845)
     expect(handle).toEqual(null)
-  })
-
-  it('returns null for invalid track id in track id route', () => {
-    const route = '/blah/track-asdf'
-    const params = parseTrackRoute(route)
-    expect(params).toEqual(null)
-  })
-
-  it('returns null for invalid track id in hashed track id route', () => {
-    mockDecode.mockReturnValue([NaN])
-
-    const route = '/tracks/asdf'
-    const params = parseTrackRoute(route)
-    expect(params).toEqual(null)
   })
 })

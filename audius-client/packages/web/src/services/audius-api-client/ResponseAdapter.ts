@@ -411,7 +411,8 @@ export const makeStemTrack = (stem: APIStem): StemTrackMetadata | undefined => {
     },
     remix_of: null,
     duration: 0,
-    updated_at: ''
+    updated_at: '',
+    permalink: ''
   }
 }
 

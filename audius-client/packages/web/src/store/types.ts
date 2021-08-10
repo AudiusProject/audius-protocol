@@ -69,6 +69,7 @@ import { SetAsArtistPickConfirmationState } from './application/ui/setAsArtistPi
 import { ThemeState } from './application/ui/theme/types'
 import { UserListModalState } from './application/ui/userListModal/types'
 import { BackendState } from './backend/types'
+import TracksCacheState from './cache/tracks/types'
 import { ConfirmerState } from './confirmer/types'
 import { DragNDropState } from './dragndrop/types'
 import { ReachabilityState } from './reachability/types'
@@ -76,7 +77,8 @@ import { ReachabilityState } from './reachability/types'
 export enum Kind {
   TRACKS = 'TRACKS',
   COLLECTIONS = 'COLLECTIONS',
-  USERS = 'USERS'
+  USERS = 'USERS',
+  TRACK_ROUTES = 'TRACK_ROUTES'
 }
 
 export enum Status {
@@ -171,7 +173,7 @@ export type AppState = {
   notification: NotificationState
 
   // Cache
-  tracks: Cache<Track>
+  tracks: TracksCacheState
   collections: Cache<Collection>
   users: UserCacheState
 

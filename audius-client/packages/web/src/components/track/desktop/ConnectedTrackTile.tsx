@@ -34,7 +34,7 @@ import {
   shareTrack
 } from 'store/social/tracks/actions'
 import { AppState } from 'store/types'
-import { fullTrackPage, trackPage, profilePage } from 'utils/route'
+import { fullTrackPage, profilePage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import { getTrackWithFallback, getUserWithFallback } from '../helpers'
@@ -97,6 +97,7 @@ const ConnectedTrackTile = memo(
       is_delete,
       track_id: trackId,
       title,
+      permalink,
       repost_count,
       save_count,
       followee_reposts,
@@ -169,6 +170,7 @@ const ConnectedTrackTile = memo(
         isReposted,
         trackId: trackId,
         trackTitle: title,
+        trackPermalink: permalink,
         type: 'track'
       }
 
@@ -205,9 +207,9 @@ const ConnectedTrackTile = memo(
     const onClickTitle = useCallback(
       e => {
         e.stopPropagation()
-        if (goToRoute) goToRoute(trackPage(handle, title, trackId))
+        if (goToRoute) goToRoute(permalink)
       },
-      [goToRoute, handle, title, trackId]
+      [goToRoute, permalink]
     )
 
     const renderUserName = () => {
@@ -300,7 +302,7 @@ const ConnectedTrackTile = memo(
         id={trackId}
         isOwner={isOwner}
         isDisabled={disableActions || showSkeleton}
-        link={fullTrackPage(handle, title, trackId)}
+        link={fullTrackPage(permalink)}
       >
         <TrackTile
           size={size}

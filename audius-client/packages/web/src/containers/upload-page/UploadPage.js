@@ -15,7 +15,7 @@ import { Name } from 'services/analytics'
 import { getAccountUser } from 'store/account/selectors'
 import { make } from 'store/analytics/actions'
 import { pause as pauseQueue } from 'store/queue/slice'
-import { trackPage, playlistPage, albumPage, profilePage } from 'utils/route'
+import { playlistPage, albumPage, profilePage } from 'utils/route'
 
 import styles from './UploadPage.module.css'
 import EditPage from './components/EditPage'
@@ -291,8 +291,7 @@ class Upload extends Component {
     if (upload.completionId) {
       switch (this.state.uploadType) {
         case UploadType.INDIVIDUAL_TRACK: {
-          const trackTitle = upload.tracks[0].metadata.title
-          route = trackPage(account.handle, trackTitle, upload.completionId)
+          route = upload.tracks[0].metadata.permalink
           uploadType = 'track'
           break
         }

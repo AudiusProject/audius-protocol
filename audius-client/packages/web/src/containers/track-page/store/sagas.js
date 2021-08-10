@@ -14,6 +14,7 @@ import { waitForBackendSetup } from 'store/backend/sagas'
 import * as trackCacheActions from 'store/cache/tracks/actions'
 import { getTrack as getCachedTrack } from 'store/cache/tracks/selectors'
 import { retrieveTracks } from 'store/cache/tracks/utils'
+import { retrieveTrackByHandleAndSlug } from 'store/cache/tracks/utils/retrieveTracks'
 import { getUsers } from 'store/cache/users/selectors'
 import { getIsReachable } from 'store/reachability/selectors'
 import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
@@ -93,50 +94,58 @@ function* getTrackRanks(trackId) {
   yield put(trackPageActions.getTrackRanks(trackId))
 }
 
-function* getMoreByThisArtist(trackId, ownerHandle) {
+function* getMoreByThisArtist(permalink, ownerHandle) {
   yield put(
     tracksActions.fetchLineupMetadatas(0, 6, false, {
       ownerHandle,
-      trackId
+      permalink
     })
   )
 }
 
 function* watchFetchTrack() {
   yield takeEvery(trackPageActions.FETCH_TRACK, function* (action) {
-    const { trackId, trackName, ownerHandle, canBeUnlisted } = action
-    const ids = canBeUnlisted
-      ? [{ id: trackId, url_title: trackName, handle: ownerHandle }]
-      : [trackId]
-
+    const { trackId, handle, slug, canBeUnlisted } = action
+    const permalink = `/${handle}/${slug}`
+    yield fork(getMoreByThisArtist, permalink, handle)
     try {
-      yield fork(getMoreByThisArtist, trackId, ownerHandle)
-      const trackIds = yield call(retrieveTracks, {
-        trackIds: ids,
-        canBeUnlisted,
-        withStems: true,
-        withRemixes: true,
-        withRemixParents: true
-      })
-      if (
-        !trackIds ||
-        !trackIds.length ||
-        trackIds.every(track => track === undefined || !track.track_id)
-      ) {
-        // If no tracks because no internet, do nothing. Else navigate to 404.
+      let track
+      if (!trackId) {
+        track = yield call(retrieveTrackByHandleAndSlug, {
+          handle,
+          slug,
+          withStems: true,
+          withRemixes: true,
+          withRemixParents: true
+        })
+      } else {
+        const ids = canBeUnlisted
+          ? [{ id: trackId, url_title: slug, handle }]
+          : [trackId]
+        const tracks = yield call(retrieveTracks, {
+          trackIds: ids,
+          canBeUnlisted,
+          withStems: true,
+          withRemixes: true,
+          withRemixParents: true
+        })
+        track = tracks && tracks.length === 1 ? tracks[0] : null
+      }
+      if (!track) {
         const isReachable = yield select(getIsReachable)
         if (isReachable) {
           yield put(pushRoute(NOT_FOUND_PAGE))
           return
         }
+      } else {
+        yield fork(getTrackRanks, track.track_id)
+        yield put(trackPageActions.fetchTrackSucceeded(track.track_id))
       }
-
-      yield fork(getTrackRanks, trackId)
-
-      yield put(trackPageActions.fetchTrackSucceeded(trackId))
     } catch (e) {
       console.error(e)
-      yield put(trackPageActions.fetchTrackFailed)
+      yield put(
+        trackPageActions.fetchTrackFailed(trackId ?? `/${handle}/${slug}`)
+      )
     }
   })
 }
@@ -157,10 +166,10 @@ function* watchFetchTrackSucceeded() {
 
 function* watchRefetchLineup() {
   yield takeEvery(trackPageActions.REFETCH_LINEUP, function* (action) {
-    const { track_id } = yield select(getTrack)
+    const { permalink } = yield select(getTrack)
     const { handle } = yield select(getUser)
     yield put(tracksActions.reset())
-    yield call(getMoreByThisArtist, track_id, handle)
+    yield call(getMoreByThisArtist, permalink, handle)
   })
 }
 
@@ -201,11 +210,7 @@ function* watchGoToRemixesOfParentPage() {
           ids: [parentTrack.owner_id]
         }))[parentTrack.owner_id]
         if (parentTrackUser) {
-          const route = trackRemixesPage(
-            parentTrackUser.handle,
-            parentTrack.title,
-            parentTrack.track_id
-          )
+          const route = trackRemixesPage(parentTrack.permalink)
           yield put(pushRoute(route))
         }
       }

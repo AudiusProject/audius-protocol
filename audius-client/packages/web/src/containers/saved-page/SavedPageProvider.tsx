@@ -25,7 +25,7 @@ import * as socialActions from 'store/social/tracks/actions'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 import { formatCount } from 'utils/formatUtil'
-import { trackPage, profilePage } from 'utils/route'
+import { profilePage } from 'utils/route'
 
 import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'
 import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
@@ -249,7 +249,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 
   onClickTrackName = (record: TrackRecord) => {
-    this.props.goToRoute(trackPage(record.handle, record.name, record.track_id))
+    this.props.goToRoute(record.permalink)
   }
 
   onClickArtistName = (record: TrackRecord) => {

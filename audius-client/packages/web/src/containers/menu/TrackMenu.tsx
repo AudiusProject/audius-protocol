@@ -34,7 +34,7 @@ import {
   shareTrack
 } from 'store/social/tracks/actions'
 import { AppState } from 'store/types'
-import { trackPage, profilePage } from 'utils/route'
+import { profilePage } from 'utils/route'
 
 const messages = {
   addToNewPlaylist: 'Add to New Playlist',
@@ -74,6 +74,7 @@ export type OwnProps = {
   isReposted: boolean
   trackId: ID
   trackTitle: string
+  trackPermalink: string
   type: 'track'
 }
 
@@ -112,6 +113,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       shareTrack,
       trackId,
       trackTitle,
+      trackPermalink,
       undoRepostTrack,
       unsaveTrack,
       unsetArtistPick
@@ -155,7 +157,7 @@ const TrackMenu = (props: TrackMenuProps) => {
 
     const trackPageMenuItem = {
       text: messages.visitTrackPage,
-      onClick: () => goToRoute(trackPage(handle, trackTitle, trackId))
+      onClick: () => goToRoute(trackPermalink)
     }
 
     // TODO: Add back go to album when we have better album linking.

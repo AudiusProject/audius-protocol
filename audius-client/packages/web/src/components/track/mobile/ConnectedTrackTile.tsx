@@ -32,7 +32,6 @@ import {
 } from 'store/social/tracks/actions'
 import { AppState } from 'store/types'
 import {
-  trackPage,
   profilePage,
   REPOSTING_USERS_ROUTE,
   FAVORITING_USERS_ROUTE
@@ -85,6 +84,7 @@ const ConnectedTrackTile = memo(
       is_delete,
       track_id,
       title,
+      permalink,
       repost_count,
       save_count,
       followee_reposts,
@@ -126,7 +126,7 @@ const ConnectedTrackTile = memo(
 
     const goToTrackPage = (e: React.MouseEvent<HTMLElement>) => {
       e.stopPropagation()
-      goToRoute(trackPage(handle, title, track_id))
+      goToRoute(permalink)
     }
 
     const goToArtistPage = (e: React.MouseEvent<HTMLElement>) => {
