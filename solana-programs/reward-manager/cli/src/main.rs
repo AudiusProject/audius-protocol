@@ -195,6 +195,7 @@ fn command_add_sender(
 
     let mut senders = Vec::new();
     let mut secrets = Vec::new();
+    println!("Reading secrets from: {:?}", &senders_secrets);
     let mut rdr = csv::Reader::from_path(&senders_secrets)?;
 
     let new_sender = <[u8; 20]>::from_hex(new_sender).expect(HEX_ETH_ADDRESS_DECODING_ERROR);
@@ -203,7 +204,6 @@ fn command_add_sender(
         <[u8; 20]>::from_hex(operator_address).expect(HEX_ETH_ADDRESS_DECODING_ERROR);
 
     println!("Signing message with senders private keys...");
-
     for key in rdr.deserialize() {
         let deserialized_sender_data: SenderData = key?;
         let decoded_secret = <[u8; 32]>::from_hex(deserialized_sender_data.eth_secret)
@@ -212,6 +212,8 @@ fn command_add_sender(
         senders.push(Pubkey::from_str(&deserialized_sender_data.solana_key)?);
         secrets.push(libsecp256k1::SecretKey::parse(&decoded_secret)?);
     }
+
+    println!("Senders: {:?}", senders);
 
     instructions.append(&mut sign_message(message_to_sign.as_ref(), secrets));
 
