@@ -42,7 +42,6 @@ const DISCOVERY_NODE_ALLOW_LIST = new Set([
   'https://discoveryprovider.audius3.prod-us-west-2.staked.cloud',
   'https://audius-discovery-1.altego.net',
   'https://discoveryprovider.audius.prod-us-west-2.staked.cloud',
-  'https://discovery-d.mainnet.audius.radar.tech',
   'https://discoveryprovider.audius.co',
   'https://discoveryprovider.audius5.prod-us-west-2.staked.cloud',
   'https://audius-discovery-2.altego.net',
