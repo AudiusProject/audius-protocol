@@ -248,6 +248,17 @@ type AttestationMeta = {
   signature: string
 }
 
+// TODO: move this to be a helper, and apply it to token account and transfer
+const prepareInstructionForRelay = (instruction: TransactionInstruction) => ({
+  programId: instruction.programId.toString(),
+  data: instruction.data,
+  keys: instruction.keys.map(({isSigner, pubkey, isWritable}) => ({
+    pubkey: pubkey.toString(),
+    isSigner,
+    isWritable
+  }))
+})
+
 export async function verifyTransferSignature({
   rewardManagerProgramId,
   rewardManagerAccount,
@@ -256,9 +267,10 @@ export async function verifyTransferSignature({
   challengeId,
   specifier,
   feePayer,
-  feePayerSecret, // Remove this :)
   recipientEthAddress,
   tokenAmount,
+  identityService,
+  connection
 }: {
   rewardManagerProgramId: PublicKey,
   rewardManagerAccount: PublicKey,
@@ -267,13 +279,12 @@ export async function verifyTransferSignature({
   challengeId: string,
   specifier: string,
   feePayer: PublicKey,
-  feePayerSecret: Uint8Array,
   attestationSignature: string,
   recipientEthAddress: string,
   tokenAmount: number
+  identityService: any
+  connection: Connection
 }) {
-  const connection = new Connection('https://api.devnet.solana.com')
-
 
   const transferId = constructTransferId(challengeId, specifier)
   const [rewardManagerAuthority, derivedMessageAccount,] = await deriveMessageAccount(transferId, rewardManagerProgramId, rewardManagerAccount)
@@ -308,7 +319,7 @@ export async function verifyTransferSignature({
     instructionIndex: instructions.length,
     transferId,
     isOracle: true,
-    tokenAmount, 
+    tokenAmount,
     oracleAddress: oracleAttestation.ethAddress
   })
   const oracleTransfer = await generateVerifySignatureInstruction({
@@ -321,36 +332,16 @@ export async function verifyTransferSignature({
     feePayer
   })
   instructions = [...instructions, oracleSecp, oracleTransfer]
-
+  const relayable = instructions.map(prepareInstructionForRelay)
   const {blockhash: recentBlockhash} = await connection.getRecentBlockhash()
-  const transaction = new Transaction({
-    feePayer,
+  const transactionData = {
     recentBlockhash,
-  })
-  transaction.add(...instructions)
-  // Sign with the fee payer
-  transaction.sign({
-    publicKey: feePayer,
-    secretKey: feePayerSecret
-  })
+    instructions: relayable
+  }
 
   try {
-    const transactionSignature = await sendAndConfirmTransaction(
-      connection,
-      transaction,
-      [
-        {
-          publicKey: feePayer,
-          secretKey: feePayerSecret
-        },
-      ],
-      {
-        skipPreflight: false,
-        commitment: 'processed',
-        preflightCommitment: 'processed'
-      }
-    )
-    return transactionSignature
+    const response = await identityService.solanaRelay(transactionData)
+    return response
   } catch (e) {
     console.error("SENT BUT ERROR")
     console.error(e.message)
@@ -386,7 +377,6 @@ export const transfer = async ({
   const transferId = constructTransferId(challengeId, specifier)
   const [rewardManagerAuthority, verifiedMessagesAccount,] = await deriveMessageAccount(transferId, rewardProgramId, rewardManagerAccount)
   const transferAccount = await deriveTransferAccount(transferId, rewardProgramId, rewardManagerAccount)
-  // G4pFwHLdYPHCjLkhHHdw9WmqXiY7FtcFd1npNVhihz5s
   const recipientBankAccount = await getBankAccountAddress(recipientEthAddress, userBankAccount, TOKEN_PROGRAM_ID)
   const [_, derivedBotAddress ] = await findDerivedPair(
     rewardProgramId,
@@ -396,34 +386,6 @@ export const transfer = async ({
       ...ethAddressToArr(oracleEthAddress)
     ])
   )
-  console.log({derivedBotAddress})
-
-  //       let derived_seed = [
-  //           TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
-  //           transfer_data.id.as_ref(),
-  //       ]
-  //       .concat();
-  //       let (reward_manager_authority, _, bump_seed) =
-  //           find_derived_pair(program_id, reward_manager_info.key, derived_seed.as_ref());
-
-  //       let signers_seeds = &[
-  //           &reward_manager_authority.to_bytes()[..32],
-  //           &derived_seed.as_slice(),
-  //           &[bump_seed],
-  //       ];
-
-  //       // TODO: Verify transfer target address
-
-  //       // Create deterministic account on-chain
-  //       create_account(
-  //           program_id,
-  //           payer_info.clone(),
-  //           transfer_account_info.clone(),
-  //           0,
-  //           &[signers_seeds],
-  //           rent,
-  //       )?;
-
 
   const accounts: AccountMeta[] = [
     {

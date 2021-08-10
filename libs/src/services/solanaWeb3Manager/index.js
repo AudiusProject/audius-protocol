@@ -38,6 +38,8 @@ class SolanaWeb3Manager {
    *  the address for the specific fee payer to be used in relayed transactions
    * @param {string} solanaWeb3Config.claimableTokenProgramAddress
    *  the address for the claimable token program used to create banks and transfer wAudio
+   * @param {string} solanaWeb3Config.rewardsManagerProgramId
+   * @param {string} solanaWeb3Config.rewardsManagerProgramPDA
    *
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
@@ -65,7 +67,9 @@ class SolanaWeb3Manager {
       solanaTokenAddress,
       claimableTokenPDA,
       feePayerAddress,
-      claimableTokenProgramAddress
+      claimableTokenProgramAddress,
+      rewardsManagerProgramId,
+      rewardsManagerProgramPDA
     } = this.solanaWeb3Config
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint)
@@ -88,6 +92,8 @@ class SolanaWeb3Manager {
       )
     )
     this.claimableTokenPDAKey = new PublicKey(this.claimableTokenPDA)
+    this.rewardManagerProgramId = new PublicKey(rewardsManagerProgramId)
+    this.rewardManagerProgramPDA = new PublicKey(rewardsManagerProgramPDA)
   }
 
   /**
@@ -249,6 +255,29 @@ class SolanaWeb3Manager {
       claimableTokenProgramKey: this.claimableTokenProgramKey,
       connection: this.connection,
       identityService: this.identityService
+    })
+  }
+
+  async verifyTransferSignature ({
+    attestations,
+    oracleAttestation,
+    challengeId,
+    specifier,
+    recipientEthAddress,
+    tokenAmount,
+   }) {
+    return verifyTransferSignature({
+      rewardManagerProgramId: this.rewardManagerProgramId,
+      rewardManagerAccount: this.rewardManagerProgramPDA,
+      attestations,
+      oracleAttestation,
+      challengeId,
+      specifier,
+      feePayer: this.feePayerKey,
+      recipientEthAddress,
+      tokenAmount,
+      identityService: this.identityService,
+      connection: this.connection,
     })
   }
 }
