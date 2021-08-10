@@ -228,7 +228,10 @@ async function processEmailNotifications (expressApp, audiusLibs) {
           audiusLibs
         )
         if (!sent) {
-          logger.info(`processEmailNotifications | Failed to send live email to ${userId}`)
+          // sent could be undefined, in which case there was no email sending failure, rather the user had 0 email notifications to be sent
+          if (sent === false) {
+            logger.info(`processEmailNotifications | Failed to send live email to ${userId}`)
+          }
           continue
         }
         logger.info(`processEmailNotifications | Live email to ${userId}, last email from ${lastSentTimestamp}`)
@@ -265,8 +268,11 @@ async function processEmailNotifications (expressApp, audiusLibs) {
             audiusLibs
           )
           if (!sent) {
-            const emailType = latestUserEmail ? frequency : 'first'
-            logger.info(`processEmailNotifications | Failed to send ${emailType} email to ${userId}`)
+            // sent could be undefined, in which case there was no email sending failure, rather the user had 0 email notifications to be sent
+            if (sent === false) {
+              const emailType = latestUserEmail ? frequency : 'first'
+              logger.info(`processEmailNotifications | Failed to send ${emailType} email to ${userId}`)
+            }
             continue
           }
           if (!latestUserEmail) {
