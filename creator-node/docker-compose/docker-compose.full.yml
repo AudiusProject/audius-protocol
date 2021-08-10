@@ -11,7 +11,6 @@ services:
       - '4432:5432'
   creator-node:
     build: ../.
-    command: sh -c '/usr/bin/wait && exec ./node_modules/.bin/nodemon src/index.js | ./node_modules/.bin/bunyan'
     env_file:
       - ./development.env
     depends_on:
