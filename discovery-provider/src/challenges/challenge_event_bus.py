@@ -88,6 +88,7 @@ class ChallengeEventBus:
                 self._redis.rpush(REDIS_QUEUE_PREFIX, event_json)
             except Exception as e:
                 logger.warning(f"ChallengeEventBus: error enqueuing to Redis: {e}")
+        self._in_memory_queue.clear()
 
     def process_events(self, session: Session, max_events=1000):
         """Dequeues `max_events` from Redis queue and processes them, forwarding to listening ChallengeManagers.
