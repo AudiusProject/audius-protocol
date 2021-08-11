@@ -5,7 +5,7 @@ use crate::{
     instruction::{
         AddSenderArgs, CreateSenderArgs, InitRewardManagerArgs, Instructions, TransferArgs, VerifyTransferSignatureArgs
     },
-    state::{RewardManager, SenderAccount, VerifiedMessage, VerifiedMessages},
+    state::{RewardManager, SenderAccount, VerifiedMessage, VerifiedMessages, ADD_SENDER_MESSAGE_PREFIX, DELETE_SENDER_MESSAGE_PREFIX},
     utils::*,
 };
 use borsh::BorshDeserialize;
@@ -158,6 +158,41 @@ impl Processor {
         Ok(())
     }
 
+    fn process_delete_sender_with_senders_poof<'a>(
+        program_id: &Pubkey,
+        reward_manager_info: &AccountInfo<'a>,
+        sender_info: &AccountInfo<'a>,
+        refunder_info: &AccountInfo<'a>,
+        signers_info: Vec<&AccountInfo>,
+        instructions_info: &AccountInfo<'a>,
+    ) -> ProgramResult {
+        assert_owned_by(reward_manager_info, program_id)?;
+        assert_owned_by(sender_info, program_id)?;
+
+        let reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
+        let sender_account = SenderAccount::unpack(&sender_info.data.borrow())?;
+
+        if signers_info.len() < reward_manager.min_votes.into() {
+            return Err(AudiusProgramError::NotEnoughSigners.into());
+        }
+
+        check_secp_instructions(
+            program_id,
+            &reward_manager_info.key,
+            instructions_info,
+            signers_info.clone(),
+            signers_info.len(),
+            sender_account.eth_address,
+            DELETE_SENDER_MESSAGE_PREFIX,
+        )?;
+
+        assert_account_key(reward_manager_info, &sender_account.reward_manager)?;
+
+        Self::transfer_all(sender_info, refunder_info)?;
+
+        Ok(())
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn process_add_sender<'a>(
         program_id: &Pubkey,
@@ -178,13 +213,14 @@ impl Processor {
             return Err(AudiusProgramError::NotEnoughSigners.into());
         }
 
-        check_secp_add_sender(
+        check_secp_instructions(
             program_id,
             &reward_manager_info.key,
             instructions_info,
             signers_info.clone(),
             signers_info.len(),
             eth_address,
+            ADD_SENDER_MESSAGE_PREFIX,
         )?;
 
         let derived_seed = [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()].concat();
@@ -475,6 +511,24 @@ impl Processor {
                     sender,
                     refunder,
                     sys_prog,
+                )
+            }
+            Instructions::DeleteSenderWithSendersProof => {
+                msg!("Instruction: DeleteSenderWithSendersProof");
+                let reward_manager = next_account_info(account_info_iter)?;
+                let sender_account = next_account_info(account_info_iter)?;
+                let refunder = next_account_info(account_info_iter)?;
+                let _sys_prog = next_account_info(account_info_iter)?;
+                let instructions_info = next_account_info(account_info_iter)?;
+                let signers = account_info_iter.collect::<Vec<&AccountInfo>>();
+
+                Self::process_delete_sender_with_senders_poof(
+                    program_id,
+                    reward_manager,
+                    sender_account,
+                    refunder,
+                    signers,
+                    instructions_info,
                 )
             }
             Instructions::AddSender(AddSenderArgs {

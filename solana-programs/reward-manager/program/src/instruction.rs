@@ -93,6 +93,16 @@ pub enum Instructions {
     ///   4. `[]` Refunder account
     DeleteSender,
 
+    ///   Delete sender with other senders proof
+    /// 
+    ///   0. `[]` Reward manager
+    ///   1. `[writable]` Sender account ot delete
+    ///   2. `[writable]` Refunder account
+    ///   3. `[]` System program id
+    ///   4. `[]` Instruction info
+    ///   5. `[]` Bunch of senders which prove removing another one
+    DeleteSenderWithSendersProof,
+
     ///
     ///
     /// 0. `[]` Reward manager
@@ -227,6 +237,46 @@ pub fn delete_sender(
         AccountMeta::new(*refunder_account, false),
         AccountMeta::new_readonly(system_program::id(), false),
     ];
+
+    Ok(Instruction {
+        program_id: *program_id,
+        accounts,
+        data,
+    })
+}
+
+/// Create `DeleteSenderWithSendersProof` instruction
+pub fn delete_sender_with_senders_proof<'a, I>(
+    program_id: &Pubkey,
+    reward_manager: &Pubkey,
+    refunder_account: &Pubkey,
+    eth_address: EthereumAddress,
+    signers: I,
+) -> Result<Instruction, ProgramError>
+where
+    I: IntoIterator<Item = &'a Pubkey>,
+{
+    let data = Instructions::DeleteSenderWithSendersProof.try_to_vec()?;
+
+    let (_, derived_address, _) = find_derived_pair(
+        program_id,
+        reward_manager,
+        [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
+            .concat()
+            .as_ref(),
+    );
+
+    let mut accounts = vec![
+        AccountMeta::new_readonly(*reward_manager, false),
+        AccountMeta::new(derived_address, false),
+        AccountMeta::new(*refunder_account, false),
+        AccountMeta::new_readonly(system_program::id(), false),
+        AccountMeta::new_readonly(sysvar::instructions::id(), false),
+    ];
+    let iter = signers
+        .into_iter()
+        .map(|i| AccountMeta::new_readonly(*i, false));
+    accounts.extend(iter);
 
     Ok(Instruction {
         program_id: *program_id,

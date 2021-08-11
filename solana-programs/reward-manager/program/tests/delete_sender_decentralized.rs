@@ -3,7 +3,7 @@ mod utils;
 use audius_reward_manager::{
     instruction,
     processor::SENDER_SEED_PREFIX,
-    state::{SenderAccount, ADD_SENDER_MESSAGE_PREFIX},
+    state::{SenderAccount, DELETE_SENDER_MESSAGE_PREFIX},
     utils::{find_derived_pair, EthereumAddress},
 };
 use rand::{thread_rng, Rng};
@@ -29,10 +29,10 @@ async fn success() {
 
     let reward_manager = Keypair::new();
     let manager_account = Keypair::new();
-    let eth_address: EthereumAddress = rng.gen();
+    let refunder_account = Pubkey::new_unique();
     let operator: EthereumAddress = rng.gen();
-    let keys: [[u8; 32]; 3] = rng.gen();
-    let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
+    let keys: [[u8; 32]; 4] = rng.gen();
+    let mut signers: [Pubkey; 4] = unsafe { MaybeUninit::zeroed().assume_init() };
 
     for item in keys.iter().enumerate() {
         let sender_priv_key = SecretKey::parse(item.1).unwrap();
@@ -49,14 +49,6 @@ async fn success() {
 
         signers[item.0] = derived_address;
     }
-
-    let (_, derived_address, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
-            .concat()
-            .as_ref(),
-    );
 
     let mut context = program_test.start_with_context().await;
     let rent = context.banks_client.get_rent().await.unwrap();
@@ -98,22 +90,26 @@ async fn success() {
 
     let mut instructions = Vec::<Instruction>::new();
 
+    // get eth_address of sender which will be deleted
+    let sender_priv_key = SecretKey::parse(&keys[3]).unwrap();
+    let secp_pubkey = libsecp256k1::PublicKey::from_secret_key(&sender_priv_key);
+    let eth_address = construct_eth_pubkey(&secp_pubkey);
+
     // Insert signs instructions
-    let message = [ADD_SENDER_MESSAGE_PREFIX.as_ref(), reward_manager.pubkey().as_ref(), eth_address.as_ref()].concat();
-    for item in keys.iter().enumerate() {
+    let message = [DELETE_SENDER_MESSAGE_PREFIX.as_ref(), reward_manager.pubkey().as_ref(), eth_address.as_ref()].concat();
+    for item in keys[..3].iter().enumerate() {
         let priv_key = SecretKey::parse(item.1).unwrap();
         let inst = new_secp256k1_instruction_2_0(&priv_key, message.as_ref(), item.0 as _);
         instructions.push(inst);
     }
 
     instructions.push(
-        instruction::add_sender(
+        instruction::delete_sender_with_senders_proof(
             &audius_reward_manager::id(),
             &reward_manager.pubkey(),
-            &context.payer.pubkey(),
+            &refunder_account,
             eth_address,
-            operator,
-            &signers,
+            &signers[..3],
         )
         .unwrap(),
     );
@@ -126,12 +122,18 @@ async fn success() {
     );
     context.banks_client.process_transaction(tx).await.unwrap();
 
-    assert_eq!(
-        SenderAccount::new(reward_manager.pubkey(), eth_address, operator),
-        context
-            .banks_client
-            .get_account_data_with_borsh(derived_address)
-            .await
-            .unwrap()
+    let (_, sender_solana_key, _) = find_derived_pair(
+        &audius_reward_manager::id(),
+        &reward_manager.pubkey(),
+        [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
+            .concat()
+            .as_ref(),
     );
+
+    let account = context
+        .banks_client
+        .get_account(sender_solana_key)
+        .await
+        .unwrap();
+    assert!(account.is_none());
 }
