@@ -5,14 +5,13 @@ mod utils;
 use audius_reward_manager::{
     instruction,
     processor::{SENDER_SEED_PREFIX, TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX},
-    state::VerifiedMessages,
     utils::{find_derived_pair, EthereumAddress},
     vote_message,
 };
 use rand::{thread_rng, Rng};
 use libsecp256k1::{PublicKey, SecretKey};
 use solana_program::{
-    instruction::Instruction, program_pack::Pack, pubkey::Pubkey, system_instruction,
+    instruction::Instruction, program_pack::Pack, pubkey::Pubkey 
 };
 use solana_program_test::*;
 use solana_sdk::{
