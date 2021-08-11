@@ -237,14 +237,16 @@ module.exports = function (app) {
     let funderBalance = parseFloat(Web3.utils.fromWei(await getEthRelayerFunds(funderAddress), 'ether'))
     let funderAboveMinimum = funderBalance >= minimumFunderBalance
     let belowMinimumBalances = []
-    let balances = []
-    for (let account of ETH_RELAY_HEALTH_ACCOUNTS) {
-      let balance = parseFloat(Web3.utils.fromWei(await getEthRelayerFunds(account), 'ether'))
-      balances.push({ account, balance })
-      if (balance < minimumBalance) {
-        belowMinimumBalances.push({ account, balance })
-      }
-    }
+
+    const balances = await Promise.all(
+      [...ETH_RELAY_HEALTH_ACCOUNTS].map(async account => {
+        let balance = parseFloat(Web3.utils.fromWei(await getEthRelayerFunds(account), 'ether'))
+        if (balance < minimumBalance) {
+          belowMinimumBalances.push({ account, balance })
+        }
+        return { account, balance }
+      })
+    )
 
     let balanceResponse = {
       'minimum_balance': minimumBalance,
