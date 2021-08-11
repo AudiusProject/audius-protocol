@@ -115,7 +115,7 @@ def user_library_state_update(
 
 
 def dispatch_favorite(bus: ChallengeEventBus, save, block_number):
-    bus.enqueue(ChallengeEvent.favorite, block_number, save.user_id)
+    bus.dispatch(ChallengeEvent.favorite, block_number, save.user_id)
 
 
 def invalidate_old_save(session, user_id, playlist_id, save_type):
