@@ -7,7 +7,7 @@ use clap::{
 
 use audius_reward_manager::{
     instruction::{
-        add_sender, create_sender, delete_sender, init, transfer, verify_transfer_signature,
+        create_sender_public, create_sender, delete_sender, init, transfer, verify_transfer_signature,
     },
     processor::SENDER_SEED_PREFIX,
     state::{RewardManager, SenderAccount, VerifiedMessages},
@@ -217,7 +217,7 @@ fn command_add_sender(
 
     instructions.append(&mut sign_message(message_to_sign.as_ref(), secrets));
 
-    instructions.push(add_sender(
+    instructions.push(create_sender_public(
         &audius_reward_manager::id(),
         &reward_manager,
         &config.fee_payer.pubkey(),

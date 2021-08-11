@@ -181,7 +181,7 @@ impl Processor {
         Ok(())
     }
 
-    fn process_delete_sender_with_senders_poof<'a>(
+    fn process_delete_sender_public<'a>(
         program_id: &Pubkey,
         reward_manager_info: &AccountInfo<'a>,
         sender_info: &AccountInfo<'a>,
@@ -217,7 +217,7 @@ impl Processor {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn process_add_sender<'a>(
+    fn process_create_sender_public<'a>(
         program_id: &Pubkey,
         reward_manager_info: &AccountInfo<'a>,
         authority_info: &AccountInfo<'a>,
@@ -549,29 +549,11 @@ impl Processor {
                     sys_prog,
                 )
             }
-            Instructions::DeleteSenderWithSendersProof => {
-                msg!("Instruction: DeleteSenderWithSendersProof");
-                let reward_manager = next_account_info(account_info_iter)?;
-                let sender_account = next_account_info(account_info_iter)?;
-                let refunder = next_account_info(account_info_iter)?;
-                let _sys_prog = next_account_info(account_info_iter)?;
-                let instructions_info = next_account_info(account_info_iter)?;
-                let signers = account_info_iter.collect::<Vec<&AccountInfo>>();
-
-                Self::process_delete_sender_with_senders_poof(
-                    program_id,
-                    reward_manager,
-                    sender_account,
-                    refunder,
-                    signers,
-                    instructions_info,
-                )
-            }
-            Instructions::AddSender(AddSenderArgs {
+            Instructions::CreateSenderPublic(AddSenderArgs {
                 eth_address,
                 operator,
             }) => {
-                msg!("Instruction: AddSender");
+                msg!("Instruction: CreateSenderPublic");
 
                 let reward_manager = next_account_info(account_info_iter)?;
                 let authority = next_account_info(account_info_iter)?;
@@ -582,7 +564,7 @@ impl Processor {
                 let _system_program = next_account_info(account_info_iter)?;
                 let signers = account_info_iter.collect::<Vec<&AccountInfo>>();
 
-                Self::process_add_sender(
+                Self::process_create_sender_public(
                     program_id,
                     reward_manager,
                     authority,
@@ -593,6 +575,23 @@ impl Processor {
                     signers,
                     eth_address,
                     operator,
+                )
+            }
+            Instructions::DeleteSenderPublic => {
+                msg!("Instruction: DeleteSenderPublic");
+                let reward_manager = next_account_info(account_info_iter)?;
+                let sender_account = next_account_info(account_info_iter)?;
+                let refunder = next_account_info(account_info_iter)?;
+                let instructions_info = next_account_info(account_info_iter)?;
+                let signers = account_info_iter.collect::<Vec<&AccountInfo>>();
+
+                Self::process_delete_sender_public(
+                    program_id,
+                    reward_manager,
+                    sender_account,
+                    refunder,
+                    signers,
+                    instructions_info,
                 )
             }
             Instructions::VerifyTransferSignature(VerifyTransferSignatureArgs { id }) => {
