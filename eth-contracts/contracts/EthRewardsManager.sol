@@ -7,13 +7,13 @@ import "./InitializableV2.sol";
 import "./Governance.sol";
 
 interface Wormhole {
-    function lockAssets(
-        address asset,
+    function transferTokens(
+        address token,
         uint256 amount,
+        uint16 recipientChain,
         bytes32 recipient,
-        uint8 target_chain,
-        uint32 nonce,
-        bool refund_dust
+        uint256 arbiterFee,
+        uint32 nonce
     ) external;
 }
 
@@ -108,21 +108,22 @@ contract EthRewardsManager is InitializableV2 {
 
     /**
      * @notice Transfers to solana
+     * @param arbiterFee - fee to pay wormhole arbiter
      * @param _nonce - nonce for wormhole
      */
-    function transferToSolana(uint32 _nonce) external {
+    function transferToSolana(uint256 arbiterFee, uint32 _nonce) external {
         _requireIsInitialized();
 
         uint256 balance = audiusToken.balanceOf(address(this));
         audiusToken.approve(address(wormhole), balance);
 
-        wormhole.lockAssets(
+        wormhole.transferTokens(
             address(audiusToken),
             balance,
-            recipient,
             1,
-            _nonce,
-            true
+            recipient,
+            arbiterFee,
+            _nonce
         );
     }
 

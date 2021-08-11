@@ -70,6 +70,8 @@ def populate_mock_db(db, entities):
         reposts = entities.get("reposts", [])
         saves = entities.get("saves", [])
         track_routes = entities.get("track_routes", [])
+        remixes = entities.get("remixes", [])
+        stems = entities.get("stems", [])
         num_blocks = max(len(tracks), len(users), len(follows))
 
         for i in range(num_blocks):
@@ -201,3 +203,15 @@ def populate_mock_db(db, entities):
                 collision_id=route_meta.get("collision_id", 0),
             )
             session.add(route)
+        for i, remix_meta in enumerate(remixes):
+            remix = models.Remix(
+                parent_track_id=remix_meta.get("parent_track_id", i),
+                child_track_id=remix_meta.get("child_track_id", i + 1),
+            )
+            session.add(remix)
+        for i, stems_meta in enumerate(stems):
+            stem = models.Stem(
+                parent_track_id=stems_meta.get("parent_track_id", i),
+                child_track_id=stems_meta.get("child_track_id", i + 1),
+            )
+            session.add(stem)

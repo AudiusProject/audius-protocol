@@ -323,7 +323,8 @@ class Track(Base):
             f"updated_at={self.updated_at},"
             f"created_at={self.created_at},"
             f"stem_of={self.stem_of},"
-            f"permalink={self.permalink}"
+            f"permalink={self.permalink},"
+            f"user={self.user}"
             ")>"
         )
 

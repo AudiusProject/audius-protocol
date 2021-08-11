@@ -1,4 +1,5 @@
 from sqlalchemy import desc
+from sqlalchemy.orm import aliased
 from src.models import Track, Stem, AggregateTrack
 from src.queries.query_helpers import (
     populate_track_metadata,
@@ -28,6 +29,7 @@ def get_remixable_tracks(args):
             .distinct(Track.track_id)
             .subquery()
         )
+        track_alias = aliased(Track, remixable_tracks_subquery)
 
         count_subquery = session.query(
             AggregateTrack.track_id.label("id"),
@@ -36,18 +38,17 @@ def get_remixable_tracks(args):
 
         query = (
             session.query(
-                remixable_tracks_subquery,
+                track_alias,
                 count_subquery.c["count"],
-                decayed_score(
-                    count_subquery.c["count"], remixable_tracks_subquery.c.created_at
-                ).label("score"),
+                decayed_score(count_subquery.c["count"], track_alias.created_at).label(
+                    "score"
+                ),
             )
-            .select_from(remixable_tracks_subquery)
             .join(
                 count_subquery,
-                count_subquery.c["id"] == remixable_tracks_subquery.c.track_id,
+                count_subquery.c["id"] == track_alias.track_id,
             )
-            .order_by(desc("score"), desc(remixable_tracks_subquery.c.track_id))
+            .order_by(desc("score"), desc(track_alias.track_id))
             .limit(limit)
         )
 
@@ -55,9 +56,9 @@ def get_remixable_tracks(args):
 
         tracks = []
         for result in results:
-            track = result[0:-2]
+            track = result[0]
             score = result[-1]
-            track = helpers.tuple_to_model_dictionary(track, Track)
+            track = helpers.model_to_dictionary(track)
             track["score"] = score
             tracks.append(track)
 
@@ -68,5 +69,11 @@ def get_remixable_tracks(args):
 
         if args.get("with_users", False):
             add_users_to_tracks(session, tracks, current_user_id)
+        else:
+            # Remove the user from the tracks
+            tracks = [
+                {key: val for key, val in dict.items() if key != "user"}
+                for dict in tracks
+            ]
 
     return tracks

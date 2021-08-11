@@ -1,7 +1,9 @@
 from datetime import datetime
 
+from src.queries.get_remixable_tracks import get_remixable_tracks
 from src.queries.get_tracks import _get_tracks
 from src.utils.db_session import get_db
+
 from tests.utils import populate_mock_db
 
 
@@ -171,3 +173,32 @@ def test_get_track_by_handle_slug(app):
                 {"user_id": 4, "id": [9], "offset": 0, "limit": 10},
             )
             assert len(tracks) == 0
+
+
+def test_get_remixable_tracks(app):
+
+    with app.app_context():
+        db = get_db()
+
+        populate_tracks(db)
+        populate_mock_db(
+            db,
+            {
+                "remixes": [
+                    {"parent_track_id": 9, "child_track_id": 1},
+                    {"parent_track_id": 8, "child_track_id": 1},
+                ],
+                "stems": [
+                    {"parent_track_id": 7, "child_track_id": 1},
+                    {"parent_track_id": 6, "child_track_id": 1},
+                ],
+                "saves": [{"user_id": 4, "save_item_id": 1}],
+                "reposts": [{"user_id": 4, "repost_item_id": 1}],
+            },
+        )
+
+        with db.scoped_session() as session:
+            session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
+        tracks = get_remixable_tracks({"with_users": True})
+        assert len(tracks) == 2
+        assert tracks[0]["user"]

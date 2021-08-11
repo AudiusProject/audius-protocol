@@ -1,9 +1,9 @@
 from typing import Tuple
 
 from web3 import Web3
-from web3.auto import w3
-from eth_account.messages import encode_defunct
-
+from eth_utils.conversions import to_bytes
+from eth_keys import keys
+from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import and_
 from src.models.models import (
@@ -18,6 +18,8 @@ from src.tasks.index_oracles import (
     oracle_addresses_key,
     get_oracle_addresses_from_chain,
 )
+
+ATTESTATION_DECIMALS = 9
 
 
 class Attestation:
@@ -53,6 +55,19 @@ class Attestation:
     def _get_combined_id(self):
         return f"{self.challenge_id}::{self.challenge_specifier}"
 
+    def _get_encoded_amount(self):
+        amt = int(self.amount) * 10 ** ATTESTATION_DECIMALS
+        return amt.to_bytes(8, byteorder="little")
+
+    def get_attestation_bytes(self):
+        user_bytes = to_bytes(hexstr=self.user_address)
+        oracle_bytes = to_bytes(hexstr=self.oracle_address)
+        combined_id_bytes = to_bytes(text=self._get_combined_id())
+        amount_bytes = self._get_encoded_amount()
+        items = [user_bytes, amount_bytes, combined_id_bytes, oracle_bytes]
+        joined = to_bytes(text="_").join(items)
+        return joined
+
 
 # Define custom error strings
 CHALLENGE_INCOMPLETE = "CHALLENGE_INCOMPLETE"
@@ -76,13 +91,11 @@ def is_valid_oracle(address: str) -> bool:
     return address in oracle_addresses
 
 
-def sign_attestation(attestation_str: str, private_key: str):
-    to_sign_hash = Web3.keccak(text=attestation_str).hex()
-    encoded_to_sign = encode_defunct(hexstr=to_sign_hash)
-    signed_message = w3.eth.account.sign_message(
-        encoded_to_sign, private_key=private_key
-    )
-    return signed_message.signature.hex()
+def sign_attestation(attestation_bytes: bytes, private_key: str):
+    k = keys.PrivateKey(HexBytes(private_key))
+    to_sign_hash = Web3.keccak(attestation_bytes)
+    sig = k.sign_msg_hash(to_sign_hash)
+    return sig.to_hex()
 
 
 def get_attestation(
@@ -158,7 +171,8 @@ def get_attestation(
         challenge_specifier=user_challenge.specifier,
     )
 
+    attestation_bytes = attestation.get_attestation_bytes()
     signed_attestation: str = sign_attestation(
-        repr(attestation), shared_config["delegate"]["private_key"]
+        attestation_bytes, shared_config["delegate"]["private_key"]
     )
     return (shared_config["delegate"]["owner_wallet"], signed_attestation)
