@@ -3,7 +3,7 @@ from web3 import Web3
 from src.models import AssociatedWallet, UserEvents
 from src.tasks.users import lookup_user_record, parse_user_event
 from src.utils.db_session import get_db
-from src.challenges.challenge_event_bus import ChallengeEventBus, get_event_bus
+from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.utils.user_event_constants import user_event_types_lookup
 from src.utils import helpers
 from src.utils.redis_connection import get_redis
@@ -195,7 +195,7 @@ def test_index_users(app):
         db = get_db()
         redis = get_redis()
         web3 = Web3()
-        challenge_event_bus: ChallengeEventBus = get_event_bus()
+        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
         update_task = UpdateTask(ipfs_client, web3, challenge_event_bus, redis)
 
     with db.scoped_session() as session, challenge_event_bus.use_scoped_dispatch_queue():

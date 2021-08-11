@@ -77,7 +77,9 @@ class ChallengeEventBus:
         Note: May defer the dispatch if using an in-memory queue (see: use_scoped_dispatch_queue)
         """
         if self._use_in_memory_queue:
-            logger.debug("ChallengeEventBus: deferring dispatch - using in-memory queue")
+            logger.debug(
+                "ChallengeEventBus: deferring dispatch - using in-memory queue"
+            )
             self._in_memory_queue.append(
                 {
                     "event": event,
@@ -167,7 +169,3 @@ def setup_challenge_bus():
     )
 
     return bus
-
-
-def get_event_bus():
-    return current_app.challenge_bus
