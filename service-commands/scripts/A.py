@@ -101,7 +101,7 @@ def setup(host, service, config):
                     "npm install && "
                     "npm link @audius/libs && "
                     "echo 'Rebooting machine...' && "
-                    "reboot && "
+                    "reboot"
                 ),
             ]
         )
