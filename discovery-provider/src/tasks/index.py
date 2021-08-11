@@ -1,10 +1,9 @@
 import concurrent.futures
 import logging
-from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.challenges.challenge_event import ChallengeEvent
 
 from sqlalchemy import func
 from src.app import contract_addresses
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import (
     AssociatedWallet,
     Block,
