@@ -106,6 +106,7 @@ def test_track_upload_challenge(app):
 
         # Process dummy event at block number before this challenge is added
         bus.dispatch(ChallengeEvent.track_upload, 1, 1)
+        bus.flush()
         bus.process_events(session)
         user_challenges = track_upload_challenge_manager.get_user_challenge_state(
             session, ["1"]
@@ -117,6 +118,7 @@ def test_track_upload_challenge(app):
         # Process dummy event at block number when challenge is added
         session.add(track2)
         bus.dispatch(ChallengeEvent.track_upload, 30000000, 1)
+        bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
             session, ["1"]
@@ -131,6 +133,7 @@ def test_track_upload_challenge(app):
         bus.dispatch(ChallengeEvent.track_upload, 30000001, 1)
         session.add(track4)
         bus.dispatch(ChallengeEvent.track_upload, 30000001, 1)
+        bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
             session, ["1"]
@@ -146,6 +149,7 @@ def test_track_upload_challenge(app):
         )
         session.flush()
         bus.dispatch(ChallengeEvent.track_upload, 3, 1)
+        bus.flush()
         bus.process_events(session)
         user_challenge = track_upload_challenge_manager.get_user_challenge_state(
             session, ["1"]

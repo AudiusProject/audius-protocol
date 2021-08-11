@@ -34,6 +34,7 @@ def dispatch_play(offset: int, session: Session, bus: ChallengeEventBus):
         1,
         {"created_at": play.created_at.timestamp()},
     )
+    bus.flush()
     bus.process_events(session)
 
 
