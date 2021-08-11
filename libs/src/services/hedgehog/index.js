@@ -10,7 +10,7 @@ class HedgehogWrapper {
   // Therefore, we need to define this.audiusServiceEndpoint, to satisfy all the deps of the
   // requestToAudiusService and make it execute correctly
 
-  constructor (identityService) {
+  constructor (identityService, useLocalStorage = true) {
     this.identityService = identityService
 
     this.getFn = async (obj) => {
@@ -25,7 +25,12 @@ class HedgehogWrapper {
       return this.identityService.setUserFn(obj)
     }
 
-    const hedgehog = new Hedgehog(this.getFn, this.setAuthFn, this.setUserFn)
+    const hedgehog = new Hedgehog(
+      this.getFn,
+      this.setAuthFn,
+      this.setUserFn,
+      useLocalStorage
+    )
 
     // we override the login function here because getFn needs both lookupKey and email
     // in identity service, but hedgehog only sends lookupKey

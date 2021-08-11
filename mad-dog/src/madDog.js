@@ -17,7 +17,7 @@ const makeCreatorNodeName = num => `cn${num}_creator-node_1`
 // For now, this only takes down a single node
 // per test.
 class MadDog {
-  constructor({
+  constructor ({
     numCreatorNodes,
     downProbability = DOWN_PROBABILITY,
     pauseDurationSec = PAUSE_DURATION_SEC,
@@ -42,7 +42,7 @@ class MadDog {
    * Starts mad dog. Creates stormy network conditions
    * and randomly pauses down a single node over the course of the test.
    */
-  start(serviceName) {
+  start (serviceName) {
     logger.info('Starting 😡🐶')
     this._setNetworkConditions(serviceName)
     this.tickToken = setInterval(() => {
@@ -56,35 +56,41 @@ class MadDog {
     }, TICK_INTERVAL_SEC * 1000)
   }
 
-  stop() {
+  stop () {
     clearInterval(this.tickToken)
-    if (this.netemProcess) this.netemProcess.kill()
+    if (this.netemProcess) {
+      // Kill original process
+      this.netemProcess.kill()
+      // Set packet loss to 0% aka revert back to normal
+      exec(`pumba netem --tc-image gaiadocker/iproute2 -d ${this.networkDownDurationSec}s loss -p 0 containers ${this.netemProcessService}`)
+    }
     if (this.pauseProcess) this.pauseProcess.kill()
   }
 
-  _setNetworkConditions(serviceName) {
+  _setNetworkConditions (serviceName) {
     const service = serviceName || _.sample(this.services)
     logger.info(
       `Setting ${this.packetLossPercent}% packet loss for service: ${service}`
     )
+    this.netemProcessService = service
     this.netemProcess = exec(`pumba netem --tc-image gaiadocker/iproute2 -d ${this.networkDownDurationSec}s loss -p ${this.packetLossPercent} containers ${service}`)
     this._setProcessLogs(this.netemProcess)
   }
 
-  _setProcessLogs(process) {
+  _setProcessLogs (process) {
     process.stdout.on('data', (data) => logger.info(`stdout: ${data}`))
     process.stderr.on('data', (data) => logger.error(`stderr: ${data}`))
     process.on('exit', (code) => {
-      logger.info(`child process exited with code ${code}`)
+      if (!isNaN(code)) logger.info(`child process exited with code ${code}`)
       process = null
     })
   }
 
-  _pauseService(serviceName) {
+  _pauseService (serviceName) {
     const service = serviceName || _.sample(this.services)
     didPause = true
     logger.info(`Pausing service: [${service}]`)
-    this.pauseProcess = exec(`pumba pause -d ${this.pauseDurationSec}s constainers ${service}`)
+    this.pauseProcess = exec(`pumba pause -d ${this.pauseDurationSec}s containers ${service}`)
     _setProcessLogs(this.pauseProcess)
     setTimeout(() => {
       logger.info(`Unpausing service: [${service}]`)

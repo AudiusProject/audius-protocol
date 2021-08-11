@@ -4,8 +4,7 @@ const config = require('../config.js')
 
 const {
   handleResponse,
-  successResponse,
-  errorResponseBadRequest
+  successResponse
 } = require('../apiHelpers')
 
 /**
@@ -34,7 +33,7 @@ module.exports = function (app) {
 
   const accessTokenCorsOptions = {
     credentials: true,
-    origin: config.get('tikTokAuthOrigin')
+    origin: true
   }
 
   app.options('/tiktok/access_token', cors(accessTokenCorsOptions))
@@ -42,12 +41,12 @@ module.exports = function (app) {
     '/tiktok/access_token',
     cors(accessTokenCorsOptions),
     handleResponse(async (req, res, next) => {
-      const { code, state } = req.body
-      const { csrfState } = req.cookies
+      const { code } = req.body
 
-      if (!state || !csrfState || state !== csrfState) {
-        return errorResponseBadRequest('Invalid state')
-      }
+      // NOTE: sk - temporarily disabling csrf check for go live
+      // if (!state || !csrfState || state !== csrfState) {
+      //   return errorResponseBadRequest('Invalid state')
+      // }
 
       let urlAccessToken = 'https://open-api.tiktok.com/oauth/access_token/'
       urlAccessToken += '?client_key=' + config.get('tikTokAPIKey')

@@ -707,7 +707,7 @@ class UsersByContentNode(Resource):
         """New route to call get_users_cnode with replica_type param (only consumed by content node)
         - Leaving `/users/creator_node` above untouched for backwards-compatibility
 
-        Response = array of objects of schema { user_id, wallet, primary, secondary1, secondary2 }
+        Response = array of objects of schema { user_id, wallet, primary, secondary1, secondary2, primarySpId, secondary1SpID, secondary2SpID }
         """
         args = users_by_content_node_route_parser.parse_args()
 

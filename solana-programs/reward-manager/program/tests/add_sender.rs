@@ -7,7 +7,7 @@ use audius_reward_manager::{
     utils::{find_derived_pair, EthereumAddress},
 };
 use rand::{thread_rng, Rng};
-use secp256k1::{PublicKey, SecretKey};
+use libsecp256k1::{PublicKey, SecretKey};
 use solana_program::program_pack::Pack;
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
 use solana_program_test::*;
@@ -83,7 +83,7 @@ async fn success() {
     // Create senders
     for key in &keys {
         let sender_priv_key = SecretKey::parse(&key).unwrap();
-        let secp_pubkey = PublicKey::from_secret_key(&sender_priv_key);
+        let secp_pubkey = libsecp256k1::PublicKey::from_secret_key(&sender_priv_key);
         let eth_address = construct_eth_pubkey(&secp_pubkey);
         let operator: EthereumAddress = rng.gen();
         create_sender(
