@@ -9,8 +9,8 @@ use audius_reward_manager::{
     utils::{find_derived_pair, EthereumAddress},
     vote_message,
 };
-use rand::{thread_rng, Rng};
 use libsecp256k1::{PublicKey, SecretKey};
+use rand::{thread_rng, Rng};
 use solana_program::{
     instruction::Instruction, program_pack::Pack, pubkey::Pubkey, system_instruction,
 };

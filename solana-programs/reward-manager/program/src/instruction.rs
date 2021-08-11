@@ -1,11 +1,7 @@
 //! Instruction types
 
 use crate::{
-    processor::{
-        SENDER_SEED_PREFIX,
-        TRANSFER_SEED_PREFIX,
-        VERIFY_TRANSFER_SEED_PREFIX
-    },
+    processor::{SENDER_SEED_PREFIX, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX},
     utils::{find_derived_pair, find_program_address, EthereumAddress},
 };
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -45,7 +41,7 @@ pub struct AddSenderArgs {
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
 pub struct VerifyTransferSignatureArgs {
     /// ID generated on backend
-    pub id: String
+    pub id: String,
 }
 
 /// `Transfer` instruction args
@@ -73,6 +69,13 @@ pub enum Instructions {
     ///   6. `[]` Rent sysvar
     InitRewardManager(InitRewardManagerArgs),
 
+    ///   Change RewardManager authority
+    ///
+    ///   0. `[writable]` Reward manager
+    ///   1. `[signer]` Current authority
+    ///   2. `[]` New authority
+    ChangeRewardManagerAuthority,
+
     ///   Admin method creating new authorized sender
     ///
     ///   0. `[]` Reward manager
@@ -94,7 +97,7 @@ pub enum Instructions {
     DeleteSender,
 
     ///   Delete sender with other senders proof
-    /// 
+    ///
     ///   0. `[]` Reward manager
     ///   1. `[writable]` Sender account ot delete
     ///   2. `[writable]` Refunder account
@@ -164,6 +167,28 @@ pub fn init(
         AccountMeta::new_readonly(spl_token::id(), false),
         AccountMeta::new_readonly(sysvar::rent::id(), false),
     ];
+    Ok(Instruction {
+        program_id: *program_id,
+        accounts,
+        data,
+    })
+}
+
+/// Create `ChangeRewardManagerAuthority` instruction
+pub fn change_manager_authority(
+    program_id: &Pubkey,
+    reward_manager: &Pubkey,
+    current_authority: &Pubkey,
+    new_authority: &Pubkey,
+) -> Result<Instruction, ProgramError> {
+    let data = Instructions::ChangeRewardManagerAuthority.try_to_vec()?;
+
+    let accounts = vec![
+        AccountMeta::new(*reward_manager, false),
+        AccountMeta::new_readonly(*current_authority, true),
+        AccountMeta::new_readonly(*new_authority, false),
+    ];
+
     Ok(Instruction {
         program_id: *program_id,
         accounts,
@@ -338,13 +363,11 @@ pub fn verify_transfer_signature(
     reward_manager: &Pubkey,
     sender: &Pubkey,
     funder: &Pubkey,
-    id: String
+    id: String,
 ) -> Result<Instruction, ProgramError> {
-    let data = Instructions::VerifyTransferSignature(
-        VerifyTransferSignatureArgs {
-            id: id.clone()
-        }
-    ).try_to_vec()?;
+    let data =
+        Instructions::VerifyTransferSignature(VerifyTransferSignatureArgs { id: id.clone() })
+            .try_to_vec()?;
 
     let (reward_manager_authority, verified_messages, _) = find_derived_pair(
         program_id,

@@ -3,11 +3,11 @@ mod utils;
 use audius_reward_manager::{
     instruction,
     processor::SENDER_SEED_PREFIX,
-    state::{SenderAccount, DELETE_SENDER_MESSAGE_PREFIX},
+    state::DELETE_SENDER_MESSAGE_PREFIX,
     utils::{find_derived_pair, EthereumAddress},
 };
-use rand::{thread_rng, Rng};
 use libsecp256k1::{PublicKey, SecretKey};
+use rand::{thread_rng, Rng};
 use solana_program::program_pack::Pack;
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
 use solana_program_test::*;
@@ -30,7 +30,6 @@ async fn success() {
     let reward_manager = Keypair::new();
     let manager_account = Keypair::new();
     let refunder_account = Pubkey::new_unique();
-    let operator: EthereumAddress = rng.gen();
     let keys: [[u8; 32]; 4] = rng.gen();
     let mut signers: [Pubkey; 4] = unsafe { MaybeUninit::zeroed().assume_init() };
 
@@ -96,7 +95,12 @@ async fn success() {
     let eth_address = construct_eth_pubkey(&secp_pubkey);
 
     // Insert signs instructions
-    let message = [DELETE_SENDER_MESSAGE_PREFIX.as_ref(), reward_manager.pubkey().as_ref(), eth_address.as_ref()].concat();
+    let message = [
+        DELETE_SENDER_MESSAGE_PREFIX.as_ref(),
+        reward_manager.pubkey().as_ref(),
+        eth_address.as_ref(),
+    ]
+    .concat();
     for item in keys[..3].iter().enumerate() {
         let priv_key = SecretKey::parse(item.1).unwrap();
         let inst = new_secp256k1_instruction_2_0(&priv_key, message.as_ref(), item.0 as _);

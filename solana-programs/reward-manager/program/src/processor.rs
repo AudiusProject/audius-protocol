@@ -3,9 +3,13 @@
 use crate::{
     error::AudiusProgramError,
     instruction::{
-        AddSenderArgs, CreateSenderArgs, InitRewardManagerArgs, Instructions, TransferArgs, VerifyTransferSignatureArgs
+        AddSenderArgs, CreateSenderArgs, InitRewardManagerArgs, Instructions, TransferArgs,
+        VerifyTransferSignatureArgs,
     },
-    state::{RewardManager, SenderAccount, VerifiedMessage, VerifiedMessages, ADD_SENDER_MESSAGE_PREFIX, DELETE_SENDER_MESSAGE_PREFIX},
+    state::{
+        RewardManager, SenderAccount, VerifiedMessage, VerifiedMessages, ADD_SENDER_MESSAGE_PREFIX,
+        DELETE_SENDER_MESSAGE_PREFIX,
+    },
     utils::*,
 };
 use borsh::BorshDeserialize;
@@ -76,6 +80,25 @@ impl Processor {
         )?;
 
         reward_manager = RewardManager::new(*token_account_info.key, *manager_info.key, min_votes);
+        RewardManager::pack(reward_manager, *reward_manager_info.data.borrow_mut())?;
+
+        Ok(())
+    }
+
+    fn process_change_reward_manager_authority<'a>(
+        reward_manager_info: &AccountInfo<'a>,
+        current_authority_info: &AccountInfo<'a>,
+        new_authority_info: &AccountInfo<'a>,
+    ) -> ProgramResult {
+        if !current_authority_info.is_signer {
+            return Err(ProgramError::MissingRequiredSignature);
+        }
+
+        let mut reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
+        assert_account_key(current_authority_info, &reward_manager.manager)?;
+
+        reward_manager.manager = *new_authority_info.key;
+
         RewardManager::pack(reward_manager, *reward_manager_info.data.borrow_mut())?;
 
         Ok(())
@@ -178,7 +201,7 @@ impl Processor {
 
         check_secp_instructions(
             program_id,
-            &reward_manager_info.key,
+            reward_manager_info.key,
             instructions_info,
             signers_info.clone(),
             signers_info.len(),
@@ -215,7 +238,7 @@ impl Processor {
 
         check_secp_instructions(
             program_id,
-            &reward_manager_info.key,
+            reward_manager_info.key,
             instructions_info,
             signers_info.clone(),
             signers_info.len(),
@@ -278,7 +301,7 @@ impl Processor {
         .concat();
 
         let (reward_manager_authority, derived_address, bump_seed) =
-        find_derived_pair(program_id, reward_manager_info.key, derived_seed.as_ref());
+            find_derived_pair(program_id, reward_manager_info.key, derived_seed.as_ref());
 
         assert_account_key(authority_info, &reward_manager_authority)?;
         assert_account_key(verified_messages_info, &derived_address)?;
@@ -468,6 +491,19 @@ impl Processor {
                     min_votes,
                 )
             }
+            Instructions::ChangeRewardManagerAuthority => {
+                msg!("Instruction: ChangeRewardManagerAuthority");
+
+                let reward_manager = next_account_info(account_info_iter)?;
+                let current_authority = next_account_info(account_info_iter)?;
+                let new_authority = next_account_info(account_info_iter)?;
+
+                Self::process_change_reward_manager_authority(
+                    reward_manager,
+                    current_authority,
+                    new_authority,
+                )
+            }
             Instructions::CreateSender(CreateSenderArgs {
                 eth_address,
                 operator,
@@ -559,11 +595,7 @@ impl Processor {
                     operator,
                 )
             }
-            Instructions::VerifyTransferSignature(
-                VerifyTransferSignatureArgs {
-                    id
-                }
-            ) => {
+            Instructions::VerifyTransferSignature(VerifyTransferSignatureArgs { id }) => {
                 msg!("Instruction: VerifyTransferSignature");
 
                 let verified_messages = next_account_info(account_info_iter)?;
@@ -584,9 +616,7 @@ impl Processor {
                     rent_info,
                     sender,
                     instructions_info,
-                    VerifyTransferSignatureArgs {
-                        id
-                    },
+                    VerifyTransferSignatureArgs { id },
                 )
             }
             Instructions::Transfer(TransferArgs {

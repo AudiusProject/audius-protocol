@@ -6,8 +6,8 @@ use audius_reward_manager::{
     state::{SenderAccount, ADD_SENDER_MESSAGE_PREFIX},
     utils::{find_derived_pair, EthereumAddress},
 };
-use rand::{thread_rng, Rng};
 use libsecp256k1::{PublicKey, SecretKey};
+use rand::{thread_rng, Rng};
 use solana_program::program_pack::Pack;
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
 use solana_program_test::*;
@@ -99,7 +99,12 @@ async fn success() {
     let mut instructions = Vec::<Instruction>::new();
 
     // Insert signs instructions
-    let message = [ADD_SENDER_MESSAGE_PREFIX.as_ref(), reward_manager.pubkey().as_ref(), eth_address.as_ref()].concat();
+    let message = [
+        ADD_SENDER_MESSAGE_PREFIX.as_ref(),
+        reward_manager.pubkey().as_ref(),
+        eth_address.as_ref(),
+    ]
+    .concat();
     for item in keys.iter().enumerate() {
         let priv_key = SecretKey::parse(item.1).unwrap();
         let inst = new_secp256k1_instruction_2_0(&priv_key, message.as_ref(), item.0 as _);
