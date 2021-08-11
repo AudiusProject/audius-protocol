@@ -580,19 +580,20 @@ jobs:
 
       - restore_cache:
           keys:
-            - claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
-            - claimable-token-deps-
+            - reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
+            - reward-manager-deps-
       - run:
-          name: run claimable token tests
+          name: run reward manager tests
           command: |
             export PATH=$PWD/solana-release/bin:$PATH
-            cd solana-programs/claimable-tokens/program
+            cd solana-programs/reward-manager
+            cp ../claimable-tokens/program/target/deploy/claimable_tokens.so .
             cargo build-bpf
             cargo test-bpf
       - save_cache:
           paths:
-            - solana-programs/claimable-tokens/program/target
-          key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
+            - solana-programs/reward-manager/program/target
+          key: reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
       # - restore_cache:
       #     keys:
       #       - track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
