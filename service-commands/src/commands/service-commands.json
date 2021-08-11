@@ -11,10 +11,10 @@
     "up": [
       "export DOCKER_CLIENT_TIMEOUT=360",
       "export COMPOSE_HTTP_TIMEOUT=360",
-      "docker network create -d bridge audius_dev"
+      "docker network create -d bridge audius_dev || true"
     ],
     "down": [
-      "docker network rm audius_dev"
+      "docker network rm audius_dev || true"
     ]
   },
   "contracts": {
