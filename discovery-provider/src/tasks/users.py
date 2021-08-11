@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import TypedDict
+from typing import Set, TypedDict
 
 import base58
 from eth_account.messages import defunct_hash_message
@@ -33,7 +33,7 @@ def user_state_update(
     """Return int representing number of User model state changes found in transaction."""
 
     num_total_changes = 0
-    user_ids = set()
+    user_ids: Set[int] = set()
     if not user_factory_txs:
         return num_total_changes, user_ids
 

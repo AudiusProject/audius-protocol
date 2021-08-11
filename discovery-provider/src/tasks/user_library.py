@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import Dict
 
 from src.app import contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
@@ -33,8 +34,8 @@ def user_library_state_update(
     challenge_bus = update_task.challenge_event_bus
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
-    track_save_state_changes = {}
-    playlist_save_state_changes = {}
+    track_save_state_changes: Dict[int, Dict[int, Save]] = {}
+    playlist_save_state_changes: Dict[int, Dict[int, Save]] = {}
 
     for tx_receipt in user_library_factory_txs:
         try:
@@ -140,7 +141,7 @@ def add_track_save(
     tx_receipt,
     block_number,
     block_datetime,
-    track_state_changes,
+    track_state_changes: Dict[int, Dict[int, Save]],
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_add_track_events = user_library_contract.events.TrackSaveAdded().processReceipt(
@@ -237,7 +238,7 @@ def delete_track_save(
     tx_receipt,
     block_number,
     block_datetime,
-    track_state_changes,
+    track_state_changes: Dict[int, Dict[int, Save]],
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_delete_track_events = (
@@ -278,7 +279,7 @@ def delete_playlist_save(
     tx_receipt,
     block_number,
     block_datetime,
-    playlist_state_changes,
+    playlist_state_changes: Dict[int, Dict[int, Save]],
 ):
     txhash = update_task.web3.toHex(tx_receipt.transactionHash)
     new_add_playlist_events = (

@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import Dict
 from src.challenges.challenge_event_bus import ChallengeEventBus
 
 from src.app import contract_addresses
@@ -38,9 +39,9 @@ def social_feature_state_update(
     #   track_repost_state_changes = { "user_id": { "track_id": {__Repost__} } }
     #   playlist_repost_state_changes = { "user_id": { "playlist_id": {__Repost__} } }
     #   follow_state_changes = { "follower_user_id": { "followee_user_id": {__Follow__} } }
-    track_repost_state_changes = {}
-    playlist_repost_state_changes = {}
-    follow_state_changes = {}
+    track_repost_state_changes: Dict[int, Dict[int, Repost]] = {}
+    playlist_repost_state_changes: Dict[int, Dict[int, Repost]] = {}
+    follow_state_changes: Dict[int, Dict[int, Follow]] = {}
 
     for tx_receipt in social_feature_factory_txs:
         try:

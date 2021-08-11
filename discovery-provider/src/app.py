@@ -1,9 +1,11 @@
 from __future__ import absolute_import
 
 import ast
+from collections import defaultdict
 import datetime
 import logging
 import time
+from typing import Any, Dict, Optional
 
 import redis
 from celery.schedules import crontab, timedelta
@@ -58,7 +60,7 @@ playlist_factory = None
 user_library_factory = None
 ipld_blacklist_factory = None
 user_replica_set_manager = None
-contract_addresses = None
+contract_addresses: Dict[str, Any] = defaultdict()
 
 logger = logging.getLogger(__name__)
 

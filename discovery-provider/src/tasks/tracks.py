@@ -2,7 +2,7 @@ import functools
 import logging
 import time
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Set
 
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import functions, null
@@ -44,7 +44,7 @@ def track_state_update(
     num_total_changes = 0
 
     # This stores the track_ids created or updated in the set of transactions
-    track_ids = set()
+    track_ids: Set[int] = set()
 
     if not track_factory_txs:
         return num_total_changes, track_ids
