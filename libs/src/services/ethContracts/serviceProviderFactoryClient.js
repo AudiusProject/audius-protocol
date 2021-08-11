@@ -449,6 +449,10 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
     return spInfo
   }
 
+  /**
+   * Returns all service providers of requested `serviceType`
+   * Returns array of objects with schema { blockNumber, delegateOwnerWallet, endpoint, owner, spID, type }
+   */
   async getServiceProviderList (serviceType) {
     const numberOfProviders = await this.getTotalServiceTypeProviders(serviceType)
 

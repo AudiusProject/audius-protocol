@@ -270,25 +270,40 @@ async function findCIDInNetwork (filePath, cid, logger, libs) {
 }
 
 /**
- * Get all creator nodes registered on chain from a cached redis value
+ * Get all Content Nodes registered on chain, excluding self
+ * Fetches from Redis if available, else fetches from chain and updates Redis value
+ * Returns array of objects with schema { blockNumber, delegateOwnerWallet, endpoint, owner, spID, type }
  */
-async function getAllRegisteredCNodes (libs) {
+async function getAllRegisteredCNodes (libs, logger) {
   const cacheKey = 'all_registered_cnodes'
 
+  let CNodes
   try {
+    // Fetch from Redis if present
     const cnodesList = await redis.get(cacheKey)
     if (cnodesList) {
       return JSON.parse(cnodesList)
     }
 
-    let creatorNodes = (await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('content-node'))
+    // Else, fetch from chain
+    let creatorNodes = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('content-node')
+
+    // Filter out self endpoint
     creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
-    redis.set(cacheKey, JSON.stringify(creatorNodes), 'EX', 60 * 30) // cache this for 30 minutes
-    return creatorNodes
+
+    // Write fetched value to Redis with 30min expiry
+    await redis.set(cacheKey, JSON.stringify(creatorNodes), 'EX', 60 * 30 /* 30min in seconds */)
+
+    CNodes = creatorNodes
+
   } catch (e) {
-    console.error('Error getting values in getAllRegisteredCNodes', e)
+    const logFunction = logger ? logger.error : console.error
+    logFunction(`Error getting values in getAllRegisteredCNodes: ${e.message}`)
+
+    CNodes = []
   }
-  return []
+
+  return CNodes
 }
 
 /**

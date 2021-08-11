@@ -55,7 +55,7 @@ async function syncLockMiddleware (req, res, next) {
 /**
  * Blocks writes if node is not the primary for audiusUser associated with wallet
  */
-async function ensurePrimaryMiddleware (req, res, next) {
+async function ensurePrimaryMiddlewareOLD (req, res, next) {
   const serviceRegistry = req.app.get('serviceRegistry')
   const start = Date.now()
 
@@ -95,6 +95,75 @@ async function ensurePrimaryMiddleware (req, res, next) {
   }
   req.session.nodeIsPrimary = true
   req.session.creatorNodeEndpoints = creatorNodeEndpoints
+
+  req.logger.info(`ensurePrimaryMiddleware succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${creatorNodeEndpoints}`)
+  next()
+}
+
+/**
+ * Blocks writes if node is not the primary for audiusUser associated with wallet
+ */
+async function ensurePrimaryMiddleware (req, res, next) {
+  const start = Date.now()
+
+  const logPrefix = '[ensurePrimaryMiddleware]'
+  const logger = req.logger
+
+  const serviceRegistry = req.app.get('serviceRegistry')
+  const { nodeConfig, libs } = serviceRegistry
+
+  if (!req.session || !req.session.wallet) {
+    return sendResponse(req, res, errorResponseUnauthorized('User must be logged in'))
+  }
+
+  const selfSpID = nodeConfig.get('spID')
+  if (!selfSpID) {
+    return sendResponse(req, res, errorResponseServerError('TODO'))
+  }
+
+  //
+
+  /**
+   * Fetch current user replicaSetSpIDs from chain
+   * Will throw error if selfSpID is not user primary
+   */
+  let replicaSetSpIDs
+  try {
+    replicaSetSpIDs = await getReplicaSetSpIDs({
+      serviceRegistry,
+      logger: req.logger,
+      wallet: req.session.wallet,
+      blockNumber: req.body.blockNumber,
+      ensurePrimary: true,
+      selfSpID
+    })
+  } catch (e) {
+    return sendResponse(req, res, errorResponseServerError(e))
+  }
+
+  const primarySpID = replicaSetSpIDs[0]
+  if (selfSpID !== primarySpID) {
+    return sendResponse(req, res, errorResponseUnauthorized(`${logPrefix} Failed. This node's spID (${selfSpID}) does not match user's primary spID on chain (${primarySpID}).`))
+  }
+
+  req.session.replicaSetSpIDs = replicaSetSpIDs
+  req.session.nodeIsPrimary = true
+
+  /**
+   * Convert replicaSetSpIDs to replicaSetEndpoints for later consumption (do not error on failure)
+   * Currently `req.session.creatorNodeEndpoints` is only used by `issueAndWaitForSecondarySyncRequests()`
+   * There is a possibility of failing to retrieve endpoints for each spID, so the consumer of req.session.creatorNodeEndpoints must perform null checks
+   */
+  const allRegisteredCNodes = await utils.getAllRegisteredCNodes(libs, logger)
+  const replicaSetEndpoints = replicaSetSpIDs.map(replicaSpID => {
+    const replicaSetInfo = (allRegisteredCNodes.filter(CNodeInfo => CNodeInfo.spID === replicaSpID))[0]
+    if (replicaSetInfo && replicaSetInfo.endpoint) {
+      return replicaSetInfo.endpoint
+    } else {
+      return null
+    }
+  })
+  req.session.creatorNodeEndpoints = replicaSetEndpoints
 
   req.logger.info(`ensurePrimaryMiddleware succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${creatorNodeEndpoints}`)
   next()
@@ -387,6 +456,162 @@ async function getCreatorNodeEndpoints ({ serviceRegistry, logger, wallet, block
 
   logger.info(`getCreatorNodeEndpoints route time ${Date.now() - start}`)
   return userReplicaSet
+}
+
+/**
+ * Retrieves user replica set spIDs from chain (ETH.UserReplicaSetManager)
+ *
+ * Polls contract (via web3 provider) conditionally as follows:
+ *    - If `blockNumber` provided, polls contract until it has indexed that blockNumber (for up to 200 seconds)
+ *    - Else if `ensurePrimary` required, polls contract until it has indexed selfSpID as primary (for up to 60 seconds)
+ *      - Errors if retrieved primary spID does not match selfSpID
+ *    - If neither of above conditions are met, falls back to single contract query without polling
+ *
+ * @param {Object} serviceRegistry
+ * @param {Object} logger
+ * @param {string} wallet - wallet used to query discprov for user data
+ * @param {number} blockNumber - blocknumber of eth TX preceding CN call
+ * @param {string} selfSpID
+ * @param {boolean} ensurePrimary - determines if function should error if this CN is not primary
+ *
+ * @returns {Array} - array of strings of replica set
+ */
+async function getReplicaSetSpIDs ({ serviceRegistry, logger, wallet, blockNumber, ensurePrimary, selfSpID }) {
+  /**
+   * if (blocknumber provided) {
+   *    poll discprov until that blocknumber and return user replicaSet (no validation, just return)
+   * }
+   * else if (ensurePrimary = true && selfEndpoint provided) {
+   *    poll discprov until user endpoint = selfEndpoint
+   *    error after timeout if unequal
+   *    NOW: poll web3 until user primary = self.spID
+   *    error after timeout if unequal
+   * }
+   * else (fallback condition -> single discprov call with no polling) {
+   *    NOW: single chain request and return 
+   * }
+   */
+
+  const start = Date.now()
+
+  const logPrefix = '[getReplicaSetSpIDs]'
+
+  const { libs } = serviceRegistry
+
+  let user = null
+
+  if (blockNumber) {
+    /**
+     * If `blockNumber` provided, polls contract until it has indexed that blocknumber (for up to 200 seconds)
+     */
+
+    const start2 = Date.now()
+
+    // In total, will try for 200 seconds.
+    const MaxRetries = 201
+    const RetryTimeout = 1000 // 1 seconds
+
+    let returnedBlockNumber = -1
+    for (let retry = 1; retry <= MaxRetries; retry++) {
+      logger.debug(`${logPrefix} retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} returnedBlockNumber ${returnedBlockNumber} || blockNumber ${blockNumber}`)
+
+      try {
+        const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
+        const fetchedUserReplicaSet = await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet()
+
+        if (!fetchedUser || fetchedUser.length === 0 || !fetchedUser[0].hasOwnProperty('blocknumber') || !fetchedUser[0].hasOwnProperty('track_blocknumber')) {
+          throw new Error('Missing or malformatted user fetched from discprov.')
+        }
+
+        user = fetchedUser
+        returnedBlockNumber = Math.max(user[0].blocknumber, user[0].track_blocknumber)
+
+        if (returnedBlockNumber >= blockNumber) {
+          break
+        }
+      } catch (e) { // Ignore all errors until MaxRetries exceeded.
+        logger.info(e)
+      }
+
+      await utils.timeout(RetryTimeout)
+      logger.info(`getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} returnedBlockNumber ${returnedBlockNumber} || blockNumber ${blockNumber}`)
+    }
+
+    // Error if no user found for wallet after all polling
+    if (!user) {
+      throw new Error(`${logPrefix} Failed to retrieve user for wallet ${wallet} after ${MaxRetries} retries. Aborting.`)
+    }
+
+    // Error if web3 provider has still not indexed to target blockNumber
+    if (returnedBlockNumber < blockNumber) {
+      throw new Error(`Web3 provider still outdated after ${MaxRetries} retries. returned blockNumber ${returnedBlockNumber}, target blocknumber ${blockNumber}.`)
+    }
+
+  } else if (ensurePrimary && myCnodeEndpoint) {
+    /**
+     * Else if ensurePrimary required, polls discprov until it has indexed myCnodeEndpoint (for up to 60 seconds)
+     * Errors if retrieved primary does not match myCnodeEndpoint
+     */
+    logger.info(`getCreatorNodeEndpoints || no blockNumber passed, retrying until DN returns same endpoint`)
+
+    const start2 = Date.now()
+
+    // Will poll every sec for up to 1 minute (60 sec)
+    const MaxRetries = 61
+    const RetryTimeout = 1000 // 1 seconds
+
+    let returnedPrimaryEndpoint = null
+    for (let retry = 1; retry <= MaxRetries; retry++) {
+      logger.info(`getCreatorNodeEndpoints retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
+
+      try {
+        const fetchedUser = await libs.User.getUsers(1, 0, null, wallet)
+
+        if (!fetchedUser || fetchedUser.length === 0 || !fetchedUser[0].hasOwnProperty('creator_node_endpoint')) {
+          throw new Error('Missing or malformatted user fetched from discprov.')
+        }
+
+        user = fetchedUser
+        returnedPrimaryEndpoint = (user[0].creator_node_endpoint).split(',')[0]
+
+        if (returnedPrimaryEndpoint === myCnodeEndpoint) {
+          break
+        }
+      } catch (e) { // Ignore all errors until MaxRetries exceeded
+        logger.info(e)
+      }
+
+      await utils.timeout(RetryTimeout)
+      logger.info(`getCreatorNodeEndpoints AFTER TIMEOUT retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start2} myCnodeEndpoint ${myCnodeEndpoint}`)
+    }
+
+    // Error if discprov doesn't return any user for wallet
+    if (!user) {
+      throw new Error(`Failed to retrieve user from discprov after ${MaxRetries} retries. Aborting.`)
+    }
+
+    // Error if discprov has still not returned own endpoint as primary
+    if (returnedPrimaryEndpoint !== myCnodeEndpoint) {
+      throw new Error(`Discprov still hasn't returned own endpoint as primary after ${MaxRetries} retries. Discprov primary ${returnedPrimaryEndpoint} || own endpoint ${myCnodeEndpoint}`)
+    }
+  } else {
+    /**
+     * If neither of above conditions are met, falls back to single discprov query without polling
+     */
+    logger.info(`getCreatorNodeEndpoints || ensurePrimary === false, fetching user without retries`)
+    user = await libs.User.getUsers(1, 0, null, wallet)
+  }
+
+  if (!user) {
+    throw new Error(`Failed to retrieve user with wallet ${wallet} from Eth UserReplicaSetManager contract`)
+  } else if (!user.hasOwnProperty('primaryId') || !user.hasOwnProperty('secondaryIds')) {
+    throw new Error(`Failed to retrieve primaryId or secondaryIds for user with wallet ${wallet} from Eth UserReplicaSetManager contract`)
+  }
+
+  const userReplicaSetSpIDs = [user.primaryId, ...user.secondaryIds]
+
+  logger.info(`getReplicaSetSpIDs completed in ${Date.now() - start}`)
+  return userReplicaSetSpIDs
 }
 
 // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2
