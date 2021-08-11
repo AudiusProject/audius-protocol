@@ -27,11 +27,8 @@ class URSMRegistrationManager {
     this.delegateOwnerWallet = nodeConfig.get('delegateOwnerWallet')
     this.delegatePrivateKey = nodeConfig.get('delegatePrivateKey')
     this.spOwnerWallet = nodeConfig.get('spOwnerWallet')
-    this.isUserMetadataNode = nodeConfig.get('isUserMetadataNode')
 
-    if (!this.isUserMetadataNode &&
-      (!this.audiusLibs || !this.delegateOwnerWallet || !this.delegatePrivateKey || !this.spOwnerWallet)
-    ) {
+    if (!this.audiusLibs || !this.delegateOwnerWallet || !this.delegatePrivateKey || !this.spOwnerWallet) {
       throw new Error('URSMRegistrationManager cannot start due to missing required configs')
     }
   }
@@ -60,11 +57,6 @@ class URSMRegistrationManager {
    */
   async run () {
     this.logInfo('Beginning URSM registration process')
-
-    if (this.isUserMetadataNode) {
-      this.logInfo('URSMRegistration cannot run in userMetadataNode')
-      return
-    }
 
     /**
      * (Backwards-compatibility) Short circuit if L2 URSM contract not yet deployed

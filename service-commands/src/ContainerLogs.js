@@ -104,7 +104,6 @@ ContainerLogs.logs = {
 ContainerLogs.services = (() => {
   const services = [
     Service.DISCOVERY_PROVIDER,
-    Service.USER_METADATA_NODE,
     Service.IDENTITY_SERVICE
   ].map(s => serviceCommands[s].host)
 

@@ -1,6 +1,6 @@
 from typing import Dict, List, Optional, TypedDict
 
-from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.challenges.event_bus import EventBus
 
 
 class ChallengeEventQueueItem(TypedDict):
@@ -12,8 +12,9 @@ class ChallengeEventQueueItem(TypedDict):
 
 class ChallengeEventQueue:
     _event_queue: List[ChallengeEventQueueItem] = []
+    _bus: EventBus
 
-    def __init__(self, bus: ChallengeEventBus):
+    def __init__(self, bus: EventBus):
         self._bus = bus
 
     def __enter__(self):

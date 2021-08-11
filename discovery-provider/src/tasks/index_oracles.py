@@ -23,17 +23,22 @@ eth_registry_instance = eth_web3.eth.contract(
 
 
 def get_oracle_addresses_from_chain(redis) -> List[str]:
-    eth_rewards_manager_address = eth_registry_instance.functions.getContract(
-        bytes("EthRewardsManagerProxy", "utf-8")
-    ).call()
-    eth_rewards_manager_instance = eth_web3.eth.contract(
-        address=eth_rewards_manager_address, abi=REWARDS_CONTRACT_ABI
-    )
-    oracle_addresses = (
-        eth_rewards_manager_instance.functions.getAntiAbuseOracleAddresses().call()
-    )
-    redis.set(oracle_addresses_key, ",".join(oracle_addresses))
-    return oracle_addresses
+    try:
+        # Note: this call will fail until the eth rewards manager contract is deployed
+        eth_rewards_manager_address = eth_registry_instance.functions.getContract(
+            bytes("EthRewardsManagerProxy", "utf-8")
+        ).call()
+        eth_rewards_manager_instance = eth_web3.eth.contract(
+            address=eth_rewards_manager_address, abi=REWARDS_CONTRACT_ABI
+        )
+        oracle_addresses = (
+            eth_rewards_manager_instance.functions.getAntiAbuseOracleAddresses().call()
+        )
+        redis.set(oracle_addresses_key, ",".join(oracle_addresses))
+        return oracle_addresses
+    except Exception as e:
+        logger.error(f"index_oracles.py | Failed to get oracle addresses from chain: {e}")
+        return []
 
 
 @celery.task(name="index_oracles", bind=True)

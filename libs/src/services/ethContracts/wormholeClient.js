@@ -21,22 +21,22 @@ class WormholeClient {
 
   /* ------- SETTERS ------- */
 
-  async lockAssets (
+  async transferTokens (
     fromAcct,
     amount,
     solanaAccount,
     chainId,
-    refundDust,
+    arbiterFee,
     deadline,
     signedDigest,
     relayer
   ) {
-    const method = this.WormholeContract.methods.lockAssets(
+    const method = this.WormholeContract.methods.transferTokens(
       fromAcct,
       amount,
-      solanaAccount,
       chainId,
-      refundDust,
+      solanaAccount,
+      arbiterFee,
       deadline,
       signedDigest.v,
       signedDigest.r,

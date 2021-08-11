@@ -38,6 +38,7 @@ WAUDIO_PROGRAM_PUBKEY = (
 )
 WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS) if WAUDIO_MINT_ADDRESS else None
 
+MAX_LAZY_REFRESH_USER_IDS = 100
 
 class AssociatedWallets(TypedDict):
     eth: List[str]
@@ -108,7 +109,7 @@ def refresh_user_ids(
     waudio_token,
 ):
     with db.scoped_session() as session:
-        lazy_refresh_user_ids = get_lazy_refresh_user_ids(redis, session)
+        lazy_refresh_user_ids = get_lazy_refresh_user_ids(redis, session)[:MAX_LAZY_REFRESH_USER_IDS]
         immediate_refresh_user_ids = get_immediate_refresh_user_ids(redis)
 
         logger.info(

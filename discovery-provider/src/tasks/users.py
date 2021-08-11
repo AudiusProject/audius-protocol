@@ -183,7 +183,7 @@ def invalidate_old_user(session, user_id):
 def parse_user_event(
     self,
     user_contract,
-    update_task,
+    update_task: DatabaseTask,
     session,
     tx_receipt,
     block_number,
@@ -247,6 +247,14 @@ def parse_user_event(
         user_record.is_creator = event_args._isCreator
     elif event_type == user_event_types_lookup["update_is_verified"]:
         user_record.is_verified = event_args._isVerified
+        if user_record.is_verified:
+            update_task.challenge_event_queue.enqueue(
+                session,
+                ChallengeEvent.connect_verified,
+                block_number,
+                user_record.user_id,
+            )
+
     elif event_type == user_event_types_lookup["update_creator_node_endpoint"]:
         # Ensure any user consuming the new UserReplicaSetManager contract does not process
         # legacy `creator_node_endpoint` changes

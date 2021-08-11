@@ -56,12 +56,12 @@ const verifyUserReplicaSetStatus = async (
     // Throw if mismatch between queried primaryID and assigned
     //    spID on chain for this endpoint
     if (primaryID !== primaryInfo.spID) {
-      throw new Error(`Mismatch spID values. Expected endpoint for ${primaryID}, found ${primaryInfo.spID}`)
+      throw new Error(`Mismatch spID values. Indexed value=${primaryID} chain value=${primaryInfo.spID}`)
     }
 
     // Throw if mismatch between primaryID from discovery-node and primaryID in UserReplicaSetManager
     if (primaryID !== parseInt(usrReplicaInfoFromContract.primaryId)) {
-      throw new Error(`Mismatch primaryID values. Expected ${primaryID}, found ${usrReplicaInfoFromContract.primaryId}`)
+      throw new Error(`Mismatch primaryID values. Indexed value=${primaryID} contract value=${usrReplicaInfoFromContract.primaryId}`)
     }
 
     logger.info(`userId: ${userId} Replica Set Info: ${primaryID}, ${usrQueryInfo.secondary_ids}`)

@@ -11,7 +11,7 @@ const {
   IpldBlacklistTest,
   userReplicaSetBlockSaturationTest,
   trackListenCountsTest,
-  userReplicaSetNodes
+  SnapbackReconfigTests
 } = require('./tests/')
 
 // Configuration.
@@ -48,7 +48,6 @@ const contentNodeHealthChecks = _.range(1, DEFAULT_NUM_CREATOR_NODES + 1).reduce
 )
 const services = [
   [Service.DISCOVERY_PROVIDER, SetupCommand.HEALTH_CHECK],
-  [Service.USER_METADATA_NODE, SetupCommand.HEALTH_CHECK],
   [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
   ...contentNodeHealthChecks
 ]
@@ -256,16 +255,26 @@ async function main () {
         break
       }
       case 'test-ursm-nodes': {
-        const test = makeTest(
-          'userReplicaSetNodesTest',
-          userReplicaSetNodes,
+        const deregisterCNTest = makeTest(
+          'snapbackReconfigTestDeregisterCN',
+          SnapbackReconfigTests.deregisterCN,
           {
             numUsers: 8,
             numCreatorNodes: 10,
-            iterations: 3
+            iterations: 2
           }
         )
-        await testRunner([test])
+
+        const forceCNUnavailabilityTest = makeTest(
+          'snapbackReconfigTestForceCNUnavailability',
+          SnapbackReconfigTests.forceCNUnavailability,
+          {
+            numUsers: 8,
+            numCreatorNodes: 10,
+            iterations: 2
+          }
+        )
+        await testRunner([deregisterCNTest, forceCNUnavailabilityTest])
         break
       }
       case 'test-ci': {
@@ -311,13 +320,35 @@ async function main () {
           }
         )
 
+        const deregisterCNTest = makeTest(
+          'snapbackReconfigTestDeregisterCN',
+          SnapbackReconfigTests.deregisterCN,
+          {
+            numUsers: 2,
+            numCreatorNodes: 10,
+            iterations: 2
+          }
+        )
+
+        const forceCNUnavailabilityTest = makeTest(
+          'snapbackReconfigTestForceCNUnavailability',
+          SnapbackReconfigTests.forceCNUnavailability,
+          {
+            numUsers: 2,
+            numCreatorNodes: 10,
+            iterations: 2
+          }
+        )
+
         const tests = [
           coreIntegrationTests,
           snapbackTest,
           ...blacklistTests,
           ursmTest,
           ursmBlockSaturationTest,
-          trackListenCountTest
+          trackListenCountTest,
+          deregisterCNTest,
+          forceCNUnavailabilityTest
         ]
 
         await testRunner(tests)

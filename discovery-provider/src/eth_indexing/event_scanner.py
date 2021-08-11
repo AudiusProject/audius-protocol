@@ -89,6 +89,7 @@ class EventScanner:
         self.event_type = event_type
         self.filters = filters
         self.last_scanned_block = MIN_SCAN_START_BLOCK
+        self.latest_chain_block = self.web3.eth.blockNumber
 
     def restore(self):
         """Restore the last scan state from redis.
@@ -140,7 +141,7 @@ class EventScanner:
 
         # Do not scan all the way to the final block, as this
         # block might not be mined yet
-        return self.web3.eth.blockNumber - ETH_BLOCK_TAIL_OFFSET
+        return self.latest_chain_block - ETH_BLOCK_TAIL_OFFSET
 
     def get_last_scanned_block(self) -> int:
         """The number of the last block we have stored."""

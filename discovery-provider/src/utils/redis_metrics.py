@@ -24,7 +24,7 @@ REDIS = redis.Redis.from_url(url=REDIS_URL)
 # interval in minutes for pulling metrics from other nodes
 METRICS_INTERVAL = 5
 # interval in minutes for synchronizing metrics from other nodes
-SYNCHRONIZE_METRICS_INTERVAL = 180
+SYNCHRONIZE_METRICS_INTERVAL = 60
 
 # Redis Key Convention:
 # API_METRICS:routes:<date>:<hour>

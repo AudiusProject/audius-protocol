@@ -10,41 +10,41 @@ contract MockWormhole {
 
     uint8 CHAIN_ID = 2;
 
-    event LogTokensLocked(
-        uint8 targetChain,
-        uint8 tokenChain,
+    event LogTokensTransferred(
+        uint16 recipientChain,
+        uint16 tokenChain,
         uint8 tokenDecimals,
         bytes32 indexed token,
         bytes32 indexed sender,
         bytes32 recipient,
         uint256 amount,
+        uint256 arbiterFee,
         uint32 nonce
     );
 
-    constructor() public {}
-
-    function lockAssets(
-        address asset,
+    function transferTokens(
+        address token,
         uint256 amount,
+        uint16 recipientChain,
         bytes32 recipient,
-        uint8 targetChain,
-        uint32 nonce,
-        bool refund_dust
+        uint256 arbiterFee,
+        uint32 nonce
     ) public {
-        ERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
+        ERC20(token).safeTransferFrom(msg.sender, address(this), amount);
 
-        uint8 asset_chain = CHAIN_ID;
-        uint8 decimals = ERC20Detailed(asset).decimals();
-        bytes32 asset_address = bytes32(uint256(asset));
+        uint16 assetChain = CHAIN_ID;
+        uint8 decimals = ERC20Detailed(token).decimals();
+        bytes32 assetAddress = bytes32(uint256(token));
 
-        emit LogTokensLocked(
-            targetChain,
-            asset_chain,
+        emit LogTokensTransferred(
+            recipientChain,
+            assetChain,
             decimals,
-            asset_address,
+            assetAddress,
             bytes32(uint256(msg.sender)),
             recipient,
             amount,
+            arbiterFee,
             nonce
         );
     }

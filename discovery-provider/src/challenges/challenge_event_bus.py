@@ -8,6 +8,8 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge import ChallengeManager
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_queue import ChallengeEventQueue
+from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
+from src.challenges.event_bus import EventBus
 from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
@@ -17,7 +19,7 @@ logger = logging.getLogger(__name__)
 REDIS_QUEUE_PREFIX = "challenges-event-queue"
 
 
-class ChallengeEventBus:
+class ChallengeEventBus(EventBus):
     """`ChallengeEventBus` supports:
     - dispatching challenge events to a Redis queue
     - registering challenge managers to listen to the events.
@@ -125,6 +127,10 @@ def setup_challenge_bus():
     bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
     # track_upload_challenge_manager listeners
     bus.register_listener(ChallengeEvent.track_upload, track_upload_challenge_manager)
+    # connect_verified_challenge_manager listeners
+    bus.register_listener(
+        ChallengeEvent.connect_verified, connect_verified_challenge_manager
+    )
 
     return bus
 

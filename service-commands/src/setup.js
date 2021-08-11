@@ -141,7 +141,6 @@ const Service = Object.freeze({
   DISCOVERY_PROVIDER: 'discovery-provider',
   CONTENT_SERVICE: 'content-service',
   CREATOR_NODE: 'creator-node',
-  USER_METADATA_NODE: 'user-metadata-node',
   IDENTITY_SERVICE: 'identity-service',
   DISTRIBUTE: 'distribute',
   ACCOUNT: 'account',
@@ -606,13 +605,6 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1 }) => {
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
     ...discoveryNodesCommands,
-    [Service.USER_METADATA_NODE, SetupCommand.UNSET_SHELL_ENV],
-    [
-      Service.USER_METADATA_NODE,
-      SetupCommand.UP_UM,
-      { ...options, waitSec: 10 }
-    ],
-    [Service.USER_METADATA_NODE, SetupCommand.HEALTH_CHECK],
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
     [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
