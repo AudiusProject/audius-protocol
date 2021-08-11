@@ -545,7 +545,7 @@ jobs:
   test-solana-programs:
     docker:
       # specify the version you desire here
-      - image: cimg/rust:1.53.0
+      - image: solanalabs/solana:v1.7.8
     parameters:
       force:
         type: boolean
@@ -557,10 +557,10 @@ jobs:
           steps:
             - run: ./diff.sh solana-programs || (echo "no diff" && circleci-agent step halt)
 
-      - run:
-          name: Setup solana
-          command: |
-            curl -L 'https://github.com/solana-labs/solana/releases/download/v1.7.8/solana-release-x86_64-unknown-linux-gnu.tar.bz2' | tar jxf -
+      # - run:
+      #     name: Setup solana
+      #     command: |
+      #       curl -L 'https://github.com/solana-labs/solana/releases/download/v1.7.8/solana-release-x86_64-unknown-linux-gnu.tar.bz2' | tar jxf -
 
       - restore_cache:
           keys:
@@ -602,7 +602,7 @@ jobs:
           name: run reward manager tests
           command: |
             export PATH=$PWD/solana-release/bin:$PATH
-            cd solana-programs/reward-manager
+            cd solana-programs/reward-manager/program
             cp ../claimable-tokens/program/target/deploy/claimable_tokens.so .
             cargo build-bpf
             cargo test-bpf
