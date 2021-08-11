@@ -276,8 +276,7 @@ def index_blocks(self, db, blocks_list):
         )
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
         # Handle each block in a distinct transaction
-        with db.scoped_session() as session, challenge_bus.scoped_dispatch_queue() as challenge_event_queue:
-            update_task.challenge_event_queue = challenge_event_queue
+        with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
             current_block_query = session.query(Block).filter_by(is_current=True)
 
             # Without this check we may end up duplicating an insert operation
@@ -491,7 +490,6 @@ def index_blocks(self, db, blocks_list):
                 logger.info(
                     f"index.py | session commmited to db for block=${block_number}"
                 )
-                update_task.challenge_event_bus.flush_event_queue()
                 if skip_tx_hash:
                     clear_indexing_error(redis)
                 if user_state_changed:

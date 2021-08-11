@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from src.challenges.challenge_event_queue import ChallengeEventQueue
+from src.challenges.challenge_event_bus import ChallengeEventBus
 
 from src.app import contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
@@ -31,7 +31,7 @@ def social_feature_state_update(
         address=contract_addresses["social_feature_factory"],
         abi=social_feature_factory_abi,
     )
-    challenge_event_queue = update_task.challenge_event_queue
+    challenge_bus = update_task.challenge_event_bus
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
     # stores net state changes of all reposts and follows and corresponding events in current block
@@ -121,7 +121,7 @@ def social_feature_state_update(
             )
             repost = repost_track_ids[repost_track_id]
             session.add(repost)
-            dispatch_challenge_repost(challenge_event_queue, repost, block_number)
+            dispatch_challenge_repost(challenge_bus, repost, block_number)
         num_total_changes += len(repost_track_ids)
 
     for repost_user_id, repost_playlist_ids in playlist_repost_state_changes.items():
@@ -134,7 +134,7 @@ def social_feature_state_update(
             )
             repost = repost_playlist_ids[repost_playlist_id]
             session.add(repost)
-            dispatch_challenge_repost(challenge_event_queue, repost, block_number)
+            dispatch_challenge_repost(challenge_bus, repost, block_number)
         num_total_changes += len(repost_playlist_ids)
 
     for follower_user_id, followee_user_ids in follow_state_changes.items():
@@ -142,7 +142,7 @@ def social_feature_state_update(
             invalidate_old_follow(session, follower_user_id, followee_user_id)
             follow = followee_user_ids[followee_user_id]
             session.add(follow)
-            dispatch_challenge_follow(challenge_event_queue, follow, block_number)
+            dispatch_challenge_follow(challenge_bus, follow, block_number)
         num_total_changes += len(followee_user_ids)
 
     return num_total_changes
@@ -151,12 +151,12 @@ def social_feature_state_update(
 ######## HELPERS ########
 
 
-def dispatch_challenge_repost(queue: ChallengeEventQueue, repost, block_number):
-    queue.enqueue(ChallengeEvent.repost, block_number, repost.user_id)
+def dispatch_challenge_repost(bus: ChallengeEventBus, repost, block_number):
+    bus.dispatch(ChallengeEvent.repost, block_number, repost.user_id)
 
 
-def dispatch_challenge_follow(queue: ChallengeEventQueue, follow, block_number):
-    queue.enqueue(ChallengeEvent.follow, block_number, follow.follower_user_id)
+def dispatch_challenge_follow(bus: ChallengeEventBus, follow, block_number):
+    bus.dispatch(ChallengeEvent.follow, block_number, follow.follower_user_id)
 
 
 def invalidate_old_repost(session, repost_user_id, repost_item_id, repost_type):

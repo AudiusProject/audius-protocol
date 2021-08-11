@@ -3,7 +3,7 @@ from web3 import Web3
 from src.models import AssociatedWallet, UserEvents
 from src.tasks.users import lookup_user_record, parse_user_event
 from src.utils.db_session import get_db
-from src.challenges.challenge_event_bus import get_event_bus
+from src.challenges.challenge_event_bus import ChallengeEventBus, get_event_bus
 from src.utils.user_event_constants import user_event_types_lookup
 from src.utils import helpers
 from src.utils.redis_connection import get_redis
@@ -195,10 +195,10 @@ def test_index_users(app):
         db = get_db()
         redis = get_redis()
         web3 = Web3()
-        challenge_event_bus = get_event_bus()
+        challenge_event_bus: ChallengeEventBus = get_event_bus()
         update_task = UpdateTask(ipfs_client, web3, challenge_event_bus, redis)
 
-    with db.scoped_session() as session:
+    with db.scoped_session() as session, challenge_event_bus.use_scoped_dispatch_queue():
         # ================== Test Add User Event ==================
         event_type, entry = get_add_user_event()
 
@@ -228,7 +228,6 @@ def test_index_users(app):
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
             block_timestamp,  # Used to update the user.updated_at field
-            challenge_event_bus,
         )
 
         # updated_at should be updated every parse_user_event
@@ -258,7 +257,6 @@ def test_index_users(app):
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
             block_timestamp,  # Used to update the user.updated_at field
-            challenge_event_bus,
         )
 
         # add_user should be updated fields: handle, handle_lc, wallet
@@ -281,7 +279,6 @@ def test_index_users(app):
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
             block_timestamp,  # Used to update the user.updated_at field
-            challenge_event_bus,
         )
 
         # add_user should be updated fields: handle, handle_lc, wallet
@@ -304,7 +301,6 @@ def test_index_users(app):
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
             block_timestamp,  # Used to update the user.updated_at field
-            challenge_event_bus,
         )
 
         # add_user should be updated fields: handle, handle_lc, wallet
@@ -327,7 +323,6 @@ def test_index_users(app):
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
             block_timestamp,  # Used to update the user.updated_at field
-            challenge_event_bus,
         )
 
         # add_user should be updated fields: handle, handle_lc, wallet
@@ -354,7 +349,6 @@ def test_index_users(app):
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
             block_timestamp,  # Used to update the user.updated_at field
-            challenge_event_bus,
         )
 
         # add_user should be updated fields: handle, handle_lc, wallet
@@ -380,7 +374,6 @@ def test_index_users(app):
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
             block_timestamp,  # Used to update the user.updated_at field
-            challenge_event_bus,
         )
 
         # add_user should be updated fields: handle, handle_lc, wallet
@@ -404,7 +397,6 @@ def test_index_users(app):
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
             block_timestamp,  # Used to update the user.updated_at field
-            challenge_event_bus,
         )
 
         # add_user should be updated fields: profile_picture_sizes, profile_picture
@@ -431,7 +423,6 @@ def test_index_users(app):
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
             block_timestamp,  # Used to update the user.updated_at field
-            challenge_event_bus,
         )
 
         # add_user should be updated fields: cover_photo, cover_photo_sizes
@@ -454,7 +445,6 @@ def test_index_users(app):
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
             block_timestamp,  # Used to update the user.updated_at field
-            challenge_event_bus,
         )
         session.flush()
 

@@ -1,11 +1,12 @@
 import logging
 from datetime import datetime
-from src.database_task import DatabaseTask
-from src.challenges.challenge_event_queue import ChallengeEventQueue
+
 from src.app import contract_addresses
-from src.models import Playlist, SaveType, Save
-from src.utils.indexing_errors import IndexingError
 from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.database_task import DatabaseTask
+from src.models import Playlist, Save, SaveType
+from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ def user_library_state_update(
     user_library_contract = update_task.web3.eth.contract(
         address=contract_addresses["user_library_factory"], abi=user_library_abi
     )
-    challenge_event_queue = update_task.challenge_event_queue
+    challenge_bus = update_task.challenge_event_bus
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
 
     track_save_state_changes = {}
@@ -93,7 +94,7 @@ def user_library_state_update(
             invalidate_old_save(session, user_id, track_id, SaveType.track)
             save = track_ids[track_id]
             session.add(save)
-            dispatch_favorite(challenge_event_queue, save, block_number)
+            dispatch_favorite(challenge_bus, save, block_number)
         num_total_changes += len(track_ids)
 
     for user_id, playlist_ids in playlist_save_state_changes.items():
@@ -113,8 +114,8 @@ def user_library_state_update(
 ######## HELPERS ########
 
 
-def dispatch_favorite(queue: ChallengeEventQueue, save, block_number):
-    queue.enqueue(ChallengeEvent.favorite, block_number, save.user_id)
+def dispatch_favorite(bus: ChallengeEventBus, save, block_number):
+    bus.enqueue(ChallengeEvent.favorite, block_number, save.user_id)
 
 
 def invalidate_old_save(session, user_id, playlist_id, save_type):

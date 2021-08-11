@@ -307,3 +307,44 @@ def test_aggregates(app):
         user_challenges = get_user_challenges()
         for uc in user_challenges:
             assert uc.completed_blocknumber == 100
+
+
+def test_in_memory_queue(app):
+    setup_challenges(app)
+
+    with app.app_context():
+        db = get_db()
+
+    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+
+    bus = ChallengeEventBus(redis_conn)
+    with db.scoped_session() as session, bus.use_scoped_dispatch_queue():
+        agg_challenge = ChallengeManager("test_challenge_3", AggregateUpdater())
+        agg_challenge.process(session, "test_event", [])
+        TEST_EVENT = "TEST_EVENT"
+
+        bus.register_listener(
+            TEST_EVENT, ChallengeManager("test_challenge_1", DefaultUpdater())
+        )
+        bus.register_listener(
+            TEST_EVENT, ChallengeManager("test_challenge_2", DefaultUpdater())
+        )
+        # - Multiple events with the same user_id but diff specifiers get created
+        bus.register_listener(TEST_EVENT, agg_challenge)
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 2})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 3})
+        bus.process_events(session)
+
+        # no events should be processed because we haven't dispatched yet
+        state = agg_challenge.get_user_challenge_state(session, ["1-2", "1-3"])
+        assert len(state) == 0
+
+    bus.process_events(session)
+    state = agg_challenge.get_user_challenge_state(session, ["1-2", "1-3"])
+    assert len(state) == 2
+    # Also make sure the thing is incomplete
+    res = get_challenges(1, False, session, bus)
+    agg_chal = {c["challenge_id"]: c for c in res}["test_challenge_3"]
+    assert agg_chal["is_complete"] == False
+
+    redis_conn = redis.Redis.from_url(url=REDIS_URL)

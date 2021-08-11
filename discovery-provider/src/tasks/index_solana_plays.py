@@ -7,7 +7,6 @@ import base58
 from sqlalchemy import desc
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.challenges.challenge_event_queue import ChallengeEventQueue
 from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
@@ -134,8 +133,8 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
         meta = tx_info["result"]["meta"]
         error = meta["err"]
 
-        challenge_event_queue: ChallengeEventQueue = (
-            index_solana_plays.challenge_event_queue
+        challenge_bus: ChallengeEventBus = (
+            index_solana_plays.challenge_bus
         )
 
         if error:
@@ -177,7 +176,7 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
                             signature=tx_sig,
                         )
                     )
-                    challenge_event_queue.enqueue(
+                    challenge_bus.dispatch(
                         ChallengeEvent.track_listen,
                         tx_slot,
                         user_id,
@@ -466,8 +465,7 @@ def index_solana_plays(self):
         if have_lock:
             logger.info("index_solana_plays.py | Acquired lock")
             challenge_bus: ChallengeEventBus = index_solana_plays.challenge_event_bus
-            with challenge_bus.scoped_dispatch_queue() as challenge_event_queue:
-                index_solana_plays.challenge_event_queue = challenge_event_queue
+            with challenge_bus.use_scoped_dispatch_queue():
                 process_solana_plays(solana_client, redis)
         else:
             logger.info("index_solana_plays.py | Failed to acquire lock")

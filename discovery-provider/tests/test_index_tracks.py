@@ -11,7 +11,7 @@ from src.tasks.tracks import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db
-from src.challenges.challenge_event_bus import get_event_bus
+from src.challenges.challenge_event_bus import ChallengeEventBus, get_event_bus
 from tests.index_helpers import AttrDict, IPFSClient, UpdateTask
 
 block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
@@ -182,13 +182,13 @@ def test_index_tracks(mock_index_task, app):
     """Tests that tracks are indexed correctly"""
     with app.app_context():
         db = get_db()
-        challenge_event_bus = get_event_bus()
+        challenge_event_bus: ChallengeEventBus = get_event_bus()
         web3 = Web3()
         update_task = UpdateTask(ipfs_client, web3, challenge_event_bus)
 
     pending_track_routes = []
 
-    with db.scoped_session() as session:
+    with db.scoped_session() as session, challenge_event_bus.use_scoped_dispatch_queue():
         # ================== Test New Track Event ==================
         event_type, entry = get_new_track_event()
 

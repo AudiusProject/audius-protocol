@@ -40,7 +40,7 @@ def user_state_update(
     user_contract = update_task.web3.eth.contract(
         address=contract_addresses["user_factory"], abi=user_abi
     )
-    challenge_event_queue = update_task.challenge_event_queue
+    challenge_bus = update_task.challenge_event_bus
 
     # This stores the state of the user object along with all the events applied to it
     # before it gets committed to the db
@@ -117,7 +117,7 @@ def user_state_update(
         logger.info(f"index.py | users.py | Adding {value_obj['user']}")
         if value_obj["events"]:
             invalidate_old_user(session, user_id)
-            challenge_event_queue.enqueue(
+            challenge_bus.dispatch(
                 session, ChallengeEvent.profile_update, block_number, user_id
             )
             session.add(value_obj["user"])
@@ -248,7 +248,7 @@ def parse_user_event(
     elif event_type == user_event_types_lookup["update_is_verified"]:
         user_record.is_verified = event_args._isVerified
         if user_record.is_verified:
-            update_task.challenge_event_queue.enqueue(
+            update_task.challenge_event_bus.dispatch(
                 session,
                 ChallengeEvent.connect_verified,
                 block_number,
