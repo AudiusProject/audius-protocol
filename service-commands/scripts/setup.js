@@ -109,6 +109,16 @@ program
     'service instance number',
     SERVICE_INSTANCE_NUMBER.toString()
   )
+  .option(
+    '-nc, --num-cnodes <number>',
+    'number of creator nodes',
+    NUM_CREATOR_NODES.toString()
+  )
+  .option(
+    '-nd, --num-dn <number>',
+    'number of discovery nodes',
+    NUM_DISCOVERY_NODES.toString()
+  )
   .action(async (service, command, opts) => {
     try {
       if (!service || !command) {
@@ -118,6 +128,13 @@ program
 
       const serviceName = findService(service)
       const setupCommand = findCommand(command)
+
+      if (serviceName === Service.ALL && setupCommand == SetupCommand.UP) {
+        const numCreatorNodes = parseInt(opts.numCnodes)
+        const numDiscoveryNodes = parseInt(opts.numDn)
+        await allUp({ numCreatorNodes, numDiscoveryNodes })
+        return
+      }
 
       if (
         serviceName === Service.CREATOR_NODE ||
