@@ -86,7 +86,7 @@ def setup(host, service, config):
                     "sudo chmod +x /usr/local/bin/docker-compose && "
                     "sudo chown $USER /etc/hosts && "
                     "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash && "
-                    "echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.bashrc && "
+                    "echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.profile && "
                     "source ~/.nvm/nvm.sh && "
                     "source ~/.profile && "
                     "source ~/.bashrc && "
