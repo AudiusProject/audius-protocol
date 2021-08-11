@@ -1,6 +1,7 @@
 from celery import Task
 from redis import Redis
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.challenges.challenge_event_queue import ChallengeEventQueue
 from src.utils.session_manager import SessionManager
 
 
@@ -62,3 +63,11 @@ class DatabaseTask(Task):
     @property
     def challenge_event_bus(self) -> ChallengeEventBus:
         return self._challenge_event_bus
+
+    @property
+    def challenge_event_queue(self) -> ChallengeEventQueue:
+        return self._challenge_event_queue
+
+    @challenge_event_queue.setter
+    def challenge_event_queue(self, event_queue: ChallengeEventQueue):
+        self._challenge_event_queue = event_queue

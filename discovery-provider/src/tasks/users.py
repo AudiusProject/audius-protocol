@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from src.database_task import DatabaseTask
 from typing import TypedDict
 import base58
 from eth_account.messages import defunct_hash_message
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 def user_state_update(
     self,
-    update_task,
+    update_task: DatabaseTask,
     session,
     user_factory_txs,
     block_number,
@@ -39,7 +40,7 @@ def user_state_update(
     user_contract = update_task.web3.eth.contract(
         address=contract_addresses["user_factory"], abi=user_abi
     )
-    challenge_bus = update_task.challenge_event_bus
+    challenge_event_queue = update_task.challenge_event_queue
 
     # This stores the state of the user object along with all the events applied to it
     # before it gets committed to the db
@@ -116,7 +117,7 @@ def user_state_update(
         logger.info(f"index.py | users.py | Adding {value_obj['user']}")
         if value_obj["events"]:
             invalidate_old_user(session, user_id)
-            challenge_bus.dispatch(
+            challenge_event_queue.enqueue(
                 session, ChallengeEvent.profile_update, block_number, user_id
             )
             session.add(value_obj["user"])

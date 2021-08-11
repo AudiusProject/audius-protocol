@@ -8,7 +8,7 @@ from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import functions, null
 from src.app import contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
-from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.challenges.challenge_event_queue import ChallengeEventQueue
 from src.database_task import DatabaseTask
 from src.models import Remix, Stem, Track, TrackRoute, User
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
@@ -33,7 +33,7 @@ track_event_types_arr = [
 
 def track_state_update(
     self,
-    update_task,
+    update_task: DatabaseTask,
     session,
     track_factory_txs,
     block_number,
@@ -445,7 +445,7 @@ def parse_track_event(
     block_timestamp,
     pending_track_routes,
 ):
-    challenge_bus = update_task.challenge_event_bus
+    challenge_event_queue = update_task.challenge_event_queue
     event_args = entry["args"]
     # Just use block_timestamp as integer
     block_datetime = datetime.utcfromtimestamp(block_timestamp)
@@ -513,7 +513,9 @@ def parse_track_event(
 
         update_stems_table(session, track_record, track_metadata)
         update_remixes_table(session, track_record, track_metadata)
-        dispatch_challenge_track_upload(challenge_bus, block_number, track_record)
+        dispatch_challenge_track_upload(
+            challenge_event_queue, block_number, track_record
+        )
 
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
@@ -589,9 +591,9 @@ def parse_track_event(
 
 
 def dispatch_challenge_track_upload(
-    bus: ChallengeEventBus, block_number: int, track_record
+    queue: ChallengeEventQueue, block_number: int, track_record
 ):
-    bus.queue_event(ChallengeEvent.track_upload, block_number, track_record.owner_id)
+    queue.enqueue(ChallengeEvent.track_upload, block_number, track_record.owner_id)
 
 
 def is_valid_json_field(metadata, field):

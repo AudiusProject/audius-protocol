@@ -1,5 +1,7 @@
 import concurrent.futures
 import logging
+from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.challenges.challenge_event import ChallengeEvent
 
 from sqlalchemy import func
 from src.app import contract_addresses
@@ -272,9 +274,10 @@ def index_blocks(self, db, blocks_list):
         logger.info(
             f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
-
+        challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
         # Handle each block in a distinct transaction
-        with db.scoped_session() as session:
+        with db.scoped_session() as session, challenge_bus.scoped_dispatch_queue() as challenge_event_queue:
+            update_task.challenge_event_queue = challenge_event_queue
             current_block_query = session.query(Block).filter_by(is_current=True)
 
             # Without this check we may end up duplicating an insert operation
