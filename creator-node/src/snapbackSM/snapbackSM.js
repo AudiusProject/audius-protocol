@@ -428,6 +428,7 @@ class SnapbackSM {
       this.log(`[issueUpdateReplicaSetOp] Reconfig [SUCCESS]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`)
     } catch (e) {
       const errorMsg = `[issueUpdateReplicaSetOp] Reconfig [ERROR]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}\n${e.stack}`
+      this.logError(response.errorMsg)
       response.errorMsg = errorMsg
       return response
     }
@@ -844,7 +845,7 @@ class SnapbackSM {
         const healthyNodes = Object.keys(healthyServicesMap)
         if (healthyNodes.length === 0) throw new Error('Auto-selecting Content Nodes returned an empty list of healthy nodes.')
 
-        const errors = []
+        let numIssueUpdateReplicaSetOpErrors = 0
         for await (const userInfo of requiredUpdateReplicaSetOps) {
           const { errorMsg, issuedReconfig } = await this.issueUpdateReplicaSetOp(
             userInfo.user_id,
@@ -857,10 +858,10 @@ class SnapbackSM {
             replicaSetNodesToUserWalletsMap
           )
 
-          if (errorMsg) errors.push(errorMsg)
+          if (errorMsg) numIssueUpdateReplicaSetOpErrors++
           if (issuedReconfig) numUpdateReplicaOpsIssued++
         }
-        if (errors.length > 0) throw new Error(`issueUpdateReplicaSetOp() failed for subset of users: [${errors.toString()}]`)
+        if (numIssueUpdateReplicaSetOpErrors > 0) throw new Error(`issueUpdateReplicaSetOp() failed for ${numIssueUpdateReplicaSetOpErrors} users`)
 
         decisionTree.push({
           stage: 'issueUpdateReplicaSetOp() Success',
