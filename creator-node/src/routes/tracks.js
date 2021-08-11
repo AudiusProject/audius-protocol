@@ -746,14 +746,14 @@ module.exports = function (app) {
 
         // check that the number of files in the Files table for these segments for this user matches the number of segments from the metadata object
         if (fileSegmentRecords.length !== trackRecord.track_segments.length) {
-          req.logger.warning(`Track stream content mismatch for blockchainId ${blockchainId} - number of segments don't match between local and discovery`)
+          req.logger.warn(`Track stream content mismatch for blockchainId ${blockchainId} - number of segments don't match between local and discovery`)
         }
 
         // check that there's a single sourceFile that all File records share by getting an array of uniques
         const uniqSourceFiles = fileSegmentRecords.map(record => record.sourceFile).filter((v, i, a) => a.indexOf(v) === i)
 
         if (uniqSourceFiles.length !== 1) {
-          req.logger.warning(`Track stream content mismatch for blockchainId ${blockchainId} - there's not one sourceFile that matches all segments`)
+          req.logger.warn(`Track stream content mismatch for blockchainId ${blockchainId} - there's not one sourceFile that matches all segments`)
         }
 
         // search for the copy320 record based on the sourceFile

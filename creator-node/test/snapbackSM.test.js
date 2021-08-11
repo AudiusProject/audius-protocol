@@ -64,8 +64,6 @@ const healthCheckVerboseResponse = {
 
 const healthyNodes = [constants.healthyNode1Endpoint, constants.healthyNode2Endpoint, constants.healthyNode3Endpoint]
 
-// TODO: Update hardcoded strings in reconfig modes to the imported modes
-
 describe('test SnapbackSM', function () {
   let server
 
@@ -203,10 +201,10 @@ describe('test SnapbackSM', function () {
     const snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     assert.strictEqual(snapback.highestEnabledReconfigMode, RECONFIG_MODES.RECONFIG_DISABLED.key)
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.RECONFIG_DISABLED.key))
-    assert.ok(!snapback.enabledReconfigModesSet.has(RECONFIG_MODES.ONE_SECONDARY.key))
-    assert.ok(!snapback.enabledReconfigModesSet.has(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
-    assert.ok(!snapback.enabledReconfigModesSet.has(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.RECONFIG_DISABLED.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
   })
 
   it('[determineNewReplicaSet] if the mode enabled does not cover the reconfig type, do not issue reconfig', async function () {
@@ -263,7 +261,7 @@ describe('test SnapbackSM', function () {
     assert.ok(healthyNodes.includes(newSecondary1))
     assert.ok(healthyNodes.includes(newSecondary2))
     assert.strictEqual(issueReconfig, false)
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.RECONFIG_DISABLED.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.RECONFIG_DISABLED.key))
   })
 
   it('[determineNewReplicaSet] if entire replica set is unhealthy, return falsy replica set', async function () {
@@ -343,8 +341,7 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(newSecondary1, constants.secondary1Endpoint)
     assert.ok(healthyNodes.includes(newSecondary2))
     assert.strictEqual(issueReconfig, true)
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.RECONFIG_DISABLED.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.ONE_SECONDARY.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
   })
 
   it('[determineNewReplicaSet] if both secondaries are unhealthy, return two new secondaries ', async function () {
@@ -399,9 +396,8 @@ describe('test SnapbackSM', function () {
     assert.ok(healthyNodes.includes(newSecondary1))
     assert.ok(healthyNodes.includes(newSecondary2))
     assert.strictEqual(issueReconfig, true)
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.RECONFIG_DISABLED.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.ONE_SECONDARY.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
   })
 
   it('[determineNewReplicaSet] if one primary is unhealthy, return a secondary promoted to primary, existing secondary1, and new secondary2', async function () {
@@ -459,10 +455,9 @@ describe('test SnapbackSM', function () {
     assert.strictEqual(newSecondary1, constants.secondary2Endpoint)
     assert.ok(healthyNodes.includes(newSecondary2))
     assert.strictEqual(issueReconfig, true)
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.RECONFIG_DISABLED.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.ONE_SECONDARY.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
   })
 
   it('[determineNewReplicaSet] if primary+secondary are unhealthy, return a secondary promoted to a primary, and 2 new secondaries', async function () {
@@ -519,10 +514,9 @@ describe('test SnapbackSM', function () {
     assert.ok(healthyNodes.includes(newSecondary1))
     assert.ok(healthyNodes.includes(newSecondary2))
     assert.strictEqual(issueReconfig, true)
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.RECONFIG_DISABLED.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.ONE_SECONDARY.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
   })
 
   it('[issueUpdateReplicaSetOp] if when `this.endpointToSPIdMap` is used and it does not have an spId for an endpoint, do not issue reconfig', async function () {
@@ -620,36 +614,299 @@ describe('test SnapbackSM', function () {
     let snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     assert.strictEqual(snapback.highestEnabledReconfigMode, RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.RECONFIG_DISABLED.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.ONE_SECONDARY.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
 
     nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.MULTIPLE_SECONDARIES.key)
     snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     assert.strictEqual(snapback.highestEnabledReconfigMode, RECONFIG_MODES.MULTIPLE_SECONDARIES.key)
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.RECONFIG_DISABLED.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.ONE_SECONDARY.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
-    assert.ok(!snapback.enabledReconfigModesSet.has(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
 
     nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.ONE_SECONDARY.key)
     snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     assert.strictEqual(snapback.highestEnabledReconfigMode, RECONFIG_MODES.ONE_SECONDARY.key)
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.RECONFIG_DISABLED.key))
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.ONE_SECONDARY.key))
-    assert.ok(!snapback.enabledReconfigModesSet.has(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
-    assert.ok(!snapback.enabledReconfigModesSet.has(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+    assert.ok(snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
 
     nodeConfig.set('snapbackHighestReconfigMode', RECONFIG_MODES.RECONFIG_DISABLED.key)
     snapback = new SnapbackSM(nodeConfig, getLibsMock())
 
     assert.strictEqual(snapback.highestEnabledReconfigMode, RECONFIG_MODES.RECONFIG_DISABLED.key)
-    assert.ok(snapback.enabledReconfigModesSet.has(RECONFIG_MODES.RECONFIG_DISABLED.key))
-    assert.ok(!snapback.enabledReconfigModesSet.has(RECONFIG_MODES.ONE_SECONDARY.key))
-    assert.ok(!snapback.enabledReconfigModesSet.has(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
-    assert.ok(!snapback.enabledReconfigModesSet.has(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.ONE_SECONDARY.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key))
+    assert.ok(!snapback.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key))
+  })
+
+  it('[aggregateReconfigAndPotentialSyncOps] if the self node is the secondary and a primary spId is different from what is on chain, issue reconfig', async function () {
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    // Mock that one of the nodes got reregistered from spId 3 to spId 4
+    snapback.peerSetManager.endpointToSPIdMap = {
+      'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4,
+      'http://cnWithSpId2.co': 2,
+      'http://cnWithSpId3.co': 3
+    }
+
+    snapback.endpoint = 'http://cnWithSpId2.co'
+
+    const nodeUsers = [{
+      'user_id': 1,
+      'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
+      'primary': 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
+      'secondary1': 'http://cnWithSpId2.co',
+      'secondary2': 'http://cnWithSpId3.co',
+      'primarySpID': 1,
+      'secondary1SpID': 2,
+      'secondary2SpID': 3
+    }]
+
+    const unhealthyPeers = new Set()
+
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+
+    // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
+    assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://cnOriginallySpId3ReregisteredAsSpId4.co')
+    assert.strictEqual(potentialSyncRequests.length, 0)
+  })
+
+  it('[aggregateReconfigAndPotentialSyncOps] if the self node is the primary and a secondary spId is different from what is on chain, issue reconfig', async function () {
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    // Mock these as very nodes that completed only successful syncs
+    snapback._computeUserSecondarySyncSuccessRates = async () => {
+      return {
+        'http://cnWithSpId2.co': {
+          successRate: 100
+        },
+        'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
+          successRate: 100
+        }
+      }
+    }
+
+    // Mock that one of the nodes got reregistered from spId 3 to spId 4
+    snapback.peerSetManager.endpointToSPIdMap = {
+      'http://some_healthy_primary.co': 1,
+      'http://cnWithSpId2.co': 2,
+      'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4
+    }
+
+    snapback.endpoint = 'http://some_healthy_primary.co'
+
+    const nodeUsers = [{
+      'user_id': 1,
+      'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
+      'primary': 'http://some_healthy_primary.co',
+      'secondary1': 'http://cnWithSpId2.co',
+      'secondary2': 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
+      'primarySpID': 1,
+      'secondary1SpID': 2,
+      'secondary2SpID': 3
+    }]
+
+    const unhealthyPeers = new Set()
+
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+
+    // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
+    assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://cnOriginallySpId3ReregisteredAsSpId4.co')
+    assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
+  })
+
+  it('[aggregateReconfigAndPotentialSyncOps] if the self node (primary) is the same as the SP with a different spId, do not issue reconfig', async function () {
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    // Mock these as very nodes that completed only successful syncs
+    snapback._computeUserSecondarySyncSuccessRates = async () => {
+      return {
+        'http://cnWithSpId2.co': {
+          successRate: 100
+        },
+        'http://cnWithSpId3.co': {
+          successRate: 100
+        }
+      }
+    }
+
+    // Mock that one of the nodes got reregistered from spId 3 to spId 4
+    snapback.peerSetManager.endpointToSPIdMap = {
+      'http://some_healthy_primary.co': 4,
+      'http://cnWithSpId2.co': 2,
+      'http://cnWithSpId3.co': 3
+    }
+
+    snapback.endpoint = 'http://some_healthy_primary.co'
+
+    const nodeUsers = [{
+      'user_id': 1,
+      'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
+      'primary': 'http://some_healthy_primary.co',
+      'secondary1': 'http://cnWithSpId2.co',
+      'secondary2': 'http://cnWithSpId3.co',
+      'primarySpID': 1,
+      'secondary1SpID': 2,
+      'secondary2SpID': 3
+    }]
+
+    const unhealthyPeers = new Set()
+
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+
+    // Make sure that the CN with the different spId gets put into `requiredUpdateReplicaSetOps`
+    assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
+    assert.strictEqual(potentialSyncRequests.length, 2)
+    assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
+    assert.strictEqual(potentialSyncRequests[1].endpoint, 'http://cnWithSpId3.co')
+  })
+
+  it('[aggregateReconfigAndPotentialSyncOps] if the self node (secondary) is the same as the SP with a different spId, do not issue reconfig', async function () {
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    // Mock that one of the nodes got reregistered from spId 3 to spId 4
+    snapback.peerSetManager.endpointToSPIdMap = {
+      'http://some_healthy_primary.co': 1,
+      'http://cnWithSpId2.co': 2,
+      'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4
+    }
+
+    snapback.endpoint = 'http://cnOriginallySpId3ReregisteredAsSpId4.co'
+
+    const nodeUsers = [{
+      'user_id': 1,
+      'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
+      'primary': 'http://some_healthy_primary.co',
+      'secondary1': 'http://cnWithSpId2.co',
+      'secondary2': 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
+      'primarySpID': 1,
+      'secondary1SpID': 2,
+      'secondary2SpID': 3
+    }]
+
+    const unhealthyPeers = new Set()
+
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+
+    assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
+    assert.strictEqual(potentialSyncRequests.length, 0)
+  })
+
+  it('[aggregateReconfigAndPotentialSyncOps] if any replica set node is not in the map, issue reconfig', async function () {
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    // Mock these as very nodes that completed only successful syncs
+    snapback._computeUserSecondarySyncSuccessRates = async () => {
+      return {
+        'http://cnWithSpId2.co': {
+          successRate: 100
+        },
+        'http://deregisteredCN.co': {
+          successRate: 100
+        }
+      }
+    }
+
+    // Mock the deregistered node to not have any spId
+    snapback.peerSetManager.endpointToSPIdMap = {
+      'http://some_healthy_primary.co': 1,
+      'http://cnWithSpId2.co': 2
+    }
+
+    snapback.endpoint = 'http://some_healthy_primary.co'
+
+    const nodeUsers = [{
+      'user_id': 1,
+      'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
+      'primary': 'http://some_healthy_primary.co',
+      'secondary1': 'http://cnWithSpId2.co',
+      'secondary2': 'http://deregisteredCN.co',
+      'primarySpID': 1,
+      'secondary1SpID': 2,
+      'secondary2SpID': 3
+    }]
+
+    const unhealthyPeers = new Set()
+
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+
+    assert.strictEqual(requiredUpdateReplicaSetOps[0].unhealthyReplicas[0], 'http://deregisteredCN.co')
+    assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
+  })
+
+  // TODO: The below tests will become redundant when Discovery upgrades. Remove then.
+
+  it('[aggregateReconfigAndPotentialSyncOps] if Discovery Node does not respond with replica set spIds, the spId is mismatched, and the self node is the primary, do not issue reconfig', async function () {
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    // Mock these as very nodes that completed only successful syncs
+    snapback._computeUserSecondarySyncSuccessRates = async () => {
+      return {
+        'http://cnWithSpId2.co': {
+          successRate: 100
+        },
+        'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
+          successRate: 100
+        }
+      }
+    }
+
+    // Mock that one of the nodes got reregistered from spId 3 to spId 4
+    snapback.peerSetManager.endpointToSPIdMap = {
+      'http://some_healthy_primary.co': 1,
+      'http://cnWithSpId2.co': 2,
+      'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4
+    }
+
+    snapback.endpoint = 'http://some_healthy_primary.co'
+
+    const nodeUsers = [{
+      'user_id': 1,
+      'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
+      'primary': 'http://some_healthy_primary.co',
+      'secondary1': 'http://cnWithSpId2.co',
+      'secondary2': 'http://cnOriginallySpId3ReregisteredAsSpId4.co'
+    }]
+
+    const unhealthyPeers = new Set()
+
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+
+    assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
+    assert.strictEqual(potentialSyncRequests.length, 2)
+    assert.strictEqual(potentialSyncRequests[0].endpoint, 'http://cnWithSpId2.co')
+    assert.strictEqual(potentialSyncRequests[1].endpoint, 'http://cnOriginallySpId3ReregisteredAsSpId4.co')
+  })
+
+  it('[aggregateReconfigAndPotentialSyncOps] if Discovery Node does not respond with replica set spIds, the spId is mismatched, and the self node is a secondary, do not issue reconfig', async function () {
+    const snapback = new SnapbackSM(nodeConfig, getLibsMock())
+
+    // Mock that one of the nodes got reregistered from spId 3 to spId 4
+    snapback.peerSetManager.endpointToSPIdMap = {
+      'http://some_healthy_primary.co': 1,
+      'http://cnWithSpId2.co': 2,
+      'http://cnOriginallySpId3ReregisteredAsSpId4.co': 4
+    }
+
+    snapback.endpoint = 'http://cnOriginallySpId3ReregisteredAsSpId4.co'
+
+    const nodeUsers = [{
+      'user_id': 1,
+      'wallet': '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
+      'primary': 'http://some_healthy_primary.co',
+      'secondary1': 'http://cnWithSpId2.co',
+      'secondary2': 'http://cnOriginallySpId3ReregisteredAsSpId4.co'
+    }]
+
+    const unhealthyPeers = new Set()
+
+    const { requiredUpdateReplicaSetOps, potentialSyncRequests } = await snapback.aggregateReconfigAndPotentialSyncOps(nodeUsers, unhealthyPeers)
+
+    assert.strictEqual(requiredUpdateReplicaSetOps.length, 0)
+    assert.strictEqual(potentialSyncRequests.length, 0)
   })
 })

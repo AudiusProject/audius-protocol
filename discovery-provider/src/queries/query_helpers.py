@@ -1276,12 +1276,16 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
     Returns: None
     """
     user_ids = get_users_ids(tracks)
-    users = list(map(lambda t: t["user"][0], tracks))
+    users = []
+    if tracks and len(tracks) > 0 and tracks[0].get("user"):
+        users = list(map(lambda t: t["user"][0], tracks))
+    else:
+        # This shouldn't happen - all tracks should come preloaded with their owners per the relationship
+        users = get_unpopulated_users(session, user_ids)
+        logger.warning("add_users_to_tracks() called but tracks have no users")
     set_users_in_cache(users)
     # bundle peripheral info into user results
-    populated_users = populate_user_metadata(
-        session, user_ids, users, current_user_id
-    )
+    populated_users = populate_user_metadata(session, user_ids, users, current_user_id)
     user_map = {}
     for user in populated_users:
         user_map[user["user_id"]] = user
