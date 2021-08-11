@@ -5,7 +5,7 @@ from collections import defaultdict
 import datetime
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import redis
 from celery.schedules import crontab, timedelta
