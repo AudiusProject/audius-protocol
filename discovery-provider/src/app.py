@@ -305,8 +305,6 @@ def configure_flask(test_config, app, mode="app"):
         ast.literal_eval(app.config["db"]["engine_args_literal"]),
     )
 
-    app.challenge_bus = setup_challenge_bus()
-
     # Register route blueprints
     register_exception_handlers(app)
     app.register_blueprint(queries.bp)
@@ -497,7 +495,7 @@ def configure_celery(flask_app, celery, test_config=None):
                 redis=redis_inst,
                 eth_web3_provider=eth_web3,
                 solana_client=solana_client,
-                challenge_event_bus=flask_app.challenge_bus,
+                challenge_event_bus=setup_challenge_bus(),
             )
 
     celery.autodiscover_tasks(["src.tasks"], "index", True)

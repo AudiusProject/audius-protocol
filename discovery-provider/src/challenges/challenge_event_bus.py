@@ -46,6 +46,8 @@ class ChallengeEventBus:
     @contextmanager
     def use_scoped_dispatch_queue(self):
         """Makes the bus only dispatch the events once out of the new scope created with 'with'"""
+        if self._use_in_memory_queue == True:
+            logger.warning("ChallengeEventBus: Already using in-memory queue")
         try:
             self._use_in_memory_queue = True
             yield self._in_memory_queue
