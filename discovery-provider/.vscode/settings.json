@@ -8,6 +8,7 @@
   "python.linting.maxNumberOfProblems": 1000, // set high max errors
   "python.linting.pylintCategorySeverity.convention": "Warning",
   "python.linting.pylintCategorySeverity.refactor": "Warning",
+  "python.pythonPath": "/usr/bin/python3",
   "python.formatting.provider": "black", // This gives us autoformatting
   "editor.formatOnSave": true,
   "python.analysis.typeCheckingMode": "off",
