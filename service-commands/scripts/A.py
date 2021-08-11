@@ -2,7 +2,7 @@ import subprocess
 import argparse
 
 
-def create_instance(name, image, machine_type):
+def create_instance(name, image_project, image_family, size, machine_type):
     subprocess.run(
         [
             "gcloud",
@@ -10,10 +10,12 @@ def create_instance(name, image, machine_type):
             "instances",
             "create",
             name,
-            "--image-family",
-            image,
             "--image-project",
-            "ubuntu-os-cloud",
+            image_project,
+            "--image-family",
+            image_family,
+            "--size",
+            size,
             "--machine-type",
             machine_type,
         ]
@@ -122,9 +124,22 @@ def main():
     )
 
     parser_create_instance.add_argument(
-        "--image",
+        "--image-family",
         default="ubuntu-2004-lts",
         help="Image to use for creating the instance",
+    )
+
+    parser_create_instance.add_argument(
+        "--image-project",
+        default="ubuntu-os-cloud",
+        help="Image project to fetch image from",
+    )
+
+    parser_create_instance.add_argument(
+        "--size",
+        default=100,
+        type=int,
+        help="Size of disk to create",
     )
 
     parser_create_instance.add_argument(
@@ -162,7 +177,13 @@ def main():
     args = parser.parse_args()
 
     if args.operation == "create-instance":
-        create_instance(args.name, args.image, args.machine_type)
+        create_instance(
+            args.name,
+            args.image_project,
+            args.image_family,
+            args.size,
+            args.machine_type,
+        )
     elif args.operation == "setup":
         setup(args.host, args.service, args.config)
 
