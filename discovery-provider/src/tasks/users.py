@@ -1,21 +1,22 @@
 import logging
 from datetime import datetime
-from src.database_task import DatabaseTask
 from typing import TypedDict
+
 import base58
 from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session, make_transient
 from src.app import contract_addresses
-from src.utils import helpers
-from src.models import User, UserEvents, AssociatedWallet
+from src.challenges.challenge_event import ChallengeEvent
+from src.database_task import DatabaseTask
+from src.models import AssociatedWallet, User, UserEvents
+from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.metadata import user_metadata_format
-from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
-from src.queries.get_balances import enqueue_immediate_balance_refresh
+from src.utils import helpers
 from src.utils.indexing_errors import IndexingError
-from src.challenges.challenge_event import ChallengeEvent
+from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
 
 logger = logging.getLogger(__name__)
 
