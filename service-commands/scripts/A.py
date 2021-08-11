@@ -10,8 +10,10 @@ def create_instance(name, image, machine_type):
             "instances",
             "create",
             name,
-            "--image",
+            "--image-family",
             image,
+            "--image-project",
+            "ubuntu-os-cloud",
             "--machine-type",
             machine_type,
         ]
