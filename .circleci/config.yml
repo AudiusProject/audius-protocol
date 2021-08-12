@@ -552,10 +552,10 @@ jobs:
         default: false
     steps:
       - checkout
-      # - unless:
-      #     condition: << parameters.force >>
-      #     steps:
-      #       - run: ./diff.sh solana-programs || (echo "no diff" && circleci-agent step halt)
+      - unless:
+          condition: << parameters.force >>
+          steps:
+            - run: ./diff.sh solana-programs || (echo "no diff" && circleci-agent step halt)
 
       - run:
           name: Setup solana
