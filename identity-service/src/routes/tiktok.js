@@ -1,10 +1,12 @@
 const axios = require('axios')
 const cors = require('cors')
+
 const config = require('../config.js')
 
 const {
   handleResponse,
-  successResponse
+  successResponse,
+  errorResponseBadRequest
 } = require('../apiHelpers')
 
 /**
@@ -16,6 +18,7 @@ module.exports = function (app) {
   app.get(
     '/tiktok',
     handleResponse(async (req, res, next) => {
+      const { redirectUrl } = req.query
       const csrfState = Math.random().toString(36).substring(7)
       res.cookie('csrfState', csrfState, { maxAge: 60000 })
 
@@ -24,7 +27,7 @@ module.exports = function (app) {
       url += `?client_key=${config.get('tikTokAPIKey')}`
       url += '&scope=user.info.basic,share.sound.create'
       url += '&response_type=code'
-      url += `&redirect_uri=${config.get('tikTokAuthOrigin')}`
+      url += `&redirect_uri=${redirectUrl || config.get('tikTokAuthOrigin')}`
       url += '&state=' + csrfState
 
       res.redirect(url)
@@ -41,12 +44,12 @@ module.exports = function (app) {
     '/tiktok/access_token',
     cors(accessTokenCorsOptions),
     handleResponse(async (req, res, next) => {
-      const { code } = req.body
+      const { code, state } = req.body
+      const { csrfState } = req.cookies
 
-      // NOTE: sk - temporarily disabling csrf check for go live
-      // if (!state || !csrfState || state !== csrfState) {
-      //   return errorResponseBadRequest('Invalid state')
-      // }
+      if (!state || !csrfState || state !== csrfState) {
+        return errorResponseBadRequest('Invalid state')
+      }
 
       let urlAccessToken = 'https://open-api.tiktok.com/oauth/access_token/'
       urlAccessToken += '?client_key=' + config.get('tikTokAPIKey')
