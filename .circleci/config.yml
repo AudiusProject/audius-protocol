@@ -570,7 +570,7 @@ jobs:
       - run:
           name: run audius eth registry tests
           command: |
-            export PATH=$PWD/solana-release/bin:$PATH
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
             cd solana-programs/audius_eth_registry
             cargo build-bpf
             cargo test-bpf
@@ -586,7 +586,7 @@ jobs:
       - run:
           name: run claimable token tests
           command: |
-            export PATH=$PWD/solana-release/bin:$PATH
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
             cd solana-programs/claimable-tokens/program
             cargo build-bpf
             cargo test-bpf
