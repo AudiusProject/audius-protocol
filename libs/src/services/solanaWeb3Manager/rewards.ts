@@ -2,6 +2,7 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
 import { AccountMeta, Connection, PublicKey, Secp256k1Program, sendAndConfirmTransaction, SystemProgram, SYSVAR_INSTRUCTIONS_PUBKEY, SYSVAR_RENT_PUBKEY, Transaction, TransactionInstruction } from "@solana/web3.js"
 import { keccak_256 } from "js-sha3"
 import { ecdsaSign } from "secp256k1"
+import IdentityService from "../identity"
 const borsh = require('borsh')
 const {getBankAccountAddress} = require('./userBank')
 const BN = require('bn.js')
@@ -83,18 +84,17 @@ const ethAddressToArr = (ethAddress: string) => {
 
 const constructTransferId = (challengeId: string, specifier: string) => `${challengeId}:${specifier}`
 
+const padUIAmount = (amount: number) => amount * 10 ** DECIMALS
 const createAmount = (amount: number) => {
-  const padded = amount * 10 ** DECIMALS
+  const padded = padUIAmount(amount)
   return (new BN(padded)).toArray('le', 8)
 }
 
 const constructAttestation = (isBot: boolean, recipientEthAddress: string, tokenAmount: number, transferId: string, oracleAddress: string) => {
-  console.log("CONSTRUCTING!!!")
   const userBytes = ethAddressToArr(recipientEthAddress)
   const oracleBytes = ethAddressToArr(oracleAddress)
   const transferIdBytes = encoder.encode(transferId)
   const amountBytes = createAmount(tokenAmount)
-  console.log({amountBytes})
   const items = isBot ? [userBytes, amountBytes, transferIdBytes] : [userBytes, amountBytes, transferIdBytes, oracleBytes]
   const sep = encoder.encode('_')
   const res = items.slice(1).reduce((prev, cur, i) => {
@@ -132,7 +132,6 @@ const generateVerifySignatureInstruction = async ({
   feePayer: PublicKey
   transferId: string
 }) => {
-  console.log({attestationMeta})
   const derivedSender = await deriveSenderFromEthAddress(attestationMeta.ethAddress, rewardManagerProgramId, rewardManagerAccount)
 
   ///   Verify transfer signature
@@ -248,18 +247,7 @@ type AttestationMeta = {
   signature: string
 }
 
-// TODO: move this to be a helper, and apply it to token account and transfer
-const prepareInstructionForRelay = (instruction: TransactionInstruction) => ({
-  programId: instruction.programId.toString(),
-  data: instruction.data,
-  keys: instruction.keys.map(({isSigner, pubkey, isWritable}) => ({
-    pubkey: pubkey.toString(),
-    isSigner,
-    isWritable
-  }))
-})
-
-export async function verifyTransferSignature({
+export async function submitAttestations({
   rewardManagerProgramId,
   rewardManagerAccount,
   attestations,
@@ -285,7 +273,6 @@ export async function verifyTransferSignature({
   identityService: any
   connection: Connection
 }) {
-
   const transferId = constructTransferId(challengeId, specifier)
   const [rewardManagerAuthority, derivedMessageAccount,] = await deriveMessageAccount(transferId, rewardManagerProgramId, rewardManagerAccount)
 
@@ -343,50 +330,56 @@ export async function verifyTransferSignature({
     const response = await identityService.solanaRelay(transactionData)
     return response
   } catch (e) {
-    console.error("SENT BUT ERROR")
     console.error(e.message)
     console.log({e})
   }
 }
 
-export const transfer = async ({
-  rewardProgramId,
+export const evaluateAttestations = async ({
+  rewardManagerProgramId,
   rewardManagerAccount,
   rewardManagerTokenSource,
   challengeId,
   specifier,
   recipientEthAddress,
-  userBankAccount,
+  userBankProgramAccount,
   oracleEthAddress,
   feePayer,
-  feePayerSecret,
-  amount
+  tokenAmount,
+  identityService,
+  connection
 }: {
-  rewardProgramId: PublicKey
+  rewardManagerProgramId: PublicKey
   rewardManagerAccount: PublicKey
   rewardManagerTokenSource: PublicKey
   challengeId: string
   specifier: string
   recipientEthAddress: string
-  userBankAccount: PublicKey,
+  userBankProgramAccount: PublicKey,
   oracleEthAddress: string
   feePayer: PublicKey
-  feePayerSecret: Uint8Array
-  amount: number
+  tokenAmount: number
+  identityService: any
+  connection: Connection
 }) => {
   const transferId = constructTransferId(challengeId, specifier)
-  const [rewardManagerAuthority, verifiedMessagesAccount,] = await deriveMessageAccount(transferId, rewardProgramId, rewardManagerAccount)
-  const transferAccount = await deriveTransferAccount(transferId, rewardProgramId, rewardManagerAccount)
-  const recipientBankAccount = await getBankAccountAddress(recipientEthAddress, userBankAccount, TOKEN_PROGRAM_ID)
-  const [_, derivedBotAddress ] = await findDerivedPair(
-    rewardProgramId,
-    rewardManagerAccount,
-    Uint8Array.from([
-      ...encoder.encode(SENDER_SEED_PREFIX),
-      ...ethAddressToArr(oracleEthAddress)
-    ])
-  )
+  const [rewardManagerAuthority, verifiedMessagesAccount,] = await deriveMessageAccount(transferId, rewardManagerProgramId, rewardManagerAccount)
+  const transferAccount = await deriveTransferAccount(transferId, rewardManagerProgramId, rewardManagerAccount)
+  const recipientBankAccount = await getBankAccountAddress(recipientEthAddress, userBankProgramAccount, TOKEN_PROGRAM_ID)
+  const derivedBotAddress = await deriveSenderFromEthAddress(oracleEthAddress, rewardManagerProgramId, rewardManagerAccount)
 
+
+  ///   0. `[]` Verified messages
+  ///   1. `[]` Reward manager
+  ///   2. `[]` Reward manager authority
+  ///   3. `[]` Reward token source
+  ///   4. `[]` Reward token recipient
+  ///   5. `[]` Transfer account
+  ///   6. `[]` Bot oracle
+  ///   7. `[]` Payer
+  ///   8. `[]` Sysvar rent
+  ///   9. `[]` Token program id
+  ///  10. `[]` System program id
   const accounts: AccountMeta[] = [
     {
       pubkey: verifiedMessagesAccount,
@@ -438,20 +431,9 @@ export const transfer = async ({
       isWritable: false
     }
   ]
-    ///   0. `[]` Verified messages
-    ///   1. `[]` Reward manager
-    ///   2. `[]` Reward manager authority
-    ///   3. `[]` Reward token source
-    ///   4. `[]` Reward token recipient
-    ///   5. `[]` Transfer account
-    ///   6. `[]` Bot oracle
-    ///   7. `[]` Payer
-    ///   8. `[]` Sysvar rent
-    ///   9. `[]` Token program id
-    ///  10. `[]` System program id
 
   const instructionData = new TransferInstructionData({
-    amount: amount * 10**DECIMALS,
+    amount: padUIAmount(tokenAmount),
     id: transferId,
     eth_recipient: ethAddressToArr(recipientEthAddress)
   })
@@ -460,47 +442,37 @@ export const transfer = async ({
     5,
     ...serializedInstructionData
   ))
-  const connection = new Connection('https://api.devnet.solana.com')
   const transferInstruction = new TransactionInstruction({
     keys: accounts,
-    programId: rewardProgramId,
+    programId: rewardManagerProgramId,
     data: serializedInstructionEnum
   })
-
-  const { blockhash: recentBlockhash }= await connection.getRecentBlockhash()
-  const transaction = new Transaction({
-    feePayer,
-    recentBlockhash
-  })
-  transaction.add(transferInstruction)
-  transaction.sign({
-    publicKey: feePayer,
-    secretKey: feePayerSecret
-  })
+  const relayable = prepareInstructionForRelay(transferInstruction)
+  const {blockhash: recentBlockhash} = await connection.getRecentBlockhash()
+  const transactionData = {
+    recentBlockhash,
+    instructions: relayable
+  }
 
   try {
-    const transactionSignature = await sendAndConfirmTransaction(
-      connection,
-      transaction,
-      [
-        {
-          publicKey: feePayer,
-          secretKey: feePayerSecret
-        },
-      ],
-      {
-        skipPreflight: false,
-        commitment: 'processed',
-        preflightCommitment: 'processed'
-      }
-    )
-    return transactionSignature
+    const response = await identityService.solanaRelay(transactionData)
+    return response
   } catch (e) {
-    console.error("SENT BUT ERROR")
     console.error(e.message)
     console.log({e})
   }
 }
+
+const prepareInstructionForRelay = (instruction: TransactionInstruction) => ({
+  programId: instruction.programId.toString(),
+  data: instruction.data,
+  keys: instruction.keys.map(({isSigner, pubkey, isWritable}) => ({
+    pubkey: pubkey.toString(),
+    isSigner,
+    isWritable
+  }))
+})
+
 
 const deriveTransferAccount = async (transferId: string, rewardProgramId: PublicKey, rewardManager: PublicKey) => {
   const seed = Uint8Array.from([

@@ -8,8 +8,8 @@ const {
   findAssociatedTokenAddress
 } = require('./tokenAccount')
 const { wAudioFromWeiAudio } = require('./wAudio')
-const { verifyTransferSignature, transfer } = require('./rewards')
 const Utils = require('../../utils')
+const { submitAttestations, evaluateAttestations } = require('./rewards')
 
 const { PublicKey } = solanaWeb3
 window.PublicKey = PublicKey
@@ -55,8 +55,6 @@ class SolanaWeb3Manager {
 
     this.solanaWeb3 = solanaWeb3
     this.splToken = splToken
-    window.verifyTransferSignature = verifyTransferSignature
-    window.transfer = transfer
   }
 
 
@@ -69,7 +67,8 @@ class SolanaWeb3Manager {
       feePayerAddress,
       claimableTokenProgramAddress,
       rewardsManagerProgramId,
-      rewardsManagerProgramPDA
+      rewardsManagerProgramPDA,
+      rewardsManagerTokenPDA
     } = this.solanaWeb3Config
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint)
@@ -94,6 +93,7 @@ class SolanaWeb3Manager {
     this.claimableTokenPDAKey = new PublicKey(this.claimableTokenPDA)
     this.rewardManagerProgramId = new PublicKey(rewardsManagerProgramId)
     this.rewardManagerProgramPDA = new PublicKey(rewardsManagerProgramPDA)
+    this.rewardManagerTokenPDA = new PublicKey(rewardsManagerTokenPDA)
   }
 
   /**
@@ -258,7 +258,7 @@ class SolanaWeb3Manager {
     })
   }
 
-  async verifyTransferSignature ({
+  async submitChallengeAttestations ({
     attestations,
     oracleAttestation,
     challengeId,
@@ -266,7 +266,7 @@ class SolanaWeb3Manager {
     recipientEthAddress,
     tokenAmount,
    }) {
-    return verifyTransferSignature({
+    return submitAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
       attestations,
@@ -278,6 +278,29 @@ class SolanaWeb3Manager {
       tokenAmount,
       identityService: this.identityService,
       connection: this.connection,
+    })
+  }
+
+  async evaluateChallengeAttestations({
+    challengeId,
+    specifier,
+    recipientEthAddress,
+    oracleEthAddress,
+    tokenAmount
+  }) {
+    return evaluateAttestations({
+      rewardManagerProgramId: this.rewardManagerProgramId,
+      rewardManagerAccount: this.rewardManagerProgramPDA,
+      rewardManagerTokenSource: this.rewardManagerTokenPDA,
+      challengeId,
+      specifier,
+      recipientEthAddress,
+      userBankProgramAccount: this.claimableTokenPDAKey,
+      oracleEthAddress,
+      feePayer: this.feePayerKey,
+      tokenAmount,
+      identityService: this.identityService,
+      connection: this.connection
     })
   }
 }

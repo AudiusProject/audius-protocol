@@ -197,6 +197,7 @@ class AudiusLibs {
    * @param {string} claimableTokenProgramAddress address of the audius user bank program
    * @param {string} rewardsManagerProgramId address for the Rewards Manager program
    * @param {string} rewardsManagerProgramPDA Rewards Manager PDA
+   * @param {string} rewardsManagerTokenPDA The PDA of the rewards manager funds holder account
    */
   static configSolanaWeb3 ({
     solanaClusterEndpoint,
@@ -206,7 +207,8 @@ class AudiusLibs {
     feePayerAddress,
     claimableTokenProgramAddress,
     rewardsManagerProgramId,
-    rewardsManagerProgramPDA
+    rewardsManagerProgramPDA,
+    rewardsManagerTokenPDA
   }) {
     return {
       solanaClusterEndpoint,
@@ -216,7 +218,8 @@ class AudiusLibs {
       feePayerAddress,
       claimableTokenProgramAddress,
       rewardsManagerProgramId,
-      rewardsManagerProgramPDA
+      rewardsManagerProgramPDA,
+      rewardsManagerTokenPDA
     }
   }
 
