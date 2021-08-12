@@ -41,12 +41,12 @@ module.exports = function (app) {
     '/tiktok/access_token',
     cors(accessTokenCorsOptions),
     handleResponse(async (req, res, next) => {
-      const { code } = req.body
+      const { code, state } = req.body;
+      const { csrfState } = req.cookies;
 
-      // NOTE: sk - temporarily disabling csrf check for go live
-      // if (!state || !csrfState || state !== csrfState) {
-      //   return errorResponseBadRequest('Invalid state')
-      // }
+      if (!state || !csrfState || state !== csrfState) {
+        return errorResponseBadRequest("Invalid state");
+      }
 
       let urlAccessToken = 'https://open-api.tiktok.com/oauth/access_token/'
       urlAccessToken += '?client_key=' + config.get('tikTokAPIKey')
