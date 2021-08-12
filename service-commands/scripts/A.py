@@ -21,8 +21,7 @@ def create_instance(name, image_project, image_family, size, machine_type):
         ]
     )
 
-    print(end="IP address: ")
-    subprocess.run(
+    ip = subprocess.run(
         [
             "gcloud",
             "compute",
@@ -30,12 +29,34 @@ def create_instance(name, image_project, image_family, size, machine_type):
             "describe",
             name,
             "--format='get(networkInterfaces[0].accessConfigs[0].natIP)'",
-        ]
+        ],
+        capture_output=True,
+    ).stdout.decode()
+    print("IP address:", ip)
+
+    return ip
+
+
+def setup(name, service, config, user):
+    proc = subprocess.run(
+        [
+            "gcloud",
+            "compute",
+            "instances",
+            "describe",
+            name,
+            "--format='get(networkInterfaces[0].accessConfigs[0].natIP)'",
+        ],
+        capture_output=True,
     )
 
+    host = proc.stdout.decode()
+    if proc.returncode != 0:
+        host = create_instance(
+            name, "ubuntu-os-cloud", "ubuntu-2004-lts", 100, "n2-standard-4"
+        )
 
-def setup(host, service, config):
-    host = host if "@" in host else f"ubuntu@{host}"
+    host = f"{user}@host"
 
     if service in ["creator-node", "discovery-provider"]:
         print("Setting up audius-k8s-manifests...")
@@ -182,14 +203,20 @@ def main():
     )
 
     parser_setup.add_argument(
-        "host",
-        help="Host to do setup on",
+        "--user",
+        help="user to login as",
     )
 
     parser_setup.add_argument(
         "service",
         choices=["creator-node", "discovery-provider", "remote-dev"],
         help="",  # TODO
+    )
+
+    parser_setup.add_argument(
+        "name",
+        nargs="?",
+        help="name of gcp instance to do setup on",
     )
 
     args = parser.parse_args()
@@ -203,7 +230,7 @@ def main():
             args.machine_type,
         )
     elif args.operation == "setup":
-        setup(args.host, args.service, args.config)
+        setup(args.name, args.service, args.config, args.user)
 
 
 if __name__ == "__main__":
