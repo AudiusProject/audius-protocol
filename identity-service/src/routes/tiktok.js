@@ -16,6 +16,7 @@ module.exports = function (app) {
   app.get(
     '/tiktok',
     handleResponse(async (req, res, next) => {
+      const { redirectUrl } = req.query
       const csrfState = Math.random().toString(36).substring(7)
       res.cookie('csrfState', csrfState, { maxAge: 60000 })
 
@@ -24,7 +25,7 @@ module.exports = function (app) {
       url += `?client_key=${config.get('tikTokAPIKey')}`
       url += '&scope=user.info.basic,share.sound.create'
       url += '&response_type=code'
-      url += `&redirect_uri=${config.get('tikTokAuthOrigin')}`
+      url += `&redirect_uri=${redirectUrl || config.get('tikTokAuthOrigin')}`
       url += '&state=' + csrfState
 
       res.redirect(url)
