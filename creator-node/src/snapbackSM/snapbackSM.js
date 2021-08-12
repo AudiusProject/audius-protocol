@@ -96,6 +96,7 @@ class SnapbackSM {
     this.MaxRecurringRequestSyncJobConcurrency = this.nodeConfig.get('maxRecurringRequestSyncJobConcurrency')
 
     this.MinimumSecondaryUserSyncSuccessPercent = this.nodeConfig.get('minimumSecondaryUserSyncSuccessPercent') / 100
+    this.MinimumFailedSyncRequestsBeforeReconfig = this.nodeConfig.get('minimumFailedSyncRequestsBeforeReconfig')
 
     this.SecondaryUserSyncDailyFailureCountThreshold = this.nodeConfig.get('secondaryUserSyncDailyFailureCountThreshold')
 
@@ -162,7 +163,7 @@ class SnapbackSM {
 
         await utils.timeout(this.snapbackJobInterval)
 
-        await this.stateMachineQueue.add({ starttime: Date.now() })
+        await this.stateMachineQueue.add({ startTime: Date.now() })
 
         done()
       }
@@ -972,7 +973,7 @@ class SnapbackSM {
     let potentialSyncRequests = []
     let unhealthyReplicas = []
 
-    const { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID } = nodeUser
+    const { wallet, primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID } = nodeUser
 
     /**
      * If this node is primary for user, check both secondaries for health
@@ -989,17 +990,32 @@ class SnapbackSM {
       const secondariesEndpoint = secondariesInfo.map(entry => entry.endpoint)
 
       /**
-       * If either secondary is in `unhealthyPeers` list, add it to `unhealthyReplicas` list
+       * For each secondary, enqueue `potentialSyncRequest` if healthy else add to `unhealthyReplicas`
        */
       const userSecondarySyncMetrics = await this._computeUserSecondarySyncSuccessRates(nodeUser, secondariesEndpoint)
-      for (const secondary of secondariesInfo) {
-        const secUserSyncSuccessRate = userSecondarySyncMetrics[secondary.endpoint]['SuccessRate']
-        if (secUserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent ||
-          unhealthyPeers.has(secondary.endpoint) ||
-          this.peerSetManager.endpointToSPIdMap[secondary.endpoint] !== secondary.spId) {
-          unhealthyReplicas.push(secondary.endpoint)
+      for (const secondaryInfo of secondariesInfo) {
+        const secondary = secondaryInfo.endpoint
+
+        const { successRate, successCount, failureCount } = userSecondarySyncMetrics[secondary]
+
+        // Error case 1 - mismatched spID
+        if (this.peerSetManager.endpointToSPIdMap[secondary] !== secondaryInfo.spId) {
+          this.logError(`processStateMachineOperation(): Secondary ${secondary} for user ${wallet} mismatched spID. Expected ${secondaryInfo.spId}, found ${this.peerSetManager.endpointToSPIdMap[secondary]}. Marking replica as unhealthy.`)
+          unhealthyReplicas.push(secondary)
+
+          // Error case 2 - already marked unhealthy
+        } else if (unhealthyPeers.has(secondary)) {
+          this.logError(`processStateMachineOperation(): Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy.`)
+          unhealthyReplicas.push(secondary)
+
+          // Error case 3 - low user sync success rate
+        } else if (failureCount >= this.MinimumFailedSyncRequestsBeforeReconfig && successRate < this.MinimumSecondaryUserSyncSuccessPercent) {
+          this.logError(`processStateMachineOperation(): Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${this.MinimumSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`)
+          unhealthyReplicas.push(secondary)
+
+          // Success case
         } else {
-          potentialSyncRequests.push({ ...nodeUser, endpoint: secondary.endpoint })
+          potentialSyncRequests.push({ ...nodeUser, endpoint: secondary })
         }
       }
 
@@ -1074,16 +1090,23 @@ class SnapbackSM {
       const secondaries = ([secondary1, secondary2]).filter(Boolean)
 
       /**
-       * If either secondary is in `unhealthyPeers` list, add it to `unhealthyReplicas` list
+       * For each secondary, enqueue `potentialSyncRequest` if healthy else add to `unhealthyReplicas`
        */
-      const userSecondarySyncMetrics = await this._computeUserSecondarySyncSuccessRates(
-        nodeUser.wallet, secondaries
-      )
+      const userSecondarySyncMetrics = await this._computeUserSecondarySyncSuccessRates(nodeUser.wallet, secondaries)
       for (const secondary of secondaries) {
-        const secUserSyncSuccessRate = userSecondarySyncMetrics[secondary]['SuccessRate']
-        if (secUserSyncSuccessRate < this.MinimumSecondaryUserSyncSuccessPercent || unhealthyPeers.has(secondary)) {
-          this.log(`processStateMachineOperation(): Secondary ${secondary} for user ${nodeUser.wallet} has userSyncSuccessRate of ${secUserSyncSuccessRate}; failed to meet threshold of ${this.MinimumSecondaryUserSyncSuccessPercent} - found value ${secUserSyncSuccessRate}. Marking replica as unhealthy.`)
+        const { successRate, successCount, failureCount } = userSecondarySyncMetrics[secondary]
+
+        // Error case 1 - already marked unhealty
+        if (unhealthyPeers.has(secondary)) {
+          this.logError(`processStateMachineOperation(): Secondary ${secondary} for user ${nodeUser.wallet} in unhealthy peer set. Marking replica as unhealthy.`)
           unhealthyReplicas.push(secondary)
+
+          // Error case 2 - low user sync success rate
+        } else if (failureCount >= this.MinimumFailedSyncRequestsBeforeReconfig && successRate < this.MinimumSecondaryUserSyncSuccessPercent) {
+          this.logError(`processStateMachineOperation(): Secondary ${secondary} for user ${nodeUser.wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${this.MinimumSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`)
+          unhealthyReplicas.push(secondary)
+
+          // Success case
         } else {
           potentialSyncRequests.push({ ...nodeUser, endpoint: secondary })
         }

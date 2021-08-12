@@ -682,10 +682,10 @@ describe('test SnapbackSM', function () {
     snapback._computeUserSecondarySyncSuccessRates = async () => {
       return {
         'http://cnWithSpId2.co': {
-          SuccessRate: 100
+          successRate: 100
         },
         'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
-          SuccessRate: 100
+          successRate: 100
         }
       }
     }
@@ -726,10 +726,10 @@ describe('test SnapbackSM', function () {
     snapback._computeUserSecondarySyncSuccessRates = async () => {
       return {
         'http://cnWithSpId2.co': {
-          SuccessRate: 100
+          successRate: 100
         },
         'http://cnWithSpId3.co': {
-          SuccessRate: 100
+          successRate: 100
         }
       }
     }
@@ -803,10 +803,10 @@ describe('test SnapbackSM', function () {
     snapback._computeUserSecondarySyncSuccessRates = async () => {
       return {
         'http://cnWithSpId2.co': {
-          SuccessRate: 100
+          successRate: 100
         },
         'http://deregisteredCN.co': {
-          SuccessRate: 100
+          successRate: 100
         }
       }
     }
@@ -847,10 +847,10 @@ describe('test SnapbackSM', function () {
     snapback._computeUserSecondarySyncSuccessRates = async () => {
       return {
         'http://cnWithSpId2.co': {
-          SuccessRate: 100
+          successRate: 100
         },
         'http://cnOriginallySpId3ReregisteredAsSpId4.co': {
-          SuccessRate: 100
+          successRate: 100
         }
       }
     }
