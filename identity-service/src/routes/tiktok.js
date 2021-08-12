@@ -1,5 +1,7 @@
 const axios = require('axios')
 const cors = require('cors')
+
+const { errorResponseBadRequest } = require('./apiHelpers')
 const config = require('../config.js')
 
 const {
@@ -42,11 +44,11 @@ module.exports = function (app) {
     '/tiktok/access_token',
     cors(accessTokenCorsOptions),
     handleResponse(async (req, res, next) => {
-      const { code, state } = req.body;
-      const { csrfState } = req.cookies;
+      const { code, state } = req.body
+      const { csrfState } = req.cookies
 
       if (!state || !csrfState || state !== csrfState) {
-        return errorResponseBadRequest("Invalid state");
+        return errorResponseBadRequest('Invalid state')
       }
 
       let urlAccessToken = 'https://open-api.tiktok.com/oauth/access_token/'
