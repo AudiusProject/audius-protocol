@@ -552,10 +552,10 @@ jobs:
         default: false
     steps:
       - checkout
-      - unless:
-          condition: << parameters.force >>
-          steps:
-            - run: ./diff.sh solana-programs || (echo "no diff" && circleci-agent step halt)
+      # - unless:
+      #     condition: << parameters.force >>
+      #     steps:
+      #       - run: ./diff.sh solana-programs || (echo "no diff" && circleci-agent step halt)
 
       # - run:
       #     name: Setup solana
@@ -603,7 +603,7 @@ jobs:
           command: |
             export PATH=$PWD/solana-release/bin:$PATH
             cd solana-programs/reward-manager/program
-            cp ../claimable-tokens/program/target/deploy/claimable_tokens.so .
+            cp ../../claimable-tokens/program/target/deploy/claimable_tokens.so .
             cargo build-bpf
             cargo test-bpf
       - save_cache:
