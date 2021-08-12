@@ -14,24 +14,29 @@ def create_instance(name, image_project, image_family, size, machine_type):
             image_project,
             "--image-family",
             image_family,
-            "--size",
+            "--boot-disk-size",
             size,
             "--machine-type",
             machine_type,
         ]
     )
 
-    ip = subprocess.run(
-        [
-            "gcloud",
-            "compute",
-            "instances",
-            "describe",
-            name,
-            "--format='get(networkInterfaces[0].accessConfigs[0].natIP)'",
-        ],
-        capture_output=True,
-    ).stdout.decode()
+    ip = (
+        subprocess.run(
+            [
+                "gcloud",
+                "compute",
+                "instances",
+                "describe",
+                name,
+                "--format",
+                "get(networkInterfaces[0].accessConfigs[0].natIP)",
+            ],
+            capture_output=True,
+        )
+        .stdout.decode()
+        .strip()
+    )
     print("IP address:", ip)
 
     return ip
@@ -45,18 +50,19 @@ def setup(name, service, config, user):
             "instances",
             "describe",
             name,
-            "--format='get(networkInterfaces[0].accessConfigs[0].natIP)'",
+            "--format",
+            "get(networkInterfaces[0].accessConfigs[0].natIP)",
         ],
         capture_output=True,
     )
 
-    host = proc.stdout.decode()
+    host = proc.stdout.decode().strip()
     if proc.returncode != 0:
         host = create_instance(
-            name, "ubuntu-os-cloud", "ubuntu-2004-lts", 100, "n2-standard-4"
+            name, "ubuntu-os-cloud", "ubuntu-2004-lts", "100", "n2-standard-4"
         )
 
-    host = f"{user}@host"
+    host = f"{user}@{host}"
 
     if service in ["creator-node", "discovery-provider"]:
         print("Setting up audius-k8s-manifests...")
@@ -176,8 +182,7 @@ def main():
 
     parser_create_instance.add_argument(
         "--size",
-        default=100,
-        type=int,
+        default="100",
         help="Size of disk to create",
     )
 
@@ -204,6 +209,7 @@ def main():
 
     parser_setup.add_argument(
         "--user",
+        default="ubuntu",
         help="user to login as",
     )
 
