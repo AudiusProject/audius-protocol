@@ -21,8 +21,22 @@ def create_instance(name, image_project, image_family, size, machine_type):
         ]
     )
 
+    print(end="IP address: ")
+    subprocess.run(
+        [
+            "gcloud",
+            "compute",
+            "instances",
+            "describe",
+            name,
+            "--format='get(networkInterfaces[0].accessConfigs[0].natIP)'",
+        ]
+    )
+
 
 def setup(host, service, config):
+    host = host if "@" in host else f"ubuntu@{host}"
+
     if service in ["creator-node", "discovery-provider"]:
         print("Setting up audius-k8s-manifests...")
         subprocess.run(
