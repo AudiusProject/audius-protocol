@@ -391,11 +391,20 @@ class CreatorNode {
     const route = this.creatorNodeEndpoint + '/track_content_status'
     const start = Date.now()
     while (Date.now() - start < MAX_TRACK_TRANSCODE_TIMEOUT) {
-      const { status, resp } = await this.getTrackContentProcessingStatus(uuid)
-      // Should have a body structure of:
-      //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
-      if (status && status === 'DONE') return resp
-      if (status && status === 'FAILED') await this._handleErrorHelper(new Error(`${taskType} failed: uuid=${uuid}, error=${resp}`), route, uuid)
+      try {
+        const { status, resp } = await this.getTrackContentProcessingStatus(uuid)
+        // Should have a body structure of:
+        //   { transcodedTrackCID, transcodedTrackUUID, track_segments, source_file }
+        if (status && status === 'DONE') return resp
+        if (status && status === 'FAILED') {
+          await this._handleErrorHelper(new Error(`${taskType} failed: uuid=${uuid}, error=${resp}`), route, uuid)
+        }
+      } catch (e) {
+        // Catch errors here and swallow them. Errors don't signify that the track
+        // upload has failed, just that we were unable to establish a connection to the node.
+        // This allows polling to retry
+        console.error(`Failed to poll for processing status, ${e}`)
+      }
 
       await wait(POLL_STATUS_INTERVAL)
     }
