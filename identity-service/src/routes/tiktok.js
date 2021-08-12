@@ -1,12 +1,12 @@
 const axios = require('axios')
 const cors = require('cors')
 
-const { errorResponseBadRequest } = require('./apiHelpers')
 const config = require('../config.js')
 
 const {
   handleResponse,
-  successResponse
+  successResponse,
+  errorResponseBadRequest
 } = require('../apiHelpers')
 
 /**
