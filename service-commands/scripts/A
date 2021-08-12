@@ -1,3 +1,8 @@
 #!/bin/bash
 cd $PROTOCOL_DIR/service-commands
-node scripts/setup.js $@
+
+if [[ "$1" == "create-instance" || "$1" == "setup" ]]; then
+  python scripts/A.py $@
+else
+  node scripts/setup.js $@
+fi
