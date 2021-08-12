@@ -2,7 +2,7 @@
 cd $PROTOCOL_DIR/service-commands
 
 if [[ "$1" == "create-instance" || "$1" == "setup" ]]; then
-  python scripts/A.py $@
+  python3 scripts/A.py $@
 else
   node scripts/setup.js $@
 fi
