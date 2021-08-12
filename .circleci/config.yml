@@ -594,22 +594,22 @@ jobs:
             - solana-programs/claimable-tokens/program/target
           key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
 
-      - restore_cache:
-          keys:
-            - reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
-            - reward-manager-deps-
-      - run:
-          name: run reward manager tests
-          command: |
-            export PATH=$PWD/solana-release/bin:$PATH
-            cd solana-programs/reward-manager/program
-            cp ../../claimable-tokens/program/target/deploy/claimable_tokens.so .
-            cargo build-bpf
-            cargo test-bpf
-      - save_cache:
-          paths:
-            - solana-programs/reward-manager/program/target
-          key: reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
+      # - restore_cache:
+      #     keys:
+      #       - reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
+      #       - reward-manager-deps-
+      # - run:
+      #     name: run reward manager tests
+      #     command: |
+      #       export PATH=$PWD/solana-release/bin:$PATH
+      #       cd solana-programs/reward-manager/program
+      #       cp ../../claimable-tokens/program/target/deploy/claimable_tokens.so .
+      #       cargo build-bpf
+      #       cargo test-bpf
+      # - save_cache:
+      #     paths:
+      #       - solana-programs/reward-manager/program/target
+      #     key: reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
       # - restore_cache:
       #     keys:
       #       - track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
