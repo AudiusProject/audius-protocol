@@ -19,7 +19,7 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
  * @param {string?} randomBytesToSign optional bytes string to be included in response object
  *    and used in signature generation
  */
-const healthCheck = async ({ libs } = {}, logger, sequelize, getMonitors, numberOfCPUs, randomBytesToSign = null) => {
+const healthCheck = async ({ libs } = {}, logger, sequelize, getMonitors, numberOfCPUs, getTranscodeQueueJobs, randomBytesToSign = null) => {
   // System information
   const [
     totalMemory,
@@ -28,6 +28,8 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, getMonitors, number
     MONITORS.TOTAL_MEMORY,
     MONITORS.STORAGE_PATH_SIZE
   ])
+
+  const { active: transcodeActive, waiting: transcodeWaiting } = await getTranscodeQueueJobs()
 
   let response = {
     ...versionInfo,
@@ -40,7 +42,9 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, getMonitors, number
     isRegisteredOnURSM: config.get('isRegisteredOnURSM'),
     numberOfCPUs,
     totalMemory,
-    storagePathSize
+    storagePathSize,
+    transcodeActive,
+    transcodeWaiting
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
