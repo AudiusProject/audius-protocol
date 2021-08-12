@@ -109,7 +109,7 @@ pub enum Instructions {
     ///   Delete sender with other senders proof
     ///
     ///   0. `[]` Reward manager
-    ///   1. `[writable]` Sender account ot delete
+    ///   1. `[writable]` Sender account to delete
     ///   2. `[writable]` Refunder account
     ///   3. `[]` Instruction info
     ///   4. `[]` Bunch of senders which prove removing another one
