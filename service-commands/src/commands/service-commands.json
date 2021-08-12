@@ -46,18 +46,26 @@
       "cd eth-contracts/; npm run ganache-q"
     ]
   },
- "solana-programs": {
-    "path": "solana-programs",
-    "up": [
-      "docker run -d --name solana --publish 8899:8899/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.7.1 sh -c 'solana-test-validator --gossip-host solana'",
-      "docker ps",
-      "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop > solana-program-config.json",
-      "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service",
-      "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
-    ],
+ "solana-validator": {
+   "up": [
+      "docker run -d --name solana --publish 8899:8899/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.7.1 sh -c 'solana-test-validator --gossip-host solana'"
+   ],
     "down": [
       "docker container stop solana || true",
       "docker container rm solana || true"
+    ]
+ },
+ "solana-programs": {
+    "path": "solana-programs",
+    "up": [
+      "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop > solana-program-config.json",
+      "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service",
+      "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json",
+      "sudo chown -R $(id -u):$(id -g) solana-programs/",
+      "cd solana-programs/; cat solana-program-config.json | jq .ownerWallet > test-owner.json"
+    ],
+    "add-sender": [
+      "cd solana-programs/reward-manager/cli; cargo run create-sender --eth-operator-address $sender_address --eth-sender-address $sender_address --reward-manager $reward_manager_address"
     ]
   },
   "ipfs": {

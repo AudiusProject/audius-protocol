@@ -146,6 +146,10 @@ fn command_create_sender(
     println!("Owner {:}", config.owner.pubkey());
     println!("Using program ID {:}", &audius_reward_manager::id());
     println!("Using RewardManager Account {:?}", &reward_manager);
+    println!("config.owner.pubkey() {:?}", &config.owner.pubkey());
+    println!("config.fee_payer.pubkey() {:?}", &config.fee_payer.pubkey());
+    println!("decoded_eth_sender_address {:?}", &decoded_eth_sender_address);
+    println!("decoded_eth_operator_address {:?}", &decoded_eth_operator_address);
 
     let transaction = CustomTransaction {
         instructions: vec![create_sender(

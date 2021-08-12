@@ -4,15 +4,14 @@ mod utils;
 
 use audius_reward_manager::{
     instruction,
-    processor::{SENDER_SEED_PREFIX, TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX},
-    state::VerifiedMessages,
+    processor::{SENDER_SEED_PREFIX, TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX},
     utils::{find_derived_pair, EthereumAddress},
     vote_message,
 };
 use rand::{thread_rng, Rng};
 use libsecp256k1::{PublicKey, SecretKey};
 use solana_program::{
-    instruction::Instruction, program_pack::Pack, pubkey::Pubkey, system_instruction,
+    instruction::Instruction, program_pack::Pack, pubkey::Pubkey 
 };
 use solana_program_test::*;
 use solana_sdk::{
@@ -20,12 +19,12 @@ use solana_sdk::{
 };
 use std::mem::MaybeUninit;
 use utils::*;
-/*
 
 #[tokio::test]
-async fn success() {
+async fn success_transfer() {
     /* Create verified messages and initialize reward manager */
     let mut program_test = program_test();
+
     program_test.add_program("claimable_tokens", claimable_tokens::id(), None);
     let mut rng = thread_rng();
 
@@ -152,24 +151,6 @@ async fn success() {
     }
 
     let mut instructions = Vec::<Instruction>::new();
-
-    let verified_messages = Keypair::new();
-
-    let tx = Transaction::new_signed_with_payer(
-        &[system_instruction::create_account(
-            &context.payer.pubkey(),
-            &verified_messages.pubkey(),
-            rent.minimum_balance(VerifiedMessages::LEN),
-            VerifiedMessages::LEN as u64,
-            &audius_reward_manager::id(),
-        )],
-        Some(&context.payer.pubkey()),
-        &[&context.payer, &verified_messages],
-        context.last_blockhash,
-    );
-
-    context.banks_client.process_transaction(tx).await.unwrap();
-
     // Add 3 messages and bot oracle
     let oracle_sign =
         new_secp256k1_instruction_2_0(&oracle_priv_key, bot_oracle_message.as_ref(), 0);
@@ -232,18 +213,31 @@ async fn success() {
         .as_ref(),
     );
 
+    let (_, verified_messages_derived_address, _) = find_derived_pair(
+        &audius_reward_manager::id(),
+        &reward_manager.pubkey(),
+        [
+            VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
+            transfer_id.as_ref(),
+        ]
+        .concat()
+        .as_ref(),
+    );
+
     let recipient_sol_key = claimable_tokens::utils::program::get_address_pair(
         &claimable_tokens::id(),
         &mint.pubkey(),
         recipient_eth_key,
     )
     .unwrap();
+    println!("Creating...Recipient sol key = {:?}", &recipient_sol_key.derive.address);
     create_recipient_with_claimable_program(&mut context, &mint.pubkey(), recipient_eth_key).await;
+    println!("Created recipient sol key = {:?}", &recipient_sol_key.derive.address);
 
     let tx = Transaction::new_signed_with_payer(
         &[instruction::transfer(
             &audius_reward_manager::id(),
-            &verified_messages.pubkey(),
+            &verified_messages_derived_address,
             &reward_manager.pubkey(),
             &token_account.pubkey(),
             &recipient_sol_key.derive.address,
@@ -271,5 +265,3 @@ async fn success() {
     );
     assert_eq!(transfer_account_data.data.len(), TRANSFER_ACC_SPACE);
 }
-
-*/
