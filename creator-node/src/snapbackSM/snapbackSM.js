@@ -972,7 +972,7 @@ class SnapbackSM {
     let potentialSyncRequests = []
     let unhealthyReplicas = []
 
-    const { primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID } = nodeUser
+    const { wallet, primary, secondary1, secondary2, primarySpID, secondary1SpID, secondary2SpID } = nodeUser
 
     /**
      * If this node is primary for user, check both secondaries for health
@@ -999,17 +999,17 @@ class SnapbackSM {
 
         // Error case 1 - mismatched spID
         if (this.peerSetManager.endpointToSPIdMap[secondary] !== secondaryInfo.spId) {
-          this.logError(`processStateMachineOperation(): Secondary ${secondary} for user ${nodeUser.wallet} mismatched spID. Expected ${secondaryInfo.spId}, found ${this.peerSetManager.endpointToSPIdMap[secondary]}. Marking replica as unhealthy.`)
+          this.logError(`processStateMachineOperation(): Secondary ${secondary} for user ${wallet} mismatched spID. Expected ${secondaryInfo.spId}, found ${this.peerSetManager.endpointToSPIdMap[secondary]}. Marking replica as unhealthy.`)
           unhealthyReplicas.push(secondary)
 
           // Error case 2 - already marked unhealthy
         } else if (unhealthyPeers.has(secondary)) {
-          this.logError(`processStateMachineOperation(): Secondary ${secondary} for user ${nodeUser.wallet} in unhealthy peer set. Marking replica as unhealthy.`)
+          this.logError(`processStateMachineOperation(): Secondary ${secondary} for user ${wallet} in unhealthy peer set. Marking replica as unhealthy.`)
           unhealthyReplicas.push(secondary)
 
           // Error case 3 - low user sync success rate
         } else if (failureCount >= this.MinimumFailedSyncRequestsBeforeReconfig && successRate < this.MinimumSecondaryUserSyncSuccessPercent) {
-          this.logError(`processStateMachineOperation(): Secondary ${secondary} for user ${nodeUser.wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${this.MinimumSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`)
+          this.logError(`processStateMachineOperation(): Secondary ${secondary} for user ${wallet} has userSyncSuccessRate of ${successRate}, which is below threshold of ${this.MinimumSecondaryUserSyncSuccessPercent}. ${successCount} Successful syncs vs ${failureCount} Failed syncs. Marking replica as unhealthy.`)
           unhealthyReplicas.push(secondary)
 
           // Success case

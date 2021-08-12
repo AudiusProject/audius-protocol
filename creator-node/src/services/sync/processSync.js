@@ -260,8 +260,9 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
 
         const trackFiles = fetchedCNodeUser.files.filter(file => models.File.TrackTypes.includes(file.type))
         const nonTrackFiles = fetchedCNodeUser.files.filter(file => models.File.NonTrackTypes.includes(file.type))
+        const numTotalFiles = trackFiles.length + nonTrackFiles.length
 
-        let numCIDsThatFailedSaveFileOp = 0
+        const CIDsThatFailedSaveFileOp = new Set()
 
         // Save all track files to disk in batches (to limit concurrent load)
         for (let i = 0; i < trackFiles.length; i += FileSaveMaxConcurrency) {
@@ -270,8 +271,8 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
 
           /**
            * Fetch content for each CID + save to FS
-           * Error on failure to fetch content for CID, or skip it after repeated failures
-           * @notice `skippableSaveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
+           * Record any CIDs that failed retrieval/saving for later use
+           * @notice `saveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
            */
           await Promise.all(trackFilesSlice.map(
             async (trackFile) => {
@@ -279,10 +280,9 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
                 serviceRegistry, logger, trackFile.multihash, trackFile.storagePath, userReplicaSet
               )
 
-              // If saveFile op failed, mark trackFile DB entry as skipped
+              // If saveFile op failed, record CID for later processing
               if (!success) {
-                trackFile.skipped = true // defaults to false
-                numCIDsThatFailedSaveFileOp++
+                CIDsThatFailedSaveFileOp.add(trackFile.multihash)
               }
             }
           ))
@@ -314,10 +314,9 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
                   )
                 }
 
-                // If saveFile op failed, mark trackFile DB entry as skipped
+                // If saveFile op failed, record CID for later processing
                 if (!success) {
-                  nonTrackFile.skipped = true // defaults to false
-                  numCIDsThatFailedSaveFileOp++
+                  CIDsThatFailedSaveFileOp.add(multihash)
                 }
               }
             }
@@ -325,6 +324,11 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         }
         logger.info(redisKey, 'Saved all non-track files to disk.')
 
+        /**
+         * Handle scenario where failed to retrieve/save > 0 CIDs
+         * Reject sync if number of failures for user is below threshold, else proceed and mark unretrieved files as skipped
+         */
+        const numCIDsThatFailedSaveFileOp = CIDsThatFailedSaveFileOp.size
         if (numCIDsThatFailedSaveFileOp > 0) {
           const userSyncFailureCount = UserSyncFailureCountManager.incrementFailureCount(fetchedWalletPublicKey)
 
@@ -346,6 +350,10 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
           UserSyncFailureCountManager.resetFailureCount(fetchedWalletPublicKey)
         }
 
+        /**
+         * Write all records to DB
+         */
+
         await models.ClockRecord.bulkCreate(fetchedCNodeUser.clockRecords.map(clockRecord => ({
           ...clockRecord,
           cnodeUserUUID
@@ -353,6 +361,9 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         logger.info(redisKey, 'Saved all ClockRecord entries to DB')
 
         await models.File.bulkCreate(nonTrackFiles.map(file => {
+          if (CIDsThatFailedSaveFileOp.has(file.multihash)) {
+            file.skipped = true // defaults to false
+          }
           return {
             ...file,
             trackBlockchainId: null,
@@ -368,6 +379,9 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         logger.info(redisKey, 'Saved all Track entries to DB')
 
         await models.File.bulkCreate(trackFiles.map(trackFile => {
+          if (CIDsThatFailedSaveFileOp.has(trackFile.multihash)) {
+            trackFile.skipped = true // defaults to false
+          }
           return {
             ...trackFile,
             cnodeUserUUID
@@ -384,7 +398,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
         await transaction.commit()
         await redisLock.removeLock(redisKey)
 
-        logger.info(redisKey, `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey}`)
+        logger.info(redisKey, `Transaction successfully committed for cnodeUser wallet ${fetchedWalletPublicKey} with ${numTotalFiles} files processed and ${numCIDsThatFailedSaveFileOp} skipped.`)
 
         // track that sync for this user was successful
         await SyncHistoryAggregator.recordSyncSuccess(fetchedWalletPublicKey)

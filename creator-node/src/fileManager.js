@@ -88,7 +88,7 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
  * @param {Array} gatewaysToTry List of gateway endpoints to try
  * @param {String?} fileNameForImage file name if the multihash is image in dir.
  *                  eg original.jpg or 150x150.jpg
- * @return {Boolean} success indicator
+ * @return {Boolean} true if success, false if error
  */
 async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
   const { ipfsLatest } = serviceRegistry

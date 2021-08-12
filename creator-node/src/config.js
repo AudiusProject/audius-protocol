@@ -540,20 +540,20 @@ const config = convict({
     default: 5000
   },
   minimumSuccessfulSyncCountPercentage: {
-    doc: 'Minimum percentage of failed syncs to be considered healthy',
+    doc: 'Minimum percentage of failed syncs to be considered healthy in peer health computation',
     format: 'nat',
     env: 'minimumSuccessfulSyncCountPercentage',
     // TODO: Update to higher percentage when higher threshold of syncs are passing
     default: 0
   },
   minimumSecondaryUserSyncSuccessPercent: {
-    doc: 'Minimum percent of successful Syncs for a user on a secondary for the secondary to be considered healthy for that user',
+    doc: 'Minimum percent of successful Syncs for a user on a secondary for the secondary to be considered healthy for that user. Ensures that a single failure will not cycle out secondary.',
     format: 'nat',
     env: 'minimumSecondaryUserSyncSuccessPercent',
     default: 50
   },
   minimumFailedSyncRequestsBeforeReconfig: {
-    doc: 'Minimum number of failed SyncRequests before a Secondary will be cycled out of replica set by Primary',
+    doc: '[on Primary] Minimum number of failed SyncRequests from Primary before it cycles Secondary out of replica set',
     format: 'nat',
     env: 'minimumFailedSyncRequestsBeforeReconfig',
     default: 20
@@ -578,7 +578,7 @@ const config = convict({
     default: 300000 // 5min (prod default)
   },
   syncRequestMaxUserFailureCountBeforeSkip: {
-    doc: 'Max number of failures to complete user sync due to saveFile error before skipping and completing sync',
+    doc: '[on Secondary] Max number of failed syncs per user before skipping un-retrieved content, saving to db, and succeeding sync',
     format: 'nat',
     env: 'syncRequestMaxUserFailureCountBeforeSkip',
     default: 10

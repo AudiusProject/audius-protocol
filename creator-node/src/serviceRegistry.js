@@ -105,7 +105,7 @@ class ServiceRegistry {
     await this._initSnapbackSM()
 
     // SyncQueue construction (requires L1 identity)
-    // Note - passes in reference to self instance, a very sub-optimal workaround
+    // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
     this.syncQueue = new SyncQueue(
       this.nodeConfig,
       this.redis,
@@ -119,6 +119,7 @@ class ServiceRegistry {
     await this._registerNodeOnL2URSM()
 
     // SkippedCIDsRetryQueue construction + init (requires SyncQueue)
+    // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
     this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(this.nodeConfig, this.libs, this)
     await this.skippedCIDsRetryQueue.init()
 
