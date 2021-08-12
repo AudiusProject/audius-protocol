@@ -561,6 +561,7 @@ jobs:
           name: Setup solana
           command: |
             sh -c "$(curl -sSfL https://release.solana.com/v1.7.8/install)"
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
 
       - restore_cache:
           keys:
