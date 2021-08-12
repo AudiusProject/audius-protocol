@@ -1,4 +1,4 @@
-#!/bin/env python3.9
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -7,6 +7,34 @@ import argparse
 
 
 def create_instance(name, image_project, image_family, size, machine_type):
+    project = (
+        subprocess.run(
+            [
+                "gcloud",
+                "config",
+                "get-value",
+                "project",
+            ],
+            capture_output=True,
+        )
+        .stdout.decode()
+        .strip()
+    )
+
+    account = (
+        subprocess.run(
+            ["gcloud", "config", "list", "account", "format", "value(core.account)"],
+            capture_output=True,
+        )
+        .stdout.decode()
+        .strip()
+    )
+
+    print("Project:", project)
+    print("Account:", account)
+
+    input("Press Enter to confirm account and project...")
+
     subprocess.run(
         [
             "gcloud",
@@ -41,19 +69,6 @@ def create_instance(name, image_project, image_family, size, machine_type):
         .stdout.decode()
         .strip()
     )
-
-    if input("Configure local /etc/hosts? [y/N]").lower() == "y":
-        subprocess.run(
-            [
-                "sudo",
-                "-E",
-                f"AUDIUS_REMOTE_DEV_HOST={ip}",
-                "node",
-                f"{os.getenv('PROTOCOL_DIR', './')}/service-commands/scripts/hosts.js",
-                "add-remote-host",
-            ]
-        )
-
     print("IP address:", ip)
 
     return ip
@@ -73,14 +88,14 @@ def setup(name, service, config, user):
         capture_output=True,
     )
 
-    host = proc.stdout.decode().strip()
+    ip = proc.stdout.decode().strip()
     if proc.returncode != 0:
         input(f"Creating new instance '{name}'. Press Enter to contiue...")
-        host = create_instance(
+        ip = create_instance(
             name, "ubuntu-os-cloud", "ubuntu-2004-lts", "100", "n2-standard-4"
         )
 
-    host = f"{user}@{host}"
+    host = f"{user}@{ip}"
 
     if service in ["creator-node", "discovery-provider"]:
         print("Setting up audius-k8s-manifests...")
@@ -169,6 +184,18 @@ def setup(name, service, config, user):
             ]
         )
 
+        if input("Configure local /etc/hosts? [y/N]").lower() == "y":
+            subprocess.run(
+                [
+                    "sudo",
+                    "-E",
+                    f"AUDIUS_REMOTE_DEV_HOST={ip}",
+                    "node",
+                    f"{os.getenv('PROTOCOL_DIR', './')}/service-commands/scripts/hosts.js",
+                    "add-remote-host",
+                ]
+            )
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -240,7 +267,6 @@ def main():
 
     parser_setup.add_argument(
         "name",
-        nargs="?",
         help="name of gcp instance to do setup on",
     )
 
