@@ -119,7 +119,7 @@ class ServiceSelection {
       this.decisionTree.push({ stage: DECISION_TREE_STATE.NO_SERVICES_LEFT_TO_TRY })
       if (this.getBackupsSize() > 0) {
         // Some backup exists
-        const backup = this.selectFromBackups()
+        const backup = await this.selectFromBackups()
         this.decisionTree.push({ stage: DECISION_TREE_STATE.SELECTED_FROM_BACKUP, val: backup })
         return backup
       } else {
