@@ -547,6 +547,15 @@ class DiscoveryProvider {
 
   /* ------- INTERNAL FUNCTIONS ------- */
 
+  /**
+   * Performs a single request, defined in the request, via axios, calling any
+   * monitoring callbacks as needed.
+   *
+   * @param {*} requestObj
+   * @param {*} discoveryProviderEndpoint
+   * @returns
+   * @memberof DiscoveryProvider
+   */
   async _performRequestWithMonitoring (requestObj, discoveryProviderEndpoint) {
     let axiosRequest = this._createDiscProvRequest(requestObj, discoveryProviderEndpoint)
     let response
@@ -727,10 +736,6 @@ class DiscoveryProvider {
     }
     return axiosRequest
   }
-
-
-
-
 }
 
 module.exports = DiscoveryProvider

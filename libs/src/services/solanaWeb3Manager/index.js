@@ -43,7 +43,11 @@ class SolanaWeb3Manager {
    * @param {string} solanaWeb3Config.claimableTokenProgramAddress
    *  the address for the claimable token program used to create banks and transfer wAudio
    * @param {string} solanaWeb3Config.rewardsManagerProgramId
+   *  the ID of the rewards manager program
    * @param {string} solanaWeb3Config.rewardsManagerProgramPDA
+   *  the manager account of the rewards manager program
+   * @param {string} solanaWeb3Config.rewardsManagerTokenPDA
+   *  the token holder account of the rewards manager program
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
    */
@@ -279,7 +283,6 @@ class SolanaWeb3Manager {
    *     recipientEthAddress,
    *     tokenAmount,
    *    }
-   * @returns
    * @memberof SolanaWeb3Manager
    */
   async submitChallengeAttestations ({
@@ -320,7 +323,6 @@ class SolanaWeb3Manager {
    *     oracleEthAddress,
    *     tokenAmount
    *   }
-   * @returns
    * @memberof SolanaWeb3Manager
    */
   async evaluateChallengeAttestations({
@@ -349,7 +351,7 @@ class SolanaWeb3Manager {
   // Helpers
 
   /**
-   * Converts "UI" wAudio (i.e. 5) into properly denominated BN representation - i.e. 5 * 10 ^ 9
+   * Converts "UI" wAudio (i.e. 5) into properly denominated BN representation - (i.e. 5 * 10 ^ 9)
    *
    * @param {number} amount
    * @returns BN
