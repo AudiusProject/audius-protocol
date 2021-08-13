@@ -62,9 +62,18 @@ async function timeRequestsAndSortByVersion (requests, timeout = null) {
     // If health check failed, send to back of timings
     if (!a.response) return 1
     if (!b.response) return -1
+
     // Sort by highest version
     if (semver.gt(a.response.data.data.version, b.response.data.data.version)) return -1
     if (semver.lt(a.response.data.data.version, b.response.data.data.version)) return 1
+
+    // Sort by content node transcode queue load
+    // defined as the ratio of (active + waiting transcodes) / (transcode slots, same as number of cpu cores)
+    const a_healthRatio = ((a.response.data.data.transcodeActive + a.response.data.data.transcodeWaiting) / a.response.data.data.numberOfCPUs)
+    const b_healthRatio = ((b.response.data.data.transcodeActive + b.response.data.data.transcodeWaiting) / b.response.data.data.numberOfCPUs)
+    if (a_healthRatio > b_healthRatio) return 1
+    else if (a_healthRatio < b_healthRatio) return -1
+
     // If same version, do a tie breaker on the response time
     return a.millis - b.millis
   })

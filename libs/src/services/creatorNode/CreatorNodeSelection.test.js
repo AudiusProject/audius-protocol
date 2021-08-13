@@ -53,7 +53,8 @@ let defaultHealthCheckData = {
   'allocatedFileDescriptors': 2912,
   'receivedBytesPerSec': 776.7638177541248,
   'transferredBytesPerSec': 39888.88888888889,
-  'maxStorageUsedPercent': 95
+  'maxStorageUsedPercent': 95,
+  'numberOfCPUs': 8
 }
 
 describe('test CreatorNodeSelection', () => {
@@ -503,6 +504,51 @@ describe('test CreatorNodeSelection', () => {
       numberOfNodes: 3,
       ethContracts: mockEthContracts(
         [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2],
+        '1.2.3'
+      ),
+      whitelist: null,
+      blacklist: null,
+      maxStorageUsedPercent: 50
+    })
+
+    const { primary, secondaries, services } = await cns.select()
+
+    assert(primary === shouldBePrimary)
+    assert(secondaries.length === 2)
+    assert(secondaries.includes(shouldBeSecondary1))
+    assert(secondaries.includes(shouldBeSecondary2))
+
+    const returnedHealthyServices = new Set(Object.keys(services))
+    assert(returnedHealthyServices.size === 3)
+    const healthyServices = [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2]
+    healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+  })
+
+  it('correctly sorts healthy services by transcode queue size', async () => {
+    let healthCheckData = {
+      ...defaultHealthCheckData
+    }
+
+    const shouldBePrimary = 'https://noTranscodeTasks.audius.co'
+    nock(shouldBePrimary)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...healthCheckData, transcodeActive: 0, transcodeWaiting: 0 } })
+
+    const shouldBeSecondary1 = 'https://mostTranscodeTasks.audius.co'
+    nock(shouldBeSecondary1)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...healthCheckData, transcodeActive: 8, transcodeWaiting: 0 } })
+
+    const shouldBeSecondary2 = 'https://mediumTranscodeTasks.audius.co'
+    nock(shouldBeSecondary2)
+      .get('/health_check/verbose')
+      .reply(200, { data: { ...healthCheckData, transcodeActive: 4, transcodeWaiting: 0 } })
+
+    const cns = new CreatorNodeSelection({
+      creatorNode: mockCreatorNode,
+      numberOfNodes: 3,
+      ethContracts: mockEthContracts(
+        [shouldBeSecondary2, shouldBeSecondary1, shouldBePrimary],
         '1.2.3'
       ),
       whitelist: null,
