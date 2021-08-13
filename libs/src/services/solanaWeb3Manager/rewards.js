@@ -88,7 +88,7 @@ const validateAttestationsInstructionSchema = new Map([
  */
 
 /**
- * Submits attestations for Discovery Nodes and AAO that a user has completed a challenge.
+ * Submits attestations from Discovery Nodes and AAO that a user has completed a challenge.
  *
  * @param {{
  *   rewardManagerProgramId: PublicKey,
@@ -206,7 +206,6 @@ export async function submitAttestations({
     return response
   } catch (e) {
     console.error(e.message)
-    console.log({ e })
   }
 }
 
@@ -536,14 +535,14 @@ const generateSecpInstruction = ({
   instructionIndex,
 }) => {
   // Perform signature manipulations:
-  // - remove the 0x prefix, and then lose the final byte
-  // ('1b', which is the recovery ID, and not desired by the `createInsturctionWithEthAddress` method)
+  // - remove the 0x prefix
+  // - lose the final byte / recovery ID
   let strippedSignature = attestationMeta.signature.replace("0x", "")
   const recoveryIdStr = strippedSignature.slice(strippedSignature.length - 2)
   const recoveryId = new BN(recoveryIdStr, "hex").toNumber()
   strippedSignature = strippedSignature.slice(0, strippedSignature.length - 2)
   const encodedSignature = Uint8Array.of(
-    ...new BN(strippedSignature, "hex").toArray("be") // 0 pad to add length, but this seems wrong. Idk
+    ...new BN(strippedSignature, "hex").toArray("be")
   )
 
   const encodedSenderMessage = constructAttestation(
@@ -566,6 +565,7 @@ const generateSecpInstruction = ({
 // Misc
 
 /**
+ * Converts an eth address hex represenatation to an array of Uint8s in big endian notation
  * @param {string} ethAddress
  * @returns {Uint8Array}
  */
@@ -575,6 +575,7 @@ const ethAddressToArray = (ethAddress) => {
 }
 
 /**
+ * Constructs a transfer ID
  * @param {string} challengeId
  * @param {string} specifier
  * @returns {string}
@@ -583,6 +584,8 @@ const constructTransferId = (challengeId, specifier) =>
   `${challengeId}:${specifier}`
 
 /**
+ * Converts a BN to a Uint8Array of length 8, in little endian notation.
+ * Useful for when Rust wants a u64 (8 * 8) represented as a byte array.
  *
  * @param {BN} bn
  */
@@ -659,7 +662,8 @@ const prepareInstructionForRelay = (instruction) => ({
 })
 
 /**
- * Derives the 'transfer account' - the account which represents a single successful disbursement and is used to dedupe - from the transferId and other info>
+ * Derives the 'transfer account' - the account which represents a single successful disbursement
+ * and is used to dedupe - from the transferId and other info
  *
  * @param {string} transferId
  * @param {PublicKey} rewardProgramId

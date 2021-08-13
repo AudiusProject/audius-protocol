@@ -21,7 +21,6 @@ const User = require('./api/user')
 const Track = require('./api/track')
 const Playlist = require('./api/playlist')
 const File = require('./api/file')
-const Challenge = require('./api/challenge')
 const ServiceProvider = require('./api/serviceProvider')
 const Web3 = require('./web3')
 const Captcha = require('./utils/captcha')
@@ -281,7 +280,6 @@ class AudiusLibs {
     this.Track = null
     this.Playlist = null
     this.File = null
-    this.Challenge = null
 
     this.useTrackContentPolling = useTrackContentPolling
     this.useResumableTrackUpload = useResumableTrackUpload
@@ -428,7 +426,6 @@ class AudiusLibs {
     this.Track = new Track(...services)
     this.Playlist = new Playlist(...services)
     this.File = new File(this.User, ...services)
-    this.Challenge = new Challenge(...services)
   }
 }
 
