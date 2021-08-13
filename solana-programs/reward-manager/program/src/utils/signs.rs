@@ -107,14 +107,18 @@ pub fn check_message_from_secp_instruction(
     }
 }
 
-pub fn get_message_from_secp_instruction(secp_instruction_data: Vec<u8>) -> Result<VoteMessage, ProgramError> {
-    let mut message = secp_instruction_data[MESSAGE_DATA_OFFSET..]
-        .to_vec();
+pub fn get_message_from_secp_instruction(
+    secp_instruction_data: Vec<u8>,
+) -> Result<VoteMessage, ProgramError> {
+    let mut message = secp_instruction_data[MESSAGE_DATA_OFFSET..].to_vec();
 
     while message.len() < 128 {
         message.push(0);
     }
-    message.as_slice().try_into().map_err(|_| AudiusProgramError::SignatureVerificationFailed.into())
+    message
+        .as_slice()
+        .try_into()
+        .map_err(|_| AudiusProgramError::SignatureVerificationFailed.into())
 }
 
 fn vec_into_checkmap(vec: &[EthereumAddress]) -> BTreeMap<EthereumAddress, bool> {
@@ -142,13 +146,14 @@ fn check_signer(
 }
 
 /// Checks secp instructions for add sender
-pub fn check_secp_add_sender(
+pub fn check_secp_instructions(
     program_id: &Pubkey,
     reward_manager: &Pubkey,
     instruction_info: &AccountInfo,
     expected_signers: Vec<&AccountInfo>,
     extraction_depth: usize,
     new_sender: EthereumAddress,
+    message_prefix: &str,
 ) -> ProgramResult {
     let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
     // Instruction can't be first in transaction
@@ -163,7 +168,12 @@ pub fn check_secp_add_sender(
         get_eth_addresses(program_id, reward_manager, expected_signers)?;
 
     let mut checkmap = vec_into_checkmap(&senders_eth_addresses);
-    let expected_message = [reward_manager.as_ref(), new_sender.as_ref()].concat();
+    let expected_message = [
+        message_prefix.as_ref(),
+        reward_manager.as_ref(),
+        new_sender.as_ref(),
+    ]
+    .concat();
 
     for secp_instruction in secp_instructions {
         let eth_signer = get_signer_from_secp_instruction(secp_instruction.data.clone());
