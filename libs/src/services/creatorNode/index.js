@@ -1,5 +1,6 @@
 const axios = require('axios')
 const FormData = require('form-data')
+const retry = require('async-retry')
 const tus = require('tus-js-client')
 
 const { wait } = require('../../utils')
@@ -644,75 +645,93 @@ class CreatorNode {
    * @return {Object} response body
    */
   async _makeRequest (axiosRequestObj, requiresConnection = true) {
-    if (requiresConnection) {
-      await this.ensureConnected()
-    }
-
-    axiosRequestObj.headers = axiosRequestObj.headers || {}
-
-    if (this.authToken) {
-      axiosRequestObj.headers['X-Session-ID'] = this.authToken
-    }
-
-    const user = this.userStateManager.getCurrentUser()
-    if (user && user.wallet && user.user_id) {
-      axiosRequestObj.headers['User-Wallet-Addr'] = user.wallet
-      axiosRequestObj.headers['User-Id'] = user.user_id
-    }
-
-    const requestId = uuid()
-    axiosRequestObj.headers['X-Request-ID'] = requestId
-
-    axiosRequestObj.baseURL = this.creatorNodeEndpoint
-
-    // Axios throws for non-200 responses
-    const url = new URL(axiosRequestObj.baseURL + axiosRequestObj.url)
-    const start = Date.now()
-    try {
-      const resp = await axios(axiosRequestObj)
-      const duration = Date.now() - start
-
-      if (this.monitoringCallbacks.request) {
-        try {
-          this.monitoringCallbacks.request({
-            endpoint: url.origin,
-            pathname: url.pathname,
-            queryString: url.search,
-            signer: resp.data.signer,
-            signature: resp.data.signature,
-            requestMethod: axiosRequestObj.method,
-            status: resp.status,
-            responseTimeMillis: duration
-          })
-        } catch (e) {
-          // Swallow errors -- this method should not throw generally
-          console.error(e)
-        }
-      }
-      // Axios `data` field gets the response body
-      return resp.data
-    } catch (e) {
-      const resp = e.response || {}
-      const duration = Date.now() - start
-
-      if (this.monitoringCallbacks.request) {
-        try {
-          this.monitoringCallbacks.request({
-            endpoint: url.origin,
-            pathname: url.pathname,
-            queryString: url.search,
-            requestMethod: axiosRequestObj.method,
-            status: resp.status,
-            responseTimeMillis: duration
-          })
-        } catch (e) {
-          // Swallow errors -- this method should not throw generally
-          console.error(e)
-        }
+    const work = async () => {
+      if (requiresConnection) {
+        await this.ensureConnected()
       }
 
-      await this._handleErrorHelper(e, axiosRequestObj.url, requestId)
+      axiosRequestObj.headers = axiosRequestObj.headers || {}
+
+      if (this.authToken) {
+        axiosRequestObj.headers['X-Session-ID'] = this.authToken
+      }
+
+      const user = this.userStateManager.getCurrentUser()
+      if (user && user.wallet && user.user_id) {
+        axiosRequestObj.headers['User-Wallet-Addr'] = user.wallet
+        axiosRequestObj.headers['User-Id'] = user.user_id
+      }
+
+      const requestId = uuid()
+      axiosRequestObj.headers['X-Request-ID'] = requestId
+
+      axiosRequestObj.baseURL = this.creatorNodeEndpoint
+
+      // Axios throws for non-200 responses
+      const url = new URL(axiosRequestObj.baseURL + axiosRequestObj.url)
+      const start = Date.now()
+      try {
+        const resp = await axios(axiosRequestObj)
+        const duration = Date.now() - start
+
+        if (this.monitoringCallbacks.request) {
+          try {
+            this.monitoringCallbacks.request({
+              endpoint: url.origin,
+              pathname: url.pathname,
+              queryString: url.search,
+              signer: resp.data.signer,
+              signature: resp.data.signature,
+              requestMethod: axiosRequestObj.method,
+              status: resp.status,
+              responseTimeMillis: duration
+            })
+          } catch (e) {
+            // Swallow errors -- this method should not throw generally
+            console.error(e)
+          }
+        }
+        // Axios `data` field gets the response body
+        return resp.data
+      } catch (e) {
+        const resp = e.response || {}
+        const duration = Date.now() - start
+
+        if (this.monitoringCallbacks.request) {
+          try {
+            this.monitoringCallbacks.request({
+              endpoint: url.origin,
+              pathname: url.pathname,
+              queryString: url.search,
+              requestMethod: axiosRequestObj.method,
+              status: resp.status,
+              responseTimeMillis: duration
+            })
+          } catch (e) {
+            // Swallow errors -- this method should not throw generally
+            console.error(e)
+          }
+        }
+
+        await this._handleErrorHelper(e, axiosRequestObj.url, requestId)
+      }
     }
+    return retry(async (bail, num) => {
+      return work()
+    }, {
+      // Retry function 3x
+      // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+      minTimeout: 500,
+      maxTimeout: 4000,
+      factor: 3,
+      retries: 3,
+      onRetry: (err, i) => {
+        if (err) {
+          // eslint-disable-next-line no-console
+          console.log('Retry error : ', err)
+        }
+      }
+    })
   }
 
   /**
@@ -747,7 +766,7 @@ class CreatorNode {
    * @param {function?} onProgress called with loaded bytes and total bytes
    * @param {Object<string, any>} extraFormDataOptions extra FormData fields passed to the upload
    */
-  async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}, retries = 1) {
+  async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}, retries = 2) {
     await this.ensureConnected()
 
     const { headers, formData } = this.createFormDataAndUploadHeaders(file, extraFormDataOptions)
