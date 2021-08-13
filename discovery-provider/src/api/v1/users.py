@@ -1,6 +1,6 @@
 import logging
 from src.utils.helpers import encode_int_id
-from src.challenges.challenge_event_bus import get_event_bus
+from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from flask_restx import Resource, Namespace, fields, reqparse
@@ -750,7 +750,7 @@ class GetChallenges(Resource):
         db = get_db_read_replica()
 
         with db.scoped_session() as session:
-            bus = get_event_bus()
+            bus = setup_challenge_bus()
             challenges = get_challenges(decoded_id, show_historical, session, bus)
             challenges = list(map(extend_challenge_response, challenges))
 
