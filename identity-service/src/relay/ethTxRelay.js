@@ -104,7 +104,7 @@ const createAndSendEthTransaction = async (sender, receiverAddress, value, web3,
   if (address !== sender.publicKey.toLowerCase()) {
     throw new Error(`L1 txRelay - Invalid relayerPublicKey found. Expected ${sender.publicKey.toLowerCase()}, found ${address}`)
   }
-  const nonce = await web3.eth.getTransactionCount(address)
+  const nonce = await web3.eth.getTransactionCount(address, 'pending')
   let txParams = {
     nonce: web3.utils.toHex(nonce),
     gasPrice,

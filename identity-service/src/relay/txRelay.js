@@ -209,7 +209,7 @@ const createAndSendTransaction = async (sender, receiverAddress, value, web3, lo
     throw new Error('Invalid relayerPublicKey')
   }
   const gasPrice = await getGasPrice(logger, web3)
-  const nonce = await web3.eth.getTransactionCount(address)
+  const nonce = await web3.eth.getTransactionCount(address, 'pending')
   gasLimit = gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT
   let txParams = {
     nonce: web3.utils.toHex(nonce),
