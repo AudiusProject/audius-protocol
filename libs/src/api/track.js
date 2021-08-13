@@ -376,27 +376,12 @@ class Track extends Base {
 
       phase = phases.ASSOCIATING_TRACK
       // Associate the track id with the file metadata and block number
-      await retry(async (bail, num) => {
-        return this.creatorNode.associateTrack(
-          trackId,
-          metadataFileUUID,
-          txReceipt.blockNumber,
-          transcodedTrackUUID
-        )
-      }, {
-        // Retry function 3x
-        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
-        minTimeout: 500,
-        maxTimeout: 4000,
-        factor: 3,
-        retries: 3,
-        onRetry: (err, i) => {
-          if (err) {
-            // eslint-disable-next-line no-console
-            console.log('Retry error : ', err)
-          }
-        }
-      })
+      await this.creatorNode.associateTrack(
+        trackId,
+        metadataFileUUID,
+        txReceipt.blockNumber,
+        transcodedTrackUUID
+      )
       return { blockHash: txReceipt.blockHash, blockNumber: txReceipt.blockNumber, trackId, transcodedTrackCID, error: false }
     } catch (e) {
       return {
