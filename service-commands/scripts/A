@@ -23,7 +23,7 @@ def create_instance(name, image_project, image_family, size, machine_type):
 
     account = (
         subprocess.run(
-            ["gcloud", "config", "list", "account", "format", "value(core.account)"],
+            ["gcloud", "config", "list", "account", "--format", "value(core.account)"],
             capture_output=True,
         )
         .stdout.decode()
@@ -33,7 +33,8 @@ def create_instance(name, image_project, image_family, size, machine_type):
     print("Project:", project)
     print("Account:", account)
 
-    input("Press Enter to confirm account and project...")
+    if input("Confirm account and project? [y/N]").lower() != "y":
+        return
 
     subprocess.run(
         [
