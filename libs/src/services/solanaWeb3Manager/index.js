@@ -12,6 +12,8 @@ const Utils = require('../../utils')
 const { submitAttestations, evaluateAttestations } = require('./rewards')
 const BN = require('bn.js')
 
+const { PublicKey } = solanaWeb3
+
 /**
  * @typedef {import("./rewards.js").AttestationMeta} AttestationMeta
  */
@@ -268,7 +270,7 @@ class SolanaWeb3Manager {
    *     challengeId: string,
    *     specifier: string,
    *     recipientEthAddress: string,
-   *     tokenAmount: number,
+   *     tokenAmount: BN,
    * }} {
    *     attestations,
    *     oracleAttestation,
@@ -342,6 +344,19 @@ class SolanaWeb3Manager {
       identityService: this.identityService,
       connection: this.connection
     })
+  }
+
+  // Helpers
+
+  /**
+   * Converts "UI" wAudio (i.e. 5) into properly denominated BN representation - i.e. 5 * 10 ^ 9
+   *
+   * @param {number} amount
+   * @returns BN
+   * @memberof SolanaWeb3Manager
+   */
+  uiAudioToBNWaudio(amount) {
+    return new BN(amount * 10 ** 9)
   }
 }
 

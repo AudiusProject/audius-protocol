@@ -9,13 +9,11 @@ const BN = require('bn.js')
 const SENDER_SEED_PREFIX = "S_"
 const VERIFY_TRANSFER_SEED_PREFIX = "V_"
 const TRANSFER_PREFIX = "T_"
-const DECIMALS = 9
 const SUBMIT_INSTRUCTION_ENUM_VALUE = 6
 const EVALUATE_INSTRUCTION_ENUM_VALUE = 7
 
 const encoder = new TextEncoder()
 
-const a = xyz(123)
 class SubmitAttestationInstructionData {
   /**
    *Creates an instance of SubmitAttestationInstructionData.
@@ -207,7 +205,7 @@ export async function submitAttestations({
  *   userBankProgramAccount: PublicKey,
  *   oracleEthAddress: string
  *   feePayer: PublicKey
- *   tokenAmount: number
+ *   tokenAmount: BN
  *   identityService: any
  *   connection: Connection
  * }} {
@@ -310,7 +308,7 @@ export const evaluateAttestations = async ({
   ]
 
   const instructionData = new ValidateAttestationsInstructionData({
-    amount: padUIAmount(tokenAmount),
+    amount: tokenAmount.toNumber(),
     id: transferId,
     eth_recipient: ethAddressToArray(recipientEthAddress)
   })
@@ -516,22 +514,6 @@ const ethAddressToArray = (ethAddress) => {
  * @returns {string}
  */
 const constructTransferId = (challengeId, specifier) => `${challengeId}:${specifier}`
-
-// /**
-//  * @param {number} amount
-//  * @returns {number}
-//  */
-// const padUIAmount = (amount) =>
-//   amount * 10 ** DECIMALS
-
-// /**
-//  * @param {number} amount
-//  * @returns {Uint8Array}
-//  */
-// const createAmountAsPaddedUint8Array = (amount) => {
-//   const padded = padUIAmount(amount)
-//   return padBNToUint8Array((new BN(padded)))
-// }
 
 /**
  *
