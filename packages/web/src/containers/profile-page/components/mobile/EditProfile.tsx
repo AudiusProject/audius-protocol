@@ -4,7 +4,8 @@ import {
   IconTwitterBird,
   IconInstagram,
   IconDonate,
-  IconLink
+  IconLink,
+  IconTikTok
 } from '@audius/stems'
 
 import EditableRow, { Format } from 'components/groupable-list/EditableRow'
@@ -20,6 +21,7 @@ type EditProfileProps = {
   isVerified: boolean
   twitterHandle: string
   instagramHandle: string
+  tikTokHandle: string
   twitterVerified?: boolean
   instagramVerified?: boolean
   website: string
@@ -30,6 +32,7 @@ type EditProfileProps = {
   onUpdateLocation: (location: string) => void
   onUpdateTwitterHandle: (handle: string) => void
   onUpdateInstagramHandle: (handle: string) => void
+  onUpdateTikTokHandle: (handle: string) => void
   onUpdateWebsite: (website: string) => void
   onUpdateDonation: (donation: string) => void
 }
@@ -41,6 +44,7 @@ const EditProfile = ({
   isVerified,
   twitterHandle,
   instagramHandle,
+  tikTokHandle,
   twitterVerified,
   instagramVerified,
   website,
@@ -50,6 +54,7 @@ const EditProfile = ({
   onUpdateLocation,
   onUpdateTwitterHandle,
   onUpdateInstagramHandle,
+  onUpdateTikTokHandle,
   onUpdateWebsite,
   onUpdateDonation
 }: EditProfileProps) => {
@@ -95,6 +100,14 @@ const EditProfile = ({
             maxLength={200}
             inputPrefix='@'
             isDisabled={!!instagramVerified}
+          />
+          <EditableRow
+            label={<IconTikTok className={styles.icon} />}
+            format={Format.INPUT}
+            initialValue={tikTokHandle}
+            onChange={onUpdateTikTokHandle}
+            maxLength={200}
+            inputPrefix='@'
           />
           <EditableRow
             label={<IconLink className={styles.icon} />}
