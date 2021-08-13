@@ -50,13 +50,12 @@ def dispatch_new_user_signup(
     session.add(create_user_referral(referrer, referred_user_id))
     session.flush()
     bus.dispatch(
-        session,
         ChallengeEvent.referral_signup,
         1,
         referrer,
         {"referred_user_id": referred_user_id},
     )
-    bus.dispatch(session, ChallengeEvent.referred_signup, 1, referred_user_id)
+    bus.dispatch(ChallengeEvent.referred_signup, 1, referred_user_id)
 
 
 def test_referral_challenge(app):
@@ -98,13 +97,13 @@ def test_referral_challenge(app):
         dispatch_new_user_signup(referrer.user_id, 2, session, bus)
         for _ in range(0, 4):
             bus.dispatch(
-                session,
                 ChallengeEvent.referral_signup,
                 1,
                 referrer.user_id,
                 {"referred_user_id": 2},
             )
-            bus.dispatch(session, ChallengeEvent.referred_signup, 1, 2)
+            bus.dispatch(ChallengeEvent.referred_signup, 1, 2)
+        bus.flush()
         bus.process_events(session)
 
         challenges = (
@@ -123,6 +122,7 @@ def test_referral_challenge(app):
         dispatch_new_user_signup(referrer.user_id, 9, session, bus)
         dispatch_new_user_signup(referrer.user_id, 10, session, bus)
         dispatch_new_user_signup(referrer.user_id, 11, session, bus)
+        bus.flush()
         bus.process_events(session)
 
         challenges = (

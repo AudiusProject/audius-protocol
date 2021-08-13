@@ -519,14 +519,12 @@ def update_user_events(
             if event == "referrer" and isinstance(value, int):
                 user_events.referrer = value
                 bus.dispatch(
-                    session,
                     ChallengeEvent.referral_signup,
                     user_record.blocknumber,
                     value,
                     {"referred_user_id": user_record.user_id},
                 )
                 bus.dispatch(
-                    session,
                     ChallengeEvent.referred_signup,
                     user_record.blocknumber,
                     user_record.user_id,
