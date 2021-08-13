@@ -560,7 +560,8 @@ jobs:
       - run:
           name: Setup solana
           command: |
-            curl -L 'https://github.com/solana-labs/solana/releases/download/v1.6.9/solana-release-x86_64-unknown-linux-gnu.tar.bz2' | tar jxf -
+            sh -c "$(curl -sSfL https://release.solana.com/v1.7.8/install)"
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
 
       - restore_cache:
           keys:
@@ -569,7 +570,7 @@ jobs:
       - run:
           name: run audius eth registry tests
           command: |
-            export PATH=$PWD/solana-release/bin:$PATH
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
             cd solana-programs/audius_eth_registry
             cargo build-bpf
             cargo test-bpf
@@ -578,6 +579,38 @@ jobs:
             - solana-programs/audius_eth_registry/target
           key: audius-eth-registry-deps-2-{{ checksum "solana-programs/audius_eth_registry/Cargo.toml" }}
 
+      - restore_cache:
+          keys:
+            - claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
+            - claimable-token-deps-
+      - run:
+          name: run claimable token tests
+          command: |
+            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:$PATH"
+            cd solana-programs/claimable-tokens/program
+            cargo build-bpf
+            cargo test-bpf
+      - save_cache:
+          paths:
+            - solana-programs/claimable-tokens/program/target
+          key: claimable-token-deps-{{ checksum "solana-programs/claimable-tokens/program/Cargo.toml" }}
+
+      # - restore_cache:
+      #     keys:
+      #       - reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
+      #       - reward-manager-deps-
+      # - run:
+      #     name: run reward manager tests
+      #     command: |
+      #       export PATH=$PWD/solana-release/bin:$PATH
+      #       cd solana-programs/reward-manager/program
+      #       cp ../../claimable-tokens/program/target/deploy/claimable_tokens.so .
+      #       cargo build-bpf
+      #       cargo test-bpf
+      # - save_cache:
+      #     paths:
+      #       - solana-programs/reward-manager/program/target
+      #     key: reward-manager-deps-{{ checksum "solana-programs/reward-manager/program/Cargo.toml" }}
       # - restore_cache:
       #     keys:
       #       - track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}

@@ -113,17 +113,17 @@ const Setters = {
 
 const Getters = {
   /**
-   * Given wallet and secondaries array, returns map from each secondary to SuccessCount, FailureCount, and SuccessRate
+   * Given wallet and secondaries array, returns map from each secondary to successCount, failureCount, and successRate
    *
    * @param {String} wallet
    * @param {Array} secondaries
-   * @returns {Object} { secondary1: { 'SuccessCount' : _, 'FailureCount': _, 'SuccessRate': _ }, ... }
+   * @returns {Object} { secondary1: { 'successCount' : _, 'failureCount': _, 'successRate': _ }, ... }
    */
   async computeUserSecondarySyncSuccessRates (wallet, secondaries) {
     // Initialize sync success and failure counts for every secondary to 0
     let secondarySyncMetrics = {}
     secondaries.forEach(secondary => {
-      secondarySyncMetrics[secondary] = { 'SuccessCount': 0, 'FailureCount': 0 }
+      secondarySyncMetrics[secondary] = { 'successCount': 0, 'failureCount': 0 }
     })
 
     // Retrieve map of all SyncRequestOutcome keys and daily counts for user from all secondaries
@@ -140,17 +140,17 @@ const Getters = {
       }
 
       if (outcome === Outcomes.SUCCESS) {
-        secondarySyncMetrics[secondary]['SuccessCount'] += count
+        secondarySyncMetrics[secondary]['successCount'] += count
       } else if (outcome === Outcomes.FAILURE) {
-        secondarySyncMetrics[secondary]['FailureCount'] += count
+        secondarySyncMetrics[secondary]['failureCount'] += count
       }
       // All keys should contain 'Success' or 'Failure' - ignore any keys that don't
     }
 
-    // For each secondary, compute and store SuccessRate
+    // For each secondary, compute and store successRate
     Object.keys(secondarySyncMetrics).forEach(secondary => {
-      const { SuccessCount: successCount, FailureCount: failureCount } = secondarySyncMetrics[secondary]
-      secondarySyncMetrics[secondary]['SuccessRate'] = (failureCount === 0) ? 1 : (successCount / failureCount)
+      const { successCount, failureCount } = secondarySyncMetrics[secondary]
+      secondarySyncMetrics[secondary]['successRate'] = (failureCount === 0) ? 1 : (successCount / failureCount)
     })
 
     return secondarySyncMetrics
@@ -176,7 +176,7 @@ const Getters = {
    * Only one redis key should exist for above params, but takes 1st value if multiple are found
    */
   async getSecondaryUserSyncFailureCountForToday (secondary, wallet, syncType) {
-    const resp = await this.getSyncRequestOutcomeMetrics({
+    const resp = await Getters.getSyncRequestOutcomeMetrics({
       secondary,
       wallet,
       syncType,

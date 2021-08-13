@@ -49,12 +49,12 @@ def test_listen_streak_challenge(app):
         session.flush()
 
         bus.dispatch(
-            session,
             ChallengeEvent.connect_verified,
             1,  # block_number
             1,  # user_id
             {},
         )
+        bus.flush()
         bus.process_events(session)
         session.flush()
 

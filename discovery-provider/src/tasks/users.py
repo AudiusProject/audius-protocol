@@ -1,28 +1,30 @@
 import logging
 from datetime import datetime
-from src.challenges.challenge_event_bus import ChallengeEventBus
-from typing import TypedDict
+from typing import Set, TypedDict
+
 import base58
 from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session, make_transient
 from src.app import contract_addresses
-from src.utils import helpers
-from src.models import User, UserEvents, AssociatedWallet
+from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.database_task import DatabaseTask
+from src.models import AssociatedWallet, User, UserEvents
+from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.tasks.metadata import user_metadata_format
-from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
-from src.queries.get_balances import enqueue_immediate_balance_refresh
+from src.utils import helpers
 from src.utils.indexing_errors import IndexingError
-from src.challenges.challenge_event import ChallengeEvent
+from src.utils.user_event_constants import user_event_types_arr, user_event_types_lookup
 
 logger = logging.getLogger(__name__)
 
 
 def user_state_update(
     self,
-    update_task,
+    update_task: DatabaseTask,
     session,
     user_factory_txs,
     block_number,
@@ -32,7 +34,7 @@ def user_state_update(
     """Return int representing number of User model state changes found in transaction."""
 
     num_total_changes = 0
-    user_ids = set()
+    user_ids: Set[int] = set()
     if not user_factory_txs:
         return num_total_changes, user_ids
 
@@ -93,7 +95,6 @@ def user_state_update(
                         event_type,
                         user_events_lookup[user_id]["user"],
                         block_timestamp,
-                        challenge_bus,
                     )
                     if user_record is not None:
                         user_events_lookup[user_id]["events"].append(event_type)
@@ -184,7 +185,7 @@ def invalidate_old_user(session, user_id):
 def parse_user_event(
     self,
     user_contract,
-    update_task,
+    update_task: DatabaseTask,
     session,
     tx_receipt,
     block_number,
@@ -192,7 +193,6 @@ def parse_user_event(
     event_type,
     user_record,
     block_timestamp,
-    challenge_bus,
 ):
     event_args = entry["args"]
 
@@ -250,7 +250,7 @@ def parse_user_event(
     elif event_type == user_event_types_lookup["update_is_verified"]:
         user_record.is_verified = event_args._isVerified
         if user_record.is_verified:
-            challenge_bus.dispatch(
+            update_task.challenge_event_bus.dispatch(
                 session,
                 ChallengeEvent.connect_verified,
                 block_number,

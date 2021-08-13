@@ -1,18 +1,20 @@
+import functools
 import logging
 import time
-import functools
 from datetime import datetime
-from typing import List, Optional
-from sqlalchemy.orm.session import make_transient, Session
-from sqlalchemy.sql import null, functions
+from typing import List, Optional, Set
+
+from sqlalchemy.orm.session import make_transient
+from sqlalchemy.sql import functions, null
 from src.app import contract_addresses
-from src.models import Remix, Stem, Track, TrackRoute, User
-from src.tasks.metadata import track_metadata_format
-from src.tasks.ipld_blacklist import is_blacklisted_ipld
-from src.utils import multihash, helpers
-from src.utils.indexing_errors import IndexingError
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.database_task import DatabaseTask
+from src.models import Remix, Stem, Track, TrackRoute, User
+from src.tasks.ipld_blacklist import is_blacklisted_ipld
+from src.tasks.metadata import track_metadata_format
+from src.utils import helpers, multihash
+from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +33,7 @@ track_event_types_arr = [
 
 def track_state_update(
     self,
-    update_task,
+    update_task: DatabaseTask,
     session,
     track_factory_txs,
     block_number,
@@ -42,7 +44,7 @@ def track_state_update(
     num_total_changes = 0
 
     # This stores the track_ids created or updated in the set of transactions
-    track_ids = set()
+    track_ids: Set[int] = set()
 
     if not track_factory_txs:
         return num_total_changes, track_ids
@@ -282,7 +284,9 @@ def update_track_routes_table(
 
     # Get the title slug, and set the new slug to that
     # (will check for conflicts later)
-    new_track_slug_title = helpers.create_track_slug(track_metadata["title"], track_record.track_id)
+    new_track_slug_title = helpers.create_track_slug(
+        track_metadata["title"], track_record.track_id
+    )
     new_track_slug = new_track_slug_title
 
     # Find the current route for the track
@@ -433,7 +437,7 @@ def update_track_routes_table(
 def parse_track_event(
     self,
     session,
-    update_task,
+    update_task: DatabaseTask,
     entry,
     event_type,
     track_record,
@@ -509,9 +513,7 @@ def parse_track_event(
 
         update_stems_table(session, track_record, track_metadata)
         update_remixes_table(session, track_record, track_metadata)
-        dispatch_challenge_track_upload(
-            session, challenge_bus, block_number, track_record
-        )
+        dispatch_challenge_track_upload(challenge_bus, block_number, track_record)
 
     if event_type == track_event_types_lookup["update_track"]:
         upd_track_metadata_digest = event_args._multihashDigest.hex()
@@ -587,11 +589,9 @@ def parse_track_event(
 
 
 def dispatch_challenge_track_upload(
-    session: Session, bus: ChallengeEventBus, block_number: int, track_record
+    bus: ChallengeEventBus, block_number: int, track_record
 ):
-    bus.dispatch(
-        session, ChallengeEvent.track_upload, block_number, track_record.owner_id
-    )
+    bus.dispatch(ChallengeEvent.track_upload, block_number, track_record.owner_id)
 
 
 def is_valid_json_field(metadata, field):

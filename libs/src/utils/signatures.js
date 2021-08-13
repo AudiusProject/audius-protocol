@@ -18,12 +18,12 @@ const getPermitTypehash = () => {
   return _permitTypehash
 }
 
-let _lockAssetsTypehash = null
-const getLockAssetTypeHash = () => {
-  if (!_lockAssetsTypehash) {
-    _lockAssetsTypehash = Utils.keccak256('LockAssets(address from,uint256 amount,bytes32 recipient,uint8 targetChain,uint32 nonce,bool refundDust,uint256 deadline)')
+let _transferTokensTypehash = null
+const getTransferTokensTypeHash = () => {
+  if (!_transferTokensTypehash) {
+    _transferTokensTypehash = Utils.keccak256('TransferTokens(address from,uint256 amount,uint16 recipientChain,bytes32 recipient,uint256 artbiterFee,uint32 nonce,uint256 deadline)')
   }
-  return _lockAssetsTypehash
+  return _transferTokensTypehash
 }
 
 // Returns the EIP712 hash which should be signed by the user
@@ -56,22 +56,22 @@ function getPermitDigest (
 }
 
 // Returns the EIP712 hash which should be signed by the user
-// in order to make a call to `lockAssets`
-function getLockAssetsDigest (
+// in order to make a call to `transferTokens`
+function getTransferTokensDigest (
   web3,
   name,
   address,
   chainId,
-  lockAssets,
+  transferTokens,
   nonce,
   deadline
 ) {
   const DOMAIN_SEPARATOR = getDomainSeparator(web3, name, address, chainId)
   let innerEncoded = web3.eth.abi.encodeParameters(
-    ['bytes32', 'address', 'uint256', 'bytes32', 'uint8',
-      'uint32', 'bool', 'uint256'],
-    [getLockAssetTypeHash(), lockAssets.from, lockAssets.amount, lockAssets.recipient,
-      lockAssets.targetChain, nonce, lockAssets.refundDust, deadline]
+    ['bytes32', 'address', 'uint256', 'uint16', 'bytes32',
+      'uint256', 'uint32', 'uint256'],
+    [getTransferTokensTypeHash(), transferTokens.from, transferTokens.amount, transferTokens.recipientChain,
+      transferTokens.recipient, transferTokens.arbiterFee, nonce, deadline]
   )
   let encoded = pack(
     ['bytes1', 'bytes1', 'bytes32', 'bytes32'],
@@ -103,5 +103,5 @@ function getDomainSeparator (web3, name, contractAddress, chainId) {
 module.exports = {
   sign,
   getPermitDigest,
-  getLockAssetsDigest
+  getTransferTokensDigest
 }

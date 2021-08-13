@@ -29,12 +29,12 @@ def dispatch_play(offset: int, session: Session, bus: ChallengeEventBus):
     session.add(play)
     session.flush()
     bus.dispatch(
-        session,
         ChallengeEvent.track_listen,
         1,
         1,
         {"created_at": play.created_at.timestamp()},
     )
+    bus.flush()
     bus.process_events(session)
 
 

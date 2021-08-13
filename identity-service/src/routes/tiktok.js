@@ -1,5 +1,6 @@
 const axios = require('axios')
 const cors = require('cors')
+
 const config = require('../config.js')
 
 const {
@@ -17,6 +18,7 @@ module.exports = function (app) {
   app.get(
     '/tiktok',
     handleResponse(async (req, res, next) => {
+      const { redirectUrl } = req.query
       const csrfState = Math.random().toString(36).substring(7)
       res.cookie('csrfState', csrfState, { maxAge: 60000 })
 
@@ -25,7 +27,7 @@ module.exports = function (app) {
       url += `?client_key=${config.get('tikTokAPIKey')}`
       url += '&scope=user.info.basic,share.sound.create'
       url += '&response_type=code'
-      url += `&redirect_uri=${config.get('tikTokAuthOrigin')}`
+      url += `&redirect_uri=${redirectUrl || config.get('tikTokAuthOrigin')}`
       url += '&state=' + csrfState
 
       res.redirect(url)
@@ -34,7 +36,7 @@ module.exports = function (app) {
 
   const accessTokenCorsOptions = {
     credentials: true,
-    origin: config.get('tikTokAuthOrigin')
+    origin: true
   }
 
   app.options('/tiktok/access_token', cors(accessTokenCorsOptions))

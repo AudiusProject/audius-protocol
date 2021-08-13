@@ -1,8 +1,9 @@
-import logging
 import concurrent.futures
+import logging
 
 from sqlalchemy import func
 from src.app import contract_addresses
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import (
     AssociatedWallet,
     Block,
@@ -17,33 +18,34 @@ from src.models import (
     User,
     UserEvents,
 )
-from src.tasks.celery_app import celery
-from src.tasks.tracks import track_state_update
-from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
-from src.tasks.social_features import social_feature_state_update
-from src.tasks.playlists import playlist_state_update
-from src.tasks.user_library import user_library_state_update
-from src.tasks.user_replica_set import user_replica_set_state_update
-from src.utils.redis_constants import (
-    latest_block_redis_key,
-    latest_block_hash_redis_key,
-    most_recent_indexed_block_hash_redis_key,
-    most_recent_indexed_block_redis_key,
-)
-from src.utils.redis_cache import (
-    remove_cached_user_ids,
-    remove_cached_track_ids,
-    remove_cached_playlist_ids,
-)
-from src.queries.get_skipped_transactions import (
-    get_indexing_error,
-    set_indexing_error,
-    clear_indexing_error,
-)
 from src.queries.confirm_indexing_transaction_error import (
     confirm_indexing_transaction_error,
 )
+from src.queries.get_skipped_transactions import (
+    clear_indexing_error,
+    get_indexing_error,
+    set_indexing_error,
+)
+from src.tasks.celery_app import celery
+from src.tasks.playlists import playlist_state_update
+from src.tasks.social_features import social_feature_state_update
+from src.tasks.tracks import track_state_update
+from src.tasks.user_library import user_library_state_update
+from src.tasks.user_replica_set import user_replica_set_state_update
+from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
 from src.utils.indexing_errors import IndexingError
+from src.utils.redis_cache import (
+    remove_cached_playlist_ids,
+    remove_cached_track_ids,
+    remove_cached_user_ids,
+)
+from src.utils.redis_constants import (
+    latest_block_hash_redis_key,
+    latest_block_redis_key,
+    most_recent_indexed_block_hash_redis_key,
+    most_recent_indexed_block_redis_key,
+)
+from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +71,7 @@ def get_contract_info_if_exists(self, address):
     return None
 
 
-def initialize_blocks_table_if_necessary(db):
+def initialize_blocks_table_if_necessary(db: SessionManager):
     redis = update_task.redis
 
     target_blockhash = None
@@ -119,7 +121,7 @@ def initialize_blocks_table_if_necessary(db):
     return target_blockhash
 
 
-def get_latest_block(db):
+def get_latest_block(db: SessionManager):
     latest_block = None
     block_processing_window = int(
         update_task.shared_config["discprov"]["block_processing_window"]
@@ -271,9 +273,9 @@ def index_blocks(self, db, blocks_list):
         logger.info(
             f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
-
+        challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
         # Handle each block in a distinct transaction
-        with db.scoped_session() as session:
+        with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
             current_block_query = session.query(Block).filter_by(is_current=True)
 
             # Without this check we may end up duplicating an insert operation
