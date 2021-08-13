@@ -53,8 +53,7 @@ let defaultHealthCheckData = {
   'allocatedFileDescriptors': 2912,
   'receivedBytesPerSec': 776.7638177541248,
   'transferredBytesPerSec': 39888.88888888889,
-  'maxStorageUsedPercent': 95,
-  'numberOfCPUs': 8
+  'maxStorageUsedPercent': 95
 }
 
 describe('test CreatorNodeSelection', () => {
