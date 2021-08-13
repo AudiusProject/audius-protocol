@@ -107,6 +107,7 @@ const healthCheckVerboseController = async (req) => {
     sequelize,
     getMonitors,
     numberOfCPUs,
+    TranscodingQueue.getTranscodeQueueJobs,
     getAggregateSyncData,
     getLatestSyncData
   )

@@ -87,8 +87,8 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, getMonitors, number
  * @param {function} getAggregateSyncData fn to get the latest daily sync count (success, fail, triggered)
  * @param {function} getLatestSyncData fn to get the timestamps of the most recent sync (success, fail)
  */
-const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, getMonitors, numberOfCPUs, getAggregateSyncData, getLatestSyncData) => {
-  const basicHealthCheck = await healthCheck({ libs }, logger, sequelize, getMonitors, numberOfCPUs)
+const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, getMonitors, numberOfCPUs, getTranscodeQueueJobs, getAggregateSyncData, getLatestSyncData) => {
+  const basicHealthCheck = await healthCheck({ libs }, logger, sequelize, getMonitors, numberOfCPUs, getTranscodeQueueJobs)
 
   // Location information
   const country = config.get('serviceCountry')
