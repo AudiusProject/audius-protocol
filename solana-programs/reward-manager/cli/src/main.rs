@@ -610,6 +610,35 @@ fn main() {
                     .required(true)
                     .help("Ethereum operator address"),
             ))
+        .subcommand(SubCommand::with_name("change-reward-manager-authority").about("Admin method disabling 'manager' authority")
+            .arg(
+                Arg::with_name("reward-manager")
+                    .long("reward-manager")
+                    .validator(is_pubkey)
+                    .value_name("ADDRESS")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Reward manager"),
+            )
+            .arg(
+                Arg::with_name("current-authority")
+                    .long("current-authority")
+                    .validator(is_pubkey)
+                    .value_name("ADDRESS")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Current authority"),
+            )
+            .arg(
+                Arg::with_name("new-authority")
+                    .long("new-authority")
+                    .validator(is_pubkey)
+                    .value_name("ADDRESS")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Current authority"),
+            )
+            )
         .subcommand(SubCommand::with_name("delete-sender").about("Admin method deleting sender")
             .arg(
                 Arg::with_name("reward-manager")
@@ -683,7 +712,7 @@ fn main() {
                     .value_name("ETH_ADDRESS")
                     .takes_value(true)
                     .required(true)
-                    .help("New Ethereum sender address"),
+                    .help("Existing Ethereum sender address"),
             )
             .arg(
                 Arg::with_name("senders-secrets")
@@ -933,6 +962,12 @@ fn main() {
                 String::from(operator_address.get(2..).unwrap()),
                 senders_secrets,
             )
+        }
+        ("change-reward-manager-authority", Some(arg_matches)) => {
+            let reward_manager: Pubkey = pubkey_of(arg_matches, "reward-manager").unwrap();
+            println!("{:}", &reward_manager);
+            // TODO: Add function call
+            exit(1)
         }
         ("delete-sender-public", Some(arg_matches)) => {
             let reward_manager: Pubkey = pubkey_of(arg_matches, "reward-manager").unwrap();
