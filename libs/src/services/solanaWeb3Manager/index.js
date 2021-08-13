@@ -10,9 +10,11 @@ const {
 const { wAudioFromWeiAudio } = require('./wAudio')
 const Utils = require('../../utils')
 const { submitAttestations, evaluateAttestations } = require('./rewards')
+const BN = require('bn.js')
 
-const { PublicKey } = solanaWeb3
-window.PublicKey = PublicKey
+/**
+ * @typedef {import("./rewards.js").AttestationMeta} AttestationMeta
+ */
 
 /**
  * SolanaWeb3Manager acts as the interface to solana contracts from a client.
@@ -40,7 +42,6 @@ class SolanaWeb3Manager {
    *  the address for the claimable token program used to create banks and transfer wAudio
    * @param {string} solanaWeb3Config.rewardsManagerProgramId
    * @param {string} solanaWeb3Config.rewardsManagerProgramPDA
-   *
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
    */
@@ -258,6 +259,27 @@ class SolanaWeb3Manager {
     })
   }
 
+  /**
+   * Submits attestations for challenge completion to the RewardsManager program on Solana.
+   *
+   * @param {{
+   *     attestations: AttestationMeta[],
+   *     oracleAttestation: AttestationMeta,
+   *     challengeId: string,
+   *     specifier: string,
+   *     recipientEthAddress: string,
+   *     tokenAmount: number,
+   * }} {
+   *     attestations,
+   *     oracleAttestation,
+   *     challengeId,
+   *     specifier,
+   *     recipientEthAddress,
+   *     tokenAmount,
+   *    }
+   * @returns
+   * @memberof SolanaWeb3Manager
+   */
   async submitChallengeAttestations ({
     attestations,
     oracleAttestation,
@@ -281,6 +303,24 @@ class SolanaWeb3Manager {
     })
   }
 
+  /**
+   * Evaluates existing submitted attestations, disbursing if successful.
+   *
+   * @param {{
+   *    challengeId: string,
+   *    specifier: string,
+   *    recipientEthAddress: string
+   *    oracleEthAddress: string
+   * }} {
+   *     challengeId,
+   *     specifier,
+   *     recipientEthAddress,
+   *     oracleEthAddress,
+   *     tokenAmount
+   *   }
+   * @returns
+   * @memberof SolanaWeb3Manager
+   */
   async evaluateChallengeAttestations({
     challengeId,
     specifier,
