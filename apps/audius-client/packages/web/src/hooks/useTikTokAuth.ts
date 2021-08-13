@@ -52,9 +52,9 @@ export const useTikTokAuth = ({
       message.send()
       const response = await message.receive()
 
-      const { authorizationCode, csrfState } = response
-      if (authorizationCode && csrfState) {
-        getAccessToken(authorizationCode, csrfState, callback)
+      const { accessToken, openId, expiresIn } = response
+      if (accessToken && openId && expiresIn) {
+        storeAccessToken(accessToken, openId, expiresIn, callback)
       } else {
         onError(new Error('Native mobile TikTok auth failed'))
       }
@@ -117,9 +117,7 @@ export const useTikTokAuth = ({
             closeDialog()
             return onError(
               new Error(
-                'OAuth redirect has occurred but no query or hash parameters were found. ' +
-                  'They were either not set during the redirect, or were removed—typically by a ' +
-                  'routing library—before Twitter react component could read it.'
+                'OAuth redirect has occurred but no query or hash parameters were found.'
               )
             )
           }
@@ -129,6 +127,21 @@ export const useTikTokAuth = ({
         // This will catch until the popup is redirected back to the same origin
       }
     }, 500)
+  }
+
+  const storeAccessToken = (
+    accessToken: string,
+    openId: string,
+    expiresIn: string,
+    callback: WithAuthCallback
+  ) => {
+    window.localStorage.setItem('tikTokAccessToken', accessToken)
+    window.localStorage.setItem('tikTokOpenId', openId)
+
+    const expirationDate = moment().add(expiresIn, 's').format()
+    window.localStorage.setItem('tikTokAccessTokenExpiration', expirationDate)
+
+    callback(accessToken, openId)
   }
 
   const getAccessToken = async (
@@ -158,13 +171,7 @@ export const useTikTokAuth = ({
         }
       } = await response.json()
 
-      window.localStorage.setItem('tikTokAccessToken', access_token)
-      window.localStorage.setItem('tikTokOpenId', open_id)
-
-      const expirationDate = moment().add(expires_in, 's').format()
-      window.localStorage.setItem('tikTokAccessTokenExpiration', expirationDate)
-
-      callback(access_token, open_id)
+      storeAccessToken(access_token, open_id, expires_in, callback)
     } catch (error) {
       return onError(error)
     }

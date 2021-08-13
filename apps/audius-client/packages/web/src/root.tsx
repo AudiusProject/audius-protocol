@@ -20,13 +20,15 @@ const validPublicSitePathnames = [
   '',
   'press',
   'legal/terms-of-use',
-  'legal/privacy-policy'
+  'legal/privacy-policy',
+  'auth-redirect'
 ]
 
 const publicSiteSubPathnames = [
   'press',
   'legal/terms-of-use',
-  'legal/privacy-policy'
+  'legal/privacy-policy',
+  'auth-redirect'
 ]
 
 const isPublicSiteRoute = (location = window.location) => {

@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react'
 
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 
+import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import NavScreen from 'components/public-site/NavOverlay'
 import LandingPage from 'containers/landing-page/LandingPage'
 import {
@@ -14,7 +15,7 @@ const PressKitPage = React.lazy(() =>
   import('containers/press-kit-page/PressKitPage')
 )
 const PrivacyPolicyPage = React.lazy(() =>
-  import('containers/pirvacy-policy-page/PrivacyPolicyPage')
+  import('containers/privacy-policy-page/PrivacyPolicyPage')
 )
 const TermsOfUsePage = React.lazy(() =>
   import('containers/terms-of-use-page/TermsOfUsePage')
@@ -145,6 +146,11 @@ const PublicSiteApp = ({
                 setRenderPublicSite={setRenderPublicSite}
               />
             )}
+          />
+          <Route
+            exact
+            path={'/auth-redirect'}
+            render={() => <LoadingSpinnerFullPage />}
           />
         </Router>
       </React.Suspense>

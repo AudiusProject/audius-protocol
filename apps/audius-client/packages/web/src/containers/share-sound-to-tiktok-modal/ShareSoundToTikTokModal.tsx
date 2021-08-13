@@ -9,6 +9,7 @@ import {
   Anchor,
   ModalProps
 } from '@audius/stems'
+import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { MODAL_OFFSET_PIXELS } from 'components/action-sheet-modal/ActionSheetModal'
@@ -99,9 +100,17 @@ const ShareSoundToTikTokModal = () => {
           ? messages.error
           : fileRequirementErrorMessages[fileRequirementError!]
 
-      return <div className={styles.errorMessage}>{errorMessage}</div>
+      return (
+        <div className={cn(styles.message, styles.errorMessage)}>
+          {errorMessage}
+        </div>
+      )
     } else {
-      return <div>{rawMessage.replace('[Track Name]', track?.title ?? '')}</div>
+      return (
+        <div className={styles.message}>
+          {rawMessage.replace('[Track Name]', track?.title ?? '')}
+        </div>
+      )
     }
   }
 
