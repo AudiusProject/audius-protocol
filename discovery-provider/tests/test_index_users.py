@@ -1,5 +1,6 @@
 from datetime import datetime
 from unittest import mock
+from web3 import Web3
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.database_task import DatabaseTask
@@ -9,7 +10,6 @@ from src.utils import helpers
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
 from src.utils.user_event_constants import user_event_types_lookup
-from web3 import Web3
 
 from tests.index_helpers import AttrDict, IPFSClient
 
