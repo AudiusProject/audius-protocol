@@ -156,7 +156,7 @@ const createUserBankFrom = async ({
 
   const transactionData = {
     recentBlockhash: blockhash,
-    instruction: {
+    instructions: [{
       keys: accounts.map(account => {
         return {
           pubkey: account.pubkey.toString(),
@@ -166,7 +166,7 @@ const createUserBankFrom = async ({
       }),
       programId: claimableTokenProgramKey.toString(),
       data: Buffer.from(serializedInstructionEnum)
-    }
+    }]
   }
 
   const response = await identityService.solanaRelay(transactionData)

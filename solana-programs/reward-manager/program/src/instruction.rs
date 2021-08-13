@@ -1,11 +1,7 @@
 //! Instruction types
 
 use crate::{
-    processor::{
-        SENDER_SEED_PREFIX,
-        TRANSFER_SEED_PREFIX,
-        VERIFY_TRANSFER_SEED_PREFIX
-    },
+    processor::{SENDER_SEED_PREFIX, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX},
     utils::{find_derived_pair, find_program_address, EthereumAddress},
 };
 use borsh::{BorshDeserialize, BorshSerialize};
@@ -32,7 +28,7 @@ pub struct CreateSenderArgs {
     pub operator: EthereumAddress,
 }
 
-/// `AddSender` instruction args
+/// `CreateSenderPublic` instruction args
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
 pub struct AddSenderArgs {
     /// Ethereum address
@@ -45,7 +41,7 @@ pub struct AddSenderArgs {
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
 pub struct VerifyTransferSignatureArgs {
     /// ID generated on backend
-    pub id: String
+    pub id: String,
 }
 
 /// `Transfer` instruction args
@@ -72,6 +68,13 @@ pub enum Instructions {
     ///   5. `[]` Token program
     ///   6. `[]` Rent sysvar
     InitRewardManager(InitRewardManagerArgs),
+
+    ///   Change RewardManager authority
+    ///
+    ///   0. `[writable]` Reward manager
+    ///   1. `[signer]` Current authority
+    ///   2. `[]` New authority
+    ChangeRewardManagerAuthority,
 
     ///   Admin method creating new authorized sender
     ///
@@ -101,7 +104,16 @@ pub enum Instructions {
     /// 3. `[writable]` new_sender
     /// 4. `[]` Bunch of old senders which prove adding new one
     /// ...
-    AddSender(AddSenderArgs),
+    CreateSenderPublic(AddSenderArgs),
+
+    ///   Delete sender with other senders proof
+    ///
+    ///   0. `[]` Reward manager
+    ///   1. `[writable]` Sender account to delete
+    ///   2. `[writable]` Refunder account
+    ///   3. `[]` Instruction info
+    ///   4. `[]` Bunch of senders which prove removing another one
+    DeleteSenderPublic,
 
     ///   Verify transfer signature
     ///
@@ -154,6 +166,28 @@ pub fn init(
         AccountMeta::new_readonly(spl_token::id(), false),
         AccountMeta::new_readonly(sysvar::rent::id(), false),
     ];
+    Ok(Instruction {
+        program_id: *program_id,
+        accounts,
+        data,
+    })
+}
+
+/// Create `ChangeRewardManagerAuthority` instruction
+pub fn change_manager_authority(
+    program_id: &Pubkey,
+    reward_manager: &Pubkey,
+    current_authority: &Pubkey,
+    new_authority: &Pubkey,
+) -> Result<Instruction, ProgramError> {
+    let data = Instructions::ChangeRewardManagerAuthority.try_to_vec()?;
+
+    let accounts = vec![
+        AccountMeta::new(*reward_manager, false),
+        AccountMeta::new_readonly(*current_authority, true),
+        AccountMeta::new_readonly(*new_authority, false),
+    ];
+
     Ok(Instruction {
         program_id: *program_id,
         accounts,
@@ -235,8 +269,8 @@ pub fn delete_sender(
     })
 }
 
-/// Create `AddSender` instruction
-pub fn add_sender<'a, I>(
+/// Create `CreateSenderPublic` instruction
+pub fn create_sender_public<'a, I>(
     program_id: &Pubkey,
     reward_manager: &Pubkey,
     funder: &Pubkey,
@@ -247,7 +281,7 @@ pub fn add_sender<'a, I>(
 where
     I: IntoIterator<Item = &'a Pubkey>,
 {
-    let data = Instructions::AddSender(AddSenderArgs {
+    let data = Instructions::CreateSenderPublic(AddSenderArgs {
         eth_address,
         operator,
     })
@@ -282,19 +316,56 @@ where
     })
 }
 
+/// Create `DeleteSenderPublic` instruction
+pub fn delete_sender_public<'a, I>(
+    program_id: &Pubkey,
+    reward_manager: &Pubkey,
+    refunder_account: &Pubkey,
+    eth_address: EthereumAddress,
+    signers: I,
+) -> Result<Instruction, ProgramError>
+where
+    I: IntoIterator<Item = &'a Pubkey>,
+{
+    let data = Instructions::DeleteSenderPublic.try_to_vec()?;
+
+    let (_, derived_address, _) = find_derived_pair(
+        program_id,
+        reward_manager,
+        [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
+            .concat()
+            .as_ref(),
+    );
+
+    let mut accounts = vec![
+        AccountMeta::new_readonly(*reward_manager, false),
+        AccountMeta::new(derived_address, false),
+        AccountMeta::new(*refunder_account, false),
+        AccountMeta::new_readonly(sysvar::instructions::id(), false),
+    ];
+    let iter = signers
+        .into_iter()
+        .map(|i| AccountMeta::new_readonly(*i, false));
+    accounts.extend(iter);
+
+    Ok(Instruction {
+        program_id: *program_id,
+        accounts,
+        data,
+    })
+}
+
 /// Create `VerifyTransferSignature` instruction
 pub fn verify_transfer_signature(
     program_id: &Pubkey,
     reward_manager: &Pubkey,
     sender: &Pubkey,
     funder: &Pubkey,
-    id: String
+    id: String,
 ) -> Result<Instruction, ProgramError> {
-    let data = Instructions::VerifyTransferSignature(
-        VerifyTransferSignatureArgs {
-            id: id.clone()
-        }
-    ).try_to_vec()?;
+    let data =
+        Instructions::VerifyTransferSignature(VerifyTransferSignatureArgs { id: id.clone() })
+            .try_to_vec()?;
 
     let (reward_manager_authority, verified_messages, _) = find_derived_pair(
         program_id,

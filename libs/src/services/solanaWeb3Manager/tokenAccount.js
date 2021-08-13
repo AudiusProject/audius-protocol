@@ -125,7 +125,7 @@ async function createAssociatedTokenAccount ({
 
   const transactionData = {
     recentBlockhash: blockhash,
-    instruction: {
+    instructions: [{
       keys: accounts.map(account => {
         return {
           pubkey: account.pubkey.toString(),
@@ -135,7 +135,7 @@ async function createAssociatedTokenAccount ({
       }),
       programId: ASSOCIATED_TOKEN_PROGRAM_ID.toString(),
       data: Buffer.from([])
-    }
+    }]
   }
 
   const response = await identityService.solanaRelay(transactionData)

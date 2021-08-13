@@ -138,7 +138,8 @@ class PeerSetManager {
    * @notice This function depends on a new discprov route and cannot be consumed until every discprov exposes that route
    *    It will throw if the route doesn't exist
    * @returns {Object[]} array of objects
-   *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
+   *  - Each object should have the schema { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID },
+   * and at the very least have the schema { primary, secondary1, secondary2, user_id, wallet }
    */
   async getAllNodeUsers () {
     // Fetch discovery node currently connected to libs as this can change
@@ -172,7 +173,8 @@ class PeerSetManager {
    * Retrieve users with this node as primary
    * Leaving this function in until all discovery providers update to new version and expose new `/users/content_node/all` route
    * @returns {Object[]} array of objects
-   *  - Each object has schema { primary, secondary1, secondary2, user_id, wallet }
+   *  - Each object should have the schema { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID }
+   * and at the very least have the schema { primary, secondary1, secondary2, user_id, wallet }
    */
   async getNodePrimaryUsers () {
     // Fetch discovery node currently connected to libs as this can change

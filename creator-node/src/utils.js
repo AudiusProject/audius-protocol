@@ -272,7 +272,7 @@ async function findCIDInNetwork (filePath, cid, logger, libs) {
 /**
  * Get all Content Nodes registered on chain, excluding self
  * Fetches from Redis if available, else fetches from chain and updates Redis value
- * Returns array of objects with schema { blockNumber, delegateOwnerWallet, endpoint, owner, spID, type }
+ * @returns {Object[]} array of SP objects with schema { owner, endpoint, spID, type, blockNumber, delegateOwnerWallet }
  */
 async function getAllRegisteredCNodes (libs, logger) {
   const cacheKey = 'all_registered_cnodes'
