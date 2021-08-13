@@ -1,16 +1,17 @@
-import React, { useState, useRef, ReactNode } from 'react'
+import React, { useState, useRef, ReactNode, useMemo } from 'react'
 
 import {
   IconTwitterBird,
   IconInstagram,
   IconDonate,
-  IconLink
+  IconLink,
+  IconTikTok
 } from '@audius/stems'
 import cn from 'classnames'
 
 import Input from 'components/data-entry/Input'
 
-import { Type } from './SocialLink'
+import { Type, handleTypes } from './SocialLink'
 import styles from './SocialLinkInput.module.css'
 
 const sanitizeHandle = (handle: string) => {
@@ -23,6 +24,12 @@ const sanitizeHandle = (handle: string) => {
     }
     if (handle.includes('instagram')) {
       const split = handle.split('instagram.com/')[1]
+      if (split) {
+        return split.split('/')[0]
+      }
+    }
+    if (handle.includes('tiktok')) {
+      const split = handle.split('tiktok.com/')[1]
       if (split) {
         return split.split('/')[0]
       }
@@ -54,6 +61,8 @@ const SocialLinkInput = ({
 
   const inputRef = useRef()
 
+  const isHandle = useMemo(() => handleTypes.includes(type), [type])
+
   const handleOnChange = (text: string) => {
     if (textLimitMinusLinks) {
       const textWithoutLinks = text.replace(/(?:https?):\/\/[\n\S]+/g, '')
@@ -61,7 +70,7 @@ const SocialLinkInput = ({
     }
 
     let sanitized: string
-    if (type === Type.TWITTER || type === Type.INSTAGRAM) {
+    if (isHandle) {
       clearTimeout(timeoutRef.current)
       timeoutRef.current = setTimeout(() => {
         if (text.startsWith('@')) {
@@ -100,6 +109,9 @@ const SocialLinkInput = ({
     case Type.INSTAGRAM:
       icon = <IconInstagram className={styles.icon} />
       break
+    case Type.TIKTOK:
+      icon = <IconTikTok className={styles.icon} />
+      break
     case Type.WEBSITE:
       icon = <IconLink className={styles.icon} />
       break
@@ -108,13 +120,16 @@ const SocialLinkInput = ({
       break
   }
 
-  let placeholder: string
+  let placeholder = ''
   switch (type) {
     case Type.TWITTER:
       placeholder = 'Twitter Handle'
       break
     case Type.INSTAGRAM:
       placeholder = 'Instagram Handle'
+      break
+    case Type.TIKTOK:
+      placeholder = 'TikTok Handle'
       break
     case Type.WEBSITE:
       placeholder = 'Website'
@@ -132,12 +147,10 @@ const SocialLinkInput = ({
       })}
     >
       <div className={styles.icon}>{icon}</div>
-      {(type === Type.TWITTER || type === Type.INSTAGRAM) && (
-        <span className={styles.at}>{'@'}</span>
-      )}
+      {isHandle && <span className={styles.at}>{'@'}</span>}
       <Input
         className={cn(styles.input, className, {
-          [styles.handle]: type === Type.TWITTER || type === Type.INSTAGRAM
+          [styles.handle]: isHandle
         })}
         characterLimit={200}
         size='small'

@@ -64,6 +64,7 @@ export type ProfilePageProps = {
   location: string
   twitterHandle: string
   instagramHandle: string
+  tikTokHandle: string
   twitterVerified?: boolean
   instagramVerified?: boolean
   website: string
@@ -108,6 +109,7 @@ export type ProfilePageProps = {
   updateLocation: (location: string) => void
   updateTwitterHandle: (handle: string) => void
   updateInstagramHandle: (handle: string) => void
+  updateTikTokHandle: (handle: string) => void
   updateWebsite: (website: string) => void
   updateDonation: (donation: string) => void
   changeTab: (tab: Tabs) => void
@@ -172,6 +174,7 @@ const ProfilePage = ({
   updateLocation,
   updateTwitterHandle,
   updateInstagramHandle,
+  updateTikTokHandle,
   updateWebsite,
   updateDonation,
   updateProfilePicture,
@@ -204,6 +207,7 @@ const ProfilePage = ({
   location,
   twitterHandle,
   instagramHandle,
+  tikTokHandle,
   twitterVerified,
   instagramVerified,
   website,
@@ -647,6 +651,7 @@ const ProfilePage = ({
           location={location}
           twitterHandle={twitterHandle}
           instagramHandle={instagramHandle}
+          tikTokHandle={tikTokHandle}
           twitterVerified={twitterVerified}
           instagramVerified={instagramVerified}
           website={website}
@@ -659,6 +664,7 @@ const ProfilePage = ({
           onUpdateLocation={updateLocation}
           onUpdateTwitterHandle={updateTwitterHandle}
           onUpdateInstagramHandle={updateInstagramHandle}
+          onUpdateTikTokHandle={updateTikTokHandle}
           onUpdateWebsite={updateWebsite}
           onUpdateDonation={updateDonation}
           goToRoute={goToRoute}

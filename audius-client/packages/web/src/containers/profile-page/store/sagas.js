@@ -185,6 +185,7 @@ function* fetchUserSocials(handle) {
         metadata: {
           twitter_handle: socials.twitterHandle || null,
           instagram_handle: socials.instagramHandle || null,
+          tiktok_handle: socials.tikTokHandle || null,
           website: socials.website || null,
           donation: socials.donation || null,
           _artist_pick: socials.pinnedTrackId || null

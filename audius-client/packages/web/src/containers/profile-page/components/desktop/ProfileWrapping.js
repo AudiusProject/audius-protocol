@@ -84,7 +84,14 @@ const ProfileWrapping = props => {
     false
   )
   const record = useRecord()
-  const { handle, goToRoute, twitterHandle, instagramHandle, website } = props
+  const {
+    handle,
+    goToRoute,
+    twitterHandle,
+    instagramHandle,
+    tikTokHandle,
+    website
+  } = props
   const onClickTwitter = useCallback(() => {
     record(
       make(Name.PROFILE_PAGE_CLICK_TWITTER, {
@@ -101,6 +108,14 @@ const ProfileWrapping = props => {
       })
     )
   }, [record, handle, instagramHandle])
+  const onClickTikTok = useCallback(() => {
+    record(
+      make(Name.PROFILE_PAGE_CLICK_TIKTOK, {
+        handle: handle.replace('@', ''),
+        tikTokHandle
+      })
+    )
+  }, [record, handle, tikTokHandle])
   const onClickWebsite = useCallback(() => {
     record(
       make(Name.PROFILE_PAGE_CLICK_WEBSITE, {
@@ -184,6 +199,14 @@ const ProfileWrapping = props => {
             onChange={props.onUpdateInstagramHandle}
           />
         </div>
+        <div className={styles.editField}>
+          <SocialLinkInput
+            defaultValue={props.tikTokHandle}
+            className={styles.tikTokInput}
+            type={Type.TIKTOK}
+            onChange={props.onUpdateTikTokHandle}
+          />
+        </div>
         <div className={cn(styles.editLabel, styles.section)}>Website</div>
         <div className={styles.editField}>
           <SocialLinkInput
@@ -227,6 +250,13 @@ const ProfileWrapping = props => {
               type={Type.INSTAGRAM}
               link={props.instagramHandle}
               onClick={onClickInstagram}
+            />
+          )}
+          {props.tikTokHandle && (
+            <SocialLink
+              type={Type.TIKTOK}
+              link={props.tikTokHandle}
+              onClick={onClickTikTok}
             />
           )}
           {props.website && (

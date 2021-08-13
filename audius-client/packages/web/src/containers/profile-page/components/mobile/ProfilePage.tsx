@@ -59,6 +59,7 @@ export type ProfilePageProps = {
   location: string
   twitterHandle: string
   instagramHandle: string
+  tikTokHandle: string
   twitterVerified?: boolean
   instagramVerified?: boolean
   website: string
@@ -119,6 +120,7 @@ export type ProfilePageProps = {
   updateLocation: (location: string) => void
   updateTwitterHandle: (handle: string) => void
   updateInstagramHandle: (handle: string) => void
+  updateTikTokHandle: (handle: string) => void
   updateWebsite: (website: string) => void
   updateDonation: (donation: string) => void
   updateProfilePicture: (
@@ -189,6 +191,7 @@ const ProfilePage = g(
     followers,
     twitterHandle,
     instagramHandle,
+    tikTokHandle,
     twitterVerified,
     instagramVerified,
     website,
@@ -226,6 +229,7 @@ const ProfilePage = g(
     updateLocation,
     updateTwitterHandle,
     updateInstagramHandle,
+    updateTikTokHandle,
     updateWebsite,
     updateDonation,
     updateProfilePicture,
@@ -341,6 +345,7 @@ const ProfilePage = g(
           isVerified={verified}
           twitterHandle={twitterHandle}
           instagramHandle={instagramHandle}
+          tikTokHandle={tikTokHandle}
           twitterVerified={twitterVerified}
           instagramVerified={instagramVerified}
           website={website}
@@ -350,6 +355,7 @@ const ProfilePage = g(
           onUpdateLocation={updateLocation}
           onUpdateTwitterHandle={updateTwitterHandle}
           onUpdateInstagramHandle={updateInstagramHandle}
+          onUpdateTikTokHandle={updateTikTokHandle}
           onUpdateWebsite={updateWebsite}
           onUpdateDonation={updateDonation}
         />
@@ -642,6 +648,7 @@ const ProfilePage = g(
                 setFollowersUserId={setFollowersUserId}
                 twitterHandle={twitterHandle}
                 instagramHandle={instagramHandle}
+                tikTokHandle={tikTokHandle}
                 website={website}
                 donation={donation}
                 followers={followers}
