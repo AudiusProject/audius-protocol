@@ -62,6 +62,7 @@ const INITIAL_UPDATE_FIELDS = {
   updatedLocation: null,
   updatedTwitterHandle: null,
   updatedInstagramHandle: null,
+  updatedTikTokHandle: null,
   updatedWebsite: null,
   updatedDonation: null
 }
@@ -89,6 +90,7 @@ type ProfilePageState = {
   updatedLocation: string | null
   updatedTwitterHandle: string | null
   updatedInstagramHandle: string | null
+  updatedTikTokHandle: string | null
   updatedWebsite: string | null
   updatedDonation: string | null
   tracksLineupOrder: TracksSortMode
@@ -349,6 +351,12 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     })
   }
 
+  updateTikTokHandle = (handle: string) => {
+    this.setState({
+      updatedTikTokHandle: handle
+    })
+  }
+
   updateWebsite = (website: string) => {
     this.setState({
       updatedWebsite: website
@@ -404,6 +412,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updatedLocation: null,
       updatedTwitterHandle: null,
       updatedInstagramHandle: null,
+      updatedTikTokHandle: null,
       updatedWebsite: null,
       updatedDonation: null
     })
@@ -423,6 +432,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updatedLocation,
       updatedTwitterHandle,
       updatedInstagramHandle,
+      updatedTikTokHandle,
       updatedWebsite,
       updatedDonation
     } = this.state
@@ -450,6 +460,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     }
     if (updatedInstagramHandle !== null) {
       updatedMetadata.instagram_handle = updatedInstagramHandle
+    }
+    if (updatedTikTokHandle !== null) {
+      updatedMetadata.tiktok_handle = updatedTikTokHandle
     }
     if (updatedWebsite !== null) {
       updatedMetadata.website = updatedWebsite
@@ -717,6 +730,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updatedProfilePicture,
       updatedTwitterHandle,
       updatedInstagramHandle,
+      updatedTikTokHandle,
       updatedWebsite,
       updatedDonation
     } = this.state
@@ -764,6 +778,11 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         : profile.instagramVerified
         ? profile.handle
         : profile.instagram_handle || ''
+      : ''
+    const tikTokHandle = profile
+      ? updatedTikTokHandle !== null
+        ? updatedTikTokHandle
+        : profile.tiktok_handle || ''
       : ''
     const website = profile
       ? updatedWebsite !== null
@@ -819,6 +838,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       location,
       twitterHandle,
       instagramHandle,
+      tikTokHandle,
       website,
       donation,
       coverPhotoSizes,
@@ -869,6 +889,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updateLocation: this.updateLocation,
       updateTwitterHandle: this.updateTwitterHandle,
       updateInstagramHandle: this.updateInstagramHandle,
+      updateTikTokHandle: this.updateTikTokHandle,
       updateWebsite: this.updateWebsite,
       updateDonation: this.updateDonation,
       updateCoverPhoto: this.updateCoverPhoto,
@@ -885,6 +906,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         updatedLocation !== null ||
         updatedTwitterHandle !== null ||
         updatedInstagramHandle !== null ||
+        updatedTikTokHandle !== null ||
         updatedWebsite !== null ||
         updatedDonation !== null ||
         updatedCoverPhoto !== null ||

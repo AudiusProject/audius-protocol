@@ -7,7 +7,8 @@ import {
   IconTwitterBird,
   IconInstagram,
   IconDonate,
-  IconLink
+  IconLink,
+  IconTikTok
 } from '@audius/stems'
 import Skeleton from 'antd/lib/skeleton'
 import cn from 'classnames'
@@ -99,6 +100,7 @@ type ProfileHeaderProps = {
   setFollowingUserId: (id: ID) => void
   twitterHandle: string
   instagramHandle: string
+  tikTokHandle: string
   website: string
   donation: string
   followers: any
@@ -135,6 +137,7 @@ const ProfileHeader = ({
   followingCount,
   twitterHandle,
   instagramHandle,
+  tikTokHandle,
   website,
   donation,
   setFollowersUserId,
@@ -228,6 +231,17 @@ const ProfileHeader = ({
     const win = window.open(`https://twitter.com/${twitterHandle}`, '_blank')
     if (win) win.focus()
   }, [record, twitterHandle, handle])
+
+  const onGoToTikTok = useCallback(() => {
+    record(
+      make(Name.PROFILE_PAGE_CLICK_TIKTOK, {
+        handle: handle.replace('@', ''),
+        tikTokHandle
+      })
+    )
+    const win = window.open(`https://tiktok.com/@${tikTokHandle}`, '_blank')
+    if (win) win.focus()
+  }, [record, tikTokHandle, handle])
 
   const onExternalLinkClick = useCallback(
     event => {
@@ -405,6 +419,12 @@ const ProfileHeader = ({
               <IconInstagram
                 className={cn(styles.socialIcon)}
                 onClick={onGoToInstagram}
+              />
+            )}
+            {tikTokHandle && (
+              <IconTikTok
+                className={cn(styles.socialIcon)}
+                onClick={onGoToTikTok}
               />
             )}
           </div>

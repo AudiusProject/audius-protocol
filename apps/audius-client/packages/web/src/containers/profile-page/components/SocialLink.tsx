@@ -1,10 +1,11 @@
-import React, { ReactNode, useCallback } from 'react'
+import React, { ReactNode, useCallback, useMemo } from 'react'
 
 import {
   IconTwitterBird,
   IconInstagram,
   IconDonate,
-  IconLink
+  IconLink,
+  IconTikTokInverted
 } from '@audius/stems'
 import cn from 'classnames'
 import Linkify from 'linkifyjs/react'
@@ -16,16 +17,20 @@ import styles from './SocialLink.module.css'
 export enum Type {
   TWITTER,
   INSTAGRAM,
+  TIKTOK,
   WEBSITE,
   DONATION
 }
 
 const SITE_URL_MAP = {
   [Type.TWITTER]: 'https://twitter.com/',
-  [Type.INSTAGRAM]: 'https://instagram.com/'
+  [Type.INSTAGRAM]: 'https://instagram.com/',
+  [Type.TIKTOK]: 'https://tiktok.com/@'
 }
 
-const goToHandle = (type: Type.TWITTER | Type.INSTAGRAM, handle: string) => {
+type HandleType = keyof typeof SITE_URL_MAP
+
+const goToHandle = (type: HandleType, handle: string) => {
   if (SITE_URL_MAP[type] && handle) {
     const win = window.open(`${SITE_URL_MAP[type]}${handle}`, '_blank')
     if (win) win.focus()
@@ -40,6 +45,14 @@ const goToLink = (link: string) => {
   if (win) win.focus()
 }
 
+export const handleTypes = [Type.TWITTER, Type.INSTAGRAM, Type.TIKTOK]
+const singleLinkTypes = [
+  Type.TWITTER,
+  Type.INSTAGRAM,
+  Type.TIKTOK,
+  Type.WEBSITE
+]
+
 type SocialLinkProps = {
   type: Type
   link: string
@@ -47,14 +60,17 @@ type SocialLinkProps = {
 }
 
 const SocialLink = ({ type, link, onClick }: SocialLinkProps) => {
+  const isHandle = useMemo(() => handleTypes.includes(type), [type])
+  const isSingleLink = useMemo(() => singleLinkTypes.includes(type), [type])
+
   const onIconClick = useCallback(() => {
-    if (type === Type.TWITTER || type === Type.INSTAGRAM) {
-      goToHandle(type, link)
+    if (isHandle) {
+      goToHandle(type as HandleType, link)
     } else {
       goToLink(link)
     }
     if (onClick) onClick()
-  }, [type, link, onClick])
+  }, [isHandle, type, link, onClick])
 
   let icon: ReactNode
   switch (type) {
@@ -63,6 +79,9 @@ const SocialLink = ({ type, link, onClick }: SocialLinkProps) => {
       break
     case Type.INSTAGRAM:
       icon = <IconInstagram className={styles.icon} />
+      break
+    case Type.TIKTOK:
+      icon = <IconTikTokInverted className={styles.icon} />
       break
     case Type.WEBSITE:
       icon = <IconLink className={styles.icon} />
@@ -77,7 +96,7 @@ const SocialLink = ({ type, link, onClick }: SocialLinkProps) => {
   }
 
   let text: ReactNode
-  if (type === Type.TWITTER || type === Type.INSTAGRAM) {
+  if (isHandle) {
     text = `@${link}`
   } else {
     text = link.replace(/((?:https?):\/\/)|www./g, '')
@@ -93,15 +112,13 @@ const SocialLink = ({ type, link, onClick }: SocialLinkProps) => {
       )
     }
   }
-  const singleLink =
-    type === Type.TWITTER || type === Type.INSTAGRAM || type === Type.WEBSITE
 
   return (
     <div className={styles.socialLink}>
       <div
-        onClick={singleLink ? onIconClick : () => {}}
+        onClick={isSingleLink ? onIconClick : () => {}}
         className={cn(styles.wrapper, {
-          [styles.singleLink]: singleLink
+          [styles.singleLink]: isSingleLink
         })}
       >
         {icon}

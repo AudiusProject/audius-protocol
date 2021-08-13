@@ -42,6 +42,7 @@ export type UserMetadata = {
   user_id: number
   twitter_handle?: string
   instagram_handle?: string
+  tiktok_handle?: string
   website?: string
   wallet?: string
   donation?: string

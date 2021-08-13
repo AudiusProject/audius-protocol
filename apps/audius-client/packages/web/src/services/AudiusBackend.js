@@ -596,6 +596,7 @@ class AudiusBackend {
         const body = await AudiusBackend.getCreatorSocialHandle(account.handle)
         account.twitter_handle = body.twitterHandle || null
         account.instagram_handle = body.instagramHandle || null
+        account.tiktok_handle = body.tikTokHandle || null
         account.website = body.website || null
         account.donation = body.donation || null
         account._artist_pick = body.pinnedTrackId || null
@@ -1099,6 +1100,7 @@ class AudiusBackend {
       if (
         newMetadata.twitter_handle ||
         newMetadata.instagram_handle ||
+        newMetadata.tiktok_handle ||
         newMetadata.website ||
         newMetadata.donation
       ) {
@@ -1113,6 +1115,7 @@ class AudiusBackend {
           body: JSON.stringify({
             twitterHandle: newMetadata.twitter_handle,
             instagramHandle: newMetadata.instagram_handle,
+            tikTokHandle: newMetadata.tiktok_handle,
             website: newMetadata.website,
             donation: newMetadata.donation
           })
