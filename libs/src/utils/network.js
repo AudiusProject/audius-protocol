@@ -74,7 +74,7 @@ async function timeRequestsAndSortByVersion (requests, timeout = null) {
     if (healthRatioA > healthRatioB) return 1
     else if (healthRatioA < healthRatioB) return -1
 
-    // If same version, do a tie breaker on the response time
+    // If same version and transcode queue load, do a tie breaker on the response time
     return a.millis - b.millis
   })
 }
