@@ -511,7 +511,6 @@ def test_index_users(bus_mock: mock.MagicMock, app):
         assert user_events.referrer == 2
         assert user_events.is_mobile_user == True
         calls = [
-            mock.call.dispatch(ChallengeEvent.referred_signup, 1, 1),
             mock.call.dispatch(ChallengeEvent.mobile_install, 1, 1),
         ]
         bus_mock.assert_has_calls(calls)
