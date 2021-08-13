@@ -144,7 +144,6 @@ const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, 
   }
 
   const { active: transcodeActive, waiting: transcodeWaiting } = await getTranscodeQueueJobs()
-  console.log('transcodeActive', transcodeActive, transcodeWaiting)
 
   const response = {
     ...basicHealthCheck,
@@ -178,7 +177,6 @@ const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, 
     transcodeActive,
     transcodeWaiting
   }
-  console.log(response.transcodeActive, response.transcodeWaiting, 'respszz')
 
   return response
 }
