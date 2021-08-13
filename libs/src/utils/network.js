@@ -69,8 +69,29 @@ async function timeRequestsAndSortByVersion (requests, timeout = null) {
 
     // Sort by content node transcode queue load
     // defined as the ratio of (active + waiting transcodes) / (transcode slots, same as number of cpu cores)
-    const healthRatioA = ((a.response.data.data.transcodeActive + a.response.data.data.transcodeWaiting) / a.response.data.data.numberOfCPUs)
-    const healthRatioB = ((b.response.data.data.transcodeActive + b.response.data.data.transcodeWaiting) / b.response.data.data.numberOfCPUs)
+    // if either number of CPUs or transcode fields aren't defined in the health check, ratios default to 1
+    let numCPUsA = 1
+    let numCPUsB = 1
+    if (a.response.data.data && a.response.data.data.numberOfCPUs) {
+      numCPUsA = a.response.data.data.numberOfCPUs
+    }
+    if (b.response.data.data && b.response.data.data.numberOfCPUs) {
+      numCPUsB = b.response.data.data.numberOfCPUs
+    }
+
+    let transcodeCountA = numCPUsA
+    let transcodeCountB = numCPUsB
+    if (a.response.data.data && a.response.data.data.hasOwnProperty('transcodeActive') && a.response.data.data.hasOwnProperty('transcodeWaiting')) {
+      transcodeCountA = a.response.data.data.transcodeActive + a.response.data.data.transcodeWaiting
+    }
+    if (b.response.data.data && b.response.data.data.hasOwnProperty('transcodeActive') && b.response.data.data.hasOwnProperty('transcodeWaiting')) {
+      transcodeCountB = b.response.data.data.transcodeActive + b.response.data.data.transcodeWaiting
+    }
+
+    // lower is better, means less transcode queue utilization
+    // default ratio for transcode count and num cpus if node doesn't have one of those defined is 1
+    const healthRatioA = (transcodeCountA / numCPUsA)
+    const healthRatioB = (transcodeCountB / numCPUsB)
     if (healthRatioA > healthRatioB) return 1
     else if (healthRatioA < healthRatioB) return -1
 
