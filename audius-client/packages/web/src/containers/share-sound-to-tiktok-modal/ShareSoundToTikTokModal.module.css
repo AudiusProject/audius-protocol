@@ -1,6 +1,5 @@
 .modalBody {
   overflow: hidden;
-  height: 216px;
   max-width: 528px;
   width: 100%;
   display: flex;
@@ -36,13 +35,18 @@
 
 .modalContent {
   display: flex;
-  padding: 16px 32px;
+  padding: 16px 32px 24px;
   flex-direction: column;
   align-items: center;
   text-align: center;
   height: 100%;
   justify-content: space-around;
   font-weight: var(--font-medium);
+}
+
+.message {
+  line-height: 26px;
+  margin-bottom: 16px;
 }
 
 .errorMessage {
