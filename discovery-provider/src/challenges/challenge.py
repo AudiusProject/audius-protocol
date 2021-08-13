@@ -1,3 +1,4 @@
+from collections import defaultdict
 import logging
 from typing import Counter, Dict, Set, Tuple, TypedDict, List, Optional, cast
 from sqlalchemy.orm.session import Session
@@ -186,11 +187,9 @@ class ChallengeManager:
                 .group_by(UserChallenge.user_id)
             ).all()
             challenges_per_user = dict(all_user_challenges)
-            new_user_challenges_specifiers: Dict[int, Set[str]] = dict()
+            new_user_challenges_specifiers: Dict[int, Set[str]] = defaultdict(set)
             for new_metadata in new_challenge_metadata:
                 user_id = new_metadata["user_id"]
-                if not new_user_challenges_specifiers.get(user_id):
-                    new_user_challenges_specifiers[user_id] = set()
                 completion_count = challenges_per_user.get(user_id, 0) + len(
                     new_user_challenges_specifiers[user_id]
                 )
