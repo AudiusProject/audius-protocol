@@ -131,28 +131,6 @@ describe('Test Health Check', function () {
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
   })
-
-  it('Should return accurate transcode queue size', async function () {
-    const res = await healthCheck({}, mockLogger, sequelizeMock, getMonitorsMock, 2)
-
-    assert.deepStrictEqual(res, {
-      ...version,
-      service: 'content-node',
-      healthy: true,
-      git: undefined,
-      selectedDiscoveryProvider: 'none',
-      spID: config.get('spID'),
-      spOwnerWallet: config.get('spOwnerWallet'),
-      creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
-      isRegisteredOnURSM: false,
-      meetsMinRequirements: false,
-      numberOfCPUs: 2,
-      storagePathSize: 62725623808,
-      totalMemory: 6237151232
-    })
-
-    assert.deepStrictEqual(res.meetsMinRequirements, false)
-  })
 })
 
 describe('Test Health Check Verbose', function () {
