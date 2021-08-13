@@ -9,6 +9,7 @@ from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session, make_transient
 from src.app import contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models import AssociatedWallet, User, UserEvents
 from src.queries.get_balances import enqueue_immediate_balance_refresh
@@ -346,6 +347,7 @@ def parse_user_event(
                     session,
                     user_record,
                     ipfs_metadata["events"],
+                    update_task.challenge_event_bus,
                 )
 
     # All incoming profile photos intended to be a directory
@@ -491,7 +493,10 @@ class UserEventsMetadata(TypedDict):
 
 
 def update_user_events(
-    session: Session, user_record: User, events: UserEventsMetadata
+    session: Session,
+    user_record: User,
+    events: UserEventsMetadata,
+    bus: ChallengeEventBus,
 ) -> None:
     """Updates the user events table"""
     try:
