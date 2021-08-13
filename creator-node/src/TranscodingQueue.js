@@ -128,13 +128,13 @@ class TranscodingQueue {
       waiting,
       active
     ] = await Promise.all([
-      queue.getJobs(['waiting']).length,
-      queue.getJobs(['active']).length
+      queue.getJobs(['waiting']),
+      queue.getJobs(['active'])
     ])
 
     return {
-      waiting,
-      active
+      waiting: waiting.length,
+      active: active.length
     }
   }
 }

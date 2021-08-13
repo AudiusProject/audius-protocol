@@ -19,7 +19,7 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
  * @param {string?} randomBytesToSign optional bytes string to be included in response object
  *    and used in signature generation
  */
-const healthCheck = async ({ libs } = {}, logger, sequelize, getMonitors, numberOfCPUs, getTranscodeQueueJobs, randomBytesToSign = null) => {
+const healthCheck = async ({ libs } = {}, logger, sequelize, getMonitors, numberOfCPUs, randomBytesToSign = null) => {
   // System information
   const [
     totalMemory,
@@ -144,6 +144,7 @@ const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, 
   }
 
   const { active: transcodeActive, waiting: transcodeWaiting } = await getTranscodeQueueJobs()
+  console.log('transcodeActive', transcodeActive, transcodeWaiting)
 
   const response = {
     ...basicHealthCheck,
@@ -177,6 +178,7 @@ const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, 
     transcodeActive,
     transcodeWaiting
   }
+  console.log(response.transcodeActive, response.transcodeWaiting, 'respszz')
 
   return response
 }
