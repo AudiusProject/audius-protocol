@@ -941,13 +941,6 @@ fn main() {
             println!("{:}", &reward_manager);
             println!("{:}", &existing_sender);
             println!("{:}", &senders_secrets);
-            /*
-                fn command_delete_sender_public(
-                config: &Config,
-                reward_manager: Pubkey,
-                sender_to_delete: String,
-                senders_secrets: String
-            )*/
             command_delete_sender_public(
                 &config,
                 reward_manager,
