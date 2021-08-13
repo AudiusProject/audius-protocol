@@ -148,7 +148,15 @@ describe('Test Health Check Verbose', function () {
         highestEnabledReconfigMode: 'RECONFIG_DISABLED'
       }
     }
-    const res = await healthCheckVerbose(serviceRegistryMock, mockLogger, sequelizeMock, getMonitorsMock, 2)
+    const TranscodingQueueMock = (active = 0, waiting = 0) => {
+      return {
+        getTranscodeQueueJobs: async () => {
+          return { active, waiting }
+        }
+      }
+    }
+
+    const res = await healthCheckVerbose(serviceRegistryMock, mockLogger, sequelizeMock, getMonitorsMock, 2, TranscodingQueueMock(4, 0).getTranscodeQueueJobs)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -187,7 +195,9 @@ describe('Test Health Check Verbose', function () {
       currentSnapbackReconfigMode: 'RECONFIG_DISABLED',
       manualSyncsDisabled: false,
       snapbackModuloBase: 18,
-      snapbackJobInterval: 1000
+      snapbackJobInterval: 1000,
+      transcodeActive: 4,
+      transcodeWaiting: 0
     })
   })
 })
