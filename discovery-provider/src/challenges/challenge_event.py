@@ -12,3 +12,4 @@ class ChallengeEvent(str, enum.Enum):
     track_listen = "track_listen"
     track_upload = "track_upload"
     connect_verified = "connect_verified"
+    mobile_install = "mobile_install"

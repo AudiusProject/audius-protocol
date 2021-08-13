@@ -515,6 +515,13 @@ def update_user_events(
                 user_events.referrer = value
             elif event == "is_mobile_user" and isinstance(value, bool):
                 user_events.is_mobile_user = value
+                if value:
+                    bus.dispatch(
+                        ChallengeEvent.mobile_install,
+                        user_record.blocknumber,
+                        user_record.user_id,
+                    )
+
         session.add(user_events)
 
     except Exception as e:

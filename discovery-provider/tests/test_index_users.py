@@ -1,13 +1,17 @@
 from datetime import datetime
-from web3 import Web3
+from unittest import mock
+
+from src.challenges.challenge_event import ChallengeEvent
+from src.database_task import DatabaseTask
 from src.models import AssociatedWallet, UserEvents
 from src.tasks.users import lookup_user_record, parse_user_event
-from src.utils.db_session import get_db
-from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
-from src.utils.user_event_constants import user_event_types_lookup
 from src.utils import helpers
+from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
-from tests.index_helpers import AttrDict, IPFSClient, UpdateTask
+from src.utils.user_event_constants import user_event_types_lookup
+from web3 import Web3
+
+from tests.index_helpers import AttrDict, IPFSClient
 
 block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
 
@@ -189,16 +193,22 @@ ipfs_client = IPFSClient(
 )
 
 
-def test_index_users(app):
+@mock.patch("src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True)
+def test_index_users(bus_mock: mock.MagicMock, app):
     """Tests that users are indexed correctly"""
     with app.app_context():
         db = get_db()
         redis = get_redis()
         web3 = Web3()
-        challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
-        update_task = UpdateTask(ipfs_client, web3, challenge_event_bus, redis)
+        bus_mock(redis)
+        update_task = DatabaseTask(
+            ipfs_client=ipfs_client,
+            web3=web3,
+            challenge_event_bus=bus_mock,
+            redis=redis,
+        )
 
-    with db.scoped_session() as session, challenge_event_bus.use_scoped_dispatch_queue():
+    with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
         # ================== Test Add User Event ==================
         event_type, entry = get_add_user_event()
 
@@ -500,3 +510,11 @@ def test_index_users(app):
         )
         assert user_events.referrer == 2
         assert user_events.is_mobile_user == True
+        calls = [
+            mock.call.dispatch(
+                ChallengeEvent.referral_signup, 1, 2, {"referred_user_id": 1}
+            ),
+            mock.call.dispatch(ChallengeEvent.referred_signup, 1, 1),
+            mock.call.dispatch(ChallengeEvent.mobile_install, 1, 1),
+        ]
+        bus_mock.assert_has_calls(calls)

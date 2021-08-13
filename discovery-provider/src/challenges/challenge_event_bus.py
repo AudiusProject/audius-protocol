@@ -9,6 +9,7 @@ from src.challenges.challenge import ChallengeManager
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
 from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
+from src.challenges.mobile_install_challenge import mobile_install_challenge_manager
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
 from src.utils.redis_connection import get_redis
@@ -160,6 +161,9 @@ def setup_challenge_bus():
     # connect_verified_challenge_manager listeners
     bus.register_listener(
         ChallengeEvent.connect_verified, connect_verified_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.mobile_install, mobile_install_challenge_manager
     )
 
     return bus

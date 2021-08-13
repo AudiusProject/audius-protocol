@@ -26,5 +26,11 @@
 		"type": "boolean",
 		"amount": "10",
 		"active": false
+	},
+	{
+		"id": "mobile-install",
+		"type": "boolean",
+		"amount": "10",
+		"active": false
 	}
 ]
