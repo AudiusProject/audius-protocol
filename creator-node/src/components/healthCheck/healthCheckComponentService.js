@@ -29,8 +29,6 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, getMonitors, number
     MONITORS.STORAGE_PATH_SIZE
   ])
 
-  const { active: transcodeActive, waiting: transcodeWaiting } = await getTranscodeQueueJobs()
-
   let response = {
     ...versionInfo,
     healthy: true,
@@ -42,9 +40,7 @@ const healthCheck = async ({ libs } = {}, logger, sequelize, getMonitors, number
     isRegisteredOnURSM: config.get('isRegisteredOnURSM'),
     numberOfCPUs,
     totalMemory,
-    storagePathSize,
-    transcodeActive,
-    transcodeWaiting
+    storagePathSize
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
@@ -147,6 +143,8 @@ const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, 
     currentSnapbackReconfigMode = snapbackSM.highestEnabledReconfigMode
   }
 
+  const { active: transcodeActive, waiting: transcodeWaiting } = await getTranscodeQueueJobs()
+
   const response = {
     ...basicHealthCheck,
     country,
@@ -175,7 +173,9 @@ const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, 
     currentSnapbackReconfigMode,
     manualSyncsDisabled,
     snapbackModuloBase,
-    snapbackJobInterval
+    snapbackJobInterval,
+    transcodeActive,
+    transcodeWaiting
   }
 
   return response

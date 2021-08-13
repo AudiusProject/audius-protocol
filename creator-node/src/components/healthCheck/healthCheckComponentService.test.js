@@ -13,14 +13,6 @@ const libsMock = {
   }
 }
 
-const TranscodingQueueMock = (active = 0, waiting = 0) => {
-  return {
-    getTranscodeQueueJobs: async () => {
-      return { active, waiting }
-    }
-  }
-}
-
 const sequelizeMock = {
   'query': async () => Promise.resolve()
 }
@@ -79,7 +71,7 @@ describe('Test Health Check', function () {
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
     config.set('spID', 10)
 
-    const res = await healthCheck({ libs: libsMock }, mockLogger, sequelizeMock, getMonitorsMock, 2, TranscodingQueueMock().getTranscodeQueueJobs)
+    const res = await healthCheck({ libs: libsMock }, mockLogger, sequelizeMock, getMonitorsMock, 2)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -94,14 +86,12 @@ describe('Test Health Check', function () {
       meetsMinRequirements: false,
       numberOfCPUs: 2,
       storagePathSize: 62725623808,
-      totalMemory: 6237151232,
-      transcodeActive: 0,
-      transcodeWaiting: 0
+      totalMemory: 6237151232
     })
   })
 
   it('Should handle no libs', async function () {
-    const res = await healthCheck({}, mockLogger, sequelizeMock, getMonitorsMock, 2, TranscodingQueueMock().getTranscodeQueueJobs)
+    const res = await healthCheck({}, mockLogger, sequelizeMock, getMonitorsMock, 2)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -116,14 +106,12 @@ describe('Test Health Check', function () {
       meetsMinRequirements: false,
       numberOfCPUs: 2,
       storagePathSize: 62725623808,
-      totalMemory: 6237151232,
-      transcodeActive: 0,
-      transcodeWaiting: 0
+      totalMemory: 6237151232
     })
   })
 
   it('Should return "meetsMinRequirements" = false if system requirements arent met', async function () {
-    const res = await healthCheck({}, mockLogger, sequelizeMock, getMonitorsMock, 2, TranscodingQueueMock().getTranscodeQueueJobs)
+    const res = await healthCheck({}, mockLogger, sequelizeMock, getMonitorsMock, 2)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -138,16 +126,14 @@ describe('Test Health Check', function () {
       meetsMinRequirements: false,
       numberOfCPUs: 2,
       storagePathSize: 62725623808,
-      totalMemory: 6237151232,
-      transcodeActive: 0,
-      transcodeWaiting: 0
+      totalMemory: 6237151232
     })
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
   })
 
   it('Should return accurate transcode queue size', async function () {
-    const res = await healthCheck({}, mockLogger, sequelizeMock, getMonitorsMock, 2, TranscodingQueueMock(4, 0).getTranscodeQueueJobs)
+    const res = await healthCheck({}, mockLogger, sequelizeMock, getMonitorsMock, 2)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -162,9 +148,7 @@ describe('Test Health Check', function () {
       meetsMinRequirements: false,
       numberOfCPUs: 2,
       storagePathSize: 62725623808,
-      totalMemory: 6237151232,
-      transcodeActive: 4,
-      transcodeWaiting: 0
+      totalMemory: 6237151232
     })
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
@@ -186,7 +170,15 @@ describe('Test Health Check Verbose', function () {
         highestEnabledReconfigMode: 'RECONFIG_DISABLED'
       }
     }
-    const res = await healthCheckVerbose(serviceRegistryMock, mockLogger, sequelizeMock, getMonitorsMock, 2, TranscodingQueueMock().getTranscodeQueueJobs)
+    const TranscodingQueueMock = (active = 0, waiting = 0) => {
+      return {
+        getTranscodeQueueJobs: async () => {
+          return { active, waiting }
+        }
+      }
+    }
+
+    const res = await healthCheckVerbose(serviceRegistryMock, mockLogger, sequelizeMock, getMonitorsMock, 2, TranscodingQueueMock(4, 0).getTranscodeQueueJobs)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -226,7 +218,7 @@ describe('Test Health Check Verbose', function () {
       manualSyncsDisabled: false,
       snapbackModuloBase: 18,
       snapbackJobInterval: 1000,
-      transcodeActive: 0,
+      transcodeActive: 4,
       transcodeWaiting: 0
     })
   })

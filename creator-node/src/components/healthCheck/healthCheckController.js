@@ -64,7 +64,6 @@ const healthCheckController = async (req) => {
     sequelize,
     getMonitors,
     numberOfCPUs,
-    TranscodingQueue.getTranscodeQueueJobs,
     randomBytesToSign
   )
   return successResponse(response)
