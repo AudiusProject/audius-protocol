@@ -269,7 +269,9 @@ def parse_user_event(
         # Reference user_replica_set.py for the updated indexing flow around this field
         replica_set_upgraded = user_replica_set_upgraded(user_record)
         logger.info(
-            f"index.py | users.py | {self.request.id} | {user_record.handle} Replica set upgraded: {replica_set_upgraded}"
+            f"""index.py | users.py | {self.request.id}
+            | {user_record.handle} Replica set upgraded: {replica_set_upgraded}
+            """
         )
         if not replica_set_upgraded:
             user_record.creator_node_endpoint = event_args._creatorNodeEndpoint
@@ -470,7 +472,7 @@ def update_user_associated_wallets(
             enqueue_immediate_balance_refresh(update_task.redis, [user_record.user_id])
     except Exception as e:
         logger.error(
-            f"index.py | users.py | {self.request.id} | Fatal updating user associated wallets while indexing {e}",
+            f"index.py | users.py | Fatal updating user associated wallets while indexing {e}",
             exc_info=True,
         )
 
@@ -490,7 +492,7 @@ def validate_signature(
             return True
         except Exception as e:
             logger.error(
-                f"index.py | users.py | {self.request.id} | Verifying SPL validation signature for user_id {user_id} {e}",
+                f"index.py | users.py | Verifying SPL validation signature for user_id {user_id} {e}",
                 exc_info=True,
             )
             return False
@@ -531,7 +533,7 @@ def update_user_events(
 
     except Exception as e:
         logger.error(
-            f"index.py | users.py | {self.request.id} | Fatal updating user events while indexing {e}",
+            f"index.py | users.py | Fatal updating user events while indexing {e}",
             exc_info=True,
         )
 
@@ -553,7 +555,7 @@ def get_ipfs_metadata(update_task, user_record):
             user_metadata_format,
             user_record.creator_node_endpoint,
         )
-        logger.info(f"index.py | users.py | {self.request.id} | {user_metadata}")
+        logger.info(f"index.py | users.py | {user_metadata}")
     return user_metadata
 
 
