@@ -737,6 +737,13 @@ class CreatorNode {
 
     const requestId = uuid()
     headers['X-Request-ID'] = requestId
+
+    const user = this.userStateManager.getCurrentUser()
+    if (user && user.wallet && user.user_id) {
+      headers['User-Wallet-Addr'] = user.wallet
+      headers['User-Id'] = user.user_id
+    }
+
     return { headers, formData }
   }
 

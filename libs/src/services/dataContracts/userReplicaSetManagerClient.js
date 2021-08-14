@@ -94,13 +94,29 @@ class UserReplicaSetManagerClient extends ContractClient {
   }
 
   /**
-   * Return the current replica set associated with a given user
+   * Returns replica set for requested user at requested blocknumber
    * @param {number} userId
+   * @returns {Object} replica set info with schema { primaryId: int, secondaryIds: int[] }
    */
   async getUserReplicaSet (userId) {
     const method = await this.getMethod('getUserReplicaSet', userId)
-    let currentWallet = this.web3Manager.getWalletAddress()
-    let resp = await method.call({ from: currentWallet })
+    const currentWallet = this.web3Manager.getWalletAddress()
+    const resp = await method.call({ from: currentWallet })
+    return {
+      primaryId: parseInt(resp.primaryId),
+      secondaryIds: resp.secondaryIds.map(x => parseInt(x))
+    }
+  }
+
+  /**
+   * Returns replica set for requested user at requested blocknumber
+   * @notice will error if web3 cannot find data for requested blocknumber
+   * @returns {Object} replica set info with schema { primaryId: int, secondaryIds: int[] }
+   */
+  async getUserReplicaSetAtBlockNumber (userId, blockNumber) {
+    const method = await this.getMethod('getUserReplicaSet', userId)
+    const currentWallet = this.web3Manager.getWalletAddress()
+    const resp = await method.call({ from: currentWallet }, blockNumber)
     return {
       primaryId: parseInt(resp.primaryId),
       secondaryIds: resp.secondaryIds.map(x => parseInt(x))

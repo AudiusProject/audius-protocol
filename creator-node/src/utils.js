@@ -295,7 +295,6 @@ async function getAllRegisteredCNodes (libs, logger) {
     await redis.set(cacheKey, JSON.stringify(creatorNodes), 'EX', 60 * 30 /* 30min in seconds */)
 
     CNodes = creatorNodes
-
   } catch (e) {
     const logFunction = logger ? logger.error : console.error
     logFunction(`Error getting values in getAllRegisteredCNodes: ${e.message}`)
