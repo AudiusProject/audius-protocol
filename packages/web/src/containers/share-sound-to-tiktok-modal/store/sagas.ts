@@ -1,7 +1,9 @@
 import { takeEvery, put, call, select } from 'redux-saga/effects'
 
 import { show as showConfetti } from 'containers/music-confetti/store/slice'
+import { Name } from 'services/analytics'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { make } from 'store/analytics/actions'
 import { setVisibility } from 'store/application/ui/modals/slice'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { AppState } from 'store/types'
@@ -44,6 +46,8 @@ function* handleRequestOpen(action: ReturnType<typeof requestOpen>) {
 }
 
 function* handleShare() {
+  yield put(make(Name.TIKTOK_START_SHARE_SOUND, {}))
+
   yield put(setStatus({ status: Status.SHARE_STARTED }))
   const { id } = yield select(getTrackToShare)
 
@@ -69,6 +73,7 @@ function* handleShare() {
     }
   } catch (e) {
     console.log(e)
+    yield put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: e }))
     yield put(setStatus({ status: Status.SHARE_ERROR }))
   }
 }
@@ -105,10 +110,12 @@ function* handleUpload(action: ReturnType<typeof upload>) {
       throw new Error('TikTok Share sound request unsuccessful')
     }
 
+    yield put(make(Name.TIKTOK_COMPLETE_SHARE_SOUND, {}))
     yield put(setStatus({ status: Status.SHARE_SUCCESS }))
     yield put(showConfetti())
   } catch (e) {
     console.log(e)
+    yield put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: e }))
     yield put(setStatus({ status: Status.SHARE_ERROR }))
   } finally {
     trackBlob = null

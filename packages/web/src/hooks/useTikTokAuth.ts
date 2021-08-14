@@ -7,7 +7,9 @@ import 'whatwg-fetch'
 import 'url-search-params-polyfill'
 
 import { IDENTITY_SERVICE } from 'services/AudiusBackend'
+import { Name } from 'services/analytics'
 import { RequestTikTokAuthMessage } from 'services/native-mobile-interface/oauth'
+import { useRecord, make } from 'store/analytics/actions'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
@@ -24,8 +26,15 @@ type WithAuthCallback = (accessToken: string, openId: string) => void
  * @returns {Function}
  */
 export const useTikTokAuth = ({
-  onError
+  onError: errorCallback
 }: useTikTokAuthOptions): ((callback: WithAuthCallback) => void) => {
+  const record = useRecord()
+
+  const onError = (e: Error) => {
+    errorCallback(e)
+    record(make(Name.TIKTOK_OAUTH_ERROR, { error: e.message }))
+  }
+
   const withAuth = (callback: WithAuthCallback) => {
     const accessToken = window.localStorage.getItem('tikTokAccessToken')
     const openId = window.localStorage.getItem('tikTokOpenId')
@@ -37,6 +46,7 @@ export const useTikTokAuth = ({
     if (accessToken && openId && !isExpired) {
       callback(accessToken, openId)
     } else {
+      record(make(Name.TIKTOK_START_OAUTH, {}))
       getRequestToken(callback, !!NATIVE_MOBILE)
     }
   }
@@ -172,6 +182,7 @@ export const useTikTokAuth = ({
       } = await response.json()
 
       storeAccessToken(access_token, open_id, expires_in, callback)
+      record(make(Name.TIKTOK_COMPLETE_OAUTH, {}))
     } catch (error) {
       return onError(error)
     }
