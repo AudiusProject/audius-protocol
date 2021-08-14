@@ -78,6 +78,7 @@ class TranscodingQueue {
     this.logStatus = this.logStatus.bind(this)
     this.segment = this.segment.bind(this)
     this.transcode320 = this.transcode320.bind(this)
+    this.getTranscodeQueueJobs = this.getTranscodeQueueJobs.bind(this)
   }
 
   /**
@@ -119,6 +120,22 @@ class TranscodingQueue {
     )
     const result = await job.finished()
     return result
+  }
+
+  async getTranscodeQueueJobs () {
+    const queue = this.queue
+    const [
+      waiting,
+      active
+    ] = await Promise.all([
+      queue.getJobs(['waiting']),
+      queue.getJobs(['active'])
+    ])
+
+    return {
+      waiting: waiting.length,
+      active: active.length
+    }
   }
 }
 
