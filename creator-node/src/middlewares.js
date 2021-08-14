@@ -107,7 +107,6 @@ async function ensurePrimaryMiddleware (req, res, next) {
     replicaSetSpIDs = await getReplicaSetSpIDs({
       serviceRegistry,
       logger: req.logger,
-      wallet: req.session.wallet,
       blockNumber: req.body.blockNumber,
       ensurePrimary: true,
       selfSpID,
@@ -449,14 +448,14 @@ async function getCreatorNodeEndpoints ({ serviceRegistry, logger, wallet, block
  *
  * @param {Object} serviceRegistry
  * @param {Object} logger
- * @param {string} wallet - wallet used to query discprov for user data
+ * @param {number} userId - userId used to query chain contract
  * @param {number} blockNumber - blocknumber of eth TX preceding CN call
  * @param {string} selfSpID
  * @param {boolean} ensurePrimary - determines if function should error if this CN is not primary
  *
  * @returns {Array} - array of strings of replica set
  */
-async function getReplicaSetSpIDs ({ serviceRegistry, logger, wallet, userId, blockNumber, ensurePrimary, selfSpID }) {
+async function getReplicaSetSpIDs ({ serviceRegistry, logger, userId, blockNumber, ensurePrimary, selfSpID }) {
   const start = Date.now()
   const logPrefix = `[getReplicaSetSpIDs] [userId = ${userId}]`
   const { libs } = serviceRegistry
@@ -472,6 +471,7 @@ async function getReplicaSetSpIDs ({ serviceRegistry, logger, wallet, userId, bl
     const MAX_RETRIES = 201
     const RETRY_TIMEOUT_MS = 1000 // 1 seconds
 
+    let errorMsg = null
     let blockNumberIndexed = false
     for (let retry = 1; retry <= MAX_RETRIES; retry++) {
       logger.info(`${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${Date.now() - start}. Polling until blockNumber ${blockNumber}.`)
@@ -479,21 +479,22 @@ async function getReplicaSetSpIDs ({ serviceRegistry, logger, wallet, userId, bl
       try {
         // will throw error if blocknumber not found
         replicaSet = await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSetAtBlockNumber(userId, blockNumber)
+        errorMsg = null
         blockNumberIndexed = true
         break
-      } catch (e) { } // Ignore all errors until MAX_RETRIES exceeded
+      } catch (e) { errorMsg = e.message } // Ignore all errors until MAX_RETRIES exceeded
 
       await utils.timeout(RETRY_TIMEOUT_MS)
     }
 
-    // Error if failed to retrieve replicaSet
-    if (!replicaSet || !replicaSet.hasOwnProperty('primaryId') || !replicaSet.primaryId) {
-      throw new Error(`${logPrefix} Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting.`)
+    // Error if indexed blockNumber but didn't find any replicaSet for user
+    if (blockNumberIndexed && (!replicaSet || !replicaSet.hasOwnProperty('primaryId') || !replicaSet.primaryId)) {
+      throw new Error(`${logPrefix} ERROR || Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting.`)
     }
 
     // Error if failed to index target blockNumber
     if (!blockNumberIndexed) {
-      throw new Error(`${logPrefix} Web3 provider failed to index target blockNumber ${blockNumber} after ${MAX_RETRIES} retries. Aborting.`)
+      throw new Error(`${logPrefix} ERROR || Web3 provider failed to index target blockNumber ${blockNumber} after ${MAX_RETRIES} retries. Aborting. Error ${errorMsg}`)
     }
   } else if (ensurePrimary && selfSpID) {
     /**
@@ -505,28 +506,31 @@ async function getReplicaSetSpIDs ({ serviceRegistry, logger, wallet, userId, bl
     const MAX_RETRIES = 61
     const RETRY_TIMEOUT_MS = 1000 // 1 sec
 
+    let errorMsg = null
     for (let retry = 1; retry <= MAX_RETRIES; retry++) {
       logger.info(`${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${Date.now() - start}. Polling until primaryEnsured.`)
 
       try {
         replicaSet = await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
 
+        errorMsg = null
+
         if (replicaSet && replicaSet.hasOwnProperty('primaryId') && replicaSet.primaryId === selfSpID) {
           break
         }
-      } catch (e) { } // Ignore all errors until MAX_RETRIES exceeded
+      } catch (e) { errorMsg = e.message } // Ignore all errors until MAX_RETRIES exceeded
 
       await utils.timeout(RETRY_TIMEOUT_MS)
     }
 
     // Error if failed to retrieve replicaSet
     if (!replicaSet || !replicaSet.hasOwnProperty('primaryId') || !replicaSet.primaryId) {
-      throw new Error(`${logPrefix} Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting.`)
+      throw new Error(`${logPrefix} ERROR || Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting. Error ${errorMsg}`)
     }
 
     // Error if returned primary spID does not match self spID
     if (replicaSet.primaryId !== selfSpID) {
-      throw new Error(`${logPrefix} After ${MAX_RETRIES} retries, found different primary (${replicaSet.primaryId}) for user. Aborting.`)
+      throw new Error(`${logPrefix} ERROR || After ${MAX_RETRIES} retries, found different primary (${replicaSet.primaryId}) for user. Aborting.`)
     }
   } else {
     /**
@@ -535,12 +539,13 @@ async function getReplicaSetSpIDs ({ serviceRegistry, logger, wallet, userId, bl
 
     logger.info(`${logPrefix} ensurePrimary = false, fetching user replicaSet without retries`)
 
+    let errorMsg = null
     try {
       replicaSet = await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
-    } catch (e) { }
+    } catch (e) { errorMsg = e.message }
 
     if (!replicaSet || !replicaSet.hasOwnProperty('primaryId') || !replicaSet.primaryId) {
-      throw new Error(`${logPrefix} Failed to retrieve user from UserReplicaSetManager. Aborting.`)
+      throw new Error(`${logPrefix} ERROR || Failed to retrieve user from UserReplicaSetManager. Aborting. Error ${errorMsg}`)
     }
   }
 
