@@ -108,10 +108,11 @@ const INSTAGRAM_POLLER = `
 
 const TIKTOK_POLLER = `
 (function() {
-  const exit = () => {
+  const exit = (error) => {
     window.ReactNativeWebView.postMessage(
       JSON.stringify({
-        type: '${AUTH_RESPONSE}'
+        type: '${AUTH_RESPONSE}',
+        error: error.message
       })
     )
   }
@@ -131,6 +132,10 @@ const TIKTOK_POLLER = `
         }
       }
     )
+
+    if (!response.ok) {
+      throw new Error(response.status + ' ' + (await response.text()))
+    }
 
     const {
       data: {
@@ -160,13 +165,13 @@ const TIKTOK_POLLER = `
         const csrfState = query.get('state')
         const error = query.get('error')
         if (authorizationCode && csrfState) {
-          getAccessToken(authorizationCode, csrfState)
+          await getAccessToken(authorizationCode, csrfState)
         } else {
-          exit()
+          exit(new Error(error ||'OAuth redirect has occured but authorizationCode was not found.'))
         }
       }
-    } catch {
-      exit()
+    } catch (error) {
+      exit(error)
     }
   }, 500)
 })();
@@ -216,7 +221,9 @@ const OAuth = ({
                   openId: message.openId,
                   expiresIn: message.expiresIn
                 }
-              : {}
+              : {
+                  error: message.error
+                }
         }
 
         postMessage(webRef.current, {
@@ -232,7 +239,8 @@ const OAuth = ({
     if (webRef.current) {
       postMessage(webRef.current, {
         type: messageType,
-        id: messageId
+        id: messageId,
+        error: 'Popup has been closed by user'
       })
     }
     close()
