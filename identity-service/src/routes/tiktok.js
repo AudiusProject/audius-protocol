@@ -20,7 +20,7 @@ module.exports = function (app) {
     handleResponse(async (req, res, next) => {
       const { redirectUrl } = req.query
       const csrfState = Math.random().toString(36).substring(7)
-      res.cookie('csrfState', csrfState, { maxAge: 60000 })
+      res.cookie('csrfState', csrfState, { maxAge: 600000 })
 
       let url = 'https://open-api.tiktok.com/platform/oauth/connect/'
 
