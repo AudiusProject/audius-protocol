@@ -36,20 +36,22 @@ const logContext = {
 }
 
 describe('test Tracks with mocked IPFS', function () {
-  let app, server, session, ipfsMock, libsMock, handleTrackContentRoute, mockServiceRegistry
+  let app, server, session, ipfsMock, libsMock, handleTrackContentRoute, mockServiceRegistry, userId
 
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
     libsMock.useTrackContentPolling = true
 
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
+    userId = 1
+
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, null, null, userId)
     await BlacklistManager.init()
 
     app = appInfo.app
     server = appInfo.server
     mockServiceRegistry = appInfo.mockServiceRegistry
-    session = await createStarterCNodeUser()
+    session = await createStarterCNodeUser(userId)
 
     handleTrackContentRoute = require('../src/components/tracks/tracksComponentService').handleTrackContentRoute
   })
@@ -68,6 +70,7 @@ describe('test Tracks with mocked IPFS', function () {
       .attach('file', file, { filename: 'fname.jpg' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .expect(400)
   })
 
@@ -80,10 +83,10 @@ describe('test Tracks with mocked IPFS', function () {
     await server.close()
 
     ipfsMock = getIPFSMock()
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, null, null, userId)
     app = appInfo.app
     server = appInfo.server
-    session = await createStarterCNodeUser()
+    session = await createStarterCNodeUser(userId)
 
     ipfsMock.add.exactly(64)
     ipfsMock.pin.add.exactly(32)
@@ -95,6 +98,7 @@ describe('test Tracks with mocked IPFS', function () {
       .attach('file', file, { filename: 'fname.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .expect(400)
 
     // Reset max file limits
@@ -108,10 +112,10 @@ describe('test Tracks with mocked IPFS', function () {
     // Reset app
     await server.close()
     ipfsMock = getIPFSMock()
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, null, null, userId)
     app = appInfo.app
     server = appInfo.server
-    session = await createStarterCNodeUser()
+    session = await createStarterCNodeUser(userId)
 
     ipfsMock.add.exactly(64)
     ipfsMock.pin.add.exactly(32)
@@ -123,6 +127,7 @@ describe('test Tracks with mocked IPFS', function () {
       .attach('file', file, { filename: 'fname.jpg' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .expect(500)
 
     // Reset max file limits
@@ -179,6 +184,7 @@ describe('test Tracks with mocked IPFS', function () {
     const trackMetadataResp = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ metadata, sourceFile })
       .expect(200)
 
@@ -214,6 +220,7 @@ describe('test Tracks with mocked IPFS', function () {
     await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ metadata, sourceFile })
       .expect(400)
   })
@@ -248,6 +255,7 @@ describe('test Tracks with mocked IPFS', function () {
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ metadata, sourceFile })
       .expect(400)
   })
@@ -277,6 +285,7 @@ describe('test Tracks with mocked IPFS', function () {
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ metadata, sourceFile })
       .expect(400)
   })
@@ -305,6 +314,7 @@ describe('test Tracks with mocked IPFS', function () {
     const trackMetadataResp = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ metadata, sourceFile })
       .expect(200)
 
@@ -315,6 +325,7 @@ describe('test Tracks with mocked IPFS', function () {
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ blockchainTrackId: 1, blockNumber: 10, metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID })
       .expect(200)
   })
@@ -351,6 +362,7 @@ describe('test Tracks with mocked IPFS', function () {
     await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ metadata })
       .expect(400)
   })
@@ -390,6 +402,7 @@ describe('test Tracks with mocked IPFS', function () {
     const trackMetadataResp = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ metadata, sourceFile })
       .expect(200)
 
@@ -400,26 +413,29 @@ describe('test Tracks with mocked IPFS', function () {
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ blockchainTrackId: 1, blockNumber: 10, metadataFileUUID: trackMetadataResp.body.data.metadataFileUUID })
       .expect(200)
   })
 })
 
 describe('test Tracks with real IPFS', function () {
-  let app2, server, session, libsMock, ipfs, handleTrackContentRoute, mockServiceRegistry
+  let app2, server, session, libsMock, ipfs, handleTrackContentRoute, mockServiceRegistry, userId
 
   /** Inits ipfs client, libs mock, web server app, blacklist manager, and creates starter CNodeUser */
   beforeEach(async () => {
     ipfs = ipfsClient.ipfs
     libsMock = getLibsMock()
 
-    const appInfo = await getApp(ipfs, libsMock, BlacklistManager)
+    userId = 1
+
+    const appInfo = await getApp(ipfs, libsMock, BlacklistManager, null, null, userId)
     await BlacklistManager.init()
 
     app2 = appInfo.app
     server = appInfo.server
     mockServiceRegistry = appInfo.mockServiceRegistry
-    session = await createStarterCNodeUser()
+    session = await createStarterCNodeUser(userId)
 
     handleTrackContentRoute = require('../src/components/tracks/tracksComponentService').handleTrackContentRoute
   })
@@ -541,6 +557,7 @@ describe('test Tracks with real IPFS', function () {
     const resp = await request(app2)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({})
       .expect(400)
 
@@ -558,6 +575,7 @@ describe('test Tracks with real IPFS', function () {
     const resp = await request(app2)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ metadata })
       .expect(403)
 
@@ -575,6 +593,7 @@ describe('test Tracks with real IPFS', function () {
     const resp = await request(app2)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ metadata })
       .expect(500)
 
@@ -591,6 +610,7 @@ describe('test Tracks with real IPFS', function () {
     const resp = await request(app2)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ metadata })
       .expect(function (res) {
         if (res.body.error) {

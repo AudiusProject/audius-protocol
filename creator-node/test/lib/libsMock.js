@@ -45,12 +45,12 @@ function getLibsMock () {
     },
     contracts: {
       UserReplicaSetManagerClient: {
-        getUserReplicaSet: sinon.mock(),
-        getUserReplicaSetAtBlockNumber: sinon.mock()
+        getUserReplicaSet: sinon.mock().atLeast(1),
+        getUserReplicaSetAtBlockNumber: sinon.mock().atLeast(1)
       }
     },
     User: {
-      getUsers: sinon.mock()
+      getUsers: sinon.mock().atLeast(1)
     },
     discoveryProvider: {
       discoveryProviderEndpoint: 'http://docker.for.mac.localhost:5000'

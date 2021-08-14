@@ -454,7 +454,7 @@ describe('test ContentBlacklist', function () {
       .expect(400)
   })
 
-  it.only('should throw an error when adding an user id to the blacklist and streaming /ipfs/:CID route', async () => {
+  it('should throw an error when adding an user id to the blacklist and streaming /ipfs/:CID route', async () => {
     // Create user and upload track
     const data = await createUserAndUploadTrack()
 

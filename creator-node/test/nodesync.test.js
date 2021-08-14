@@ -66,7 +66,7 @@ describe('test nodesync', async function () {
 
     const createUserAndTrack = async function () {
       // Create user
-      ({ cnodeUserUUID, sessionToken } = await createStarterCNodeUser(userId))
+      ({ cnodeUserUUID, sessionToken, userId } = await createStarterCNodeUser(userId))
 
       // Upload user metadata
       const metadata = {
@@ -77,7 +77,7 @@ describe('test nodesync', async function () {
       const userMetadataResp = await request(app)
         .post('/audius_users/metadata')
         .set('X-Session-ID', sessionToken)
-        .set('User-Id', session.userId)
+        .set('User-Id', userId)
         .send(metadata)
         .expect(200)
       metadataMultihash = userMetadataResp.body.data.metadataMultihash
@@ -92,7 +92,7 @@ describe('test nodesync', async function () {
       await request(app)
         .post('/audius_users')
         .set('X-Session-ID', sessionToken)
-        .set('User-Id', session.userId)
+        .set('User-Id', userId)
         .send(associateRequest)
         .expect(200)
 
@@ -112,15 +112,19 @@ describe('test nodesync', async function () {
 
       // Upload track metadata
       const trackMetadata = {
-        test: 'field1',
-        owner_id: 1,
-        track_segments: trackSegments
+        metadata: {
+          test: 'field1',
+          owner_id: 1,
+          track_segments: trackSegments
+        },
+        source_file: sourceFile
       }
       const trackMetadataResp = await request(app)
         .post('/tracks/metadata')
         .set('X-Session-ID', sessionToken)
-        .set('User-Id', session.userId)
-        .send({ metadata: trackMetadata, source_file: sourceFile })
+        .set('User-Id', userId)
+        .send(trackMetadata)
+        .expect(200)
       trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
       trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
 
@@ -128,7 +132,7 @@ describe('test nodesync', async function () {
       await request(app)
         .post('/tracks')
         .set('X-Session-ID', sessionToken)
-        .set('User-Id', session.userId)
+        .set('User-Id', userId)
         .send({
           blockchainTrackId: 1,
           blockNumber: 10,
@@ -598,7 +602,7 @@ describe('test nodesync', async function () {
 
     const createUser = async function () {
       // Create user
-      const { cnodeUserUUID, sessionToken } = await createStarterCNodeUser()
+      const session = await createStarterCNodeUser(userId)
 
       // Upload user metadata
       const metadata = {
@@ -608,7 +612,8 @@ describe('test nodesync', async function () {
       }
       const userMetadataResp = await request(app)
         .post('/audius_users/metadata')
-        .set('X-Session-ID', sessionToken)
+        .set('X-Session-ID', session.sessionToken)
+        .set('User-Id', session.userId)
         .send(metadata)
         .expect(200)
 
@@ -622,11 +627,12 @@ describe('test nodesync', async function () {
       }
       await request(app)
         .post('/audius_users')
-        .set('X-Session-ID', sessionToken)
+        .set('X-Session-ID', session.sessionToken)
+        .set('User-Id', session.userId)
         .send(associateRequest)
         .expect(200)
 
-      return cnodeUserUUID
+      return session.cnodeUserUUID
     }
 
     /**
@@ -641,7 +647,7 @@ describe('test nodesync', async function () {
       // Mock ipfs.swarm.connect() function for test purposes
       ipfsImport.ipfs.swarm.connect = async function () { return { 'Strings': [] } }
 
-      const appInfo = await getApp(ipfsImport.ipfs, libsMock, BlacklistManager, ipfsImport.ipfsLatest)
+      const appInfo = await getApp(ipfsImport.ipfs, libsMock, BlacklistManager, ipfsImport.ipfsLatest, null, userId)
       server = appInfo.server
       app = appInfo.app
 
