@@ -1,4 +1,5 @@
 import React, { RefObject, useCallback } from 'react'
+import Config from 'react-native-config'
 import { Dispatch } from 'redux'
 import { connect } from 'react-redux'
 import { WebView } from 'react-native-webview'
@@ -20,12 +21,14 @@ import { postMessage } from '../../utils/postMessage'
 
 const AUTH_RESPONSE = 'auth-response'
 
+const IDENTITY_SERVICE = Config.IDENTITY_SERVICE
+
 const TWITTER_POLLER = `
 (function() {
   const exit = () => {
     window.ReactNativeWebView.postMessage(
       JSON.stringify({
-        type: 'auth-response'
+        type: '${AUTH_RESPONSE}'
       })
     )
   }
@@ -45,7 +48,7 @@ const TWITTER_POLLER = `
 
           window.ReactNativeWebView.postMessage(
             JSON.stringify({
-              type:  'auth-response',
+              type: '${AUTH_RESPONSE}',
               oauthToken,
               oauthVerifier
             })
@@ -68,7 +71,7 @@ const INSTAGRAM_POLLER = `
   const exit = () => {
     window.ReactNativeWebView.postMessage(
       JSON.stringify({
-        type: 'auth-response'
+        type: '${AUTH_RESPONSE}'
       })
     )
   }
@@ -86,7 +89,7 @@ const INSTAGRAM_POLLER = `
 
           window.ReactNativeWebView.postMessage(
             JSON.stringify({ 
-              type:  'auth-response',
+              type: '${AUTH_RESPONSE}',
               instagramCode
             })
           )
@@ -108,29 +111,56 @@ const TIKTOK_POLLER = `
   const exit = () => {
     window.ReactNativeWebView.postMessage(
       JSON.stringify({
-        type: 'auth-response'
+        type: '${AUTH_RESPONSE}'
       })
     )
   }
 
-  setInterval(() => {
+  const getAccessToken = async (authorizationCode, csrfState) => {
+    const response = await window.fetch(
+      '${IDENTITY_SERVICE}/tiktok/access_token',
+      {
+        credentials: 'include',
+        method: 'POST',
+        body: JSON.stringify({
+          code: authorizationCode,
+          state: csrfState,
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+
+    const {
+      data: {
+        data: { access_token, open_id, expires_in }
+      }
+    } = await response.json()
+
+    window.ReactNativeWebView.postMessage(
+      JSON.stringify({
+        type: '${AUTH_RESPONSE}',
+        accessToken: access_token,
+        openId: open_id,
+        expiresIn: expires_in
+      })
+    )
+  }
+
+  const poll = setInterval(async () => {
     try {
       if (
         window.location.hostname.includes('audius.co')
       ) {
+        clearInterval(poll)
         const query = new URLSearchParams(window.location.search || '')
 
         const authorizationCode = query.get('code')
         const csrfState = query.get('state')
         const error = query.get('error')
         if (authorizationCode && csrfState) {
-          window.ReactNativeWebView.postMessage(
-            JSON.stringify({
-              type: 'auth-response',
-              authorizationCode,
-              csrfState,
-            })
-          )
+          getAccessToken(authorizationCode, csrfState)
         } else {
           exit()
         }
@@ -180,10 +210,11 @@ const OAuth = ({
                 }
               : {},
           [Provider.TIKTOK]: (message: any) =>
-            message.authorizationCode && message.csrfState
+            message.accessToken && message.openId && message.expiresIn
               ? {
-                  authorizationCode: message.authorizationCode,
-                  csrfState: message.csrfState
+                  accessToken: message.accessToken,
+                  openId: message.openId,
+                  expiresIn: message.expiresIn
                 }
               : {}
         }
@@ -225,7 +256,8 @@ const OAuth = ({
         <View
           style={{
             width: 75,
-            marginLeft: 8
+            marginLeft: 8,
+            marginBottom: 8
           }}
         >
           <Button onPress={onClose} title='Close' />
