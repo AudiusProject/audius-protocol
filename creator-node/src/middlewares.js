@@ -144,7 +144,7 @@ async function ensurePrimaryMiddleware (req, res, next) {
   })
   req.session.creatorNodeEndpoints = replicaSetEndpoints.filter(Boolean)
 
-  req.logger.info(`${logPrefix} succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${replicaSetEndpoints}`)
+  req.logger.info(`${logPrefix} succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${req.session.creatorNodeEndpoints}`)
   next()
 }
 
