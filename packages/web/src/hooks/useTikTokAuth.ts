@@ -62,11 +62,13 @@ export const useTikTokAuth = ({
       message.send()
       const response = await message.receive()
 
-      const { accessToken, openId, expiresIn } = response
+      const { accessToken, openId, expiresIn, error } = response
       if (accessToken && openId && expiresIn) {
         storeAccessToken(accessToken, openId, expiresIn, callback)
       } else {
-        onError(new Error('Native mobile TikTok auth failed'))
+        onError(
+          new Error(error || 'Access token not returned from native layer')
+        )
       }
     } else {
       const popup = openPopup()
@@ -120,7 +122,10 @@ export const useTikTokAuth = ({
             } else {
               closeDialog()
               return onError(
-                new Error(error || 'An error occured during OAuth')
+                new Error(
+                  error ||
+                    'OAuth redirect has occured but authorizationCode was not found.'
+                )
               )
             }
           } else {
@@ -174,6 +179,10 @@ export const useTikTokAuth = ({
           }
         }
       )
+
+      if (!response.ok) {
+        throw new Error(response.status + ' ' + (await response.text()))
+      }
 
       const {
         data: {
