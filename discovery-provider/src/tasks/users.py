@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from time import time
+import time
 from typing import Set, TypedDict
 
 import base58
