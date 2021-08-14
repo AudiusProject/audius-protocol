@@ -1,3 +1,5 @@
+const promiseAny = require('promise.any')
+
 const { sendResponse, errorResponse, errorResponseUnauthorized, errorResponseServerError, errorResponseBadRequest } = require('./apiHelpers')
 const config = require('./config')
 const sessionManager = require('./sessionManager')
@@ -5,7 +7,6 @@ const models = require('./models')
 const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
-const promiseAny = require('promise.any')
 
 /**
  * Ensure valid cnodeUser and session exist for provided session token
@@ -134,14 +135,13 @@ async function ensurePrimaryMiddleware (req, res, next) {
     if (replicaSpID === selfSpID) {
       return nodeConfig.get('creatorNodeEndpoint')
     }
+    // Get endpoint from registeredCNode matching current replicaSpID
     const replicaSetInfo = (allRegisteredCNodes.filter(CNodeInfo => CNodeInfo.spID === replicaSpID))[0]
     if (replicaSetInfo && replicaSetInfo.endpoint) {
       return replicaSetInfo.endpoint
-    } else {
-      return null
     }
   })
-  req.session.creatorNodeEndpoints = replicaSetEndpoints
+  req.session.creatorNodeEndpoints = replicaSetEndpoints.filter(Boolean)
 
   req.logger.info(`${logPrefix} succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${replicaSetEndpoints}`)
   next()
@@ -467,31 +467,31 @@ async function getReplicaSetSpIDs ({ serviceRegistry, logger, wallet, userId, bl
    */
   if (blockNumber) {
     // In total, will try for 200 seconds.
-    const MaxRetries = 201
-    const RetryTimeout = 1000 // 1 seconds
+    const MAX_RETRIES = 201
+    const RETRY_TIMEOUT_MS = 1000 // 1 seconds
 
     let blockNumberIndexed = false
-    for (let retry = 1; retry <= MaxRetries; retry++) {
-      logger.info(`${logPrefix} retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start}. Polling until blockNumber ${blockNumber}.`)
+    for (let retry = 1; retry <= MAX_RETRIES; retry++) {
+      logger.info(`${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${Date.now() - start}. Polling until blockNumber ${blockNumber}.`)
 
       try {
         // will throw error if blocknumber not found
         replicaSet = await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSetAtBlockNumber(userId, blockNumber)
         blockNumberIndexed = true
         break
-      } catch (e) { } // Ignore all errors until MaxRetries exceeded
+      } catch (e) { } // Ignore all errors until MAX_RETRIES exceeded
 
-      await utils.timeout(RetryTimeout)
+      await utils.timeout(RETRY_TIMEOUT_MS)
     }
 
     // Error if failed to retrieve replicaSet
     if (!replicaSet || !replicaSet.hasOwnProperty('primaryId') || !replicaSet.primaryId) {
-      throw new Error(`${logPrefix} Failed to retrieve user from UserReplicaSetManager after ${MaxRetries} retries. Aborting.`)
+      throw new Error(`${logPrefix} Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting.`)
     }
 
     // Error if failed to index target blockNumber
     if (!blockNumberIndexed) {
-      throw new Error(`${logPrefix} Web3 provider failed to index target blockNumber ${blockNumber} after ${MaxRetries} retries. Aborting.`)
+      throw new Error(`${logPrefix} Web3 provider failed to index target blockNumber ${blockNumber} after ${MAX_RETRIES} retries. Aborting.`)
     }
   } else if (ensurePrimary && selfSpID) {
     /**
@@ -500,11 +500,11 @@ async function getReplicaSetSpIDs ({ serviceRegistry, logger, wallet, userId, bl
      */
 
     // Will poll every second for 60 sec
-    const MaxRetries = 61
-    const RetryTimeout = 1000 // 1 sec
+    const MAX_RETRIES = 61
+    const RETRY_TIMEOUT_MS = 1000 // 1 sec
 
-    for (let retry = 1; retry <= MaxRetries; retry++) {
-      logger.info(`${logPrefix} retry #${retry}/${MaxRetries} || time from start: ${Date.now() - start}. Polling until primaryEnsured.`)
+    for (let retry = 1; retry <= MAX_RETRIES; retry++) {
+      logger.info(`${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${Date.now() - start}. Polling until primaryEnsured.`)
 
       try {
         replicaSet = await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
@@ -512,23 +512,23 @@ async function getReplicaSetSpIDs ({ serviceRegistry, logger, wallet, userId, bl
         if (replicaSet && replicaSet.hasOwnProperty('primaryId') && replicaSet.primaryId === selfSpID) {
           break
         }
-      } catch (e) { } // Ignore all errors until MaxRetries exceeded
+      } catch (e) { } // Ignore all errors until MAX_RETRIES exceeded
 
-      await utils.timeout(RetryTimeout)
+      await utils.timeout(RETRY_TIMEOUT_MS)
     }
 
     // Error if failed to retrieve replicaSet
     if (!replicaSet || !replicaSet.hasOwnProperty('primaryId') || !replicaSet.primaryId) {
-      throw new Error(`${logPrefix} Failed to retrieve user from UserReplicaSetManager after ${MaxRetries} retries. Aborting.`)
+      throw new Error(`${logPrefix} Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting.`)
     }
 
     // Error if returned primary spID does not match self spID
     if (replicaSet.primaryId !== selfSpID) {
-      throw new Error(`${logPrefix} After ${MaxRetries} retries, found different primary (${replicaSet.primaryId}) for user. Aborting.`)
+      throw new Error(`${logPrefix} After ${MAX_RETRIES} retries, found different primary (${replicaSet.primaryId}) for user. Aborting.`)
     }
   } else {
     /**
-     * If neither of above conditions are met, falls back to single discprov query without polling
+     * If neither of above conditions are met, falls back to single chain call without polling
      */
 
     logger.info(`${logPrefix} ensurePrimary = false, fetching user replicaSet without retries`)

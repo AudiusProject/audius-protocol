@@ -96,7 +96,7 @@ class UserReplicaSetManagerClient extends ContractClient {
   /**
    * Returns replica set for requested user at requested blocknumber
    * @param {number} userId
-   * @returns {Object} replica set info with schema { primaryId: int, secondaryIds: int[] }
+   * @returns {Object} replica set info with schema { primaryId: int, secondaryIds: number[] }
    */
   async getUserReplicaSet (userId) {
     const method = await this.getMethod('getUserReplicaSet', userId)

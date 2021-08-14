@@ -4,18 +4,19 @@ const path = require('path')
 const { BufferListStream } = require('bl')
 const axios = require('axios')
 const spawn = require('child_process').spawn
+const { promisify } = require('util')
 
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
 const { ipfs, ipfsLatest } = require('./ipfsClient')
 const redis = require('./redis')
-
 const config = require('./config')
 const BlacklistManager = require('./blacklistManager')
 const { generateTimestampAndSignature } = require('./apiSigning')
-const { promisify } = require('util')
 
 const readFile = promisify(fs.readFile)
+
+const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 
 class Utils {
   static verifySignature (data, sig) {
@@ -292,7 +293,7 @@ async function getAllRegisteredCNodes (libs, logger) {
     creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
 
     // Write fetched value to Redis with 30min expiry
-    await redis.set(cacheKey, JSON.stringify(creatorNodes), 'EX', 60 * 30 /* 30min in seconds */)
+    await redis.set(cacheKey, JSON.stringify(creatorNodes), 'EX', THIRTY_MINUTES_IN_SECONDS)
 
     CNodes = creatorNodes
   } catch (e) {
