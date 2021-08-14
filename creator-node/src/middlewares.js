@@ -457,7 +457,7 @@ async function getCreatorNodeEndpoints ({ serviceRegistry, logger, wallet, block
  */
 async function getReplicaSetSpIDs ({ serviceRegistry, logger, userId, blockNumber, ensurePrimary, selfSpID }) {
   const start = Date.now()
-  const logPrefix = `[getReplicaSetSpIDs] [userId = ${userId}]`
+  const logPrefix = `[getReplicaSetSpIDs] [userId = ${userId}] [selfSpID = ${selfSpID}] [blockNumber = ${blockNumber}] [ensurePrimary = ${ensurePrimary}]`
   const { libs } = serviceRegistry
 
   // returns Object of schema { primaryId: string, secondaryIds: int[] }
