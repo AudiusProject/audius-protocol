@@ -343,12 +343,12 @@ async function main () {
         const tests = [
           coreIntegrationTests,
           snapbackTest,
-          // ...blacklistTests,
-          // ursmTest,
-          // ursmBlockSaturationTest,
-          // trackListenCountTest,
-          // deregisterCNTest,
-          // forceCNUnavailabilityTest
+          ...blacklistTests,
+          ursmTest,
+          ursmBlockSaturationTest,
+          trackListenCountTest,
+          deregisterCNTest,
+          forceCNUnavailabilityTest
         ]
 
         await testRunner(tests)
