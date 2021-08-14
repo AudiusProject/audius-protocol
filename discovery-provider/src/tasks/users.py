@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from time import time
 from typing import Set, TypedDict
 
 import base58
@@ -83,6 +84,9 @@ def user_state_update(
                     # Add or update the value of the user record for this block in user_events_lookup,
                     # ensuring that multiple events for a single user result in only 1 row insert operation
                     # (even if multiple operations are present)
+                    logger.info(
+                        f"index.py | users.py | {self.request.id} | Beging parsing user event"
+                    )
                     user_record = parse_user_event(
                         self,
                         user_contract,
@@ -94,6 +98,9 @@ def user_state_update(
                         event_type,
                         user_events_lookup[user_id]["user"],
                         block_timestamp,
+                    )
+                    logger.info(
+                        f"index.py | users.py | {self.request.id} | Finished parsing user event"
                     )
                     if user_record is not None:
                         user_events_lookup[user_id]["events"].append(event_type)
@@ -209,7 +216,7 @@ def parse_user_event(
         # If cid is in blacklist, do not update user
         if is_blacklisted:
             logger.info(
-                f"index.py | users.py | Encountered blacklisted CID:"
+                f"index.py | users.py | {self.request.id} | Encountered blacklisted CID:"
                 f"{metadata_multihash} in indexing update user metadata multihash"
             )
             return None
@@ -227,7 +234,7 @@ def parse_user_event(
         is_blacklisted = is_blacklisted_ipld(session, profile_photo_multihash)
         if is_blacklisted:
             logger.info(
-                f"index.py | users.py | Encountered blacklisted CID:"
+                f"index.py | users.py | {self.request.id} | Encountered blacklisted CID:"
                 f"{profile_photo_multihash} in indexing update user profile photo"
             )
             return None
@@ -239,7 +246,7 @@ def parse_user_event(
         is_blacklisted = is_blacklisted_ipld(session, cover_photo_multihash)
         if is_blacklisted:
             logger.info(
-                f"index.py | users.py | Encountered blacklisted CID:"
+                f"index.py | users.py | {self.request.id} | Encountered blacklisted CID:"
                 f"{cover_photo_multihash} in indexing update user cover photo"
             )
             return None
@@ -262,7 +269,7 @@ def parse_user_event(
         # Reference user_replica_set.py for the updated indexing flow around this field
         replica_set_upgraded = user_replica_set_upgraded(user_record)
         logger.info(
-            f"index.py | users.py | {user_record.handle} Replica set upgraded: {replica_set_upgraded}"
+            f"index.py | users.py | {self.request.id} | {user_record.handle} Replica set upgraded: {replica_set_upgraded}"
         )
         if not replica_set_upgraded:
             user_record.creator_node_endpoint = event_args._creatorNodeEndpoint
@@ -273,7 +280,12 @@ def parse_user_event(
     # If the multihash is updated, fetch the metadata (if not fetched) and update the associated wallets column
     if event_type == user_event_types_lookup["update_multihash"]:
         # Look up metadata multihash in IPFS and override with metadata fields
+        tick = time.perf_counter()
         ipfs_metadata = get_ipfs_metadata(update_task, user_record)
+        tock = time.perf_counter()
+        logger.info(
+            f"index.py | users.py | {self.request.id} | Fetched IPFS metadata in {tock - tick}s"
+        )
 
         if ipfs_metadata:
             # ipfs_metadata properties are defined in get_ipfs_metadata
@@ -352,7 +364,7 @@ def parse_user_event(
     # Any write to profile_picture field is replaced by profile_picture_sizes
     if user_record.profile_picture:
         logger.info(
-            f"index.py | users.py | Processing user profile_picture {user_record.profile_picture}"
+            f"index.py | users.py | {self.request.id} | Processing user profile_picture {user_record.profile_picture}"
         )
         user_record.profile_picture_sizes = user_record.profile_picture
         user_record.profile_picture = None
@@ -361,7 +373,7 @@ def parse_user_event(
     # Any write to cover_photo field is replaced by cover_photo_sizes
     if user_record.cover_photo:
         logger.info(
-            f"index.py | users.py | Processing user cover photo {user_record.cover_photo}"
+            f"index.py | users.py | {self.request.id} | Processing user cover photo {user_record.cover_photo}"
         )
         user_record.cover_photo_sizes = user_record.cover_photo
         user_record.cover_photo = None
@@ -458,7 +470,7 @@ def update_user_associated_wallets(
             enqueue_immediate_balance_refresh(update_task.redis, [user_record.user_id])
     except Exception as e:
         logger.error(
-            f"index.py | users.py | Fatal updating user associated wallets while indexing {e}",
+            f"index.py | users.py | {self.request.id} | Fatal updating user associated wallets while indexing {e}",
             exc_info=True,
         )
 
@@ -478,7 +490,7 @@ def validate_signature(
             return True
         except Exception as e:
             logger.error(
-                f"index.py | users.py | Verifying SPL validation signature for user_id {user_id} {e}",
+                f"index.py | users.py | {self.request.id} | Verifying SPL validation signature for user_id {user_id} {e}",
                 exc_info=True,
             )
             return False
@@ -519,7 +531,7 @@ def update_user_events(
 
     except Exception as e:
         logger.error(
-            f"index.py | users.py | Fatal updating user events while indexing {e}",
+            f"index.py | users.py | {self.request.id} | Fatal updating user events while indexing {e}",
             exc_info=True,
         )
 
@@ -541,7 +553,7 @@ def get_ipfs_metadata(update_task, user_record):
             user_metadata_format,
             user_record.creator_node_endpoint,
         )
-        logger.info(f"index.py | users.py | {user_metadata}")
+        logger.info(f"index.py | users.py | {self.request.id} | {user_metadata}")
     return user_metadata
 
 
