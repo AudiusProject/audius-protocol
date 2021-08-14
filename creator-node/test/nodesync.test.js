@@ -26,13 +26,15 @@ const sampleExportDummyCIDPath = path.resolve(__dirname, 'syncAssets/sampleExpor
 const sampleExportDummyCIDFromClock2Path = path.resolve(__dirname, 'syncAssets/sampleExportDummyCIDFromClock2.json')
 
 describe('test nodesync', async function () {
-  let server, app, mockServiceRegistry
+  let server, app, mockServiceRegistry, userId
 
   const originalMaxExportClockValueRange = config.get('maxExportClockValueRange')
   let maxExportClockValueRange = originalMaxExportClockValueRange
 
+  userId = 1
+
   const setupDepsAndApp = async function () {
-    const appInfo = await getApp(ipfsClient, libsMock, BlacklistManager)
+    const appInfo = await getApp(ipfsClient, libsMock, BlacklistManager, null, null, userId)
     server = appInfo.server
     app = appInfo.app
     mockServiceRegistry = appInfo.mockServiceRegistry
@@ -64,7 +66,7 @@ describe('test nodesync', async function () {
 
     const createUserAndTrack = async function () {
       // Create user
-      ({ cnodeUserUUID, sessionToken } = await createStarterCNodeUser())
+      ({ cnodeUserUUID, sessionToken } = await createStarterCNodeUser(userId))
 
       // Upload user metadata
       const metadata = {
@@ -75,6 +77,7 @@ describe('test nodesync', async function () {
       const userMetadataResp = await request(app)
         .post('/audius_users/metadata')
         .set('X-Session-ID', sessionToken)
+        .set('User-Id', session.userId)
         .send(metadata)
         .expect(200)
       metadataMultihash = userMetadataResp.body.data.metadataMultihash
@@ -89,6 +92,7 @@ describe('test nodesync', async function () {
       await request(app)
         .post('/audius_users')
         .set('X-Session-ID', sessionToken)
+        .set('User-Id', session.userId)
         .send(associateRequest)
         .expect(200)
 
@@ -115,6 +119,7 @@ describe('test nodesync', async function () {
       const trackMetadataResp = await request(app)
         .post('/tracks/metadata')
         .set('X-Session-ID', sessionToken)
+        .set('User-Id', session.userId)
         .send({ metadata: trackMetadata, source_file: sourceFile })
       trackMetadataMultihash = trackMetadataResp.body.data.metadataMultihash
       trackMetadataFileUUID = trackMetadataResp.body.data.metadataFileUUID
@@ -123,6 +128,7 @@ describe('test nodesync', async function () {
       await request(app)
         .post('/tracks')
         .set('X-Session-ID', sessionToken)
+        .set('User-Id', session.userId)
         .send({
           blockchainTrackId: 1,
           blockNumber: 10,

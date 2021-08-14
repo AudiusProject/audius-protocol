@@ -43,6 +43,12 @@ function getLibsMock () {
         getServiceEndpointInfo: sinon.mock().atLeast(1)
       }
     },
+    contracts: {
+      UserReplicaSetManagerClient: {
+        getUserReplicaSet: sinon.mock(),
+        getUserReplicaSetAtBlockNumber: sinon.mock()
+      }
+    },
     User: {
       getUsers: sinon.mock()
     },
@@ -50,6 +56,9 @@ function getLibsMock () {
       discoveryProviderEndpoint: 'http://docker.for.mac.localhost:5000'
     }
   }
+
+  libsMock.contracts.UserReplicaSetManagerClient.getUserReplicaSet.returns({ primaryId: 1, secondaryIds: [2, 3] })
+  libsMock.contracts.UserReplicaSetManagerClient.getUserReplicaSetAtBlockNumber.returns({ primaryId: 1, secondaryIds: [2, 3] })
 
   libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint.returns('1')
   libsMock.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo.returns({

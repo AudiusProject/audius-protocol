@@ -13,19 +13,21 @@ const { getMonitorRedisKey, MONITORS } = require('../src/monitors/monitors')
 
 describe('test ensureStorageMiddleware', () => {
   const storagePathUsedRedisKey = getMonitorRedisKey(MONITORS.STORAGE_PATH_USED)
-  let app, server, session, ipfsMock, libsMock, monitoringQueueMock
+  let app, server, session, ipfsMock, libsMock, monitoringQueueMock, userId
 
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
 
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
+    userId = 1
+
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, null, null, userId)
     await BlacklistManager.init()
 
     app = appInfo.app
     server = appInfo.server
     monitoringQueueMock = appInfo.mockServiceRegistry.monitoringQueue
-    session = await createStarterCNodeUser()
+    session = await createStarterCNodeUser(userId)
   })
 
   afterEach(async () => {
@@ -40,6 +42,7 @@ describe('test ensureStorageMiddleware', () => {
     const resp = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ test: 'IMA STARBOY' })
       .expect(500)
 
@@ -59,6 +62,7 @@ describe('test ensureStorageMiddleware', () => {
       .attach('file', file, { filename: 'abel.jpg' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .expect(500)
 
     const errorObj = JSON.parse(resp.error.text)
@@ -95,6 +99,7 @@ describe('test ensureStorageMiddleware', () => {
       .attach('file', file, { filename: 'STARBOY.mp3' })
       .set('Content-Type', 'multipart/form-data')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .expect(500)
 
     const errorObj = JSON.parse(resp.error.text)
@@ -112,6 +117,7 @@ describe('test ensureStorageMiddleware', () => {
     const resp = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send(
         {
           metadata: {

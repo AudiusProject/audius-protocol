@@ -40,7 +40,9 @@ async function authMiddleware (req, res, next) {
       attributes: ['blockchainId'],
       where: { cnodeUserUUID }
     })
-    userId = parseInt(resp.blockchainId)
+    if (resp && resp.blockchainId) {
+      userId = parseInt(resp.blockchainId)
+    }
   }
 
   // Attach session object to request
