@@ -12,6 +12,15 @@ from tests.index_helpers import AttrDict, IPFSClient, UpdateTask
 block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
 
 
+class FakeTask:
+    def __init__(self, id=1):
+        class FakeRequest:
+            def __init__(self, id):
+                self.id = id
+
+        self.request = FakeRequest(id)
+
+
 def get_add_user_event():
     event_type = user_event_types_lookup["add_user"]
     add_user_event = AttrDict(
@@ -218,7 +227,7 @@ def test_index_users(app):
         assert user_record.wallet == None
 
         parse_user_event(
-            None,  # self - not used
+            FakeTask(id=1),
             None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
@@ -247,7 +256,7 @@ def test_index_users(app):
         assert user_record.handle != None
 
         parse_user_event(
-            None,  # self - not used
+            FakeTask(id=1),
             None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
@@ -269,7 +278,7 @@ def test_index_users(app):
         assert user_record.location == None
 
         parse_user_event(
-            None,  # self - not used
+            FakeTask(id=1),
             None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
@@ -291,7 +300,7 @@ def test_index_users(app):
         assert user_record.is_creator == None
 
         parse_user_event(
-            None,  # self - not used
+            FakeTask(id=1),
             None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
@@ -313,7 +322,7 @@ def test_index_users(app):
         assert user_record.name == None
 
         parse_user_event(
-            None,  # self - not used
+            FakeTask(id=1),
             None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
@@ -339,7 +348,7 @@ def test_index_users(app):
         user_record.primary_id = 1
 
         parse_user_event(
-            None,  # self - not used
+            FakeTask(id=1),
             None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
@@ -364,7 +373,7 @@ def test_index_users(app):
         assert user_record.creator_node_endpoint == None
 
         parse_user_event(
-            None,  # self - not used
+            FakeTask(id=1),
             None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
@@ -387,7 +396,7 @@ def test_index_users(app):
         assert user_record.profile_picture_sizes == None
 
         parse_user_event(
-            None,  # self - not used
+            FakeTask(id=1),
             None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
@@ -413,7 +422,7 @@ def test_index_users(app):
         assert user_record.cover_photo_sizes == None
 
         parse_user_event(
-            None,  # self - not used
+            FakeTask(id=1),
             None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,
@@ -435,7 +444,7 @@ def test_index_users(app):
         event_type, entry = get_update_multihash_event()
 
         parse_user_event(
-            None,  # self - not used
+            FakeTask(id=1),
             None,  # user_contract - not used
             update_task,  # only need the ipfs client for get_metadata
             session,

@@ -269,9 +269,8 @@ def parse_user_event(
         # Reference user_replica_set.py for the updated indexing flow around this field
         replica_set_upgraded = user_replica_set_upgraded(user_record)
         logger.info(
-            f"""index.py | users.py | {self.request.id}
-            | {user_record.handle} Replica set upgraded: {replica_set_upgraded}
-            """
+            f"index.py | users.py | {self.request.id}"
+            f"| {user_record.handle} Replica set upgraded: {replica_set_upgraded}"
         )
         if not replica_set_upgraded:
             user_record.creator_node_endpoint = event_args._creatorNodeEndpoint
