@@ -268,7 +268,9 @@ class CreatorNodeSelection extends ServiceSelection {
               maxFileDescriptors: data.maxFileDescriptors,
               allocatedFileDescriptors: data.allocatedFileDescriptors,
               receivedBytesPerSec: data.receivedBytesPerSec,
-              transferredBytesPerSec: data.transferredBytesPerSec
+              transferredBytesPerSec: data.transferredBytesPerSec,
+              transcodeWaiting: data.transcodeWaiting,
+              transcodeActive: data.transcodeActive
             })
           } catch (e) {
             // Swallow errors -- this method should not throw generally

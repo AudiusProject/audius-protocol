@@ -134,7 +134,7 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
         error = meta["err"]
 
         challenge_bus: ChallengeEventBus = (
-            index_solana_plays.challenge_bus
+            index_solana_plays.challenge_event_bus
         )
 
         if error:

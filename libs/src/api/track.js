@@ -341,12 +341,26 @@ class Track extends Base {
         metadataFileUUID,
         transcodedTrackUUID,
         transcodedTrackCID
-      } = await this.creatorNode.uploadTrackContent(
-        trackFile,
-        coverArtFile,
-        metadata,
-        onProgress
-      )
+      } = await retry(async (bail, num) => {
+        return this.creatorNode.uploadTrackContent(
+          trackFile,
+          coverArtFile,
+          metadata,
+          onProgress
+        )
+      }, {
+        // Retry function 3x
+        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+        minTimeout: 500,
+        maxTimeout: 4000,
+        factor: 3,
+        retries: 3,
+        onRetry: (err, i) => {
+          if (err) {
+            console.log('uploadTrackContent retry error: ', err)
+          }
+        }
+      })
 
       phase = phases.ADDING_TRACK
 
@@ -420,8 +434,7 @@ class Track extends Base {
       retries: 3,
       onRetry: (err, i) => {
         if (err) {
-          // eslint-disable-next-line no-console
-          console.log('Retry error : ', err)
+          console.log('uploadTrackContentToCreatorNode retry error: ', err)
         }
       }
     })
