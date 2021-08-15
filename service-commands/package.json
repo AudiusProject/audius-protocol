@@ -7,7 +7,7 @@
     "preinstall": "mkdir -p ~/.local/bin && ln -sf $PWD/scripts/A ~/.local/bin/A"
   },
   "dependencies": {
-    "@audius/libs": "1.2.13",
+    "@audius/libs": "1.2.19",
     "axios": "^0.19.2",
     "colors": "^1.4.0",
     "commander": "^6.0.0",
