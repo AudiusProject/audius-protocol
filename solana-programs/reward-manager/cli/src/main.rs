@@ -7,10 +7,22 @@ use clap::{
 
 use audius_reward_manager::{
     instruction::{
-        add_sender, create_sender, delete_sender, init, transfer, verify_transfer_signature,
+        create_sender_public,
+        create_sender,
+        delete_sender,
+        init,
+        transfer,
+        verify_transfer_signature,
+        delete_sender_public
     },
     processor::SENDER_SEED_PREFIX,
-    state::{RewardManager, SenderAccount, VerifiedMessages},
+    state::{
+        RewardManager,
+        SenderAccount,
+        VerifiedMessages,
+        DELETE_SENDER_MESSAGE_PREFIX,
+        ADD_SENDER_MESSAGE_PREFIX
+    },
     utils::find_derived_pair
 };
 
@@ -146,6 +158,10 @@ fn command_create_sender(
     println!("Owner {:}", config.owner.pubkey());
     println!("Using program ID {:}", &audius_reward_manager::id());
     println!("Using RewardManager Account {:?}", &reward_manager);
+    println!("config.owner.pubkey() {:?}", &config.owner.pubkey());
+    println!("config.fee_payer.pubkey() {:?}", &config.fee_payer.pubkey());
+    println!("decoded_eth_sender_address {:?}", &decoded_eth_sender_address);
+    println!("decoded_eth_operator_address {:?}", &decoded_eth_operator_address);
 
     let transaction = CustomTransaction {
         instructions: vec![create_sender(
@@ -184,6 +200,63 @@ fn command_delete_sender(
     transaction.sign(config, 0)
 }
 
+fn command_delete_sender_public(
+    config: &Config,
+    reward_manager: Pubkey,
+    sender_to_delete: String,
+    senders_secrets: String
+) -> CommandResult {
+    let mut instructions = Vec::new();
+
+    let mut senders = Vec::new();
+    let mut secrets = Vec::new();
+    println!("Using eth address: {:}", &sender_to_delete);
+    let del_address =
+        <[u8; 20]>::from_hex(sender_to_delete).expect(HEX_ETH_ADDRESS_DECODING_ERROR);
+
+    let message_to_sign = [
+        DELETE_SENDER_MESSAGE_PREFIX.as_ref(),
+        reward_manager.as_ref(),
+        del_address.as_ref()
+    ].concat();
+
+    println!("Reading secrets from: {:?}", &senders_secrets);
+    println!("Signing message with senders private keys...");
+
+    let mut rdr = csv::Reader::from_path(&senders_secrets)?;
+    for key in rdr.deserialize() {
+        let deserialized_sender_data: SenderData = key?;
+        let decoded_secret = <[u8; 32]>::from_hex(deserialized_sender_data.eth_secret)
+            .expect(HEX_ETH_SECRET_DECODING_ERROR);
+
+        senders.push(Pubkey::from_str(&deserialized_sender_data.solana_key)?);
+        secrets.push(libsecp256k1::SecretKey::parse(&decoded_secret)?);
+    }
+
+    println!("Senders: {:?}", senders);
+
+    // Append signed delete messages
+    instructions.append(
+        &mut sign_message(message_to_sign.as_ref(), secrets)
+    );
+
+    // Append public function
+    instructions.push(delete_sender_public(
+        &audius_reward_manager::id(),
+        &reward_manager,
+        &config.fee_payer.pubkey(),
+        del_address,
+        &senders
+    )?);
+
+    let transaction = CustomTransaction {
+        instructions,
+        signers: vec![config.fee_payer.as_ref(), config.owner.as_ref()],
+    };
+
+    transaction.sign(config, 0)
+}
+
 fn command_add_sender(
     config: &Config,
     reward_manager: Pubkey,
@@ -195,15 +268,19 @@ fn command_add_sender(
 
     let mut senders = Vec::new();
     let mut secrets = Vec::new();
+    println!("Reading secrets from: {:?}", &senders_secrets);
     let mut rdr = csv::Reader::from_path(&senders_secrets)?;
 
     let new_sender = <[u8; 20]>::from_hex(new_sender).expect(HEX_ETH_ADDRESS_DECODING_ERROR);
-    let message_to_sign = [reward_manager.as_ref(), new_sender.as_ref()].concat();
+    let message_to_sign = [
+        ADD_SENDER_MESSAGE_PREFIX.as_ref(),
+        reward_manager.as_ref(),
+        new_sender.as_ref()
+    ].concat();
     let operator_address =
         <[u8; 20]>::from_hex(operator_address).expect(HEX_ETH_ADDRESS_DECODING_ERROR);
 
     println!("Signing message with senders private keys...");
-
     for key in rdr.deserialize() {
         let deserialized_sender_data: SenderData = key?;
         let decoded_secret = <[u8; 32]>::from_hex(deserialized_sender_data.eth_secret)
@@ -213,9 +290,11 @@ fn command_add_sender(
         secrets.push(libsecp256k1::SecretKey::parse(&decoded_secret)?);
     }
 
+    println!("Senders: {:?}", senders);
+
     instructions.append(&mut sign_message(message_to_sign.as_ref(), secrets));
 
-    instructions.push(add_sender(
+    instructions.push(create_sender_public(
         &audius_reward_manager::id(),
         &reward_manager,
         &config.fee_payer.pubkey(),
@@ -531,6 +610,35 @@ fn main() {
                     .required(true)
                     .help("Ethereum operator address"),
             ))
+        .subcommand(SubCommand::with_name("change-reward-manager-authority").about("Admin method disabling 'manager' authority")
+            .arg(
+                Arg::with_name("reward-manager")
+                    .long("reward-manager")
+                    .validator(is_pubkey)
+                    .value_name("ADDRESS")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Reward manager"),
+            )
+            .arg(
+                Arg::with_name("current-authority")
+                    .long("current-authority")
+                    .validator(is_pubkey)
+                    .value_name("ADDRESS")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Current authority"),
+            )
+            .arg(
+                Arg::with_name("new-authority")
+                    .long("new-authority")
+                    .validator(is_pubkey)
+                    .value_name("ADDRESS")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Current authority"),
+            )
+            )
         .subcommand(SubCommand::with_name("delete-sender").about("Admin method deleting sender")
             .arg(
                 Arg::with_name("reward-manager")
@@ -577,6 +685,34 @@ fn main() {
                     .takes_value(true)
                     .required(true)
                     .help("Ethereum operator address"),
+            )
+            .arg(
+                Arg::with_name("senders-secrets")
+                .long("senders-secrets")
+                .validator(is_csv_file)
+                .value_name("PATH")
+                .takes_value(true)
+                .required(true)
+                .help("CSV file with senders Ethereum secret keys"),
+            ))
+        .subcommand(SubCommand::with_name("delete-sender-public").about("Delete existing sender with signatures")
+            .arg(
+                Arg::with_name("reward-manager")
+                    .long("reward-manager")
+                    .validator(is_pubkey)
+                    .value_name("ADDRESS")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Reward manager"),
+            )
+            .arg(
+                Arg::with_name("existing-sender")
+                    .long("existing-sender")
+                    .validator(is_eth_address)
+                    .value_name("ETH_ADDRESS")
+                    .takes_value(true)
+                    .required(true)
+                    .help("Existing Ethereum sender address"),
             )
             .arg(
                 Arg::with_name("senders-secrets")
@@ -825,6 +961,26 @@ fn main() {
                 String::from(new_sender.get(2..).unwrap()),
                 String::from(operator_address.get(2..).unwrap()),
                 senders_secrets,
+            )
+        }
+        ("change-reward-manager-authority", Some(arg_matches)) => {
+            let reward_manager: Pubkey = pubkey_of(arg_matches, "reward-manager").unwrap();
+            println!("{:}", &reward_manager);
+            // TODO: Add function call
+            exit(1)
+        }
+        ("delete-sender-public", Some(arg_matches)) => {
+            let reward_manager: Pubkey = pubkey_of(arg_matches, "reward-manager").unwrap();
+            let existing_sender: String = value_t_or_exit!(arg_matches, "existing-sender", String);
+            let senders_secrets: String = value_t_or_exit!(arg_matches, "senders-secrets", String);
+            println!("{:}", &reward_manager);
+            println!("{:}", &existing_sender);
+            println!("{:}", &senders_secrets);
+            command_delete_sender_public(
+                &config,
+                reward_manager,
+                String::from(existing_sender.get(2..).unwrap()),
+                senders_secrets
             )
         }
         ("verify-transfer-signature", Some(arg_matches)) => {

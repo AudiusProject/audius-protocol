@@ -131,6 +131,7 @@ const Service = Object.freeze({
   NETWORK: 'network',
   CONTRACTS: 'contracts',
   ETH_CONTRACTS: 'eth-contracts',
+  SOLANA_VALIDATOR: 'solana-validator',
   SOLANA_PROGRAMS: 'solana-programs',
   IPFS: 'ipfs',
   IPFS_2: 'ipfs-2',
@@ -615,6 +616,9 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1 }) => {
 
   // Start up the docker network `audius_dev`
   await runSetupCommand(Service.NETWORK, SetupCommand.UP)
+
+  // Start up the Solana test validator
+  await runSetupCommand(Service.SOLANA_VALIDATOR, SetupCommand.UP)
 
   // Run parallel ops
   await Promise.all(inParallel.map(s => runSetupCommand(...s)))

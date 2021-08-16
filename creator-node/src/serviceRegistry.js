@@ -9,6 +9,7 @@ const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const { logger } = require('./logging')
 const utils = require('./utils')
 const SyncQueue = require('./services/sync/syncQueue')
+const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -41,6 +42,7 @@ class ServiceRegistry {
     this.snapbackSM = null
     this.URSMRegistrationManager = null
     this.syncQueue = null
+    this.skippedCIDsRetryQueue = null
 
     this.servicesInitialized = false
     this.servicesThatRequireServerInitialized = false
@@ -89,7 +91,9 @@ class ServiceRegistry {
    * Specifically:
    *  - recover node L1 identity (requires node health check from server to return success)
    *  - initialize SnapbackSM service (requires node L1 identity)
+   *  - construct SyncQueue (requires node L1 identity)
    *  - register node on L2 URSM contract (requires node L1 identity)
+   *  - construct & init SkippedCIDsRetryQueue (requires SyncQueue)
    */
   async initServicesThatRequireServer () {
     // Cannot progress without recovering spID from node's record on L1 ServiceProviderFactory contract
@@ -101,7 +105,7 @@ class ServiceRegistry {
     await this._initSnapbackSM()
 
     // SyncQueue construction (requires L1 identity)
-    // Note - passes in reference to self instance, a very sub-optimal workaround
+    // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
     this.syncQueue = new SyncQueue(
       this.nodeConfig,
       this.redis,
@@ -113,6 +117,11 @@ class ServiceRegistry {
     // L2URSMRegistration (requires L1 identity)
     // Retries indefinitely
     await this._registerNodeOnL2URSM()
+
+    // SkippedCIDsRetryQueue construction + init (requires SyncQueue)
+    // Note - passes in reference to instance of self (serviceRegistry), a very sub-optimal workaround
+    this.skippedCIDsRetryQueue = new SkippedCIDsRetryQueue(this.nodeConfig, this.libs, this)
+    await this.skippedCIDsRetryQueue.init()
 
     this.servicesThatRequireServerInitialized = true
     this.logInfo(`All services that require server successfully initialized!`)

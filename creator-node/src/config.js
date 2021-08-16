@@ -540,17 +540,23 @@ const config = convict({
     default: 5000
   },
   minimumSuccessfulSyncCountPercentage: {
-    doc: 'Minimum percentage of failed syncs to be considered healthy',
+    doc: 'Minimum percentage of failed syncs to be considered healthy in peer health computation',
     format: 'nat',
     env: 'minimumSuccessfulSyncCountPercentage',
     // TODO: Update to higher percentage when higher threshold of syncs are passing
     default: 0
   },
   minimumSecondaryUserSyncSuccessPercent: {
-    doc: 'Minimum percent of failed Syncs for a user on a secondary for the secondary to be considered healthy for that user',
+    doc: 'Minimum percent of successful Syncs for a user on a secondary for the secondary to be considered healthy for that user. Ensures that a single failure will not cycle out secondary.',
     format: 'nat',
     env: 'minimumSecondaryUserSyncSuccessPercent',
     default: 50
+  },
+  minimumFailedSyncRequestsBeforeReconfig: {
+    doc: '[on Primary] Minimum number of failed SyncRequests from Primary before it cycles Secondary out of replica set',
+    format: 'nat',
+    env: 'minimumFailedSyncRequestsBeforeReconfig',
+    default: 20
   },
   maxNumberSecondsPrimaryRemainsUnhealthy: {
     doc: 'The max number of seconds since first failed health check that a primary can still be marked as healthy',
@@ -563,13 +569,37 @@ const config = convict({
     doc: 'Max number of sync failures for a secondary for a user per day before stopping further SyncRequest issuance',
     format: 'nat',
     env: 'secondaryUserSyncDailyFailureCountThreshold',
-    default: 10
+    default: 20
   },
   maxSyncMonitoringDurationInMs: {
     doc: 'Max duration that primary will monitor secondary for syncRequest completion',
     format: 'nat',
     env: 'maxSyncMonitoringDurationInMs',
     default: 300000 // 5min (prod default)
+  },
+  syncRequestMaxUserFailureCountBeforeSkip: {
+    doc: '[on Secondary] Max number of failed syncs per user before skipping un-retrieved content, saving to db, and succeeding sync',
+    format: 'nat',
+    env: 'syncRequestMaxUserFailureCountBeforeSkip',
+    default: 10
+  },
+  skippedCIDsRetryQueueJobIntervalMs: {
+    doc: 'Interval (ms) for SkippedCIDsRetryQueue Job Processing',
+    format: 'nat',
+    env: 'skippedCIDsRetryQueueJobIntervalMs',
+    default: 3600000 // 1hr in ms
+  },
+  skippedCIDRetryQueueMaxAgeHr: {
+    doc: 'Max age (hours) of skipped CIDs to retry in SkippedCIDsRetryQueue',
+    format: 'nat',
+    env: 'skippedCIDRetryQueueMaxAgeHr',
+    default: 1440 // 2 months in hours
+  },
+  saveFileForMultihashToFSIPFSFallback: {
+    doc: 'Boolean indicating if `saveFileForMultihashToFS()` should fallback to IPFS retrieval if gateway retrieval fails',
+    format: 'BooleanCustom',
+    env: 'saveFileForMultihashToFSIPFSFallback',
+    default: true
   }
 
   /**

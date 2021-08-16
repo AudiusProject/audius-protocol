@@ -1,5 +1,6 @@
 const {
   PublicKey,
+  Secp256k1Program,
   SYSVAR_INSTRUCTIONS_PUBKEY
 } = require('@solana/web3.js')
 const BN = require('bn.js')
@@ -131,16 +132,24 @@ async function transferWAudioBalance ({
   // eth pubkey is different from the ethAddress - addresses are len 20, pub keys are len 64
   const ethPubkey = secp256k1.publicKeyCreate(ethPrivateKeyArr, false).slice(1)
   const { blockhash } = await connection.getRecentBlockhash()
+  const secpTransactionInstruction = Secp256k1Program.createInstructionWithPublicKey({
+    publicKey: Buffer.from(ethPubkey),
+    message: recipientPubkey.toBytes(),
+    signature: Buffer.from(signatureObj.signature),
+    recoveryId: signatureObj.recid
+  })
 
   const transactionData = {
     recentBlockhash: blockhash,
-    secpInstruction: {
-      publicKey: Buffer.from(ethPubkey),
-      message: recipientPubkey.toString(),
-      signature: Buffer.from(signatureObj.signature),
-      recoveryId: signatureObj.recid
-    },
-    instruction: {
+    instructions: [{
+      programId: secpTransactionInstruction.programId.toString(),
+      data: secpTransactionInstruction.data,
+      keys: secpTransactionInstruction.keys.map(account => ({
+        pubkey: account.pubkey.toString(),
+        isSigner: account.isSigner,
+        isWritable: account.isWritable
+      }))
+    }, {
       keys: accounts.map(account => {
         return {
           pubkey: account.pubkey.toString(),
@@ -150,7 +159,7 @@ async function transferWAudioBalance ({
       }),
       programId: claimableTokenProgramKey.toString(),
       data: Buffer.from(serializedInstructionEnum)
-    }
+    }]
   }
 
   const response = await identityService.solanaRelay(transactionData)

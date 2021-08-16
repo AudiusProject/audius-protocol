@@ -32,6 +32,9 @@ function requestNotExcludedFromLogging (url) {
   return (excludedRoutes.filter(excludedRoute => url.includes(excludedRoute))).length === 0
 }
 
+/**
+ * @notice request headers are case-insensitive
+ */
 function getRequestLoggingContext (req, requestID) {
   req.startTime = process.hrtime()
   const urlParts = req.url.split('?')

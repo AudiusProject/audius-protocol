@@ -10,11 +10,9 @@ use audius_reward_manager::{
     utils::{find_derived_pair, EthereumAddress},
     vote_message,
 };
-use rand::{thread_rng, Rng};
 use libsecp256k1::{PublicKey, SecretKey};
-use solana_program::{
-    instruction::Instruction, program_pack::Pack, pubkey::Pubkey
-};
+use rand::{thread_rng, Rng};
+use solana_program::{instruction::Instruction, program_pack::Pack, pubkey::Pubkey};
 use solana_program_test::*;
 use solana_sdk::{
     secp256k1_instruction::*, signature::Keypair, signer::Signer, transaction::Transaction,
@@ -133,7 +131,7 @@ async fn success() {
             &reward_manager.pubkey(),
             &signers[0],
             &context.payer.pubkey(),
-            transfer_id.to_string()
+            transfer_id.to_string(),
         )
         .unwrap(),
     );
@@ -160,7 +158,7 @@ async fn success() {
             &reward_manager.pubkey(),
             &signers[1],
             &context.payer.pubkey(),
-            transfer_id.to_string()
+            transfer_id.to_string(),
         )
         .unwrap(),
     );
@@ -242,8 +240,8 @@ async fn success_multiple_recovery_1_tx() {
         transfer_id.as_ref(),
     ]
     .concat());
-     // Add bot oracle as sender
-     let (_, oracle_derived_address, _) = find_derived_pair(
+    // Add bot oracle as sender
+    let (_, oracle_derived_address, _) = find_derived_pair(
         &audius_reward_manager::id(),
         &reward_manager.pubkey(),
         [SENDER_SEED_PREFIX.as_ref(), eth_oracle_address.as_ref()]
@@ -257,7 +255,8 @@ async fn success_multiple_recovery_1_tx() {
         &manager_account,
         eth_oracle_address,
         oracle_operator,
-    ).await;
+    )
+    .await;
     println!("Created bot oracle sender - {:?}", oracle_derived_address);
 
     // Generate data and create senders
@@ -315,7 +314,7 @@ async fn success_multiple_recovery_1_tx() {
             &reward_manager.pubkey(),
             &signers[0],
             &context.payer.pubkey(),
-            transfer_id.to_string()
+            transfer_id.to_string(),
         )
         .unwrap(),
     );
@@ -331,17 +330,13 @@ async fn success_multiple_recovery_1_tx() {
             &reward_manager.pubkey(),
             &signers[1],
             &context.payer.pubkey(),
-            transfer_id.to_string()
+            transfer_id.to_string(),
         )
         .unwrap(),
     );
 
     // Add bot oracle signature
-    let oracle_sign = new_secp256k1_instruction_2_0(
-        &oracle_priv_key,
-        bot_oracle_msg.as_ref(),
-        4
-    );
+    let oracle_sign = new_secp256k1_instruction_2_0(&oracle_priv_key, bot_oracle_msg.as_ref(), 4);
     instructions.push(oracle_sign);
     instructions.push(
         instruction::verify_transfer_signature(
@@ -349,7 +344,7 @@ async fn success_multiple_recovery_1_tx() {
             &reward_manager.pubkey(),
             &oracle_derived_address,
             &context.payer.pubkey(),
-            transfer_id.to_string()
+            transfer_id.to_string(),
         )
         .unwrap(),
     );
@@ -367,61 +362,44 @@ async fn success_multiple_recovery_1_tx() {
     let (_reward_manager_authority, verified_msgs_derived_acct, _) = find_derived_pair(
         &audius_reward_manager::id(),
         &reward_manager.pubkey(),
-        [VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(), transfer_id.as_ref()]
-            .concat()
-            .as_ref(),
+        [
+            VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
+            transfer_id.as_ref(),
+        ]
+        .concat()
+        .as_ref(),
     );
 
     let verified_msg_acct_data = get_account(&mut context, &verified_msgs_derived_acct)
         .await
         .unwrap();
 
-    println!("Expected verified_msgs_derived_acct {:}", verified_msgs_derived_acct);
-
-    let mut verified_messages =
-        VerifiedMessages::unpack_unchecked(&verified_msg_acct_data.data).unwrap();
-
-    println!("verified_messages {:?}", verified_messages);
-
-    // Expect 3 msgs
-    assert_eq!(
-        verified_messages.messages.len(),
-        3
+    println!(
+        "Expected verified_msgs_derived_acct {:}",
+        verified_msgs_derived_acct
     );
+
+    let verified_messages =
+        VerifiedMessages::unpack_unchecked(&verified_msg_acct_data.data).unwrap();
+    println!("verified_messages {:?}", verified_messages);
+    // Expect 3 msgs
+    assert_eq!(verified_messages.messages.len(), 3);
 
     // Verify every message
     for (i, x) in verified_messages.messages.iter().enumerate() {
         println!("Item {} = {:?}", i, x);
-        if (i < 2) {
+        if i < 2 {
             let sender_priv_key = SecretKey::parse(&keys[i]).unwrap();
             let secp_pubkey = PublicKey::from_secret_key(&sender_priv_key);
             let eth_address = construct_eth_pubkey(&secp_pubkey);
-            assert_eq!(
-                x.address,
-                eth_address
-            );
-            assert_eq!(
-                x.operator,
-                operators[i]
-            );
-            assert_eq!(
-                x.message,
-                senders_message
-            );
+            assert_eq!(x.address, eth_address);
+            assert_eq!(x.operator, operators[i]);
+            assert_eq!(x.message, senders_message);
         }
         if i == 3 {
-            assert_eq!(
-                x.message,
-                bot_oracle_msg
-            );
-            assert_eq!(
-                x.address,
-                eth_oracle_address
-            );
-            assert_eq!(
-                x.operator,
-                oracle_operator
-            );
+            assert_eq!(x.message, bot_oracle_msg);
+            assert_eq!(x.address, eth_oracle_address);
+            assert_eq!(x.operator, oracle_operator);
         }
     }
 }

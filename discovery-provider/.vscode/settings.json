@@ -13,5 +13,11 @@
   "editor.formatOnSave": true,
   "python.analysis.typeCheckingMode": "off",
   "python.languageServer": "Pylance",
-  "editor.tabSize": 4
+  "editor.tabSize": 4,
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.nosetestsEnabled": false,
+  "python.testing.pytestEnabled": true
 }

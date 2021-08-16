@@ -83,6 +83,9 @@
     cur_address=$(grep -Po '(?<=declare_id!\(").*(?=")' program/src/lib.rs)
     cargo build-bpf
 
+    echo "Copying claimable-tokens.so for tests"
+    cp ../claimable-tokens/program/target/deploy/claimable_tokens.so program/
+
     echo "Deploying RewardsManager..."
     solana-keygen new -s --no-bip39-passphrase -o target/deploy/audius_reward_manager-keypair.json --force
     rewards_manager_address=$(solana program deploy target/deploy/audius_reward_manager.so --output json | jq -r '.programId')
@@ -121,7 +124,7 @@ cat <<EOF
     "signerGroup": "$signer_group",
     "feePayerWallet": $(cat feepayer.json),
     "feePayerWalletPubkey": "$feepayer_pubkey",
-    "ownerWallet": "$owner_wallet",
+    "ownerWallet": $owner_wallet,
     "ownerWalletPubkey": "$owner_wallet_pubkey",
     "endpoint": "$SOLANA_HOST",
     "signerPrivateKey": "$priv_key",

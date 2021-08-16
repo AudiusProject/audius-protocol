@@ -8,7 +8,7 @@ const SyncQueue = require('../../src/services/sync/syncQueue')
 redisClient.set('ipfsGatewayReqs', 0)
 redisClient.set('ipfsStandaloneReqs', 0)
 
-async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClient = null, setMockFn = null) {
+async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClient = null, setMockFn = null, spId = null) {
   // we need to clear the cache that commonjs require builds, otherwise it uses old values for imports etc
   // eg if you set a new env var, it doesn't propogate well unless you clear the cache for the config file as well
   // as all files that consume it
@@ -17,6 +17,8 @@ async function getApp (ipfsClient, libsClient, blacklistManager, ipfsLatestClien
   // run all migrations before each test
   await clearDatabase()
   await runMigrations()
+
+  if (spId) nodeConfig.set('spID', spId)
 
   const mockServiceRegistry = {
     ipfs: ipfsClient,

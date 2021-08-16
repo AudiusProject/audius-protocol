@@ -1,17 +1,17 @@
+from contextlib import contextmanager
 import json
 import logging
-from flask import current_app
-from src.challenges.challenge import ChallengeManager
-from typing import Dict
-from sqlalchemy.orm.session import Session
-from src.utils.redis_connection import get_redis
-from src.challenges.profile_challenge import profile_challenge_manager
-from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
-from src.challenges.track_upload_challenge import track_upload_challenge_manager
-from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
-from src.challenges.challenge_event import ChallengeEvent
-
 from collections import defaultdict
+from typing import Dict, List
+
+from sqlalchemy.orm.session import Session
+from src.challenges.challenge import ChallengeManager
+from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
+from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
+from src.challenges.profile_challenge import profile_challenge_manager
+from src.challenges.track_upload_challenge import track_upload_challenge_manager
+from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
 REDIS_QUEUE_PREFIX = "challenges-event-queue"
@@ -29,6 +29,7 @@ class ChallengeEventBus:
         self._listeners = defaultdict(lambda: [])
         self._redis = redis
         self._managers = {}
+        self._in_memory_queue: List[Dict] = []
 
     def register_listener(self, event: str, listener: ChallengeManager):
         """Registers a listener (`ChallengeManager`) to listen for a particular event type."""
@@ -40,21 +41,54 @@ class ChallengeEventBus:
         """Gets a manager for a given challenge_id"""
         return self._managers[challenge_id]
 
+    @contextmanager
+    def use_scoped_dispatch_queue(self):
+        """Makes the bus only dispatch the events once out of the new scope created with 'with'"""
+        if len(self._in_memory_queue) > 0:
+            logger.warning("ChallengeEventBus: Already using in-memory queue")
+        try:
+            yield self._in_memory_queue
+        finally:
+            self.flush()
+
     def dispatch(
         self,
-        session: Session,
         event: str,
         block_number: int,
         user_id: int,
         extra: Dict = {},
     ):
-        """Dispatches an event + block_number + user_id to Redis queue"""
-        try:
-            event_json = self._event_to_json(event, block_number, user_id, extra)
-            logger.info(f"ChallengeEventBus: dispatch {event_json}")
-            self._redis.rpush(REDIS_QUEUE_PREFIX, event_json)
-        except Exception as e:
-            logger.warning(f"ChallengeEventBus: error enqueuing to Redis: {e}")
+        """Dispatches an event + block_number + user_id to an in memory queue.
+
+        Does not dispatch to Redis until flush is called or a scoped dispatch queue goes out of scope
+        """
+        self._in_memory_queue.append(
+            {
+                "event": event,
+                "block_number": block_number,
+                "user_id": user_id,
+                "extra": extra,
+            }
+        )
+
+    def flush(self):
+        """Flushes the in-memory queue of events and queues them to Redis"""
+        logger.info(
+            f"ChallengeEventBus: Flushing {len(self._in_memory_queue)} events from in-memory queue"
+        )
+        for event in self._in_memory_queue:
+            try:
+                event_json = self._event_to_json(
+                    event["event"],
+                    event["block_number"],
+                    event["user_id"],
+                    event.get("extra", {}),
+                )
+                logger.info(f"ChallengeEventBus: dispatch {event_json}")
+                self._redis.rpush(REDIS_QUEUE_PREFIX, event_json)
+            except Exception as e:
+                logger.warning(f"ChallengeEventBus: error enqueuing to Redis: {e}")
+        self._in_memory_queue.clear()
 
     def process_events(self, session: Session, max_events=1000):
         """Dequeues `max_events` from Redis queue and processes them, forwarding to listening ChallengeManagers.
@@ -124,10 +158,8 @@ def setup_challenge_bus():
     # track_upload_challenge_manager listeners
     bus.register_listener(ChallengeEvent.track_upload, track_upload_challenge_manager)
     # connect_verified_challenge_manager listeners
-    bus.register_listener(ChallengeEvent.connect_verified, connect_verified_challenge_manager)
+    bus.register_listener(
+        ChallengeEvent.connect_verified, connect_verified_challenge_manager
+    )
 
     return bus
-
-
-def get_event_bus():
-    return current_app.challenge_bus

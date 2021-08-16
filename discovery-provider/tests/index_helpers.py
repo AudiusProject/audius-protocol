@@ -1,6 +1,9 @@
 # Helper methods for testing indexing
 
 
+from src.challenges.challenge_event_bus import ChallengeEventBus
+
+
 class AttrDict(dict):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -19,5 +22,5 @@ class UpdateTask:
     def __init__(self, ipfs_client, web3, challenge_event_bus, redis=None):
         self.ipfs_client = ipfs_client
         self.web3 = web3
-        self.challenge_event_bus = challenge_event_bus
+        self.challenge_event_bus: ChallengeEventBus = challenge_event_bus
         self.redis = redis
