@@ -13,7 +13,8 @@ use audius_reward_manager::{
         init,
         transfer,
         verify_transfer_signature,
-        delete_sender_public
+        delete_sender_public,
+        change_manager_authority
     },
     processor::SENDER_SEED_PREFIX,
     state::{
@@ -247,6 +248,41 @@ fn command_delete_sender_public(
         &config.fee_payer.pubkey(),
         del_address,
         &senders
+    )?);
+
+    let transaction = CustomTransaction {
+        instructions,
+        signers: vec![config.fee_payer.as_ref(), config.owner.as_ref()],
+    };
+
+    transaction.sign(config, 0)
+}
+
+fn command_change_reward_manager_authority(
+    config: &Config,
+    reward_manager: Pubkey,
+    current_authority: Pubkey,
+    new_authority: Pubkey
+) -> CommandResult {
+    println!("Using reward manager - {:}", &reward_manager);
+    println!("Current authority input - {:}", &current_authority);
+    println!("New authority - {:}", &new_authority);
+    let reward_manager_data = config.rpc_client.get_account_data(&reward_manager)?;
+    let reward_manager_from_chain = RewardManager::unpack(reward_manager_data.as_slice())?;
+    println!("Current authority from chain - {:}", reward_manager_from_chain.manager);
+
+    if reward_manager_from_chain.manager != current_authority {
+        println!("Incorrect parameters, exiting");
+        exit(1);
+    }
+
+    let mut instructions = Vec::new();
+
+    instructions.push(change_manager_authority(
+        &audius_reward_manager::id(),
+        &reward_manager,
+        &current_authority,
+        &new_authority
     )?);
 
     let transaction = CustomTransaction {
@@ -965,9 +1001,14 @@ fn main() {
         }
         ("change-reward-manager-authority", Some(arg_matches)) => {
             let reward_manager: Pubkey = pubkey_of(arg_matches, "reward-manager").unwrap();
-            println!("{:}", &reward_manager);
-            // TODO: Add function call
-            exit(1)
+            let current_authority: Pubkey = pubkey_of(arg_matches, "current-authority").unwrap();
+            let new_authority: Pubkey = pubkey_of(arg_matches, "new-authority").unwrap();
+            command_change_reward_manager_authority(
+                &config,
+                reward_manager,
+                current_authority,
+                new_authority
+            )
         }
         ("delete-sender-public", Some(arg_matches)) => {
             let reward_manager: Pubkey = pubkey_of(arg_matches, "reward-manager").unwrap();
