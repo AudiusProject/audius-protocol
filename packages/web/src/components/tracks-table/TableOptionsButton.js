@@ -22,7 +22,8 @@ class TableOptionsButton extends Component {
       isArtistPick,
       onRemove,
       removeText,
-      hiddenUntilHover
+      hiddenUntilHover,
+      trackPermalink
     } = this.props
 
     const removeMenuItem = {
@@ -89,7 +90,8 @@ TableOptionsButton.propTypes = {
   removeText: PropTypes.string,
   isArtistPick: PropTypes.bool,
   isOwner: PropTypes.bool,
-  hiddenUntilHover: PropTypes.bool
+  hiddenUntilHover: PropTypes.bool,
+  trackPermalink: PropTypes.string
 }
 
 TableOptionsButton.defaultProps = {
