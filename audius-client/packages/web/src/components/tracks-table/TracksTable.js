@@ -141,6 +141,7 @@ const optionsButtonCell = (val, record, index, props) => {
       trackTitle={val.name}
       albumId={null}
       albumName={null}
+      trackPermalink={val.permalink}
     />
   )
 }
