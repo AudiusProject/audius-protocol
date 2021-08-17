@@ -90,14 +90,15 @@ def parse_transfer_instruction_id(transfer_id: str) -> Optional[List[str]]:
     id_parts = transfer_id.split(":")
     if len(id_parts) != 2:
         logger.error(
-            f"index_rewards_manager.py | Unable to parse transfer instruction id into challenge_id and specifier {transfer_id}"
+            "index_rewards_manager.py | Unable to parse transfer instruction id"
+            f"into challenge_id and specifier {transfer_id}"
         )
         return None
     return id_parts
 
 
 def get_valid_instruction(
-    tx_message: TransactionMessage, meta: ResultMeta, tx_sig: str
+    tx_message: TransactionMessage, meta: ResultMeta
 ) -> Optional[TransactionMessageInstruction]:
     """Checks that the tx is valid
     checks for the transaction message for correct instruction log
@@ -163,7 +164,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
             )
             return None
         tx_message = result["transaction"]["message"]
-        instruction = get_valid_instruction(tx_message, meta, tx_sig)
+        instruction = get_valid_instruction(tx_message, meta)
         if instruction is None:
             return None
         transfer_instruction_data = parse_transfer_instruction_data(instruction["data"])
@@ -193,7 +194,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
 def process_batch_sol_rewards_transfer_instructions(
     session: Session, transfer_instructions: List[RewardTransferInstruction]
 ):
-    """Validates that the transfer instruction is consistent with DB and inserts a ChallengeDisbursement DB entries"""
+    """Validates that the transfer instruction is consistent with DB and inserts ChallengeDisbursement DB entries"""
     try:
         eth_recipients = [instr["eth_recipient"] for instr in transfer_instructions]
         users = (
@@ -220,7 +221,8 @@ def process_batch_sol_rewards_transfer_instructions(
             eth_recipient = transfer_instr["eth_recipient"]
             if specifier not in user_challenge_specifiers:
                 logger.error(
-                    f"index_rewards_manager.py | Challenge specifier {specifier} not found while processing disbursement"
+                    f"index_rewards_manager.py | Challenge specifier {specifier} not found"
+                    "while processing disbursement"
                 )
                 continue
             if eth_recipient not in users_map:
