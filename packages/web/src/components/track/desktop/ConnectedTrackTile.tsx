@@ -95,6 +95,7 @@ const ConnectedTrackTile = memo(
   }: ConnectedTrackTileProps) => {
     const {
       is_delete,
+      is_unlisted,
       track_id: trackId,
       title,
       permalink,
@@ -162,6 +163,7 @@ const ConnectedTrackTile = memo(
         includeFavorite: false,
         includeRepost: false,
         includeShare: false,
+        includeShareToTikTok: !is_unlisted,
         includeTrackPage: true,
         isArtistPick: isArtistPick,
         isDeleted: is_delete,

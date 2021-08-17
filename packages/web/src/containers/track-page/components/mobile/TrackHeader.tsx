@@ -191,7 +191,7 @@ const TrackHeader = ({
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
       isUnlisted && !fieldVisibility.share ? null : OverflowAction.SHARE,
-      isShareSoundToTikTokEnabled && isOwner
+      isShareSoundToTikTokEnabled && isOwner && !isUnlisted
         ? OverflowAction.SHARE_TO_TIKTOK
         : null,
       OverflowAction.ADD_TO_PLAYLIST,
