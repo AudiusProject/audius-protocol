@@ -54,7 +54,7 @@ class DiscoveryProvider {
       blacklist: this.blacklist,
       reselectTimeout,
       selectionCallback,
-      monitoringCallbacks
+      monitoringCallbacks,
       requestTimeout: selectionRequestTimeout,
     }, this.ethContracts)
     this.selectionRequestTimeout = selectionRequestTimeout || REQUEST_TIMEOUT_MS
