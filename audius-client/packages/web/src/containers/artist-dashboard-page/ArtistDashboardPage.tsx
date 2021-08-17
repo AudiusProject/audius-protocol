@@ -139,6 +139,7 @@ const makeColumns = (account: User, isUnlisted: boolean) => {
             isFavorited={val.has_current_user_saved}
             isOwner
             isArtistPick={account._artist_pick === val.track_id}
+            isUnlisted={record.is_unlisted}
             index={index}
             trackTitle={val.name}
             hiddenUntilHover={false}

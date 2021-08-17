@@ -14,6 +14,7 @@ import PreviousButtonProvider from 'components/play-bar/previous-button/Previous
 import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import { PlayButtonStatus } from 'components/play-bar/types'
+import { useFlag } from 'containers/remote-config/hooks'
 import { getCastMethod } from 'containers/settings-page/store/selectors'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useImageSize'
@@ -27,6 +28,7 @@ import {
   ShareSource
 } from 'services/analytics'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
+import { FeatureFlags } from 'services/remote-config'
 import { getUserId } from 'store/account/selectors'
 import { useRecord, make } from 'store/analytics/actions'
 import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
@@ -254,8 +256,13 @@ const NowPlaying = g(
       goToRoute(profilePage(handle))
     }
 
+    const { isEnabled: isShareSoundToTikTokEnabled } = useFlag(
+      FeatureFlags.SHARE_SOUND_TO_TIKTOK
+    )
+
     const onClickOverflow = useCallback(() => {
       const isOwner = currentUserId === owner_id
+      const isUnlisted = track.is_unlisted
 
       const overflowActions = [
         !isOwner
@@ -269,6 +276,9 @@ const NowPlaying = g(
             : OverflowAction.FAVORITE
           : null,
         OverflowAction.SHARE,
+        isShareSoundToTikTokEnabled && isOwner && !isUnlisted
+          ? OverflowAction.SHARE_TO_TIKTOK
+          : null,
         OverflowAction.ADD_TO_PLAYLIST,
         OverflowAction.VIEW_TRACK_PAGE,
         OverflowAction.VIEW_ARTIST_PAGE
@@ -283,6 +293,8 @@ const NowPlaying = g(
       track_id,
       owner_id,
       clickOverflow,
+      track,
+      isShareSoundToTikTokEnabled,
       has_current_user_saved,
       has_current_user_reposted,
       onClose

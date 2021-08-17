@@ -100,6 +100,7 @@ const TrackListItem = ({
     includeFavorite: true,
     includeRepost: true,
     includeShare: true,
+    includeShareToTikTok: !track.is_unlisted,
     includeTrackPage: true,
     isArtistPick: track.user._artist_pick === track.track_id,
     isDeleted: deleted,

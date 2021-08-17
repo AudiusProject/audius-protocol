@@ -17,6 +17,7 @@ export const getTrackWithFallback = (track: Track | null) => {
       has_current_user_saved: false,
       play_count: 0,
       is_delete: false,
+      is_unlisted: false,
       activity_timestamp: '',
       _co_sign: undefined,
       _cover_art_sizes: {

@@ -66,6 +66,7 @@ export type OwnProps = {
   includeFavorite: boolean
   includeRepost: boolean
   includeShare: boolean
+  includeShareToTikTok: boolean
   includeTrackPage: boolean
   isArtistPick: boolean
   isDeleted: boolean
@@ -97,6 +98,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       includeFavorite,
       includeRepost,
       includeShare,
+      includeShareToTikTok,
       includeTrackPage,
       isArtistPick,
       isDeleted,
@@ -229,6 +231,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       menu.items.push(embedMenuItem)
     }
     if (
+      includeShareToTikTok &&
       getFeatureEnabled(FeatureFlags.SHARE_SOUND_TO_TIKTOK) &&
       trackId &&
       isOwner &&

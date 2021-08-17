@@ -181,6 +181,14 @@ const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
     )
   }, [type, user, upload, record])
 
+  const shouldShowShareToTikTok = () => {
+    return (
+      type === 'Track' &&
+      isShareSoundToTikTokEnabled &&
+      !upload.tracks[0]?.metadata.is_unlisted
+    )
+  }
+
   const continuePage = getContinuePage(type)
 
   return (
@@ -201,7 +209,7 @@ const ShareBanner = ({ isHidden, type, upload, user }: ShareBannerProps) => {
           text={messages.share}
           leftIcon={<IconTwitterBird />}
         />
-        {type === 'Track' && isShareSoundToTikTokEnabled && (
+        {shouldShowShareToTikTok() && (
           <Button
             onClick={onClickTikTok}
             className={cn(styles.button, styles.buttonTikTok)}

@@ -82,6 +82,7 @@ const ConnectedTrackTile = memo(
 
     const {
       is_delete,
+      is_unlisted,
       track_id,
       title,
       permalink,
@@ -167,7 +168,7 @@ const ConnectedTrackTile = memo(
             : OverflowAction.FAVORITE
           : null,
         OverflowAction.SHARE,
-        isShareSoundToTikTokEnabled && isOwner
+        isShareSoundToTikTokEnabled && isOwner && !is_unlisted
           ? OverflowAction.SHARE_TO_TIKTOK
           : null,
         OverflowAction.ADD_TO_PLAYLIST,
