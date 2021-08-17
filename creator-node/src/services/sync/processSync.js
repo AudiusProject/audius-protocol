@@ -106,7 +106,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
 
     try {
       // Attempt to connect directly to target CNode's IPFS node.
-      await _initBootstrapAndRefreshPeers(serviceRegistry, logger, body.data.ipfsIDObj.addresses, redisKey)
+      _initBootstrapAndRefreshPeers(serviceRegistry, logger, body.data.ipfsIDObj.addresses, redisKey)
       logger.info(redisKey, 'IPFS Nodes connected + data export received')
     } catch (e) {
       // if there's an error peering to an IPFS node, do not stop execution
