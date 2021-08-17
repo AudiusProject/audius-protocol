@@ -4,6 +4,8 @@ const config = require('../config')
 const { getIPFSPeerId } = require('../utils')
 
 module.exports = function (app) {
+  let ipfsIDObj
+
   /**
    * Exports all db data (not files) associated with walletPublicKey[] as JSON.
    * Returns IPFS node ID object, so importing nodes can peer manually for optimized file transfer.
@@ -131,7 +133,10 @@ module.exports = function (app) {
 
       // Expose ipfs node's peer ID.
       const ipfs = req.app.get('ipfsAPI')
-      const ipfsIDObj = await getIPFSPeerId(ipfs)
+
+      if (!ipfsIDObj) {
+        ipfsIDObj = await getIPFSPeerId(ipfs)
+      }
 
       req.logger.info(`Successful export for wallets ${walletPublicKeys} to source endpoint ${sourceEndpoint || '(not provided)'} for clock value range [${requestedClockRangeMin},${requestedClockRangeMax}] || route duration ${Date.now() - start} ms`)
       return successResponse({ cnodeUsers: cnodeUsersDict, ipfsIDObj })
