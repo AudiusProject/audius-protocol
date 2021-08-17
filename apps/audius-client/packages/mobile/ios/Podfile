@@ -50,9 +50,13 @@ target 'AudiusReactNative' do
 
   pod 'Firebase/Analytics'
 
-
   pod 'react-native-google-cast/NoBluetooth', path: '../node_modules/react-native-google-cast/ios/'
 
   use_native_modules!
 
+  post_install do |installer|
+    installer.pods_project.build_configurations.each do |config|
+      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+    end
+  end
 end

@@ -41,7 +41,7 @@
     "@types/react-redux": "^7.1.5",
     "bn.js": "^5.2.0",
     "lottie-ios": "^3.2.3",
-    "lottie-react-native": "^4.0.2",
+    "lottie-react-native": "^4.0.3",
     "numeral": "^2.0.6",
     "path-dirname": "^1.0.2",
     "react": "16.13.1",
