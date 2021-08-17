@@ -1,7 +1,7 @@
 """add-rewards-manager-disbursement
 
 Revision ID: badd3aab7e5e
-Revises: f64a484f1496
+Revises: 9562cf365cf4
 Create Date: 2021-08-05 13:50:52.864760
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "badd3aab7e5e"
-down_revision = "f64a484f1496"
+down_revision = "9562cf365cf4"
 branch_labels = None
 depends_on = None
 
