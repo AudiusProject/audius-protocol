@@ -1,3 +1,4 @@
+import concurrent.futures
 import logging
 from datetime import datetime
 from typing import Set, TypedDict
@@ -52,17 +53,17 @@ def user_state_update(
     # for each user factory transaction, loop through every tx
     # loop through all audius event types within that tx and get all event logs
     # for each event, apply changes to the user in user_events_lookup
-    for tx_receipt in user_factory_txs:
-        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-        for event_type in user_event_types_arr:
-            user_events_tx = getattr(user_contract.events, event_type)().processReceipt(
-                tx_receipt
-            )
-            # if record does not get added, do not count towards num_total_changes
-            processedEntries = 0
-            for entry in user_events_tx:
-                user_id = entry["args"]._userId
-                try:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        # Keep a mapping of futures -> event_type
+        futures_map = {}
+        futures = []
+        for tx_receipt in user_factory_txs:
+            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+            for event_type in user_event_types_arr:
+                user_events_tx = getattr(
+                    user_contract.events, event_type
+                )().processReceipt(tx_receipt)
+                for entry in user_events_tx:
                     user_id = entry["args"]._userId
                     user_ids.add(user_id)
 
@@ -83,7 +84,8 @@ def user_state_update(
                     # Add or update the value of the user record for this block in user_events_lookup,
                     # ensuring that multiple events for a single user result in only 1 row insert operation
                     # (even if multiple operations are present)
-                    user_record = parse_user_event(
+                    future = executor.submit(
+                        parse_user_event,
                         self,
                         user_contract,
                         update_task,
@@ -95,18 +97,24 @@ def user_state_update(
                         user_events_lookup[user_id]["user"],
                         block_timestamp,
                     )
-                    if user_record is not None:
-                        user_events_lookup[user_id]["events"].append(event_type)
-                        user_events_lookup[user_id]["user"] = user_record
-                        processedEntries += 1
-                except Exception as e:
-                    logger.error("Error in parse user transaction")
-                    event_blockhash = update_task.web3.toHex(block_hash)
-                    raise IndexingError(
-                        "user", block_number, event_blockhash, txhash, str(e)
-                    ) from e
 
-            num_total_changes += processedEntries
+                    futures.append(future)
+                    futures_map[future] = event_type
+
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                event_type = futures_map[future]
+                user_record = future.result()
+                if user_record is not None:
+                    user_events_lookup[user_record.user_id]["events"].append(event_type)
+                    user_events_lookup[user_record.user_id]["user"] = user_record
+                    num_total_changes += 1
+            except Exception as e:
+                logger.error("Error in parse user transaction")
+                event_blockhash = update_task.web3.toHex(block_hash)
+                raise IndexingError(
+                    "user", block_number, event_blockhash, txhash, str(e)
+                ) from e
 
     logger.info(
         f"index.py | users.py | There are {num_total_changes} events processed."
