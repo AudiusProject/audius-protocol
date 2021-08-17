@@ -170,42 +170,47 @@ module.exports = function (app) {
 
     const response = {}
 
-    // Fetch clock value from DB
-    const cnodeUser = await models.CNodeUser.findOne({
-      where: { walletPublicKey }
-    })
-    const clockValue = (cnodeUser) ? cnodeUser.dataValues.clock : -1
-    response.clockValue = clockValue
+    async function fetchClockValueFromDb () {
+      // Fetch clock value from DB
+      const cnodeUser = await models.CNodeUser.findOne({
+        where: { walletPublicKey }
+      })
+      const clockValue = (cnodeUser) ? cnodeUser.dataValues.clock : -1
+      response.clockValue = clockValue
 
-    // Determine if a sync is currently in progress for this user
-    let syncInProgress = false
-    try {
-      const lockHeld = await redisClient.lock.getLock(
-        redisClient.getNodeSyncRedisKey(walletPublicKey)
-      )
-      if (lockHeld) {
-        syncInProgress = true
+      // Return CIDSkipInfo if requested
+      if (returnSkipInfo && cnodeUser) {
+        const countsQuery = (await sequelize.query(`
+          select
+            count(*) as "numCIDs",
+            count(case when "skipped" = true then 1 else null end) as "numSkippedCIDs"
+          from "Files"
+          where "cnodeUserUUID" = :cnodeUserUUID
+        `, { replacements: { cnodeUserUUID: cnodeUser.cnodeUserUUID } }))[0][0]
+
+        const numCIDs = parseInt(countsQuery.numCIDs)
+        const numSkippedCIDs = parseInt(countsQuery.numSkippedCIDs)
+
+        response.CIDSkipInfo = { numCIDs, numSkippedCIDs }
       }
-    } catch (e) {
-      // Swallow error, leave syncInProgress unset
     }
-    response.syncInProgress = syncInProgress
 
-    // Return CIDSkipInfo if requested
-    if (returnSkipInfo && cnodeUser) {
-      const countsQuery = (await sequelize.query(`
-        select
-          count(*) as "numCIDs",
-          count(case when "skipped" = true then 1 else null end) as "numSkippedCIDs"
-        from "Files"
-        where "cnodeUserUUID" = :cnodeUserUUID
-      `, { replacements: { cnodeUserUUID: cnodeUser.cnodeUserUUID } }))[0][0]
-
-      const numCIDs = parseInt(countsQuery.numCIDs)
-      const numSkippedCIDs = parseInt(countsQuery.numSkippedCIDs)
-
-      response.CIDSkipInfo = { numCIDs, numSkippedCIDs }
+    async function isSyncInProgress () {
+      let syncInProgress = false
+      try {
+        const lockHeld = await redisClient.lock.getLock(
+          redisClient.getNodeSyncRedisKey(walletPublicKey)
+        )
+        if (lockHeld) {
+          syncInProgress = true
+        }
+      } catch (e) {
+        // Swallow error, leave syncInProgress unset
+      }
+      response.syncInProgress = syncInProgress
     }
+
+    await Promise.all([fetchClockValueFromDb(), isSyncInProgress()])
 
     return successResponse(response)
   }))
