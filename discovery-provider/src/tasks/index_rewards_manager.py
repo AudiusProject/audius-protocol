@@ -1,7 +1,7 @@
 import concurrent.futures
 import logging
 import time
-from typing import Callable, List, TypedDict, Optional, Union
+from typing import Callable, List, TypedDict, Optional
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from solana.rpc.api import Client
@@ -26,6 +26,7 @@ from src.utils.solana_indexing import (
 logger = logging.getLogger(__name__)
 
 REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
+REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 MIN_SLOT = int(shared_config["solana"]["rewards_manager_min_slot"])
 
 # Maximum number of batches to process at once
@@ -82,7 +83,7 @@ def parse_transfer_instruction_data(data: str) -> RewardsManagerTransfer:
     return parse_instruction_data(data, rewards_manager_transfer_instr)
 
 
-def parse_transfer_instruction_id(transfer_id: str) -> Union[List[str], None]:
+def parse_transfer_instruction_id(transfer_id: str) -> Optional[List[str]]:
     """Parses the transfer instruction id into [challenge_id, specifier]
     The id in the transfer instruction is formatted as "<CHALLENGE_ID>:<SPECIFIER>"
     """
@@ -96,22 +97,41 @@ def parse_transfer_instruction_id(transfer_id: str) -> Union[List[str], None]:
 
 
 def get_valid_instruction(
-    tx_message: TransactionMessage, meta: ResultMeta
+    tx_message: TransactionMessage, meta: ResultMeta, tx_sig: str
 ) -> Optional[TransactionMessageInstruction]:
-    """Checks the transaction message for a transfer instruction and validates it"""
-    instructions = tx_message["instructions"]
-    rewards_manager_program_index = tx_message["accountKeys"].index(
-        REWARDS_MANAGER_PROGRAM
-    )
-    has_transfer_instruction = any(
-        log == "Program log: Instruction: Transfer" for log in meta["logMessages"]
-    )
-    if has_transfer_instruction:
+    """Checks that the tx is valid
+    checks for the transaction message for correct instruction log
+    checks accounts keys for rewards manager account
+    checks for rewards manager program in instruction
+    """
+    try:
+        account_keys = tx_message["accountKeys"]
+        has_transfer_instruction = any(
+            log == "Program log: Instruction: Transfer" for log in meta["logMessages"]
+        )
+
+        if not has_transfer_instruction:
+            return None
+
+        if not any(REWARDS_MANAGER_ACCOUNT == key for key in account_keys):
+            logger.error(
+                "index_rewards_manager.py | Rewards manager account missing from account keys"
+            )
+            return None
+
+        instructions = tx_message["instructions"]
+        rewards_manager_program_index = account_keys.index(REWARDS_MANAGER_PROGRAM)
         for instruction in instructions:
             if instruction["programIdIndex"] == rewards_manager_program_index:
                 return instruction
 
-    return None
+        return None
+    except Exception as e:
+        logger.error(
+            f"index_rewards_manager.py | Error processing instruction valid, {e}",
+            exc_info=True,
+        )
+        return None
 
 
 class RewardTransferInstruction(TypedDict):
@@ -125,13 +145,13 @@ class RewardTransferInstruction(TypedDict):
 
 def fetch_and_parse_sol_rewards_transfer_instruction(
     solana_client: Client, tx_sig: str
-) -> Union[RewardTransferInstruction, None]:
-    """Fetches metadata for rewards transfer transactions and creates Challege Disbursements
+) -> Optional[RewardTransferInstruction]:
+    """Fetches metadata for rewards transfer transactions and parses data
 
     Fetches the transaction metadata from solana using the tx signature
     Checks the metadata for a transfer instruction
     Decodes and parses the transfer instruction metadata
-    Validates the metadata fields and inserts a ChallengeDisbursement DB entry
+    Validates the metadata fields
     """
     try:
         tx_info = get_sol_tx_info(solana_client, tx_sig)
@@ -143,7 +163,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
             )
             return None
         tx_message = result["transaction"]["message"]
-        instruction = get_valid_instruction(tx_message, meta)
+        instruction = get_valid_instruction(tx_message, meta, tx_sig)
         if instruction is None:
             return None
         transfer_instruction_data = parse_transfer_instruction_data(instruction["data"])
@@ -173,6 +193,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
 def process_batch_sol_rewards_transfer_instructions(
     session: Session, transfer_instructions: List[RewardTransferInstruction]
 ):
+    """Validates that the transfer instruction is consistent with DB and inserts a ChallengeDisbursement DB entries"""
     try:
         eth_recipients = [instr["eth_recipient"] for instr in transfer_instructions]
         users = (
@@ -199,12 +220,12 @@ def process_batch_sol_rewards_transfer_instructions(
             eth_recipient = transfer_instr["eth_recipient"]
             if specifier not in user_challenge_specifiers:
                 logger.error(
-                    f"Challenge specifier {specifier} not found while processing disbursement"
+                    f"index_rewards_manager.py | Challenge specifier {specifier} not found while processing disbursement"
                 )
                 continue
             if eth_recipient not in users_map:
                 logger.error(
-                    f"eth_recipient {eth_recipient} not found while processing disbursement"
+                    f"index_rewards_manager.py | eth_recipient {eth_recipient} not found while processing disbursement"
                 )
                 continue
             challenge_disbursements.append(
@@ -383,6 +404,12 @@ def process_transaction_signatures(
 def process_solana_rewards_manager(solana_client: Client, db: SessionManager):
     """Fetches the next set of reward manager transactions and updates the DB with Challenge Disbursements"""
     if not is_valid_rewards_manager_program:
+        logger.error(
+            "index_rewards_manager.py | no valid reward manager program passed"
+        )
+        return
+    if not REWARDS_MANAGER_ACCOUNT:
+        logger.error("index_rewards_manager.py | reward manager account missing")
         return
     # List of signatures that will be populated as we traverse recent operations
     transaction_signatures = get_transaction_signatures(
