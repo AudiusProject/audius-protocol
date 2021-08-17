@@ -84,7 +84,8 @@ const FULL_ENDPOINT_MAP = {
 
 const ENDPOINT_MAP = {
   associatedWallets: '/users/associated_wallets',
-  associatedWalletUserId: '/users/id'
+  associatedWalletUserId: '/users/id',
+  userChallenges: (userId: OpaqueID) => `/users/${userId}/challenges`
 }
 
 const TRENDING_LIMIT = 100
@@ -290,6 +291,12 @@ type GetAssociatedWalletUserIDArgs = {
 type AssociatedWalletUserIdResponse = {
   user_id: Nullable<ID>
 }
+
+type GetUserChallengesArgs = {
+  userID: number
+}
+
+type UserChallengesResponse = {}
 
 type InitializationState =
   | { state: 'uninitialized' }
@@ -1041,6 +1048,26 @@ class AudiusAPIClient {
     if (!userID) return null
     const encodedUserId = userID.data.user_id
     return encodedUserId ? decodeHashId(encodedUserId.toString()) : null
+  }
+
+  async getUserChallenges({ userID }: GetUserChallengesArgs) {
+    this._assertInitialized()
+    const encodedCurrentUserId = encodeHashId(userID)
+    if (encodedCurrentUserId === null) return null // throw error
+
+    const params = { id: encodedCurrentUserId }
+
+    const userChallenges: Nullable<APIResponse<
+      UserChallengesResponse
+    >> = await this._getResponse(
+      ENDPOINT_MAP.userChallenges(encodedCurrentUserId),
+      params,
+      true,
+      PathType.VersionPath
+    )
+
+    if (!userChallenges) return null
+    return userChallenges.data
   }
 
   async getBlockConfirmation(blockhash: string, blocknumber: number) {

@@ -157,6 +157,12 @@
 .emoji.white-heavy-check-mark {
 	background-image: url('../fonts/emojis/white-heavy-check-mark.png');
 }
+.emoji.mobile-phone-with-arrow {
+	background-image: url('../fonts/emojis/mobile-phone-with-arrow.png');
+}
+.emoji.incoming-envelope {
+	background-image: url('../fonts/emojis/incoming-envelope.png');
+}
 .emoji.octagonal-sign {
 	background-image: url('../fonts/emojis/octagonal-sign.png');
 }

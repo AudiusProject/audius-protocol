@@ -3,7 +3,7 @@ import { combineReducers } from 'redux'
 
 import addToPlaylist from 'containers/add-to-playlist/store/reducers'
 import dashboard from 'containers/artist-dashboard-page/store/reducer'
-import rewardsUI from 'containers/audio-rewards-page/store/slice'
+import rewardsPage from 'containers/audio-rewards-page/store/slice'
 import collection from 'containers/collection-page/store/reducer'
 import deletePlaylistConfirmation from 'containers/delete-playlist-confirmation-modal/store/reducers'
 import deleted from 'containers/deleted-page/store/slice'
@@ -141,7 +141,6 @@ const createRootReducer = routeHistory =>
         modals,
         musicConfetti,
         remixSettingsModal,
-        rewardsUI,
         scrollLock,
         setAsArtistPickConfirmation,
         shareSoundToTikTokModal,
@@ -163,6 +162,7 @@ const createRootReducer = routeHistory =>
         nowPlaying,
         remixes,
         reposts,
+        rewardsPage,
         settings,
         smartCollection,
         tokenDashboard,

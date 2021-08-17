@@ -148,6 +148,8 @@ export enum StringKeys {
 
   /** Rewards IDs as comma-separated array */
   REWARDS_IDS = 'REWARDS_IDS',
+  TRENDING_REWARD_IDS = 'TRENDING_REWARD_IDS',
+  CHALLENGE_REWARD_IDS = 'CHALLENGE_REWARD_IDS',
 
   /** Embedded tweet for trending rewards UI tracks */
   REWARDS_TWEET_ID_TRACKS = 'REWARDS_TWEET_ID_TRACKS',

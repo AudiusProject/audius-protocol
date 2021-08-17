@@ -2,6 +2,7 @@ import { fork } from 'redux-saga/effects'
 
 import addToPlaylistSagas from 'containers/add-to-playlist/store/sagas'
 import dashboardSagas from 'containers/artist-dashboard-page/store/sagas'
+import rewardsPageSagas from 'containers/audio-rewards-page/store/sagas'
 import collectionSagas from 'containers/collection-page/store/sagas'
 import deletedSagas from 'containers/deleted-page/store/sagas'
 import enablePushNotificationsSagas from 'containers/enable-push-notifications-drawer/store/sagas'
@@ -85,6 +86,7 @@ export default function* rootSaga() {
     notificationSagas(),
     passwordResetSagas(),
     profileSagas(),
+    rewardsPageSagas(),
     savedSagas(),
     searchBarSagas(),
     searchPageSagas(),

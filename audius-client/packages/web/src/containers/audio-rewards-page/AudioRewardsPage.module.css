@@ -38,6 +38,7 @@
 .mobile .walletTile, .mobile.balanceTile {
   flex: 1 0 220px;
   width: 100%;
+  margin: 12px;
 }
 
 .pageContainer .walletTile, .pageContainer .balanceTile {

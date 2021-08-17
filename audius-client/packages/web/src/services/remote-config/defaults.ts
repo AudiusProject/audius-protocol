@@ -30,8 +30,13 @@ export const remoteConfigStringDefaults: {
     'https://instagram.com/$USERNAME$/?__a=1',
   // Audius user id
   [StringKeys.TRENDING_PLAYLIST_OMITTED_USER_IDS]: '51',
+  // Remove when Rewards UI update is live
   [StringKeys.REWARDS_IDS]:
     'trending-track,trending-playlist,top-api,verified-upload',
+  [StringKeys.TRENDING_REWARD_IDS]:
+    'trending-track,trending-playlist,trending-underground,top-api',
+  [StringKeys.CHALLENGE_REWARD_IDS]:
+    'track-upload,invite-friends,mobile-app,connect-verified,listen-streak,profile-completion',
   [StringKeys.REWARDS_TWEET_ID_TRACKS]: '1374856377651187713',
   [StringKeys.REWARDS_TWEET_ID_PLAYLISTS]: '1374856377651187713',
   [StringKeys.REWARDS_TWEET_ID_UNDERGROUND]: '1374856377651187713',

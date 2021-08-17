@@ -25,6 +25,9 @@
   color: #C675FF;
   text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
 }
+.label.mobile {
+  font-size: var(--font-s);
+}
 
 .text {
   font-weight: bold;
@@ -32,6 +35,9 @@
   line-height: 24px;
   text-align: center;
   color: var(--static-white);
+}
+.text.mobile {
+  font-size: var(--font-m);
 }
 
 .compact {

@@ -9,7 +9,8 @@ export enum FeatureFlags {
   SHARE_SOUND_TO_TIKTOK = 'share_sound_to_tiktok',
   REMIXABLES = 'remixables',
   REMIXABLES_WEB = 'remixables_web',
-  TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD = 'transfer_audio_to_waudio_on_load'
+  TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD = 'transfer_audio_to_waudio_on_load',
+  CHALLENGE_REWARDS_UI = 'challenge_rewards_ui'
 }
 
 /**
@@ -25,7 +26,8 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: false,
   [FeatureFlags.REMIXABLES]: false,
   [FeatureFlags.REMIXABLES_WEB]: false,
-  [FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD]: false
+  [FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD]: false,
+  [FeatureFlags.CHALLENGE_REWARDS_UI]: false
 }
 
 export enum FeatureFlagCohortType {
@@ -56,7 +58,9 @@ export const flagCohortType: {
   [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.REMIXABLES]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.REMIXABLES_WEB]: FeatureFlagCohortType.USER_ID,
-  [FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD]: FeatureFlagCohortType.USER_ID
+  [FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD]:
+    FeatureFlagCohortType.USER_ID,
+  [FeatureFlags.CHALLENGE_REWARDS_UI]: FeatureFlagCohortType.USER_ID
 }
 
 export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId'
