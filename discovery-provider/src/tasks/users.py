@@ -54,7 +54,7 @@ def user_state_update(
     # loop through all audius event types within that tx and get all event logs
     # for each event, apply changes to the user in user_events_lookup
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-        # Keep a mapping of futures -> event_type
+        # Keep a mapping of futures -> { event_type, txhash }
         futures_map = {}
         futures = []
         for tx_receipt in user_factory_txs:
@@ -99,17 +99,21 @@ def user_state_update(
                     )
 
                     futures.append(future)
-                    futures_map[future] = event_type
+                    futures_map[future] = {
+                        "event_type": event_type,
+                        "txhash": txhash,
+                    }
 
         for future in concurrent.futures.as_completed(futures):
             try:
-                event_type = futures_map[future]
+                event_type = futures_map[future]["event_type"]
                 user_record = future.result()
                 if user_record is not None:
                     user_events_lookup[user_record.user_id]["events"].append(event_type)
                     user_events_lookup[user_record.user_id]["user"] = user_record
                     num_total_changes += 1
             except Exception as e:
+                event_type = futures_map[future]["txhash"]
                 logger.error("Error in parse user transaction")
                 event_blockhash = update_task.web3.toHex(block_hash)
                 raise IndexingError(
