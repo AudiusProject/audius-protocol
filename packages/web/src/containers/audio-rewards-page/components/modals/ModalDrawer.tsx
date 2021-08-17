@@ -31,6 +31,7 @@ const ModalDrawer = (props: ModalDrawerProps) => {
           <div className={styles.titleContainer}>
             <span
               className={cn({
+                [props.titleClassName!]: !!props.titleClassName,
                 [styles.drawerGradientTitle]: gradientTitle,
                 [styles.drawerTitle]: !gradientTitle
               })}
@@ -53,8 +54,15 @@ const ModalDrawer = (props: ModalDrawerProps) => {
       dismissOnClickOutside={props.dismissOnClickOutside}
       title={props.title}
       contentHorizontalPadding={props.contentHorizontalPadding}
-      titleClassName={gradientTitle ? styles.modalTitle : undefined}
-      headerContainerClassName={gradientTitle ? styles.modalHeader : undefined}
+      titleClassName={cn(props.titleClassName ? props.titleClassName : '', {
+        [styles.modalTitle]: gradientTitle
+      })}
+      headerContainerClassName={cn(
+        props.headerContainerClassName ? props.headerContainerClassName : '',
+        {
+          [styles.modalHeader]: gradientTitle
+        }
+      )}
       bodyClassName={cn(styles.modalBody, {
         [styles.gradientHeader]: gradientTitle,
         [props.bodyClassName!]: !!props.bodyClassName

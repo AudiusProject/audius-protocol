@@ -10,16 +10,19 @@ import NavContext, {
   LeftPreset,
   RightPreset
 } from 'containers/nav/store/context'
+import { useFlag } from 'containers/remote-config/hooks'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { FeatureFlags } from 'services/remote-config'
 import { preloadWalletProviders } from 'store/token-dashboard/slice'
 import { isMobile } from 'utils/clientUtil'
 import { AUDIO_PAGE, BASE_URL, TRENDING_PAGE } from 'utils/route'
 
 import styles from './AudioRewardsPage.module.css'
-import RewardsTile from './RewardsTile'
+import ChallengeRewardsTile from './ChallengeRewardsTile'
 import Tiers from './Tiers'
 import { BalanceTile, WalletTile } from './Tiles'
+import TrendingRewardsTile from './TrendingRewardsTile'
 import WalletModal from './WalletModal'
 import ExplainerTile from './components/ExplainerTile'
 
@@ -30,6 +33,9 @@ export const messages = {
 
 export const RewardsContent = () => {
   const wm = useWithMobileStyle(styles.mobile)
+  const { isEnabled: isChallengeRewardsEnabled } = useFlag(
+    FeatureFlags.CHALLENGE_REWARDS_UI
+  )
   useRequiresAccount(TRENDING_PAGE)
   return (
     <>
@@ -39,7 +45,10 @@ export const RewardsContent = () => {
         <BalanceTile className={wm(styles.balanceTile)} />
         <WalletTile className={styles.walletTile} />
       </div>
-      <RewardsTile className={styles.mobile} />
+      {isChallengeRewardsEnabled && (
+        <ChallengeRewardsTile className={styles.mobile} />
+      )}
+      <TrendingRewardsTile className={styles.mobile} />
       <Tiers />
     </>
   )

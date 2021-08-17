@@ -2,7 +2,7 @@ import { RouterState } from 'connected-react-router'
 
 import { AddToPlaylistState } from 'containers/add-to-playlist/store/reducers'
 import ArtistDashboardState from 'containers/artist-dashboard-page/store/types'
-import rewardsUI from 'containers/audio-rewards-page/store/slice'
+import rewardsPage from 'containers/audio-rewards-page/store/slice'
 import CollectionsPageState from 'containers/collection-page/store/types'
 import { DeletePlaylistConfirmationModalState } from 'containers/delete-playlist-confirmation-modal/store/types'
 import DeletedPageReducer from 'containers/deleted-page/store/slice'
@@ -126,7 +126,6 @@ export type AppState = {
       modals: ReturnType<typeof modals>
       musicConfetti: ReturnType<typeof MusicConfetti>
       remixSettingsModal: ReturnType<typeof RemixSettingsModalReducer>
-      rewardsUI: ReturnType<typeof rewardsUI>
       scrollLock: ScrollLockState
       setAsArtistPickConfirmation: SetAsArtistPickConfirmationState
       shareSoundToTikTokModal: ShareSoundToTikTokModalState
@@ -150,6 +149,7 @@ export type AppState = {
       smartCollection: SmartCollectionState
       exploreCollections: ExploreCollectionsState
       remixes: ReturnType<typeof RemixesPageReducer>
+      rewardsPage: ReturnType<typeof rewardsPage>
       deleted: ReturnType<typeof DeletedPageReducer>
       tokenDashboard: ReturnType<typeof tokenDashboard>
       trendingPlaylists: ReturnType<typeof trendingPlaylistsReducer>

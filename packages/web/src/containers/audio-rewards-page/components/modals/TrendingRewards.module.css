@@ -126,3 +126,12 @@
 .mobile .button {
   width: 100%;
 }
+
+.titleHeader {
+  text-align: center;
+  color: var(--white);
+  line-height: 34px
+}
+.titleIcon {
+  margin-right: 8px;
+}
