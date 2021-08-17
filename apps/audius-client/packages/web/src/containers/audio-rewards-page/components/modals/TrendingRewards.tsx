@@ -43,7 +43,9 @@ const messages = {
   topPlaylists: 'TOP PLAYLISTS',
   underground: 'UNDERGROUND',
   terms: 'Terms and Conditions Apply',
-  modalTitle: '$AUDIO REWARDS',
+  tracksModalTitle: 'Top 5 Trending Tracks',
+  playlistsModalTitle: 'Top 5 Trending Playlists',
+  undergroundModalTitle: 'Top 5 Underground Trending Tracks',
   buttonTextTracks: 'Current Trending Tracks',
   buttonTextPlaylists: 'Current Trending Playlists',
   buttonTextUnderground: 'Current Underground Trending Tracks',
@@ -60,16 +62,19 @@ const TRENDING_PAGES = {
 
 const textMap = {
   playlists: {
+    modalTitle: messages.playlistsModalTitle,
     title: messages.playlistTitle,
     button: messages.buttonTextPlaylists,
     buttonMobile: messages.mobileButtonTextPlaylists
   },
   tracks: {
+    modalTitle: messages.tracksModalTitle,
     title: messages.tracksTitle,
     button: messages.buttonTextTracks,
     buttonMobile: messages.mobileButtonTextTracks
   },
   underground: {
+    modalTitle: messages.undergroundModalTitle,
     title: messages.undergroundTitle,
     button: messages.buttonTextUnderground,
     buttonMobile: messages.mobileButtonTextUnderground
@@ -209,12 +214,18 @@ const TrendingRewardsBody = ({
 
 export const TrendingRewardsModal = () => {
   const [isOpen, setOpen] = useModalState('TrendingRewardsExplainer')
+  const [modalType, _] = useRewardsType()
 
   return (
     <ModalDrawer
       isOpen={isOpen}
       onClose={() => setOpen(false)}
-      title={messages.modalTitle}
+      title={
+        <h2 className={styles.titleHeader}>
+          <i className={`emoji large chart-increasing ${styles.titleIcon}`} />
+          {textMap[modalType].modalTitle}
+        </h2>
+      }
       allowScroll
       showTitleHeader
       showDismissButton

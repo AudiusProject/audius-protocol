@@ -3,6 +3,7 @@ import React, { Suspense, useEffect } from 'react'
 import { isMobile } from 'utils/clientUtil'
 import lazyWithPreload from 'utils/lazyWithPreload'
 
+import ChallengeRewardsModal from './ChallengeRewards'
 import TopAPIModal from './TopAPI'
 import TransferAudioMobileDrawer from './TransferAudioMobileDrawer'
 import TrendingRewardsModal from './TrendingRewards'
@@ -16,6 +17,7 @@ const RewardsModals = () => {
   return (
     <>
       <TrendingRewardsModal />
+      <ChallengeRewardsModal />
       <VerifiedUpload />
       <TopAPIModal />
       <Suspense fallback={null}>
