@@ -263,6 +263,11 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(
         ],
     }
 
+    with db.scoped_session() as session:
+        process_batch_sol_rewards_transfer_instructions(session, [parsed_tx])
+        disbursments = session.query(ChallengeDisbursement).all()
+        assert len(disbursments) == 0
+
     populate_mock_db(db, test_entries)
     with db.scoped_session() as session:
         process_batch_sol_rewards_transfer_instructions(session, [parsed_tx])
@@ -274,5 +279,3 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(
         assert disbursment.signature == "tx_sig_one"
         assert disbursment.slot == 72131741
         assert disbursment.specifier == "123456789"
-
-        # Check that the challenge disbursment is present
