@@ -5,7 +5,8 @@ from src.models import ChallengeDisbursement
 from src.tasks.index_rewards_manager import (
     parse_transfer_instruction_data,
     parse_transfer_instruction_id,
-    process_sol_rewards_transfer_instruction,
+    fetch_and_parse_sol_rewards_transfer_instruction,
+    process_batch_sol_rewards_transfer_instructions,
 )
 from src.utils.db_session import get_db
 from src.utils.config import shared_config
@@ -30,15 +31,15 @@ def test_parse_transfer_instruction_id():
     assert parsed_id[0] == "profile-completion"
     assert parsed_id[1] == "123456789"
 
-    # Throws an error on invalid transfer_id
-    with pytest.raises(Exception):
-        transfer_id = "profile-completion_123456789"
-        parsed_id = parse_transfer_instruction_id(transfer_id)
+    # Returns None on invalid transfer_id
+    transfer_id = "profile-completion_123456789"
+    parsed_id = parse_transfer_instruction_id(transfer_id)
+    assert parsed_id == None
 
-    # Throws an error on invalid transfer_id
-    with pytest.raises(Exception):
-        transfer_id = "profile-completion:123456789:"
-        parsed_id = parse_transfer_instruction_id(transfer_id)
+    # Returns none on invalid transfer_id
+    transfer_id = "profile-completion:123456789:"
+    parsed_id = parse_transfer_instruction_id(transfer_id)
+    assert parsed_id == None
 
 
 mock_tx_info = {
@@ -230,7 +231,7 @@ def get_sol_tx_info_mock(monkeypatch):
     return mock_get_sol_tx_info
 
 
-def test_process_sol_rewards_transfer_instruction(
+def test_fetch_and_parse_sol_rewards_transfer_instruction(
     app, get_sol_tx_info_mock
 ):  # pylint: disable=W0621
     get_sol_tx_info_mock.return_value = mock_tx_info
@@ -238,16 +239,12 @@ def test_process_sol_rewards_transfer_instruction(
     with app.app_context():
         db = get_db()
 
-    with db.scoped_session() as session:
-        with pytest.raises(Exception):
-            # Should Raise exeption for no matching user
-            process_sol_rewards_transfer_instruction(session, {}, "tx_sig_one")
-
-        # Insert block and user
-
-        with pytest.raises(Exception):
-            # Should Raise exeption for no matching user
-            process_sol_rewards_transfer_instruction(session, {}, "tx_sig_one")
+    parsed_tx = fetch_and_parse_sol_rewards_transfer_instruction({}, "tx_sig_one")
+    assert parsed_tx["amount"] == 10000000000
+    assert parsed_tx["eth_recipient"] == "0x7698a57431399ab25c8567b4126a116035be0304"
+    assert parsed_tx["challenge_id"] == "profile-completion"
+    assert parsed_tx["tx_sig"] == "tx_sig_one"
+    assert parsed_tx["slot"] == 72131741
 
     test_entries = {
         "users": [
@@ -265,9 +262,10 @@ def test_process_sol_rewards_transfer_instruction(
             }
         ],
     }
+
     populate_mock_db(db, test_entries)
     with db.scoped_session() as session:
-        process_sol_rewards_transfer_instruction(session, {}, "tx_sig_one")
+        process_batch_sol_rewards_transfer_instructions(session, [parsed_tx])
         disbursments = session.query(ChallengeDisbursement).all()
         assert len(disbursments) == 1
         disbursment = disbursments[0]

@@ -1,7 +1,7 @@
 import concurrent.futures
 import logging
 import time
-from typing import Callable, List, TypedDict, Optional
+from typing import Callable, List, TypedDict, Optional, Union
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 from solana.rpc.api import Client
@@ -82,15 +82,16 @@ def parse_transfer_instruction_data(data: str) -> RewardsManagerTransfer:
     return parse_instruction_data(data, rewards_manager_transfer_instr)
 
 
-def parse_transfer_instruction_id(transfer_id: str) -> List[str]:
+def parse_transfer_instruction_id(transfer_id: str) -> Union[List[str], None]:
     """Parses the transfer instruction id into [challenge_id, specifier]
     The id in the transfer instruction is formatted as "<CHALLENGE_ID>:<SPECIFIER>"
     """
     id_parts = transfer_id.split(":")
     if len(id_parts) != 2:
-        raise Exception(
-            f"Unable to parse transfer instruction id into challenge_id and specifier {transfer_id}"
+        logger.error(
+            f"index_rewards_manager.py | Unable to parse transfer instruction id into challenge_id and specifier {transfer_id}"
         )
+        return None
     return id_parts
 
 
@@ -113,9 +114,18 @@ def get_valid_instruction(
     return None
 
 
-def process_sol_rewards_transfer_instruction(
-    session: Session, solana_client: Client, tx_sig: str
-):
+class RewardTransferInstruction(TypedDict):
+    amount: int
+    challenge_id: str
+    specifier: str
+    eth_recipient: str
+    tx_sig: str
+    slot: int
+
+
+def fetch_and_parse_sol_rewards_transfer_instruction(
+    solana_client: Client, tx_sig: str
+) -> Union[RewardTransferInstruction, None]:
     """Fetches metadata for rewards transfer transactions and creates Challege Disbursements
 
     Fetches the transaction metadata from solana using the tx signature
@@ -131,49 +141,88 @@ def process_sol_rewards_transfer_instruction(
             logger.info(
                 f"index_rewards_manager.py | Skipping error transaction from chain {tx_info}"
             )
-            return
+            return None
         tx_message = result["transaction"]["message"]
         instruction = get_valid_instruction(tx_message, meta)
         if instruction is None:
-            return
+            return None
         transfer_instruction_data = parse_transfer_instruction_data(instruction["data"])
         amount = transfer_instruction_data["amount"]
         eth_recipient = transfer_instruction_data["eth_recipient"]
         id = transfer_instruction_data["id"]
-        challenge_id, specifier = parse_transfer_instruction_id(id)
+        transfer_instruction = parse_transfer_instruction_id(id)
+        if transfer_instruction is None:
+            return None
 
-        user_query = (
-            session.query(User.user_id).filter(User.wallet == eth_recipient).first()
-        )
-        if user_query is None:
-            raise Exception(f"No user found with eth address {eth_recipient}")
-        user_challenge = (
-            session.query(UserChallenge.user_id)
-            .filter(
-                UserChallenge.challenge_id == challenge_id,
-                UserChallenge.specifier == specifier,
-            )
-            .first()
-        )
-        if user_challenge is None:
-            raise Exception(
-                f"No user challenge found with challenge_id {challenge_id} and specifier {specifier}"
-            )
-
-        session.add(
-            ChallengeDisbursement(
-                challenge_id=challenge_id,
-                user_id=user_query[0],
-                specifier=specifier,
-                amount=str(amount),
-                slot=result["slot"],
-                signature=tx_sig,
-            )
-        )
+        challenge_id, specifier = transfer_instruction
+        return {
+            "amount": amount,
+            "eth_recipient": eth_recipient,
+            "challenge_id": challenge_id,
+            "specifier": specifier,
+            "tx_sig": tx_sig,
+            "slot": result["slot"],
+        }
     except Exception as e:
         logger.error(
             f"index_rewards_manager.py | Error processing {tx_sig}, {e}", exc_info=True
         )
+        raise e
+
+
+def process_batch_sol_rewards_transfer_instructions(
+    session: Session, transfer_instructions: List[RewardTransferInstruction]
+):
+    try:
+        eth_recipients = [instr["eth_recipient"] for instr in transfer_instructions]
+        users = (
+            session.query(User.wallet, User.user_id)
+            .filter(User.wallet.in_(eth_recipients), User.is_current == True)
+            .all()
+        )
+        users_map = {user[0]: user[1] for user in users}
+
+        specifiers = [instr["specifier"] for instr in transfer_instructions]
+
+        user_challenges = (
+            session.query(UserChallenge.specifier)
+            .filter(
+                UserChallenge.specifier.in_(specifiers),
+            )
+            .all()
+        )
+        user_challenge_specifiers = set([challenge[0] for challenge in user_challenges])
+
+        challenge_disbursements = []
+        for transfer_instr in transfer_instructions:
+            specifier = transfer_instr["specifier"]
+            eth_recipient = transfer_instr["eth_recipient"]
+            if specifier not in user_challenge_specifiers:
+                logger.error(
+                    f"Challenge specifier {specifier} not found while processing disbursement"
+                )
+                continue
+            if eth_recipient not in users_map:
+                logger.error(
+                    f"eth_recipient {eth_recipient} not found while processing disbursement"
+                )
+                continue
+            challenge_disbursements.append(
+                ChallengeDisbursement(
+                    challenge_id=transfer_instr["challenge_id"],
+                    user_id=users_map[eth_recipient],
+                    specifier=specifier,
+                    amount=str(transfer_instr["amount"]),
+                    slot=transfer_instr["slot"],
+                    signature=transfer_instr["tx_sig"],
+                )
+            )
+
+        if challenge_disbursements:
+            session.bulk_save_objects(challenge_disbursements)
+
+    except Exception as e:
+        logger.error(f"index_rewards_manager.py | Error processing {e}", exc_info=True)
         raise e
 
 
@@ -299,26 +348,31 @@ def process_transaction_signatures(
     for tx_sig_batch in transaction_signatures:
         logger.info(f"index_rewards_manager.py | processing {tx_sig_batch}")
         batch_start_time = time.time()
+
+        transfer_instructions: List[RewardTransferInstruction] = []
         # Process each batch in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            with db.scoped_session() as session:
-                parse_sol_tx_futures = {
-                    executor.submit(
-                        process_sol_rewards_transfer_instruction,
-                        session,
-                        solana_client,
-                        tx_sig,
-                    ): tx_sig
-                    for tx_sig in tx_sig_batch
-                }
-                for future in concurrent.futures.as_completed(parse_sol_tx_futures):
-                    try:
-                        # No return value expected here so we just ensure all futures are resolved
-                        future.result()
-                    except Exception as exc:
-                        logger.error(f"index_rewards_manager.py | {exc}")
-                        raise exc
-
+            parse_sol_tx_futures = {
+                executor.submit(
+                    fetch_and_parse_sol_rewards_transfer_instruction,
+                    solana_client,
+                    tx_sig,
+                ): tx_sig
+                for tx_sig in tx_sig_batch
+            }
+            for future in concurrent.futures.as_completed(parse_sol_tx_futures):
+                try:
+                    # No return value expected here so we just ensure all futures are resolved
+                    parsed_solana_transfer_instruction = future.result()
+                    if parsed_solana_transfer_instruction is not None:
+                        transfer_instructions.append(parsed_solana_transfer_instruction)
+                except Exception as exc:
+                    logger.error(f"index_rewards_manager.py | {exc}")
+                    raise exc
+        with db.scoped_session() as session:
+            process_batch_sol_rewards_transfer_instructions(
+                session, transfer_instructions
+            )
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
         logger.info(
