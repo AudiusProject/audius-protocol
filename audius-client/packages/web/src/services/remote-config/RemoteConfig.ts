@@ -46,7 +46,17 @@ export enum IntKeys {
   /**
    * Number of random (recommended) tracks to fetch and add to the autoplay queue
    */
-  AUTOPLAY_LIMIT = 'AUTOPLAY_LIMIT'
+  AUTOPLAY_LIMIT = 'AUTOPLAY_LIMIT',
+
+  /**
+   * Request timeout in ms before a selected discovery node is thought of as unhealthy
+   */
+  DISCOVERY_NODE_SELECTION_REQUEST_TIMEOUT = 'DISCOVERY_NODE_SELECTION_REQUEST_TIMEOUT',
+
+  /**
+   * Number of retries to a discovery node before it is thought of as unhealthy
+   */
+  DISCOVERY_NODE_SELECTION_REQUEST_RETRIES = 'DISCOVERY_NODE_SELECTION_REQUEST_RETRIES'
 }
 
 export enum BooleanKeys {

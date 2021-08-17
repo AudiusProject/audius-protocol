@@ -11,7 +11,9 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.SERVICE_MONITOR_HEALTH_CHECK_SAMPLE_RATE]: 0,
   [IntKeys.SERVICE_MONITOR_REQUEST_SAMPLE_RATE]: 0,
   [IntKeys.INSTAGRAM_HANDLE_CHECK_TIMEOUT]: 4000,
-  [IntKeys.AUTOPLAY_LIMIT]: 10
+  [IntKeys.AUTOPLAY_LIMIT]: 10,
+  [IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_TIMEOUT]: 30000,
+  [IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_RETRIES]: 5
 }
 
 export const remoteConfigStringDefaults: {
