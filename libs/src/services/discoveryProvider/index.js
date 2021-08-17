@@ -24,9 +24,12 @@ const MAX_MAKE_REQUEST_RETRY_COUNT = 5
  * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
  * @param {function} selectionCallback invoked when a discovery node is selected
  * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
- * @param {function} monitoringCallbacks.request
- * @param {function} monitoringCallbacks.healthCheck
+ *  @param {function} monitoringCallbacks.request
+ *  @param {function} monitoringCallbacks.healthCheck
+ * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
+* @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
  */
+
 class DiscoveryProvider {
   constructor (
     whitelist,
@@ -36,7 +39,9 @@ class DiscoveryProvider {
     web3Manager,
     reselectTimeout,
     selectionCallback,
-    monitoringCallbacks = {}
+    monitoringCallbacks = {},
+    selectionRequestTimeout,
+    selectionRequestRetries
   ) {
     this.whitelist = whitelist
     this.blacklist = blacklist
@@ -50,7 +55,10 @@ class DiscoveryProvider {
       reselectTimeout,
       selectionCallback,
       monitoringCallbacks
+      requestTimeout: selectionRequestTimeout,
     }, this.ethContracts)
+    this.selectionRequestTimeout = selectionRequestTimeout || REQUEST_TIMEOUT_MS
+    this.selectionRequestRetries = selectionRequestRetries || MAX_MAKE_REQUEST_RETRY_COUNT
 
     this.monitoringCallbacks = monitoringCallbacks
   }
@@ -649,7 +657,7 @@ class DiscoveryProvider {
    */
   async getHealthyDiscoveryProviderEndpoint (attemptedRetries) {
     let endpoint = this.discoveryProviderEndpoint
-    if (attemptedRetries > MAX_MAKE_REQUEST_RETRY_COUNT) {
+    if (attemptedRetries > this.selectionRequestRetries) {
       // Add to unhealthy list if current disc prov endpoint has reached max retry count
       console.info(`Attempted max retries with endpoint ${endpoint}`)
       this.serviceSelector.addUnhealthy(endpoint)
@@ -686,7 +694,7 @@ class DiscoveryProvider {
       headers['X-User-ID'] = currentUserId
     }
 
-    const timeout = requestObj.timeout || REQUEST_TIMEOUT_MS
+    const timeout = requestObj.timeout || this.selectionRequestTimeout
     let axiosRequest = {
       url: requestUrl,
       headers: headers,
