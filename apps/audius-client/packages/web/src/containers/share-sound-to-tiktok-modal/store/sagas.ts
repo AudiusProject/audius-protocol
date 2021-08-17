@@ -73,7 +73,7 @@ function* handleShare() {
     }
   } catch (e) {
     console.log(e)
-    yield put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: e }))
+    yield put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: e.message }))
     yield put(setStatus({ status: Status.SHARE_ERROR }))
   }
 }
@@ -115,7 +115,7 @@ function* handleUpload(action: ReturnType<typeof upload>) {
     yield put(showConfetti())
   } catch (e) {
     console.log(e)
-    yield put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: e }))
+    yield put(make(Name.TIKTOK_SHARE_SOUND_ERROR, { error: e.message }))
     yield put(setStatus({ status: Status.SHARE_ERROR }))
   } finally {
     trackBlob = null
