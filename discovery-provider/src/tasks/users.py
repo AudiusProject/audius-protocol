@@ -152,7 +152,7 @@ def lookup_user_record(
     if user_exists:
         user_record = (
             session.query(User)
-            .filter(User.user_id == user_id, User.is_current == True)
+            .filter(User.user_id == user_id, User.is_current is True)
             .first()
         )
 
@@ -185,7 +185,7 @@ def invalidate_old_user(session, user_id):
         # Update existing record in db to is_current = False
         num_invalidated_users = (
             session.query(User)
-            .filter(User.user_id == user_id, User.is_current == True)
+            .filter(User.user_id == user_id, User.is_current is True)
             .update({"is_current": False})
         )
         assert (
