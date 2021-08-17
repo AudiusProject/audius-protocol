@@ -1117,7 +1117,7 @@ profile_name={self.profile_name},\
 profile_picture={self.profile_picture},\
 profile_cover_photo={self.profile_cover_photo},\
 follows_complete={self.follows},\
-favorites_complete={self.favorites_complete},\
+favorites_complete={self.favorites},\
 reposts_complete={self.reposts})>"
 
 
