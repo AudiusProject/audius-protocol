@@ -186,8 +186,6 @@ def test_index_tracks(mock_index_task, app):
         web3 = Web3()
         update_task = UpdateTask(ipfs_client, web3, challenge_event_bus)
 
-    pending_track_routes = []
-
     with db.scoped_session() as session, challenge_event_bus.use_scoped_dispatch_queue():
         # ================== Test New Track Event ==================
         event_type, entry = get_new_track_event()
@@ -245,7 +243,6 @@ def test_index_tracks(mock_index_task, app):
             track_record,  # User ORM instance
             block_number,  # Used to forward to track uploads challenge
             block_timestamp,  # Used to update the user.updated_at field
-            pending_track_routes,
         )
 
         # updated_at should be updated every parse_track_event
@@ -322,7 +319,6 @@ def test_index_tracks(mock_index_task, app):
             track_record,
             block_number,
             block_timestamp,
-            pending_track_routes,
         )
 
         # Check that track routes are updated appropriately
@@ -392,7 +388,6 @@ def test_index_tracks(mock_index_task, app):
             track_record_dupe,
             block_number,
             block_timestamp,
-            pending_track_routes,
         )
 
         # Check that track routes are assigned appropriately
@@ -429,7 +424,6 @@ def test_index_tracks(mock_index_task, app):
             track_record_dupe,
             block_number,
             block_timestamp,
-            pending_track_routes,
         )
 
         # Check that track routes are assigned appropriately
@@ -454,11 +448,8 @@ def test_index_tracks(mock_index_task, app):
         )
         assert track_route
 
-        # Make sure the blocks are committed
-        session.commit()
-        pending_track_routes.clear()
         revert_blocks(mock_index_task, db, [second_block])
-        # Commit the revert
+
         session.commit()
 
         track_routes = session.query(TrackRoute).all()
@@ -494,7 +485,6 @@ def test_index_tracks(mock_index_task, app):
             track_record,  # User ORM instance
             block_number,  # Used to forward to track uploads challenge
             block_timestamp,  # Used to update the user.updated_at field
-            pending_track_routes,
         )
 
         # =================== Test track __repr___ ======================
