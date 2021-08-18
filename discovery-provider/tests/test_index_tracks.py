@@ -421,7 +421,7 @@ def test_index_tracks(mock_index_task, app):
             block_timestamp,
             pending_track_routes,
         )
-        session.commit()
+
         # Check that track routes are assigned appropriately
         track_routes = session.query(TrackRoute).filter(TrackRoute.track_id == 30).all()
         assert [
