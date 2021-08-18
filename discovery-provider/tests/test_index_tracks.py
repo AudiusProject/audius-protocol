@@ -328,7 +328,7 @@ def test_index_tracks(mock_index_task, app):
         # Check that track routes are updated appropriately
         track_routes = session.query(TrackRoute).filter(TrackRoute.track_id == 1).all()
         # Should have the two routes created on track creation as well as two more for the update
-        assert len(track_routes) == 4, "Has four total routes after a track name update"
+        assert len(track_routes) == 2, "Has two total routes after a track name update"
         assert (
             len(
                 [
@@ -341,19 +341,8 @@ def test_index_tracks(mock_index_task, app):
             == 1
         ), "The current route is 'real-magic-bassy-flip-2'"
         assert (
-            len([route for route in track_routes if route.is_current is False]) == 3
-        ), "Three routes are marked non-current"
-        assert (
-            len(
-                [
-                    route
-                    for route in track_routes
-                    if route.slug == "real-magic-bassy-flip-2-1"
-                    or route.slug == "real-magic-bassy-flip-1"
-                ]
-            )
-            == 2
-        ), "Has both of the 'old-style' routes"
+            len([route for route in track_routes if route.is_current is False]) == 1
+        ), "One route is marked non-current"
         assert (
             len(
                 [
@@ -369,9 +358,9 @@ def test_index_tracks(mock_index_task, app):
         # ============== Test Track Route Collisions ===================
 
         # Attempts to insert a new track with the route "real-magic-bassy-flip"
-        # Should attempt to try to route to "real-magic-bassy-flip-1", but
+        # Should attempt to try to route to "real-magic-bassy-flip", but
         # that should be taken by the rename above, so the fallback logic
-        # should trigger making it go to "real-magic-bassy-flip-2"
+        # should trigger making it go to "real-magic-bassy-flip-1"
         event_type, entry = get_new_track_event_dupe()
         track_record_dupe = lookup_track_record(
             update_task,
@@ -400,14 +389,15 @@ def test_index_tracks(mock_index_task, app):
         assert [
             route
             for route in track_routes
-            if route.slug == "real-magic-bassy-flip-3"
-            and route.collision_id == 3
+            if route.slug == "real-magic-bassy-flip-1"
+            and route.collision_id == 1
             and route.is_current is True
             and route.title_slug == "real-magic-bassy-flip"
-        ], "New route should be current and go to collision id 3"
+        ], "New route should be current and go to collision id 1"
 
-        # Another "real-magic-bassy-flip", which should find collision id 2 and
-        # easily jump to collision id 3 and not need fallback logic
+        # Another "real-magic-bassy-flip", which should find collision id 1 and
+        # easily jump to collision id 2, but then conflict with the rename above
+        # and require the additional failsafe collision detection to go to collision id 3
         event_type, entry = get_new_track_event_dupe()
 
         track_record_dupe = lookup_track_record(
@@ -431,7 +421,7 @@ def test_index_tracks(mock_index_task, app):
             block_timestamp,
             pending_track_routes,
         )
-
+        session.commit()
         # Check that track routes are assigned appropriately
         track_routes = session.query(TrackRoute).filter(TrackRoute.track_id == 30).all()
         assert [
@@ -439,9 +429,9 @@ def test_index_tracks(mock_index_task, app):
             for route in track_routes
             if route.is_current is True
             and route.title_slug == "real-magic-bassy-flip"
-            and route.slug == "real-magic-bassy-flip-4"
-            and route.collision_id == 4
-        ], "New route should be current and go to collision id 4"
+            and route.slug == "real-magic-bassy-flip-3"
+            and route.collision_id == 3
+        ], "New route should be current and go to collision id 3"
 
         # ================== Test Revert TrackRoute ===================
 
