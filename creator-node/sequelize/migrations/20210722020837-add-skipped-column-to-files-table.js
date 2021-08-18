@@ -7,16 +7,12 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.addColumn('Files', 'skipped', {
-      type: Sequelize.BOOLEAN,
-      allowNull: false,
-      defaultValue: false
-    })
-    await queryInterface.addIndex('Files', ['skipped'], {
-      name: 'Files_skipped_idx',
-      using: 'btree',
-      concurrently: true
-    })
+    await queryInterface.sequelize.query(`
+      BEGIN;
+      ALTER TABLE "Files" ADD COLUMN IF NOT EXISTS "skipped" BOOLEAN NOT NULL DEFAULT FALSE;
+      CREATE INDEX IF NOT EXISTS "Files_skipped_idx" ON "Files" USING btree ("skipped");
+      COMMIT;
+    `)
   },
 
   down: async (queryInterface, Sequelize) => {

@@ -1,13 +1,16 @@
-const { sendResponse, errorResponse, errorResponseUnauthorized, errorResponseServerError } = require('./apiHelpers')
+const promiseAny = require('promise.any')
+
+const { sendResponse, errorResponse, errorResponseUnauthorized, errorResponseServerError, errorResponseBadRequest } = require('./apiHelpers')
 const config = require('./config')
 const sessionManager = require('./sessionManager')
 const models = require('./models')
 const utils = require('./utils')
 const { hasEnoughStorageSpace } = require('./fileManager')
 const { getMonitors, MONITORS } = require('./monitors/monitors')
-const promiseAny = require('promise.any')
 
-/** Ensure valid cnodeUser and session exist for provided session token. */
+/**
+ * Ensure valid cnodeUser and session exist for provided session token
+ */
 async function authMiddleware (req, res, next) {
   // Get session token
   const sessionToken = req.get(sessionManager.sessionTokenHeader)
@@ -27,11 +30,27 @@ async function authMiddleware (req, res, next) {
     return sendResponse(req, res, errorResponseUnauthorized('No node user exists for provided authentication token'))
   }
 
+  // Every libs session for a user logged into CN will pass a userId from POA.UserFactory
+  let userId = req.get('User-Id')
+
+  // Not every libs call passes this header until all clients upgrade to version 1.2.18
+  // We fetch from DB as a fallback in the meantime
+  if (!userId) {
+    const resp = await models.AudiusUser.findOne({
+      attributes: ['blockchainId'],
+      where: { cnodeUserUUID }
+    })
+    if (resp && resp.blockchainId) {
+      userId = parseInt(resp.blockchainId)
+    }
+  }
+
   // Attach session object to request
   req.session = {
     cnodeUser: cnodeUser,
     wallet: cnodeUser.walletPublicKey,
-    cnodeUserUUID: cnodeUserUUID
+    cnodeUserUUID: cnodeUserUUID,
+    userId
   }
   next()
 }
@@ -56,47 +75,76 @@ async function syncLockMiddleware (req, res, next) {
  * Blocks writes if node is not the primary for audiusUser associated with wallet
  */
 async function ensurePrimaryMiddleware (req, res, next) {
-  const serviceRegistry = req.app.get('serviceRegistry')
   const start = Date.now()
+  let logPrefix = '[ensurePrimaryMiddleware]'
+  const logger = req.logger
+
+  const serviceRegistry = req.app.get('serviceRegistry')
+  const { nodeConfig, libs } = serviceRegistry
 
   if (!req.session || !req.session.wallet) {
-    return sendResponse(req, res, errorResponseUnauthorized('User must be logged in'))
+    return sendResponse(req, res, errorResponseUnauthorized(`${logPrefix} User must be logged in`))
   }
 
-  let serviceEndpoint
-  try {
-    serviceEndpoint = await getOwnEndpoint(serviceRegistry)
-  } catch (e) {
-    return sendResponse(req, res, errorResponseServerError(e))
+  if (!req.session.userId) {
+    return sendResponse(req, res, errorResponseBadRequest(`${logPrefix} User must specify 'User-Id' request header`))
+  }
+  const userId = req.session.userId
+
+  logPrefix = `${logPrefix} [userId = ${userId}]`
+
+  const selfSpID = nodeConfig.get('spID')
+  if (!selfSpID) {
+    return sendResponse(req, res, errorResponseServerError(`${logPrefix} Node failed to recover its own spID. Cannot validate user write.`))
   }
 
-  let creatorNodeEndpoints
+  /**
+   * Fetch current user replicaSetSpIDs
+   * Will throw error if selfSpID is not user primary
+   */
+  let replicaSetSpIDs
   try {
-    creatorNodeEndpoints = await getCreatorNodeEndpoints({
+    replicaSetSpIDs = await getReplicaSetSpIDs({
       serviceRegistry,
       logger: req.logger,
-      wallet: req.session.wallet,
       blockNumber: req.body.blockNumber,
       ensurePrimary: true,
-      myCnodeEndpoint: serviceEndpoint
+      selfSpID,
+      userId
     })
   } catch (e) {
-    return sendResponse(req, res, errorResponseServerError(e))
+    return sendResponse(req, res, errorResponseServerError(`${logPrefix} ${e.message}`))
   }
-  const primary = creatorNodeEndpoints[0]
 
-  // Error if this node is not primary for user.
-  if (!primary || (primary && serviceEndpoint !== primary)) {
-    return sendResponse(
-      req,
-      res,
-      errorResponseUnauthorized(`This node (${serviceEndpoint}) is not primary for user. Primary is: ${primary}`)
-    )
+  const primarySpID = replicaSetSpIDs[0]
+
+  // TODO there should be no need to do this validation (standardize / cleanup errors between here and in getReplicaSetSpIDs())
+  if (selfSpID !== primarySpID) {
+    return sendResponse(req, res, errorResponseUnauthorized(`${logPrefix} Failed. This node's spID (${selfSpID}) does not match user's primary spID on chain (${primarySpID}).`))
   }
+
+  req.session.replicaSetSpIDs = replicaSetSpIDs
   req.session.nodeIsPrimary = true
-  req.session.creatorNodeEndpoints = creatorNodeEndpoints
 
-  req.logger.info(`ensurePrimaryMiddleware succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${creatorNodeEndpoints}`)
+  /**
+   * Convert replicaSetSpIDs to replicaSetEndpoints for later consumption (do not error on failure)
+   * Currently `req.session.creatorNodeEndpoints` is only used by `issueAndWaitForSecondarySyncRequests()`
+   * There is a possibility of failing to retrieve endpoints for each spID, so the consumer of req.session.creatorNodeEndpoints must perform null checks
+   */
+  const allRegisteredCNodes = await utils.getAllRegisteredCNodes(libs, logger)
+  const replicaSetEndpoints = replicaSetSpIDs.map(replicaSpID => {
+    if (replicaSpID === selfSpID) {
+      return nodeConfig.get('creatorNodeEndpoint')
+    }
+    // Get endpoint from registeredCNode matching current replicaSpID
+    const replicaSetInfo = (allRegisteredCNodes.filter(CNodeInfo => CNodeInfo.spID === replicaSpID))[0]
+    if (replicaSetInfo && replicaSetInfo.endpoint) {
+      return replicaSetInfo.endpoint
+    }
+  })
+  req.session.creatorNodeEndpoints = replicaSetEndpoints.filter(Boolean)
+
+  req.logger.info(`${logPrefix} succeeded ${Date.now() - start} ms. creatorNodeEndpoints: ${req.session.creatorNodeEndpoints}`)
   next()
 }
 
@@ -387,6 +435,124 @@ async function getCreatorNodeEndpoints ({ serviceRegistry, logger, wallet, block
 
   logger.info(`getCreatorNodeEndpoints route time ${Date.now() - start}`)
   return userReplicaSet
+}
+
+/**
+ * Retrieves user replica set spIDs from chain (POA.UserReplicaSetManager)
+ *
+ * Polls contract (via web3 provider) conditionally as follows:
+ *    - If `blockNumber` provided, polls contract until it has indexed that blockNumber (for up to 200 seconds)
+ *    - Else if `ensurePrimary` required, polls contract until it has indexed selfSpID as primary (for up to 60 seconds)
+ *      - Errors if retrieved primary spID does not match selfSpID
+ *    - If neither of above conditions are met, falls back to single contract query without polling
+ *
+ * @param {Object} serviceRegistry
+ * @param {Object} logger
+ * @param {number} userId - userId used to query chain contract
+ * @param {number} blockNumber - blocknumber of eth TX preceding CN call
+ * @param {string} selfSpID
+ * @param {boolean} ensurePrimary - determines if function should error if this CN is not primary
+ *
+ * @returns {Array} - array of strings of replica set
+ */
+async function getReplicaSetSpIDs ({ serviceRegistry, logger, userId, blockNumber, ensurePrimary, selfSpID }) {
+  const start = Date.now()
+  const logPrefix = `[getReplicaSetSpIDs] [userId = ${userId}] [selfSpID = ${selfSpID}] [blockNumber = ${blockNumber}] [ensurePrimary = ${ensurePrimary}]`
+  const { libs } = serviceRegistry
+
+  // returns Object of schema { primaryId: string, secondaryIds: int[] }
+  let replicaSet = null
+
+  /**
+   * If `blockNumber` provided, polls contract until it has indexed that blocknumber (for up to 200 seconds)
+   */
+  if (blockNumber) {
+    // In total, will try for 200 seconds.
+    const MAX_RETRIES = 201
+    const RETRY_TIMEOUT_MS = 1000 // 1 seconds
+
+    let errorMsg = null
+    let blockNumberIndexed = false
+    for (let retry = 1; retry <= MAX_RETRIES; retry++) {
+      logger.info(`${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${Date.now() - start}. Polling until blockNumber ${blockNumber}.`)
+
+      try {
+        // will throw error if blocknumber not found
+        replicaSet = await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSetAtBlockNumber(userId, blockNumber)
+        errorMsg = null
+        blockNumberIndexed = true
+        break
+      } catch (e) { errorMsg = e.message } // Ignore all errors until MAX_RETRIES exceeded
+
+      await utils.timeout(RETRY_TIMEOUT_MS)
+    }
+
+    // Error if indexed blockNumber but didn't find any replicaSet for user
+    if (blockNumberIndexed && (!replicaSet || !replicaSet.hasOwnProperty('primaryId') || !replicaSet.primaryId)) {
+      throw new Error(`${logPrefix} ERROR || Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting.`)
+    }
+
+    // Error if failed to index target blockNumber
+    if (!blockNumberIndexed) {
+      throw new Error(`${logPrefix} ERROR || Web3 provider failed to index target blockNumber ${blockNumber} after ${MAX_RETRIES} retries. Aborting. Error ${errorMsg}`)
+    }
+  } else if (ensurePrimary && selfSpID) {
+    /**
+     * If ensurePrimary required but no blockNumber provided, poll URSM until returned primary = selfSpID
+     * Error if still mismatched after specified timeout
+     */
+
+    // Will poll every second for 60 sec
+    const MAX_RETRIES = 61
+    const RETRY_TIMEOUT_MS = 1000 // 1 sec
+
+    let errorMsg = null
+    for (let retry = 1; retry <= MAX_RETRIES; retry++) {
+      logger.info(`${logPrefix} retry #${retry}/${MAX_RETRIES} || time from start: ${Date.now() - start}. Polling until primaryEnsured.`)
+
+      try {
+        replicaSet = await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+
+        errorMsg = null
+
+        if (replicaSet && replicaSet.hasOwnProperty('primaryId') && replicaSet.primaryId === selfSpID) {
+          break
+        }
+      } catch (e) { errorMsg = e.message } // Ignore all errors until MAX_RETRIES exceeded
+
+      await utils.timeout(RETRY_TIMEOUT_MS)
+    }
+
+    // Error if failed to retrieve replicaSet
+    if (!replicaSet || !replicaSet.hasOwnProperty('primaryId') || !replicaSet.primaryId) {
+      throw new Error(`${logPrefix} ERROR || Failed to retrieve user from UserReplicaSetManager after ${MAX_RETRIES} retries. Aborting. Error ${errorMsg}`)
+    }
+
+    // Error if returned primary spID does not match self spID
+    if (replicaSet.primaryId !== selfSpID) {
+      throw new Error(`${logPrefix} ERROR || After ${MAX_RETRIES} retries, found different primary (${replicaSet.primaryId}) for user. Aborting.`)
+    }
+  } else {
+    /**
+     * If neither of above conditions are met, falls back to single chain call without polling
+     */
+
+    logger.info(`${logPrefix} ensurePrimary = false, fetching user replicaSet without retries`)
+
+    let errorMsg = null
+    try {
+      replicaSet = await libs.contracts.UserReplicaSetManagerClient.getUserReplicaSet(userId)
+    } catch (e) { errorMsg = e.message }
+
+    if (!replicaSet || !replicaSet.hasOwnProperty('primaryId') || !replicaSet.primaryId) {
+      throw new Error(`${logPrefix} ERROR || Failed to retrieve user from UserReplicaSetManager. Aborting. Error ${errorMsg}`)
+    }
+  }
+
+  const userReplicaSetSpIDs = [replicaSet.primaryId, ...replicaSet.secondaryIds]
+
+  logger.info(`${logPrefix} completed in ${Date.now() - start}. userReplicaSetSpIDs = [${userReplicaSetSpIDs}]`)
+  return userReplicaSetSpIDs
 }
 
 // Regular expression to check if endpoint is a FQDN. https://regex101.com/r/kIowvx/2

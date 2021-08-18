@@ -7,6 +7,7 @@ const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
 const { getMonitors } = require('../../monitors/monitors')
 const { getAggregateSyncData, getLatestSyncData } = require('../../snapbackSM/syncHistoryAggregator')
+const TranscodingQueue = require('../../TranscodingQueue')
 
 const { recoverWallet } = require('../../apiSigning')
 const { handleTrackContentUpload, removeTrackFolder } = require('../../fileManager')
@@ -57,7 +58,14 @@ const healthCheckController = async (req) => {
   let { randomBytesToSign } = req.query
 
   const logger = req.logger
-  const response = await healthCheck(serviceRegistry, logger, sequelize, getMonitors, numberOfCPUs, randomBytesToSign)
+  const response = await healthCheck(
+    serviceRegistry,
+    logger,
+    sequelize,
+    getMonitors,
+    numberOfCPUs,
+    randomBytesToSign
+  )
   return successResponse(response)
 }
 
@@ -98,6 +106,7 @@ const healthCheckVerboseController = async (req) => {
     sequelize,
     getMonitors,
     numberOfCPUs,
+    TranscodingQueue.getTranscodeQueueJobs,
     getAggregateSyncData,
     getLatestSyncData
   )

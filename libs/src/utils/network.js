@@ -62,10 +62,12 @@ async function timeRequestsAndSortByVersion (requests, timeout = null) {
     // If health check failed, send to back of timings
     if (!a.response) return 1
     if (!b.response) return -1
+
     // Sort by highest version
     if (semver.gt(a.response.data.data.version, b.response.data.data.version)) return -1
     if (semver.lt(a.response.data.data.version, b.response.data.data.version)) return 1
-    // If same version, do a tie breaker on the response time
+
+    // If same version and transcode queue load, do a tie breaker on the response time
     return a.millis - b.millis
   })
 }

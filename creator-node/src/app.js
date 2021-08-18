@@ -81,7 +81,9 @@ const initializeApp = (port, serviceRegistry) => {
   const server = app.listen(port, () => logger.info(`Listening on port ${port}...`))
 
   // Increase from 2min default to accommodate long-lived requests.
-  server.setTimeout(config.get('setTimeout'))
+  server.setTimeout(config.get('setTimeout'), () => {
+    logger.warn(`Server socket timeout hit`)
+  })
   server.timeout = config.get('timeout')
   server.keepAliveTimeout = config.get('keepAliveTimeout')
   server.headersTimeout = config.get('headersTimeout')

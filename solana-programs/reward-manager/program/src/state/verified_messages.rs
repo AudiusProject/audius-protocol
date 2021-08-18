@@ -12,6 +12,12 @@ use std::convert::TryFrom;
 /// Vote message
 pub type VoteMessage = [u8; 128];
 
+/// Add sender message prefix
+pub const ADD_SENDER_MESSAGE_PREFIX: &str = "add";
+
+/// Delete sender message prefix
+pub const DELETE_SENDER_MESSAGE_PREFIX: &str = "delete";
+
 /// Generates fixed vote message from slice
 #[macro_export]
 macro_rules! vote_message {
