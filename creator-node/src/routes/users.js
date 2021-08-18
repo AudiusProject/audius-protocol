@@ -168,7 +168,7 @@ module.exports = function (app) {
 
     const returnSkipInfo = !!req.query.returnSkipInfo
 
-    const response = {}
+    let response = {}
 
     async function fetchClockValueFromDb () {
       // Fetch clock value from DB
