@@ -192,7 +192,7 @@ module.exports = function (app) {
     }
 
     balances = await Promise.all(
-      [RELAY_HEALTH_ACCOUNTS].map(async account => {
+      [...RELAY_HEALTH_ACCOUNTS].map(async account => {
         let balance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(account), 'ether'))
         if (balance < minimumBalance) {
           belowMinimumBalances.push({ account, balance })
