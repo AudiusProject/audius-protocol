@@ -1,7 +1,7 @@
 import concurrent.futures
 import logging
 from datetime import datetime
-from typing import Set, TypedDict
+from typing import Dict, Set, TypedDict, Union
 
 import base58
 from eth_account.messages import defunct_hash_message
@@ -52,7 +52,7 @@ def user_state_update(
 
     ipfsMetadata = {}
     ipfsMetadataFutures = {}
-    creatorNodeEndpoint = {}
+    creatorNodeEndpoint: Dict[int, Union[None, str]] = {}
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
         for tx_receipt in user_factory_txs:
