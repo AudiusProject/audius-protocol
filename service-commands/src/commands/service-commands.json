@@ -48,7 +48,7 @@
   },
  "solana-validator": {
    "up": [
-      "docker run -d --name solana --publish 8899:8899/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.7.1 sh -c 'solana-test-validator --gossip-host solana'"
+      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.7.1 sh -c 'solana-test-validator --gossip-host solana'"
    ],
     "down": [
       "docker container stop solana || true",
