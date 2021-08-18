@@ -551,8 +551,12 @@ class DiscoveryProvider {
    * Performs a single request, defined in the request, via axios, calling any
    * monitoring callbacks as needed.
    *
-   * @param {*} requestObj
-   * @param {*} discoveryProviderEndpoint
+   * @param {{
+     endpoint: string,
+     urlParams: string,
+     queryParams: object
+   }} requestObj
+   * @param {string} discoveryProviderEndpoint
    * @returns
    * @memberof DiscoveryProvider
    */

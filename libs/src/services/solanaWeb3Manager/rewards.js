@@ -11,6 +11,7 @@ import {
 const borsh = require("borsh")
 const { getBankAccountAddress } = require("./userBank")
 const BN = require("bn.js")
+const {prepareInstructionForRelay} = require('./utils')
 
 // Various prefixes used for rewards
 const SENDER_SEED_PREFIX = "S_"
@@ -390,7 +391,6 @@ export const evaluateAttestations = async ({
     return response
   } catch (e) {
     console.error(e.message)
-    console.log({ e })
   }
 }
 
@@ -586,6 +586,7 @@ const constructTransferId = (challengeId, specifier) =>
 /**
  * Converts a BN to a Uint8Array of length 8, in little endian notation.
  * Useful for when Rust wants a u64 (8 * 8) represented as a byte array.
+ * Ex: https://github.com/AudiusProject/audius-protocol/blob/master/solana-programs/reward-manager/program/src/processor.rs#L389
  *
  * @param {BN} bn
  */
@@ -594,7 +595,7 @@ const padBNToUint8Array = (bn) => bn.toArray("le", 8)
 /**
  * Constructs an attestation from inputs.
  *
- * @param {boolean} isBot
+ * @param {boolean} isOracle
  * @param {string} recipientEthAddress
  * @param {BN} tokenAmount
  * @param {string} transferId
@@ -602,7 +603,7 @@ const padBNToUint8Array = (bn) => bn.toArray("le", 8)
  * @returns {Uint8Array}
  */
 const constructAttestation = (
-  isBot,
+  isOracle,
   recipientEthAddress,
   tokenAmount,
   transferId,
@@ -612,7 +613,7 @@ const constructAttestation = (
   const oracleBytes = ethAddressToArray(oracleAddress)
   const transferIdBytes = encoder.encode(transferId)
   const amountBytes = padBNToUint8Array(tokenAmount)
-  const items = isBot
+  const items = isOracle
     ? [userBytes, amountBytes, transferIdBytes]
     : [userBytes, amountBytes, transferIdBytes, oracleBytes]
   const sep = encoder.encode("_")
@@ -645,21 +646,6 @@ const deriveSolanaSenderFromEthAddress = async (
   )
   return derivedSender
 }
-
-/**
- * Puts an instruction in a serializable form that our relay can understand.
- *
- * @param {TransactionInstruction} instruction
- */
-const prepareInstructionForRelay = (instruction) => ({
-  programId: instruction.programId.toString(),
-  data: instruction.data,
-  keys: instruction.keys.map(({ isSigner, pubkey, isWritable }) => ({
-    pubkey: pubkey.toString(),
-    isSigner,
-    isWritable,
-  })),
-})
 
 /**
  * Derives the 'transfer account' - the account which represents a single successful disbursement
@@ -714,7 +700,7 @@ const deriveMessageAccount = async (
  * @param {PublicKey} pubkey
  * @returns {Promise<[PublicKey, number]>}
  */
-const findProgramAddressFromPubkey = (programId, pubkey) => {
+const findProgramAddressFromPubkey = async (programId, pubkey) => {
   return PublicKey.findProgramAddress(
     [pubkey.toBytes().slice(0, 32)],
     programId
@@ -731,7 +717,7 @@ const findProgramAddressFromPubkey = (programId, pubkey) => {
  * @param {Uint8Array} seed
  * @returns {Promise<[PublicKey, number]>}
  */
-const findProgramAddressFromPubkeyAndSeeds = (programId, base, seed) => {
+const findProgramAddressFromPubkeyAndSeeds = async (programId, base, seed) => {
   return PublicKey.findProgramAddress(
     [base.toBytes().slice(0, 32), seed],
     programId
