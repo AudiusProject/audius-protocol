@@ -440,11 +440,11 @@ const generateSubmitAttestationInstruction = async ({
   ///
   ///   0. `[writable]` New or existing account storing verified messages
   ///   1. `[]` Reward manager
-  ///   1. `[]` Reward manager authority (NEW)
-  ///   1. `[]` fee payer (NEW)
-  ///   2. `[]` Sender
-  ///   2. `[]` sysvar rent (new)
-  ///   3. `[]` Sysvar instruction id (NEW)
+  ///   2. `[]` Reward manager authority
+  ///   3. `[]` fee payer
+  ///   4. `[]` Sender
+  ///   5. `[]` sysvar rent
+  ///   6. `[]` Sysvar instruction id
   const verifyInstructionAccounts = [
     {
       pubkey: derivedMessageAccount,
@@ -535,8 +535,12 @@ const generateSecpInstruction = ({
   instructionIndex,
 }) => {
   // Perform signature manipulations:
-  // - remove the 0x prefix
-  // - lose the final byte / recovery ID
+  // - remove the 0x prefix for BN
+  // - lose the final byte / recovery ID: the secp instruction constructor
+  //   requires only 'r', 's' from the signature, while 'v', the recovery ID,
+  //   is passed as a separate argument.
+  //   https://medium.com/mycrypto/the-magic-of-digital-signatures-on-ethereum-98fe184dc9c7
+  //
   let strippedSignature = attestationMeta.signature.replace("0x", "")
   const recoveryIdStr = strippedSignature.slice(strippedSignature.length - 2)
   const recoveryId = new BN(recoveryIdStr, "hex").toNumber()
