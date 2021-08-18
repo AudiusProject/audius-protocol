@@ -191,13 +191,16 @@ module.exports = function (app) {
       req.logger.error(`Failed to fund relayer with error: ${err}`)
     }
 
-    for (let account of RELAY_HEALTH_ACCOUNTS) {
-      let balance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(account), 'ether'))
-      balances.push({ account, balance })
-      if (balance < minimumBalance) {
-        belowMinimumBalances.push({ account, balance })
-      }
-    }
+    balances = await Promise.all(
+      [RELAY_HEALTH_ACCOUNTS].map(async account => {
+        let balance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(account), 'ether'))
+        if (balance < minimumBalance) {
+          belowMinimumBalances.push({ account, balance })
+        }
+        return { account, balance }
+      })
+    )
+
     const relayerPublicKey = config.get('relayerPublicKey')
     const relayerBalance = parseFloat(Web3.utils.fromWei(await getRelayerFunds(relayerPublicKey), 'ether'))
     const relayerAboveMinimum = relayerBalance >= minimumRelayerBalance
