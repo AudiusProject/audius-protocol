@@ -50,13 +50,11 @@ def user_state_update(
     # NOTE - events are stored only for debugging purposes and not used or persisted anywhere
     user_events_lookup = {}
 
-    # for each user factory transaction, loop through every tx
-    # loop through all audius event types within that tx and get all event logs
-    # for each event, apply changes to the user in user_events_lookup
+    ipfsMetadata = {}
+    ipfsMetadataFutures = {}
+    creatorNodeEndpoint = {}
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-        # Keep a mapping of futures -> { event_type, txhash }
-        futures_map = {}
-        futures = []
         for tx_receipt in user_factory_txs:
             txhash = update_task.web3.toHex(tx_receipt.transactionHash)
             for event_type in user_event_types_arr:
@@ -64,8 +62,8 @@ def user_state_update(
                     user_contract.events, event_type
                 )().processReceipt(tx_receipt)
                 for entry in user_events_tx:
-                    user_id = entry["args"]._userId
-                    user_ids.add(user_id)
+                    event_args = entry["args"]
+                    user_id = event_args._userId
 
                     # if the user id is not in the lookup object, it hasn't been initialized yet
                     # first, get the user object from the db(if exists or create a new one)
@@ -81,11 +79,73 @@ def user_state_update(
                         )
                         user_events_lookup[user_id] = {"user": ret_user, "events": []}
 
+                    if event_type == user_event_types_lookup["update_multihash"]:
+                        metadata_multihash = helpers.multihash_digest_to_cid(
+                            event_args._multihashDigest
+                        )
+                        is_blacklisted = is_blacklisted_ipld(
+                            session, metadata_multihash
+                        )
+                        if not is_blacklisted:
+                            ipfsMetadataFutures[
+                                (metadata_multihash, creatorNodeEndpoint[user_id])
+                            ] = executor.submit(
+                                get_ipfs_metadata,
+                                update_task,
+                                metadata_multihash,
+                                creatorNodeEndpoint.get(
+                                    user_id,
+                                    user_events_lookup[user_id][
+                                        "user"
+                                    ].creator_node_endpoint,
+                                ),
+                            )
+                    elif (
+                        event_type
+                        == user_event_types_lookup["update_creator_node_endpoint"]
+                    ):
+                        # Ensure any user consuming the new UserReplicaSetManager contract does not process
+                        # legacy `creator_node_endpoint` changes
+                        # Reference user_replica_set.py for the updated indexing flow around this field
+                        replica_set_upgraded = user_replica_set_upgraded(
+                            user_events_lookup[user_id]["user"]
+                        )
+                        if not replica_set_upgraded:
+                            creatorNodeEndpoint[
+                                user_id
+                            ] = event_args._creatorNodeEndpoint
+
+        for key, future in ipfsMetadataFutures.items():
+            try:
+                ipfsMetadata[key] = future.result()
+            except Exception as e:
+                logger.error("Error in pre-fetching cid")
+                event_blockhash = update_task.web3.toHex(block_hash)
+                raise IndexingError(
+                    "user", block_number, event_blockhash, txhash, str(e)
+                ) from e
+
+    # for each user factory transaction, loop through every tx
+    # loop through all audius event types within that tx and get all event logs
+    # for each event, apply changes to the user in user_events_lookup
+    for tx_receipt in user_factory_txs:
+        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+        for event_type in user_event_types_arr:
+            user_events_tx = getattr(user_contract.events, event_type)().processReceipt(
+                tx_receipt
+            )
+            # if record does not get added, do not count towards num_total_changes
+            processedEntries = 0
+            for entry in user_events_tx:
+                user_id = entry["args"]._userId
+                try:
+                    user_id = entry["args"]._userId
+                    user_ids.add(user_id)
+
                     # Add or update the value of the user record for this block in user_events_lookup,
                     # ensuring that multiple events for a single user result in only 1 row insert operation
                     # (even if multiple operations are present)
-                    future = executor.submit(
-                        parse_user_event,
+                    user_record = parse_user_event(
                         self,
                         user_contract,
                         update_task,
@@ -95,30 +155,28 @@ def user_state_update(
                         entry,
                         event_type,
                         user_events_lookup[user_id]["user"],
+                        ipfsMetadata.get(
+                            (
+                                user_events_lookup[user_id]["user"].metadata_multihash,
+                                user_events_lookup[user_id][
+                                    "user"
+                                ].creator_node_endpoint,
+                            )
+                        ),
                         block_timestamp,
                     )
+                    if user_record is not None:
+                        user_events_lookup[user_id]["events"].append(event_type)
+                        user_events_lookup[user_id]["user"] = user_record
+                        processedEntries += 1
+                except Exception as e:
+                    logger.error("Error in parse user transaction")
+                    event_blockhash = update_task.web3.toHex(block_hash)
+                    raise IndexingError(
+                        "user", block_number, event_blockhash, txhash, str(e)
+                    ) from e
 
-                    futures.append(future)
-                    futures_map[future] = {
-                        "event_type": event_type,
-                        "txhash": txhash,
-                    }
-
-        for future in concurrent.futures.as_completed(futures):
-            try:
-                event_type = futures_map[future]["event_type"]
-                user_record = future.result()
-                if user_record is not None:
-                    user_events_lookup[user_record.user_id]["events"].append(event_type)
-                    user_events_lookup[user_record.user_id]["user"] = user_record
-                    num_total_changes += 1
-            except Exception as e:
-                event_type = futures_map[future]["txhash"]
-                logger.error("Error in parse user transaction")
-                event_blockhash = update_task.web3.toHex(block_hash)
-                raise IndexingError(
-                    "user", block_number, event_blockhash, txhash, str(e)
-                ) from e
+            num_total_changes += processedEntries
 
     logger.info(
         f"index.py | users.py | There are {num_total_changes} events processed."
@@ -203,6 +261,7 @@ def parse_user_event(
     entry,
     event_type,
     user_record,
+    ipfs_metadata,
     block_timestamp,
 ):
     event_args = entry["args"]
@@ -284,9 +343,6 @@ def parse_user_event(
 
     # If the multihash is updated, fetch the metadata (if not fetched) and update the associated wallets column
     if event_type == user_event_types_lookup["update_multihash"]:
-        # Look up metadata multihash in IPFS and override with metadata fields
-        ipfs_metadata = get_ipfs_metadata(update_task, user_record)
-
         if ipfs_metadata:
             # ipfs_metadata properties are defined in get_ipfs_metadata
 
@@ -544,14 +600,13 @@ def recover_user_id_hash(web3, user_id, signature):
     return wallet_address
 
 
-def get_ipfs_metadata(update_task, user_record):
+def get_ipfs_metadata(update_task, metadata_multihash, creator_node_endpoint):
     user_metadata = user_metadata_format
-    if user_record.metadata_multihash:
-
+    if metadata_multihash:
         user_metadata = update_task.ipfs_client.get_metadata(
-            user_record.metadata_multihash,
+            metadata_multihash,
             user_metadata_format,
-            user_record.creator_node_endpoint,
+            creator_node_endpoint,
         )
         logger.info(f"index.py | users.py | {user_metadata}")
     return user_metadata
