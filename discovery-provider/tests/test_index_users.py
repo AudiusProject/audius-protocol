@@ -1,7 +1,7 @@
 from datetime import datetime
 from web3 import Web3
 from src.models import AssociatedWallet, UserEvents
-from src.tasks.users import lookup_user_record, parse_user_event
+from src.tasks.users import get_ipfs_metadata, lookup_user_record, parse_user_event
 from src.utils.db_session import get_db
 from src.challenges.challenge_event_bus import ChallengeEventBus, setup_challenge_bus
 from src.utils.user_event_constants import user_event_types_lookup
@@ -227,6 +227,7 @@ def test_index_users(app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
+            None,  # ipfs_metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -256,6 +257,7 @@ def test_index_users(app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
+            None,  # ipfs_metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -278,6 +280,7 @@ def test_index_users(app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
+            None,  # ipfs_metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -300,6 +303,7 @@ def test_index_users(app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
+            None,  # ipfs_metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -322,6 +326,7 @@ def test_index_users(app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
+            None,  # ipfs_metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -348,6 +353,7 @@ def test_index_users(app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
+            None,  # ipfs_metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -373,6 +379,7 @@ def test_index_users(app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
+            None,  # ipfs_metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -396,6 +403,7 @@ def test_index_users(app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
+            None,  # ipfs_metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -422,6 +430,7 @@ def test_index_users(app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
+            None,  # ipfs_metadata - not used
             block_timestamp,  # Used to update the user.updated_at field
         )
 
@@ -444,6 +453,9 @@ def test_index_users(app):
             entry,  # Contains the event args used for updating
             event_type,  # String that should one of user_event_types_lookup
             user_record,  # User ORM instance
+            get_ipfs_metadata(
+                update_task, entry.args._multihashDigest, ""
+            ),  # ipfs_metadata
             block_timestamp,  # Used to update the user.updated_at field
         )
         session.flush()
