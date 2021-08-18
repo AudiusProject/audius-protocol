@@ -1,4 +1,3 @@
-// https://github.com/AudiusProject/audius-protocol/blob/af8a50569950c9daccf08dc6e5e1279895011794/libs/src/services/solanaWeb3Manager/rewards.ts
 const borsh = require('borsh')
 const Web3 = require('web3')
 const BN = require('bn.js')
