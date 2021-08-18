@@ -99,6 +99,7 @@ class ChallengeManager:
     _starting_block: Optional[int]
     _step_count: Optional[int]
     _challenge_type: ChallengeType
+    _is_active: bool
 
     def __init__(self, challenge_id: str, updater: ChallengeUpdater):
         self.challenge_id = challenge_id
@@ -107,6 +108,7 @@ class ChallengeManager:
         self._starting_block = None
         self._step_count = None
         self._challenge_type = None  # type: ignore
+        self._is_active = False
 
     def process(self, session, event_type: str, event_metadatas: List[EventMetadata]):
         """Processes a number of events for a particular event type, updating
@@ -115,6 +117,10 @@ class ChallengeManager:
         """
         if not self._did_init:  # lazy init
             self._init_challenge(session)
+
+        # If inactive, do nothing
+        if not self._is_active:
+            return
 
         # filter out events that took place before the starting block, returning
         # early if need be
@@ -125,7 +131,6 @@ class ChallengeManager:
                     event_metadatas,
                 )
             )
-
         if not event_metadatas:
             return
 
@@ -215,7 +220,12 @@ class ChallengeManager:
         to_update = in_progress_challenges + new_user_challenges
 
         self._updater.update_user_challenges(
-            session, event_type, to_update, self._step_count, events_with_specifiers, self._starting_block
+            session,
+            event_type,
+            to_update,
+            self._step_count,
+            events_with_specifiers,
+            self._starting_block,
         )
 
         # Add block # to newly completed challenges
@@ -255,6 +265,7 @@ class ChallengeManager:
         self._step_count = challenge.step_count
         self._challenge_type = challenge.type
         self._did_init = True
+        self._is_active = challenge.active
 
     def _create_new_user_challenge(self, user_id: int, specifier: str):
         return UserChallenge(

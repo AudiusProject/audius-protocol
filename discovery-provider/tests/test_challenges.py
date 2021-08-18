@@ -45,6 +45,14 @@ def setup_challenges(app):
                 active=True,
                 starting_block=100,
             ),
+            Challenge(
+                id="some_inactive_challenge",
+                type=ChallengeType.numeric,
+                amount=5,
+                step_count=5,
+                active=False,
+                starting_block=0,
+            ),
         ]
         user_challenges = [
             UserChallenge(
@@ -352,3 +360,24 @@ def test_in_memory_queue(app):
     assert agg_chal["is_complete"] == False
 
     redis_conn = redis.Redis.from_url(url=REDIS_URL)
+
+
+def test_inactive_challenge(app):
+    setup_challenges(app)
+    with app.app_context():
+        db = get_db()
+
+    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+
+    bus = ChallengeEventBus(redis_conn)
+    with db.scoped_session() as session:
+        mgr = ChallengeManager("some_inactive_challenge", DefaultUpdater())
+        TEST_EVENT = "TEST_EVENT"
+        bus.register_listener(TEST_EVENT, mgr)
+        with bus.use_scoped_dispatch_queue():
+            bus.dispatch(TEST_EVENT, 100, 1, {})
+        bus.process_events(session)
+        state = mgr.get_user_challenge_state(session, ["1"])
+        # We should not have any UserChallenges created for the
+        # inactive challenge!!
+        assert len(state) == 0
