@@ -1,5 +1,5 @@
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
-import {
+const { TOKEN_PROGRAM_ID } = require("@solana/spl-token")
+const {
   Connection,
   PublicKey,
   Secp256k1Program,
@@ -7,7 +7,7 @@ import {
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
-} from "@solana/web3.js"
+} = require("@solana/web3.js")
 const borsh = require("borsh")
 const { getBankAccountAddress } = require("./userBank")
 const BN = require("bn.js")
