@@ -64,7 +64,6 @@ export class ProfilePage extends Component {
     const { uuid, profile: twitterProfile } = await twitterProfileRes.json()
     try {
       const {
-        uuid,
         profile,
         profileImage,
         profileBanner,
@@ -98,7 +97,6 @@ export class ProfilePage extends Component {
   onInstagramLogin = async (uuid, instagramProfile) => {
     try {
       const {
-        uuid,
         profile,
         profileImage,
         requiresUserReview
