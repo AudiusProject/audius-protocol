@@ -251,8 +251,8 @@ def add_old_style_route(session, track_record, track_metadata):
         new_track_route.txhash = track_record.txhash
         session.add(new_track_route)
 
-        # Commit this so it gets in before the new route creation
-        session.commit()
+        # Ensure the new route exists the next time we query
+        session.flush()
     else:
         logger.error(
             f"Cannot add 'old-style' track_route to Track={track_record}\
@@ -262,7 +262,7 @@ def add_old_style_route(session, track_record, track_metadata):
 
 @time_method
 def update_track_routes_table(session, track_record, track_metadata):
-    """Creates the route for the given track and commits it to the track_routes table"""
+    """Creates the route for the given track and flushes it to the track_routes table"""
 
     # Check if the title is staying the same, and if so, return early
     if track_record.title == track_metadata["title"]:
@@ -370,8 +370,8 @@ def update_track_routes_table(session, track_record, track_metadata):
     new_track_route.txhash = track_record.txhash
     session.add(new_track_route)
 
-    # Make sure to commit so we don't add the same route twice
-    session.commit()
+    # Make sure to flush so we don't add the same route twice
+    session.flush()
 
 
 def parse_track_event(
@@ -425,7 +425,7 @@ def parse_track_event(
             track_metadata_multihash, track_metadata_format, creator_node_endpoint
         )
 
-        # Note: These will commit the session
+        # Note: These will flush the session
         add_old_style_route(session, track_record, track_metadata)
         update_track_routes_table(session, track_record, track_metadata)
         track_record = populate_track_record_metadata(
@@ -487,7 +487,7 @@ def parse_track_event(
             upd_track_metadata_multihash, track_metadata_format, creator_node_endpoint
         )
 
-        # Note: These will commit the session
+        # Note: These will flush the session
         add_old_style_route(session, track_record, track_metadata)
         update_track_routes_table(session, track_record, track_metadata)
         track_record = populate_track_record_metadata(
