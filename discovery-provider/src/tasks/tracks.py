@@ -2,7 +2,7 @@ import functools
 import logging
 import time
 from datetime import datetime
-from typing import List, Set
+from typing import Optional, Set
 
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import functions, null
