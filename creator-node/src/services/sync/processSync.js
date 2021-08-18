@@ -105,7 +105,8 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
     logger.info(redisKey, `Successful export from ${creatorNodeEndpoint} for wallets ${walletPublicKeys} and requested min clock ${localMaxClockVal + 1}`)
 
     try {
-      // Attempt to connect directly to target CNode's IPFS node.
+      // Attempt to connect directly to target CNode's IPFS node
+      // async function runs in the background
       _initBootstrapAndRefreshPeers(serviceRegistry, logger, body.data.ipfsIDObj.addresses, redisKey)
       logger.info(redisKey, 'IPFS Nodes connected + data export received')
     } catch (e) {

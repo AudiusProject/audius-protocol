@@ -17,6 +17,9 @@ const { generateTimestampAndSignature } = require('./apiSigning')
 const readFile = promisify(fs.readFile)
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
+const TEN_MINUTES_IN_SECONDS = 60 * 10
+
+let ipfsIDObj
 
 class Utils {
   static verifySignature (data, sig) {
@@ -79,8 +82,12 @@ async function getIPFSPeerId (ipfs) {
   // the IPFS pod. Command is:
   // ipfs config --json Addresses.Announce '["/ip4/<public ip>/tcp/<public port>"]'
   // the public port is the port mapped to IPFS' port 4001
-
-  let ipfsIDObj = await ipfs.id()
+  if (!ipfsIDObj) {
+    ipfsIDObj = await ipfs.id()
+    setInterval(async () => {
+      ipfsIDObj = await ipfs.id()
+    }, TEN_MINUTES_IN_SECONDS * 1000)
+  }
 
   return ipfsIDObj
 }
