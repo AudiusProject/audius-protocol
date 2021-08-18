@@ -228,6 +228,11 @@ const run = async () => {
                 console.log(`Registering disc prov ${serviceCount}`)
                 await findEthAddressForDiscProvAndRegister(serviceCount)
                 break
+            case 'register-eth-address':
+                const ethAddress = args[3]
+                console.log(`Registering disc prov ${ethAddress}`)
+                await createSenderLocal(ethAddress)
+                break
             default:
                 throw new Error('Invalid argument found')
         }
