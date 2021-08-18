@@ -118,7 +118,7 @@ const validateAttestationsInstructionSchema = new Map([
  *   connection
  * }
  */
-export async function submitAttestations({
+async function submitAttestations({
   rewardManagerProgramId,
   rewardManagerAccount,
   attestations,
@@ -241,7 +241,7 @@ export async function submitAttestations({
  *   connection
  * }
  */
-export const evaluateAttestations = async ({
+const evaluateAttestations = async ({
   rewardManagerProgramId,
   rewardManagerAccount,
   rewardManagerTokenSource,
@@ -754,4 +754,9 @@ const findProgramAddressWithAuthority = async (
     seed
   )
   return [rewardManagerAuthority, derivedAddress, bumpSeed]
+}
+
+module.exports = {
+  submitAttestations,
+  evaluateAttestations
 }
