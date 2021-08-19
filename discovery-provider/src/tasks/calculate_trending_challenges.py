@@ -1,6 +1,8 @@
 import logging
 import time
 from redis import Redis
+from sqlalchemy.orm.session import Session
+
 from src.models import Block
 from src.tasks.celery_app import celery
 from src.queries.get_trending_tracks import (
@@ -19,11 +21,9 @@ from src.queries.get_underground_trending import (
     make_underground_trending_cache_key,
     make_get_unpopulated_tracks,
 )
-from sqlalchemy.orm.session import Session
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
 
 logger = logging.getLogger(__name__)
-time_ranges = ["week", "month", "year"]
 
 trending_strategy_factory = TrendingStrategyFactory()
 

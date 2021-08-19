@@ -4,7 +4,7 @@ from .models import Base
 
 class TrendingResult(Base):
     """
-    Trending Reults track the top trending tracks/playlists each week to keep a record of the winners
+    Trending Results track the top trending tracks/playlists each week to keep a record of the winners
     for reference in the trending challenges
     """
 

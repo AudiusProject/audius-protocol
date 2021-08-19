@@ -21,7 +21,7 @@ from tests.utils import populate_mock_db
 REDIS_URL = shared_config["redis"]["url"]
 logger = logging.getLogger(__name__)
 
-"""
+
 def test_trending_challenge_should_update(app):
     with app.app_context():
         db = get_db()
@@ -74,8 +74,6 @@ def test_trending_challenge_should_update(app):
         timestamp = 1630090800
         should_update = should_trending_challenge_update(redis_conn, session, timestamp)
         assert should_update
-
-"""
 
 
 def test_trending_challenge_job(app):

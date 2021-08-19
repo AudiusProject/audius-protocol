@@ -32,7 +32,7 @@ def create_new_challenges(session, allowed_challenge_types=[]):
         new_challenges = [
             challenge
             for challenge in new_challenges
-            if challenge.get("id") in allowed_challenge_types
+            if challenge.get("type") in allowed_challenge_types
         ]
     logger.info(f"Adding challenges: {new_challenges}")
 
