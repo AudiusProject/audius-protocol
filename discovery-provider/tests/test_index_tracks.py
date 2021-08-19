@@ -236,6 +236,12 @@ def test_index_tracks(mock_index_task, app):
         )
         session.add(track_owner)
 
+        entry_multihash = helpers.multihash_digest_to_cid(
+            b"@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}"
+            + b"\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg"
+        )
+        track_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
+
         parse_track_event(
             None,  # self - not used
             session,
@@ -245,6 +251,7 @@ def test_index_tracks(mock_index_task, app):
             track_record,  # User ORM instance
             block_number,  # Used to forward to track uploads challenge
             block_timestamp,  # Used to update the user.updated_at field
+            track_metadata,
             pending_track_routes,
         )
 
@@ -255,12 +262,6 @@ def test_index_tracks(mock_index_task, app):
         assert track_record.created_at == datetime.utcfromtimestamp(block_timestamp)
         assert track_record.owner_id == entry.args._trackOwnerId
         assert track_record.is_delete == False
-
-        entry_multihash = helpers.multihash_digest_to_cid(
-            b"@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}"
-            + b"\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg"
-        )
-        track_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
 
         assert track_record.title == track_metadata["title"]
         assert track_record.length == 0
@@ -313,6 +314,13 @@ def test_index_tracks(mock_index_task, app):
         )
 
         event_type, entry = get_update_track_event()
+
+        entry_multihash = helpers.multihash_digest_to_cid(
+            b"\x93\x7f\xa2\xe6\xf0\xe5\xb5f\xca\x14(4m.B"
+            + b"\xba3\xf8\xc8<|%*{\x11\xc1\xe2/\xd7\xee\xd7q"
+        )
+        track_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
+
         parse_track_event(
             None,
             session,
@@ -322,6 +330,7 @@ def test_index_tracks(mock_index_task, app):
             track_record,
             block_number,
             block_timestamp,
+            track_metadata,
             pending_track_routes,
         )
 
@@ -383,6 +392,12 @@ def test_index_tracks(mock_index_task, app):
             "0x",  # txhash
         )
 
+        entry_multihash = helpers.multihash_digest_to_cid(
+            b"@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}"
+            + b"\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg"
+        )
+        track_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
+
         parse_track_event(
             None,
             session,
@@ -392,6 +407,7 @@ def test_index_tracks(mock_index_task, app):
             track_record_dupe,
             block_number,
             block_timestamp,
+            track_metadata,
             pending_track_routes,
         )
 
@@ -429,6 +445,7 @@ def test_index_tracks(mock_index_task, app):
             track_record_dupe,
             block_number,
             block_timestamp,
+            track_metadata,
             pending_track_routes,
         )
 
@@ -494,6 +511,7 @@ def test_index_tracks(mock_index_task, app):
             track_record,  # User ORM instance
             block_number,  # Used to forward to track uploads challenge
             block_timestamp,  # Used to update the user.updated_at field
+            None,
             pending_track_routes,
         )
 
