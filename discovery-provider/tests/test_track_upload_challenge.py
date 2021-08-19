@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from src.models.models import Challenge
 import redis
 from src.models import User, Block, Track
 from src.utils.db_session import get_db
@@ -95,6 +96,11 @@ def test_track_upload_challenge(app):
         # Register events with the bus
         bus.register_listener(
             ChallengeEvent.track_upload, track_upload_challenge_manager
+        )
+
+        # set challenge as active for purposes of test
+        session.query(Challenge).filter(Challenge.id == "track-upload").update(
+            {"active": True}
         )
 
         session.add(block1)

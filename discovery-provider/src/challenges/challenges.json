@@ -25,6 +25,6 @@
 		"id": "connect-verified",
 		"type": "boolean",
 		"amount": "10",
-		"active": false
+		"active": true
 	}
 ]
