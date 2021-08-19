@@ -87,7 +87,6 @@ const EditPlaylistModal = ({
         onDelete={onClickDelete}
         onSave={onSaveEdit}
         onCancel={onClose}
-        zIndex={zIndex.EDIT_PLAYLIST_MODAL}
       />
       <DeleteConfirmationModal
         title={`${messages.delete} ${
