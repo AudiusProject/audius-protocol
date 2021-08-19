@@ -130,11 +130,7 @@
 .menuContainer {
   position: absolute;
   right: -10px;
-}
-
-.menuContainer {
-  position: absolute;
-  right: -10px;
+  align-self: flex-start;
 }
 
 .iconContainer {
