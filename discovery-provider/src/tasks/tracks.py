@@ -140,14 +140,14 @@ def track_state_update(
 
                     track_events[track_id] = {"track": track_entry, "events": []}
 
-                track_metadata_multihash: Optional[str] = None
+                track_metadata = None
                 if event_type != track_event_types_lookup["delete_track"]:
                     track_metadata_digest = event_args._multihashDigest.hex()
                     track_metadata_hash_fn = event_args._multihashHashFn
                     buf = multihash.encode(
                         bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
                     )
-                    track_metadata_multihash = multihash.to_b58_string(buf)
+                    track_metadata = ipfs_metadata.get(multihash.to_b58_string(buf))
 
                 try:
                     parsed_track = parse_track_event(
@@ -159,7 +159,7 @@ def track_state_update(
                         track_events[track_id]["track"],
                         block_number,
                         block_timestamp,
-                        ipfs_metadata.get(track_metadata_multihash),
+                        track_metadata,
                         pending_track_routes,
                     )
 
