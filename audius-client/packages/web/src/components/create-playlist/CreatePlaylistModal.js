@@ -11,6 +11,7 @@ import { useCollectionCoverArt } from 'hooks/useImageSize'
 import { SquareSizes } from 'models/common/ImageSizes'
 import * as schemas from 'schemas'
 import { resizeImage } from 'utils/imageProcessingUtil'
+import zIndex from 'utils/zIndex'
 
 import styles from './CreatePlaylistModal.module.css'
 
@@ -204,7 +205,8 @@ CreatePlaylistModal.defaultProps = {
   visible: true,
   title: 'Create Playlist',
   isAlbum: false,
-  editMode: false
+  editMode: false,
+  zIndex: zIndex.CREATE_PLAYLIST_MODAL
 }
 
 export default memo(CreatePlaylistModal)

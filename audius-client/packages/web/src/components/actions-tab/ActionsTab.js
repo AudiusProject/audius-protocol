@@ -123,13 +123,13 @@ const ExpandedActionsTab = props => {
           </Toast>
         </div>
       </Tooltip>
-      <div className={styles.actionButton}>
+      <div className={cn(styles.actionButton, styles.menuKebabContainer)}>
         {isDisabled || isHidden ? (
           <div className={styles.iconKebabHorizontalWrapper}>
             <IconKebabHorizontal className={styles.iconKebabHorizontal} />
           </div>
         ) : (
-          <Menu {...overflowMenu} className={styles.menuKebabContainer}>
+          <Menu {...overflowMenu}>
             {(ref, triggerPopup) => (
               <div
                 className={styles.iconKebabHorizontalWrapper}
