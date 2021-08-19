@@ -3,7 +3,7 @@ import functools
 import logging
 import time
 from datetime import datetime
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Dict
 
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import functions, null
@@ -91,15 +91,15 @@ def track_state_update(
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
         futures = {}
-        for cid in cids:
-            futures[cid[0]] = executor.submit(
+        for cid, creator_node_endpoint in cids:
+            futures[cid] = executor.submit(
                 update_task.ipfs_client.get_metadata,
-                cid[0],
+                cid,
                 track_metadata_format,
-                cid[1],
+                creator_node_endpoint,
             )
 
-        ipfs_metadata = {}
+        ipfs_metadata: Dict = {}
         for cid, future in futures.items():
             try:
                 ipfs_metadata[cid] = future.result()
@@ -140,7 +140,7 @@ def track_state_update(
 
                     track_events[track_id] = {"track": track_entry, "events": []}
 
-                track_metadata_multihash = None
+                track_metadata_multihash: Optional[str] = None
                 if event_type != track_event_types_lookup["delete_track"]:
                     track_metadata_digest = event_args._multihashDigest.hex()
                     track_metadata_hash_fn = event_args._multihashHashFn
