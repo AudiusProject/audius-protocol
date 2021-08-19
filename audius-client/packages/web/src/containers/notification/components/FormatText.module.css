@@ -48,3 +48,15 @@
   margin-left: 4px;
 }
 
+.rewardTitle {
+  color: var(--secondary-light-1);
+  display: block;
+  font-weight: var(--font-demi-bold);
+  margin-bottom: 4px;
+}
+.rewardTitle.rewardTitle i {
+  height: 16px;
+  width: 16px;
+  margin-bottom: 4px;
+  margin-right: 8px;
+}

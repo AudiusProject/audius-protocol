@@ -3,6 +3,7 @@ import React, { useCallback } from 'react'
 import cn from 'classnames'
 
 import ArtistPopover from 'components/artist/ArtistPopover'
+import { challengeRewardsConfig } from 'containers/audio-rewards-page/config'
 import {
   Notification,
   NotificationType,
@@ -393,6 +394,24 @@ export const formatBody = (
         </span>
       )
     }
+    case NotificationType.ChallengeReward: {
+      const { amount: rewardAmount, title, icon } = challengeRewardsConfig[
+        notification.challengeId
+      ]
+      return (
+        <span
+          className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
+        >
+          <span
+            className={cn(styles.rewardTitle, { [styles.isMobile]: isMobile })}
+          >
+            {icon}
+            {title}
+          </span>
+          {`You’ve earned ${rewardAmount} $AUDIO for completing this challenge!`}
+        </span>
+      )
+    }
   }
 }
 
@@ -411,9 +430,7 @@ export const formatHeader = (
   }
   switch (notification.type) {
     case NotificationType.RemixCreate: {
-      // @ts-ignore
       const entity = notification.entities.find(
-        // @ts-ignore
         track => track.track_id === notification.parentTrackId
       )
       return (

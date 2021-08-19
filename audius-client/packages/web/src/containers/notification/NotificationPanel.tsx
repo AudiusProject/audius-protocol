@@ -33,7 +33,7 @@ type OwnProps = {
   isElectron: boolean
   status: Status
   hasMore: boolean
-  notifications: any
+  notifications: Notification[]
   modalIsOpen: boolean
   panelIsOpen: boolean
   modalNotification: Notification | null

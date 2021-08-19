@@ -7,7 +7,8 @@ import {
   Achievement,
   RemixCosign,
   RemixCreate,
-  TrendingTrack
+  TrendingTrack,
+  ChallengeReward
 } from 'containers/notification/store/types'
 import Collection from 'models/Collection'
 import Track from 'models/Track'
@@ -149,6 +150,12 @@ export const getRemixCosignText = async (
     link
   }
 }
+
+export const getRewardsText = (notification: ChallengeReward) => ({
+  text: `I earned $AUDIO for completing challenges on @AudiusProject #AudioRewards`,
+  link: null
+})
+
 export const getNotificationTwitterText = async (notification: any) => {
   if (notification.type === NotificationType.Milestone) {
     return getAchievementText(notification)
@@ -158,6 +165,8 @@ export const getNotificationTwitterText = async (notification: any) => {
     return getRemixCreateText(notification)
   } else if (notification.type === NotificationType.RemixCosign) {
     return getRemixCosignText(notification)
+  } else if (notification.type === NotificationType.ChallengeReward) {
+    return getRewardsText(notification)
   }
 }
 
@@ -168,6 +177,7 @@ export const getTwitterButtonText = (notification: any) => {
       return 'Share this Milestone'
     case NotificationType.RemixCreate:
     case NotificationType.RemixCosign:
+    case NotificationType.ChallengeReward:
       return 'Share With Your Fans'
     default:
       return ''
@@ -230,7 +240,8 @@ export const TwitterShare = ({
     notification.type !== NotificationType.Milestone &&
     notification.type !== NotificationType.TrendingTrack &&
     notification.type !== NotificationType.RemixCosign &&
-    notification.type !== NotificationType.RemixCreate
+    notification.type !== NotificationType.RemixCreate &&
+    notification.type !== NotificationType.ChallengeReward
   )
     return null
   const twitterText = getTwitterButtonText(notification)
