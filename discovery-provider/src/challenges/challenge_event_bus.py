@@ -2,10 +2,10 @@ from contextlib import contextmanager
 import json
 import logging
 from collections import defaultdict
-from typing import Dict, List
+from typing import Any, DefaultDict, Dict, List, Tuple, TypedDict
 
 from sqlalchemy.orm.session import Session
-from src.challenges.challenge import ChallengeManager
+from src.challenges.challenge import ChallengeManager, EventMetadata
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
 from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
@@ -17,6 +17,13 @@ logger = logging.getLogger(__name__)
 REDIS_QUEUE_PREFIX = "challenges-event-queue"
 
 
+class InternalEvent(TypedDict):
+    event: ChallengeEvent
+    block_number: int
+    user_id: int
+    extra: Dict
+
+
 class ChallengeEventBus:
     """`ChallengeEventBus` supports:
     - dispatching challenge events to a Redis queue
@@ -25,13 +32,18 @@ class ChallengeEventBus:
     - fetching the manager for a given challenge
     """
 
+    _listeners: DefaultDict[ChallengeEvent, List[ChallengeManager]]
+    _redis: Any
+    _managers: Dict[str, ChallengeManager]
+    _in_memory_queue: List[InternalEvent]
+
     def __init__(self, redis):
         self._listeners = defaultdict(lambda: [])
         self._redis = redis
         self._managers = {}
         self._in_memory_queue: List[Dict] = []
 
-    def register_listener(self, event: str, listener: ChallengeManager):
+    def register_listener(self, event: ChallengeEvent, listener: ChallengeManager):
         """Registers a listener (`ChallengeManager`) to listen for a particular event type."""
         self._listeners[event].append(listener)
         if not listener.challenge_id in self._managers:
@@ -53,7 +65,7 @@ class ChallengeEventBus:
 
     def dispatch(
         self,
-        event: str,
+        event: ChallengeEvent,
         block_number: int,
         user_id: int,
         extra: Dict = {},
@@ -62,6 +74,16 @@ class ChallengeEventBus:
 
         Does not dispatch to Redis until flush is called or a scoped dispatch queue goes out of scope
         """
+        valid_event = event is not None and isinstance(event, str)
+        valid_block = block_number is not None and isinstance(block_number, int)
+        valid_user = user_id is not None and isinstance(user_id, int)
+        valid_extra = extra is not None and isinstance(extra, dict)
+        if not (valid_event and valid_block and valid_user and valid_extra):
+            logger.warning(
+                f"ChallengeEventBus: ignoring invalid event: {(event, block_number, user_id, extra)}"
+            )
+            return
+
         self._in_memory_queue.append(
             {
                 "event": event,
@@ -72,7 +94,7 @@ class ChallengeEventBus:
         )
 
     def flush(self):
-        """Flushes the in-memory queue of events and queues them to Redis"""
+        """Flushes the in-memory queue of events and enqueues them to Redis"""
         logger.info(
             f"ChallengeEventBus: Flushing {len(self._in_memory_queue)} events from in-memory queue"
         )
@@ -90,9 +112,9 @@ class ChallengeEventBus:
                 logger.warning(f"ChallengeEventBus: error enqueuing to Redis: {e}")
         self._in_memory_queue.clear()
 
-    def process_events(self, session: Session, max_events=1000):
+    def process_events(self, session: Session, max_events=1000) -> Tuple[int, bool]:
         """Dequeues `max_events` from Redis queue and processes them, forwarding to listening ChallengeManagers.
-        Returns the number of events it's processed.
+        Returns (num_processed_events, did_error)
         """
         try:
             # get the first max_events elements.
@@ -104,7 +126,9 @@ class ChallengeEventBus:
 
             # Consolidate event types for processing
             # map of {"event_type": [{ user_id: number, block_number: number, extra: {} }]}}
-            event_user_dict = defaultdict(lambda: [])
+            event_user_dict: DefaultDict[
+                ChallengeEvent, List[EventMetadata]
+            ] = defaultdict(lambda: [])
             for event_dict in events_dicts:
                 event_type = event_dict["event"]
                 event_user_dict[event_type].append(
@@ -116,16 +140,23 @@ class ChallengeEventBus:
                         ),
                     }
                 )
-
-            for (event_type, event_dicts) in event_user_dict.items():
-                listeners = self._listeners[event_type]
-                for listener in listeners:
-                    listener.process(session, event_type, event_dicts)
-
-            return len(events_json)
         except Exception as e:
             logger.warning(f"ChallengeEventBus: error processing from Redis: {e}")
-            return 0
+            return (-1, True)
+
+        did_error = False
+        for (event_type, event_dicts) in event_user_dict.items():
+            listeners = self._listeners[event_type]
+            for listener in listeners:
+                try:
+                    listener.process(session, event_type, event_dicts)
+                except Exception as e:
+                    logger.warning(
+                        f"ChallengeEventBus: manager [{listener.challenge_id} unexpectedly propogated error: [{e}]"
+                    )
+                    did_error = True
+
+        return (len(events_json), did_error)
 
     # Helpers
 
@@ -138,7 +169,7 @@ class ChallengeEventBus:
         }
         return json.dumps(event_dict)
 
-    def _json_to_event(self, event_json):
+    def _json_to_event(self, event_json) -> InternalEvent:
         return json.loads(event_json)
 
 

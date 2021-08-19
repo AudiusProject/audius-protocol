@@ -1,5 +1,7 @@
-from typing import Dict, List, Optional
 import redis
+import logging
+from src.models.models import Block
+from typing import Dict, List, Optional
 from sqlalchemy.orm.session import Session
 
 from tests.test_get_challenges import DefaultUpdater
@@ -16,6 +18,8 @@ from src.utils.helpers import model_to_dictionary
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.utils.config import shared_config
 from src.queries.get_challenges import get_challenges
+
+logger = logging.getLogger(__name__)
 
 
 def setup_challenges(app):
@@ -381,3 +385,83 @@ def test_inactive_challenge(app):
         # We should not have any UserChallenges created for the
         # inactive challenge!!
         assert len(state) == 0
+
+
+def test_rejects_invalid_events(app):
+    setup_challenges(app)
+    with app.app_context():
+        db = get_db()
+
+    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+
+    bus = ChallengeEventBus(redis_conn)
+    with db.scoped_session() as session:
+        mgr = ChallengeManager("test_challenge_1", DefaultUpdater())
+        TEST_EVENT = "TEST_EVENT"
+        bus.register_listener(TEST_EVENT, mgr)
+        with bus.use_scoped_dispatch_queue():
+            bus.dispatch(TEST_EVENT, None, 1)
+            bus.dispatch(TEST_EVENT, 1, None)
+            bus.dispatch(TEST_EVENT, 1, 1, 1)
+        (count, did_error) = bus.process_events(session)
+        assert count == 0
+        assert did_error == False
+
+
+class BrokenUpdater(ChallengeUpdater):
+    # This should trigger a postgres exceptions
+    def on_after_challenge_creation(self, session, metadatas: List[FullEventMetadata]):
+        block1 = Block(blockhash="0x99", number=1)
+        block2 = Block(blockhash="0x99", number=1)
+        session.add_all([block1, block2])
+        session.flush()
+
+
+def test_catches_exceptions_in_single_processor(app):
+    """Ensure that if a single processor fails, the others still succeed"""
+    with app.app_context():
+        db = get_db()
+
+    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+
+    bus = ChallengeEventBus(redis_conn)
+    with db.scoped_session() as session:
+
+        session.add_all(
+            [
+                Challenge(
+                    id="test_challenge_1",
+                    type=ChallengeType.numeric,
+                    amount=5,
+                    step_count=3,
+                    active=True,
+                ),
+                Challenge(
+                    id="test_challenge_2",
+                    type=ChallengeType.numeric,
+                    amount=5,
+                    step_count=3,
+                    active=True,
+                ),
+            ]
+        )
+        session.commit()
+
+        correct_manager = ChallengeManager("test_challenge_1", DefaultUpdater())
+        broken_manager = ChallengeManager("test_challenge_2", BrokenUpdater())
+        TEST_EVENT = "TEST_EVENT"
+        TEST_EVENT_2 = "TEST_EVENT_2"
+        bus.register_listener(TEST_EVENT, correct_manager)
+        bus.register_listener(TEST_EVENT_2, broken_manager)
+
+        with bus.use_scoped_dispatch_queue():
+            # dispatch the broken one first
+            bus.dispatch(TEST_EVENT_2, 1, 1)
+            bus.dispatch(TEST_EVENT, 1, 1)
+        try:
+            bus.process_events(session)
+        except:
+            raise Exception("Shouldn't have propogated error!")
+        challenge_1_state = correct_manager.get_user_challenge_state(session, ["1"])
+        # Make sure that the 'correct_manager' still executes
+        assert len(challenge_1_state) == 1
