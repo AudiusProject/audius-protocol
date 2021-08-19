@@ -337,7 +337,7 @@ class AudiusLibs {
       )
       await this.web3Manager.init()
     }
-    if (this.solanaWeb3Config && this.web3Manager) {
+    if (this.solanaWeb3Config) {
       this.solanaWeb3Manager = new SolanaWeb3Manager(
         this.solanaWeb3Config,
         this.identityService,

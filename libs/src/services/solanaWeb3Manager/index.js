@@ -1,3 +1,4 @@
+const BN = require('bn.js')
 const solanaWeb3 = require('@solana/web3.js')
 const splToken = require('@solana/spl-token')
 const { transferWAudioBalance } = require('./transfer')
@@ -9,9 +10,9 @@ const {
 } = require('./tokenAccount')
 const { wAudioFromWeiAudio } = require('./wAudio')
 const Utils = require('../../utils')
-const { submitAttestations, evaluateAttestations } = require('./rewards')
 const SolanaUtils = require('./utils')
 const { TransactionHandler } = require('./transactionHandler')
+const { submitAttestations, evaluateAttestations, createSender } = require('./rewards')
 
 const { PublicKey } = solanaWeb3
 
@@ -120,6 +121,7 @@ class SolanaWeb3Manager {
    * Creates a solana bank account from the web3 provider's eth address
    */
   async createUserBank () {
+    if (!this.web3Manager) throw new Error('No web3Manager supplied to solanaWeb3Manager')
     const ethAddress = this.web3Manager.getWalletAddress()
     await createUserBankFrom({
       ethAddress,
@@ -167,6 +169,7 @@ class SolanaWeb3Manager {
    * @returns {PublicKey} UserBank
    */
   async getUserBank () {
+    if (!this.web3Manager) throw new Error('No web3Manager supplied to solanaWeb3Manager')
     const ethAddress = this.web3Manager.getWalletAddress()
     const bank = await getBankAccountAddress(
       ethAddress,
@@ -227,6 +230,7 @@ class SolanaWeb3Manager {
    * of wei $AUDIO for all method calls
    */
   async transferWAudio (recipientSolanaAddress, amount) {
+    if (!this.web3Manager) throw new Error('No web3Manager supplied to solanaWeb3Manager')
     // Check if the solana address is a token account
     let tokenAccountInfo = await this.getAssociatedTokenAccountInfo(recipientSolanaAddress)
     if (!tokenAccountInfo) {
@@ -344,6 +348,33 @@ class SolanaWeb3Manager {
       oracleEthAddress,
       feePayer: this.feePayerKey,
       tokenAmount,
+      transactionHandler: this.transactionHandler
+    })
+  }
+
+  /**
+   * Creates a new rewards signer (one that can attest)
+   * @param {{
+   *   senderEthAddress: string,
+   *   operatorEthAddress: string,
+   *   attestations: AttestationMeta[],
+   * }} {
+   * @memberof SolanaWeb3Manager
+   */
+  async createSender({
+    senderEthAddress,
+    operatorEthAddress,
+    attestations
+  }) {
+    return createSender({
+      rewardManagerProgramId: this.rewardManagerProgramId,
+      rewardManagerAccount: this.rewardManagerProgramPDA,
+      senderEthAddress,
+      feePayer: this.feePayerKey,
+      operatorEthAddress,
+      attestations,
+      identityService: this.identityService,
+      connection: this.connection,
       transactionHandler: this.transactionHandler
     })
   }

@@ -103,7 +103,11 @@ class TransactionHandler {
           preflightCommitment: 'processed'
         }
       )
-      return transactionSignature
+      return {
+        res: transactionSignature,
+        error: null,
+        errorCode: null
+      }
     } catch (e) {
       const { message: error } = e
       const errorCode = this._parseSolanaErrorCode(error)

@@ -57,7 +57,8 @@ class EthWeb3Manager {
   ) {
     const gasLimit = txGasLimit || await estimateGas({
       method: contractMethod,
-      from: this.ownerWallet
+      from: this.ownerWallet,
+      gasLimitMaximum: HIGH_GAS_PRICE
     })
     if (contractAddress && privateKey) {
       let gasPrice = parseInt(await this.web3.eth.getGasPrice())
@@ -118,7 +119,11 @@ class EthWeb3Manager {
     txGasLimit = null
   ) {
     const encodedABI = contractMethod.encodeABI()
-    const gasLimit = txGasLimit || await estimateGas({ from: relayerWallet, method: contractMethod })
+    const gasLimit = txGasLimit || await estimateGas({
+      from: relayerWallet,
+      method: contractMethod,
+      gasLimitMaximum: HIGH_GAS_PRICE
+    })
     const response = await retry(async bail => {
       try {
         const attempt = await this.identityService.ethRelay(
