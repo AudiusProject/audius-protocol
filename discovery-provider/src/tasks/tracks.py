@@ -1,3 +1,4 @@
+import concurrent.futures
 import functools
 import logging
 import time
@@ -53,6 +54,62 @@ def track_state_update(
     track_contract = update_task.web3.eth.contract(
         address=contract_addresses["track_factory"], abi=track_abi
     )
+
+    cids = []
+    for tx_receipt in track_factory_txs:
+        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+        for event_type in track_event_types_arr:
+            track_events_tx = getattr(
+                track_contract.events, event_type
+            )().processReceipt(tx_receipt)
+            for entry in track_events_tx:
+                if event_type == track_event_types_lookup["delete_track"]:
+                    continue
+
+                event_args = entry["args"]
+                track_id = (
+                    event_args._trackId if "_trackId" in event_args else event_args._id
+                )
+                blockhash = update_task.web3.toHex(entry.blockHash)
+
+                track_metadata_digest = event_args._multihashDigest.hex()
+                track_metadata_hash_fn = event_args._multihashHashFn
+                buf = multihash.encode(
+                    bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
+                )
+                track_metadata_multihash = multihash.to_b58_string(buf)
+
+                owner_id = event_args._trackOwnerId
+
+                creator_node_endpoint = (
+                    session.query(User.handle, User.creator_node_endpoint)
+                    .filter(User.user_id == owner_id, User.is_current == True)
+                    .first()
+                )[1]
+
+                cids.append([track_metadata_multihash, creator_node_endpoint])
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        futures = {}
+        for cid in cids:
+            futures[cid[0]] = executor.submit(
+                update_task.ipfs_client.get_metadata,
+                cid[0],
+                track_metadata_format,
+                cid[1],
+            )
+
+        ipfs_metadata = {}
+        for cid, future in futures.items():
+            try:
+                ipfs_metadata[cid] = future.result()
+            except Exception as e:
+                logger.info("Error in parse track transaction")
+                blockhash = update_task.web3.toHex(block_hash)
+                raise IndexingError(
+                    "track", block_number, blockhash, txhash, str(e)
+                ) from e
+
     pending_track_routes: List[TrackRoute] = []
     track_events = {}
     for tx_receipt in track_factory_txs:
@@ -83,6 +140,16 @@ def track_state_update(
 
                     track_events[track_id] = {"track": track_entry, "events": []}
 
+                if event_type == track_event_types_lookup["delete_track"]:
+                    track_metadata_multihash = None
+                else:
+                    track_metadata_digest = event_args._multihashDigest.hex()
+                    track_metadata_hash_fn = event_args._multihashHashFn
+                    buf = multihash.encode(
+                        bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
+                    )
+                    track_metadata_multihash = multihash.to_b58_string(buf)
+
                 try:
                     parsed_track = parse_track_event(
                         self,
@@ -93,6 +160,7 @@ def track_state_update(
                         track_events[track_id]["track"],
                         block_number,
                         block_timestamp,
+                        ipfs_metadata.get(track_metadata_multihash),
                         pending_track_routes,
                     )
 
@@ -443,6 +511,7 @@ def parse_track_event(
     track_record,
     block_number,
     block_timestamp,
+    track_metadata,
     pending_track_routes,
 ):
     challenge_bus = update_task.challenge_event_bus
@@ -476,15 +545,11 @@ def parse_track_event(
         track_record.owner_id = owner_id
         track_record.is_delete = False
 
-        handle, creator_node_endpoint = (
+        handle = (
             session.query(User.handle, User.creator_node_endpoint)
             .filter(User.user_id == owner_id, User.is_current == True)
             .first()
-        )
-
-        track_metadata = update_task.ipfs_client.get_metadata(
-            track_metadata_multihash, track_metadata_format, creator_node_endpoint
-        )
+        )[0]
 
         add_old_style_route(session, track_record, track_metadata, pending_track_routes)
         update_track_routes_table(
@@ -539,15 +604,11 @@ def parse_track_event(
         track_record.owner_id = owner_id
         track_record.is_delete = False
 
-        handle, creator_node_endpoint = (
+        handle = (
             session.query(User.handle, User.creator_node_endpoint)
             .filter(User.user_id == owner_id, User.is_current == True)
             .first()
-        )
-
-        track_metadata = update_task.ipfs_client.get_metadata(
-            upd_track_metadata_multihash, track_metadata_format, creator_node_endpoint
-        )
+        )[0]
 
         add_old_style_route(session, track_record, track_metadata, pending_track_routes)
         update_track_routes_table(
