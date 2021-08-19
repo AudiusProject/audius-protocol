@@ -85,8 +85,8 @@ def user_state_update(
                     ) from e
 
     creator_node_endpoint = {
-        user_id: user_events_lookup[user_id]["user"].creator_node_endpoint
-        for user_id in user_events_lookup
+        user_id: data["user"].creator_node_endpoint
+        for user_id, data in user_events_lookup.items()
     }
     cids = []
     for tx_receipt in user_factory_txs:
@@ -97,40 +97,30 @@ def user_state_update(
             )
             for entry in user_events_tx:
                 user_id = entry["args"]._userId
-                try:
-                    user_id = entry["args"]._userId
-                    if event_type == user_event_types_lookup["update_multihash"]:
-                        metadata_multihash = helpers.multihash_digest_to_cid(
-                            event["args"]._multihashDigest
+                if event_type == user_event_types_lookup["update_multihash"]:
+                    metadata_multihash = helpers.multihash_digest_to_cid(
+                        entry["args"]._multihashDigest
+                    )
+                    is_blacklisted = is_blacklisted_ipld(session, metadata_multihash)
+                    if not is_blacklisted:
+                        cids.append(
+                            [metadata_multihash, creator_node_endpoint[user_id]]
                         )
-                        is_blacklisted = is_blacklisted_ipld(
-                            session, metadata_multihash
-                        )
-                        if not is_blacklisted:
-                            cids.append(
-                                [metadata_multihash, creator_node_endpoint[user_id]]
-                            )
-                    elif (
-                        event_type
-                        == user_event_types_lookup["update_creator_node_endpoint"]
+                elif (
+                    event_type
+                    == user_event_types_lookup["update_creator_node_endpoint"]
+                ):
+                    if not user_replica_set_upgraded(
+                        user_events_lookup[user_id]["user"]
                     ):
-                        if not user_replica_set_upgraded(
-                            user_events_lookup[user_id]["user"]
-                        ):
-                            creatorNodeEndpoint[user_id] = event[
-                                "args"
-                            ]._creatorNodeEndpoint
-                except Exception as e:
-                    logger.error("Error in parse user transaction")
-                    event_blockhash = update_task.web3.toHex(block_hash)
-                    raise IndexingError(
-                        "user", block_number, event_blockhash, txhash, str(e)
-                    ) from e
+                        creator_node_endpoint[user_id] = entry[
+                            "args"
+                        ]._creatorNodeEndpoint
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-        future = {}
+        futures = {}
         for cid in cids:
-            future[cid[0]] = executor.submit(
+            futures[cid[0]] = executor.submit(
                 get_ipfs_metadata,
                 update_task,
                 cid[0],
@@ -138,9 +128,9 @@ def user_state_update(
             )
 
         ipfs_metadata = {}
-        for cid in future:
+        for cid, future in futures.items():
             try:
-                ipfs_metadata[cid] = future[cid].result()
+                ipfs_metadata[cid] = future.result()
             except Exception as e:
                 logger.error("Error in parse user transaction")
                 event_blockhash = update_task.web3.toHex(block_hash)
