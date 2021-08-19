@@ -113,9 +113,6 @@ class ChallengeManager:
     def process(self, session, event_type: str, event_metadatas: List[EventMetadata]):
         """Processes a number of events for a particular event type, updating
         UserChallengeEvents as needed.
-
-        Returns the number of events processed without error.
-
         """
         logger.info(
             f"ChallengeManager: processing event type [{event_type}] for challenge [{self.challenge_id}]"
@@ -160,6 +157,11 @@ class ChallengeManager:
 
         specifiers: List[str] = [e["specifier"] for e in events_with_specifiers]
 
+        # Because we reuse a single session between multiple
+        # challenge managers, we have to be extra careful in the case
+        # that we run into a Postgres level error, to rollback
+        # the session so it remains usable - hence, all the sensitive
+        # code belongs in a `try` block here.
         try:
             # Gets all user challenges,
             existing_user_challenges = fetch_user_challenges(

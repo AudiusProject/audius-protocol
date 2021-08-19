@@ -74,6 +74,7 @@ class ChallengeEventBus:
 
         Does not dispatch to Redis until flush is called or a scoped dispatch queue goes out of scope
         """
+        # Sanitize input, drop the event if it's malformed
         valid_event = event is not None and isinstance(event, str)
         valid_block = block_number is not None and isinstance(block_number, int)
         valid_user = user_id is not None and isinstance(user_id, int)
@@ -151,6 +152,8 @@ class ChallengeEventBus:
                 try:
                     listener.process(session, event_type, event_dicts)
                 except Exception as e:
+                    # We really shouldn't see errors from a ChallengeManager (they should handle on their own),
+                    # but in case we do, swallow it and continue on
                     logger.warning(
                         f"ChallengeEventBus: manager [{listener.challenge_id} unexpectedly propogated error: [{e}]"
                     )
