@@ -140,9 +140,8 @@ def track_state_update(
 
                     track_events[track_id] = {"track": track_entry, "events": []}
 
-                if event_type == track_event_types_lookup["delete_track"]:
-                    track_metadata_multihash = None
-                else:
+                track_metadata_multihash = None
+                if event_type != track_event_types_lookup["delete_track"]:
                     track_metadata_digest = event_args._multihashDigest.hex()
                     track_metadata_hash_fn = event_args._multihashHashFn
                     buf = multihash.encode(
