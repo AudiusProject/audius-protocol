@@ -50,7 +50,7 @@ const STATIC_PORT = Config.STATIC_SERVER_PORT || 3100
 export const URL_SCHEME = 'audius://'
 
 // Intercept localhost://, file:///, audius://, twitter embed, or recaptcha
-const URL_INTERCEPT_PATTERN = /^(http:\/\/localhost|file:\/\/\/|audius:\/\/|https:\/\/platform.twitter|https:\/\/www.google.com\/recaptcha\/.*|.*)/
+const URL_INTERCEPT_PATTERN = /^(http:\/\/localhost|file:\/\/\/|audius:\/\/|https:\/\/platform.twitter|https:\/\/www.google.com\/recaptcha\/.*)/
 const AUDIUS_SITE_PREFIX = /^(https|http):\/\/audius.co\//
 const AUDIUS_REDIRECT_SITE_PREFIX = /^(https|http):\/\/redirect.audius.co\/app-redirect\//
 const AUDIUS_PORT_INCLUDE_PATTERN = /(:3100|:3101)/
