@@ -272,7 +272,8 @@ const NotificationBlock = (props: NotificationBlockProps) => {
       {(type === NotificationType.Milestone ||
         type === NotificationType.TrendingTrack ||
         type === NotificationType.RemixCosign ||
-        type === NotificationType.RemixCreate) && (
+        type === NotificationType.RemixCreate ||
+        type === NotificationType.ChallengeReward) && (
         <TwitterShare
           notification={props.notification}
           markNotificationAsRead={markNotificationAsRead}

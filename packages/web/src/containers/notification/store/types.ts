@@ -1,3 +1,4 @@
+import { ChallengeRewardID } from 'containers/audio-rewards-page/types'
 import Collection from 'models/Collection'
 import Track from 'models/Track'
 import User from 'models/User'
@@ -20,7 +21,8 @@ export enum NotificationType {
   Milestone = 'Milestone',
   RemixCreate = 'RemixCreate',
   RemixCosign = 'RemixCosign',
-  TrendingTrack = 'TrendingTrack'
+  TrendingTrack = 'TrendingTrack',
+  ChallengeReward = 'ChallengeReward'
 }
 
 export enum Entity {
@@ -156,6 +158,11 @@ export type TrendingTrack = BaseNotification & {
   entity: Track & { user: User }
 }
 
+export type ChallengeReward = BaseNotification & {
+  type: NotificationType.ChallengeReward
+  challengeId: ChallengeRewardID
+}
+
 export type Notification =
   | Announcement
   | UserSubscription
@@ -166,6 +173,7 @@ export type Notification =
   | RemixCreate
   | RemixCosign
   | TrendingTrack
+  | ChallengeReward
 
 export default interface NotificationState {
   notifications: {
