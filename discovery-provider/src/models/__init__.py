@@ -51,6 +51,7 @@ from .track_route import TrackRoute
 from .user_bank import UserBankTransaction
 from .user_bank import UserBankAccount
 from .user_events import UserEvents
+from .trending_result import TrendingResult
 
 __all__ = [
     "AggregateDailyAppNameMetrics",
@@ -96,6 +97,7 @@ __all__ = [
     "TagTrackUserMatview",
     "Track",
     "TrackRoute",
+    "TrendingResult",
     "URSMContentNode",
     "User",
     "UserBalance",

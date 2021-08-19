@@ -75,7 +75,7 @@ def populate_mock_db(db, entities, block_offset=0):
         challenges = entities.get("challenges", [])
         user_challenges = entities.get("user_challenges", [])
 
-        num_blocks = max(len(tracks), len(users), len(follows))
+        num_blocks = max(len(tracks), len(users), len(follows), len(saves))
 
         for i in range(block_offset, block_offset + num_blocks):
             block = models.Block(

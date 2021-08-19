@@ -16,7 +16,7 @@ def get_challenges_dicts():
         return parsed
 
 
-def create_new_challenges(session):
+def create_new_challenges(session, allowed_challenge_types=[]):
     challenges_dicts = get_challenges_dicts()
     challenges = []
     existing_challenges = session.query(Challenge).all()
@@ -26,6 +26,14 @@ def create_new_challenges(session):
     new_challenges = list(
         filter(lambda c: c.get("id") not in existing_ids, challenges_dicts)
     )
+
+    # if allowed_challenge_typed defined, filter out non-type
+    if allowed_challenge_types:
+        new_challenges = [
+            challenge
+            for challenge in new_challenges
+            if challenge.get("id") in allowed_challenge_types
+        ]
     logger.info(f"Adding challenges: {new_challenges}")
 
     # Add all the new challenges
