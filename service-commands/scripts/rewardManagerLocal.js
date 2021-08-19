@@ -224,13 +224,15 @@ const run = async () => {
         switch(args[2]) {
             case 'register-discprov':
                 const serviceCount = args[3]
-                console.log(`Registering disc prov ${serviceCount}`)
+                console.log(`RewardManager | Registering disc prov ${serviceCount}`)
                 await findEthAddressForDiscProvAndRegister(serviceCount)
+                console.log(`RewardManager | Finished registering disc prov ${serviceCount}`)
                 break
             case 'register-eth-address':
                 const ethAddress = args[3]
-                console.log(`Registering disc prov ${ethAddress}`)
+                console.log(`RewardManager | Registering disc prov ${ethAddress}`)
                 await createSenderLocal(ethAddress)
+                console.log(`RewardManager | Finished registering disc prov ${ethAddress}`)
                 break
             default:
                 throw new Error('Invalid argument found')

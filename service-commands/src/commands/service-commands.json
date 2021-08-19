@@ -131,7 +131,8 @@
       "cd discovery-provider; . compose/env/unsetShellEnv.sh"
     ],
     "register": [
-      "cd libs/; node initScripts/local.js register-discprov #"
+      "cd libs/; node initScripts/local.js register-discprov #",
+      "cd service-commands/; node scripts/rewardManagerLocal.js register-discprov #"
     ],
     "restart": [
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
