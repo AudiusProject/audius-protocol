@@ -1,7 +1,7 @@
 import concurrent.futures
 import logging
 from datetime import datetime
-from typing import Dict, Set, TypedDict, Union
+from typing import Set, TypedDict
 
 import base58
 from eth_account.messages import defunct_hash_message
@@ -50,20 +50,19 @@ def user_state_update(
     # NOTE - events are stored only for debugging purposes and not used or persisted anywhere
     user_events_lookup = {}
 
-    ipfsMetadata = {}
-    ipfsMetadataFutures = {}
-    creatorNodeEndpoint: Dict[int, Union[None, str]] = {}
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-        for tx_receipt in user_factory_txs:
-            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-            for event_type in user_event_types_arr:
-                user_events_tx = getattr(
-                    user_contract.events, event_type
-                )().processReceipt(tx_receipt)
-                for entry in user_events_tx:
-                    event_args = entry["args"]
-                    user_id = event_args._userId
+    # for each user factory transaction, loop through every tx
+    # loop through all audius event types within that tx and get all event logs
+    # for each event, apply changes to the user in user_events_lookup
+    for tx_receipt in user_factory_txs:
+        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+        for event_type in user_event_types_arr:
+            user_events_tx = getattr(user_contract.events, event_type)().processReceipt(
+                tx_receipt
+            )
+            for entry in user_events_tx:
+                user_id = entry["args"]._userId
+                try:
+                    user_id = entry["args"]._userId
 
                     # if the user id is not in the lookup object, it hasn't been initialized yet
                     # first, get the user object from the db(if exists or create a new one)
@@ -78,48 +77,72 @@ def user_state_update(
                             txhash,
                         )
                         user_events_lookup[user_id] = {"user": ret_user, "events": []}
+                except Exception as e:
+                    logger.error("Error in parse user transaction")
+                    event_blockhash = update_task.web3.toHex(block_hash)
+                    raise IndexingError(
+                        "user", block_number, event_blockhash, txhash, str(e)
+                    ) from e
 
+    creator_node_endpoint = {
+        user_id: user_events_lookup[user_id]["user"].creator_node_endpoint
+        for user_id in user_events_lookup
+    }
+    cids = []
+    for tx_receipt in user_factory_txs:
+        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+        for event_type in user_event_types_arr:
+            user_events_tx = getattr(user_contract.events, event_type)().processReceipt(
+                tx_receipt
+            )
+            for entry in user_events_tx:
+                user_id = entry["args"]._userId
+                try:
+                    user_id = entry["args"]._userId
                     if event_type == user_event_types_lookup["update_multihash"]:
                         metadata_multihash = helpers.multihash_digest_to_cid(
-                            event_args._multihashDigest
+                            event["args"]._multihashDigest
                         )
                         is_blacklisted = is_blacklisted_ipld(
                             session, metadata_multihash
                         )
                         if not is_blacklisted:
-                            ipfsMetadataFutures[
-                                (metadata_multihash, creatorNodeEndpoint[user_id])
-                            ] = executor.submit(
-                                get_ipfs_metadata,
-                                update_task,
-                                metadata_multihash,
-                                creatorNodeEndpoint.get(
-                                    user_id,
-                                    user_events_lookup[user_id][
-                                        "user"
-                                    ].creator_node_endpoint,
-                                ),
+                            cids.append(
+                                [metadata_multihash, creator_node_endpoint[user_id]]
                             )
                     elif (
                         event_type
                         == user_event_types_lookup["update_creator_node_endpoint"]
                     ):
-                        # Ensure any user consuming the new UserReplicaSetManager contract does not process
-                        # legacy `creator_node_endpoint` changes
-                        # Reference user_replica_set.py for the updated indexing flow around this field
-                        replica_set_upgraded = user_replica_set_upgraded(
+                        if not user_replica_set_upgraded(
                             user_events_lookup[user_id]["user"]
-                        )
-                        if not replica_set_upgraded:
-                            creatorNodeEndpoint[
-                                user_id
-                            ] = event_args._creatorNodeEndpoint
+                        ):
+                            creatorNodeEndpoint[user_id] = event[
+                                "args"
+                            ]._creatorNodeEndpoint
+                except Exception as e:
+                    logger.error("Error in parse user transaction")
+                    event_blockhash = update_task.web3.toHex(block_hash)
+                    raise IndexingError(
+                        "user", block_number, event_blockhash, txhash, str(e)
+                    ) from e
 
-        for key, future in ipfsMetadataFutures.items():
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        future = {}
+        for cid in cids:
+            future[cid[0]] = executor.submit(
+                get_ipfs_metadata,
+                update_task,
+                cid[0],
+                cid[1],
+            )
+
+        ipfs_metadata = {}
+        for cid in future:
             try:
-                ipfsMetadata[key] = future.result()
+                ipfs_metadata[cid] = future[cid].result()
             except Exception as e:
-                logger.error("Error in pre-fetching cid")
+                logger.error("Error in parse user transaction")
                 event_blockhash = update_task.web3.toHex(block_hash)
                 raise IndexingError(
                     "user", block_number, event_blockhash, txhash, str(e)
@@ -155,13 +178,8 @@ def user_state_update(
                         entry,
                         event_type,
                         user_events_lookup[user_id]["user"],
-                        ipfsMetadata.get(
-                            (
-                                user_events_lookup[user_id]["user"].metadata_multihash,
-                                user_events_lookup[user_id][
-                                    "user"
-                                ].creator_node_endpoint,
-                            )
+                        ipfs_metadata.get(
+                            user_events_lookup[user_id]["user"].metadata_multihash
                         ),
                         block_timestamp,
                     )
@@ -210,7 +228,7 @@ def lookup_user_record(
     if user_exists:
         user_record = (
             session.query(User)
-            .filter(User.user_id == user_id, User.is_current is True)
+            .filter(User.user_id == user_id, User.is_current == True)
             .first()
         )
 
@@ -243,7 +261,7 @@ def invalidate_old_user(session, user_id):
         # Update existing record in db to is_current = False
         num_invalidated_users = (
             session.query(User)
-            .filter(User.user_id == user_id, User.is_current is True)
+            .filter(User.user_id == user_id, User.is_current == True)
             .update({"is_current": False})
         )
         assert (
@@ -343,6 +361,7 @@ def parse_user_event(
 
     # If the multihash is updated, fetch the metadata (if not fetched) and update the associated wallets column
     if event_type == user_event_types_lookup["update_multihash"]:
+        # Look up metadata multihash in IPFS and override with metadata fields
         if ipfs_metadata:
             # ipfs_metadata properties are defined in get_ipfs_metadata
 
@@ -469,7 +488,7 @@ def update_user_associated_wallets(
 
         # Verify the wallet signatures and create the user id to wallet associations
         for associated_wallet, wallet_metadata in associated_wallets.items():
-            if "signature" not in wallet_metadata or not isinstance(
+            if not "signature" in wallet_metadata or not isinstance(
                 wallet_metadata["signature"], str
             ):
                 continue
@@ -509,7 +528,7 @@ def update_user_associated_wallets(
 
         # Mark the previously associated wallets as deleted
         for previously_associated_wallet in previous_wallets:
-            if previously_associated_wallet not in added_associated_wallets:
+            if not previously_associated_wallet in added_associated_wallets:
                 associated_wallet_entry = AssociatedWallet(
                     user_id=user_record.user_id,
                     wallet=previously_associated_wallet,
