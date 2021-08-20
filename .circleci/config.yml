@@ -40,7 +40,7 @@ jobs:
             cd libs
             rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
             source ~/.bash_profile
-            nvm install 10.16
+            nvm install 14
             npm install
       - save_cache:
           name: Save libs cache
@@ -60,7 +60,7 @@ jobs:
             cd contracts/
             rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
             source ~/.bash_profile
-            nvm install 10.16
+            nvm install 14
             npm install
       - save_cache:
           name: Save contracts cache
@@ -80,7 +80,7 @@ jobs:
             cd eth-contracts/
             rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
             source ~/.bash_profile
-            nvm install 10.16
+            nvm install 14
             npm install
       - save_cache:
           name: Save eth-contracts cache
@@ -98,7 +98,7 @@ jobs:
           name: content-node repo init
           command: |
             source ~/.bash_profile
-            nvm install v14.16
+            nvm install v14.17.5
             cd creator-node/
             npm install
       - save_cache:
@@ -117,7 +117,7 @@ jobs:
           name: identity-service repo init
           command: |
             source ~/.bash_profile
-            nvm install v10.16
+            nvm install v14.17.5
             cd identity-service/
             npm install
       - save_cache:
@@ -137,7 +137,7 @@ jobs:
           command: |
             source ~/.bash_profile
             cd mad-dog/
-            nvm install v10.16
+            nvm install v14.17.5
             npm install
       - save_cache:
           name: Save mad-dog cache
@@ -155,7 +155,7 @@ jobs:
           name: service-commands repo init
           command: |
             source ~/.bash_profile
-            nvm install v10.16
+            nvm install v14.17.5
             cd service-commands/
             npm install
       - save_cache:
@@ -174,8 +174,8 @@ jobs:
             set -e
             export PROTOCOL_DIR=/home/circleci/project
             source ~/.bash_profile
-            nvm install v10.16
-            nvm use 10.16
+            nvm install v14.17.5
+            nvm use 14
             cd /home/circleci/project/service-commands/scripts/
             cd /home/circleci/project/libs/
             npm rebuild
