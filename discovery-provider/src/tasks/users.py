@@ -1,13 +1,13 @@
 import logging
-from datetime import datetime
-from src.challenges.challenge_event_bus import ChallengeEventBus
 from typing import Set, TypedDict, Tuple
+from datetime import datetime
 
 import base58
 from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session, make_transient
+
 from src.app import contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
 from src.database_task import DatabaseTask

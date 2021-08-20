@@ -1,12 +1,14 @@
-import redis
 import logging
-from src.models.models import Block
 from typing import Dict, List, Optional
+
 from sqlalchemy.orm.session import Session
+import redis
+
 
 from tests.test_get_challenges import DefaultUpdater
 from tests.utils import populate_mock_db_blocks
 
+from src.models.models import Block
 from src.models import Challenge, UserChallenge, ChallengeType
 from src.utils.db_session import get_db
 from src.challenges.challenge import (
@@ -461,6 +463,7 @@ def test_catches_exceptions_in_single_processor(app):
         try:
             bus.process_events(session)
         except:
+            # pylint: disable=W0707
             raise Exception("Shouldn't have propogated error!")
         challenge_1_state = correct_manager.get_user_challenge_state(session, ["1"])
         # Make sure that the 'correct_manager' still executes

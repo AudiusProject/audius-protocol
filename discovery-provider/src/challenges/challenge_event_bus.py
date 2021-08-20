@@ -68,12 +68,14 @@ class ChallengeEventBus:
         event: ChallengeEvent,
         block_number: int,
         user_id: int,
-        extra: Dict = {},
+        extra: Dict = None,
     ):
         """Dispatches an event + block_number + user_id to an in memory queue.
 
         Does not dispatch to Redis until flush is called or a scoped dispatch queue goes out of scope
         """
+        if extra is None:
+            extra = {}
         # Sanitize input, drop the event if it's malformed
         valid_event = event is not None and isinstance(event, str)
         valid_block = block_number is not None and isinstance(block_number, int)

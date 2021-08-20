@@ -1,6 +1,7 @@
 from datetime import date, timedelta
-from src.models.models import Challenge
 import redis
+
+from src.models.models import Challenge
 from src.models import User, Block, Track
 from src.utils.db_session import get_db
 from src.challenges.track_upload_challenge import track_upload_challenge_manager

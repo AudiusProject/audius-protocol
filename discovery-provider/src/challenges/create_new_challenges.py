@@ -1,8 +1,9 @@
 import json
 import logging
-from src.models import Challenge
 from os import path
 import pathlib
+
+from src.models import Challenge
 
 logger = logging.getLogger(__name__)
 

@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
-from src.models.models import Challenge
 import redis
 from sqlalchemy.orm.session import Session
 
+from src.models.models import Challenge
 from src.models import User, Block, Play
 from src.utils.db_session import get_db
 from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
