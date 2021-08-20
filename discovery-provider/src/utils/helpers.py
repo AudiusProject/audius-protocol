@@ -414,7 +414,7 @@ def create_track_slug(title, track_id, collision_id=0):
     """
     # Strip out invalid character
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^", "", title
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.", "", title
     )
 
     # Convert whitespaces to dashes
