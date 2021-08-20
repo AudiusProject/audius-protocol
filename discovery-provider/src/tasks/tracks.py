@@ -424,15 +424,9 @@ def parse_track_event(
             track_metadata_multihash, track_metadata_format, creator_node_endpoint
         )
 
-<<<<<<< HEAD
-        add_old_style_route(session, track_record, track_metadata, pending_track_routes)
         update_track_routes_table(
             session, track_record, track_metadata, pending_track_routes
         )
-=======
-        # Note: This will flush the session
-        update_track_routes_table(session, track_record, track_metadata)
->>>>>>> 43ca3bce... Stop generating old routes on indexing flow
         track_record = populate_track_record_metadata(
             track_record, track_metadata, handle
         )
@@ -492,15 +486,9 @@ def parse_track_event(
             upd_track_metadata_multihash, track_metadata_format, creator_node_endpoint
         )
 
-<<<<<<< HEAD
-        add_old_style_route(session, track_record, track_metadata, pending_track_routes)
         update_track_routes_table(
             session, track_record, track_metadata, pending_track_routes
         )
-=======
-        # Note: This will flush the session
-        update_track_routes_table(session, track_record, track_metadata)
->>>>>>> 43ca3bce... Stop generating old routes on indexing flow
         track_record = populate_track_record_metadata(
             track_record, track_metadata, handle
         )
