@@ -640,7 +640,7 @@ class DiscoveryProvider {
     try {
       parsedResponse = await this._performRequestWithMonitoring(requestObj, this.discoveryProviderEndpoint)
     } catch (e) {
-      const fullErrString = `Failed to make Discovery Provider request at attempt #${attemptedRetries}: ${JSON.stringify(errMsg)}`
+      const fullErrString = `Failed to make Discovery Provider request at attempt #${attemptedRetries}: ${JSON.stringify(e.message)}`
       console.error(fullErrString)
       if (retry) {
         return this._makeRequest(requestObj, retry, attemptedRetries + 1)
