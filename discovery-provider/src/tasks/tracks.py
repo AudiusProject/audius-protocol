@@ -93,7 +93,7 @@ def track_state_update(
                     session.query(User.creator_node_endpoint)
                     .filter(User.user_id == owner_id, User.is_current == True)
                     .first()
-                )
+                )[0]
 
                 cids.append([cid, creator_node_endpoint])
 
@@ -557,7 +557,7 @@ def parse_track_event(
             session.query(User.handle)
             .filter(User.user_id == owner_id, User.is_current == True)
             .first()
-        )
+        )[0]
 
         add_old_style_route(session, track_record, track_metadata, pending_track_routes)
         update_track_routes_table(
@@ -604,7 +604,7 @@ def parse_track_event(
         track_record.is_delete = False
 
         handle = (
-            session.query(User.handle, User.creator_node_endpoint)
+            session.query(User.handle)
             .filter(User.user_id == owner_id, User.is_current == True)
             .first()
         )[0]
