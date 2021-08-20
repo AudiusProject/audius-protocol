@@ -1,7 +1,7 @@
 """Wipe challenges
 
 Revision ID: 9ff8c8ae8de2
-Revises: 9562cf365cf4
+Revises: badd3aab7e5e
 Create Date: 2021-08-19 22:23:09.417170
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "9ff8c8ae8de2"
-down_revision = "9562cf365cf4"
+down_revision = "badd3aab7e5e"
 branch_labels = None
 depends_on = None
 
