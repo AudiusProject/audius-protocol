@@ -55,6 +55,8 @@ def track_state_update(
         address=contract_addresses["track_factory"], abi=track_abi
     )
 
+    # Iterate through transactions and fetch metadata cids in them
+    blacklisted_cids = set()
     cids = []
     for tx_receipt in track_factory_txs:
         txhash = update_task.web3.toHex(tx_receipt.transactionHash)
@@ -67,9 +69,6 @@ def track_state_update(
                     continue
 
                 event_args = entry["args"]
-                track_id = (
-                    event_args._trackId if "_trackId" in event_args else event_args._id
-                )
                 blockhash = update_task.web3.toHex(entry.blockHash)
 
                 track_metadata_digest = event_args._multihashDigest.hex()
@@ -77,18 +76,28 @@ def track_state_update(
                 buf = multihash.encode(
                     bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
                 )
-                track_metadata_multihash = multihash.to_b58_string(buf)
+                cid = multihash.to_b58_string(buf)
+
+                # If the IPLD is blacklisted, do not add to cids list for pre-fetching
+                if is_blacklisted_ipld(session, cid):
+                    logger.info(
+                        f"index.py | tracks.py | Encountered blacklisted metadata CID:"
+                        f"{cid}"
+                    )
+                    blacklisted_cids.add(cid)
+                    continue
 
                 owner_id = event_args._trackOwnerId
 
                 creator_node_endpoint = (
-                    session.query(User.handle, User.creator_node_endpoint)
+                    session.query(User.creator_node_endpoint)
                     .filter(User.user_id == owner_id, User.is_current == True)
                     .first()
-                )[1]
+                )
 
-                cids.append([track_metadata_multihash, creator_node_endpoint])
+                cids.append([cid, creator_node_endpoint])
 
+    # Prefetch cids asynchronously
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
         futures = {}
         for cid, creator_node_endpoint in cids:
@@ -104,7 +113,9 @@ def track_state_update(
             try:
                 ipfs_metadata[cid] = future.result()
             except Exception as e:
-                logger.info("Error in parse track transaction")
+                logger.error(
+                    f"index.py | tracks.py | Error when pre-fetching CID {cid}"
+                )
                 blockhash = update_task.web3.toHex(block_hash)
                 raise IndexingError(
                     "track", block_number, blockhash, txhash, str(e)
@@ -141,13 +152,20 @@ def track_state_update(
                     track_events[track_id] = {"track": track_entry, "events": []}
 
                 track_metadata = None
-                if event_type != track_event_types_lookup["delete_track"]:
+                if event_type in [
+                    track_event_types_lookup["new_track"],
+                    track_event_types_lookup["update_track"],
+                ]:
                     track_metadata_digest = event_args._multihashDigest.hex()
                     track_metadata_hash_fn = event_args._multihashHashFn
                     buf = multihash.encode(
                         bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
                     )
-                    track_metadata = ipfs_metadata.get(multihash.to_b58_string(buf))
+                    cid = multihash.to_b58_string(buf)
+                    # do not process entry if cid is blacklisted
+                    if cid in blacklisted_cids:
+                        continue
+                    track_metadata = ipfs_metadata.get(cid)
 
                 try:
                     parsed_track = parse_track_event(
@@ -531,24 +549,15 @@ def parse_track_event(
             f"index.py | tracks.py | track metadata ipld : {track_metadata_multihash}"
         )
 
-        # If the IPLD is blacklisted, do not keep processing the current entry
-        # continue with the next entry in the update_track_events list
-        if is_blacklisted_ipld(session, track_metadata_multihash):
-            logger.info(
-                f"index.py | tracks.py | Encountered blacklisted metadata CID:"
-                f"{track_metadata_multihash} in indexing new track"
-            )
-            return None
-
         owner_id = event_args._trackOwnerId
         track_record.owner_id = owner_id
         track_record.is_delete = False
 
         handle = (
-            session.query(User.handle, User.creator_node_endpoint)
+            session.query(User.handle)
             .filter(User.user_id == owner_id, User.is_current == True)
             .first()
-        )[0]
+        )
 
         add_old_style_route(session, track_record, track_metadata, pending_track_routes)
         update_track_routes_table(
@@ -589,15 +598,6 @@ def parse_track_event(
         logger.info(
             f"index.py | tracks.py | update track metadata ipld : {upd_track_metadata_multihash}"
         )
-
-        # If the IPLD is blacklisted, do not keep processing the current entry
-        # continue with the next entry in the update_track_events list
-        if is_blacklisted_ipld(session, upd_track_metadata_multihash):
-            logger.info(
-                f"index.py | tracks.py | Encountered blacklisted metadata CID:"
-                f"{upd_track_metadata_multihash} in indexing update track"
-            )
-            return None
 
         owner_id = event_args._trackOwnerId
         track_record.owner_id = owner_id
