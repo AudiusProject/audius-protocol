@@ -1,9 +1,9 @@
 import logging
-from typing import Counter, Dict, Tuple, TypedDict, List, Optional, cast
+from typing import Dict, Tuple, TypedDict, List, Optional, cast
+from abc import ABC
 from sqlalchemy.orm.session import Session
 from sqlalchemy import func
 from src.models.models import ChallengeType
-from abc import ABC, abstractmethod
 from src.models import Challenge, UserChallenge
 
 logger = logging.getLogger(__name__)
@@ -99,6 +99,7 @@ class ChallengeManager:
     _starting_block: Optional[int]
     _step_count: Optional[int]
     _challenge_type: ChallengeType
+    _is_active: bool
 
     def __init__(self, challenge_id: str, updater: ChallengeUpdater):
         self.challenge_id = challenge_id
@@ -107,14 +108,21 @@ class ChallengeManager:
         self._starting_block = None
         self._step_count = None
         self._challenge_type = None  # type: ignore
+        self._is_active = False
 
     def process(self, session, event_type: str, event_metadatas: List[EventMetadata]):
         """Processes a number of events for a particular event type, updating
         UserChallengeEvents as needed.
-
         """
+        logger.info(
+            f"ChallengeManager: processing event type [{event_type}] for challenge [{self.challenge_id}]"
+        )
         if not self._did_init:  # lazy init
             self._init_challenge(session)
+
+        # If inactive, do nothing
+        if not self._is_active:
+            return
 
         # filter out events that took place before the starting block, returning
         # early if need be
@@ -125,7 +133,6 @@ class ChallengeManager:
                     event_metadatas,
                 )
             )
-
         if not event_metadatas:
             return
 
@@ -150,85 +157,113 @@ class ChallengeManager:
 
         specifiers: List[str] = [e["specifier"] for e in events_with_specifiers]
 
-        # Gets all user challenges,
-        existing_user_challenges = fetch_user_challenges(
-            session, self.challenge_id, specifiers
-        )
+        # Because we reuse a single session between multiple
+        # challenge managers, we have to be extra careful in the case
+        # that we run into a Postgres level error, to rollback
+        # the session so it remains usable - hence, all the sensitive
+        # code belongs in a `try` block here.
+        try:
+            # Gets all user challenges,
+            existing_user_challenges = fetch_user_challenges(
+                session, self.challenge_id, specifiers
+            )
 
-        # Create users that need challenges still
-        existing_specifiers = {
-            challenge.specifier for challenge in existing_user_challenges
-        }
+            # Create users that need challenges still
+            existing_specifiers = {
+                challenge.specifier for challenge in existing_user_challenges
+            }
 
-        # Create new challenges
+            # Create new challenges
 
-        new_challenge_metadata = [
-            metadata
-            for metadata in events_with_specifiers
-            if metadata["specifier"] not in existing_specifiers
-        ]
-        to_create_metadata: List[FullEventMetadata] = []
-        if self._challenge_type == ChallengeType.aggregate:
-            # For aggregate challenges, only create them
-            # if we haven't maxed out completion yet, and
-            # we haven't overriden this via should_create_new_challenge
+            new_challenge_metadata = [
+                metadata
+                for metadata in events_with_specifiers
+                if metadata["specifier"] not in existing_specifiers
+            ]
+            to_create_metadata: List[FullEventMetadata] = []
+            if self._challenge_type == ChallengeType.aggregate:
+                # For aggregate challenges, only create them
+                # if we haven't maxed out completion yet, and
+                # we haven't overriden this via should_create_new_challenge
 
-            # Get *all* UserChallenges per user
-            user_ids = list({e["user_id"] for e in event_metadatas})
-            all_user_challenges: List[Tuple[int, int]] = (
-                session.query(
-                    UserChallenge.user_id, func.count(UserChallenge.specifier)
+                # Get *all* UserChallenges per user
+                user_ids = list({e["user_id"] for e in event_metadatas})
+                all_user_challenges: List[Tuple[int, int]] = (
+                    session.query(
+                        UserChallenge.user_id, func.count(UserChallenge.specifier)
+                    )
+                    .filter(
+                        UserChallenge.challenge_id == self.challenge_id,
+                        UserChallenge.user_id.in_(user_ids),
+                    )
+                    .group_by(UserChallenge.user_id)
+                ).all()
+                challenges_per_user = dict(all_user_challenges)
+                for new_metadata in new_challenge_metadata:
+                    completion_count = challenges_per_user.get(
+                        new_metadata["user_id"], 0
+                    )
+                    if self._step_count and completion_count >= self._step_count:
+                        continue
+                    if not self._updater.should_create_new_challenge(
+                        event_type, new_metadata["user_id"], new_metadata["extra"]
+                    ):
+                        continue
+                    to_create_metadata.append(new_metadata)
+            else:
+                to_create_metadata = new_challenge_metadata
+
+            new_user_challenges = [
+                self._create_new_user_challenge(
+                    metadata["user_id"], metadata["specifier"]
                 )
-                .filter(
-                    UserChallenge.challenge_id == self.challenge_id,
-                    UserChallenge.user_id.in_(user_ids),
-                )
-                .group_by(UserChallenge.user_id)
-            ).all()
-            challenges_per_user = dict(all_user_challenges)
-            for new_metadata in new_challenge_metadata:
-                completion_count = challenges_per_user.get(new_metadata["user_id"], 0)
-                if self._step_count and completion_count >= self._step_count:
-                    continue
-                if not self._updater.should_create_new_challenge(
-                    event_type, new_metadata["user_id"], new_metadata["extra"]
-                ):
-                    continue
-                to_create_metadata.append(new_metadata)
-        else:
-            to_create_metadata = new_challenge_metadata
+                for metadata in to_create_metadata
+            ]
+            # Do any other custom work needed after creating a challenge event
+            self._updater.on_after_challenge_creation(session, to_create_metadata)
 
-        new_user_challenges = [
-            self._create_new_user_challenge(metadata["user_id"], metadata["specifier"])
-            for metadata in to_create_metadata
-        ]
-        # Do any other custom work needed after creating a challenge event
-        self._updater.on_after_challenge_creation(session, to_create_metadata)
+            # Update all the challenges
 
-        # Update all the challenges
+            in_progress_challenges = [
+                challenge
+                for challenge in existing_user_challenges
+                if not challenge.is_complete
+            ]
+            to_update = in_progress_challenges + new_user_challenges
 
-        in_progress_challenges = [
-            challenge
-            for challenge in existing_user_challenges
-            if not challenge.is_complete
-        ]
-        to_update = in_progress_challenges + new_user_challenges
+            self._updater.update_user_challenges(
+                session,
+                event_type,
+                to_update,
+                self._step_count,
+                events_with_specifiers,
+                self._starting_block,
+            )
 
-        self._updater.update_user_challenges(
-            session, event_type, to_update, self._step_count, events_with_specifiers, self._starting_block
-        )
+            # Add block # to newly completed challenges
+            for challenge in to_update:
+                if challenge.is_complete:
+                    block_number = events_with_specifiers_map[challenge.specifier][
+                        "block_number"
+                    ]
+                    challenge.completed_blocknumber = block_number
 
-        # Add block # to newly completed challenges
-        for challenge in to_update:
-            if challenge.is_complete:
-                block_number = events_with_specifiers_map[challenge.specifier][
-                    "block_number"
-                ]
-                challenge.completed_blocknumber = block_number
+            logger.debug(
+                f"ChallengeManager: Updated challenges from event [{event_type}]: [{to_update}]"
+            )
+            # Only add the new ones
+            session.add_all(new_user_challenges)
 
-        logger.debug(f"Updated challenges from event [{event_type}]: [{to_update}]")
-        # Only add the new ones
-        session.add_all(new_user_challenges)
+            # Commit, so if there are DB errors
+            # we encounter now and can roll back
+            # to keep the session valid
+            # for the next manager
+            session.commit()
+        except Exception as e:
+            logger.warning(
+                f"ChallengeManager: caught error in manager [{self.challenge_id}]: [{e}]. Rolling back"
+            )
+            session.rollback()
 
     def get_user_challenge_state(
         self, session: Session, specifiers: List[str]
@@ -255,6 +290,7 @@ class ChallengeManager:
         self._step_count = challenge.step_count
         self._challenge_type = challenge.type
         self._did_init = True
+        self._is_active = challenge.active
 
     def _create_new_user_challenge(self, user_id: int, specifier: str):
         return UserChallenge(

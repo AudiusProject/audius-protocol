@@ -1,9 +1,13 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 import redis
 from sqlalchemy.orm import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.challenges.challenge import ChallengeManager, ChallengeUpdater
+from src.challenges.challenge import (
+    ChallengeManager,
+    ChallengeUpdater,
+    FullEventMetadata,
+)
 from src.models.models import User
 from src.utils.db_session import get_db
 from src.models import (
@@ -22,7 +26,21 @@ DEFAULT_EVENT = ""
 
 
 class DefaultUpdater(ChallengeUpdater):
-    pass
+    def update_user_challenges(
+        self,
+        session: Session,
+        event: str,
+        user_challenges: List[UserChallenge],
+        step_count: Optional[int],
+        event_metadatas: List[FullEventMetadata],
+        starting_block: Optional[int],
+    ):
+        for challenge in user_challenges:
+            if not challenge.current_step_count:
+                challenge.current_step_count = 0
+            challenge.current_step_count += 1
+            if challenge.current_step_count == step_count:
+                challenge.is_complete = True
 
 
 class NumericCustomUpdater(ChallengeUpdater):
