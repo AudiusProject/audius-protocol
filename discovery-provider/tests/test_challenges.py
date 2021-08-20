@@ -4,7 +4,6 @@ from typing import Dict, List, Optional
 from sqlalchemy.orm.session import Session
 import redis
 
-
 from tests.test_get_challenges import DefaultUpdater
 from tests.utils import populate_mock_db_blocks
 
@@ -458,8 +457,8 @@ def test_catches_exceptions_in_single_processor(app):
 
         with bus.use_scoped_dispatch_queue():
             # dispatch the broken one first
-            bus.dispatch(TEST_EVENT_2, 1, 1)
-            bus.dispatch(TEST_EVENT, 1, 1)
+            bus.dispatch(TEST_EVENT_2, 101, 1)
+            bus.dispatch(TEST_EVENT, 101, 1)
         try:
             bus.process_events(session)
         except:
@@ -468,3 +467,24 @@ def test_catches_exceptions_in_single_processor(app):
         challenge_1_state = correct_manager.get_user_challenge_state(session, ["1"])
         # Make sure that the 'correct_manager' still executes
         assert len(challenge_1_state) == 1
+        assert challenge_1_state[0].current_step_count == 1
+        # Make sure broken manager didn't do anything
+        challenge_2_state = broken_manager.get_user_challenge_state(session, ["1"])
+        assert len(challenge_2_state) == 0
+
+        # Try the other order
+        with bus.use_scoped_dispatch_queue():
+            # dispatch the correct one first
+            bus.dispatch(TEST_EVENT, 101, 1)
+            bus.dispatch(TEST_EVENT_2, 101, 1)
+        try:
+            bus.process_events(session)
+        except:
+            # pylint: disable=W0707
+            raise Exception("Shouldn't have propogated error!")
+        challenge_1_state = correct_manager.get_user_challenge_state(session, ["1"])
+        assert len(challenge_1_state) == 1
+        assert challenge_1_state[0].current_step_count == 2
+        # Make sure broken manager didn't do anything
+        challenge_2_state = broken_manager.get_user_challenge_state(session, ["1"])
+        assert len(challenge_2_state) == 0

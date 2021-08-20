@@ -188,6 +188,8 @@ def parse_sol_play_transaction(session: Session, solana_client, tx_sig):
                         )
                     )
 
+                    # Only enqueue a challenge event if it's *not*
+                    # an anonymous listen
                     if user_id is not None:
                         challenge_bus.dispatch(
                             ChallengeEvent.track_listen,

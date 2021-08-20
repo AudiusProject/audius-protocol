@@ -117,7 +117,9 @@ class ChallengeEventBus:
 
     def process_events(self, session: Session, max_events=1000) -> Tuple[int, bool]:
         """Dequeues `max_events` from Redis queue and processes them, forwarding to listening ChallengeManagers.
-        Returns (num_processed_events, did_error)
+        Returns (num_processed_events, did_error).
+        Will return -1 as num_processed_events if an error prevented any events from
+        being processed (i.e. some error deserializing from Redis)
         """
         try:
             # get the first max_events elements.

@@ -164,3 +164,26 @@ def test_multiple_listens(app):
 
         # we really want to just ensure that this doesn't crash
         assert state.current_step_count == 1
+
+
+def test_anon_listen(app):
+    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+    bus = ChallengeEventBus(redis_conn)
+    # Register events with the bus
+    bus.register_listener(ChallengeEvent.track_listen, listen_streak_challenge_manager)
+
+    with app.app_context():
+        db = get_db()
+
+    with db.scoped_session() as session:
+        setup_challenges(session)
+        with bus.use_scoped_dispatch_queue():
+            bus.dispatch(
+                ChallengeEvent.track_listen,
+                0,
+                None,
+                {"created_at": datetime.now()},
+            )
+        (num_processed, error) = bus.process_events(session)
+        assert not error
+        assert num_processed == 0
