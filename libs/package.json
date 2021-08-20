@@ -55,7 +55,7 @@
     "url": "git+https://github.com/AudiusProject/audius-protocol/tree/master/libs"
   },
   "engines": {
-    "node": ">=10.15.3"
+    "node": ">=14.0.0"
   },
   "author": "Audius",
   "license": "Apache-2.0",
