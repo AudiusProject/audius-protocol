@@ -11,7 +11,7 @@ from src.utils.db_session import get_db
 REDIS_URL = shared_config["redis"]["url"]
 
 
-def test_referral_challenge(app):
+def test_mobile_install_challenge(app):
     redis_conn = redis.Redis.from_url(url=REDIS_URL)
 
     with app.app_context():
