@@ -29,54 +29,64 @@ def get_cid_source(cid):
                         'users' as "table_name",
                         'metadata_multihash' as "type",
                         "is_current"
-                    FROM "users" WHERE  (table cid_const) = "metadata_multihash"
+                    FROM "users" WHERE (table cid_const) = "metadata_multihash"
                 )
-                    UNION ALL
-                    (
-                        SELECT 
-                            "user_id" as "id", 
-                            'users' as "table_name",
-                            'profile_cover_images' as "type",
-                            "is_current"
-                        FROM 
-                            "users" 
-                        WHERE 
-                            (table cid_const) in (
+                UNION ALL
+                (
+                    SELECT 
+                        "user_id" as "id", 
+                        'users' as "table_name",
+                        'profile_cover_images' as "type",
+                        "is_current"
+                    FROM 
+                        "users" 
+                    WHERE 
+                        (table cid_const) in (
                             "profile_picture", 
-                            "cover_photo", "profile_picture_sizes", 
+                            "cover_photo", 
+                            "profile_picture_sizes", 
                             "cover_photo_sizes"
-                            )
-                    ) 
-                    UNION ALL 
-                    (
-                            SELECT 
-                            "playlist_id" as "id", 
-                            'playlists' as "table_name",
-                            'playlist_image_multihash' as "type",
-                            "is_current"
-                            FROM 
-                                "playlists" 
-                            WHERE 
-                                (table cid_const) in (
-                                    "playlist_image_sizes_multihash", 
-                                    "playlist_image_multihash"
-                                )
-                    ) 
-                    UNION ALL 
-                    (
+                        )
+                ) 
+                UNION ALL 
+                (
                         SELECT 
-                            "track_id" as "id", 
-                            'tracks' as "table_name",
-                            'track_metadata_or_cover_art_size' as "type",
-                            "is_current"
+                        "playlist_id" as "id", 
+                        'playlists' as "table_name",
+                        'playlist_image_multihash' as "type",
+                        "is_current"
                         FROM 
-                            "tracks" 
+                            "playlists" 
                         WHERE 
                             (table cid_const) in (
-                                "metadata_multihash",
-                                "cover_art_sizes"
+                                "playlist_image_sizes_multihash", 
+                                "playlist_image_multihash"
                             )
-                    )
+                ) 
+                UNION ALL 
+                (
+                    SELECT 
+                        "track_id" as "id", 
+                        'tracks' as "table_name",
+                        'track_metadata' as "type",
+                        "is_current"
+                    FROM 
+                        "tracks" 
+                    WHERE 
+                        (table cid_const) = "metadata_multihash"
+                )
+                UNION ALL 
+                (
+                    SELECT 
+                        "track_id" as "id", 
+                        'tracks' as "table_name",
+                        'cover_art_size' as "type",
+                        "is_current"
+                    FROM 
+                        "tracks" 
+                    WHERE 
+                        (table cid_const) = "cover_art_sizes"
+                )
             ) as "outer"
             """
         )
@@ -86,7 +96,6 @@ def get_cid_source(cid):
 
         # If something is found, return it
         if len(cid_source) != 0:
-            logger.warning(f"Found something: {[dict(row) for row in cid_source]}")
             return [dict(row) for row in cid_source]
 
         # Check to see if CID is a segment
@@ -96,18 +105,21 @@ def get_cid_source(cid):
                 SELECT 
                     "track_id" as "id", 
                     'tracks' as "table_name",
-                    'segment' as "type"
+                    'segment' as "type",
+                    "is_current"
                 FROM 
                     (
                         SELECT 
                             jb -> 'duration' as "d", 
                             jb -> 'multihash' :: varchar as "cid", 
-                            "track_id" 
+                            "track_id",
+                            "is_current"
                         FROM 
                             (
                                 SELECT 
                                     jsonb_array_elements("track_segments") as "jb", 
-                                    "track_id" 
+                                    "track_id",
+                                    "is_current"
                                 FROM 
                                     "tracks"
                             ) as a

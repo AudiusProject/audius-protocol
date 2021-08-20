@@ -43,6 +43,7 @@ from src.queries.get_ursm_cnodes import get_ursm_cnodes
 from src.queries.get_sol_plays import get_sol_play, get_track_listen_milestones
 from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
 from src.queries.get_cid_source import get_cid_source
+from src.queries.get_user_history import get_user_history
 from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
@@ -631,9 +632,17 @@ def get_track_listen_milestone_data():
 
 @bp.route("/cid/source", methods=("GET",))
 def get_cid_source_route():
-    try :
+    try:
         request_cid = request.args.get("cid") or None
         cid_source = get_cid_source(request_cid)
         return api_helpers.success_response(cid_source)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+@bp.route("/users/history/<int:user_id>", methods=("GET",))
+def get_user_history_route(user_id):
+    try:
+        user_history = get_user_history(user_id)
+        return api_helpers.success_response(user_history)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
