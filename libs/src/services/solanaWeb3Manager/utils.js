@@ -1,5 +1,3 @@
-const { TransactionInstruction } = require('@solana/web3.js')
-
 /**
  * Puts an instruction in a serializable form that our relay can understand.
  *
@@ -11,8 +9,8 @@ const prepareInstructionForRelay = (instruction) => ({
   keys: instruction.keys.map(({ isSigner, pubkey, isWritable }) => ({
     pubkey: pubkey.toString(),
     isSigner,
-    isWritable,
-  })),
+    isWritable
+  }))
 })
 
 module.exports = {

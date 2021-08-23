@@ -64,7 +64,6 @@ class SolanaWeb3Manager {
     this.splToken = splToken
   }
 
-
   async init () {
     const {
       solanaClusterEndpoint,
@@ -291,8 +290,8 @@ class SolanaWeb3Manager {
     challengeId,
     specifier,
     recipientEthAddress,
-    tokenAmount,
-   }) {
+    tokenAmount
+  }) {
     return submitAttestations({
       rewardManagerProgramId: this.rewardManagerProgramId,
       rewardManagerAccount: this.rewardManagerProgramPDA,
@@ -304,7 +303,7 @@ class SolanaWeb3Manager {
       recipientEthAddress,
       tokenAmount,
       identityService: this.identityService,
-      connection: this.connection,
+      connection: this.connection
     })
   }
 
@@ -325,7 +324,7 @@ class SolanaWeb3Manager {
    *   }
    * @memberof SolanaWeb3Manager
    */
-  async evaluateChallengeAttestations({
+  async evaluateChallengeAttestations ({
     challengeId,
     specifier,
     recipientEthAddress,
@@ -357,7 +356,7 @@ class SolanaWeb3Manager {
    * @returns BN
    * @memberof SolanaWeb3Manager
    */
-  uiAudioToBNWaudio(amount) {
+  uiAudioToBNWaudio (amount) {
     return new BN(amount * 10 ** 9)
   }
 }

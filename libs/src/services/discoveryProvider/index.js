@@ -55,7 +55,7 @@ class DiscoveryProvider {
       reselectTimeout,
       selectionCallback,
       monitoringCallbacks,
-      requestTimeout: selectionRequestTimeout,
+      requestTimeout: selectionRequestTimeout
     }, this.ethContracts)
     this.selectionRequestTimeout = selectionRequestTimeout || REQUEST_TIMEOUT_MS
     this.selectionRequestRetries = selectionRequestRetries || MAX_MAKE_REQUEST_RETRY_COUNT
@@ -541,7 +541,7 @@ class DiscoveryProvider {
 
   async getChallengeAttestation (challengeId, encodedUserId, specifier, oracleAddress, discoveryProviderEndpoint) {
     const req = Requests.getChallengeAttestation(challengeId, encodedUserId, specifier, oracleAddress)
-    const {data} = await this._performRequestWithMonitoring(req, discoveryProviderEndpoint)
+    const { data } = await this._performRequestWithMonitoring(req, discoveryProviderEndpoint)
     return data
   }
 
