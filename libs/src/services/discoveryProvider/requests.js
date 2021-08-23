@@ -387,3 +387,14 @@ module.exports.getTrackListenMilestones = (timout) => {
     timout
   }
 }
+
+module.exports.getChallengeAttestation = (challengeId, encodedUserId, specifier, oracleAddress) => {
+  return {
+    endpoint: `/v1/challenges/${challengeId}/attest`,
+    queryParams: {
+      user_id: encodedUserId,
+      specifier,
+      oracle: oracleAddress
+    }
+  }
+}

@@ -417,7 +417,7 @@ describe('DiscoveryProviderSelection', () => {
     assert.strictEqual(sixthService, initiallyUnhealthy)
   })
 
-  it('will reselect a healthy disc prov if initialized disc prov becomes unhealthy', async () => {
+  it.only('will reselect a healthy disc prov if initialized disc prov becomes unhealthy', async () => {
     const LocalStorage = require('node-localstorage').LocalStorage
     const localStorage = new LocalStorage('./local-storage')
 
