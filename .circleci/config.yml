@@ -485,7 +485,7 @@ jobs:
   test-identity-service:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.16.3
+      - image: circleci/node:14.17.5
       - image: ipfs/go-ipfs:release
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
