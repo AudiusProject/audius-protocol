@@ -96,7 +96,7 @@ mkdir -p $storagePath
 # setting delegate keys for app to start
 export delegateOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
 export delegatePrivateKey="0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d"
-export creatorNodeEndpoint="http://localhost:5000"
+export creatorNodeEndpoint="http://mock-cn1.audius.co"
 export spOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
 
 # Setting peerSetManager env vars

@@ -304,8 +304,11 @@ async function getAllRegisteredCNodes (libs, logger) {
 
     CNodes = creatorNodes
   } catch (e) {
-    const logFunction = logger ? logger.error : console.error
-    logFunction(`Error getting values in getAllRegisteredCNodes: ${e.message}`)
+    if (logger) {
+      logger.error(`Error getting values in getAllRegisteredCNodes: ${e.message}`)
+    } else {
+      console.error(`Error getting values in getAllRegisteredCNodes: ${e.message}`)
+    }
 
     CNodes = []
   }
