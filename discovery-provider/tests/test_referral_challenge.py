@@ -2,12 +2,13 @@ from datetime import datetime
 
 import redis
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql.expression import or_
 from src.challenges.challenge_event_bus import ChallengeEvent, ChallengeEventBus
 from src.challenges.referral_challenge import (
     referral_challenge_manager,
     referred_challenge_manager,
 )
-from src.models.models import Block, User, UserChallenge
+from src.models.models import Block, Challenge, User, UserChallenge
 from src.models.user_events import UserEvents
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
@@ -94,6 +95,10 @@ def test_referral_challenge(app):
         session.flush()
         session.add(referrer)
         session.flush()
+        # set challenge as active for purposes of test
+        session.query(Challenge).filter(
+            or_(Challenge.id == "referred", Challenge.id == "referrals")
+        ).update({"active": True})
         dispatch_new_user_signup(referrer.user_id, 2, session, bus)
         for _ in range(0, 4):
             bus.dispatch(
