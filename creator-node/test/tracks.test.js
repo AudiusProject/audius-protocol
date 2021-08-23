@@ -22,7 +22,7 @@ const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
 const testAudiusFileNumSegments = 32
 
-describe('test non-polling Tracks with mocked IPFS', function () {
+describe('test non-polling Tracks with mocked IPFS (these are legacy - see pollingTracks.test.js for updated tests)', function () {
   let app, server, session, ipfsMock, libsMock, userId
 
   beforeEach(async () => {
@@ -484,7 +484,7 @@ describe('test non-polling Tracks with mocked IPFS', function () {
   })
 })
 
-describe('test non-polling Tracks with real IPFS', function () {
+describe('test non-polling Tracks with real IPFS (these are legacy - see pollingTracks.test.js for updated tests)', function () {
   let app, server, session, libsMock, ipfs, userId
 
   // Will need a '.' in front of storagePath to look at current dir
