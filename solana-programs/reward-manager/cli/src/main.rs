@@ -11,7 +11,7 @@ use audius_reward_manager::{
         create_sender,
         delete_sender,
         init,
-        transfer,
+        evaluate_attestations,
         submit_attestations,
         delete_sender_public,
         change_manager_authority
@@ -512,7 +512,7 @@ fn command_transfer(
         );
     }
 
-    instructions.push(transfer(
+    instructions.push(evaluate_attestations(
         &audius_reward_manager::id(),
         &verified_messages_pubkey,
         &reward_manager_pubkey,

@@ -235,7 +235,7 @@ async fn success_transfer() {
     println!("Created recipient sol key = {:?}", &recipient_sol_key.derive.address);
 
     let tx = Transaction::new_signed_with_payer(
-        &[instruction::transfer(
+        &[instruction::evaluate_attestations(
             &audius_reward_manager::id(),
             &verified_messages_derived_address,
             &reward_manager.pubkey(),

@@ -3,7 +3,7 @@
 use crate::{
     error::AudiusProgramError,
     instruction::{
-        AddSenderArgs, CreateSenderArgs, InitRewardManagerArgs, Instructions, TransferArgs,
+        CreateSenderPublicArgs, CreateSenderArgs, InitRewardManagerArgs, Instructions, EvaluateAttestationArgs,
         SubmitAttestationsArgs,
     },
     state::{
@@ -352,7 +352,7 @@ impl Processor {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn process_transfer<'a>(
+    fn process_evaluate_attestations<'a>(
         program_id: &Pubkey,
         verified_messages_info: &AccountInfo<'a>,
         reward_manager_info: &AccountInfo<'a>,
@@ -363,7 +363,7 @@ impl Processor {
         bot_oracle_info: &AccountInfo<'a>,
         payer_info: &AccountInfo<'a>,
         rent_info: &AccountInfo<'a>,
-        transfer_data: TransferArgs,
+        transfer_data: EvaluateAttestationArgs,
     ) -> ProgramResult {
         let rent = &Rent::from_account_info(rent_info)?;
 
@@ -549,7 +549,7 @@ impl Processor {
                     sys_prog,
                 )
             }
-            Instructions::CreateSenderPublic(AddSenderArgs {
+            Instructions::CreateSenderPublic(CreateSenderPublicArgs {
                 eth_address,
                 operator,
             }) => {
@@ -618,7 +618,7 @@ impl Processor {
                     SubmitAttestationsArgs { id },
                 )
             }
-            Instructions::Transfer(TransferArgs {
+            Instructions::EvaluateAttestation(EvaluateAttestationArgs {
                 amount,
                 id,
                 eth_recipient,
@@ -637,7 +637,7 @@ impl Processor {
                 let _token_program_id = next_account_info(account_info_iter)?;
                 let _system_program_id = next_account_info(account_info_iter)?;
 
-                Self::process_transfer(
+                Self::process_evaluate_attestations(
                     program_id,
                     verified_messages_info,
                     reward_manager_info,
@@ -648,7 +648,7 @@ impl Processor {
                     bot_oracle_info,
                     payer_info,
                     rent_info,
-                    TransferArgs {
+                    EvaluateAttestationArgs {
                         amount,
                         id,
                         eth_recipient,
