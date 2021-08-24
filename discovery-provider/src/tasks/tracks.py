@@ -213,7 +213,7 @@ def time_method(func):
 
 
 @time_method
-def update_track_routes_table(session, track_record, track_metadata):
+def update_track_routes_table(session, track_record, track_metadata, pending_track_routes):
     """Creates the route for the given track"""
 
     # Check if the title is staying the same, and if so, return early
