@@ -91,7 +91,7 @@ const config = convict({
       https://nodejs.org/dist/latest-v6.x/docs/api/http.html#http_server_settimeout_msecs_callback
     `,
     format: 'nat',
-    env: 'timeout',
+    env: 'setTimeout',
     default: 60 * 60 * 1000 // 1 hour
   },
   timeout: {
@@ -593,7 +593,7 @@ const config = convict({
     doc: 'Max age (hours) of skipped CIDs to retry in SkippedCIDsRetryQueue',
     format: 'nat',
     env: 'skippedCIDRetryQueueMaxAgeHr',
-    default: 1440 // 2 months in hours
+    default: 8760 // 1 year in hrs
   },
   saveFileForMultihashToFSIPFSFallback: {
     doc: 'Boolean indicating if `saveFileForMultihashToFS()` should fallback to IPFS retrieval if gateway retrieval fails',

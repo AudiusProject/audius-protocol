@@ -21,7 +21,7 @@ const DELEGATE_PRIVATE_KEY = '0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
 describe('test ContentBlacklist', function () {
-  let app, server, libsMock, mockServiceRegistry
+  let app, server, libsMock, mockServiceRegistry, userId
 
   beforeEach(async () => {
     const ipfs = ipfsClient.ipfs
@@ -30,7 +30,9 @@ describe('test ContentBlacklist', function () {
     process.env.delegateOwnerWallet = DELEGATE_OWNER_WALLET
     process.env.delegatePrivateKey = DELEGATE_PRIVATE_KEY
 
-    const appInfo = await getApp(ipfs, libsMock, BlacklistManager)
+    userId = 1
+
+    const appInfo = await getApp(ipfs, libsMock, BlacklistManager, null, null, userId)
     await BlacklistManager.init()
 
     app = appInfo.app
@@ -595,7 +597,7 @@ describe('test ContentBlacklist', function () {
   /** Helper setup method to test ContentBlacklist.  */
   async function createUserAndUploadTrack () {
     // Create user
-    const { cnodeUserUUID, sessionToken } = await createStarterCNodeUser()
+    const { cnodeUserUUID, sessionToken } = await createStarterCNodeUser(userId)
     const cnodeUser = await getCNodeUser(cnodeUserUUID)
 
     // Set user metadata
@@ -607,6 +609,7 @@ describe('test ContentBlacklist', function () {
     const { body: { data: { metadataFileUUID } } } = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', sessionToken)
+      .set('User-Id', userId)
       .send(metadata)
 
     const associateRequest = {
@@ -619,6 +622,7 @@ describe('test ContentBlacklist', function () {
     await request(app)
       .post('/audius_users/')
       .set('X-Session-ID', sessionToken)
+      .set('User-Id', userId)
       .send(associateRequest)
 
     // Upload a track
@@ -646,11 +650,13 @@ describe('test ContentBlacklist', function () {
     } = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', sessionToken)
+      .set('User-Id', userId)
       .send({ metadata: trackMetadata, source_file: sourceFile })
       // associate track metadata with track
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', sessionToken)
+      .set('User-Id', userId)
       .send({
         blockchainTrackId: 1,
         blockNumber: 10,

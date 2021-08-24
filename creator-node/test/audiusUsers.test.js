@@ -17,7 +17,7 @@ const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
 
 describe('test AudiusUsers with mocked IPFS', function () {
-  let app, server, session, ipfsMock, libsMock
+  let app, server, session, ipfsMock, libsMock, userId
 
   // Will need a '.' in front of storagePath to look at current dir
   // a '/' will search the root dir
@@ -33,12 +33,14 @@ describe('test AudiusUsers with mocked IPFS', function () {
     ipfsMock = getIPFSMock()
     libsMock = getLibsMock()
 
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
+    userId = 1
+
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, null, null, userId)
     await BlacklistManager.init()
 
     app = appInfo.app
     server = appInfo.server
-    session = await createStarterCNodeUser()
+    session = await createStarterCNodeUser(userId)
   })
 
   afterEach(async () => {
@@ -54,6 +56,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
     const resp = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ metadata })
       .expect(200)
 
@@ -72,6 +75,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
     const resp = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ metadata })
       .expect(200)
 
@@ -82,6 +86,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
     await request(app)
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
       .expect(200)
   })
@@ -91,7 +96,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
 // another describe block for this purpose
 // NOTE: these tests mock ipfs client errors; otherwise, for happy path, uses actual ipfsClient
 describe('Test AudiusUsers with real IPFS', function () {
-  let app, server, session, libsMock, ipfs
+  let app, server, session, libsMock, ipfs, userId
 
   // Will need a '.' in front of storagePath to look at current dir
   // a '/' will search the root dir
@@ -107,12 +112,14 @@ describe('Test AudiusUsers with real IPFS', function () {
     ipfs = ipfsClient.ipfs
     libsMock = getLibsMock()
 
-    const appInfo = await getApp(ipfs, libsMock, BlacklistManager)
+    userId = 1
+
+    const appInfo = await getApp(ipfs, libsMock, BlacklistManager, null, null, userId)
     await BlacklistManager.init()
 
     app = appInfo.app
     server = appInfo.server
-    session = await createStarterCNodeUser()
+    session = await createStarterCNodeUser(userId)
   })
 
   afterEach(async () => {
@@ -124,6 +131,7 @@ describe('Test AudiusUsers with real IPFS', function () {
     const resp = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ dummy: 'data' })
       .expect(500)
 
@@ -138,6 +146,7 @@ describe('Test AudiusUsers with real IPFS', function () {
     const resp = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send(metadata)
       .expect(400)
 
@@ -149,6 +158,7 @@ describe('Test AudiusUsers with real IPFS', function () {
     const resp = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
       .send({ metadata })
       .expect(200)
 

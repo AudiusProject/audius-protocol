@@ -150,7 +150,7 @@ const Getters = {
     // For each secondary, compute and store successRate
     Object.keys(secondarySyncMetrics).forEach(secondary => {
       const { successCount, failureCount } = secondarySyncMetrics[secondary]
-      secondarySyncMetrics[secondary]['successRate'] = (failureCount === 0) ? 1 : (successCount / failureCount)
+      secondarySyncMetrics[secondary]['successRate'] = (failureCount === 0) ? 1 : (successCount / (successCount + failureCount))
     })
 
     return secondarySyncMetrics

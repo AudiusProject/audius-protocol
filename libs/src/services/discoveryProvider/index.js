@@ -24,9 +24,12 @@ const MAX_MAKE_REQUEST_RETRY_COUNT = 5
  * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
  * @param {function} selectionCallback invoked when a discovery node is selected
  * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
- * @param {function} monitoringCallbacks.request
- * @param {function} monitoringCallbacks.healthCheck
+ *  @param {function} monitoringCallbacks.request
+ *  @param {function} monitoringCallbacks.healthCheck
+ * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
+* @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
  */
+
 class DiscoveryProvider {
   constructor (
     whitelist,
@@ -36,7 +39,9 @@ class DiscoveryProvider {
     web3Manager,
     reselectTimeout,
     selectionCallback,
-    monitoringCallbacks = {}
+    monitoringCallbacks = {},
+    selectionRequestTimeout,
+    selectionRequestRetries
   ) {
     this.whitelist = whitelist
     this.blacklist = blacklist
@@ -49,8 +54,11 @@ class DiscoveryProvider {
       blacklist: this.blacklist,
       reselectTimeout,
       selectionCallback,
-      monitoringCallbacks
+      monitoringCallbacks,
+      requestTimeout: selectionRequestTimeout
     }, this.ethContracts)
+    this.selectionRequestTimeout = selectionRequestTimeout || REQUEST_TIMEOUT_MS
+    this.selectionRequestRetries = selectionRequestRetries || MAX_MAKE_REQUEST_RETRY_COUNT
 
     this.monitoringCallbacks = monitoringCallbacks
   }
@@ -531,31 +539,29 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
+  async getChallengeAttestation (challengeId, encodedUserId, specifier, oracleAddress, discoveryProviderEndpoint) {
+    const req = Requests.getChallengeAttestation(challengeId, encodedUserId, specifier, oracleAddress)
+    const { data } = await this._performRequestWithMonitoring(req, discoveryProviderEndpoint)
+    return data
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
-  // TODO(DM) - standardize this to axios like audius service and creator node
-  // requestObj consists of multiple properties
-  // endpoint - base route
-  // urlParams - string of url params to be appended after base route
-  // queryParams - object of query params to be appended to url
-  async _makeRequest (requestObj, retry = true, attemptedRetries = 0) {
-    try {
-      const newDiscProvEndpoint = await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
-
-      // If new DP endpoint is selected, update disc prov endpoint and reset attemptedRetries count
-      if (this.discoveryProviderEndpoint !== newDiscProvEndpoint) {
-        let updateDiscProvEndpointMsg = `Current Discovery Provider endpoint ${this.discoveryProviderEndpoint} is unhealthy. `
-        updateDiscProvEndpointMsg += `Switching over to the new Discovery Provider endpoint ${newDiscProvEndpoint}!`
-        console.info(updateDiscProvEndpointMsg)
-        this.discoveryProviderEndpoint = newDiscProvEndpoint
-        attemptedRetries = 0
-      }
-    } catch (e) {
-      console.error(e)
-      return
-    }
-
-    let axiosRequest = this.createDiscProvRequest(requestObj)
+  /**
+   * Performs a single request, defined in the request, via axios, calling any
+   * monitoring callbacks as needed.
+   *
+   * @param {{
+     endpoint: string,
+     urlParams: string,
+     queryParams: object
+   }} requestObj
+   * @param {string} discoveryProviderEndpoint
+   * @returns
+   * @memberof DiscoveryProvider
+   */
+  async _performRequestWithMonitoring (requestObj, discoveryProviderEndpoint) {
+    let axiosRequest = this._createDiscProvRequest(requestObj, discoveryProviderEndpoint)
     let response
     let parsedResponse
 
@@ -566,6 +572,7 @@ class DiscoveryProvider {
       const duration = Date.now() - start
       parsedResponse = Utils.parseDataFromResponse(response)
 
+      // Fire monitoring callbacks for request success case
       if (this.monitoringCallbacks.request) {
         try {
           this.monitoringCallbacks.request({
@@ -587,8 +594,8 @@ class DiscoveryProvider {
       const resp = e.response || {}
       const duration = Date.now() - start
       const errMsg = e.response && e.response.data ? e.response.data : e
-      console.error(`Failed to make Discovery Provider request at attempt #${attemptedRetries}: ${JSON.stringify(errMsg)}`)
 
+      // Fire monitoring callbaks for request failure case
       if (this.monitoringCallbacks.request) {
         try {
           this.monitoringCallbacks.request({
@@ -604,7 +611,37 @@ class DiscoveryProvider {
           console.error(e)
         }
       }
+      throw errMsg
+    }
+    return parsedResponse
+  }
 
+  // requestObj consists of multiple properties
+  // endpoint - base route
+  // urlParams - string of url params to be appended after base route
+  // queryParams - object of query params to be appended to url
+  async _makeRequest (requestObj, retry = true, attemptedRetries = 0) {
+    try {
+      const newDiscProvEndpoint = await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
+
+      // If new DP endpoint is selected, update disc prov endpoint and reset attemptedRetries count
+      if (this.discoveryProviderEndpoint !== newDiscProvEndpoint) {
+        let updateDiscProvEndpointMsg = `Current Discovery Provider endpoint ${this.discoveryProviderEndpoint} is unhealthy. `
+        updateDiscProvEndpointMsg += `Switching over to the new Discovery Provider endpoint ${newDiscProvEndpoint}!`
+        console.info(updateDiscProvEndpointMsg)
+        this.discoveryProviderEndpoint = newDiscProvEndpoint
+        attemptedRetries = 0
+      }
+    } catch (e) {
+      console.error(e)
+      return
+    }
+    let parsedResponse
+    try {
+      parsedResponse = await this._performRequestWithMonitoring(requestObj, this.discoveryProviderEndpoint)
+    } catch (e) {
+      const fullErrString = `Failed to make Discovery Provider request at attempt #${attemptedRetries}: ${JSON.stringify(e.message)}`
+      console.error(fullErrString)
       if (retry) {
         return this._makeRequest(requestObj, retry, attemptedRetries + 1)
       }
@@ -649,7 +686,7 @@ class DiscoveryProvider {
    */
   async getHealthyDiscoveryProviderEndpoint (attemptedRetries) {
     let endpoint = this.discoveryProviderEndpoint
-    if (attemptedRetries > MAX_MAKE_REQUEST_RETRY_COUNT) {
+    if (attemptedRetries > this.selectionRequestRetries) {
       // Add to unhealthy list if current disc prov endpoint has reached max retry count
       console.info(`Attempted max retries with endpoint ${endpoint}`)
       this.serviceSelector.addUnhealthy(endpoint)
@@ -668,16 +705,17 @@ class DiscoveryProvider {
   }
 
   /**
-   * Creates the discovery provider axiox request object with necessary configs
+   * Creates the discovery provider axios request object with necessary configs
    * @param {object} requestObj
+   * @param {string} discoveryProviderEndpoint
    */
-  createDiscProvRequest (requestObj) {
+  _createDiscProvRequest (requestObj, discoveryProviderEndpoint) {
     let requestUrl
 
     if (urlJoin && urlJoin.default) {
-      requestUrl = urlJoin.default(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
+      requestUrl = urlJoin.default(discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
     } else {
-      requestUrl = urlJoin(this.discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
+      requestUrl = urlJoin(discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
     }
 
     const headers = {}
@@ -686,7 +724,7 @@ class DiscoveryProvider {
       headers['X-User-ID'] = currentUserId
     }
 
-    const timeout = requestObj.timeout || REQUEST_TIMEOUT_MS
+    const timeout = requestObj.timeout || this.selectionRequestTimeout
     let axiosRequest = {
       url: requestUrl,
       headers: headers,

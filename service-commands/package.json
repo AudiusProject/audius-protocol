@@ -4,10 +4,10 @@
   "description": "Library for performing commands against services, including setup.",
   "main": "src/index.js",
   "scripts": {
-    "preinstall": "mkdir -p ~/.local/bin && ln -f scripts/A ~/.local/bin/A"
+    "preinstall": "mkdir -p ~/.local/bin && ln -sf $PWD/scripts/A ~/.local/bin/A"
   },
   "dependencies": {
-    "@audius/libs": "1.2.13",
+    "@audius/libs": "1.2.19",
     "axios": "^0.19.2",
     "colors": "^1.4.0",
     "commander": "^6.0.0",
@@ -16,7 +16,9 @@
     "ffmpeg-static": "^4.2.7",
     "node-fetch": "^2.6.0",
     "untildify": "^4.0.0",
-    "web3": "^1.2.7"
+    "web3": "^1.2.7",
+    "@solana/web3.js": "1.20.0",
+    "borsh": "^0.4.0"
   },
   "devDependencies": {
     "eslint": "^7.2.0",

@@ -3,9 +3,13 @@ import datetime
 import logging
 import time
 
+from typing import Union, Tuple
+
 import base58
 from sqlalchemy import desc
+from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
+
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Play
 from src.tasks.celery_app import celery
@@ -44,7 +48,7 @@ pub struct TrackData {
 """
 
 
-def parse_instruction_data(data):
+def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None], int]:
     decoded = base58.b58decode(data)[1:]
 
     user_id_length = int.from_bytes(decoded[0:4], "little")
@@ -55,8 +59,14 @@ def parse_instruction_data(data):
     try:
         user_id = int(decoded[user_id_start:user_id_end])
     except ValueError:
+        # Deal with some python logging annoyances by pulling this out
+        log = (
+            "Failed to parse user_id from {!r}".format(
+                decoded[user_id_start:user_id_end]
+            ),
+        )
         logger.error(
-            f"Failed to parse user_id from {decoded[user_id_start:user_id_end]}",
+            log,
             exc_info=True,
         )
 
@@ -72,8 +82,11 @@ def parse_instruction_data(data):
     try:
         source = str(decoded[source_start:source_end], "utf-8")
     except ValueError:
+        log = (
+            "Failed to parse source from {!r}".format(decoded[source_start:source_end]),
+        )
         logger.error(
-            f"Failed to parse source from {decoded[source_start:source_end]}",
+            log,
             exc_info=True,
         )
 
@@ -126,16 +139,14 @@ def is_valid_tx(account_keys):
     return False
 
 
-def parse_sol_play_transaction(session, solana_client, tx_sig):
+def parse_sol_play_transaction(session: Session, solana_client, tx_sig):
     try:
         tx_info = get_sol_tx_info(solana_client, tx_sig)
         logger.info(f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}")
         meta = tx_info["result"]["meta"]
         error = meta["err"]
 
-        challenge_bus: ChallengeEventBus = (
-            index_solana_plays.challenge_bus
-        )
+        challenge_bus = index_solana_plays.challenge_event_bus
 
         if error:
             logger.info(
@@ -176,12 +187,16 @@ def parse_sol_play_transaction(session, solana_client, tx_sig):
                             signature=tx_sig,
                         )
                     )
-                    challenge_bus.dispatch(
-                        ChallengeEvent.track_listen,
-                        tx_slot,
-                        user_id,
-                        {"created_at": created_at.timestamp()},
-                    )
+
+                    # Only enqueue a challenge event if it's *not*
+                    # an anonymous listen
+                    if user_id is not None:
+                        challenge_bus.dispatch(
+                            ChallengeEvent.track_listen,
+                            tx_slot,
+                            user_id,
+                            {"created_at": created_at.timestamp()},
+                        )
         else:
             logger.info(
                 f"index_solana_plays.py | tx={tx_sig} Failed to find SECP_PROGRAM"

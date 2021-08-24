@@ -33,7 +33,7 @@ module.exports = function (app) {
   }))
 
   app.post('/social_handles', authMiddleware, handleResponse(async (req, res, next) => {
-    let { twitterHandle, instagramHandle, website, donation } = req.body
+    let { twitterHandle, instagramHandle, tikTokHandle, website, donation } = req.body
     const handle = req.user.handle
     const socialHandles = await models.SocialHandles.findOne({
       where: { handle }
@@ -51,6 +51,7 @@ module.exports = function (app) {
         handle,
         twitterHandle,
         instagramHandle,
+        tikTokHandle,
         website,
         donation
       })
@@ -59,6 +60,7 @@ module.exports = function (app) {
         handle,
         twitterHandle,
         instagramHandle,
+        tikTokHandle,
         website,
         donation
       })
