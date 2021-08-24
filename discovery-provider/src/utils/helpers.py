@@ -418,7 +418,7 @@ def create_track_slug(title, track_id, collision_id=0):
     )
 
     # Convert whitespaces to dashes
-    sanitized_title = re.sub(r"\s+", "-", sanitized_title)
+    sanitized_title = re.sub(r"\s+", "-", sanitized_title.strip())
     sanitized_title = re.sub(r"-+", "-", sanitized_title)
 
     sanitized_title = sanitized_title.lower()
