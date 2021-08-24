@@ -22,9 +22,22 @@
 		"starting_block": 30000000
 	},
 	{
+		"id": "referrals",
+		"type": "aggregate",
+		"amount": "1",
+		"active": false,
+		"step_count": 5
+	},
+	{
+		"id": "referred",
+		"type": "boolean",
+		"amount": "1",
+		"active": false
+	},
+	{
 		"id": "connect-verified",
 		"type": "boolean",
 		"amount": "10",
-		"active": false
+		"active": true
 	}
 ]

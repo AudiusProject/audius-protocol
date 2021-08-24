@@ -180,7 +180,7 @@ class FullTrack(Resource):
     @record_metrics
     @full_ns.marshal_with(full_track_response)
     @cache(ttl_sec=5)
-    def get(self, track_id):
+    def get(self, track_id: str):
         args = full_track_parser.parse_args()
         decoded_id = decode_with_abort(track_id, full_ns)
         current_user_id = get_current_user_id(args)
