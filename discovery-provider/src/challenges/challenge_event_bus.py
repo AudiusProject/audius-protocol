@@ -9,6 +9,7 @@ from src.challenges.challenge import ChallengeManager, EventMetadata
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
 from src.challenges.listen_streak_challenge import listen_streak_challenge_manager
+from src.challenges.mobile_install_challenge import mobile_install_challenge_manager
 from src.challenges.profile_challenge import profile_challenge_manager
 from src.challenges.referral_challenge import (
     referral_challenge_manager,
@@ -204,6 +205,9 @@ def setup_challenge_bus():
     # connect_verified_challenge_manager listeners
     bus.register_listener(
         ChallengeEvent.connect_verified, connect_verified_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.mobile_install, mobile_install_challenge_manager
     )
 
     return bus
