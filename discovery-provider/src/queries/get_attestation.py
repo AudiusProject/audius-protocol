@@ -4,6 +4,7 @@ from web3 import Web3
 from eth_utils.conversions import to_bytes
 from eth_keys import keys
 from hexbytes import HexBytes
+from solana.publickey import PublicKey
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import and_
 from src.models.models import (
@@ -20,7 +21,9 @@ from src.tasks.index_oracles import (
     get_oracle_addresses_from_chain,
 )
 
-REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
+REWARDS_MANAGER_PROGRAM_ACCOUNT = PublicKey(
+    shared_config["solana"]["rewards_manager_account"]
+)
 ATTESTATION_DECIMALS = 9
 
 
@@ -111,7 +114,8 @@ def get_attestation(
     """
     Returns a owner_wallet, signed_attestation tuple,
     or throws an error explaining why the attestation was
-    not able to be created."""
+    not able to be created.
+    """
     if not user_id or not challenge_id or not oracle_address:
         raise AttestationError(INVALID_INPUT)
 
@@ -189,13 +193,18 @@ def verify_discovery_node_exists_on_chain(new_sender_address: str) -> bool:
 
 
 def get_create_sender_attestation(new_sender_address: str) -> Tuple[str, str]:
+    """
+    Returns a owner_wallet, signed_attestation tuple,
+    or throws an error explaining why the sender attestation was
+    not able to be created.
+    """
     is_valid = verify_discovery_node_exists_on_chain(new_sender_address)
     if not is_valid:
         raise Exception(f"Expected {new_sender_address} to be registered on chain")
 
     items = [
         to_bytes(text=ADD_SENDER_MESSAGE_PREFIX),
-        to_bytes(hexstr=REWARDS_MANAGER_PROGRAM),
+        bytes(REWARDS_MANAGER_PROGRAM_ACCOUNT),
         to_bytes(hexstr=new_sender_address),
     ]
     attestation_bytes = to_bytes(text="").join(items)
