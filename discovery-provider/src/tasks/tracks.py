@@ -298,70 +298,8 @@ def time_method(func):
 
 
 @time_method
-def add_old_style_route(session, track_record, track_metadata, pending_track_routes):
-    """Temporary method to add the old style routes to the track_routes db while we
-    transition the clients to use the new routing API.
-    """
-    # Check if the title is staying the same, and if so, return early
-    if track_record.title == track_metadata["title"]:
-        return
-    # Use create_track_route_id() since the regex replace is slightly different
-    new_track_slug_title = helpers.create_track_route_id(track_metadata["title"], "")
-    # Remove "/"
-    new_track_slug_title = new_track_slug_title[1:]
-    # Append ID
-    new_track_slug_title = f"{new_track_slug_title}-{track_record.track_id}"
-
-    # Check to make sure the route doesn't exist
-    existing_track_route = next(
-        (
-            route
-            for route in pending_track_routes
-            if route.slug == new_track_slug_title
-            and route.owner_id == track_record.owner_id
-        ),
-        None,
-    )
-    if existing_track_route is None:
-        existing_track_route = (
-            session.query(TrackRoute)
-            .filter(
-                TrackRoute.slug == new_track_slug_title,
-                TrackRoute.owner_id == track_record.owner_id,
-            )
-            .one_or_none()
-        )
-
-    if existing_track_route is None:
-        # Add the new track route
-        new_track_route = TrackRoute()
-        new_track_route.slug = new_track_slug_title
-        new_track_route.title_slug = new_track_slug_title
-        new_track_route.collision_id = 0
-        new_track_route.owner_id = track_record.owner_id
-        new_track_route.track_id = track_record.track_id
-        new_track_route.is_current = (
-            False  # This route is meant to be a fallback, not the main route
-        )
-        new_track_route.blockhash = track_record.blockhash
-        new_track_route.blocknumber = track_record.blocknumber
-        new_track_route.txhash = track_record.txhash
-        session.add(new_track_route)
-
-        # Add to in-memory store to make sure we don't try to add it twice
-        pending_track_routes.append(new_track_route)
-    else:
-        logger.error(
-            f"Cannot add 'old-style' track_route to Track={track_record}\
-            as the route already exists: {existing_track_route}"
-        )
-
-
-@time_method
-def update_track_routes_table(
-    session, track_record, track_metadata, pending_track_routes
-):
-    """Creates the route for the given track and commits it to the track_routes table"""
+def update_track_routes_table(session, track_record, track_metadata, pending_track_routes):
+    """Creates the route for the given track"""
 
     # Check if the title is staying the same, and if so, return early
     if track_record.title == track_metadata["title"]:
@@ -559,7 +497,6 @@ def parse_track_event(
             .first()
         )[0]
 
-        add_old_style_route(session, track_record, track_metadata, pending_track_routes)
         update_track_routes_table(
             session, track_record, track_metadata, pending_track_routes
         )
@@ -609,7 +546,6 @@ def parse_track_event(
             .first()
         )[0]
 
-        add_old_style_route(session, track_record, track_metadata, pending_track_routes)
         update_track_routes_table(
             session, track_record, track_metadata, pending_track_routes
         )

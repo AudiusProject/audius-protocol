@@ -35,7 +35,7 @@ const logContext = {
   }
 }
 
-describe('test Tracks with mocked IPFS', function () {
+describe('test Polling Tracks with mocked IPFS', function () {
   let app, server, session, ipfsMock, libsMock, handleTrackContentRoute, mockServiceRegistry, userId
 
   beforeEach(async () => {
@@ -419,7 +419,7 @@ describe('test Tracks with mocked IPFS', function () {
   })
 })
 
-describe('test Tracks with real IPFS', function () {
+describe('test Polling Tracks with real IPFS', function () {
   let app2, server, session, libsMock, ipfs, handleTrackContentRoute, mockServiceRegistry, userId
 
   /** Inits ipfs client, libs mock, web server app, blacklist manager, and creates starter CNodeUser */

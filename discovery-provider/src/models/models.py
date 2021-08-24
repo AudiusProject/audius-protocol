@@ -1083,7 +1083,8 @@ class ChallengeDisbursement(Base):
     challenge_id = Column(String, ForeignKey("challenges.id"), nullable=False)
     user_id = Column(Integer, nullable=False)
     amount = Column(String, nullable=False)
-    block_number = Column(Integer, nullable=False)
+    signature = Column(String, nullable=False)
+    slot = Column(Integer, nullable=False)
     specifier = Column(String, nullable=False)
 
     PrimaryKeyConstraint(challenge_id, specifier)
@@ -1093,7 +1094,8 @@ class ChallengeDisbursement(Base):
 challenge_id={self.challenge_id},\
 user_id={self.user_id},\
 amount={self.amount},\
-block_number={self.block_number},\
+signature={self.signature},\
+slot={self.slot},\
 specifier={self.specifier})>"
 
 
@@ -1117,7 +1119,7 @@ profile_name={self.profile_name},\
 profile_picture={self.profile_picture},\
 profile_cover_photo={self.profile_cover_photo},\
 follows_complete={self.follows},\
-favorites_complete={self.favorites_complete},\
+favorites_complete={self.favorites},\
 reposts_complete={self.reposts})>"
 
 

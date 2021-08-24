@@ -9,8 +9,14 @@ const {
 } = require('./tokenAccount')
 const { wAudioFromWeiAudio } = require('./wAudio')
 const Utils = require('../../utils')
+const { submitAttestations, evaluateAttestations } = require('./rewards')
+const BN = require('bn.js')
 
 const { PublicKey } = solanaWeb3
+
+/**
+ * @typedef {import("./rewards.js").AttestationMeta} AttestationMeta
+ */
 
 /**
  * SolanaWeb3Manager acts as the interface to solana contracts from a client.
@@ -36,7 +42,12 @@ class SolanaWeb3Manager {
    *  the address for the specific fee payer to be used in relayed transactions
    * @param {string} solanaWeb3Config.claimableTokenProgramAddress
    *  the address for the claimable token program used to create banks and transfer wAudio
-   *
+   * @param {string} solanaWeb3Config.rewardsManagerProgramId
+   *  the ID of the rewards manager program
+   * @param {string} solanaWeb3Config.rewardsManagerProgramPDA
+   *  the manager account of the rewards manager program
+   * @param {string} solanaWeb3Config.rewardsManagerTokenPDA
+   *  the token holder account of the rewards manager program
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
    */
@@ -60,7 +71,10 @@ class SolanaWeb3Manager {
       solanaTokenAddress,
       claimableTokenPDA,
       feePayerAddress,
-      claimableTokenProgramAddress
+      claimableTokenProgramAddress,
+      rewardsManagerProgramId,
+      rewardsManagerProgramPDA,
+      rewardsManagerTokenPDA
     } = this.solanaWeb3Config
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint)
@@ -83,6 +97,9 @@ class SolanaWeb3Manager {
       )
     )
     this.claimableTokenPDAKey = new PublicKey(this.claimableTokenPDA)
+    this.rewardManagerProgramId = new PublicKey(rewardsManagerProgramId)
+    this.rewardManagerProgramPDA = new PublicKey(rewardsManagerProgramPDA)
+    this.rewardManagerTokenPDA = new PublicKey(rewardsManagerTokenPDA)
   }
 
   /**
@@ -245,6 +262,102 @@ class SolanaWeb3Manager {
       connection: this.connection,
       identityService: this.identityService
     })
+  }
+
+  /**
+   * Submits attestations for challenge completion to the RewardsManager program on Solana.
+   *
+   * @param {{
+   *     attestations: AttestationMeta[],
+   *     oracleAttestation: AttestationMeta,
+   *     challengeId: string,
+   *     specifier: string,
+   *     recipientEthAddress: string,
+   *     tokenAmount: BN,
+   * }} {
+   *     attestations,
+   *     oracleAttestation,
+   *     challengeId,
+   *     specifier,
+   *     recipientEthAddress,
+   *     tokenAmount,
+   *    }
+   * @memberof SolanaWeb3Manager
+   */
+  async submitChallengeAttestations ({
+    attestations,
+    oracleAttestation,
+    challengeId,
+    specifier,
+    recipientEthAddress,
+    tokenAmount
+  }) {
+    return submitAttestations({
+      rewardManagerProgramId: this.rewardManagerProgramId,
+      rewardManagerAccount: this.rewardManagerProgramPDA,
+      attestations,
+      oracleAttestation,
+      challengeId,
+      specifier,
+      feePayer: this.feePayerKey,
+      recipientEthAddress,
+      tokenAmount,
+      identityService: this.identityService,
+      connection: this.connection
+    })
+  }
+
+  /**
+   * Evaluates existing submitted attestations, disbursing if successful.
+   *
+   * @param {{
+   *    challengeId: string,
+   *    specifier: string,
+   *    recipientEthAddress: string
+   *    oracleEthAddress: string
+   * }} {
+   *     challengeId,
+   *     specifier,
+   *     recipientEthAddress,
+   *     oracleEthAddress,
+   *     tokenAmount
+   *   }
+   * @memberof SolanaWeb3Manager
+   */
+  async evaluateChallengeAttestations ({
+    challengeId,
+    specifier,
+    recipientEthAddress,
+    oracleEthAddress,
+    tokenAmount
+  }) {
+    return evaluateAttestations({
+      rewardManagerProgramId: this.rewardManagerProgramId,
+      rewardManagerAccount: this.rewardManagerProgramPDA,
+      rewardManagerTokenSource: this.rewardManagerTokenPDA,
+      challengeId,
+      specifier,
+      recipientEthAddress,
+      userBankProgramAccount: this.claimableTokenPDAKey,
+      oracleEthAddress,
+      feePayer: this.feePayerKey,
+      tokenAmount,
+      identityService: this.identityService,
+      connection: this.connection
+    })
+  }
+
+  // Helpers
+
+  /**
+   * Converts "UI" wAudio (i.e. 5) into properly denominated BN representation - (i.e. 5 * 10 ^ 9)
+   *
+   * @param {number} amount
+   * @returns BN
+   * @memberof SolanaWeb3Manager
+   */
+  uiAudioToBNWaudio (amount) {
+    return new BN(amount * 10 ** 9)
   }
 }
 

@@ -72,6 +72,9 @@ def populate_mock_db(db, entities):
         track_routes = entities.get("track_routes", [])
         remixes = entities.get("remixes", [])
         stems = entities.get("stems", [])
+        challenges = entities.get("challenges", [])
+        user_challenges = entities.get("user_challenges", [])
+
         num_blocks = max(len(tracks), len(users), len(follows))
 
         for i in range(num_blocks):
@@ -132,7 +135,7 @@ def populate_mock_db(db, entities):
         for i, user_meta in enumerate(users):
             user = models.User(
                 blockhash=hex(i),
-                blocknumber=1,
+                blocknumber=i,
                 user_id=user_meta.get("user_id", i),
                 is_current=True,
                 handle=user_meta.get("handle", i),
@@ -203,6 +206,7 @@ def populate_mock_db(db, entities):
                 collision_id=route_meta.get("collision_id", 0),
             )
             session.add(route)
+
         for i, remix_meta in enumerate(remixes):
             remix = models.Remix(
                 parent_track_id=remix_meta.get("parent_track_id", i),
@@ -215,3 +219,27 @@ def populate_mock_db(db, entities):
                 child_track_id=stems_meta.get("child_track_id", i + 1),
             )
             session.add(stem)
+
+        for i, challenge_meta in enumerate(challenges):
+            challenge = models.Challenge(
+                id=challenge_meta.get("id", ""),
+                type=challenge_meta.get("type", ""),
+                amount=challenge_meta.get("amount", ""),
+                active=challenge_meta.get("active", True),
+                step_count=challenge_meta.get("step_count", None),
+                starting_block=challenge_meta.get("starting_block", None),
+            )
+            session.add(challenge)
+        for i, user_challenge_meta in enumerate(user_challenges):
+            user_challenge = models.UserChallenge(
+                challenge_id=user_challenge_meta.get("challenge_id", ""),
+                user_id=user_challenge_meta.get("user_id", 1),
+                specifier=user_challenge_meta.get("specifier", ""),
+                is_complete=user_challenge_meta.get("is_complete", False),
+                completed_blocknumber=user_challenge_meta.get(
+                    "completed_blocknumber", 1
+                ),
+                current_step_count=user_challenge_meta.get("current_step_count", None),
+            )
+            session.add(user_challenge)
+        session.flush()

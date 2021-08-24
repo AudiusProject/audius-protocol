@@ -60,6 +60,13 @@ def populate_tracks(db):
                 "created_at": datetime(2018, 5, 20),
                 "is_unlisted": True,
             },
+            {
+                "track_id": 10,
+                "owner_id": 4,
+                "release_date": "Wed Dec 25 2019 12:00:00 GMT-0800",
+                "created_at": datetime(2018, 5, 21),
+                "is_delete": True,
+            },
         ],
         "track_routes": [
             {"slug": "track-1", "owner_id": 1287289},
@@ -191,6 +198,8 @@ def test_get_remixable_tracks(app):
                 "stems": [
                     {"parent_track_id": 7, "child_track_id": 1},
                     {"parent_track_id": 6, "child_track_id": 1},
+                    # Verify that tracks with deleted stems are not returned
+                    {"parent_track_id": 5, "child_track_id": 10},
                 ],
                 "saves": [{"user_id": 4, "save_item_id": 1}],
                 "reposts": [{"user_id": 4, "repost_item_id": 1}],

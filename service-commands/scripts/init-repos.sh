@@ -46,3 +46,20 @@ cd identity-service/
 npm install --dev &
 
 wait
+
+# create link for libs
+cd $PROTOCOL_DIR/
+cd libs
+npm link
+
+# link service-commands to libs
+cd $PROTOCOL_DIR/
+cd service-commands
+npm link @audius/libs
+
+cd $PROTOCOL_DIR/
+cd ..
+if [ -d "audius-client" ]; then
+    cd audius-client
+    npm link @audius/libs
+fi
