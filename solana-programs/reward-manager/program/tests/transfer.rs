@@ -165,7 +165,7 @@ async fn success_transfer() {
         );
         instructions.push(inst);
         instructions.push(
-            instruction::verify_transfer_signature(
+            instruction::submit_attestations(
                 &audius_reward_manager::id(),
                 &reward_manager.pubkey(),
                 &signers[item.0],
@@ -183,7 +183,7 @@ async fn success_transfer() {
     );
     instructions.push(oracle_sign);
     instructions.push(
-        instruction::verify_transfer_signature(
+        instruction::submit_attestations(
             &audius_reward_manager::id(),
             &reward_manager.pubkey(),
             &oracle_derived_address,

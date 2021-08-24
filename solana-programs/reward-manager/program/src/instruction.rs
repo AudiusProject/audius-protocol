@@ -39,7 +39,7 @@ pub struct AddSenderArgs {
 
 /// Verify `Transfer` instruction args
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
-pub struct VerifyTransferSignatureArgs {
+pub struct SubmitAttestationsArgs {
     /// ID generated on backend
     pub id: String,
 }
@@ -125,7 +125,7 @@ pub enum Instructions {
     ///   5. `[]` Sysvar rent
     ///   6. `[]` Instruction info
     ///   7. `[]` System program id
-    VerifyTransferSignature(VerifyTransferSignatureArgs),
+    SubmitAttestations(SubmitAttestationsArgs),
 
     ///   Transfer tokens to pointed receiver
     ///
@@ -355,8 +355,8 @@ where
     })
 }
 
-/// Create `VerifyTransferSignature` instruction
-pub fn verify_transfer_signature(
+/// Create `SubmitAttestations` instruction
+pub fn submit_attestations(
     program_id: &Pubkey,
     reward_manager: &Pubkey,
     sender: &Pubkey,
@@ -364,7 +364,7 @@ pub fn verify_transfer_signature(
     id: String,
 ) -> Result<Instruction, ProgramError> {
     let data =
-        Instructions::VerifyTransferSignature(VerifyTransferSignatureArgs { id: id.clone() })
+        Instructions::SubmitAttestations(SubmitAttestationsArgs { id: id.clone() })
             .try_to_vec()?;
 
     let (reward_manager_authority, verified_messages, _) = find_derived_pair(

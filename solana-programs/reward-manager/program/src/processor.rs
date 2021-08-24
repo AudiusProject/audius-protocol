@@ -4,7 +4,7 @@ use crate::{
     error::AudiusProgramError,
     instruction::{
         AddSenderArgs, CreateSenderArgs, InitRewardManagerArgs, Instructions, TransferArgs,
-        VerifyTransferSignatureArgs,
+        SubmitAttestationsArgs,
     },
     state::{
         RewardManager, SenderAccount, VerifiedMessage, VerifiedMessages, ADD_SENDER_MESSAGE_PREFIX,
@@ -276,7 +276,7 @@ impl Processor {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn process_verify_transfer_signature<'a>(
+    fn process_submit_attestations<'a>(
         program_id: &Pubkey,
         verified_messages_info: &AccountInfo<'a>,
         reward_manager_info: &AccountInfo<'a>,
@@ -285,7 +285,7 @@ impl Processor {
         rent_info: &AccountInfo<'a>,
         sender_info: &AccountInfo<'a>,
         instruction_info: &AccountInfo<'a>,
-        verify_transfer_data: VerifyTransferSignatureArgs,
+        verify_transfer_data: SubmitAttestationsArgs,
     ) -> ProgramResult {
         assert_owned_by(reward_manager_info, program_id)?;
         assert_owned_by(sender_info, program_id)?;
@@ -594,8 +594,8 @@ impl Processor {
                     instructions_info,
                 )
             }
-            Instructions::VerifyTransferSignature(VerifyTransferSignatureArgs { id }) => {
-                msg!("Instruction: VerifyTransferSignature");
+            Instructions::SubmitAttestations(SubmitAttestationsArgs { id }) => {
+                msg!("Instruction: SubmitAttestations");
 
                 let verified_messages = next_account_info(account_info_iter)?;
                 let reward_manager = next_account_info(account_info_iter)?;
@@ -606,7 +606,7 @@ impl Processor {
                 let instructions_info = next_account_info(account_info_iter)?;
                 let _system_program_id = next_account_info(account_info_iter)?;
 
-                Self::process_verify_transfer_signature(
+                Self::process_submit_attestations(
                     program_id,
                     verified_messages,
                     reward_manager,
@@ -615,7 +615,7 @@ impl Processor {
                     rent_info,
                     sender,
                     instructions_info,
-                    VerifyTransferSignatureArgs { id },
+                    SubmitAttestationsArgs { id },
                 )
             }
             Instructions::Transfer(TransferArgs {
