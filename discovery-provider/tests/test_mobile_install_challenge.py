@@ -4,7 +4,7 @@ import redis
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.mobile_install_challenge import mobile_install_challenge_manager
-from src.models.models import Block, User, UserChallenge
+from src.models.models import Block, Challenge, User, UserChallenge
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 
@@ -36,6 +36,11 @@ def test_mobile_install_challenge(app):
 
     with db.scoped_session() as session:
         bus = ChallengeEventBus(redis_conn)
+
+        # set challenge as active for purposes of test
+        session.query(Challenge).filter(Challenge.id == "mobile-install").update(
+            {"active": True}
+        )
         bus.register_listener(
             ChallengeEvent.mobile_install, mobile_install_challenge_manager
         )
