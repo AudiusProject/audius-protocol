@@ -39,8 +39,7 @@ describe('test src/utils.js', () => {
 
   it('will not rehydrate in rehydrateIpfsDirFromFsIfNecessary if CID is in BlacklistManager', async () => {
     const multihash = 'testCID'
-    const storagePath = 'storagePath'
-    const logContext = {}
+    const logContext = { storagePath: 'storagePath' }
 
     // Add CID to BlacklistManager
     await BlacklistManager.addToRedis(BlacklistManager.getRedisSegmentCIDKey(), multihash)
@@ -49,7 +48,7 @@ describe('test src/utils.js', () => {
     const ipfsSingleByteCatSpy = sinon.spy(utils, 'ipfsSingleByteCat')
     const ipfsAddSpy = sinon.spy(ipfsLatest, 'add')
 
-    await utils.rehydrateIpfsDirFromFsIfNecessary(multihash, storagePath, logContext)
+    await utils.rehydrateIpfsDirFromFsIfNecessary(multihash, logContext)
 
     // Make sure rehydration does not occur
     assert(blacklistManagerSpy.calledOnce)
