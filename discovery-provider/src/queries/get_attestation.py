@@ -1,3 +1,4 @@
+from src.tasks.index_metrics import get_all_other_nodes
 from typing import Tuple
 
 from web3 import Web3
@@ -19,6 +20,7 @@ from src.tasks.index_oracles import (
     get_oracle_addresses_from_chain,
 )
 
+REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
 ATTESTATION_DECIMALS = 9
 
 
@@ -176,3 +178,28 @@ def get_attestation(
         attestation_bytes, shared_config["delegate"]["private_key"]
     )
     return (shared_config["delegate"]["owner_wallet"], signed_attestation)
+
+
+ADD_SENDER_MESSAGE_PREFIX = "add"
+
+
+def verify_discovery_node_exists_on_chain(new_sender_address: str) -> bool:
+    other_nodes = set(get_all_other_nodes())
+    return new_sender_address in other_nodes
+
+
+def get_create_sender_attestation(new_sender_address: str) -> str:
+    is_valid = verify_discovery_node_exists_on_chain(new_sender_address)
+    if not is_valid:
+        raise Exception(f"Expected {new_sender_address} to be registered on chain")
+
+    items = [
+        to_bytes(text=ADD_SENDER_MESSAGE_PREFIX),
+        to_bytes(hexstr=REWARDS_MANAGER_PROGRAM),
+        to_bytes(hexstr=new_sender_address),
+    ]
+    attestation_bytes = to_bytes(text="").join(items)
+    signed_attestation: str = sign_attestation(
+        attestation_bytes, shared_config["delegate"]["private_key"]
+    )
+    return signed_attestation

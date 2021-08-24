@@ -60,6 +60,8 @@ class Attest(Resource):
                 return None
 
 
+undisbursed_route = "/undisbursed"
+
 get_undisbursed_challenges_route_parser = reqparse.RequestParser()
 get_undisbursed_challenges_route_parser.add_argument("limit", required=False, type=int)
 get_undisbursed_challenges_route_parser.add_argument("offset", required=False, type=int)
@@ -75,7 +77,7 @@ get_challenges_response = make_response(
 )
 
 
-@ns.route("/undisbursed")
+@ns.route(undisbursed_route)
 class GetUndisbursedChallenges(Resource):
     @ns.doc(
         params={
@@ -103,3 +105,7 @@ class GetUndisbursedChallenges(Resource):
                 },
             )
             return success_response(undisbursed_challenges)
+
+@ns.route("/")
+class CreateSenderAttestation(Resource):
+    pass
