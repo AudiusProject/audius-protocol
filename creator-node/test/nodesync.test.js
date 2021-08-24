@@ -671,17 +671,17 @@ describe('test nodesync', async function () {
       // If changes are made to the response body, make the corresponding changes to the hash too
       nock('http://mock-cn1.audius.co')
         .persist()
-        .get(uri => uri.includes('/ipfs'))
+        .get(uri => uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE'))
         .reply(200, 'audius is cool')
 
       nock('http://mock-cn2.audius.co')
         .persist()
-        .get(uri => uri.includes('/ipfs'))
+        .get(uri => uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE'))
         .reply(200, 'audius is cool')
 
       nock('http://mock-cn3.audius.co')
         .persist()
-        .get(uri => uri.includes('/ipfs'))
+        .get(uri => uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE'))
         .reply(200, 'audius is cool')
 
       // Confirm no local user state before sync
@@ -809,17 +809,17 @@ describe('test nodesync', async function () {
       // If changes are made to the response body, make the corresponding changes to the hash too
       nock('http://mock-cn1.audius.co')
         .persist()
-        .get(uri => uri.includes('/ipfs'))
+        .get(uri => uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE'))
         .reply(200, 'audius is cool')
 
       nock('http://mock-cn2.audius.co')
         .persist()
-        .get(uri => uri.includes('/ipfs'))
+        .get(uri => uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE'))
         .reply(200, 'audius is cool')
 
       nock('http://mock-cn3.audius.co')
         .persist()
-        .get(uri => uri.includes('/ipfs'))
+        .get(uri => uri.includes('/ipfs/QmSU6rdPHdTrVohDSfhVCBiobTMr6a3NvPz4J7nLWVDvmE'))
         .reply(200, 'audius is cool')
 
       // Confirm initial local state is empty
