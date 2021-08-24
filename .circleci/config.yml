@@ -377,7 +377,6 @@ jobs:
       force:
         type: boolean
         default: false
-    parallelism: 10
     steps:
       - checkout
       - unless:
