@@ -1,9 +1,8 @@
-import concurrent.futures
 import functools
 import logging
 import time
 from datetime import datetime
-from typing import List, Optional, Set, Dict
+from typing import List, Optional, Set
 
 from sqlalchemy.orm.session import make_transient
 from sqlalchemy.sql import functions, null
@@ -13,7 +12,6 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models import Remix, Stem, Track, TrackRoute, User
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
-from src.tasks.metadata import track_metadata_format
 from src.utils import helpers, multihash
 from src.utils.indexing_errors import IndexingError
 
@@ -36,6 +34,8 @@ def track_state_update(
     self,
     update_task: DatabaseTask,
     session,
+    blacklisted_cids,
+    ipfs_metadata,
     track_factory_txs,
     block_number,
     block_timestamp,
@@ -54,72 +54,6 @@ def track_state_update(
     track_contract = update_task.web3.eth.contract(
         address=contract_addresses["track_factory"], abi=track_abi
     )
-
-    # Iterate through transactions and fetch metadata cids in them
-    blacklisted_cids = set()
-    cids = []
-    for tx_receipt in track_factory_txs:
-        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-        for event_type in track_event_types_arr:
-            track_events_tx = getattr(
-                track_contract.events, event_type
-            )().processReceipt(tx_receipt)
-            for entry in track_events_tx:
-                if event_type == track_event_types_lookup["delete_track"]:
-                    continue
-
-                event_args = entry["args"]
-                blockhash = update_task.web3.toHex(entry.blockHash)
-
-                track_metadata_digest = event_args._multihashDigest.hex()
-                track_metadata_hash_fn = event_args._multihashHashFn
-                buf = multihash.encode(
-                    bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
-                )
-                cid = multihash.to_b58_string(buf)
-
-                # If the IPLD is blacklisted, do not add to cids list for pre-fetching
-                if is_blacklisted_ipld(session, cid):
-                    logger.info(
-                        f"index.py | tracks.py | Encountered blacklisted metadata CID:"
-                        f"{cid}"
-                    )
-                    blacklisted_cids.add(cid)
-                    continue
-
-                owner_id = event_args._trackOwnerId
-
-                creator_node_endpoint = (
-                    session.query(User.creator_node_endpoint)
-                    .filter(User.user_id == owner_id, User.is_current == True)
-                    .first()
-                )[0]
-
-                cids.append([cid, creator_node_endpoint])
-
-    # Prefetch cids asynchronously
-    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-        futures = {}
-        for cid, creator_node_endpoint in cids:
-            futures[cid] = executor.submit(
-                update_task.ipfs_client.get_metadata,
-                cid,
-                track_metadata_format,
-                creator_node_endpoint,
-            )
-
-        ipfs_metadata: Dict = {}
-        for cid, future in futures.items():
-            try:
-                ipfs_metadata[cid] = future.result()
-            except Exception as e:
-                logger.error(
-                    f"index.py | tracks.py | Error when pre-fetching CID {cid}"
-                )
-                blockhash = update_task.web3.toHex(block_hash)
-                raise IndexingError(
-                    "track", block_number, blockhash, txhash, str(e)
-                ) from e
 
     pending_track_routes: List[TrackRoute] = []
     track_events = {}
@@ -298,7 +232,9 @@ def time_method(func):
 
 
 @time_method
-def update_track_routes_table(session, track_record, track_metadata, pending_track_routes):
+def update_track_routes_table(
+    session, track_record, track_metadata, pending_track_routes
+):
     """Creates the route for the given track"""
 
     # Check if the title is staying the same, and if so, return early

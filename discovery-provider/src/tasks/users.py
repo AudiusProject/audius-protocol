@@ -1,4 +1,3 @@
-import concurrent.futures
 import logging
 from typing import Set, TypedDict, Tuple
 from datetime import datetime
@@ -28,6 +27,7 @@ def user_state_update(
     self,
     update_task: DatabaseTask,
     session: Session,
+    ipfs_metadata,
     user_factory_txs,
     block_number,
     block_timestamp,
@@ -51,44 +51,6 @@ def user_state_update(
     # Data format is {"user_id": {"user", "events": []}}
     # NOTE - events are stored only for debugging purposes and not used or persisted anywhere
     user_events_lookup = {}
-
-    cids = []
-    for tx_receipt in user_factory_txs:
-        txhash = update_task.web3.toHex(tx_receipt.transactionHash)
-        for event_type in user_event_types_arr:
-            user_events_tx = getattr(user_contract.events, event_type)().processReceipt(
-                tx_receipt
-            )
-            for entry in user_events_tx:
-                user_id = entry["args"]._userId
-                if event_type == user_event_types_lookup["update_multihash"]:
-                    metadata_multihash = helpers.multihash_digest_to_cid(
-                        entry["args"]._multihashDigest
-                    )
-                    is_blacklisted = is_blacklisted_ipld(session, metadata_multihash)
-                    if not is_blacklisted:
-                        cids.append(metadata_multihash)
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-        futures = {}
-        for cid in cids:
-            futures[cid] = executor.submit(
-                get_ipfs_metadata,
-                update_task,
-                cid,
-                None,
-            )
-
-        ipfs_metadata = {}
-        for cid, future in futures.items():
-            try:
-                ipfs_metadata[cid] = future.result()
-            except Exception as e:
-                logger.error("Error in parse user transaction")
-                event_blockhash = update_task.web3.toHex(block_hash)
-                raise IndexingError(
-                    "user", block_number, event_blockhash, txhash, str(e)
-                ) from e
 
     # for each user factory transaction, loop through every tx
     # loop through all audius event types within that tx and get all event logs
