@@ -46,7 +46,7 @@ pub struct SubmitAttestationsArgs {
 
 /// `Transfer` instruction args
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
-pub struct EvaluateAttestationArgs {
+pub struct EvaluateAttestationsArgs {
     /// Amount to transfer
     pub amount: u64,
     /// ID generated on backend
@@ -140,7 +140,7 @@ pub enum Instructions {
     ///   8. `[]` Sysvar rent
     ///   9. `[]` Token program id
     ///  10. `[]` System program id
-    EvaluateAttestation(EvaluateAttestationArgs),
+    EvaluateAttestations(EvaluateAttestationsArgs),
 }
 
 /// Create `InitRewardManager` instruction
@@ -407,7 +407,7 @@ pub fn evaluate_attestations(
     id: String,
     eth_recipient: [u8; 20],
 ) -> Result<Instruction, ProgramError> {
-    let data = Instructions::EvaluateAttestation(EvaluateAttestationArgs {
+    let data = Instructions::EvaluateAttestations(EvaluateAttestationsArgs {
         amount,
         id: id.clone(),
         eth_recipient,

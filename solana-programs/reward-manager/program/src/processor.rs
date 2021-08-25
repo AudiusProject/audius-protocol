@@ -3,7 +3,7 @@
 use crate::{
     error::AudiusProgramError,
     instruction::{
-        CreateSenderPublicArgs, CreateSenderArgs, InitRewardManagerArgs, Instructions, EvaluateAttestationArgs,
+        CreateSenderPublicArgs, CreateSenderArgs, InitRewardManagerArgs, Instructions, EvaluateAttestationsArgs,
         SubmitAttestationsArgs,
     },
     state::{
@@ -363,7 +363,7 @@ impl Processor {
         bot_oracle_info: &AccountInfo<'a>,
         payer_info: &AccountInfo<'a>,
         rent_info: &AccountInfo<'a>,
-        transfer_data: EvaluateAttestationArgs,
+        transfer_data: EvaluateAttestationsArgs,
     ) -> ProgramResult {
         let rent = &Rent::from_account_info(rent_info)?;
 
@@ -618,7 +618,7 @@ impl Processor {
                     SubmitAttestationsArgs { id },
                 )
             }
-            Instructions::EvaluateAttestation(EvaluateAttestationArgs {
+            Instructions::EvaluateAttestations(EvaluateAttestationsArgs {
                 amount,
                 id,
                 eth_recipient,
@@ -648,7 +648,7 @@ impl Processor {
                     bot_oracle_info,
                     payer_info,
                     rent_info,
-                    EvaluateAttestationArgs {
+                    EvaluateAttestationsArgs {
                         amount,
                         id,
                         eth_recipient,
