@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "🐶 Audius Protocol System Level Test Suite",
   "main": "src/index.js",
-   "scripts": {
+  "scripts": {
     "start": "node src/index.js --inspect",
     "link-deps": "npm link @audius/libs && npm link @audius/service-commands"
   },
