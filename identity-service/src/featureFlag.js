@@ -2,7 +2,7 @@ const uuidv4 = require('uuid/v4')
 
 // Declaration of feature flags set in optimizely
 const FEATURE_FLAGS = Object.freeze({
-  SOLANA_LISTEN_ENABLED_SERVER: 'SOLANA_LISTEN_ENABLED_SERVER'
+  SOLANA_LISTEN_ENABLED_SERVER: 'solana_listen_enabled_server'
 })
 
 // Default values for feature flags while optimizely has not loaded
