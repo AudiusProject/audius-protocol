@@ -11,8 +11,8 @@ use audius_reward_manager::{
         create_sender,
         delete_sender,
         init,
-        transfer,
-        verify_transfer_signature,
+        evaluate_attestations,
+        submit_attestations,
         delete_sender_public,
         change_manager_authority
     },
@@ -358,7 +358,7 @@ fn command_add_sender(
 }
 
 #[allow(clippy::too_many_arguments)]
-fn command_verify_transfer_signature(
+fn command_submit_attestations(
     config: &Config,
     reward_manager_pubkey: Pubkey,
     signer_pubkey: Pubkey,
@@ -413,7 +413,7 @@ fn command_verify_transfer_signature(
     ));
 
     instructions.push(
-        verify_transfer_signature(
+        submit_attestations(
             &audius_reward_manager::id(),
             &reward_manager_pubkey,
             &signer_pubkey,
@@ -431,7 +431,7 @@ fn command_verify_transfer_signature(
                 &make_bot_message(),
                 2
             );
-            let bot_verify = verify_transfer_signature(
+            let bot_verify = submit_attestations(
                 &audius_reward_manager::id(),
                 &reward_manager_pubkey,
                 &bot_oracle_pubkey.unwrap(),
@@ -512,7 +512,7 @@ fn command_transfer(
         );
     }
 
-    instructions.push(transfer(
+    instructions.push(evaluate_attestations(
         &audius_reward_manager::id(),
         &verified_messages_pubkey,
         &reward_manager_pubkey,
@@ -1039,7 +1039,7 @@ fn main() {
             let include_oracle_verify = arg_matches.is_present("include_oracle_verify");
             let bot_oracle_secret = value_t!(arg_matches, "bot_oracle_secret", String).ok();
 
-            command_verify_transfer_signature(
+            command_submit_attestations(
                 &config,
                 reward_manager,
                 signer_pubkey,

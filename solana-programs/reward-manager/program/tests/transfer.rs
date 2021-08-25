@@ -165,7 +165,7 @@ async fn success_transfer() {
         );
         instructions.push(inst);
         instructions.push(
-            instruction::verify_transfer_signature(
+            instruction::submit_attestations(
                 &audius_reward_manager::id(),
                 &reward_manager.pubkey(),
                 &signers[item.0],
@@ -183,7 +183,7 @@ async fn success_transfer() {
     );
     instructions.push(oracle_sign);
     instructions.push(
-        instruction::verify_transfer_signature(
+        instruction::submit_attestations(
             &audius_reward_manager::id(),
             &reward_manager.pubkey(),
             &oracle_derived_address,
@@ -235,7 +235,7 @@ async fn success_transfer() {
     println!("Created recipient sol key = {:?}", &recipient_sol_key.derive.address);
 
     let tx = Transaction::new_signed_with_payer(
-        &[instruction::transfer(
+        &[instruction::evaluate_attestations(
             &audius_reward_manager::id(),
             &verified_messages_derived_address,
             &reward_manager.pubkey(),
