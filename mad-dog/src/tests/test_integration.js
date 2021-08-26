@@ -1,7 +1,9 @@
 const {
   OPERATION_TYPE,
   TrackUploadRequest,
-  TrackUploadResponse
+  TrackUploadResponse,
+  TrackRepostRequest,
+  TrackRepostResponse
 } = require('../operations.js')
 
 const path = require('path')
@@ -22,9 +24,10 @@ const {
   upgradeUsersToCreators,
   delay
 } = require('../helpers.js')
-const { getContentNodeEndpoints } = require('@audius/service-commands')
+const { getContentNodeEndpoints, getRepostersForTrack } = require('@audius/service-commands')
 const {
   uploadTrack,
+  repostTrack,
   getTrackMetadata,
   getUser,
   getUsers,
@@ -37,11 +40,12 @@ const {
 
 // NOTE - # of ticks = (TEST_DURATION_SECONDS / TICK_INTERVAL_SECONDS) - 1
 const TICK_INTERVAL_SECONDS = 5
-const TEST_DURATION_SECONDS = 10
+const TEST_DURATION_SECONDS = 30
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 
 const SECOND_USER_PIC_PATH = path.resolve('assets/images/duck.jpg')
 const THIRD_USER_PIC_PATH = path.resolve('assets/images/sid.png')
+const repostedTracks = []
 
 /**
  * Randomly uploads tracks over the duration of the test,
@@ -95,23 +99,26 @@ module.exports = coreIntegration = async ({
     testDurationSeconds: TEST_DURATION_SECONDS
   })
 
+  const uploadedTracks = []
+
   // Register the request listener. The only request type this test
   // currently handles is to upload tracks.
   emitterTest.registerOnRequestListener(async (request, emit) => {
     const { type, walletIndex, userId } = request
+    let res
     switch (type) {
       case OPERATION_TYPE.TRACK_UPLOAD: {
         const track = getRandomTrackMetadata(userId)
 
         const randomTrackFilePath = await getRandomTrackFilePath(TEMP_STORAGE_PATH)
 
-        let res
         try {
           // Execute a track upload request against a single
           // instance of libs.
           const trackId = await executeOne(walletIndex, l =>
             uploadTrack(l, track, randomTrackFilePath)
           )
+          uploadedTracks.push(trackId)
           res = new TrackUploadResponse(walletIndex, trackId, track)
         } catch (e) {
           logger.error(`Caught error [${e.message}] uploading track: [${JSON.stringify(track)}]\n${e.stack}`)
@@ -122,6 +129,36 @@ module.exports = coreIntegration = async ({
             false,
             e.message
           )
+          throw new Error(e)
+        }
+        // Emit the response event
+        emit(Event.RESPONSE, res)
+        break
+      }
+      case OPERATION_TYPE.TRACK_REPOST: {
+        if (uploadedTracks.length === 0){
+          logger.info("Cannot repost until a track is uploaded")
+          res = new TrackRepostResponse(walletIndex, null, userId, false)
+        } else {
+          const trackId = uploadedTracks[uploadedTracks.length - 1]
+          try {
+            // Execute a track upload request against a single
+            // instance of libs.
+            const transaction = await executeOne(walletIndex, l =>
+              repostTrack(l, trackId)
+            )
+            res = new TrackRepostResponse(walletIndex, trackId, userId)
+          } catch (e) {
+            logger.error(`Caught error [${e.message}] reposting track: [${trackId}]\n${e.stack}`)
+            res = new TrackRepostResponse(
+              walletIndex,
+              trackId,
+              userId,
+              false,
+              e.message
+            )
+            throw new Error(e)
+          }
         }
         // Emit the response event
         emit(Event.RESPONSE, res)
@@ -150,12 +187,19 @@ module.exports = coreIntegration = async ({
           }
         } else {
           if (!walletTrackMap[walletIndex]) {
-            walletTrackMap[walletIndex] = {}
+            walletTrackMap[walletIndex] = []
           }
 
-          walletTrackMap[walletIndex] = {
+          walletTrackMap[walletIndex].push({
             [trackId]: metadata
-          }
+          })
+        }
+        break
+      }
+      case OPERATION_TYPE.TRACK_REPOST: {
+        const { walletIndex, trackId, userId, success } = res
+        if (success){
+          repostedTracks.push({trackId, userId})
         }
         break
       }
@@ -168,11 +212,16 @@ module.exports = coreIntegration = async ({
   // of events.
   emitterTest.registerOnTickListener(emit => {
     const requesterIdx = _.random(0, numUsers - 1)
-    const request = new TrackUploadRequest(
+    const uploadRequest = new TrackUploadRequest(
       requesterIdx,
       walletIdMap[requesterIdx]
     )
-    emit(Event.REQUEST, request)
+    const repostRequest = new TrackRepostRequest(
+      requesterIdx,
+      walletIdMap[requesterIdx]
+    )
+    emit(Event.REQUEST, uploadRequest)
+    emit(Event.REQUEST, repostRequest)
   })
 
   // Create users. Upgrade them to creators later
@@ -271,15 +320,20 @@ module.exports = coreIntegration = async ({
   }
 
   // Ensure all CIDs exist on all replicas
-  const allCIDsExistOnCNodes = await verifyAllCIDsExistOnCNodes(trackUploadInfo, executeOne)
-  if (!allCIDsExistOnCNodes) {
-    return { error: 'Not all CIDs exist on creator nodes.' }
-  }
+  // const allCIDsExistOnCNodes = await verifyAllCIDsExistOnCNodes(trackUploadInfo, executeOne)
+  // if (!allCIDsExistOnCNodes) {
+  //   return { error: 'Not all CIDs exist on creator nodes.' }
+  // }
   const failedWallets = Object.values(failedUploads)
   if (failedWallets.length) {
     const userIds = failedWallets.map(w => walletIdMap[w])
     logger.error(`Uploads failed for user IDs=[${userIds}]`)
   }
+
+  const allTracksReposted = verifyTracksReposted(executeOne)
+  if (!allTracksReposted){
+    return { error: 'Not all tracks were reposted.' }
+}
 
   // Switch user primary (above tests have already confirmed all secondaries have latest state)
   for await (const walletIndex of Object.keys(walletIdMap)) {
@@ -361,6 +415,8 @@ module.exports = coreIntegration = async ({
     }
   }
 
+  logger.info("All core integration tests passed.")
+
   return {}
 }
 
@@ -414,6 +470,18 @@ const verifyAllCIDsExistOnCNodes = async (trackUploads, executeOne) => {
   }
   logger.info('Completed verifying CIDs')
   return !failedCIDs.length
+}
+
+async function verifyTracksReposted(executeOne){
+  for (const {trackId, userId} of repostedTracks) {
+    await executeOne(0, l => l.waitForLatestBlock())
+    const reposters = await executeOne(0, l => getRepostersForTrack(l, trackId))
+    const usersReposted = reposters.map(obj => obj.user_id)
+    if (!usersReposted.includes(userId)){
+      return false;
+    }
+  }
+  return true;
 }
 
 /**
