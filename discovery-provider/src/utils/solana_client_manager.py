@@ -27,13 +27,9 @@ class SolanaClientManager:
         return self.clients[index]
 
     def get_sol_tx_info(self, tx_sig: str, retries=DEFAULT_MAX_RETRIES):
-        """Fetches a solana transaction by signature with retries and a delay
+        """Fetches a solana transaction by signature with retries and a delay."""
 
-        If not found, raise an exception
-        """
-        for index, client in random.sample(
-            list(enumerate(self.clients)), k=len(self.clients)
-        ):
+        def handle_get_sol_tx_info(client, index):
             endpoint = self.endpoints[index]
             num_retries = retries
             while num_retries > 0:
@@ -43,7 +39,8 @@ class SolanaClientManager:
                         return tx_info
                 except Exception as e:
                     logger.error(
-                        f"solana_client_manager.py | get_sol_tx_info | Error fetching tx {tx_sig} from endpoint {endpoint}, {e}",
+                        f"solana_client_manager.py | get_sol_tx_info | \
+                            Error fetching tx {tx_sig} from endpoint {endpoint}, {e}",
                         exc_info=True,
                     )
                 num_retries -= 1
@@ -51,8 +48,14 @@ class SolanaClientManager:
                 logger.error(
                     f"solana_client_manager.py | get_sol_tx_info | Retrying tx fetch: {tx_sig} with endpoint {endpoint}"
                 )
-        raise Exception(
-            "solana_client_manager.py | get_sol_tx_info | All requests failed to fetch {tx_sig}"
+            raise Exception(
+                f"solana_client_manager.py | get_sol_tx_info | Failed to fetch {tx_sig} with endpoint {endpoint}"
+            )
+
+        return _try_all(
+            self.clients,
+            handle_get_sol_tx_info,
+            "solana_client_manager.py | get_sol_tx_info | All requests failed to fetch {tx_sig}",
         )
 
     def get_confirmed_signature_for_address2(
@@ -61,16 +64,24 @@ class SolanaClientManager:
         before: Optional[str] = None,
         limit: Optional[int] = None,
     ):
-        """Fetches confirmed signatures for transactions given an address.
-        Iterates randomly across all clients before failure.
-        """
-        for client in random.sample(self.clients, k=len(self.clients)):
-            try:
-                return client.get_confirmed_signature_for_address2(
-                    account, before, limit
-                )
-            except Exception:
-                continue
-        raise Exception(
-            "solana_client_manager.py | get_confirmed_signature_for_address2 | All requests failed"
+        """Fetches confirmed signatures for transactions given an address."""
+
+        def handle_get_confirmed_signature_for_address2(client):
+            return client.get_confirmed_signature_for_address2(account, before, limit)
+
+        return _try_all(
+            self.clients,
+            handle_get_confirmed_signature_for_address2,
+            "solana_client_manager.py | get_confirmed_signature_for_address2 | All requests failed",
         )
+
+
+def _try_all(iterable, func, message):
+    """Executes a function with retries across the iterable.
+    If all executions fail, raise an exception."""
+    for index, value in random.sample(list(enumerate(iterable)), k=len(iterable)):
+        try:
+            return func(value, index)
+        except Exception:
+            continue
+    raise Exception(message)
