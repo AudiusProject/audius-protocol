@@ -1,4 +1,5 @@
 import logging
+from src.queries.get_related_artists import get_related_artists
 from src.utils.helpers import encode_int_id
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.api.v1.playlists import get_tracks_for_playlist
@@ -610,6 +611,21 @@ top_genre_users_route_parser.add_argument("offset", required=False, type=int)
 top_genre_users_response = make_full_response(
     "top_genre_users_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
+
+
+@full_ns.route("/<string:user_id>/related")
+class RelatedUsers(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""A list of users that followers of this user follow, or top artists on the platform if not enough data to find related artists. Limited to the top 100 users.""",
+        responses={200: "Success", 500: "Server error"},
+    )
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        decoded_id = decode_with_abort(user_id, full_ns)
+        users = get_related_artists(decoded_id)
+        users = list(map(extend_user, users))
+        return success_response(users)
 
 
 @full_ns.route("/genre/top")

@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from src.tasks.index_related_artists import queue_related_artist_calculation
 from typing import Dict
 from src.challenges.challenge_event_bus import ChallengeEventBus
 
@@ -144,6 +145,7 @@ def social_feature_state_update(
             follow = followee_user_ids[followee_user_id]
             session.add(follow)
             dispatch_challenge_follow(challenge_bus, follow, block_number)
+            queue_related_artist_calculation(update_task.redis, followee_user_id)
         num_total_changes += len(followee_user_ids)
 
     return num_total_changes

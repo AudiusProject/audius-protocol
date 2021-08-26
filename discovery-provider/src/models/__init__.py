@@ -46,6 +46,7 @@ from .models import (
     UserBalance,
     UserChallenge,
 )
+from .related_artist import RelatedArtist
 from .track_route import TrackRoute
 from .user_bank import UserBankTransaction
 from .user_bank import UserBankAccount

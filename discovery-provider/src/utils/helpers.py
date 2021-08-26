@@ -1,19 +1,22 @@
+import contextlib
 import datetime
+import functools
+import json
 import logging
 import os
 import re
 import time
-import contextlib
-import json
+from functools import reduce
 from json.encoder import JSONEncoder
 from typing import Optional, cast
 from urllib.parse import urljoin
-from functools import reduce
+
 import requests
-from hashids import Hashids
 from flask import g, request
+from hashids import Hashids
 from jsonformatter import JsonFormatter
 from src import exceptions
+
 from . import multihash
 
 
@@ -450,3 +453,17 @@ class DateTimeEncoder(JSONEncoder):
         if isinstance(o, (datetime.date, datetime.datetime)):
             return o.isoformat()
         return super().default(o)
+
+
+def time_method(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kargs):
+        tick = time.perf_counter()
+        result = func(*args, **kargs)
+        tock = time.perf_counter()
+        elapsed = tock - tick
+        logger = logging.getLogger(__name__)
+        logger.info(f"TIME_METHOD Function={func.__name__} Elapsed={elapsed:0.6f}s")
+        return result
+
+    return wrapper
