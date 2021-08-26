@@ -19,3 +19,11 @@ undisbursed_challenge = ns.model(
         "completed_blocknumber": fields.Integer(required=True),
     },
 )
+
+create_sender_attestation = ns.model(
+    "create_sender_attestation",
+    {
+        "owner_wallet": fields.String(required=True),
+        "attestation": fields.String(required=True),
+    },
+)

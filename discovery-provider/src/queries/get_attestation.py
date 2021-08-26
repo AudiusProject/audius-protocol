@@ -1,4 +1,3 @@
-from src.tasks.index_metrics import get_all_other_nodes
 from typing import Tuple
 
 from web3 import Web3
@@ -15,6 +14,7 @@ from src.models.models import (
 )
 from src.utils.redis_connection import get_redis
 from src.utils.config import shared_config
+from src.utils.get_all_other_nodes import get_all_other_nodes
 from src.tasks.index_oracles import (
     oracle_addresses_key,
     get_oracle_addresses_from_chain,
@@ -184,11 +184,11 @@ ADD_SENDER_MESSAGE_PREFIX = "add"
 
 
 def verify_discovery_node_exists_on_chain(new_sender_address: str) -> bool:
-    other_nodes = set(get_all_other_nodes())
-    return new_sender_address in other_nodes
+    other_nodes_addresses = set(get_all_other_nodes()[1])
+    return new_sender_address in other_nodes_addresses
 
 
-def get_create_sender_attestation(new_sender_address: str) -> str:
+def get_create_sender_attestation(new_sender_address: str) -> Tuple[str, str]:
     is_valid = verify_discovery_node_exists_on_chain(new_sender_address)
     if not is_valid:
         raise Exception(f"Expected {new_sender_address} to be registered on chain")
@@ -202,4 +202,5 @@ def get_create_sender_attestation(new_sender_address: str) -> str:
     signed_attestation: str = sign_attestation(
         attestation_bytes, shared_config["delegate"]["private_key"]
     )
-    return signed_attestation
+    owner_wallet = shared_config["delegate"]["owner_wallet"]
+    return owner_wallet, signed_attestation

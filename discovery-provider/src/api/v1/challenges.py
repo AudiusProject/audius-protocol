@@ -6,8 +6,16 @@ from src.api.v1.helpers import (
     make_response,
     success_response,
 )
-from src.api.v1.models.challenges import undisbursed_challenge, attestation
-from src.queries.get_attestation import AttestationError, get_attestation
+from src.api.v1.models.challenges import (
+    undisbursed_challenge,
+    attestation,
+    create_sender_attestation,
+)
+from src.queries.get_attestation import (
+    AttestationError,
+    get_attestation,
+    get_create_sender_attestation,
+)
 from src.queries.get_undisbursed_challenges import get_undisbursed_challenges
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import cache
@@ -106,6 +114,43 @@ class GetUndisbursedChallenges(Resource):
             )
             return success_response(undisbursed_challenges)
 
-@ns.route("/")
+
+create_sender_attest_route = "/attest_sender"
+
+create_sender_attest_parser = reqparse.RequestParser()
+create_sender_attest_parser.add_argument("sender_eth_address", required=True)
+
+create_sender_attestation_response = make_response(
+    "attestation_response", ns, fields.Nested(create_sender_attestation)
+)
+
+
+@ns.route(create_sender_attest_route)
 class CreateSenderAttestation(Resource):
-    pass
+    """
+    Produces an attestation that a specified discovery node is a
+    validated on-chain discovery node that can be used to sign challenges.
+    """
+
+    @ns.doc(
+        params={
+            "sender_eth_address": "The address of the discovery node to attest to",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(create_sender_attestation_response)
+    @ns.expect(create_sender_attest_parser)
+    @cache(ttl_sec=5)
+    def get(self):
+        args = create_sender_attest_parser.parse_args(strict=True)
+        sender_eth_address = args["sender_eth_address"]
+        try:
+            owner_wallet, attestation = get_create_sender_attestation(
+                sender_eth_address
+            )
+            return success_response(
+                {"owner_wallet": owner_wallet, "attestation": attestation}
+            )
+        except Exception as e:
+            abort(400, e)
+            return None
