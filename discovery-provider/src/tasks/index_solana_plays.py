@@ -16,6 +16,7 @@ from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.redis_cache import pickle_and_set
 from src.utils.redis_constants import latest_sol_play_tx_key
+from src.utils.solana_client import SolanaClient
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
 SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
@@ -95,26 +96,8 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
     return user_id, track_id, source, timestamp
 
 
-# Retry 5x until a tx 'result' is found with valid contents
-# If not found, move forward
-def get_sol_tx_info(solana_client, tx_sig, retries=5):
-    while retries > 0:
-        try:
-            tx_info = solana_client.get_confirmed_transaction(tx_sig)
-            if tx_info["result"] is not None:
-                return tx_info
-        except Exception as e:
-            logger.error(
-                f"index_solana_plays.py | Error fetching tx {tx_sig}, {e}",
-                exc_info=True,
-            )
-        retries -= 1
-        logger.error(f"index_solana_plays.py | Retrying tx fetch: {tx_sig}")
-    raise Exception(f"index_solana_plays.py | Failed to fetch {tx_sig}")
-
-
 # Cache the latest value in redis
-def cache_latest_tx_redis(solana_client, redis, tx):
+def cache_latest_tx_redis(redis, tx):
     try:
         tx_sig = tx["signature"]
         tx_slot = tx["slot"]
@@ -139,9 +122,9 @@ def is_valid_tx(account_keys):
     return False
 
 
-def parse_sol_play_transaction(session: Session, solana_client, tx_sig):
+def parse_sol_play_transaction(session: Session, solana_client: SolanaClient, tx_sig):
     try:
-        tx_info = get_sol_tx_info(solana_client, tx_sig)
+        tx_info = solana_client.get_sol_tx_info(tx_sig)
         logger.info(f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}")
         meta = tx_info["result"]["meta"]
         error = meta["err"]
@@ -320,7 +303,7 @@ is found - these limiting parameters are defined as TX_SIGNATURES_MAX_BATCHES, T
 """
 
 
-def process_solana_plays(solana_client, redis):
+def process_solana_plays(solana_client: SolanaClient, redis):
     try:
         base58.b58decode(TRACK_LISTEN_PROGRAM)
     except ValueError:
@@ -366,7 +349,7 @@ def process_solana_plays(solana_client, redis):
         else:
             # Cache latest transaction from chain
             if page_count == 0:
-                cache_latest_tx_redis(solana_client, redis, transactions_array[0])
+                cache_latest_tx_redis(redis, transactions_array[0])
             with db.scoped_session() as read_session:
                 for tx in transactions_array:
                     tx_sig = tx["signature"]

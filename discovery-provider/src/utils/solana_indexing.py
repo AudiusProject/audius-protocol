@@ -2,7 +2,6 @@ import enum
 import logging
 from typing import Optional, List, Dict, TypedDict, Any
 import base58
-from solana.rpc.api import Client
 
 logger = logging.getLogger(__name__)
 
@@ -137,26 +136,3 @@ def parse_instruction_data(data: str, instructionFormat: List[InstructionFormat]
             last_end = last_end + type_len
 
     return decoded_params
-
-
-# ============== Solana Fetch Transaction Info Helpers ==============
-
-
-def get_sol_tx_info(solana_client: Client, tx_sig: str, retries=5):
-    """Fetches a solana transaction by signature with retries
-
-    If not found, raise an exception
-    """
-    while retries > 0:
-        try:
-            tx_info = solana_client.get_confirmed_transaction(tx_sig)
-            if tx_info["result"] is not None:
-                return tx_info
-        except Exception as e:
-            logger.error(
-                f"get_sol_tx_info | Error fetching tx {tx_sig}, {e}",
-                exc_info=True,
-            )
-        retries -= 1
-        logger.error(f"get_sol_tx_info | Retrying tx fetch: {tx_sig}")
-    raise Exception(f"get_sol_tx_info | Failed to fetch {tx_sig}")

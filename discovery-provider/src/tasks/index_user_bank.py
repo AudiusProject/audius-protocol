@@ -13,7 +13,7 @@ from src.utils.config import shared_config
 from src.utils.solana import get_address_pair, SPL_TOKEN_ID_PK
 from src.models import User, UserBankTransaction, UserBankAccount
 from src.queries.get_balances import enqueue_immediate_balance_refresh
-from src.tasks.index_solana_plays import get_sol_tx_info
+from src.utils.solana_client import SolanaClient
 
 logger = logging.getLogger(__name__)
 
@@ -144,8 +144,10 @@ def process_user_bank_tx_details(
             refresh_user_balance(session, redis, acct_2)
 
 
-def parse_user_bank_transaction(session: Session, solana_client, tx_sig, redis):
-    tx_info = get_sol_tx_info(solana_client, tx_sig)
+def parse_user_bank_transaction(
+    session: Session, solana_client: SolanaClient, tx_sig, redis
+):
+    tx_info = solana_client.get_sol_tx_info(tx_sig)
     tx_slot = tx_info["result"]["slot"]
     timestamp = tx_info["result"]["blockTime"]
     parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)

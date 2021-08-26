@@ -12,7 +12,6 @@ from celery.schedules import crontab, timedelta
 from flask import Flask
 from flask.json import JSONEncoder
 from flask_cors import CORS
-from solana.rpc.api import Client
 from sqlalchemy import exc
 from sqlalchemy_utils import create_database, database_exists
 from web3 import HTTPProvider, Web3
@@ -40,8 +39,7 @@ from src.utils.ipfs_lib import IPFSClient
 from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
-
-SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
+from src.utils.solana_client import SolanaClient
 
 # these global vars will be set in create_celery function
 web3endpoint = None
@@ -166,7 +164,7 @@ def create_celery(test_config=None):
     eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
 
     # Initialize Solana web3 provider
-    solana_client = Client(SOLANA_ENDPOINT)
+    solana_client = SolanaClient()
 
     global registry
     global user_factory
