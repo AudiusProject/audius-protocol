@@ -11,4 +11,7 @@ class ChallengeEvent(str, enum.Enum):
     favorite = "favorite"
     track_listen = "track_listen"
     track_upload = "track_upload"
+    referral_signup = "referral_signup"  # Fired for the referring user
+    referred_signup = "referred_signup"  # Fired for the new user
     connect_verified = "connect_verified"
+    mobile_install = "mobile_install"

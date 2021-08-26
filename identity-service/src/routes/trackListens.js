@@ -7,6 +7,7 @@ const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
 const solClient = require('../solana-client.js')
 const config = require('../config.js')
+const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
 async function getListenHour () {
   let listenDate = new Date()
@@ -210,7 +211,10 @@ module.exports = function (app) {
     if (!userId || !trackId) {
       return errorResponseBadRequest('Must include user id and valid track id')
     }
-    const solanaListen = req.body.solanaListen || false
+
+    const optimizelyClient = app.get('optimizelyClient')
+    const isSolanaListenEnabled = getFeatureFlag(optimizelyClient, FEATURE_FLAGS.SOLANA_LISTEN_ENABLED_SERVER)
+    const solanaListen = req.body.solanaListen || isSolanaListenEnabled || false
 
     // Dedicated listen flow
     if (solanaListen) {

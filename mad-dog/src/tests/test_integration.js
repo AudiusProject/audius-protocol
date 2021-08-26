@@ -114,7 +114,7 @@ module.exports = coreIntegration = async ({
           )
           res = new TrackUploadResponse(walletIndex, trackId, track)
         } catch (e) {
-          logger.warn(`Caught error [${e.message}] uploading track: [${track}]`)
+          logger.error(`Caught error [${e.message}] uploading track: [${JSON.stringify(track)}]\n${e.stack}`)
           res = new TrackUploadResponse(
             walletIndex,
             null,
@@ -277,9 +277,8 @@ module.exports = coreIntegration = async ({
   }
   const failedWallets = Object.values(failedUploads)
   if (failedWallets.length) {
-    logger.info({ failedWallets, failedUploads })
     const userIds = failedWallets.map(w => walletIdMap[w])
-    logger.warn(`Uploads failed for user IDs=[${userIds}]`)
+    logger.error(`Uploads failed for user IDs=[${userIds}]`)
   }
 
   // Switch user primary (above tests have already confirmed all secondaries have latest state)

@@ -11,6 +11,9 @@ Track.uploadTrack = async (libs, trackMetadata, trackPath) => {
     trackMetadata
   })
 
+  // Wait for discovery node to index user
+  await libs.waitForLatestBlock()
+
   // Check that uploaded track is what we expect
   const uploadedTrackMetadata = await libs.getTrack(trackId)
 
