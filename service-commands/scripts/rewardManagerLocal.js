@@ -213,7 +213,9 @@ const findEthAddressForDiscProvAndRegister = async(serviceNumber) => {
     )
     const ethAccounts = await ethWeb3.eth.getAccounts()
     console.log(`Finding address for disc prov #${serviceNumber}`)
-    const discProvAccount = ethAccounts[8 + serviceNumber]
+    const accountIndex = 8 + parseInt(serviceNumber)
+    console.log(`Account index = ${accountIndex}`)
+    const discProvAccount = ethAccounts[accountIndex]
     console.log(`Eth address for disc prov #${serviceNumber}=${discProvAccount}`)
     await createSenderLocal(discProvAccount)
 }
