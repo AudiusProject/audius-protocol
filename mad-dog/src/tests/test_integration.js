@@ -190,10 +190,9 @@ module.exports = coreIntegration = async ({
           if (!walletTrackMap[walletIndex]) {
             walletTrackMap[walletIndex] = []
           }
-
-          walletTrackMap[walletIndex].push({
-            [trackId]: metadata
-          })
+          if (trackId){ // only add successfully uploaded tracks
+            walletTrackMap[walletIndex].push(trackId)
+          }
         }
         break
       }
@@ -311,7 +310,7 @@ module.exports = coreIntegration = async ({
     const userId = walletIdMap[walletIndex]
     const tracks = walletTrackMap[walletIndex]
     if (!tracks) continue
-    for (const trackId of Object.keys(tracks)) {
+    for (const trackId of tracks) {
       trackUploadInfo.push({
         walletIndex,
         trackId,
@@ -321,10 +320,11 @@ module.exports = coreIntegration = async ({
   }
 
   // Ensure all CIDs exist on all replicas
-  // const allCIDsExistOnCNodes = await verifyAllCIDsExistOnCNodes(trackUploadInfo, executeOne)
-  // if (!allCIDsExistOnCNodes) {
-  //   return { error: 'Not all CIDs exist on creator nodes.' }
-  // }
+  const allCIDsExistOnCNodes = await verifyAllCIDsExistOnCNodes(trackUploadInfo, executeOne)
+  if (!allCIDsExistOnCNodes) {
+    return { error: 'Not all CIDs exist on creator nodes.' }
+  }
+
   const failedWallets = Object.values(failedUploads)
   if (failedWallets.length) {
     const userIds = failedWallets.map(w => walletIdMap[w])
