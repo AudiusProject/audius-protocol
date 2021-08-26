@@ -32,6 +32,8 @@ const discoveryNodeType = 'discovery-node'
 const discoveryNodeTypeMin = 200000
 const discoveryNodeTypeMax = 7000000
 
+const DISCOVERY_WALLET_OFFSET = 8
+
 // try to dynamically get versions from .version.json
 let serviceVersions = {}
 let serviceTypesList = []
@@ -413,7 +415,7 @@ const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
 const makeDiscoveryProviderEndpoint = (serviceNumber) => `http://dn${serviceNumber}_web-server_1:${5000 + parseInt(serviceNumber) - 1}`
 
 const _registerDiscProv = async (ethAccounts, serviceNumber) => {
-  const audiusLibs = await initAudiusLibs(true, null, ethAccounts[8 + serviceNumber])
+  const audiusLibs = await initAudiusLibs(true, null, ethAccounts[DISCOVERY_WALLET_OFFSET + serviceNumber])
   const endpoint = makeDiscoveryProviderEndpoint(serviceNumber)
   await registerLocalService(audiusLibs, discoveryNodeType, endpoint, amountOfAuds)
 }
@@ -499,16 +501,10 @@ const _initEthContractTypes = async (libs) => {
 }
 
 const _configureDiscProv = async (ethAccounts, serviceNumber, envPath) => {
-  // const audiusLibs = await initAudiusLibs(true, null, discProvAccountPubkey)
-  // PKey is now recovered
   let ganacheEthAccounts = await getEthContractAccounts()
-  // console.log(ganacheEthAccounts)
-  let discProvAccountPubkey = ethAccounts[8 + serviceNumber].toLowerCase()
+  let discProvAccountPubkey = ethAccounts[DISCOVERY_WALLET_OFFSET + serviceNumber].toLowerCase()
   let delegateWalletPrivKey = ganacheEthAccounts['private_keys'][`${discProvAccountPubkey}`]
-  // console.log(`Pubkey - ${discProvAccountPubkey}:${delegateWalletPrivKey}`)
 
-  // const endpoint = makeDiscoveryProviderEndpoint(serviceNumber)
-  // await registerLocalService(audiusLibs, discoveryNodeType, endpoint, amountOfAuds)
   const fileStream = fs.createReadStream(envPath)
   const rl = readline.createInterface({
     input: fileStream,
