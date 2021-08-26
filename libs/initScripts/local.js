@@ -504,12 +504,6 @@ const _configureDiscProv = async (ethAccounts, serviceNumber, envPath) => {
   let ganacheEthAccounts = await getEthContractAccounts()
   let discProvAccountPubkey = ethAccounts[DISCOVERY_WALLET_OFFSET + serviceNumber].toLowerCase()
   let delegateWalletPrivKey = ganacheEthAccounts['private_keys'][`${discProvAccountPubkey}`]
-
-  const fileStream = fs.createReadStream(envPath)
-  const rl = readline.createInterface({
-    input: fileStream,
-    crlfDelay: Infinity
-  })
   const delegateOwnerWalletPubkeyLine = `export audius_delegate_owner_wallet=${discProvAccountPubkey}`
   const delegateOwnerWalletPkeyLine = `export audius_delegate_private_key=${delegateWalletPrivKey}`
   let output = []
