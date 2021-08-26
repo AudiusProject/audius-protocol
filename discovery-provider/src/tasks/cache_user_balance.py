@@ -40,6 +40,7 @@ WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS) if WAUDIO_MINT_ADDRESS else 
 
 MAX_LAZY_REFRESH_USER_IDS = 100
 
+
 class AssociatedWallets(TypedDict):
     eth: List[str]
     sol: List[str]
@@ -109,7 +110,9 @@ def refresh_user_ids(
     waudio_token,
 ):
     with db.scoped_session() as session:
-        lazy_refresh_user_ids = get_lazy_refresh_user_ids(redis, session)[:MAX_LAZY_REFRESH_USER_IDS]
+        lazy_refresh_user_ids = get_lazy_refresh_user_ids(redis, session)[
+            :MAX_LAZY_REFRESH_USER_IDS
+        ]
         immediate_refresh_user_ids = get_immediate_refresh_user_ids(redis)
 
         logger.info(
@@ -365,7 +368,7 @@ def update_user_balances_task(self):
     db = update_user_balances_task.db
     redis = update_user_balances_task.redis
     eth_web3 = update_user_balances_task.eth_web3
-    solana_client = update_user_balances_task.solana_client
+    solana_client_manager = update_user_balances_task.solana_client_manager
 
     have_lock = False
     update_lock = redis.lock("update_user_balances_lock", timeout=7200)
@@ -381,7 +384,7 @@ def update_user_balances_task(self):
             token_inst = get_token_contract(
                 eth_web3, update_user_balances_task.shared_config
             )
-            waudio_token = get_audio_token(solana_client)
+            waudio_token = get_audio_token(solana_client_manager.get_client())
             refresh_user_ids(
                 redis,
                 db,

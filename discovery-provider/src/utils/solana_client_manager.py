@@ -16,9 +16,12 @@ DEFAULT_MAX_RETRIES = 5
 DELAY_SECONDS = 0.2
 
 
-class SolanaClient:
+class SolanaClientManager:
     def __init__(self) -> None:
         self.client = Client(SOLANA_ENDPOINT)
+
+    def get_client(self) -> Client:
+        return self.client
 
     def get_sol_tx_info(self, tx_sig: str, retries=DEFAULT_MAX_RETRIES):
         """Fetches a solana transaction by signature with retries and a delay

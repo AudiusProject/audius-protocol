@@ -16,7 +16,7 @@ from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.redis_cache import pickle_and_set
 from src.utils.redis_constants import latest_sol_play_tx_key
-from src.utils.solana_client import SolanaClient
+from src.utils.solana_client_manager import SolanaClientManager
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
 SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
@@ -122,9 +122,11 @@ def is_valid_tx(account_keys):
     return False
 
 
-def parse_sol_play_transaction(session: Session, solana_client: SolanaClient, tx_sig):
+def parse_sol_play_transaction(
+    session: Session, solana_client_manager: SolanaClientManager, tx_sig
+):
     try:
-        tx_info = solana_client.get_sol_tx_info(tx_sig)
+        tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         logger.info(f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}")
         meta = tx_info["result"]["meta"]
         error = meta["err"]
@@ -303,7 +305,7 @@ is found - these limiting parameters are defined as TX_SIGNATURES_MAX_BATCHES, T
 """
 
 
-def process_solana_plays(solana_client: SolanaClient, redis):
+def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
     try:
         base58.b58decode(TRACK_LISTEN_PROGRAM)
     except ValueError:
@@ -335,8 +337,10 @@ def process_solana_plays(solana_client: SolanaClient, redis):
 
     # Traverse recent records until an intersection is found with existing Plays table
     while not intersection_found:
-        transactions_history = solana_client.get_confirmed_signature_for_address2(
-            TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=100
+        transactions_history = (
+            solana_client_manager.get_confirmed_signature_for_address2(
+                TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=100
+            )
         )
         transactions_array = transactions_history["result"]
         if not transactions_array:
@@ -423,7 +427,10 @@ def process_solana_plays(solana_client: SolanaClient, redis):
             with db.scoped_session() as session:
                 parse_sol_tx_futures = {
                     executor.submit(
-                        parse_sol_play_transaction, session, solana_client, tx_sig
+                        parse_sol_play_transaction,
+                        session,
+                        solana_client_manager,
+                        tx_sig,
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
@@ -450,7 +457,7 @@ def index_solana_plays(self):
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
     redis = index_solana_plays.redis
-    solana_client = index_solana_plays.solana_client
+    solana_client_manager = index_solana_plays.solana_client_manager
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
@@ -464,7 +471,7 @@ def index_solana_plays(self):
             logger.info("index_solana_plays.py | Acquired lock")
             challenge_bus: ChallengeEventBus = index_solana_plays.challenge_event_bus
             with challenge_bus.use_scoped_dispatch_queue():
-                process_solana_plays(solana_client, redis)
+                process_solana_plays(solana_client_manager, redis)
         else:
             logger.info("index_solana_plays.py | Failed to acquire lock")
     except Exception as e:
