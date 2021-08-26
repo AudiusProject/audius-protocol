@@ -1,5 +1,5 @@
 import logging
-from typing import List, Union
+from typing import Union
 
 from redis import Redis
 from src.queries.get_related_artists import update_related_artist_scores_if_needed

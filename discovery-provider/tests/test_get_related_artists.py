@@ -1,18 +1,16 @@
+import math
 from datetime import datetime, timedelta
+
 from src.models.related_artist import RelatedArtist
 from src.queries.get_related_artists import (
     _calculate_related_artists_scores,
     get_related_artists,
     update_related_artist_scores_if_needed,
 )
-from .utils import populate_mock_db
-import redis
-from src.utils.config import shared_config
 from src.utils.db_session import get_db
-import math
 
+from .utils import populate_mock_db
 
-REDIS_URL = shared_config["redis"]["url"]
 
 entities = {
     "users": [{}] * 7,

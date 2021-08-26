@@ -1,13 +1,13 @@
 import logging
 from datetime import datetime
-from src.tasks.index_related_artists import queue_related_artist_calculation
 from typing import Dict
-from src.challenges.challenge_event_bus import ChallengeEventBus
 
 from src.app import contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models import Follow, Playlist, Repost, RepostType
+from src.tasks.index_related_artists import queue_related_artist_calculation
 from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
