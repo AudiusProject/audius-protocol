@@ -19,7 +19,7 @@ const Event = Object.freeze({
  */
 const tick = async (emitter, intervalSeconds, totalDurationSeconds) => {
   const token = setInterval(() => {
-    logger.info('Tick')
+    logger.info(`Tick at interval ${intervalSeconds * 1000}`)
     emitter.emit(Event.TICK)
   }, intervalSeconds * 1000)
 
@@ -83,7 +83,7 @@ class EmitterBasedTest {
   registerOnRequestListener (listener) {
     this.emitter.on(Event.REQUEST, request => {
       this.inFlightCount += 1
-      logger.info(`Handling request: [${request.type}]]`)
+      logger.info(`Handling request: [${request.type}]`)
       logger.info(`[${this.inFlightCount}] requests in flight.`)
       listener(request, this.emit)
     })

@@ -328,6 +328,9 @@ const discoveryNodeUp = async () => {
   // Start up the docker network `audius_dev`
   await runSetupCommand(Service.NETWORK, SetupCommand.UP)
 
+  // Start up the Solana test validator
+  await runSetupCommand(Service.SOLANA_VALIDATOR, SetupCommand.UP)
+
   // Run parallel ops
   await Promise.all(inParallel.map(s => runSetupCommand(...s)))
 
@@ -384,6 +387,9 @@ const discoveryNodeWebServerUp = async () => {
 
   // Start up the docker network `audius_dev`
   await runSetupCommand(Service.NETWORK, SetupCommand.UP)
+
+  // Start up the Solana test validator
+  await runSetupCommand(Service.SOLANA_VALIDATOR, SetupCommand.UP)
 
   // Run parallel ops
   await Promise.all(inParallel.map(s => runSetupCommand(...s)))
@@ -520,6 +526,9 @@ const identityServiceUp = async () => {
 
   // Start up the docker network `audius_dev`
   await runSetupCommand(Service.NETWORK, SetupCommand.UP)
+
+  // Start up the Solana test validator
+  await runSetupCommand(Service.SOLANA_VALIDATOR, SetupCommand.UP)
 
   // Run parallel ops
   await Promise.all(inParallel.map(s => runSetupCommand(...s)))

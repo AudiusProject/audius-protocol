@@ -122,7 +122,8 @@ function LibsWrapper (walletIndex = 0) {
       identityServiceConfig,
       creatorNodeConfig,
       isServer: true,
-      enableUserReplicaSetManagerContract: true
+      enableUserReplicaSetManagerContract: true,
+      useTrackContentPolling: true
     })
 
     try {
@@ -655,7 +656,7 @@ function LibsWrapper (walletIndex = 0) {
 
   /**
   * Wait for the discovery node to catch up to the latest block on chain up to a max
-  * indexing timeout of default 10000ms. Used to check IPLD block indexing.
+  * indexing timeout of default 10000ms.
   * @param {number} [maxIndexingTimeout=10000] max time indexing window
   */
   this.waitForLatestIPLDBlock = async (maxIndexingTimeout = MAX_INDEXING_TIMEOUT) => {
