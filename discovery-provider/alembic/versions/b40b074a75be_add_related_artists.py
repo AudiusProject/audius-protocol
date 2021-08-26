@@ -25,7 +25,7 @@ def upgrade():
 
     op.create_table(
         "related_artists",
-        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("user_id", sa.Integer(), nullable=False, index=True),
         sa.Column("related_artist_user_id", sa.Integer(), nullable=False),
         sa.Column("score", sa.Float(), nullable=False),
         sa.Column("created", sa.DateTime(), nullable=False),

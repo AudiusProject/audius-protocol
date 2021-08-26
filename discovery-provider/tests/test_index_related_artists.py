@@ -44,7 +44,7 @@ def test_index_related_artists(app):
         + [{"follower_user_id": i, "followee_user_id": 5} for i in range(151, 651)]
         # 60 mutual followers between user_5 & user_0 make up 30% of user_6 followers = score 18
         + [{"follower_user_id": i, "followee_user_id": 6} for i in range(141, 341)],
-        "tracks": [{"owner_id": i} for i in range(0, 341)],
+        "tracks": [{"owner_id": i} for i in range(0, 7)],
     }
     populate_mock_db(db, entities)
     with db.scoped_session() as session:
@@ -73,11 +73,11 @@ def test_index_related_artists(app):
         assert results[3].related_artist_user_id == 3 and math.isclose(
             results[3].score, 10, abs_tol=0.001
         )
-        assert results[4].related_artist_user_id == 4 and math.isclose(
-            results[4].score, 3.2, abs_tol=0.001
+        assert results[4].related_artist_user_id == 5 and math.isclose(
+            results[4].score, 5, abs_tol=0.001
         )
-        assert results[5].related_artist_user_id == 5 and math.isclose(
-            results[5].score, 5, abs_tol=0.001
+        assert results[5].related_artist_user_id == 4 and math.isclose(
+            results[5].score, 3.2, abs_tol=0.001
         )
     populate_mock_db(
         db,

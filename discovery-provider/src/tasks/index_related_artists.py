@@ -12,7 +12,6 @@ INDEX_RELATED_ARTIST_REDIS_QUEUE = "related-artists-calculation-queue"
 
 
 def queue_related_artist_calculation(redis: Redis, user_id: int):
-    # Prioritize users by how many times they've been followed
     redis.rpush(INDEX_RELATED_ARTIST_REDIS_QUEUE, user_id)
 
 

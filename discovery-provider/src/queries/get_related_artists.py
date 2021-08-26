@@ -10,15 +10,28 @@ from src.models.models import AggregateUser, Follow, User
 from src.queries.query_helpers import helpers
 from src.utils.helpers import time_method
 
+# Let calculations sit for this long before requiring recalculating
 CALCULATION_TTL = timedelta(weeks=2)
+# Only calculate for users with at least this many followers
 MIN_FOLLOWER_REQUIREMENT = 200
+# Only sample for users with at least this many followers
 MAX_FOLLOWERS_WITHOUT_SAMPLE = 10000
+# Set the sample size to 3 million, an extremely generous cap (roughly 50% at time of writing)
+SAMPLE_SIZE_ROWS = 3000000
+# The minimum score required to be recommended for an artist (also the minimum number of followers needed to be recommended)
+MIN_SCORE_THRESHOLD = 2
+# Maximum number of related artists to have precalculated
+MAX_RELATED_ARTIST_COUNT = 100
 
 
 @time_method
 def _calculate_related_artists_scores(
-    session: Session, user_id, sample_size=None
+    session: Session, user_id, sample_size=None, limit=MAX_RELATED_ARTIST_COUNT
 ) -> List[RelatedArtist]:
+    """Calculates the scores of related artists to the given user_id by querying who followers of the user_id also follow, and using the scoring algorithm:
+
+    `score = mutual_follower_count * percentage_of_suggested_artist_followers`
+    """
 
     # Get all the followers of the artist
     followers_subquery = aliased(
@@ -87,9 +100,13 @@ def _calculate_related_artists_scores(
         .select_from(mutual_followers_subquery)
         .join(AggregateUser, AggregateUser.user_id == column("suggested_artist_id"))
         .join(User, User.user_id == column("suggested_artist_id"))
-        .filter(User.is_current, AggregateUser.track_count > 0)
+        .filter(
+            User.is_current,
+            AggregateUser.track_count > 0,
+            column("score") >= MIN_SCORE_THRESHOLD,
+        )
         .order_by(desc(column("score")))
-        .limit(100)
+        .limit(limit)
     )
     rows = scoring_query.all()
     related_artists = [
@@ -107,6 +124,18 @@ def _calculate_related_artists_scores(
 def update_related_artist_scores_if_needed(
     session: Session, user_id: int
 ) -> Tuple[bool, str]:
+    """Checks to make sure the user specified has at least a minimum required number of followers, and that they don't already have fresh RelatedArtist calculation, and then if necessary calculates the new related artist scores.
+
+    Args:
+        session (Session): the db sesssion to use for the connection
+        user_id (int): the user_id of the user of which we're finding related artists
+
+    Returns:
+        bool: whether an update was needed
+        str: the reason why an update was not needed, if applicable
+    """
+
+    # Filter by followers first, since that narrows down more users
     aggregate_user = (
         session.query(AggregateUser)
         .filter(AggregateUser.user_id == user_id)
@@ -127,7 +156,9 @@ def update_related_artist_scores_if_needed(
         )
     # Use table sampling if more than a certain number of followers
     if aggregate_user.follower_count >= MAX_FOLLOWERS_WITHOUT_SAMPLE:
-        related_artists = _calculate_related_artists_scores(session, user_id, 1000000)
+        related_artists = _calculate_related_artists_scores(
+            session, user_id, SAMPLE_SIZE_ROWS
+        )
     else:
         related_artists = _calculate_related_artists_scores(session, user_id)
     if related_artists:
@@ -137,26 +168,28 @@ def update_related_artist_scores_if_needed(
     return False, "No results"
 
 
-def _get_related_artists(session: Session, user_id: int):
+def _get_related_artists(session: Session, user_id: int, limit=100):
     related_artists = (
         session.query(User)
         .select_from(RelatedArtist)
         .join(User, User.user_id == RelatedArtist.related_artist_user_id)
         .filter(RelatedArtist.user_id == user_id, User.is_current)
         .order_by(desc(RelatedArtist.score))
+        .limit(limit)
         .all()
     )
     return helpers.query_result_to_list(related_artists)
 
 
-def _get_top_artists(session: Session):
+def _get_top_artists(session: Session, limit=100):
+    """Gets the top artists by follows of all of Audius"""
     top_artists = (
         session.query(User)
         .select_from(AggregateUser)
         .join(User, User.user_id == AggregateUser.user_id)
         .filter(AggregateUser.track_count > 0, User.is_current)
         .order_by(desc(AggregateUser.follower_count))
-        .limit(100)
+        .limit(limit)
         .all()
     )
     return helpers.query_result_to_list(top_artists)

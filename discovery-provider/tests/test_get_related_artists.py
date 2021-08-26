@@ -31,7 +31,7 @@ entities = {
     + [{"follower_user_id": i, "followee_user_id": 5} for i in range(151, 651)]
     # 60 mutual followers between user_5 & user_0 make up 30% of user_6 followers = score 18
     + [{"follower_user_id": i, "followee_user_id": 6} for i in range(141, 341)],
-    "tracks": [{"owner_id": i} for i in range(0, 341)],
+    "tracks": [{"owner_id": i} for i in range(0, 7)],
 }
 
 
@@ -92,6 +92,7 @@ def test_calculate_related_artists_scores(app):
 
 
 def test_update_related_artist_scores_if_needed(app):
+    """Tests all cases of update_related_artist_scores_if_needed: not enough followers, existing fresh scores, and needing recalculation"""
     with app.app_context():
         db = get_db()
 
@@ -115,6 +116,7 @@ def test_update_related_artist_scores_if_needed(app):
 
 
 def test_get_related_artists_top_n(app):
+    """Tests that artists with too few followers get a generic list of top artists by follows"""
     with app.app_context():
         db = get_db()
     populate_mock_db(db, entities)
@@ -122,7 +124,9 @@ def test_get_related_artists_top_n(app):
         session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
         artists = get_related_artists(session, 1)
     assert artists[0]["user_id"] == 5
-    assert artists[1]["user_id"] == 6 or artists[2]["user_id"] == 6
+    assert (
+        artists[1]["user_id"] == 6 or artists[2]["user_id"] == 6
+    )  # 6 and 0 have the same number of follows
     assert artists[2]["user_id"] == 0 or artists[1]["user_id"] == 0
     assert artists[3]["user_id"] == 2
     assert artists[4]["user_id"] == 1

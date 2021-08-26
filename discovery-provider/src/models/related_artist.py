@@ -12,7 +12,7 @@ from .models import Base
 class RelatedArtist(Base):
     __tablename__ = "related_artists"
 
-    user_id = Column(Integer, nullable=False)
+    user_id = Column(Integer, nullable=False, index=True)
     related_artist_user_id = Column(Integer, nullable=False)
     score = Column(Float, nullable=False)
     created = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
@@ -24,4 +24,4 @@ class RelatedArtist(Base):
 user_id={self.user_id},\
 related_artist_user_id={self.related_artist_user_id},\
 score={self.score},\
-createds={self.created}>"
+created={self.created}>"
