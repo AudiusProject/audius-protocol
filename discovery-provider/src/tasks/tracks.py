@@ -99,7 +99,7 @@ def track_state_update(
                     # do not process entry if cid is blacklisted
                     if cid in blacklisted_cids:
                         continue
-                    track_metadata = ipfs_metadata.get(cid)
+                    track_metadata = ipfs_metadata[cid]
 
                 try:
                     parsed_track = parse_track_event(
