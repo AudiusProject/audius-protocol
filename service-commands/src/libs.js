@@ -228,29 +228,29 @@ function LibsWrapper (walletIndex = 0) {
     if (error) throw error
     return trackId
   }
+
   /**
    * Repost a track.
    *
-   * @param {*} args trackId
+   * @param {number} args trackId
    * @returns transaction receipt
    * @throws any libs error
    */
    this.repostTrack = async trackId => {
     assertLibsDidInit()
-
     return await this.libsInstance.Track.addTrackRepost(trackId)
   }
 
 /**
  * Gets reposters for a tracks.
  *
- * @param {*} args trackId
+ * @param {number} args trackId
  * @returns trackId
  * @throws any libs error
  */
   this.getRepostersForTrack = async trackId => {
     assertLibsDidInit()
-    return await this.libsInstance.Track.getRepostersForTrack(100,0,trackId)
+    return await this.libsInstance.Track.getRepostersForTrack(100, 0, trackId)
   }
 
   /**

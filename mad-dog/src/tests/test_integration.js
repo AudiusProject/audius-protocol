@@ -100,6 +100,7 @@ module.exports = coreIntegration = async ({
   })
 
   const uploadedTracks = []
+  const tracksAttemptedRepost = []
 
   // Register the request listener. The only request type this test
   // currently handles is to upload tracks.
@@ -118,7 +119,7 @@ module.exports = coreIntegration = async ({
           const trackId = await executeOne(walletIndex, l =>
             uploadTrack(l, track, randomTrackFilePath)
           )
-          uploadedTracks.push(trackId)
+          uploadedTracks.push({trackId, userId})
           res = new TrackUploadResponse(walletIndex, trackId, track)
         } catch (e) {
           logger.error(`Caught error [${e.message}] uploading track: [${JSON.stringify(track)}]\n${e.stack}`)
@@ -137,13 +138,13 @@ module.exports = coreIntegration = async ({
       }
       case OPERATION_TYPE.TRACK_REPOST: {
         if (uploadedTracks.length === 0){
-          logger.info("Cannot repost until a track is uploaded")
+          let missingTrackMessage = "Cannot repost until a track is uploaded"
+          logger.info(missingTrackMessage)
           res = new TrackRepostResponse(walletIndex, null, userId, false)
         } else {
-          const trackId = uploadedTracks[uploadedTracks.length - 1]
+          const trackId = uploadedTracks.filter(obj => obj[1] != userId)[0].trackId
           try {
-            // Execute a track upload request against a single
-            // instance of libs.
+            tracksAttemptedRepost.push(trackId)
             const transaction = await executeOne(walletIndex, l =>
               repostTrack(l, trackId)
             )
@@ -332,7 +333,8 @@ module.exports = coreIntegration = async ({
 
   const allTracksReposted = verifyTracksReposted(executeOne)
   if (!allTracksReposted){
-    return { error: 'Not all tracks were reposted.' }
+    const tracksWithNoRepost = tracksAttemptedRepost.filter(obj => !repostedTracks.map(obj => obj[0]).includes(obj)) // filter attempted reposts that were not successfully reposted
+    logger.error(`Tracks without a repost=[${tracksWithNoRepost}]`)
 }
 
   // Switch user primary (above tests have already confirmed all secondaries have latest state)
