@@ -19,9 +19,6 @@ MIN_FOLLOWER_REQUIREMENT = 200
 MAX_FOLLOWERS_WITHOUT_SAMPLE = 10000
 # Set the sample size to 3 million, an extremely generous cap (roughly 50% at time of writing)
 SAMPLE_SIZE_ROWS = 3000000
-# The minimum score required to be recommended for an artist
-# (also the minimum number of followers needed to be recommended)
-MIN_SCORE_THRESHOLD = 2
 # Maximum number of related artists to have precalculated
 MAX_RELATED_ARTIST_COUNT = 100
 
@@ -103,11 +100,7 @@ def _calculate_related_artists_scores(
         .select_from(mutual_followers_subquery)
         .join(AggregateUser, AggregateUser.user_id == column("suggested_artist_id"))
         .join(User, User.user_id == column("suggested_artist_id"))
-        .filter(
-            User.is_current,
-            AggregateUser.track_count > 0,
-            column("score") >= MIN_SCORE_THRESHOLD,
-        )
+        .filter(User.is_current, AggregateUser.track_count > 0)
         .order_by(desc(column("score")))
         .limit(limit)
     )
