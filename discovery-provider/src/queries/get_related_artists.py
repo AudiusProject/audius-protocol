@@ -19,7 +19,8 @@ MIN_FOLLOWER_REQUIREMENT = 200
 MAX_FOLLOWERS_WITHOUT_SAMPLE = 10000
 # Set the sample size to 3 million, an extremely generous cap (roughly 50% at time of writing)
 SAMPLE_SIZE_ROWS = 3000000
-# The minimum score required to be recommended for an artist (also the minimum number of followers needed to be recommended)
+# The minimum score required to be recommended for an artist
+# (also the minimum number of followers needed to be recommended)
 MIN_SCORE_THRESHOLD = 2
 # Maximum number of related artists to have precalculated
 MAX_RELATED_ARTIST_COUNT = 100
@@ -29,7 +30,8 @@ MAX_RELATED_ARTIST_COUNT = 100
 def _calculate_related_artists_scores(
     session: Session, user_id, sample_size=None, limit=MAX_RELATED_ARTIST_COUNT
 ) -> List[RelatedArtist]:
-    """Calculates the scores of related artists to the given user_id by querying who followers of the user_id also follow, and using the scoring algorithm:
+    """Calculates the scores of related artists to the given user_id by
+    querying who followers of the user_id also follow and using the scoring algorithm:
 
     `score = mutual_follower_count * percentage_of_suggested_artist_followers`
     """
@@ -125,7 +127,9 @@ def _calculate_related_artists_scores(
 def update_related_artist_scores_if_needed(
     session: Session, user_id: int
 ) -> Tuple[bool, str]:
-    """Checks to make sure the user specified has at least a minimum required number of followers, and that they don't already have fresh RelatedArtist calculation, and then if necessary calculates the new related artist scores.
+    """Checks to make sure the user specified has at least a minimum required number of followers,
+    and that they don't already have fresh score calculation,
+    and then if necessary calculates new related artist scores.
 
     Args:
         session (Session): the db sesssion to use for the connection
