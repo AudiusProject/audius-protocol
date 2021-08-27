@@ -127,14 +127,14 @@
 }
 
 .created {
-  padding: 2px 6px;
+  padding: 4px 6px;
   border-radius: 50px;
   border: 1px solid var(--white);
   background: var(--primary);
 }
 
 .owned {
-  padding: 2px 6px;
+  padding: 4px 6px;
   border-radius: 50px;
   border: 1px solid var(--white);
   background: var(--secondary);
@@ -171,6 +171,8 @@
 }
 
 .detailsStamp {
+  display: flex;
+  align-items: center;
   margin-bottom: 20px;
   font-size: var(--font-2xs);
   color: var(--white);
@@ -254,9 +256,10 @@
 
 .detailsMediaWrapper img {
   border-radius: 8px;
-  width: 100%;
+  width: auto;
   pointer-events: none;
   cursor: default;
+  max-height: 70vh;
 }
 
 .detailsMediaWrapper video {
@@ -294,6 +297,13 @@
   max-width: none;
   max-height: none;
   height: auto;
+}
+
+.nftDrawer .detailsMediaWrapper img {
+  border-radius: 8px;
+  max-width: 100%;
+  pointer-events: none;
+  cursor: default;
 }
 
 .nftDrawer .volumeIcon {
@@ -509,6 +519,15 @@
   background-color: var(--secondary) !important;
 }
 
+.chainIcon {
+  border: 1px solid var(--neutral-light-7);
+  border-radius: 50%;
+  padding: 2px;
+  margin-left: 8px;
+  width: 24px;
+  height: 24px;
+}
+
 .mobile.collectiblesWrapper {
   min-width: unset;
 }
@@ -576,10 +595,6 @@
 
 .mobileSubtitle {
   text-align: center;
-}
-
-.content {
-  padding: 0 24px;
 }
 
 .mobileContent {

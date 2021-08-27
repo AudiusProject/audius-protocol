@@ -1,14 +1,19 @@
 import * as allPromisesSettled from 'promise.allsettled'
 
-import { Collectible } from 'containers/collectibles/components/types'
 import {
   isAssetValid,
   assetToCollectible,
   creationEventToCollectible,
   transferEventToCollectible,
   isNotFromNullAddress
-} from 'containers/collectibles/helpers'
-import { OpenSeaAsset, OpenSeaEvent } from 'services/opensea-client/types'
+} from 'containers/collectibles/ethCollectibleHelpers'
+import { Collectible, CollectibleState } from 'containers/collectibles/types'
+import {
+  OpenSeaAsset,
+  OpenSeaAssetExtended,
+  OpenSeaEvent,
+  OpenSeaEventExtended
+} from 'services/opensea-client/types'
 
 const OPENSEA_API_URL = process.env.REACT_APP_OPENSEA_API_URL
 const OPENSEA_NUM_ASSETS_LIMIT = 1000
@@ -28,18 +33,24 @@ class OpenSeaClient {
   async getTransferredCollectiblesForMultipleWallets(
     wallets: string[],
     limit = OPENSEA_NUM_ASSETS_LIMIT
-  ): Promise<OpenSeaEvent[]> {
+  ): Promise<OpenSeaEventExtended[]> {
     return Promise.allSettled(
       wallets.map(wallet =>
         client.getTransferredCollectiblesForWallet(wallet, limit)
       )
     ).then(results =>
       results
-        .filter(result => result.status === 'fulfilled')
+        .map((result, i) => ({ result, wallet: wallets[i] }))
+        .filter(({ result }) => result.status === 'fulfilled')
         .map(
-          result =>
-            (result as PromiseFulfilledResult<{ asset_events: OpenSeaEvent[] }>)
-              .value.asset_events
+          ({ result, wallet }) =>
+            (result as PromiseFulfilledResult<{
+              asset_events: OpenSeaEvent[]
+            }>).value.asset_events?.map(event => ({
+              ...event,
+              asset: { ...event.asset, wallet },
+              wallet
+            })) || []
         )
         .flat()
     )
@@ -57,18 +68,24 @@ class OpenSeaClient {
   async getCreatedCollectiblesForMultipleWallets(
     wallets: string[],
     limit = OPENSEA_NUM_ASSETS_LIMIT
-  ): Promise<OpenSeaEvent[]> {
+  ): Promise<OpenSeaEventExtended[]> {
     return Promise.allSettled(
       wallets.map(wallet =>
         client.getCreatedCollectiblesForWallet(wallet, limit)
       )
     ).then(results =>
       results
-        .filter(result => result.status === 'fulfilled')
+        .map((result, i) => ({ result, wallet: wallets[i] }))
+        .filter(({ result }) => result.status === 'fulfilled')
         .map(
-          result =>
-            (result as PromiseFulfilledResult<{ asset_events: OpenSeaEvent[] }>)
-              .value.asset_events
+          ({ result, wallet }) =>
+            (result as PromiseFulfilledResult<{
+              asset_events: OpenSeaEvent[]
+            }>).value.asset_events?.map(event => ({
+              ...event,
+              asset: { ...event.asset, wallet },
+              wallet
+            })) || []
         )
         .flat()
     )
@@ -86,22 +103,24 @@ class OpenSeaClient {
   async getCollectiblesForMultipleWallets(
     wallets: string[],
     limit = OPENSEA_NUM_ASSETS_LIMIT
-  ): Promise<OpenSeaAsset[]> {
+  ): Promise<OpenSeaAssetExtended[]> {
     return Promise.allSettled(
       wallets.map(wallet => client.getCollectiblesForWallet(wallet, limit))
     ).then(results =>
       results
-        .filter(result => result.status === 'fulfilled')
+        .map((result, i) => ({ result, wallet: wallets[i] }))
+        .filter(({ result }) => result.status === 'fulfilled')
         .map(
-          result =>
-            (result as PromiseFulfilledResult<{ assets: OpenSeaAsset[] }>).value
-              .assets
+          ({ result, wallet }) =>
+            (result as PromiseFulfilledResult<{
+              assets: OpenSeaAsset[]
+            }>).value.assets?.map(asset => ({ ...asset, wallet })) || []
         )
         .flat()
     )
   }
 
-  async getAllCollectibles(wallets: string[]) {
+  async getAllCollectibles(wallets: string[]): Promise<CollectibleState> {
     return Promise.all([
       client.getCollectiblesForMultipleWallets(wallets),
       client.getCreatedCollectiblesForMultipleWallets(wallets),
@@ -132,7 +151,7 @@ class OpenSeaClient {
             isAssetValid(event.asset) &&
             !isNotFromNullAddress(event)
         )
-        .reduce((acc: { [key: string]: OpenSeaEvent }, curr) => {
+        .reduce((acc: { [key: string]: OpenSeaEventExtended }, curr) => {
           const { token_id, asset_contract } = curr.asset
           const id = `${token_id}:::${asset_contract?.address ?? ''}`
           if (
@@ -182,7 +201,7 @@ class OpenSeaClient {
             isAssetValid(event.asset) &&
             isNotFromNullAddress(event)
         )
-        .reduce((acc: { [key: string]: OpenSeaEvent }, curr) => {
+        .reduce((acc: { [key: string]: OpenSeaEventExtended }, curr) => {
           const { token_id, asset_contract } = curr.asset
           const id = `${token_id}:::${asset_contract?.address ?? ''}`
           if (
@@ -210,7 +229,15 @@ class OpenSeaClient {
         })
       )
 
-      return Object.values(collectiblesMap)
+      return Object.values(collectiblesMap).reduce(
+        (result, collectible) => ({
+          ...result,
+          [collectible.wallet]: (result[collectible.wallet] || []).concat([
+            collectible
+          ])
+        }),
+        {} as CollectibleState
+      )
     })
   }
 }

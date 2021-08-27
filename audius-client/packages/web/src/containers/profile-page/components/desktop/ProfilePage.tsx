@@ -251,7 +251,8 @@ const ProfilePage = ({
   const profileHasCollectiblesTierRequirement =
     tierNumber >= badgeTiers.findIndex(t => t.tier === MIN_COLLECTIBLES_TIER)
 
-  const profileHasCollectibles = profile?.collectibleList?.length
+  const profileHasCollectibles =
+    profile?.collectibleList?.length || profile?.solanaCollectibleList?.length
   const profileNeverSetCollectiblesOrder = !profile?.collectibles
   const profileHasNonEmptyCollectiblesOrder =
     profile?.collectibles?.order.length

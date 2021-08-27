@@ -17,6 +17,9 @@ import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
 import { setAudiusAccountUser } from 'services/LocalStorage'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
+import { FeatureFlags } from 'services/remote-config'
+import { getFeatureEnabled } from 'services/remote-config/Provider'
+import SolanaClient from 'services/solana-client/SolanaClient'
 import { getUserId } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as cacheActions from 'store/cache/actions'
@@ -75,30 +78,68 @@ function* fetchProfileCustomizedCollectibles(user) {
   }
 }
 
-function* fetchOpenSeaAssets(user) {
-  const associatedWallets = yield apiClient.getAssociatedWallets({
+export function* fetchOpenSeaAssetsForWallets(wallets) {
+  return yield call(OpenSeaClient.getAllCollectibles, wallets)
+}
+
+export function* fetchOpenSeaAssets(user) {
+  const { wallets } = yield apiClient.getAssociatedWallets({
     userID: user.user_id
   })
-  const collectibleList = yield call(OpenSeaClient.getAllCollectibles, [
+  const collectiblesMap = yield call(fetchOpenSeaAssetsForWallets, [
     user.wallet,
-    ...associatedWallets.wallets
+    ...wallets
   ])
-  if (collectibleList) {
-    if (collectibleList.length) {
-      yield put(
-        cacheActions.update(Kind.USERS, [
-          {
-            id: user.user_id,
-            metadata: { collectibleList }
-          }
-        ])
-      )
-    } else {
-      console.log('profile has no assets in OpenSea')
-    }
-  } else {
-    console.log('could not fetch OpenSea assets')
+
+  const collectibleList = Object.values(collectiblesMap).flat()
+  if (!collectibleList.length) {
+    console.log('profile has no assets in OpenSea')
   }
+
+  yield put(
+    cacheActions.update(Kind.USERS, [
+      {
+        id: user.user_id,
+        metadata: { collectibleList }
+      }
+    ])
+  )
+}
+
+export function* fetchSolanaCollectiblesForWallets(wallets) {
+  if (!getFeatureEnabled(FeatureFlags.SOLANA_COLLECTIBLES_ENABLED)) {
+    return {}
+  }
+
+  return yield call(SolanaClient.getAllCollectibles, wallets)
+}
+
+export function* fetchSolanaCollectibles(user) {
+  if (!getFeatureEnabled(FeatureFlags.SOLANA_COLLECTIBLES_ENABLED)) {
+    return
+  }
+
+  const { sol_wallets: solWallets } = yield apiClient.getAssociatedWallets({
+    userID: user.user_id
+  })
+  const collectiblesMap = yield call(
+    fetchSolanaCollectiblesForWallets,
+    solWallets
+  )
+
+  const solanaCollectibleList = Object.values(collectiblesMap).flat()
+  if (!solanaCollectibleList.length) {
+    console.log('profile has no Solana NFTs')
+  }
+
+  yield put(
+    cacheActions.update(Kind.USERS, [
+      {
+        id: user.user_id,
+        metadata: { solanaCollectibleList }
+      }
+    ])
+  )
 }
 
 function* fetchProfileAsync(action) {
@@ -137,6 +178,7 @@ function* fetchProfileAsync(action) {
     yield fork(fetchUserCollections, user.user_id)
     yield fork(fetchProfileCustomizedCollectibles, user)
     yield fork(fetchOpenSeaAssets, user)
+    yield fork(fetchSolanaCollectibles, user)
 
     // Get current user notification & subscription status
     const isSubscribed = yield call(

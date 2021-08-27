@@ -2,6 +2,11 @@ import { select } from 'redux-saga-test-plan/matchers'
 import { all, call, put, race, take, takeLatest } from 'redux-saga/effects'
 import { WalletLinkProvider } from 'walletlink'
 
+import { CollectibleState } from 'containers/collectibles/types'
+import {
+  fetchOpenSeaAssetsForWallets,
+  fetchSolanaCollectiblesForWallets
+} from 'containers/profile-page/store/sagas'
 import { fetchServices } from 'containers/service-selection/store/slice'
 import { ID } from 'models/common/Identifiers'
 import { newUserMetadata } from 'schemas'
@@ -55,7 +60,8 @@ import {
   getAssociatedWallets,
   updateWalletError,
   preloadWalletProviders,
-  Chain
+  Chain,
+  resetStatus
 } from './slice'
 
 const CONNECT_WALLET_CONFIRMATION_UID = 'CONNECT_WALLET'
@@ -117,8 +123,16 @@ function* fetchEthWalletInfo(wallets: string[]) {
     address: string
     balance: BNWei
   }[] = yield call(walletClient.getEthWalletBalances, wallets)
-  // TODO: Fetch collectible count
-  const collectibleCounts = wallets.map(_ => 0)
+
+  const collectiblesMap: CollectibleState = yield call(
+    fetchOpenSeaAssetsForWallets,
+    wallets
+  )
+
+  const collectibleCounts = wallets.map(
+    wallet => collectiblesMap[wallet]?.length ?? 0
+  )
+
   return wallets.map((_, idx) => ({
     ...ethWalletBalances[idx],
     collectibleCount: collectibleCounts[idx]
@@ -130,8 +144,15 @@ function* fetchSplWalletInfo(wallets: string[]) {
     address: string
     balance: BNWei
   }[] = yield call(walletClient.getSolWalletBalances, wallets)
-  // TODO: Fetch collectible count
-  const collectibleCounts = wallets.map(_ => 0)
+
+  const collectiblesMap: CollectibleState = yield call(
+    fetchSolanaCollectiblesForWallets,
+    wallets
+  )
+
+  const collectibleCounts = wallets.map(
+    wallet => collectiblesMap[wallet]?.length ?? 0
+  )
 
   return wallets.map((_, idx) => ({
     ...splWalletBalances[idx],
@@ -265,10 +286,14 @@ function* connectWallet() {
       yield call(connectEthWallet, web3Instance)
     }
   } catch (err) {
+    // if error is "Cannot use 'in' operator to search for 'message' in Modal closed by user",
+    // do not show error message because user closed the modal
+    const errorMessage = err.message.includes('Modal closed by user')
+      ? null
+      : 'An error occured while connecting a wallet with your account.'
     yield put(
       updateWalletError({
-        errorMessage:
-          'An error occured while connecting a wallet with your account.'
+        errorMessage
       })
     )
   }
@@ -339,8 +364,12 @@ function* connectSPLWallet(
     }[] = yield call(walletClient.getSolWalletBalances, [connectingWallet])
     const walletBalance = splWalletBalances[0].balance
 
-    // TODO: Fetch collectible count
-    const collectibleCount = 0
+    const collectiblesMap: CollectibleState = yield call(
+      fetchSolanaCollectiblesForWallets,
+      [connectingWallet]
+    )
+
+    const collectibleCount = collectiblesMap[connectingWallet]?.length ?? 0
 
     yield put(
       setIsConnectingWallet({
@@ -435,12 +464,6 @@ function* connectSPLWallet(
         function* (updatedWallets: WalletAddress[]) {
           // Update the user's balance w/ the new wallet
           yield put(getBalance())
-          const splWalletBalances: {
-            address: string
-            balance: BNWei
-          }[] = yield call(walletClient.getSolWalletBalances, updatedWallets)
-          // TODO: Fetch collectible count
-          const collectibleCount = 0
 
           yield put(
             setWalletAddedConfirmed({
@@ -525,8 +548,14 @@ function* connectEthWallet(web3Instance: any) {
       balance: BNWei
     }[] = yield call(walletClient.getEthWalletBalances, [connectingWallet])
     const walletBalance = walletBalances[0].balance
-    // TODO: fetch collectible count
-    const collectibleCount = 0
+
+    const collectiblesMap: CollectibleState = yield call(
+      fetchOpenSeaAssetsForWallets,
+      [connectingWallet]
+    )
+
+    const collectibleCount = collectiblesMap[connectingWallet]?.length ?? 0
+
     yield put(
       setIsConnectingWallet({
         wallet: connectingWallet,
@@ -603,10 +632,7 @@ function* connectEthWallet(web3Instance: any) {
         function* (updatedWallets: WalletAddress[]) {
           // Update the user's balance w/ the new wallet
           yield put(getBalance())
-          const walletBalances: {
-            address: string
-            balance: BNWei
-          }[] = yield call(walletClient.getEthWalletBalances, updatedWallets)
+
           yield put(
             setWalletAddedConfirmed({
               wallet: connectingWallet,
