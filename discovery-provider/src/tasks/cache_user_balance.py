@@ -18,7 +18,7 @@ from src.queries.get_balances import (
     LAZY_REFRESH_REDIS_PREFIX,
 )
 from src.utils.redis_constants import user_balances_refresh_last_completion_redis_key
-from src.utils.solana import (
+from src.solana_indexing.solana_helpers import (
     SPL_TOKEN_ID_PK,
     ASSOCIATED_TOKEN_PROGRAM_ID_PK,
 )
