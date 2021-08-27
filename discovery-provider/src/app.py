@@ -457,7 +457,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "index_related_artists": {
                 "task": "index_related_artists",
-                "schedule": timedelta(seconds=5),
+                "schedule": timedelta(seconds=60),
             },
         },
         task_serializer="json",
