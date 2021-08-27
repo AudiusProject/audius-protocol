@@ -22,7 +22,13 @@ class SolanaClientManager:
         self.endpoints = SOLANA_ENDPOINTS.split(",")
         self.clients = [Client(endpoint) for endpoint in self.endpoints]
 
-    def get_client(self) -> Client:
+    def get_client(self, randomize=False) -> Client:
+        if not self.clients:
+            raise Exception(
+                "solana_client_manager.py | get_client | There are no solana clients"
+            )
+        if not randomize:
+            return self.clients[0]
         index = random.randrange(0, len(self.clients))
         return self.clients[index]
 
@@ -76,10 +82,12 @@ class SolanaClientManager:
         )
 
 
-def _try_all(iterable, func, message):
+def _try_all(iterable, func, message, randomize=False):
     """Executes a function with retries across the iterable.
     If all executions fail, raise an exception."""
-    for index, value in random.sample(list(enumerate(iterable)), k=len(iterable)):
+    items = list(enumerate(iterable))
+    items = items if not randomize else random.sample(items, k=len(items))
+    for index, value in items:
         try:
             return func(value, index)
         except Exception:
