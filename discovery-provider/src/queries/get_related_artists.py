@@ -206,7 +206,7 @@ def get_related_artists(user_id: int, current_user_id: int):
         if (
             aggregate_user
             and aggregate_user.track_count > 0
-            and aggregate_user.follower_count >= 200
+            and aggregate_user.follower_count >= MIN_FOLLOWER_REQUIREMENT
         ):
             users = _get_related_artists(session, user_id)
         else:
