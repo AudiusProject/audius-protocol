@@ -126,9 +126,9 @@ def test_get_related_artists_top_n(app):
         artists = get_related_artists(1, None)
         assert artists[0]["user_id"] == 5
         assert (
-            artists[1]["user_id"] == 6 or artists[2]["user_id"] == 6
-        )  # 6 and 0 have the same number of follows
-        assert artists[2]["user_id"] == 0 or artists[1]["user_id"] == 0
+            artists[1]["user_id"] == 0
+        )  # 6 and 0 have the same number of follows, sort then by user_id
+        assert artists[2]["user_id"] == 6
         assert artists[3]["user_id"] == 2
         assert artists[4]["user_id"] == 1
         assert artists[5]["user_id"] == 3
