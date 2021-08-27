@@ -28,7 +28,7 @@ def upgrade():
         sa.Column("user_id", sa.Integer(), nullable=False, index=True),
         sa.Column("related_artist_user_id", sa.Integer(), nullable=False),
         sa.Column("score", sa.Float(), nullable=False),
-        sa.Column("created", sa.DateTime(), nullable=False),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint("user_id", "related_artist_user_id"),
     )
 

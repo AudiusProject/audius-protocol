@@ -15,7 +15,7 @@ class RelatedArtist(Base):
     user_id = Column(Integer, nullable=False, index=True)
     related_artist_user_id = Column(Integer, nullable=False)
     score = Column(Float, nullable=False)
-    created = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=datetime.datetime.utcnow)
 
     PrimaryKeyConstraint(user_id, related_artist_user_id)
 
@@ -24,4 +24,4 @@ class RelatedArtist(Base):
 user_id={self.user_id},\
 related_artist_user_id={self.related_artist_user_id},\
 score={self.score},\
-created={self.created}>"
+created_at={self.created_at}>"
