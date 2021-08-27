@@ -4,23 +4,23 @@ import time
 from typing import Callable, List, TypedDict, Optional
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
-from solana.rpc.api import Client
-
 import base58
 from src.models.models import User, UserChallenge
 from src.models import ChallengeDisbursement
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.session_manager import SessionManager
-from src.utils.solana_indexing import (
+from src.solana.solana_client_manager import SolanaClientManager
+from src.solana.solana_transaction_types import (
     ResultMeta,
     TransactionMessage,
     TransactionMessageInstruction,
-    get_sol_tx_info,
+    TransactionInfoResult,
+)
+from src.solana.solana_parser import (
     parse_instruction_data,
     InstructionFormat,
     SolanaInstructionType,
-    TransactionInfoResult,
 )
 
 logger = logging.getLogger(__name__)
@@ -145,7 +145,7 @@ class RewardTransferInstruction(TypedDict):
 
 
 def fetch_and_parse_sol_rewards_transfer_instruction(
-    solana_client: Client, tx_sig: str
+    solana_client_manager: SolanaClientManager, tx_sig: str
 ) -> Optional[RewardTransferInstruction]:
     """Fetches metadata for rewards transfer transactions and parses data
 
@@ -155,7 +155,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
     Validates the metadata fields
     """
     try:
-        tx_info = get_sol_tx_info(solana_client, tx_sig)
+        tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         result: TransactionInfoResult = tx_info["result"]
         meta = result["meta"]
         if meta["err"]:
@@ -280,7 +280,7 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
 
 
 def get_transaction_signatures(
-    solana_client: Client,
+    solana_client_manager: SolanaClientManager,
     db: SessionManager,
     program: str,
     get_latest_slot: Callable[[Session], int],
@@ -305,8 +305,10 @@ def get_transaction_signatures(
     with db.scoped_session() as session:
         latest_processed_slot = get_latest_slot(session)
         while not intersection_found:
-            transactions_history = solana_client.get_confirmed_signature_for_address2(
-                program, before=last_tx_signature, limit=100
+            transactions_history = (
+                solana_client_manager.get_confirmed_signature_for_address2(
+                    program, before=last_tx_signature, limit=100
+                )
             )
 
             transactions_array = transactions_history["result"]
@@ -365,7 +367,9 @@ def get_transaction_signatures(
 
 
 def process_transaction_signatures(
-    solana_client: Client, db: SessionManager, transaction_signatures: List[str]
+    solana_client_manager: SolanaClientManager,
+    db: SessionManager,
+    transaction_signatures: List[str],
 ):
     """Concurrently processes the transactions to update the DB state for reward transfer instructions"""
     for tx_sig_batch in transaction_signatures:
@@ -378,7 +382,7 @@ def process_transaction_signatures(
             parse_sol_tx_futures = {
                 executor.submit(
                     fetch_and_parse_sol_rewards_transfer_instruction,
-                    solana_client,
+                    solana_client_manager,
                     tx_sig,
                 ): tx_sig
                 for tx_sig in tx_sig_batch
@@ -403,7 +407,9 @@ def process_transaction_signatures(
         )
 
 
-def process_solana_rewards_manager(solana_client: Client, db: SessionManager):
+def process_solana_rewards_manager(
+    solana_client_manager: SolanaClientManager, db: SessionManager
+):
     """Fetches the next set of reward manager transactions and updates the DB with Challenge Disbursements"""
     if not is_valid_rewards_manager_program:
         logger.error(
@@ -415,7 +421,7 @@ def process_solana_rewards_manager(solana_client: Client, db: SessionManager):
         return
     # List of signatures that will be populated as we traverse recent operations
     transaction_signatures = get_transaction_signatures(
-        solana_client,
+        solana_client_manager,
         db,
         REWARDS_MANAGER_PROGRAM,
         get_latest_reward_disbursment_slot,
@@ -424,14 +430,14 @@ def process_solana_rewards_manager(solana_client: Client, db: SessionManager):
     )
     logger.info(f"index_rewards_manager.py | {transaction_signatures}")
 
-    process_transaction_signatures(solana_client, db, transaction_signatures)
+    process_transaction_signatures(solana_client_manager, db, transaction_signatures)
 
 
 ######## CELERY TASKS ########
 @celery.task(name="index_rewards_manager", bind=True)
 def index_rewards_manager(self):
     redis = index_rewards_manager.redis
-    solana_client = index_rewards_manager.solana_client
+    solana_client_manager = index_rewards_manager.solana_client_manager
     db = index_rewards_manager.db
 
     # Define lock acquired boolean
@@ -444,7 +450,7 @@ def index_rewards_manager(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.info("index_rewards_manager.py | Acquired lock")
-            process_solana_rewards_manager(solana_client, db)
+            process_solana_rewards_manager(solana_client_manager, db)
         else:
             logger.info("index_rewards_manager.py | Failed to acquire lock")
     except Exception as e:

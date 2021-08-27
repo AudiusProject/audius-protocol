@@ -10,10 +10,10 @@ from sqlalchemy import desc, and_
 from solana.publickey import PublicKey
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
-from src.utils.solana import get_address_pair, SPL_TOKEN_ID_PK
 from src.models import User, UserBankTransaction, UserBankAccount
 from src.queries.get_balances import enqueue_immediate_balance_refresh
-from src.tasks.index_solana_plays import get_sol_tx_info
+from src.solana.solana_client_manager import SolanaClientManager
+from src.solana.solana_helpers import get_address_pair, SPL_TOKEN_ID_PK
 
 logger = logging.getLogger(__name__)
 
@@ -144,8 +144,10 @@ def process_user_bank_tx_details(
             refresh_user_balance(session, redis, acct_2)
 
 
-def parse_user_bank_transaction(session: Session, solana_client, tx_sig, redis):
-    tx_info = get_sol_tx_info(solana_client, tx_sig)
+def parse_user_bank_transaction(
+    session: Session, solana_client_manager: SolanaClientManager, tx_sig, redis
+):
+    tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
     tx_slot = tx_info["result"]["slot"]
     timestamp = tx_info["result"]["blockTime"]
     parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
@@ -162,7 +164,7 @@ def parse_user_bank_transaction(session: Session, solana_client, tx_sig, redis):
 
 
 def process_user_bank_txs():
-    solana_client = index_user_bank.solana_client
+    solana_client_manager = index_user_bank.solana_client_manager
     db = index_user_bank.db
     redis = index_user_bank.redis
     logger.info("index_user_bank.py | Acquired lock")
@@ -188,8 +190,10 @@ def process_user_bank_txs():
         latest_processed_slot = get_highest_user_bank_tx_slot(session)
         logger.info(f"index_user_bank.py | high tx = {latest_processed_slot}")
         while not intersection_found:
-            transactions_history = solana_client.get_confirmed_signature_for_address2(
-                USER_BANK_ADDRESS, before=last_tx_signature, limit=100
+            transactions_history = (
+                solana_client_manager.get_confirmed_signature_for_address2(
+                    USER_BANK_ADDRESS, before=last_tx_signature, limit=100
+                )
             )
             transactions_array = transactions_history["result"]
             if not transactions_array:
@@ -260,7 +264,7 @@ def process_user_bank_txs():
                     executor.submit(
                         parse_user_bank_transaction,
                         session,
-                        solana_client,
+                        solana_client_manager,
                         tx_sig,
                         redis,
                     ): tx_sig

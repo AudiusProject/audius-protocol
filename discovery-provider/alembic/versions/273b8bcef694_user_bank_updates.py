@@ -9,9 +9,6 @@ import logging
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
-from solana.publickey import PublicKey
-from src.models import User
-from src.utils.solana import get_address_pair
 
 logger = logging.getLogger(__name__)
 
