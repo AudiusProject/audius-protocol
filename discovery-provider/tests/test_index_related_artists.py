@@ -53,7 +53,7 @@ def test_index_related_artists(app):
     process_related_artists_queue(db, redis_conn)
     with db.scoped_session() as session:
         session.query(RelatedArtist).update(
-            {RelatedArtist.created: datetime.utcnow() - timedelta(weeks=5)}
+            {RelatedArtist.created_at: datetime.utcnow() - timedelta(weeks=5)}
         )
         results: List[RelatedArtist] = (
             session.query(RelatedArtist)

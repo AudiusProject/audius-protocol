@@ -109,7 +109,7 @@ def test_update_related_artist_scores_if_needed(app):
             not result
         ), "Don't calculate when scores are already calculated and fresh"
         session.query(RelatedArtist).update(
-            {RelatedArtist.created: datetime.utcnow() - timedelta(weeks=5)}
+            {RelatedArtist.created_at: datetime.utcnow() - timedelta(weeks=5)}
         )
         session.commit()
         result, _ = update_related_artist_scores_if_needed(session, 0)

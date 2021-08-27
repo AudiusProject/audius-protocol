@@ -147,10 +147,13 @@ def update_related_artist_scores_if_needed(
         session.query(RelatedArtist).filter(RelatedArtist.user_id == user_id).first()
     )
     # Don't recalculate if we already have recently
-    if existing_score and existing_score.created > datetime.utcnow() - CALCULATION_TTL:
+    if (
+        existing_score
+        and existing_score.created_at > datetime.utcnow() - CALCULATION_TTL
+    ):
         return (
             False,
-            f"Fresh calculation already exists. created={existing_score.created}",
+            f"Fresh calculation already exists. created_at={existing_score.created_at}",
         )
     # Use table sampling if more than a certain number of followers
     if aggregate_user.follower_count >= MAX_FOLLOWERS_WITHOUT_SAMPLE:
