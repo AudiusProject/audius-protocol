@@ -351,6 +351,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_plays",
             "src.tasks.index_metrics",
             "src.tasks.index_materialized_views",
+            "src.tasks.index_aggregate_plays",
             "src.tasks.vacuum_db",
             "src.tasks.index_network_peers",
             "src.tasks.index_trending",
@@ -393,6 +394,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_materialized_views": {
                 "task": "update_materialized_views",
                 "schedule": timedelta(seconds=300),
+            },
+            "update_aggregate_plays": {
+                "task": "update_aggregate_plays",
+                "schedule": timedelta(seconds=15),
             },
             "vacuum_db": {
                 "task": "vacuum_db",

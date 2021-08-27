@@ -34,7 +34,6 @@ def update_views(self, db):
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY playlist_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY album_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY tag_track_user")
-        session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY aggregate_plays")
 
     vacuum_matviews(db)
 
