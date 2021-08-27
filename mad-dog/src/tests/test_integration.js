@@ -46,6 +46,7 @@ const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 const SECOND_USER_PIC_PATH = path.resolve('assets/images/duck.jpg')
 const THIRD_USER_PIC_PATH = path.resolve('assets/images/sid.png')
 const repostedTracks = []
+const uploadedTracks = []
 
 /**
  * Randomly uploads tracks over the duration of the test,
@@ -99,7 +100,6 @@ module.exports = coreIntegration = async ({
     testDurationSeconds: TEST_DURATION_SECONDS
   })
 
-  const uploadedTracks = []
   const tracksAttemptedRepost = []
 
   // Register the request listener. The only request type this test
@@ -328,14 +328,18 @@ module.exports = coreIntegration = async ({
   const failedWallets = Object.values(failedUploads)
   if (failedWallets.length) {
     const userIds = failedWallets.map(w => walletIdMap[w])
-    logger.error(`Uploads failed for user IDs=[${userIds}]`)
+    return {
+      error: `Uploads failed for user IDs=[${userIds}].`
+    }
   }
 
-  const allTracksReposted = verifyTracksReposted(executeOne)
+  const allTracksReposted = await verifyTracksReposted(executeOne)
   if (!allTracksReposted){
     const tracksWithNoRepost = tracksAttemptedRepost.filter(obj => !repostedTracks.map(obj => obj[0]).includes(obj)) // filter attempted reposts that were not successfully reposted
-    logger.error(`Tracks without a repost=[${tracksWithNoRepost}]`)
-}
+    return {
+      error: `Tracks without a repost=[${tracksWithNoRepost}.`
+    }
+  }
 
   // Switch user primary (above tests have already confirmed all secondaries have latest state)
   for await (const walletIndex of Object.keys(walletIdMap)) {
@@ -417,7 +421,7 @@ module.exports = coreIntegration = async ({
     }
   }
 
-  logger.info("All core integration tests passed.")
+  printTestSummary()
 
   return {}
 }
@@ -475,8 +479,8 @@ const verifyAllCIDsExistOnCNodes = async (trackUploads, executeOne) => {
 }
 
 async function verifyTracksReposted(executeOne){
+  await executeOne(0, l => l.waitForLatestBlock())
   for (const {trackId, userId} of repostedTracks) {
-    await executeOne(0, l => l.waitForLatestBlock())
     const reposters = await executeOne(0, l => getRepostersForTrack(l, trackId))
     const usersReposted = reposters.map(obj => obj.user_id)
     if (!usersReposted.includes(userId)){
@@ -579,4 +583,10 @@ async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) 
       )
     }
   })
+}
+
+const printTestSummary = () => {
+  logger.info(`\n------------------------ AUDIUS CORE INTEGRATION TEST Summary ------------------------`)
+  logger.info(`uploadedTracks: ${uploadedTracks.length}                | Total uploaded tracks`)
+  logger.info(`repostedTracks: ${repostedTracks.length}                | Total reposted tracks`)
 }
