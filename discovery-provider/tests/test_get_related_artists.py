@@ -92,7 +92,8 @@ def test_calculate_related_artists_scores(app):
 
 
 def test_update_related_artist_scores_if_needed(app):
-    """Tests all cases of update_related_artist_scores_if_needed: not enough followers, existing fresh scores, and needing recalculation"""
+    """Tests all cases of update_related_artist_scores_if_needed: not enough followers, existing fresh scores,
+    and needing recalculation"""
     with app.app_context():
         db = get_db()
 
@@ -122,7 +123,7 @@ def test_get_related_artists_top_n(app):
     populate_mock_db(db, entities)
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
-    artists = get_related_artists(1)
+    artists = get_related_artists(1, None)
     assert artists[0]["user_id"] == 5
     assert (
         artists[1]["user_id"] == 6 or artists[2]["user_id"] == 6
