@@ -201,6 +201,20 @@ const createWindow = () => {
   mainWindow.webContents.on('did-fail-load', () => {
     initAutoUpdater()
   })
+
+  let devToolsOpen = false
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.meta && input.alt && input.code === 'KeyI') {
+      if (devToolsOpen) {
+        mainWindow.webContents.closeDevTools()
+        devToolsOpen = false
+      } else {
+        mainWindow.webContents.openDevTools()
+        devToolsOpen = true
+      }
+      event.preventDefault()
+    }
+  })
 }
 
 // Acquire a lock for Windows so the app only launches once.
@@ -261,6 +275,21 @@ function initMenu() {
           click: () => mainWindow.reload()
         }
       ]
+    },
+    {
+      label: 'Window',
+      submenu: [
+        { role: 'minimize' },
+        { role: 'zoom' },
+        ...(process.platform === 'darwin'
+          ? [
+              { type: 'separator' },
+              { role: 'front' },
+              { type: 'separator' },
+              { role: 'window' }
+            ]
+          : [{ role: 'close' }])
+      ]
     }
   ]
 
@@ -284,9 +313,14 @@ function initMenu() {
 }
 
 function configureShortcuts() {
-  globalShortcut.register('CmdOrCtrl+Option+I', () => {
-    mainWindow.webContents.openDevTools()
-  })
+  // Register global shortcuts here. Global shortcuts are fired even
+  // when electron is in the background.
+  // For example:
+  // globalShortcut.register('CmdOrCtrl+Option+I', () => {
+  //   if (mainWindow.isFocused()) {
+  //     mainWindow.webContents.openDevTools()
+  //   }
+  // })
 }
 
 /* IPC Handlers */
