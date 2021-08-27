@@ -13,7 +13,7 @@ def get_user_history(user_id):
         user_history_query = (
             session.query(User)
             .filter(User.user_id == user_id)
-            .order_by(User.updated_at.desc())
+            .order_by(User.updated_at.asc())
         )
 
         user_history = user_history_query.all()
