@@ -197,7 +197,7 @@ def _get_top_artists(session: Session, limit=100):
 
 
 @time_method
-def get_related_artists(user_id: int, current_user_id: int):
+def get_related_artists(user_id: int, current_user_id: int, limit: int = 100):
     db = get_db_read_replica()
     users = []
     with db.scoped_session() as session:
@@ -211,9 +211,9 @@ def get_related_artists(user_id: int, current_user_id: int):
             and aggregate_user.track_count > 0
             and aggregate_user.follower_count >= MIN_FOLLOWER_REQUIREMENT
         ):
-            users = _get_related_artists(session, user_id)
+            users = _get_related_artists(session, user_id, limit)
         else:
-            users = _get_top_artists(session)
+            users = _get_top_artists(session, limit)
 
         user_ids = list(map(lambda user: user["user_id"], users))
         users = populate_user_metadata(session, user_ids, users, current_user_id)

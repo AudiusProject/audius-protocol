@@ -606,6 +606,7 @@ class FollowingUsers(Resource):
 
 related_artist_route_parser = reqparse.RequestParser()
 related_artist_route_parser.add_argument("user_id", required=False)
+related_artist_route_parser.add_argument("limit", required=False, type=int)
 related_artist_response = make_full_response(
     "related_artist_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
@@ -617,16 +618,17 @@ class RelatedUsers(Resource):
     @full_ns.expect(related_artist_route_parser)
     @full_ns.doc(
         id="""Gets a list of users that might be of interest to followers of this user.""",
-        params={"user_id": "A User ID"},
-        responses={200: "Success", 500: "Server error"},
+        params={"user_id": "A User ID", "limit": "Limit"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(related_artist_response)
     @cache(ttl_sec=5)
     def get(self, user_id):
         args = following_route_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
         current_user_id = get_current_user_id(args)
         decoded_id = decode_with_abort(user_id, full_ns)
-        users = get_related_artists(decoded_id, current_user_id)
+        users = get_related_artists(decoded_id, current_user_id, limit)
         users = list(map(extend_user, users))
         return success_response(users)
 
