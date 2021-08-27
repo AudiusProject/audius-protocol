@@ -220,7 +220,8 @@ jobs:
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            or: [equal: [ master, << pipeline.git.branch >> ], << parameters.force >>]
           steps:
             - run: ./diff.sh libs || (echo "no diff" && circleci-agent step halt)
       - setup_remote_docker
@@ -288,7 +289,8 @@ jobs:
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            or: [equal: [ master, << pipeline.git.branch >> ], << parameters.force >>]
           steps:
             - run: ./diff.sh contracts || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
@@ -329,7 +331,8 @@ jobs:
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            or: [equal: [ master, << pipeline.git.branch >> ], << parameters.force >>]
           steps:
             - run: ./diff.sh eth-contracts || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
@@ -366,7 +369,7 @@ jobs:
   test-creator-node:
     docker:
       # specify the version you desire here
-      - image: circleci/node:14.16  
+      - image: circleci/node:14.16
       - image: ipfs/go-ipfs:release
       - image: circleci/postgres:11.1
         environment:
@@ -380,7 +383,8 @@ jobs:
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            or: [equal: [ master, << pipeline.git.branch >> ], << parameters.force >>]
           steps:
             - run: ./diff.sh creator-node || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
@@ -433,7 +437,8 @@ jobs:
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            or: [equal: [ master, << pipeline.git.branch >> ], << parameters.force >>]
           steps:
             - run: ./diff.sh discovery-provider || (echo "no diff" && circleci-agent step halt)
       - restore_cache:
@@ -503,7 +508,8 @@ jobs:
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            or: [equal: [ master, << pipeline.git.branch >> ], << parameters.force >>]
           steps:
             - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
       - setup_remote_docker
@@ -553,7 +559,8 @@ jobs:
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            or: [equal: [ master, << pipeline.git.branch >> ], << parameters.force >>]
           steps:
             - run: ./diff.sh solana-programs || (echo "no diff" && circleci-agent step halt)
 
