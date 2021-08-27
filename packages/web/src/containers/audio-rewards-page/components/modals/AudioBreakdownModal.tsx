@@ -80,7 +80,7 @@ const AudioBreakdownBody = () => {
             tokenClassName={wm(styles.sectionAmount)}
           />
         </div>
-        <WalletsTable className={styles.walletsTable} hideCollectibles />
+        <WalletsTable className={styles.walletsTable} />
         <div className={wm(styles.sectionDescription)}>
           {messages.linkedWalletsDescription}
           <Tooltip

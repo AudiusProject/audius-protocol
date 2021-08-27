@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
-import { Modal, IconLink } from '@audius/stems'
+import { Modal, IconLink, LogoEth, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
@@ -10,12 +10,15 @@ import Drawer from 'components/drawer/Drawer'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import PreloadImage from 'components/preload-image/PreloadImage'
-import {
-  Collectible,
-  CollectibleType
-} from 'containers/collectibles/components//types'
+import Tooltip from 'components/tooltip/Tooltip'
+import { MountPlacement } from 'components/types'
 import { collectibleMessages } from 'containers/collectibles/components/CollectiblesPage'
 import styles from 'containers/collectibles/components/CollectiblesPage.module.css'
+import {
+  Collectible,
+  CollectibleMediaType
+} from 'containers/collectibles/types'
+import { Chain } from 'store/token-dashboard/slice'
 import { formatDateWithTimezoneOffset } from 'utils/timeUtil'
 
 const CollectibleMedia: React.FC<{
@@ -23,13 +26,13 @@ const CollectibleMedia: React.FC<{
   isMuted: boolean
   toggleMute: () => void
 }> = ({ collectible, isMuted, toggleMute }) => {
-  const { type, imageUrl, videoUrl, gifUrl } = collectible
+  const { mediaType, imageUrl, videoUrl, gifUrl } = collectible
 
-  return type === CollectibleType.GIF ? (
+  return mediaType === CollectibleMediaType.GIF ? (
     <div className={styles.detailsMediaWrapper}>
       <img src={gifUrl!} alt='Collectible' />
     </div>
-  ) : type === CollectibleType.VIDEO ? (
+  ) : mediaType === CollectibleMediaType.VIDEO ? (
     <div className={styles.detailsMediaWrapper} onClick={toggleMute}>
       <video muted={isMuted} autoPlay loop playsInline src={videoUrl!}>
         {collectibleMessages.videoNotSupported}
@@ -51,7 +54,7 @@ const CollectibleDetails: React.FC<{
   collectible: Collectible
   isMobile: boolean
 }> = ({ collectible, isMobile }) => {
-  const { type, frameUrl, videoUrl } = collectible
+  const { mediaType, frameUrl, videoUrl } = collectible
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false)
@@ -95,8 +98,8 @@ const CollectibleDetails: React.FC<{
         className={styles.perspectiveCard}
         onClick={handleItemClick}
       >
-        {type === CollectibleType.GIF ||
-        (type === CollectibleType.VIDEO && frameUrl) ? (
+        {mediaType === CollectibleMediaType.GIF ||
+        (mediaType === CollectibleMediaType.VIDEO && frameUrl) ? (
           <div className={styles.imageWrapper}>
             <PreloadImage
               asBackground
@@ -116,7 +119,7 @@ const CollectibleDetails: React.FC<{
               )}
             </div>
           </div>
-        ) : type === CollectibleType.VIDEO ? (
+        ) : mediaType === CollectibleMediaType.VIDEO ? (
           <div className={cn(styles.media, styles.imageWrapper)}>
             <IconPlay className={styles.playIcon} />
             <video
@@ -139,7 +142,7 @@ const CollectibleDetails: React.FC<{
               )}
             </div>
           </div>
-        ) : type === CollectibleType.IMAGE ? (
+        ) : mediaType === CollectibleMediaType.IMAGE ? (
           <div className={styles.imageWrapper}>
             <PreloadImage
               asBackground
@@ -197,6 +200,16 @@ const CollectibleDetails: React.FC<{
                 <span className={styles.created}>
                   {collectibleMessages.created}
                 </span>
+              )}
+
+              {collectible.chain === Chain.Eth ? (
+                <Tooltip text='Ethereum' mount={MountPlacement.PARENT}>
+                  <LogoEth className={styles.chainIcon} />
+                </Tooltip>
+              ) : (
+                <Tooltip text='Solana' mount={MountPlacement.PARENT}>
+                  <LogoSol className={styles.chainIcon} />
+                </Tooltip>
               )}
             </div>
 
@@ -274,6 +287,12 @@ const CollectibleDetails: React.FC<{
                 <span className={styles.created}>
                   {collectibleMessages.created}
                 </span>
+              )}
+
+              {collectible.chain === Chain.Eth ? (
+                <LogoEth className={styles.chainIcon} />
+              ) : (
+                <LogoSol className={styles.chainIcon} />
               )}
             </div>
 

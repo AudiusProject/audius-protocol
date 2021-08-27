@@ -52,6 +52,8 @@ export type OpenSeaAsset = {
   asset_contract: Nullable<AssetContract>
 }
 
+export type OpenSeaAssetExtended = OpenSeaAsset & { wallet: string }
+
 export type OpenSeaEvent = {
   id: number
   created_date: string
@@ -62,4 +64,9 @@ export type OpenSeaEvent = {
     address: string
   }
   asset: OpenSeaAsset
+}
+
+export type OpenSeaEventExtended = Omit<OpenSeaEvent, 'asset'> & {
+  asset: OpenSeaAssetExtended
+  wallet: string
 }
