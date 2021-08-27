@@ -72,7 +72,7 @@ class SolanaClientManager:
     ):
         """Fetches confirmed signatures for transactions given an address."""
 
-        def handle_get_confirmed_signature_for_address2(client):
+        def handle_get_confirmed_signature_for_address2(client, _):
             return client.get_confirmed_signature_for_address2(account, before, limit)
 
         return _try_all(
