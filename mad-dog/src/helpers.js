@@ -5,6 +5,9 @@ const path = require('path')
 const fetch = require('node-fetch')
 const util = require('util')
 const streamPipeline = util.promisify(require('stream').pipeline)
+const { RandomPicture } = require('random-picture')
+
+const TEMP_IMG_STORAGE_PATH = '/home/ubuntu/audius/audius-protocol/mad-dog/local-storage/tmp-imgs'
 
 const { logger } = require('./logger.js')
 
@@ -97,27 +100,57 @@ const addUsersWithoutProfileImageOnSignUp = async (
 async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, addedUserIds, walletIndexToUserIdMap, uploadProfilePic = true }) {
   await logOps('Add users', async () => {
     const users = genRandomUsers(userCount)
+
     await executeAll(async (libs, i) => {
       try {
-      // If user already exists, do not recreate user and use existing user
+        // If user already exists, do not recreate user and use existing user
         const existingUser = await getUser({ executeOne, walletIndex: i })
         let userId
+
         if (existingUser) {
           logger.info(`Found existing user=${existingUser.user_id}`)
           existingUserIds.push(existingUser.user_id)
           userId = existingUser.user_id
+
         } else {
-          logger.info('Creating new user...')
-          const userMetadata = users[i]
-          let newUserId
-          if (uploadProfilePic) {
-            newUserId = await uploadProfileImagesAndAddUser(libs, userMetadata, USER_PIC_PATH)
-          } else {
-            newUserId = await addUser(libs, userMetadata)
+          const createNewUser = async () => {
+            const start = Date.now()
+            logger.info(`Creating new user for index ${i}...`)
+
+            const userMetadata = users[i]
+            let newUserId
+
+            if (uploadProfilePic) {
+              let picPath
+              try {
+                // get random image from web
+                const randomImageFilePath = await getRandomImageFilePath(TEMP_IMG_STORAGE_PATH)
+                picPath = randomImageFilePath
+              } catch (e) {
+                console.log(`[_addUsers] Error fetching random image: ${e.message}`)
+                picPath = USER_PIC_PATH
+              }
+              newUserId = await uploadProfileImagesAndAddUser(libs, userMetadata, picPath)
+
+            } else {
+              newUserId = await addUser(libs, userMetadata)
+            }
+
+            logger.info(`Created new user=${newUserId} in ${Date.now() - start}ms`)
+
+            addedUserIds.push(newUserId)
+            userId = newUserId
           }
-          logger.info(`Created new user=${newUserId}`)
-          addedUserIds.push(newUserId)
-          userId = newUserId
+
+          const withTimeout = async (requestPromise, timeoutMs, timeoutMsg) => {
+            const timeoutPromise = new Promise((resolve, reject) => {
+              setTimeout(() => reject(new Error(timeoutMsg)), timeoutMs)
+            })
+            return Promise.race([requestPromise, timeoutPromise])
+          }
+
+          const createNewUserTimeoutMs = 300000
+          await withTimeout(createNewUser(), createNewUserTimeoutMs, `Failed to create new user for index ${i} in ${createNewUserTimeoutMs}`)
         }
 
         await executeOne(i, libs => libs.waitForLatestBlock())
@@ -290,6 +323,35 @@ const getRandomTrackFilePath = async localDirPath => {
     logger.info(`Wrote track to temp local storage at ${targetFilePath}`)
   } catch (e) {
     const errorMsg = `Error with writing track to path ${localDirPath}`
+    logger.error(errorMsg)
+    console.error(e)
+    throw new Error(`${errorMsg}: ${e.message}`)
+  }
+
+  // Return full file path
+  return targetFilePath
+}
+
+const getRandomImageFilePath = async (localDirPath) => {
+  if (!fs.existsSync(localDirPath)) {
+    fs.mkdirSync(localDirPath)
+  }
+
+  const imageURL = (await RandomPicture()).url // always jpg
+  const targetFilePath = path.resolve(localDirPath, `${genRandomString(6)}.jpg`)
+
+  const response = await fetch(imageURL)
+  if (!response.ok) {
+    throw new Error(`unexpected response ${response.statusText}`)
+  }
+
+  try {
+    await fs.ensureDir(localDirPath)
+    await streamPipeline(response.body, fs.createWriteStream(targetFilePath))
+
+    logger.info(`Wrote image to temp local storage at ${targetFilePath}`)
+  } catch (e) {
+    const errorMsg = `Error with writing image to path ${localDirPath}`
     logger.error(errorMsg)
     console.error(e)
     throw new Error(`${errorMsg}: ${e.message}`)
