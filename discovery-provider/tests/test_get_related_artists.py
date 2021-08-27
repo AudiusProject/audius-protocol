@@ -48,7 +48,7 @@ def test_calculate_related_artists_scores(app):
 
         # Check sampled (with large enough sample to get all rows for deterministic result)
         rows = _calculate_related_artists_scores(
-            session, 0, 200 + 50 + 100 + 40 + 5 + 500 + 200
+            session, 0, sample_size=200 + 50 + 100 + 40 + 5 + 500 + 200  # sum of all the follows
         )
         assert rows[0].related_artist_user_id == 1 and math.isclose(
             rows[0].score, 50, abs_tol=0.001
