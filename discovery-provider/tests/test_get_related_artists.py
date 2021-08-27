@@ -120,16 +120,16 @@ def test_get_related_artists_top_n(app):
     """Tests that artists with too few followers get a generic list of top artists by follows"""
     with app.app_context():
         db = get_db()
-    populate_mock_db(db, entities)
-    with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
-    artists = get_related_artists(1, None)
-    assert artists[0]["user_id"] == 5
-    assert (
-        artists[1]["user_id"] == 6 or artists[2]["user_id"] == 6
-    )  # 6 and 0 have the same number of follows
-    assert artists[2]["user_id"] == 0 or artists[1]["user_id"] == 0
-    assert artists[3]["user_id"] == 2
-    assert artists[4]["user_id"] == 1
-    assert artists[5]["user_id"] == 3
-    assert artists[6]["user_id"] == 4
+        populate_mock_db(db, entities)
+        with db.scoped_session() as session:
+            session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
+        artists = get_related_artists(1, None)
+        assert artists[0]["user_id"] == 5
+        assert (
+            artists[1]["user_id"] == 6 or artists[2]["user_id"] == 6
+        )  # 6 and 0 have the same number of follows
+        assert artists[2]["user_id"] == 0 or artists[1]["user_id"] == 0
+        assert artists[3]["user_id"] == 2
+        assert artists[4]["user_id"] == 1
+        assert artists[5]["user_id"] == 3
+        assert artists[6]["user_id"] == 4
