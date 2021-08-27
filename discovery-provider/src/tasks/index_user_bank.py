@@ -12,8 +12,8 @@ from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.models import User, UserBankTransaction, UserBankAccount
 from src.queries.get_balances import enqueue_immediate_balance_refresh
-from src.solana_indexing.solana_client_manager import SolanaClientManager
-from src.solana_indexing.solana_helpers import get_address_pair, SPL_TOKEN_ID_PK
+from src.solana.solana_client_manager import SolanaClientManager
+from src.solana.solana_helpers import get_address_pair, SPL_TOKEN_ID_PK
 
 logger = logging.getLogger(__name__)
 
