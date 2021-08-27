@@ -1,6 +1,8 @@
 import logging
 import os
 import time
+import requests
+
 from typing import Dict, Optional, Tuple, TypedDict, cast
 
 from src.models import Block, IPLDBlacklistBlock
@@ -291,6 +293,14 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # DB connections check
         db_connections_json, error = _get_db_conn_state()
         health_results["db_connections"] = db_connections_json
+
+        # get latitude longitude
+        url = "https://ipinfo.io"
+        r = requests.get(url)
+        lat, lon = r.json()["loc"].split(",")
+        health_results["latitude"] = lat
+        health_results["longitude"] = lon
+
         if error:
             return health_results, error
 
