@@ -1,7 +1,7 @@
 import {
   Collectible,
   CollectiblesMetadata
-} from 'containers/collectibles/components/types'
+} from 'containers/collectibles/types'
 import { PlaylistLibrary } from 'models/PlaylistLibrary'
 import Color from 'models/common/Color'
 import { CID, ID } from 'models/common/Identifiers'
@@ -36,6 +36,7 @@ export type UserMetadata = {
   has_collectibles: boolean
   collectibles?: CollectiblesMetadata
   collectibleList?: Collectible[]
+  solanaCollectibleList?: Collectible[]
 
   // Only present on the "current" account
   track_save_count?: number

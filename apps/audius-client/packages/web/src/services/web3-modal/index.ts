@@ -1,4 +1,4 @@
-import { clusterApiUrl } from '@solana/web3.js'
+import { Cluster, clusterApiUrl } from '@solana/web3.js'
 import Web3Modal, { IProviderOptions } from 'web3modal'
 
 import phantomIconPurpleSvg from 'assets/img/phantom-icon-purple.svg'
@@ -11,6 +11,7 @@ const WEB3_NETWORK_ID = parseInt(process.env.REACT_APP_ETH_NETWORK_ID || '')
 const ETH_PROVIDER_URLS = (process.env.REACT_APP_ETH_PROVIDER_URL || '').split(
   ','
 )
+const SOLANA_WEB3_CLUSTER = process.env.REACT_APP_SOLANA_WEB3_CLUSTER
 
 declare global {
   interface Window {
@@ -114,7 +115,7 @@ export const createSession = async (config: Config): Promise<any> => {
         display: {
           logo: phantomIconPurpleSvg,
           name: 'Phantom',
-          description: 'Connect solana account'
+          description: 'Connect Solana account'
         },
         options: {},
         package: PassThrough,
@@ -135,27 +136,18 @@ export const createSession = async (config: Config): Promise<any> => {
         display: {
           logo: solletSvg,
           name: 'Sollet',
-          description: 'Connect solana account'
+          description: 'Connect Solana account'
         },
         options: {},
         package: PassThrough,
         connector: async (...args: any) => {
           try {
             // Connect to solana web3
-            const network = clusterApiUrl('devnet')
+
+            const network = clusterApiUrl(SOLANA_WEB3_CLUSTER as Cluster)
             const providerUrl = 'https://www.sollet.io'
             const wallet = new SolWallet(providerUrl, network)
-            const walletConnection: Promise<string> = new Promise(
-              (resolve, reject) => {
-                wallet.on('connect', publicKey => {
-                  resolve(publicKey.toBase58())
-                })
-              }
-            )
             await wallet.connect()
-            const walletPk: string = await walletConnection
-            // @ts-ignore
-            window.wallet = wallet
             return wallet
           } catch (err) {
             console.error(err)

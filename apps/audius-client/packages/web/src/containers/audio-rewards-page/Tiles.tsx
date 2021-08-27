@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'

@@ -1,8 +1,13 @@
 import {
   Collectible,
-  CollectibleType
-} from 'containers/collectibles/components/types'
-import { OpenSeaAsset, OpenSeaEvent } from 'services/opensea-client/types'
+  CollectibleMediaType
+} from 'containers/collectibles/types'
+import {
+  OpenSeaAssetExtended,
+  OpenSeaEvent,
+  OpenSeaEventExtended
+} from 'services/opensea-client/types'
+import { Chain } from 'store/token-dashboard/slice'
 import { gifPreview } from 'utils/imageProcessingUtil'
 
 /**
@@ -25,7 +30,7 @@ const SUPPORTED_VIDEO_EXTENSIONS = ['webm', 'mp4', 'ogv', 'ogg', 'mov']
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-const isAssetImage = (asset: OpenSeaAsset) => {
+const isAssetImage = (asset: OpenSeaAssetExtended) => {
   const nonImageExtensions = [
     ...OPENSEA_VIDEO_EXTENSIONS,
     ...OPENSEA_AUDIO_EXTENSIONS
@@ -38,7 +43,7 @@ const isAssetImage = (asset: OpenSeaAsset) => {
   ].some(url => url && nonImageExtensions.every(ext => !url.endsWith(ext)))
 }
 
-const isAssetVideo = (asset: OpenSeaAsset) => {
+const isAssetVideo = (asset: OpenSeaAssetExtended) => {
   const {
     animation_url,
     animation_original_url,
@@ -59,7 +64,7 @@ const isAssetVideo = (asset: OpenSeaAsset) => {
   )
 }
 
-const isAssetGif = (asset: OpenSeaAsset) => {
+const isAssetGif = (asset: OpenSeaAssetExtended) => {
   return !!(
     asset.image_url?.endsWith('.gif') ||
     asset.image_original_url?.endsWith('.gif') ||
@@ -68,7 +73,7 @@ const isAssetGif = (asset: OpenSeaAsset) => {
   )
 }
 
-export const isAssetValid = (asset: OpenSeaAsset) => {
+export const isAssetValid = (asset: OpenSeaAssetExtended) => {
   return isAssetVideo(asset) || isAssetImage(asset) || isAssetGif(asset)
 }
 
@@ -97,9 +102,9 @@ export const isAssetValid = (asset: OpenSeaAsset) => {
  * @param asset
  */
 export const assetToCollectible = async (
-  asset: OpenSeaAsset
+  asset: OpenSeaAssetExtended
 ): Promise<Collectible> => {
-  let type: CollectibleType
+  let mediaType: CollectibleMediaType
   let frameUrl = null
   let imageUrl = null
   let videoUrl = null
@@ -115,12 +120,12 @@ export const assetToCollectible = async (
 
   try {
     if (isAssetGif(asset)) {
-      type = CollectibleType.GIF
+      mediaType = CollectibleMediaType.GIF
       const urlForFrame = imageUrls.find(url => url?.endsWith('.gif'))!
       frameUrl = await getFrameFromGif(urlForFrame, name || '')
       gifUrl = imageUrls.find(url => url?.endsWith('.gif'))!
     } else if (isAssetVideo(asset)) {
-      type = CollectibleType.VIDEO
+      mediaType = CollectibleMediaType.VIDEO
       frameUrl =
         imageUrls.find(
           url =>
@@ -143,17 +148,17 @@ export const assetToCollectible = async (
         url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext))
       )!
     } else {
-      type = CollectibleType.IMAGE
+      mediaType = CollectibleMediaType.IMAGE
       frameUrl = imageUrls.find(url => !!url)!
       const res = await fetch(frameUrl, { method: 'HEAD' })
       const isGif = res.headers.get('Content-Type')?.includes('gif')
       const isVideo = res.headers.get('Content-Type')?.includes('video')
       if (isGif) {
-        type = CollectibleType.GIF
+        mediaType = CollectibleMediaType.GIF
         gifUrl = frameUrl
         frameUrl = await getFrameFromGif(frameUrl, name || '')
       } else if (isVideo) {
-        type = CollectibleType.VIDEO
+        mediaType = CollectibleMediaType.VIDEO
         frameUrl = null
         videoUrl = imageUrls.find(url => !!url)!
       } else {
@@ -162,7 +167,7 @@ export const assetToCollectible = async (
     }
   } catch (e) {
     console.error('Error processing collectible', e)
-    type = CollectibleType.IMAGE
+    mediaType = CollectibleMediaType.IMAGE
     frameUrl = imageUrls.find(url => !!url)!
     imageUrl = frameUrl
   }
@@ -172,7 +177,7 @@ export const assetToCollectible = async (
     tokenId: asset.token_id,
     name: asset.name,
     description: asset.description,
-    type,
+    mediaType,
     frameUrl,
     imageUrl,
     videoUrl,
@@ -182,12 +187,14 @@ export const assetToCollectible = async (
     dateLastTransferred: null,
     externalLink: asset.external_link,
     permaLink: asset.permalink,
-    assetContractAddress: asset.asset_contract?.address ?? null
+    assetContractAddress: asset.asset_contract?.address ?? null,
+    chain: Chain.Eth,
+    wallet: asset.wallet
   }
 }
 
 export const creationEventToCollectible = async (
-  event: OpenSeaEvent
+  event: OpenSeaEventExtended
 ): Promise<Collectible> => {
   const { asset, created_date } = event
 
@@ -201,7 +208,7 @@ export const creationEventToCollectible = async (
 }
 
 export const transferEventToCollectible = async (
-  event: OpenSeaEvent,
+  event: OpenSeaEventExtended,
   isOwned = true
 ): Promise<Collectible> => {
   const { asset, created_date } = event
@@ -219,7 +226,7 @@ export const isNotFromNullAddress = (event: OpenSeaEvent) => {
   return event.from_account.address !== NULL_ADDRESS
 }
 
-const getFrameFromGif = async (url: string, name: string) => {
+export const getFrameFromGif = async (url: string, name: string) => {
   const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1
   const isSafariMobile =
     navigator.userAgent.match(/iPad/i) || navigator.userAgent.match(/iPhone/i)

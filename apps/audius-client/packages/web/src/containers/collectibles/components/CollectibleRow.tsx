@@ -13,8 +13,8 @@ import {
 import styles from 'containers/collectibles/components/CollectiblesPage.module.css'
 import {
   Collectible,
-  CollectibleType
-} from 'containers/collectibles/components/types'
+  CollectibleMediaType
+} from 'containers/collectibles/types'
 import { findAncestor } from 'utils/domUtils'
 import { formatDateWithTimezoneOffset } from 'utils/timeUtil'
 
@@ -77,7 +77,7 @@ export const VisibleCollectibleRow = props => {
             alt={collectibleMessages.visibleThumbnail}
           />
         </div>
-      ) : type === CollectibleType.VIDEO ? (
+      ) : type === CollectibleMediaType.VIDEO ? (
         <div>
           <video
             muted={true}
@@ -116,7 +116,14 @@ export const HiddenCollectibleRow: React.FC<{
   onShowClick: () => void
 }> = props => {
   const { collectible, onShowClick } = props
-  const { name, isOwned, dateCreated, type, frameUrl, videoUrl } = collectible
+  const {
+    name,
+    isOwned,
+    dateCreated,
+    mediaType,
+    frameUrl,
+    videoUrl
+  } = collectible
 
   return (
     <div className={cn(styles.editRow, styles.editHidden)}>
@@ -135,7 +142,7 @@ export const HiddenCollectibleRow: React.FC<{
             alt={collectibleMessages.hiddenThumbnail}
           />
         </div>
-      ) : type === CollectibleType.VIDEO ? (
+      ) : mediaType === CollectibleMediaType.VIDEO ? (
         <div>
           <video
             muted={true}

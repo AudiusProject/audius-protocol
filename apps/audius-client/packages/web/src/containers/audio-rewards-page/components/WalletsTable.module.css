@@ -30,8 +30,9 @@
 }
 
 .copyContainer {
+  display: flex;
+  justify-content: space-between;
   border-top: 1px solid var(--neutral-light-8);
-  display: inline-flex;
   align-items: center;
   height: 57px;
   width: 100%;

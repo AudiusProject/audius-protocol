@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useContext, useEffect } from 'react'
 
 import { LogoEth, LogoSol } from '@audius/stems'
 import cn from 'classnames'
@@ -8,16 +8,21 @@ import { ReactComponent as IconCopy } from 'assets/img/iconCopy.svg'
 import { ReactComponent as IconRemove } from 'assets/img/iconRemoveTrack.svg'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Toast from 'components/toast/Toast'
+import { ToastContext } from 'components/toast/ToastContext'
 import { ComponentPlacement, MountPlacement } from 'components/types'
+import { useFlag } from 'containers/remote-config/hooks'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { FeatureFlags } from 'services/remote-config'
 import {
   getAssociatedWallets,
   requestRemoveWallet,
   getRemoveWallet,
-  Chain
+  Chain,
+  resetStatus
 } from 'store/token-dashboard/slice'
 import { BNWei } from 'store/wallet/slice'
 import { copyToClipboard } from 'utils/clipboardUtil'
+import { NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
 
 import DisplayAudio from './DisplayAudio'
@@ -27,6 +32,7 @@ const COPIED_TOAST_TIMEOUT = 2000
 
 const messages = {
   copied: 'Copied To Clipboard!',
+  newWalletConnected: 'New Wallet Successfully Connected!',
   linkedWallets: 'LINKED WALLETS',
   collectibles: 'COLLECTIBLES',
   audio: '$AUDIO'
@@ -64,6 +70,10 @@ const Wallet = ({
   hasActions,
   hideCollectibles
 }: WalletProps) => {
+  const { isEnabled: solWalletAudioEnabled } = useFlag(
+    FeatureFlags.SOL_WALLET_AUDIO_ENABLED
+  )
+
   const dispatch = useDispatch()
   const onRequestRemoveWallet = useCallback(
     (e: React.MouseEvent) => {
@@ -112,14 +122,16 @@ const Wallet = ({
           {collectibleCount}
         </div>
       )}
-      <div className={cn(styles.audioBalance, styles.walletText)}>
-        <DisplayAudio
-          showLabel={false}
-          amount={audioBalance}
-          className={styles.balanceContainer}
-          tokenClassName={styles.balance}
-        />
-      </div>
+      {(chain === Chain.Eth || solWalletAudioEnabled) && (
+        <div className={cn(styles.audioBalance, styles.walletText)}>
+          <DisplayAudio
+            showLabel={false}
+            amount={audioBalance}
+            className={styles.balanceContainer}
+            tokenClassName={styles.balance}
+          />
+        </div>
+      )}
       {hasActions && (isConfirmAdding || isConfirmRemoving) && (
         <LoadingSpinner className={styles.loading}></LoadingSpinner>
       )}
@@ -146,6 +158,10 @@ const WalletsTable = ({
   className,
   hideCollectibles
 }: WalletsTableProps) => {
+  const { isEnabled: solWalletAudioEnabled } = useFlag(
+    FeatureFlags.SOL_WALLET_AUDIO_ENABLED
+  )
+
   const {
     status,
     confirmingWallet,
@@ -153,6 +169,23 @@ const WalletsTable = ({
     connectedEthWallets: ethWallets,
     connectedSolWallets: solWallets
   } = useSelector(getAssociatedWallets)
+
+  const { toast } = useContext(ToastContext)
+  const dispatch = useDispatch()
+  useEffect(() => {
+    if (status === 'Confirmed') {
+      const timeout = NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS
+      toast(messages.newWalletConnected, timeout)
+      setTimeout(() => {
+        dispatch(resetStatus())
+      }, timeout)
+    }
+
+    return () => {
+      dispatch(resetStatus())
+    }
+  }, [toast, dispatch, status])
+
   const removeWallets = useSelector(getRemoveWallet)
 
   const wm = useWithMobileStyle(styles.mobile)
@@ -188,9 +221,11 @@ const WalletsTable = ({
             {messages.collectibles}
           </h6>
         )}
-        <h6 className={cn(styles.walletsHeaderItem, styles.headerAudio)}>
-          {messages.audio}
-        </h6>
+        {(ethWallets?.length || solWalletAudioEnabled) && (
+          <h6 className={cn(styles.walletsHeaderItem, styles.headerAudio)}>
+            {messages.audio}
+          </h6>
+        )}
       </div>
       {ethWallets &&
         ethWallets.map(wallet => (

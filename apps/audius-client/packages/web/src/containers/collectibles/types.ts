@@ -1,3 +1,4 @@
+import { Chain } from 'store/token-dashboard/slice'
 import { Nullable } from 'utils/typeUtils'
 
 export type CollectiblesMetadata = {
@@ -5,7 +6,7 @@ export type CollectiblesMetadata = {
   order: string[]
 }
 
-export enum CollectibleType {
+export enum CollectibleMediaType {
   IMAGE = 'IMAGE',
   VIDEO = 'VIDEO',
   GIF = 'GIF'
@@ -16,7 +17,7 @@ export type Collectible = {
   tokenId: string
   name: Nullable<string>
   description: Nullable<string>
-  type: CollectibleType
+  mediaType: CollectibleMediaType
   frameUrl: Nullable<string>
   imageUrl: Nullable<string>
   gifUrl: Nullable<string>
@@ -27,4 +28,10 @@ export type Collectible = {
   externalLink: Nullable<string>
   permaLink: Nullable<string>
   assetContractAddress: Nullable<string>
+  chain: Chain
+  wallet: string
+}
+
+export type CollectibleState = {
+  [wallet: string]: Collectible[]
 }
