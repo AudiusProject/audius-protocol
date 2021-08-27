@@ -17,9 +17,9 @@ def queue_related_artist_calculation(redis: Redis, user_id: int):
 
 def process_related_artists_queue(db: SessionManager, redis: Redis):
     next: Union[int, bool] = True
-    needed_update = False
+    needed_update_count = 0
     with db.scoped_session() as session:
-        while next and not needed_update:
+        while next and needed_update_count < 10:
             next = redis.lpop(INDEX_RELATED_ARTIST_REDIS_QUEUE)
             if next:
                 next = int(next)
@@ -33,6 +33,7 @@ def process_related_artists_queue(db: SessionManager, redis: Redis):
                     logger.info(
                         f"index_related_artists.py | Updated related artists for user_id={next}"
                     )
+                    needed_update_count += 1
                 else:
                     logger.info(
                         f"index_related_artists.py | Skipped updating user_id={next} reason={reason}"
