@@ -18,14 +18,14 @@ def queue_related_artist_calculation(redis: Redis, user_id: int):
 def process_related_artists_queue(db: SessionManager, redis: Redis):
     next: Union[int, bool] = True
     needed_update = False
-    while next and not needed_update:
-        next = redis.lpop(INDEX_RELATED_ARTIST_REDIS_QUEUE)
-        if next:
-            next = int(next)
-            logger.debug(
-                f"index_related_artists.py | Checking user_id={next} for related artists recalculation..."
-            )
-            with db.scoped_session() as session:
+    with db.scoped_session() as session:
+        while next and not needed_update:
+            next = redis.lpop(INDEX_RELATED_ARTIST_REDIS_QUEUE)
+            if next:
+                next = int(next)
+                logger.debug(
+                    f"index_related_artists.py | Checking user_id={next} for related artists recalculation..."
+                )
                 needed_update, reason = update_related_artist_scores_if_needed(
                     session, next
                 )
