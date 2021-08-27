@@ -47,6 +47,7 @@ const SECOND_USER_PIC_PATH = path.resolve('assets/images/duck.jpg')
 const THIRD_USER_PIC_PATH = path.resolve('assets/images/sid.png')
 const repostedTracks = []
 const uploadedTracks = []
+const userRepostedMap = {}
 
 /**
  * Randomly uploads tracks over the duration of the test,
@@ -119,7 +120,7 @@ module.exports = coreIntegration = async ({
           const trackId = await executeOne(walletIndex, l =>
             uploadTrack(l, track, randomTrackFilePath)
           )
-          uploadedTracks.push({trackId, userId})
+          uploadedTracks.push({ trackId: trackId, userId: userId })
           res = new TrackUploadResponse(walletIndex, trackId, track)
         } catch (e) {
           logger.error(`Caught error [${e.message}] uploading track: [${JSON.stringify(track)}]\n${e.stack}`)
@@ -137,17 +138,27 @@ module.exports = coreIntegration = async ({
         break
       }
       case OPERATION_TYPE.TRACK_REPOST: {
-        if (uploadedTracks.length === 0){
-          let missingTrackMessage = "Cannot repost until a track is uploaded"
+        // repost candidates include tracks from other users that have not already been reposted by current user
+        const repostCandidates = uploadedTracks
+          .filter(obj => obj.userId !== userId)
+          .filter(obj => {
+            if (!userRepostedMap[obj.userId]) {
+              return true
+            }
+            return !userRepostedMap[obj.userId].includes(obj.trackId)
+          })
+          .map(obj => obj.trackId)
+        if (repostCandidates.length === 0) {
+          const missingTrackMessage = 'No tracks available to repost'
           logger.info(missingTrackMessage)
           res = new TrackRepostResponse(walletIndex, null, userId, false)
         } else {
-          const trackId = uploadedTracks.filter(obj => obj[1] != userId)[0].trackId
+          const trackId = repostCandidates.slice(-1)[0]
           try {
             tracksAttemptedRepost.push(trackId)
-            const transaction = await executeOne(walletIndex, l =>
+            await executeOne(walletIndex, l => {
               repostTrack(l, trackId)
-            )
+            })
             res = new TrackRepostResponse(walletIndex, trackId, userId)
           } catch (e) {
             logger.error(`Caught error [${e.message}] reposting track: [${trackId}]\n${e.stack}`)
@@ -190,7 +201,7 @@ module.exports = coreIntegration = async ({
           if (!walletTrackMap[walletIndex]) {
             walletTrackMap[walletIndex] = []
           }
-          if (trackId){ // only add successfully uploaded tracks
+          if (trackId) { // only add successfully uploaded tracks
             walletTrackMap[walletIndex].push(trackId)
           }
         }
@@ -198,9 +209,13 @@ module.exports = coreIntegration = async ({
       }
       case OPERATION_TYPE.TRACK_REPOST: {
         const { walletIndex, trackId, userId, success } = res
-        if (success){
-          repostedTracks.push({trackId, userId})
+        if (success) {
+          repostedTracks.push({ trackId: trackId, userId: userId })
         }
+        if (!userRepostedMap[userId]) {
+          userRepostedMap[userId] = []
+        }
+        userRepostedMap[userId].push(trackId)
         break
       }
       default:
@@ -334,8 +349,8 @@ module.exports = coreIntegration = async ({
   }
 
   const allTracksReposted = await verifyTracksReposted(executeOne)
-  if (!allTracksReposted){
-    const tracksWithNoRepost = tracksAttemptedRepost.filter(obj => !repostedTracks.map(obj => obj[0]).includes(obj)) // filter attempted reposts that were not successfully reposted
+  if (!allTracksReposted) {
+    const tracksWithNoRepost = tracksAttemptedRepost.filter(obj => !repostedTracks.map(obj => obj.trackId).includes(obj)) // filter attempted reposts that were not successfully reposted
     return {
       error: `Tracks without a repost=[${tracksWithNoRepost}.`
     }
@@ -478,16 +493,16 @@ const verifyAllCIDsExistOnCNodes = async (trackUploads, executeOne) => {
   return !failedCIDs.length
 }
 
-async function verifyTracksReposted(executeOne){
+async function verifyTracksReposted (executeOne) {
   await executeOne(0, l => l.waitForLatestBlock())
-  for (const {trackId, userId} of repostedTracks) {
+  for (const { trackId, userId } of repostedTracks) {
     const reposters = await executeOne(0, l => getRepostersForTrack(l, trackId))
     const usersReposted = reposters.map(obj => obj.user_id)
-    if (!usersReposted.includes(userId)){
-      return false;
+    if (!usersReposted.includes(userId)) {
+      return false
     }
   }
-  return true;
+  return true
 }
 
 /**
@@ -586,7 +601,7 @@ async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) 
 }
 
 const printTestSummary = () => {
-  logger.info(`\n------------------------ AUDIUS CORE INTEGRATION TEST Summary ------------------------`)
+  logger.info('\n------------------------ AUDIUS CORE INTEGRATION TEST Summary ------------------------')
   logger.info(`uploadedTracks: ${uploadedTracks.length}                | Total uploaded tracks`)
   logger.info(`repostedTracks: ${repostedTracks.length}                | Total reposted tracks`)
 }
