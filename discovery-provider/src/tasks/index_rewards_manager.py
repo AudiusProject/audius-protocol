@@ -10,15 +10,17 @@ from src.models import ChallengeDisbursement
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.session_manager import SessionManager
-from src.utils.solana_client_manager import SolanaClientManager
-from src.utils.solana_indexing import (
+from src.solana_indexing.solana_client_manager import SolanaClientManager
+from src.solana_indexing.solana_transaction_types import (
     ResultMeta,
     TransactionMessage,
     TransactionMessageInstruction,
+    TransactionInfoResult,
+)
+from src.solana_indexing.solana_parser import (
     parse_instruction_data,
     InstructionFormat,
     SolanaInstructionType,
-    TransactionInfoResult,
 )
 
 logger = logging.getLogger(__name__)

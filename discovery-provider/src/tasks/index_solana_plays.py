@@ -16,7 +16,7 @@ from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.redis_cache import pickle_and_set
 from src.utils.redis_constants import latest_sol_play_tx_key
-from src.utils.solana_client_manager import SolanaClientManager
+from src.solana_indexing.solana_client_manager import SolanaClientManager
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
 SIGNER_GROUP = shared_config["solana"]["signer_group_address"]

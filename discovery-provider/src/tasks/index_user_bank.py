@@ -13,7 +13,7 @@ from src.utils.config import shared_config
 from src.utils.solana import get_address_pair, SPL_TOKEN_ID_PK
 from src.models import User, UserBankTransaction, UserBankAccount
 from src.queries.get_balances import enqueue_immediate_balance_refresh
-from src.utils.solana_client_manager import SolanaClientManager
+from src.solana_indexing.solana_client_manager import SolanaClientManager
 
 logger = logging.getLogger(__name__)
 

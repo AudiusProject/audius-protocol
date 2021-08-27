@@ -39,7 +39,7 @@ from src.utils.ipfs_lib import IPFSClient
 from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
-from src.utils.solana_client_manager import SolanaClientManager
+from src.solana_indexing.solana_client_manager import SolanaClientManager
 
 # these global vars will be set in create_celery function
 web3endpoint = None

@@ -8,7 +8,7 @@ from src.tasks.index_rewards_manager import (
 )
 from src.utils.db_session import get_db
 from src.utils.config import shared_config
-from src.utils.solana_client_manager import SolanaClientManager
+from src.solana_indexing.solana_client_manager import SolanaClientManager
 from tests.utils import populate_mock_db
 
 REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
