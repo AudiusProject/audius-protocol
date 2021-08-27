@@ -122,7 +122,7 @@ def test_get_related_artists_top_n(app):
     populate_mock_db(db, entities)
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
-        artists = get_related_artists(session, 1)
+    artists = get_related_artists(1)
     assert artists[0]["user_id"] == 5
     assert (
         artists[1]["user_id"] == 6 or artists[2]["user_id"] == 6

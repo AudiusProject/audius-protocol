@@ -604,6 +604,33 @@ class FollowingUsers(Resource):
         return success_response(users)
 
 
+related_artist_route_parser = reqparse.RequestParser()
+related_artist_route_parser.add_argument("user_id", required=False)
+related_artist_response = make_full_response(
+    "related_artist_response", full_ns, fields.List(fields.Nested(user_model_full))
+)
+
+
+@full_ns.route("/<string:user_id>/related")
+class RelatedUsers(Resource):
+    @record_metrics
+    @full_ns.expect(related_artist_route_parser)
+    @full_ns.doc(
+        id="""Gets a list of users that might be of interest to followers of this user.""",
+        params={"user_id": "A User ID"},
+        responses={200: "Success", 500: "Server error"},
+    )
+    @full_ns.marshal_with(related_artist_response)
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        args = following_route_parser.parse_args()
+        current_user_id = get_current_user_id(args)
+        decoded_id = decode_with_abort(user_id, full_ns)
+        users = get_related_artists(decoded_id, current_user_id)
+        users = list(map(extend_user, users))
+        return success_response(users)
+
+
 top_genre_users_route_parser = reqparse.RequestParser()
 top_genre_users_route_parser.add_argument("genre", required=False, action="append")
 top_genre_users_route_parser.add_argument("limit", required=False, type=int)
@@ -611,21 +638,6 @@ top_genre_users_route_parser.add_argument("offset", required=False, type=int)
 top_genre_users_response = make_full_response(
     "top_genre_users_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
-
-
-@full_ns.route("/<string:user_id>/related")
-class RelatedUsers(Resource):
-    @record_metrics
-    @full_ns.doc(
-        id="""A list of users that followers of this user follow, or top artists on the platform if not enough data to find related artists. Limited to the top 100 users.""",
-        responses={200: "Success", 500: "Server error"},
-    )
-    @cache(ttl_sec=5)
-    def get(self, user_id):
-        decoded_id = decode_with_abort(user_id, full_ns)
-        users = get_related_artists(decoded_id)
-        users = list(map(extend_user, users))
-        return success_response(users)
 
 
 @full_ns.route("/genre/top")

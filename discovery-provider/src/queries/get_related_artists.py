@@ -7,7 +7,8 @@ from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.selectable import FromClause
 from src.models import RelatedArtist
 from src.models.models import AggregateUser, Follow, User
-from src.queries.query_helpers import helpers
+from src.queries.query_helpers import helpers, populate_user_metadata
+from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import time_method
 
 # Let calculations sit for this long before requiring recalculating
@@ -196,16 +197,24 @@ def _get_top_artists(session: Session, limit=100):
 
 
 @time_method
-def get_related_artists(session: Session, user_id: int):
-    aggregate_user = (
-        session.query(AggregateUser)
-        .filter(AggregateUser.user_id == user_id)
-        .one_or_none()
-    )
-    if (
-        aggregate_user
-        and aggregate_user.track_count > 0
-        and aggregate_user.follower_count >= 200
-    ):
-        return _get_related_artists(session, user_id)
-    return _get_top_artists(session)
+def get_related_artists(user_id: int, current_user_id: int):
+    db = get_db_read_replica()
+    users = []
+    with db.scoped_session() as session:
+        aggregate_user = (
+            session.query(AggregateUser)
+            .filter(AggregateUser.user_id == user_id)
+            .one_or_none()
+        )
+        if (
+            aggregate_user
+            and aggregate_user.track_count > 0
+            and aggregate_user.follower_count >= 200
+        ):
+            users = _get_related_artists(session, user_id)
+        else:
+            users = _get_top_artists(session)
+
+        user_ids = list(map(lambda user: user["user_id"], users))
+        users = populate_user_metadata(session, user_ids, users, current_user_id)
+    return users
