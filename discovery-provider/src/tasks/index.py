@@ -33,7 +33,7 @@ from src.tasks.celery_app import celery
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
 from src.tasks.tracks import track_state_update, track_event_types_lookup
-from src.tasks.metadata import track_metadata_format
+from src.tasks.metadata import track_metadata_format, user_metadata_format
 from src.tasks.user_library import user_library_state_update
 from src.tasks.user_replica_set import user_replica_set_state_update
 from src.tasks.users import user_state_update, user_event_types_lookup
@@ -228,6 +228,7 @@ def fetch_ipfs_metadata(
 
     blacklisted_cids = set()
     cids = set()
+    cid_type = {}
 
     with db.scoped_session() as session:
         for tx_receipt in user_factory_txs:
@@ -241,6 +242,7 @@ def fetch_ipfs_metadata(
                 )
                 if not is_blacklisted_ipld(session, metadata_multihash):
                     cids.add((metadata_multihash, txhash))
+                    cid_type[metadata_multihash] = "user"
                 else:
                     blacklisted_cids.add(metadata_multihash)
 
@@ -263,6 +265,7 @@ def fetch_ipfs_metadata(
                     cid = multihash.to_b58_string(buf)
                     if not is_blacklisted_ipld(session, cid):
                         cids.add((cid, txhash))
+                        cid_type[metadata_multihash] = "track"
                     else:
                         blacklisted_cids.add(cid)
 
@@ -274,7 +277,9 @@ def fetch_ipfs_metadata(
             future = executor.submit(
                 update_task.ipfs_client.get_metadata,
                 cid,
-                track_metadata_format,
+                track_metadata_format
+                if cid_type[cid] == "track"
+                else user_metadata_format,
                 None,
             )
             futures.append(future)
