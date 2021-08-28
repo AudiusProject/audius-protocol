@@ -21,6 +21,7 @@ import {
   resetStatus
 } from 'store/token-dashboard/slice'
 import { BNWei } from 'store/wallet/slice'
+import { useIsMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import { NEW_WALLET_CONNECTED_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { useSelector } from 'utils/reducer'
@@ -74,6 +75,7 @@ const Wallet = ({
     FeatureFlags.SOL_WALLET_AUDIO_ENABLED
   )
 
+  const isMobile = useIsMobile()
   const dispatch = useDispatch()
   const onRequestRemoveWallet = useCallback(
     (e: React.MouseEvent) => {
@@ -117,7 +119,7 @@ const Wallet = ({
           </>
         </Toast>
       </div>
-      {!hideCollectibles && (
+      {!hideCollectibles && !isMobile && (
         <div className={cn(styles.collectibleCount, styles.walletText)}>
           {collectibleCount}
         </div>
@@ -184,6 +186,7 @@ const WalletsTable = ({
 
   const removeWallets = useSelector(getRemoveWallet)
 
+  const isMobile = useIsMobile()
   const wm = useWithMobileStyle(styles.mobile)
 
   const isDisabled =
@@ -210,7 +213,7 @@ const WalletsTable = ({
         <h6 className={cn(styles.walletsHeaderItem, styles.headerWallet)}>
           {messages.linkedWallets}
         </h6>
-        {!hideCollectibles && (
+        {!hideCollectibles && !isMobile && (
           <h6
             className={cn(styles.walletsHeaderItem, styles.headerCollectibles)}
           >
