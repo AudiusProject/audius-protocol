@@ -232,6 +232,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         else None
     )
     # Get system information monitor values
+    print(monitor_names)
     sys_info = monitors.get_monitors(
         [
             MONITORS[monitor_names.database_size],
@@ -291,6 +292,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # DB connections check
         db_connections_json, error = _get_db_conn_state()
         health_results["db_connections"] = db_connections_json
+
         if error:
             return health_results, error
 
