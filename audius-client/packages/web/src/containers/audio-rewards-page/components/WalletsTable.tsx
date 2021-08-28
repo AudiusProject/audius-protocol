@@ -43,7 +43,7 @@ const shortenSPLAddress = (addr: string) => {
 }
 
 const shortenEthAddress = (addr: string) => {
-  return `0x${addr.substr(2, 4)}...${addr.substr(addr.length - 5)}`
+  return `0x${addr.substring(2, 4)}...${addr.substr(addr.length - 5)}`
 }
 
 type WalletProps = {
@@ -122,16 +122,16 @@ const Wallet = ({
           {collectibleCount}
         </div>
       )}
-      {(chain === Chain.Eth || solWalletAudioEnabled) && (
-        <div className={cn(styles.audioBalance, styles.walletText)}>
+      <div className={cn(styles.audioBalance, styles.walletText)}>
+        {(chain === Chain.Eth || solWalletAudioEnabled) && (
           <DisplayAudio
             showLabel={false}
             amount={audioBalance}
             className={styles.balanceContainer}
             tokenClassName={styles.balance}
           />
-        </div>
-      )}
+        )}
+      </div>
       {hasActions && (isConfirmAdding || isConfirmRemoving) && (
         <LoadingSpinner className={styles.loading}></LoadingSpinner>
       )}
@@ -158,10 +158,6 @@ const WalletsTable = ({
   className,
   hideCollectibles
 }: WalletsTableProps) => {
-  const { isEnabled: solWalletAudioEnabled } = useFlag(
-    FeatureFlags.SOL_WALLET_AUDIO_ENABLED
-  )
-
   const {
     status,
     confirmingWallet,
@@ -221,11 +217,9 @@ const WalletsTable = ({
             {messages.collectibles}
           </h6>
         )}
-        {(ethWallets?.length || solWalletAudioEnabled) && (
-          <h6 className={cn(styles.walletsHeaderItem, styles.headerAudio)}>
-            {messages.audio}
-          </h6>
-        )}
+        <h6 className={cn(styles.walletsHeaderItem, styles.headerAudio)}>
+          {messages.audio}
+        </h6>
       </div>
       {ethWallets &&
         ethWallets.map(wallet => (
