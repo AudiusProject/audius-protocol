@@ -8,6 +8,7 @@ orbs:
   helm: circleci/helm@0.1.2
   kubernetes: circleci/kubernetes@0.3.0
   coveralls: coveralls/coveralls@1.0.6
+  build-tools: circleci/build-tools@2.9.1
 jobs:
   test-mad-dog-e2e:
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
@@ -18,6 +19,7 @@ jobs:
     steps:
       - add_ssh_keys
       - checkout
+      - build-tools/merge-with-parent
       - run:
           name: clone tooling and mad dog
           command: |
@@ -219,6 +221,7 @@ jobs:
         default: false
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition: << parameters.force >>
           steps:
@@ -287,6 +290,7 @@ jobs:
         default: false
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition: << parameters.force >>
           steps:
@@ -328,6 +332,7 @@ jobs:
         default: false
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition: << parameters.force >>
           steps:
@@ -379,6 +384,7 @@ jobs:
         default: false
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition: << parameters.force >>
           steps:
@@ -432,6 +438,7 @@ jobs:
         default: false
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition: << parameters.force >>
           steps:
@@ -502,6 +509,7 @@ jobs:
         default: false
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition: << parameters.force >>
           steps:
@@ -552,6 +560,7 @@ jobs:
         default: false
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition: << parameters.force >>
           steps:
@@ -635,6 +644,7 @@ jobs:
         type: string
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
