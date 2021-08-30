@@ -146,10 +146,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     Returns a tuple of health results and a boolean indicating an error
     """
-    print("shared_config: ")
-    print({section: dict(shared_config[section]) for section in shared_config.sections()})
-
-
     redis = redis_connection.get_redis()
     web3 = web3_provider.get_web3()
 
