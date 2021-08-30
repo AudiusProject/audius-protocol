@@ -364,6 +364,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: audius_creator_node_test
       - image: redis:5.0.4
+    parallelism: 30
     steps:
       - checkout
       - unless:
@@ -398,7 +399,6 @@ jobs:
             export delegatePrivateKey=0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d
             export storagePath="test_file_storage"
             export ipfsPort=5001
-            npm run test:unit
             npm run test:ci
 
   test-discovery-provider:
