@@ -1,12 +1,13 @@
 import logging
 from datetime import datetime
 from typing import Dict
-from src.challenges.challenge_event_bus import ChallengeEventBus
 
 from src.app import contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models import Follow, Playlist, Repost, RepostType
+from src.tasks.index_related_artists import queue_related_artist_calculation
 from src.utils.indexing_errors import IndexingError
 
 logger = logging.getLogger(__name__)
@@ -144,6 +145,7 @@ def social_feature_state_update(
             follow = followee_user_ids[followee_user_id]
             session.add(follow)
             dispatch_challenge_follow(challenge_bus, follow, block_number)
+            queue_related_artist_calculation(update_task.redis, followee_user_id)
         num_total_changes += len(followee_user_ids)
 
     return num_total_changes

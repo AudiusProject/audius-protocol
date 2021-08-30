@@ -54,7 +54,7 @@ def populate_mock_db_blocks(db, min, max):
             session.flush()
 
 
-def populate_mock_db(db, entities):
+def populate_mock_db(db, entities, block_offset=0):
     """
     Helper function to populate the mock DB with tracks, users, plays, and follows
 
@@ -77,7 +77,7 @@ def populate_mock_db(db, entities):
 
         num_blocks = max(len(tracks), len(users), len(follows))
 
-        for i in range(num_blocks):
+        for i in range(block_offset, block_offset + num_blocks):
             block = models.Block(
                 blockhash=hex(i),
                 number=i,
@@ -139,7 +139,7 @@ def populate_mock_db(db, entities):
                 user_id=user_meta.get("user_id", i),
                 is_current=True,
                 handle=user_meta.get("handle", i),
-                handle_lc=user_meta.get("handle", i).lower(),
+                handle_lc=user_meta.get("handle", str(i)).lower(),
                 wallet=user_meta.get("wallet", i),
                 profile_picture=user_meta.get("profile_picture"),
                 profile_picture_sizes=user_meta.get("profile_picture_sizes"),

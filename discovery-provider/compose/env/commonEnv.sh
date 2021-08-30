@@ -1,0 +1,4 @@
+export audius_delegate_owner_wallet=
+export audius_delegate_private_key=
+echo $audius_delegate_owner_wallet
+echo $audius_delegate_private_key
