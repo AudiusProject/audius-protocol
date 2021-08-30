@@ -476,9 +476,12 @@ async function writeStreamToFileSystem (stream, expectedStoragePath, createDir =
     destinationStream.on('finish', () => {
       resolve()
     })
-    destinationStream.on('error', err => { reject(err) })
+    destinationStream.on('error', err => {
+      console.log('destinationStream ERROR IN WRITESTREAMTOFILESYSTEM', err)
+      reject(err)
+    })
     stream.on('error', err => {
-      console.log('ERROR IN WRITESTREAMTOFILESYSTEM', err)
+      console.log('stream ERROR IN WRITESTREAMTOFILESYSTEM', err)
       destinationStream.end()
       reject(err)
     })
