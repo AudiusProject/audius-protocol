@@ -146,6 +146,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     Returns a tuple of health results and a boolean indicating an error
     """
+    print("shared_config: ")
+    print({section: dict(shared_config[section]) for section in shared_config.sections()})
+
+
     redis = redis_connection.get_redis()
     web3 = web3_provider.get_web3()
 
@@ -232,7 +236,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         else None
     )
     # Get system information monitor values
-    print(monitor_names)
     sys_info = monitors.get_monitors(
         [
             MONITORS[monitor_names.database_size],
@@ -292,6 +295,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # DB connections check
         db_connections_json, error = _get_db_conn_state()
         health_results["db_connections"] = db_connections_json
+        health_results["latitude"] = shared_config["serviceLocation"]["serviceLatitude"]
+        health_results["longitude"] = shared_config["serviceLocation"]["serviceLongitude"]
 
         if error:
             return health_results, error

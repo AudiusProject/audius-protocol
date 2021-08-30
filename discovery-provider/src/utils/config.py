@@ -3,8 +3,8 @@ import logging
 import configparser
 import os
 import os.path
-
 import datetime
+import requests
 
 from flask import current_app
 
@@ -122,5 +122,20 @@ except (KeyError, RuntimeError) as e:
     raise RuntimeError(
         f"""
     Missing delegate owner wallet ({owner_wallet}) and/or delgate private key ({private_key}): {e}
+    """
+    ) from e
+
+try:
+    # get latitude longitude
+    ip_info_url = "https://ipinfo.io"
+    ip_info_response = requests.get(ip_info_url)
+    latitude, longitude = ip_info_response.json()["loc"].split(",")
+    shared_config["serviceLocation"]["serviceLatitude"] = latitude
+    shared_config["serviceLocation"]["serviceLongitude"] = longitude
+
+except (KeyError, RuntimeError) as e:
+    raise RuntimeError(
+        f"""
+    Failed to get latitude ({latitude}) and/or longitude ({longitude}): {e}
     """
     ) from e
