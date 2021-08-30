@@ -97,7 +97,7 @@ function getLibsMock () {
     }
   }
   libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderList = libsMock.ethContracts.getServiceProviderList
-  libsMock.User.getUsers.returns([{ 'creator_node_endpoint': '"http://mock-cn1.audius.co,http://mock-cn2.audius.co,http://mock-cn3.audius.co"', 'blocknumber': 10, 'track_blocknumber': 10 }])
+  libsMock.User.getUsers.returns([{ 'creator_node_endpoint': 'http://mock-cn1.audius.co,http://mock-cn2.audius.co,http://mock-cn3.audius.co', 'blocknumber': 10, 'track_blocknumber': 10 }])
   libsMock.User.getUsers.atLeast(1)
 
   return libsMock
