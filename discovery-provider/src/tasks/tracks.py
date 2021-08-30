@@ -185,7 +185,7 @@ def invalidate_old_track(session, track_id):
 
 
 def update_stems_table(session, track_record, track_metadata):
-    if (not "stem_of" in track_metadata) or (
+    if ("stem_of" not in track_metadata) or (
         not isinstance(track_metadata["stem_of"], dict)
     ):
         return
