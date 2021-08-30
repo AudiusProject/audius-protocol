@@ -630,10 +630,9 @@ def get_track_listen_milestone_data():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
-@bp.route("/cid/source", methods=("GET",))
-def get_cid_source_route():
+@bp.route("/cid/source/<string:request_cid>", methods=("GET",))
+def get_cid_source_route(request_cid):
     try:
-        request_cid = request.args.get("cid") or None
         cid_source = get_cid_source(request_cid)
         return api_helpers.success_response(cid_source)
     except exceptions.ArgumentError as e:
