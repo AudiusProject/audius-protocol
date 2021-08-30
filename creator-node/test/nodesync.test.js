@@ -792,7 +792,7 @@ describe('test nodesync', async function () {
       assert.deepStrictEqual(localClockInfo, clockInfo)
     })
 
-    it('Syncs correctly when cnodeUser data already exists locally', async function () {
+    it.only('Syncs correctly when cnodeUser data already exists locally', async function () {
       // Get the saved export
       const sampleExport = JSON.parse(fs.readFileSync(sampleExportDummyCIDFromClock2Path))
       const cnodeUser = Object.values(sampleExport.data.cnodeUsers)[0]
