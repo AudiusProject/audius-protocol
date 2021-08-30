@@ -96,9 +96,9 @@ def user_state_update(
                         entry,
                         event_type,
                         user_events_lookup[user_id]["user"],
-                        ipfs_metadata[
+                        ipfs_metadata.get(
                             user_events_lookup[user_id]["user"].metadata_multihash
-                        ],
+                        ),
                         block_timestamp,
                     )
                     if user_record is not None:
