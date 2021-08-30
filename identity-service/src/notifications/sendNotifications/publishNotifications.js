@@ -30,6 +30,8 @@ const getPublishNotifBaseType = (notification) => {
     case notificationTypes.Create.album:
     case notificationTypes.Create.base:
       return notificationTypes.Create.base
+    case notificationTypes.ChallengeReward:
+      return notificationTypes.ChallengeReward
   }
 }
 
@@ -95,7 +97,7 @@ const publishNotifications = async (notifications, metadata, userNotificationSet
     }
     const publishNotifType = getPublishNotifBaseType(notification)
     const msg = pushNotificationMessagesMap[publishNotifType](populatedNotification)
-    const title = notificationResponseTitleMap[notification.type]
+    const title = notificationResponseTitleMap[notification.type](populatedNotification)
     const userId = getPublishUserId(notification, publishNotifType)
     const types = getPublishTypes(userId, publishNotifType, userNotificationSettings)
     await publish(msg, userId, tx, true, title, types)

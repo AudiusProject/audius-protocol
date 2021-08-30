@@ -136,6 +136,13 @@ function formatRemixCosign (notification, metadata) {
   }
 }
 
+function formatChallengeReward (notification, metadata) {
+  return {
+    type: NotificationType.ChallengeReward,
+    challengeId: notification.challengeId
+  }
+}
+
 const notificationResponseMap = {
   [NotificationType.Follow]: formatFollow,
   [NotificationType.FavoriteTrack]: (notification, metadata) => {
@@ -197,6 +204,9 @@ const notificationResponseMap = {
   [NotificationType.TrendingTrack]: (notification, metadata) => {
     return formatTrendingTrack(notification, metadata)
   },
+  [NotificationType.ChallengeReward]: (notification, metadata) => {
+    return formatChallengeReward(notification, metadata)
+  },
   [NotificationType.Announcement]: formatAnnouncement,
   [NotificationType.MilestoneRepost]: formatMilestone('Repost'),
   [NotificationType.MilestoneFavorite]: formatMilestone('Favorite'),
@@ -214,21 +224,54 @@ const TrendingTrackTitle = 'Congrats - You’re Trending! 📈'
 const RemixCreateTitle = 'New Remix Of Your Track ♻️'
 const RemixCosignTitle = 'New Track Co-Sign! 🔥'
 
+const challengeInfoMap = {
+  'profile-completion': {
+    title: '✅️ Complete your Profile',
+    amount: 5,
+  },
+  'listen-streak': {
+    title: '🎧 Listening Streak: 7 Days',
+    amount: 5,
+  },
+  'track-upload': {
+    title: '🎶 Upload 5 Tracks',
+    amount: 5,
+  },
+  'referrals': {
+    title: '📨 Invite your Friends',
+    amount: 1,
+  },
+  // TODO: Confirm copy for this challenge
+  'referred': {
+    title: '📨 Invite your Friends',
+    amount: 1,
+  },
+  'connect-verified': {
+    title: '✅️ Link Verified Accounts',
+    amount: 10,
+  },
+  'mobile-install': {
+    title: '📲 Get the App',
+    amount: 10,
+  },
+}
+
 const notificationResponseTitleMap = {
-  [NotificationType.Follow]: NewFollowerTitle,
-  [NotificationType.FavoriteTrack]: NewFavoriteTitle,
-  [NotificationType.FavoritePlaylist]: NewFavoriteTitle,
-  [NotificationType.FavoriteAlbum]: NewFavoriteTitle,
-  [NotificationType.RepostTrack]: NewRepostTitle,
-  [NotificationType.RepostPlaylist]: NewRepostTitle,
-  [NotificationType.RepostAlbum]: NewRepostTitle,
-  [NotificationType.CreateTrack]: NewSubscriptionUpdateTitle,
-  [NotificationType.CreateAlbum]: NewSubscriptionUpdateTitle,
-  [NotificationType.CreatePlaylist]: NewSubscriptionUpdateTitle,
-  [NotificationType.Milestone]: NewMilestoneTitle,
-  [NotificationType.TrendingTrack]: TrendingTrackTitle,
-  [NotificationType.RemixCreate]: RemixCreateTitle,
-  [NotificationType.RemixCosign]: RemixCosignTitle
+  [NotificationType.Follow]: () => NewFollowerTitle,
+  [NotificationType.FavoriteTrack]: () => NewFavoriteTitle,
+  [NotificationType.FavoritePlaylist]: () => NewFavoriteTitle,
+  [NotificationType.FavoriteAlbum]: () => NewFavoriteTitle,
+  [NotificationType.RepostTrack]: () => NewRepostTitle,
+  [NotificationType.RepostPlaylist]: () => NewRepostTitle,
+  [NotificationType.RepostAlbum]: () => NewRepostTitle,
+  [NotificationType.CreateTrack]: () => NewSubscriptionUpdateTitle,
+  [NotificationType.CreateAlbum]: () => NewSubscriptionUpdateTitle,
+  [NotificationType.CreatePlaylist]: () => NewSubscriptionUpdateTitle,
+  [NotificationType.Milestone]: () => NewMilestoneTitle,
+  [NotificationType.TrendingTrack]: () => TrendingTrackTitle,
+  [NotificationType.RemixCreate]: () => RemixCreateTitle,
+  [NotificationType.RemixCosign]: () => RemixCosignTitle,
+  [NotificationType.ChallengeReward]: (notification) => challengeInfoMap[notification.challengeId].title
 }
 
 function formatNotificationProps (notifications, metadata) {
@@ -282,6 +325,9 @@ const pushNotificationMessagesMap = {
     const rank = notification.rank
     const rankSuffix = getRankSuffix(rank)
     return `Your Track ${notification.entity.title} is ${notification.rank}${rankSuffix} on Trending Right Now! 🍾`
+  },
+  [notificationTypes.ChallengeReward] (notification) {
+    return `You’ve earned ${challengeInfoMap[notification.challengeId].amount} $AUDIO for completing this challenge!`
   }
 }
 

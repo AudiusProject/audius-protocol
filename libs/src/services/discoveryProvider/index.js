@@ -534,6 +534,11 @@ class DiscoveryProvider {
     return this._makeRequest(req)
   }
 
+  async getSolanaNotifications (minSlotNumber, timeout) {
+    const req = Requests.getSolanaNotifications(minSlotNumber, timeout)
+    return this._makeRequest(req)
+  }
+
   async getTrackListenMilestones (timeout = null) {
     const req = Requests.getTrackListenMilestones(timeout)
     return this._makeRequest(req)

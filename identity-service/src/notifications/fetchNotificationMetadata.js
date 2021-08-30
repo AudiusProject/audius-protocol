@@ -113,6 +113,7 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
   let trackIdsToFetch = []
   let collectionIdsToFetch = []
   let fetchTrackRemixParents = []
+  // let challengesToFetch = []
 
   for (let notification of notifications) {
     logger.debug('fetchNotificationMetadata.js#notification', notification)
@@ -171,6 +172,11 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
             userIdsToFetch.push(action.actionEntityId)
           }
         }
+        break
+      }
+      // TODO: Nothing probably needed here
+      case NotificationType.ChallengeReward: {
+        // challengesToFetch.push(notification.challengeId)
         break
       }
       case NotificationType.RemixCosign: {

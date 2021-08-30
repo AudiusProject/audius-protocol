@@ -74,7 +74,7 @@ async function updateBlockchainIds () {
  */
 async function calculateTrackListenMilestonesFromDiscovery (discoveryProvider) {
   // Pull listen count notification data from discovery provider
-  const timeout = 2 /* min */ * 60 /* sec */ * 10000 /* ms */
+  const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
   const trackListenMilestones = await discoveryProvider.getTrackListenMilestones(timeout)
   const listenCountBody = trackListenMilestones.data
   let parsedListenCounts = []

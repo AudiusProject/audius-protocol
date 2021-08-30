@@ -1,6 +1,6 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
-  const Notification = sequelize.define('Notification', {
+  const SolanaNotification = sequelize.define('SolanaNotification', {
     id: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -9,27 +9,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     type: {
       type: DataTypes.ENUM({
-        values: [
-          'Follow',
-          'RepostTrack',
-          'RepostPlaylist',
-          'RepostAlbum',
-          'FavoriteTrack',
-          'FavoritePlaylist',
-          'FavoriteAlbum',
-          'CreateTrack',
-          'CreatePlaylist',
-          'CreateAlbum',
-          'Announcement',
-          'MilestoneListen',
-          'MilestoneRepost',
-          'MilestoneFavorite',
-          'MilestoneFollow',
-          'RemixCreate',
-          'RemixCosign',
-          'TrendingTrack',
-          'ChallengeReward'
-        ]
+        values: ['ChallengeReward']
       }),
       allowNull: false
     },
@@ -57,23 +37,19 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    blocknumber: {
+    slot: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    timestamp: {
-      type: DataTypes.DATE,
-      allowNull: false
-    }
   }, {})
 
-  Notification.associate = function (models) {
-    Notification.hasMany(models.NotificationAction, {
+  SolanaNotification.associate = function (models) {
+    SolanaNotification.hasMany(models.SolanaNotificationAction, {
       sourceKey: 'id',
       foreignKey: 'notificationId',
       as: 'actions'
     })
   }
 
-  return Notification
+  return SolanaNotification
 }
