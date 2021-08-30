@@ -275,10 +275,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     try {
       decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
       const content = fs.createReadStream(expectedStoragePath)
-
-      console.log('what is this.....', expectedStoragePath, content)
-      const results = await ipfsLatest.add(content, { onlyHash: true, timeout: 10000 })
-      for (const result of results) {
+      for await (const result of ipfsLatest.add(content, { onlyHash: true, timeout: 10000 })) {
         if (multihash !== result.cid.toString()) {
           decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: result.cid.toString(), time: Date.now() })
           // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
@@ -289,7 +286,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
       decisionTree.push({ stage: 'Successfully verified the file contents for the CID', vals: multihash, time: Date.now() })
     } catch (e) {
       decisionTree.push({ stage: `Error during content verification for multihash`, vals: multihash, time: Date.now() })
-      throw new Error(`Error during content verification for multihash ${multihash} ${e.message}\n${e.stack}`)
+      throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
     }
 
     // If error, return boolean failure indicator + print logs
