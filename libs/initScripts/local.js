@@ -32,6 +32,8 @@ const discoveryNodeType = 'discovery-node'
 const discoveryNodeTypeMin = 200000
 const discoveryNodeTypeMax = 7000000
 
+const DISCOVERY_WALLET_OFFSET = 8
+
 // try to dynamically get versions from .version.json
 let serviceVersions = {}
 let serviceTypesList = []
@@ -98,6 +100,14 @@ const run = async () => {
       case 'setversion':
         await _initAllVersions(audiusLibs)
         break
+
+      case 'configure-discprov-wallet': {
+        const serviceCount = args[3]
+        if (serviceCount === undefined) throw new Error('configure-discprov-wallet requires a service # as the second arg')
+        const envPath = '../discovery-provider/compose/env/commonEnv.sh'
+        await _configureDiscProv(ethAccounts, parseInt(serviceCount), envPath)
+        break
+      }
 
       case 'register-discprov':
         const serviceCount = args[3]
@@ -405,7 +415,7 @@ const _initializeLocalEnvironment = async (audiusLibs, ethAccounts) => {
 const makeDiscoveryProviderEndpoint = (serviceNumber) => `http://dn${serviceNumber}_web-server_1:${5000 + parseInt(serviceNumber) - 1}`
 
 const _registerDiscProv = async (ethAccounts, serviceNumber) => {
-  const audiusLibs = await initAudiusLibs(true, null, ethAccounts[8 + serviceNumber])
+  const audiusLibs = await initAudiusLibs(true, null, ethAccounts[DISCOVERY_WALLET_OFFSET + serviceNumber])
   const endpoint = makeDiscoveryProviderEndpoint(serviceNumber)
   await registerLocalService(audiusLibs, discoveryNodeType, endpoint, amountOfAuds)
 }
@@ -488,6 +498,21 @@ const _initEthContractTypes = async (libs) => {
   console.log(`Registering additional service type ${contentNodeType} - Min=${contentNodeTypeMin}, Max=${contentNodeTypeMax}`)
   // Add discovery-node serviceType
   await addServiceType(libs, discoveryNodeType, discoveryNodeTypeMin, discoveryNodeTypeMax)
+}
+
+const _configureDiscProv = async (ethAccounts, serviceNumber, envPath) => {
+  let ganacheEthAccounts = await getEthContractAccounts()
+  let discProvAccountPubkey = ethAccounts[DISCOVERY_WALLET_OFFSET + serviceNumber].toLowerCase()
+  let delegateWalletPrivKey = ganacheEthAccounts['private_keys'][`${discProvAccountPubkey}`]
+  const delegateOwnerWalletPubkeyLine = `export audius_delegate_owner_wallet=${discProvAccountPubkey}`
+  const delegateOwnerWalletPkeyLine = `export audius_delegate_private_key=${delegateWalletPrivKey}`
+  let output = []
+  output.push(delegateOwnerWalletPubkeyLine)
+  output.push(delegateOwnerWalletPkeyLine)
+  output.push(`echo $audius_delegate_owner_wallet`)
+  output.push(`echo $audius_delegate_private_key`)
+  fs.writeFileSync(envPath, output.join('\n'))
+  console.log(`Updated ${envPath}:\n${delegateOwnerWalletPubkeyLine}\n${delegateOwnerWalletPkeyLine}`)
 }
 
 // Write an update to either the common .sh file for creator nodes or docker env file
