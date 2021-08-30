@@ -367,11 +367,11 @@ jobs:
     parallelism: 30
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - run: ./diff.sh creator-node || (echo "no diff" && circleci-agent step halt)
+      # - unless:
+      #     condition:
+      #       equal: [ master, << pipeline.git.branch >> ]
+      #     steps:
+      #       - run: ./diff.sh creator-node || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
       # - restore_cache:
       #     keys:
