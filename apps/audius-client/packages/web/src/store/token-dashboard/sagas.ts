@@ -254,17 +254,12 @@ function* connectWallet() {
       BooleanKeys.DISPLAY_SOLANA_WEB3_PROVIDER_PHANTOM
     ) as boolean
 
-    const isSolletEnabled = getRemoteVar(
-      BooleanKeys.DISPLAY_SOLANA_WEB3_PROVIDER_SOLLET
-    ) as boolean
-
     // @ts-ignore: type web3Instance
     web3Instance = yield connectWeb3Wallet({
       isBitSkiEnabled,
       isWalletConnectEnabled,
       isWalletLinkEnabled,
-      isPhantomEnabled,
-      isSolletEnabled
+      isPhantomEnabled
     })
     if (!web3Instance) {
       yield put(
@@ -280,8 +275,6 @@ function* connectWallet() {
     const provider = web3Instance._provider
     if (provider === window.solana) {
       yield call(connectPhantomWallet, provider)
-    } else if (provider?._providerUrl?.hostname.includes('sollet')) {
-      yield call(connectSolletWallet, provider)
     } else {
       yield call(connectEthWallet, web3Instance)
     }
@@ -297,17 +290,6 @@ function* connectWallet() {
       })
     )
   }
-}
-
-function* connectSolletWallet(wallet: any) {
-  const connectingWallet: string = wallet.publicKey.toString()
-  const signMessage = async (encodedMessage: Uint8Array, encoding: string) => {
-    return wallet.sign(encodedMessage, encoding)
-  }
-  const disconnect = async () => {
-    if (wallet._publicKey) await wallet.disconnect()
-  }
-  yield connectSPLWallet(connectingWallet, signMessage, disconnect)
 }
 
 function* connectPhantomWallet(solana: any) {
