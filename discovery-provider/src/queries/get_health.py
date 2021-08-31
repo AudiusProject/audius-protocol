@@ -291,6 +291,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # DB connections check
         db_connections_json, error = _get_db_conn_state()
         health_results["db_connections"] = db_connections_json
+        health_results["latitude"] = shared_config["serviceLocation"]["serviceLatitude"]
+        health_results["longitude"] = shared_config["serviceLocation"]["serviceLongitude"]
+
         if error:
             return health_results, error
 
