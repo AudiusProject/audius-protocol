@@ -134,8 +134,4 @@ try:
     shared_config["serviceLocation"]["serviceLongitude"] = longitude
 
 except (KeyError, RuntimeError) as e:
-    raise RuntimeError(
-        f"""
-    Failed to get latitude ({latitude}) and/or longitude ({longitude}): {e}
-    """
-    ) from e
+    logger.error(f"""Failed to get latitude ({latitude}) and/or longitude ({longitude}): {e}""")
