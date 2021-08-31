@@ -45,8 +45,12 @@ class SolanaClient {
             tokenAmount: v.account.data.parsed.info.tokenAmount
           }))
           .filter(({ tokenAmount }) => {
-            // nfts generally have 0 decimal places
-            return tokenAmount.decimals === 0
+            // Filter out the token if we don't have any balance
+            const ownsNFT = tokenAmount.amount !== '0'
+            // Filter out the tokens that don't have 0 decimal places.
+            // NFTs really should have 0
+            const hasNoDecimals = tokenAmount.decimals === 0
+            return ownsNFT && hasNoDecimals
           })
           .map(({ mint }) => mint)
         return { mintAddresses }
