@@ -48,7 +48,9 @@ def test_calculate_related_artists_scores(app):
 
         # Check sampled (with large enough sample to get all rows for deterministic result)
         rows = _calculate_related_artists_scores(
-            session, 0, sample_size=200 + 50 + 100 + 40 + 5 + 500 + 200  # sum of all the follows
+            session,
+            0,
+            sample_size=200 + 50 + 100 + 40 + 5 + 500 + 200,  # sum of all the follows
         )
         assert rows[0].related_artist_user_id == 1 and math.isclose(
             rows[0].score, 50, abs_tol=0.001
@@ -116,20 +118,12 @@ def test_update_related_artist_scores_if_needed(app):
         assert result, "Calculate when the scores are stale"
 
 
-def test_get_related_artists_top_n(app):
-    """Tests that artists with too few followers get a generic list of top artists by follows"""
+def test_get_related_artists_too_few_followers(app):
+    """Tests that artists with too few followers get an empty list"""
     with app.app_context():
         db = get_db()
         populate_mock_db(db, entities)
         with db.scoped_session() as session:
             session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
         artists = get_related_artists(1, None)
-        assert artists[0]["user_id"] == 5
-        assert (
-            artists[1]["user_id"] == 0
-        )  # 6 and 0 have the same number of follows, sort then by user_id
-        assert artists[2]["user_id"] == 6
-        assert artists[3]["user_id"] == 2
-        assert artists[4]["user_id"] == 1
-        assert artists[5]["user_id"] == 3
-        assert artists[6]["user_id"] == 4
+        assert len(artists) == 0
