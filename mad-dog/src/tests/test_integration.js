@@ -3,7 +3,11 @@ const {
   TrackUploadRequest,
   TrackUploadResponse,
   TrackRepostRequest,
-  TrackRepostResponse
+  TrackRepostResponse,
+  AddPlaylistTrackRequest,
+  AddPlaylistTrackResponse,
+  CreatePlaylistRequest,
+  CreatePlaylistResponse
 } = require('../operations.js')
 
 const path = require('path')
@@ -22,9 +26,10 @@ const {
   r6,
   ensureReplicaSetSyncIsConsistent,
   upgradeUsersToCreators,
-  delay
+  delay,
+  genRandomString
 } = require('../helpers.js')
-const { getContentNodeEndpoints, getRepostersForTrack } = require('@audius/service-commands')
+const { getContentNodeEndpoints, getRepostersForTrack, createPlaylist, getPlaylists } = require('@audius/service-commands')
 const {
   uploadTrack,
   repostTrack,
@@ -35,7 +40,8 @@ const {
   uploadPhotoAndUpdateMetadata,
   setCreatorNodeEndpoint,
   updateCreator,
-  getURSMContentNodes
+  getURSMContentNodes,
+  addPlaylistTrack
 } = ServiceCommands
 
 // NOTE - # of ticks = (TEST_DURATION_SECONDS / TICK_INTERVAL_SECONDS) - 1
@@ -48,6 +54,8 @@ const THIRD_USER_PIC_PATH = path.resolve('assets/images/sid.png')
 const repostedTracks = []
 const uploadedTracks = []
 const userRepostedMap = {}
+const createdPlaylists = []
+const addedPlaylistTracks = []
 
 /**
  * Randomly uploads tracks over the duration of the test,
@@ -117,6 +125,7 @@ module.exports = coreIntegration = async ({
         try {
           // Execute a track upload request against a single
           // instance of libs.
+          await executeOne(walletIndex, l => l.waitForLatestBlock())
           const trackId = await executeOne(walletIndex, l =>
             uploadTrack(l, track, randomTrackFilePath)
           )
@@ -176,6 +185,87 @@ module.exports = coreIntegration = async ({
         emit(Event.RESPONSE, res)
         break
       }
+      case OPERATION_TYPE.CREATE_PLAYLIST: {
+        try {
+          // create playlist
+          const randomPlaylistName = genRandomString(8)
+          const playlist = await executeOne(walletIndex, l =>
+            createPlaylist(l, userId, randomPlaylistName, false, false, [])
+          )
+          await executeOne(walletIndex, l => l.waitForLatestBlock())
+
+          // verify playlist
+          const verifiedPlaylist = await executeOne(walletIndex, l =>
+            getPlaylists(l, 100, 0, [playlist.playlistId], userId)
+          )
+          if (verifiedPlaylist[0].playlist_id !== playlist.playlistId) {
+            throw new Error(`Error verifying playlist [${playlist.playlistId}]`)
+          }
+
+          res = new CreatePlaylistResponse(walletIndex, playlist.playlistId, userId)
+        } catch (e) {
+          logger.error(`Caught error [${e.message}] creating playlist.\n${e.stack}`)
+          res = new CreatePlaylistResponse(walletIndex, null, userId)
+          throw new Error(e)
+        }
+        emit(Event.RESPONSE, res)
+        break
+      }
+      case OPERATION_TYPE.ADD_PLAYLIST_TRACK: {
+        if (uploadedTracks.length === 0 || !createdPlaylists[userId]) {
+          res = new AddPlaylistTrackResponse(
+            walletIndex,
+            null,
+            false,
+            new Error('Adding a track to a playlist requires a track to be uploaded.')
+          )
+        } else {
+          const trackId = uploadedTracks[_.random(uploadedTracks.length - 1)].trackId
+          try {
+            // add track to playlist
+            const playlistId = createdPlaylists[userId][createdPlaylists[userId].length - 1]
+            const transaction = await executeOne(walletIndex, l =>
+              addPlaylistTrack(l, playlistId, trackId)
+            )
+            await executeOne(walletIndex, l => l.waitForLatestBlock())
+
+            // verify playlist track add
+            let playlistTracks
+            let playlists
+
+            let counter = 0
+            do {
+              playlists = await executeOne(walletIndex, l =>
+                getPlaylists(l, 100, 0, [playlistId], userId)
+              )
+              playlistTracks = playlists[0].playlist_contents.track_ids.map(obj => obj.track)
+              counter += 1
+              if (counter > 100) {
+                throw new Error('Maxed out retry attempts')
+              }
+            } while (playlists[0].blocknumber < transaction.blockNumber)
+
+            if (!playlistTracks.includes(trackId)) {
+              throw new Error(`Track [${trackId}] not found in playlist [${playlistId}]`)
+            }
+
+            res = new AddPlaylistTrackResponse(walletIndex, trackId)
+          } catch (e) {
+            logger.error(`Caught error [${e.message}] adding track: [${trackId}] to playlist \n${e.stack}`)
+            res = new AddPlaylistTrackResponse(
+              walletIndex,
+              null,
+              false,
+              e.message
+            )
+            throw new Error(e)
+          }
+        }
+
+        // Emit the response event
+        emit(Event.RESPONSE, res)
+        break
+      }
       default:
         logger.error('Unknown request type!')
         break
@@ -218,6 +308,24 @@ module.exports = coreIntegration = async ({
         userRepostedMap[userId].push(trackId)
         break
       }
+      case OPERATION_TYPE.CREATE_PLAYLIST: {
+        const { walletIndex, playlist, userId, success } = res
+        if (success) {
+          if (!createdPlaylists[userId]) {
+            createdPlaylists[userId] = []
+          }
+          createdPlaylists[userId].push(playlist)
+        }
+        break
+      }
+      case OPERATION_TYPE.ADD_PLAYLIST_TRACK: {
+        const { walletIndex, trackId, success } = res
+        if (success) {
+          addedPlaylistTracks.push(trackId)
+        }
+        break
+      }
+
       default:
         logger.error('Unknown response type')
     }
@@ -227,16 +335,26 @@ module.exports = coreIntegration = async ({
   // of events.
   emitterTest.registerOnTickListener(emit => {
     const requesterIdx = _.random(0, numUsers - 1)
-    const uploadRequest = new TrackUploadRequest(
+    const trackUploadRequest = new TrackUploadRequest(
       requesterIdx,
       walletIdMap[requesterIdx]
     )
-    const repostRequest = new TrackRepostRequest(
+    const trackRepostRequest = new TrackRepostRequest(
       requesterIdx,
       walletIdMap[requesterIdx]
     )
-    emit(Event.REQUEST, uploadRequest)
-    emit(Event.REQUEST, repostRequest)
+    const createPlaylistRequest = new CreatePlaylistRequest(
+      requesterIdx,
+      walletIdMap[requesterIdx]
+    )
+    const addPlaylistTrackRequest = new AddPlaylistTrackRequest(
+      requesterIdx,
+      walletIdMap[requesterIdx]
+    )
+    emit(Event.REQUEST, trackUploadRequest)
+    emit(Event.REQUEST, trackRepostRequest)
+    emit(Event.REQUEST, createPlaylistRequest)
+    emit(Event.REQUEST, addPlaylistTrackRequest)
   })
 
   // Create users. Upgrade them to creators later
@@ -604,4 +722,6 @@ const printTestSummary = () => {
   logger.info('\n------------------------ AUDIUS CORE INTEGRATION TEST Summary ------------------------')
   logger.info(`uploadedTracks: ${uploadedTracks.length}                | Total uploaded tracks`)
   logger.info(`repostedTracks: ${repostedTracks.length}                | Total reposted tracks`)
+  logger.info(`createdPlaylists: ${Object.values(createdPlaylists).flat().length}                | Total created playlists`)
+  logger.info(`addedPlaylistTracks: ${addedPlaylistTracks.length}                | Total added playlist tracks`)
 }
