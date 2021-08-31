@@ -19,7 +19,7 @@ depends_on = None
 def upgrade():
     op.get_bind().execute(
         """
-        CREATE EXTENSION tsm_system_rows;
+        CREATE EXTENSION IF NOT EXISTS tsm_system_rows;
         """
     )
 
