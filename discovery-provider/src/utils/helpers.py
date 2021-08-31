@@ -385,7 +385,7 @@ def create_track_route_id(title, handle):
     """
     # Strip out invalid character
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00", "", title
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\ud835", "", title
     )
 
     # Convert whitespaces to dashes
