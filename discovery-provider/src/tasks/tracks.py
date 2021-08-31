@@ -237,6 +237,7 @@ def update_track_routes_table(
                 .one_or_none()
             )
         except Exception as e:
+            logger.info(f"ray track id {track_record.track_id}")
             logger.error(f"Failed to query previous track routes {e}")
 
     if prev_track_route_record is not None:
