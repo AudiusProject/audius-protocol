@@ -17,7 +17,7 @@ const {
 // Configuration.
 // Should be CLI configurable in the future.
 const DEFAULT_NUM_CREATOR_NODES = 4
-const DEFAULT_NUM_USERS = 2
+const DEFAULT_NUM_USERS = 1
 const SNAPBACK_NUM_USERS = 10
 const USER_REPLICA_SET_NUM_USERS = 4
 
@@ -192,7 +192,7 @@ async function main () {
       case 'test': {
         const test = makeTest('consistency', coreIntegration, {
           numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
-          numUsers: DEFAULT_NUM_USERS
+          numUsers: 20
         })
         await testRunner([test])
         break
