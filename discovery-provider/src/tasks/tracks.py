@@ -227,14 +227,17 @@ def update_track_routes_table(
     )
     # Then query the DB if necessary
     if prev_track_route_record is None:
-        prev_track_route_record = (
-            session.query(TrackRoute)
-            .filter(
-                TrackRoute.track_id == track_record.track_id,
-                TrackRoute.is_current == True,
-            )  # noqa: E712
-            .one_or_none()
-        )
+        try:
+            prev_track_route_record = (
+                session.query(TrackRoute)
+                .filter(
+                    TrackRoute.track_id == track_record.track_id,
+                    TrackRoute.is_current == True,
+                )  # noqa: E712
+                .one_or_none()
+            )
+        except Exception as e:
+            logger.error(f"Failed to query previous track routes {e}")
 
     if prev_track_route_record is not None:
         if prev_track_route_record.title_slug == new_track_slug_title:
