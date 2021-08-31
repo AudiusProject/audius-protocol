@@ -75,8 +75,12 @@
 
     cd ../cli
     cargo build
-    generate_pda_output=$(cargo run generate-base-pda "$token" "$claimable_token_address")
-    echo $generate_pda_output
+    claimable_token_deploy_response=$(cargo run generate-base-pda "$token" "$claimable_token_address")
+    # receives response like:
+    # Recieved mint EeVWPMme6KKiXhNUPBUTqtTRVSKDNkmTzrXphysoZwHd Recieved program_id 8vLh7kQgESezUhqSw7NBgt2aQ5NZ7mZLdD1e8uuiA1Ss Recieved program_base_address (43ygn9QDL1h6w7FTa1jWhR8VukMoLPPTKnqzWm8KcUYD, 255)
+    echo $claimable_token_deploy_response
+    # pull out just the PDA
+    claimable_token_pda=$(echo $claimable_token_deploy_response | grep -Po '(?<=\().*(?=,)')
 
     echo "Building RewardsManager"
     cd ../../reward-manager/
@@ -131,6 +135,7 @@ cat <<EOF
     "splToken": "$token",
     "splTokenAccount": "$token_account",
     "claimableTokenAddress": "$claimable_token_address",
+    "claimableTokenPDA": "$claimable_token_pda",
     "rewardsManagerAddress": "$rewards_manager_address",
     "rewardsManagerAccount": "$reward_manager_account_key",
     "rewardsManagerTokenAccount": "$reward_manager_token_account_key"
