@@ -149,7 +149,7 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
             return Promise.race([requestPromise, timeoutPromise])
           }
 
-          const createNewUserTimeoutMs = 300000
+          const createNewUserTimeoutMs = 300000 // 300sec = 5 min
           await withTimeout(createNewUser(), createNewUserTimeoutMs, `Failed to create new user for index ${i} in ${createNewUserTimeoutMs}`)
         }
 

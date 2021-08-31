@@ -192,7 +192,7 @@ async function main () {
       case 'test': {
         const test = makeTest('consistency', coreIntegration, {
           numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
-          numUsers: 20
+          numUsers: 10
         })
         await testRunner([test])
         break

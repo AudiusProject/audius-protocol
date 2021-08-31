@@ -72,10 +72,18 @@ class EmitterBasedTest {
     this.isTicking = false
     logger.info('Finished ticking.')
 
+    const withTimeout = async (requestPromise, timeoutMs, timeoutMsg) => {
+      const timeoutPromise = new Promise((resolve, reject) => {
+        setTimeout(() => reject(new Error(timeoutMsg)), timeoutMs)
+      })
+      return Promise.race([requestPromise, timeoutPromise])
+    }
+
     // Await any pending requests if necessary
     if (this.inFlightCount > 0) {
       logger.info(`Awaiting [${this.inFlightCount}] inflight requests.`)
-      await this.inFlightPromise
+      await withTimeout(this.inFlightPromise, 300000, `Failed to resolve all inflight requests in 300000ms`)
+      // await this.inFlightPromise
     }
     logger.info('Test done.')
   }
