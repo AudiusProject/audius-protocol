@@ -1,3 +1,4 @@
+const { PublicKey } = require('@solana/web3.js')
 
 const keccak256 = require('keccak256')
 const secp256k1 = require('secp256k1')
@@ -42,6 +43,15 @@ class SolanaUtils {
   }
 
   /**
+   * Constructs a transfer ID
+   * @param {string} challengeId
+   * @param {string} specifier
+   * @returns {string}
+   */
+  static constructTransferId (challengeId, specifier) {
+    return `${challengeId}:${specifier}`
+  }
+  /**
    * Constructs an attestation from inputs.
    *
    * @param {boolean} isOracle
@@ -82,7 +92,37 @@ class SolanaUtils {
   static uiAudioToBNWaudio (amount) {
     return new BN(amount * 10 ** 9)
   }
+
+  /**
+   * Derives a program address from a program ID and pubkey as seed.
+   * Optionally takes in seeds.
+   * Returns the new pubkey and bump seeds.
+   *
+   * @param {PublicKey} programId
+   * @param {PublicKey} pubkey
+   * @param [Uint8Array] seed
+   * @returns {Promise<[PublicKey, number]>}
+   */
+  static async findProgramAddressFromPubkey (programId, pubkey, seed) {
+    let seedsArr = [pubkey.toBytes().slice(0, 32)]
+    if (seed) {
+      seedsArr.push(seed)
+    }
+    return PublicKey.findProgramAddress(
+      seedsArr,
+      programId
+    )
+  }
 }
+
+/**
+ * Converts a BN to a Uint8Array of length 8, in little endian notation.
+ * Useful for when Rust wants a u64 (8 * 8) represented as a byte array.
+ * Ex: https://github.com/AudiusProject/audius-protocol/blob/master/solana-programs/reward-manager/program/src/processor.rs#L389
+ *
+ * @param {BN} bn
+ */
+const padBNToUint8Array = (bn) => bn.toArray('le', 8)
 
 
 module.exports = SolanaUtils

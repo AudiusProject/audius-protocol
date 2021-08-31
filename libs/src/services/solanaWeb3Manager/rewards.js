@@ -576,23 +576,6 @@ const ethAddressToArray = (ethAddress) => {
   return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be'))
 }
 
-/**
- * Constructs a transfer ID
- * @param {string} challengeId
- * @param {string} specifier
- * @returns {string}
- */
-const constructTransferId = (challengeId, specifier) =>
-  `${challengeId}:${specifier}`
-
-/**
- * Converts a BN to a Uint8Array of length 8, in little endian notation.
- * Useful for when Rust wants a u64 (8 * 8) represented as a byte array.
- * Ex: https://github.com/AudiusProject/audius-protocol/blob/master/solana-programs/reward-manager/program/src/processor.rs#L389
- *
- * @param {BN} bn
- */
-const padBNToUint8Array = (bn) => bn.toArray('le', 8)
 
 /**
  * Derives the Solana account associated with a given sender Eth address.
@@ -664,38 +647,6 @@ const deriveMessageAccount = async (
 }
 
 /**
- * Derives a program address from a program ID and pubkey as seed.
- * Returns the new pubkey and bump seeds.
- *
- * @param {PublicKey} programId
- * @param {PublicKey} pubkey
- * @returns {Promise<[PublicKey, number]>}
- */
-const findProgramAddressFromPubkey = async (programId, pubkey) => {
-  return PublicKey.findProgramAddress(
-    [pubkey.toBytes().slice(0, 32)],
-    programId
-  )
-}
-
-/**
- * Finds a 'derived' address by finding a programAddress with
- * seeds array  as first 32 bytes of base + seeds
- * Returns [derivedAddress, bumpSeed]
- *
- * @param {PublicKey} programId
- * @param {PublicKey} base
- * @param {Uint8Array} seed
- * @returns {Promise<[PublicKey, number]>}
- */
-const findProgramAddressFromPubkeyAndSeeds = async (programId, base, seed) => {
-  return PublicKey.findProgramAddress(
-    [base.toBytes().slice(0, 32), seed],
-    programId
-  )
-}
-
-/**
  * Finds a program address, using both seeds, pubkey, and the derived rewards manager authority.
  * Return [rewardManagerAutuhority, derivedAddress, and bumpSeeds]
  *
@@ -711,11 +662,11 @@ const findProgramAddressWithAuthority = async (
 ) => {
   // Finds the rewardManagerAuthority account by generating
   // a PDA with the rewardsMnager as a seed
-  const [rewardManagerAuthority] = await findProgramAddressFromPubkey(
+  const [rewardManagerAuthority] = await SolanaUtils.findProgramAddressFromPubkey(
     programId,
     rewardManager
   )
-  const [derivedAddress, bumpSeed] = await findProgramAddressFromPubkeyAndSeeds(
+  const [derivedAddress, bumpSeed] = await SolanaUtils.findProgramAddressFromPubkey(
     programId,
     rewardManagerAuthority,
     seed

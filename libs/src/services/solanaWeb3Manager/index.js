@@ -11,6 +11,7 @@ const { wAudioFromWeiAudio } = require('./wAudio')
 const Utils = require('../../utils')
 const { submitAttestations, evaluateAttestations } = require('./rewards')
 const BN = require('bn.js')
+const SolanaUtils = require('./utils')
 
 const { PublicKey } = solanaWeb3
 
@@ -90,10 +91,7 @@ class SolanaWeb3Manager {
 
     this.claimableTokenProgramKey = new PublicKey(claimableTokenProgramAddress)
     this.claimableTokenPDA = claimableTokenPDA || (
-      await this._generateClaimableTokenPDA(
-        this.mintKey,
-        this.claimableTokenProgramKey
-      )
+      (await SolanaUtils.findProgramAddressFromPubkey(this.claimableTokenProgramKey, this.mintKey))[0].toString()
     )
     this.claimableTokenPDAKey = new PublicKey(this.claimableTokenPDA)
     this.rewardManagerProgramId = new PublicKey(rewardsManagerProgramId)
@@ -333,18 +331,6 @@ class SolanaWeb3Manager {
       identityService: this.identityService,
       connection: this.connection
     })
-  }
-
-  /**
-   * Generates a PDA for the claimable token program from
-   * the mint key and the program ID
-   */
-  async _generateClaimableTokenPDA (mintKey, programKey) {
-    let res = await this.solanaWeb3.PublicKey.findProgramAddress(
-      [mintKey.toBytes().slice(0, 32)],
-      programKey
-    )
-    return res[0].toString()
   }
 }
 
