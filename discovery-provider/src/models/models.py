@@ -43,7 +43,7 @@ def validate_field_helper(field, value, model, field_type):
     # the fix is to replace those characters with empty with empty string
     # https://stackoverflow.com/questions/1347646/postgres-error-on-insert-error-invalid-byte-sequence-for-encoding-utf8-0x0
     if type(field_type) in (String, Text) and value:
-        value = value.replace("\x00", "")
+        value = value.replace("\x00", "").replace("\ud835", "")
 
     to_validate = {field: value}
     try:
