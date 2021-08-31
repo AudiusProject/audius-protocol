@@ -77,10 +77,6 @@ export enum BooleanKeys {
    */
   DISPLAY_SOLANA_WEB3_PROVIDER_PHANTOM = 'DISPLAY_SOLANA_WEB3_PROVIDER_PHANTOM',
   /*
-   * Boolean to show sollet as an option for associating spl wallets
-   */
-  DISPLAY_SOLANA_WEB3_PROVIDER_SOLLET = 'DISPLAY_SOLANA_WEB3_PROVIDER_SOLLET',
-  /*
    * Boolean to show instagram verification on mobile.
    */
   DISPLAY_INSTAGRAM_VERIFICATION = 'DISPLAY_INSTAGRAM_VERIFICATION',
