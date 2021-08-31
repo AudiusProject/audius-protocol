@@ -683,7 +683,7 @@ top_users_response = make_full_response(
 class FullTopUsers(Resource):
     @full_ns.expect(top_users_response)
     @full_ns.doc(
-        id="""Get the Top Users""",
+        id="""Get the Top Users having at least one track by follower count""",
         params={"limit": "Limit", "offset": "Offset"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
