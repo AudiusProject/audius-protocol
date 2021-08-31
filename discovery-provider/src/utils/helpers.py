@@ -421,6 +421,7 @@ def create_track_slug(title, track_id, collision_id=0):
         "",
         title,
     )
+    sanitized_title = sanitized_title.replace("\ud835", "")
 
     # Convert whitespaces to dashes
     sanitized_title = re.sub(r"\s+", "-", sanitized_title.strip())
