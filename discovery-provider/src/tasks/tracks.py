@@ -264,6 +264,7 @@ def update_track_routes_table(
     if max_collision_id is None:
         logger.info(f"ray track id2: {track_record.track_id} {track_record.owner_id}")
         logger.info(track_record)
+        logger.info(track_metadata)
         max_collision_id = (
             session.query(functions.max(TrackRoute.collision_id))
             .filter(
