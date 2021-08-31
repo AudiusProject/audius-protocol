@@ -182,20 +182,6 @@ def _get_related_artists(session: Session, user_id: int, limit=100):
     return helpers.query_result_to_list(related_artists)
 
 
-def _get_top_artists(session: Session, limit=100):
-    """Gets the top artists by follows of all of Audius"""
-    top_artists = (
-        session.query(User)
-        .select_from(AggregateUser)
-        .join(User, User.user_id == AggregateUser.user_id)
-        .filter(AggregateUser.track_count > 0, User.is_current)
-        .order_by(desc(AggregateUser.follower_count), User.user_id)
-        .limit(limit)
-        .all()
-    )
-    return helpers.query_result_to_list(top_artists)
-
-
 @time_method
 def get_related_artists(user_id: int, current_user_id: int, limit: int = 100):
     db = get_db_read_replica()
@@ -212,8 +198,6 @@ def get_related_artists(user_id: int, current_user_id: int, limit: int = 100):
             and aggregate_user.follower_count >= MIN_FOLLOWER_REQUIREMENT
         ):
             users = _get_related_artists(session, user_id, limit)
-        else:
-            users = _get_top_artists(session, limit)
 
         user_ids = list(map(lambda user: user["user_id"], users))
         users = populate_user_metadata(session, user_ids, users, current_user_id)
