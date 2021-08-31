@@ -13,6 +13,8 @@ services:
       - audius_redis_url=redis://${COMPOSE_PROJECT_NAME}_redis-server_1:6379/00
       - audius_db_url=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
       - audius_db_url_read_replica=postgresql+psycopg2://postgres:postgres@${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432/audius_discovery
+      - audius_delegate_owner_wallet=${audius_delegate_owner_wallet}
+      - audius_delegate_private_key=${audius_delegate_private_key}
       - audius_ipfs_host=${COMPOSE_PROJECT_NAME}-ipfs-node
       - audius_discprov_dev_mode=true
       - WAIT_HOSTS=${COMPOSE_PROJECT_NAME}_discovery-provider-db_1:5432,${COMPOSE_PROJECT_NAME}_redis-server_1:6379, ${COMPOSE_PROJECT_NAME}-ipfs-node:5001

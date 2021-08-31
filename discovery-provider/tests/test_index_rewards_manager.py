@@ -1,6 +1,4 @@
-from unittest.mock import MagicMock
-import pytest
-import src
+from unittest.mock import create_autospec
 from src.models import ChallengeDisbursement
 from src.tasks.index_rewards_manager import (
     parse_transfer_instruction_data,
@@ -10,6 +8,7 @@ from src.tasks.index_rewards_manager import (
 )
 from src.utils.db_session import get_db
 from src.utils.config import shared_config
+from src.solana.solana_client_manager import SolanaClientManager
 from tests.utils import populate_mock_db
 
 REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
@@ -21,7 +20,7 @@ def test_decode_reward_manager_transfer_instruction():
     assert decoded_data == {
         "amount": 10000000000,
         "id": "profile-completion:123456789",
-        "eth_recipient": "0x7698a57431399ab25c8567b4126a116035be0304",
+        "eth_recipient": "0x403be3560116a12b467855cb29a393174a59876",
     }
 
 
@@ -218,30 +217,18 @@ mock_tx_info = {
 }
 
 
-@pytest.fixture
-def get_sol_tx_info_mock(monkeypatch):
-    mock_get_sol_tx_info = MagicMock()
-
-    def get_sol_tx_info(client, signature):
-        return mock_get_sol_tx_info(client, signature)
-
-    monkeypatch.setattr(
-        src.tasks.index_rewards_manager, "get_sol_tx_info", get_sol_tx_info
-    )
-    return mock_get_sol_tx_info
-
-
-def test_fetch_and_parse_sol_rewards_transfer_instruction(
-    app, get_sol_tx_info_mock
-):  # pylint: disable=W0621
-    get_sol_tx_info_mock.return_value = mock_tx_info
-
+def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disable=W0621
     with app.app_context():
         db = get_db()
 
-    parsed_tx = fetch_and_parse_sol_rewards_transfer_instruction({}, "tx_sig_one")
+    solana_client_manager_mock = create_autospec(SolanaClientManager)
+    solana_client_manager_mock.get_sol_tx_info.return_value = mock_tx_info
+
+    parsed_tx = fetch_and_parse_sol_rewards_transfer_instruction(
+        solana_client_manager_mock, "tx_sig_one"
+    )
     assert parsed_tx["amount"] == 10000000000
-    assert parsed_tx["eth_recipient"] == "0x7698a57431399ab25c8567b4126a116035be0304"
+    assert parsed_tx["eth_recipient"] == "0x403be3560116a12b467855cb29a393174a59876"
     assert parsed_tx["challenge_id"] == "profile-completion"
     assert parsed_tx["tx_sig"] == "tx_sig_one"
     assert parsed_tx["slot"] == 72131741
@@ -251,7 +238,7 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(
             {
                 "user_id": 1,
                 "handle": "piazza",
-                "wallet": "0x7698a57431399ab25c8567b4126a116035be0304",
+                "wallet": "0x403be3560116a12b467855cb29a393174a59876",
             },
         ],
         "user_challenges": [
