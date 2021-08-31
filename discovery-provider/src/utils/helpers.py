@@ -383,9 +383,10 @@ def create_track_route_id(title, handle):
     Constructs a track's route_id from an unsanitized title and handle.
     Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
     """
+    sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
     # Strip out invalid character
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00", "", title
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00", "", sanitized_title
     )
 
     # Convert whitespaces to dashes
@@ -415,9 +416,12 @@ def create_track_slug(title, track_id, collision_id=0):
     Example:
     (Title="My Awesome Track!", collision_id=2) => "my-awesome-track-2"
     """
+    sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
     # Strip out invalid character
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.", "", title
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.",
+        "",
+        sanitized_title,
     )
 
     # Convert whitespaces to dashes
