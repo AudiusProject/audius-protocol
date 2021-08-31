@@ -11,21 +11,25 @@ const PreloadImage = ({
   src,
   alt = '',
   asBackground = false,
+  preloaded = false,
   className
 }: {
   src: string
   alt?: string
   asBackground?: boolean
+  preloaded?: boolean
   className: string
 }) => {
-  const [isLoaded, setIsLoaded] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(preloaded)
   useEffect(() => {
-    const load = async () => {
-      await preload(src)
-      setIsLoaded(true)
+    if (!preloaded) {
+      const load = async () => {
+        await preload(src)
+        setIsLoaded(true)
+      }
+      load()
     }
-    load()
-  }, [setIsLoaded, src])
+  }, [preloaded, setIsLoaded, src])
   return asBackground ? (
     <div
       className={cn(styles.img, className, { [styles.isLoaded]: isLoaded })}

@@ -121,8 +121,8 @@ export const assetToCollectible = async (
   try {
     if (isAssetGif(asset)) {
       mediaType = CollectibleMediaType.GIF
-      const urlForFrame = imageUrls.find(url => url?.endsWith('.gif'))!
-      frameUrl = await getFrameFromGif(urlForFrame, name || '')
+      // frame url for the gif is computed later in the collectibles page
+      frameUrl = null
       gifUrl = imageUrls.find(url => url?.endsWith('.gif'))!
     } else if (isAssetVideo(asset)) {
       mediaType = CollectibleMediaType.VIDEO
@@ -156,7 +156,8 @@ export const assetToCollectible = async (
       if (isGif) {
         mediaType = CollectibleMediaType.GIF
         gifUrl = frameUrl
-        frameUrl = await getFrameFromGif(frameUrl, name || '')
+        // frame url for the gif is computed later in the collectibles page
+        frameUrl = null
       } else if (isVideo) {
         mediaType = CollectibleMediaType.VIDEO
         frameUrl = null
