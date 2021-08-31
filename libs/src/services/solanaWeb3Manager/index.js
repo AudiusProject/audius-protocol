@@ -88,10 +88,9 @@ class SolanaWeb3Manager {
     this.feePayerAddress = feePayerAddress
     this.feePayerKey = new PublicKey(feePayerAddress)
 
-    this.claimableTokenProgramAddress = claimableTokenProgramAddress
     this.claimableTokenProgramKey = new PublicKey(claimableTokenProgramAddress)
     this.claimableTokenPDA = claimableTokenPDA || (
-      await this.generateProgramDerivedAddress(
+      await this._generateClaimableTokenPDA(
         this.mintKey,
         this.claimableTokenProgramKey
       )
@@ -100,17 +99,6 @@ class SolanaWeb3Manager {
     this.rewardManagerProgramId = new PublicKey(rewardsManagerProgramId)
     this.rewardManagerProgramPDA = new PublicKey(rewardsManagerProgramPDA)
     this.rewardManagerTokenPDA = new PublicKey(rewardsManagerTokenPDA)
-  }
-
-  /**
-   * Generates a program derived address
-   */
-  async generateProgramDerivedAddress (mintKey, programKey) {
-    let res = await this.solanaWeb3.PublicKey.findProgramAddress(
-      [mintKey.toBytes().slice(0, 32)],
-      programKey
-    )
-    return res[0].toString()
   }
 
   /**
@@ -347,17 +335,16 @@ class SolanaWeb3Manager {
     })
   }
 
-  // Helpers
-
   /**
-   * Converts "UI" wAudio (i.e. 5) into properly denominated BN representation - (i.e. 5 * 10 ^ 9)
-   *
-   * @param {number} amount
-   * @returns BN
-   * @memberof SolanaWeb3Manager
+   * Generates a PDA for the claimable token program from
+   * the mint key and the program ID
    */
-  uiAudioToBNWaudio (amount) {
-    return new BN(amount * 10 ** 9)
+  async _generateClaimableTokenPDA (mintKey, programKey) {
+    let res = await this.solanaWeb3.PublicKey.findProgramAddress(
+      [mintKey.toBytes().slice(0, 32)],
+      programKey
+    )
+    return res[0].toString()
   }
 }
 

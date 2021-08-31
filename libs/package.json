@@ -21,7 +21,7 @@
     "@audius/hedgehog": "1.0.9",
     "@ethersproject/solidity": "5.0.5",
     "@solana/spl-token": "0.1.6",
-    "@solana/web3.js": "1.24.0",
+    "@solana/web3.js": "1.24.1",
     "abi-decoder": "1.2.0",
     "ajv": "^6.12.2",
     "async-retry": "^1.2.3",

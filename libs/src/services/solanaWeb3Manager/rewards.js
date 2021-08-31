@@ -10,7 +10,7 @@ const {
 const borsh = require('borsh')
 const { getBankAccountAddress } = require('./userBank')
 const BN = require('bn.js')
-const { prepareInstructionForRelay } = require('./utils')
+const SolanaUtils = require('./utils')
 
 // Various prefixes used for rewards
 const SENDER_SEED_PREFIX = 'S_'
@@ -194,7 +194,7 @@ async function submitAttestations ({
   instructions = [...instructions, oracleSecp, oracleTransfer]
 
   // Prep transaction to be relayed and send it
-  const relayable = instructions.map(prepareInstructionForRelay)
+  const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
   const { blockhash: recentBlockhash } = await connection.getRecentBlockhash()
   const transactionData = {
     recentBlockhash,
@@ -378,7 +378,7 @@ const evaluateAttestations = async ({
   })
 
   // Prepare and send transaction
-  const relayable = prepareInstructionForRelay(transferInstruction)
+  const relayable = SolanaUtils.prepareInstructionForRelay(transferInstruction)
   const { blockhash: recentBlockhash } = await connection.getRecentBlockhash()
   const transactionData = {
     recentBlockhash,
@@ -547,7 +547,7 @@ const generateSecpInstruction = ({
     ...new BN(strippedSignature, 'hex').toArray('be')
   )
 
-  const encodedSenderMessage = constructAttestation(
+  const encodedSenderMessage = SolanaUtils.constructAttestation(
     isOracle,
     recipientEthAddress,
     tokenAmount,
@@ -593,37 +593,6 @@ const constructTransferId = (challengeId, specifier) =>
  * @param {BN} bn
  */
 const padBNToUint8Array = (bn) => bn.toArray('le', 8)
-
-/**
- * Constructs an attestation from inputs.
- *
- * @param {boolean} isOracle
- * @param {string} recipientEthAddress
- * @param {BN} tokenAmount
- * @param {string} transferId
- * @param {string} oracleAddress
- * @returns {Uint8Array}
- */
-const constructAttestation = (
-  isOracle,
-  recipientEthAddress,
-  tokenAmount,
-  transferId,
-  oracleAddress
-) => {
-  const userBytes = ethAddressToArray(recipientEthAddress)
-  const oracleBytes = ethAddressToArray(oracleAddress)
-  const transferIdBytes = encoder.encode(transferId)
-  const amountBytes = padBNToUint8Array(tokenAmount)
-  const items = isOracle
-    ? [userBytes, amountBytes, transferIdBytes]
-    : [userBytes, amountBytes, transferIdBytes, oracleBytes]
-  const sep = encoder.encode('_')
-  const res = items.slice(1).reduce((prev, cur, i) => {
-    return Uint8Array.of(...prev, ...sep, ...cur)
-  }, Uint8Array.from(items[0]))
-  return res
-}
 
 /**
  * Derives the Solana account associated with a given sender Eth address.
