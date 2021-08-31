@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 /**
  * Adds index on Files table ("sourceFile")
@@ -16,4 +16,4 @@ module.exports = {
       DROP INDEX IF EXISTS "Files_sourceFile_idx";
     `)
   }
-};
+}
