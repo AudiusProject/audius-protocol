@@ -2,7 +2,6 @@ import { Cluster, clusterApiUrl } from '@solana/web3.js'
 import Web3Modal, { IProviderOptions } from 'web3modal'
 
 import phantomIconPurpleSvg from 'assets/img/phantom-icon-purple.svg'
-import solletSvg from 'assets/img/sollet.svg'
 import walletLinkSvg from 'assets/img/wallet-link.svg'
 const CHAIN_ID = process.env.REACT_APP_ETH_NETWORK_ID
 const BITSKI_CLIENT_ID = process.env.REACT_APP_BITSKI_CLIENT_ID
@@ -24,7 +23,6 @@ type Config = {
   isWalletConnectEnabled: boolean
   isWalletLinkEnabled: boolean
   isPhantomEnabled: boolean
-  isSolletEnabled: boolean
 }
 
 class PassThrough {
@@ -125,30 +123,6 @@ export const createSession = async (config: Config): Promise<any> => {
             await window.solana.connect()
             await new Promise(resolve => setTimeout(resolve, 1000))
             return window.solana
-          } catch (err) {
-            console.error(err)
-          }
-        }
-      }
-    }
-    if (config.isSolletEnabled) {
-      providerOptions['custom-sollet'] = {
-        display: {
-          logo: solletSvg,
-          name: 'Sollet',
-          description: 'Connect Solana account'
-        },
-        options: {},
-        package: PassThrough,
-        connector: async (...args: any) => {
-          try {
-            // Connect to solana web3
-
-            const network = clusterApiUrl(SOLANA_WEB3_CLUSTER as Cluster)
-            const providerUrl = 'https://www.sollet.io'
-            const wallet = new SolWallet(providerUrl, network)
-            await wallet.connect()
-            return wallet
           } catch (err) {
             console.error(err)
           }
