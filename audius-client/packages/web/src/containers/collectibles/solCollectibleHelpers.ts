@@ -9,8 +9,6 @@ import {
 import { Chain } from 'store/token-dashboard/slice'
 import { Nullable } from 'utils/typeUtils'
 
-import { getFrameFromGif } from './ethCollectibleHelpers'
-
 type SolanaNFTMedia = {
   collectibleMediaType: CollectibleMediaType
   url: string
@@ -27,8 +25,12 @@ const nftGif = async (nft: SolanaNFT): Promise<Nullable<SolanaNFTMedia>> => {
   )
   if (gifFile) {
     const url = (gifFile as SolanaNFTPropertiesFile).uri
-    const frameUrl = await getFrameFromGif(url, nft.name)
-    return { collectibleMediaType: CollectibleMediaType.GIF, url, frameUrl }
+    // frame url for the gif is computed later in the collectibles page
+    return {
+      collectibleMediaType: CollectibleMediaType.GIF,
+      url,
+      frameUrl: null
+    }
   }
   return null
 }
@@ -149,8 +151,12 @@ const nftComputedMedia = async (
   const headResponse = await fetch(url, { method: 'HEAD' })
   const contentType = headResponse.headers.get('Content-Type')
   if (contentType?.includes('gif')) {
-    const frameUrl = await getFrameFromGif(url, nft.name)
-    return { collectibleMediaType: CollectibleMediaType.GIF, url, frameUrl }
+    // frame url for the gif is computed later in the collectibles page
+    return {
+      collectibleMediaType: CollectibleMediaType.GIF,
+      url,
+      frameUrl: null
+    }
   }
   if (contentType?.includes('video')) {
     return {
