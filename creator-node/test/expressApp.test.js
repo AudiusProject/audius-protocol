@@ -7,7 +7,7 @@ const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
-describe('test expressApp', async function () {
+describe('test expressApp', function () {
   let app, server, session, ipfsMock, libsMock
 
   beforeEach(async () => {

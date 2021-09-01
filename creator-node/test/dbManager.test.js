@@ -12,7 +12,7 @@ const { getApp } = require('./lib/app')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
-describe('Test createNewDataRecord()', async function () {
+describe('Test createNewDataRecord()', function () {
   const req = {
     logger: {
       error: (msg) => console.log(msg)
@@ -299,7 +299,7 @@ describe('Test createNewDataRecord()', async function () {
   })
 })
 
-describe('Test ClockRecord model', async function () {
+describe('Test ClockRecord model', function () {
   let server
 
   /** Init server to run DB migrations */

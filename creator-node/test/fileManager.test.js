@@ -49,7 +49,7 @@ const metadata = {
 const buffer = Buffer.from(JSON.stringify(metadata))
 
 describe('test fileManager', () => {
-  afterEach(function () {
+  afterEach(async function () {
     sinon.restore()
   })
 
@@ -241,7 +241,7 @@ describe('test fileManager', () => {
   })
 })
 
-describe('test removeTrackFolder()', async function () {
+describe('test removeTrackFolder()', function () {
   const testTrackUploadDir = './test/testTrackUploadDir/'
   const trackSourceFileDir = path.join(storagePath, 'testTrackSourceFileDir')
 

@@ -683,6 +683,7 @@ const generateRandomCID = (numRandomDigits = 5, maxRandomNumber = 1000) => {
   // Return Qm..aaa... of length 46. Array(..) part needs + 1 to generate the remaining amount
   return 'Qm' + randomNDigitNumber + Array(46 - 2 - numRandomDigits + 1).join('a')
 }
+
 // Setup libs mock according to ContentBlacklist needs by using libsMock as the base
 const setupLibsMock = (libsMock) => {
   libsMock = getLibsMock()

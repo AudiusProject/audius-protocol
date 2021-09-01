@@ -8,7 +8,7 @@ describe('test segmentFile()', () => {
   // Create the segments directory to store segments in.
   // Middleware would normally handle this, however, in this test
   // context, segmentFile() is unit tested directly without the middleware.
-  before(() => {
+  before(async () => {
     const segmentsDirPath = path.join(__dirname, 'segments')
     if (!fs.existsSync(segmentsDirPath)) {
       try {

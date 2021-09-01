@@ -25,7 +25,7 @@ const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const sampleExportDummyCIDPath = path.resolve(__dirname, 'syncAssets/sampleExportDummyCID.json')
 const sampleExportDummyCIDFromClock2Path = path.resolve(__dirname, 'syncAssets/sampleExportDummyCIDFromClock2.json')
 
-describe('test nodesync', async function () {
+describe('test nodesync', function () {
   let server, app, mockServiceRegistry, userId
 
   const originalMaxExportClockValueRange = config.get('maxExportClockValueRange')
@@ -58,7 +58,7 @@ describe('test nodesync', async function () {
     await server.close()
   })
 
-  describe('test /export route', async function () {
+  describe('test /export route', function () {
     let cnodeUserUUID, sessionToken, metadataMultihash, metadataFileUUID, transcodedTrackCID, transcodedTrackUUID, trackSegments, sourceFile
     let trackMetadataMultihash, trackMetadataFileUUID
 
@@ -141,7 +141,7 @@ describe('test nodesync', async function () {
         })
     }
 
-    describe('Confirm export object matches DB state with a user and track', async function () {
+    describe('Confirm export object matches DB state with a user and track', function () {
       beforeEach(setupDepsAndApp)
 
       beforeEach(createUserAndTrack)
@@ -263,7 +263,7 @@ describe('test nodesync', async function () {
       })
     })
 
-    describe('Confirm export works for user with data exceeding maxExportClockValueRange', async function () {
+    describe('Confirm export works for user with data exceeding maxExportClockValueRange', function () {
       /**
        * override maxExportClockValueRange to smaller value for testing
        */
@@ -593,7 +593,7 @@ describe('test nodesync', async function () {
     })
   })
 
-  describe('Test processSync function', async function () {
+  describe('Test processSync function', function () {
     let serviceRegistryMock
 
     const TEST_ENDPOINT = 'http://test-cn.co'

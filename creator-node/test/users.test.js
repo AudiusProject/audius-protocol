@@ -8,7 +8,7 @@ const { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConst
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
-describe('test Users', async function () {
+describe('test Users', function () {
   let app, server, ipfsMock, libsMock
 
   /** Setup app + global test vars */
