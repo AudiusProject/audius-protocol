@@ -43,6 +43,8 @@ const fsStat = promisify(fs.stat)
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
 const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
+const IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT = 5
+const IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_TIMEOUTMS = 5000
 
 /**
  * Helper method to stream file from file system on creator node
@@ -339,7 +341,6 @@ module.exports = function (app) {
 
     const routestart = Date.now()
     const imageBufferOriginal = req.file.path
-    req.logger.info(`SIDTEST IMAGESIZE ${Buffer.byteLength(imageBufferOriginal)}`)
     const originalFileName = req.file.originalname
     const cnodeUserUUID = req.session.cnodeUserUUID
 
@@ -384,7 +385,13 @@ module.exports = function (app) {
 
     const dirCID = resizeResp.dir.dirCID
 
-    const ipfsVerification = async function (counter = 4) {
+    /**
+     * Perform IPFS verification with retries
+     *
+     * Use retries because for some reason IPFS (very rarely) fails due to some non-deterministic error. Seems to be with the verification step; the files are correct.
+     * Wait fixed timeout between each retry, hopefully addresses IPFS non-deterministic errors
+     */
+    const ipfsVerificationWithRetries = async function (retriesLeft) {
       // build ipfs add array
       let ipfsAddArray = []
       try {
@@ -422,20 +429,18 @@ module.exports = function (app) {
       // Ensure actual and expected dirCIDs match
       const expectedDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
       if (expectedDirCID !== dirCID) {
-        if (counter > 0) {
-          req.logger.error(`SIDTEST ERROR IPFS VERIFCIATION DIRCID. attempt #${4-counter}. actual dirCID=${dirCID} expectedCID=${expectedDirCID} Retrying...`)
-          await timeout(5000)
-          await ipfsVerification(counter - 1)
+        if (retriesLeft > 0) {
+          req.logger.error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}. ${retriesLeft} retries remaining out of ${IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT}. Retrying...`)
+          await timeout(IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_TIMEOUTMS)
+          await ipfsVerificationWithRetries(retriesLeft - 1)
+
         } else {
-          req.logger.error(`SIDTEST ERROR IPFS VERFICIATION FAILED WITH ALL 4 RETRIES. actual dirCID=${dirCID} expectedCID=${expectedDirCID}`)
-          throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}`)
+          throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}. Failed after all ${IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT} retries.`)
         }
-      } else {
-        req.logger.info(`SIDTEST IPFSVERIFICATION SUCCESS on retry # ${4 - counter}`)
       }
     }
 
-    await ipfsVerification()
+    await ipfsVerificationWithRetries(IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT)
 
     // Record image file entries in DB
     const transaction = await models.sequelize.transaction()
