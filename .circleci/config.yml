@@ -10,6 +10,7 @@ orbs:
   coveralls: coveralls/coveralls@1.0.6
 jobs:
   test-mad-dog-e2e:
+    parallelism: 10
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
     # uses medium (2vcpu/4gb) by default
     resource_class: large # 4vcpu/8gb
