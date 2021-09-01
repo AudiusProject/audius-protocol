@@ -433,7 +433,6 @@ module.exports = function (app) {
           req.logger.error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}. ${retriesLeft} retries remaining out of ${IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT}. Retrying...`)
           await timeout(IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_TIMEOUTMS)
           await ipfsVerificationWithRetries(retriesLeft - 1)
-
         } else {
           throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}. Failed after all ${IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT} retries.`)
         }
