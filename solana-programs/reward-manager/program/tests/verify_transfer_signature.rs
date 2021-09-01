@@ -21,7 +21,7 @@ use std::mem::MaybeUninit;
 use utils::*;
 
 #[tokio::test]
-async fn success() {
+async fn success_verify_transfer_signature() {
     let program_test = program_test();
     let mut rng = thread_rng();
 

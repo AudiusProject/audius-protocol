@@ -11,7 +11,7 @@ use solana_sdk::{signature::Signer, transaction::Transaction};
 use utils::*;
 
 #[tokio::test]
-async fn success() {
+async fn success_change_manager_authority() {
     let program_test = program_test();
 
     let mint = Keypair::new();
