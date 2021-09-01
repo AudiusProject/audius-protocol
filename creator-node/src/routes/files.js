@@ -339,7 +339,7 @@ module.exports = function (app) {
 
     const routestart = Date.now()
     const imageBufferOriginal = req.file.path
-    req.logger.info(`SIDTEST IMAGESIZE ${imageBufferOriginal.toString().length}`)
+    req.logger.info(`SIDTEST IMAGESIZE ${Buffer.byteLength(imageBufferOriginal)}`)
     const originalFileName = req.file.originalname
     const cnodeUserUUID = req.session.cnodeUserUUID
 
@@ -384,45 +384,58 @@ module.exports = function (app) {
 
     const dirCID = resizeResp.dir.dirCID
 
-    // build ipfs add array
-    let ipfsAddArray = []
-    try {
-      await Promise.all(resizeResp.files.map(async function (file) {
-        const fileBuffer = await fs.readFile(file.storagePath)
-        ipfsAddArray.push({
-          path: file.sourceFile,
-          content: fileBuffer
-        })
-      }))
-    } catch (e) {
-      throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
-    }
-
-    // Re-compute dirCID from all image files to ensure it matches dirCID returned above
-    let ipfsAddRespArr
-    try {
-      const ipfsAddResp = await ipfs.add(
-        ipfsAddArray,
-        {
-          pin: false,
-          onlyHash: true,
-          timeout: 1000
-        }
-      )
-      ipfsAddRespArr = []
-      for await (const resp of ipfsAddResp) {
-        ipfsAddRespArr.push(resp)
+    const ipfsVerification = async function (counter = 4) {
+      // build ipfs add array
+      let ipfsAddArray = []
+      try {
+        await Promise.all(resizeResp.files.map(async function (file) {
+          const fileBuffer = await fs.readFile(file.storagePath)
+          ipfsAddArray.push({
+            path: file.sourceFile,
+            content: fileBuffer
+          })
+        }))
+      } catch (e) {
+        throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
       }
-    } catch (e) {
-      // If ipfs.add op fails, log error and move on, since this is an ipfs error and not an image upload error
-      req.logger.info(`Error calling ipfs.add on dir to re-compute dirCID ${dirCID} ${e}`)
+
+      // Re-compute dirCID from all image files to ensure it matches dirCID returned above
+      let ipfsAddRespArr
+      try {
+        const ipfsAddResp = await ipfs.add(
+          ipfsAddArray,
+          {
+            pin: false,
+            onlyHash: true,
+            timeout: 1000
+          }
+        )
+        ipfsAddRespArr = []
+        for await (const resp of ipfsAddResp) {
+          ipfsAddRespArr.push(resp)
+        }
+      } catch (e) {
+        // If ipfs.add op fails, log error and move on, since this is an ipfs error and not an image upload error
+        req.logger.info(`Error calling ipfs.add on dir to re-compute dirCID ${dirCID} ${e}`)
+      }
+
+      // Ensure actual and expected dirCIDs match
+      const expectedDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
+      if (expectedDirCID !== dirCID) {
+        if (counter > 0) {
+          req.logger.error(`SIDTEST ERROR IPFS VERIFCIATION DIRCID. attempt #${4-counter}. actual dirCID=${dirCID} expectedCID=${expectedDirCID} Retrying...`)
+          await timeout(5000)
+          await ipfsVerification(counter - 1)
+        } else {
+          req.logger.error(`SIDTEST ERROR IPFS VERFICIATION FAILED WITH ALL 4 RETRIES. actual dirCID=${dirCID} expectedCID=${expectedDirCID}`)
+          throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}`)
+        }
+      } else {
+        req.logger.info(`SIDTEST IPFSVERIFICATION SUCCESS on retry # ${4 - counter}`)
+      }
     }
 
-    // Ensure actual and expected dirCIDs match
-    const expectedDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
-    if (expectedDirCID !== dirCID) {
-      throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}`)
-    }
+    await ipfsVerification()
 
     // Record image file entries in DB
     const transaction = await models.sequelize.transaction()
