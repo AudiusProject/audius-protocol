@@ -829,7 +829,6 @@ class CreatorNode {
 
       onProgress(total, total)
       return resp.data
-
     } catch (e) {
       if (!e.response && retries > 0) {
         console.warn(`Network Error in request ${requestId} with ${retries} retries... retrying`)
