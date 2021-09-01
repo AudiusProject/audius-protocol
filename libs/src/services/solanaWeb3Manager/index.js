@@ -10,7 +10,7 @@ const {
 const { wAudioFromWeiAudio } = require('./wAudio')
 const Utils = require('../../utils')
 const { submitAttestations, evaluateAttestations } = require('./rewards')
-const BN = require('bn.js')
+const SolanaUtils = require('./utils')
 
 const { PublicKey } = solanaWeb3
 
@@ -88,29 +88,14 @@ class SolanaWeb3Manager {
     this.feePayerAddress = feePayerAddress
     this.feePayerKey = new PublicKey(feePayerAddress)
 
-    this.claimableTokenProgramAddress = claimableTokenProgramAddress
     this.claimableTokenProgramKey = new PublicKey(claimableTokenProgramAddress)
     this.claimableTokenPDA = claimableTokenPDA || (
-      await this.generateProgramDerivedAddress(
-        this.mintKey,
-        this.claimableTokenProgramKey
-      )
+      (await SolanaUtils.findProgramAddressFromPubkey(this.claimableTokenProgramKey, this.mintKey))[0].toString()
     )
     this.claimableTokenPDAKey = new PublicKey(this.claimableTokenPDA)
     this.rewardManagerProgramId = new PublicKey(rewardsManagerProgramId)
     this.rewardManagerProgramPDA = new PublicKey(rewardsManagerProgramPDA)
     this.rewardManagerTokenPDA = new PublicKey(rewardsManagerTokenPDA)
-  }
-
-  /**
-   * Generates a program derived address
-   */
-  async generateProgramDerivedAddress (mintKey, programKey) {
-    let res = await this.solanaWeb3.PublicKey.findProgramAddress(
-      [mintKey.toBytes().slice(0, 32)],
-      programKey
-    )
-    return res[0].toString()
   }
 
   /**
@@ -345,19 +330,6 @@ class SolanaWeb3Manager {
       identityService: this.identityService,
       connection: this.connection
     })
-  }
-
-  // Helpers
-
-  /**
-   * Converts "UI" wAudio (i.e. 5) into properly denominated BN representation - (i.e. 5 * 10 ^ 9)
-   *
-   * @param {number} amount
-   * @returns BN
-   * @memberof SolanaWeb3Manager
-   */
-  uiAudioToBNWaudio (amount) {
-    return new BN(amount * 10 ** 9)
   }
 }
 

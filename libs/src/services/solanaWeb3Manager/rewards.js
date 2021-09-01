@@ -1,6 +1,5 @@
 const { TOKEN_PROGRAM_ID } = require('@solana/spl-token')
 const {
-  PublicKey,
   Secp256k1Program,
   SystemProgram,
   SYSVAR_INSTRUCTIONS_PUBKEY,
@@ -10,7 +9,7 @@ const {
 const borsh = require('borsh')
 const { getBankAccountAddress } = require('./userBank')
 const BN = require('bn.js')
-const { prepareInstructionForRelay } = require('./utils')
+const SolanaUtils = require('./utils')
 
 // Various prefixes used for rewards
 const SENDER_SEED_PREFIX = 'S_'
@@ -131,7 +130,7 @@ async function submitAttestations ({
   connection
 }) {
   // Construct combined transfer ID
-  const transferId = constructTransferId(challengeId, specifier)
+  const transferId = SolanaUtils.constructTransferId(challengeId, specifier)
 
   // Derive the message account we'll use to store the attestations
   const [
@@ -194,7 +193,7 @@ async function submitAttestations ({
   instructions = [...instructions, oracleSecp, oracleTransfer]
 
   // Prep transaction to be relayed and send it
-  const relayable = instructions.map(prepareInstructionForRelay)
+  const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
   const { blockhash: recentBlockhash } = await connection.getRecentBlockhash()
   const transactionData = {
     recentBlockhash,
@@ -255,7 +254,7 @@ const evaluateAttestations = async ({
   connection
 }) => {
   // Get transfer ID
-  const transferId = constructTransferId(challengeId, specifier)
+  const transferId = SolanaUtils.constructTransferId(challengeId, specifier)
 
   // Derive the messages account we previously stored attestations in
   const [
@@ -362,7 +361,7 @@ const evaluateAttestations = async ({
   const instructionData = new ValidateAttestationsInstructionData({
     amount: tokenAmount.toNumber(),
     id: transferId,
-    ethRecipient: ethAddressToArray(recipientEthAddress)
+    ethRecipient: SolanaUtils.ethAddressToArray(recipientEthAddress)
   })
   const serializedInstructionData = borsh.serialize(
     validateAttestationsInstructionSchema,
@@ -378,7 +377,7 @@ const evaluateAttestations = async ({
   })
 
   // Prepare and send transaction
-  const relayable = prepareInstructionForRelay(transferInstruction)
+  const relayable = SolanaUtils.prepareInstructionForRelay(transferInstruction)
   const { blockhash: recentBlockhash } = await connection.getRecentBlockhash()
   const transactionData = {
     recentBlockhash,
@@ -547,8 +546,7 @@ const generateSecpInstruction = ({
     ...new BN(strippedSignature, 'hex').toArray('be')
   )
 
-  const encodedSenderMessage = constructAttestation(
-    isOracle,
+  const encodedSenderMessage = SolanaUtils.constructAttestation(
     recipientEthAddress,
     tokenAmount,
     transferId,
@@ -567,65 +565,6 @@ const generateSecpInstruction = ({
 // Misc
 
 /**
- * Converts an eth address hex represenatation to an array of Uint8s in big endian notation
- * @param {string} ethAddress
- * @returns {Uint8Array}
- */
-const ethAddressToArray = (ethAddress) => {
-  const strippedEthAddress = ethAddress.replace('0x', '')
-  return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be'))
-}
-
-/**
- * Constructs a transfer ID
- * @param {string} challengeId
- * @param {string} specifier
- * @returns {string}
- */
-const constructTransferId = (challengeId, specifier) =>
-  `${challengeId}:${specifier}`
-
-/**
- * Converts a BN to a Uint8Array of length 8, in little endian notation.
- * Useful for when Rust wants a u64 (8 * 8) represented as a byte array.
- * Ex: https://github.com/AudiusProject/audius-protocol/blob/master/solana-programs/reward-manager/program/src/processor.rs#L389
- *
- * @param {BN} bn
- */
-const padBNToUint8Array = (bn) => bn.toArray('le', 8)
-
-/**
- * Constructs an attestation from inputs.
- *
- * @param {boolean} isOracle
- * @param {string} recipientEthAddress
- * @param {BN} tokenAmount
- * @param {string} transferId
- * @param {string} oracleAddress
- * @returns {Uint8Array}
- */
-const constructAttestation = (
-  isOracle,
-  recipientEthAddress,
-  tokenAmount,
-  transferId,
-  oracleAddress
-) => {
-  const userBytes = ethAddressToArray(recipientEthAddress)
-  const oracleBytes = ethAddressToArray(oracleAddress)
-  const transferIdBytes = encoder.encode(transferId)
-  const amountBytes = padBNToUint8Array(tokenAmount)
-  const items = isOracle
-    ? [userBytes, amountBytes, transferIdBytes]
-    : [userBytes, amountBytes, transferIdBytes, oracleBytes]
-  const sep = encoder.encode('_')
-  const res = items.slice(1).reduce((prev, cur, i) => {
-    return Uint8Array.of(...prev, ...sep, ...cur)
-  }, Uint8Array.from(items[0]))
-  return res
-}
-
-/**
  * Derives the Solana account associated with a given sender Eth address.
  *
  * @param {string} ethAddress
@@ -638,7 +577,7 @@ const deriveSolanaSenderFromEthAddress = async (
   rewardManagerProgramId,
   rewardManagerAccount
 ) => {
-  const ethAddressArr = ethAddressToArray(ethAddress)
+  const ethAddressArr = SolanaUtils.ethAddressToArray(ethAddress)
   const encodedPrefix = encoder.encode(SENDER_SEED_PREFIX)
 
   const [, derivedSender] = await findProgramAddressWithAuthority(
@@ -695,38 +634,6 @@ const deriveMessageAccount = async (
 }
 
 /**
- * Derives a program address from a program ID and pubkey as seed.
- * Returns the new pubkey and bump seeds.
- *
- * @param {PublicKey} programId
- * @param {PublicKey} pubkey
- * @returns {Promise<[PublicKey, number]>}
- */
-const findProgramAddressFromPubkey = async (programId, pubkey) => {
-  return PublicKey.findProgramAddress(
-    [pubkey.toBytes().slice(0, 32)],
-    programId
-  )
-}
-
-/**
- * Finds a 'derived' address by finding a programAddress with
- * seeds array  as first 32 bytes of base + seeds
- * Returns [derivedAddress, bumpSeed]
- *
- * @param {PublicKey} programId
- * @param {PublicKey} base
- * @param {Uint8Array} seed
- * @returns {Promise<[PublicKey, number]>}
- */
-const findProgramAddressFromPubkeyAndSeeds = async (programId, base, seed) => {
-  return PublicKey.findProgramAddress(
-    [base.toBytes().slice(0, 32), seed],
-    programId
-  )
-}
-
-/**
  * Finds a program address, using both seeds, pubkey, and the derived rewards manager authority.
  * Return [rewardManagerAutuhority, derivedAddress, and bumpSeeds]
  *
@@ -742,11 +649,11 @@ const findProgramAddressWithAuthority = async (
 ) => {
   // Finds the rewardManagerAuthority account by generating
   // a PDA with the rewardsMnager as a seed
-  const [rewardManagerAuthority] = await findProgramAddressFromPubkey(
+  const [rewardManagerAuthority] = await SolanaUtils.findProgramAddressFromPubkey(
     programId,
     rewardManager
   )
-  const [derivedAddress, bumpSeed] = await findProgramAddressFromPubkeyAndSeeds(
+  const [derivedAddress, bumpSeed] = await SolanaUtils.findProgramAddressFromPubkey(
     programId,
     rewardManagerAuthority,
     seed
