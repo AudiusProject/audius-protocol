@@ -1,6 +1,5 @@
 const { TOKEN_PROGRAM_ID } = require('@solana/spl-token')
 const {
-  PublicKey,
   Secp256k1Program,
   SystemProgram,
   SYSVAR_INSTRUCTIONS_PUBKEY,
@@ -131,7 +130,7 @@ async function submitAttestations ({
   connection
 }) {
   // Construct combined transfer ID
-  const transferId = constructTransferId(challengeId, specifier)
+  const transferId = SolanaUtils.constructTransferId(challengeId, specifier)
 
   // Derive the message account we'll use to store the attestations
   const [
@@ -255,7 +254,7 @@ const evaluateAttestations = async ({
   connection
 }) => {
   // Get transfer ID
-  const transferId = constructTransferId(challengeId, specifier)
+  const transferId = SolanaUtils.constructTransferId(challengeId, specifier)
 
   // Derive the messages account we previously stored attestations in
   const [

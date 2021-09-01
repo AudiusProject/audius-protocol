@@ -122,13 +122,14 @@ async function transferWAudioBalance ({
   ]
 
   // eth pubkey is different from the ethAddress - addresses are len 20, pub keys are len 64
+  const ethPrivateKeyArr = Buffer.from(senderEthPrivateKey, 'hex')
   const ethPubkey = secp256k1.publicKeyCreate(ethPrivateKeyArr, false).slice(1)
   const { blockhash } = await connection.getRecentBlockhash()
   const secpTransactionInstruction = Secp256k1Program.createInstructionWithPublicKey({
     publicKey: Buffer.from(ethPubkey),
     message: recipientPubkey.toBytes(),
     signature,
-    recoveryId,
+    recoveryId
   })
 
   const transactionData = {

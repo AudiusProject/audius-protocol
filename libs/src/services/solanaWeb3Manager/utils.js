@@ -4,14 +4,13 @@ const keccak256 = require('keccak256')
 const secp256k1 = require('secp256k1')
 
 class SolanaUtils {
-
   /**
    *
    *
    * @param {*} bytes
    * @param {string} ethPrivateKey
    */
-  static signBytes(bytes, ethPrivateKey) {
+  static signBytes (bytes, ethPrivateKey) {
     const msgHash = keccak256(bytes)
     const ethPrivateKeyArr = Buffer.from(ethPrivateKey, 'hex')
     const signatureObj = secp256k1.ecdsaSign(
@@ -30,7 +29,7 @@ class SolanaUtils {
    *
    * @param {TransactionInstruction} instruction
    */
-  static prepareInstructionForRelay(instruction) {
+  static prepareInstructionForRelay (instruction) {
     return {
       programId: instruction.programId.toString(),
       data: instruction.data,
@@ -60,7 +59,7 @@ class SolanaUtils {
    * @param {string} [oracleAddress] optional oracle address, only used for DN attestations
    * @returns {Uint8Array}
    */
-  static constructAttestation(
+  static constructAttestation (
     recipientEthAddress,
     tokenAmount,
     transferId,
@@ -117,7 +116,7 @@ class SolanaUtils {
    * @param {string} ethAddress
    * @returns {Uint8Array}
    */
-  static ethAddressToArray(ethAddress) {
+  static ethAddressToArray (ethAddress) {
     const strippedEthAddress = ethAddress.replace('0x', '')
     return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be'))
   }

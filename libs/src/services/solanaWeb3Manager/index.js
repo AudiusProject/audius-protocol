@@ -10,7 +10,6 @@ const {
 const { wAudioFromWeiAudio } = require('./wAudio')
 const Utils = require('../../utils')
 const { submitAttestations, evaluateAttestations } = require('./rewards')
-const BN = require('bn.js')
 const SolanaUtils = require('./utils')
 
 const { PublicKey } = solanaWeb3
