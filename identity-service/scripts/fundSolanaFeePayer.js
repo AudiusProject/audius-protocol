@@ -9,7 +9,7 @@ if (!process.env.funderPrivateKey || !process.env.feePayerAddress) {
 const RPC_ENDPOINT = 'https://api.mainnet-beta.solana.com' // DEVNET is https://api.devnet.solana.com
 // Funder - the private key wallet that will fund the fee payer
 const FUNDER_PRIVATE_KEY = process.env.funderPrivateKey ? JSON.parse(process.env.funderPrivateKey) : []
-// Fee payer - the private key of the wallet exposed in identity to pay for tx's
+// Fee payer - the address of the wallet in identity to pay for tx's
 const FEE_PAYER_PUBLIC_KEY = (new solanaWeb3.PublicKey(process.env.feePayerAddress))
 
 // initialize connection and values
