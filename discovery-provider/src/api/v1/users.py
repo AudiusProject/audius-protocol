@@ -1,4 +1,5 @@
 import logging
+from src.queries.get_top_users import get_top_users
 from src.queries.get_related_artists import get_related_artists
 from src.utils.helpers import encode_int_id
 from src.challenges.challenge_event_bus import setup_challenge_bus
@@ -666,6 +667,34 @@ class FullTopGenreUsers(Resource):
             get_top_genre_users_args["genre"] = args["genre"]
         top_users = get_top_genre_users(get_top_genre_users_args)
         users = list(map(extend_user, top_users["users"]))
+        return success_response(users)
+
+
+top_users_response_parser = reqparse.RequestParser()
+top_users_response_parser.add_argument("user_id", required=False)
+top_users_response_parser.add_argument("limit", required=False, type=int)
+top_users_response_parser.add_argument("offset", required=False, type=int)
+top_users_response = make_full_response(
+    "top_users_response", full_ns, fields.List(fields.Nested(user_model_full))
+)
+
+
+@full_ns.route("/top")
+class FullTopUsers(Resource):
+    @full_ns.expect(top_users_response)
+    @full_ns.doc(
+        id="""Get the Top Users having at least one track by follower count""",
+        params={"limit": "Limit", "offset": "Offset"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.marshal_with(top_users_response)
+    @cache(ttl_sec=60 * 60 * 24)
+    def get(self):
+        args = top_users_response_parser.parse_args()
+        current_user_id = get_current_user_id(args)
+
+        top_users = get_top_users(current_user_id)
+        users = list(map(extend_user, top_users))
         return success_response(users)
 
 
