@@ -35,7 +35,7 @@ run_unit_tests () {
 
 run_integration_tests () {
   echo Running integration tests...
-  ./node_modules/mocha/bin/mocha test/*.test.js --timeout 30000 --exit
+  ./node_modules/mocha/bin/mocha test/tests.js --timeout 30000 --exit
 }
 
 if [ "$1" == "standalone_creator" ]; then
@@ -111,7 +111,7 @@ export minimumRollingSyncCount=10
 export minimumSuccessfulSyncCountPercentage=50
 
 # tests
-run_unit_tests
+# run_unit_tests
 run_integration_tests
 
 rm -r $storagePath
