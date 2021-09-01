@@ -548,7 +548,6 @@ const generateSecpInstruction = ({
   )
 
   const encodedSenderMessage = SolanaUtils.constructAttestation(
-    isOracle,
     recipientEthAddress,
     tokenAmount,
     transferId,

@@ -54,27 +54,24 @@ class SolanaUtils {
   /**
    * Constructs an attestation from inputs.
    *
-   * @param {boolean} isOracle
    * @param {string} recipientEthAddress
    * @param {BN} tokenAmount
    * @param {string} transferId
-   * @param {string} oracleAddress
+   * @param {string} [oracleAddress] optional oracle address, only used for DN attestations
    * @returns {Uint8Array}
    */
   static constructAttestation(
-    isOracle,
     recipientEthAddress,
     tokenAmount,
     transferId,
     oracleAddress
   ) {
     const userBytes = SolanaUtils.ethAddressToArray(recipientEthAddress)
-    const oracleBytes = SolanaUtils.ethAddressToArray(oracleAddress)
     const transferIdBytes = encoder.encode(transferId)
     const amountBytes = padBNToUint8Array(tokenAmount)
-    const items = isOracle
-      ? [userBytes, amountBytes, transferIdBytes]
-      : [userBytes, amountBytes, transferIdBytes, oracleBytes]
+    const items = oracleAddress
+      ? [userBytes, amountBytes, transferIdBytes, SolanaUtils.ethAddressToArray(oracleAddress)]
+      : [userBytes, amountBytes, transferIdBytes]
     const sep = encoder.encode('_')
     const res = items.slice(1).reduce((prev, cur, i) => {
       return Uint8Array.of(...prev, ...sep, ...cur)
@@ -100,7 +97,7 @@ class SolanaUtils {
    *
    * @param {PublicKey} programId
    * @param {PublicKey} pubkey
-   * @param [Uint8Array] seed
+   * @param {Uint8Array} [seed] optionally include a seed
    * @returns {Promise<[PublicKey, number]>}
    */
   static async findProgramAddressFromPubkey (programId, pubkey, seed) {
@@ -123,7 +120,6 @@ class SolanaUtils {
     const strippedEthAddress = ethAddress.replace('0x', '')
     return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be'))
   }
-
 }
 
 /**
@@ -134,6 +130,5 @@ class SolanaUtils {
  * @param {BN} bn
  */
 const padBNToUint8Array = (bn) => bn.toArray('le', 8)
-
 
 module.exports = SolanaUtils
