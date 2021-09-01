@@ -11,43 +11,52 @@ const RPC_ENDPOINT = 'https://api.mainnet-beta.solana.com' // DEVNET is https://
 const FUNDER_PRIVATE_KEY = process.env.funderPrivateKey ? JSON.parse(process.env.funderPrivateKey) : []
 // Fee payer - the address of the wallet in identity to pay for tx's
 const FEE_PAYER_PUBLIC_KEY = (new solanaWeb3.PublicKey(process.env.feePayerAddress))
+const MIN_BALANCE = solanaWeb3.LAMPORTS_PER_SOL
 
 // initialize connection and values
 let solanaConnection = new solanaWeb3.Connection(RPC_ENDPOINT)
 const FUNDER_SOL_ACCOUNT = (new solanaWeb3.Account(FUNDER_PRIVATE_KEY))
 const FUNDER_PUBLIC_KEY = (new solanaWeb3.Account(FUNDER_PRIVATE_KEY)).publicKey
 
-async function getBalance () {
-  const feePayerBalance = await solanaConnection.getBalance(FEE_PAYER_PUBLIC_KEY)
-  console.log(`Fee payer balance: ${feePayerBalance} at ${FEE_PAYER_PUBLIC_KEY}`)
-
-  const funderBalance = await solanaConnection.getBalance(FUNDER_PUBLIC_KEY)
-  console.log(`Funder balance: ${funderBalance} at ${FUNDER_PUBLIC_KEY}`)
+async function getBalance (publicKey) {
+  if (!publicKey) throw new Error('publicKey is required, no public key passed in')
+  const balance = await solanaConnection.getBalance(publicKey)
+  return balance
 }
 
 async function transferBalance (amountToTransfer = solanaWeb3.LAMPORTS_PER_SOL) {
-  var transaction = new solanaWeb3.Transaction().add(
-    solanaWeb3.SystemProgram.transfer({
-      fromPubkey: FUNDER_PUBLIC_KEY,
-      toPubkey: FEE_PAYER_PUBLIC_KEY,
-      lamports: amountToTransfer
-    })
-  )
-  // Sign transaction, broadcast, and confirm
-  var signature = await solanaWeb3.sendAndConfirmTransaction(
-    solanaConnection,
-    transaction,
-    [FUNDER_SOL_ACCOUNT]
-  )
-  console.log('SIGNATURE', signature)
-  console.log('SUCCESS')
+  const feePayerBalance = await getBalance(FEE_PAYER_PUBLIC_KEY)
+
+  if (feePayerBalance < MIN_BALANCE) {
+    const transaction = new solanaWeb3.Transaction().add(
+      solanaWeb3.SystemProgram.transfer({
+        fromPubkey: FUNDER_PUBLIC_KEY,
+        toPubkey: FEE_PAYER_PUBLIC_KEY,
+        lamports: amountToTransfer
+      })
+    )
+    // Sign transaction, broadcast, and confirm
+    const signature = await solanaWeb3.sendAndConfirmTransaction(
+      solanaConnection,
+      transaction,
+      [FUNDER_SOL_ACCOUNT]
+    )
+    console.log('SIGNATURE', signature)
+    console.log('SUCCESS')
+  } else {
+    console.log('Fee payer meets min balance')
+  }
 }
 
 async function run () {
   try {
-    await getBalance()
+    console.log(`-------- Balances before transferring --------`)
+    console.log(`Fee payer balance: ${(await getBalance(FEE_PAYER_PUBLIC_KEY)) / solanaWeb3.LAMPORTS_PER_SOL}`)
+    console.log(`Funder balance: ${(await getBalance(FUNDER_PUBLIC_KEY)) / solanaWeb3.LAMPORTS_PER_SOL}`)
     await transferBalance()
-    await getBalance()
+    console.log(`-------- Balances after transferring --------`)
+    console.log(`Fee payer balance: ${(await getBalance(FEE_PAYER_PUBLIC_KEY)) / solanaWeb3.LAMPORTS_PER_SOL}`)
+    console.log(`Funder balance: ${(await getBalance(FUNDER_PUBLIC_KEY)) / solanaWeb3.LAMPORTS_PER_SOL}`)
   } catch (e) {
     console.error(e)
     process.exit(1)
