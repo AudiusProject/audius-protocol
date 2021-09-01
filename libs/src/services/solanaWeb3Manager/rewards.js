@@ -362,7 +362,7 @@ const evaluateAttestations = async ({
   const instructionData = new ValidateAttestationsInstructionData({
     amount: tokenAmount.toNumber(),
     id: transferId,
-    ethRecipient: ethAddressToArray(recipientEthAddress)
+    ethRecipient: SolanaUtils.ethAddressToArray(recipientEthAddress)
   })
   const serializedInstructionData = borsh.serialize(
     validateAttestationsInstructionSchema,
@@ -567,17 +567,6 @@ const generateSecpInstruction = ({
 // Misc
 
 /**
- * Converts an eth address hex represenatation to an array of Uint8s in big endian notation
- * @param {string} ethAddress
- * @returns {Uint8Array}
- */
-const ethAddressToArray = (ethAddress) => {
-  const strippedEthAddress = ethAddress.replace('0x', '')
-  return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be'))
-}
-
-
-/**
  * Derives the Solana account associated with a given sender Eth address.
  *
  * @param {string} ethAddress
@@ -590,7 +579,7 @@ const deriveSolanaSenderFromEthAddress = async (
   rewardManagerProgramId,
   rewardManagerAccount
 ) => {
-  const ethAddressArr = ethAddressToArray(ethAddress)
+  const ethAddressArr = SolanaUtils.ethAddressToArray(ethAddress)
   const encodedPrefix = encoder.encode(SENDER_SEED_PREFIX)
 
   const [, derivedSender] = await findProgramAddressWithAuthority(

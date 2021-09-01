@@ -1,5 +1,5 @@
 const { PublicKey } = require('@solana/web3.js')
-
+const BN = require('bn.js')
 const keccak256 = require('keccak256')
 const secp256k1 = require('secp256k1')
 
@@ -68,8 +68,8 @@ class SolanaUtils {
     transferId,
     oracleAddress
   ) {
-    const userBytes = ethAddressToArray(recipientEthAddress)
-    const oracleBytes = ethAddressToArray(oracleAddress)
+    const userBytes = SolanaUtils.ethAddressToArray(recipientEthAddress)
+    const oracleBytes = SolanaUtils.ethAddressToArray(oracleAddress)
     const transferIdBytes = encoder.encode(transferId)
     const amountBytes = padBNToUint8Array(tokenAmount)
     const items = isOracle
@@ -113,6 +113,17 @@ class SolanaUtils {
       programId
     )
   }
+
+  /**
+   * Converts an eth address hex represenatation to an array of Uint8s in big endian notation
+   * @param {string} ethAddress
+   * @returns {Uint8Array}
+   */
+  static ethAddressToArray(ethAddress) {
+    const strippedEthAddress = ethAddress.replace('0x', '')
+    return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be'))
+  }
+
 }
 
 /**
