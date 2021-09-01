@@ -353,6 +353,14 @@ class Playlist(Base):
 
     PrimaryKeyConstraint(is_current, playlist_id, playlist_owner_id, blockhash, txhash)
 
+    ModelValidator.init_model_schemas("Playlist")
+    fields = get_fields_to_validate("Playlist")
+
+    # unpacking args into @validates
+    @validates(*fields)
+    def validate_field(self, field, value):
+        return validate_field_helper(field, value, "Playlist", getattr(Playlist, field).type)
+
     def __repr__(self):
         return f"<Playlist(blockhash={self.blockhash},\
 blocknumber={self.blocknumber},\
