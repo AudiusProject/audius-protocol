@@ -774,10 +774,15 @@ class CreatorNode {
    * @param {Object<string, any>} extraFormDataOptions extra FormData fields passed to the upload
    */
   async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}, retries = 2) {
+    console.log(`SIDTEST STARTING UPLOADFILE attempt#${2 - retries}`)
     await this.ensureConnected()
 
     const { headers, formData } = this.createFormDataAndUploadHeaders(file, extraFormDataOptions)
     const requestId = headers['X-Request-ID']
+
+    const logstring = `requestid ${requestId} attempt#${2 - retries} INFO: USERID: ${headers['User-Id']} // wallet ${headers['User-Wallet-Addr']}`
+
+    console.log(`SIDTEST UPLOADFILE ${logstring}`)
 
     let total
     const url = this.creatorNodeEndpoint + route
@@ -810,17 +815,20 @@ class CreatorNode {
           // Set content length headers (only applicable in server/node environments).
           // See: https://github.com/axios/axios/issues/1362
           maxContentLength: Infinity,
-          maxBodyLength: Infinity
+          maxBodyLength: Infinity,
+          timeout: 10000
         }
       )
+      console.log(`SIDTEST UPLOADFILE RESP ${logstring} ${JSON.stringify(resp.data)}`)
       if (resp.data && resp.data.error) {
         throw new Error(JSON.stringify(resp.data.error))
       }
       onProgress(total, total)
       return resp.data
     } catch (e) {
+      console.log(`SIDTEST UPLOADFILE ERROR ${e.message} ${logstring}`)
       if (!e.response && retries > 0) {
-        console.warn(`Network Error in request ${requestId} with ${retries} retries... retrying`)
+        console.warn(`Network Error in request ${requestId} with ${retries} retries... retrying // ${logstring}`)
         console.warn(e)
         return this._uploadFile(file, route, onProgress, extraFormDataOptions, retries - 1)
       }

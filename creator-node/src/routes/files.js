@@ -339,6 +339,7 @@ module.exports = function (app) {
 
     const routestart = Date.now()
     const imageBufferOriginal = req.file.path
+    req.logger.info(`SIDTEST IMAGESIZE ${imageBufferOriginal.toString().length}`)
     const originalFileName = req.file.originalname
     const cnodeUserUUID = req.session.cnodeUserUUID
 
