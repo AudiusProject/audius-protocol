@@ -130,13 +130,13 @@ def get_valid_instruction(
     """
     try:
         account_keys = tx_message["accountKeys"]
-        has_transfer_instruction = any(
+        has_user_bank_instruction = any(
             log == "Program log: Instruction: CreateTokenAccount"
             or log == "Program log: Instruction: Claim"
             for log in meta["logMessages"]
         )
 
-        if not has_transfer_instruction:
+        if not has_user_bank_instruction:
             return None
 
         if not any(REWARDS_MANAGER_ACCOUNT == key for key in account_keys):
