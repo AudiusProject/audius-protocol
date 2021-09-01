@@ -355,6 +355,7 @@ jobs:
           path_to_lcov: ./eth-contracts/coverage/lcov.info
 
   test-creator-node:
+    parallelism: 10
     docker:
       # specify the version you desire here
       - image: circleci/node:14.16
