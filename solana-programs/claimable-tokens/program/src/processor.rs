@@ -97,12 +97,6 @@ impl Processor {
         let authority_signature_seeds = [&source_data.mint.to_bytes()[..32], &[pair.base.seed]];
         let signers = &[&authority_signature_seeds[..]];
 
-        let debit_amount = if amount != 0 {
-            amount
-        } else {
-            source_data.amount
-        };
-
         invoke_signed(
             &spl_token::instruction::transfer(
                 &spl_token::id(),
@@ -110,7 +104,7 @@ impl Processor {
                 destination.key,
                 authority.key,
                 &[&authority.key],
-                debit_amount,
+                amount,
             )?,
             &[source, destination, authority],
             signers,
