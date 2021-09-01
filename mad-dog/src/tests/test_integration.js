@@ -9,7 +9,9 @@ const { getContentNodeEndpoints, getRepostersForTrack } = require('@audius/servi
 const {
   OPERATION_TYPE,
   TrackUploadRequest,
-  TrackUploadResponse
+  TrackUploadResponse,
+  TrackRepostRequest,
+  TrackRepostResponse
 } = require('../operations.js')
 const { logger } = require('../logger.js')
 const MadDog = require('../madDog.js')
