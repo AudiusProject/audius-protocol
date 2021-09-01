@@ -157,7 +157,7 @@ class File extends Base {
     // Assign a creator_node_endpoint to the user if necessary
     await this.User.assignReplicaSetIfNecessary()
 
-    const resp = await this.creatorNode.uploadImage(file, square, undefined, undefined, undefined, timeoutMs)
+    const resp = await this.creatorNode.uploadImage(file, square, undefined, timeoutMs)
     return resp
   }
 }

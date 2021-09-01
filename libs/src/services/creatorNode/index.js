@@ -349,7 +349,7 @@ class CreatorNode {
    * @return {Object} response body
    */
   async uploadImage (file, square = true, onProgress, timeoutMs) {
-    const { data: body } = await this._uploadFile(file, '/image_upload', onProgress, { 'square': square }, timeoutMs)
+    const { data: body } = await this._uploadFile(file, '/image_upload', onProgress, { 'square': square }, undefined, timeoutMs)
     return body
   }
 
