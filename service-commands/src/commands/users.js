@@ -26,9 +26,6 @@ User.uploadProfileImagesAndAddUser = async (libsWrapper, metadata, userPicturePa
 
   metadata = await User.getUser(libsWrapper, userId)
 
-  const filesize = fs.statSync(userPicturePath)
-  console.log(`MADDOG UPLOADPROFILEIMAGESANDADDUSER userid${userId} file size ${filesize.size}bytes filepath ${userPicturePath}`)
-
   // Upload photo for profile picture
   await User.uploadPhotoAndUpdateMetadata(libsWrapper, {
     metadata,
@@ -58,9 +55,11 @@ User.uploadPhotoAndUpdateMetadata = async (libsWrapper, {
 }) => {
   const newMetadata = { ...metadata }
   const userPicFile = fs.createReadStream(picturePath)
+
   const resp = await libsWrapper.libsInstance.File.uploadImage(
     userPicFile,
-    'true' // square, this weirdly has to be a boolean string
+    'true', // square, this weirdly has to be a boolean string
+    10000 // timeoutMs
   )
   if (updateProfilePicture) newMetadata.profile_picture_sizes = resp.dirCID
   if (updateCoverPhoto) newMetadata.cover_photo_sizes = resp.dirCID

@@ -231,12 +231,12 @@ module.exports = coreIntegration = async ({
       requesterIdx,
       walletIdMap[requesterIdx]
     )
-    // const repostRequest = new TrackRepostRequest(
-    //   requesterIdx,
-    //   walletIdMap[requesterIdx]
-    // )
+    const repostRequest = new TrackRepostRequest(
+      requesterIdx,
+      walletIdMap[requesterIdx]
+    )
     emit(Event.REQUEST, uploadRequest)
-    // emit(Event.REQUEST, repostRequest)
+    emit(Event.REQUEST, repostRequest)
   })
 
   // Create users. Upgrade them to creators later
@@ -306,10 +306,9 @@ module.exports = coreIntegration = async ({
     m.start()
   }
 
-  // Start the test, wait for it to finish.
-  await emitterTest.start()
+  // Run emitter test, wait for it to finish
+  await emitterTest.run()
   logger.info('Emitter test exited')
-  return
 
   /**
    * Verify results

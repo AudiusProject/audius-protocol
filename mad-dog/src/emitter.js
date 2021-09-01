@@ -62,10 +62,10 @@ class EmitterBasedTest {
   }
 
   /**
-   * Begin the test.
+   * Run test.
    * Returns when all inflight requests and ticks are completed.
    */
-  async start () {
+  async run () {
     logger.info('Beginning ticking.')
     this.isTicking = true
     await tick(this.emitter, this.tickIntervalSeconds, this.testDurationSeconds)
@@ -83,7 +83,6 @@ class EmitterBasedTest {
     if (this.inFlightCount > 0) {
       logger.info(`Awaiting [${this.inFlightCount}] inflight requests.`)
       await withTimeout(this.inFlightPromise, 300000, `Failed to resolve all inflight requests in 300000ms`)
-      // await this.inFlightPromise
     }
     logger.info('Test done.')
   }
