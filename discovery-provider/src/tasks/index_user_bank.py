@@ -2,7 +2,7 @@ import concurrent.futures
 import datetime
 import logging
 import re
-from typing import Tuple, Optional
+from typing import Tuple, Optional, TypedDict, List
 import time
 from redis import Redis
 from sqlalchemy.orm.session import Session
@@ -14,6 +14,12 @@ from src.models import User, UserBankTransaction, UserBankAccount
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import get_address_pair, SPL_TOKEN_ID_PK
+from src.solana.solana_transaction_types import TransactionInfoResult
+from src.solana.solana_parser import (
+    parse_instruction_data,
+    InstructionFormat,
+    SolanaInstructionType,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -94,11 +100,70 @@ def refresh_user_balance(session: Session, redis: Redis, user_bank_acct: str):
         )
         enqueue_immediate_balance_refresh(redis, [user_id[0]])
 
+create_token_account_instr: List[InstructionFormat] = [
+    {"name": "eth_address", "type": SolanaInstructionType.EthereumAddress},
+]
+
+class CreateTokenAccount(TypedDict):
+    eth_address: str
+
+def parse_create_token_data(data: str) -> CreateTokenAccount:
+    """Parse Transfer instruction data submitted to Audius Rewards Manager program
+
+    Instruction struct:
+    pub struct TransferArgs {
+        pub eth_address: EthereumAddress,
+    }
+
+    Decodes the data and parses each param into the correct type
+    """
+
+    return parse_instruction_data(data, create_token_account_instr)
+
+def get_valid_instruction(
+    tx_message: TransactionMessage, meta: ResultMeta
+) -> Optional[TransactionMessageInstruction]:
+    """Checks that the tx is valid
+    checks for the transaction message for correct instruction log
+    checks accounts keys for rewards manager account
+    checks for rewards manager program in instruction
+    """
+    try:
+        account_keys = tx_message["accountKeys"]
+        has_transfer_instruction = any(
+            log == "Program log: Instruction: CreateTokenAccount"
+            or log == "Program log: Instruction: Claim"
+            for log in meta["logMessages"]
+        )
+
+        if not has_transfer_instruction:
+            return None
+
+        if not any(REWARDS_MANAGER_ACCOUNT == key for key in account_keys):
+            logger.error(
+                "index_rewards_manager.py | Rewards manager account missing from account keys"
+            )
+            return None
+
+        instructions = tx_message["instructions"]
+        rewards_manager_program_index = account_keys.index(REWARDS_MANAGER_PROGRAM)
+        for instruction in instructions:
+            if instruction["programIdIndex"] == rewards_manager_program_index:
+                return instruction
+
+        return None
+    except Exception as e:
+        logger.error(
+            f"index_rewards_manager.py | Error processing instruction valid, {e}",
+            exc_info=True,
+        )
+        return None
 
 def process_user_bank_tx_details(
     session: Session, redis: Redis, tx_info, tx_sig, timestamp
 ):
-    meta = tx_info["result"]["meta"]
+    result: TransactionInfoResult = tx_info["result"]
+    meta = result["meta"]
     error = meta["err"]
     if error:
         logger.info(
@@ -106,43 +171,54 @@ def process_user_bank_tx_details(
         )
         return
     account_keys = tx_info["result"]["transaction"]["message"]["accountKeys"]
-    instructions = meta["logMessages"]
-    for msg in instructions:
-        if "EthereumAddress" in msg:
-            public_key_str, public_key_bytes = parse_eth_address_from_msg(msg)
-            logger.info(f"index_user_bank.py | {public_key_str}")
-            # Rederive address based on user public key
-            _, derived_address = get_address_pair(
-                WAUDIO_PROGRAM_PUBKEY, public_key_bytes, USER_BANK_KEY, SPL_TOKEN_ID_PK
-            )
-            bank_acct = str(derived_address[0])
-            # Confirm expected address is present in transaction
-            try:
-                bank_acct_index = account_keys.index(bank_acct)
-                session.add(
-                    UserBankAccount(
-                        signature=tx_sig,
-                        ethereum_address=public_key_str,
-                        bank_account=bank_acct,
-                        created_at=timestamp,
-                    )
-                )
-                if bank_acct_index:
-                    logger.info(
-                        f"index_user_bank.py | Found known account: {public_key_str}, {bank_acct}"
-                    )
-            except ValueError as e:
-                logger.error(e)
-        elif "Transfer" in msg:
-            # Accounts to refresh balance
-            acct_1 = account_keys[1]
-            acct_2 = account_keys[2]
-            logger.info(
-                f"index_user_bank.py | Balance refresh accounts: {acct_1}, {acct_2}"
-            )
-            refresh_user_balance(session, redis, acct_1)
-            refresh_user_balance(session, redis, acct_2)
+    tx_message = result["transaction"]["message"]
 
+    # instructions = meta["logMessages"]
+    user_bank_program_index = account_keys.index(USER_BANK_ADDRESS)
+    logger.error(f"index_user_bank.py | index {user_bank_program_index}")
+
+    instructions = tx_message["instructions"]
+    for instruction in instructions:
+        if instruction["programIdIndex"] == user_bank_program_index:
+            logger.error(f"index_user_bank.py | instruction {instruction}")
+            parsed = parse_create_token_data(instruction["data"])
+            logger.error(f"index_user_bank.py | instruction_parsed {parsed}")
+
+    # for msg in instructions:
+    #     if "EthereumAddress" in msg:
+    #         public_key_str, public_key_bytes = parse_eth_address_from_msg(msg)
+    #         logger.info(f"index_user_bank.py | {public_key_str}")
+    #         # Rederive address based on user public key
+    #         _, derived_address = get_address_pair(
+    #             WAUDIO_PROGRAM_PUBKEY, public_key_bytes, USER_BANK_KEY, SPL_TOKEN_ID_PK
+    #         )
+    #         bank_acct = str(derived_address[0])
+    #         # Confirm expected address is present in transaction
+    #         try:
+    #             bank_acct_index = account_keys.index(bank_acct)
+    #             session.add(
+    #                 UserBankAccount(
+    #                     signature=tx_sig,
+    #                     ethereum_address=public_key_str,
+    #                     bank_account=bank_acct,
+    #                     created_at=timestamp,
+    #                 )
+    #             )
+    #             if bank_acct_index:
+    #                 logger.info(
+    #                     f"index_user_bank.py | Found known account: {public_key_str}, {bank_acct}"
+    #                 )
+    #         except ValueError as e:
+    #             logger.error(e)
+    #     elif "Transfer" in msg:
+    #         # Accounts to refresh balance
+    #         acct_1 = account_keys[1]
+    #         acct_2 = account_keys[2]
+    #         logger.info(
+    #             f"index_user_bank.py | Balance refresh accounts: {acct_1}, {acct_2}"
+    #         )
+    #         refresh_user_balance(session, redis, acct_1)
+    #         refresh_user_balance(session, redis, acct_2)
 
 def parse_user_bank_transaction(
     session: Session, solana_client_manager: SolanaClientManager, tx_sig, redis
@@ -158,9 +234,9 @@ def parse_user_bank_transaction(
     )
 
     process_user_bank_tx_details(session, redis, tx_info, tx_sig, parsed_timestamp)
-    session.add(
-        UserBankTransaction(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp)
-    )
+    # session.add(
+    #     UserBankTransaction(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp)
+    # )
 
 
 def process_user_bank_txs():
