@@ -5,7 +5,7 @@ const secp256k1 = require('secp256k1')
 
 class SolanaUtils {
   /**
-   *
+   * Signs arbitrary bytes
    *
    * @param {*} bytes
    * @param {string} ethPrivateKey
@@ -50,6 +50,7 @@ class SolanaUtils {
   static constructTransferId (challengeId, specifier) {
     return `${challengeId}:${specifier}`
   }
+
   /**
    * Constructs an attestation from inputs.
    *
