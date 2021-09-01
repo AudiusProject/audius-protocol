@@ -1,20 +1,19 @@
 const solanaWeb3 = require('@solana/web3.js')
 
 // input validation
-if (!process.env.funderPrivateKey || !process.env.feePayerPrivateKey) {
-  console.log('funderPrivateKey and feePayerPrivateKey env vars must be set')
-  console.log('Example usage: `funderPrivateKey=[...] feePayerPrivateKey=[...] node fundSolanaFeePayer.js`')
+if (!process.env.funderPrivateKey || !process.env.feePayerAddress) {
+  console.log('funderPrivateKey and feePayerAddress env vars must be set')
+  console.log('Example usage: `funderPrivateKey=[...] feePayerAddress=<address> node fundSolanaFeePayer.js`')
   process.exit(1)
 }
 const RPC_ENDPOINT = 'https://api.mainnet-beta.solana.com' // DEVNET is https://api.devnet.solana.com
 // Funder - the private key wallet that will fund the fee payer
 const FUNDER_PRIVATE_KEY = process.env.funderPrivateKey ? JSON.parse(process.env.funderPrivateKey) : []
 // Fee payer - the private key of the wallet exposed in identity to pay for tx's
-const FEE_PAYER_PRIVATE_KEY = process.env.feePayerPrivateKey ? JSON.parse(process.env.feePayerPrivateKey) : []
+const FEE_PAYER_PUBLIC_KEY = (new solanaWeb3.PublicKey(process.env.feePayerAddress))
 
 // initialize connection and values
 let solanaConnection = new solanaWeb3.Connection(RPC_ENDPOINT)
-const FEE_PAYER_PUBLIC_KEY = (new solanaWeb3.Account(FEE_PAYER_PRIVATE_KEY)).publicKey
 const FUNDER_SOL_ACCOUNT = (new solanaWeb3.Account(FUNDER_PRIVATE_KEY))
 const FUNDER_PUBLIC_KEY = (new solanaWeb3.Account(FUNDER_PRIVATE_KEY)).publicKey
 
@@ -31,7 +30,7 @@ async function transferBalance (amountToTransfer = solanaWeb3.LAMPORTS_PER_SOL) 
     solanaWeb3.SystemProgram.transfer({
       fromPubkey: FUNDER_PUBLIC_KEY,
       toPubkey: FEE_PAYER_PUBLIC_KEY,
-      lamports: amountToTransfer,
+      lamports: amountToTransfer
     })
   )
   // Sign transaction, broadcast, and confirm
@@ -40,14 +39,14 @@ async function transferBalance (amountToTransfer = solanaWeb3.LAMPORTS_PER_SOL) 
     transaction,
     [FUNDER_SOL_ACCOUNT]
   )
-  console.log("SIGNATURE", signature)
-  console.log("SUCCESS")
+  console.log('SIGNATURE', signature)
+  console.log('SUCCESS')
 }
 
 async function run () {
   try {
     await getBalance()
-    await transferBalance(solanaWeb3.LAMPORTS_PER_SOL / 100)
+    await transferBalance()
     await getBalance()
   } catch (e) {
     console.error(e)
