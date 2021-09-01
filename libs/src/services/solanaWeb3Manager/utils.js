@@ -66,6 +66,7 @@ class SolanaUtils {
     transferId,
     oracleAddress
   ) {
+    const encoder = new TextEncoder()
     const userBytes = SolanaUtils.ethAddressToArray(recipientEthAddress)
     const transferIdBytes = encoder.encode(transferId)
     const amountBytes = padBNToUint8Array(tokenAmount)
