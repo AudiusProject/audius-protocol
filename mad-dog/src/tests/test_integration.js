@@ -14,6 +14,7 @@ const path = require('path')
 const { _ } = require('lodash')
 const fs = require('fs-extra')
 const axios = require('axios')
+const retry = require('async-retry')
 
 const { logger } = require('../logger.js')
 const ServiceCommands = require('@audius/service-commands')
@@ -224,7 +225,7 @@ module.exports = coreIntegration = async ({
           try {
             // add track to playlist
             const playlistId = createdPlaylists[userId][createdPlaylists[userId].length - 1]
-            const transaction = await executeOne(walletIndex, l =>
+            await executeOne(walletIndex, l =>
               addPlaylistTrack(l, playlistId, trackId)
             )
             await executeOne(walletIndex, l => l.waitForLatestBlock())
@@ -233,22 +234,19 @@ module.exports = coreIntegration = async ({
             let playlistTracks
             let playlists
 
-            let counter = 0
-            do {
+            await retry(async () => {
               playlists = await executeOne(walletIndex, l =>
                 getPlaylists(l, 100, 0, [playlistId], userId)
               )
               playlistTracks = playlists[0].playlist_contents.track_ids.map(obj => obj.track)
-              counter += 1
-              if (counter > 100) {
-                throw new Error('Maxed out retry attempts')
+
+              if (!playlistTracks.includes(trackId)) {
+                throw new Error(`Track [${trackId}] not found in playlist [${playlistId}]`)
               }
-            } while (playlists[0].blocknumber < transaction.blockNumber)
-
-            if (!playlistTracks.includes(trackId)) {
-              throw new Error(`Track [${trackId}] not found in playlist [${playlistId}]`)
-            }
-
+            }, {
+              retries: 20,
+              factor: 2
+            })
             res = new AddPlaylistTrackResponse(walletIndex, trackId)
           } catch (e) {
             logger.error(`Caught error [${e.message}] adding track: [${trackId}] to playlist \n${e.stack}`)
