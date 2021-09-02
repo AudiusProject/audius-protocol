@@ -1,11 +1,12 @@
 import time
 import logging
+import redis
 
 from web3 import Web3
 from web3.providers.rpc import HTTPProvider
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
-from src.eth_indexing.event_scanner import EventScanner
+from src.eth_indexing.event_scanner import EventScanner, eth_indexing_last_scanned_block_key
 from src.utils.helpers import load_eth_abi_values
 from src.utils.redis_constants import index_eth_last_completion_redis_key
 from src.tasks.cache_user_balance import get_token_address
@@ -77,6 +78,14 @@ def index_eth_transfer_events(db, redis):
             total {total_chunks_scanned} chunk scans performed"
     )
 
+def delete_last_scanned_block():
+    logger.info("index_eth.py | deleting existing redis scanned block on start")
+    redis_url = shared_config["redis"]["url"]
+    redis_inst = redis.Redis.from_url(url=redis_url)
+    redis_inst.delete(eth_indexing_last_scanned_block_key)
+    logger.info("index_eth.py | successfully deleted existing redis scanned block on start")
+
+delete_last_scanned_block()
 
 @celery.task(name="index_eth", bind=True)
 def index_eth(self):
