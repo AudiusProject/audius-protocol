@@ -3,7 +3,10 @@
 use crate::{
     error::{to_claimable_tokens_error, ClaimableProgramError},
     instruction::ClaimableProgramInstruction,
-    utils::program::{get_address_pair, EthereumAddress},
+    utils::program::{
+        get_address_pair,
+        EthereumAddress
+    }
 };
 use borsh::BorshDeserialize;
 use solana_program::{
@@ -36,9 +39,12 @@ impl Processor {
         required_lamports: u64,
         space: u64,
     ) -> ProgramResult {
-        msg!("EthereumAddress = {:?}", eth_address);
         let pair = get_address_pair(program_id, mint_key, eth_address)?;
+        // Verify base and incoming account match expected
         if *base.key != pair.base.address {
+            return Err(ProgramError::InvalidSeeds);
+        }
+        if *account_to_create.key != pair.derive.address {
             return Err(ProgramError::InvalidSeeds);
         }
 
@@ -89,6 +95,7 @@ impl Processor {
     ) -> Result<(), ProgramError> {
         let source_data = spl_token::state::Account::unpack(&source.data.borrow())?;
 
+        // Verify source token account matches the expected PDA
         let pair = get_address_pair(program_id, &source_data.mint, eth_address)?;
         if *source.key != pair.derive.address {
             return Err(ProgramError::InvalidSeeds);
@@ -150,7 +157,6 @@ impl Processor {
     ) -> ProgramResult {
         // check that mint is initialized
         spl_token::state::Mint::unpack(&mint_account_info.data.borrow())?;
-
         Self::create_account(
             program_id,
             funder_account_info.clone(),
@@ -209,6 +215,17 @@ impl Processor {
         eth_address: EthereumAddress,
         amount: u64,
     ) -> ProgramResult {
+
+        // Confirmation of ownership
+        // assert_owned_by(
+        //     banks_token_account_info,
+        //     program_id
+        // )?;
+        msg!("program id: {:?}", &program_id);
+        msg!("banks token : {:?}", &banks_token_account_info);
+        msg!("banks token owner : {:?}", &banks_token_account_info);
+        msg!("authority : {:?}", &authority_account_info);
+
         Self::check_ethereum_sign(
             &instruction_info,
             &eth_address,

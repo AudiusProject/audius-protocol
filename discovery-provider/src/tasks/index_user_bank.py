@@ -1,4 +1,5 @@
 import concurrent.futures
+import base58
 import datetime
 import logging
 import re
@@ -14,7 +15,12 @@ from src.models import User, UserBankTransaction, UserBankAccount
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import get_address_pair, SPL_TOKEN_ID_PK
-from src.solana.solana_transaction_types import TransactionInfoResult
+from src.solana.solana_transaction_types import (
+    TransactionInfoResult,
+    TransactionMessage,
+    TransactionMessageInstruction,
+    ResultMeta
+)
 from src.solana.solana_parser import (
     parse_instruction_data,
     InstructionFormat,
@@ -130,37 +136,26 @@ def get_valid_instruction(
     """
     try:
         account_keys = tx_message["accountKeys"]
-        has_user_bank_instruction = any(
-            log == "Program log: Instruction: CreateTokenAccount"
-            or log == "Program log: Instruction: Claim"
-            for log in meta["logMessages"]
-        )
-
-        if not has_user_bank_instruction:
-            return None
-
-        if not any(REWARDS_MANAGER_ACCOUNT == key for key in account_keys):
-            logger.error(
-                "index_rewards_manager.py | Rewards manager account missing from account keys"
-            )
-            return None
-
         instructions = tx_message["instructions"]
-        rewards_manager_program_index = account_keys.index(REWARDS_MANAGER_PROGRAM)
+        user_bank_program_index = account_keys.index(USER_BANK_ADDRESS)
         for instruction in instructions:
-            if instruction["programIdIndex"] == rewards_manager_program_index:
+            if instruction["programIdIndex"] == user_bank_program_index:
                 return instruction
 
         return None
     except Exception as e:
         logger.error(
-            f"index_rewards_manager.py | Error processing instruction valid, {e}",
+            f"index_user_bank.py | Error processing instruction valid, {e}",
             exc_info=True,
         )
         return None
 
 def process_user_bank_tx_details(
-    session: Session, redis: Redis, tx_info, tx_sig, timestamp
+    session: Session,
+    redis: Redis,
+    tx_info,
+    tx_sig,
+    timestamp
 ):
     result: TransactionInfoResult = tx_info["result"]
     meta = result["meta"]
@@ -173,52 +168,76 @@ def process_user_bank_tx_details(
     account_keys = tx_info["result"]["transaction"]["message"]["accountKeys"]
     tx_message = result["transaction"]["message"]
 
-    # instructions = meta["logMessages"]
-    user_bank_program_index = account_keys.index(USER_BANK_ADDRESS)
-    logger.error(f"index_user_bank.py | index {user_bank_program_index}")
+    # Check for valid instruction
+    has_create_token_instruction = any(
+        log == "Program log: Instruction: CreateTokenAccount"
+        for log in meta["logMessages"]
+    )
+    has_claim_instruction = any(
+        log == "Program log: Instruction: Claim"
+        for log in meta["logMessages"]
+    )
+    logger.error(f"index_user_bank.py |\
+    has_create_token_instruction={has_create_token_instruction},\
+    has_claim_instruction={has_claim_instruction}")
 
-    instructions = tx_message["instructions"]
-    for instruction in instructions:
-        if instruction["programIdIndex"] == user_bank_program_index:
-            logger.error(f"index_user_bank.py | instruction {instruction}")
-            parsed = parse_create_token_data(instruction["data"])
-            logger.error(f"index_user_bank.py | instruction_parsed {parsed}")
+    if not has_create_token_instruction and not has_claim_instruction:
+        return None
 
-    # for msg in instructions:
-    #     if "EthereumAddress" in msg:
-    #         public_key_str, public_key_bytes = parse_eth_address_from_msg(msg)
-    #         logger.info(f"index_user_bank.py | {public_key_str}")
-    #         # Rederive address based on user public key
-    #         _, derived_address = get_address_pair(
-    #             WAUDIO_PROGRAM_PUBKEY, public_key_bytes, USER_BANK_KEY, SPL_TOKEN_ID_PK
-    #         )
-    #         bank_acct = str(derived_address[0])
-    #         # Confirm expected address is present in transaction
-    #         try:
-    #             bank_acct_index = account_keys.index(bank_acct)
-    #             session.add(
-    #                 UserBankAccount(
-    #                     signature=tx_sig,
-    #                     ethereum_address=public_key_str,
-    #                     bank_account=bank_acct,
-    #                     created_at=timestamp,
-    #                 )
-    #             )
-    #             if bank_acct_index:
-    #                 logger.info(
-    #                     f"index_user_bank.py | Found known account: {public_key_str}, {bank_acct}"
-    #                 )
-    #         except ValueError as e:
-    #             logger.error(e)
-    #     elif "Transfer" in msg:
-    #         # Accounts to refresh balance
-    #         acct_1 = account_keys[1]
-    #         acct_2 = account_keys[2]
-    #         logger.info(
-    #             f"index_user_bank.py | Balance refresh accounts: {acct_1}, {acct_2}"
-    #         )
-    #         refresh_user_balance(session, redis, acct_1)
-    #         refresh_user_balance(session, redis, acct_2)
+    instruction = get_valid_instruction(tx_message, meta)
+    if instruction is None:
+        logger.error(f"index_user_bank.py | NO Valid instruction found")
+        return None
+
+    if has_create_token_instruction:
+        logger.error(f"index_user_bank.py | instruction = {instruction}")
+        tx_data = instruction["data"]
+        parsed_token_data = parse_create_token_data(tx_data)
+        logger.error(f"index_user_bank.py | {parsed_token_data}")
+
+        eth_addr = parsed_token_data["eth_address"]
+        logger.error(f"index_user_bank.py | eth_addr {eth_addr}")
+
+        decoded = base58.b58decode(tx_data)[1:]
+        public_key_bytes = decoded[:20]
+
+        _, derived_address = get_address_pair(
+            WAUDIO_PROGRAM_PUBKEY,
+            public_key_bytes,
+            USER_BANK_KEY,
+            SPL_TOKEN_ID_PK
+        )
+        bank_acct = str(derived_address[0])
+        logger.error(f"index_user_bank.py |\
+        derived {derived_address},\
+        {bank_acct}")
+        try:
+            # Confirm expected address is present in transaction
+            bank_acct_index = account_keys.index(bank_acct)
+            if bank_acct_index:
+                logger.info(
+                    f"index_user_bank.py | Found known account: {eth_addr}, {bank_acct}"
+                )
+                session.add(
+                    UserBankAccount(
+                        signature=tx_sig,
+                        ethereum_address=eth_addr,
+                        bank_account=bank_acct,
+                        created_at=timestamp,
+                    )
+                )
+        except ValueError as e:
+            logger.error(e)
+
+    elif has_claim_instruction:
+        # Accounts to refresh balance
+        acct_1 = account_keys[1]
+        acct_2 = account_keys[2]
+        logger.info(
+            f"index_user_bank.py | Balance refresh accounts: {acct_1}, {acct_2}"
+        )
+        refresh_user_balance(session, redis, acct_1)
+        refresh_user_balance(session, redis, acct_2)
 
 def parse_user_bank_transaction(
     session: Session, solana_client_manager: SolanaClientManager, tx_sig, redis
