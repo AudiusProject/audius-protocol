@@ -170,25 +170,27 @@ class EventScanner:
         # add user ids from the transfer event into the balance refresh queue
         transfer_event_wallets = [transfer["from"].lower(), transfer["to"].lower()]
         with self.db.scoped_session() as session:
-            result = (
+            user_result = (
                 session.query(User.user_id)
-                .outerjoin(AssociatedWallet, User.user_id == AssociatedWallet.user_id)
                 .filter(User.is_current == True)
+                .filter(User.wallet.in_(transfer_event_wallets))
+            ).all()
+            user_set = {user_id for [user_id] in user_result}
+
+            associated_wallet_result = (
+                session.query(AssociatedWallet.user_id)
                 .filter(AssociatedWallet.is_current == True)
                 .filter(AssociatedWallet.is_delete == False)
-                .filter(
-                    or_(
-                        User.wallet.in_(transfer_event_wallets),
-                        AssociatedWallet.wallet.in_(transfer_event_wallets),
-                    )
+                .filter(AssociatedWallet.wallet.in_(transfer_event_wallets))
+            ).all()
+            associated_wallet_set = {user_id for [user_id] in associated_wallet_result}
+
+            user_ids = list(user_set.union(associated_wallet_set))
+            if user_ids:
+                logger.info(
+                    f"event_scanner.py | Enqueueing user ids {user_ids} to immediate balance refresh queue"
                 )
-                .all()
-            )
-            user_ids = [user_id for [user_id] in result]
-            logger.info(
-                f"event_scanner.py | Enqueueing user ids {user_ids} to immediate balance refresh queue"
-            )
-            enqueue_immediate_balance_refresh(self.redis, user_ids)
+                enqueue_immediate_balance_refresh(self.redis, user_ids)
 
         # Return a pointer that allows us to look up this event later if needed
         return f"{block_number}-{txhash}-{log_index}"
