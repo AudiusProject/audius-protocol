@@ -16,8 +16,6 @@
               }
           },
           "required": [
-            "playlist_name",
-            "description"
           ],
           "title": "Playlist"
       }

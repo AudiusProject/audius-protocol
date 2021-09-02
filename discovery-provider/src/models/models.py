@@ -354,7 +354,7 @@ class Playlist(Base):
     PrimaryKeyConstraint(is_current, playlist_id, playlist_owner_id, blockhash, txhash)
 
     ModelValidator.init_model_schemas("Playlist")
-    fields = get_fields_to_validate("Playlist")
+    fields = ["playlist_name", "description"]
 
     # unpacking args into @validates
     @validates(*fields)
