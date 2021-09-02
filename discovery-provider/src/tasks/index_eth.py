@@ -33,10 +33,10 @@ AUDIO_CHECKSUM_ADDRESS = get_token_address(web3, shared_config)
 
 # This implementation follows the example outlined in the link below
 # https://web3py.readthedocs.io/en/stable/examples.html#advanced-example-fetching-all-token-transfer-events
-def index_eth_transfer_events(db, redis):
+def index_eth_transfer_events(db, redis_inst):
     scanner = EventScanner(
         db=db,
-        redis=redis,
+        redis=redis_inst,
         web3=web3,
         contract=AUDIO_TOKEN_CONTRACT,
         event_type=AUDIO_TOKEN_CONTRACT.events.Transfer,
@@ -91,23 +91,23 @@ delete_last_scanned_block()
 def index_eth(self):
     # Index AUDIO Transfer events to update user balances
     db = index_eth.db
-    redis = index_eth.redis
+    redis_inst = index_eth.redis
 
     # Define lock acquired boolean
     have_lock = False
 
     # Define redis lock object
-    update_lock = redis.lock("index_eth_lock")
+    update_lock = redis_inst.lock("index_eth_lock")
     try:
         # Attempt to acquire lock
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.info(f"index_eth.py | {self.request.id} | Acquired index_eth_lock")
 
-            index_eth_transfer_events(db, redis)
+            index_eth_transfer_events(db, redis_inst)
 
             end_time = time.time()
-            redis.set(index_eth_last_completion_redis_key, int(end_time))
+            redis_inst.set(index_eth_last_completion_redis_key, int(end_time))
             logger.info(
                 f"index_eth.py | {self.request.id} | Processing complete within session"
             )
