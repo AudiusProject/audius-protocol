@@ -38,15 +38,15 @@ Track.uploadTrack = async (libs, trackMetadata, trackPath) => {
 }
 
 Track.repostTrack = async (libs, trackId) => {
-  return await libs.repostTrack(trackId)
+  return libs.repostTrack(trackId)
 }
 
 Track.getRepostersForTrack = async (libs, trackId) => {
-  return await libs.getRepostersForTrack(trackId)
+  return libs.getRepostersForTrack(trackId)
 }
 
 Track.getTrackMetadata = async (libs, trackId) => {
-  return await libs.getTrack(trackId)
+  return libs.getTrack(trackId)
 }
 
 Track.addTrackToChain = async (libs, userId, { digest, hashFn, size }) => {

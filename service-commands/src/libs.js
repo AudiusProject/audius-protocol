@@ -236,18 +236,18 @@ function LibsWrapper (walletIndex = 0) {
    * @returns transaction receipt
    * @throws any libs error
    */
-   this.repostTrack = async trackId => {
+  this.repostTrack = async trackId => {
     assertLibsDidInit()
     return await this.libsInstance.Track.addTrackRepost(trackId)
   }
 
-/**
- * Gets reposters for a tracks.
- *
- * @param {number} args trackId
- * @returns trackId
- * @throws any libs error
- */
+  /**
+   * Gets reposters for a tracks.
+   *
+   * @param {number} args trackId
+   * @returns trackId
+   * @throws any libs error
+   */
   this.getRepostersForTrack = async trackId => {
     assertLibsDidInit()
     return await this.libsInstance.Track.getRepostersForTrack(100, 0, trackId)
@@ -537,6 +537,23 @@ function LibsWrapper (walletIndex = 0) {
       trackIds
     )
     return createPlaylistTxReceipt
+  }
+
+  /**
+   * Add a playlist track addition txn to chain
+   * @param {number} playlistId
+   * @param {number} trackId
+   */
+  this.addPlaylistTrack = async (
+    playlistId,
+    trackId
+  ) => {
+    assertLibsDidInit()
+    const addPlaylistTrackTxReceipt = await this.libsInstance.contracts.PlaylistFactoryClient.addPlaylistTrack(
+      playlistId,
+      trackId
+    )
+    return addPlaylistTrackTxReceipt
   }
 
   /**
