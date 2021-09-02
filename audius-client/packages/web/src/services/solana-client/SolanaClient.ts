@@ -84,6 +84,7 @@ class SolanaClient {
         )
         const nonNullRes = accountInfos.filter(Boolean)
         const urls = nonNullRes
+          // @ts-ignore
           .map(x => client._utf8ArrayToUrl(x![0].data))
           .filter(Boolean)
         const results = await Promise.all(
