@@ -78,14 +78,10 @@ def index_eth_transfer_events(db, redis_inst):
             total {total_chunks_scanned} chunk scans performed"
     )
 
-def delete_last_scanned_block():
+def delete_last_scanned_block(redis_inst):
     logger.info("index_eth.py | deleting existing redis scanned block on start")
-    redis_url = shared_config["redis"]["url"]
-    redis_inst = redis.Redis.from_url(url=redis_url)
     redis_inst.delete(eth_indexing_last_scanned_block_key)
     logger.info("index_eth.py | successfully deleted existing redis scanned block on start")
-
-delete_last_scanned_block()
 
 @celery.task(name="index_eth", bind=True)
 def index_eth(self):
