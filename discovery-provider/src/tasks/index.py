@@ -414,7 +414,7 @@ def index_blocks(self, db, blocks_list):
                     )
                     continue
 
-                if skip_tx_hash == 'commit':
+                if skip_tx_hash == "commit":
                     # The whole block is worth skipping because we failed at the database commit
                     logger.info(f"index.py | Skipping all txs in block {block.hash}")
                     break
@@ -615,7 +615,12 @@ def index_blocks(self, db, blocks_list):
                 try:
                     session.commit()
                 except Exception as e:
-                    raise IndexingError("session.commit", block_number, block_hash, 'commit', str(e))
+                    # Use 'commit' as the tx hash here.
+                    # We're at a point where the whole block can't be added to the database, so
+                    # we should skip it in favor of making progress
+                    raise IndexingError(
+                        "session.commit", block_number, block_hash, "commit", str(e)
+                    ) from e
                 logger.info(
                     f"index.py | session commmited to db for block=${block_number}"
                 )
