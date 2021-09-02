@@ -24,6 +24,7 @@ const File = require('./api/file')
 const ServiceProvider = require('./api/serviceProvider')
 const Web3 = require('./web3')
 const Captcha = require('./utils/captcha')
+const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 
 class AudiusLibs {
   /**
@@ -433,4 +434,5 @@ module.exports = AudiusLibs
 
 module.exports.AudiusABIDecoder = AudiusABIDecoder
 module.exports.Utils = Utils
+module.exports.SolanaUtils = SolanaUtils
 module.exports.SanityChecks = SanityChecks
