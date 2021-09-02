@@ -185,6 +185,9 @@ class EventScanner:
                 .all()
             )
             user_ids = [user_id for [user_id] in result]
+            logger.info(
+                f"event_scanner.py | Enqueueing user ids {user_ids} to immediate balance refresh queue"
+            )
             enqueue_immediate_balance_refresh(self.redis, user_ids)
 
         # Return a pointer that allows us to look up this event later if needed
