@@ -443,7 +443,7 @@ def index_rewards_manager(self):
     # Define lock acquired boolean
     have_lock = False
     # Max duration of lock is 4hrs or 14400 seconds
-    update_lock = redis.lock("solana_rewards_manager", timeout=14400)
+    update_lock = redis.lock("solana_rewards_manager_lock", timeout=14400)
 
     try:
         # Attempt to acquire lock - do not block if unable to acquire

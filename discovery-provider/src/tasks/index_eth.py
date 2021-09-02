@@ -57,23 +57,23 @@ def index_eth_transfer_events(db, redis):
     end_block = scanner.get_suggested_scan_end_block()
     if start_block > end_block:
         logger.info(
-            f"Start block ({start_block}) cannot be greater then end block ({end_block})"
+            f"index_eth.py | Start block ({start_block}) cannot be greater then end block ({end_block})"
         )
         return
 
-    logger.info(f"Scanning events from blocks {start_block} - {end_block}")
+    logger.info(f"index_eth.py | Scanning events from blocks {start_block} - {end_block}")
     start = time.time()
 
     # Run the scan
     result, total_chunks_scanned = scanner.scan(start_block, end_block)
 
     logger.info(
-        "Reached end block for eth transfer events... saving events to database"
+        "index_eth.py | Reached end block for eth transfer events... saving events to database"
     )
     scanner.save(end_block)
     duration = time.time() - start
     logger.info(
-        f"Scanned total {len(result)} Transfer events, in {duration} seconds, \
+        f"index_eth.py | Scanned total {len(result)} Transfer events, in {duration} seconds, \
             total {total_chunks_scanned} chunk scans performed"
     )
 

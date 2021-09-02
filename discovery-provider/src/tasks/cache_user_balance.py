@@ -204,6 +204,7 @@ def refresh_user_ids(
         )
 
         # Fetch balances
+        # pylint: disable=too-many-nested-blocks
         for user_id, wallets in user_id_metadata.items():
             try:
                 owner_wallet = wallets["owner_wallet"]
@@ -230,34 +231,35 @@ def refresh_user_ids(
                         associated_balance += (
                             balance + delegation_balance + stake_balance
                         )
-                    for wallet in wallets["associated_wallets"]["sol"]:
-                        try:
-                            root_sol_account = PublicKey(wallet)
-                            derived_account, _ = PublicKey.find_program_address(
-                                [
-                                    bytes(root_sol_account),
-                                    bytes(SPL_TOKEN_ID_PK),
-                                    bytes(WAUDIO_PROGRAM_PUBKEY),  # type: ignore
-                                ],
-                                ASSOCIATED_TOKEN_PROGRAM_ID_PK,
-                            )
-                            bal_info = waudio_token.get_account_info(derived_account)
-                            associated_waudio_balance: str = bal_info["result"][
-                                "value"
-                            ]["amount"]
-                            associated_sol_balance += int(associated_waudio_balance)
-                        except Exception as e:
-                            logger.error(
-                                " ".join(
+                    if waudio_token is not None:
+                        for wallet in wallets["associated_wallets"]["sol"]:
+                            try:
+                                root_sol_account = PublicKey(wallet)
+                                derived_account, _ = PublicKey.find_program_address(
                                     [
-                                        "cache_user_balance.py | Error fetching associated ",
-                                        "wallet balance for user %s, wallet %s: %s",
-                                    ]
-                                ),
-                                user_id,
-                                wallet,
-                                e,
-                            )
+                                        bytes(root_sol_account),
+                                        bytes(SPL_TOKEN_ID_PK),
+                                        bytes(WAUDIO_PROGRAM_PUBKEY),  # type: ignore
+                                    ],
+                                    ASSOCIATED_TOKEN_PROGRAM_ID_PK,
+                                )
+                                bal_info = waudio_token.get_account_info(derived_account)
+                                associated_waudio_balance: str = bal_info["result"][
+                                    "value"
+                                ]["amount"]
+                                associated_sol_balance += int(associated_waudio_balance)
+                            except Exception as e:
+                                logger.error(
+                                    " ".join(
+                                        [
+                                            "cache_user_balance.py | Error fetching associated ",
+                                            "wallet balance for user %s, wallet %s: %s",
+                                        ]
+                                    ),
+                                    user_id,
+                                    wallet,
+                                    e,
+                                )
 
                 if wallets["bank_account"] is not None:
                     if waudio_token is None:

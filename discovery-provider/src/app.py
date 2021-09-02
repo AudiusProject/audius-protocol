@@ -489,11 +489,11 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("aggregate_metrics_lock")
     redis_inst.delete("synchronize_metrics_lock")
     redis_inst.delete("solana_plays_lock")
-    redis_inst.delete("index_challenges")
+    redis_inst.delete("index_challenges_lock")
     redis_inst.delete("user_bank_lock")
-    redis_inst.delete("index_eth")
-    redis_inst.delete("index_oracles")
-    redis_inst.delete("solana_rewards_manager")
+    redis_inst.delete("index_eth_lock")
+    redis_inst.delete("index_oracles_lock")
+    redis_inst.delete("solana_rewards_manager_lock")
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object
