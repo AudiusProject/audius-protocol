@@ -131,8 +131,8 @@ def refresh_user_ids(
         # Balances from current user lookup may
         # not be present in the db, so make those
         not_present_set = set(user_ids) - {user.user_id for user in existing_user_balances}
-        new_balances = [
-            UserBalance(user_id=user_id, balance=0, associated_wallets_balance=0)
+        new_balances: List[UserBalance] = [
+            UserBalance(user_id=user_id, balance="0", associated_wallets_balance="0", associated_sol_wallets_balance="0")
             for user_id in not_present_set
         ]
         if new_balances:
