@@ -126,7 +126,21 @@ def refresh_user_ids(
         existing_user_balances: List[UserBalance] = (
             (session.query(UserBalance)).filter(UserBalance.user_id.in_(user_ids)).all()
         )
-        user_balances = {user.user_id: user for user in existing_user_balances}
+        all_user_balance = existing_user_balances
+
+        # Balances from current user lookup may
+        # not be present in the db, so make those
+        not_present_set = set(user_ids) - {user.user_id for user in existing_user_balances}
+        new_balances = [
+            UserBalance(user_id=user_id, balance=0, associated_wallets_balance=0)
+            for user_id in not_present_set
+        ]
+        if new_balances:
+            session.add_all(new_balances)
+            all_user_balance = existing_user_balances + new_balances
+            logger.info(f"cache_user_balance.py | adding new users: {not_present_set}")
+
+        user_balances = {user.user_id: user for user in all_user_balance}
 
         # Grab the users & associated_wallets we need to refresh
         user_associated_wallet_query: List[Tuple[int, str, str, str]] = (
