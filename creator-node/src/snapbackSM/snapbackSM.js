@@ -204,18 +204,22 @@ class SnapbackSM {
   }
 
   logDebug (msg) {
+    if (typeof msg === 'object') msg = JSON.stringify(msg)
     logger.debug(`SnapbackSM DEBUG: ${msg}`)
   }
 
   log (msg) {
+    if (typeof msg === 'object') msg = JSON.stringify(msg)
     logger.info(`SnapbackSM: ${msg}`)
   }
 
   logWarn (msg) {
+    if (typeof msg === 'object') msg = JSON.stringify(msg)
     logger.warn(`SnapbackSM WARNING: ${msg}`)
   }
 
   logError (msg) {
+    if (typeof msg === 'object') msg = JSON.stringify(msg)
     logger.error(`SnapbackSM ERROR: ${msg}`)
   }
 
@@ -386,22 +390,22 @@ class SnapbackSM {
         wallet,
         phase,
         reconfigType,
-        unhealthyReplicas,
+        unhealthyReplicas: unhealthyReplicas.toString(),
         currPrimary: primary,
         currSecondary1: secondary1,
         currSecondary2: secondary2,
         newPrimary,
         newSecondary1,
         newSecondary2,
-        rollOff
+        rollOff: rollOff.toString()
       }
 
       newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
 
       // If snapback is not enabled, log reconfig op without issuing.
       if (!issueReconfig) {
-        this.log({ ...baseLogObj, issueUpdateReplicaSetOpResult: { event: 'DISABLED RECONFIG', val: this.highestEnabledReconfigMode } })
-        response.errorMsg = `[issueUpdateReplicaSetOp] Reconfig [DISABLED]: ${JSON.stringify(baseLogObj)}`
+        let disabledLog = { ...baseLogObj, issueUpdateReplicaSetOpResult: { event: 'DISABLED RECONFIG', val: { highestEnabledReconfigMode: this.highestEnabledReconfigMode } } }
+        this.log(disabledLog)
         return response
       }
 
@@ -411,9 +415,9 @@ class SnapbackSM {
         // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
         // selected as part of the new replica set, do not issue reconfig
         if (!this.peerSetManager.endpointToSPIdMap[endpt]) {
-          const disabledLog = { ...baseLogObj, issueUpdateReplicaSetOpResult: { event: 'SKIPPED RECONFIG DUE TO SP ID UNAVAILABILITY', val: endpt } }
-          this.logError(disabledLog)
-          response.errorMsg = `[issueUpdateReplicaSetOp] ${JSON.stringify(disabledLog)} unable to find valid spId for ${endpt}. Skipping reconfig.`
+          const skippedLog = { ...baseLogObj, issueUpdateReplicaSetOpResult: { event: 'SKIPPED RECONFIG DUE TO SP ID UNAVAILABILITY', val: endpt } }
+          this.logError(skippedLog)
+          response.errorMsg = `[issueUpdateReplicaSetOp] ${JSON.stringify(skippedLog)} unable to find valid spId for ${endpt}. Skipping reconfig.`
           return response
         }
         newReplicaSetSPIds.push(this.peerSetManager.endpointToSPIdMap[endpt])
