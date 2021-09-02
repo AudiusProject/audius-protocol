@@ -354,13 +354,12 @@ class SnapbackSM {
    * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
   */
   async issueUpdateReplicaSetOp (userId, wallet, primary, secondary1, secondary2, unhealthyReplicas, healthyNodes, replicaSetNodesToUserClockStatusesMap) {
-    this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=[${unhealthyReplicas}]`)
-
     const unhealthyReplicasSet = new Set(unhealthyReplicas)
     let response = { errorMsg: null, issuedReconfig: false }
     let newReplicaSetEndpoints = []
     let newReplicaSetSPIds = []
     let phase = ''
+    let baseLogObj = {}
     try {
       // Generate new replica set
       phase = issueUpdateReplicaSetOpPhases.DETERMINE_NEW_REPLICA_SET
@@ -369,7 +368,8 @@ class SnapbackSM {
         newSecondary1,
         newSecondary2,
         issueReconfig,
-        reconfigType
+        reconfigType,
+        rollOff
       } = await this.determineNewReplicaSet({
         wallet,
         secondary1,
@@ -380,11 +380,28 @@ class SnapbackSM {
         replicaSetNodesToUserClockStatusesMap
       })
 
+      baseLogObj = {
+        issueUpdateReplicaSetOpResult: {},
+        userId,
+        wallet,
+        phase,
+        reconfigType,
+        unhealthyReplicas,
+        currPrimary: primary,
+        currSecondary1: secondary1,
+        currSecondary2: secondary2,
+        newPrimary,
+        newSecondary1,
+        newSecondary2,
+        rollOff
+      }
+
       newReplicaSetEndpoints = [newPrimary, newSecondary1, newSecondary2]
 
-      // If snapback is not enabled, Log reconfig op without issuing.
+      // If snapback is not enabled, log reconfig op without issuing.
       if (!issueReconfig) {
-        this.log(`[issueUpdateReplicaSetOp] Reconfig [DISABLED]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`)
+        this.log({ ...baseLogObj, issueUpdateReplicaSetOpResult: { event: 'DISABLED RECONFIG', val: this.highestEnabledReconfigMode } })
+        response.errorMsg = `[issueUpdateReplicaSetOp] Reconfig [DISABLED]: ${JSON.stringify(baseLogObj)}`
         return response
       }
 
@@ -394,8 +411,8 @@ class SnapbackSM {
         // If for some reason any node in the new replica set is not registered on chain as a valid SP and is
         // selected as part of the new replica set, do not issue reconfig
         if (!this.peerSetManager.endpointToSPIdMap[endpt]) {
-          this.logError(response.errorMsg)
-          response.errorMsg = `[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} phase=${phase} unable to find valid SPs from new replica set=[${newReplicaSetEndpoints}] | new replica set spIds=[${newReplicaSetSPIds}] | reconfig type=[${reconfigType}]. Skipping reconfig.`
+          this.logError({ ...baseLogObj, issueUpdateReplicaSetOpResult: { event: 'SKIPPED RECONFIG DUE TO SP ID UNAVAILABILITY', val: endpt } })
+          response.errorMsg = `[issueUpdateReplicaSetOp] ${JSON.stringify(baseLogObj)} unable to find valid spId for ${endpt}. Skipping reconfig.`
           return response
         }
         newReplicaSetSPIds.push(this.peerSetManager.endpointToSPIdMap[endpt])
@@ -426,11 +443,11 @@ class SnapbackSM {
         syncType: SyncType.Recurring
       })
 
-      this.log(`[issueUpdateReplicaSetOp] Reconfig [SUCCESS]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | reconfig type=[${reconfigType}]`)
+      this.log({ ...baseLogObj, issueUpdateReplicaSetOpResult: { event: 'SUCCESSFUL RECONFIG' } })
     } catch (e) {
-      const errorMsg = `[issueUpdateReplicaSetOp] Reconfig [ERROR]: userId=${userId} wallet=${wallet} phase=${phase} old replica set=[${primary},${secondary1},${secondary2}] | new replica set=[${newReplicaSetEndpoints}] | Error: ${e.toString()}\n${e.stack}`
-      this.logError(response.errorMsg)
+      const errorMsg = `[issueUpdateReplicaSetOp] Reconfig [ERROR]: ${JSON.stringify(baseLogObj)} | error=${e.toString()}\n${e.stack}`
       response.errorMsg = errorMsg
+      this.logError({ ...baseLogObj, issueUpdateReplicaSetOpResult: { event: 'ERROR RECONFIG', val: `${e.toString()}\n${e.stack}` } })
       return response
     }
 
@@ -472,7 +489,7 @@ class SnapbackSM {
    * }
    */
   async determineNewReplicaSet ({ primary, secondary1, secondary2, wallet, unhealthyReplicasSet, healthyNodes, replicaSetNodesToUserClockStatusesMap }) {
-    let response = { newPrimary: null, newSecondary1: null, newSecondary2: null, issueReconfig: false, reconfigType: null }
+    let response = { newPrimary: null, newSecondary1: null, newSecondary2: null, issueReconfig: false, reconfigType: null, rollOff: [] }
 
     const currentReplicaSet = [primary, secondary1, secondary2]
     const healthyReplicaSet = new Set(currentReplicaSet.filter(node => !unhealthyReplicasSet.has(node)))
@@ -496,9 +513,19 @@ class SnapbackSM {
         response.newSecondary2 = newReplicaNodes[0]
         response.issueReconfig = this.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
         response.reconfigType = RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
+
+        response.rollOff = [primary]
       } else {
         // If one secondary is unhealthy, select a new secondary
-        const currentHealthySecondary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
+        // const currentHealthySecondary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
+        let currentHealthySecondary
+        if (unhealthyReplicasSet.has(secondary1)) {
+          currentHealthySecondary = secondary2
+          response.rollOff.push(secondary1)
+        } else {
+          currentHealthySecondary = secondary1
+          response.rollOff.push(secondary2)
+        }
         response.newPrimary = primary
         response.newSecondary1 = currentHealthySecondary
         response.newSecondary2 = newReplicaNodes[0]
@@ -508,7 +535,14 @@ class SnapbackSM {
     } else if (unhealthyReplicasSet.size === 2) {
       if (unhealthyReplicasSet.has(primary)) {
         // If primary + secondary is unhealthy, use other healthy secondary as primary and 2 random secondaries
-        response.newPrimary = !unhealthyReplicasSet.has(secondary1) ? secondary1 : secondary2
+        response.rollOff.push(primary)
+        if (unhealthyReplicasSet.has(secondary1)) {
+          response.newPrimary = secondary2
+          response.rollOff.push(secondary1)
+        } else {
+          response.newPrimary = secondary1
+          response.rollOff.push(secondary2)
+        }
         response.issueReconfig = this.isReconfigEnabled(RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key)
         response.reconfigType = RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
       } else {
@@ -516,6 +550,8 @@ class SnapbackSM {
         response.newPrimary = primary
         response.issueReconfig = this.isReconfigEnabled(RECONFIG_MODES.MULTIPLE_SECONDARIES.key)
         response.reconfigType = RECONFIG_MODES.MULTIPLE_SECONDARIES.key
+
+        response.rollOff = [secondary1, secondary2]
       }
       response.newSecondary1 = newReplicaNodes[0]
       response.newSecondary2 = newReplicaNodes[1]
