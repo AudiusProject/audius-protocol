@@ -40,7 +40,7 @@ from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
 from src.solana.solana_client_manager import SolanaClientManager
-from src.tasks.index_eth import delete_last_scanned_bdelete_last_scanned_block, delete_last_scanned_block
+from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 
 # these global vars will be set in create_celery function
 web3endpoint = None
@@ -325,6 +325,10 @@ def configure_flask(test_config, app, mode="app"):
 
     return app
 
+def delete_last_scanned_eth_block_redis(redis_inst):
+    logger.info("index_eth.py | deleting existing redis scanned block on start")
+    redis_inst.delete(eth_indexing_last_scanned_block_key)
+    logger.info("index_eth.py | successfully deleted existing redis scanned block on start")
 
 def configure_celery(flask_app, celery, test_config=None):
     database_url = shared_config["db"]["url"]
@@ -481,7 +485,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst = redis.Redis.from_url(url=redis_url)
 
     # Clear last scanned redis block on startup
-    delete_last_scanned_block(redis_inst)
+    delete_last_scanned_eth_block_redis(redis_inst)
 
     # Clear existing locks used in tasks if present
     redis_inst.delete("disc_prov_lock")
