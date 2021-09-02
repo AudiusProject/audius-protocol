@@ -40,6 +40,7 @@ from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
 from src.solana.solana_client_manager import SolanaClientManager
+from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 
 # these global vars will be set in create_celery function
 web3endpoint = None
@@ -324,6 +325,10 @@ def configure_flask(test_config, app, mode="app"):
 
     return app
 
+def delete_last_scanned_eth_block_redis(redis_inst):
+    logger.info("index_eth.py | deleting existing redis scanned block on start")
+    redis_inst.delete(eth_indexing_last_scanned_block_key)
+    logger.info("index_eth.py | successfully deleted existing redis scanned block on start")
 
 def configure_celery(flask_app, celery, test_config=None):
     database_url = shared_config["db"]["url"]
@@ -478,6 +483,10 @@ def configure_celery(flask_app, celery, test_config=None):
 
     # Initialize Redis connection
     redis_inst = redis.Redis.from_url(url=redis_url)
+
+    # Clear last scanned redis block on startup
+    delete_last_scanned_eth_block_redis(redis_inst)
+
     # Clear existing locks used in tasks if present
     redis_inst.delete("disc_prov_lock")
     redis_inst.delete("network_peers_lock")
@@ -489,11 +498,11 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("aggregate_metrics_lock")
     redis_inst.delete("synchronize_metrics_lock")
     redis_inst.delete("solana_plays_lock")
-    redis_inst.delete("index_challenges")
+    redis_inst.delete("index_challenges_lock")
     redis_inst.delete("user_bank_lock")
-    redis_inst.delete("index_eth")
-    redis_inst.delete("index_oracles")
-    redis_inst.delete("solana_rewards_manager")
+    redis_inst.delete("index_eth_lock")
+    redis_inst.delete("index_oracles_lock")
+    redis_inst.delete("solana_rewards_manager_lock")
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object

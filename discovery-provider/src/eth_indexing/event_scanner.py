@@ -16,7 +16,6 @@ from web3._utils.events import get_event_data
 from eth_abi.codec import ABICodec
 
 from src.models.models import AssociatedWallet, EthBlock, User
-from src.utils.helpers import redis_set_and_dump, redis_get_or_restore
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 
 
@@ -94,7 +93,7 @@ class EventScanner:
     def restore(self):
         """Restore the last scan state from redis.
         If value not found in redis, restore from database."""
-        restored = redis_get_or_restore(self.redis, eth_indexing_last_scanned_block_key)
+        restored = self.redis.get(eth_indexing_last_scanned_block_key)
         if not restored:
             with self.db.scoped_session() as session:
                 result = session.query(EthBlock.last_scanned_block).first()
@@ -112,8 +111,7 @@ class EventScanner:
         logger.info(
             f"event_scanner.py | Saving last scanned block ({self.last_scanned_block}) to redis"
         )
-        redis_set_and_dump(
-            self.redis,
+        self.redis.set(
             eth_indexing_last_scanned_block_key,
             str(self.last_scanned_block),
         )
@@ -187,6 +185,9 @@ class EventScanner:
                 .all()
             )
             user_ids = [user_id for [user_id] in result]
+            logger.info(
+                f"event_scanner.py | Enqueueing user ids {user_ids} to immediate balance refresh queue"
+            )
             enqueue_immediate_balance_refresh(self.redis, user_ids)
 
         # Return a pointer that allows us to look up this event later if needed
