@@ -43,6 +43,8 @@ const fsStat = promisify(fs.stat)
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
 const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
+const IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT = 5
+const IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_TIMEOUTMS = 5000
 
 /**
  * Helper method to stream file from file system on creator node
@@ -383,45 +385,61 @@ module.exports = function (app) {
 
     const dirCID = resizeResp.dir.dirCID
 
-    // build ipfs add array
-    let ipfsAddArray = []
-    try {
-      await Promise.all(resizeResp.files.map(async function (file) {
-        const fileBuffer = await fs.readFile(file.storagePath)
-        ipfsAddArray.push({
-          path: file.sourceFile,
-          content: fileBuffer
-        })
-      }))
-    } catch (e) {
-      throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
-    }
-
-    // Re-compute dirCID from all image files to ensure it matches dirCID returned above
-    let ipfsAddRespArr
-    try {
-      const ipfsAddResp = await ipfs.add(
-        ipfsAddArray,
-        {
-          pin: false,
-          onlyHash: true,
-          timeout: 1000
-        }
-      )
-      ipfsAddRespArr = []
-      for await (const resp of ipfsAddResp) {
-        ipfsAddRespArr.push(resp)
+    /**
+     * Perform IPFS verification with retries
+     *
+     * Use retries because for some reason IPFS (very rarely) fails due to some non-deterministic error. Seems to be with the verification step; the files are correct.
+     * Wait fixed timeout between each retry, hopefully addresses IPFS non-deterministic errors
+     */
+    const ipfsVerificationWithRetries = async function (retriesLeft) {
+      // build ipfs add array
+      let ipfsAddArray = []
+      try {
+        await Promise.all(resizeResp.files.map(async function (file) {
+          const fileBuffer = await fs.readFile(file.storagePath)
+          ipfsAddArray.push({
+            path: file.sourceFile,
+            content: fileBuffer
+          })
+        }))
+      } catch (e) {
+        throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
       }
-    } catch (e) {
-      // If ipfs.add op fails, log error and move on, since this is an ipfs error and not an image upload error
-      req.logger.info(`Error calling ipfs.add on dir to re-compute dirCID ${dirCID} ${e}`)
+
+      // Re-compute dirCID from all image files to ensure it matches dirCID returned above
+      let ipfsAddRespArr
+      try {
+        const ipfsAddResp = await ipfs.add(
+          ipfsAddArray,
+          {
+            pin: false,
+            onlyHash: true,
+            timeout: 1000
+          }
+        )
+        ipfsAddRespArr = []
+        for await (const resp of ipfsAddResp) {
+          ipfsAddRespArr.push(resp)
+        }
+      } catch (e) {
+        // If ipfs.add op fails, log error and move on, since this is an ipfs error and not an image upload error
+        req.logger.info(`Error calling ipfs.add on dir to re-compute dirCID ${dirCID} ${e}`)
+      }
+
+      // Ensure actual and expected dirCIDs match
+      const expectedDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
+      if (expectedDirCID !== dirCID) {
+        if (retriesLeft > 0) {
+          req.logger.error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}. ${retriesLeft} retries remaining out of ${IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT}. Retrying...`)
+          await timeout(IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_TIMEOUTMS)
+          await ipfsVerificationWithRetries(retriesLeft - 1)
+        } else {
+          throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}. Failed after all ${IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT} retries.`)
+        }
+      }
     }
 
-    // Ensure actual and expected dirCIDs match
-    const expectedDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
-    if (expectedDirCID !== dirCID) {
-      throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}`)
-    }
+    await ipfsVerificationWithRetries(IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT)
 
     // Record image file entries in DB
     const transaction = await models.sequelize.transaction()
