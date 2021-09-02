@@ -18,7 +18,10 @@ import { setAudiusAccountUser } from 'services/LocalStorage'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
 import { FeatureFlags } from 'services/remote-config'
-import { getFeatureEnabled } from 'services/remote-config/Provider'
+import {
+  getFeatureEnabled,
+  waitForRemoteConfig
+} from 'services/remote-config/Provider'
 import SolanaClient from 'services/solana-client/SolanaClient'
 import { getUserId } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
@@ -107,6 +110,8 @@ export function* fetchOpenSeaAssets(user) {
 }
 
 export function* fetchSolanaCollectiblesForWallets(wallets) {
+  yield call(waitForRemoteConfig)
+
   if (!getFeatureEnabled(FeatureFlags.SOLANA_COLLECTIBLES_ENABLED)) {
     return {}
   }
@@ -115,6 +120,8 @@ export function* fetchSolanaCollectiblesForWallets(wallets) {
 }
 
 export function* fetchSolanaCollectibles(user) {
+  yield call(waitForRemoteConfig)
+
   if (!getFeatureEnabled(FeatureFlags.SOLANA_COLLECTIBLES_ENABLED)) {
     return
   }
@@ -386,7 +393,9 @@ export function* updateProfileAsync(action) {
         /* cache */ false,
         /* asUrl */ false
       )
+      const collectibles = metadata.collectibles
       metadata = merge(metadataFromIPFS, metadata)
+      metadata.collectibles = { ...collectibles }
     } catch (e) {
       // Although we failed to fetch the existing user metadata, this should only
       // happen if the user's account data is unavailable across the whole network.
