@@ -414,6 +414,11 @@ def index_blocks(self, db, blocks_list):
                     )
                     continue
 
+                if skip_tx_hash == 'commit':
+                    # The whole block is worth skipping because we failed at the database commit
+                    logger.info(f"index.py | Skipping all txs in block {block.hash}")
+                    break
+
                 if skip_tx_hash is not None and skip_tx_hash == tx_hash:
                     logger.info(f"index.py | Skipping tx {tx_hash}")
                     continue
@@ -607,7 +612,10 @@ def index_blocks(self, db, blocks_list):
                 )
 
                 track_lexeme_state_changed = user_state_changed or track_state_changed
-                session.commit()
+                try:
+                    session.commit()
+                except Exception as e:
+                    raise IndexingError("session.commit", block_number, block_hash, 'commit', str(e))
                 logger.info(
                     f"index.py | session commmited to db for block=${block_number}"
                 )
