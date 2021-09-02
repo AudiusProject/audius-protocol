@@ -175,13 +175,17 @@ class EventScanner:
                 .filter(User.is_current == True)
                 .filter(User.wallet.in_(transfer_event_wallets))
             ).all()
+            user_set = {user_id for [user_id] in user_result}
+
             associated_wallet_result = (
                 session.query(AssociatedWallet.user_id)
                 .filter(AssociatedWallet.is_current == True)
                 .filter(AssociatedWallet.is_delete == False)
                 .filter(AssociatedWallet.wallet.in_(transfer_event_wallets))
             ).all()
-            user_ids = list(set(user_result).union(set(associated_wallet_result)))
+            associated_wallet_set = {user_id for [user_id] in associated_wallet_result}
+
+            user_ids = list(user_set.union(associated_wallet_set))
             if user_ids:
                 logger.info(
                     f"event_scanner.py | Enqueueing user ids {user_ids} to immediate balance refresh queue"
