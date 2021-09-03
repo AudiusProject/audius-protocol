@@ -114,7 +114,7 @@ class CreateTokenAccount(TypedDict):
     eth_address: str
 
 def parse_create_token_data(data: str) -> CreateTokenAccount:
-    """Parse Transfer instruction data submitted to Audius Rewards Manager program
+    """Parse Transfer instruction data submitted to Audius Claimable Token program
 
     Instruction struct:
     pub struct TransferArgs {
@@ -131,8 +131,7 @@ def get_valid_instruction(
 ) -> Optional[TransactionMessageInstruction]:
     """Checks that the tx is valid
     checks for the transaction message for correct instruction log
-    checks accounts keys for rewards manager account
-    checks for rewards manager program in instruction
+    checks accounts keys for claimable token program
     """
     try:
         account_keys = tx_message["accountKeys"]
