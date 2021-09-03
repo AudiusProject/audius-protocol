@@ -230,6 +230,6 @@
   },
   "peerDependencies": {
     "@solana/spl-token": "0.1.6",
-    "@solana/web3.js": "1.24.0"
+    "@solana/web3.js": "1.24.1"
   }
 }
