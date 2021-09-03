@@ -28,6 +28,7 @@ def user_state_update(
     update_task: DatabaseTask,
     session: Session,
     ipfs_metadata,
+    blacklisted_cids,
     user_factory_txs,
     block_number,
     block_timestamp,
@@ -88,21 +89,24 @@ def user_state_update(
                     # (even if multiple operations are present)
 
                     if event_type == user_event_types_lookup["update_multihash"]:
-                        user_record = parse_user_event(
-                            self,
-                            user_contract,
-                            update_task,
-                            session,
-                            tx_receipt,
-                            block_number,
-                            entry,
-                            event_type,
-                            user_events_lookup[user_id]["user"],
-                            ipfs_metadata[
-                                user_events_lookup[user_id]["user"].metadata_multihash
-                            ],
-                            block_timestamp,
+                        metadata_multihash = helpers.multihash_digest_to_cid(
+                            entry["args"]._multihashDigest
                         )
+
+                        if metadata_multihash not in blacklisted_cids:
+                            user_record = parse_user_event(
+                                self,
+                                user_contract,
+                                update_task,
+                                session,
+                                tx_receipt,
+                                block_number,
+                                entry,
+                                event_type,
+                                user_events_lookup[user_id]["user"],
+                                ipfs_metadata[metadata_multihash],
+                                block_timestamp,
+                            )
                     else:
                         user_record = parse_user_event(
                             self,
@@ -227,14 +231,6 @@ def parse_user_event(
         metadata_multihash = helpers.multihash_digest_to_cid(
             event_args._multihashDigest
         )
-        is_blacklisted = is_blacklisted_ipld(session, metadata_multihash)
-        # If cid is in blacklist, do not update user
-        if is_blacklisted:
-            logger.info(
-                f"index.py | users.py | Encountered blacklisted CID:"
-                f"{metadata_multihash} in indexing update user metadata multihash"
-            )
-            return None
         user_record.metadata_multihash = metadata_multihash
     elif event_type == user_event_types_lookup["update_name"]:
         user_record.name = helpers.bytes32_to_str(event_args._name)

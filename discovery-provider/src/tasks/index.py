@@ -503,12 +503,12 @@ def index_blocks(self, db, blocks_list):
         with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
             try:
                 # bulk process operations once all tx's for block have been parsed
-                ipfs_metadata[None] = user_metadata_format
                 total_user_changes, user_ids = user_state_update(
                     self,
                     update_task,
                     session,
                     ipfs_metadata,
+                    blacklisted_cids,
                     user_factory_txs,
                     block_number,
                     block_timestamp,
@@ -520,7 +520,6 @@ def index_blocks(self, db, blocks_list):
                     f" user_state_changed={user_state_changed} for block={block_number}"
                 )
 
-                ipfs_metadata[None] = track_metadata_format
                 total_track_changes, track_ids = track_state_update(
                     self,
                     update_task,
