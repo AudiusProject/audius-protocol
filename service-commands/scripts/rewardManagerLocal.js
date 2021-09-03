@@ -82,7 +82,6 @@ const createSenderInstructionSchema = new Map([
 const createSenderLocal = async ethAddress => {
   const protocolDir = getEnv('PROTOCOL_DIR')
   const solanaConfig = require(`${protocolDir}/solana-programs/solana-program-config.json`)
-  console.log({ solanaConfig })
   const ownerWalletBytes = solanaConfig.ownerWallet
   const feepayerWalletBytes = solanaConfig.feePayerWallet
   const connection = new solanaWeb3.Connection('http://localhost:8899')
