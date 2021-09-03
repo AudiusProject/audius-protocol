@@ -92,9 +92,8 @@ def user_state_update(
                         metadata_multihash = helpers.multihash_digest_to_cid(
                             entry["args"]._multihashDigest
                         )
-
-                        if metadata_multihash not in blacklisted_cids:
-                            user_record = parse_user_event(
+                        user_record = (
+                            parse_user_event(
                                 self,
                                 user_contract,
                                 update_task,
@@ -107,6 +106,9 @@ def user_state_update(
                                 ipfs_metadata[metadata_multihash],
                                 block_timestamp,
                             )
+                            if metadata_multihash not in blacklisted_cids
+                            else None
+                        )
                     else:
                         user_record = parse_user_event(
                             self,
