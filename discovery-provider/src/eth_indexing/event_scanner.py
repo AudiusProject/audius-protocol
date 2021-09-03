@@ -21,7 +21,8 @@ from src.queries.get_balances import enqueue_immediate_balance_refresh
 
 logger = logging.getLogger(__name__)
 
-eth_indexing_last_scanned_block_key = "eth_indexing_last_scanned_block"
+# version 2 added to reset existing last indexed eth block
+eth_indexing_last_scanned_block_key = "eth_indexing_last_scanned_block_2"
 
 # How many times we try to re-attempt a failed JSON-RPC call
 MAX_REQUEST_RETRIES = 30
