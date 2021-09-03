@@ -86,21 +86,38 @@ def user_state_update(
                     # Add or update the value of the user record for this block in user_events_lookup,
                     # ensuring that multiple events for a single user result in only 1 row insert operation
                     # (even if multiple operations are present)
-                    user_record = parse_user_event(
-                        self,
-                        user_contract,
-                        update_task,
-                        session,
-                        tx_receipt,
-                        block_number,
-                        entry,
-                        event_type,
-                        user_events_lookup[user_id]["user"],
-                        ipfs_metadata[
-                            user_events_lookup[user_id]["user"].metadata_multihash
-                        ],
-                        block_timestamp,
-                    )
+
+                    if event_type == user_event_types_lookup["update_multihash"]:
+                        user_record = parse_user_event(
+                            self,
+                            user_contract,
+                            update_task,
+                            session,
+                            tx_receipt,
+                            block_number,
+                            entry,
+                            event_type,
+                            user_events_lookup[user_id]["user"],
+                            ipfs_metadata[
+                                user_events_lookup[user_id]["user"].metadata_multihash
+                            ],
+                            block_timestamp,
+                        )
+                    else:
+                        user_record = parse_user_event(
+                            self,
+                            user_contract,
+                            update_task,
+                            session,
+                            tx_receipt,
+                            block_number,
+                            entry,
+                            event_type,
+                            user_events_lookup[user_id]["user"],
+                            None,
+                            block_timestamp,
+                        )
+
                     if user_record is not None:
                         user_events_lookup[user_id]["events"].append(event_type)
                         user_events_lookup[user_id]["user"] = user_record
