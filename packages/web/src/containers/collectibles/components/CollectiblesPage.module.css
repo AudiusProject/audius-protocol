@@ -192,6 +192,7 @@
   margin-bottom: 16px;
   font-weight: var(--font-medium);
   line-height: 125%;
+  overflow-wrap: break-word;
 }
 
 .link {
@@ -260,6 +261,10 @@
   pointer-events: none;
   cursor: default;
   max-height: 70vh;
+}
+
+.detailsMediaWrapper.svg {
+  width: 40vw;
 }
 
 .detailsMediaWrapper video {
