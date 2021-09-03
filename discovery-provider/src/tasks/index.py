@@ -265,7 +265,7 @@ def fetch_ipfs_metadata(
                     cid = multihash.to_b58_string(buf)
                     if not is_blacklisted_ipld(session, cid):
                         cids.add((cid, txhash))
-                        cid_type[metadata_multihash] = "track"
+                        cid_type[cid] = "track"
                     else:
                         blacklisted_cids.add(cid)
 
