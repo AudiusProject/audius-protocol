@@ -253,9 +253,9 @@ def parse_user_bank_transaction(
     )
 
     process_user_bank_tx_details(session, redis, tx_info, tx_sig, parsed_timestamp)
-    # session.add(
-    #     UserBankTransaction(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp)
-    # )
+    session.add(
+        UserBankTransaction(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp)
+    )
 
 
 def process_user_bank_txs():
