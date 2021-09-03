@@ -44,7 +44,6 @@ const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
 const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
 const IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT = 5
-const IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_TIMEOUT_MS = 5000
 
 /**
  * Helper method to stream file from file system on creator node
@@ -368,7 +367,6 @@ const _dirCIDIPFSVerificationWithRetries = async function (req, resizeResp, dirC
   if (expectedDirCID !== dirCID) {
     if (retriesLeft > 0) {
       req.logger.error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}. ${retriesLeft} retries remaining out of ${IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT}. Retrying...`)
-      await timeout(IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_TIMEOUT_MS)
       await _dirCIDIPFSVerificationWithRetries(req, resizeResp, dirCID, retriesLeft - 1)
     } else {
       throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}. Failed after all ${IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT} retries.`)
