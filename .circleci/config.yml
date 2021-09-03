@@ -15,6 +15,11 @@ jobs:
     parallelism: 1
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
     # uses medium (2vcpu/4gb) by default
+    parameters:
+      mad-dog-type:
+        description: "test-ci or test-nightly"
+        default: 'test-ci'
+        type: string
     resource_class: large # 4vcpu/8gb
     machine:
       image: ubuntu-1604:201903-01 # recommended linux image - includes Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
@@ -198,7 +203,7 @@ jobs:
             docker ps
             export ipfsHost="localhost"
             export ipfsPort=6001
-            npm run start test-ci verbose
+            npm run start << parameters.mad-dog-type >> verbose
 
   test-libs:
     docker:
@@ -717,6 +722,9 @@ workflows:
           name: test-identity-service-nightly
       - test-solana-programs:
           name: test-solana-programs-nightly
+      - test-mad-dog-e2e:
+          name: test-mad-dog-e2e-nightly
+          mad-dog-type: test-nightly
     triggers:
       - schedule:
           cron: '0 5 * * *'

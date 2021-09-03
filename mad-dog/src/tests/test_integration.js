@@ -45,9 +45,8 @@ const {
   addPlaylistTrack
 } = ServiceCommands
 
-// NOTE - # of ticks = (TEST_DURATION_SECONDS / TICK_INTERVAL_SECONDS) - 1
-const TICK_INTERVAL_SECONDS = 5
-const TEST_DURATION_SECONDS = 100
+const DEFAULT_TICK_INTERVAL_SECONDS = 5
+const DEFAULT_TEST_DURATION_SECONDS = 100
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 const TEMP_IMG_STORAGE_PATH = path.resolve('./local-storage/tmp-imgs/')
 
@@ -68,6 +67,7 @@ module.exports = coreIntegration = async ({
   executeAll,
   executeOne,
   numCreatorNodes,
+  testDurationSeconds,
   enableFaultInjection
 }) => {
   // Begin: Test Setup
@@ -107,9 +107,10 @@ module.exports = coreIntegration = async ({
   const failedUploads = {}
 
   // Create the Emitter Based Test
+  // NOTE - # of ticks = (duration / interval) - 1
   const emitterTest = new EmitterBasedTest({
-    tickIntervalSeconds: TICK_INTERVAL_SECONDS,
-    testDurationSeconds: TEST_DURATION_SECONDS
+    tickIntervalSeconds: DEFAULT_TICK_INTERVAL_SECONDS,
+    testDurationSeconds: testDurationSeconds || DEFAULT_TEST_DURATION_SECONDS
   })
 
   const tracksAttemptedRepost = []
@@ -241,7 +242,7 @@ module.exports = coreIntegration = async ({
           const trackId = uploadedTracks[_.random(uploadedTracks.length - 1)].trackId
           try {
             // add track to playlist
-            const playlistId = createdPlaylists[userId][createdPlaylists[userId].length - 1]
+            const playlistId = createdPlaylists[userId][_.random(createdPlaylists[userId].length - 1)]
             await executeOne(walletIndex, l =>
               addPlaylistTrack(l, playlistId, trackId)
             )
@@ -562,7 +563,7 @@ module.exports = coreIntegration = async ({
     }
   }
 
-  verifyThresholds()
+  verifyThresholds(emitterTest)
   printTestSummary()
 
   return {}
@@ -728,8 +729,8 @@ async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) 
   })
 }
 
-const verifyThresholds = () => {
-  const numberOfTicks = (TEST_DURATION_SECONDS / TICK_INTERVAL_SECONDS) - 1
+const verifyThresholds = (emitterTest) => {
+  const numberOfTicks = (emitterTest.testDurationSeconds / emitterTest.tickIntervalSeconds) - 1
   assert.ok(uploadedTracks.length > (numberOfTicks / 5))
   assert.ok(repostedTracks.length > (numberOfTicks / 10))
   assert.ok(createdPlaylists.length > (numberOfTicks / 10))
