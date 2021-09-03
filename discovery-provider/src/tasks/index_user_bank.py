@@ -1,10 +1,10 @@
 import concurrent.futures
-import base58
 import datetime
 import logging
 import re
-from typing import Tuple, Optional, TypedDict, List
 import time
+from typing import Tuple, Optional, TypedDict, List
+import base58
 from redis import Redis
 from sqlalchemy.orm.session import Session
 from sqlalchemy import desc, and_
@@ -176,30 +176,21 @@ def process_user_bank_tx_details(
         log == "Program log: Instruction: Claim"
         for log in meta["logMessages"]
     )
-    logger.error(f"index_user_bank.py |\
-    has_create_token_instruction={has_create_token_instruction},\
-    has_claim_instruction={has_claim_instruction}")
 
     if not has_create_token_instruction and not has_claim_instruction:
-        return None
+        return
 
     instruction = get_valid_instruction(tx_message, meta)
     if instruction is None:
-        logger.error(f"index_user_bank.py | NO Valid instruction found")
-        return None
+        logger.error(f"index_user_bank.py | {tx_sig} No Valid instruction found")
+        return
 
     if has_create_token_instruction:
-        logger.error(f"index_user_bank.py | instruction = {instruction}")
         tx_data = instruction["data"]
         parsed_token_data = parse_create_token_data(tx_data)
-        logger.error(f"index_user_bank.py | {parsed_token_data}")
-
         eth_addr = parsed_token_data["eth_address"]
-        logger.error(f"index_user_bank.py | eth_addr {eth_addr}")
-
         decoded = base58.b58decode(tx_data)[1:]
         public_key_bytes = decoded[:20]
-
         _, derived_address = get_address_pair(
             WAUDIO_PROGRAM_PUBKEY,
             public_key_bytes,
@@ -207,15 +198,12 @@ def process_user_bank_tx_details(
             SPL_TOKEN_ID_PK
         )
         bank_acct = str(derived_address[0])
-        logger.error(f"index_user_bank.py |\
-        derived {derived_address},\
-        {bank_acct}")
         try:
             # Confirm expected address is present in transaction
             bank_acct_index = account_keys.index(bank_acct)
             if bank_acct_index:
                 logger.info(
-                    f"index_user_bank.py | Found known account: {eth_addr}, {bank_acct}"
+                    f"index_user_bank.py | {tx_sig} Found known account: {eth_addr}, {bank_acct}"
                 )
                 session.add(
                     UserBankAccount(
