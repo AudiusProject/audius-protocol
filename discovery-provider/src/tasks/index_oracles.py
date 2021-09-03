@@ -45,7 +45,7 @@ def get_oracle_addresses_from_chain(redis) -> List[str]:
 def index_oracles_task(self):
     redis = index_oracles_task.redis
     have_lock = False
-    update_lock = redis.lock("index_oracles", timeout=60)
+    update_lock = redis.lock("index_oracles_lock", timeout=60)
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
