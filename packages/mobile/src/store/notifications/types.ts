@@ -13,7 +13,8 @@ export enum NotificationType {
   Milestone = 'Milestone',
   RemixCreate = 'RemixCreate',
   RemixCosign = 'RemixCosign',
-  TrendingTrack = 'TrendingTrack'
+  TrendingTrack = 'TrendingTrack',
+  ChallengeReward = 'ChallengeReward'
 }
 
 export enum Entity {
@@ -154,6 +155,20 @@ export type TrendingTrack = BaseNotification & {
   entity: Track & { user: User }
 }
 
+export type ChallengeRewardID =
+  | 'track-upload'
+  | 'referrals'
+  | 'referred'
+  | 'mobile-install'
+  | 'connect-verified'
+  | 'listen-streak'
+  | 'profile-completion'
+
+export type ChallengeReward = BaseNotification & {
+  type: NotificationType.ChallengeReward
+  challengeId: ChallengeRewardID
+}
+
 export type Notification =
   | Announcement
   | UserSubscription
@@ -164,3 +179,4 @@ export type Notification =
   | RemixCreate
   | RemixCosign
   | TrendingTrack
+  | ChallengeReward
