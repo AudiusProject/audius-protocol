@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
-import { Modal, IconLink, LogoEth, LogoSol } from '@audius/stems'
+import { IconLink, LogoEth, LogoSol, Modal } from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
@@ -31,6 +31,23 @@ const CollectibleMedia: React.FC<{
 }> = ({ collectible, isMuted, toggleMute }) => {
   const { mediaType, imageUrl, videoUrl, gifUrl } = collectible
 
+  const [isSvg, setIsSvg] = useState(false)
+
+  // check for svg images to give them non-empty width
+  const handleImage = useCallback(
+    (imageContainer: HTMLDivElement | null) => {
+      if (
+        mediaType === CollectibleMediaType.IMAGE &&
+        imageUrl?.endsWith('.svg') &&
+        imageContainer &&
+        getComputedStyle(imageContainer).width === '0px'
+      ) {
+        setIsSvg(true)
+      }
+    },
+    [mediaType, imageUrl, setIsSvg]
+  )
+
   return mediaType === CollectibleMediaType.GIF ? (
     <div className={styles.detailsMediaWrapper}>
       <img src={gifUrl!} alt='Collectible' />
@@ -47,7 +64,10 @@ const CollectibleMedia: React.FC<{
       )}
     </div>
   ) : (
-    <div className={styles.detailsMediaWrapper}>
+    <div
+      className={cn(styles.detailsMediaWrapper, { [styles.svg]: isSvg })}
+      ref={handleImage}
+    >
       <img src={imageUrl!} alt='Collectible' />
     </div>
   )

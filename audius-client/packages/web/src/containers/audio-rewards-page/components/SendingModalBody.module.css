@@ -26,11 +26,9 @@
   margin: 24px 0px;
 }
 
-.displayAudio {
-}
-
 .spinner {
   margin: 24px;
+  width: 80px;
 }
 
 .message {

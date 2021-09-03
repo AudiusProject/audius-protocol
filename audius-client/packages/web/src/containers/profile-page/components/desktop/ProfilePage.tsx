@@ -255,7 +255,7 @@ const ProfilePage = ({
     profile?.collectibleList?.length || profile?.solanaCollectibleList?.length
   const profileNeverSetCollectiblesOrder = !profile?.collectibles
   const profileHasNonEmptyCollectiblesOrder =
-    profile?.collectibles?.order.length
+    profile?.collectibles?.order?.length ?? false
   const profileHasVisibleImageOrVideoCollectibles =
     profileHasCollectibles &&
     (profileNeverSetCollectiblesOrder || profileHasNonEmptyCollectiblesOrder)
