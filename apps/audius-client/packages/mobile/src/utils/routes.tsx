@@ -74,3 +74,7 @@ export const getEmptyPageRoute = (fullUrl = false) => {
   const route = `/empty_page`
   return fullUrl ? `${AUDIUS_URL}${route}` : route
 }
+
+export const getChallengeRewardsRoute = () => {
+  return '/audio'
+}
