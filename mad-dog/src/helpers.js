@@ -115,7 +115,7 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
         } else {
           const createNewUser = async () => {
             const start = Date.now()
-            logger.info(`Creating new user for index ${i}...`)
+            logger.info(`Creating new user...`)
 
             const userMetadata = users[i]
             let newUserId
@@ -142,15 +142,8 @@ async function _addUsers ({ userCount, executeAll, executeOne, existingUserIds, 
             userId = newUserId
           }
 
-          const withTimeout = async (requestPromise, timeoutMs, timeoutMsg) => {
-            const timeoutPromise = new Promise((resolve, reject) => {
-              setTimeout(() => reject(new Error(timeoutMsg)), timeoutMs)
-            })
-            return Promise.race([requestPromise, timeoutPromise])
-          }
-
           const createNewUserTimeoutMs = 300000 // 300sec = 5 min
-          await withTimeout(createNewUser(), createNewUserTimeoutMs, `Failed to create new user for index ${i} in ${createNewUserTimeoutMs}`)
+          await racePromiseWithTimeout(createNewUser(), createNewUserTimeoutMs, `Failed to create new user for index ${i} in ${createNewUserTimeoutMs}`)
         }
 
         await executeOne(i, libs => libs.waitForLatestBlock())
@@ -382,6 +375,13 @@ const r6 = (withNum = false) => genRandomString(6, withNum)
 /** Delay execution for n ms */
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
+const racePromiseWithTimeout = async (requestPromise, timeoutMs, timeoutMsg) => {
+  const timeoutPromise = new Promise((resolve, reject) => {
+    setTimeout(() => reject(new Error(timeoutMsg)), timeoutMs)
+  })
+  return Promise.race([requestPromise, timeoutPromise])
+}
+
 const ensureReplicaSetSyncIsConsistent = async ({ i, libs, executeOne }) => {
   let primary, secondary1, secondary2, primaryClockValue, secondary1ClockValue, secondary2ClockValue
   const userId = libs.userId
@@ -485,6 +485,7 @@ module.exports = {
   genRandomString,
   getRandomTrackFilePath,
   delay,
+  racePromiseWithTimeout,
   ensureReplicaSetSyncIsConsistent,
   makeExecuteAll,
   makeExecuteOne,

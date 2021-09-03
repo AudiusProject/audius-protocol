@@ -10,6 +10,8 @@ orbs:
   coveralls: coveralls/coveralls@1.0.6
 jobs:
   test-mad-dog-e2e:
+    # https://circleci.com/docs/2.0/parallelism-faster-jobs/
+    # 1 is default; leaving this here for quick modification
     parallelism: 10
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
     # uses medium (2vcpu/4gb) by default
