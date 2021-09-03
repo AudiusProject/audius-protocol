@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import {
   Achievement,
+  ChallengeReward,
   Entity,
   Notification,
   NotificationType,
@@ -116,6 +117,11 @@ const getRemixCosignText = async (
     link
   }
 }
+export const getRewardsText = (notification: ChallengeReward) => ({
+  text: `I earned $AUDIO for completing challenges on @AudiusProject #AudioRewards`,
+  link: null
+})
+
 export const getNotificationTwitterText = async (notification: any) => {
   if (notification.type === NotificationType.Milestone) {
     return getAchievementText(notification)
@@ -125,6 +131,8 @@ export const getNotificationTwitterText = async (notification: any) => {
     return getRemixCreateText(notification)
   } else if (notification.type === NotificationType.RemixCosign) {
     return getRemixCosignText(notification)
+  } else if (notification.type === NotificationType.ChallengeReward) {
+    return getRewardsText(notification)
   }
 }
 
@@ -135,16 +143,18 @@ export const getTwitterButtonText = (notification: any) => {
       return 'Share this Milestone'
     case NotificationType.RemixCreate:
     case NotificationType.RemixCosign:
+    case NotificationType.ChallengeReward:
       return 'Share With Your Fans'
     default:
       return ''
   }
 }
 
-const getTwitterLink = (url: string, text: string) => {
-  return `http://twitter.com/share?url=${encodeURIComponent(
-    url
-  )}&text=${encodeURIComponent(text)}`
+const getTwitterLink = (url: string | null, text: string) => {
+  const textString = `?text=${encodeURIComponent(text)}`
+  const urlString = url ? `&url=${encodeURIComponent(url)}` : ''
+
+  return `http://twitter.com/share${textString}${urlString}`
 }
 
 const styles = StyleSheet.create({

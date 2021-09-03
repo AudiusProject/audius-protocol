@@ -31,7 +31,8 @@ const typeIconMap = {
   [NotificationType.Milestone]: IconTrophy,
   [NotificationType.RemixCosign]: IconRemix,
   [NotificationType.RemixCreate]: IconRemix,
-  [NotificationType.TrendingTrack]: IconTrending
+  [NotificationType.TrendingTrack]: IconTrending,
+  [NotificationType.ChallengeReward]: IconAudius
 }
 
 const typeTitleMap = {
@@ -43,7 +44,8 @@ const typeTitleMap = {
   [NotificationType.Milestone]: 'NEW MILESTONE',
   [NotificationType.RemixCosign]: 'NEW COSIGN',
   [NotificationType.RemixCreate]: 'NEW REMIX',
-  [NotificationType.TrendingTrack]: 'TRENDING'
+  [NotificationType.TrendingTrack]: 'TRENDING',
+  [NotificationType.ChallengeReward]: "YOU'VE EARNED $AUDIO"
 }
 
 const styles = StyleSheet.create({

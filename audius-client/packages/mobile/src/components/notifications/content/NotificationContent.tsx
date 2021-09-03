@@ -12,6 +12,7 @@ import Announcement from './Announcement'
 import Remix from './Remix'
 import Subscription from './Subscription'
 import Cosign from './Cosign'
+import ChallengeReward from './ChallengeReward'
 
 type NotificationContentProps = {
   notification: Notification
@@ -43,6 +44,13 @@ const NotificationContent = ({
       return <Remix notification={notification} onGoToRoute={onGoToRoute} />
     case NotificationType.TrendingTrack:
       return <Trending notification={notification} onGoToRoute={onGoToRoute} />
+    case NotificationType.ChallengeReward:
+      return (
+        <ChallengeReward
+          notification={notification}
+          onGoToRoute={onGoToRoute}
+        />
+      )
   }
 }
 
