@@ -73,19 +73,12 @@ class SolanaClient {
               )[0]
           )
         )
-        const accountInfos = await Promise.all(
-          programAddresses.map(async pa => {
-            try {
-              return await client.connection.getMultipleAccountsInfo([pa])
-            } catch (error) {
-              return null
-            }
-          })
+        const accountInfos = await client.connection.getMultipleAccountsInfo(
+          programAddresses
         )
-        const nonNullRes = accountInfos.filter(Boolean)
+        const nonNullRes = accountInfos?.filter(Boolean) ?? []
         const urls = nonNullRes
-          // @ts-ignore
-          .map(x => client._utf8ArrayToUrl(x![0].data))
+          .map(x => client._utf8ArrayToUrl(x!.data))
           .filter(Boolean)
         const results = await Promise.all(
           urls.map(async url =>
