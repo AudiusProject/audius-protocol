@@ -252,19 +252,19 @@ class PeerSetManager {
     // Check for sufficient minimum storage size
     const { storagePathSize, storagePathUsed } = verboseHealthCheckResp
     if (storagePathSize && storagePathUsed && storagePathSize - storagePathUsed <= MINIMUM_STORAGE_PATH_SIZE) {
-      throw new Error(`Almost out of storage=${storagePathSize - storagePathUsed}bytes remaining`)
+      throw new Error(`Almost out of storage=${storagePathSize - storagePathUsed}bytes remaining. Minimum storage required=${MINIMUM_STORAGE_PATH_SIZE}bytes`)
     }
 
     // Check for sufficient memory space
     const { usedMemory, totalMemory } = verboseHealthCheckResp
     if (usedMemory && totalMemory && totalMemory - usedMemory <= MINIMUM_MEMORY_AVAILABLE) {
-      throw new Error(`Running low on memory=${totalMemory - usedMemory}bytes remaining`)
+      throw new Error(`Running low on memory=${totalMemory - usedMemory}bytes remaining. Minimum memory required=${MINIMUM_MEMORY_AVAILABLE}bytes`)
     }
 
     // Check for sufficient file descriptors space
     const { allocatedFileDescriptors, maxFileDescriptors } = verboseHealthCheckResp
     if (allocatedFileDescriptors && maxFileDescriptors && allocatedFileDescriptors / maxFileDescriptors >= MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE) {
-      throw new Error(`Running low on file descriptors availability=${allocatedFileDescriptors / maxFileDescriptors * 100}% used`)
+      throw new Error(`Running low on file descriptors availability=${allocatedFileDescriptors / maxFileDescriptors * 100}% used. Max file descriptors allocated percentage allowed=${MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE * 100}%`)
     }
 
     // Check historical sync data for current day
@@ -273,7 +273,7 @@ class PeerSetManager {
       dailySyncFailCount &&
       dailySyncSuccessCount + dailySyncFailCount > MINIMUM_DAILY_SYNC_COUNT &&
       dailySyncSuccessCount / (dailySyncFailCount + dailySyncSuccessCount) < MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE) {
-      throw new Error(`Latest daily sync data shows that this node fails at a high rate of syncs. Successful syncs=${dailySyncSuccessCount} || Failed syncs=${dailySyncFailCount}`)
+      throw new Error(`Latest daily sync data shows that this node fails at a high rate of syncs. Successful syncs=${dailySyncSuccessCount} || Failed syncs=${dailySyncFailCount}. Minimum successful sync percentage=${MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE * 100}%`)
     }
 
     // Check historical sync data for rolling window 30 days
@@ -282,7 +282,7 @@ class PeerSetManager {
       thirtyDayRollingSyncFailCount &&
       thirtyDayRollingSyncSuccessCount + thirtyDayRollingSyncFailCount > MINIMUM_ROLLING_SYNC_COUNT &&
       thirtyDayRollingSyncSuccessCount / (thirtyDayRollingSyncFailCount + thirtyDayRollingSyncSuccessCount) < MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE) {
-      throw new Error(`Rolling sync data shows that this node fails at a high rate of syncs. Successful syncs=${thirtyDayRollingSyncSuccessCount} || Failed syncs=${thirtyDayRollingSyncFailCount}`)
+      throw new Error(`Rolling sync data shows that this node fails at a high rate of syncs. Successful syncs=${thirtyDayRollingSyncSuccessCount} || Failed syncs=${thirtyDayRollingSyncFailCount}. Minimum successful sync percentage=${MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE * 100}%`)
     }
   }
 
