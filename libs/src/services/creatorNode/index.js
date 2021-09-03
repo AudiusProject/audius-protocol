@@ -344,9 +344,7 @@ class CreatorNode {
   /**
    * Uploads an image to the connected content node
    * @param {File} file image to upload
-   * @param {string} route route to handle upload (image_upload, track_upload, etc.)
    * @param {function?} onProgress called with loaded bytes and total bytes
-   * @param {boolean?} square whether this image should be turned into a square (e.g. profile picture / track artwork)
    * @param {number?} timeoutMs timeout in ms axios request to upload file to CN will wait
    * @return {Object} response body
    */
@@ -775,7 +773,7 @@ class CreatorNode {
    * @param {function?} onProgress called with loaded bytes and total bytes
    * @param {Object<string, any>} extraFormDataOptions extra FormData fields passed to the upload
    * @param {number} retries max number of attempts made for axios request to upload file to CN before erroring
-   * @param {number} timeoutMs timeout in ms axios request to upload file to CN will wait
+   * @param {number?} timeoutMs timeout in ms axios request to upload file to CN will wait
    */
   async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}, retries = 2, timeoutMs = null) {
     await this.ensureConnected()
