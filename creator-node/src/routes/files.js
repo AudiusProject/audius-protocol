@@ -326,7 +326,9 @@ const getDirCID = async (req, res) => {
  * Use retries because for some reason IPFS (very rarely) fails due to some non-deterministic error. Seems to be with the verification step; the files are correct.
  * Wait fixed timeout between each retry, hopefully addresses IPFS non-deterministic errors
  */
- const _dirCIDIPFSVerificationWithRetries = async function (retriesLeft = IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT) {
+const _dirCIDIPFSVerificationWithRetries = async function (req, resizeResp, dirCID, retriesLeft = IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT) {
+  const ipfs = req.app.get('ipfsLatestAPI')
+
   // build ipfs add array
   let ipfsAddArray = []
   try {
@@ -367,7 +369,7 @@ const getDirCID = async (req, res) => {
     if (retriesLeft > 0) {
       req.logger.error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}. ${retriesLeft} retries remaining out of ${IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT}. Retrying...`)
       await timeout(IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_TIMEOUT_MS)
-      await _dirCIDIPFSVerificationWithRetries(retriesLeft - 1)
+      await _dirCIDIPFSVerificationWithRetries(req, resizeResp, dirCID, retriesLeft - 1)
     } else {
       throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}. Failed after all ${IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT} retries.`)
     }
@@ -431,22 +433,17 @@ module.exports = function (app) {
       return errorResponseServerError(e)
     }
 
-    /**
-     * Ensure image files written to disk match dirCID returned from resizeImage
-     */
-
-    const ipfs = req.app.get('ipfsLatestAPI')
-
     const dirCID = resizeResp.dir.dirCID
 
-    await _dirCIDIPFSVerificationWithRetries()
+    // Ensure image files written to disk match dirCID returned from resizeImage
+    await _dirCIDIPFSVerificationWithRetries(req, resizeResp, dirCID)
 
     // Record image file entries in DB
     const transaction = await models.sequelize.transaction()
     try {
       // Record dir file entry in DB
       const createDirFileQueryObj = {
-        multihash: resizeResp.dir.dirCID,
+        multihash: dirCID,
         sourceFile: null,
         storagePath: resizeResp.dir.dirDestPath,
         type: 'dir' // TODO - replace with models enum
