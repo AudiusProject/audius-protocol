@@ -36,11 +36,13 @@ async function handleEvent(event) {
     event.request.url.endsWith(
       'hannibalburess/coach-wilson-produced-by-flux-pavilion-517598'
     )
-  )
-    event.request.url = event.request.url.substring(
+  ) {
+    const newUrl = event.request.url.substring(
       0,
       event.request.url.length - '-517598'.length
     )
+    return Response.redirect(newUrl, 302)
+  }
 
   const url = new URL(event.request.url)
   const { pathname, search, hash } = url
