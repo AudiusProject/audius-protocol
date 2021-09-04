@@ -624,7 +624,9 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = fal
   ]
 
   if (withAAO) {
+    sequential.push([Service.AAO, SetupCommand.REGISTER])
     sequential.push([Service.AAO, SetupCommand.UP])
+
   }
 
   const start = Date.now()

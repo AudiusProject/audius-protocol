@@ -232,7 +232,7 @@
       "echo 'AAO Started'"
     ],
     "register": [
-      "./scripts/registerAAO.sh"
+      "cd service-commands; ./scripts/registerAAO.sh"
     ],
     "down": [
       "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
