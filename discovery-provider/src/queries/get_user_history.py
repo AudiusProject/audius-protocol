@@ -1,5 +1,4 @@
 import logging  # pylint: disable=C0302
-from sqlalchemy import asc
 
 from src.models import User
 from src.utils import helpers
