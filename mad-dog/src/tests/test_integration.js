@@ -18,8 +18,7 @@ const {
   CreatePlaylistRequest,
   CreatePlaylistResponse
 } = require('../operations.js')
-const { 
-} = require('../logger.js')
+const { logger } = require('../logger.js')
 const MadDog = require('../madDog.js')
 const { EmitterBasedTest, Event } = require('../emitter.js')
 const {
@@ -700,7 +699,7 @@ async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) 
         },
         {
           retries: 5,
-          maxTimeout: 5000, // ms
+          maxTimeout: 5000 // ms
         }
       )
       return promise
