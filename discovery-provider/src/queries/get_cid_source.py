@@ -1,6 +1,7 @@
 import logging
 import sqlalchemy
 
+from src import exceptions
 from src.utils import db_session
 
 logger = logging.getLogger(__name__)
@@ -13,7 +14,7 @@ def get_cid_source(cid):
     Args: the observed CID
     """
     if cid is None:
-        raise ArgumentError("Input CID is invalid")
+        raise exceptions.ArgumentError("Input CID is invalid")
 
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
