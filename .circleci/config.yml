@@ -176,7 +176,7 @@ jobs:
           name: execute
           # https://support.circleci.com/hc/en-us/articles/360045268074-Build-Fails-with-Too-long-with-no-output-exceeded-10m0s-context-deadline-exceeded-
           # mad-dog should never hang more than a min with zero output; exit early.
-          no_output_timeout: 2m
+          no_output_timeout: 5m
           command: |
             sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba
             sudo chmod +x /usr/local/bin/pumba
@@ -730,4 +730,4 @@ workflows:
           cron: '0 5 * * *'
           filters:
             branches:
-              only: /(^master$)/
+              only: /(^origin/is-maddog-extend$)/ # temp change will be removed before merging
