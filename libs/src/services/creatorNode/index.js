@@ -344,12 +344,12 @@ class CreatorNode {
   /**
    * Uploads an image to the connected content node
    * @param {File} file image to upload
-   * @param {boolean?} square whether this image should be turned into a square (e.g. profile picture / track artwork)
    * @param {function?} onProgress called with loaded bytes and total bytes
+   * @param {number?} timeoutMs timeout in ms axios request to upload file to CN will wait
    * @return {Object} response body
    */
-  async uploadImage (file, square = true, onProgress) {
-    const { data: body } = await this._uploadFile(file, '/image_upload', onProgress, { 'square': square })
+  async uploadImage (file, square = true, onProgress, timeoutMs = null) {
+    const { data: body } = await this._uploadFile(file, '/image_upload', onProgress, { 'square': square }, /* retries */ undefined, timeoutMs)
     return body
   }
 
@@ -772,8 +772,10 @@ class CreatorNode {
    * @param {string} route route to handle upload (image_upload, track_upload, etc.)
    * @param {function?} onProgress called with loaded bytes and total bytes
    * @param {Object<string, any>} extraFormDataOptions extra FormData fields passed to the upload
+   * @param {number} retries max number of attempts made for axios request to upload file to CN before erroring
+   * @param {number?} timeoutMs timeout in ms axios request to upload file to CN will wait
    */
-  async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}, retries = 2) {
+  async _uploadFile (file, route, onProgress = (loaded, total) => {}, extraFormDataOptions = {}, retries = 2, timeoutMs = null) {
     await this.ensureConnected()
 
     const { headers, formData } = this.createFormDataAndUploadHeaders(file, extraFormDataOptions)
@@ -793,29 +795,40 @@ class CreatorNode {
       // axios needs to correctly detect we're in node and use the `http` module
       // rather than XMLHttpRequest. We force that here.
       // https://github.com/axios/axios/issues/1180
+
       const isBrowser = typeof window !== 'undefined'
+
       console.debug(`Uploading file to ${url}`)
+
+      const reqParams = {
+        headers: headers,
+        adapter: isBrowser ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http'),
+        // Add a 10% inherit processing time for the file upload.
+        onUploadProgress: (progressEvent) => {
+          if (!total) total = progressEvent.total
+          console.info(`Upload in progress: ${progressEvent.loaded} / ${total}`)
+          onProgress(progressEvent.loaded, total)
+        },
+        // Set content length headers (only applicable in server/node environments).
+        // See: https://github.com/axios/axios/issues/1362
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity
+      }
+
+      if (timeoutMs) {
+        reqParams.timeout = timeoutMs
+      }
+
       const resp = await axios.post(
         url,
         formData,
-        {
-          headers: headers,
-          adapter: isBrowser ? require('axios/lib/adapters/xhr') : require('axios/lib/adapters/http'),
-          // Add a 10% inherit processing time for the file upload.
-          onUploadProgress: (progressEvent) => {
-            if (!total) total = progressEvent.total
-            console.info(`Upload in progress: ${progressEvent.loaded} / ${total}`)
-            onProgress(progressEvent.loaded, total)
-          },
-          // Set content length headers (only applicable in server/node environments).
-          // See: https://github.com/axios/axios/issues/1362
-          maxContentLength: Infinity,
-          maxBodyLength: Infinity
-        }
+        reqParams
       )
+
       if (resp.data && resp.data.error) {
         throw new Error(JSON.stringify(resp.data.error))
       }
+
       onProgress(total, total)
       return resp.data
     } catch (e) {
@@ -824,6 +837,7 @@ class CreatorNode {
         console.warn(e)
         return this._uploadFile(file, route, onProgress, extraFormDataOptions, retries - 1)
       }
+
       await this._handleErrorHelper(e, url, requestId)
     }
   }

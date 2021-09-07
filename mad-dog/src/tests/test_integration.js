@@ -1,3 +1,12 @@
+const path = require('path')
+const { _ } = require('lodash')
+const fs = require('fs-extra')
+const axios = require('axios')
+const retry = require('async-retry')
+const assert = require('assert')
+const ServiceCommands = require('@audius/service-commands')
+const { getContentNodeEndpoints, getRepostersForTrack, createPlaylist, getPlaylists } = require('@audius/service-commands')
+
 const {
   OPERATION_TYPE,
   TrackUploadRequest,
@@ -9,15 +18,8 @@ const {
   CreatePlaylistRequest,
   CreatePlaylistResponse
 } = require('../operations.js')
-
-const path = require('path')
-const { _ } = require('lodash')
-const fs = require('fs-extra')
-const axios = require('axios')
-const retry = require('async-retry')
-const assert = require('assert')
-const { logger } = require('../logger.js')
-const ServiceCommands = require('@audius/service-commands')
+const { 
+} = require('../logger.js')
 const MadDog = require('../madDog.js')
 const { EmitterBasedTest, Event } = require('../emitter.js')
 const {
@@ -30,7 +32,6 @@ const {
   delay,
   genRandomString
 } = require('../helpers.js')
-const { getContentNodeEndpoints, getRepostersForTrack, createPlaylist, getPlaylists } = require('@audius/service-commands')
 const {
   uploadTrack,
   repostTrack,
@@ -49,6 +50,7 @@ const {
 const TICK_INTERVAL_SECONDS = 5
 const TEST_DURATION_SECONDS = 100
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
+const TEMP_IMG_STORAGE_PATH = path.resolve('./local-storage/tmp-imgs/')
 
 const SECOND_USER_PIC_PATH = path.resolve('assets/images/duck.jpg')
 const THIRD_USER_PIC_PATH = path.resolve('assets/images/sid.png')
@@ -98,6 +100,7 @@ module.exports = coreIntegration = async ({
 
   // create tmp storage dir
   await fs.ensureDir(TEMP_STORAGE_PATH)
+  await fs.ensureDir(TEMP_IMG_STORAGE_PATH)
 
   // map of walletId => trackId => metadata
   const walletTrackMap = {}
@@ -437,8 +440,8 @@ module.exports = coreIntegration = async ({
     m.start()
   }
 
-  // Start the test, wait for it to finish.
-  await emitterTest.start()
+  // Run emitter test, wait for it to finish
+  await emitterTest.run()
   logger.info('Emitter test exited')
 
   /**
@@ -513,8 +516,9 @@ module.exports = coreIntegration = async ({
 
   // TODO Upload more content to new primary + verify
 
-  // Remove temp storage dir
+  // Remove temp storage dirs
   await fs.remove(TEMP_STORAGE_PATH)
+  await fs.remove(TEMP_IMG_STORAGE_PATH)
 
   userMetadatas = await executeOne(walletIndexes[0], libsWrapper => {
     return getUsers(libsWrapper, userIds)
@@ -681,15 +685,28 @@ async function checkUserMetadataAndClockValues ({
 
 async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) {
   logger.info(`Checking metadata across replica set is consistent user=${userId}...`)
+  const start = Date.now()
+
   const replicaSetMetadatas = (await Promise.all(
     endpoints.map(endpoint => {
-      return axios({
-        url: `/ipfs/${metadataMultihash}`,
-        method: 'get',
-        baseURL: endpoint
-      })
+      const promise = retry(
+        async () => {
+          return axios({
+            url: `/ipfs/${metadataMultihash}`,
+            method: 'get',
+            baseURL: endpoint,
+            timeout: 4000
+          })
+        },
+        {
+          retries: 5,
+          maxTimeout: 5000, // ms
+        }
+      )
+      return promise
     })
   )).map(response => response.data)
+  logger.info(`Completed metadata check for user ${userId} in ${Date.now() - start}ms`)
 
   const fieldsToCheck = [
     'is_creator',

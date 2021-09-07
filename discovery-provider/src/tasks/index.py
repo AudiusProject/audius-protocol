@@ -1,8 +1,11 @@
+# pylint: disable=C0302
 import concurrent.futures
 import logging
 
 from sqlalchemy import func
 from src.app import contract_addresses
+from src.utils import helpers, multihash
+from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import (
     AssociatedWallet,
@@ -29,10 +32,11 @@ from src.queries.get_skipped_transactions import (
 from src.tasks.celery_app import celery
 from src.tasks.playlists import playlist_state_update
 from src.tasks.social_features import social_feature_state_update
-from src.tasks.tracks import track_state_update
+from src.tasks.tracks import track_state_update, track_event_types_lookup
+from src.tasks.metadata import track_metadata_format, user_metadata_format
 from src.tasks.user_library import user_library_state_update
 from src.tasks.user_replica_set import user_replica_set_state_update
-from src.tasks.users import user_state_update  # pylint: disable=E0611,E0001
+from src.tasks.users import user_state_update, user_event_types_lookup
 from src.utils.indexing_errors import IndexingError
 from src.utils.redis_cache import (
     remove_cached_playlist_ids,
@@ -205,6 +209,96 @@ def fetch_tx_receipts(self, block_transactions):
     return block_tx_with_receipts
 
 
+def fetch_ipfs_metadata(
+    db,
+    user_factory_txs,
+    track_factory_txs,
+    block_number,
+    block_hash,
+):
+    track_abi = update_task.abi_values["TrackFactory"]["abi"]
+    track_contract = update_task.web3.eth.contract(
+        address=contract_addresses["track_factory"], abi=track_abi
+    )
+
+    user_abi = update_task.abi_values["UserFactory"]["abi"]
+    user_contract = update_task.web3.eth.contract(
+        address=contract_addresses["user_factory"], abi=user_abi
+    )
+
+    blacklisted_cids = set()
+    cids = set()
+    cid_type = {}
+
+    with db.scoped_session() as session:
+        for tx_receipt in user_factory_txs:
+            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+            user_events_tx = getattr(
+                user_contract.events, user_event_types_lookup["update_multihash"]
+            )().processReceipt(tx_receipt)
+            for entry in user_events_tx:
+                metadata_multihash = helpers.multihash_digest_to_cid(
+                    entry["args"]._multihashDigest
+                )
+                if not is_blacklisted_ipld(session, metadata_multihash):
+                    cids.add((metadata_multihash, txhash))
+                    cid_type[metadata_multihash] = "user"
+                else:
+                    blacklisted_cids.add(metadata_multihash)
+
+        for tx_receipt in track_factory_txs:
+            txhash = update_task.web3.toHex(tx_receipt.transactionHash)
+            for event_type in [
+                track_event_types_lookup["new_track"],
+                track_event_types_lookup["update_track"],
+            ]:
+                track_events_tx = getattr(
+                    track_contract.events, event_type
+                )().processReceipt(tx_receipt)
+                for entry in track_events_tx:
+                    event_args = entry["args"]
+                    track_metadata_digest = event_args._multihashDigest.hex()
+                    track_metadata_hash_fn = event_args._multihashHashFn
+                    buf = multihash.encode(
+                        bytes.fromhex(track_metadata_digest), track_metadata_hash_fn
+                    )
+                    cid = multihash.to_b58_string(buf)
+                    if not is_blacklisted_ipld(session, cid):
+                        cids.add((cid, txhash))
+                        cid_type[cid] = "track"
+                    else:
+                        blacklisted_cids.add(cid)
+
+    ipfs_metadata = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        futures = []
+        futures_map = {}
+        for cid, txhash in cids:
+            future = executor.submit(
+                update_task.ipfs_client.get_metadata,
+                cid,
+                track_metadata_format
+                if cid_type[cid] == "track"
+                else user_metadata_format,
+                None,
+            )
+            futures.append(future)
+            futures_map[future] = [cid, txhash]
+
+        for future in concurrent.futures.as_completed(futures):
+            cid, txhash = futures_map[future]
+            try:
+                ipfs_metadata[cid] = future.result()
+            except Exception as e:
+                logger.info("Error in fetch ipfs metadata")
+                blockhash = update_task.web3.toHex(block_hash)
+                raise IndexingError(
+                    "prefetch-cids", block_number, blockhash, txhash, str(e)
+                ) from e
+
+    return ipfs_metadata, blacklisted_cids
+
+
 # During each indexing iteration, check if the address for UserReplicaSetManager
 # has been set in the L2 contract registry - if so, update the global contract_addresses object
 # This change is to ensure no indexing restart is necessary when UserReplicaSetManager is
@@ -274,7 +368,6 @@ def index_blocks(self, db, blocks_list):
             f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
-        # Handle each block in a distinct transaction
         with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
             current_block_query = session.query(Block).filter_by(is_current=True)
 
@@ -383,12 +476,39 @@ def index_blocks(self, db, blocks_list):
                     )
                     user_replica_set_manager_txs.append(tx_receipt)
 
+        # pre-fetch cids asynchronously to not have it block in user_state_update
+        # and track_state_update
+        try:
+            ipfs_metadata, blacklisted_cids = fetch_ipfs_metadata(
+                db,
+                user_factory_txs,
+                track_factory_txs,
+                block_number,
+                block_hash,
+            )
+        except IndexingError as err:
+            logger.info(
+                f"index.py | Error in the indexing task at"
+                f" block={err.blocknumber} and hash={err.txhash}"
+            )
+            set_indexing_error(
+                redis, err.blocknumber, err.blockhash, err.txhash, err.message
+            )
+            confirm_indexing_transaction_error(
+                redis, err.blocknumber, err.blockhash, err.txhash, err.message
+            )
+            raise err
+
+        # Handle each block in a distinct transaction
+        with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
             try:
                 # bulk process operations once all tx's for block have been parsed
                 total_user_changes, user_ids = user_state_update(
                     self,
                     update_task,
                     session,
+                    ipfs_metadata,
+                    blacklisted_cids,
                     user_factory_txs,
                     block_number,
                     block_timestamp,
@@ -404,6 +524,8 @@ def index_blocks(self, db, blocks_list):
                     self,
                     update_task,
                     session,
+                    blacklisted_cids,
+                    ipfs_metadata,
                     track_factory_txs,
                     block_number,
                     block_timestamp,
