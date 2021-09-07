@@ -10,6 +10,9 @@ orbs:
   coveralls: coveralls/coveralls@1.0.6
 jobs:
   test-mad-dog-e2e:
+    # https://circleci.com/docs/2.0/parallelism-faster-jobs/
+    # 1 is default; leaving this here for quick modification
+    parallelism: 1
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
     # uses medium (2vcpu/4gb) by default
     resource_class: large # 4vcpu/8gb
@@ -167,7 +170,8 @@ jobs:
       - run:
           name: execute
           # https://support.circleci.com/hc/en-us/articles/360045268074-Build-Fails-with-Too-long-with-no-output-exceeded-10m0s-context-deadline-exceeded-
-          no_output_timeout: 30m
+          # mad-dog should never hang more than a min with zero output; exit early.
+          no_output_timeout: 2m
           command: |
             sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba
             sudo chmod +x /usr/local/bin/pumba
