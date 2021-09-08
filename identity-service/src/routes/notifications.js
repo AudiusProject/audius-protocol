@@ -7,6 +7,7 @@ const {
 const models = require('../models')
 const authMiddleware = require('../authMiddleware')
 const { fetchAnnouncements } = require('../announcements.js')
+const { getShouldRunNotifications } = require('../notifications/utils')
 
 const NotificationType = Object.freeze({
   Follow: 'Follow',
@@ -679,6 +680,33 @@ module.exports = function (app) {
       return subscribers
     }, initSubscribers)
     return successResponse({ users })
+  }))
+
+  /*
+   * Returns if the notifications processor is running
+  */
+  app.get('/notifications/processor', handleResponse(async (req, res, next) => {
+    const shouldRunNotifications = await getShouldRunNotifications(app.redisClient)
+    const isProcessorRunning = app.notificationProcessor.isInit
+    return successResponse({ isProcessorRunning, shouldRunNotifications })
+  }))
+
+  /*
+   * Starts the notifications processor if passing valid parameters
+  */
+  app.post('/notifications/processor/start', handleResponse(async (req, res, next) => {
+    const shouldRunNotifications = await getShouldRunNotifications(app.redisClient)
+    const isProcessorRunning = app.notificationProcessor.isInit
+    if (!isProcessorRunning && shouldRunNotifications) {
+      req.logger.info(`Starting notification processor`)
+      await this.notificationProcessor.init(
+        app.get('audiusLibs'),
+        app,
+        app.get('redis')
+      )
+      return successResponse({ didStart: true })
+    }
+    return successResponse({ didStart: false })
   }))
 }
 

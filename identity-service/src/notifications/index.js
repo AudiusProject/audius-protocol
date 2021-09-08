@@ -39,6 +39,7 @@ class NotificationProcessor {
   constructor ({
     errorHandler
   }) {
+    this.isInit = false
     this.notifQueue = new Bull(
       `notification-queue-${Date.now()}`,
       {
@@ -85,6 +86,7 @@ class NotificationProcessor {
    */
   async init (audiusLibs, expressApp, redis) {
     // Clear any pending notif jobs
+    this.isInit = true
     await this.notifQueue.empty()
     await this.emailQueue.empty()
     this.redis = redis
