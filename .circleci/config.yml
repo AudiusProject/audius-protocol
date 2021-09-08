@@ -669,58 +669,58 @@ workflows:
   # test, build and push all commits
   test-build-and-push:
     jobs:
-      - test-libs:
-          name: test-libs
-      - docker-build-and-push:
-          name: build-libs
-          repo: libs
-          requires:
-            - test-libs
+      # - test-libs:
+      #     name: test-libs
+      # - docker-build-and-push:
+      #     name: build-libs
+      #     repo: libs
+      #     requires:
+      #       - test-libs
 
-      - test-contracts:
-          name: test-contracts
-      - docker-build-and-push:
-          name: build-contracts
-          repo: contracts
-          requires:
-            - test-contracts
+      # - test-contracts:
+      #     name: test-contracts
+      # - docker-build-and-push:
+      #     name: build-contracts
+      #     repo: contracts
+      #     requires:
+      #       - test-contracts
 
-      - test-eth-contracts:
-          name: test-eth-contracts
-      - docker-build-and-push:
-          name: build-eth-contracts
-          repo: eth-contracts
-          requires:
-            - test-eth-contracts
+      # - test-eth-contracts:
+      #     name: test-eth-contracts
+      # - docker-build-and-push:
+      #     name: build-eth-contracts
+      #     repo: eth-contracts
+      #     requires:
+      #       - test-eth-contracts
 
-      - test-creator-node:
-          name: test-creator-node
-      - docker-build-and-push:
-          name: build-creator-node
-          repo: creator-node
-          requires:
-            - test-creator-node
+      # - test-creator-node:
+      #     name: test-creator-node
+      # - docker-build-and-push:
+      #     name: build-creator-node
+      #     repo: creator-node
+      #     requires:
+      #       - test-creator-node
 
-      - test-discovery-provider:
-          name: test-discovery-provider
-      - docker-build-and-push:
-          name: build-discovery-provider
-          repo: discovery-provider
-          requires:
-            - test-discovery-provider
+      # - test-discovery-provider:
+      #     name: test-discovery-provider
+      # - docker-build-and-push:
+      #     name: build-discovery-provider
+      #     repo: discovery-provider
+      #     requires:
+      #       - test-discovery-provider
 
       - test-identity-service:
           name: test-identity-service
       - docker-build-and-push:
           name: build-identity-service
           repo: identity-service
-          requires:
-            - test-identity-service
+          # requires:
+          #   - test-identity-service
 
-      - test-solana-programs:
-          name: test-solana-programs
+      # - test-solana-programs:
+      #     name: test-solana-programs
 
-      - test-mad-dog-e2e
+      # - test-mad-dog-e2e
 
   # test master at midnight daily
   test-nightly:
