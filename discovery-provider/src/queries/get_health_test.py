@@ -372,7 +372,8 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
             "wait_event": "ClientRead",
         }
     ]
-
+    assert "latitude" in health_results
+    assert "longitude" in health_results
     assert "maximum_healthy_block_difference" in health_results
     assert "version" in health_results
     assert "service" in health_results

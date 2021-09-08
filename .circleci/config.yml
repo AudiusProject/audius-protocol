@@ -8,8 +8,12 @@ orbs:
   helm: circleci/helm@0.1.2
   kubernetes: circleci/kubernetes@0.3.0
   coveralls: coveralls/coveralls@1.0.6
+  build-tools: circleci/build-tools@2.9.1
 jobs:
   test-mad-dog-e2e:
+    # https://circleci.com/docs/2.0/parallelism-faster-jobs/
+    # 1 is default; leaving this here for quick modification
+    parallelism: 1
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
     # uses medium (2vcpu/4gb) by default
     resource_class: large # 4vcpu/8gb
@@ -18,6 +22,7 @@ jobs:
     steps:
       - add_ssh_keys
       - checkout
+      - build-tools/merge-with-parent
       - run:
           name: clone tooling and mad dog
           command: |
@@ -167,7 +172,8 @@ jobs:
       - run:
           name: execute
           # https://support.circleci.com/hc/en-us/articles/360045268074-Build-Fails-with-Too-long-with-no-output-exceeded-10m0s-context-deadline-exceeded-
-          no_output_timeout: 30m
+          # mad-dog should never hang more than a min with zero output; exit early.
+          no_output_timeout: 2m
           command: |
             sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba
             sudo chmod +x /usr/local/bin/pumba
@@ -215,6 +221,7 @@ jobs:
       # - image: circleci/mongo:3.4.4
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
@@ -280,6 +287,7 @@ jobs:
         command: ['--port=8555', '-a', '100', '-l', '8000000']
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
@@ -318,6 +326,7 @@ jobs:
         command: ['--port=8546', '-a', '50', '-l', '8000000']
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
@@ -366,6 +375,7 @@ jobs:
       - image: redis:5.0.4
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
@@ -416,6 +426,7 @@ jobs:
         command: ['--port=8555', '-a', '100', '-l', '8000000']
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
@@ -483,6 +494,7 @@ jobs:
       - image: redis:5.0.4
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
@@ -530,6 +542,7 @@ jobs:
       - image: cimg/rust:1.53.0
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - unless:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
@@ -614,6 +627,7 @@ jobs:
         type: string
     steps:
       - checkout
+      - build-tools/merge-with-parent
       - setup_remote_docker:
           docker_layer_caching: true
       - run:

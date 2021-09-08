@@ -54,7 +54,7 @@ def parse_instruction_data(data: str, instructionFormat: List[InstructionFormat]
         elif type == SolanaInstructionType.EthereumAddress:
             type_len = solanaInstructionSpace[type]
             decoded_params[name] = hex(
-                int.from_bytes(decoded[last_end : last_end + type_len], "little")
+                int.from_bytes(decoded[last_end : last_end + type_len], "big")
             )
             last_end = last_end + type_len
         elif type == SolanaInstructionType.UnixTimestamp:

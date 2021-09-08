@@ -269,6 +269,17 @@ async fn test_claim_all_instruction() {
     )
     .await;
 
+    // Query current valance
+    let mut bank_token_account_data = get_account(&mut program_context, &address_to_create).await;
+    let mut bank_token_account =
+        spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
+    println!(
+        "{:?} current balance = {:?} ",
+        bank_token_account.amount,
+        address_to_create
+    );
+
+    // Transfer ALL tokens
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction,
@@ -279,7 +290,7 @@ async fn test_claim_all_instruction() {
                 &base_acc,
                 instruction::Claim {
                     eth_address,
-                    amount: 0,
+                    amount: bank_token_account.amount,
                 },
             )
             .unwrap(),
@@ -294,8 +305,8 @@ async fn test_claim_all_instruction() {
         .await
         .unwrap();
 
-    let bank_token_account_data = get_account(&mut program_context, &address_to_create).await;
-    let bank_token_account =
+    bank_token_account_data = get_account(&mut program_context, &address_to_create).await;
+    bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     // check that program sent all the tokens from bank token account to user token account
     assert_eq!(bank_token_account.amount, 0);

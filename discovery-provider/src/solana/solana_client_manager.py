@@ -61,7 +61,7 @@ class SolanaClientManager:
         return _try_all(
             self.clients,
             handle_get_sol_tx_info,
-            "solana_client_manager.py | get_sol_tx_info | All requests failed to fetch {tx_sig}",
+            f"solana_client_manager.py | get_sol_tx_info | All requests failed to fetch {tx_sig}",
         )
 
     def get_confirmed_signature_for_address2(
@@ -91,5 +91,8 @@ def _try_all(iterable, func, message, randomize=False):
         try:
             return func(value, index)
         except Exception:
+            logger.error(f"solana_client_manager.py | _try_all | Failed attempt at index {index} for function {func}")
+            if index < len(items) - 1:
+                logger.info(f"solana_client_manager.py | _try_all | Retrying")
             continue
     raise Exception(message)
