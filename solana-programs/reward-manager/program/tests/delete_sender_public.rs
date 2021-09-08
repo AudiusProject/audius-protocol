@@ -143,8 +143,7 @@ async fn success_delete_sender_public() {
 }
 
 #[tokio::test]
-#[should_panic(expected = "TransactionError(InstructionError(3, BorshIoError(\"Unkown\")))")]
-async fn falure_delete_sender_public_mismatched_signature_to_pubkey() {
+async fn failure_delete_sender_public_mismatched_signature_to_pubkey() {
     let program_test = program_test();
     let mut rng = thread_rng();
 
@@ -255,20 +254,11 @@ async fn falure_delete_sender_public_mismatched_signature_to_pubkey() {
         &[&context.payer],
         context.last_blockhash,
     );
-    context.banks_client.process_transaction(tx).await.unwrap();
+    let tx_result = context.banks_client.process_transaction(tx).await;
 
-    let (_, sender_solana_key, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
-            .concat()
-            .as_ref(),
-    );
-
-    let account = context
-        .banks_client
-        .get_account(sender_solana_key)
-        .await
-        .unwrap();
-    assert!(account.is_none());
+    match tx_result {
+        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 3: Failed to serialize or deserialize account data: Unkown" => return (),
+        Err(_) => panic!("Returned incorrect error!"),
+        Ok(_) => panic!("Incorrectly returned Ok!"),
+    }
 }
