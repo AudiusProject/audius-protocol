@@ -208,6 +208,12 @@ function decodeHashId (id) {
   return ids[0]
 }
 
+const NOTIFICATIONS_POD_HOSTNAME = 'notifications-pod-hostname'
+async function getShouldRunNotifications (redis) {
+  const notificationsPodHostname = await redis.get(NOTIFICATIONS_POD_HOSTNAME)
+  return config.podHostName === notificationsPodHostname
+}
+
 module.exports = {
   encodeHashId,
   decodeHashId,
@@ -216,5 +222,6 @@ module.exports = {
   calculateTrackListenMilestonesFromDiscovery,
   getHighestBlockNumber,
   getHighestSlot,
-  shouldNotifyUser
+  shouldNotifyUser,
+  getShouldRunNotifications
 }
