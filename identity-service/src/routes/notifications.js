@@ -697,7 +697,7 @@ module.exports = function (app) {
   */
   app.post('/notifications/processor/start', handleResponse(async (req, res, next) => {
     const shouldRunNotifications = await getShouldRunNotifications(app.get('redis'))
-    const isProcessorRunning = app.notificationProcessor.isInit
+    const isProcessorRunning = app.get('notificationProcessor').isInit
     if (!isProcessorRunning && shouldRunNotifications) {
       req.logger.info(`Starting notification processor`)
       await this.notificationProcessor.init(
