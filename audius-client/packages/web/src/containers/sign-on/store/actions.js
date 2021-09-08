@@ -3,6 +3,7 @@ export const SET_VALUE_FIELD = 'SIGN_ON/SET_VALUE_FIELD'
 export const RESET_SIGN_ON = 'SIGN_ON/RESET_SIGN_ON'
 
 export const VALIDATE_EMAIL = 'SIGN_ON/VALIDATE_EMAIL'
+export const VALIDATE_EMAIL_IN_USE = 'SIGN_ON/VALIDATE_EMAIL_IN_USE'
 export const VALIDATE_EMAIL_SUCCEEDED = 'SIGN_ON/VALIDATE_EMAIL_SUCCEEDED'
 export const VALIDATE_EMAIL_FAILED = 'SIGN_ON/VALIDATE_EMAIL_FAILED'
 
@@ -86,6 +87,10 @@ export function resetSignOn() {
  */
 export function validateEmail(email) {
   return { type: VALIDATE_EMAIL, email }
+}
+
+export function validateEmailInUse(email) {
+  return { type: VALIDATE_EMAIL_IN_USE, email }
 }
 
 export function validateEmailSucceeded(available) {

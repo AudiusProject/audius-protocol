@@ -4,7 +4,7 @@ import { delay } from 'redux-saga'
 import {
   all,
   call,
-  fork,
+  throttle,
   put,
   race,
   select,
@@ -52,6 +52,9 @@ const SUGGESTED_FOLLOW_USER_HANDLE_URL =
   process.env.REACT_APP_SUGGESTED_FOLLOW_HANDLES ||
   'https://download.audius.co/static-resources/signup-follows.json'
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
+
+// Wait 2 seconds between validating an email
+const THROTTLE_VALIDATE_EMAIL_MS = 2 * 1000
 
 const messages = {
   incompleteAccount:
@@ -211,12 +214,20 @@ function* validateHandle(action) {
 }
 
 function* validateEmail(action) {
-  yield call(waitForBackendSetup)
   try {
     if (!isValidEmailString(action.email)) {
       yield put(signOnActions.validateEmailFailed('characters'))
       return
     }
+    yield put(signOnActions.validateEmailInUse(action.email))
+  } catch (err) {
+    yield put(signOnActions.validateEmailFailed(err.message))
+  }
+}
+
+function* validateEmailInUse(action) {
+  yield call(waitForBackendSetup)
+  try {
     const inUse = yield call(AudiusBackend.emailInUse, action.email)
     yield put(signOnActions.validateEmailSucceeded(!inUse))
   } catch (err) {
@@ -454,6 +465,14 @@ function* watchValidateEmail() {
   yield takeLatest(signOnActions.VALIDATE_EMAIL, validateEmail)
 }
 
+function* watchValidateEmailInUse() {
+  yield throttle(
+    THROTTLE_VALIDATE_EMAIL_MS,
+    signOnActions.VALIDATE_EMAIL_IN_USE,
+    validateEmailInUse
+  )
+}
+
 function* watchValidateHandle() {
   yield takeLatest(signOnActions.VALIDATE_HANDLE, validateHandle)
 }
@@ -511,6 +530,7 @@ export default function sagas() {
     watchFetchAllFollowArtists,
     watchFetchReferrer,
     watchValidateEmail,
+    watchValidateEmailInUse,
     watchValidateHandle,
     watchSignUp,
     watchSignIn,
