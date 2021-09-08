@@ -20,7 +20,7 @@ def test_decode_reward_manager_transfer_instruction():
     assert decoded_data == {
         "amount": 10000000000,
         "id": "profile-completion:123456789",
-        "eth_recipient": "0x403be3560116a12b467855cb29a393174a59876",
+        "eth_recipient": "0x0403be3560116a12b467855cb29a393174a59876",
     }
 
 
@@ -228,7 +228,7 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
         solana_client_manager_mock, "tx_sig_one"
     )
     assert parsed_tx["amount"] == 10000000000
-    assert parsed_tx["eth_recipient"] == "0x403be3560116a12b467855cb29a393174a59876"
+    assert parsed_tx["eth_recipient"] == "0x0403be3560116a12b467855cb29a393174a59876"
     assert parsed_tx["challenge_id"] == "profile-completion"
     assert parsed_tx["tx_sig"] == "tx_sig_one"
     assert parsed_tx["slot"] == 72131741
@@ -238,7 +238,7 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
             {
                 "user_id": 1,
                 "handle": "piazza",
-                "wallet": "0x403be3560116a12b467855cb29a393174a59876",
+                "wallet": "0x0403be3560116a12b467855cb29a393174a59876",
             },
         ],
         "user_challenges": [
