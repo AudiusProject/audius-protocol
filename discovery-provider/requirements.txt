@@ -15,7 +15,7 @@ alembic==1.4.3
 celery[redis]==4.2.0
 redis==3.2.0
 pytest==6.0.1
-SQLAlchemy-Utils==0.33.3
+SQLAlchemy-Utils==0.37.6
 chance==0.110
 ipfshttpclient==0.8.0a1
 pytest-cov==2.6.0
