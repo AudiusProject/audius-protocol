@@ -4,7 +4,7 @@ const {
   SystemProgram,
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
-  TransactionInstruction
+  TransactionInstruction,
 } = require('@solana/web3.js')
 const borsh = require('borsh')
 const { getBankAccountAddress } = require('./userBank')
@@ -159,7 +159,6 @@ async function submitAttestations ({
       const secpInstruction = Promise.resolve(
         generateSecpInstruction({
           attestationMeta: meta,
-          isOracle: false,
           recipientEthAddress,
           oracleAddress: oracleAttestation.ethAddress,
           tokenAmount,
@@ -177,9 +176,7 @@ async function submitAttestations ({
     recipientEthAddress,
     instructionIndex: instructions.length,
     transferId,
-    isOracle: true,
     tokenAmount,
-    oracleAddress: oracleAttestation.ethAddress
   })
   const oracleTransfer = await generateSubmitAttestationInstruction({
     attestationMeta: oracleAttestation,
@@ -384,6 +381,7 @@ const evaluateAttestations = async ({
     instructions: relayable
   }
 
+
   try {
     const response = await identityService.solanaRelay(transactionData)
     return response
@@ -505,7 +503,6 @@ const generateSubmitAttestationInstruction = async ({
  *
  * @param {{
  *   attestationMeta: AttestationMeta
- *   isOracle: boolean
  *   recipientEthAddress: string
  *   tokenAmount: BN
  *   transferId: string
@@ -513,7 +510,6 @@ const generateSubmitAttestationInstruction = async ({
  *   instructionIndex: number
  * }} {
  *   attestationMeta,
- *   isOracle,
  *   recipientEthAddress,
  *   tokenAmount,
  *   transferId,
@@ -524,7 +520,6 @@ const generateSubmitAttestationInstruction = async ({
  */
 const generateSecpInstruction = ({
   attestationMeta,
-  isOracle,
   recipientEthAddress,
   tokenAmount,
   transferId,
