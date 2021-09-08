@@ -4,7 +4,7 @@ const {
   SystemProgram,
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
-  TransactionInstruction,
+  TransactionInstruction
 } = require('@solana/web3.js')
 const borsh = require('borsh')
 const { getBankAccountAddress } = require('./userBank')
@@ -176,7 +176,7 @@ async function submitAttestations ({
     recipientEthAddress,
     instructionIndex: instructions.length,
     transferId,
-    tokenAmount,
+    tokenAmount
   })
   const oracleTransfer = await generateSubmitAttestationInstruction({
     attestationMeta: oracleAttestation,
@@ -380,7 +380,6 @@ const evaluateAttestations = async ({
     recentBlockhash,
     instructions: relayable
   }
-
 
   try {
     const response = await identityService.solanaRelay(transactionData)
