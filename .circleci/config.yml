@@ -381,9 +381,9 @@ jobs:
       - checkout
       - unless:
           condition:
-            - build-tools/merge-with-parent
             equal: [ master, << pipeline.git.branch >> ]
           steps:
+            - build-tools/merge-with-parent
             - run: ./diff.sh creator-node || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
       # - restore_cache:
