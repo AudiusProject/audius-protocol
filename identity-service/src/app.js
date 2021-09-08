@@ -82,6 +82,7 @@ class App {
     server.headersTimeout = config.get('headersTimeout')
 
     this.express.set('redis', this.redisClient)
+    this.express.set('notificationProcessor', this.notificationProcessor)
 
     try {
       await txRelay.fundRelayerIfEmpty()
