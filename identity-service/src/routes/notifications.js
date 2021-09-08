@@ -686,7 +686,7 @@ module.exports = function (app) {
    * Returns if the notifications processor is running
   */
   app.get('/notifications/processor', handleResponse(async (req, res, next) => {
-    const shouldRunNotifications = await getShouldRunNotifications(app.redisClient)
+    const shouldRunNotifications = await getShouldRunNotifications(app.get('redis'))
     const isProcessorRunning = app.notificationProcessor.isInit
     return successResponse({ isProcessorRunning, shouldRunNotifications })
   }))
@@ -695,7 +695,7 @@ module.exports = function (app) {
    * Starts the notifications processor if passing valid parameters
   */
   app.post('/notifications/processor/start', handleResponse(async (req, res, next) => {
-    const shouldRunNotifications = await getShouldRunNotifications(app.redisClient)
+    const shouldRunNotifications = await getShouldRunNotifications(app.get('redis'))
     const isProcessorRunning = app.notificationProcessor.isInit
     if (!isProcessorRunning && shouldRunNotifications) {
       req.logger.info(`Starting notification processor`)
