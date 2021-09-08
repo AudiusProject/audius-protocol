@@ -3,8 +3,11 @@ import {
   CollectibleMediaType
 } from 'containers/collectibles/types'
 import {
+  MetaplexNFT,
+  MetaplexNFTPropertiesFile,
   SolanaNFT,
-  SolanaNFTPropertiesFile
+  SolanaNFTType,
+  StarAtlasNFT
 } from 'services/solana-client/types'
 import { Chain } from 'store/token-dashboard/slice'
 import { Nullable } from 'utils/typeUtils'
@@ -19,12 +22,12 @@ type SolanaNFTMedia = {
  * NFT is a gif if it has a file with MIME type image/gif
  * if it's a gif, we compute an image frame from the gif
  */
-const nftGif = async (nft: SolanaNFT): Promise<Nullable<SolanaNFTMedia>> => {
+const nftGif = async (nft: MetaplexNFT): Promise<Nullable<SolanaNFTMedia>> => {
   const gifFile = nft.properties.files?.find(
     file => typeof file === 'object' && file.type === 'image/gif'
   )
   if (gifFile) {
-    const url = (gifFile as SolanaNFTPropertiesFile).uri
+    const url = (gifFile as MetaplexNFTPropertiesFile).uri
     // frame url for the gif is computed later in the collectibles page
     return {
       collectibleMediaType: CollectibleMediaType.GIF,
@@ -45,13 +48,15 @@ const nftGif = async (nft: SolanaNFT): Promise<Nullable<SolanaNFTMedia>> => {
  * if the video has a poster/thumbnail, it would be in the image property
  * otherwise, we later use the first video frame as the thumbnail
  */
-const nftVideo = async (nft: SolanaNFT): Promise<Nullable<SolanaNFTMedia>> => {
+const nftVideo = async (
+  nft: MetaplexNFT
+): Promise<Nullable<SolanaNFTMedia>> => {
   const files = nft.properties.files
   // In case we want to restrict to specific file extensions, see below link
   // https://github.com/metaplex-foundation/metaplex/blob/81023eb3e52c31b605e1dcf2eb1e7425153600cd/js/packages/web/src/views/artCreate/index.tsx#L318
   const videoFile = files?.find(
     file => typeof file === 'object' && file.type.includes('video')
-  ) as SolanaNFTPropertiesFile
+  ) as MetaplexNFTPropertiesFile
   const videoUrl = files?.find(
     file =>
       typeof file === 'string' &&
@@ -98,13 +103,15 @@ const nftVideo = async (nft: SolanaNFT): Promise<Nullable<SolanaNFTMedia>> => {
  * - it has a file whose type is image, or
  * - it has an image property
  */
-const nftImage = async (nft: SolanaNFT): Promise<Nullable<SolanaNFTMedia>> => {
+const nftImage = async (
+  nft: MetaplexNFT
+): Promise<Nullable<SolanaNFTMedia>> => {
   const files = nft.properties.files
   // In case we want to restrict to specific file extensions, see below link
   // https://github.com/metaplex-foundation/metaplex/blob/81023eb3e52c31b605e1dcf2eb1e7425153600cd/js/packages/web/src/views/artCreate/index.tsx#L316
   const imageFile = files?.find(
     file => typeof file === 'object' && file.type.includes('image')
-  ) as SolanaNFTPropertiesFile
+  ) as MetaplexNFTPropertiesFile
   const isImage =
     nft.properties.category === 'image' || nft.image.length || imageFile
   if (isImage) {
@@ -140,7 +147,7 @@ const nftImage = async (nft: SolanaNFT): Promise<Nullable<SolanaNFTMedia>> => {
  * - if image, the image url is also the frame url
  */
 const nftComputedMedia = async (
-  nft: SolanaNFT
+  nft: MetaplexNFT
 ): Promise<Nullable<SolanaNFTMedia>> => {
   const files = nft.properties.files
   if (!files?.length) {
@@ -176,8 +183,8 @@ const nftComputedMedia = async (
   return null
 }
 
-export const solanaNFTToCollectible = async (
-  nft: SolanaNFT,
+const metaplexNFTToCollectible = async (
+  nft: MetaplexNFT,
   address: string
 ): Promise<Collectible> => {
   const identifier = [nft.symbol, nft.name, nft.image]
@@ -213,4 +220,48 @@ export const solanaNFTToCollectible = async (
   }
 
   return collectible
+}
+
+const starAtlasNFTToCollectible = async (
+  nft: StarAtlasNFT,
+  address: string
+): Promise<Collectible> => {
+  const identifier = [nft._id, nft.symbol, nft.name, nft.image]
+    .filter(Boolean)
+    .join(':::')
+
+  const collectible = {
+    id: identifier,
+    tokenId: nft._id,
+    name: nft.name,
+    description: nft.description,
+    isOwned: true,
+    chain: Chain.Sol
+  } as Collectible
+
+  // todo: check if there are gif or video nfts for star atlas
+  // todo: check for standard metadata format for star atlas
+  collectible.mediaType = CollectibleMediaType.IMAGE
+  collectible.imageUrl = nft.image
+  collectible.frameUrl = nft.media?.thumbnailUrl?.length
+    ? nft.media.thumbnailUrl
+    : nft.image
+  collectible.dateCreated = nft.createdAt
+
+  return collectible
+}
+
+export const solanaNFTToCollectible = async (
+  nft: SolanaNFT,
+  address: string,
+  type: SolanaNFTType
+): Promise<Nullable<Collectible>> => {
+  switch (type) {
+    case SolanaNFTType.METAPLEX:
+      return metaplexNFTToCollectible(nft as MetaplexNFT, address)
+    case SolanaNFTType.STAR_ATLAS:
+      return starAtlasNFTToCollectible(nft as StarAtlasNFT, address)
+    default:
+      return null
+  }
 }

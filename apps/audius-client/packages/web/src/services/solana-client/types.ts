@@ -1,28 +1,48 @@
 import { Nullable } from 'utils/typeUtils'
 
-type SolanaNFTCreator = {
+export enum SolanaNFTType {
+  METAPLEX = 'METAPLEX',
+  STAR_ATLAS = 'STAR_ATLAS'
+}
+
+type MetaplexNFTCreator = {
   address: string
   verified: boolean
   share: number
 }
 
-export type SolanaNFTPropertiesFile = {
+export type MetaplexNFTPropertiesFile = {
   type: string
   uri: string
 }
 
-type SolanaNFTProperties = {
+type MetaplexNFTProperties = {
   category: string
-  files: (string | SolanaNFTPropertiesFile)[]
-  creators: SolanaNFTCreator[]
+  files: (string | MetaplexNFTPropertiesFile)[]
+  creators: MetaplexNFTCreator[]
 }
 
-export type SolanaNFT = {
+export type MetaplexNFT = {
   name: string
   description: string
   symbol: string
   image: string
   animation_url: Nullable<string>
   external_url: string
-  properties: SolanaNFTProperties
+  properties: MetaplexNFTProperties
 }
+
+export type StarAtlasNFT = {
+  _id: string
+  name: string
+  description: string
+  symbol: string
+  image: string
+  media: {
+    thumbnailUrl: string // may be empty string
+  }
+  deactivated: boolean
+  createdAt: string
+}
+
+export type SolanaNFT = MetaplexNFT | StarAtlasNFT
