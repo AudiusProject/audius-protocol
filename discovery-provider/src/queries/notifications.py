@@ -1,18 +1,10 @@
 import logging  # pylint: disable=C0302
 import functools as ft
 from datetime import date, datetime, timedelta
-from typing import List
-from src.models.models import ChallengeDisbursement
 from flask import Blueprint, request
 from sqlalchemy import desc
 
 from src import api_helpers
-from src.queries import response_name_constants as const
-from src.queries.query_helpers import (
-    get_repost_counts,
-    get_save_counts,
-    get_follower_count_dict,
-)
 from src.models import (
     Block,
     Follow,
@@ -24,7 +16,13 @@ from src.models import (
     RepostType,
     Remix,
     AggregateUser,
-    UserChallenge,
+    ChallengeDisbursement,
+)
+from src.queries import response_name_constants as const
+from src.queries.query_helpers import (
+    get_repost_counts,
+    get_save_counts,
+    get_follower_count_dict,
 )
 from src.utils.db_session import get_db_read_replica
 from src.utils.config import shared_config
@@ -921,9 +919,13 @@ def solana_notifications():
     if not max_slot_number or (max_slot_number - min_slot_number) > max_slot_diff:
         max_slot_number = min_slot_number + max_slot_diff
 
-    # Need to get the latest slot number from the ChallengeDisbursements table
-    # it's latest slot may be different from other modals, e.g. Listens, latest slot
-    # Need to cap max_slot_number to the latest slot
+    # TODO: This needs to be updated when more notification types are added to the solana notifications queue
+    # Need to write a system to keep track of the proper latest slot to index based on all of the applicable table
+    with db.scoped_session() as session:
+        current_slot_query_results = session.query(ChallengeDisbursement).all()
+        current_max_slot_num = current_slot_query_results[0].slot
+        if current_max_slot_num < max_slot_number:
+            max_slot_number = current_max_slot_num
 
     notifications_unsorted = []
     notification_metadata = {

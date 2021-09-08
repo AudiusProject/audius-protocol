@@ -7,6 +7,7 @@ const audiusLibsWrapper = require('../audiusLibsInstance')
 
 // default configs
 const startBlock = config.get('notificationStartBlock')
+const startSlot = config.get('solanaNotificationStartSlot')
 // Number of tracks to fetch for new listens on each poll
 const trackListenMilestonePollCount = 100
 
@@ -147,6 +148,19 @@ async function getHighestBlockNumber () {
 }
 
 /**
+ * Get max slot from the SolanaNotificationAction table
+ * @returns Integer highestSlot
+ */
+async function getHighestSlot () {
+  let highestSlot = await models.SolanaNotificationAction.max('slot')
+  if (!highestSlot) highestSlot = startSlot
+
+  let date = new Date()
+  logger.info(`Highest slot: ${highestSlot} - ${date}`)
+  return highestSlot
+}
+
+/**
  * Checks the user notification settings for both regular and push notifications and
  * returns if they should be notified according to their settings
  *
@@ -201,5 +215,6 @@ module.exports = {
   calculateTrackListenMilestones,
   calculateTrackListenMilestonesFromDiscovery,
   getHighestBlockNumber,
+  getHighestSlot,
   shouldNotifyUser
 }

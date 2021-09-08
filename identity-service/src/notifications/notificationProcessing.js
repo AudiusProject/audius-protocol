@@ -171,7 +171,7 @@ async function _processFollowNotifications (audiusLibs, notif, blocknumber, time
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Follow](msgGenNotif)
-      const title = notificationResponseTitleMap[notificationTypes.Follow]
+      const title = notificationResponseTitleMap[notificationTypes.Follow]()
       let types = []
       if (notifyMobile) types.push(deviceType.Mobile)
       if (notifyBrowserPush) types.push(deviceType.Browser)
@@ -286,7 +286,7 @@ async function _processBaseRepostNotifications (audiusLibs, notif, blocknumber, 
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Repost.base](msgGenNotif)
-      const title = notificationResponseTitleMap[repostType]
+      const title = notificationResponseTitleMap[repostType]()
       let types = []
       if (notifyMobile) types.push(deviceType.Mobile)
       if (notifyBrowserPush) types.push(deviceType.Browser)
@@ -400,7 +400,7 @@ async function _processFavoriteNotifications (audiusLibs, notif, blocknumber, ti
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Favorite.base](msgGenNotif)
-      const title = notificationResponseTitleMap[favoriteType]
+      const title = notificationResponseTitleMap[favoriteType]()
       let types = []
       if (notifyMobile) types.push(deviceType.Mobile)
       if (notifyBrowserPush) types.push(deviceType.Browser)
@@ -545,7 +545,7 @@ async function _processCreateNotifications (audiusLibs, notif, blocknumber, time
 
       // snippets
       const msg = pushNotificationMessagesMap[notificationTypes.Create.base](msgGenNotif)
-      const title = notificationResponseTitleMap[createType]
+      const title = notificationResponseTitleMap[createType]()
       subscriberPushNotifications.push({
         msg,
         notificationTarget,
@@ -677,7 +677,7 @@ async function _processRemixCreateNotifications (audiusLibs, notif, blocknumber,
       try {
         // snippets
         const msg = pushNotificationMessagesMap[notificationTypes.RemixCreate](msgGenNotif)
-        const title = notificationResponseTitleMap[notificationTypes.RemixCreate]
+        const title = notificationResponseTitleMap[notificationTypes.RemixCreate]()
         let types = []
         if (notifyMobile) types.push(deviceType.Mobile)
         if (notifyBrowserPush) types.push(deviceType.Browser)
@@ -770,7 +770,7 @@ async function _processCosignNotifications (audiusLibs, notif, blocknumber, time
 
     // snippets
     const msg = pushNotificationMessagesMap[notificationTypes.RemixCosign](msgGenNotif)
-    const title = notificationResponseTitleMap[notificationTypes.RemixCosign]
+    const title = notificationResponseTitleMap[notificationTypes.RemixCosign]()
     let types = [deviceType.Mobile, deviceType.Browser]
     await publish(msg, childTrackUserId, tx, true, title, types)
   } catch (e) {

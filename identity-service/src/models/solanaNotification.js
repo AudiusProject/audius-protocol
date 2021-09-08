@@ -40,7 +40,7 @@ module.exports = (sequelize, DataTypes) => {
     slot: {
       type: DataTypes.INTEGER,
       allowNull: false
-    },
+    }
   }, {})
 
   SolanaNotification.associate = function (models) {

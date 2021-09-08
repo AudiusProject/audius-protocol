@@ -8,7 +8,8 @@ const {
   updateBlockchainIds,
   // calculateTrackListenMilestones,
   calculateTrackListenMilestonesFromDiscovery,
-  getHighestBlockNumber
+  getHighestBlockNumber,
+  getHighestSlot
 } = require('./utils')
 const { processEmailNotifications } = require('./sendNotificationEmails')
 const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
@@ -175,7 +176,7 @@ class NotificationProcessor {
           logger.debug('notification queue processing error - tried to process a minSlot < oldMaxSlot', minSlot, oldMaxSlot)
           maxSlot = oldMaxSlot
         } else {
-          maxslot = await this.indexAllSolanaNotifications(audiusLibs, minSlot, oldMaxSlot)
+          maxSlot = await this.indexAllSolanaNotifications(audiusLibs, minSlot, oldMaxSlot)
         }
 
         // Update cached max slot number
@@ -260,9 +261,7 @@ class NotificationProcessor {
       jobId: `${notificationJobType}:${Date.now()}`
     })
 
-    // TODO: Need to get current highest slot
-    // let startSlot = await getHighestSlot()
-    let startSlot = 0
+    let startSlot = await getHighestSlot()
     logger.info(`Starting with slot ${startSlot}`)
     await this.solanaNotifQueue.add({
       minSlot: startSlot,
@@ -373,7 +372,7 @@ class NotificationProcessor {
 
     // Timeout of 2 minutes
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
-    const { info: metadata, notifications } = await discoveryProvider.getSolanaNotifications(minBlock, timeout)
+    const { info: metadata, notifications } = await discoveryProvider.getSolanaNotifications(minSlot, timeout)
     logger.info(`${logLabel} - query solana notifications from discovery node complete`)
 
     // Use a single transaction
@@ -396,7 +395,7 @@ class NotificationProcessor {
 
       const endTime = process.hrtime(startTime)
       const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
-      logger.info(`notifications main indexAll job finished - minBlock: ${minBlock}, startDate: ${startDate}, duration: ${duration}, notifications: ${notifications.length}`)
+      logger.info(`notifications main indexAll job finished - minSlot: ${minSlot}, startDate: ${startDate}, duration: ${duration}, notifications: ${notifications.length}`)
     } catch (e) {
       logger.error(`Error indexing notification ${e}`)
       logger.error(e.stack)

@@ -385,7 +385,7 @@ module.exports.getSolanaNotifications = (minSlotNumber, timeout) => {
   return {
     endpoint: 'solana_notifications',
     queryParams: {
-      min_slot_number: minSlotNumber,
+      min_slot_number: minSlotNumber
     },
     timeout
   }

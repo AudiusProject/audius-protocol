@@ -227,33 +227,32 @@ const RemixCosignTitle = 'New Track Co-Sign! 🔥'
 const challengeInfoMap = {
   'profile-completion': {
     title: '✅️ Complete your Profile',
-    amount: 5,
+    amount: 5
   },
   'listen-streak': {
     title: '🎧 Listening Streak: 7 Days',
-    amount: 5,
+    amount: 5
   },
   'track-upload': {
     title: '🎶 Upload 5 Tracks',
-    amount: 5,
+    amount: 5
   },
   'referrals': {
     title: '📨 Invite your Friends',
-    amount: 1,
+    amount: 1
   },
-  // TODO: Confirm copy for this challenge
   'referred': {
     title: '📨 Invite your Friends',
-    amount: 1,
+    amount: 1
   },
   'connect-verified': {
     title: '✅️ Link Verified Accounts',
-    amount: 10,
+    amount: 10
   },
   'mobile-install': {
     title: '📲 Get the App',
-    amount: 10,
-  },
+    amount: 10
+  }
 }
 
 const notificationResponseTitleMap = {
@@ -327,7 +326,9 @@ const pushNotificationMessagesMap = {
     return `Your Track ${notification.entity.title} is ${notification.rank}${rankSuffix} on Trending Right Now! 🍾`
   },
   [notificationTypes.ChallengeReward] (notification) {
-    return `You’ve earned ${challengeInfoMap[notification.challengeId].amount} $AUDIO for completing this challenge!`
+    return notification.challengeId === 'referred'
+      ? `You’ve recieved ${challengeInfoMap[notification.challengeId].amount} $AUDIO for being referred! Invite your friends to join to earn more!`
+      : `You’ve earned ${challengeInfoMap[notification.challengeId].amount} $AUDIO for completing this challenge!`
   }
 }
 
