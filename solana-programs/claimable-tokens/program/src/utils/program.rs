@@ -2,14 +2,8 @@
 
 //! Extended functionality for Pubkey
 use solana_program::{
-    account_info::AccountInfo,
-    entrypoint::ProgramResult,
     pubkey::Pubkey,
     pubkey::PubkeyError
-};
-
-use crate::{
-    error::ClaimableProgramError,
 };
 
 /// Represent compressed ethereum pubkey
