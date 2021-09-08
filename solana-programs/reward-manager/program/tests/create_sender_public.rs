@@ -142,7 +142,6 @@ async fn success_create_sender_public() {
 }
 
 #[tokio::test]
-#[should_panic(expected = "TransactionError(InstructionError(3, BorshIoError(\"Unkown\")))")]
 async fn failure_create_sender_public_mismatched_signature_to_pubkey() {
     let program_test = program_test();
     let mut rng = thread_rng();
@@ -242,20 +241,16 @@ async fn failure_create_sender_public_mismatched_signature_to_pubkey() {
         &[&context.payer],
         context.last_blockhash,
     );
-    context.banks_client.process_transaction(tx).await.unwrap();
+    let tx_result = context.banks_client.process_transaction(tx).await;
 
-    assert_eq!(
-        SenderAccount::new(reward_manager.pubkey(), eth_address, operator),
-        context
-            .banks_client
-            .get_account_data_with_borsh(derived_address)
-            .await
-            .unwrap()
-    );
+    match tx_result {
+        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 3: Failed to serialize or deserialize account data: Unkown" => return (),
+        Err(_) => panic!("Returned incorrect error!"),
+        Ok(_) => panic!("Incorrectly returned Ok!"),
+    }
 }
 
 #[tokio::test]
-#[should_panic(expected = "TransactionError(InstructionError(3, BorshIoError(\"Unkown\")))")]
 async fn failure_create_sender_public_mismatched_pubkey_to_signature() {
     let program_test = program_test();
     let mut rng = thread_rng();
@@ -367,14 +362,11 @@ async fn failure_create_sender_public_mismatched_pubkey_to_signature() {
         &[&context.payer],
         context.last_blockhash,
     );
-    context.banks_client.process_transaction(tx).await.unwrap();
+    let tx_result = context.banks_client.process_transaction(tx).await;
 
-    assert_eq!(
-        SenderAccount::new(reward_manager.pubkey(), eth_address, operator),
-        context
-            .banks_client
-            .get_account_data_with_borsh(derived_address)
-            .await
-            .unwrap()
-    );
+    match tx_result {
+        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 3: Failed to serialize or deserialize account data: Unkown" => return (),
+        Err(_) => panic!("Returned incorrect error!"),
+        Ok(_) => panic!("Incorrectly returned Ok!"),
+    }
 }
