@@ -261,6 +261,7 @@
   pointer-events: none;
   cursor: default;
   max-height: 70vh;
+  max-width: 70vw;
 }
 
 .detailsMediaWrapper.svg {
