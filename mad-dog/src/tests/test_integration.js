@@ -729,6 +729,8 @@ async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) 
 }
 
 const verifyThresholds = () => {
+  // thresholds are approximated based on the number of ticks, randomization, and dependencies
+  // for example, reposted tracks has a lower threshold because it depends on an existing track not yet reposted
   const numberOfTicks = (TEST_DURATION_SECONDS / TICK_INTERVAL_SECONDS) - 1
   assert.ok(uploadedTracks.length > (numberOfTicks / 5))
   assert.ok(repostedTracks.length > (numberOfTicks / 10))
