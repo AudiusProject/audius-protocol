@@ -76,8 +76,7 @@ async fn success_change_manager_authority() {
 }
 
 #[tokio::test]
-#[should_panic]
-async fn failure_bad_manager() {
+async fn failure_change_manager_authority_bad_manager() {
     let program_test = program_test();
 
     let mint = Keypair::new();
@@ -127,25 +126,17 @@ async fn failure_bad_manager() {
         context.last_blockhash,
     );
 
-    context.banks_client.process_transaction(tx).await.unwrap();
-
-    assert_eq!(
-        audius_reward_manager::state::RewardManager::new(
-            token_account.pubkey(),
-            new_manager.pubkey(),
-            min_votes
-        ),
-        context
-            .banks_client
-            .get_account_data_with_borsh(reward_manager.pubkey())
-            .await
-            .unwrap()
-    );
+    let tx_result = context.banks_client.process_transaction(tx).await;
+    match tx_result {
+        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 0: invalid account data for instruction" => return (),
+        Err(_) => panic!("Returned incorrect error!"),
+        Ok(_) => panic!("Incorrectly returned Ok!"),
+    }
 }
 
 #[tokio::test]
-#[should_panic(expected = "KeypairPubkeyMismatch")]
-async fn failure_bad_authority() {
+#[should_panic(expected = "Transaction::sign failed with error KeypairPubkeyMismatch")]
+async fn failure_change_manager_authority_bad_authority() {
     let program_test = program_test();
 
     let mint = Keypair::new();
@@ -195,18 +186,5 @@ async fn failure_bad_authority() {
         context.last_blockhash,
     );
 
-    context.banks_client.process_transaction(tx).await.unwrap();
-
-    assert_eq!(
-        audius_reward_manager::state::RewardManager::new(
-            token_account.pubkey(),
-            new_manager.pubkey(),
-            min_votes
-        ),
-        context
-            .banks_client
-            .get_account_data_with_borsh(reward_manager.pubkey())
-            .await
-            .unwrap()
-    );
+    context.banks_client.process_transaction(tx).await;
 }
