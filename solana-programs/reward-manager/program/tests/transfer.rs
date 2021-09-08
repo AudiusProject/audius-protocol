@@ -449,17 +449,6 @@ async fn failure_transfer_invalid_message_format() {
 
     context.banks_client.process_transaction(tx).await;
 
-    let (_, transfer_derived_address, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [
-            TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
-            transfer_id.as_ref(),
-        ]
-        .concat()
-        .as_ref(),
-    );
-
     let (_, verified_messages_derived_address, _) = find_derived_pair(
         &audius_reward_manager::id(),
         &reward_manager.pubkey(),
@@ -502,6 +491,11 @@ async fn failure_transfer_invalid_message_format() {
 
     let tx_result = context.banks_client.process_transaction(tx).await;
     assert!(tx_result.is_err());
+    match tx_result {
+        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 0: custom program error: 0xe" => return (),
+        Err(_) => panic!("Returned incorrect error!"),
+        Ok(_) => panic!("Incorrectly returned Ok!"),
+    }
 }
 
 #[tokio::test]
@@ -686,17 +680,6 @@ async fn failure_transfer_invalid_oracle_message_format() {
 
     context.banks_client.process_transaction(tx).await;
 
-    let (_, transfer_derived_address, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [
-            TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
-            transfer_id.as_ref(),
-        ]
-        .concat()
-        .as_ref(),
-    );
-
     let (_, verified_messages_derived_address, _) = find_derived_pair(
         &audius_reward_manager::id(),
         &reward_manager.pubkey(),
@@ -739,6 +722,11 @@ async fn failure_transfer_invalid_oracle_message_format() {
 
     let tx_result = context.banks_client.process_transaction(tx).await;
     assert!(tx_result.is_err());
+    match tx_result {
+        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 0: custom program error: 0xe" => return (),
+        Err(_) => panic!("Returned incorrect error!"),
+        Ok(_) => panic!("Incorrectly returned Ok!"),
+    }
 }
 
 #[tokio::test]
@@ -917,5 +905,10 @@ async fn failure_transfer_incorrect_number_of_verified_messages() {
 
     // intentionally not push oracle instruction above and process transaction
     let tx_result = context.banks_client.process_transaction(tx).await;
-    assert!(tx_result.is_err())
+    assert!(tx_result.is_err());
+    match tx_result {
+        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 7: custom program error: 0x8" => return (),
+        Err(_) => panic!("Returned incorrect error!"),
+        Ok(_) => panic!("Incorrectly returned Ok!"),
+    }
 }
