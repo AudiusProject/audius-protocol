@@ -60,8 +60,8 @@ pub struct EvaluateAttestationsArgs {
 pub enum Instructions {
     ///   Initialize Reward manager
     ///
-    ///   0. `[writable]` Account that will be initialized as Reward manager.
-    ///   1. `[writable]` The new account that to be initialized as the token account.
+    ///   0. `[writable]` Reward manager - Account that will be initialized as Reward manager.
+    ///   1. `[writable]` Token account - The new account that to be initialized as the token account.
     ///   2. `[]` Mint with which the new token account will be associated on initialization.
     ///   3. `[]` Manager account to be set as the Reward manager.
     ///   4. `[]` Reward manager authority.
@@ -69,12 +69,12 @@ pub enum Instructions {
     ///   6. `[]` Rent sysvar
     InitRewardManager(InitRewardManagerArgs),
 
-    ///   Change RewardManager authority
+    ///   Change RewardManager manager account
     ///
     ///   0. `[writable]` Reward manager
-    ///   1. `[signer]` Current authority
-    ///   2. `[]` New authority
-    ChangeRewardManagerAuthority,
+    ///   1. `[signer]` Current manager
+    ///   2. `[]` New manager
+    ChangeManagerAccount,
 
     ///   Admin method creating new authorized sender
     ///
@@ -87,7 +87,7 @@ pub enum Instructions {
     ///   6. `[]` Rent sysvar
     CreateSender(CreateSenderArgs),
 
-    ///   Admin method removing sender
+    ///   Admin method for removing sender
     ///  
     ///   0. `[]` Reward manager
     ///   1. `[signer]` Manager account
@@ -96,7 +96,7 @@ pub enum Instructions {
     ///   4. `[]` Refunder account
     DeleteSender,
 
-    ///
+    ///   Add sender with other senders attesting as proof
     ///
     /// 0. `[]` Reward manager
     /// 1. `[]` Reward manager authority
@@ -106,7 +106,7 @@ pub enum Instructions {
     /// ...
     CreateSenderPublic(CreateSenderPublicArgs),
 
-    ///   Delete sender with other senders proof
+    ///   Delete sender with other senders attesting as proof
     ///
     ///   0. `[]` Reward manager
     ///   1. `[writable]` Sender account to delete
@@ -115,9 +115,9 @@ pub enum Instructions {
     ///   4. `[]` Bunch of senders which prove removing another one
     DeleteSenderPublic,
 
-    ///   Verify transfer signature
+    ///   Submit attestations
     ///
-    ///   0. `[writable]` New or existing account PDA storing verified messages
+    ///   0. `[writable]` Verified messages - New or existing account PDA storing verified messages
     ///   1. `[]` Reward manager
     ///   2. `[]` Reward manager authority
     ///   3. `[signer]` Funder
@@ -127,15 +127,15 @@ pub enum Instructions {
     ///   7. `[]` System program id
     SubmitAttestations(SubmitAttestationsArgs),
 
-    ///   Transfer tokens to pointed receiver
+    ///   Evaluate attestations, transferring tokens to token recipient
     ///
-    ///   0. `[]` Verified messages
+    ///   0. `[]` Verified messages - New or existing account PDA storing verified messages-
     ///   1. `[]` Reward manager
     ///   2. `[]` Reward manager authority
     ///   3. `[]` Reward token source
     ///   4. `[]` Reward token recipient
-    ///   5. `[]` Transfer account
-    ///   6. `[]` Bot oracle
+    ///   5. `[]` Transfer account - the account which represents a successful transfer
+    ///   6. `[]` Bot oracle - the address of the oracle 
     ///   7. `[]` Payer
     ///   8. `[]` Sysvar rent
     ///   9. `[]` Token program id
@@ -173,14 +173,14 @@ pub fn init(
     })
 }
 
-/// Create `ChangeRewardManagerAuthority` instruction
+/// Create `ChangeManagerAccount` instruction
 pub fn change_manager_authority(
     program_id: &Pubkey,
     reward_manager: &Pubkey,
     current_authority: &Pubkey,
     new_authority: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
-    let data = Instructions::ChangeRewardManagerAuthority.try_to_vec()?;
+    let data = Instructions::ChangeManagerAccount.try_to_vec()?;
 
     let accounts = vec![
         AccountMeta::new(*reward_manager, false),

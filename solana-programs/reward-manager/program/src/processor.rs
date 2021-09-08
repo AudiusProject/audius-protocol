@@ -47,7 +47,8 @@ impl Processor {
         Ok(())
     }
 
-    /// Process example instruction
+    /// Process init instruction
+    /// Initializes the token account and creates a RewardManager account
     #[allow(clippy::too_many_arguments)]
     fn process_init_instruction<'a>(
         program_id: &Pubkey,
@@ -66,12 +67,16 @@ impl Processor {
             RewardManager::unpack_unchecked(&reward_manager_info.data.borrow())?;
         assert_uninitialized(&reward_manager)?;
 
+        // Find the reward_manager_authority, and test it against
+        // `authority_info` to ensure the correct 
+        // account was passed in.
         let (reward_manager_authority, _) =
             find_program_address(program_id, reward_manager_info.key);
         if reward_manager_authority != *authority_info.key {
             return Err(ProgramError::InvalidAccountData);
         }
 
+        // Initialize the token account
         spl_initialize_account(
             token_account_info.clone(),
             mint_info.clone(),
@@ -85,25 +90,31 @@ impl Processor {
         Ok(())
     }
 
-    fn process_change_reward_manager_authority<'a>(
+    /// Process change_manager_account instruction.
+    /// Changes the `manager` field on the `RewardManager` account,
+    /// provided that the transaction is signed by the current manager.
+    fn process_change_manager_account<'a>(
         reward_manager_info: &AccountInfo<'a>,
-        current_authority_info: &AccountInfo<'a>,
-        new_authority_info: &AccountInfo<'a>,
+        current_manager_info: &AccountInfo<'a>,
+        new_manager_info: &AccountInfo<'a>,
     ) -> ProgramResult {
-        if !current_authority_info.is_signer {
+        if !current_manager_info.is_signer {
             return Err(ProgramError::MissingRequiredSignature);
         }
 
         let mut reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
-        assert_account_key(current_authority_info, &reward_manager.manager)?;
+        assert_account_key(current_manager_info, &reward_manager.manager)?;
 
-        reward_manager.manager = *new_authority_info.key;
+        reward_manager.manager = *new_manager_info.key;
 
         RewardManager::pack(reward_manager, *reward_manager_info.data.borrow_mut())?;
 
         Ok(())
     }
 
+    /// Process create_sender instruction.
+    /// Creates a new `Sender` account, owned by the program.
+    /// Must be signed by the `manager_account_info`
     #[allow(clippy::too_many_arguments)]
     fn process_create_sender<'a>(
         program_id: &Pubkey,
@@ -126,19 +137,21 @@ impl Processor {
         let reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
         assert_account_key(manager_account_info, &reward_manager.manager)?;
 
-        let derived_seed = [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()].concat();
-        let (reward_manager_authority, derived_address, bump_seed) =
-            find_derived_pair(program_id, reward_manager_info.key, derived_seed.as_ref());
+        // Derive the sender address from the eth_address, and assert it matches `sender_info`
+        let sender_seed = [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()].concat();
+        let (reward_manager_authority, derived_sender_address, bump_seed) =
+            find_derived_pair(program_id, reward_manager_info.key, sender_seed.as_ref());
 
         assert_account_key(authority_info, &reward_manager_authority)?;
-        assert_account_key(sender_info, &derived_address)?;
+        assert_account_key(sender_info, &derived_sender_address)?;
 
         let signers_seeds = &[
             &reward_manager_authority.to_bytes()[..32],
-            &derived_seed.as_slice(),
+            &sender_seed.as_slice(),
             &[bump_seed],
         ];
 
+        // Create the account
         let rent = Rent::from_account_info(rent_info)?;
         create_account(
             program_id,
@@ -155,6 +168,9 @@ impl Processor {
         Ok(())
     }
 
+    /// Process `delete_sender` instruction.
+    /// Deletes a sender by transfering all of it's balance to the `refunder_account`.
+    /// Must be signed by the `manager_account_info`.
     fn process_delete_sender<'a>(
         program_id: &Pubkey,
         reward_manager_info: &AccountInfo<'a>,
@@ -181,6 +197,9 @@ impl Processor {
         Ok(())
     }
 
+    /// Process `delete_sender_public` instruction.
+    /// Ensures signers are correct, then deletes the `sender_info`
+    /// by transferring its balance to `refunder_info`.
     fn process_delete_sender_public<'a>(
         program_id: &Pubkey,
         reward_manager_info: &AccountInfo<'a>,
@@ -195,11 +214,13 @@ impl Processor {
         let reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
         let sender_account = SenderAccount::unpack(&sender_info.data.borrow())?;
 
+        // Verify we have a sufficient amount of signers
         if signers_info.len() < reward_manager.min_votes.into() {
             return Err(AudiusProgramError::NotEnoughSigners.into());
         }
 
-        check_secp_instructions(
+        // Verify signers are as expected
+        validate_secp_add_delete_sender(
             program_id,
             reward_manager_info.key,
             instructions_info,
@@ -232,11 +253,14 @@ impl Processor {
         assert_owned_by(reward_manager_info, program_id)?;
 
         let reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
+
+        // Verify we have a sufficient amount of signers
         if signers_info.len() < reward_manager.min_votes.into() {
             return Err(AudiusProgramError::NotEnoughSigners.into());
         }
 
-        check_secp_instructions(
+        // Verify signers are as expected
+        validate_secp_add_delete_sender(
             program_id,
             reward_manager_info.key,
             instructions_info,
@@ -246,16 +270,19 @@ impl Processor {
             ADD_SENDER_MESSAGE_PREFIX,
         )?;
 
-        let derived_seed = [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()].concat();
-        let (reward_manager_authority, derived_address, bump_seed) =
-            find_derived_pair(program_id, reward_manager_info.key, derived_seed.as_ref());
+        // Ensure `new_sender_info` matches `derived_sender_info`, generated 
+        // from eth address
+        let sender_seed = [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()].concat();
+        let (reward_manager_authority, derived_sender_info, bump_seed) =
+            find_derived_pair(program_id, reward_manager_info.key, sender_seed.as_ref());
 
         assert_account_key(authority_info, &reward_manager_authority)?;
-        assert_account_key(new_sender_info, &derived_address)?;
+        assert_account_key(new_sender_info, &derived_sender_info)?;
 
+        // Create the new sender account
         let signers_seeds = &[
             &reward_manager_authority.to_bytes()[..32],
-            &derived_seed.as_slice(),
+            &sender_seed.as_slice(),
             &[bump_seed],
         ];
 
@@ -290,29 +317,31 @@ impl Processor {
         assert_owned_by(reward_manager_info, program_id)?;
         assert_owned_by(sender_info, program_id)?;
 
+        // Retrieve the sender account, assert that 
+        // it's reward_manager field is this reward_manager.
         let sender_account = SenderAccount::unpack(&sender_info.data.borrow())?;
         assert_account_key(reward_manager_info, &sender_account.reward_manager)?;
 
-        // Verify derived address matches expected value
-        let derived_seed = [
+        // Derive the verified messages account from the transfer_data and seed prefix,
+        // and ensure that the account matches `verified_messages_info` before proceeding.
+        let verified_messages_account_seed = [
             VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
             verify_transfer_data.id.as_ref(),
-        ]
-        .concat();
-
-        let (reward_manager_authority, derived_address, bump_seed) =
-            find_derived_pair(program_id, reward_manager_info.key, derived_seed.as_ref());
-
+        ].concat();
+        let (reward_manager_authority, derived_verified_messages_account, bump_seed) =
+            find_derived_pair(program_id, reward_manager_info.key, verified_messages_account_seed.as_ref());
         assert_account_key(authority_info, &reward_manager_authority)?;
-        assert_account_key(verified_messages_info, &derived_address)?;
+        assert_account_key(verified_messages_info, &derived_verified_messages_account)?;
 
-        let signers_seeds = &[
-            &reward_manager_authority.to_bytes()[..32],
-            &derived_seed.as_slice(),
-            &[bump_seed],
-        ];
-
+        // If the verified messages account doesn't exist, create it. Otherwise, 
+        // ensure that we own it before proceeding.
         if verified_messages_info.data_len() == 0 && verified_messages_info.lamports() == 0 {
+            let signers_seeds = &[
+                &reward_manager_authority.to_bytes()[..32],
+                &verified_messages_account_seed.as_slice(),
+                &[bump_seed],
+            ];
+
             let rent = Rent::from_account_info(rent_info)?;
             create_account(
                 program_id,
@@ -326,6 +355,7 @@ impl Processor {
             assert_owned_by(verified_messages_info, program_id)?;
         }
 
+        // Unpack verified messages, initializing it if needed.
         let mut verified_messages =
             VerifiedMessages::unpack_unchecked(&verified_messages_info.data.borrow())?;
         if verified_messages.is_initialized() {
@@ -334,8 +364,10 @@ impl Processor {
             verified_messages = VerifiedMessages::new(*reward_manager_info.key);
         }
 
-        // Check signatures from prev instruction
-        let message = check_secp_verify_transfer(instruction_info, &sender_account.eth_address)?;
+        // Check that that previous instruction was a signed vote message,
+        // signed by the `sender_account`'s eth address, adding it to the verified_messages
+        // account if so.
+        let message = validate_secp_submit_attestation(instruction_info, &sender_account.eth_address)?;
 
         verified_messages.add(VerifiedMessage {
             address: sender_account.eth_address,
@@ -374,7 +406,9 @@ impl Processor {
         let reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
 
         let verified_messages = VerifiedMessages::unpack(&verified_messages_info.data.borrow())?;
-        // Check signs for minimum required votes
+
+        // Check signs for minimum required votes, accounting for extra bot oracle
+        // attestation
         if verified_messages.messages.len() != (reward_manager.min_votes + 1) as usize {
             return Err(AudiusProgramError::NotEnoughSigners.into());
         }
@@ -404,8 +438,8 @@ impl Processor {
         ]
         .concat();
 
-        // Check messages and bot oracles
-        assert_messages(
+        // Assert messages are in the expected format
+        assert_valid_attestations(
             &valid_message,
             &valid_bot_oracle_message,
             &bot_oracle.eth_address,
@@ -422,21 +456,21 @@ impl Processor {
             transfer_data.amount,
         )?;
 
-        let derived_seed = [
+        // Create the transfer account to represent this disbursement, 
+        // preventing the same transfer_data from being used twice.
+        let transfer_account_seed = [
             TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
             transfer_data.id.as_ref(),
         ]
         .concat();
         let (reward_manager_authority, _, bump_seed) =
-            find_derived_pair(program_id, reward_manager_info.key, derived_seed.as_ref());
+            find_derived_pair(program_id, reward_manager_info.key, transfer_account_seed.as_ref());
 
         let signers_seeds = &[
             &reward_manager_authority.to_bytes()[..32],
-            &derived_seed.as_slice(),
+            &transfer_account_seed.as_slice(),
             &[bump_seed],
         ];
-
-        // Create deterministic account on-chain
         create_account(
             program_id,
             payer_info.clone(),
@@ -446,7 +480,7 @@ impl Processor {
             rent,
         )?;
 
-        // Delete verified messages account
+        // Delete verified messages account by zeroing its rent
         let verified_messages_lamports = verified_messages_info.lamports();
         let payer_lamports = payer_info.lamports();
 
@@ -491,14 +525,14 @@ impl Processor {
                     min_votes,
                 )
             }
-            Instructions::ChangeRewardManagerAuthority => {
-                msg!("Instruction: ChangeRewardManagerAuthority");
+            Instructions::ChangeManagerAccount => {
+                msg!("Instruction: ChangeManagerAccount");
 
                 let reward_manager = next_account_info(account_info_iter)?;
                 let current_authority = next_account_info(account_info_iter)?;
                 let new_authority = next_account_info(account_info_iter)?;
 
-                Self::process_change_reward_manager_authority(
+                Self::process_change_manager_account(
                     reward_manager,
                     current_authority,
                     new_authority,
