@@ -151,6 +151,7 @@ const BasicForm = props => {
               placeholder='Description'
               defaultValue={props.defaultFields.description || ''}
               onChange={value => props.onChangeField('description', value)}
+              characterLimit={1000}
             />
           </div>
         </div>
