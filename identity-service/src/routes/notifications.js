@@ -699,7 +699,7 @@ module.exports = function (app) {
     const isProcessorRunning = app.get('notificationProcessor').isInit
     if (!isProcessorRunning && shouldRunNotifications) {
       req.logger.info(`Starting notification processor`)
-      await this.notificationProcessor.init(
+      await app.get('notificationProcessor').init(
         app.get('audiusLibs'),
         app,
         app.get('redis')
