@@ -197,7 +197,7 @@ function decodeHashId (id) {
 const NOTIFICATIONS_POD_HOSTNAME = 'notifications-pod-hostname'
 async function getShouldRunNotifications (redis) {
   const notificationsPodHostname = await redis.get(NOTIFICATIONS_POD_HOSTNAME)
-  return config.HOSTNAME === notificationsPodHostname
+  return config.get('HOSTNAME') === notificationsPodHostname
 }
 
 module.exports = {

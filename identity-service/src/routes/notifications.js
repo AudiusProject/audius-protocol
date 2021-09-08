@@ -687,7 +687,7 @@ module.exports = function (app) {
   */
   app.get('/notifications/processor', handleResponse(async (req, res, next) => {
     const shouldRunNotifications = await getShouldRunNotifications(app.get('redis'))
-    const isProcessorRunning = app.notificationProcessor.isInit
+    const isProcessorRunning = app.get('notificationProcessor').isInit
     return successResponse({ isProcessorRunning, shouldRunNotifications })
   }))
 
