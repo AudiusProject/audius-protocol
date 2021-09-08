@@ -213,17 +213,6 @@ impl Processor {
         eth_address: EthereumAddress,
         amount: u64,
     ) -> ProgramResult {
-
-        // Confirmation of ownership
-        // assert_owned_by(
-        //     banks_token_account_info,
-        //     program_id
-        // )?;
-        msg!("program id: {:?}", &program_id);
-        msg!("banks token : {:?}", &banks_token_account_info);
-        msg!("banks token owner : {:?}", &banks_token_account_info);
-        msg!("authority : {:?}", &authority_account_info);
-
         Self::check_ethereum_sign(
             &instruction_info,
             &eth_address,
