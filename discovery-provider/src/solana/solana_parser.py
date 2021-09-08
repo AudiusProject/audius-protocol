@@ -56,6 +56,7 @@ def parse_instruction_data(data: str, instructionFormat: List[InstructionFormat]
             decoded_int = int.from_bytes(decoded[last_end : last_end + type_len], "big")
             # Ensure stored address is of length 40 characters
             # Pads zeros if present at start of string
+            # https://stackoverflow.com/a/12638477
             decoded_params[name] = "0x{:040x}".format(decoded_int)
             last_end = last_end + type_len
         elif type == SolanaInstructionType.UnixTimestamp:
