@@ -2,9 +2,9 @@ import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { Connection, PublicKey } from '@solana/web3.js'
 
 import { solanaNFTToCollectible } from 'containers/collectibles/solCollectibleHelpers'
-import { CollectibleState } from 'containers/collectibles/types'
+import { Collectible, CollectibleState } from 'containers/collectibles/types'
 
-import { SolanaNFT } from './types'
+import { MetaplexNFT, SolanaNFTType } from './types'
 
 const SOLANA_CLUSTER_ENDPOINT = process.env.REACT_APP_SOLANA_CLUSTER_ENDPOINT
 const METADATA_PROGRAM_ID = process.env.REACT_APP_METADATA_PROGRAM_ID
@@ -73,32 +73,42 @@ class SolanaClient {
               )[0]
           )
         )
+
         const accountInfos = await client.connection.getMultipleAccountsInfo(
           programAddresses
         )
-        const nonNullRes = accountInfos?.filter(Boolean) ?? []
-        const urls = nonNullRes
-          .map(x => client._utf8ArrayToUrl(x!.data))
-          .filter(Boolean)
+        const nonNullInfos = accountInfos?.filter(Boolean) ?? []
+
+        const metadataUrls = nonNullInfos
+          .map(x => client._utf8ArrayToNFTType(x!.data))
+          .filter(Boolean) as { type: SolanaNFTType; url: string }[]
+
         const results = await Promise.all(
-          urls.map(async url =>
-            fetch(url!)
+          metadataUrls.map(async item =>
+            fetch(item!.url)
               .then(res => res.json())
               .catch(() => null)
           )
         )
-        return results.map(r => r as SolanaNFT).filter(Boolean)
+
+        const metadatas = results.map((metadata, i) => ({
+          metadata,
+          type: metadataUrls[i].type
+        }))
+
+        return metadatas.filter(r => !!r.metadata)
       })
     )
 
     const solanaCollectibles = await Promise.all(
-      nfts.map(async (collectiblesForAddress, i) => {
+      nfts.map(async (nftsForAddress, i) => {
         const collectibles = await Promise.all(
-          collectiblesForAddress.map(
-            async c => await solanaNFTToCollectible(c, wallets[i])
+          nftsForAddress.map(
+            async nft =>
+              await solanaNFTToCollectible(nft.metadata, wallets[i], nft.type)
           )
         )
-        return collectibles
+        return collectibles.filter(Boolean) as Collectible[]
       })
     )
 
@@ -111,21 +121,39 @@ class SolanaClient {
     )
   }
 
-  _utf8ArrayToUrl(array: Uint8Array) {
+  _utf8ArrayToNFTType(
+    array: Uint8Array
+  ): { type: SolanaNFTType; url: string } | null {
     const str = new TextDecoder().decode(array)
-    // https://github.com/metaplex-foundation/metaplex/blob/81023eb3e52c31b605e1dcf2eb1e7425153600cd/js/packages/web/src/contexts/meta/processMetaData.ts#L29
-    const isArweave = str.includes('arweave')
     const query = 'https://'
     const startIndex = str.indexOf(query)
-    if (!isArweave || startIndex === -1) {
+
+    // metaplex standard nfts live in arweave, see link below
+    // https://github.com/metaplex-foundation/metaplex/blob/81023eb3e52c31b605e1dcf2eb1e7425153600cd/js/packages/web/src/contexts/meta/processMetaData.ts#L29
+    const isMetaplex = str.includes('arweave')
+
+    // star atlas nfts live in https://galaxy.staratlas.com/nfts/...
+    const isStarAtlas = str.includes('staratlas')
+
+    const isInvalid = (!isMetaplex && !isStarAtlas) || startIndex === -1
+    if (isInvalid) {
       return null
     }
-    const endIndex = str.indexOf('/', startIndex + query.length)
-    if (endIndex === -1) {
+
+    const suffix = isMetaplex ? '/' : '/nfts/'
+    const suffixIndex = str.indexOf(suffix, startIndex + query.length)
+    if (suffixIndex === -1) {
       return null
     }
-    const url = str.substring(startIndex, endIndex + 44)
-    return url
+
+    const hashLength = isMetaplex ? 43 : 44
+    const endIndex = suffixIndex + suffix.length + hashLength
+
+    const url = str.substring(startIndex, endIndex)
+    return {
+      type: isMetaplex ? SolanaNFTType.METAPLEX : SolanaNFTType.STAR_ATLAS,
+      url
+    }
   }
 }
 
