@@ -83,9 +83,7 @@ impl Processor {
     }
 
     /// Transfer tokens from source to destination
-    ///
-    /// NOTE: if amount is 0 transfer all token otherwise transfer specified value
-    fn token_transfer<'a>(
+     fn token_transfer<'a>(
         source: AccountInfo<'a>,
         destination: AccountInfo<'a>,
         authority: AccountInfo<'a>,
