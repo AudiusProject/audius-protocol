@@ -49,6 +49,7 @@ impl Processor {
 
     /// Process init instruction
     /// Initializes the token account and creates a RewardManager account
+    /// with `min_votes`, `token_account_info`, and `manager_info`.
     #[allow(clippy::too_many_arguments)]
     fn process_init_instruction<'a>(
         program_id: &Pubkey,
@@ -137,7 +138,7 @@ impl Processor {
         let reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
         assert_account_key(manager_account_info, &reward_manager.manager)?;
 
-        // Derive the sender address from the eth_address, and assert it matches `sender_info`
+        // Derive the sender address from the eth_address and sender_seed_prefix, and assert it matches `sender_info`
         let sender_seed = [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()].concat();
         let (reward_manager_authority, derived_sender_address, bump_seed) =
             find_derived_pair(program_id, reward_manager_info.key, sender_seed.as_ref());
@@ -318,7 +319,7 @@ impl Processor {
         assert_owned_by(sender_info, program_id)?;
 
         // Retrieve the sender account, assert that 
-        // it's reward_manager field is this reward_manager.
+        // the sender's `reward_manager` is this `reward_manager`.
         let sender_account = SenderAccount::unpack(&sender_info.data.borrow())?;
         assert_account_key(reward_manager_info, &sender_account.reward_manager)?;
 

@@ -135,7 +135,7 @@ pub enum Instructions {
     ///   3. `[]` Reward token source
     ///   4. `[]` Reward token recipient
     ///   5. `[]` Transfer account - the account which represents a successful transfer
-    ///   6. `[]` Bot oracle - the address of the oracle 
+    ///   6. `[]` Bot oracle - the ethereum public address of the oracle 
     ///   7. `[]` Payer
     ///   8. `[]` Sysvar rent
     ///   9. `[]` Token program id
