@@ -13,6 +13,7 @@
     "@project-serum/sol-wallet-adapter": "^0.2.5",
     "@reduxjs/toolkit": "^1.3.2",
     "@sentry/browser": "^5.10.2",
+    "@testing-library/react": "^12.0.0",
     "@types/jsmediatags": "^3.9.1",
     "@types/react-helmet": "^5.0.15",
     "@walletconnect/web3-provider": "^1.3.6",
@@ -124,6 +125,7 @@
     "build:ipfs-stage": "env-cmd ./.env/.env.ipfs.stage npm run build:stage && rm -rf build-mobile-staging && mv build-staging build-ipfs-staging",
     "build:ipfs-prod": "env-cmd ./.env/.env.ipfs.prod npm run build:prod && rm -rf build-mobile-production && mv build-production build-ipfs-production",
     "test": "react-scripts test --resetMocks=false",
+    "test:coverage": "react-scripts test --resetMocks=false --coverage  --watchAll=false",
     "eject": "react-scripts eject",
     "lint:fix": "eslint --cache --fix --ext=js,jsx,ts,tsx src",
     "lint": "eslint --cache --ext=js,jsx,ts,tsx src",
@@ -231,5 +233,11 @@
   "peerDependencies": {
     "@solana/spl-token": "0.1.6",
     "@solana/web3.js": "1.24.1"
+  },
+  "jest": {
+    "coverageReporters": [
+      "text",
+      "html"
+    ]
   }
 }

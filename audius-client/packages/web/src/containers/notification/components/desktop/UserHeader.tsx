@@ -3,7 +3,9 @@ import React, {
   useCallback,
   MouseEvent,
   useEffect,
-  MutableRefObject
+  MutableRefObject,
+  useMemo,
+  useState
 } from 'react'
 
 import cn from 'classnames'
@@ -38,11 +40,25 @@ export const UserImage = ({
   onProfileClick: (handle: string) => void
   className?: string
 }) => {
+  const [loadImage, setLoadImage] = useState(false)
   const profilePicture = useUserProfilePicture(
     user.user_id,
     user._profile_picture_sizes,
-    SquareSizes.SIZE_150_BY_150
+    SquareSizes.SIZE_150_BY_150,
+    undefined,
+    undefined,
+    loadImage
   )
+
+  // Loading the images immediately causes lag in the NotificationPanel animation
+  useEffect(() => {
+    if (!loadImage) {
+      const t = setTimeout(() => {
+        setLoadImage(true)
+      }, 500)
+      return () => clearTimeout(t)
+    }
+  }, [loadImage])
 
   const onClick = useCallback(
     e => {
@@ -51,6 +67,7 @@ export const UserImage = ({
     },
     [onProfileClick, user.handle]
   )
+
   return (
     <ArtistPopover handle={user.handle}>
       <div onClick={onClick} className={className}>

@@ -16,16 +16,10 @@ export enum WidthSizes {
 
 export type URL = string
 
-export type CoverArtSizes = {
-  [key in SquareSizes | DefaultSizes.OVERRIDE]: URL
-}
+export type ImageSizesObject<
+  ImageSizeEnum extends SquareSizes | WidthSizes
+> = Partial<Record<ImageSizeEnum | DefaultSizes, URL>>
 
-export type ProfilePictureSizes = {
-  [key in SquareSizes | DefaultSizes.OVERRIDE]: URL
-}
-
-export type CoverPhotoSizes = {
-  [key in WidthSizes | DefaultSizes.OVERRIDE]: URL
-}
-
-export type ImageSizes = CoverArtSizes | ProfilePictureSizes | CoverPhotoSizes
+export type CoverArtSizes = ImageSizesObject<SquareSizes>
+export type ProfilePictureSizes = ImageSizesObject<SquareSizes>
+export type CoverPhotoSizes = ImageSizesObject<WidthSizes>
