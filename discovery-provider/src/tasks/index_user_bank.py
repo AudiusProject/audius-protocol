@@ -2,8 +2,9 @@ import concurrent.futures
 import datetime
 import logging
 import re
-from typing import Tuple, Optional
 import time
+from typing import Tuple, Optional, TypedDict, List
+import base58
 from redis import Redis
 from sqlalchemy.orm.session import Session
 from sqlalchemy import desc, and_
@@ -14,6 +15,17 @@ from src.models import User, UserBankTransaction, UserBankAccount
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import get_address_pair, SPL_TOKEN_ID_PK
+from src.solana.solana_transaction_types import (
+    TransactionInfoResult,
+    TransactionMessage,
+    TransactionMessageInstruction,
+    ResultMeta
+)
+from src.solana.solana_parser import (
+    parse_instruction_data,
+    InstructionFormat,
+    SolanaInstructionType,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -94,11 +106,58 @@ def refresh_user_balance(session: Session, redis: Redis, user_bank_acct: str):
         )
         enqueue_immediate_balance_refresh(redis, [user_id[0]])
 
+create_token_account_instr: List[InstructionFormat] = [
+    {"name": "eth_address", "type": SolanaInstructionType.EthereumAddress},
+]
+
+class CreateTokenAccount(TypedDict):
+    eth_address: str
+
+def parse_create_token_data(data: str) -> CreateTokenAccount:
+    """Parse Transfer instruction data submitted to Audius Claimable Token program
+
+    Instruction struct:
+    pub struct TransferArgs {
+        pub eth_address: EthereumAddress,
+    }
+
+    Decodes the data and parses each param into the correct type
+    """
+
+    return parse_instruction_data(data, create_token_account_instr)
+
+def get_valid_instruction(
+    tx_message: TransactionMessage, meta: ResultMeta
+) -> Optional[TransactionMessageInstruction]:
+    """Checks that the tx is valid
+    checks for the transaction message for correct instruction log
+    checks accounts keys for claimable token program
+    """
+    try:
+        account_keys = tx_message["accountKeys"]
+        instructions = tx_message["instructions"]
+        user_bank_program_index = account_keys.index(USER_BANK_ADDRESS)
+        for instruction in instructions:
+            if instruction["programIdIndex"] == user_bank_program_index:
+                return instruction
+
+        return None
+    except Exception as e:
+        logger.error(
+            f"index_user_bank.py | Error processing instruction valid, {e}",
+            exc_info=True,
+        )
+        return None
 
 def process_user_bank_tx_details(
-    session: Session, redis: Redis, tx_info, tx_sig, timestamp
+    session: Session,
+    redis: Redis,
+    tx_info,
+    tx_sig,
+    timestamp
 ):
-    meta = tx_info["result"]["meta"]
+    result: TransactionInfoResult = tx_info["result"]
+    meta = result["meta"]
     error = meta["err"]
     if error:
         logger.info(
@@ -106,43 +165,66 @@ def process_user_bank_tx_details(
         )
         return
     account_keys = tx_info["result"]["transaction"]["message"]["accountKeys"]
-    instructions = meta["logMessages"]
-    for msg in instructions:
-        if "EthereumAddress" in msg:
-            public_key_str, public_key_bytes = parse_eth_address_from_msg(msg)
-            logger.info(f"index_user_bank.py | {public_key_str}")
-            # Rederive address based on user public key
-            _, derived_address = get_address_pair(
-                WAUDIO_PROGRAM_PUBKEY, public_key_bytes, USER_BANK_KEY, SPL_TOKEN_ID_PK
-            )
-            bank_acct = str(derived_address[0])
+    tx_message = result["transaction"]["message"]
+
+    # Check for valid instruction
+    has_create_token_instruction = any(
+        log == "Program log: Instruction: CreateTokenAccount"
+        for log in meta["logMessages"]
+    )
+    has_claim_instruction = any(
+        log == "Program log: Instruction: Claim"
+        for log in meta["logMessages"]
+    )
+
+    if not has_create_token_instruction and not has_claim_instruction:
+        return
+
+    instruction = get_valid_instruction(tx_message, meta)
+    if instruction is None:
+        logger.error(f"index_user_bank.py | {tx_sig} No Valid instruction found")
+        return
+
+    if has_create_token_instruction:
+        tx_data = instruction["data"]
+        parsed_token_data = parse_create_token_data(tx_data)
+        eth_addr = parsed_token_data["eth_address"]
+        decoded = base58.b58decode(tx_data)[1:]
+        public_key_bytes = decoded[:20]
+        _, derived_address = get_address_pair(
+            WAUDIO_PROGRAM_PUBKEY,
+            public_key_bytes,
+            USER_BANK_KEY,
+            SPL_TOKEN_ID_PK
+        )
+        bank_acct = str(derived_address[0])
+        try:
             # Confirm expected address is present in transaction
-            try:
-                bank_acct_index = account_keys.index(bank_acct)
+            bank_acct_index = account_keys.index(bank_acct)
+            if bank_acct_index:
+                logger.info(
+                    f"index_user_bank.py | {tx_sig} Found known account: {eth_addr}, {bank_acct}"
+                )
                 session.add(
                     UserBankAccount(
                         signature=tx_sig,
-                        ethereum_address=public_key_str,
+                        ethereum_address=eth_addr,
                         bank_account=bank_acct,
                         created_at=timestamp,
                     )
                 )
-                if bank_acct_index:
-                    logger.info(
-                        f"index_user_bank.py | Found known account: {public_key_str}, {bank_acct}"
-                    )
-            except ValueError as e:
-                logger.error(e)
-        elif "Transfer" in msg:
-            # Accounts to refresh balance
-            acct_1 = account_keys[1]
-            acct_2 = account_keys[2]
-            logger.info(
-                f"index_user_bank.py | Balance refresh accounts: {acct_1}, {acct_2}"
-            )
-            refresh_user_balance(session, redis, acct_1)
-            refresh_user_balance(session, redis, acct_2)
+        except ValueError as e:
+            logger.error(e)
 
+    elif has_claim_instruction:
+        # Accounts to refresh balance
+        acct_1 = account_keys[1]
+        acct_2 = account_keys[2]
+        logger.info(
+            f"index_user_bank.py | Balance refresh accounts: {acct_1}, {acct_2}"
+        )
+        refresh_user_balance(session, redis, acct_1)
+        refresh_user_balance(session, redis, acct_2)
 
 def parse_user_bank_transaction(
     session: Session, solana_client_manager: SolanaClientManager, tx_sig, redis

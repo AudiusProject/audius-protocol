@@ -20,7 +20,7 @@ const DEFAULT_NUM_CREATOR_NODES = 4
 const DEFAULT_NUM_USERS = 2
 const SNAPBACK_NUM_USERS = 10
 const USER_REPLICA_SET_NUM_USERS = 4
-const MAD_DOG_NIGHTLY_DURATION_SECONDS = 1000
+const MAD_DOG_NIGHTLY_DURATION_SECONDS = 300
 
 // Allow command line args for wallet index offset
 const commandLineOffset = parseInt(process.argv.slice(4)[0])

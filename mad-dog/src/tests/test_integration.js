@@ -3,9 +3,9 @@ const { _ } = require('lodash')
 const fs = require('fs-extra')
 const axios = require('axios')
 const retry = require('async-retry')
+const assert = require('assert')
 const ServiceCommands = require('@audius/service-commands')
 const { getContentNodeEndpoints, getRepostersForTrack, createPlaylist, getPlaylists } = require('@audius/service-commands')
-const assert = require('assert')
 
 const {
   OPERATION_TYPE,
@@ -233,6 +233,7 @@ module.exports = coreIntegration = async ({
           const playlist = await executeOne(walletIndex, l =>
             createPlaylist(l, userId, randomPlaylistName, false, false, [])
           )
+          logger.info(`User [${userId}] created playlist [${playlist.playlistId}].`)
           await executeOne(walletIndex, l => l.waitForLatestBlock())
           await retry(async () => {
             // verify playlist
@@ -267,6 +268,7 @@ module.exports = coreIntegration = async ({
             await executeOne(walletIndex, l =>
               addPlaylistTrack(l, playlistId, trackId)
             )
+            logger.info(`Track [${trackId}] added to playlist [${playlistId}].`)
             await executeOne(walletIndex, l => l.waitForLatestBlock())
 
             // verify playlist track add
@@ -458,13 +460,13 @@ module.exports = coreIntegration = async ({
   // Run emitter test, wait for it to finish
   await emitterTest.run()
   logger.info('Emitter test exited')
-
   printTestSummary()
-  verifyThresholds(emitterTest)
 
   /**
    * Verify results
    */
+
+  verifyThresholds(emitterTest)
 
   // Check all user replicas until they are synced up to primary
   await executeAll(async (libs, i) => {
@@ -742,6 +744,9 @@ async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) 
 
 const verifyThresholds = (emitterTest) => {
   // NOTE - # of ticks = (duration / interval) - 1
+  // thresholds are approximated based on the number of ticks, randomization, and dependencies
+  // e.g., reposted has a lower threshold since it depends on an existing track that's not yet reposted
+
   const numberOfTicks = (emitterTest.testDurationSeconds / emitterTest.tickIntervalSeconds) - 1
   assert.ok(uploadedTracks.length > (numberOfTicks / 5))
   assert.ok(repostedTracks.length > (numberOfTicks / 10))

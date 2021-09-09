@@ -159,7 +159,6 @@ async function submitAttestations ({
       const secpInstruction = Promise.resolve(
         generateSecpInstruction({
           attestationMeta: meta,
-          isOracle: false,
           recipientEthAddress,
           oracleAddress: oracleAttestation.ethAddress,
           tokenAmount,
@@ -177,9 +176,7 @@ async function submitAttestations ({
     recipientEthAddress,
     instructionIndex: instructions.length,
     transferId,
-    isOracle: true,
-    tokenAmount,
-    oracleAddress: oracleAttestation.ethAddress
+    tokenAmount
   })
   const oracleTransfer = await generateSubmitAttestationInstruction({
     attestationMeta: oracleAttestation,
@@ -505,7 +502,6 @@ const generateSubmitAttestationInstruction = async ({
  *
  * @param {{
  *   attestationMeta: AttestationMeta
- *   isOracle: boolean
  *   recipientEthAddress: string
  *   tokenAmount: BN
  *   transferId: string
@@ -513,7 +509,6 @@ const generateSubmitAttestationInstruction = async ({
  *   instructionIndex: number
  * }} {
  *   attestationMeta,
- *   isOracle,
  *   recipientEthAddress,
  *   tokenAmount,
  *   transferId,
@@ -524,7 +519,6 @@ const generateSubmitAttestationInstruction = async ({
  */
 const generateSecpInstruction = ({
   attestationMeta,
-  isOracle,
   recipientEthAddress,
   tokenAmount,
   transferId,
