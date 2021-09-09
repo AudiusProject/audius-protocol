@@ -43,5 +43,6 @@
 }
 
 :global(#WEB3_CONNECT_MODAL_ID) {
-  z-index: 10000;
+  /* See utils/zIndex.ts */
+  z-index: 10001;
 }
