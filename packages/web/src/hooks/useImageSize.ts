@@ -10,7 +10,7 @@ import {
   CoverArtSizes,
   CoverPhotoSizes,
   DefaultSizes,
-  ImageSizes,
+  ImageSizesObject,
   ProfilePictureSizes,
   SquareSizes,
   URL,
@@ -19,138 +19,144 @@ import {
 import { fetchCoverArt as fetchCollectionCoverArt } from 'store/cache/collections/actions'
 import { fetchCoverArt as fetchTrackCoverArt } from 'store/cache/tracks/actions'
 import { fetchCoverPhoto, fetchProfilePicture } from 'store/cache/users/actions'
+import { Maybe } from 'utils/typeUtils'
 
-type SizeArray = Array<SquareSizes | WidthSizes>
+type Size = SquareSizes | WidthSizes
 
 /** Gets the width dimension of a size */
-const getWidth = (size: SquareSizes | WidthSizes): number =>
-  parseInt(size.split('x')[0], 10)
-
-/** Gets all sizes in an array that are greater than the provided size */
-const filterGreater = (
-  sizes: SizeArray,
-  size: SquareSizes | WidthSizes
-): SizeArray => {
-  return sizes.filter(s => getWidth(s) > getWidth(size))
-}
-
-/** Gets all sizes in an array that are less than the provided size */
-const filterLess = (
-  sizes: SizeArray,
-  size: SquareSizes | WidthSizes
-): SizeArray => {
-  return sizes.filter(s => getWidth(s) < getWidth(size))
-}
+const getWidth = (size: Size): number => parseInt(size.split('x')[0], 10)
 
 /** Sorts sizes according to their width dimension */
-const sortSizes = (sizes: SizeArray, reverse?: boolean): SizeArray => {
-  return reverse
-    ? sizes.sort((a, b) => getWidth(b) - getWidth(a))
-    : sizes.sort((a, b) => getWidth(a) - getWidth(b))
+const sortSizes = <ImageSize extends Size>(sizes: ImageSize[]): ImageSize[] => {
+  return sizes.sort((a, b) => getWidth(b) - getWidth(a))
 }
 
 /**
- * Gets the next smallest available image size. If we have images
- * [A > B > C] and we request B, this method returns C.
+ * Gets the next available image size (sorted largest to smallest) meeting a condition
  */
-const getNextSmallest = (
-  imageSizes: ImageSizes,
-  size: SquareSizes | WidthSizes,
-  defaultImage: string
-): URL => {
-  const keys = Object.keys(imageSizes) as SquareSizes[]
-  const nextLargest = sortSizes(filterLess(keys, size))[0]
-  if (!nextLargest) return defaultImage
-  return (imageSizes as any)[nextLargest]
+const getNextImage = <
+  ImageSize extends Size,
+  ImageSizes extends ImageSizesObject<ImageSize>
+>(
+  condition: (desiredWidth: number, currentWidth: number) => boolean
+) => (imageSizes: ImageSizes, size: ImageSize) => {
+  const keys = Object.keys(imageSizes) as ImageSize[]
+
+  const desiredWidth = getWidth(size)
+  const sorted = sortSizes(
+    keys.filter(s => condition(getWidth(s), desiredWidth))
+  )
+  const next = sorted[0]
+  return imageSizes[next]
 }
 
-/**
- * Gets the first available larger image size. If we have images
- * [A > B > C] and we request C, this method returns A.
- */
-const getLarger = (
-  imageSizes: ImageSizes,
-  size: SquareSizes | WidthSizes,
-  defaultImage: string
-): URL | null => {
-  const keys = Object.keys(imageSizes) as SquareSizes[]
-  const larger = sortSizes(filterGreater(keys, size))[0]
-  if (!larger) return defaultImage
-  return (imageSizes as any)[larger]
-}
-
-type UseImageSizeProps = {
-  id?: number | null
-  sizes: ImageSizes | null
-  size: SquareSizes | WidthSizes
-  action: (id: number, size: SquareSizes | WidthSizes) => void
+type UseImageSizeProps<
+  ImageSize extends Size,
+  ImageSizes extends ImageSizesObject<ImageSize>
+> = {
+  // The action to dispatch to fetch the desired size
+  action: (id: number, size: ImageSize) => void
+  // The fallback if no sizes are available
   defaultImage?: string
+  // A unique id (used to prevent duplicate fetches)
+  id?: number | null
+  // A flag (default = true) that will trigger the image load. Can be used to delay the load
+  load?: boolean
+  // A flag that will cause the return value to be a function that will trigger the image load
   onDemand?: boolean
+  // The desired size of the image
+  size: ImageSize
+  // The available sizes of the image
+  sizes: ImageSizes | null
 }
+
 /**
  * Custom hooks that allow a component to use an image size for a
  * track, collection, or user's image.
+ *
+ * If the desired size is not yet cached, the next best size will be returned.
+ * The desired size will be requested and returned when it becomes available
+ *
  */
-const useImageSize = ({
-  id,
-  sizes,
-  size,
+export const useImageSize = <
+  ImageSize extends Size,
+  ImageSizes extends ImageSizesObject<ImageSize>
+>({
   action,
   defaultImage = '',
-  onDemand
-}: UseImageSizeProps) => {
+  id,
+  load = true,
+  onDemand,
+  size,
+  sizes
+}: UseImageSizeProps<ImageSize, ImageSizes>) => {
   const dispatch = useDispatch()
   const [getPreviousId, setPreviousId] = useInstanceVar<number | null>(null)
 
-  const getImageSize = () => {
+  const fallbackImage = (url: URL) => {
+    setPreviousId(null)
+    return url
+  }
+
+  const getSmallerImage = getNextImage<ImageSize, ImageSizes>((a, b) => a < b)
+  const getLargerImage = getNextImage<ImageSize, ImageSizes>((a, b) => a > b)
+
+  const getImageSize = (): Maybe<URL> => {
     if (id === null || id === undefined) {
       return ''
     }
 
     // No image sizes object
-    if (id !== null && id !== undefined && !sizes) {
-      setPreviousId(null)
-      return ''
+    if (!sizes) {
+      return fallbackImage('')
     }
 
-    // Found an override
-    // @ts-ignore
+    // An override exists
     if (DefaultSizes.OVERRIDE in sizes) {
-      setPreviousId(null)
-      const url = (sizes as any)[DefaultSizes.OVERRIDE]
-      if (!url) return defaultImage
-      return url
+      const override: Maybe<URL> = sizes[DefaultSizes.OVERRIDE]
+      if (override) {
+        return fallbackImage(override)
+      }
+
+      return defaultImage
     }
 
-    // Found the requested size
-    // @ts-ignore
+    // The desired size exists
     if (size in sizes) {
-      setPreviousId(null)
-      const url = (sizes as any)[size]
-      if (!url) return defaultImage
-      return url
+      const desired: Maybe<URL> = sizes[size]
+      if (desired) {
+        return desired
+      }
+
+      return defaultImage
     }
 
-    // A larger size does exist
-    // @ts-ignore
-    const larger = getLarger(sizes, size)
+    // A larger size exists
+    const larger: Maybe<URL> = getLargerImage(sizes, size)
     if (larger) {
-      setPreviousId(null)
-      return larger
+      return fallbackImage(larger)
     }
 
-    // Request the right size but return the next best option
-    if (getPreviousId() !== id) {
+    // If no larger size exists, dispatch to get the desired size
+    // Don't dispatch twice for the same id
+    if (load && getPreviousId() !== id) {
       setPreviousId(id)
-      // Don't dispatch twice for the same id
+      // Request the desired size
       dispatch(action(id, size))
     }
-    // @ts-ignore
-    return getNextSmallest(sizes, size)
+
+    // A smaller size exists
+    const smaller: Maybe<URL> = getSmallerImage(sizes, size)
+    if (smaller) {
+      return fallbackImage(smaller)
+    }
+
+    return undefined
   }
 
-  if (!onDemand) return getImageSize()
-  return getImageSize
+  // TODO: sk - disambiguate the return value so it can be typed
+  if (!onDemand) return getImageSize() as any
+  return getImageSize as any
 }
 
 const ARTWORK_HAS_LOADED_TIMEOUT = 1000
@@ -185,7 +191,8 @@ export const useTrackCoverArt = (
   coverArtSizes: CoverArtSizes | null,
   size: SquareSizes,
   defaultImage: string = imageEmpty,
-  onDemand = false
+  onDemand = false,
+  load = true
 ) =>
   useImageSize({
     id: trackId,
@@ -193,7 +200,8 @@ export const useTrackCoverArt = (
     size,
     action: fetchTrackCoverArt,
     defaultImage,
-    onDemand
+    onDemand,
+    load
   })
 
 export const useCollectionCoverArt = (
@@ -201,7 +209,8 @@ export const useCollectionCoverArt = (
   coverArtSizes: CoverArtSizes | null,
   size: SquareSizes,
   defaultImage: string = imageEmpty,
-  onDemand = false
+  onDemand = false,
+  load = true
 ) =>
   useImageSize({
     id: collectionId,
@@ -209,7 +218,8 @@ export const useCollectionCoverArt = (
     size,
     action: fetchCollectionCoverArt,
     defaultImage,
-    onDemand
+    onDemand,
+    load
   })
 
 export const useUserProfilePicture = (
@@ -217,7 +227,8 @@ export const useUserProfilePicture = (
   profilePictureSizes: ProfilePictureSizes | null,
   size: SquareSizes,
   defaultImage: string = profilePicEmpty,
-  onDemand = false
+  onDemand = false,
+  load = true
 ) =>
   useImageSize({
     id: userId,
@@ -225,7 +236,8 @@ export const useUserProfilePicture = (
     size,
     action: fetchProfilePicture,
     defaultImage,
-    onDemand
+    onDemand,
+    load
   })
 
 export const useUserCoverPhoto = (
@@ -233,7 +245,8 @@ export const useUserCoverPhoto = (
   coverPhotoSizes: CoverPhotoSizes | null,
   size: WidthSizes,
   defaultImage: string = imageCoverPhotoBlank,
-  onDemand = false
+  onDemand = false,
+  load = true
 ) =>
   useImageSize({
     id: userId,
@@ -241,5 +254,6 @@ export const useUserCoverPhoto = (
     size,
     action: fetchCoverPhoto,
     defaultImage,
-    onDemand
+    onDemand,
+    load
   })

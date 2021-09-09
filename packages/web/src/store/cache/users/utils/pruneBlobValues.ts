@@ -14,7 +14,7 @@ export const pruneBlobValues = (user: User) => {
   if (returned._profile_picture_sizes) {
     ;(Object.keys(returned._profile_picture_sizes) as SquareSizes[]).forEach(
       size => {
-        if (returned._profile_picture_sizes[size].startsWith('blob')) {
+        if (returned._profile_picture_sizes[size]?.startsWith('blob')) {
           delete returned._profile_picture_sizes[size]
         }
       }
@@ -23,7 +23,7 @@ export const pruneBlobValues = (user: User) => {
   if (returned._cover_photo_sizes) {
     ;(Object.keys(returned._cover_photo_sizes) as WidthSizes[]).forEach(
       size => {
-        if (returned._cover_photo_sizes[size].startsWith('blob')) {
+        if (returned._cover_photo_sizes[size]?.startsWith('blob')) {
           delete returned._cover_photo_sizes[size]
         }
       }
