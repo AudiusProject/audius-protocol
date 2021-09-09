@@ -80,7 +80,6 @@ type FollowerGroup = {
   status: Status
   users: User[]
 }
-
 export interface ProfileUser extends User {
   followers: FollowerGroup
   followeeFollows: FollowerGroup

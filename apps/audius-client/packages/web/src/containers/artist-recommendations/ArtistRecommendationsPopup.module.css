@@ -1,0 +1,16 @@
+.popup {
+  width: 352px;
+}
+
+.headerTitle {
+  flex: 1;
+  margin-right: 32px;
+  color: var(--secondary);
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+  text-align: center;
+}
+
+.popupItem {
+  margin: 16px;
+}

@@ -134,6 +134,8 @@ export type ProfilePageProps = {
   setNotificationSubscription: (userId: ID, isSubscribed: boolean) => void
   didChangeTabsFrom: (prevLabel: string, currentLabel: string) => void
   onShare: () => void
+  areArtistRecommendationsVisible: boolean
+  onCloseArtistRecommendations: () => void
 }
 
 type EmptyTabProps = {
@@ -238,7 +240,9 @@ const ProfilePage = g(
     onClickMobileOverflow,
     didChangeTabsFrom,
     activeTab,
-    onShare
+    onShare,
+    areArtistRecommendationsVisible,
+    onCloseArtistRecommendations
   }) => {
     const { setHeader } = useContext(HeaderContext)
     useEffect(() => {
@@ -669,6 +673,10 @@ const ProfilePage = g(
                 onUpdateProfilePicture={updateProfilePicture}
                 onUpdateCoverPhoto={updateCoverPhoto}
                 setNotificationSubscription={setNotificationSubscription}
+                areArtistRecommendationsVisible={
+                  areArtistRecommendationsVisible
+                }
+                onCloseArtistRecommendations={onCloseArtistRecommendations}
               />
               {content}
             </PullToRefresh>

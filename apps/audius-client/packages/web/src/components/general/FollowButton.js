@@ -25,10 +25,11 @@ const FollowButton = props => {
 
   const style = {
     [styles.noIcon]: !props.showIcon,
+    [styles.full]: props.size === 'full',
     [styles.medium]: props.size === 'medium',
     [styles.small]: props.size === 'small'
   }
-  const { following, onUnfollow, onFollow } = props
+  const { following, onUnfollow, onFollow, isDisabled } = props
 
   const onClick = useCallback(() => {
     if (following) onUnfollow()
@@ -52,25 +53,26 @@ const FollowButton = props => {
   let text
   if (!props.following && !isHoveringClicked) {
     icon = <IconFollow />
-    text = messages.follow
+    text = props.messages.follow
   } else if (props.following && isHoveringClicked) {
     icon = <IconFollowing />
-    text = messages.following
+    text = props.messages.following
   } else if (props.following && !isHovering) {
-    text = messages.following
+    text = props.messages.following
     icon = <IconFollowing />
   } else if (props.following && isHovering) {
     icon = <IconUnfollow />
-    text = messages.unfollow
+    text = props.messages.unfollow
   } else if (!props.following && isHoveringClicked) {
     icon = <IconFollow />
-    text = messages.follow
+    text = props.messages.follow
   }
 
   if (!props.showIcon) icon = null
 
   return (
     <Button
+      isDisabled={isDisabled}
       className={cn(styles.followButton, props.className, style)}
       textClassName={styles.followButtonText}
       iconClassName={styles.followButtonIcon}
@@ -87,21 +89,29 @@ const FollowButton = props => {
 }
 
 FollowButton.propTypes = {
+  messages: PropTypes.shape({
+    follow: PropTypes.string.isRequired,
+    following: PropTypes.string.isRequired,
+    unfollow: PropTypes.string.isRequired
+  }),
   invertedColor: PropTypes.bool,
   showIcon: PropTypes.bool,
-  size: PropTypes.oneOf(['small', 'medium']),
+  size: PropTypes.oneOf(['small', 'medium', 'full']),
   widthToHideText: PropTypes.number,
   className: PropTypes.string,
   following: PropTypes.bool,
   onFollow: PropTypes.func,
-  onUnfollow: PropTypes.func
+  onUnfollow: PropTypes.func,
+  isDisabled: PropTypes.bool
 }
 
 FollowButton.defaultProps = {
   invertedColor: false,
   following: false,
   showIcon: true,
-  size: 'medium'
+  size: 'medium',
+  messages: messages,
+  isDisabled: false
 }
 
 export default FollowButton

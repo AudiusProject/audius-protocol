@@ -19,6 +19,7 @@ import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowButton from 'components/general/FollowButton'
 import SubscribeButton from 'components/general/SubscribeButton'
+import { ArtistRecommendationsDropdown } from 'containers/artist-recommendations/ArtistRecommendationsDropdown'
 import ProfilePageBadge from 'containers/user-badges/ProfilePageBadge'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { useUserCoverPhoto, useUserProfilePicture } from 'hooks/useImageSize'
@@ -116,6 +117,8 @@ type ProfileHeaderProps = {
   onUpdateProfilePicture: (files: any, source: 'original' | 'unsplash') => void
   onUpdateCoverPhoto: (files: any, source: 'original' | 'unsplash') => void
   setNotificationSubscription: (userId: ID, isSubscribed: boolean) => void
+  areArtistRecommendationsVisible: boolean
+  onCloseArtistRecommendations: () => void
 }
 
 function isEllipsisActive(e: HTMLElement) {
@@ -153,7 +156,9 @@ const ProfileHeader = ({
   updatedProfilePicture,
   onUpdateCoverPhoto,
   onUpdateProfilePicture,
-  setNotificationSubscription
+  setNotificationSubscription,
+  areArtistRecommendationsVisible,
+  onCloseArtistRecommendations
 }: ProfileHeaderProps) => {
   const [hasEllipsis, setHasEllipsis] = useState(false)
   const [isDescriptionMinimized, setIsDescriptionMinimized] = useState(true)
@@ -479,6 +484,14 @@ const ProfileHeader = ({
               {isDescriptionMinimized ? messages.showMore : messages.showLess}
             </div>
           ) : null}
+          <ArtistRecommendationsDropdown
+            isVisible={areArtistRecommendationsVisible}
+            renderHeader={() => (
+              <p>Here are some accounts that vibe well with {name}</p>
+            )}
+            artistId={userId}
+            onClose={onCloseArtistRecommendations}
+          />
         </div>
       )}
       {mode === 'owner' && !isEditing && <UploadButton />}
