@@ -1,4 +1,7 @@
 const contractConfig = require('../contract-config.js')
+const fs = require('fs')
+const path = require('path')
+const os = require('os')
 const _lib = require('../utils/lib')
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const EthRewardsManager = artifacts.require('EthRewardsManager')
@@ -7,6 +10,22 @@ const MockWormhole = artifacts.require('MockWormhole')
 
 const ethRewardsManagerProxyKey = web3.utils.utf8ToHex('EthRewardsManagerProxy')
 
+
+const outputAAOAccounts = (accounts) => {
+  const homeFolder = path.join(os.homedir(), '/.audius')
+  if (!fs.existsSync(homeFolder)) {
+    fs.mkdirSync(homeFolder, { recursive: true })
+  }
+
+  fs.writeFileSync(
+    path.join(homeFolder, 'aao-config.json'),
+    JSON.stringify(accounts), 
+    'utf8'
+  )
+}
+
+const AAO_ACCOUNT_BASE = 17
+
 module.exports = (deployer, network, accounts) => {
   deployer.then(async () => {
     const config = contractConfig[network]
@@ -14,7 +33,14 @@ module.exports = (deployer, network, accounts) => {
     const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
     const guardianAddress = config.guardianAddress || proxyDeployerAddress
     const solanaRecipientAddress = config.solanaRecipientAddress || Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
-    const antiAbuseOracleAddresses = config.antiAbuseOracleAddresses || [accounts[12], accounts[13], accounts[14]]
+
+    const aaoAccounts = [accounts[AAO_ACCOUNT_BASE], accounts[AAO_ACCOUNT_BASE + 1], accounts[AAO_ACCOUNT_BASE + 2]]
+
+    if (network === 'test_local' || network === 'development') {
+      outputAAOAccounts(aaoAccounts)
+    }
+
+    const antiAbuseOracleAddresses = config.antiAbuseOracleAddresses || aaoAccounts
     let wormholeAddress = config.wormholeAddress
 
     const tokenAddress = process.env.tokenAddress

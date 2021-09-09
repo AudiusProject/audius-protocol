@@ -40,7 +40,7 @@
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
       "echo 'Migrating eth contracts'",
-      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 9"
+      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 11"
     ],
     "down": [
       "cd eth-contracts/; npm run ganache-q"
@@ -221,6 +221,23 @@
     "up": [
       "cd libs; node initScripts/local.js update-userreplicasetmanager-init-config",
       "cd contracts/; node_modules/.bin/truffle migrate --f 4 --to 4"
+    ]
+  },
+  "aao": {
+    "up": [
+      "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
+      "echo 'Starting AAO...'",
+      "cd $AAO_DIR; ./scripts/configureLocal.sh; docker-compose -f docker-compose-dev.yml up -d",
+      "sleep 5",
+      "echo 'AAO Started'"
+    ],
+    "register": [
+      "cd service-commands; ./scripts/registerAAO.sh"
+    ],
+    "down": [
+      "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
+      "echo 'Stopping AAO...'",
+      "cd $AAO_DIR; docker-compose -f docker-compose-dev.yml down"
     ]
   }
 }
