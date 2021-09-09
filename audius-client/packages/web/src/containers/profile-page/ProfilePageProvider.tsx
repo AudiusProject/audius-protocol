@@ -201,12 +201,11 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       }
     }
 
-    // If editing profile and route to another user profile, exit edit mode
-    if (
-      prevProps.profile?.profile?.handle !== profile?.profile?.handle &&
-      editMode
-    ) {
-      this.setState({ editMode: false })
+    if (prevProps.profile?.profile?.handle !== profile?.profile?.handle) {
+      // If editing profile and route to another user profile, exit edit mode
+      if (editMode) this.setState({ editMode: false })
+      // Close artist recommendations when the profile changes
+      this.setState({ areArtistRecommendationsVisible: false })
     }
   }
 
