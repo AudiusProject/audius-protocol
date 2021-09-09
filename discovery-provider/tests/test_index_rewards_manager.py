@@ -8,9 +8,10 @@ from src.tasks.index_rewards_manager import (
 )
 from src.utils.db_session import get_db
 from src.utils.config import shared_config
-from src.solana.solana_client_manager import SolanaClientManager
-from tests.utils import populate_mock_db
 from src.utils.redis_connection import get_redis
+from src.solana.solana_client_manager import SolanaClientManager
+
+from tests.utils import populate_mock_db
 
 REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
 
