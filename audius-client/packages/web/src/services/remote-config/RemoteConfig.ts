@@ -91,7 +91,17 @@ export enum BooleanKeys {
   SKIP_ROLLOVER_NODES_SANITY_CHECK = 'SKIP_ROLLOVER_NODES_SANITY_CHECK'
 }
 
-export enum DoubleKeys {}
+export enum DoubleKeys {
+  /**
+   * How often we should show recommendations of top artists as suggested follows
+   * if the followed user doesn't have related artists
+   */
+  SHOW_ARTIST_RECOMMENDATIONS_FALLBACK_PERCENT = 'SHOW_ARTIST_RECOMMENDATIONS_FALLBACK_PERCENT',
+  /**
+   * How often we should show suggested follows after a user follows another user
+   */
+  SHOW_ARTIST_RECOMMENDATIONS_PERCENT = 'SHOW_ARTIST_RECOMMENDATIONS_PERCENT'
+}
 
 export enum StringKeys {
   /**

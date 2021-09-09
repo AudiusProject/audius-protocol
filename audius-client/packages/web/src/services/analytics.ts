@@ -121,6 +121,7 @@ export enum Name {
   PROFILE_PAGE_CLICK_TIKTOK = 'Profile Page: Go To TikTok',
   PROFILE_PAGE_CLICK_WEBSITE = 'ProfilePage: Go To Website',
   PROFILE_PAGE_CLICK_DONATION = 'ProfilePage: Go To Donation',
+  PROFILE_PAGE_SHOWN_ARTIST_RECOMMENDATIONS = 'ProfilePage: Shown Artist Recommendations',
 
   // Track page
   TRACK_PAGE_DOWNLOAD = 'Track Page: Download',
@@ -383,7 +384,8 @@ export enum FollowSource {
   COLLECTION_PAGE = 'collection page',
   HOVER_TILE = 'hover tile',
   OVERFLOW = 'overflow',
-  USER_LIST = 'user list'
+  USER_LIST = 'user list',
+  ARTIST_RECOMMENDATIONS_POPUP = 'artist recommendations popup'
 }
 
 type Share = {
@@ -625,6 +627,10 @@ type ProfilePageClickDonation = {
   eventName: Name.PROFILE_PAGE_CLICK_DONATION
   handle: string
   donation: string
+}
+type ProfilePageShownArtistRecommendations = {
+  eventName: Name.PROFILE_PAGE_SHOWN_ARTIST_RECOMMENDATIONS
+  userId: number
 }
 
 // Track Page
@@ -937,6 +943,7 @@ export type AllTrackingEvents =
   | ProfilePageClickTikTok
   | ProfilePageClickWebsite
   | ProfilePageClickDonation
+  | ProfilePageShownArtistRecommendations
   | TrackPageDownload
   | TrackPagePlayMore
   | PlaybackPlay

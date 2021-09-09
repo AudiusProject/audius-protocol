@@ -1,0 +1,80 @@
+.headerBar {
+  display: flex;
+  align-items: center;
+  margin-top: 0;
+  text-align: start;
+}
+.icon {
+  padding: 2px;
+  margin: -6px;
+  box-sizing: content-box;
+  position: relative;
+  transition: all 0.17s ease-in-out !important;
+}
+.icon.remove g path {
+  fill: var(--neutral-light-4);
+}
+.closeButton {
+  width: 16px;
+  margin-right: 16px;
+}
+.closeButton:hover {
+  cursor: pointer;
+}
+
+.content {
+  text-align: center;
+  font-size: var(--font-s);
+}
+.contentItem {
+  margin: 16px;
+}
+.content p {
+  line-height: 1.25;
+}
+
+.profilePictureList {
+  display: flex;
+  justify-content: center;
+}
+.profilePictureWrapper {
+  height: 52px;
+  width: 52px;
+  flex: 0 0 52px;
+  margin-right: -7px;
+}
+.profilePicture {
+  box-sizing: border-box;
+  height: 52px;
+  width: 52px;
+  flex: 0 0 52px;
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 50%;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--default-profile-picture-background);
+}
+
+.artistLink {
+  display: inline-block;
+  color: var(--secondary);
+  font-weight: var(--font-bold);
+  margin-bottom: 4px;
+  cursor: pointer;
+  line-height: normal;
+}
+.artistLink :global(.artistPopover) {
+  display: inline-block;
+}
+
+.verified > *:first-child {
+  margin-left: 5px;
+}
+
+.spinner {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto;
+}

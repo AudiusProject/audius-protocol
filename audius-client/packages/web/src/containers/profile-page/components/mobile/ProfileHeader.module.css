@@ -49,7 +49,7 @@
   position: absolute;
   top: 21px;
   right: 13px;
-  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.3);
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.3);
 }
 
 .artistInfo {
@@ -111,7 +111,7 @@
 }
 
 .badgesSpan {
-  display: inline-block
+  display: inline-block;
 }
 
 .artistHandle {
@@ -216,7 +216,7 @@
   margin-top: 8px;
   text-align: left;
   color: var(--primary);
-  font-family: "Avenir Next LT Pro";
+  font-family: 'Avenir Next LT Pro';
   font-size: 14px;
   font-weight: 500;
 }
@@ -262,7 +262,8 @@
   margin-bottom: 8px;
 }
 
-.website, .donation {
+.website,
+.donation {
   margin-top: 12px;
   display: flex;
   justify-content: flex-start;
@@ -280,7 +281,8 @@
   align-items: flex-start;
 }
 
-.website .socialIcon, .donation .socialIcon {
+.website .socialIcon,
+.donation .socialIcon {
   margin-right: 8px;
 }
 

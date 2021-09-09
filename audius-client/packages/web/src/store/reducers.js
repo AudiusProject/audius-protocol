@@ -3,6 +3,7 @@ import { combineReducers } from 'redux'
 
 import addToPlaylist from 'containers/add-to-playlist/store/reducers'
 import dashboard from 'containers/artist-dashboard-page/store/reducer'
+import artistRecommendations from 'containers/artist-recommendations/store/slice'
 import rewardsPage from 'containers/audio-rewards-page/store/slice'
 import collection from 'containers/collection-page/store/reducer'
 import deletePlaylistConfirmation from 'containers/delete-playlist-confirmation-modal/store/reducers'
@@ -127,6 +128,7 @@ const createRootReducer = routeHistory =>
     application: combineReducers({
       ui: combineReducers({
         appCTAModal,
+        artistRecommendations,
         averageColor,
         cookieBanner,
         createPlaylistModal,
