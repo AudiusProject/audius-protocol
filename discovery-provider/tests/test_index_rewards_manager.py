@@ -10,6 +10,7 @@ from src.utils.db_session import get_db
 from src.utils.config import shared_config
 from src.solana.solana_client_manager import SolanaClientManager
 from tests.utils import populate_mock_db
+from src.utils.redis_connection import get_redis
 
 REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
 
@@ -217,9 +218,10 @@ mock_tx_info = {
 }
 
 
-def test_fetch_and_parse_sol_rewards_transfer_instruction(app, redis_mock):  # pylint: disable=W0621
+def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disable=W0621
     with app.app_context():
         db = get_db()
+        redis = get_redis()
 
     solana_client_manager_mock = create_autospec(SolanaClientManager)
     solana_client_manager_mock.get_sol_tx_info.return_value = mock_tx_info
@@ -251,13 +253,13 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app, redis_mock):  # p
     }
 
     with db.scoped_session() as session:
-        process_batch_sol_rewards_transfer_instructions(session, [parsed_tx], redis_mock)
+        process_batch_sol_rewards_transfer_instructions(session, [parsed_tx], redis)
         disbursments = session.query(ChallengeDisbursement).all()
         assert len(disbursments) == 0
 
     populate_mock_db(db, test_entries)
     with db.scoped_session() as session:
-        process_batch_sol_rewards_transfer_instructions(session, [parsed_tx], redis_mock)
+        process_batch_sol_rewards_transfer_instructions(session, [parsed_tx], redis)
         disbursments = session.query(ChallengeDisbursement).all()
         assert len(disbursments) == 1
         disbursment = disbursments[0]
