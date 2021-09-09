@@ -234,7 +234,7 @@ function isStringKey(key: AllRemoteConfigKeys): key is StringKeys {
   return !!Object.values(StringKeys).find(x => x === key)
 }
 function isDoubleKey(key: AllRemoteConfigKeys): key is DoubleKeys {
-  return !!Object.values(IntKeys).find(x => x === key)
+  return !!Object.values(DoubleKeys).find(x => x === key)
 }
 
 // Removes some boilerplate around getting values, falling back to defaults,

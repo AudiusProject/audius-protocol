@@ -10,6 +10,7 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
+import * as artistRecommendationsActions from 'containers/artist-recommendations/store/slice'
 import feedSagas from 'containers/profile-page/store/lineups/feed/sagas.js'
 import tracksSagas from 'containers/profile-page/store/lineups/tracks/sagas.js'
 import { DefaultSizes } from 'models/common/ImageSizes'
@@ -17,8 +18,9 @@ import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
 import { setAudiusAccountUser } from 'services/LocalStorage'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
-import { FeatureFlags } from 'services/remote-config'
+import { DoubleKeys, FeatureFlags } from 'services/remote-config'
 import {
+  getRemoteVar,
   getFeatureEnabled,
   waitForRemoteConfig
 } from 'services/remote-config/Provider'
@@ -201,6 +203,16 @@ function* fetchProfileAsync(action) {
       if (user.is_creator && user.track_count > 0) {
         yield fork(fetchMostUsedTags, user.user_id, user.track_count)
       }
+    }
+
+    const showArtistRecommendationsPercent =
+      getRemoteVar(DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_PERCENT) || 0
+    if (Math.random() < showArtistRecommendationsPercent) {
+      yield put(
+        artistRecommendationsActions.fetchRelatedArtists({
+          userId: user.user_id
+        })
+      )
     }
 
     // Delay so the page can load before we fetch followers/followees
