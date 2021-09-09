@@ -548,14 +548,8 @@ class CreatorNode {
       clientChallengeKey = challengeResp.data.challenge
       url = '/users/login/challenge'
     } catch (e) {
-      // If '/users/login/get_challenge' returns 404, login using legacy non-challenge route
-      if (e.response && e.response.status === 404) {
-        clientChallengeKey = Math.round((new Date()).getTime() / 1000)
-        url = '/users/login'
-      } else {
-        const requestUrl = this.creatorNodeEndpoint + '/users/login/challenge'
-        await this._handleErrorHelper(e, requestUrl)
-      }
+      const requestUrl = this.creatorNodeEndpoint + '/users/login/challenge'
+      await this._handleErrorHelper(e, requestUrl)
     }
 
     const signature = await this.web3Manager.sign(clientChallengeKey)
