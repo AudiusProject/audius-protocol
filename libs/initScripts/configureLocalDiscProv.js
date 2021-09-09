@@ -43,7 +43,7 @@ const configureLocalDiscProv = async () => {
     waudioMintAddress,
     claimableTokenAddress,
     rewardsManagerAddress,
-    rewardsManagerAccount,
+    rewardsManagerAccount
   )
 }
 
@@ -59,7 +59,7 @@ const _updateDiscoveryProviderEnvFile = async (
   waudioMintAddress,
   claimableTokenAddress,
   rewardsManagerAddress,
-  rewardsManagerAccount,
+  rewardsManagerAccount
 ) => {
   const fileStream = fs.createReadStream(readPath)
   const rl = readline.createInterface({

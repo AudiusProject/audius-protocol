@@ -10,6 +10,8 @@ const MockWormhole = artifacts.require('MockWormhole')
 
 const ethRewardsManagerProxyKey = web3.utils.utf8ToHex('EthRewardsManagerProxy')
 
+const AAO_ACCOUNT_BASE = 25
+
 const outputAAOAccounts = (accounts) => {
   const homeFolder = path.join(os.homedir(), '/.audius')
   if (!fs.existsSync(homeFolder)) {
@@ -31,13 +33,13 @@ module.exports = (deployer, network, accounts) => {
     const guardianAddress = config.guardianAddress || proxyDeployerAddress
     const solanaRecipientAddress = config.solanaRecipientAddress || Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
 
-    outputAAOAccounts([
-      accounts[12],
-      accounts[13],
-      accounts[14]
-    ])
+    const aaoAccounts = [accounts[AAO_ACCOUNT_BASE], accounts[AAO_ACCOUNT_BASE + 1], accounts[AAO_ACCOUNT_BASE + 2]]
 
-    const antiAbuseOracleAddresses = config.antiAbuseOracleAddresses || [accounts[12], accounts[13], accounts[14]]
+    if (network === 'test_local' || network === 'development') {
+      outputAAOAccounts(aaoAccounts)
+    }
+
+    const antiAbuseOracleAddresses = config.antiAbuseOracleAddresses || aaoAccounts
     let wormholeAddress = config.wormholeAddress
 
     const tokenAddress = process.env.tokenAddress
