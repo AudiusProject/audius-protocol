@@ -12,6 +12,7 @@ const CreatorNode = require('./services/creatorNode/index')
 const DiscoveryProvider = require('./services/discoveryProvider/index')
 const AudiusABIDecoder = require('./services/ABIDecoder/index')
 const SchemaValidator = require('./services/schemaValidator')
+const Wormhole = require('./services/wormhole')
 const UserStateManager = require('./userStateManager')
 const Utils = require('./utils')
 const SanityChecks = require('./sanityChecks')
@@ -201,6 +202,28 @@ class AudiusLibs {
   }
 
   /**
+   * Configures wormhole
+   * @param {Object} config
+   * @param {string} config.solChainId the chain id of solana
+   * @param {string} config.rpcHost the wormhole RPC host
+   * @param {string} config.ethBridgeAddress address of the sol wormhole bridge
+   * @param {string} config.solBridgeAddress address of the sol wormhole bridge
+   */
+  static configWormhole ({
+    chainId,
+    rpcHost,
+    ethBridgeAddress,
+    solBridgeAddress
+  }) {
+    return {
+      chainId,
+      rpcHost,
+      ethBridgeAddress,
+      solBridgeAddress
+    }
+  }
+
+  /**
    * Constructs an Audius Libs instance with configs.
    * Unless default-valued, all configs are optional.
    * @example
@@ -214,6 +237,7 @@ class AudiusLibs {
     web3Config,
     ethWeb3Config,
     solanaWeb3Config,
+    wormholeConfig,
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
@@ -230,6 +254,7 @@ class AudiusLibs {
     this.ethWeb3Config = ethWeb3Config
     this.web3Config = web3Config
     this.solanaWeb3Config = solanaWeb3Config
+    this.wormholeConfig = wormholeConfig
     this.identityServiceConfig = identityServiceConfig
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
@@ -249,6 +274,7 @@ class AudiusLibs {
     this.ethContracts = null
     this.web3Manager = null
     this.solanaWeb3Manager = null
+    this.wormhole = null
     this.contracts = null
     this.creatorNode = null
 
@@ -336,6 +362,16 @@ class AudiusLibs {
       contractsToInit.push(this.contracts.init())
     }
     await Promise.all(contractsToInit)
+
+    if (this.wormholeConfig && this.web3Manager && this.solanaWeb3Manager && this.ethContracts) {
+      this.wormhole = new Wormhole(
+        this.wormholeConfig,
+        this.web3Manager,
+        this.solanaWeb3Manager,
+        this.ethContracts
+      )
+      await this.wormhole.init()
+    }
 
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {
