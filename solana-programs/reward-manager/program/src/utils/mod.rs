@@ -19,7 +19,7 @@ use std::collections::BTreeSet;
 mod signs;
 pub use signs::*;
 
-/// Assert owned by
+/// Assert `account` is owned by `owner`
 pub fn assert_owned_by(account: &AccountInfo, owner: &Pubkey) -> ProgramResult {
     if account.owner != owner {
         Err(AudiusProgramError::IncorrectOwner.into())
@@ -37,7 +37,7 @@ pub fn assert_uninitialized<T: IsInitialized>(account: &T) -> ProgramResult {
     }
 }
 
-/// Assert account key
+/// Assert `account_info`'s key matches `key`
 pub fn assert_account_key(account_info: &AccountInfo, key: &Pubkey) -> ProgramResult {
     if *account_info.key != *key {
         Err(ProgramError::InvalidArgument)
@@ -46,7 +46,7 @@ pub fn assert_account_key(account_info: &AccountInfo, key: &Pubkey) -> ProgramRe
     }
 }
 
-/// Assert unique senders & operators
+/// Assert unique senders & operators, and message count <= TOTAL_VERIFIED_MESSAGES
 pub fn assert_unique_senders(messages: &[VerifiedMessage]) -> ProgramResult {
     let mut uniq_senders = BTreeSet::new();
     let mut uniq_operators = BTreeSet::new();
@@ -56,12 +56,12 @@ pub fn assert_unique_senders(messages: &[VerifiedMessage]) -> ProgramResult {
         return Err(AudiusProgramError::MessagesOverflow.into());
     }
 
-    // Check sender collision
+    // Check sender address collision
     if !messages_iter.all(move |x| uniq_senders.insert(x.address)) {
         return Err(AudiusProgramError::RepeatedSenders.into());
     }
 
-    // Check operator collision
+    // Check sender operator collision
     if !messages_iter.all(move |x| uniq_operators.insert(x.operator)) {
         return Err(AudiusProgramError::OperatorCollision.into());
     }
@@ -69,10 +69,12 @@ pub fn assert_unique_senders(messages: &[VerifiedMessage]) -> ProgramResult {
     Ok(())
 }
 
-/// Assert messages
-pub fn assert_messages(
-    valid_message: &[u8],
-    valid_bot_oracle_message: &[u8],
+/// Assert that each message matches either the valid_message or
+/// valid_bot_oracle format, and that at least one message is from the 
+/// bot oracle
+pub fn assert_valid_attestations(
+    valid_attestation: &[u8],
+    valid_bot_oracle_attestation: &[u8],
     bot_oracle_address: &EthereumAddress,
     messages: &[VerifiedMessage],
 ) -> ProgramResult {
@@ -83,12 +85,12 @@ pub fn assert_messages(
     } in messages
     {
         if address == bot_oracle_address {
-            if vote_message!(valid_bot_oracle_message) != *message {
+            if vote_message!(valid_bot_oracle_attestation) != *message {
                 return Err(AudiusProgramError::IncorrectMessages.into());
             }
 
             oracle_signed = true;
-        } else if vote_message!(valid_message) != *message {
+        } else if vote_message!(valid_attestation) != *message {
             return Err(AudiusProgramError::IncorrectMessages.into());
         }
     }
@@ -111,16 +113,20 @@ pub fn assert_initialized<T: IsInitialized>(account: &T) -> ProgramResult {
 /// Represent compressed ethereum pubkey
 pub type EthereumAddress = [u8; 20];
 
-/// Generates seed bump for authorities
+/// Finds a program address, using first 32 bytes of `pubkey` as seed and
+/// `program_id` as base
 pub fn find_program_address(program_id: &Pubkey, pubkey: &Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(&[&pubkey.to_bytes()[..32]], program_id)
 }
 
-/// Generates derived address
-pub fn find_derived_address(program_id: &Pubkey, base: &Pubkey, seed: &[u8]) -> (Pubkey, u8) {
+/// Finds a program address, using first 32 bytes of `pubkey` + `seed` as seed, and
+/// `base` as base
+pub fn find_program_address_with_seed(program_id: &Pubkey, base: &Pubkey, seed: &[u8]) -> (Pubkey, u8) {
     Pubkey::find_program_address(&[&base.to_bytes()[..32], seed], program_id)
 }
 
+/// Derives an address based on the `reward_manager_authority` and `seed`, where
+/// `reward_manager_authority` is itself derived from the `reward_manager` pubkey.
 pub fn find_derived_pair(
     program_id: &Pubkey,
     reward_manager: &Pubkey,
@@ -128,12 +134,12 @@ pub fn find_derived_pair(
 ) -> (Pubkey, Pubkey, u8) {
     let (reward_manager_authority, _) = find_program_address(program_id, reward_manager);
     let (derived_address, bump_seed) =
-        find_derived_address(program_id, &reward_manager_authority, seed);
+        find_program_address_with_seed(program_id, &reward_manager_authority, seed);
 
     (reward_manager_authority, derived_address, bump_seed)
 }
 
-/// Initialize SPL accont instruction.
+/// Initialize SPL account instruction.
 pub fn spl_initialize_account<'a>(
     account: AccountInfo<'a>,
     mint: AccountInfo<'a>,

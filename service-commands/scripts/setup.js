@@ -64,10 +64,16 @@ program
     'number of discovery nodes',
     NUM_DISCOVERY_NODES.toString()
   )
+  .option(
+    '-aao, --with-aao',
+    'whether to include AAO',
+    false
+  )
   .action(async opts => {
     const numCreatorNodes = parseInt(opts.numCnodes)
     const numDiscoveryNodes = parseInt(opts.numDn)
-    await allUp({ numCreatorNodes, numDiscoveryNodes })
+    const withAAO = opts.withAao
+    await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO, opts })
   })
 
 program
@@ -119,6 +125,11 @@ program
     'number of discovery nodes',
     NUM_DISCOVERY_NODES.toString()
   )
+  .option(
+    '-aao, --with-aao',
+    'whether to include AAO',
+    false
+  )
   .action(async (service, command, opts) => {
     try {
       if (!service || !command) {
@@ -132,7 +143,8 @@ program
       if (serviceName === Service.ALL && setupCommand == SetupCommand.UP) {
         const numCreatorNodes = parseInt(opts.numCnodes)
         const numDiscoveryNodes = parseInt(opts.numDn)
-        await allUp({ numCreatorNodes, numDiscoveryNodes })
+        const withAAO = opts.withAao
+        await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO })
         return
       }
 

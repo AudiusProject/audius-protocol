@@ -39,7 +39,8 @@ pub struct VerifiedMessage {
     pub operator: EthereumAddress,
 }
 
-/// Verified messages
+/// Transient account to store verified messages, created in
+/// `submit_attestations`.
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
 pub struct VerifiedMessages {
     /// Version

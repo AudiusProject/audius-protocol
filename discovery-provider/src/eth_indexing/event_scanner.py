@@ -168,8 +168,15 @@ class EventScanner:
             "timestamp": block_timestamp,
         }
 
-        # add user ids from the transfer event into the balance refresh queue
-        transfer_event_wallets = [transfer["from"].lower(), transfer["to"].lower()]
+        # Add user ids from the transfer event into the balance refresh queue.
+        # Depending on the wallet connection, we may have the address stored as
+        # lower cased, so to be safe, we refresh check-summed and lower-cased adddresses.
+        transfer_event_wallets = [
+            transfer["from"],
+            transfer["to"],
+            transfer["from"].lower(),
+            transfer["to"].lower(),
+        ]
         with self.db.scoped_session() as session:
             user_result = (
                 session.query(User.user_id)

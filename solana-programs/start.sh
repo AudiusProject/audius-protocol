@@ -8,7 +8,7 @@
     solana config set -u $SOLANA_HOST
 
     solana-keygen new -s --no-bip39-passphrase
-    solana-keygen new -s --no-bip39-passphrase -o feepayer.json
+    solana-keygen new -s --no-bip39-passphrase -o feepayer.json --force
     feepayer_pubkey=$(solana-keygen pubkey feepayer.json)
 
     while test $(solana balance feepayer.json | sed 's/\(\.\| \).*//') -lt 10; do

@@ -428,7 +428,7 @@ fn main() -> anyhow::Result<()> {
             balance(config, eth_address, mint).context("Failed to execute `balance` command")?
         }
         ("generate-base-pda", Some(args)) => {
-            let base_account = (|| -> anyhow::Result<_> {
+            let _base_account = (|| -> anyhow::Result<_> {
                 let mint = pubkey_of(args, "mint").unwrap();
                 let program_id = pubkey_of(args, "program_id").unwrap();
                 println!("Recieved mint {:?}", mint);

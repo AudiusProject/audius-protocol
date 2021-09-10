@@ -55,9 +55,11 @@ User.uploadPhotoAndUpdateMetadata = async (libsWrapper, {
 }) => {
   const newMetadata = { ...metadata }
   const userPicFile = fs.createReadStream(picturePath)
+
   const resp = await libsWrapper.libsInstance.File.uploadImage(
     userPicFile,
-    'true' // square, this weirdly has to be a boolean string
+    'true', // square, this weirdly has to be a boolean string
+    10000 // timeoutMs
   )
   if (updateProfilePicture) newMetadata.profile_picture_sizes = resp.dirCID
   if (updateCoverPhoto) newMetadata.cover_photo_sizes = resp.dirCID
