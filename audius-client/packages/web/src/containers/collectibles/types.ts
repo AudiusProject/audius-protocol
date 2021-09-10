@@ -9,7 +9,8 @@ export type CollectiblesMetadata = {
 export enum CollectibleMediaType {
   IMAGE = 'IMAGE',
   VIDEO = 'VIDEO',
-  GIF = 'GIF'
+  GIF = 'GIF',
+  THREE_D = 'THREE_D'
 }
 
 export type Collectible = {
@@ -22,6 +23,7 @@ export type Collectible = {
   imageUrl: Nullable<string>
   gifUrl: Nullable<string>
   videoUrl: Nullable<string>
+  threeDUrl: Nullable<string>
   isOwned: boolean
   dateCreated: Nullable<string>
   dateLastTransferred: Nullable<string>

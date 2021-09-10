@@ -39,9 +39,67 @@ const nftGif = async (nft: MetaplexNFT): Promise<Nullable<SolanaNFTMedia>> => {
 }
 
 /**
+ * NFT is a 3D object if:
+ * - its category is vr, or
+ * - it has an animation url that ends in glb, or
+ * - it has a file whose type is glb, or
+ *
+ * if the 3D has a poster/thumbnail, it would be:
+ * - either in the image property, or
+ * - the properties files with a type of image
+ */
+const nftThreeDWithFrame = async (
+  nft: MetaplexNFT
+): Promise<Nullable<SolanaNFTMedia>> => {
+  const files = nft.properties?.files ?? []
+  const objFile = files.find(
+    (file: any) => typeof file === 'object' && file.type.includes('glb')
+  ) as MetaplexNFTPropertiesFile
+  const objUrl = files.find(
+    (file: any) => typeof file === 'string' && file.endsWith('glb')
+  ) as string
+  const is3DObject =
+    nft.properties?.category === 'vr' ||
+    nft.animation_url?.endsWith('glb') ||
+    objFile ||
+    objUrl
+  if (is3DObject) {
+    let frameUrl
+    if (!nft.image.endsWith('glb')) {
+      frameUrl = nft.image
+    } else {
+      const imageFile = files?.find(
+        file => typeof file === 'object' && file.type.includes('image')
+      ) as MetaplexNFTPropertiesFile
+      if (imageFile) {
+        frameUrl = imageFile.uri
+      }
+    }
+    if (frameUrl) {
+      let url: string
+      if (nft.animation_url && nft.animation_url.endsWith('glb')) {
+        url = nft.animation_url
+      } else if (objFile) {
+        url = objFile.uri
+      } else if (objUrl) {
+        url = objUrl
+      } else {
+        return null
+      }
+      return {
+        collectibleMediaType: CollectibleMediaType.THREE_D,
+        url,
+        frameUrl
+      }
+    }
+  }
+  return null
+}
+
+/**
  * NFT is a video if:
  * - its category is video, or
- * - it has an animation url, or
+ * - it has an animation url that does not end in glb, or
  * - it has a file whose type is video, or
  * - it has a file whose url includes watch.videodelivery.net
  *
@@ -55,7 +113,10 @@ const nftVideo = async (
   // In case we want to restrict to specific file extensions, see below link
   // https://github.com/metaplex-foundation/metaplex/blob/81023eb3e52c31b605e1dcf2eb1e7425153600cd/js/packages/web/src/views/artCreate/index.tsx#L318
   const videoFile = files.find(
-    file => typeof file === 'object' && file.type.includes('video')
+    file =>
+      typeof file === 'object' &&
+      file.type.includes('video') &&
+      !file.type.endsWith('glb')
   ) as MetaplexNFTPropertiesFile
   const videoUrl = files.find(
     file =>
@@ -65,12 +126,12 @@ const nftVideo = async (
   ) as string
   const isVideo =
     nft.properties?.category === 'video' ||
-    nft.animation_url ||
+    (nft.animation_url && !nft.animation_url.endsWith('glb')) ||
     videoFile ||
     videoUrl
   if (isVideo) {
     let url: string
-    if (nft.animation_url) {
+    if (nft.animation_url && !nft.animation_url.endsWith('glb')) {
       url = nft.animation_url
     } else if (videoFile) {
       url = videoFile.uri
@@ -98,7 +159,7 @@ const nftVideo = async (
 }
 
 /**
- * NFT is a video if:
+ * NFT is an image if:
  * - its category is image, or
  * - it has a file whose type is image, or
  * - it has an image property
@@ -210,6 +271,7 @@ const metaplexNFTToCollectible = async (
   }
 
   const { url, frameUrl, collectibleMediaType } = ((await nftGif(nft)) ||
+    (await nftThreeDWithFrame(nft)) ||
     (await nftVideo(nft)) ||
     (await nftImage(nft)) ||
     (await nftComputedMedia(nft))) as SolanaNFTMedia
@@ -217,6 +279,8 @@ const metaplexNFTToCollectible = async (
   collectible.mediaType = collectibleMediaType
   if (collectibleMediaType === CollectibleMediaType.GIF) {
     collectible.gifUrl = url
+  } else if (collectibleMediaType === CollectibleMediaType.THREE_D) {
+    collectible.threeDUrl = url
   } else if (collectibleMediaType === CollectibleMediaType.VIDEO) {
     collectible.videoUrl = url
   } else if (collectibleMediaType === CollectibleMediaType.IMAGE) {
@@ -244,12 +308,33 @@ const starAtlasNFTToCollectible = async (
   } as Collectible
 
   // todo: check if there are gif or video nfts for star atlas
-  // todo: check for standard metadata format for star atlas
-  collectible.mediaType = CollectibleMediaType.IMAGE
-  collectible.imageUrl = nft.image
-  collectible.frameUrl = nft.media?.thumbnailUrl?.length
-    ? nft.media.thumbnailUrl
-    : nft.image
+  const is3DObj = ['glb', 'gltf'].some(extension =>
+    [nft.image, nft.media?.thumbnailUrl]
+      .filter(Boolean)
+      .some(url => url.endsWith(extension))
+  )
+  const hasImageFrame = [nft.image, nft.media?.thumbnailUrl]
+    .filter(Boolean)
+    .some(item => ['glb', 'gltf'].every(url => !url.endsWith(item)))
+  if (is3DObj && hasImageFrame) {
+    collectible.mediaType = CollectibleMediaType.THREE_D
+    collectible.threeDUrl = ['glb', 'gltf'].some(extension =>
+      nft.image.endsWith(extension)
+    )
+      ? nft.image
+      : nft.media?.thumbnailUrl
+    collectible.frameUrl = ['glb', 'gltf'].every(
+      extension => !nft.image.endsWith(extension)
+    )
+      ? nft.image
+      : nft.media?.thumbnailUrl
+  } else {
+    collectible.mediaType = CollectibleMediaType.IMAGE
+    collectible.imageUrl = nft.image
+    collectible.frameUrl = nft.media?.thumbnailUrl?.length
+      ? nft.media.thumbnailUrl
+      : nft.image
+  }
   collectible.dateCreated = nft.createdAt
 
   return collectible

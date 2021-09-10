@@ -27,23 +27,28 @@ const OPENSEA_VIDEO_EXTENSIONS = [
 ]
 
 const SUPPORTED_VIDEO_EXTENSIONS = ['webm', 'mp4', 'ogv', 'ogg', 'mov']
+const SUPPORTED_3D_EXTENSIONS = ['gltf', 'glb']
+
+const NON_IMAGE_EXTENSIONS = [
+  ...OPENSEA_VIDEO_EXTENSIONS,
+  ...OPENSEA_AUDIO_EXTENSIONS
+]
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 const isAssetImage = (asset: OpenSeaAssetExtended) => {
-  const nonImageExtensions = [
-    ...OPENSEA_VIDEO_EXTENSIONS,
-    ...OPENSEA_AUDIO_EXTENSIONS
-  ]
   return [
     asset.image_url,
     asset.image_original_url,
     asset.image_preview_url,
     asset.image_thumbnail_url
-  ].some(url => url && nonImageExtensions.every(ext => !url.endsWith(ext)))
+  ].some(url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext)))
 }
 
-const isAssetVideo = (asset: OpenSeaAssetExtended) => {
+const areUrlExtensionsSupportedForType = (
+  asset: OpenSeaAssetExtended,
+  extensions: string[]
+) => {
   const {
     animation_url,
     animation_original_url,
@@ -59,8 +64,17 @@ const isAssetVideo = (asset: OpenSeaAssetExtended) => {
     image_original_url,
     image_preview_url,
     image_thumbnail_url
-  ].some(
-    url => url && SUPPORTED_VIDEO_EXTENSIONS.some(ext => url.endsWith(ext))
+  ].some(url => url && extensions.some(ext => url.endsWith(ext)))
+}
+
+const isAssetVideo = (asset: OpenSeaAssetExtended) => {
+  return areUrlExtensionsSupportedForType(asset, SUPPORTED_VIDEO_EXTENSIONS)
+}
+
+const isAssetThreeDAndIncludesImage = (asset: OpenSeaAssetExtended) => {
+  return (
+    areUrlExtensionsSupportedForType(asset, SUPPORTED_3D_EXTENSIONS) &&
+    isAssetImage(asset)
   )
 }
 
@@ -74,7 +88,12 @@ const isAssetGif = (asset: OpenSeaAssetExtended) => {
 }
 
 export const isAssetValid = (asset: OpenSeaAssetExtended) => {
-  return isAssetVideo(asset) || isAssetImage(asset) || isAssetGif(asset)
+  return (
+    isAssetGif(asset) ||
+    isAssetThreeDAndIncludesImage(asset) ||
+    isAssetVideo(asset) ||
+    isAssetImage(asset)
+  )
 }
 
 /**
@@ -108,6 +127,7 @@ export const assetToCollectible = async (
   let frameUrl = null
   let imageUrl = null
   let videoUrl = null
+  let threeDUrl = null
   let gifUrl = null
 
   const { animation_url, animation_original_url, name } = asset
@@ -124,12 +144,19 @@ export const assetToCollectible = async (
       // frame url for the gif is computed later in the collectibles page
       frameUrl = null
       gifUrl = imageUrls.find(url => url?.endsWith('.gif'))!
+    } else if (isAssetThreeDAndIncludesImage(asset)) {
+      mediaType = CollectibleMediaType.THREE_D
+      frameUrl = imageUrls.find(
+        url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext))
+      )!
+      threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
+        url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext))
+      )!
     } else if (isAssetVideo(asset)) {
       mediaType = CollectibleMediaType.VIDEO
       frameUrl =
         imageUrls.find(
-          url =>
-            url && SUPPORTED_VIDEO_EXTENSIONS.every(ext => !url.endsWith(ext))
+          url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext))
         ) ?? null
 
       /**
@@ -182,6 +209,7 @@ export const assetToCollectible = async (
     frameUrl,
     imageUrl,
     videoUrl,
+    threeDUrl,
     gifUrl,
     isOwned: true,
     dateCreated: null,
