@@ -40,7 +40,7 @@
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
       "echo 'Migrating eth contracts'",
-      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 9"
+      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 11"
     ],
     "down": [
       "cd eth-contracts/; npm run ganache-q"
@@ -48,7 +48,7 @@
   },
  "solana-validator": {
    "up": [
-      "docker run -d --name solana --publish 8899:8899/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.7.1 sh -c 'solana-test-validator --gossip-host solana'"
+      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.7.1 sh -c 'solana-test-validator --gossip-host solana --limit-ledger-size 100000000'"
    ],
     "down": [
       "docker container stop solana || true",
@@ -60,9 +60,7 @@
     "up": [
       "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop > solana-program-config.json",
       "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service",
-      "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json",
-      "sudo chown -R $(id -u):$(id -g) solana-programs/",
-      "cd solana-programs/; cat solana-program-config.json | jq .ownerWallet > test-owner.json"
+      "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
     ],
     "add-sender": [
       "cd solana-programs/reward-manager/cli; cargo run create-sender --eth-operator-address $sender_address --eth-sender-address $sender_address --reward-manager $reward_manager_address"
@@ -116,8 +114,9 @@
     "port": 5000,
     "up": [
       "cd libs/initScripts; node configureLocalDiscProv.js",
+      "cd libs/; node initScripts/local.js configure-discprov-wallet #",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
-      "cd discovery-provider;  . compose/env/shellEnv#.sh;  docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider;  . compose/env/shellEnv#.sh; . compose/env/commonEnv.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
@@ -133,7 +132,8 @@
       "cd discovery-provider; . compose/env/unsetShellEnv.sh"
     ],
     "register": [
-      "cd libs/; node initScripts/local.js register-discprov #"
+      "cd libs/; node initScripts/local.js register-discprov #",
+      "cd service-commands/; node scripts/rewardManagerLocal.js register-discprov #"
     ],
     "restart": [
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
@@ -221,6 +221,23 @@
     "up": [
       "cd libs; node initScripts/local.js update-userreplicasetmanager-init-config",
       "cd contracts/; node_modules/.bin/truffle migrate --f 4 --to 4"
+    ]
+  },
+  "aao": {
+    "up": [
+      "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
+      "echo 'Starting AAO...'",
+      "cd $AAO_DIR; ./scripts/configureLocal.sh; docker-compose -f docker-compose-dev.yml up -d",
+      "sleep 5",
+      "echo 'AAO Started'"
+    ],
+    "register": [
+      "cd service-commands; ./scripts/registerAAO.sh"
+    ],
+    "down": [
+      "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
+      "echo 'Stopping AAO...'",
+      "cd $AAO_DIR; docker-compose -f docker-compose-dev.yml down"
     ]
   }
 }

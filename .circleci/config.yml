@@ -8,8 +8,12 @@ orbs:
   helm: circleci/helm@0.1.2
   kubernetes: circleci/kubernetes@0.3.0
   coveralls: coveralls/coveralls@1.0.6
+  build-tools: circleci/build-tools@2.9.1
 jobs:
   test-mad-dog-e2e:
+    # https://circleci.com/docs/2.0/parallelism-faster-jobs/
+    # 1 is default; leaving this here for quick modification
+    parallelism: 1
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
     # uses medium (2vcpu/4gb) by default
     resource_class: large # 4vcpu/8gb
@@ -18,6 +22,11 @@ jobs:
     steps:
       - add_ssh_keys
       - checkout
+      - unless:
+          condition:
+            equal: [ master, << pipeline.git.branch >> ]
+          steps:
+            - build-tools/merge-with-parent
       - run:
           name: clone tooling and mad dog
           command: |
@@ -40,7 +49,7 @@ jobs:
             cd libs
             rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
             source ~/.bash_profile
-            nvm install 10.16
+            nvm install 14
             npm install
       - save_cache:
           name: Save libs cache
@@ -60,7 +69,7 @@ jobs:
             cd contracts/
             rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
             source ~/.bash_profile
-            nvm install 10.16
+            nvm install 14
             npm install
       - save_cache:
           name: Save contracts cache
@@ -80,7 +89,7 @@ jobs:
             cd eth-contracts/
             rm -rf node_modules/web3-providers-ws/node_modules/websocket/.git/
             source ~/.bash_profile
-            nvm install 10.16
+            nvm install 14
             npm install
       - save_cache:
           name: Save eth-contracts cache
@@ -98,7 +107,7 @@ jobs:
           name: content-node repo init
           command: |
             source ~/.bash_profile
-            nvm install v14.16
+            nvm install v14.17.5
             cd creator-node/
             npm install
       - save_cache:
@@ -117,7 +126,7 @@ jobs:
           name: identity-service repo init
           command: |
             source ~/.bash_profile
-            nvm install v10.16
+            nvm install v14.17.5
             cd identity-service/
             npm install
       - save_cache:
@@ -137,7 +146,7 @@ jobs:
           command: |
             source ~/.bash_profile
             cd mad-dog/
-            nvm install v10.16
+            nvm install v14.17.5
             npm install
       - save_cache:
           name: Save mad-dog cache
@@ -155,7 +164,7 @@ jobs:
           name: service-commands repo init
           command: |
             source ~/.bash_profile
-            nvm install v10.16
+            nvm install v14.17.5
             cd service-commands/
             npm install
       - save_cache:
@@ -167,15 +176,16 @@ jobs:
       - run:
           name: execute
           # https://support.circleci.com/hc/en-us/articles/360045268074-Build-Fails-with-Too-long-with-no-output-exceeded-10m0s-context-deadline-exceeded-
-          no_output_timeout: 30m
+          # mad-dog should never hang more than a min with zero output; exit early.
+          no_output_timeout: 2m
           command: |
             sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba
             sudo chmod +x /usr/local/bin/pumba
             set -e
             export PROTOCOL_DIR=/home/circleci/project
             source ~/.bash_profile
-            nvm install v10.16
-            nvm use 10.16
+            nvm install v14.17.5
+            nvm use 14
             cd /home/circleci/project/service-commands/scripts/
             cd /home/circleci/project/libs/
             npm rebuild
@@ -199,7 +209,7 @@ jobs:
   test-libs:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.16
+      - image: circleci/node:14.17.5
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
         # https://circleci.com/docs/2.0/configuration-reference/#docker
@@ -213,15 +223,13 @@ jobs:
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/mongo:3.4.4
-    parameters:
-      force:
-        type: boolean
-        default: false
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            equal: [ master, << pipeline.git.branch >> ]
           steps:
+            - build-tools/merge-with-parent
             - run: ./diff.sh libs || (echo "no diff" && circleci-agent step halt)
       - setup_remote_docker
 
@@ -281,15 +289,13 @@ jobs:
       - image: circleci/node:10.16.3
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8555', '-a', '100', '-l', '8000000']
-    parameters:
-      force:
-        type: boolean
-        default: false
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            equal: [ master, << pipeline.git.branch >> ]
           steps:
+            - build-tools/merge-with-parent
             - run: ./diff.sh contracts || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
       - restore_cache:
@@ -322,15 +328,13 @@ jobs:
       - image: circleci/node:10.16.3
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8546', '-a', '50', '-l', '8000000']
-    parameters:
-      force:
-        type: boolean
-        default: false
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            equal: [ master, << pipeline.git.branch >> ]
           steps:
+            - build-tools/merge-with-parent
             - run: ./diff.sh eth-contracts || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
       - restore_cache:
@@ -366,22 +370,20 @@ jobs:
   test-creator-node:
     docker:
       # specify the version you desire here
-      - image: circleci/node:14.16  
+      - image: circleci/node:14.16
       - image: ipfs/go-ipfs:release
       - image: circleci/postgres:11.1
         environment:
           POSTGRES_USER: postgres
           POSTGRES_DB: audius_creator_node_test
       - image: redis:5.0.4
-    parameters:
-      force:
-        type: boolean
-        default: false
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            equal: [ master, << pipeline.git.branch >> ]
           steps:
+            - build-tools/merge-with-parent
             - run: ./diff.sh creator-node || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
       # - restore_cache:
@@ -426,15 +428,13 @@ jobs:
       - image: redis:3.0-alpine
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8555', '-a', '100', '-l', '8000000']
-    parameters:
-      force:
-        type: boolean
-        default: false
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            equal: [ master, << pipeline.git.branch >> ]
           steps:
+            - build-tools/merge-with-parent
             - run: ./diff.sh discovery-provider || (echo "no diff" && circleci-agent step halt)
       - restore_cache:
           keys:
@@ -485,7 +485,7 @@ jobs:
   test-identity-service:
     docker:
       # specify the version you desire here
-      - image: circleci/node:10.16.3
+      - image: circleci/node:14.17.5
       - image: ipfs/go-ipfs:release
       - image: trufflesuite/ganache-cli:latest
         # https://discuss.circleci.com/t/docker-using-local-image/11581/9
@@ -496,15 +496,13 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: audius_identity_service_test
       - image: redis:5.0.4
-    parameters:
-      force:
-        type: boolean
-        default: false
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            equal: [ master, << pipeline.git.branch >> ]
           steps:
+            - build-tools/merge-with-parent
             - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
       - setup_remote_docker
       # restores data-contracts
@@ -546,15 +544,13 @@ jobs:
     docker:
       # specify the version you desire here
       - image: cimg/rust:1.53.0
-    parameters:
-      force:
-        type: boolean
-        default: false
     steps:
       - checkout
       - unless:
-          condition: << parameters.force >>
+          condition:
+            equal: [ master, << pipeline.git.branch >> ]
           steps:
+            - build-tools/merge-with-parent
             - run: ./diff.sh solana-programs || (echo "no diff" && circleci-agent step halt)
 
       - run:
@@ -635,6 +631,11 @@ jobs:
         type: string
     steps:
       - checkout
+      - unless:
+          condition:
+            equal: [ master, << pipeline.git.branch >> ]
+          steps:
+            - build-tools/merge-with-parent
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
@@ -722,25 +723,18 @@ workflows:
     jobs:
       - test-libs:
           name: test-libs-nightly
-          force: true
       - test-contracts:
           name: test-contracts-nightly
-          force: true
       - test-eth-contracts:
           name: test-eth-contracts-nightly
-          force: true
       - test-creator-node:
           name: test-creator-node-nightly
-          force: true
       - test-discovery-provider:
           name: test-discovery-provider-nightly
-          force: true
       - test-identity-service:
           name: test-identity-service-nightly
-          force: true
       - test-solana-programs:
           name: test-solana-programs-nightly
-          force: true
     triggers:
       - schedule:
           cron: '0 5 * * *'

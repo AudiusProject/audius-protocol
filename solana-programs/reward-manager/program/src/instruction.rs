@@ -30,7 +30,7 @@ pub struct CreateSenderArgs {
 
 /// `CreateSenderPublic` instruction args
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
-pub struct AddSenderArgs {
+pub struct CreateSenderPublicArgs {
     /// Ethereum address
     pub eth_address: EthereumAddress,
     /// Sender operator
@@ -39,14 +39,14 @@ pub struct AddSenderArgs {
 
 /// Verify `Transfer` instruction args
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
-pub struct VerifyTransferSignatureArgs {
+pub struct SubmitAttestationsArgs {
     /// ID generated on backend
     pub id: String,
 }
 
 /// `Transfer` instruction args
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
-pub struct TransferArgs {
+pub struct EvaluateAttestationsArgs {
     /// Amount to transfer
     pub amount: u64,
     /// ID generated on backend
@@ -104,7 +104,7 @@ pub enum Instructions {
     /// 3. `[writable]` new_sender
     /// 4. `[]` Bunch of old senders which prove adding new one
     /// ...
-    CreateSenderPublic(AddSenderArgs),
+    CreateSenderPublic(CreateSenderPublicArgs),
 
     ///   Delete sender with other senders proof
     ///
@@ -125,7 +125,7 @@ pub enum Instructions {
     ///   5. `[]` Sysvar rent
     ///   6. `[]` Instruction info
     ///   7. `[]` System program id
-    VerifyTransferSignature(VerifyTransferSignatureArgs),
+    SubmitAttestations(SubmitAttestationsArgs),
 
     ///   Transfer tokens to pointed receiver
     ///
@@ -140,7 +140,7 @@ pub enum Instructions {
     ///   8. `[]` Sysvar rent
     ///   9. `[]` Token program id
     ///  10. `[]` System program id
-    Transfer(TransferArgs),
+    EvaluateAttestations(EvaluateAttestationsArgs),
 }
 
 /// Create `InitRewardManager` instruction
@@ -281,7 +281,7 @@ pub fn create_sender_public<'a, I>(
 where
     I: IntoIterator<Item = &'a Pubkey>,
 {
-    let data = Instructions::CreateSenderPublic(AddSenderArgs {
+    let data = Instructions::CreateSenderPublic(CreateSenderPublicArgs {
         eth_address,
         operator,
     })
@@ -355,8 +355,8 @@ where
     })
 }
 
-/// Create `VerifyTransferSignature` instruction
-pub fn verify_transfer_signature(
+/// Create `SubmitAttestations` instruction
+pub fn submit_attestations(
     program_id: &Pubkey,
     reward_manager: &Pubkey,
     sender: &Pubkey,
@@ -364,7 +364,7 @@ pub fn verify_transfer_signature(
     id: String,
 ) -> Result<Instruction, ProgramError> {
     let data =
-        Instructions::VerifyTransferSignature(VerifyTransferSignatureArgs { id: id.clone() })
+        Instructions::SubmitAttestations(SubmitAttestationsArgs { id: id.clone() })
             .try_to_vec()?;
 
     let (reward_manager_authority, verified_messages, _) = find_derived_pair(
@@ -393,9 +393,9 @@ pub fn verify_transfer_signature(
     })
 }
 
-/// Create `Transfer` instruction
+/// Create `Evaluate attestation` instruction
 #[allow(clippy::too_many_arguments)]
-pub fn transfer(
+pub fn evaluate_attestations(
     program_id: &Pubkey,
     verified_messages: &Pubkey,
     reward_manager: &Pubkey,
@@ -407,7 +407,7 @@ pub fn transfer(
     id: String,
     eth_recipient: [u8; 20],
 ) -> Result<Instruction, ProgramError> {
-    let data = Instructions::Transfer(TransferArgs {
+    let data = Instructions::EvaluateAttestations(EvaluateAttestationsArgs {
         amount,
         id: id.clone(),
         eth_recipient,

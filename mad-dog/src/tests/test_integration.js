@@ -1,16 +1,24 @@
-const {
-  OPERATION_TYPE,
-  TrackUploadRequest,
-  TrackUploadResponse
-} = require('../operations.js')
-
 const path = require('path')
 const { _ } = require('lodash')
 const fs = require('fs-extra')
 const axios = require('axios')
-
-const { logger } = require('../logger.js')
+const retry = require('async-retry')
+const assert = require('assert')
 const ServiceCommands = require('@audius/service-commands')
+const { getContentNodeEndpoints, getRepostersForTrack, createPlaylist, getPlaylists } = require('@audius/service-commands')
+
+const {
+  OPERATION_TYPE,
+  TrackUploadRequest,
+  TrackUploadResponse,
+  TrackRepostRequest,
+  TrackRepostResponse,
+  AddPlaylistTrackRequest,
+  AddPlaylistTrackResponse,
+  CreatePlaylistRequest,
+  CreatePlaylistResponse
+} = require('../operations.js')
+const { logger } = require('../logger.js')
 const MadDog = require('../madDog.js')
 const { EmitterBasedTest, Event } = require('../emitter.js')
 const {
@@ -20,11 +28,12 @@ const {
   r6,
   ensureReplicaSetSyncIsConsistent,
   upgradeUsersToCreators,
-  delay
+  delay,
+  genRandomString
 } = require('../helpers.js')
-const { getContentNodeEndpoints } = require('@audius/service-commands')
 const {
   uploadTrack,
+  repostTrack,
   getTrackMetadata,
   getUser,
   getUsers,
@@ -32,16 +41,23 @@ const {
   uploadPhotoAndUpdateMetadata,
   setCreatorNodeEndpoint,
   updateCreator,
-  getURSMContentNodes
+  getURSMContentNodes,
+  addPlaylistTrack
 } = ServiceCommands
 
 // NOTE - # of ticks = (TEST_DURATION_SECONDS / TICK_INTERVAL_SECONDS) - 1
 const TICK_INTERVAL_SECONDS = 5
-const TEST_DURATION_SECONDS = 10
+const TEST_DURATION_SECONDS = 100
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
+const TEMP_IMG_STORAGE_PATH = path.resolve('./local-storage/tmp-imgs/')
 
 const SECOND_USER_PIC_PATH = path.resolve('assets/images/duck.jpg')
 const THIRD_USER_PIC_PATH = path.resolve('assets/images/sid.png')
+const repostedTracks = []
+const uploadedTracks = []
+const userRepostedMap = {}
+const createdPlaylists = []
+const addedPlaylistTracks = []
 
 /**
  * Randomly uploads tracks over the duration of the test,
@@ -83,6 +99,7 @@ module.exports = coreIntegration = async ({
 
   // create tmp storage dir
   await fs.ensureDir(TEMP_STORAGE_PATH)
+  await fs.ensureDir(TEMP_IMG_STORAGE_PATH)
 
   // map of walletId => trackId => metadata
   const walletTrackMap = {}
@@ -95,26 +112,30 @@ module.exports = coreIntegration = async ({
     testDurationSeconds: TEST_DURATION_SECONDS
   })
 
+  const tracksAttemptedRepost = []
+
   // Register the request listener. The only request type this test
   // currently handles is to upload tracks.
   emitterTest.registerOnRequestListener(async (request, emit) => {
     const { type, walletIndex, userId } = request
+    let res
     switch (type) {
       case OPERATION_TYPE.TRACK_UPLOAD: {
         const track = getRandomTrackMetadata(userId)
 
         const randomTrackFilePath = await getRandomTrackFilePath(TEMP_STORAGE_PATH)
 
-        let res
         try {
           // Execute a track upload request against a single
           // instance of libs.
+          await executeOne(walletIndex, l => l.waitForLatestBlock())
           const trackId = await executeOne(walletIndex, l =>
             uploadTrack(l, track, randomTrackFilePath)
           )
+          uploadedTracks.push({ trackId: trackId, userId: userId })
           res = new TrackUploadResponse(walletIndex, trackId, track)
         } catch (e) {
-          logger.warn(`Caught error [${e.message}] uploading track: [${track}]`)
+          logger.error(`Caught error [${e.message}] uploading track: [${JSON.stringify(track)}]\n${e.stack}`)
           res = new TrackUploadResponse(
             walletIndex,
             null,
@@ -122,7 +143,137 @@ module.exports = coreIntegration = async ({
             false,
             e.message
           )
+          throw new Error(e)
         }
+        // Emit the response event
+        emit(Event.RESPONSE, res)
+        break
+      }
+      case OPERATION_TYPE.TRACK_REPOST: {
+        // repost candidates include tracks from other users that have not already been reposted by current user
+        const repostCandidates = uploadedTracks
+          .filter(obj => obj.userId !== userId)
+          .filter(obj => {
+            if (!userRepostedMap[obj.userId]) {
+              return true
+            }
+            return !userRepostedMap[obj.userId].includes(obj.trackId)
+          })
+          .map(obj => obj.trackId)
+        if (repostCandidates.length === 0) {
+          const missingTrackMessage = 'No tracks available to repost'
+          logger.info(missingTrackMessage)
+          res = new TrackRepostResponse(walletIndex, null, userId, false)
+        } else {
+          const trackId = repostCandidates[_.random(repostCandidates.length - 1)]
+          try {
+            tracksAttemptedRepost.push(trackId)
+            await executeOne(walletIndex, l => {
+              repostTrack(l, trackId)
+            })
+            await executeOne(walletIndex, l => l.waitForLatestBlock())
+
+            // verify repost
+            await retry(async () => {
+              const reposters = await executeOne(0, l => getRepostersForTrack(l, trackId))
+              const usersReposted = reposters.map(obj => obj.user_id)
+              if (!usersReposted.includes(userId)) {
+                throw new Error(`Reposters for track [${trackId}] do not include user [${userId}]`)
+              }
+            }, {
+              retries: 20,
+              factor: 2
+            })
+
+            res = new TrackRepostResponse(walletIndex, trackId, userId)
+          } catch (e) {
+            logger.error(`Caught error [${e.message}] reposting track: [${trackId}]\n${e.stack}`)
+            res = new TrackRepostResponse(
+              walletIndex,
+              trackId,
+              userId,
+              false,
+              e.message
+            )
+            throw new Error(e)
+          }
+        }
+        // Emit the response event
+        emit(Event.RESPONSE, res)
+        break
+      }
+      case OPERATION_TYPE.CREATE_PLAYLIST: {
+        try {
+          // create playlist
+          const randomPlaylistName = genRandomString(8)
+          const playlist = await executeOne(walletIndex, l =>
+            createPlaylist(l, userId, randomPlaylistName, false, false, [])
+          )
+          logger.info(`User [${userId}] created playlist [${playlist.playlistId}].`)
+          await executeOne(walletIndex, l => l.waitForLatestBlock())
+
+          // verify playlist
+          const verifiedPlaylist = await executeOne(walletIndex, l =>
+            getPlaylists(l, 100, 0, [playlist.playlistId], userId)
+          )
+          if (verifiedPlaylist[0].playlist_id !== playlist.playlistId) {
+            throw new Error(`Error verifying playlist [${playlist.playlistId}]`)
+          }
+
+          res = new CreatePlaylistResponse(walletIndex, playlist.playlistId, userId)
+        } catch (e) {
+          logger.error(`Caught error [${e.message}] creating playlist.\n${e.stack}`)
+          res = new CreatePlaylistResponse(walletIndex, null, userId)
+          throw new Error(e)
+        }
+        emit(Event.RESPONSE, res)
+        break
+      }
+      case OPERATION_TYPE.ADD_PLAYLIST_TRACK: {
+        if (uploadedTracks.length === 0 || !createdPlaylists[userId]) {
+          res = new AddPlaylistTrackResponse(
+            walletIndex,
+            null,
+            false,
+            new Error('Adding a track to a playlist requires a track to be uploaded.')
+          )
+        } else {
+          const trackId = uploadedTracks[_.random(uploadedTracks.length - 1)].trackId
+          try {
+            // add track to playlist
+            const playlistId = createdPlaylists[userId][_.random(createdPlaylists[userId].length - 1)]
+            await executeOne(walletIndex, l =>
+              addPlaylistTrack(l, playlistId, trackId)
+            )
+            logger.info(`Track [${trackId}] added to playlist [${playlistId}].`)
+            await executeOne(walletIndex, l => l.waitForLatestBlock())
+
+            // verify playlist track add
+            await retry(async () => {
+              const playlists = await executeOne(walletIndex, l =>
+                getPlaylists(l, 100, 0, [playlistId], userId)
+              )
+              const playlistTracks = playlists[0].playlist_contents.track_ids.map(obj => obj.track)
+              if (!playlistTracks.includes(trackId)) {
+                throw new Error(`Track [${trackId}] not found in playlist [${playlistId}]`)
+              }
+            }, {
+              retries: 20,
+              factor: 2
+            })
+            res = new AddPlaylistTrackResponse(walletIndex, trackId)
+          } catch (e) {
+            logger.error(`Caught error [${e.message}] adding track: [${trackId}] to playlist \n${e.stack}`)
+            res = new AddPlaylistTrackResponse(
+              walletIndex,
+              null,
+              false,
+              e.message
+            )
+            throw new Error(e)
+          }
+        }
+
         // Emit the response event
         emit(Event.RESPONSE, res)
         break
@@ -150,15 +301,43 @@ module.exports = coreIntegration = async ({
           }
         } else {
           if (!walletTrackMap[walletIndex]) {
-            walletTrackMap[walletIndex] = {}
+            walletTrackMap[walletIndex] = []
           }
-
-          walletTrackMap[walletIndex] = {
-            [trackId]: metadata
+          if (trackId) { // only add successfully uploaded tracks
+            walletTrackMap[walletIndex].push(trackId)
           }
         }
         break
       }
+      case OPERATION_TYPE.TRACK_REPOST: {
+        const { walletIndex, trackId, userId, success } = res
+        if (success) {
+          repostedTracks.push({ trackId: trackId, userId: userId })
+        }
+        if (!userRepostedMap[userId]) {
+          userRepostedMap[userId] = []
+        }
+        userRepostedMap[userId].push(trackId)
+        break
+      }
+      case OPERATION_TYPE.CREATE_PLAYLIST: {
+        const { walletIndex, playlist, userId, success } = res
+        if (success) {
+          if (!createdPlaylists[userId]) {
+            createdPlaylists[userId] = []
+          }
+          createdPlaylists[userId].push(playlist)
+        }
+        break
+      }
+      case OPERATION_TYPE.ADD_PLAYLIST_TRACK: {
+        const { walletIndex, trackId, success } = res
+        if (success) {
+          addedPlaylistTracks.push(trackId)
+        }
+        break
+      }
+
       default:
         logger.error('Unknown response type')
     }
@@ -168,11 +347,29 @@ module.exports = coreIntegration = async ({
   // of events.
   emitterTest.registerOnTickListener(emit => {
     const requesterIdx = _.random(0, numUsers - 1)
-    const request = new TrackUploadRequest(
+    const trackUploadRequest = new TrackUploadRequest(
       requesterIdx,
       walletIdMap[requesterIdx]
     )
-    emit(Event.REQUEST, request)
+    const trackRepostRequest = new TrackRepostRequest(
+      requesterIdx,
+      walletIdMap[requesterIdx]
+    )
+    const createPlaylistRequest = new CreatePlaylistRequest(
+      requesterIdx,
+      walletIdMap[requesterIdx]
+    )
+    const addPlaylistTrackRequest = new AddPlaylistTrackRequest(
+      requesterIdx,
+      walletIdMap[requesterIdx]
+    )
+    const requests = [trackUploadRequest, trackRepostRequest, createPlaylistRequest, addPlaylistTrackRequest]
+    for (const request of requests) {
+      const randomEmit = _.random(1)
+      if (randomEmit) {
+        emit(Event.REQUEST, request)
+      }
+    }
   })
 
   // Create users. Upgrade them to creators later
@@ -242,8 +439,8 @@ module.exports = coreIntegration = async ({
     m.start()
   }
 
-  // Start the test, wait for it to finish.
-  await emitterTest.start()
+  // Run emitter test, wait for it to finish
+  await emitterTest.run()
   logger.info('Emitter test exited')
 
   /**
@@ -261,7 +458,7 @@ module.exports = coreIntegration = async ({
     const userId = walletIdMap[walletIndex]
     const tracks = walletTrackMap[walletIndex]
     if (!tracks) continue
-    for (const trackId of Object.keys(tracks)) {
+    for (const trackId of tracks) {
       trackUploadInfo.push({
         walletIndex,
         trackId,
@@ -275,11 +472,13 @@ module.exports = coreIntegration = async ({
   if (!allCIDsExistOnCNodes) {
     return { error: 'Not all CIDs exist on creator nodes.' }
   }
+
   const failedWallets = Object.values(failedUploads)
   if (failedWallets.length) {
-    logger.info({ failedWallets, failedUploads })
     const userIds = failedWallets.map(w => walletIdMap[w])
-    logger.warn(`Uploads failed for user IDs=[${userIds}]`)
+    return {
+      error: `Uploads failed for user IDs=[${userIds}].`
+    }
   }
 
   // Switch user primary (above tests have already confirmed all secondaries have latest state)
@@ -316,8 +515,9 @@ module.exports = coreIntegration = async ({
 
   // TODO Upload more content to new primary + verify
 
-  // Remove temp storage dir
+  // Remove temp storage dirs
   await fs.remove(TEMP_STORAGE_PATH)
+  await fs.remove(TEMP_IMG_STORAGE_PATH)
 
   userMetadatas = await executeOne(walletIndexes[0], libsWrapper => {
     return getUsers(libsWrapper, userIds)
@@ -361,6 +561,9 @@ module.exports = coreIntegration = async ({
       error: `User post track upload -- ${e.message}`
     }
   }
+
+  verifyThresholds()
+  printTestSummary()
 
   return {}
 }
@@ -481,15 +684,28 @@ async function checkUserMetadataAndClockValues ({
 
 async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) {
   logger.info(`Checking metadata across replica set is consistent user=${userId}...`)
+  const start = Date.now()
+
   const replicaSetMetadatas = (await Promise.all(
     endpoints.map(endpoint => {
-      return axios({
-        url: `/ipfs/${metadataMultihash}`,
-        method: 'get',
-        baseURL: endpoint
-      })
+      const promise = retry(
+        async () => {
+          return axios({
+            url: `/ipfs/${metadataMultihash}`,
+            method: 'get',
+            baseURL: endpoint,
+            timeout: 4000
+          })
+        },
+        {
+          retries: 5,
+          maxTimeout: 5000 // ms
+        }
+      )
+      return promise
     })
   )).map(response => response.data)
+  logger.info(`Completed metadata check for user ${userId} in ${Date.now() - start}ms`)
 
   const fieldsToCheck = [
     'is_creator',
@@ -510,4 +726,22 @@ async function checkMetadataEquality ({ endpoints, metadataMultihash, userId }) 
       )
     }
   })
+}
+
+const verifyThresholds = () => {
+  // thresholds are approximated based on the number of ticks, randomization, and dependencies
+  // for example, reposted tracks has a lower threshold because it depends on an existing track not yet reposted
+  const numberOfTicks = (TEST_DURATION_SECONDS / TICK_INTERVAL_SECONDS) - 1
+  assert.ok(uploadedTracks.length > (numberOfTicks / 5))
+  assert.ok(repostedTracks.length > (numberOfTicks / 10))
+  assert.ok(createdPlaylists.length > (numberOfTicks / 10))
+  assert.ok(addedPlaylistTracks.length > (numberOfTicks / 10))
+}
+
+const printTestSummary = () => {
+  logger.info('\n------------------------ AUDIUS CORE INTEGRATION TEST Summary ------------------------')
+  logger.info(`uploadedTracks: ${uploadedTracks.length}                | Total uploaded tracks`)
+  logger.info(`repostedTracks: ${repostedTracks.length}                | Total reposted tracks`)
+  logger.info(`createdPlaylists: ${Object.values(createdPlaylists).flat().length}                | Total created playlists`)
+  logger.info(`addedPlaylistTracks: ${addedPlaylistTracks.length}                | Total added playlist tracks`)
 }

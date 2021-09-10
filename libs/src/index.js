@@ -24,6 +24,7 @@ const File = require('./api/file')
 const ServiceProvider = require('./api/serviceProvider')
 const Web3 = require('./web3')
 const Captcha = require('./utils/captcha')
+const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 
 class AudiusLibs {
   /**
@@ -33,17 +34,29 @@ class AudiusLibs {
    * @param {number?} reselectTimeout timeout to clear locally cached discovery providers
    * @param {(selection: string) => void?} selectionCallback invoked with the select discovery provider
    * @param {object?} monitoringCallbacks callbacks to be invoked with metrics from requests sent to a service
-   * @param {function} monitoringCallbacks.request
-   * @param {function} monitoringCallbacks.healthCheck
+   *  @param {function} monitoringCallbacks.request
+   *  @param {function} monitoringCallbacks.healthCheck
+   * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
+   * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
    */
   static configDiscoveryProvider (
     whitelist = null,
     blacklist = null,
     reselectTimeout = null,
     selectionCallback = null,
-    monitoringCallbacks = {}
+    monitoringCallbacks = {},
+    selectionRequestTimeout = null,
+    selectionRequestRetries = null
   ) {
-    return { whitelist, blacklist, reselectTimeout, selectionCallback, monitoringCallbacks }
+    return {
+      whitelist,
+      blacklist,
+      reselectTimeout,
+      selectionCallback,
+      monitoringCallbacks,
+      selectionRequestTimeout,
+      selectionRequestRetries
+    }
   }
 
   /**
@@ -182,6 +195,9 @@ class AudiusLibs {
    *  bank program can take ownership of accounts
    * @param {string} feePayerAddress address for the fee payer for transactions
    * @param {string} claimableTokenProgramAddress address of the audius user bank program
+   * @param {string} rewardsManagerProgramId address for the Rewards Manager program
+   * @param {string} rewardsManagerProgramPDA Rewards Manager PDA
+   * @param {string} rewardsManagerTokenPDA The PDA of the rewards manager funds holder account
    */
   static configSolanaWeb3 ({
     solanaClusterEndpoint,
@@ -189,7 +205,10 @@ class AudiusLibs {
     solanaTokenAddress,
     claimableTokenPDA,
     feePayerAddress,
-    claimableTokenProgramAddress
+    claimableTokenProgramAddress,
+    rewardsManagerProgramId,
+    rewardsManagerProgramPDA,
+    rewardsManagerTokenPDA
   }) {
     return {
       solanaClusterEndpoint,
@@ -197,7 +216,10 @@ class AudiusLibs {
       solanaTokenAddress,
       claimableTokenPDA,
       feePayerAddress,
-      claimableTokenProgramAddress
+      claimableTokenProgramAddress,
+      rewardsManagerProgramId,
+      rewardsManagerProgramPDA,
+      rewardsManagerTokenPDA
     }
   }
 
@@ -348,7 +370,9 @@ class AudiusLibs {
         this.web3Manager,
         this.discoveryProviderConfig.reselectTimeout,
         this.discoveryProviderConfig.selectionCallback,
-        this.discoveryProviderConfig.monitoringCallbacks
+        this.discoveryProviderConfig.monitoringCallbacks,
+        this.discoveryProviderConfig.selectionRequestTimeout,
+        this.discoveryProviderConfig.selectionRequestRetries
       )
       await this.discoveryProvider.init()
     }
@@ -410,4 +434,5 @@ module.exports = AudiusLibs
 
 module.exports.AudiusABIDecoder = AudiusABIDecoder
 module.exports.Utils = Utils
+module.exports.SolanaUtils = SolanaUtils
 module.exports.SanityChecks = SanityChecks

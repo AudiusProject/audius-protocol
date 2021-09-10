@@ -91,12 +91,17 @@ def setup(name, service, config, user):
 
     ip = proc.stdout.decode().strip()
     if proc.returncode != 0:
-        input(f"Creating new instance '{name}'. Press Enter to contiue...")
+        input(f"Creating new instance '{name}'. Press Enter to continue...")
         ip = create_instance(
-            name, "ubuntu-os-cloud", "ubuntu-2004-lts", "100", "n2-standard-4"
+            name, "ubuntu-os-cloud", "ubuntu-2004-lts", "100", "n2-custom-12-24576"
         )
 
     host = f"{user}@{ip}"
+
+    print("Waiting for instance to start")
+    returncode = None
+    while returncode != 0:
+        returncode = subprocess.run(["ssh", host, ":"])
 
     if service in ["creator-node", "discovery-provider"]:
         print("Setting up audius-k8s-manifests...")
@@ -151,7 +156,7 @@ def setup(name, service, config, user):
                 host,
                 (
                     "sudo apt update && "
-                    "sudo apt install apt-transport-https ca-certificates curl software-properties-common build-essential python-is-python2 git-secrets && "
+                    "sudo apt install apt-transport-https ca-certificates curl software-properties-common build-essential python-is-python2 python3-pip git-secrets && "
                     "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - && "
                     "sudo sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable' && "
                     "sudo apt update && "
@@ -239,7 +244,7 @@ def main():
 
     parser_create_instance.add_argument(
         "--machine-type",
-        default="n2-standard-4",
+        default="n2-custom-12-24576",
         help="Machine type to use for the instance",
     )
 

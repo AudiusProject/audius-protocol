@@ -14,16 +14,21 @@ const SOLANA_USER_BANK_ADDRESS = 'audius_solana_user_bank_program_address'
 const SOLANA_WAUDIO_PROGRAM_ADDRESS = 'audius_solana_waudio_program_address'
 const SOLANA_WAUDIO_MINT_ADDRESS = 'audius_solana_waudio_mint_address'
 
+const SOLANA_REWARDS_MANAGER_ADDRESS = 'audius_solana_rewards_manager_program_address'
+const SOLANA_REWARDS_MANAGER_ACCOUNT = 'audius_solana_rewards_manager_account'
+
 // LOCAL DEVELOPMENT ONLY
 // Updates audius_eth_contracts_registry in discovery provider
 const configureLocalDiscProv = async () => {
-  let ethRegistryAddress = ethContractsMigrationOutput.registryAddress
-  let solanaTrackListenCountAddress = solanaConfig.trackListenCountAddress
-  let signerGroup = solanaConfig.signerGroup
-  let solanaEndpoint = solanaConfig.endpoint
-  let waudioAddress = solanaConfig.splToken
-  let waudioMintAddress = solanaConfig.ownerWalletPubkey
-  let claimableTokenAddress = solanaConfig.claimableTokenAddress
+  const ethRegistryAddress = ethContractsMigrationOutput.registryAddress
+  const solanaTrackListenCountAddress = solanaConfig.trackListenCountAddress
+  const signerGroup = solanaConfig.signerGroup
+  const solanaEndpoint = solanaConfig.endpoint
+  const waudioAddress = solanaConfig.splToken
+  const waudioMintAddress = solanaConfig.ownerWalletPubkey
+  const claimableTokenAddress = solanaConfig.claimableTokenAddress
+  const rewardsManagerAddress = solanaConfig.rewardsManagerAddress
+  const rewardsManagerAccount = solanaConfig.rewardsManagerAccount
   console.log(`waudioAddress: ${waudioAddress}, claimableTokenAddress: ${claimableTokenAddress}, waudioMintAddress=${waudioMintAddress}`)
   let envPath = path.join(process.cwd(), '../../', 'discovery-provider/compose/.env')
 
@@ -36,7 +41,9 @@ const configureLocalDiscProv = async () => {
     signerGroup,
     waudioAddress,
     waudioMintAddress,
-    claimableTokenAddress
+    claimableTokenAddress,
+    rewardsManagerAddress,
+    rewardsManagerAccount
   )
 }
 
@@ -50,7 +57,9 @@ const _updateDiscoveryProviderEnvFile = async (
   signerGroup,
   waudioAddress,
   waudioMintAddress,
-  claimableTokenAddress
+  claimableTokenAddress,
+  rewardsManagerAddress,
+  rewardsManagerAccount
 ) => {
   const fileStream = fs.createReadStream(readPath)
   const rl = readline.createInterface({
@@ -66,6 +75,8 @@ const _updateDiscoveryProviderEnvFile = async (
   let waudioAddressFound = false
   let waudioMintAddressFound = false
   let claimableTokenAddressFound = false
+  let rewardsAddressFound = false
+  let rewardsAccountFound = false
 
   const ethRegistryAddressLine = `${ETH_CONTRACTS_REGISTRY}=${ethRegistryAddress}`
   const solanaTrackListenCountAddressLine = `${SOLANA_TRACK_LISTEN_COUNT_ADDRESS}=${solanaTrackListenCountAddress}`
@@ -74,6 +85,8 @@ const _updateDiscoveryProviderEnvFile = async (
   const waudioAddressLine = `${SOLANA_WAUDIO_PROGRAM_ADDRESS}=${waudioAddress}`
   const waudioMintAddressLine = `${SOLANA_WAUDIO_MINT_ADDRESS}=${waudioMintAddress}`
   const claimableTokenAddressLine = `${SOLANA_USER_BANK_ADDRESS}=${claimableTokenAddress}`
+  const rewardsManagerAddressLine = `${SOLANA_REWARDS_MANAGER_ADDRESS}=${rewardsManagerAddress}`
+  const rewardsManagerAccountLine = `${SOLANA_REWARDS_MANAGER_ACCOUNT}=${rewardsManagerAccount}`
 
   for await (const line of rl) {
     if (line.includes(ETH_CONTRACTS_REGISTRY)) {
@@ -97,6 +110,12 @@ const _updateDiscoveryProviderEnvFile = async (
     } else if (line.includes(SOLANA_WAUDIO_PROGRAM_ADDRESS)) {
       output.push(waudioAddressLine)
       waudioAddressFound = true
+    } else if (line.includes(SOLANA_REWARDS_MANAGER_ADDRESS)) {
+      output.push(rewardsManagerAddressLine)
+      rewardsAddressFound = true
+    } else if (line.includes(SOLANA_REWARDS_MANAGER_ACCOUNT)) {
+      output.push(rewardsManagerAccountLine)
+      rewardsAccountFound = true
     } else {
       output.push(line)
     }
@@ -121,6 +140,12 @@ const _updateDiscoveryProviderEnvFile = async (
   }
   if (!claimableTokenAddressFound) {
     output.push(claimableTokenAddressLine)
+  }
+  if (!rewardsAddressFound) {
+    output.push(rewardsManagerAddressLine)
+  }
+  if (!rewardsAccountFound) {
+    output.push(rewardsManagerAccountLine)
   }
   fs.writeFileSync(writePath, output.join('\n'))
   console.log(`Updated DISCOVERY PROVIDER ${writePath} ${ETH_CONTRACTS_REGISTRY}=${ethRegistryAddress} ${output}`)

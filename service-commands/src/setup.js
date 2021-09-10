@@ -50,7 +50,7 @@ const execShellCommand = (command, service, { verbose }) => {
     }
 
     console.log(`${command}`)
-    const proc = exec(command, { maxBuffer: 1024 * 1024 })
+    const proc = exec(command, { maxBuffer: 1024 * 1024, shell: '/bin/bash' })
     let output = ''
     // Stream the stdout
     proc.stdout.on('data', data => {
@@ -146,7 +146,8 @@ const Service = Object.freeze({
   DISTRIBUTE: 'distribute',
   ACCOUNT: 'account',
   INIT_REPOS: 'init-repos',
-  USER_REPLICA_SET_MANAGER: 'user-replica-set-manager'
+  USER_REPLICA_SET_MANAGER: 'user-replica-set-manager',
+  AAO: 'aao'
 })
 
 // gets a service command, interpolating service names
@@ -328,6 +329,9 @@ const discoveryNodeUp = async () => {
   // Start up the docker network `audius_dev`
   await runSetupCommand(Service.NETWORK, SetupCommand.UP)
 
+  // Start up the Solana test validator
+  await runSetupCommand(Service.SOLANA_VALIDATOR, SetupCommand.UP)
+
   // Run parallel ops
   await Promise.all(inParallel.map(s => runSetupCommand(...s)))
 
@@ -384,6 +388,9 @@ const discoveryNodeWebServerUp = async () => {
 
   // Start up the docker network `audius_dev`
   await runSetupCommand(Service.NETWORK, SetupCommand.UP)
+
+  // Start up the Solana test validator
+  await runSetupCommand(Service.SOLANA_VALIDATOR, SetupCommand.UP)
 
   // Run parallel ops
   await Promise.all(inParallel.map(s => runSetupCommand(...s)))
@@ -521,6 +528,9 @@ const identityServiceUp = async () => {
   // Start up the docker network `audius_dev`
   await runSetupCommand(Service.NETWORK, SetupCommand.UP)
 
+  // Start up the Solana test validator
+  await runSetupCommand(Service.SOLANA_VALIDATOR, SetupCommand.UP)
+
   // Run parallel ops
   await Promise.all(inParallel.map(s => runSetupCommand(...s)))
 
@@ -537,7 +547,8 @@ const identityServiceUp = async () => {
  * Brings up an entire Audius Protocol stack.
  * @param {*} config. currently supports up to 4 Creator Nodes.
  */
-const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1 }) => {
+const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = false }) => {
+  console.log({withAAO})
   console.log(
     "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
@@ -609,8 +620,13 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1 }) => {
     ...creatorNodeCommands,
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
     [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
-    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
+    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP],
   ]
+
+  if (withAAO) {
+    sequential.push([Service.AAO, SetupCommand.REGISTER])
+    sequential.push([Service.AAO, SetupCommand.UP])
+  }
 
   const start = Date.now()
 

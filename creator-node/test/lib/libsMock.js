@@ -61,15 +61,43 @@ function getLibsMock () {
   libsMock.contracts.UserReplicaSetManagerClient.getUserReplicaSetAtBlockNumber.returns({ primaryId: 1, secondaryIds: [2, 3] })
 
   libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromEndpoint.returns('1')
-  libsMock.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo.returns({
-    endpoint: 'http://localhost:5000',
-    owner: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25',
-    spID: '1',
-    type: 'content-node',
-    blockNumber: 1234,
-    delegateOwnerWallet: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25'
-  })
-  libsMock.User.getUsers.returns([{ 'creator_node_endpoint': 'http://localhost:5000', 'blocknumber': 10, 'track_blocknumber': 10 }])
+
+  libsMock.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo = async (serviceType, spId) => {
+    switch (spId) {
+      case 2:
+        return {
+          endpoint: 'http://mock-cn2.audius.co',
+          owner: '0xBdb47ebFF0eAe1A7647D029450C05666e22864Fb',
+          spID: '2',
+          type: 'content-node',
+          blockNumber: 1235,
+          delegateOwnerWallet: '0xBdb47ebFF0eAe1A7647D029450C05666e22864Fb'
+        }
+
+      case 3:
+        return {
+          endpoint: 'http://mock-cn3.audius.co',
+          owner: '0x1Fffaa556B42f4506cdb01D7BbE6a9bDbb0E5f36',
+          spID: '3',
+          type: 'content-node',
+          blockNumber: 1236,
+          delegateOwnerWallet: '0x1Fffaa556B42f4506cdb01D7BbE6a9bDbb0E5f36'
+        }
+
+      case 1:
+      default:
+        return {
+          endpoint: 'http://mock-cn1.audius.co',
+          owner: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25',
+          spID: '1',
+          type: 'content-node',
+          blockNumber: 1234,
+          delegateOwnerWallet: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25'
+        }
+    }
+  }
+  libsMock.ethContracts.ServiceProviderFactoryClient.getServiceProviderList = libsMock.ethContracts.getServiceProviderList
+  libsMock.User.getUsers.returns([{ 'creator_node_endpoint': 'http://mock-cn1.audius.co,http://mock-cn2.audius.co,http://mock-cn3.audius.co', 'blocknumber': 10, 'track_blocknumber': 10 }])
   libsMock.User.getUsers.atLeast(1)
 
   return libsMock

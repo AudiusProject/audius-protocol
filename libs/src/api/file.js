@@ -150,14 +150,14 @@ class File extends Base {
    * Uploads an image to the connected creator node.
    * @param {File} file
    */
-  async uploadImage (file, square) {
+  async uploadImage (file, square, timeoutMs = null) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(file)
 
     // Assign a creator_node_endpoint to the user if necessary
     await this.User.assignReplicaSetIfNecessary()
 
-    const resp = await this.creatorNode.uploadImage(file, square)
+    const resp = await this.creatorNode.uploadImage(file, square, /* onProgress */ undefined, timeoutMs)
     return resp
   }
 }

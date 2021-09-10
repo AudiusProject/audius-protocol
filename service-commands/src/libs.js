@@ -122,7 +122,8 @@ function LibsWrapper (walletIndex = 0) {
       identityServiceConfig,
       creatorNodeConfig,
       isServer: true,
-      enableUserReplicaSetManagerContract: true
+      enableUserReplicaSetManagerContract: true,
+      useTrackContentPolling: true
     })
 
     try {
@@ -226,6 +227,30 @@ function LibsWrapper (walletIndex = 0) {
     )
     if (error) throw error
     return trackId
+  }
+
+  /**
+   * Repost a track.
+   *
+   * @param {number} args trackId
+   * @returns transaction receipt
+   * @throws any libs error
+   */
+  this.repostTrack = async trackId => {
+    assertLibsDidInit()
+    return await this.libsInstance.Track.addTrackRepost(trackId)
+  }
+
+  /**
+   * Gets reposters for a tracks.
+   *
+   * @param {number} args trackId
+   * @returns trackId
+   * @throws any libs error
+   */
+  this.getRepostersForTrack = async trackId => {
+    assertLibsDidInit()
+    return await this.libsInstance.Track.getRepostersForTrack(100, 0, trackId)
   }
 
   /**
@@ -515,6 +540,23 @@ function LibsWrapper (walletIndex = 0) {
   }
 
   /**
+   * Add a playlist track addition txn to chain
+   * @param {number} playlistId
+   * @param {number} trackId
+   */
+  this.addPlaylistTrack = async (
+    playlistId,
+    trackId
+  ) => {
+    assertLibsDidInit()
+    const addPlaylistTrackTxReceipt = await this.libsInstance.contracts.PlaylistFactoryClient.addPlaylistTrack(
+      playlistId,
+      trackId
+    )
+    return addPlaylistTrackTxReceipt
+  }
+
+  /**
    * Add an update playlist txn to chain
    * @param {*} playlistId
    * @param {*} updatedPlaylistImageMultihashDigest
@@ -655,7 +697,7 @@ function LibsWrapper (walletIndex = 0) {
 
   /**
   * Wait for the discovery node to catch up to the latest block on chain up to a max
-  * indexing timeout of default 10000ms. Used to check IPLD block indexing.
+  * indexing timeout of default 10000ms.
   * @param {number} [maxIndexingTimeout=10000] max time indexing window
   */
   this.waitForLatestIPLDBlock = async (maxIndexingTimeout = MAX_INDEXING_TIMEOUT) => {

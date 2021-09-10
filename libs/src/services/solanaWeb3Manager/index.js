@@ -9,8 +9,14 @@ const {
 } = require('./tokenAccount')
 const { wAudioFromWeiAudio } = require('./wAudio')
 const Utils = require('../../utils')
+const { submitAttestations, evaluateAttestations } = require('./rewards')
+const SolanaUtils = require('./utils')
 
 const { PublicKey } = solanaWeb3
+
+/**
+ * @typedef {import("./rewards.js").AttestationMeta} AttestationMeta
+ */
 
 /**
  * SolanaWeb3Manager acts as the interface to solana contracts from a client.
@@ -36,7 +42,12 @@ class SolanaWeb3Manager {
    *  the address for the specific fee payer to be used in relayed transactions
    * @param {string} solanaWeb3Config.claimableTokenProgramAddress
    *  the address for the claimable token program used to create banks and transfer wAudio
-   *
+   * @param {string} solanaWeb3Config.rewardsManagerProgramId
+   *  the ID of the rewards manager program
+   * @param {string} solanaWeb3Config.rewardsManagerProgramPDA
+   *  the manager account of the rewards manager program
+   * @param {string} solanaWeb3Config.rewardsManagerTokenPDA
+   *  the token holder account of the rewards manager program
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
    */
@@ -60,7 +71,10 @@ class SolanaWeb3Manager {
       solanaTokenAddress,
       claimableTokenPDA,
       feePayerAddress,
-      claimableTokenProgramAddress
+      claimableTokenProgramAddress,
+      rewardsManagerProgramId,
+      rewardsManagerProgramPDA,
+      rewardsManagerTokenPDA
     } = this.solanaWeb3Config
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint)
@@ -74,26 +88,14 @@ class SolanaWeb3Manager {
     this.feePayerAddress = feePayerAddress
     this.feePayerKey = new PublicKey(feePayerAddress)
 
-    this.claimableTokenProgramAddress = claimableTokenProgramAddress
     this.claimableTokenProgramKey = new PublicKey(claimableTokenProgramAddress)
     this.claimableTokenPDA = claimableTokenPDA || (
-      await this.generateProgramDerivedAddress(
-        this.mintKey,
-        this.claimableTokenProgramKey
-      )
+      (await SolanaUtils.findProgramAddressFromPubkey(this.claimableTokenProgramKey, this.mintKey))[0].toString()
     )
     this.claimableTokenPDAKey = new PublicKey(this.claimableTokenPDA)
-  }
-
-  /**
-   * Generates a program derived address
-   */
-  async generateProgramDerivedAddress (mintKey, programKey) {
-    let res = await this.solanaWeb3.PublicKey.findProgramAddress(
-      [mintKey.toBytes().slice(0, 32)],
-      programKey
-    )
-    return res[0].toString()
+    this.rewardManagerProgramId = new PublicKey(rewardsManagerProgramId)
+    this.rewardManagerProgramPDA = new PublicKey(rewardsManagerProgramPDA)
+    this.rewardManagerTokenPDA = new PublicKey(rewardsManagerTokenPDA)
   }
 
   /**
@@ -244,6 +246,89 @@ class SolanaWeb3Manager {
       claimableTokenProgramKey: this.claimableTokenProgramKey,
       connection: this.connection,
       identityService: this.identityService
+    })
+  }
+
+  /**
+   * Submits attestations for challenge completion to the RewardsManager program on Solana.
+   *
+   * @param {{
+   *     attestations: AttestationMeta[],
+   *     oracleAttestation: AttestationMeta,
+   *     challengeId: string,
+   *     specifier: string,
+   *     recipientEthAddress: string,
+   *     tokenAmount: BN,
+   * }} {
+   *     attestations,
+   *     oracleAttestation,
+   *     challengeId,
+   *     specifier,
+   *     recipientEthAddress,
+   *     tokenAmount,
+   *    }
+   * @memberof SolanaWeb3Manager
+   */
+  async submitChallengeAttestations ({
+    attestations,
+    oracleAttestation,
+    challengeId,
+    specifier,
+    recipientEthAddress,
+    tokenAmount
+  }) {
+    return submitAttestations({
+      rewardManagerProgramId: this.rewardManagerProgramId,
+      rewardManagerAccount: this.rewardManagerProgramPDA,
+      attestations,
+      oracleAttestation,
+      challengeId,
+      specifier,
+      feePayer: this.feePayerKey,
+      recipientEthAddress,
+      tokenAmount,
+      identityService: this.identityService,
+      connection: this.connection
+    })
+  }
+
+  /**
+   * Evaluates existing submitted attestations, disbursing if successful.
+   *
+   * @param {{
+   *    challengeId: string,
+   *    specifier: string,
+   *    recipientEthAddress: string
+   *    oracleEthAddress: string
+   * }} {
+   *     challengeId,
+   *     specifier,
+   *     recipientEthAddress,
+   *     oracleEthAddress,
+   *     tokenAmount
+   *   }
+   * @memberof SolanaWeb3Manager
+   */
+  async evaluateChallengeAttestations ({
+    challengeId,
+    specifier,
+    recipientEthAddress,
+    oracleEthAddress,
+    tokenAmount
+  }) {
+    return evaluateAttestations({
+      rewardManagerProgramId: this.rewardManagerProgramId,
+      rewardManagerAccount: this.rewardManagerProgramPDA,
+      rewardManagerTokenSource: this.rewardManagerTokenPDA,
+      challengeId,
+      specifier,
+      recipientEthAddress,
+      userBankProgramAccount: this.claimableTokenPDAKey,
+      oracleEthAddress,
+      feePayer: this.feePayerKey,
+      tokenAmount,
+      identityService: this.identityService,
+      connection: this.connection
     })
   }
 }

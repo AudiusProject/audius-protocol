@@ -16,7 +16,9 @@
     "ffmpeg-static": "^4.2.7",
     "node-fetch": "^2.6.0",
     "untildify": "^4.0.0",
-    "web3": "^1.2.7"
+    "web3": "^1.2.7",
+    "@solana/web3.js": "1.20.0",
+    "borsh": "^0.4.0"
   },
   "devDependencies": {
     "eslint": "^7.2.0",

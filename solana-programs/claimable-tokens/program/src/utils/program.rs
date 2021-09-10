@@ -1,7 +1,10 @@
 #![allow(missing_docs)]
 
 //! Extended functionality for Pubkey
-use solana_program::pubkey::{Pubkey, PubkeyError};
+use solana_program::{
+    pubkey::Pubkey,
+    pubkey::PubkeyError
+};
 
 /// Represent compressed ethereum pubkey
 pub type EthereumAddress = [u8; 20];

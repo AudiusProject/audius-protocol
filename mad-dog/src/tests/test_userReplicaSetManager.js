@@ -114,7 +114,8 @@ const getCreatorNodeSigner = async (endpoint) => {
   return (await axios({
     method: 'get',
     baseURL: endpoint,
-    url: '/health_check'
+    url: '/health_check',
+    timeout: 5000
   })).data.data.spOwnerWallet
 }
 

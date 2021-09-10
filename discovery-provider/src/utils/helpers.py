@@ -1,19 +1,22 @@
+import contextlib
 import datetime
+import functools
+import json
 import logging
 import os
 import re
 import time
-import contextlib
-import json
+from functools import reduce
 from json.encoder import JSONEncoder
 from typing import Optional, cast
 from urllib.parse import urljoin
-from functools import reduce
+
 import requests
-from hashids import Hashids
 from flask import g, request
+from hashids import Hashids
 from jsonformatter import JsonFormatter
 from src import exceptions
+
 from . import multihash
 
 
@@ -380,9 +383,10 @@ def create_track_route_id(title, handle):
     Constructs a track's route_id from an unsanitized title and handle.
     Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
     """
+    sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
     # Strip out invalid character
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00", "", title
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00", "", sanitized_title
     )
 
     # Convert whitespaces to dashes
@@ -412,13 +416,16 @@ def create_track_slug(title, track_id, collision_id=0):
     Example:
     (Title="My Awesome Track!", collision_id=2) => "my-awesome-track-2"
     """
+    sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
     # Strip out invalid character
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^", "", title
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.",
+        "",
+        sanitized_title,
     )
 
     # Convert whitespaces to dashes
-    sanitized_title = re.sub(r"\s+", "-", sanitized_title)
+    sanitized_title = re.sub(r"\s+", "-", sanitized_title.strip())
     sanitized_title = re.sub(r"-+", "-", sanitized_title)
 
     sanitized_title = sanitized_title.lower()
@@ -450,3 +457,17 @@ class DateTimeEncoder(JSONEncoder):
         if isinstance(o, (datetime.date, datetime.datetime)):
             return o.isoformat()
         return super().default(o)
+
+
+def time_method(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kargs):
+        tick = time.perf_counter()
+        result = func(*args, **kargs)
+        tock = time.perf_counter()
+        elapsed = tock - tick
+        logger = logging.getLogger(__name__)
+        logger.info(f"TIME_METHOD Function={func.__name__} Elapsed={elapsed:0.6f}s")
+        return result
+
+    return wrapper

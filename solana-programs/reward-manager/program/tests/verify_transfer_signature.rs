@@ -126,7 +126,7 @@ async fn success() {
     instructions.push(sender_sign);
 
     instructions.push(
-        instruction::verify_transfer_signature(
+        instruction::submit_attestations(
             &audius_reward_manager::id(),
             &reward_manager.pubkey(),
             &signers[0],
@@ -153,7 +153,7 @@ async fn success() {
     instructions_2.push(sender_sign_2);
 
     instructions_2.push(
-        instruction::verify_transfer_signature(
+        instruction::submit_attestations(
             &audius_reward_manager::id(),
             &reward_manager.pubkey(),
             &signers[1],
@@ -309,7 +309,7 @@ async fn success_multiple_recovery_1_tx() {
     instructions.push(sender_sign);
 
     instructions.push(
-        instruction::verify_transfer_signature(
+        instruction::submit_attestations(
             &audius_reward_manager::id(),
             &reward_manager.pubkey(),
             &signers[0],
@@ -325,7 +325,7 @@ async fn success_multiple_recovery_1_tx() {
     instructions.push(sender_sign_2);
 
     instructions.push(
-        instruction::verify_transfer_signature(
+        instruction::submit_attestations(
             &audius_reward_manager::id(),
             &reward_manager.pubkey(),
             &signers[1],
@@ -339,7 +339,7 @@ async fn success_multiple_recovery_1_tx() {
     let oracle_sign = new_secp256k1_instruction_2_0(&oracle_priv_key, bot_oracle_msg.as_ref(), 4);
     instructions.push(oracle_sign);
     instructions.push(
-        instruction::verify_transfer_signature(
+        instruction::submit_attestations(
             &audius_reward_manager::id(),
             &reward_manager.pubkey(),
             &oracle_derived_address,

@@ -1,14 +1,16 @@
 import logging
+from typing import Set, TypedDict, Tuple
 from datetime import datetime
-from typing import Set, TypedDict
 
 import base58
 from eth_account.messages import defunct_hash_message
 from nacl.encoding import HexEncoder
 from nacl.signing import VerifyKey
 from sqlalchemy.orm.session import Session, make_transient
+
 from src.app import contract_addresses
 from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models import AssociatedWallet, User, UserEvents
 from src.queries.get_balances import enqueue_immediate_balance_refresh
@@ -24,12 +26,14 @@ logger = logging.getLogger(__name__)
 def user_state_update(
     self,
     update_task: DatabaseTask,
-    session,
+    session: Session,
+    ipfs_metadata,
+    blacklisted_cids,
     user_factory_txs,
     block_number,
     block_timestamp,
     block_hash,
-):
+) -> Tuple[int, Set]:
     """Return int representing number of User model state changes found in transaction."""
 
     num_total_changes = 0
@@ -83,18 +87,43 @@ def user_state_update(
                     # Add or update the value of the user record for this block in user_events_lookup,
                     # ensuring that multiple events for a single user result in only 1 row insert operation
                     # (even if multiple operations are present)
-                    user_record = parse_user_event(
-                        self,
-                        user_contract,
-                        update_task,
-                        session,
-                        tx_receipt,
-                        block_number,
-                        entry,
-                        event_type,
-                        user_events_lookup[user_id]["user"],
-                        block_timestamp,
-                    )
+
+                    if event_type == user_event_types_lookup["update_multihash"]:
+                        metadata_multihash = helpers.multihash_digest_to_cid(
+                            entry["args"]._multihashDigest
+                        )
+                        user_record = (
+                            parse_user_event(
+                                self,
+                                user_contract,
+                                update_task,
+                                session,
+                                tx_receipt,
+                                block_number,
+                                entry,
+                                event_type,
+                                user_events_lookup[user_id]["user"],
+                                ipfs_metadata[metadata_multihash],
+                                block_timestamp,
+                            )
+                            if metadata_multihash not in blacklisted_cids
+                            else None
+                        )
+                    else:
+                        user_record = parse_user_event(
+                            self,
+                            user_contract,
+                            update_task,
+                            session,
+                            tx_receipt,
+                            block_number,
+                            entry,
+                            event_type,
+                            user_events_lookup[user_id]["user"],
+                            None,
+                            block_timestamp,
+                        )
+
                     if user_record is not None:
                         user_events_lookup[user_id]["events"].append(event_type)
                         user_events_lookup[user_id]["user"] = user_record
@@ -118,9 +147,7 @@ def user_state_update(
         logger.info(f"index.py | users.py | Adding {value_obj['user']}")
         if value_obj["events"]:
             invalidate_old_user(session, user_id)
-            challenge_bus.dispatch(
-                session, ChallengeEvent.profile_update, block_number, user_id
-            )
+            challenge_bus.dispatch(ChallengeEvent.profile_update, block_number, user_id)
             session.add(value_obj["user"])
 
     return num_total_changes, user_ids
@@ -185,12 +212,13 @@ def parse_user_event(
     self,
     user_contract,
     update_task: DatabaseTask,
-    session,
+    session: Session,
     tx_receipt,
     block_number,
     entry,
     event_type,
     user_record,
+    ipfs_metadata,
     block_timestamp,
 ):
     event_args = entry["args"]
@@ -205,14 +233,6 @@ def parse_user_event(
         metadata_multihash = helpers.multihash_digest_to_cid(
             event_args._multihashDigest
         )
-        is_blacklisted = is_blacklisted_ipld(session, metadata_multihash)
-        # If cid is in blacklist, do not update user
-        if is_blacklisted:
-            logger.info(
-                f"index.py | users.py | Encountered blacklisted CID:"
-                f"{metadata_multihash} in indexing update user metadata multihash"
-            )
-            return None
         user_record.metadata_multihash = metadata_multihash
     elif event_type == user_event_types_lookup["update_name"]:
         user_record.name = helpers.bytes32_to_str(event_args._name)
@@ -250,7 +270,6 @@ def parse_user_event(
         user_record.is_verified = event_args._isVerified
         if user_record.is_verified:
             update_task.challenge_event_bus.dispatch(
-                session,
                 ChallengeEvent.connect_verified,
                 block_number,
                 user_record.user_id,
@@ -273,8 +292,6 @@ def parse_user_event(
     # If the multihash is updated, fetch the metadata (if not fetched) and update the associated wallets column
     if event_type == user_event_types_lookup["update_multihash"]:
         # Look up metadata multihash in IPFS and override with metadata fields
-        ipfs_metadata = get_ipfs_metadata(update_task, user_record)
-
         if ipfs_metadata:
             # ipfs_metadata properties are defined in get_ipfs_metadata
 
@@ -346,6 +363,7 @@ def parse_user_event(
                     session,
                     user_record,
                     ipfs_metadata["events"],
+                    update_task.challenge_event_bus,
                 )
 
     # All incoming profile photos intended to be a directory
@@ -491,7 +509,10 @@ class UserEventsMetadata(TypedDict):
 
 
 def update_user_events(
-    session: Session, user_record: User, events: UserEventsMetadata
+    session: Session,
+    user_record: User,
+    events: UserEventsMetadata,
+    bus: ChallengeEventBus,
 ) -> None:
     """Updates the user events table"""
     try:
@@ -513,8 +534,26 @@ def update_user_events(
         for event, value in events.items():
             if event == "referrer" and isinstance(value, int):
                 user_events.referrer = value
+                bus.dispatch(
+                    ChallengeEvent.referral_signup,
+                    user_record.blocknumber,
+                    value,
+                    {"referred_user_id": user_record.user_id},
+                )
+                bus.dispatch(
+                    ChallengeEvent.referred_signup,
+                    user_record.blocknumber,
+                    user_record.user_id,
+                )
             elif event == "is_mobile_user" and isinstance(value, bool):
                 user_events.is_mobile_user = value
+                if value:
+                    bus.dispatch(
+                        ChallengeEvent.mobile_install,
+                        user_record.blocknumber,
+                        user_record.user_id,
+                    )
+
         session.add(user_events)
 
     except Exception as e:
@@ -532,14 +571,13 @@ def recover_user_id_hash(web3, user_id, signature):
     return wallet_address
 
 
-def get_ipfs_metadata(update_task, user_record):
+def get_ipfs_metadata(update_task, metadata_multihash, creator_node_endpoint):
     user_metadata = user_metadata_format
-    if user_record.metadata_multihash:
-
+    if metadata_multihash:
         user_metadata = update_task.ipfs_client.get_metadata(
-            user_record.metadata_multihash,
+            metadata_multihash,
             user_metadata_format,
-            user_record.creator_node_endpoint,
+            creator_node_endpoint,
         )
         logger.info(f"index.py | users.py | {user_metadata}")
     return user_metadata

@@ -16,15 +16,21 @@ def get_remixable_tracks(args):
     limit = args.get("limit", 25)
     current_user_id = args.get("current_user_id", None)
 
+    StemTrack = aliased(Track)
+
     with db.scoped_session() as session:
         # Subquery to get current tracks that have stems
         remixable_tracks_subquery = (
             session.query(Track)
             .join(Stem, Stem.parent_track_id == Track.track_id)
+            .join(StemTrack, Stem.child_track_id == StemTrack.track_id)
             .filter(
                 Track.is_current == True,
                 Track.is_unlisted == False,
                 Track.is_delete == False,
+                StemTrack.is_current == True,
+                StemTrack.is_unlisted == False,
+                StemTrack.is_delete == False,
             )
             .distinct(Track.track_id)
             .subquery()

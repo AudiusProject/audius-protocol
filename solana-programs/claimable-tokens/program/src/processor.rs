@@ -3,7 +3,10 @@
 use crate::{
     error::{to_claimable_tokens_error, ClaimableProgramError},
     instruction::ClaimableProgramInstruction,
-    utils::program::{get_address_pair, EthereumAddress},
+    utils::program::{
+        get_address_pair,
+        EthereumAddress
+    }
 };
 use borsh::BorshDeserialize;
 use solana_program::{
@@ -36,9 +39,12 @@ impl Processor {
         required_lamports: u64,
         space: u64,
     ) -> ProgramResult {
-        msg!("EthereumAddress = {:?}", eth_address);
         let pair = get_address_pair(program_id, mint_key, eth_address)?;
+        // Verify base and incoming account match expected
         if *base.key != pair.base.address {
+            return Err(ProgramError::InvalidSeeds);
+        }
+        if *account_to_create.key != pair.derive.address {
             return Err(ProgramError::InvalidSeeds);
         }
 
@@ -77,9 +83,7 @@ impl Processor {
     }
 
     /// Transfer tokens from source to destination
-    ///
-    /// NOTE: if amount is 0 transfer all token otherwise transfer specified value
-    fn token_transfer<'a>(
+     fn token_transfer<'a>(
         source: AccountInfo<'a>,
         destination: AccountInfo<'a>,
         authority: AccountInfo<'a>,
@@ -89,6 +93,7 @@ impl Processor {
     ) -> Result<(), ProgramError> {
         let source_data = spl_token::state::Account::unpack(&source.data.borrow())?;
 
+        // Verify source token account matches the expected PDA
         let pair = get_address_pair(program_id, &source_data.mint, eth_address)?;
         if *source.key != pair.derive.address {
             return Err(ProgramError::InvalidSeeds);
@@ -97,12 +102,6 @@ impl Processor {
         let authority_signature_seeds = [&source_data.mint.to_bytes()[..32], &[pair.base.seed]];
         let signers = &[&authority_signature_seeds[..]];
 
-        let debit_amount = if amount != 0 {
-            amount
-        } else {
-            source_data.amount
-        };
-
         invoke_signed(
             &spl_token::instruction::transfer(
                 &spl_token::id(),
@@ -110,7 +109,7 @@ impl Processor {
                 destination.key,
                 authority.key,
                 &[&authority.key],
-                debit_amount,
+                amount,
             )?,
             &[source, destination, authority],
             signers,
@@ -156,7 +155,6 @@ impl Processor {
     ) -> ProgramResult {
         // check that mint is initialized
         spl_token::state::Mint::unpack(&mint_account_info.data.borrow())?;
-
         Self::create_account(
             program_id,
             funder_account_info.clone(),

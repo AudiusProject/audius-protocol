@@ -11,6 +11,9 @@ Track.uploadTrack = async (libs, trackMetadata, trackPath) => {
     trackMetadata
   })
 
+  // Wait for discovery node to index user
+  await libs.waitForLatestBlock()
+
   // Check that uploaded track is what we expect
   const uploadedTrackMetadata = await libs.getTrack(trackId)
 
@@ -34,8 +37,16 @@ Track.uploadTrack = async (libs, trackMetadata, trackPath) => {
   return trackId
 }
 
+Track.repostTrack = async (libs, trackId) => {
+  return libs.repostTrack(trackId)
+}
+
+Track.getRepostersForTrack = async (libs, trackId) => {
+  return libs.getRepostersForTrack(trackId)
+}
+
 Track.getTrackMetadata = async (libs, trackId) => {
-  return await libs.getTrack(trackId)
+  return libs.getTrack(trackId)
 }
 
 Track.addTrackToChain = async (libs, userId, { digest, hashFn, size }) => {

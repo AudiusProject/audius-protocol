@@ -3,8 +3,8 @@
 use crate::{
     error::AudiusProgramError,
     instruction::{
-        AddSenderArgs, CreateSenderArgs, InitRewardManagerArgs, Instructions, TransferArgs,
-        VerifyTransferSignatureArgs,
+        CreateSenderPublicArgs, CreateSenderArgs, InitRewardManagerArgs, Instructions, EvaluateAttestationsArgs,
+        SubmitAttestationsArgs,
     },
     state::{
         RewardManager, SenderAccount, VerifiedMessage, VerifiedMessages, ADD_SENDER_MESSAGE_PREFIX,
@@ -276,7 +276,7 @@ impl Processor {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn process_verify_transfer_signature<'a>(
+    fn process_submit_attestations<'a>(
         program_id: &Pubkey,
         verified_messages_info: &AccountInfo<'a>,
         reward_manager_info: &AccountInfo<'a>,
@@ -285,7 +285,7 @@ impl Processor {
         rent_info: &AccountInfo<'a>,
         sender_info: &AccountInfo<'a>,
         instruction_info: &AccountInfo<'a>,
-        verify_transfer_data: VerifyTransferSignatureArgs,
+        verify_transfer_data: SubmitAttestationsArgs,
     ) -> ProgramResult {
         assert_owned_by(reward_manager_info, program_id)?;
         assert_owned_by(sender_info, program_id)?;
@@ -352,7 +352,7 @@ impl Processor {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn process_transfer<'a>(
+    fn process_evaluate_attestations<'a>(
         program_id: &Pubkey,
         verified_messages_info: &AccountInfo<'a>,
         reward_manager_info: &AccountInfo<'a>,
@@ -363,7 +363,7 @@ impl Processor {
         bot_oracle_info: &AccountInfo<'a>,
         payer_info: &AccountInfo<'a>,
         rent_info: &AccountInfo<'a>,
-        transfer_data: TransferArgs,
+        transfer_data: EvaluateAttestationsArgs,
     ) -> ProgramResult {
         let rent = &Rent::from_account_info(rent_info)?;
 
@@ -549,7 +549,7 @@ impl Processor {
                     sys_prog,
                 )
             }
-            Instructions::CreateSenderPublic(AddSenderArgs {
+            Instructions::CreateSenderPublic(CreateSenderPublicArgs {
                 eth_address,
                 operator,
             }) => {
@@ -594,8 +594,8 @@ impl Processor {
                     instructions_info,
                 )
             }
-            Instructions::VerifyTransferSignature(VerifyTransferSignatureArgs { id }) => {
-                msg!("Instruction: VerifyTransferSignature");
+            Instructions::SubmitAttestations(SubmitAttestationsArgs { id }) => {
+                msg!("Instruction: SubmitAttestations");
 
                 let verified_messages = next_account_info(account_info_iter)?;
                 let reward_manager = next_account_info(account_info_iter)?;
@@ -606,7 +606,7 @@ impl Processor {
                 let instructions_info = next_account_info(account_info_iter)?;
                 let _system_program_id = next_account_info(account_info_iter)?;
 
-                Self::process_verify_transfer_signature(
+                Self::process_submit_attestations(
                     program_id,
                     verified_messages,
                     reward_manager,
@@ -615,10 +615,10 @@ impl Processor {
                     rent_info,
                     sender,
                     instructions_info,
-                    VerifyTransferSignatureArgs { id },
+                    SubmitAttestationsArgs { id },
                 )
             }
-            Instructions::Transfer(TransferArgs {
+            Instructions::EvaluateAttestations(EvaluateAttestationsArgs {
                 amount,
                 id,
                 eth_recipient,
@@ -637,7 +637,7 @@ impl Processor {
                 let _token_program_id = next_account_info(account_info_iter)?;
                 let _system_program_id = next_account_info(account_info_iter)?;
 
-                Self::process_transfer(
+                Self::process_evaluate_attestations(
                     program_id,
                     verified_messages_info,
                     reward_manager_info,
@@ -648,7 +648,7 @@ impl Processor {
                     bot_oracle_info,
                     payer_info,
                     rent_info,
-                    TransferArgs {
+                    EvaluateAttestationsArgs {
                         amount,
                         id,
                         eth_recipient,

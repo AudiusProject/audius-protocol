@@ -12,7 +12,6 @@ from celery.schedules import crontab, timedelta
 from flask import Flask
 from flask.json import JSONEncoder
 from flask_cors import CORS
-from solana.rpc.api import Client
 from sqlalchemy import exc
 from sqlalchemy_utils import create_database, database_exists
 from web3 import HTTPProvider, Web3
@@ -40,8 +39,8 @@ from src.utils.ipfs_lib import IPFSClient
 from src.utils.multi_provider import MultiProvider
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
-
-SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
+from src.solana.solana_client_manager import SolanaClientManager
+from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 
 # these global vars will be set in create_celery function
 web3endpoint = None
@@ -51,7 +50,7 @@ abi_values = None
 eth_web3 = None
 eth_abi_values = None
 
-solana_client = None
+solana_client_manager = None
 registry = None
 user_factory = None
 track_factory = None
@@ -154,7 +153,7 @@ def create_app(test_config=None):
 def create_celery(test_config=None):
     # pylint: disable=W0603
     global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
-    global solana_client
+    global solana_client_manager
 
     web3endpoint = helpers.get_web3_endpoint(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
@@ -166,7 +165,7 @@ def create_celery(test_config=None):
     eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
 
     # Initialize Solana web3 provider
-    solana_client = Client(SOLANA_ENDPOINT)
+    solana_client_manager = SolanaClientManager()
 
     global registry
     global user_factory
@@ -326,6 +325,10 @@ def configure_flask(test_config, app, mode="app"):
 
     return app
 
+def delete_last_scanned_eth_block_redis(redis_inst):
+    logger.info("index_eth.py | deleting existing redis scanned block on start")
+    redis_inst.delete(eth_indexing_last_scanned_block_key)
+    logger.info("index_eth.py | successfully deleted existing redis scanned block on start")
 
 def configure_celery(flask_app, celery, test_config=None):
     database_url = shared_config["db"]["url"]
@@ -351,6 +354,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_plays",
             "src.tasks.index_metrics",
             "src.tasks.index_materialized_views",
+            "src.tasks.index_aggregate_plays",
             "src.tasks.vacuum_db",
             "src.tasks.index_network_peers",
             "src.tasks.index_trending",
@@ -363,6 +367,8 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_user_bank",
             "src.tasks.index_eth",
             "src.tasks.index_oracles",
+            "src.tasks.index_rewards_manager",
+            "src.tasks.index_related_artists",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -392,6 +398,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "update_materialized_views": {
                 "task": "update_materialized_views",
                 "schedule": timedelta(seconds=300),
+            },
+            "update_aggregate_plays": {
+                "task": "update_aggregate_plays",
+                "schedule": timedelta(seconds=15),
             },
             "vacuum_db": {
                 "task": "vacuum_db",
@@ -449,6 +459,14 @@ def configure_celery(flask_app, celery, test_config=None):
                 "task": "index_oracles",
                 "schedule": timedelta(minutes=5),
             },
+            "index_rewards_manager": {
+                "task": "index_rewards_manager",
+                "schedule": timedelta(seconds=5),
+            },
+            "index_related_artists": {
+                "task": "index_related_artists",
+                "schedule": timedelta(seconds=60),
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -465,6 +483,10 @@ def configure_celery(flask_app, celery, test_config=None):
 
     # Initialize Redis connection
     redis_inst = redis.Redis.from_url(url=redis_url)
+
+    # Clear last scanned redis block on startup
+    delete_last_scanned_eth_block_redis(redis_inst)
+
     # Clear existing locks used in tasks if present
     redis_inst.delete("disc_prov_lock")
     redis_inst.delete("network_peers_lock")
@@ -476,10 +498,11 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("aggregate_metrics_lock")
     redis_inst.delete("synchronize_metrics_lock")
     redis_inst.delete("solana_plays_lock")
-    redis_inst.delete("index_challenges")
+    redis_inst.delete("index_challenges_lock")
     redis_inst.delete("user_bank_lock")
-    redis_inst.delete("index_eth")
-    redis_inst.delete("index_oracles")
+    redis_inst.delete("index_eth_lock")
+    redis_inst.delete("index_oracles_lock")
+    redis_inst.delete("solana_rewards_manager_lock")
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object
@@ -494,7 +517,7 @@ def configure_celery(flask_app, celery, test_config=None):
                 ipfs_client=ipfs_client,
                 redis=redis_inst,
                 eth_web3_provider=eth_web3,
-                solana_client=solana_client,
+                solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
             )
 

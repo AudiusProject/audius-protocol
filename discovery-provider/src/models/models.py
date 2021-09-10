@@ -43,6 +43,7 @@ def validate_field_helper(field, value, model, field_type):
     # the fix is to replace those characters with empty with empty string
     # https://stackoverflow.com/questions/1347646/postgres-error-on-insert-error-invalid-byte-sequence-for-encoding-utf8-0x0
     if type(field_type) in (String, Text) and value:
+        value = value.encode("utf-8", "ignore").decode("utf-8", "ignore")
         value = value.replace("\x00", "")
 
     to_validate = {field: value}
@@ -351,6 +352,14 @@ class Playlist(Base):
     created_at = Column(DateTime, nullable=False)
 
     PrimaryKeyConstraint(is_current, playlist_id, playlist_owner_id, blockhash, txhash)
+
+    ModelValidator.init_model_schemas("Playlist")
+    fields = ["playlist_name", "description"]
+
+    # unpacking args into @validates
+    @validates(*fields)
+    def validate_field(self, field, value):
+        return validate_field_helper(field, value, "Playlist", getattr(Playlist, field).type)
 
     def __repr__(self):
         return f"<Playlist(blockhash={self.blockhash},\
@@ -1083,7 +1092,8 @@ class ChallengeDisbursement(Base):
     challenge_id = Column(String, ForeignKey("challenges.id"), nullable=False)
     user_id = Column(Integer, nullable=False)
     amount = Column(String, nullable=False)
-    block_number = Column(Integer, nullable=False)
+    signature = Column(String, nullable=False)
+    slot = Column(Integer, nullable=False)
     specifier = Column(String, nullable=False)
 
     PrimaryKeyConstraint(challenge_id, specifier)
@@ -1093,7 +1103,8 @@ class ChallengeDisbursement(Base):
 challenge_id={self.challenge_id},\
 user_id={self.user_id},\
 amount={self.amount},\
-block_number={self.block_number},\
+signature={self.signature},\
+slot={self.slot},\
 specifier={self.specifier})>"
 
 
@@ -1117,7 +1128,7 @@ profile_name={self.profile_name},\
 profile_picture={self.profile_picture},\
 profile_cover_photo={self.profile_cover_photo},\
 follows_complete={self.follows},\
-favorites_complete={self.favorites_complete},\
+favorites_complete={self.favorites},\
 reposts_complete={self.reposts})>"
 
 
