@@ -121,37 +121,91 @@ class SolanaClient {
     )
   }
 
+  /**
+   * Decode bytes to get url for nft metadata
+   * Check urls based on nft standard e.g. metaplex, or nft collection e.g. solamander, or known domains e.g. ipfs
+   * This is because there may be multiple different collections of nfts on e.g. metaplex (arweave), also
+   * a given nft collection can have nfts living in different domains e.g. solamander on cloudfront or arweave or etc., also
+   * nfts may live in ipfs or other places
+   */
   _utf8ArrayToNFTType(
     array: Uint8Array
   ): { type: SolanaNFTType; url: string } | null {
-    const str = new TextDecoder().decode(array)
+    const text = new TextDecoder().decode(array)
+
+    // for the sake of simplicty/readability/understandability, we check the decoded url
+    // one by one against metaplex, star atlas, and others
+    return (
+      client._metaplex(text) || client._starAtlas(text) || client._unknown(text)
+    )
+  }
+
+  _metaplex(text: string): { type: SolanaNFTType; url: string } | null {
     const query = 'https://'
-    const startIndex = str.indexOf(query)
+    const startIndex = text.indexOf(query)
+    if (startIndex === -1) return null
 
     // metaplex standard nfts live in arweave, see link below
     // https://github.com/metaplex-foundation/metaplex/blob/81023eb3e52c31b605e1dcf2eb1e7425153600cd/js/packages/web/src/contexts/meta/processMetaData.ts#L29
-    const isMetaplex = str.includes('arweave')
+    const isMetaplex = text.includes('arweave')
+    const foundNFTUrl = startIndex > -1 && isMetaplex
+    if (!foundNFTUrl) return null
+
+    const suffix = '/'
+    const suffixIndex = text.indexOf(suffix, startIndex + query.length)
+    if (suffixIndex === -1) return null
+
+    const hashLength = 43
+    const endIndex = suffixIndex + suffix.length + hashLength
+    const url = text.substring(startIndex, endIndex)
+    return {
+      type: SolanaNFTType.METAPLEX,
+      url
+    }
+  }
+
+  _starAtlas(text: string): { type: SolanaNFTType; url: string } | null {
+    const query = 'https://'
+    const startIndex = text.indexOf(query)
+    if (startIndex === -1) return null
 
     // star atlas nfts live in https://galaxy.staratlas.com/nfts/...
-    const isStarAtlas = str.includes('staratlas')
+    const isStarAtlas = text.includes('staratlas')
+    const foundNFTUrl = startIndex > -1 && isStarAtlas
+    if (!foundNFTUrl) return null
 
-    const isInvalid = (!isMetaplex && !isStarAtlas) || startIndex === -1
-    if (isInvalid) {
-      return null
-    }
+    const suffix = '/nfts/'
+    const suffixIndex = text.indexOf(suffix, startIndex + query.length)
+    if (suffixIndex === -1) return null
 
-    const suffix = isMetaplex ? '/' : '/nfts/'
-    const suffixIndex = str.indexOf(suffix, startIndex + query.length)
-    if (suffixIndex === -1) {
-      return null
-    }
-
-    const hashLength = isMetaplex ? 43 : 44
+    const hashLength = 44
     const endIndex = suffixIndex + suffix.length + hashLength
-
-    const url = str.substring(startIndex, endIndex)
+    const url = text.substring(startIndex, endIndex)
     return {
-      type: isMetaplex ? SolanaNFTType.METAPLEX : SolanaNFTType.STAR_ATLAS,
+      type: SolanaNFTType.STAR_ATLAS,
+      url
+    }
+  }
+
+  _unknown(text: string): { type: SolanaNFTType; url: string } | null {
+    // Look for 'https://<...>.json' and that will be the metadata location
+    // examples:
+    // https://d1b6hed00dtfsr.cloudfront.net/9086.json
+    // https://cdn.piggygang.com/meta/3ad355d46a9cb2ee57049db4df57088f.json
+
+    const query = 'https://'
+    const startIndex = text.indexOf(query)
+    if (startIndex === -1) return null
+
+    const extension = '.json'
+    const extensionIndex = text.indexOf(extension)
+    const foundNFTUrl = startIndex > -1 && extensionIndex > -1
+    if (!foundNFTUrl) return null
+
+    const endIndex = extensionIndex + extension.length
+    const url = text.substring(startIndex, endIndex)
+    return {
+      type: SolanaNFTType.METAPLEX,
       url
     }
   }
