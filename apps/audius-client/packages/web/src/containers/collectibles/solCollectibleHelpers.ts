@@ -308,14 +308,12 @@ const starAtlasNFTToCollectible = async (
   } as Collectible
 
   // todo: check if there are gif or video nfts for star atlas
-  const is3DObj = ['glb', 'gltf'].some(extension =>
-    [nft.image, nft.media?.thumbnailUrl]
-      .filter(Boolean)
-      .some(url => url.endsWith(extension))
-  )
+  const is3DObj = [nft.image, nft.media?.thumbnailUrl]
+    .filter(Boolean)
+    .some(item => ['glb', 'gltf'].some(extension => item.endsWith(extension)))
   const hasImageFrame = [nft.image, nft.media?.thumbnailUrl]
     .filter(Boolean)
-    .some(item => ['glb', 'gltf'].every(url => !url.endsWith(item)))
+    .some(item => ['glb', 'gltf'].every(extension => !item.endsWith(extension)))
   if (is3DObj && hasImageFrame) {
     collectible.mediaType = CollectibleMediaType.THREE_D
     collectible.threeDUrl = ['glb', 'gltf'].some(extension =>
