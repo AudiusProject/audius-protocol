@@ -81,20 +81,20 @@ const CollectibleMedia: React.FC<{
         }
         if (foundDrawerAncestor) {
           const scrollableAncestorElement = scrollableAncestor as HTMLElement
-          const mouseOverListener = () => {
+          const mouseEnterListener = () => {
             scrollableAncestorElement.style.overflowY = 'hidden'
             console.log(scrollableAncestorElement.style.overflowY)
           }
-          const mouseOutListener = () => {
+          const mouseLeaveListener = () => {
             scrollableAncestorElement.style.overflowY = 'scroll'
             console.log(scrollableAncestorElement.style.overflowY)
           }
-          modelViewer.addEventListener('mouseenter', mouseOverListener)
-          modelViewer.addEventListener('mouseleave', mouseOutListener)
+          modelViewer.addEventListener('mouseenter', mouseEnterListener)
+          modelViewer.addEventListener('mouseleave', mouseLeaveListener)
 
           return () => {
-            modelViewer.removeEventListener('mouseenter', mouseOverListener)
-            modelViewer.removeEventListener('mouseleave', mouseOutListener)
+            modelViewer.removeEventListener('mouseenter', mouseEnterListener)
+            modelViewer.removeEventListener('mouseleave', mouseLeaveListener)
           }
         }
       }
