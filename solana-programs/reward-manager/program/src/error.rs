@@ -19,19 +19,19 @@ pub enum AudiusProgramError {
 
     /// Signature with an already met principal
     #[error("Signature with an already met principal")]
-    SignCollission,
+    SignCollision,
 
     /// Unexpected signer met
     #[error("Unexpected signer met")]
     WrongSigner,
 
     /// Wrong sender account
-    #[error("Incorect sender account")]
-    IncorectSenderAccount,
+    #[error("Incorrect sender account")]
+    IncorrectSenderAccount,
 
     /// Wrong manager account
-    #[error("Incorect account manager")]
-    IncorectManagerAccount,
+    #[error("Incorrect account manager")]
+    IncorrectManagerAccount,
 
     /// Wrong reward manager key
     #[error("Wrong reward manager key")]
