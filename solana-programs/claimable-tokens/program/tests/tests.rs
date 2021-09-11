@@ -270,7 +270,7 @@ async fn test_claim_all_instruction() {
     )
     .await;
 
-    // Query current valance
+    // Query current balance
     let mut bank_token_account_data = get_account(&mut program_context, &address_to_create).await;
     let mut bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
@@ -400,9 +400,10 @@ async fn test_claim_with_wrong_signature_instruction() {
     let eth_address = construct_eth_pubkey(&secp_pubkey);
 
     let user_token_account = Keypair::new();
-    let message = [8u8; 30];
+    // Use bad bad_message instead of the user token account pubkey for the program instruction
+    let bad_message = [8u8; 30];
 
-    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
+    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &bad_message);
 
     let mint_account = Keypair::new();
     let mint_authority = Keypair::new();
@@ -436,11 +437,11 @@ async fn test_claim_with_wrong_signature_instruction() {
     );
 
     transaction.sign(&[&program_context.payer], program_context.last_blockhash);
-    let transaction_error = program_context
+    let tx_result = program_context
         .banks_client
         .process_transaction(transaction)
         .await;
-    assert!(transaction_error.is_err());
+    assert!(tx_result.is_err());
 
     let bank_token_account_data = get_account(&mut program_context, &address_to_create).await;
     let bank_token_account =
@@ -454,4 +455,66 @@ async fn test_claim_with_wrong_signature_instruction() {
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
 
     assert_eq!(user_token_account.amount, 0);
+}
+
+#[tokio::test]
+async fn test_claim_with_wrong_token_account() {
+    let mut program_context = program_test().start_with_context().await;
+    let rent = program_context.banks_client.get_rent().await.unwrap();
+
+    let mut rng = thread_rng();
+    let key: [u8; 32] = rng.gen();
+    let priv_key = SecretKey::parse(&key).unwrap();
+    let secp_pubkey = PublicKey::from_secret_key(&priv_key);
+    let eth_address = construct_eth_pubkey(&secp_pubkey);
+
+    let user_token_account = Keypair::new();
+    let message = user_token_account.pubkey().to_bytes();
+
+    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
+
+    let mint_account = Keypair::new();
+    let mint_authority = Keypair::new();
+
+    let (base_acc, address_to_create, _) = prepare_claim(
+        &mut program_context,
+        mint_account,
+        rent,
+        mint_authority,
+        eth_address,
+        &user_token_account,
+    )
+    .await;
+
+    let mut transaction = Transaction::new_with_payer(
+        &[
+            secp256_program_instruction,
+            instruction::claim(
+                &id(),
+                &address_to_create,
+                // use incorrect user token account
+                &Keypair::new().pubkey(),
+                &base_acc,
+                instruction::Claim {
+                    eth_address,
+                    amount: 0,
+                },
+            )
+            .unwrap(),
+        ],
+        Some(&program_context.payer.pubkey()),
+    );
+
+    transaction.sign(&[&program_context.payer], program_context.last_blockhash);
+    let tx_result = program_context
+        .banks_client
+        .process_transaction(transaction)
+        .await;
+
+    assert!(tx_result.is_err());
+    match tx_result {
+        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 1: custom program error: 0x0" => return (),
+        Err(_) => panic!("Returned incorrect error!"),
+        Ok(_) => panic!("Incorrectly returned Ok!"),
+    }
 }
