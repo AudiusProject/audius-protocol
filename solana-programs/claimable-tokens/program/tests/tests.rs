@@ -400,10 +400,10 @@ async fn test_claim_with_wrong_signature_instruction() {
     let eth_address = construct_eth_pubkey(&secp_pubkey);
 
     let user_token_account = Keypair::new();
-    // use bad message instead of the user token account pubkey for the program instruction
-    let message = [8u8; 30];
+    // Use bad bad_message instead of the user token account pubkey for the program instruction
+    let bad_message = [8u8; 30];
 
-    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
+    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &bad_message);
 
     let mint_account = Keypair::new();
     let mint_authority = Keypair::new();
@@ -513,7 +513,7 @@ async fn test_claim_with_wrong_token_account() {
 
     assert!(tx_result.is_err());
     match tx_result {
-        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 1: custom program error: 0x1" => return (),
+        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 1: custom program error: 0x0" => return (),
         Err(_) => panic!("Returned incorrect error!"),
         Ok(_) => panic!("Incorrectly returned Ok!"),
     }
