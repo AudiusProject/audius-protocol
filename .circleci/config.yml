@@ -26,7 +26,8 @@ jobs:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
-            - build-tools/merge-with-parent
+            - build-tools/merge-with-parent:
+                parent: master
       - run:
           name: clone tooling and mad dog
           command: |
@@ -229,7 +230,8 @@ jobs:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
-            - build-tools/merge-with-parent
+            - build-tools/merge-with-parent:
+                parent: master
             - run: ./diff.sh libs || (echo "no diff" && circleci-agent step halt)
       - setup_remote_docker
 
@@ -295,7 +297,8 @@ jobs:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
-            - build-tools/merge-with-parent
+            - build-tools/merge-with-parent:
+                parent: master
             - run: ./diff.sh contracts || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
       - restore_cache:
@@ -334,7 +337,8 @@ jobs:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
-            - build-tools/merge-with-parent
+            - build-tools/merge-with-parent:
+                parent: master
             - run: ./diff.sh eth-contracts || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
       - restore_cache:
@@ -383,7 +387,8 @@ jobs:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
-            - build-tools/merge-with-parent
+            - build-tools/merge-with-parent:
+                parent: master
             - run: ./diff.sh creator-node || (echo "no diff" && circleci-agent step halt)
       # Download and cache dependencies
       # - restore_cache:
@@ -434,7 +439,8 @@ jobs:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
-            - build-tools/merge-with-parent
+            - build-tools/merge-with-parent:
+                parent: master
             - run: ./diff.sh discovery-provider || (echo "no diff" && circleci-agent step halt)
       - restore_cache:
           keys:
@@ -502,7 +508,8 @@ jobs:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
-            - build-tools/merge-with-parent
+            - build-tools/merge-with-parent:
+                parent: master
             - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
       - setup_remote_docker
       # restores data-contracts
@@ -550,7 +557,8 @@ jobs:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
-            - build-tools/merge-with-parent
+            - build-tools/merge-with-parent:
+                parent: master
             - run: ./diff.sh solana-programs || (echo "no diff" && circleci-agent step halt)
 
       - run:
@@ -635,7 +643,8 @@ jobs:
           condition:
             equal: [ master, << pipeline.git.branch >> ]
           steps:
-            - build-tools/merge-with-parent
+            - build-tools/merge-with-parent:
+                parent: master
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
