@@ -1,7 +1,7 @@
 """Modify challenges schema
 
 Revision ID: 80271bf86c56
-Revises: 436c10e54758
+Revises: 301b1e42dc4b
 Create Date: 2021-06-28 19:31:27.094479
 
 """
