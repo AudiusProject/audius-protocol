@@ -277,7 +277,7 @@ def test_trending_challenge_job(app):
             or_(
                 Challenge.id == "trending-playlist",
                 Challenge.id == "trending-track",
-                Challenge.id == "trending-underground",
+                Challenge.id == "trending-underground-track",
             )
         ).update({"active": True})
         bus.process_events(session)

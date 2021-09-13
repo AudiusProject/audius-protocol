@@ -40,7 +40,7 @@ def get_latest_blocknumber(session: Session, redis: Redis) -> Optional[int]:
     db_block_query = (
         session.query(Block.number).filter(Block.is_current == True).first()
     )
-    if not db_block_query:
+    if db_block_query is None:
         return None
     return db_block_query[0]
 
@@ -83,7 +83,7 @@ def enqueue_trending_challenges(
     with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
 
         latest_blocknumber = get_latest_blocknumber(session, redis)
-        if not latest_blocknumber:
+        if latest_blocknumber is None:
             logger.error(
                 "calculate_trending_challenges.py | Unable to get latest block number"
             )
