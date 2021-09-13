@@ -14,7 +14,7 @@ from src.queries.get_health import get_health
 
 
 def test_get_health(web3_mock, redis_mock, db_mock, get_monitors_mock):
-    """Tests that the health check returns db data"""
+    """Tests that the health check returns db and monitor data"""
     # Set up web3 eth
     def getBlock(_u1, _u2):  # unused
         block = MagicMock()
@@ -22,7 +22,6 @@ def test_get_health(web3_mock, redis_mock, db_mock, get_monitors_mock):
         block.hash = HexBytes(b"\x02")
         return block
 
-    """Tests that the health check returns monitor data"""
     get_monitors_mock.return_value = {
         "database_connections": 2,
         "filesystem_size": 62725623808,
