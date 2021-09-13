@@ -7,6 +7,10 @@ const { MONITORS } = require('../../monitors/monitors')
 
 const TEST_ENDPOINT = 'test_endpoint'
 
+const snapbackSMMock = {
+  highestEnabledReconfigMode: 'RECONFIG_DISABLED'
+}
+
 const libsMock = {
   discoveryProvider: {
     discoveryProviderEndpoint: TEST_ENDPOINT
@@ -66,12 +70,28 @@ const mockLogger = {
   warn: () => {}
 }
 
+const TranscodingQueueMock = (active = 0, waiting = 0) => {
+  return {
+    getTranscodeQueueJobs: async () => {
+      return { active, waiting }
+    }
+  }
+}
+
 describe('Test Health Check', function () {
   it('Should pass', async function () {
+    config.set('serviceCountry', 'US')
+    config.set('serviceLatitude', '37.7749')
+    config.set('serviceLongitude', '-122.4194')
+    config.set('maxStorageUsedPercent', 95)
+    config.set('snapbackJobInterval', 1000)
+    config.set('snapbackModuloBase', 18)
+    config.set('manualSyncsDisabled', false)
+
     config.set('creatorNodeEndpoint', 'http://test.endpoint')
     config.set('spID', 10)
 
-    const res = await healthCheck({ libs: libsMock }, mockLogger, sequelizeMock, getMonitorsMock, 2)
+    const res = await healthCheck({ libs: libsMock, snapbackSM: snapbackSMMock }, mockLogger, sequelizeMock, getMonitorsMock, TranscodingQueueMock(4, 0).getTranscodeQueueJobs, 2)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -83,15 +103,48 @@ describe('Test Health Check', function () {
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
+      country: 'US',
+      latitude: '37.7749',
+      longitude: '-122.4194',
+      databaseConnections: 5,
+      databaseSize: 1102901,
+      totalMemory: 6237151232,
+      usedMemory: 5969739776,
+      usedTCPMemory: 922,
+      storagePathSize: 62725623808,
+      storagePathUsed: 54063878144,
+      maxFileDescriptors: 524288,
+      allocatedFileDescriptors: 3392,
+      receivedBytesPerSec: 776.7638177541248,
+      transferredBytesPerSec: 269500,
+      maxStorageUsedPercent: 95,
       meetsMinRequirements: false,
       numberOfCPUs: 2,
-      storagePathSize: 62725623808,
-      totalMemory: 6237151232
+      thirtyDayRollingSyncSuccessCount: 50,
+      thirtyDayRollingSyncFailCount: 10,
+      dailySyncSuccessCount: 5,
+      dailySyncFailCount: 0,
+      latestSyncSuccessTimestamp: '2021-06-08T21:29:34.231Z',
+      latestSyncFailTimestamp: '',
+      currentSnapbackReconfigMode: 'RECONFIG_DISABLED',
+      manualSyncsDisabled: false,
+      snapbackModuloBase: 18,
+      snapbackJobInterval: 1000,
+      transcodeActive: 4,
+      transcodeWaiting: 0
     })
   })
 
   it('Should handle no libs', async function () {
-    const res = await healthCheck({}, mockLogger, sequelizeMock, getMonitorsMock, 2)
+    config.set('serviceCountry', 'US')
+    config.set('serviceLatitude', '37.7749')
+    config.set('serviceLongitude', '-122.4194')
+    config.set('maxStorageUsedPercent', 95)
+    config.set('snapbackJobInterval', 1000)
+    config.set('snapbackModuloBase', 18)
+    config.set('manualSyncsDisabled', false)
+
+    const res = await healthCheck({ snapbackSM: snapbackSMMock }, mockLogger, sequelizeMock, getMonitorsMock, TranscodingQueueMock(4, 0).getTranscodeQueueJobs, 2)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -103,15 +156,40 @@ describe('Test Health Check', function () {
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
+      country: 'US',
+      latitude: '37.7749',
+      longitude: '-122.4194',
+      databaseConnections: 5,
+      databaseSize: 1102901,
+      totalMemory: 6237151232,
+      usedMemory: 5969739776,
+      usedTCPMemory: 922,
+      storagePathSize: 62725623808,
+      storagePathUsed: 54063878144,
+      maxFileDescriptors: 524288,
+      allocatedFileDescriptors: 3392,
+      receivedBytesPerSec: 776.7638177541248,
+      transferredBytesPerSec: 269500,
+      maxStorageUsedPercent: 95,
       meetsMinRequirements: false,
       numberOfCPUs: 2,
-      storagePathSize: 62725623808,
-      totalMemory: 6237151232
+      thirtyDayRollingSyncSuccessCount: 50,
+      thirtyDayRollingSyncFailCount: 10,
+      dailySyncSuccessCount: 5,
+      dailySyncFailCount: 0,
+      latestSyncSuccessTimestamp: '2021-06-08T21:29:34.231Z',
+      latestSyncFailTimestamp: '',
+      currentSnapbackReconfigMode: 'RECONFIG_DISABLED',
+      manualSyncsDisabled: false,
+      snapbackModuloBase: 18,
+      snapbackJobInterval: 1000,
+      transcodeActive: 4,
+      transcodeWaiting: 0
     })
   })
 
   it('Should return "meetsMinRequirements" = false if system requirements arent met', async function () {
-    const res = await healthCheck({}, mockLogger, sequelizeMock, getMonitorsMock, 2)
+    const res = await healthCheck({ snapbackSM: snapbackSMMock }, mockLogger, sequelizeMock, getMonitorsMock, TranscodingQueueMock(4, 0).getTranscodeQueueJobs, 2)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -123,10 +201,35 @@ describe('Test Health Check', function () {
       spOwnerWallet: config.get('spOwnerWallet'),
       creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
       isRegisteredOnURSM: false,
+      country: 'US',
+      latitude: '37.7749',
+      longitude: '-122.4194',
+      databaseConnections: 5,
+      databaseSize: 1102901,
+      totalMemory: 6237151232,
+      usedMemory: 5969739776,
+      usedTCPMemory: 922,
+      storagePathSize: 62725623808,
+      storagePathUsed: 54063878144,
+      maxFileDescriptors: 524288,
+      allocatedFileDescriptors: 3392,
+      receivedBytesPerSec: 776.7638177541248,
+      transferredBytesPerSec: 269500,
+      maxStorageUsedPercent: 95,
       meetsMinRequirements: false,
       numberOfCPUs: 2,
-      storagePathSize: 62725623808,
-      totalMemory: 6237151232
+      thirtyDayRollingSyncSuccessCount: 50,
+      thirtyDayRollingSyncFailCount: 10,
+      dailySyncSuccessCount: 5,
+      dailySyncFailCount: 0,
+      latestSyncSuccessTimestamp: '2021-06-08T21:29:34.231Z',
+      latestSyncFailTimestamp: '',
+      currentSnapbackReconfigMode: 'RECONFIG_DISABLED',
+      manualSyncsDisabled: false,
+      snapbackModuloBase: 18,
+      snapbackJobInterval: 1000,
+      transcodeActive: 4,
+      transcodeWaiting: 0
     })
 
     assert.deepStrictEqual(res.meetsMinRequirements, false)
@@ -146,13 +249,6 @@ describe('Test Health Check Verbose', function () {
     const serviceRegistryMock = {
       snapbackSM: {
         highestEnabledReconfigMode: 'RECONFIG_DISABLED'
-      }
-    }
-    const TranscodingQueueMock = (active = 0, waiting = 0) => {
-      return {
-        getTranscodeQueueJobs: async () => {
-          return { active, waiting }
-        }
       }
     }
 
