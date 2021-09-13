@@ -7,6 +7,7 @@ from jsonschema import ValidationError
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import event
 from sqlalchemy.orm import relationship, validates
 from sqlalchemy.sql import null
 from sqlalchemy import (
@@ -28,6 +29,21 @@ from src.model_validator import ModelValidator
 
 Base: Any = declarative_base()
 logger = logging.getLogger(__name__)
+
+# Listen for instrumentation of attributes on the base class
+# to add a listener on that attribute whenever it is set
+@event.listens_for(Base, "attribute_instrument")
+def configure_listener(class_, key_, inst):
+    # Check that the attribute is a column (we only validate columns)
+    if not hasattr(inst.property, "columns"):
+        return
+
+    # Listen for set events on the attribute to run our default validations
+    @event.listens_for(inst, "set", retval=True)
+    def set_(target, value, oldvalue, initiator):
+        column_type = getattr(target.__class__, inst.key).type
+        return validate_field_helper(inst.key, value, target.__tablename__, column_type)
+
 
 # field_type is the sqlalchemy type from the model object
 def validate_field_helper(field, value, model, field_type):
@@ -85,16 +101,6 @@ def get_default_value(field, value, model, e):
     )
 
     return default_value
-
-
-def get_fields_to_validate(model):
-    try:
-        fields = ModelValidator.models_to_schema_and_fields_dict[model]["fields"]
-    except BaseException as e:
-        logger.error(f"Validation failed: {e}. No validation will occur for {model}")
-        fields = [""]
-
-    return fields
 
 
 class BlockMixin:
@@ -183,14 +189,6 @@ class User(Base):
     playlist_library = Column(JSONB, nullable=True)
 
     PrimaryKeyConstraint(is_current, user_id, blockhash, txhash)
-
-    ModelValidator.init_model_schemas("User")
-    fields = get_fields_to_validate("User")
-
-    # unpacking args into @validates
-    @validates(*fields)
-    def validate_field(self, field, value):
-        return validate_field_helper(field, value, "User", getattr(User, field).type)
 
     def __repr__(self):
         return f"<User(blockhash={self.blockhash},\
@@ -283,14 +281,6 @@ class Track(Base):
 
     PrimaryKeyConstraint(is_current, track_id, blockhash, txhash)
 
-    ModelValidator.init_model_schemas("Track")
-    fields = get_fields_to_validate("Track")
-
-    # unpacking args into @validates
-    @validates(*fields)
-    def validate_field(self, field, value):
-        return validate_field_helper(field, value, "Track", getattr(Track, field).type)
-
     def __repr__(self):
         return (
             f"<Track("
@@ -352,14 +342,6 @@ class Playlist(Base):
     created_at = Column(DateTime, nullable=False)
 
     PrimaryKeyConstraint(is_current, playlist_id, playlist_owner_id, blockhash, txhash)
-
-    ModelValidator.init_model_schemas("Playlist")
-    fields = ["playlist_name", "description"]
-
-    # unpacking args into @validates
-    @validates(*fields)
-    def validate_field(self, field, value):
-        return validate_field_helper(field, value, "Playlist", getattr(Playlist, field).type)
 
     def __repr__(self):
         return f"<Playlist(blockhash={self.blockhash},\

@@ -34,6 +34,8 @@ from sqlalchemy import (
 from alembic import op
 from src.model_validator import ModelValidator
 
+logger = logging.getLogger(__name__)
+
 # revision identifiers, used by Alembic.
 revision = "c8d2be7dcccc"
 down_revision = "d9992d2d598c"
@@ -149,13 +151,13 @@ class Track(Base):
 
     PrimaryKeyConstraint(is_current, track_id, blockhash, txhash)
 
-    ModelValidator.init_model_schemas("Track")
-    fields = get_fields_to_validate("Track")
+    ModelValidator.init_model_schemas("tracks")
+    fields = get_fields_to_validate("tracks")
 
     # unpacking args into @validates
     @validates(*fields)
     def validate_field(self, field, value):
-        return validate_field_helper(field, value, "Track", getattr(Track, field).type)
+        return validate_field_helper(field, value, "tracks", getattr(Track, field).type)
 
     def __repr__(self):
         return (
