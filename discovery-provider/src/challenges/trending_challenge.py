@@ -2,8 +2,7 @@ import logging
 from sqlalchemy import desc
 
 from src.models.trending_result import TrendingResult
-from typing import List, Literal, Optional, Union, Tuple
-from redis import Redis
+from typing import List, Optional, Tuple, Dict
 from datetime import date, datetime, timedelta
 import pytz
 from sqlalchemy.orm.session import Session
@@ -59,6 +58,9 @@ class TrendingChallengeUpdater(ChallengeUpdater):
         ]
         session.add_all(trending_results)
 
+    def generate_specifier(self, user_id: int, extra: Dict) -> str:
+        return f"{extra['rank']}"
+
 
 trending_track_challenge_manager = ChallengeManager(
     "trending-track", TrendingChallengeUpdater()
@@ -71,6 +73,7 @@ trending_underground_track_challenge_manager = ChallengeManager(
 trending_playlist_challenge_manager = ChallengeManager(
     "trending-playlist", TrendingChallengeUpdater()
 )
+
 
 def is_dst(zonename):
     """Checks if is daylight savings time
@@ -98,7 +101,9 @@ def get_is_valid_timestamp(dt: datetime):
 def should_trending_challenge_update(
     session: Session, timestamp: int
 ) -> Tuple[bool, Optional[date]]:
-    """Checks if the timestamp is after a week and there is no pending trending update"""
+    """Checks if the timestamp is after a week and there is no pending trending update
+    Returns a tuple of boolean if the challenge should be updated, and if it's set to true, the date
+    """
 
     dt = datetime.fromtimestamp(timestamp)
     is_valid_timestamp = get_is_valid_timestamp(dt)

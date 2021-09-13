@@ -1,7 +1,7 @@
 """create_trending_challenge
 
 Revision ID: 7693ab16e2e1
-Revises: 9562cf365cf4
+Revises: 169519f975c2
 Create Date: 2021-08-12 12:54:57.042823
 
 """
@@ -13,7 +13,7 @@ from src.challenges.create_new_challenges import create_new_challenges
 
 # revision identifiers, used by Alembic.
 revision = "7693ab16e2e1"
-down_revision = "9562cf365cf4"
+down_revision = "169519f975c2"
 branch_labels = None
 depends_on = None
 

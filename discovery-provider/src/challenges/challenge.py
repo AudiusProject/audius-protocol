@@ -223,48 +223,29 @@ class ChallengeManager:
                 self._create_new_user_challenge(
                     metadata["user_id"], metadata["specifier"]
                 )
-                .filter(
-                    UserChallenge.challenge_id == self.challenge_id,
-                    UserChallenge.user_id.in_(user_ids),
-                )
-                .group_by(UserChallenge.user_id)
-            ).all()
-            challenges_per_user = dict(all_user_challenges)
-            for new_metadata in new_challenge_metadata:
-                completion_count = challenges_per_user.get(new_metadata["user_id"], 0)
-                if self._step_count and completion_count >= self._step_count:
-                    continue
-                if not self._updater.should_create_new_challenge(
-                    event_type, new_metadata["user_id"], new_metadata["extra"]
-                ):
-                    continue
-                to_create_metadata.append(new_metadata)
-        else:
-            to_create_metadata = new_challenge_metadata
+                for metadata in to_create_metadata
+            ]
+            logger.warning(f"new challenges ${new_user_challenges}")
+            # Do any other custom work needed after creating a challenge event
+            self._updater.on_after_challenge_creation(session, to_create_metadata)
 
-        new_user_challenges = [
-            self._create_new_user_challenge(metadata["user_id"], metadata["specifier"])
-            for metadata in to_create_metadata
-        ]
-        # Do any other custom work needed after creating a challenge event
-        self._updater.on_after_challenge_creation(session, to_create_metadata)
+            # Update all the challenges
 
-        # Update all the challenges
-        in_progress_challenges = [
-            challenge
-            for challenge in existing_user_challenges
-            if not challenge.is_complete
-        ]
-        to_update = in_progress_challenges + new_user_challenges
+            in_progress_challenges = [
+                challenge
+                for challenge in existing_user_challenges
+                if not challenge.is_complete
+            ]
+            to_update = in_progress_challenges + new_user_challenges
 
-        self._updater.update_user_challenges(
-            session,
-            event_type,
-            to_update,
-            self._step_count,
-            events_with_specifiers,
-            self._starting_block,
-        )
+            self._updater.update_user_challenges(
+                session,
+                event_type,
+                to_update,
+                self._step_count,
+                events_with_specifiers,
+                self._starting_block,
+            )
 
             # Add block # to newly completed challenges
             for challenge in to_update:

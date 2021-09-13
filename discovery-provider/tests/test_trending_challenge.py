@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 def test_trending_challenge_should_update(app):
     with app.app_context():
         db = get_db()
-    redis_conn = redis.Redis.from_url(url=REDIS_URL)
 
     with db.scoped_session() as session:
 
@@ -34,22 +33,22 @@ def test_trending_challenge_should_update(app):
         # If the timestamp is outside of threshold and nothing in db
         # Wrong time, wrong day
         timestamp = 1629132028
-        should_update = should_trending_challenge_update(redis_conn, session, timestamp)
+        should_update, timestamp = should_trending_challenge_update(session, timestamp)
         assert not should_update
 
         # Right time, wrong day
         timestamp = 1629140400
-        should_update = should_trending_challenge_update(redis_conn, session, timestamp)
+        should_update, timestamp = should_trending_challenge_update(session, timestamp)
         assert not should_update
 
         # wrong time, right day
         timestamp = 1629489600
-        should_update = should_trending_challenge_update(redis_conn, session, timestamp)
+        should_update, timestamp = should_trending_challenge_update(session, timestamp)
         assert not should_update
 
         # Within bounds
         timestamp = 1629486000
-        should_update = should_trending_challenge_update(redis_conn, session, timestamp)
+        should_update, timestamp = should_trending_challenge_update(session, timestamp)
         assert should_update
 
         # ========== Test working timestamp with trending result in DB ==========
@@ -67,12 +66,12 @@ def test_trending_challenge_should_update(app):
 
         # Test same date as inserted trending result, so return false
         timestamp = 1629486000
-        should_update = should_trending_challenge_update(redis_conn, session, timestamp)
+        should_update, timestamp = should_trending_challenge_update(session, timestamp)
         assert not should_update
 
         # Test week after inserted trending result, so return true
         timestamp = 1630090800
-        should_update = should_trending_challenge_update(redis_conn, session, timestamp)
+        should_update, timestamp = should_trending_challenge_update(session, timestamp)
         assert should_update
 
 
@@ -102,6 +101,8 @@ def test_trending_challenge_job(app):
             {
                 "playlist_id": 1,
                 "playlist_owner_id": 1,
+                "playlist_name": "name",
+                "description": "description",
                 "playlist_contents": {
                     "track_ids": [
                         {"track": 1},
@@ -113,6 +114,8 @@ def test_trending_challenge_job(app):
             {
                 "playlist_id": 2,
                 "playlist_owner_id": 2,
+                "playlist_name": "name",
+                "description": "description",
                 "playlist_contents": {
                     "track_ids": [
                         {"track": 1},
@@ -125,6 +128,8 @@ def test_trending_challenge_job(app):
                 "playlist_id": 3,
                 "is_album": True,
                 "playlist_owner_id": 3,
+                "playlist_name": "name",
+                "description": "description",
                 "playlist_contents": {
                     "track_ids": [
                         {"track": 1},
@@ -136,6 +141,8 @@ def test_trending_challenge_job(app):
             {
                 "playlist_id": 4,
                 "playlist_owner_id": 4,
+                "playlist_name": "name",
+                "description": "description",
                 "playlist_contents": {
                     "track_ids": [
                         {"track": 1},
@@ -147,6 +154,8 @@ def test_trending_challenge_job(app):
             {
                 "playlist_id": 5,
                 "playlist_owner_id": 5,
+                "playlist_name": "name",
+                "description": "description",
                 "playlist_contents": {
                     "track_ids": [
                         {"track": 1},

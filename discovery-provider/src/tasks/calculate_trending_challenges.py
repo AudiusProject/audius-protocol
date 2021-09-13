@@ -1,7 +1,9 @@
+from datetime import datetime
 import logging
 import time
 from redis import Redis
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql.sqltypes import DateTime
 
 from src.models import Block
 from src.tasks.celery_app import celery
@@ -15,6 +17,7 @@ from src.queries.get_trending_playlists import (
 )
 from src.utils.redis_cache import pickle_and_set
 from src.challenges.challenge_event import ChallengeEvent
+from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.queries.get_underground_trending import (
@@ -22,6 +25,7 @@ from src.queries.get_underground_trending import (
     make_get_unpopulated_tracks,
 )
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
+from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 
@@ -43,12 +47,38 @@ def get_latest_blocknumber(session: Session, redis: Redis) -> int:
 TRENDING_LIMIT = 5
 
 
-def enqueue_trending_challenges(db, redis, challenge_bus, date):
+def dispatch_trending_challenges(
+    challenge_bus: ChallengeEventBus,
+    challenge_event: ChallengeEvent,
+    latest_blocknumber: int,
+    tracks,
+    version: str,
+    date: datetime,
+):
+    for idx, track in enumerate(tracks):
+        challenge_bus.dispatch(
+            challenge_event,
+            latest_blocknumber,
+            track["owner_id"],
+            {
+                "id": track["track_id"],
+                "user_id": track["owner_id"],
+                "rank": idx + 1,
+                "type": str(TrendingType.TRACKS),
+                "version": str(version),
+                "week": str(date),
+            },
+        )
+
+
+def enqueue_trending_challenges(
+    db: SessionManager, redis: Redis, challenge_bus: ChallengeEventBus, date: datetime
+):
     logger.info(
         "calculate_trending_challenges.py | Start calculating trending challenges"
     )
     update_start = time.time()
-    with db.scoped_session() as session:
+    with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
 
         latest_blocknumber = get_latest_blocknumber(session, redis)
 
@@ -69,21 +99,14 @@ def enqueue_trending_challenges(db, redis, challenge_bus, date):
             pickle_and_set(redis, key, res)
             top_tracks = res[0]
             top_tracks = top_tracks[:TRENDING_LIMIT]
-            for idx, track in enumerate(top_tracks):
-                challenge_bus.dispatch(
-                    session,
-                    ChallengeEvent.trending_track,
-                    latest_blocknumber,
-                    track["owner_id"],
-                    {
-                        "id": track["track_id"],
-                        "user_id": track["owner_id"],
-                        "rank": idx + 1,
-                        "type": str(TrendingType.TRACKS),
-                        "version": str(version),
-                        "week": str(date),
-                    },
-                )
+            dispatch_trending_challenges(
+                challenge_bus,
+                ChallengeEvent.trending_track,
+                latest_blocknumber,
+                top_tracks,
+                version,
+                date,
+            )
 
         # Cache underground trending
         underground_trending_versions = trending_strategy_factory.get_versions_for_type(
@@ -98,21 +121,14 @@ def enqueue_trending_challenges(db, redis, challenge_bus, date):
             pickle_and_set(redis, key, res)
             top_underground_tracks = res[0]
             top_underground_tracks = top_underground_tracks[:TRENDING_LIMIT]
-            for idx, track in enumerate(top_underground_tracks):
-                challenge_bus.dispatch(
-                    session,
-                    ChallengeEvent.trending_underground,
-                    latest_blocknumber,
-                    track["owner_id"],
-                    {
-                        "id": track["track_id"],
-                        "user_id": track["owner_id"],
-                        "rank": idx + 1,
-                        "type": str(TrendingType.UNDERGROUND_TRACKS),
-                        "version": str(version),
-                        "week": str(date),
-                    },
-                )
+            dispatch_trending_challenges(
+                challenge_bus,
+                ChallengeEvent.trending_underground,
+                latest_blocknumber,
+                top_tracks,
+                version,
+                date,
+            )
 
         trending_playlist_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.PLAYLISTS
@@ -128,7 +144,6 @@ def enqueue_trending_challenges(db, redis, challenge_bus, date):
             top_playlists = top_playlists[:TRENDING_LIMIT]
             for idx, playlist in enumerate(top_playlists):
                 challenge_bus.dispatch(
-                    session,
                     ChallengeEvent.trending_playlist,
                     latest_blocknumber,
                     playlist["playlist_owner_id"],
