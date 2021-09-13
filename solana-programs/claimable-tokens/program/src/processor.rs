@@ -99,6 +99,10 @@ impl Processor {
             return Err(ProgramError::InvalidSeeds);
         }
 
+        if amount == 0 {
+            return Err(ProgramError::InsufficientFunds);
+        }
+
         let authority_signature_seeds = [&source_data.mint.to_bytes()[..32], &[pair.base.seed]];
         let signers = &[&authority_signature_seeds[..]];
 

@@ -21,7 +21,7 @@ pub enum ClaimableProgramError {
     Secp256InstructionLosing,
     /// Instruction load error
     #[error("Instruction load error")]
-    InstructionLoadError,
+    InstructionLoadError
 }
 impl From<ClaimableProgramError> for ProgramError {
     fn from(e: ClaimableProgramError) -> Self {
