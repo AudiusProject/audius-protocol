@@ -1,6 +1,7 @@
 import logging  # pylint: disable=C0302
 import functools
 import pickle
+import json
 from flask.globals import request
 from src.utils import redis_connection
 from src.utils.query_params import stringify_query_params
@@ -52,6 +53,24 @@ def use_redis_cache(key, ttl_sec, work_func):
     to_cache = work_func()
     pickle_and_set(redis, key, to_cache, ttl_sec)
     return to_cache
+
+def get_json_cached_key(redis, key):
+    cached_value = redis.get(key)
+    if cached_value:
+        logger.info(f"Redis Cache - hit {key}")
+        try:
+            deserialized = json.loads(cached_value)
+            return deserialized
+        except Exception as e:
+            logger.warning(f"Unable to deserialize json cached response: {e}")
+            return None
+    logger.info(f"Redis Cache - miss {key}")
+    return None
+
+
+def set_json_cached_key(redis, key, obj, ttl=None):
+    serialized = json.dumps(obj)
+    redis.set(key, serialized, ttl)
 
 
 def cache(**kwargs):
