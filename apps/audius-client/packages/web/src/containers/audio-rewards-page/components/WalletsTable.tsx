@@ -177,10 +177,10 @@ const WalletsTable = ({
       setTimeout(() => {
         dispatch(resetStatus())
       }, timeout)
-    }
 
-    return () => {
-      dispatch(resetStatus())
+      return () => {
+        dispatch(resetStatus())
+      }
     }
   }, [toast, dispatch, status])
 
