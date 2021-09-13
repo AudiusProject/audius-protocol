@@ -42,7 +42,9 @@ def configure_listener(class_, key_, inst):
     @event.listens_for(inst, "set", retval=True)
     def set_(target, value, oldvalue, initiator):
         column_type = getattr(target.__class__, inst.key).type
-        return validate_field_helper(inst.key, value, target.__tablename__, column_type)
+        return validate_field_helper(
+            inst.key, value, target.__class__.__name__, column_type
+        )
 
 
 # field_type is the sqlalchemy type from the model object

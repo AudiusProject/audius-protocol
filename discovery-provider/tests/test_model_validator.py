@@ -9,7 +9,7 @@ logger = logging.getLogger("model_validator")
 def test_one_field_schema_pass():
     track = {"title": "ok"}
     try:
-        ModelValidator.validate(to_validate=track, field="title", model="tracks")
+        ModelValidator.validate(to_validate=track, field="title", model="Track")
     except ValidationError as e:
         assert False, f"test_model_validator [test_one_field_schema_pass] failed: {e}"
 
@@ -17,7 +17,7 @@ def test_one_field_schema_pass():
 def test_one_field_schema_bad_value():
     track = {"title": 1}
     try:
-        ModelValidator.validate(to_validate=track, field="title", model="tracks")
+        ModelValidator.validate(to_validate=track, field="title", model="Track")
         assert False, "test_model_validator [test_one_field_schema_bad_value] failed"
     except BaseException:
         assert True
@@ -26,7 +26,7 @@ def test_one_field_schema_bad_value():
 def test_one_field_schema_bad_key():
     track = {"wrong": "ok"}
     try:
-        ModelValidator.validate(to_validate=track, field="title", model="tracks")
+        ModelValidator.validate(to_validate=track, field="title", model="Track")
         assert False, "test_model_validator [test_one_field_schema_bad_key] failed"
     except BaseException:
         assert True
@@ -35,7 +35,7 @@ def test_one_field_schema_bad_key():
 def test_one_field_schema_bad_key_and_value():
     track = {"wrong": 1}
     try:
-        ModelValidator.validate(to_validate=track, field="title", model="tracks")
+        ModelValidator.validate(to_validate=track, field="title", model="Track")
         assert (
             False
         ), "test_model_validator [test_one_field_schema_bad_key_and_value] failed"
@@ -46,7 +46,7 @@ def test_one_field_schema_bad_key_and_value():
 def test_one_field_schema_with_additional_properties():
     track = {"title": "ok", "wrong": 1}
     try:
-        ModelValidator.validate(to_validate=track, field="title", model="tracks")
+        ModelValidator.validate(to_validate=track, field="title", model="Track")
         assert (
             False
         ), "test_model_validator [test_one_field_schema_with_additional_properties] failed"
@@ -57,7 +57,7 @@ def test_one_field_schema_with_additional_properties():
 def test_one_field_schema_empty_object():
     track = {}
     try:
-        ModelValidator.validate(to_validate=track, field="title", model="tracks")
+        ModelValidator.validate(to_validate=track, field="title", model="Track")
         assert False, "test_model_validator [test_one_field_schema_empty_object] failed"
     except BaseException:
         assert True
