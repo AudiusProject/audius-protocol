@@ -151,7 +151,12 @@ const CollectibleDetails: React.FC<{
   useEffect(() => {
     const load = async () => {
       let f = frameUrl
-      if (!f && mediaType === CollectibleMediaType.GIF) {
+      if (
+        !f &&
+        [CollectibleMediaType.GIF, CollectibleMediaType.THREE_D].includes(
+          mediaType
+        )
+      ) {
         f = await getFrameFromGif(gifUrl!, name || '')
       } else if (!f && mediaType === CollectibleMediaType.VIDEO) {
         setIsLoading(false)
