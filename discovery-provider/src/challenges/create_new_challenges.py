@@ -16,7 +16,9 @@ def get_challenges_dicts():
         return parsed
 
 
-def create_new_challenges(session, allowed_challenge_types=[]):
+def create_new_challenges(session, allowed_challenge_types=None):
+    if not allowed_challenge_types:
+        allowed_challenge_types = []
     challenges_dicts = get_challenges_dicts()
     challenges = []
     existing_challenges = session.query(Challenge).all()

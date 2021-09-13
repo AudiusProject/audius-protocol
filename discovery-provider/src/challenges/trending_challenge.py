@@ -1,28 +1,17 @@
 import logging
-from sqlalchemy import desc
-
-from src.models.trending_result import TrendingResult
 from typing import List, Optional, Tuple, Dict
 from datetime import date, datetime, timedelta
+from sqlalchemy.orm.session import Session
+from sqlalchemy import desc
 import pytz
-from sqlalchemy.orm.session import Session
-from src.models import (
-    UserChallenge,
-)
-from src.challenges.challenge import (
-    ChallengeManager,
-    ChallengeUpdater,
-    FullEventMetadata,
-)
 
-from typing import List, Optional
-from sqlalchemy.orm.session import Session
 from src.challenges.challenge import (
     ChallengeManager,
     ChallengeUpdater,
     FullEventMetadata,
 )
 from src.models.models import UserChallenge
+from src.models.trending_result import TrendingResult
 
 logger = logging.getLogger(__name__)
 

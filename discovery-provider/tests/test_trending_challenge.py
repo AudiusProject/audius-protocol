@@ -1,12 +1,12 @@
 import logging
 from datetime import date, datetime, timedelta
-from src.trending_strategies.trending_type_and_version import TrendingType
-from src.models.models import UserChallenge
-from src.models import TrendingResult, AggregatePlays
-from src.challenges.trending_challenge import should_trending_challenge_update
+from sqlalchemy.sql.expression import or_
 import redis
 
-from src.models import User, Block
+from src.trending_strategies.trending_type_and_version import TrendingType
+from src.models.models import UserChallenge, Challenge
+from src.models import TrendingResult
+from src.challenges.trending_challenge import should_trending_challenge_update
 from src.utils.db_session import get_db
 from src.challenges.trending_challenge import (
     trending_track_challenge_manager,
@@ -273,6 +273,13 @@ def test_trending_challenge_job(app):
     enqueue_trending_challenges(db, redis_conn, bus, trending_date)
 
     with db.scoped_session() as session:
+        session.query(Challenge).filter(
+            or_(
+                Challenge.id == "trending-playlist",
+                Challenge.id == "trending-track",
+                Challenge.id == "trending-underground",
+            )
+        ).update({"active": True})
         bus.process_events(session)
         session.flush()
         trending_tracks = (
@@ -281,6 +288,17 @@ def test_trending_challenge_job(app):
             .all()
         )
         assert len(trending_tracks) == 5
+
+        user_trending_tracks_challenges = (
+            session.query(UserChallenge)
+            .filter(UserChallenge.challenge_id == "trending-track")
+            .all()
+        )
+        assert len(user_trending_tracks_challenges) == 5
+        ranks = {"1", "2", "3", "4", "5"}
+        for challenge in user_trending_tracks_challenges:
+            assert challenge.specifier in ranks
+            ranks.remove(challenge.specifier)
 
         trending_playlists = (
             session.query(TrendingResult)

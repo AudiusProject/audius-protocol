@@ -1,9 +1,9 @@
 from datetime import datetime
 import logging
 import time
+from typing import Optional
 from redis import Redis
 from sqlalchemy.orm.session import Session
-from sqlalchemy.sql.sqltypes import DateTime
 
 from src.models import Block
 from src.tasks.celery_app import celery
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 trending_strategy_factory = TrendingStrategyFactory()
 
 
-def get_latest_blocknumber(session: Session, redis: Redis) -> int:
+def get_latest_blocknumber(session: Session, redis: Redis) -> Optional[int]:
     # get latest db state from redis cache
     latest_indexed_block_num = redis.get(most_recent_indexed_block_redis_key)
     if latest_indexed_block_num is not None:
@@ -40,6 +40,8 @@ def get_latest_blocknumber(session: Session, redis: Redis) -> int:
     db_block_query = (
         session.query(Block.number).filter(Block.is_current == True).first()
     )
+    if not db_block_query:
+        return None
     return db_block_query[0]
 
 
@@ -81,6 +83,11 @@ def enqueue_trending_challenges(
     with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
 
         latest_blocknumber = get_latest_blocknumber(session, redis)
+        if not latest_blocknumber:
+            logger.error(
+                "calculate_trending_challenges.py | Unable to get latest block number"
+            )
+            return
 
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
