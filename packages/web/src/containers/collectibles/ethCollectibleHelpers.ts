@@ -146,12 +146,23 @@ export const assetToCollectible = async (
       gifUrl = imageUrls.find(url => url?.endsWith('.gif'))!
     } else if (isAssetThreeDAndIncludesImage(asset)) {
       mediaType = CollectibleMediaType.THREE_D
-      frameUrl = imageUrls.find(
-        url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext))
-      )!
       threeDUrl = [animation_url, animation_original_url, ...imageUrls].find(
         url => url && SUPPORTED_3D_EXTENSIONS.some(ext => url.endsWith(ext))
       )!
+      frameUrl = imageUrls.find(
+        url => url && NON_IMAGE_EXTENSIONS.every(ext => !url.endsWith(ext))
+      )!
+      // image urls may not end in known extensions
+      // just because the don't end with the NON_IMAGE_EXTENSIONS above does not mean they are images
+      // they may be gifs
+      // example: https://lh3.googleusercontent.com/rOopRU-wH9mqMurfvJ2INLIGBKTtF8BN_XC7KZxTh8PPHt5STSNJ-i8EQit8ZTwE3Mi8LK4on_4YazdC3Cl-HdaxbnKJ23P8kocvJHQ
+      const res = await fetch(frameUrl, { method: 'HEAD' })
+      const hasGifFrame = res.headers.get('Content-Type')?.includes('gif')
+      if (hasGifFrame) {
+        gifUrl = frameUrl
+        // frame url for the gif is computed later in the collectibles page
+        frameUrl = null
+      }
     } else if (isAssetVideo(asset)) {
       mediaType = CollectibleMediaType.VIDEO
       frameUrl =
