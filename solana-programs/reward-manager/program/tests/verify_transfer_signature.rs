@@ -1,5 +1,4 @@
 #![cfg(feature = "test-bpf")]
-mod assert;
 mod utils;
 
 use audius_reward_manager::{
