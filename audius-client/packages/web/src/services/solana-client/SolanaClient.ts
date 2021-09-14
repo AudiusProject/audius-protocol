@@ -12,7 +12,15 @@ const METADATA_PROGRAM_ID = process.env.REACT_APP_METADATA_PROGRAM_ID
 const METADATA_PROGRAM_ID_PUBLIC_KEY = new PublicKey(METADATA_PROGRAM_ID!)
 
 class SolanaClient {
-  private connection = new Connection(SOLANA_CLUSTER_ENDPOINT!, 'confirmed')
+  private connection: Connection | null = null
+  constructor() {
+    try {
+      this.connection = new Connection(SOLANA_CLUSTER_ENDPOINT!, 'confirmed')
+    } catch (e) {
+      console.error('Could create Solana RPC connection', e)
+      this.connection = null
+    }
+  }
 
   /**
    * for each given wallet:
@@ -23,102 +31,107 @@ class SolanaClient {
    * - get the metadata urls from the account infos and fetch the metadatas
    * - transform the nft metadatas to Audius-domain collectibles
    */
-  async getAllCollectibles(wallets: string[]): Promise<CollectibleState> {
-    const tokenAccountsByOwnerAddress = await Promise.all(
-      wallets.map(async address =>
-        client.connection.getParsedTokenAccountsByOwner(
-          new PublicKey(address),
-          {
+  getAllCollectibles = async (wallets: string[]): Promise<CollectibleState> => {
+    try {
+      if (this.connection === null) throw new Error('No connection')
+      const connection = this.connection
+
+      const tokenAccountsByOwnerAddress = await Promise.all(
+        wallets.map(async address =>
+          connection.getParsedTokenAccountsByOwner(new PublicKey(address), {
             programId: TOKEN_PROGRAM_ID
-          }
+          })
         )
       )
-    )
 
-    const potentialNFTsByOwnerAddress = tokenAccountsByOwnerAddress
-      .map(ta => ta.value)
-      // value is an array of parsed token info
-      .map((value, i) => {
-        const mintAddresses = value
-          .map(v => ({
-            mint: v.account.data.parsed.info.mint,
-            tokenAmount: v.account.data.parsed.info.tokenAmount
+      const potentialNFTsByOwnerAddress = tokenAccountsByOwnerAddress
+        .map(ta => ta.value)
+        // value is an array of parsed token info
+        .map((value, i) => {
+          const mintAddresses = value
+            .map(v => ({
+              mint: v.account.data.parsed.info.mint,
+              tokenAmount: v.account.data.parsed.info.tokenAmount
+            }))
+            .filter(({ tokenAmount }) => {
+              // Filter out the token if we don't have any balance
+              const ownsNFT = tokenAmount.amount !== '0'
+              // Filter out the tokens that don't have 0 decimal places.
+              // NFTs really should have 0
+              const hasNoDecimals = tokenAmount.decimals === 0
+              return ownsNFT && hasNoDecimals
+            })
+            .map(({ mint }) => mint)
+          return { mintAddresses }
+        })
+
+      const nfts = await Promise.all(
+        potentialNFTsByOwnerAddress.map(async ({ mintAddresses }) => {
+          const programAddresses = await Promise.all(
+            mintAddresses.map(
+              async mintAddress =>
+                (
+                  await PublicKey.findProgramAddress(
+                    [
+                      Buffer.from('metadata'),
+                      METADATA_PROGRAM_ID_PUBLIC_KEY.toBytes(),
+                      new PublicKey(mintAddress).toBytes()
+                    ],
+                    METADATA_PROGRAM_ID_PUBLIC_KEY
+                  )
+                )[0]
+            )
+          )
+
+          const accountInfos = await connection.getMultipleAccountsInfo(
+            programAddresses
+          )
+          const nonNullInfos = accountInfos?.filter(Boolean) ?? []
+
+          const metadataUrls = nonNullInfos
+            .map(x => client._utf8ArrayToNFTType(x!.data))
+            .filter(Boolean) as { type: SolanaNFTType; url: string }[]
+
+          const results = await Promise.all(
+            metadataUrls.map(async item =>
+              fetch(item!.url)
+                .then(res => res.json())
+                .catch(() => null)
+            )
+          )
+
+          const metadatas = results.map((metadata, i) => ({
+            metadata,
+            type: metadataUrls[i].type
           }))
-          .filter(({ tokenAmount }) => {
-            // Filter out the token if we don't have any balance
-            const ownsNFT = tokenAmount.amount !== '0'
-            // Filter out the tokens that don't have 0 decimal places.
-            // NFTs really should have 0
-            const hasNoDecimals = tokenAmount.decimals === 0
-            return ownsNFT && hasNoDecimals
-          })
-          .map(({ mint }) => mint)
-        return { mintAddresses }
-      })
 
-    const nfts = await Promise.all(
-      potentialNFTsByOwnerAddress.map(async ({ mintAddresses }) => {
-        const programAddresses = await Promise.all(
-          mintAddresses.map(
-            async mintAddress =>
-              (
-                await PublicKey.findProgramAddress(
-                  [
-                    Buffer.from('metadata'),
-                    METADATA_PROGRAM_ID_PUBLIC_KEY.toBytes(),
-                    new PublicKey(mintAddress).toBytes()
-                  ],
-                  METADATA_PROGRAM_ID_PUBLIC_KEY
-                )
-              )[0]
+          return metadatas.filter(r => !!r.metadata)
+        })
+      )
+
+      const solanaCollectibles = await Promise.all(
+        nfts.map(async (nftsForAddress, i) => {
+          const collectibles = await Promise.all(
+            nftsForAddress.map(
+              async nft =>
+                await solanaNFTToCollectible(nft.metadata, wallets[i], nft.type)
+            )
           )
-        )
+          return collectibles.filter(Boolean) as Collectible[]
+        })
+      )
 
-        const accountInfos = await client.connection.getMultipleAccountsInfo(
-          programAddresses
-        )
-        const nonNullInfos = accountInfos?.filter(Boolean) ?? []
-
-        const metadataUrls = nonNullInfos
-          .map(x => client._utf8ArrayToNFTType(x!.data))
-          .filter(Boolean) as { type: SolanaNFTType; url: string }[]
-
-        const results = await Promise.all(
-          metadataUrls.map(async item =>
-            fetch(item!.url)
-              .then(res => res.json())
-              .catch(() => null)
-          )
-        )
-
-        const metadatas = results.map((metadata, i) => ({
-          metadata,
-          type: metadataUrls[i].type
-        }))
-
-        return metadatas.filter(r => !!r.metadata)
-      })
-    )
-
-    const solanaCollectibles = await Promise.all(
-      nfts.map(async (nftsForAddress, i) => {
-        const collectibles = await Promise.all(
-          nftsForAddress.map(
-            async nft =>
-              await solanaNFTToCollectible(nft.metadata, wallets[i], nft.type)
-          )
-        )
-        return collectibles.filter(Boolean) as Collectible[]
-      })
-    )
-
-    return solanaCollectibles.reduce(
-      (result, collectibles, i) => ({
-        ...result,
-        [wallets[i]]: collectibles
-      }),
-      {} as CollectibleState
-    )
+      return solanaCollectibles.reduce(
+        (result, collectibles, i) => ({
+          ...result,
+          [wallets[i]]: collectibles
+        }),
+        {} as CollectibleState
+      )
+    } catch (e) {
+      console.error('Unable to get collectibles', e)
+      return Promise.resolve({})
+    }
   }
 
   /**
@@ -128,9 +141,9 @@ class SolanaClient {
    * a given nft collection can have nfts living in different domains e.g. solamander on cloudfront or arweave or etc., also
    * nfts may live in ipfs or other places
    */
-  _utf8ArrayToNFTType(
+  _utf8ArrayToNFTType = (
     array: Uint8Array
-  ): { type: SolanaNFTType; url: string } | null {
+  ): { type: SolanaNFTType; url: string } | null => {
     const text = new TextDecoder().decode(array)
 
     // for the sake of simplicty/readability/understandability, we check the decoded url
@@ -140,7 +153,7 @@ class SolanaClient {
     )
   }
 
-  _metaplex(text: string): { type: SolanaNFTType; url: string } | null {
+  _metaplex = (text: string): { type: SolanaNFTType; url: string } | null => {
     const query = 'https://'
     const startIndex = text.indexOf(query)
     if (startIndex === -1) return null
@@ -164,7 +177,7 @@ class SolanaClient {
     }
   }
 
-  _starAtlas(text: string): { type: SolanaNFTType; url: string } | null {
+  _starAtlas = (text: string): { type: SolanaNFTType; url: string } | null => {
     const query = 'https://'
     const startIndex = text.indexOf(query)
     if (startIndex === -1) return null
@@ -187,7 +200,7 @@ class SolanaClient {
     }
   }
 
-  _unknown(text: string): { type: SolanaNFTType; url: string } | null {
+  _unknown = (text: string): { type: SolanaNFTType; url: string } | null => {
     // Look for 'https://<...>.json' and that will be the metadata location
     // examples:
     // https://d1b6hed00dtfsr.cloudfront.net/9086.json
