@@ -367,7 +367,7 @@ impl Processor {
 
             // If messages account is full from previous attempt, reset it
             let reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
-            if verified_messages.messages.len() == (reward_manager.min_votes + 1) as usize {
+            if verified_messages.messages.len() >= (reward_manager.min_votes + 1) as usize {
                 verified_messages.messages.clear()
             }
         } else {
