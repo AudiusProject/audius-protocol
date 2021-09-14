@@ -45,7 +45,6 @@ fn handle_hex_prefix(hex_str: &mut String) {
 fn eth_address_of(matches: &ArgMatches<'_>, name: &str) -> anyhow::Result<EthereumAddress> {
     let mut value = value_t!(matches.value_of(name), String)?;
     handle_hex_prefix(&mut value);
-    // 4e3355d1ADaaD887A12C2D574d991C71359bDF47
     let decoded_pk = hex::decode(value.as_str())?;
     decoded_pk
         .try_into()
