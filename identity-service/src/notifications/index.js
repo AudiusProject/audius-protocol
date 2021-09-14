@@ -15,7 +15,7 @@ const { processEmailNotifications } = require('./sendNotificationEmails')
 const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
 const { pushAnnouncementNotifications } = require('./pushAnnouncementNotifications')
 const { notificationJobType, solanaNotificationJobType, announcementJobType, unreadEmailJobType } = require('./constants')
-const { drainPublishedMessages } = require('./notificationQueue')
+const { drainPublishedMessages, drainPublishedSolanaMessages } = require('./notificationQueue')
 const emailCachePath = './emailCache'
 const processNotifications = require('./processNotifications/index.js')
 const { indexTrendingTracks } = require('./trendingTrackProcessing')
@@ -380,22 +380,22 @@ class NotificationProcessor {
     try {
       // Insert the solana notifications into the DB
       await processNotifications(notifications, tx)
-      logger.info(`notifications main indexAll job - processNotifications complete`)
+      logger.info(`${logLabel} - processNotifications complete`)
 
       // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
       await sendNotifications(audiusLibs, notifications, tx)
-      logger.info(`notifications main indexAll job - sendNotifications complete`)
+      logger.info(`${logLabel} - sendNotifications complete`)
 
       // Commit
       await tx.commit()
 
       // actually send out push notifications
-      await drainPublishedMessages()
-      logger.info(`notifications main indexAll job - drainPublishedMessages complete`)
+      await drainPublishedSolanaMessages()
+      logger.info(`${logLabel} - drainPublishedMessages complete`)
 
       const endTime = process.hrtime(startTime)
       const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
-      logger.info(`notifications main indexAll job finished - minSlot: ${minSlot}, startDate: ${startDate}, duration: ${duration}, notifications: ${notifications.length}`)
+      logger.info(`${logLabel} finished - minSlot: ${minSlot}, startDate: ${startDate}, duration: ${duration}, notifications: ${notifications.length}`)
     } catch (e) {
       logger.error(`Error indexing notification ${e}`)
       logger.error(e.stack)

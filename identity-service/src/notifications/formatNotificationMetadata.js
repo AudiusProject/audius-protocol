@@ -327,7 +327,7 @@ const pushNotificationMessagesMap = {
   },
   [notificationTypes.ChallengeReward] (notification) {
     return notification.challengeId === 'referred'
-      ? `You’ve recieved ${challengeInfoMap[notification.challengeId].amount} $AUDIO for being referred! Invite your friends to join to earn more!`
+      ? `You’ve received ${challengeInfoMap[notification.challengeId].amount} $AUDIO for being referred! Invite your friends to join to earn more!`
       : `You’ve earned ${challengeInfoMap[notification.challengeId].amount} $AUDIO for completing this challenge!`
   }
 }

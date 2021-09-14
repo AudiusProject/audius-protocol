@@ -235,7 +235,7 @@ def notifications():
 
     # Max block number is not explicitly required (yet)
     if not min_block_number and min_block_number != 0:
-        return api_helpers.error_response({"msg": "Missing min block number"}, 500)
+        return api_helpers.error_response({"msg": "Missing min block number"}, 400)
 
     if not max_block_number:
         max_block_number = min_block_number + max_block_diff
@@ -914,7 +914,7 @@ def solana_notifications():
 
     # Max slot number is not explicitly required (yet)
     if not min_slot_number and min_slot_number != 0:
-        return api_helpers.error_response({"msg": "Missing min slot number"}, 500)
+        return api_helpers.error_response({"msg": "Missing min slot number"}, 400)
 
     if not max_slot_number or (max_slot_number - min_slot_number) > max_slot_diff:
         max_slot_number = min_slot_number + max_slot_diff
@@ -922,8 +922,14 @@ def solana_notifications():
     # TODO: This needs to be updated when more notification types are added to the solana notifications queue
     # Need to write a system to keep track of the proper latest slot to index based on all of the applicable table
     with db.scoped_session() as session:
-        current_slot_query_results = session.query(ChallengeDisbursement).all()
-        current_max_slot_num = current_slot_query_results[0].slot
+        current_slot_query_result = (
+            session.query(ChallengeDisbursement.slot)
+            .order_by(
+                desc(ChallengeDisbursement.slot)
+            )
+            .first()
+        )
+        current_max_slot_num = current_slot_query_result.slot
         if current_max_slot_num < max_slot_number:
             max_slot_number = current_max_slot_num
 

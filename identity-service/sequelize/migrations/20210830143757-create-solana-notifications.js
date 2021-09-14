@@ -19,6 +19,9 @@ module.exports = {
       isHidden: {
         type: Sequelize.BOOLEAN
       },
+      isViewed: {
+        type: Sequelize.BOOLEAN
+      },
       userId: {
         type: Sequelize.INTEGER
       },
