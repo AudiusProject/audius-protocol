@@ -45,6 +45,7 @@ def configure_listener(class_, key_, inst):
         if type(column_type) in (String, Text) and value and isinstance(value, str):
             value = value.encode("utf-8", "ignore").decode("utf-8", "ignore")
             value = value.replace("\x00", "")
+        return value
 
 
 # field_type is the sqlalchemy type from the model object
