@@ -27,15 +27,15 @@ pub struct AddressPair {
     pub derive: Derived,
 }
 
-/// Return `Base` account with seed and corresponding derive
+/// Return `Base` account with seed and corresponding derived address
 /// with seed
-pub fn get_address_pair(
+pub fn find_address_pair(
     program_id: &Pubkey,
     mint: &Pubkey,
     eth_public_key: EthereumAddress,
 ) -> Result<AddressPair, PubkeyError> {
-    let (base_pubkey, base_seed) = get_base_address(mint, program_id);
-    let (derived_pubkey, derive_seed) = get_derived_address(&base_pubkey.clone(), eth_public_key)?;
+    let (base_pubkey, base_seed) = find_base_address(mint, program_id);
+    let (derived_pubkey, derive_seed) = find_derived_address(&base_pubkey.clone(), eth_public_key)?;
     Ok(AddressPair {
         base: Base {
             address: base_pubkey,
@@ -50,13 +50,13 @@ pub fn get_address_pair(
 
 /// Return PDA(that named `Base`) corresponding to specific mint
 /// and it bump seed
-pub fn get_base_address(mint: &Pubkey, program_id: &Pubkey) -> (Pubkey, u8) {
+pub fn find_base_address(mint: &Pubkey, program_id: &Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(&[&mint.to_bytes()[..32]], program_id)
 }
 
 /// Return derived token account address corresponding to specific
 /// ethereum account and seed
-pub fn get_derived_address(
+pub fn find_derived_address(
     base: &Pubkey,
     eth_public_key: EthereumAddress,
 ) -> Result<(Pubkey, String), PubkeyError> {

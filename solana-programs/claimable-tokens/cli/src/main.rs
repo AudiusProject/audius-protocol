@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use anyhow::{bail, Context};
 use claimable_tokens::{
     instruction::{Transfer, CreateTokenAccount},
-    utils::program::{get_address_pair, EthereumAddress},
+    utils::program::{find_address_pair, EthereumAddress},
 };
 use clap::{
     crate_description, crate_name, crate_version, value_t, App, AppSettings, Arg, ArgMatches,
@@ -96,7 +96,7 @@ fn transfer(
 
     let eth_pubkey = libsecp256k1::PublicKey::from_secret_key(&secret_key);
     let eth_address = construct_eth_pubkey(&eth_pubkey);
-    let pair = get_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
+    let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
 
     // If `recipient` token account provided - we will use it,
     // otherwise will use token account associated with `config.owner`
@@ -168,7 +168,7 @@ fn transfer(
 fn send_to(config: Config, eth_address: [u8; 20], mint: Pubkey, amount: f64) -> anyhow::Result<()> {
     let mut instructions: Vec<Instruction> = vec![];
 
-    let pair = get_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
+    let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
     // Checking if the derived address of recipient does not exist
     // then we must add instruction to create it
     let derived_token_acc_data = config.rpc_client.get_account_data(&pair.derive.address);
@@ -211,7 +211,7 @@ fn send_to(config: Config, eth_address: [u8; 20], mint: Pubkey, amount: f64) -> 
 }
 
 fn balance(config: Config, eth_address: EthereumAddress, mint: Pubkey) -> anyhow::Result<()> {
-    let pair = get_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
+    let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
 
     if let Response {
         value: Some(account),

@@ -4,7 +4,7 @@ use crate::{
     error::{to_claimable_tokens_error, ClaimableProgramError},
     instruction::ClaimableProgramInstruction,
     utils::program::{
-        get_address_pair,
+        find_address_pair,
         EthereumAddress
     }
 };
@@ -40,7 +40,7 @@ impl Processor {
         space: u64,
     ) -> ProgramResult {
         // Calculate target bank account PDA
-        let pair = get_address_pair(program_id, mint_key, eth_address)?;
+        let pair = find_address_pair(program_id, mint_key, eth_address)?;
         // Verify base and incoming account match expected
         if *base.key != pair.base.address {
             return Err(ProgramError::InvalidSeeds);
@@ -97,7 +97,7 @@ impl Processor {
         let source_data = spl_token::state::Account::unpack(&source.data.borrow())?;
 
         // Verify source token account matches the expected PDA
-        let pair = get_address_pair(program_id, &source_data.mint, eth_address)?;
+        let pair = find_address_pair(program_id, &source_data.mint, eth_address)?;
         if *source.key != pair.derive.address {
             return Err(ProgramError::InvalidSeeds);
         }

@@ -1,7 +1,7 @@
 #![cfg(feature = "test-bpf")]
 
 use claimable_tokens::error::ClaimableProgramError;
-use claimable_tokens::utils::program::{get_address_pair, EthereumAddress};
+use claimable_tokens::utils::program::{find_address_pair, EthereumAddress};
 use claimable_tokens::*;
 use rand::prelude::ThreadRng;
 use rand::{thread_rng, Rng};
@@ -215,7 +215,7 @@ async fn prepare_claim(
     .await
     .unwrap();
 
-    let pair = get_address_pair(
+    let pair = find_address_pair(
         &id(), 
         &mint_account.pubkey(),
         eth_address).unwrap();
@@ -271,7 +271,7 @@ async fn test_init_instruction() {
     .await
     .unwrap();
 
-    let pair = get_address_pair(&id(), &mint_account.pubkey(), eth_address).unwrap();
+    let pair = find_address_pair(&id(), &mint_account.pubkey(), eth_address).unwrap();
 
     init_user_bank(&mut program_context, &mint_account.pubkey(), eth_address)
         .await
