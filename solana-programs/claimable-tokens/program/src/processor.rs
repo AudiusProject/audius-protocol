@@ -39,6 +39,7 @@ impl Processor {
         required_lamports: u64,
         space: u64,
     ) -> ProgramResult {
+        // Calculate target bank account PDA
         let pair = get_address_pair(program_id, mint_key, eth_address)?;
         // Verify base and incoming account match expected
         if *base.key != pair.base.address {
@@ -48,6 +49,7 @@ impl Processor {
             return Err(ProgramError::InvalidSeeds);
         }
 
+        // Create user bank account signature and invoke from program
         let signature = &[&mint_key.to_bytes()[..32], &[pair.base.seed]];
 
         invoke_signed(
@@ -65,6 +67,7 @@ impl Processor {
         )
     }
 
+    /// Helper to initialize user token account
     fn initialize_token_account<'a>(
         account_to_initialize: AccountInfo<'a>,
         mint: AccountInfo<'a>,

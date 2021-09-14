@@ -6,7 +6,7 @@ use solana_program::{
     pubkey::PubkeyError
 };
 
-/// Represent compressed ethereum pubkey
+/// Represent compressed ethereum pubkey bytes
 pub type EthereumAddress = [u8; 20];
 
 /// Base PDA related with some mint
@@ -21,7 +21,7 @@ pub struct Derived {
     pub seed: String,
 }
 
-/// Base with related
+/// Base with corresponding derived address
 pub struct AddressPair {
     pub base: Base,
     pub derive: Derived,
@@ -32,17 +32,17 @@ pub struct AddressPair {
 pub fn get_address_pair(
     program_id: &Pubkey,
     mint: &Pubkey,
-    hashed_eth_pk: EthereumAddress,
+    eth_public_key: EthereumAddress,
 ) -> Result<AddressPair, PubkeyError> {
-    let (base_pk, base_seed) = get_base_address(mint, program_id);
-    let (derived_pk, derive_seed) = get_derived_address(&base_pk.clone(), hashed_eth_pk)?;
+    let (base_pubkey, base_seed) = get_base_address(mint, program_id);
+    let (derived_pubkey, derive_seed) = get_derived_address(&base_pubkey.clone(), eth_public_key)?;
     Ok(AddressPair {
         base: Base {
-            address: base_pk,
+            address: base_pubkey,
             seed: base_seed,
         },
         derive: Derived {
-            address: derived_pk,
+            address: derived_pubkey,
             seed: derive_seed,
         },
     })
@@ -58,8 +58,8 @@ pub fn get_base_address(mint: &Pubkey, program_id: &Pubkey) -> (Pubkey, u8) {
 /// ethereum account and seed
 pub fn get_derived_address(
     base: &Pubkey,
-    hashed_eth_pk: EthereumAddress,
+    eth_public_key: EthereumAddress,
 ) -> Result<(Pubkey, String), PubkeyError> {
-    let seed = bs58::encode(hashed_eth_pk).into_string();
+    let seed = bs58::encode(eth_public_key).into_string();
     Pubkey::create_with_seed(base, seed.as_str(), &spl_token::id()).map(|i| (i, seed))
 }

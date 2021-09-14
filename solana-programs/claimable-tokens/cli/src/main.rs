@@ -3,7 +3,7 @@ use std::convert::TryInto;
 use anyhow::anyhow;
 use anyhow::{bail, Context};
 use claimable_tokens::{
-    instruction::{Claim, CreateTokenAccount},
+    instruction::{Transfer, CreateTokenAccount},
     utils::program::{get_address_pair, EthereumAddress},
 };
 use clap::{
@@ -45,6 +45,7 @@ fn handle_hex_prefix(hex_str: &mut String) {
 fn eth_address_of(matches: &ArgMatches<'_>, name: &str) -> anyhow::Result<EthereumAddress> {
     let mut value = value_t!(matches.value_of(name), String)?;
     handle_hex_prefix(&mut value);
+    // 4e3355d1ADaaD887A12C2D574d991C71359bDF47
     let decoded_pk = hex::decode(value.as_str())?;
     decoded_pk
         .try_into()
@@ -144,12 +145,12 @@ fn transfer(
 
     let instructions = &[
         new_secp256k1_instruction(&secret_key, &user_acc.to_bytes()),
-        claimable_tokens::instruction::claim(
+        claimable_tokens::instruction::transfer(
             &claimable_tokens::id(),
             &pair.derive.address,
             &user_acc,
             &pair.base.address,
-            Claim {
+            Transfer {
                 eth_address,
                 amount: spl_token::ui_amount_to_amount(amount, mint_data.decimals),
             },
