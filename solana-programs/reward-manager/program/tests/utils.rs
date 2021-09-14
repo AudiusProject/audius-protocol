@@ -10,12 +10,15 @@ use solana_program::{
 use solana_program_test::*;
 use solana_program_test::{processor, ProgramTest};
 use solana_sdk::secp256k1_instruction::*;
+use solana_sdk::transaction::TransactionError;
 use solana_sdk::{
     account::Account,
     signature::{Keypair, Signer},
     transaction::Transaction,
     transport::TransportError,
 };
+use audius_reward_manager::error::AudiusProgramError;
+use solana_program::instruction::InstructionError;
 
 pub fn program_test() -> ProgramTest {
     ProgramTest::new(
@@ -296,4 +299,14 @@ pub async fn create_recipient_with_claimable_program(
         .process_transaction(transaction)
         .await
         .unwrap();
+}
+
+pub fn assert_custom_error(res: Result<(), TransportError>, instruction_index: u8, audius_error: AudiusProgramError) {
+    match res {
+        Err(TransportError::TransactionError(TransactionError::InstructionError(idx, InstructionError::Custom(v)))) => {
+            assert_eq!(idx, instruction_index);
+            assert_eq!(v, audius_error as u32);
+        },
+        _ => panic!("Expected error")
+    }
 }
