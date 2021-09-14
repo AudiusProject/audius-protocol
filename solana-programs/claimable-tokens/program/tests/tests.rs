@@ -622,3 +622,62 @@ async fn test_claim_with_wrong_token_account() {
         ClaimableProgramError::SignatureVerificationFailed
     );
 }
+
+
+#[tokio::test]
+async fn test_missing_secp_instruction() {
+    let mut program_context = program_test().start_with_context().await;
+    let rent = program_context.banks_client.get_rent().await.unwrap();
+    let (
+        _rng,
+        _key,
+        _priv_key,
+        _secp_pubkey,
+        mint_account,
+        mint_authority,
+        user_token_account,
+        eth_address
+    ) = init_test_variables();
+    let (base_acc, address_to_create, tokens_amount) = prepare_claim(
+        &mut program_context,
+        mint_account,
+        rent,
+        mint_authority,
+        eth_address,
+        &user_token_account,
+    )
+    .await;
+    let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
+
+    // Submit transaction with missing secp256 program instruction
+    let mut transaction = Transaction::new_with_payer(
+        &[
+             instruction::claim(
+                &id(),
+                &address_to_create,
+                &user_token_account.pubkey(),
+                &base_acc,
+                instruction::Claim {
+                    eth_address,
+                    amount: transfer_amount,
+                },
+            )
+            .unwrap(),
+        ],
+        Some(&program_context.payer.pubkey()),
+    );
+
+    transaction.sign(&[&program_context.payer], program_context.last_blockhash);
+    let tx_result = program_context
+        .banks_client
+        .process_transaction(transaction)
+        .await;
+
+    println!("{:?}", tx_result);
+    assert!(tx_result.is_err());
+    assert_custom_error(
+        tx_result,
+        0,
+        ClaimableProgramError::Secp256InstructionLosing
+    );
+}
