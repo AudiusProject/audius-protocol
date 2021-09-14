@@ -467,6 +467,10 @@ async fn invalid_messages_are_wiped() {
     let transfer_account_data = get_account(&mut context, &transfer_account)
         .await;
     assert!(transfer_account_data.is_some());
+
+    let recipient_account_data = get_account(& mut context, &recipient_sol_key.derive.address).await.unwrap();
+    let recipient_account = spl_token::state::Account::unpack(&recipient_account_data.data.as_slice()).unwrap();
+    assert_eq!(recipient_account.amount, 10_000u64)
 }
 
 
