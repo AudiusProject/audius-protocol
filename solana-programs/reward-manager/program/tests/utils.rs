@@ -440,7 +440,7 @@ pub async fn setup_test_environment<'a>() -> TestConstants<'a> {
 
     // Make recipient token account
 
-    let recipient_sol_key = claimable_tokens::utils::program::get_address_pair(
+    let recipient_sol_key = claimable_tokens::utils::program::find_address_pair(
         &claimable_tokens::id(),
         &mint.pubkey(),
         recipient_eth_key,
