@@ -23,6 +23,8 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     Index,
     func,
+    Unicode,
+    UnicodeText,
 )
 from src.model_validator import ModelValidator
 
@@ -42,7 +44,7 @@ def configure_listener(class_, key_, inst):
     @event.listens_for(inst, "set", retval=True)
     def set_(target, value, oldvalue, initiator):
         column_type = getattr(target.__class__, inst.key).type
-        if type(column_type) in (String, Text) and value and isinstance(value, str):
+        if type(column_type) in (String, Text, Unicode, UnicodeText) and value and isinstance(value, str):
             value = value.encode("utf-8", "ignore").decode("utf-8", "ignore")
             value = value.replace("\x00", "")
         return value
