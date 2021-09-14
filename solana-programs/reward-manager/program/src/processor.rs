@@ -99,6 +99,9 @@ impl Processor {
         current_manager_info: &AccountInfo<'a>,
         new_manager_info: &AccountInfo<'a>,
     ) -> ProgramResult {
+        // Note: we don't have to assert that we own the `reward_manager` account 
+        // as we would normally, because in writing to it the runtime 
+        // enforces ownership
         if !current_manager_info.is_signer {
             return Err(ProgramError::MissingRequiredSignature);
         }
@@ -361,6 +364,12 @@ impl Processor {
             VerifiedMessages::unpack_unchecked(&verified_messages_info.data.borrow())?;
         if verified_messages.is_initialized() {
             assert_account_key(reward_manager_info, &verified_messages.reward_manager)?;
+
+            // If messages account is full from previous attempt, reset it
+            let reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
+            if verified_messages.messages.len() >= (reward_manager.min_votes + 1) as usize {
+                verified_messages.messages.clear()
+            }
         } else {
             verified_messages = VerifiedMessages::new(*reward_manager_info.key);
         }
