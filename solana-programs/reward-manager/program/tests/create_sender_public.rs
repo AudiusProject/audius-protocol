@@ -6,48 +6,35 @@ use audius_reward_manager::{
     state::{SenderAccount, ADD_SENDER_MESSAGE_PREFIX},
     utils::{find_derived_pair, EthereumAddress},
 };
-use libsecp256k1::{PublicKey, SecretKey};
-use rand::{thread_rng, Rng};
-use solana_program::program_pack::Pack;
+use libsecp256k1::{SecretKey};
+use rand::{Rng};
+use solana_program::{instruction::InstructionError};
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
 use solana_program_test::*;
-use solana_sdk::{
-    secp256k1_instruction::construct_eth_pubkey, signature::Keypair, signer::Signer,
-    transaction::Transaction,
-};
+use solana_sdk::{secp256k1_instruction::construct_eth_pubkey, signature::Keypair, signer::Signer, transaction::{Transaction, TransactionError}, transport::TransportError};
 use std::mem::MaybeUninit;
 use utils::*;
 
 #[tokio::test]
 async fn success_create_sender_public() {
-    let program_test = program_test();
-    let mut rng = thread_rng();
+    let TestConstants { 
+        reward_manager,
+        mut context,
+        manager_account,
+        mut rng,
+        ..
+    } = setup_test_environment().await;
 
-    let mint = Keypair::new();
-    let mint_authority = Keypair::new();
-    let token_account = Keypair::new();
-
-    let reward_manager = Keypair::new();
-    let manager_account = Keypair::new();
     let eth_address: EthereumAddress = rng.gen();
     let operator: EthereumAddress = rng.gen();
+
+    let operators: [EthereumAddress; 3] = rng.gen();
     let keys: [[u8; 32]; 3] = rng.gen();
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
 
-    for item in keys.iter().enumerate() {
-        let sender_priv_key = SecretKey::parse(item.1).unwrap();
-        let secp_pubkey = PublicKey::from_secret_key(&sender_priv_key);
-        let eth_address = construct_eth_pubkey(&secp_pubkey);
-
-        let (_, derived_address, _) = find_derived_pair(
-            &audius_reward_manager::id(),
-            &reward_manager.pubkey(),
-            [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
-                .concat()
-                .as_ref(),
-        );
-
-        signers[item.0] = derived_address;
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        signers[i] = derived_address;
     }
 
     let (_, derived_address, _) = find_derived_pair(
@@ -57,44 +44,6 @@ async fn success_create_sender_public() {
             .concat()
             .as_ref(),
     );
-
-    let mut context = program_test.start_with_context().await;
-    let rent = context.banks_client.get_rent().await.unwrap();
-
-    create_mint(
-        &mut context,
-        &mint,
-        rent.minimum_balance(spl_token::state::Mint::LEN),
-        &mint_authority.pubkey(),
-    )
-    .await
-    .unwrap();
-
-    init_reward_manager(
-        &mut context,
-        &reward_manager,
-        &token_account,
-        &mint.pubkey(),
-        &manager_account.pubkey(),
-        3,
-    )
-    .await;
-
-    // Create senders
-    for key in &keys {
-        let sender_priv_key = SecretKey::parse(&key).unwrap();
-        let secp_pubkey = libsecp256k1::PublicKey::from_secret_key(&sender_priv_key);
-        let eth_address = construct_eth_pubkey(&secp_pubkey);
-        let operator: EthereumAddress = rng.gen();
-        create_sender(
-            &mut context,
-            &reward_manager.pubkey(),
-            &manager_account,
-            eth_address,
-            operator,
-        )
-        .await;
-    }
 
     let mut instructions = Vec::<Instruction>::new();
 
@@ -143,16 +92,17 @@ async fn success_create_sender_public() {
 
 #[tokio::test]
 async fn failure_create_sender_public_mismatched_signature_to_pubkey() {
-    let program_test = program_test();
-    let mut rng = thread_rng();
+    let TestConstants { 
+        reward_manager,
+        mut context,
+        manager_account,
+        mut rng,
+        ..
+    } = setup_test_environment().await;
 
-    let mint = Keypair::new();
-    let mint_authority = Keypair::new();
-    let token_account = Keypair::new();
-
-    let reward_manager = Keypair::new();
-    let manager_account = Keypair::new();
     let eth_address: EthereumAddress = rng.gen();
+
+    let operators: [EthereumAddress; 3] = rng.gen();
     let operator: EthereumAddress = rng.gen();
     let keys: [[u8; 32]; 3] = rng.gen();
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
@@ -162,50 +112,9 @@ async fn failure_create_sender_public_mismatched_signature_to_pubkey() {
         signers[i] = Keypair::new().pubkey();
     }
 
-    let (_, derived_address, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
-            .concat()
-            .as_ref(),
-    );
-
-    let mut context = program_test.start_with_context().await;
-    let rent = context.banks_client.get_rent().await.unwrap();
-
-    create_mint(
-        &mut context,
-        &mint,
-        rent.minimum_balance(spl_token::state::Mint::LEN),
-        &mint_authority.pubkey(),
-    )
-    .await
-    .unwrap();
-
-    init_reward_manager(
-        &mut context,
-        &reward_manager,
-        &token_account,
-        &mint.pubkey(),
-        &manager_account.pubkey(),
-        3,
-    )
-    .await;
-
     // Create senders
-    for key in &keys {
-        let sender_priv_key = SecretKey::parse(&key).unwrap();
-        let secp_pubkey = libsecp256k1::PublicKey::from_secret_key(&sender_priv_key);
-        let eth_address = construct_eth_pubkey(&secp_pubkey);
-        let operator: EthereumAddress = rng.gen();
-        create_sender(
-            &mut context,
-            &reward_manager.pubkey(),
-            &manager_account,
-            eth_address,
-            operator,
-        )
-        .await;
+    for (i, key) in keys.iter().enumerate() {
+        create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
     }
 
     let mut instructions = Vec::<Instruction>::new();
@@ -244,73 +153,29 @@ async fn failure_create_sender_public_mismatched_signature_to_pubkey() {
     let tx_result = context.banks_client.process_transaction(tx).await;
 
     match tx_result {
-        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 3: Failed to serialize or deserialize account data: Unkown" => return (),
-        Err(_) => panic!("Returned incorrect error!"),
-        Ok(_) => panic!("Incorrectly returned Ok!"),
+        Err(TransportError::TransactionError(TransactionError::InstructionError(3, InstructionError::BorshIoError(_)))) => assert!(true),
+        _ => panic!("Returned incorrect error!"),
     }
 }
 
 #[tokio::test]
 async fn failure_create_sender_public_mismatched_pubkey_to_signature() {
-    let program_test = program_test();
-    let mut rng = thread_rng();
+    let TestConstants { 
+        reward_manager,
+        mut context,
+        manager_account,
+        mut rng,
+        ..
+    } = setup_test_environment().await;
 
-    let mint = Keypair::new();
-    let mint_authority = Keypair::new();
-    let token_account = Keypair::new();
-
-    let reward_manager = Keypair::new();
-    let manager_account = Keypair::new();
     let eth_address: EthereumAddress = rng.gen();
     let operator: EthereumAddress = rng.gen();
     let keys: [[u8; 32]; 3] = rng.gen();
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
 
     for item in keys.iter().enumerate() {
-        let sender_priv_key = SecretKey::parse(item.1).unwrap();
-        let secp_pubkey = PublicKey::from_secret_key(&sender_priv_key);
-        let eth_address = construct_eth_pubkey(&secp_pubkey);
-
-        let (_, derived_address, _) = find_derived_pair(
-            &audius_reward_manager::id(),
-            &reward_manager.pubkey(),
-            [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
-                .concat()
-                .as_ref(),
-        );
-
         signers[item.0] = Keypair::new().pubkey();
     }
-
-    let (_, derived_address, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
-            .concat()
-            .as_ref(),
-    );
-
-    let mut context = program_test.start_with_context().await;
-    let rent = context.banks_client.get_rent().await.unwrap();
-
-    create_mint(
-        &mut context,
-        &mint,
-        rent.minimum_balance(spl_token::state::Mint::LEN),
-        &mint_authority.pubkey(),
-    )
-    .await
-    .unwrap();
-
-    init_reward_manager(
-        &mut context,
-        &reward_manager,
-        &token_account,
-        &mint.pubkey(),
-        &manager_account.pubkey(),
-        3,
-    )
-    .await;
 
     // Create senders
     for _ in 0..keys.len() {
@@ -363,10 +228,10 @@ async fn failure_create_sender_public_mismatched_pubkey_to_signature() {
         context.last_blockhash,
     );
     let tx_result = context.banks_client.process_transaction(tx).await;
+    println!("{:?}", tx_result);
 
     match tx_result {
-        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 3: Failed to serialize or deserialize account data: Unkown" => return (),
-        Err(_) => panic!("Returned incorrect error!"),
-        Ok(_) => panic!("Incorrectly returned Ok!"),
+        Err(TransportError::TransactionError(TransactionError::InstructionError(3, InstructionError::BorshIoError(_)))) => assert!(true),
+        _ => panic!("Returned incorrect error!"),
     }
 }
