@@ -466,76 +466,6 @@ async fn invalid_messages_are_wiped() {
     context.banks_client.process_transaction(tx).await.unwrap();
 }
 
-// Helpers
-
-fn get_transfer_account(reward_manager: &Keypair, transfer_id: &str) -> Pubkey {
-    let (_, transfer_derived_address, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [
-            TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
-            transfer_id.as_ref(),
-        ]
-        .concat()
-        .as_ref(),
-    );
-    transfer_derived_address
-}
-
-fn get_messages_account(reward_manager: &Keypair, transfer_id: &str) -> Pubkey {
-    let (_, verified_messages_derived_address, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [
-            VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
-            transfer_id.as_ref(),
-        ]
-        .concat()
-        .as_ref(),
-    );
-    verified_messages_derived_address
-}
-
-fn get_oracle_address(reward_manager: &Keypair, eth_oracle_address: [u8; 20]) -> Pubkey {
-    let (_, oracle_derived_address, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [SENDER_SEED_PREFIX.as_ref(), eth_oracle_address.as_ref()]
-            .concat()
-            .as_ref(),
-    );
-    oracle_derived_address
-}
-
-async fn create_sender_from(
-    reward_manager: &Keypair,
-    manager_account: &Keypair,
-    context: &mut ProgramTestContext,
-    key: &[u8; 32],
-    operator: [u8; 20]) -> Pubkey {
-    let sender_priv_key = SecretKey::parse(key).unwrap();
-    let secp_pubkey = PublicKey::from_secret_key(&sender_priv_key);
-    let eth_address = construct_eth_pubkey(&secp_pubkey);
-
-    let (_, derived_address, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
-            .concat()
-            .as_ref(),
-    );
-
-    create_sender(
-        context,
-        &reward_manager.pubkey(),
-        &manager_account,
-        eth_address,
-        operator
-    )
-    .await;
-
-    derived_address
-}
 
 #[tokio::test]
 async fn failure_transfer_invalid_message_format() {
@@ -1182,4 +1112,75 @@ async fn failure_transfer_incorrect_number_of_verified_messages() {
         Err(_) => panic!("Returned incorrect error!"),
         Ok(_) => panic!("Incorrectly returned Ok!"),
     }
+}
+
+// Helpers
+
+fn get_transfer_account(reward_manager: &Keypair, transfer_id: &str) -> Pubkey {
+    let (_, transfer_derived_address, _) = find_derived_pair(
+        &audius_reward_manager::id(),
+        &reward_manager.pubkey(),
+        [
+            TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
+            transfer_id.as_ref(),
+        ]
+        .concat()
+        .as_ref(),
+    );
+    transfer_derived_address
+}
+
+fn get_messages_account(reward_manager: &Keypair, transfer_id: &str) -> Pubkey {
+    let (_, verified_messages_derived_address, _) = find_derived_pair(
+        &audius_reward_manager::id(),
+        &reward_manager.pubkey(),
+        [
+            VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
+            transfer_id.as_ref(),
+        ]
+        .concat()
+        .as_ref(),
+    );
+    verified_messages_derived_address
+}
+
+fn get_oracle_address(reward_manager: &Keypair, eth_oracle_address: [u8; 20]) -> Pubkey {
+    let (_, oracle_derived_address, _) = find_derived_pair(
+        &audius_reward_manager::id(),
+        &reward_manager.pubkey(),
+        [SENDER_SEED_PREFIX.as_ref(), eth_oracle_address.as_ref()]
+            .concat()
+            .as_ref(),
+    );
+    oracle_derived_address
+}
+
+async fn create_sender_from(
+    reward_manager: &Keypair,
+    manager_account: &Keypair,
+    context: &mut ProgramTestContext,
+    key: &[u8; 32],
+    operator: [u8; 20]) -> Pubkey {
+    let sender_priv_key = SecretKey::parse(key).unwrap();
+    let secp_pubkey = PublicKey::from_secret_key(&sender_priv_key);
+    let eth_address = construct_eth_pubkey(&secp_pubkey);
+
+    let (_, derived_address, _) = find_derived_pair(
+        &audius_reward_manager::id(),
+        &reward_manager.pubkey(),
+        [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
+            .concat()
+            .as_ref(),
+    );
+
+    create_sender(
+        context,
+        &reward_manager.pubkey(),
+        &manager_account,
+        eth_address,
+        operator
+    )
+    .await;
+
+    derived_address
 }
