@@ -3,15 +3,14 @@ mod utils;
 
 use audius_reward_manager::{error::AudiusProgramError, instruction, processor::{SENDER_SEED_PREFIX, TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX}, state::{VerifiedMessages}, utils::{find_derived_pair, EthereumAddress}, vote_message};
 use libsecp256k1::{PublicKey, SecretKey};
-use rand::{thread_rng, Rng};
-use solana_program::{instruction::{Instruction}, program_pack::Pack, pubkey::Pubkey};
+use rand::{Rng, prelude::ThreadRng, thread_rng};
+use solana_program::{instruction::{Instruction}, program_pack::Pack, pubkey::Pubkey, rent::Rent};
 use solana_program_test::*;
 use solana_sdk::{secp256k1_instruction::*, signature::Keypair, signer::Signer, transaction::{Transaction}};
 use std::{mem::MaybeUninit};
 use utils::*;
 
-#[tokio::test]
-async fn success_transfer() {
+async fn setup_test_environment<'a>() -> (Keypair, [u8; 128], SecretKey, [u8; 128], ProgramTestContext, &'a str, Pubkey, Keypair, [u8;20], Keypair, Rent, ThreadRng, Keypair) {
     /* Create verified messages and initialize reward manager */
     let mut program_test = program_test();
 
@@ -99,6 +98,40 @@ async fn success_transfer() {
         eth_oracle_address.as_ref(),
     ]
     .concat());
+
+    return (
+        reward_manager,
+        bot_oracle_message,
+        oracle_priv_key,
+        senders_message,
+        context,
+        transfer_id,
+        oracle_derived_address,
+        mint, 
+        recipient_eth_key,
+        token_account,
+        rent,
+        rng,
+        manager_account
+    )
+}
+
+#[tokio::test]
+async fn success_transfer() {
+    let (reward_manager,
+        bot_oracle_message,
+        oracle_priv_key,
+        senders_message,
+        mut context,
+        transfer_id,
+        oracle_derived_address,
+        mint,
+        recipient_eth_key,
+        token_account,
+        rent, 
+        mut rng,
+        manager_account
+    ) = setup_test_environment().await;
 
     // Generate data and create senders
     let keys: [[u8; 32]; 3] = rng.gen();
@@ -216,74 +249,20 @@ async fn success_transfer() {
 /// wipe the account by calling `submit` again with correct attestations and
 /// finally succeed in `evaluate`.
 async fn invalid_messages_are_wiped() {
-
-    /* Create verified messages and initialize reward manager */
-    let mut program_test = program_test();
-
-    program_test.add_program("claimable_tokens", claimable_tokens::id(), None);
-    let mut rng = thread_rng();
-
-    let mut context = program_test.start_with_context().await;
-
-    let mint = Keypair::new();
-    let mint_authority = Keypair::new();
-
-    let token_account = Keypair::new();
-    let reward_manager = Keypair::new();
-    let manager_account = Keypair::new();
-
-    let rent = context.banks_client.get_rent().await.unwrap();
-
-    create_mint(
-        &mut context,
-        &mint,
-        rent.minimum_balance(spl_token::state::Mint::LEN),
-        &mint_authority.pubkey(),
-    )
-    .await
-    .unwrap();
-
-    let recipient_eth_key = [7u8; 20];
-    let transfer_id = "4r4t23df32543f56";
-    let tokens_amount = 10_000u64;
-
-
-    init_reward_manager(
-        &mut context,
-        &reward_manager,
-        &token_account,
-        &mint.pubkey(),
-        &manager_account.pubkey(),
-        3,
-    )
-    .await;
-
-    let key: [u8; 32] = rng.gen();
-    let oracle_priv_key = SecretKey::parse(&key).unwrap();
-    let secp_oracle_pubkey = PublicKey::from_secret_key(&oracle_priv_key);
-    let eth_oracle_address = construct_eth_pubkey(&secp_oracle_pubkey);
-
-    let oracle_operator: EthereumAddress = rng.gen();
-    let oracle_derived_address = get_oracle_address(&reward_manager, eth_oracle_address);
-
-    create_sender(
-        &mut context,
-        &reward_manager.pubkey(),
-        &manager_account,
-        eth_oracle_address,
-        oracle_operator,
-    )
-    .await;
-
-    mint_tokens_to(
-        &mut context,
-        &mint.pubkey(),
-        &token_account.pubkey(),
-        &mint_authority,
-        tokens_amount,
-    )
-    .await
-    .unwrap();
+    let (reward_manager,
+        bot_oracle_message,
+        oracle_priv_key,
+        senders_message,
+        mut context,
+        transfer_id,
+        oracle_derived_address,
+        mint,
+        recipient_eth_key,
+        token_account,
+        _, 
+        mut rng,
+        manager_account
+    ) = setup_test_environment().await;
 
     // Generate data and create senders
     let keys: [[u8; 32]; 4] = rng.gen();
@@ -295,27 +274,6 @@ async fn invalid_messages_are_wiped() {
         signers[i] = derived_address;
     }
 
-    
-    let senders_message = vote_message!([
-        recipient_eth_key.as_ref(),
-        b"_",
-        tokens_amount.to_le_bytes().as_ref(),
-        b"_",
-        transfer_id.as_ref(),
-        b"_",
-        eth_oracle_address.as_ref(),
-    ]
-    .concat());
-
-    let bot_oracle_message = vote_message!([
-        recipient_eth_key.as_ref(),
-        b"_",
-        tokens_amount.to_le_bytes().as_ref(),
-        b"_",
-        transfer_id.as_ref(),
-    ]
-    .concat());
-        
     let mut instructions = Vec::<Instruction>::new();
 
     // Add 4 DN attestations, no oracle
@@ -655,7 +613,7 @@ async fn failure_transfer_invalid_message_format() {
         context.last_blockhash,
     );
 
-    context.banks_client.process_transaction(tx).await;
+    context.banks_client.process_transaction(tx).await.unwrap();
 
     let (_, verified_messages_derived_address, _) = find_derived_pair(
         &audius_reward_manager::id(),
@@ -698,12 +656,7 @@ async fn failure_transfer_invalid_message_format() {
     );
 
     let tx_result = context.banks_client.process_transaction(tx).await;
-    assert!(tx_result.is_err());
-    match tx_result {
-        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 0: custom program error: 0xe" => return (),
-        Err(_) => panic!("Returned incorrect error!"),
-        Ok(_) => panic!("Incorrectly returned Ok!"),
-    }
+    assert_custom_error(tx_result, 0, AudiusProgramError::IncorrectMessages)
 }
 
 #[tokio::test]
@@ -886,7 +839,7 @@ async fn failure_transfer_invalid_oracle_message_format() {
         context.last_blockhash,
     );
 
-    context.banks_client.process_transaction(tx).await;
+    context.banks_client.process_transaction(tx).await.unwrap();
 
     let (_, verified_messages_derived_address, _) = find_derived_pair(
         &audius_reward_manager::id(),
@@ -929,12 +882,7 @@ async fn failure_transfer_invalid_oracle_message_format() {
     );
 
     let tx_result = context.banks_client.process_transaction(tx).await;
-    assert!(tx_result.is_err());
-    match tx_result {
-        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 0: custom program error: 0xe" => return (),
-        Err(_) => panic!("Returned incorrect error!"),
-        Ok(_) => panic!("Incorrectly returned Ok!"),
-    }
+    assert_custom_error(tx_result, 0, AudiusProgramError::IncorrectMessages)
 }
 
 #[tokio::test]
@@ -1113,12 +1061,7 @@ async fn failure_transfer_incorrect_number_of_verified_messages() {
 
     // intentionally not push oracle instruction above and process transaction
     let tx_result = context.banks_client.process_transaction(tx).await;
-    assert!(tx_result.is_err());
-    match tx_result {
-        Err(e) if e.to_string() == "transport transaction error: Error processing Instruction 7: custom program error: 0x8" => return (),
-        Err(_) => panic!("Returned incorrect error!"),
-        Ok(_) => panic!("Incorrectly returned Ok!"),
-    }
+    assert_custom_error(tx_result, 7, AudiusProgramError::Secp256InstructionMissing);
 }
 
 // Helpers
