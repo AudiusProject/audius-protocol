@@ -3,7 +3,7 @@ use std::convert::TryInto;
 use anyhow::anyhow;
 use anyhow::{bail, Context};
 use claimable_tokens::{
-    instruction::{Transfer, CreateTokenAccount},
+    instruction::{CreateTokenAccount, Transfer},
     utils::program::{find_address_pair, EthereumAddress},
 };
 use clap::{
@@ -17,6 +17,7 @@ use solana_clap_utils::{
     keypair::signer_from_path,
 };
 use solana_client::{rpc_client::RpcClient, rpc_response::Response};
+use solana_program::instruction::Instruction;
 use solana_sdk::{
     account::ReadableAccount,
     commitment_config::CommitmentConfig,
@@ -28,7 +29,6 @@ use solana_sdk::{
 };
 use spl_associated_token_account::{create_associated_token_account, get_associated_token_address};
 use spl_token::state::{Account, Mint};
-use solana_program::instruction::Instruction;
 
 struct Config {
     owner: Box<dyn Signer>,
@@ -59,11 +59,7 @@ fn eth_seckey_of(matches: &ArgMatches<'_>, name: &str) -> anyhow::Result<libsecp
     Ok(sk)
 }
 
-fn calculate_and_create_associated_key(
-    config: &Config,
-    mint: &Pubkey,
-) -> anyhow::Result<Pubkey> {
-
+fn calculate_and_create_associated_key(config: &Config, mint: &Pubkey) -> anyhow::Result<Pubkey> {
     let calculated_key =
         spl_associated_token_account::get_associated_token_address(&config.owner.pubkey(), &mint);
 
@@ -206,7 +202,10 @@ fn send_to(config: Config, eth_address: [u8; 20], mint: Pubkey, amount: f64) -> 
         .rpc_client
         .send_and_confirm_transaction_with_spinner(&tx)?;
 
-    println!("Transfer completed to recipient: {}\nTransaction hash: {:?}", pair.derive.address, tx_hash);
+    println!(
+        "Transfer completed to recipient: {}\nTransaction hash: {:?}",
+        pair.derive.address, tx_hash
+    );
     Ok(())
 }
 
@@ -433,16 +432,14 @@ fn main() -> anyhow::Result<()> {
                 let program_id = pubkey_of(args, "program_id").unwrap();
                 println!("Recieved mint {:?}", mint);
                 println!("Recieved program_id {:?}", program_id);
-                let program_base_address = Pubkey::find_program_address(
-                    &[&mint.to_bytes()[..32]],
-                    &program_id
-                );
+                let program_base_address =
+                    Pubkey::find_program_address(&[&mint.to_bytes()[..32]], &program_id);
                 println!("Recieved program_base_address {:?}", program_base_address);
 
                 Ok(program_base_address)
             })()
             .context("Preparing parameters for execution command `send to`")?;
-       }
+        }
         _ => unreachable!(),
     }
     Ok(())

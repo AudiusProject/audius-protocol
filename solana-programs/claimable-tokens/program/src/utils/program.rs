@@ -1,12 +1,9 @@
 #![allow(missing_docs)]
 
 //! Extended functionality for Pubkey
-use solana_program::{
-    pubkey::Pubkey,
-    pubkey::PubkeyError
-};
+use solana_program::{pubkey::Pubkey, pubkey::PubkeyError};
 
-/// Represent compressed ethereum pubkey bytes
+/// Represent Ethereum pubkey bytes
 pub type EthereumAddress = [u8; 20];
 
 /// Base PDA related with some mint

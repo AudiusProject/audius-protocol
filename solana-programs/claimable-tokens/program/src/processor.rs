@@ -3,10 +3,7 @@
 use crate::{
     error::{to_claimable_tokens_error, ClaimableProgramError},
     instruction::ClaimableProgramInstruction,
-    utils::program::{
-        find_address_pair,
-        EthereumAddress
-    }
+    utils::program::{find_address_pair, EthereumAddress},
 };
 use borsh::BorshDeserialize;
 use solana_program::{
@@ -226,7 +223,7 @@ impl Processor {
     }
 
     /// Transfer tokens from source to destination
-     fn token_transfer<'a>(
+    fn token_transfer<'a>(
         source: AccountInfo<'a>,
         destination: AccountInfo<'a>,
         authority: AccountInfo<'a>,
@@ -264,7 +261,7 @@ impl Processor {
     }
 
     /// Checks that message inside instruction was signed by expected signer
-    /// and it expected message
+    /// and message matches the expected value
     fn validate_eth_signature(
         expected_signer: &EthereumAddress,
         expected_message: &[u8],
@@ -287,5 +284,4 @@ impl Processor {
 
         Ok(())
     }
-
 }

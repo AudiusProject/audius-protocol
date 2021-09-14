@@ -3,9 +3,9 @@
 use claimable_tokens::error::ClaimableProgramError;
 use claimable_tokens::utils::program::{find_address_pair, EthereumAddress};
 use claimable_tokens::*;
+use libsecp256k1::{PublicKey, SecretKey};
 use rand::prelude::ThreadRng;
 use rand::{thread_rng, Rng};
-use libsecp256k1::{PublicKey, SecretKey};
 use solana_program::instruction::InstructionError;
 use solana_program::{program_pack::Pack, pubkey::Pubkey, system_instruction};
 use solana_program_test::*;
@@ -27,7 +27,16 @@ pub fn program_test() -> ProgramTest {
 }
 
 // Initialize common test variables in one place
-pub fn init_test_variables() -> (ThreadRng, [u8;32], SecretKey, PublicKey, Keypair, Keypair, Keypair, [u8;20]) {
+pub fn init_test_variables() -> (
+    ThreadRng,
+    [u8; 32],
+    SecretKey,
+    PublicKey,
+    Keypair,
+    Keypair,
+    Keypair,
+    [u8; 20],
+) {
     let mut rng = thread_rng();
     let key: [u8; 32] = rng.gen();
     let priv_key = SecretKey::parse(&key).unwrap();
@@ -44,19 +53,24 @@ pub fn init_test_variables() -> (ThreadRng, [u8;32], SecretKey, PublicKey, Keypa
         mint_account,
         mint_authority,
         user_token_account,
-        eth_address
-    )
+        eth_address,
+    );
 }
 
-fn assert_custom_error(res: Result<(), TransportError>, instruction_index: u8, audius_error: ClaimableProgramError) {
+fn assert_custom_error(
+    res: Result<(), TransportError>,
+    instruction_index: u8,
+    audius_error: ClaimableProgramError,
+) {
     match res {
-        Err(
-            TransportError::TransactionError(TransactionError::InstructionError(idx, InstructionError::Custom(v)))
-        ) => {
+        Err(TransportError::TransactionError(TransactionError::InstructionError(
+            idx,
+            InstructionError::Custom(v),
+        ))) => {
             assert_eq!(idx, instruction_index);
             assert_eq!(v, audius_error as u32);
-        },
-        _ => panic!("Expected error not found")
+        }
+        _ => panic!("Expected error not found"),
     }
 }
 
@@ -215,10 +229,7 @@ async fn prepare_claim(
     .await
     .unwrap();
 
-    let pair = find_address_pair(
-        &id(), 
-        &mint_account.pubkey(),
-        eth_address).unwrap();
+    let pair = find_address_pair(&id(), &mint_account.pubkey(), eth_address).unwrap();
 
     init_user_bank(program_context, &mint_account.pubkey(), eth_address)
         .await
@@ -259,7 +270,7 @@ async fn test_init_instruction() {
         mint_account,
         mint_authority,
         _user_token_account,
-        eth_address
+        eth_address,
     ) = init_test_variables();
 
     create_mint(
@@ -297,7 +308,7 @@ async fn test_claim_all_instruction() {
         mint_account,
         mint_authority,
         user_token_account,
-        eth_address
+        eth_address,
     ) = init_test_variables();
 
     let message = user_token_account.pubkey().to_bytes();
@@ -319,8 +330,7 @@ async fn test_claim_all_instruction() {
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     println!(
         "{:?} current balance = {:?} ",
-        bank_token_account.amount,
-        address_to_create
+        bank_token_account.amount, address_to_create
     );
 
     // Transfer ALL tokens
@@ -375,7 +385,7 @@ async fn test_claim_with_amount_instruction() {
         mint_account,
         mint_authority,
         user_token_account,
-        eth_address
+        eth_address,
     ) = init_test_variables();
 
     let message = user_token_account.pubkey().to_bytes();
@@ -442,7 +452,7 @@ async fn test_claim_with_zero_amount_failure() {
         mint_account,
         mint_authority,
         user_token_account,
-        eth_address
+        eth_address,
     ) = init_test_variables();
 
     let message = user_token_account.pubkey().to_bytes();
@@ -482,14 +492,16 @@ async fn test_claim_with_zero_amount_failure() {
     assert!(tx_result.is_err());
     // Confirm a transfer of 0 is not permitted
     match tx_result {
-        Err(
-            TransportError::TransactionError(
-                TransactionError::InstructionError(_idx, InstructionError::InsufficientFunds)
-            )
-        ) => {
-            println!("Insufficient funds error found as expected: {:?}", tx_result);
-        },
-        _ => panic!("Unexpected error scenario")
+        Err(TransportError::TransactionError(TransactionError::InstructionError(
+            _idx,
+            InstructionError::InsufficientFunds,
+        ))) => {
+            println!(
+                "Insufficient funds error found as expected: {:?}",
+                tx_result
+            );
+        }
+        _ => panic!("Unexpected error scenario"),
     }
 }
 
@@ -505,7 +517,7 @@ async fn test_claim_with_wrong_signature_instruction() {
         mint_account,
         mint_authority,
         user_token_account,
-        eth_address
+        eth_address,
     ) = init_test_variables();
 
     // Use bad bad_message instead of the user token account pubkey for the program instruction
@@ -525,7 +537,7 @@ async fn test_claim_with_wrong_signature_instruction() {
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction,
-            instruction::transfer (
+            instruction::transfer(
                 &id(),
                 &address_to_create,
                 &user_token_account.pubkey(),
@@ -573,7 +585,7 @@ async fn test_claim_with_wrong_token_account() {
         mint_account,
         mint_authority,
         user_token_account,
-        eth_address
+        eth_address,
     ) = init_test_variables();
 
     let message = user_token_account.pubkey().to_bytes();
@@ -592,7 +604,7 @@ async fn test_claim_with_wrong_token_account() {
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction,
-            instruction::transfer (
+            instruction::transfer(
                 &id(),
                 &address_to_create,
                 // use incorrect user token account
@@ -619,10 +631,9 @@ async fn test_claim_with_wrong_token_account() {
     assert_custom_error(
         tx_result,
         1,
-        ClaimableProgramError::SignatureVerificationFailed
+        ClaimableProgramError::SignatureVerificationFailed,
     );
 }
-
 
 #[tokio::test]
 async fn test_missing_secp_instruction() {
@@ -636,7 +647,7 @@ async fn test_missing_secp_instruction() {
         mint_account,
         mint_authority,
         user_token_account,
-        eth_address
+        eth_address,
     ) = init_test_variables();
     let (base_acc, address_to_create, tokens_amount) = prepare_claim(
         &mut program_context,
@@ -651,19 +662,17 @@ async fn test_missing_secp_instruction() {
 
     // Submit transaction with missing secp256 program instruction
     let mut transaction = Transaction::new_with_payer(
-        &[
-             instruction::transfer (
-                &id(),
-                &address_to_create,
-                &user_token_account.pubkey(),
-                &base_acc,
-                instruction::Transfer {
-                    eth_address,
-                    amount: transfer_amount,
-                },
-            )
-            .unwrap(),
-        ],
+        &[instruction::transfer(
+            &id(),
+            &address_to_create,
+            &user_token_account.pubkey(),
+            &base_acc,
+            instruction::Transfer {
+                eth_address,
+                amount: transfer_amount,
+            },
+        )
+        .unwrap()],
         Some(&program_context.payer.pubkey()),
     );
 
@@ -678,6 +687,6 @@ async fn test_missing_secp_instruction() {
     assert_custom_error(
         tx_result,
         0,
-        ClaimableProgramError::Secp256InstructionLosing
+        ClaimableProgramError::Secp256InstructionLosing,
     );
 }
