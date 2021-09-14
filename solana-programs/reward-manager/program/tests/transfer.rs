@@ -318,6 +318,7 @@ async fn invalid_messages_are_wiped() {
         
     let mut instructions = Vec::<Instruction>::new();
 
+    // Add 4 DN attestations, no oracle
     for item in keys.iter().enumerate() {
         let priv_key = SecretKey::parse(item.1).unwrap();
         let inst = new_secp256k1_instruction_2_0(
@@ -348,11 +349,7 @@ async fn invalid_messages_are_wiped() {
     context.banks_client.process_transaction(tx).await.unwrap();
 
     let transfer_account = get_transfer_account(&reward_manager, transfer_id);
-
-    // Assert that verified messages account initially has sufficient lamports
     let verified_messages_account = get_messages_account(&reward_manager, transfer_id);
-    let verified_messages_account_data = get_account(&mut context, &verified_messages_account).await.unwrap();
-    assert_eq!(verified_messages_account_data.lamports, rent.minimum_balance(VerifiedMessages::LEN));
 
     let recipient_sol_key = claimable_tokens::utils::program::get_address_pair(
         &claimable_tokens::id(),
@@ -362,6 +359,7 @@ async fn invalid_messages_are_wiped() {
     .unwrap();
     create_recipient_with_claimable_program(&mut context, &mint.pubkey(), recipient_eth_key).await;
 
+    // attempt to evaluate the bad attestations
     let tx = Transaction::new_signed_with_payer(
         &[instruction::evaluate_attestations(
             &audius_reward_manager::id(),
@@ -464,6 +462,11 @@ async fn invalid_messages_are_wiped() {
     );
 
     context.banks_client.process_transaction(tx).await.unwrap();
+
+    // Ensure we created the transfer account
+    let transfer_account_data = get_account(&mut context, &transfer_account)
+        .await;
+    assert!(transfer_account_data.is_some());
 }
 
 
