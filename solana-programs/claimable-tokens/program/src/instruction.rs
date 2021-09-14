@@ -18,7 +18,7 @@ pub struct CreateTokenAccount {
 
 /// Eth address
 #[derive(Clone, BorshDeserialize, BorshSerialize, PartialEq, Debug)]
-pub struct Claim {
+pub struct Transfer {
     /// Ethereum address
     pub eth_address: EthereumAddress,
     /// The amount of claiming tokens. If set 0 claim all tokens
@@ -40,14 +40,14 @@ pub enum ClaimableProgramInstruction {
     ///   6. `[r]` System program id
     CreateTokenAccount(CreateTokenAccount),
 
-    /// Claim
+    /// Transfer
     ///
     ///   0. `[w]` Token acc from which tokens will be send (bank account)
     ///   1. `[w]` Receiver token acc
     ///   2. `[r]` Banks token account authority
     ///   3. `[r]` Sysvar instruction id
     ///   4. `[r]` SPL token account id
-    Claim(Claim),
+    Transfer(Transfer),
 }
 
 /// Create `CreateTokenAccount` instruction
@@ -76,19 +76,19 @@ pub fn init(
     })
 }
 
-/// Create `Claim` instruction
+/// Create `Transfer` instruction
 ///
 /// NOTE: Instruction must followed after `new_secp256k1_instruction`
 /// with params: ethereum private key and user token account public key.
 /// Otherwise error message `Secp256 instruction losing` will be issued
-pub fn claim(
+pub fn transfer(
     program_id: &Pubkey,
     banks_token_acc: &Pubkey,
     users_token_acc: &Pubkey,
     authority: &Pubkey,
-    eth_address: Claim,
+    eth_address: Transfer,
 ) -> Result<Instruction, ProgramError> {
-    let data = ClaimableProgramInstruction::Claim(eth_address).try_to_vec()?;
+    let data = ClaimableProgramInstruction::Transfer(eth_address).try_to_vec()?;
     let accounts = vec![
         AccountMeta::new(*banks_token_acc, false),
         AccountMeta::new(*users_token_acc, false),

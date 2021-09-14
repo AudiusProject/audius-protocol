@@ -55,11 +55,11 @@ pub fn get_base_address(mint: &Pubkey, program_id: &Pubkey) -> (Pubkey, u8) {
 }
 
 /// Return derived token account address corresponding to specific
-/// ethereum account and it seed
+/// ethereum account and seed
 pub fn get_derived_address(
     base: &Pubkey,
     hashed_eth_pk: EthereumAddress,
 ) -> Result<(Pubkey, String), PubkeyError> {
     let seed = bs58::encode(hashed_eth_pk).into_string();
-    Pubkey::create_with_seed(&base, seed.as_str(), &spl_token::id()).map(|i| (i, seed))
+    Pubkey::create_with_seed(base, seed.as_str(), &spl_token::id()).map(|i| (i, seed))
 }

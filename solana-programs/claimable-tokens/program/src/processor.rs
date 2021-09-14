@@ -52,9 +52,9 @@ impl Processor {
 
         invoke_signed(
             &system_instruction::create_account_with_seed(
-                &funder.key,
-                &account_to_create.key,
-                &base.key,
+                funder.key,
+                account_to_create.key,
+                base.key,
                 pair.derive.seed.as_str(),
                 required_lamports,
                 space,
@@ -74,7 +74,7 @@ impl Processor {
         invoke(
             &spl_token::instruction::initialize_account(
                 &spl_token::id(),
-                &account_to_initialize.key,
+                account_to_initialize.key,
                 mint.key,
                 owner.key,
             )?,
@@ -112,7 +112,7 @@ impl Processor {
                 source.key,
                 destination.key,
                 authority.key,
-                &[&authority.key],
+                &[authority.key],
                 amount,
             )?,
             &[source, destination, authority],
@@ -207,8 +207,9 @@ impl Processor {
         Self::validate_eth_signature(expected_signer, expected_message, instruction.data)
     }
 
-    /// Claim user tokens
-    pub fn process_claim_instruction<'a>(
+    /// Transfer user tokens
+    /// Operation gated by SECP recovery
+    pub fn process_transfer_instruction<'a>(
         program_id: &Pubkey,
         banks_token_account_info: &AccountInfo<'a>,
         destination_account_info: &AccountInfo<'a>,
@@ -218,7 +219,7 @@ impl Processor {
         amount: u64,
     ) -> ProgramResult {
         Self::check_ethereum_sign(
-            &instruction_info,
+            instruction_info,
             &eth_address,
             &destination_account_info.key.to_bytes(),
         )?;
@@ -262,15 +263,15 @@ impl Processor {
                     eth_address.eth_address,
                 )
             }
-            ClaimableProgramInstruction::Claim(instruction) => {
-                msg!("Instruction: Claim");
+            ClaimableProgramInstruction::Transfer(instruction) => {
+                msg!("Instruction: Transfer");
 
                 let banks_token_account_info = next_account_info(account_info_iter)?;
                 let destination_account_info = next_account_info(account_info_iter)?;
                 let authority_account_info = next_account_info(account_info_iter)?;
                 let instruction_info = next_account_info(account_info_iter)?;
 
-                Self::process_claim_instruction(
+                Self::process_transfer_instruction(
                     program_id,
                     banks_token_account_info,
                     destination_account_info,

@@ -327,12 +327,12 @@ async fn test_claim_all_instruction() {
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction,
-            instruction::claim(
+            instruction::transfer(
                 &id(),
                 &address_to_create,
                 &user_token_account.pubkey(),
                 &base_acc,
-                instruction::Claim {
+                instruction::Transfer {
                     eth_address,
                     amount: bank_token_account.amount,
                 },
@@ -394,12 +394,12 @@ async fn test_claim_with_amount_instruction() {
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction,
-            instruction::claim(
+            instruction::transfer(
                 &id(),
                 &address_to_create,
                 &user_token_account.pubkey(),
                 &base_acc,
-                instruction::Claim {
+                instruction::Transfer {
                     eth_address,
                     amount: transfer_amount,
                 },
@@ -460,12 +460,12 @@ async fn test_claim_with_zero_amount_failure() {
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction,
-            instruction::claim(
+            instruction::transfer(
                 &id(),
                 &address_to_create,
                 &user_token_account.pubkey(),
                 &base_acc,
-                instruction::Claim {
+                instruction::Transfer {
                     eth_address,
                     amount: transfer_amount,
                 },
@@ -525,12 +525,12 @@ async fn test_claim_with_wrong_signature_instruction() {
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction,
-            instruction::claim(
+            instruction::transfer (
                 &id(),
                 &address_to_create,
                 &user_token_account.pubkey(),
                 &base_acc,
-                instruction::Claim {
+                instruction::Transfer {
                     eth_address,
                     amount: 0,
                 },
@@ -592,13 +592,13 @@ async fn test_claim_with_wrong_token_account() {
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction,
-            instruction::claim(
+            instruction::transfer (
                 &id(),
                 &address_to_create,
                 // use incorrect user token account
                 &Keypair::new().pubkey(),
                 &base_acc,
-                instruction::Claim {
+                instruction::Transfer {
                     eth_address,
                     amount: 0,
                 },
@@ -652,12 +652,12 @@ async fn test_missing_secp_instruction() {
     // Submit transaction with missing secp256 program instruction
     let mut transaction = Transaction::new_with_payer(
         &[
-             instruction::claim(
+             instruction::transfer (
                 &id(),
                 &address_to_create,
                 &user_token_account.pubkey(),
                 &base_acc,
-                instruction::Claim {
+                instruction::Transfer {
                     eth_address,
                     amount: transfer_amount,
                 },
