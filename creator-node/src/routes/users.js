@@ -45,37 +45,6 @@ module.exports = function (app) {
     return successResponse()
   }))
 
-  // TODO: to deprecate; leaving here for backwards compatibility
-  app.post('/users/login', ensureStorageMiddleware, handleResponse(async (req, res, next) => {
-    const { signature, data } = req.body
-
-    if (!signature || !data) {
-      return errorResponseBadRequest('Missing request body values.')
-    }
-
-    let address = utils.verifySignature(data, signature)
-    address = address.toLowerCase()
-
-    const user = await models.CNodeUser.findOne({
-      where: {
-        walletPublicKey: address
-      }
-    })
-    if (!user) {
-      return errorResponseBadRequest('Invalid data or signature')
-    }
-
-    const theirTimestamp = parseInt(data.split(':')[1])
-    const ourTimestamp = Math.round((new Date()).getTime() / 1000)
-
-    if (Math.abs(theirTimestamp - ourTimestamp) > 3600) {
-      console.error(`Timestamp too old. User timestamp ${theirTimestamp}, Server timestamp ${ourTimestamp}`)
-    }
-
-    const sessionToken = await sessionManager.createSession(user.cnodeUserUUID)
-    return successResponse({ sessionToken })
-  }))
-
   /**
    * Return a challenge used for validating user login. Challenge value
    * is also set in redis cache with the key 'userLoginChallenge:<wallet>'.

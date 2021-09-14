@@ -12,7 +12,7 @@ REDIS_URL = shared_config["redis"]["url"]
 logger = logging.getLogger(__name__)
 
 
-def test_listen_streak_challenge(app):
+def test_connect_verified_challenge(app):
     redis_conn = redis.Redis.from_url(url=REDIS_URL)
 
     with app.app_context():

@@ -369,6 +369,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_oracles",
             "src.tasks.index_rewards_manager",
             "src.tasks.index_related_artists",
+            "src.tasks.calculate_trending_challenges",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -503,6 +504,7 @@ def configure_celery(flask_app, celery, test_config=None):
     redis_inst.delete("index_eth_lock")
     redis_inst.delete("index_oracles_lock")
     redis_inst.delete("solana_rewards_manager_lock")
+    redis_inst.delete("calculate_trending_challenges_lock")
     logger.info("Redis instance initialized!")
 
     # Initialize custom task context with database object

@@ -20,7 +20,7 @@ use solana_sdk::{
 
 /// The test is especially work like if it used by a user
 #[tokio::test]
-async fn success() {
+async fn success_init_reward_manager() {
     let mut program_test = program_test();
 
     let manager = Pubkey::new_unique();

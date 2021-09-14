@@ -75,17 +75,20 @@ def populate_mock_db(db, entities, block_offset=0):
         challenges = entities.get("challenges", [])
         user_challenges = entities.get("user_challenges", [])
 
-        num_blocks = max(len(tracks), len(users), len(follows))
-
+        num_blocks = max(len(tracks), len(users), len(follows), len(saves))
         for i in range(block_offset, block_offset + num_blocks):
-            block = models.Block(
-                blockhash=hex(i),
-                number=i,
-                parenthash="0x01",
-                is_current=(i == 0),
+            max_block = (
+                session.query(models.Block).filter(models.Block.number == i).first()
             )
-            session.add(block)
-            session.flush()
+            if not max_block:
+                block = models.Block(
+                    blockhash=hex(i),
+                    number=i,
+                    parenthash="0x01",
+                    is_current=(i == 0),
+                )
+                session.add(block)
+                session.flush()
 
         for i, track_meta in enumerate(tracks):
             track = models.Track(
