@@ -61,18 +61,18 @@ describe('test CreatorNodeSelection', () => {
     const healthy = 'https://healthy.audius.co'
 
     nock(healthy)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: defaultHealthCheckData })
 
     const healthyButSlow = 'https://healthybutslow.audius.co'
     nock(healthyButSlow)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .delay(100)
       .reply(200, { data: defaultHealthCheckData })
 
     const healthyButSlowest = 'https://healthybutslowest.audius.co'
     nock(healthyButSlowest)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .delay(200)
       .reply(200, { data: defaultHealthCheckData })
 
@@ -100,22 +100,22 @@ describe('test CreatorNodeSelection', () => {
   it('select healthy nodes as the primary and secondary, and do not select unhealthy nodes', async () => {
     const upToDate = 'https://upToDate.audius.co'
     nock(upToDate)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: defaultHealthCheckData })
 
     const behindMajor = 'https://behindMajor.audius.co'
     nock(behindMajor)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, version: '0.2.3' } })
 
     const behindMinor = 'https://behindMinor.audius.co'
     nock(behindMinor)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.0.3' } })
 
     const behindPatch = 'https://behindPatch.audius.co'
     nock(behindPatch)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0' } })
 
     const cns = new CreatorNodeSelection({
@@ -141,30 +141,30 @@ describe('test CreatorNodeSelection', () => {
   it('return nothing if no services are healthy', async () => {
     const unhealthy1 = 'https://unhealthy1.audius.co'
     nock(unhealthy1)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(500, { })
 
     const unhealthy2 = 'https://unhealthy2.audius.co'
     nock(unhealthy2)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .delay(100)
       .reply(500, { })
 
     const unhealthy3 = 'https://unhealthy3.audius.co'
     nock(unhealthy3)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .delay(200)
       .reply(500, { })
 
     const unhealthy4 = 'https://unhealthy4.audius.co'
     nock(unhealthy4)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .delay(300)
       .reply(500, { })
 
     const unhealthy5 = 'https://unhealthy5.audius.co'
     nock(unhealthy5)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .delay(400)
       .reply(500, { })
 
@@ -190,33 +190,33 @@ describe('test CreatorNodeSelection', () => {
     // the cream of the crop -- up to date version, slow. you want this
     const shouldBePrimary = 'https://shouldBePrimary.audius.co'
     nock(shouldBePrimary)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .delay(200)
       .reply(200, { data: defaultHealthCheckData })
 
     // cold, overnight pizza -- behind by minor version, fast. nope
     const unhealthy2 = 'https://unhealthy2.audius.co'
     nock(unhealthy2)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.0.3' } })
 
     // stale chips from 2 weeks ago -- behind by major version, kinda slow. still nope
     const unhealthy3 = 'https://unhealthy3.audius.co'
     nock(unhealthy3)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .delay(100)
       .reply(200, { data: { ...defaultHealthCheckData, version: '0.2.3' } })
 
     // moldy canned beans -- not available/up at all. for sure nope
     const unhealthy1 = 'https://unhealthy1.audius.co'
     nock(unhealthy1)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(500, { })
 
     // your house mate's leftovers from her team outing -- behind by patch, kinda slow. solid
     const shouldBeSecondary = 'https://secondary.audius.co'
     nock(shouldBeSecondary)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .delay(100)
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0' } })
 
@@ -254,7 +254,7 @@ describe('test CreatorNodeSelection', () => {
       const healthyUrl = `https://healthy${i}.audius.co`
       nock(healthyUrl)
         .persist()
-        .get('/health_check/verbose')
+        .get('/health_check')
         .reply(200, { data: defaultHealthCheckData })
       contentNodes.push(healthyUrl)
     }
@@ -280,19 +280,19 @@ describe('test CreatorNodeSelection', () => {
   it('selects 1 secondary if only 1 secondary is available', async () => {
     const shouldBePrimary = 'https://shouldBePrimary.audius.co'
     nock(shouldBePrimary)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .delay(200)
       .reply(200, { data: defaultHealthCheckData })
 
     const shouldBeSecondary = 'https://secondary.audius.co'
     nock(shouldBeSecondary)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .delay(100)
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0' } })
 
     const unhealthy = 'https://unhealthy.audius.co'
     nock(unhealthy)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(500, { })
 
     const cns = new CreatorNodeSelection({
@@ -318,27 +318,27 @@ describe('test CreatorNodeSelection', () => {
   it('filters out nodes if over 95% of storage is used', async () => {
     const shouldBePrimary = 'https://primary.audius.co'
     nock(shouldBePrimary)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 30, storagePathSize: 100 } })
 
     const shouldBeSecondary1 = 'https://secondary1.audius.co'
     nock(shouldBeSecondary1)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.1', storagePathUsed: 30, storagePathSize: 100 } })
 
     const shouldBeSecondary2 = 'https://secondary2.audius.co'
     nock(shouldBeSecondary2)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0', storagePathUsed: 30, storagePathSize: 100 } })
 
     const used95PercentStorage = 'https://used95PercentStorage.audius.co'
     nock(used95PercentStorage)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 95.354, storagePathSize: 100 } })
 
     const used99PercentStorage = 'https://used99PercentStorage.audius.co'
     nock(used99PercentStorage)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 99, storagePathSize: 100 } })
 
     const cns = new CreatorNodeSelection({
@@ -367,27 +367,27 @@ describe('test CreatorNodeSelection', () => {
   it('overrides with health check resp `maxStorageUsedPercent` even if it is passed into constructor', async () => {
     const shouldBePrimary = 'https://primary.audius.co'
     nock(shouldBePrimary)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, storagePathUsed: 30, storagePathSize: 100 } })
 
     const shouldBeSecondary1 = 'https://secondary1.audius.co'
     nock(shouldBeSecondary1)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.2', storagePathUsed: 30, storagePathSize: 100 } })
 
     const shouldBeSecondary2 = 'https://secondary2.audius.co'
     nock(shouldBeSecondary2)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.1', storagePathUsed: 30, storagePathSize: 100 } })
 
     const used50PercentStorage = 'https://used95PercentStorage.audius.co'
     nock(used50PercentStorage)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0', storagePathUsed: 50, storagePathSize: 100 } })
 
     const used70PercentStorage = 'https://used70PercentStorage.audius.co'
     nock(used70PercentStorage)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0', storagePathUsed: 70.546, storagePathSize: 100 } })
 
     const cns = new CreatorNodeSelection({
@@ -425,27 +425,27 @@ describe('test CreatorNodeSelection', () => {
 
     const shouldBePrimary = 'https://primary.audius.co'
     nock(shouldBePrimary)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...healthCheckResponseWithNoMaxStorageUsedPercent, storagePathUsed: 30, storagePathSize: 100 } })
 
     const shouldBeSecondary1 = 'https://secondary1.audius.co'
     nock(shouldBeSecondary1)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...healthCheckResponseWithNoMaxStorageUsedPercent, version: '1.2.1', storagePathUsed: 30, storagePathSize: 100 } })
 
     const shouldBeSecondary2 = 'https://secondary2.audius.co'
     nock(shouldBeSecondary2)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...healthCheckResponseWithNoMaxStorageUsedPercent, version: '1.2.0', storagePathUsed: 30, storagePathSize: 100 } })
 
     const used50PercentStorage = 'https://used95PercentStorage.audius.co'
     nock(used50PercentStorage)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...healthCheckResponseWithNoMaxStorageUsedPercent, storagePathUsed: 50, storagePathSize: 100 } })
 
     const used70PercentStorage = 'https://used70PercentStorage.audius.co'
     nock(used70PercentStorage)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...healthCheckResponseWithNoMaxStorageUsedPercent, storagePathUsed: 70.546, storagePathSize: 100 } })
 
     const cns = new CreatorNodeSelection({
@@ -485,17 +485,17 @@ describe('test CreatorNodeSelection', () => {
 
     const shouldBePrimary = 'https://missingStoragePathUsedAndStoragePathSize.audius.co'
     nock(shouldBePrimary)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: healthCheckDataWithNoStorageInfo })
 
     const shouldBeSecondary1 = 'https://missingStoragePathUsed.audius.co'
     nock(shouldBeSecondary1)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...healthCheckDataWithNoStorageInfo, version: '1.2.1', storagePathSize: 100 } })
 
     const shouldBeSecondary2 = 'https://missingStoragePathSize.audius.co'
     nock(shouldBeSecondary2)
-      .get('/health_check/verbose')
+      .get('/health_check')
       .reply(200, { data: { ...healthCheckDataWithNoStorageInfo, version: '1.2.0', storagePathUsed: 30 } })
 
     const cns = new CreatorNodeSelection({
