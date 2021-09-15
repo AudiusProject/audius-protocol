@@ -339,16 +339,12 @@ impl Processor {
 
         // If the verified messages account doesn't exist, create it. Otherwise, 
         // ensure that we own it before proceeding.
-        msg!(" verified_messages_info.data_len : {:?}", verified_messages_info.data_len());
-        msg!(" verified_messages_info : {:?}", verified_messages_info.lamports());
         if verified_messages_info.data_len() == 0 && verified_messages_info.lamports() == 0 {
             let signers_seeds = &[
                 &reward_manager_authority.to_bytes()[..32],
                 &verified_messages_account_seed.as_slice(),
                 &[bump_seed],
             ];
-            msg!("signers_seeds : {:?}", signers_seeds);
-
             let rent = Rent::from_account_info(rent_info)?;
             create_account(
                 program_id,
