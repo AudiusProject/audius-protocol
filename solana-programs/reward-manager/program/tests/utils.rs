@@ -345,6 +345,7 @@ pub struct TestConstants<'a> {
     pub eth_oracle_address: [u8;20], 
     pub recipient_sol_key: AddressPair,
     pub min_votes: u8,
+    pub oracle_operator: [u8;20],
 }
 
 pub async fn setup_test_environment<'a>() -> TestConstants<'a> {
@@ -468,6 +469,7 @@ pub async fn setup_test_environment<'a>() -> TestConstants<'a> {
         eth_oracle_address, 
         recipient_sol_key,
         min_votes,
+        oracle_operator,
     }
 }
 

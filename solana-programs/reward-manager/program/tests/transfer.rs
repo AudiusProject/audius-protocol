@@ -1,11 +1,11 @@
 #![cfg(feature = "test-bpf")]
 mod utils;
 
-use audius_reward_manager::{error::AudiusProgramError, instruction, processor::{SENDER_SEED_PREFIX, TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX}, state::{VerifiedMessages}, utils::{find_derived_pair, EthereumAddress}, vote_message};
-use libsecp256k1::{PublicKey, SecretKey};
+use audius_reward_manager::{error::AudiusProgramError, instruction, processor::{TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX}, utils::{find_derived_pair, EthereumAddress}, vote_message};
+use libsecp256k1::{SecretKey};
 use solana_program::{instruction::{Instruction}, program_pack::Pack, pubkey::Pubkey};
 use solana_program_test::*;
-use solana_sdk::{secp256k1_instruction::*, signature::Keypair, signer::Signer, transaction::{Transaction}};
+use solana_sdk::{signature::Keypair, signer::Signer, transaction::{Transaction}};
 use std::{mem::MaybeUninit};
 use rand::{Rng};
 use utils::*;
@@ -664,34 +664,4 @@ fn get_messages_account(reward_manager: &Keypair, transfer_id: &str) -> Pubkey {
         .as_ref(),
     );
     verified_messages_derived_address
-}
-
-async fn create_sender_from(
-    reward_manager: &Keypair,
-    manager_account: &Keypair,
-    context: &mut ProgramTestContext,
-    key: &[u8; 32],
-    operator: [u8; 20]) -> Pubkey {
-    let sender_priv_key = SecretKey::parse(key).unwrap();
-    let secp_pubkey = PublicKey::from_secret_key(&sender_priv_key);
-    let eth_address = construct_eth_pubkey(&secp_pubkey);
-
-    let (_, derived_address, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
-            .concat()
-            .as_ref(),
-    );
-
-    create_sender(
-        context,
-        &reward_manager.pubkey(),
-        &manager_account,
-        eth_address,
-        operator
-    )
-    .await;
-
-    derived_address
 }
