@@ -572,7 +572,7 @@ jobs:
   dist-mac-staging:
     working_directory: ~/audius-client
     macos: # Run on osx so dmg can be created and signed.
-      xcode: "10.2.1"
+      xcode: "12.2.0"
     steps:
       - checkout
       - attach_workspace:
@@ -611,7 +611,7 @@ jobs:
   dist-mac-production:
     working_directory: ~/audius-client
     macos: # Run on osx so dmg can be created and signed.
-      xcode: "10.2.1"
+      xcode: "12.2.0"
     steps:
       - checkout
       - attach_workspace:
