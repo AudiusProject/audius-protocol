@@ -45,5 +45,23 @@
 		"type": "boolean",
 		"amount": "10",
 		"active": false
+	},
+	{
+		"id": "trending-track",
+		"type": "trending",
+		"amount": "100",
+		"active": false
+	},
+	{
+		"id": "trending-underground-track",
+		"type": "trending",
+		"amount": "100",
+		"active": false
+	},
+	{
+		"id": "trending-playlist",
+		"type": "trending",
+		"amount": "100",
+		"active": false
 	}
 ]

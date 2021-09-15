@@ -24,10 +24,10 @@ const tick = async (emitter, intervalSeconds, totalDurationSeconds) => {
     emitter.emit(Event.TICK)
   }, intervalSeconds * 1000)
 
-  return new Promise(res => {
+  return new Promise(resolve => {
     setTimeout(() => {
       clearInterval(token)
-      res()
+      resolve()
     }, totalDurationSeconds * 1000)
   })
 }
@@ -76,7 +76,7 @@ class EmitterBasedTest {
     // Await any pending requests if necessary
     if (this.inFlightCount > 0) {
       logger.info(`Awaiting [${this.inFlightCount}] inflight requests.`)
-      await racePromiseWithTimeout(this.inFlightPromise, 300000, `Failed to resolve all inflight requests in 300000ms`)
+      await racePromiseWithTimeout(this.inFlightPromise, 300000, 'Failed to resolve all inflight requests in 300000ms')
     }
     logger.info('Test done.')
   }

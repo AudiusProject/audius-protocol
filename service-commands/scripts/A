@@ -101,7 +101,8 @@ def setup(name, service, config, user):
     print("Waiting for instance to start")
     returncode = None
     while returncode != 0:
-        returncode = subprocess.run(["ssh", host, ":"])
+        response = subprocess.run(["ssh", host, ":"])
+        returncode = response.returncode
 
     if service in ["creator-node", "discovery-provider"]:
         print("Setting up audius-k8s-manifests...")

@@ -225,6 +225,7 @@ class ChallengeManager:
                 )
                 for metadata in to_create_metadata
             ]
+            logger.warning(f"new challenges ${new_user_challenges}")
             # Do any other custom work needed after creating a challenge event
             self._updater.on_after_challenge_creation(session, to_create_metadata)
 
