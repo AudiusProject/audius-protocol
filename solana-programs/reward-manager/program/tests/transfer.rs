@@ -197,7 +197,7 @@ async fn invalid_messages_are_wiped() {
     let transfer_account = get_transfer_account(&reward_manager, transfer_id);
     let verified_messages_account = get_messages_account(&reward_manager, transfer_id);
 
-    let recipient_sol_key = claimable_tokens::utils::program::get_address_pair(
+    let recipient_sol_key = claimable_tokens::utils::program::find_address_pair(
         &claimable_tokens::id(),
         &mint.pubkey(),
         recipient_eth_key,
@@ -415,7 +415,7 @@ async fn failure_transfer_invalid_message_format() {
 
     let verified_messages_derived_address = get_messages_account(&reward_manager, transfer_id);
 
-    let recipient_sol_key = claimable_tokens::utils::program::get_address_pair(
+    let recipient_sol_key = claimable_tokens::utils::program::find_address_pair(
         &claimable_tokens::id(),
         &mint.pubkey(),
         recipient_eth_key,
