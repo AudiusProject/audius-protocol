@@ -226,7 +226,7 @@ const ipfsGet = ({ ipfsLatest }, logger, path, timeout = 1000) => new Promise(as
   }
 })
 
-async function findCIDInNetwork (filePath, cid, logger, libs) {
+async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null) {
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
   if (attemptedStateFix) return
 
@@ -249,7 +249,8 @@ async function findCIDInNetwork (filePath, cid, logger, libs) {
           filePath,
           timestamp,
           delegateWallet,
-          signature
+          signature,
+          trackId
         },
         responseType: 'stream',
         timeout: 1000

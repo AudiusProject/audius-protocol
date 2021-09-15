@@ -198,7 +198,7 @@ class SnapbackSM {
     )
 
     // Enqueue first state machine operation (the processor internally re-enqueues job on recurring interval)
-    await this.stateMachineQueue.add({ startTime: Date.now() })
+    // await this.stateMachineQueue.add({ startTime: Date.now() })
 
     this.log(`SnapbackSM initialized with manualSyncsDisabled=${this.manualSyncsDisabled}. Added initial stateMachineQueue job; next job in ${this.snapbackJobInterval}ms`)
   }
@@ -1242,6 +1242,7 @@ class SnapbackSM {
    * @param job instance of Bull queue job
    */
   async processSyncOperation (job, syncType) {
+    return
     const { id } = job
     const { syncRequestParameters } = job.data
 
