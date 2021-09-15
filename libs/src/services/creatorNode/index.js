@@ -652,8 +652,8 @@ class CreatorNode {
 
       const user = this.userStateManager.getCurrentUser()
       if (user && user.wallet && user.user_id) {
-        axiosRequestObj.headers['User-Wallet-Addr'] = user.wallet
-        axiosRequestObj.headers['User-Id'] = user.user_id
+        axiosRequestObj.headers['Audius-User-Wallet-Addr'] = user.wallet
+        axiosRequestObj.headers['Audius-User-Id'] = user.user_id
       }
 
       const requestId = uuid()
@@ -752,9 +752,8 @@ class CreatorNode {
 
     const user = this.userStateManager.getCurrentUser()
     if (user && user.wallet && user.user_id) {
-      // TODO change to X-User-Wallet-Address and X-User-Id per convention
-      headers['User-Wallet-Addr'] = user.wallet
-      headers['User-Id'] = user.user_id
+      headers['Audius-User-Wallet-Addr'] = user.wallet
+      headers['Audius-User-Id'] = user.user_id
     }
 
     return { headers, formData }
