@@ -1,7 +1,7 @@
 #![cfg(feature = "test-bpf")]
 mod utils;
 
-use audius_reward_manager::{error::AudiusProgramError, instruction, processor::{TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX}, state::{VERIFIED_MESSAGES_LEN, VerifiedMessage}, utils::{find_derived_pair, EthereumAddress}, vote_message};
+use audius_reward_manager::{error::AudiusProgramError, instruction, processor::{TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX}, state::{VERIFIED_MESSAGES_LEN}, utils::{find_derived_pair, EthereumAddress}, vote_message};
 use libsecp256k1::{SecretKey};
 use solana_program::{instruction::{Instruction}, program_pack::Pack, pubkey::Pubkey};
 use solana_program_test::*;
@@ -661,18 +661,4 @@ fn get_transfer_account(reward_manager: &Keypair, transfer_id: &str) -> Pubkey {
         .as_ref(),
     );
     transfer_derived_address
-}
-
-fn get_messages_account(reward_manager: &Keypair, transfer_id: &str) -> Pubkey {
-    let (_, verified_messages_derived_address, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [
-            VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
-            transfer_id.as_ref(),
-        ]
-        .concat()
-        .as_ref(),
-    );
-    verified_messages_derived_address
 }
