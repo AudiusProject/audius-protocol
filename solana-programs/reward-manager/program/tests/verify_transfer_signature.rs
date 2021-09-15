@@ -11,7 +11,7 @@ use audius_reward_manager::{
 };
 use libsecp256k1::{PublicKey, SecretKey};
 use rand::{thread_rng, Rng};
-use solana_program::{instruction::Instruction, program_pack::Pack, pubkey::Pubkey};
+use solana_program::{instruction::Instruction, program_pack::Pack, pubkey::Pubkey, system_instruction};
 use solana_program_test::*;
 use solana_sdk::{
     secp256k1_instruction::*, signature::Keypair, signer::Signer, transaction::Transaction,
@@ -292,6 +292,7 @@ async fn success_multiple_recovery_1_tx() {
         .await;
     }
 
+    // Mint tokens to reward manager token acct 
     mint_tokens_to(
         &mut context,
         &mint.pubkey(),
@@ -357,18 +358,19 @@ async fn success_multiple_recovery_1_tx() {
 
     context.banks_client.process_transaction(tx).await.unwrap();
 
-    // Confirm vote submission occurred
-    let (_reward_manager_authority, verified_msgs_derived_acct, _) = find_derived_pair(
+    let verified_messages_account_seed = [
+        VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
+        transfer_id.as_ref(),
+    ].concat();
+    // Calculate verified messages derived account
+    let (reward_manager_authority, verified_msgs_derived_acct, bump_seed) = find_derived_pair(
         &audius_reward_manager::id(),
         &reward_manager.pubkey(),
-        [
-            VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
-            transfer_id.as_ref(),
-        ]
-        .concat()
+        verified_messages_account_seed
         .as_ref(),
     );
 
+    // Confirm vote submission occurred
     let verified_msg_acct_data = get_account(&mut context, &verified_msgs_derived_acct)
         .await
         .unwrap();
@@ -401,4 +403,64 @@ async fn success_multiple_recovery_1_tx() {
             assert_eq!(x.operator, oracle_operator);
         }
     }
+}
+
+// Confirm that an external caller cannot initialize a verified messages account and 'occupy' it
+#[tokio::test]
+#[should_panic]
+async fn failure_occupy_verified_messages_account() {
+    let program_test = program_test();
+    let mut rng = thread_rng();
+
+    let mut context = program_test.start_with_context().await;
+
+    let mint = Keypair::new();
+    let mint_authority = Keypair::new();
+
+    let token_account = Keypair::new();
+    let reward_manager = Keypair::new();
+    let manager_account = Keypair::new();
+    let transfer_id = "4r4t23df32543f55";
+
+    let rent = context.banks_client.get_rent().await.unwrap();
+    let verified_messages_account_seed = [
+        VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
+        transfer_id.as_ref(),
+    ].concat();
+    // Calculate verified messages derived account
+    let (reward_manager_authority, verified_msgs_derived_acct, bump_seed) = find_derived_pair(
+        &audius_reward_manager::id(),
+        &reward_manager.pubkey(),
+        verified_messages_account_seed
+        .as_ref(),
+    );
+
+    // Recreate signers seeds
+    let signers_seeds = &[
+        &reward_manager_authority.to_bytes()[..32],
+        verified_messages_account_seed.as_slice(),
+        &[bump_seed],
+    ];
+
+    // Attempt to initialize account that will be created by submit attestation maliciously
+    // Use context keypair to represent a third party attempting to take ownership
+    let recent_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
+     let mut failed_tx = Transaction::new_with_payer(
+        &[
+            system_instruction::create_account(
+                &context.payer.pubkey(),
+                &verified_msgs_derived_acct,
+                rent.minimum_balance(audius_reward_manager::state::VerifiedMessages::LEN),
+                audius_reward_manager::state::VerifiedMessages::LEN as _,
+                &context.payer.pubkey(),
+            )
+        ],
+        Some(&context.payer.pubkey()),
+    );
+    println!("NEW CASE 2");
+
+    failed_tx.sign(&[&context.payer], recent_blockhash);
+    let failed_tx_result = context.banks_client.process_transaction(failed_tx).await.map_err(|err| {
+        println!("{:?}", err);
+    });
 }
