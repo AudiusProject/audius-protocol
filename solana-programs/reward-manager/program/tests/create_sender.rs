@@ -14,6 +14,7 @@ use solana_sdk::{account::Account, signature::Keypair, signer::Signer, transacti
 use utils::program_test;
 
 #[tokio::test]
+/// Test successfully creating a sender
 async fn success_create_sender() {
     let mut program_test = program_test();
     let mut rng = thread_rng();

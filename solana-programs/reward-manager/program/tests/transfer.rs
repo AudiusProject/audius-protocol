@@ -1,17 +1,18 @@
 #![cfg(feature = "test-bpf")]
 mod utils;
 
-use audius_reward_manager::{error::AudiusProgramError, instruction, processor::{SENDER_SEED_PREFIX, TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX}, state::{VerifiedMessages}, utils::{find_derived_pair, EthereumAddress}, vote_message};
-use libsecp256k1::{PublicKey, SecretKey};
+use audius_reward_manager::{error::AudiusProgramError, instruction, processor::{TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX}, state::{VERIFIED_MESSAGES_LEN, VerifiedMessage}, utils::{find_derived_pair, EthereumAddress}, vote_message};
+use libsecp256k1::{SecretKey};
 use solana_program::{instruction::{Instruction}, program_pack::Pack, pubkey::Pubkey};
 use solana_program_test::*;
-use solana_sdk::{secp256k1_instruction::*, signature::Keypair, signer::Signer, transaction::{Transaction}};
+use solana_sdk::{signature::Keypair, signer::Signer, transaction::{Transaction}};
 use std::{mem::MaybeUninit};
 use rand::{Rng};
 use utils::*;
 
 
 #[tokio::test]
+/// Test a transfer can be completed successfully
 async fn success_transfer() {
     let TestConstants { 
         reward_manager,
@@ -94,6 +95,8 @@ async fn success_transfer() {
 
     let transfer_account = get_transfer_account(&reward_manager, transfer_id);
     let verified_messages_account = get_messages_account(&reward_manager, transfer_id);
+    let verified_messages_data = get_account(&mut context, &verified_messages_account).await.unwrap();
+    assert_eq!(verified_messages_data.lamports, rent.minimum_balance(VERIFIED_MESSAGES_LEN));
 
     let tx = Transaction::new_signed_with_payer(
         &[instruction::evaluate_attestations(
@@ -125,9 +128,16 @@ async fn success_transfer() {
         rent.minimum_balance(TRANSFER_ACC_SPACE)
     );
     assert_eq!(transfer_account_data.data.len(), TRANSFER_ACC_SPACE);
+
+    // Assert that we transferred the expected amount
     let recipient_account_data = get_account(& mut context, &recipient_sol_key.derive.address).await.unwrap();
     let recipient_account = spl_token::state::Account::unpack(&recipient_account_data.data.as_slice()).unwrap();
-    assert_eq!(recipient_account.amount, 10_000u64)
+    assert_eq!(recipient_account.amount, 10_000u64);
+
+    // Assert that we wiped the verified messages account
+    let verified_messages_data = get_account(&mut context, &verified_messages_account).await;
+    assert!(verified_messages_data.is_none());
+    
 }
 
 #[tokio::test]
@@ -564,6 +574,7 @@ async fn failure_transfer_invalid_oracle_message_format() {
 }
 
 #[tokio::test]
+/// Test that we fail if missing AAO attestation
 async fn failure_transfer_incorrect_number_of_verified_messages() {
     let TestConstants {
         reward_manager,
@@ -664,34 +675,4 @@ fn get_messages_account(reward_manager: &Keypair, transfer_id: &str) -> Pubkey {
         .as_ref(),
     );
     verified_messages_derived_address
-}
-
-async fn create_sender_from(
-    reward_manager: &Keypair,
-    manager_account: &Keypair,
-    context: &mut ProgramTestContext,
-    key: &[u8; 32],
-    operator: [u8; 20]) -> Pubkey {
-    let sender_priv_key = SecretKey::parse(key).unwrap();
-    let secp_pubkey = PublicKey::from_secret_key(&sender_priv_key);
-    let eth_address = construct_eth_pubkey(&secp_pubkey);
-
-    let (_, derived_address, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
-            .concat()
-            .as_ref(),
-    );
-
-    create_sender(
-        context,
-        &reward_manager.pubkey(),
-        &manager_account,
-        eth_address,
-        operator
-    )
-    .await;
-
-    derived_address
 }

@@ -3,16 +3,14 @@
 mod utils;
 use audius_reward_manager::instruction;
 use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
-use utils::program_test;
 
-use solana_program::program_pack::Pack;
 use solana_program_test::*;
 use solana_sdk::{signature::Signer, transaction::Transaction};
 use utils::*;
 
 #[tokio::test]
 /// Registered manager account can change the rewards manager manager
-async fn success_change_manager_() {
+async fn success_change_manager() {
     let TestConstants { 
         reward_manager,
         mut context,
@@ -89,7 +87,6 @@ async fn failure_change_manager_bad_manager() {
 
 #[tokio::test]
 #[should_panic(expected = "Transaction::sign failed with error KeypairPubkeyMismatch")]
-
 /// Tries to change a manager, but passes in a current manager which isn't 
 /// registered as manager
 async fn failure_change_manager_authority_bad_authority() {
