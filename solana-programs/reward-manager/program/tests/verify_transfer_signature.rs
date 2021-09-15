@@ -267,7 +267,6 @@ async fn failure_occupy_verified_messages_account() {
         ],
         Some(&context.payer.pubkey()),
     );
-    println!("NEW CASE 2");
 
     failed_tx.sign(&[&context.payer], recent_blockhash);
     let failed_tx_result = context.banks_client.process_transaction(failed_tx).await.map_err(|err| {
