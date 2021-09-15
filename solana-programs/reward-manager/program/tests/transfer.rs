@@ -1,9 +1,9 @@
 #![cfg(feature = "test-bpf")]
 mod utils;
 
-use audius_reward_manager::{error::AudiusProgramError, instruction, processor::{TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX}, state::{VERIFIED_MESSAGES_LEN, VerifiedMessage}, utils::{find_derived_pair, EthereumAddress}, vote_message};
+use audius_reward_manager::{error::AudiusProgramError, instruction, processor::{TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX}, state::{VERIFIED_MESSAGES_LEN}, utils::{find_derived_pair, EthereumAddress}, vote_message};
 use libsecp256k1::{SecretKey};
-use solana_program::{instruction::{Instruction}, program_pack::Pack, pubkey::Pubkey};
+use solana_program::{instruction::{Instruction}, program_pack::Pack, pubkey::Pubkey, system_instruction};
 use solana_program_test::*;
 use solana_sdk::{signature::Keypair, signer::Signer, transaction::{Transaction}};
 use std::{mem::MaybeUninit};
@@ -647,6 +647,36 @@ async fn failure_transfer_incorrect_number_of_verified_messages() {
     assert_custom_error(tx_result, 7, AudiusProgramError::Secp256InstructionMissing);
 }
 
+// Confirm that an external caller cannot initialize a transfer account and 'occupy' it
+#[tokio::test]
+#[should_panic]
+async fn failure_occupy_transfer_account() {
+    let program_test = program_test();
+    let mut context = program_test.start_with_context().await;
+    let reward_manager = Keypair::new();
+    let transfer_id = "4r4t23df32543f55";
+    let rent = context.banks_client.get_rent().await.unwrap();
+    // Calculate verified messages derived account
+    let verified_msgs_derived_acct = get_transfer_account(&reward_manager, transfer_id);
+
+    // Attempt to initialize account that will be created by submit attestation maliciously
+    // Use context keypair to represent a third party attempting to take ownership
+    let recent_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
+    let mut failed_tx = Transaction::new_with_payer(
+        &[system_instruction::create_account(
+            &context.payer.pubkey(),
+            &verified_msgs_derived_acct,
+            rent.minimum_balance(0),
+            0,
+            &context.payer.pubkey(),
+        )],
+        Some(&context.payer.pubkey()),
+    );
+
+    // Attempting to sign without programID as a signer should cause panic
+    failed_tx.sign(&[&context.payer], recent_blockhash);
+}
+
 // Helpers
 
 fn get_transfer_account(reward_manager: &Keypair, transfer_id: &str) -> Pubkey {
@@ -661,18 +691,4 @@ fn get_transfer_account(reward_manager: &Keypair, transfer_id: &str) -> Pubkey {
         .as_ref(),
     );
     transfer_derived_address
-}
-
-fn get_messages_account(reward_manager: &Keypair, transfer_id: &str) -> Pubkey {
-    let (_, verified_messages_derived_address, _) = find_derived_pair(
-        &audius_reward_manager::id(),
-        &reward_manager.pubkey(),
-        [
-            VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
-            transfer_id.as_ref(),
-        ]
-        .concat()
-        .as_ref(),
-    );
-    verified_messages_derived_address
 }

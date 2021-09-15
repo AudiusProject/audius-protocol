@@ -345,7 +345,6 @@ impl Processor {
                 &verified_messages_account_seed.as_slice(),
                 &[bump_seed],
             ];
-
             let rent = Rent::from_account_info(rent_info)?;
             create_account(
                 program_id,

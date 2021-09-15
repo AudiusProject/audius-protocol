@@ -1,7 +1,7 @@
 #![cfg(feature = "test-bpf")]
 #![allow(dead_code)]
 
-use audius_reward_manager::{instruction, vote_message, processor::{SENDER_SEED_PREFIX}};
+use audius_reward_manager::{instruction, vote_message, processor::{SENDER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX}};
 use audius_reward_manager::utils::{EthereumAddress, find_derived_pair};
 use audius_reward_manager::{id, processor::Processor};
 use claimable_tokens::utils::program::AddressPair;
@@ -501,4 +501,18 @@ pub async fn create_sender_from(
     .await;
 
     derived_address
+}
+
+pub fn get_messages_account(reward_manager: &Keypair, transfer_id: &str) -> Pubkey {
+    let (_, verified_messages_derived_address, _) = find_derived_pair(
+        &audius_reward_manager::id(),
+        &reward_manager.pubkey(),
+        [
+            VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
+            transfer_id.as_ref(),
+        ]
+        .concat()
+        .as_ref(),
+    );
+    verified_messages_derived_address
 }
