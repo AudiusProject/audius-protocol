@@ -18,7 +18,8 @@ use std::mem::MaybeUninit;
 use utils::*;
 
 #[tokio::test]
-async fn success_verify_transfer_signature() {
+/// Test that we can successfully submit a single attestation in multiple transactions
+async fn success_submit_attestations_multiple_transactions() {
     let TestConstants { 
         reward_manager,
         senders_message,
@@ -54,7 +55,6 @@ async fn success_verify_transfer_signature() {
         .unwrap(),
     );
 
-    println!("Signing verify instruction 1");
     let tx = Transaction::new_signed_with_payer(
         &instructions,
         Some(&context.payer.pubkey()),
@@ -62,7 +62,6 @@ async fn success_verify_transfer_signature() {
         context.last_blockhash,
     );
 
-    println!("Submitting verify instruction 2");
     context.banks_client.process_transaction(tx).await.unwrap();
 
     let mut instructions_2 = Vec::<Instruction>::new();
@@ -81,7 +80,6 @@ async fn success_verify_transfer_signature() {
         .unwrap(),
     );
 
-    println!("Signing verify instruction 2");
     let tx2 = Transaction::new_signed_with_payer(
         &instructions_2,
         Some(&context.payer.pubkey()),
@@ -89,11 +87,11 @@ async fn success_verify_transfer_signature() {
         context.last_blockhash,
     );
 
-    println!("Submitting verify instruction 2");
     context.banks_client.process_transaction(tx2).await.unwrap();
 }
 
 #[tokio::test]
+/// Test that we can submit attestations in a single transaction 
 async fn success_multiple_recovery_1_tx() {
     let TestConstants { 
         reward_manager,
@@ -190,14 +188,9 @@ async fn success_multiple_recovery_1_tx() {
         .await
         .unwrap();
 
-    println!(
-        "Expected verified_msgs_derived_acct {:}",
-        verified_msgs_derived_acct
-    );
-
     let verified_messages =
         VerifiedMessages::unpack_unchecked(&verified_msg_acct_data.data).unwrap();
-    println!("verified_messages {:?}", verified_messages);
+
     // Expect 3 msgs
     assert_eq!(verified_messages.messages.len(), 3);
 

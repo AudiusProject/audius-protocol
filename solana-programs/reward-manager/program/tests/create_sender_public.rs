@@ -16,6 +16,7 @@ use std::mem::MaybeUninit;
 use utils::*;
 
 #[tokio::test]
+/// Test successfully creating a sender (decentralized)
 async fn success_create_sender_public() {
     let TestConstants { 
         reward_manager,
@@ -91,6 +92,8 @@ async fn success_create_sender_public() {
 }
 
 #[tokio::test]
+/// Test that creating a sender fails if the signatures
+/// don't match known senders
 async fn failure_create_sender_public_mismatched_signature_to_pubkey() {
     let TestConstants { 
         reward_manager,
@@ -159,6 +162,7 @@ async fn failure_create_sender_public_mismatched_signature_to_pubkey() {
 }
 
 #[tokio::test]
+/// Test adding sender fails if the senders don't match the signers
 async fn failure_create_sender_public_mismatched_pubkey_to_signature() {
     let TestConstants { 
         reward_manager,

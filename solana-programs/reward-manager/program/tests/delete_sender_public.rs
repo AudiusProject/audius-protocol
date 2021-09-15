@@ -16,6 +16,7 @@ use std::mem::MaybeUninit;
 use utils::*;
 
 #[tokio::test]
+/// Test able to successfully delete a sender (decentralized)
 async fn success_delete_sender_public() {
     let TestConstants { 
         reward_manager,
@@ -91,6 +92,7 @@ async fn success_delete_sender_public() {
 }
 
 #[tokio::test]
+/// Test deleting sender fails if signers don't match known senders
 async fn failure_delete_sender_public_mismatched_signature_to_pubkey() {
     let TestConstants { 
         reward_manager,

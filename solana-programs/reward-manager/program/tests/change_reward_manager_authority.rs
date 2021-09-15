@@ -10,7 +10,7 @@ use utils::*;
 
 #[tokio::test]
 /// Registered manager account can change the rewards manager manager
-async fn success_change_manager_() {
+async fn success_change_manager() {
     let TestConstants { 
         reward_manager,
         mut context,
