@@ -5,8 +5,7 @@ const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabil
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const Staking = artifacts.require('Staking')
-const DelegateManager = artifacts.require('DelegateManager')
-const DelegateManagerV2 = artifacts.require('DelegateManagerV2')
+const DelegateManager = artifacts.require('DelegateManagerV2')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -56,6 +55,7 @@ contract('DelegateManager', async (accounts) => {
   const stakerAccount6 = accounts[17]
   const delegatorAccount1 = accounts[11]
   const slasherAccount = stakerAccount
+  const stakerAccountInvalid = accounts[18]
 
   /**
    * Initialize Registry, Governance, Token, Staking, ServiceTypeManager, ServiceProviderFactory, ClaimsManager, DelegateManager
@@ -444,22 +444,6 @@ contract('DelegateManager', async (accounts) => {
       `Imbalanced stake for account ${account} - totalInStakingContract=${info.totalInStakingContract.toString()}, outside=${info.outsideStake.toString()}`
     )
     return info
-  }
-
-  const upgradeDelegateManagerToV2 = async () => {
-    const delegateManagerV2Logic = await DelegateManagerV2.new({ from: proxyAdminAddress })
-
-      assert.equal(await delegateManagerProxy.implementation.call({ from: proxyAdminAddress }), delegateManager0.address)
-
-      await governance.guardianExecuteTransaction(
-        delegateManagerKey,
-        callValue0,
-        'upgradeTo(address)',
-        _lib.abiEncode(['address'], [delegateManagerV2Logic.address]),
-        { from: guardianAddress }
-      )
-
-      assert.equal(await delegateManagerProxy.implementation.call({ from: proxyAdminAddress }), delegateManagerV2Logic.address)
   }
 
   describe('Delegation tests', () => {
@@ -1733,17 +1717,7 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)).eq(minDelegateStake), 'Expect min delegate stake')
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount2)).eq(minDelegateStake), 'Expect min delegate stake')
 
-
-
-
-
-
       /** NEW CODE */
-
-      // proxy upgrade to DelegateManagerV2 for new SPMinDelegationAmount controls
-      await upgradeDelegateManagerToV2()
-
-      delegateManager = await DelegateManagerV2.at(delegateManagerProxy.address)
 
       // confirm spMinDelegationAmount initially is 0
       assert.isTrue((await delegateManager.getSPMinDelegationAmount(stakerAccount)).isZero(), 'Expect spMinDelegationAmount = 0')
@@ -1755,7 +1729,7 @@ contract('DelegateManager', async (accounts) => {
       // confirm updateMinDelAmt worked
       await expectEvent.inTransaction(
         tx.tx,
-        DelegateManagerV2,
+        DelegateManager,
         'SPMinDelegationAmountUpdated',
         { _serviceProvider: stakerAccount, _spMinDelegationAmount: spMinDelegationAmount }
       )
@@ -1782,6 +1756,12 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 }
       )
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)).eq(_lib.toBN(spMinDelegationAmount)), 'Expect min delegate stake')
+
+      // Fail to modify spMinDelegationAmount for invalid SP
+      await _lib.assertRevert(
+        delegateManager.updateSPMinDelegationAmount(stakerAccountInvalid, spMinDelegationAmount, { from: stakerAccountInvalid }),
+        'Only callable by valid registered SP'
+      )
     })
 
     it('Min delegate stake verification', async () => {
@@ -2771,8 +2751,6 @@ contract('DelegateManager', async (accounts) => {
       )
       const undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
       await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
-
-      await upgradeDelegateManagerToV2()
 
       await delegateManager.undelegateStake({ from: delegatorAccount1 })
 

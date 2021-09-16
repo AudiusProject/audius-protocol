@@ -165,7 +165,10 @@ contract DelegateManagerV2 is InitializableV2 {
     event RemoveDelegatorLockupDurationUpdated(uint256 indexed _removeDelegatorLockupDuration);
     event RemoveDelegatorEvalDurationUpdated(uint256 indexed _removeDelegatorEvalDuration);
 
-    event SPMinDelegationAmountUpdated(address indexed _serviceProvider, uint256 indexed _spMinDelegationAmount);
+    event SPMinDelegationAmountUpdated(
+        address indexed _serviceProvider,
+        uint256 indexed _spMinDelegationAmount
+    );
 
     /**
      * @notice Function to initialize the contract
@@ -732,22 +735,33 @@ contract DelegateManagerV2 is InitializableV2 {
 
     /**
      * TODO consider naming ServiceProvider instead of SP
+     * note - does not enforce _spMinDelegationAmount >= minDelegationAmount since not necessary
+            delegateStake() and undelegateStake() always take the max of both already
      */
-    function updateSPMinDelegationAmount(address _serviceProvider, uint256 _spMinDelegationAmount) external {
-      _requireIsInitialized();
+    function updateSPMinDelegationAmount(
+        address _serviceProvider,
+        uint256 _spMinDelegationAmount
+    ) external {
+        _requireIsInitialized();
 
-      require(
-          msg.sender == _serviceProvider || msg.sender == governanceAddress,
-          ERROR_ONLY_SP_GOVERNANCE
-      );
+        require(
+            msg.sender == _serviceProvider || msg.sender == governanceAddress,
+            ERROR_ONLY_SP_GOVERNANCE
+        );
 
-      // TODO require valid SP
+        // Ensure valid SP
+        // TODO not sure if needed
+        // ideally would like to access `SPFactory.serviceProviderAddressToId` but it is not externally accessible
+        // using numEndpoints >= 1 as an invariant is dicey
+        (,,, uint256 numEndpoints,,) = (
+            ServiceProviderFactory(serviceProviderFactoryAddress)
+            .getServiceProviderDetails(_serviceProvider)
+        );
+        require(numEndpoints > 0, "DelegateManager: Only callable by valid registered SP");
 
-      // TODO consider enforcing _spMinDelegationAmount > minDelegationAmount even tho unnecessary
+        spMinDelegationAmounts[_serviceProvider] = _spMinDelegationAmount;
 
-      spMinDelegationAmounts[_serviceProvider] = _spMinDelegationAmount;
-
-      emit SPMinDelegationAmountUpdated(_serviceProvider, _spMinDelegationAmount);
+        emit SPMinDelegationAmountUpdated(_serviceProvider, _spMinDelegationAmount);
     }
 
     /**
