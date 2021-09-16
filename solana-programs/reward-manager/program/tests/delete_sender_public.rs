@@ -27,6 +27,7 @@ async fn success_delete_sender_public() {
     } = setup_test_environment().await;
 
     let refunder_account = Pubkey::new_unique();
+    // Create 4 senders, 1 of which will be deleted
     let keys: [[u8; 32]; 4] = rng.gen();
     let operators: [EthereumAddress; 4] = rng.gen();
     let mut signers: [Pubkey; 4] = unsafe { MaybeUninit::zeroed().assume_init() };
@@ -89,6 +90,69 @@ async fn success_delete_sender_public() {
         .await
         .unwrap();
     assert!(account.is_none());
+}
+
+#[tokio::test]
+async fn failure_delete_sender_insufficient_attestations() {
+    let TestConstants { 
+        reward_manager,
+        mut context,
+        manager_account,
+        mut rng,
+        ..
+    } = setup_test_environment().await;
+
+    let refunder_account = Pubkey::new_unique();
+    // Create 4 senders, 1 of which will be deleted
+    let keys: [[u8; 32]; 4] = rng.gen();
+    let operators: [EthereumAddress; 4] = rng.gen();
+    let mut signers: [Pubkey; 4] = unsafe { MaybeUninit::zeroed().assume_init() };
+
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        signers[i] = derived_address;
+    }
+
+    let mut instructions = Vec::<Instruction>::new();
+
+    // get eth_address of sender which will be deleted
+    let sender_priv_key = SecretKey::parse(&keys[3]).unwrap();
+    let secp_pubkey = libsecp256k1::PublicKey::from_secret_key(&sender_priv_key);
+    let eth_address = construct_eth_pubkey(&secp_pubkey);
+
+    // Insert signs instructions
+    let message = [
+        DELETE_SENDER_MESSAGE_PREFIX.as_ref(),
+        reward_manager.pubkey().as_ref(),
+        eth_address.as_ref(),
+    ]
+    .concat();
+    for item in keys[..2].iter().enumerate() {
+        let priv_key = SecretKey::parse(item.1).unwrap();
+        let inst = new_secp256k1_instruction_2_0(&priv_key, message.as_ref(), item.0 as _);
+        instructions.push(inst);
+    }
+
+    // Push one less than min_votes to the signers array
+    instructions.push(
+        instruction::delete_sender_public(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &refunder_account,
+            eth_address,
+            &signers[..2],
+        )
+        .unwrap(),
+    );
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+    let res = context.banks_client.process_transaction(tx).await;
+    assert_custom_error(res, 2, audius_reward_manager::error::AudiusProgramError::NotEnoughSigners);
 }
 
 #[tokio::test]
@@ -162,3 +226,4 @@ async fn failure_delete_sender_public_mismatched_signature_to_pubkey() {
         _ => panic!("Returned incorrect error!"),
     }
 }
+
