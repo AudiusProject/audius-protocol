@@ -99,8 +99,6 @@ contract DelegateManagerV2 is InitializableV2 {
     // service provider -> (delegator -> lockupExpiryBlock)
     mapping (address => mapping (address => uint256)) private removeDelegatorRequests;
 
-    mapping (address => uint256) private spMinDelegationAmounts;
-
     event IncreaseDelegatedStake(
         address indexed _delegator,
         address indexed _serviceProvider,
@@ -165,10 +163,21 @@ contract DelegateManagerV2 is InitializableV2 {
     event RemoveDelegatorLockupDurationUpdated(uint256 indexed _removeDelegatorLockupDuration);
     event RemoveDelegatorEvalDurationUpdated(uint256 indexed _removeDelegatorEvalDuration);
 
+    // ========================================= New State Variables =========================================
+
+    string private constant ERROR_ONLY_SP = (
+        "DelegateManager: Only callable by valid SP"
+    );
+
+    // minDelegationAmount per service provider
+    mapping (address => uint256) private spMinDelegationAmounts;
+
     event SPMinDelegationAmountUpdated(
         address indexed _serviceProvider,
         uint256 indexed _spMinDelegationAmount
     );
+
+    // ========================================= Modifier Functions =========================================
 
     /**
      * @notice Function to initialize the contract
@@ -435,10 +444,12 @@ contract DelegateManagerV2 is InitializableV2 {
             unstakeAmount
         );
 
+        // Need to update service provider's `validBounds` flag
+        //  Only way to do this is through `SPFactory.updateServiceProviderStake()`
+        //  So we call it with the existing `spDeployerStake`
         (uint256 spDeployerStake,,,,,) = (
             ServiceProviderFactory(serviceProviderFactoryAddress).getServiceProviderDetails(serviceProvider)
         );
-
         ServiceProviderFactory(serviceProviderFactoryAddress).updateServiceProviderStake(
             serviceProvider, spDeployerStake
         );
@@ -734,9 +745,11 @@ contract DelegateManagerV2 is InitializableV2 {
     }
 
     /**
-     * TODO consider naming ServiceProvider instead of SP
-     * note - does not enforce _spMinDelegationAmount >= minDelegationAmount since not necessary
-            delegateStake() and undelegateStake() always take the max of both already
+     * @notice SP can update their minDelegationAmount
+     * @param _serviceProvider - address of service provider
+     * @param _spMinDelegationAmount - new minDelegationAmount for SP
+     * @notice does not enforce _spMinDelegationAmount >= minDelegationAmount since not necessary
+     *      delegateStake() and undelegateStake() always take the max of both already
      */
     function updateSPMinDelegationAmount(
         address _serviceProvider,
@@ -749,10 +762,10 @@ contract DelegateManagerV2 is InitializableV2 {
             ERROR_ONLY_SP_GOVERNANCE
         );
 
-        // Ensure valid SP
-        // TODO not sure if needed
-        // ideally would like to access `SPFactory.serviceProviderAddressToId` but it is not externally accessible
-        // using numEndpoints >= 1 as an invariant is dicey
+        /**
+         * Ensure _serviceProvider is a valid SP
+         * No objective source of truth, closest heuristic is numEndpoints > 0
+         */
         (,,, uint256 numEndpoints,,) = (
             ServiceProviderFactory(serviceProviderFactoryAddress)
             .getServiceProviderDetails(_serviceProvider)
@@ -965,8 +978,13 @@ contract DelegateManagerV2 is InitializableV2 {
         return removeDelegatorRequests[_serviceProvider][_delegator];
     }
 
-    function getSPMinDelegationAmount(address _sp) external view returns (uint256) {
-        return spMinDelegationAmounts[_sp];
+    /**
+     * @notice Get minDelegationAmount for given SP
+     * @param _serviceProvider - address of the service provider
+     * @return - minDelegationAmount for given SP
+     */
+    function getSPMinDelegationAmount(address _serviceProvider) external view returns (uint256) {
+        return spMinDelegationAmounts[_serviceProvider];
     }
 
     /// @notice Get current undelegate lockup duration

@@ -20,23 +20,17 @@ module.exports = (deployer, network, accounts) => {
     const proxyDeployerAddress = config.proxyDeployerAddress || accounts[11]
     const guardianAddress = config.guardianAddress || proxyDeployerAddress
 
-    const delegateManagerAddress = process.env.delegateManagerAddress
-    const delegateManagerProxy = AudiusAdminUpgradeabilityProxy.at(delegateManagerAddress)
-
-    // TODO this doesn't work
-    const tmp = await delegateManagerProxy.implementation.call({ from: proxyAdminAddress })
-    console.log(`SIDTEST FINAL TMP ${tmp}`)
-
     const governanceAddress = process.env.governanceAddress
     const governance = await Governance.at(governanceAddress)
-
     const delegateManagerV2Logic = await DelegateManagerV2.new({ from: proxyAdminAddress })
 
+    /**
+     * Submit contract proxy upgrade via governance guardian
+     */
     const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
     const callValue0 = _lib.toBN(0)
     const functionSignature = 'upgradeTo(address)'
     const callData = _lib.abiEncode(['address'], [delegateManagerV2Logic.address])
-
     await governance.guardianExecuteTransaction(
       delegateManagerKey,
       callValue0,
@@ -45,6 +39,11 @@ module.exports = (deployer, network, accounts) => {
       { from: guardianAddress }
     )
 
+    /**
+     * Confirm proxy is re-pointed to new logic contract
+     */
+    const delegateManagerAddress = process.env.delegateManagerAddress
+    const delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.at(delegateManagerAddress)
     assert.strictEqual(
       await delegateManagerProxy.implementation.call({ from: proxyAdminAddress }),
       delegateManagerV2Logic.address
