@@ -211,7 +211,6 @@ def setup(name, service, config, user):
 def main():
     parser = argparse.ArgumentParser(
         description="",  # TODO
-        exit_on_error=False,
     )
 
     subparser = parser.add_subparsers(
