@@ -5,7 +5,8 @@ const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabil
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const Staking = artifacts.require('Staking')
-const DelegateManager = artifacts.require('DelegateManagerV2')
+const DelegateManager = artifacts.require('DelegateManager')
+const DelegateManagerV2 = artifacts.require('DelegateManagerV2')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -38,10 +39,10 @@ const DECREASE_STAKE_LOCKUP_DURATION = UNDELEGATE_LOCKUP_DURATION
 
 const callValue0 = _lib.toBN(0)
 
-
 contract('DelegateManager', async (accounts) => {
   let staking, stakingAddress, token, registry, governance
   let serviceProviderFactory, serviceTypeManager, claimsManager, delegateManager
+  let delegateManager0, delegateManagerProxy
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress] = accounts
@@ -166,8 +167,8 @@ contract('DelegateManager', async (accounts) => {
       ['address', 'address', 'uint256'],
       [token.address, governance.address, UNDELEGATE_LOCKUP_DURATION]
     )
-    let delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
-    let delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
+    delegateManager0 = await DelegateManager.new({ from: proxyDeployerAddress })
+    delegateManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       delegateManager0.address,
       governance.address,
       delegateManagerInitializeData,
@@ -443,6 +444,22 @@ contract('DelegateManager', async (accounts) => {
       `Imbalanced stake for account ${account} - totalInStakingContract=${info.totalInStakingContract.toString()}, outside=${info.outsideStake.toString()}`
     )
     return info
+  }
+
+  const upgradeDelegateManagerToV2 = async () => {
+    const delegateManagerV2Logic = await DelegateManagerV2.new({ from: proxyAdminAddress })
+
+      assert.equal(await delegateManagerProxy.implementation.call({ from: proxyAdminAddress }), delegateManager0.address)
+
+      await governance.guardianExecuteTransaction(
+        delegateManagerKey,
+        callValue0,
+        'upgradeTo(address)',
+        _lib.abiEncode(['address'], [delegateManagerV2Logic.address]),
+        { from: guardianAddress }
+      )
+
+      assert.equal(await delegateManagerProxy.implementation.call({ from: proxyAdminAddress }), delegateManagerV2Logic.address)
   }
 
   describe('Delegation tests', () => {
@@ -1716,7 +1733,17 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)).eq(minDelegateStake), 'Expect min delegate stake')
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount2)).eq(minDelegateStake), 'Expect min delegate stake')
 
+
+
+
+
+
       /** NEW CODE */
+
+      // proxy upgrade to DelegateManagerV2 for new SPMinDelegationAmount controls
+      await upgradeDelegateManagerToV2()
+
+      delegateManager = await DelegateManagerV2.at(delegateManagerProxy.address)
 
       // confirm spMinDelegationAmount initially is 0
       assert.isTrue((await delegateManager.getSPMinDelegationAmount(stakerAccount)).isZero(), 'Expect spMinDelegationAmount = 0')
@@ -1728,8 +1755,8 @@ contract('DelegateManager', async (accounts) => {
       // confirm updateMinDelAmt worked
       await expectEvent.inTransaction(
         tx.tx,
-        DelegateManager,
-        "SPMinDelegationAmountUpdated",
+        DelegateManagerV2,
+        'SPMinDelegationAmountUpdated',
         { _serviceProvider: stakerAccount, _spMinDelegationAmount: spMinDelegationAmount }
       )
       assert.isTrue((await delegateManager.getSPMinDelegationAmount(stakerAccount)).eq(_lib.toBN(spMinDelegationAmount)), 'Expect spMinDelegationAmount to be changed')
@@ -1743,10 +1770,10 @@ contract('DelegateManager', async (accounts) => {
           invalidMinStake,
           { from: delegatorAccount1 }
         ),
-        "Minimum delegation amount"
+        'Minimum delegation amount'
       )
 
-      // confirm delegateStake fails for above new min
+      // confirm delegateStake succeeds for above new min
       let validMinStake = _lib.audToWei(minDelegateStakeValAUD)
       await token.approve(stakingAddress, validMinStake, { from: delegatorAccount1 })
       await delegateManager.delegateStake(
@@ -2744,6 +2771,9 @@ contract('DelegateManager', async (accounts) => {
       )
       const undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
       await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
+
+      await upgradeDelegateManagerToV2()
+
       await delegateManager.undelegateStake({ from: delegatorAccount1 })
 
       const spDetails3 = await serviceProviderFactory.getServiceProviderDetails.call(stakerAccount)
@@ -2756,5 +2786,6 @@ contract('DelegateManager', async (accounts) => {
       // Without a contract change this fails as the DelegateManager does not update validBounds
       assert.isTrue(spDetails3.validBounds, 'Expected validBounds == true')
     })
+
   })
 })

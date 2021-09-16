@@ -12,7 +12,6 @@ const AudiusToken = artifacts.require('AudiusToken')
 
 const serviceTypeCN = web3.utils.utf8ToHex('creator-node')
 const serviceTypeDP = web3.utils.utf8ToHex('discovery-provider')
-const delegateManagerKey = web3.utils.utf8ToHex('DelegateManager')
 
 contract('Random testing', async (accounts) => {
     let token, staking, serviceTypeManager, serviceProviderFactory
@@ -103,6 +102,7 @@ contract('Random testing', async (accounts) => {
         sysLog(`DelegateManager: ${delegateManager.address}, expected ${delManAddrFromClaimsManager}`)
         sysLog(`CN: ${serviceTypeCN} - min: ${cnTypeInfo.minStake}, max: ${cnTypeInfo.maxStake}`)
         sysLog(`DP: ${serviceTypeDP} - min: ${dpTypeInfo.minStake}, max: ${dpTypeInfo.maxStake}`)
+
         await initializeTestState()
     })
 
