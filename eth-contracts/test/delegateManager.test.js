@@ -27,7 +27,7 @@ const testEndpoint4 = 'https://localhost:5009'
 const testEndpoint5 = 'https://localhost:5010'
 
 
-const INITIAL_BAL = _lib.audToWeiBN(1000000)
+const INITIAL_BAL = _lib.audToWeiBN(10000000)
 const DEFAULT_AMOUNT_VAL = _lib.audToWei(120)
 const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
 const VOTING_PERIOD = 10
