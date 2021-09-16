@@ -238,3 +238,174 @@ async fn failure_occupy_verified_messages_account() {
     // Attempting to sign without programID as a signer should cause panic
     failed_tx.sign(&[&context.payer], recent_blockhash);
 }
+/// Fails for duplicate attestations
+#[tokio::test]
+async fn failure_duplicate_attestations() {
+    let TestConstants { 
+        reward_manager,
+        senders_message,
+        mut context,
+        transfer_id,
+        mut rng,
+        manager_account,
+        ..
+    } = setup_test_environment().await;
+
+    // Generate data and create senders
+    let keys: [[u8; 32]; 3] = rng.gen();
+    let operators: [EthereumAddress; 3] = rng.gen();
+    let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        signers[i] = derived_address;
+    }
+
+    // Send from DN1 for first txn
+    let mut instructions = Vec::<Instruction>::new();
+    let priv_key = SecretKey::parse(&keys[0]).unwrap();
+    let sender_sign = new_secp256k1_instruction_2_0(&priv_key, senders_message.as_ref(), 0);
+    instructions.push(sender_sign);
+
+    instructions.push(
+        instruction::submit_attestations(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &signers[0],
+            &context.payer.pubkey(),
+            transfer_id.to_string(),
+        )
+        .unwrap(),
+    );
+
+    let recent_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        recent_blockhash
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    // Send from DN2 for second txn
+    let priv_key = SecretKey::parse(&keys[1]).unwrap();
+    let sender_sign = new_secp256k1_instruction_2_0(&priv_key, senders_message.as_ref(), 0);
+    let mut new_instructions = Vec::<Instruction>::new();
+    new_instructions.push(sender_sign);
+
+    new_instructions.push(
+        instruction::submit_attestations(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &signers[1],
+            &context.payer.pubkey(),
+            transfer_id.to_string(),
+        )
+        .unwrap(),
+    );
+
+    let recent_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
+
+    let tx = Transaction::new_signed_with_payer(
+        &new_instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        recent_blockhash
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    // Send from DN1 again for the 3rd txn (just reuse existing instructions)
+    let recent_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        recent_blockhash
+    );
+
+    let res = context.banks_client.process_transaction(tx).await;
+    assert_custom_error(res, 1, audius_reward_manager::error::AudiusProgramError::RepeatedSenders)
+}
+
+#[tokio::test]
+/// Tests that duplicate service operators fail
+async fn failure_duplicate_operator() {
+    let TestConstants { 
+        reward_manager,
+        senders_message,
+        mut context,
+        transfer_id,
+        mut rng,
+        manager_account,
+        ..
+    } = setup_test_environment().await;
+
+    // Generate data and create senders, all with the same operator
+    let keys: [[u8; 32]; 3] = rng.gen();
+    let operators: [EthereumAddress; 3] = rng.gen();
+    let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[0]).await;
+        signers[i] = derived_address;
+    }
+
+    // Send from DN1 for first txn
+    let mut instructions = Vec::<Instruction>::new();
+    let priv_key = SecretKey::parse(&keys[0]).unwrap();
+    let sender_sign = new_secp256k1_instruction_2_0(&priv_key, senders_message.as_ref(), 0);
+    instructions.push(sender_sign);
+
+    instructions.push(
+        instruction::submit_attestations(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &signers[0],
+            &context.payer.pubkey(),
+            transfer_id.to_string(),
+        )
+        .unwrap(),
+    );
+
+    let recent_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        recent_blockhash
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    // Send from DN2 for second txn, should fail
+    let priv_key = SecretKey::parse(&keys[1]).unwrap();
+    let sender_sign = new_secp256k1_instruction_2_0(&priv_key, senders_message.as_ref(), 0);
+    let mut new_instructions = Vec::<Instruction>::new();
+    new_instructions.push(sender_sign);
+
+    new_instructions.push(
+        instruction::submit_attestations(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &signers[1],
+            &context.payer.pubkey(),
+            transfer_id.to_string(),
+        )
+        .unwrap(),
+    );
+
+    let recent_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
+
+    let tx = Transaction::new_signed_with_payer(
+        &new_instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        recent_blockhash
+    );
+
+    let res = context.banks_client.process_transaction(tx).await;
+    assert_custom_error(res, 1, audius_reward_manager::error::AudiusProgramError::OperatorCollision)
+}

@@ -416,6 +416,11 @@ impl Processor {
 
         let verified_messages = VerifiedMessages::unpack(&verified_messages_info.data.borrow())?;
 
+        // Ensure the transfer account doesn't yet exist
+        if transfer_account_info.lamports() != 0 {
+            return Err(AudiusProgramError::AlreadySent.into())
+        }
+
         // Check signs for minimum required votes, accounting for extra bot oracle
         // attestation
         if verified_messages.messages.len() != (reward_manager.min_votes + 1) as usize {
