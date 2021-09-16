@@ -117,12 +117,12 @@ const getCID = async (req, res) => {
   // Do not act as a public gateway. Only serve IPFS files that are hosted by this creator node.
   const BlacklistManager = req.app.get('blacklistManager')
   const CID = req.params.CID
-  const trackId = req.params.trackId
+  const trackId = req.query.trackId
 
-  const isStreamable = await BlacklistManager.isTrackStreamable(trackId, CID)
-  if (!isStreamable) {
-    return sendResponse(req, res, errorResponseForbidden(`trackId=${trackId} CID=${CID} has been blacklisted by this node`)) 
-  }
+    const isStreamable = await BlacklistManager.isTrackStreamable(trackId, CID)
+    if (!isStreamable) {
+      return sendResponse(req, res, errorResponseForbidden(`trackId=${trackId} CID=${CID} has been blacklisted by this node`))
+    }
 
   const cacheKey = getStoragePathQueryCacheKey(CID)
 

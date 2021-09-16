@@ -21,8 +21,7 @@ const {
   sendResponse,
   successResponse,
   errorResponseBadRequest,
-  errorResponseServerError,
-  errorResponseForbidden
+  errorResponseServerError
 } = require('../apiHelpers')
 const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
 const {

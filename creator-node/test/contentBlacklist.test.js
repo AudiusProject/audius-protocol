@@ -20,7 +20,7 @@ const DELEGATE_PRIVATE_KEY = '0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
-describe('test ContentBlacklist', function () {
+describe.only('test ContentBlacklist', function () {
   let app, server, libsMock, mockServiceRegistry, userId
 
   beforeEach(async () => {
@@ -454,7 +454,7 @@ describe('test ContentBlacklist', function () {
       .expect(400)
   })
 
-  it('should throw an error when adding an user id to the blacklist and streaming /ipfs/:CID route', async () => {
+  it.skip('should throw an error when adding an user id to the blacklist and streaming /ipfs/:CID route', async () => {
     // Create user and upload track
     const data = await createUserAndUploadTrack()
 
@@ -478,7 +478,29 @@ describe('test ContentBlacklist', function () {
     // TODO: add remove and test that the segments are unblacklisted
   })
 
-  it('should throw an error when adding a track id to the blacklist and streaming /ipfs/:CID route', async () => {
+  it('should throw an error when adding a track id to the blacklist, and streaming /ipfs/:CID', async () => {
+    // Create user and upload track
+    const data = await createUserAndUploadTrack()
+
+    // Blacklist trackId
+    const type = BlacklistManager.getTypes().track
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: [data.track.blockchainId] }, DELEGATE_PRIVATE_KEY)
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': [data.track.blockchainId], signature, timestamp })
+      .expect(200)
+
+    // Hit /ipfs/:CID route for all track CIDs and ensure error response is returned because no trackId was passed
+    await Promise.all(
+      data.track.trackSegments.map(segment =>
+        request(app)
+          .get(`/ipfs/${segment.multihash}`)
+          .expect(403)
+      )
+    )
+  })
+
+  it('should throw an error when adding a track id to the blacklist, and streaming /ipfs/:CID?trackId=<blacklistedTrackId>', async () => {
     // Create user and upload track
     const data = await createUserAndUploadTrack()
 
@@ -495,6 +517,54 @@ describe('test ContentBlacklist', function () {
       data.track.trackSegments.map(segment =>
         request(app)
           .get(`/ipfs/${segment.multihash}`)
+          .query({ trackId: data.track.blockchainId })
+          .expect(403)
+      )
+    )
+  })
+
+  it('should throw an error when adding a track id to the blacklist, and streaming /ipfs/:CID?trackId=<trackIdThatDoesntContainCID>', async () => {
+    // Create user and upload track
+    const data = await createUserAndUploadTrack()
+
+    // Blacklist trackId
+    const type = BlacklistManager.getTypes().track
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: [data.track.blockchainId] }, DELEGATE_PRIVATE_KEY)
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': [data.track.blockchainId], signature, timestamp })
+      .expect(200)
+
+    // Hit /ipfs/:CID route for all track CIDs and ensure error response is returned
+    await Promise.all(
+      data.track.trackSegments.map(segment =>
+        request(app)
+          .get(`/ipfs/${segment.multihash}`)
+          .query({ trackId: 1234 })
+          .expect(403)
+      )
+    )
+  })
+
+  it.only('should not throw an error when adding 2 tracks to the blacklist, blacklisting one of the two, and streaming /ipfs/:CID?trackId=<trackIdOfNonBlacklistedTrack>', async () => {
+    // Create user and upload track
+    const trackId1 = await createUserAndUploadTrack()
+    const trackId2 = await createUserAndUploadTrack(2, 2, 20)
+
+    // Blacklist trackId
+    const type = BlacklistManager.getTypes().track
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: [trackId1.track.blockchainId] }, DELEGATE_PRIVATE_KEY)
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': [trackId1.track.blockchainId], signature, timestamp })
+      .expect(200)
+
+    // Hit /ipfs/:CID route for all track CIDs and ensure error response is returned
+    await Promise.all(
+      trackId2.track.trackSegments.map(segment =>
+        request(app)
+          .get(`/ipfs/${segment.multihash}`)
+          .query({ trackId: trackId2.track.blockchainId })
           .expect(403)
       )
     )
@@ -595,9 +665,11 @@ describe('test ContentBlacklist', function () {
   })
 
   /** Helper setup method to test ContentBlacklist.  */
-  async function createUserAndUploadTrack () {
+  async function createUserAndUploadTrack (createUser = true, trackId = 1) {
     // Create user
-    const { cnodeUserUUID, sessionToken } = await createStarterCNodeUser(userId)
+    if (createUser) {
+      const { cnodeUserUUID, sessionToken } = await createStarterCNodeUser(userId)
+    }
     const cnodeUser = await getCNodeUser(cnodeUserUUID)
 
     // Set user metadata
@@ -658,14 +730,14 @@ describe('test ContentBlacklist', function () {
       .set('X-Session-ID', sessionToken)
       .set('User-Id', userId)
       .send({
-        blockchainTrackId: 1,
+        blockchainTrackId: trackId,
         blockNumber: 10,
         metadataFileUUID: trackMetadataFileUUID,
         transcodedTrackUUID
       })
 
     // Return user and some track data
-    return { cnodeUser, track: { trackSegments, blockchainId: 1 } }
+    return { cnodeUser, track: { trackSegments, blockchainId: trackId } }
   }
 })
 
