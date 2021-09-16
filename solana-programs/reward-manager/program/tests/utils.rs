@@ -131,7 +131,7 @@ pub async fn create_sender(
     context.banks_client.process_transaction(tx).await.unwrap();
 }
 
-fn get_oracle_address(reward_manager: &Keypair, eth_oracle_address: [u8; 20]) -> Pubkey {
+pub fn get_oracle_address(reward_manager: &Keypair, eth_oracle_address: [u8; 20]) -> Pubkey {
     let (_, oracle_derived_address, _) = find_derived_pair(
         &audius_reward_manager::id(),
         &reward_manager.pubkey(),
@@ -283,9 +283,11 @@ pub async fn mint_tokens_to(
         .unwrap()],
         Some(&program_context.payer.pubkey()),
     );
+    let recent_blockhash = program_context.banks_client.get_recent_blockhash().await.unwrap();
+
     transaction.sign(
         &[&program_context.payer, authority],
-        program_context.last_blockhash,
+        recent_blockhash
     );
     program_context
         .banks_client
@@ -346,6 +348,7 @@ pub struct TestConstants<'a> {
     pub recipient_sol_key: AddressPair,
     pub min_votes: u8,
     pub oracle_operator: [u8;20],
+    pub mint_authority: Keypair
 }
 
 pub async fn setup_test_environment<'a>() -> TestConstants<'a> {
@@ -470,6 +473,7 @@ pub async fn setup_test_environment<'a>() -> TestConstants<'a> {
         recipient_sol_key,
         min_votes,
         oracle_operator,
+        mint_authority
     }
 }
 

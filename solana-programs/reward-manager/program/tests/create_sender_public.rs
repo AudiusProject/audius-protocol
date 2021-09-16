@@ -239,3 +239,191 @@ async fn failure_create_sender_public_mismatched_pubkey_to_signature() {
         _ => panic!("Returned incorrect error!"),
     }
 }
+
+#[tokio::test]
+/// Test creating sender doesn't work if insufficient number of attestations
+async fn failure_create_sender_missing_attestations() {
+
+    let TestConstants { 
+        reward_manager,
+        mut context,
+        manager_account,
+        mut rng,
+        ..
+    } = setup_test_environment().await;
+
+    let eth_address: EthereumAddress = rng.gen();
+    let operator: EthereumAddress = rng.gen();
+
+    let operators: [EthereumAddress; 2] = rng.gen();
+    let keys: [[u8; 32]; 2] = rng.gen();
+    let mut signers: [Pubkey; 2] = unsafe { MaybeUninit::zeroed().assume_init() };
+
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        signers[i] = derived_address;
+    }
+
+    let mut instructions = Vec::<Instruction>::new();
+
+    // Insert signs instructions, but only from 2 senders
+    let message = [
+        ADD_SENDER_MESSAGE_PREFIX.as_ref(),
+        reward_manager.pubkey().as_ref(),
+        eth_address.as_ref(),
+    ]
+    .concat();
+    for item in keys.iter().enumerate() {
+        let priv_key = SecretKey::parse(item.1).unwrap();
+        let inst = new_secp256k1_instruction_2_0(&priv_key, message.as_ref(), item.0 as _);
+        instructions.push(inst);
+    }
+
+    instructions.push(
+        instruction::create_sender_public(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &context.payer.pubkey(),
+            eth_address,
+            operator,
+            &signers,
+        )
+        .unwrap(),
+    );
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+    let res = context.banks_client.process_transaction(tx).await;
+    assert_custom_error(res, 2, audius_reward_manager::error::AudiusProgramError::NotEnoughSigners);
+}
+
+#[tokio::test]
+/// Test creating sender fails if there are duplicate attestation senders
+async fn failure_create_sender_duplicate_attestation_senders() {
+    let TestConstants { 
+        reward_manager,
+        mut context,
+        manager_account,
+        mut rng,
+        ..
+    } = setup_test_environment().await;
+
+    let eth_address: EthereumAddress = rng.gen();
+    let operator: EthereumAddress = rng.gen();
+
+    let operators: [EthereumAddress; 3] = rng.gen();
+    let keys: [[u8; 32]; 3] = rng.gen();
+    let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
+
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        signers[i] = derived_address;
+    }
+
+    let mut instructions = Vec::<Instruction>::new();
+
+    let message = [
+        ADD_SENDER_MESSAGE_PREFIX.as_ref(),
+        reward_manager.pubkey().as_ref(),
+        eth_address.as_ref(),
+    ]
+    .concat();
+
+    // Add the first sender twice
+    let priv_key = SecretKey::parse(&keys[0]).unwrap();
+    let inst = new_secp256k1_instruction_2_0(&priv_key, message.as_ref(), 0 as _);
+    instructions.push(inst);
+
+    for item in keys[..2].iter().enumerate() {
+        let priv_key = SecretKey::parse(item.1).unwrap();
+        let inst = new_secp256k1_instruction_2_0(&priv_key, message.as_ref(), item.0 as u8 + 1);
+        instructions.push(inst);
+    }
+
+    let signers = [signers[0], signers[0], signers[1]];
+
+    instructions.push(
+        instruction::create_sender_public(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &context.payer.pubkey(),
+            eth_address,
+            operator,
+            &signers,
+        )
+        .unwrap(),
+    );
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+    let res = context.banks_client.process_transaction(tx).await;
+    assert_custom_error(res, 3, audius_reward_manager::error::AudiusProgramError::RepeatedSenders)
+}
+
+/// Test duplicate operators fail
+#[tokio::test]
+async fn failure_duplicate_operators() {
+    let TestConstants { 
+        reward_manager,
+        mut context,
+        manager_account,
+        mut rng,
+        ..
+    } = setup_test_environment().await;
+
+    let eth_address: EthereumAddress = rng.gen();
+
+    // Reuse the same operator 3x
+    let operator: EthereumAddress = rng.gen();
+    let keys: [[u8; 32]; 3] = rng.gen();
+    let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
+
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operator).await;
+        signers[i] = derived_address;
+    }
+
+    let mut instructions = Vec::<Instruction>::new();
+
+    // Insert signs instructions
+    let message = [
+        ADD_SENDER_MESSAGE_PREFIX.as_ref(),
+        reward_manager.pubkey().as_ref(),
+        eth_address.as_ref(),
+    ]
+    .concat();
+    for item in keys.iter().enumerate() {
+        let priv_key = SecretKey::parse(item.1).unwrap();
+        let inst = new_secp256k1_instruction_2_0(&priv_key, message.as_ref(), item.0 as _);
+        instructions.push(inst);
+    }
+
+    instructions.push(
+        instruction::create_sender_public(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &context.payer.pubkey(),
+            eth_address,
+            operator,
+            &signers,
+        )
+        .unwrap(),
+    );
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+    let res = context.banks_client.process_transaction(tx).await;
+    assert_custom_error(res, 3, audius_reward_manager::error::AudiusProgramError::OperatorCollision);
+}
