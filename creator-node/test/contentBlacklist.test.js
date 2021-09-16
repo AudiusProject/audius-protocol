@@ -20,7 +20,7 @@ const DELEGATE_PRIVATE_KEY = '0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35
 
 const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 
-describe.only('test ContentBlacklist', function () {
+describe('test ContentBlacklist', function () {
   let app, server, libsMock, mockServiceRegistry, userId
 
   beforeEach(async () => {
@@ -471,6 +471,7 @@ describe.only('test ContentBlacklist', function () {
       data.track.trackSegments.map(segment =>
         request(app)
           .get(`/ipfs/${segment.multihash}`)
+          .query({ trackId: data.track.blockchainId })
           .expect(403)
       )
     )
@@ -546,10 +547,10 @@ describe.only('test ContentBlacklist', function () {
     )
   })
 
-  it.only('should not throw an error when adding 2 tracks to the blacklist, blacklisting one of the two, and streaming /ipfs/:CID?trackId=<trackIdOfNonBlacklistedTrack>', async () => {
+  it('should not throw an error when streaming a blacklisted CID of a non-blacklisted track at /ipfs/:CID?trackId=<trackIdOfNonBlacklistedTrack>', async () => {
     // Create user and upload track
     const trackId1 = await createUserAndUploadTrack()
-    const trackId2 = await createUserAndUploadTrack(2, 2, 20)
+    const trackId2 = await createUserAndUploadTrack({ inputUserId: 2, trackId: 2, pubKey: '0x3f8f51ed837b15af580eb96cee740c723d340e7f' })
 
     // Blacklist trackId
     const type = BlacklistManager.getTypes().track
@@ -559,13 +560,13 @@ describe.only('test ContentBlacklist', function () {
       .query({ type, 'values[]': [trackId1.track.blockchainId], signature, timestamp })
       .expect(200)
 
-    // Hit /ipfs/:CID route for all track CIDs and ensure error response is returned
+    // Hit /ipfs/:CID route for all track CIDs and ensure no error response is returned
     await Promise.all(
       trackId2.track.trackSegments.map(segment =>
         request(app)
           .get(`/ipfs/${segment.multihash}`)
           .query({ trackId: trackId2.track.blockchainId })
-          .expect(403)
+          .expect(200)
       )
     )
   })
@@ -665,10 +666,13 @@ describe.only('test ContentBlacklist', function () {
   })
 
   /** Helper setup method to test ContentBlacklist.  */
-  async function createUserAndUploadTrack (createUser = true, trackId = 1) {
+  async function createUserAndUploadTrack ({ inputUserId, trackId, pubKey } = { inputUserId: userId, trackId: 1, pubKey: null }) {
     // Create user
-    if (createUser) {
-      const { cnodeUserUUID, sessionToken } = await createStarterCNodeUser(userId)
+    let cnodeUserUUID, sessionToken
+    if (!pubKey) {
+      ({ cnodeUserUUID, sessionToken } = await createStarterCNodeUser(inputUserId))
+    } else {
+      ({ cnodeUserUUID, sessionToken } = await createStarterCNodeUser(inputUserId, pubKey))
     }
     const cnodeUser = await getCNodeUser(cnodeUserUUID)
 
@@ -681,11 +685,11 @@ describe.only('test ContentBlacklist', function () {
     const { body: { data: { metadataFileUUID } } } = await request(app)
       .post('/audius_users/metadata')
       .set('X-Session-ID', sessionToken)
-      .set('User-Id', userId)
+      .set('User-Id', inputUserId)
       .send(metadata)
 
     const associateRequest = {
-      blockchainUserId: 1,
+      blockchainUserId: inputUserId,
       metadataFileUUID,
       blockNumber: 10
     }
@@ -694,7 +698,7 @@ describe.only('test ContentBlacklist', function () {
     await request(app)
       .post('/audius_users/')
       .set('X-Session-ID', sessionToken)
-      .set('User-Id', userId)
+      .set('User-Id', inputUserId)
       .send(associateRequest)
 
     // Upload a track
@@ -714,7 +718,7 @@ describe.only('test ContentBlacklist', function () {
     // set track metadata
     const trackMetadata = {
       test: 'field1',
-      owner_id: 1,
+      owner_id: inputUserId,
       track_segments: trackSegments
     }
     const {
@@ -722,13 +726,13 @@ describe.only('test ContentBlacklist', function () {
     } = await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', sessionToken)
-      .set('User-Id', userId)
+      .set('User-Id', inputUserId)
       .send({ metadata: trackMetadata, source_file: sourceFile })
       // associate track metadata with track
     await request(app)
       .post('/tracks')
       .set('X-Session-ID', sessionToken)
-      .set('User-Id', userId)
+      .set('User-Id', inputUserId)
       .send({
         blockchainTrackId: trackId,
         blockNumber: 10,

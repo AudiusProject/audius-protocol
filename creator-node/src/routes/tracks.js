@@ -629,8 +629,6 @@ module.exports = function (app) {
       return successResponse({ isDownloadable: true, cid: null })
     }
 
-    // BLOCKCHAINID IS TRACKID
-
     // Asynchronously rehydrate and return CID. If file is not in ipfs, serve from FS
     try {
       // Rehydrate master copy if necessary

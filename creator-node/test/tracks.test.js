@@ -622,7 +622,7 @@ describe('test non-polling Tracks with real IPFS (these are legacy - see polling
     assert.deepStrictEqual(resp.body.error, 'Metadata object must include owner_id and non-empty track_segments array')
   })
 
-  it('should throw an error if segment is blacklisted', async function () {
+  it('should not throw an error if segment is blacklisted', async function () {
     sinon.stub(BlacklistManager, 'CIDIsInBlacklist').returns(true)
     const metadata = {
       test: 'field1',
@@ -635,9 +635,7 @@ describe('test non-polling Tracks with real IPFS (these are legacy - see polling
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ metadata })
-      .expect(403)
-
-    assert.deepStrictEqual(resp.body.error, `Segment CID ${metadata.track_segments[0].multihash} has been blacklisted by this node.`)
+      .expect(200)
   })
 
   it('should throw error response if saving metadata to fails', async function () {

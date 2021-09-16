@@ -117,12 +117,12 @@ const getCID = async (req, res) => {
   // Do not act as a public gateway. Only serve IPFS files that are hosted by this creator node.
   const BlacklistManager = req.app.get('blacklistManager')
   const CID = req.params.CID
-  const trackId = req.query.trackId
+  const trackId = parseInt(req.query.trackId)
 
-    const isStreamable = await BlacklistManager.isTrackStreamable(trackId, CID)
-    if (!isStreamable) {
-      return sendResponse(req, res, errorResponseForbidden(`trackId=${trackId} CID=${CID} has been blacklisted by this node`))
-    }
+  const isServable = await BlacklistManager.isServable(CID, trackId)
+  if (!isServable) {
+    return sendResponse(req, res, errorResponseForbidden(`trackId=${trackId} CID=${CID} has been blacklisted by this node`))
+  }
 
   const cacheKey = getStoragePathQueryCacheKey(CID)
 
@@ -649,8 +649,8 @@ module.exports = function (app) {
     if (!matchObj) return sendResponse(req, res, errorResponseBadRequest(`Invalid filePathNormalized provided`))
 
     const { outer, inner } = matchObj
-    let isStreamable = await BlacklistManager.isTrackStreamable(trackId, outer)
-    if (!isStreamable) {
+    let isServable = await BlacklistManager.isServable(outer, trackId)
+    if (!isServable) {
       return sendResponse(req, res, errorResponseForbidden(`CID=${outer} has been blacklisted by this node.`))
     }
 
@@ -659,8 +659,8 @@ module.exports = function (app) {
     // inner will only be set for image dir CID
     // if there's an inner CID, check if CID is blacklisted and set content disposition header
     if (inner) {
-      isStreamable = await BlacklistManager.isTrackStreamable(trackId, inner)
-      if (!isStreamable) {
+      isServable = await BlacklistManager.isServable(inner, trackId)
+      if (!isServable) {
         return sendResponse(req, res, errorResponseForbidden(`CID=${inner} has been blacklisted by this node.`))
       }
       res.setHeader('Content-Disposition', contentDisposition(inner))
