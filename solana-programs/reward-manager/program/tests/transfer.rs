@@ -1,11 +1,11 @@
 #![cfg(feature = "test-bpf")]
 mod utils;
 
-use audius_reward_manager::{error::AudiusProgramError, instruction, processor::{TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX}, state::{VERIFIED_MESSAGES_LEN}, utils::{find_derived_pair, EthereumAddress}, vote_message};
-use libsecp256k1::{SecretKey};
+use audius_reward_manager::{error::AudiusProgramError, instruction, processor::{TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX}, state::{VERIFIED_MESSAGES_LEN, VerifiedMessage}, utils::{find_derived_pair, EthereumAddress}, vote_message};
+use libsecp256k1::{PublicKey, SecretKey};
 use solana_program::{instruction::{Instruction}, program_pack::Pack, pubkey::Pubkey, system_instruction};
 use solana_program_test::*;
-use solana_sdk::{signature::Keypair, signer::Signer, transaction::{Transaction}};
+use solana_sdk::{secp256k1_instruction::construct_eth_pubkey, signature::Keypair, signer::Signer, transaction::{Transaction}, transport::TransportError};
 use std::{mem::MaybeUninit};
 use rand::{Rng};
 use utils::*;
@@ -41,17 +41,14 @@ async fn success_transfer() {
     }
 
     let mut instructions = Vec::<Instruction>::new();
-    // Add 3 messages and bot oracle
-    let oracle_sign =
-        new_secp256k1_instruction_2_0(&oracle_priv_key, bot_oracle_message.as_ref(), 0);
-    instructions.push(oracle_sign);
 
+    // Add 3 messages and AAO
     for item in keys.iter().enumerate() {
         let priv_key = SecretKey::parse(item.1).unwrap();
         let inst = new_secp256k1_instruction_2_0(
             &priv_key,
             senders_message.as_ref(),
-            (2 * item.0 + 1) as u8,
+            (2 * item.0) as u8,
         );
         instructions.push(inst);
         instructions.push(
@@ -69,7 +66,7 @@ async fn success_transfer() {
     let oracle_sign = new_secp256k1_instruction_2_0(
         &oracle_priv_key,
         bot_oracle_message.as_ref(),
-        (keys.len() * 2 + 1) as u8,
+        (keys.len() * 2) as u8,
     );
     instructions.push(oracle_sign);
     instructions.push(
@@ -675,6 +672,236 @@ async fn failure_occupy_transfer_account() {
 
     // Attempting to sign without programID as a signer should cause panic
     failed_tx.sign(&[&context.payer], recent_blockhash);
+}
+
+#[tokio::test]
+/// Ensure we fail trying to disburse multiple times for the same challenge 
+async fn failure_multiple_disbursements() {
+    let mut c = setup_test_environment().await;
+
+    // Generate data and create senders
+    let keys: [[u8; 32]; 3] = c.rng.gen();
+    let operators: [EthereumAddress; 3] = c.rng.gen();
+    let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(&c.reward_manager, &c.manager_account, &mut c.context, key, operators[i]).await;
+        signers[i] = derived_address;
+    }
+
+    async fn submit_and_evaluate<'a>(keys: [[u8;32]; 3], constants: &mut TestConstants<'a>, signers: [Pubkey;3]) -> Result<(), TransportError> {
+        let TestConstants { 
+            reward_manager,
+            bot_oracle_message,
+            oracle_priv_key,
+            senders_message,
+            transfer_id,
+            oracle_derived_address,
+            recipient_eth_key,
+            token_account,
+            recipient_sol_key,
+            ..
+        } = constants;
+        let mut context = &mut constants.context;
+
+        let mut instructions = Vec::<Instruction>::new();
+    
+        // Add 3 messages and bot oracle
+        for item in keys.iter().enumerate() {
+            let priv_key = SecretKey::parse(item.1).unwrap();
+            let inst = new_secp256k1_instruction_2_0(
+                &priv_key,
+                senders_message.as_ref(),
+                (2 * item.0) as u8,
+            );
+            instructions.push(inst);
+            instructions.push(
+                instruction::submit_attestations(
+                    &audius_reward_manager::id(),
+                    &reward_manager.pubkey(),
+                    &signers[item.0],
+                    &context.payer.pubkey(),
+                    transfer_id.to_string()
+                )
+                .unwrap(),
+            );
+        }
+    
+        let oracle_sign = new_secp256k1_instruction_2_0(
+            &oracle_priv_key,
+            bot_oracle_message.as_ref(),
+            (keys.len() * 2) as u8,
+        );
+        instructions.push(oracle_sign);
+        instructions.push(
+            instruction::submit_attestations(
+                &audius_reward_manager::id(),
+                &reward_manager.pubkey(),
+                &oracle_derived_address,
+                &context.payer.pubkey(),
+                transfer_id.to_string()
+            )
+            .unwrap(),
+        );
+    
+        let latest_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
+        let tx = Transaction::new_signed_with_payer(
+            &instructions,
+            Some(&context.payer.pubkey()),
+            &[&context.payer],
+            latest_blockhash
+        );
+    
+        context.banks_client.process_transaction(tx).await.unwrap();
+    
+        let verified_messages_account = get_messages_account(&reward_manager, transfer_id);
+        let latest_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
+    
+        let tx = Transaction::new_signed_with_payer(
+            &[instruction::evaluate_attestations(
+                &audius_reward_manager::id(),
+                &verified_messages_account,
+                &reward_manager.pubkey(),
+                &token_account.pubkey(),
+                &recipient_sol_key.derive.address,
+                &oracle_derived_address,
+                &context.payer.pubkey(),
+                10_000u64,
+                transfer_id.to_string(),
+                *recipient_eth_key,
+            )
+            .unwrap()],
+            Some(&context.payer.pubkey()),
+            &[&context.payer],
+            latest_blockhash
+        );
+    
+        let res = context.banks_client.process_transaction(tx).await;
+
+        // Assert that we transferred the expected amount
+        let recipient_account_data = get_account(& mut context, &recipient_sol_key.derive.address).await.unwrap();
+        let recipient_account = spl_token::state::Account::unpack(&recipient_account_data.data.as_slice()).unwrap();
+        assert_eq!(recipient_account.amount, 10_000u64);
+
+        res
+    }
+
+    // Submit and evaluate once
+    let res = submit_and_evaluate(keys, &mut c, signers).await;
+    assert!(res.is_ok());
+
+    // Top up initial balance again
+    mint_tokens_to(
+        &mut c.context,
+        &c.mint.pubkey(),
+        &c.token_account.pubkey(),
+        &c.mint_authority,
+        c.tokens_amount,
+    )
+    .await
+    .unwrap();
+
+    // Do the whole thing again, this time expecting an error
+    let res = submit_and_evaluate(keys, &mut c, signers).await;
+    assert!(res.is_err());
+
+    assert_custom_error(res, 0, AudiusProgramError::AlreadySent);
+}
+
+
+#[tokio::test]
+/// Ensure we fail if only AAO attestations and no Discovery Node attestations are included
+async fn failure_only_aao_attestations() {
+    let TestConstants { 
+        reward_manager,
+        bot_oracle_message,
+        oracle_priv_key,
+        mut context,
+        transfer_id,
+        oracle_derived_address,
+        recipient_eth_key,
+        token_account,
+        mut rng,
+        manager_account,
+        recipient_sol_key,
+        ..
+    } = setup_test_environment().await;
+
+    // Add three more oracles, keeping track of them in a vec
+    let mut oracles = vec![(oracle_derived_address, oracle_priv_key)];
+    
+    for _ in 0..3 {
+        let key: [u8; 32] = rng.gen();
+        let oracle_priv_key = SecretKey::parse(&key).unwrap();
+        let secp_oracle_pubkey = PublicKey::from_secret_key(&oracle_priv_key);
+        let eth_oracle_address = construct_eth_pubkey(&secp_oracle_pubkey);
+        let oracle_operator: EthereumAddress = rng.gen();
+
+        let oracle_derived_address = get_oracle_address(&reward_manager, eth_oracle_address);
+
+        create_sender(
+            &mut context,
+            &reward_manager.pubkey(),
+            &manager_account,
+            eth_oracle_address,
+            oracle_operator,
+        )
+        .await;
+        oracles.push((oracle_derived_address, oracle_priv_key))
+    }
+
+    let mut instructions = Vec::<Instruction>::new();
+
+    for (i, (oracle_derived_address, oracle_priv_key)) in oracles.iter().enumerate() {
+        let inst = new_secp256k1_instruction_2_0(
+            &oracle_priv_key,
+            bot_oracle_message.as_ref(),
+            (2 * i) as u8,
+        );
+        instructions.push(inst);
+        instructions.push(
+            instruction::submit_attestations(
+                &audius_reward_manager::id(),
+                &reward_manager.pubkey(),
+                oracle_derived_address,
+                &context.payer.pubkey(),
+                transfer_id.to_string()
+            )
+            .unwrap(),
+        );
+    }
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    let verified_messages_account = get_messages_account(&reward_manager, transfer_id);
+
+    let tx = Transaction::new_signed_with_payer(
+        &[instruction::evaluate_attestations(
+            &audius_reward_manager::id(),
+            &verified_messages_account,
+            &reward_manager.pubkey(),
+            &token_account.pubkey(),
+            &recipient_sol_key.derive.address,
+            &oracle_derived_address,
+            &context.payer.pubkey(),
+            10_000u64,
+            transfer_id.to_string(),
+            recipient_eth_key,
+        )
+        .unwrap()],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    let res = context.banks_client.process_transaction(tx).await;
+    assert_custom_error(res, 0, AudiusProgramError::IncorrectMessages);
 }
 
 // Helpers
