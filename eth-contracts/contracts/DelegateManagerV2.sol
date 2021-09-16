@@ -757,10 +757,7 @@ contract DelegateManagerV2 is InitializableV2 {
     ) external {
         _requireIsInitialized();
 
-        require(
-            msg.sender == _serviceProvider || msg.sender == governanceAddress,
-            ERROR_ONLY_SP_GOVERNANCE
-        );
+        require(msg.sender == _serviceProvider, ERROR_ONLY_SP);
 
         /**
          * Ensure _serviceProvider is a valid SP
