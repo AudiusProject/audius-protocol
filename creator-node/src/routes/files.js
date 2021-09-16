@@ -621,6 +621,7 @@ module.exports = function (app) {
    * @param req.query.delegateWallet the wallet address that signed this request
    * @param req.query.timestamp the timestamp when the request was made
    * @param req.query.signature the hashed signature of the object {filePath, delegateWallet, timestamp}
+   * @param {string?} req.query.trackId the trackId of the requested file lookup
    */
   app.get('/file_lookup', async (req, res) => {
     const BlacklistManager = req.app.get('blacklistManager')
