@@ -630,7 +630,7 @@ describe('test non-polling Tracks with real IPFS (these are legacy - see polling
       owner_id: 1
     }
 
-    const resp = await request(app)
+    await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)

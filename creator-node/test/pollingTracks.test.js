@@ -541,7 +541,7 @@ describe('test Polling Tracks with real IPFS', function () {
       owner_id: 1
     }
 
-    const resp = await request(app2)
+    await request(app2)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
