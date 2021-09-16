@@ -212,7 +212,8 @@ async fn init_user_bank(
         .await
 }
 
-async fn prepare_claim(
+// Helper function
+async fn prepare_transfer(
     program_context: &mut ProgramTestContext,
     mint_account: Keypair,
     rent: solana_program::rent::Rent,
@@ -229,11 +230,13 @@ async fn prepare_claim(
     .await
     .unwrap();
 
+    // Calculate the PDA for this ethereum public key and mint
     let pair = find_address_pair(&id(), &mint_account.pubkey(), eth_address).unwrap();
-
+    // Initialize account
     init_user_bank(program_context, &mint_account.pubkey(), eth_address)
         .await
         .unwrap();
+    // Mint tokens to the user PDA
     let tokens_amount = 10_000;
     mint_tokens_to(
         program_context,
@@ -244,6 +247,7 @@ async fn prepare_claim(
     )
     .await
     .unwrap();
+    // Initialize a separate token account for testing associated with the same mint
     let user_token_account_authority = Keypair::new();
     create_token_account(
         program_context,
@@ -255,11 +259,13 @@ async fn prepare_claim(
     .await
     .unwrap();
 
+    // Return base, derive, token amount
     (pair.base.address, pair.derive.address, tokens_amount)
 }
 
+// Initialize a user token account
 #[tokio::test]
-async fn test_init_instruction() {
+async fn init_instruction() {
     let mut program_context = program_test().start_with_context().await;
     let rent = program_context.banks_client.get_rent().await.unwrap();
     let (
@@ -296,8 +302,9 @@ async fn test_init_instruction() {
     assert_eq!(token_account.mint, mint_account.pubkey());
 }
 
+// Transfer ALL tokens from an exsiting account
 #[tokio::test]
-async fn test_claim_all_instruction() {
+async fn transfer_all_instruction() {
     let mut program_context = program_test().start_with_context().await;
     let rent = program_context.banks_client.get_rent().await.unwrap();
     let (
@@ -314,7 +321,7 @@ async fn test_claim_all_instruction() {
     let message = user_token_account.pubkey().to_bytes();
     let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
 
-    let (base_acc, address_to_create, tokens_amount) = prepare_claim(
+    let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
         &mut program_context,
         mint_account,
         rent,
@@ -325,12 +332,12 @@ async fn test_claim_all_instruction() {
     .await;
 
     // Query current balance
-    let mut bank_token_account_data = get_account(&mut program_context, &address_to_create).await;
+    let mut bank_token_account_data = get_account(&mut program_context, &user_bank_account).await;
     let mut bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     println!(
         "{:?} current balance = {:?} ",
-        bank_token_account.amount, address_to_create
+        bank_token_account.amount, user_bank_account
     );
 
     // Transfer ALL tokens
@@ -339,7 +346,7 @@ async fn test_claim_all_instruction() {
             secp256_program_instruction,
             instruction::transfer(
                 &id(),
-                &address_to_create,
+                &user_bank_account,
                 &user_token_account.pubkey(),
                 &base_acc,
                 instruction::Transfer {
@@ -359,7 +366,7 @@ async fn test_claim_all_instruction() {
         .await
         .unwrap();
 
-    bank_token_account_data = get_account(&mut program_context, &address_to_create).await;
+    bank_token_account_data = get_account(&mut program_context, &user_bank_account).await;
     bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     // check that program sent all the tokens from bank token account to user token account
@@ -374,7 +381,7 @@ async fn test_claim_all_instruction() {
 }
 
 #[tokio::test]
-async fn test_claim_with_amount_instruction() {
+async fn transfer_with_amount_instruction() {
     let mut program_context = program_test().start_with_context().await;
     let rent = program_context.banks_client.get_rent().await.unwrap();
     let (
@@ -390,7 +397,7 @@ async fn test_claim_with_amount_instruction() {
 
     let message = user_token_account.pubkey().to_bytes();
     let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
-    let (base_acc, address_to_create, tokens_amount) = prepare_claim(
+    let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
         &mut program_context,
         mint_account,
         rent,
@@ -406,7 +413,7 @@ async fn test_claim_with_amount_instruction() {
             secp256_program_instruction,
             instruction::transfer(
                 &id(),
-                &address_to_create,
+                &user_bank_account,
                 &user_token_account.pubkey(),
                 &base_acc,
                 instruction::Transfer {
@@ -426,7 +433,7 @@ async fn test_claim_with_amount_instruction() {
         .await
         .unwrap();
 
-    let bank_token_account_data = get_account(&mut program_context, &address_to_create).await;
+    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await;
     let bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     // check that program sent required number tokens from bank token account to user token account
@@ -441,7 +448,7 @@ async fn test_claim_with_amount_instruction() {
 }
 
 #[tokio::test]
-async fn test_claim_with_zero_amount_failure() {
+async fn transfer_with_zero_amount_failure() {
     let mut program_context = program_test().start_with_context().await;
     let rent = program_context.banks_client.get_rent().await.unwrap();
     let (
@@ -457,7 +464,7 @@ async fn test_claim_with_zero_amount_failure() {
 
     let message = user_token_account.pubkey().to_bytes();
     let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
-    let (base_acc, address_to_create, _tokens_amount) = prepare_claim(
+    let (base_acc, user_bank_account, _tokens_amount) = prepare_transfer(
         &mut program_context,
         mint_account,
         rent,
@@ -472,7 +479,7 @@ async fn test_claim_with_zero_amount_failure() {
             secp256_program_instruction,
             instruction::transfer(
                 &id(),
-                &address_to_create,
+                &user_bank_account,
                 &user_token_account.pubkey(),
                 &base_acc,
                 instruction::Transfer {
@@ -506,7 +513,7 @@ async fn test_claim_with_zero_amount_failure() {
 }
 
 #[tokio::test]
-async fn test_claim_with_wrong_signature_instruction() {
+async fn transfer_with_wrong_signature_instruction() {
     let mut program_context = program_test().start_with_context().await;
     let rent = program_context.banks_client.get_rent().await.unwrap();
     let (
@@ -520,11 +527,11 @@ async fn test_claim_with_wrong_signature_instruction() {
         eth_address,
     ) = init_test_variables();
 
-    // Use bad bad_message instead of the user token account pubkey for the program instruction
+    // Use bad_message instead of the user token account pubkey for the program instruction
     let bad_message = [8u8; 30];
     let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &bad_message);
 
-    let (base_acc, address_to_create, tokens_amount) = prepare_claim(
+    let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
         &mut program_context,
         mint_account,
         rent,
@@ -539,7 +546,7 @@ async fn test_claim_with_wrong_signature_instruction() {
             secp256_program_instruction,
             instruction::transfer(
                 &id(),
-                &address_to_create,
+                &user_bank_account,
                 &user_token_account.pubkey(),
                 &base_acc,
                 instruction::Transfer {
@@ -559,7 +566,7 @@ async fn test_claim_with_wrong_signature_instruction() {
         .await;
     assert!(tx_result.is_err());
 
-    let bank_token_account_data = get_account(&mut program_context, &address_to_create).await;
+    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await;
     let bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     // check that bank token accounts balance the same
@@ -574,7 +581,7 @@ async fn test_claim_with_wrong_signature_instruction() {
 }
 
 #[tokio::test]
-async fn test_claim_with_wrong_token_account() {
+async fn transfer_with_wrong_token_account() {
     let mut program_context = program_test().start_with_context().await;
     let rent = program_context.banks_client.get_rent().await.unwrap();
     let (
@@ -591,7 +598,7 @@ async fn test_claim_with_wrong_token_account() {
     let message = user_token_account.pubkey().to_bytes();
     let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
 
-    let (base_acc, address_to_create, _) = prepare_claim(
+    let (base_acc, user_bank_account, _) = prepare_transfer(
         &mut program_context,
         mint_account,
         rent,
@@ -606,7 +613,7 @@ async fn test_claim_with_wrong_token_account() {
             secp256_program_instruction,
             instruction::transfer(
                 &id(),
-                &address_to_create,
+                &user_bank_account,
                 // use incorrect user token account
                 &Keypair::new().pubkey(),
                 &base_acc,
@@ -635,8 +642,10 @@ async fn test_claim_with_wrong_token_account() {
     );
 }
 
+// Submit instruction with SECP missing
+// Confirm failure as expected
 #[tokio::test]
-async fn test_missing_secp_instruction() {
+async fn missing_secp_instruction() {
     let mut program_context = program_test().start_with_context().await;
     let rent = program_context.banks_client.get_rent().await.unwrap();
     let (
@@ -649,7 +658,7 @@ async fn test_missing_secp_instruction() {
         user_token_account,
         eth_address,
     ) = init_test_variables();
-    let (base_acc, address_to_create, tokens_amount) = prepare_claim(
+    let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
         &mut program_context,
         mint_account,
         rent,
@@ -664,7 +673,7 @@ async fn test_missing_secp_instruction() {
     let mut transaction = Transaction::new_with_payer(
         &[instruction::transfer(
             &id(),
-            &address_to_create,
+            &user_bank_account,
             &user_token_account.pubkey(),
             &base_acc,
             instruction::Transfer {
@@ -689,4 +698,75 @@ async fn test_missing_secp_instruction() {
         0,
         ClaimableProgramError::Secp256InstructionLosing,
     );
+}
+
+#[tokio::test]
+async fn transfer_invalid_amount() {
+    let mut program_context = program_test().start_with_context().await;
+    let rent = program_context.banks_client.get_rent().await.unwrap();
+    let (
+        _rng,
+        _key,
+        priv_key,
+        _secp_pubkey,
+        mint_account,
+        mint_authority,
+        user_token_account,
+        eth_address,
+    ) = init_test_variables();
+
+    let message = user_token_account.pubkey().to_bytes();
+    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
+    let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
+        &mut program_context,
+        mint_account,
+        rent,
+        mint_authority,
+        eth_address,
+        &user_token_account,
+    )
+    .await;
+
+    // Increment amount to greater than available
+    let transfer_amount = tokens_amount + 100;
+
+    let mut transaction = Transaction::new_with_payer(
+        &[
+            secp256_program_instruction,
+            instruction::transfer(
+                &id(),
+                &user_bank_account,
+                &user_token_account.pubkey(),
+                &base_acc,
+                instruction::Transfer {
+                    eth_address,
+                    amount: transfer_amount,
+                },
+            )
+            .unwrap(),
+        ],
+        Some(&program_context.payer.pubkey()),
+    );
+
+    transaction.sign(&[&program_context.payer], program_context.last_blockhash);
+    let tx_result = program_context
+        .banks_client
+        .process_transaction(transaction)
+        .await;
+
+    println!("{:?}", tx_result);
+    assert!(tx_result.is_err());
+    // Confirm a transfer of 0 is not permitted
+    match tx_result {
+        Err(TransportError::TransactionError(TransactionError::InstructionError(
+            _idx,
+            InstructionError::InsufficientFunds,
+        ))) => {
+            println!(
+                "Insufficient funds error found as expected: {:?}",
+                tx_result
+            );
+        }
+        _ => panic!("Unexpected error scenario {:?}", tx_result),
+    }
 }
