@@ -8,7 +8,7 @@ use audius_reward_manager::{
 };
 use libsecp256k1::{SecretKey};
 use rand::{Rng};
-use solana_program::{instruction::InstructionError};
+use solana_program::{instruction::InstructionError, system_instruction::SystemError};
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
 use solana_program_test::*;
 use solana_sdk::{secp256k1_instruction::construct_eth_pubkey, signature::Keypair, signer::Signer, transaction::{Transaction, TransactionError}, transport::TransportError};
@@ -26,6 +26,7 @@ async fn success_create_sender_public() {
         ..
     } = setup_test_environment().await;
 
+    // Address that will be added through create_sender_public
     let eth_address: EthereumAddress = rng.gen();
     let operator: EthereumAddress = rng.gen();
 
@@ -33,6 +34,7 @@ async fn success_create_sender_public() {
     let keys: [[u8; 32]; 3] = rng.gen();
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
 
+    // Bootstrap senders through manager
     for (i, key) in keys.iter().enumerate() {
         let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
         signers[i] = derived_address;
@@ -48,7 +50,7 @@ async fn success_create_sender_public() {
 
     let mut instructions = Vec::<Instruction>::new();
 
-    // Insert signs instructions
+    // Insert signed instructions
     let message = [
         ADD_SENDER_MESSAGE_PREFIX.as_ref(),
         reward_manager.pubkey().as_ref(),
@@ -89,6 +91,115 @@ async fn success_create_sender_public() {
             .await
             .unwrap()
     );
+}
+
+#[tokio::test]
+/// Test failure to create an existing sender
+async fn failure_create_duplicate_sender() {
+    let TestConstants { 
+        reward_manager,
+        mut context,
+        manager_account,
+        mut rng,
+        ..
+    } = setup_test_environment().await;
+
+    // Address that will be added through create_sender_public
+    let eth_address: EthereumAddress = rng.gen();
+    let operator: EthereumAddress = rng.gen();
+
+    let operators: [EthereumAddress; 3] = rng.gen();
+    let keys: [[u8; 32]; 3] = rng.gen();
+    let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
+
+    // Bootstrap senders through manager
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        signers[i] = derived_address;
+    }
+
+    let (_, derived_address, _) = find_derived_pair(
+        &audius_reward_manager::id(),
+        &reward_manager.pubkey(),
+        [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()]
+            .concat()
+            .as_ref(),
+    );
+
+    let message = [
+        ADD_SENDER_MESSAGE_PREFIX.as_ref(),
+        reward_manager.pubkey().as_ref(),
+        eth_address.as_ref(),
+    ]
+    .concat();
+
+    let mut instructions = Vec::<Instruction>::new();
+
+    // Insert signed instructions
+    for item in keys.iter().enumerate() {
+        let priv_key = SecretKey::parse(item.1).unwrap();
+        let inst = new_secp256k1_instruction_2_0(&priv_key, message.as_ref(), item.0 as _);
+        instructions.push(inst);
+    }
+
+    instructions.push(
+        instruction::create_sender_public(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &context.payer.pubkey(),
+            eth_address,
+            operator,
+            &signers,
+        )
+        .unwrap(),
+    );
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    assert_eq!(
+        SenderAccount::new(reward_manager.pubkey(), eth_address, operator),
+        context
+            .banks_client
+            .get_account_data_with_borsh(derived_address)
+            .await
+            .unwrap()
+    );
+
+    // Attempt to add identical sender again
+    let mut instructions_2 = Vec::<Instruction>::new();
+    for item in keys.iter().enumerate() {
+        let priv_key = SecretKey::parse(item.1).unwrap();
+        let inst = new_secp256k1_instruction_2_0(&priv_key, message.as_ref(), item.0 as _);
+        instructions_2.push(inst);
+    }
+
+    instructions_2.push(
+        instruction::create_sender_public(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &context.payer.pubkey(),
+            eth_address,
+            operator,
+            &signers,
+        )
+        .unwrap(),
+    );
+    let latest_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
+    let failed_tx = Transaction::new_signed_with_payer(
+        &instructions_2,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        latest_blockhash,
+    );
+    let failed_tx_result = context.banks_client.process_transaction(failed_tx).await;
+    // Confirm failure to create identical sender
+    assert!(failed_tx_result.is_err());
 }
 
 #[tokio::test]
