@@ -153,6 +153,15 @@ class BlacklistManager {
   }
 
   /**
+   * Retrieves all CIDs from input trackIds from db
+   * @param {number[]} trackIds
+   * @returns {Object[]} array of track models from table
+   */
+  static async getAllCIDsFromTrackIdsInDb (trackIds) {
+    return models.Track.findAll({ where: { blockchainId: trackIds } })
+  }
+
+  /**
    * Retrieves all the deduped CIDs from the params and builds a mapping to <trackId: segments> for explicit trackIds (i.e. trackIds from table, not tracks belonging to users).
    * @param {Object} param
    * @param {number[]} param.allTrackIds all the trackIds to find CIDs for
@@ -197,10 +206,6 @@ class BlacklistManager {
     }
 
     return { segmentCIDs: [...segmentCIDs], trackIdToSegments }
-  }
-
-  static async getAllCIDsFromTrackIdsInDb (trackIds) {
-    return models.Track.findAll({ where: { blockchainId: trackIds } })
   }
 
   static async add ({ values, type }) {
