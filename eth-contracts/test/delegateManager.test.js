@@ -447,9 +447,9 @@ contract('DelegateManager', async (accounts) => {
   }
 
   const upgradeDelegateManagerToV2 = async () => {
-    const delegateManagerV2Logic = await DelegateManagerV2.new({ from: proxyAdminAddress })
-
       assert.equal(await delegateManagerProxy.implementation.call({ from: proxyAdminAddress }), delegateManager0.address)
+
+      const delegateManagerV2Logic = await DelegateManagerV2.new({ from: proxyAdminAddress })
 
       await governance.guardianExecuteTransaction(
         delegateManagerKey,

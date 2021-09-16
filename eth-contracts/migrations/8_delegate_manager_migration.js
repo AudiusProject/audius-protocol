@@ -56,6 +56,10 @@ module.exports = (deployer, network, accounts) => {
     await _lib.registerContract(governance, delegateManagerKey, delegateManagerProxy.address, guardianAddress)
     const delegateManager = await DelegateManager.at(delegateManagerProxy.address)
 
+    // Set environment variable
+    process.env.delegateManagerAddress = delegateManagerProxy.address
+    console.log(`SIDTEST DELMAN ADDR ${process.env.delegateManagerAddress}`)
+
     // Set delegate manager address in Staking.sol through governance
     await governance.guardianExecuteTransaction(
       stakingProxyKey,
