@@ -97,7 +97,6 @@ class BlacklistManager {
       // Creates a mapping of CID to blacklisted trackIds in redis. This should not include the trackIds from users.
       await this.addToRedis(REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY, trackIdToSegments)
     } catch (e) {
-      this.logError(e, e.stack)
       throw new Error(`[fetchCIDsAndAddToRedis] - Failed to add to blacklist: ${e}`)
     }
   }
@@ -125,7 +124,7 @@ class BlacklistManager {
     segmentCIDsToRemove = [...segmentCIDsToRemoveSet]
 
     try {
-      await this.removeFromRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToRemove)
+      await this.removeFromRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, allTrackIdsToBlacklist)
       await this.removeFromRedis(REDIS_SET_BLACKLIST_USERID_KEY, userIdsToRemove)
       await this.removeFromRedis(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, segmentCIDsToRemove)
       await this.removeFromRedis(REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY, trackIdToSegments)
@@ -155,7 +154,7 @@ class BlacklistManager {
   /**
    * Retrieves all CIDs from input trackIds from db
    * @param {number[]} trackIds
-   * @returns {Object[]} array of track models from table
+   * @returns {Object[]} array of track model objects from table
    */
   static async getAllCIDsFromTrackIdsInDb (trackIds) {
     return models.Track.findAll({ where: { blockchainId: trackIds } })
@@ -231,18 +230,18 @@ class BlacklistManager {
   static async remove ({ values, type }) {
     await this.removeFromDb({ values, type })
 
-    // add to redis
+    // remove to redis
     switch (type) {
       case 'USER':
-        // add user ids to redis under userid key + its associated track segments
+        // remove user ids to redis under userid key + its associated track segments
         await this.fetchCIDsAndRemoveFromRedis({ userIdsToRemove: values })
         break
       case 'TRACK':
-        // add track ids to redis under trackid key + its associated track segments
+        // remove track ids to redis under trackid key + its associated track segments
         await this.fetchCIDsAndRemoveFromRedis({ trackIdsToRemove: values })
         break
       case 'CID':
-        // add segments to redis under segment key
+        // remove segments to redis under segment key
         await this.fetchCIDsAndRemoveFromRedis({ segmentsToRemove: values })
         break
     }
