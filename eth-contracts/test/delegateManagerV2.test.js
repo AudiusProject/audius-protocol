@@ -1,3 +1,8 @@
+/**
+ * NOTE - this file is identical to `delegateManager.test.js` except that every test uses
+ *    DelegateManagerV2 instead of DelegateManager
+ */
+
 import * as _lib from '../utils/lib.js'
 const { time, expectEvent } = require('@openzeppelin/test-helpers')
 

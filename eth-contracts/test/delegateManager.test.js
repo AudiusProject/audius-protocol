@@ -27,7 +27,7 @@ const testEndpoint4 = 'https://localhost:5009'
 const testEndpoint5 = 'https://localhost:5010'
 
 
-const INITIAL_BAL = _lib.audToWeiBN(10000000)
+const INITIAL_BAL = _lib.audToWeiBN(1000000)
 const DEFAULT_AMOUNT_VAL = _lib.audToWei(120)
 const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
 const VOTING_PERIOD = 10
@@ -1732,13 +1732,51 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 })
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)).eq(minDelegateStake), 'Expect min delegate stake')
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount2)).eq(minDelegateStake), 'Expect min delegate stake')
+    })
 
+    it('Min delegator stake per SP - with DelegateManagerV2', async () => {
+      let minDelegateStakeValAUD = 100
 
+      let minDelegateStakeVal = _lib.audToWei(minDelegateStakeValAUD)
+      await updateMinDelegationAmount(minDelegateStakeVal)
 
+      // Min del stake behavior, confirm min amount is enforced PER service provider
+      let minDelegateStake = await delegateManager.getMinDelegationAmount()
 
+      // Approve staking transfer
+      await token.approve(
+        stakingAddress,
+        minDelegateStake,
+        { from: delegatorAccount1 })
 
+      // Delegate valid min to SP 1
+      await delegateManager.delegateStake(
+        stakerAccount,
+        minDelegateStake,
+        { from: delegatorAccount1 })
 
-      /** NEW CODE */
+      // Delegate invalid min for SP 2
+      let invalidMinStake = _lib.toBN(_lib.audToWei(1))
+      await token.approve(stakingAddress, invalidMinStake, { from: delegatorAccount1 })
+      await _lib.assertRevert(
+        delegateManager.delegateStake(
+          stakerAccount2,
+          invalidMinStake,
+          { from: delegatorAccount1 }),
+        'Minimum delegation amount'
+      )
+
+      // Delegate valid min for SP 2
+      await token.approve(
+        stakingAddress,
+        minDelegateStake,
+        { from: delegatorAccount1 })
+      await delegateManager.delegateStake(
+        stakerAccount2,
+        minDelegateStake,
+        { from: delegatorAccount1 })
+      assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)).eq(minDelegateStake), 'Expect min delegate stake')
+      assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount2)).eq(minDelegateStake), 'Expect min delegate stake')
 
       // proxy upgrade to DelegateManagerV2 for new SPMinDelegationAmount controls
       await upgradeDelegateManagerToV2()
@@ -2698,7 +2736,7 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('lets a service provider return to valid bounds when a delegator changes delegation', async () => {
+    it('lets a service provider return to valid bounds when a delegator changes delegation (only works with DelegateManagerV2)', async () => {
       /**
        * Test case to address behavior exercised in Postmortem: $AUDIO Claim Error (Claim of 0 $AUDIO)
        * on 05-08-2021.

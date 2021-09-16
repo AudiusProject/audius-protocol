@@ -58,7 +58,6 @@ module.exports = (deployer, network, accounts) => {
 
     // Set environment variable
     process.env.delegateManagerAddress = delegateManagerProxy.address
-    console.log(`SIDTEST DELMAN ADDR ${process.env.delegateManagerAddress}`)
 
     // Set delegate manager address in Staking.sol through governance
     await governance.guardianExecuteTransaction(
