@@ -3,8 +3,8 @@ use std::convert::TryInto;
 use anyhow::anyhow;
 use anyhow::{bail, Context};
 use claimable_tokens::{
-    instruction::{Claim, CreateTokenAccount},
-    utils::program::{get_address_pair, EthereumAddress},
+    instruction::{CreateTokenAccount, Transfer},
+    utils::program::{find_address_pair, EthereumAddress},
 };
 use clap::{
     crate_description, crate_name, crate_version, value_t, App, AppSettings, Arg, ArgMatches,
@@ -17,6 +17,7 @@ use solana_clap_utils::{
     keypair::signer_from_path,
 };
 use solana_client::{rpc_client::RpcClient, rpc_response::Response};
+use solana_program::instruction::Instruction;
 use solana_sdk::{
     account::ReadableAccount,
     commitment_config::CommitmentConfig,
@@ -28,7 +29,6 @@ use solana_sdk::{
 };
 use spl_associated_token_account::{create_associated_token_account, get_associated_token_address};
 use spl_token::state::{Account, Mint};
-use solana_program::instruction::Instruction;
 
 struct Config {
     owner: Box<dyn Signer>,
@@ -59,11 +59,7 @@ fn eth_seckey_of(matches: &ArgMatches<'_>, name: &str) -> anyhow::Result<libsecp
     Ok(sk)
 }
 
-fn calculate_and_create_associated_key(
-    config: &Config,
-    mint: &Pubkey,
-) -> anyhow::Result<Pubkey> {
-
+fn calculate_and_create_associated_key(config: &Config, mint: &Pubkey) -> anyhow::Result<Pubkey> {
     let calculated_key =
         spl_associated_token_account::get_associated_token_address(&config.owner.pubkey(), &mint);
 
@@ -96,7 +92,7 @@ fn transfer(
 
     let eth_pubkey = libsecp256k1::PublicKey::from_secret_key(&secret_key);
     let eth_address = construct_eth_pubkey(&eth_pubkey);
-    let pair = get_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
+    let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
 
     // If `recipient` token account provided - we will use it,
     // otherwise will use token account associated with `config.owner`
@@ -144,12 +140,12 @@ fn transfer(
 
     let instructions = &[
         new_secp256k1_instruction(&secret_key, &user_acc.to_bytes()),
-        claimable_tokens::instruction::claim(
+        claimable_tokens::instruction::transfer(
             &claimable_tokens::id(),
             &pair.derive.address,
             &user_acc,
             &pair.base.address,
-            Claim {
+            Transfer {
                 eth_address,
                 amount: spl_token::ui_amount_to_amount(amount, mint_data.decimals),
             },
@@ -168,7 +164,7 @@ fn transfer(
 fn send_to(config: Config, eth_address: [u8; 20], mint: Pubkey, amount: f64) -> anyhow::Result<()> {
     let mut instructions: Vec<Instruction> = vec![];
 
-    let pair = get_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
+    let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
     // Checking if the derived address of recipient does not exist
     // then we must add instruction to create it
     let derived_token_acc_data = config.rpc_client.get_account_data(&pair.derive.address);
@@ -206,12 +202,15 @@ fn send_to(config: Config, eth_address: [u8; 20], mint: Pubkey, amount: f64) -> 
         .rpc_client
         .send_and_confirm_transaction_with_spinner(&tx)?;
 
-    println!("Transfer completed to recipient: {}\nTransaction hash: {:?}", pair.derive.address, tx_hash);
+    println!(
+        "Transfer completed to recipient: {}\nTransaction hash: {:?}",
+        pair.derive.address, tx_hash
+    );
     Ok(())
 }
 
 fn balance(config: Config, eth_address: EthereumAddress, mint: Pubkey) -> anyhow::Result<()> {
-    let pair = get_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
+    let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
 
     if let Response {
         value: Some(account),
@@ -433,16 +432,14 @@ fn main() -> anyhow::Result<()> {
                 let program_id = pubkey_of(args, "program_id").unwrap();
                 println!("Recieved mint {:?}", mint);
                 println!("Recieved program_id {:?}", program_id);
-                let program_base_address = Pubkey::find_program_address(
-                    &[&mint.to_bytes()[..32]],
-                    &program_id
-                );
+                let program_base_address =
+                    Pubkey::find_program_address(&[&mint.to_bytes()[..32]], &program_id);
                 println!("Recieved program_base_address {:?}", program_base_address);
 
                 Ok(program_base_address)
             })()
             .context("Preparing parameters for execution command `send to`")?;
-       }
+        }
         _ => unreachable!(),
     }
     Ok(())

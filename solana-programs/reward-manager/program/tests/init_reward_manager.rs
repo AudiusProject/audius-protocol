@@ -18,9 +18,9 @@ use solana_sdk::{
     transaction::{Transaction, TransactionError},
 };
 
-/// The test is especially work like if it used by a user
 #[tokio::test]
-async fn success() {
+/// Test reward manager successfully initializes with expected state
+async fn success_init_reward_manager() {
     let mut program_test = program_test();
 
     let manager = Pubkey::new_unique();
@@ -107,6 +107,7 @@ async fn success() {
 }
 
 #[tokio::test]
+/// Test rewards manager fails to initialized if already initialized
 async fn fail_already_initialized() {
     let mut program_test = program_test();
 

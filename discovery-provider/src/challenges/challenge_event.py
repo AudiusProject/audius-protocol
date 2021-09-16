@@ -15,3 +15,6 @@ class ChallengeEvent(str, enum.Enum):
     referred_signup = "referred_signup"  # Fired for the new user
     connect_verified = "connect_verified"
     mobile_install = "mobile_install"
+    trending_track = "trending_track"
+    trending_underground = "trending_underground"
+    trending_playlist = "trending_playlist"

@@ -2,47 +2,24 @@
 
 mod utils;
 use audius_reward_manager::instruction;
-use solana_sdk::signature::Keypair;
-use utils::program_test;
+use solana_sdk::{signature::Keypair, transaction::TransactionError, transport::TransportError};
 
-use solana_program::program_pack::Pack;
 use solana_program_test::*;
 use solana_sdk::{signature::Signer, transaction::Transaction};
 use utils::*;
 
 #[tokio::test]
-async fn success() {
-    let program_test = program_test();
-
-    let mint = Keypair::new();
-    let mint_authority = Keypair::new();
-    let token_account = Keypair::new();
-
-    let reward_manager = Keypair::new();
-    let manager_account = Keypair::new();
-    let min_votes = 3;
-
-    let mut context = program_test.start_with_context().await;
-    let rent = context.banks_client.get_rent().await.unwrap();
-
-    create_mint(
-        &mut context,
-        &mint,
-        rent.minimum_balance(spl_token::state::Mint::LEN),
-        &mint_authority.pubkey(),
-    )
-    .await
-    .unwrap();
-
-    init_reward_manager(
-        &mut context,
-        &reward_manager,
-        &token_account,
-        &mint.pubkey(),
-        &manager_account.pubkey(),
+/// Registered manager account can change the rewards manager manager
+async fn success_change_manager() {
+    let TestConstants { 
+        reward_manager,
+        mut context,
+        token_account,
+        manager_account,
         min_votes,
-    )
-    .await;
+        ..
+    } = setup_test_environment().await;
+
 
     let new_manager = Keypair::new();
 
@@ -73,4 +50,69 @@ async fn success() {
             .await
             .unwrap()
     );
+}
+
+#[tokio::test]
+/// Tries to change a manager, but passing in the incorrect reward_manager
+async fn failure_change_manager_bad_manager() {
+    let TestConstants { 
+        mut context,
+        manager_account,
+        ..
+    } = setup_test_environment().await;
+
+    let new_manager = Keypair::new();
+
+    let bad_reward_manager = Keypair::new();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[instruction::change_manager_authority(
+            &audius_reward_manager::id(),
+            &bad_reward_manager.pubkey(),
+            &manager_account.pubkey(),
+            &new_manager.pubkey(),
+        )
+        .unwrap()],
+        Some(&context.payer.pubkey()),
+        &[&context.payer, &manager_account],
+        context.last_blockhash,
+    );
+
+    let tx_result = context.banks_client.process_transaction(tx).await;
+    match tx_result {
+        Err(TransportError::TransactionError(TransactionError::InstructionError(0, solana_program::instruction::InstructionError::InvalidAccountData))) => assert!(true),
+        _ => panic!("Returned bad error!")
+    }
+}
+
+#[tokio::test]
+#[should_panic(expected = "Transaction::sign failed with error KeypairPubkeyMismatch")]
+/// Tries to change a manager, but passes in a current manager which isn't 
+/// registered as manager
+async fn failure_change_manager_authority_bad_authority() {
+    let TestConstants { 
+        reward_manager,
+        mut context,
+        manager_account,
+        ..
+    } = setup_test_environment().await;
+
+    let new_manager = Keypair::new();
+
+    let bad_authority = Keypair::new();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[instruction::change_manager_authority(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &bad_authority.pubkey(),
+            &new_manager.pubkey(),
+        )
+        .unwrap()],
+        Some(&context.payer.pubkey()),
+        &[&context.payer, &manager_account],
+        context.last_blockhash,
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
 }

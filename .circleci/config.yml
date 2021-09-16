@@ -9,6 +9,23 @@ orbs:
   kubernetes: circleci/kubernetes@0.3.0
   coveralls: coveralls/coveralls@1.0.6
   build-tools: circleci/build-tools@2.9.1
+commands:
+  diff-and-merge-with-master:
+    parameters:
+      service:
+        type: string
+    steps:
+      - unless:
+          condition:
+            or:
+              - equal: [ master, << pipeline.git.branch >> ]
+              - matches:
+                  pattern: "^release.*$"
+                  value: << pipeline.git.branch >>
+          steps:
+            - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
+            - build-tools/merge-with-parent:
+                parent: master
 jobs:
   test-mad-dog-e2e:
     # https://circleci.com/docs/2.0/parallelism-faster-jobs/
@@ -16,6 +33,11 @@ jobs:
     parallelism: 1
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
     # uses medium (2vcpu/4gb) by default
+    parameters:
+      mad-dog-type:
+        description: "test-ci or test-nightly"
+        default: 'test-ci'
+        type: string
     resource_class: large # 4vcpu/8gb
     machine:
       image: ubuntu-1604:201903-01 # recommended linux image - includes Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
@@ -24,9 +46,14 @@ jobs:
       - checkout
       - unless:
           condition:
-            equal: [ master, << pipeline.git.branch >> ]
+            or:
+              - equal: [ master, << pipeline.git.branch >> ]
+              - matches:
+                  pattern: "^release.*$"
+                  value: << pipeline.git.branch >>
           steps:
-            - build-tools/merge-with-parent
+            - build-tools/merge-with-parent:
+                parent: master
       - run:
           name: clone tooling and mad dog
           command: |
@@ -177,7 +204,7 @@ jobs:
           name: execute
           # https://support.circleci.com/hc/en-us/articles/360045268074-Build-Fails-with-Too-long-with-no-output-exceeded-10m0s-context-deadline-exceeded-
           # mad-dog should never hang more than a min with zero output; exit early.
-          no_output_timeout: 2m
+          no_output_timeout: 5m
           command: |
             sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba
             sudo chmod +x /usr/local/bin/pumba
@@ -204,7 +231,7 @@ jobs:
             docker ps
             export ipfsHost="localhost"
             export ipfsPort=6001
-            npm run start test-ci verbose
+            npm run start << parameters.mad-dog-type >> verbose
 
   test-libs:
     docker:
@@ -225,12 +252,8 @@ jobs:
       # - image: circleci/mongo:3.4.4
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh libs || (echo "no diff" && circleci-agent step halt)
+      - diff-and-merge-with-master:
+          service: libs
       - setup_remote_docker
 
       # Download and cache dependencies
@@ -291,12 +314,8 @@ jobs:
         command: ['--port=8555', '-a', '100', '-l', '8000000']
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh contracts || (echo "no diff" && circleci-agent step halt)
+      - diff-and-merge-with-master:
+          service: contracts
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -330,12 +349,8 @@ jobs:
         command: ['--port=8546', '-a', '50', '-l', '8000000']
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh eth-contracts || (echo "no diff" && circleci-agent step halt)
+      - diff-and-merge-with-master:
+          service: eth-contracts
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -379,12 +394,8 @@ jobs:
       - image: redis:5.0.4
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh creator-node || (echo "no diff" && circleci-agent step halt)
+      - diff-and-merge-with-master:
+          service: creator-node
       # Download and cache dependencies
       # - restore_cache:
       #     keys:
@@ -430,12 +441,8 @@ jobs:
         command: ['--port=8555', '-a', '100', '-l', '8000000']
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh discovery-provider || (echo "no diff" && circleci-agent step halt)
+      - diff-and-merge-with-master:
+          service: discovery-provider
       - restore_cache:
           keys:
             - disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
@@ -498,12 +505,8 @@ jobs:
       - image: redis:5.0.4
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
+      - diff-and-merge-with-master:
+          service: identity-service
       - setup_remote_docker
       # restores data-contracts
       - restore_cache:
@@ -546,12 +549,8 @@ jobs:
       - image: cimg/rust:1.53.0
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh solana-programs || (echo "no diff" && circleci-agent step halt)
+      - diff-and-merge-with-master:
+          service: solana-programs
 
       - run:
           name: Setup solana
@@ -633,9 +632,14 @@ jobs:
       - checkout
       - unless:
           condition:
-            equal: [ master, << pipeline.git.branch >> ]
+            or:
+              - equal: [ master, << pipeline.git.branch >> ]
+              - matches:
+                  pattern: "^release.*$"
+                  value: << pipeline.git.branch >>
           steps:
-            - build-tools/merge-with-parent
+            - build-tools/merge-with-parent:
+                parent: master
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
@@ -735,6 +739,9 @@ workflows:
           name: test-identity-service-nightly
       - test-solana-programs:
           name: test-solana-programs-nightly
+      - test-mad-dog-e2e:
+          name: test-mad-dog-e2e-nightly
+          mad-dog-type: test-nightly
     triggers:
       - schedule:
           cron: '0 5 * * *'
