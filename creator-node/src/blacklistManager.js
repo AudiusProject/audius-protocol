@@ -128,9 +128,7 @@ class BlacklistManager {
       await this.removeFromRedis(REDIS_SET_BLACKLIST_TRACKID_KEY, trackIdsToRemove)
       await this.removeFromRedis(REDIS_SET_BLACKLIST_USERID_KEY, userIdsToRemove)
       await this.removeFromRedis(REDIS_SET_BLACKLIST_SEGMENTCID_KEY, segmentCIDsToRemove)
-
-      // TODO: implement this removal
-      // await this.addToRedis(REDIS_MAP_SEGMENTCID_TO_TRACKID_KEY, trackIdToSegments)
+      await this.removeFromRedis(REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY, trackIdToSegments)
     } catch (e) {
       throw new Error(`Failed to remove from blacklist: ${e}`)
     }
@@ -353,8 +351,6 @@ class BlacklistManager {
     }
   }
 
-  // iter thru all the cids, add to hset <cid: trackid>
-
   /**
    * Removes key with value to redis. If value does not exist, redis should ignore.
    * @param {string} redisKey type of value
@@ -364,13 +360,15 @@ class BlacklistManager {
     switch (redisKey) {
       case REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY: {
         const errors = []
-        const trackIds = Object.keys(data)
-        for (const id of trackIds) {
-          try {
-            // TODO: FIX THIS
-            await redis.hdel(REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY, data[id], id)
-          } catch (e) {
-            this.logWarn(`Could not remove trackId=${id}: ${e.toString()}`)
+        for (let [trackId, cids] of Object.entries(data)) {
+          trackId = parseInt(trackId)
+          for (const cid of cids) {
+            const redisCIDKey = this.getRedisBlacklistSegmentToTrackIdKey(cid)
+            try {
+              await redis.srem(redisCIDKey, trackId)
+            } catch (e) {
+              errors.push(`Unable to remove ${redisCIDKey}:${trackId}: ${e.toString()}`)
+            }
           }
         }
 
@@ -386,7 +384,7 @@ class BlacklistManager {
           const resp = await redis.srem(redisKey, data)
           this.logDebug(`redis set remove ${redisKey} response ${resp}`)
         } catch (e) {
-          throw new Error(`Unable to add ${redisKey}:${data}: ${e.toString()}`)
+          throw new Error(`Unable to remove ${redisKey}:${data}: ${e.toString()}`)
         }
         break
       }
