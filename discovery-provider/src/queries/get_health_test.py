@@ -13,24 +13,14 @@ from src.models import Block
 from src.queries.get_health import get_health
 
 
-def test_get_health(web3_mock, redis_mock, db_mock, get_monitors_mock):
-    """Tests that the health check returns db and monitor data"""
+def test_get_health(web3_mock, redis_mock, db_mock):
+    """Tests that the health check returns db data"""
     # Set up web3 eth
     def getBlock(_u1, _u2):  # unused
         block = MagicMock()
         block.number = 2
         block.hash = HexBytes(b"\x02")
         return block
-
-    get_monitors_mock.return_value = {
-        "database_connections": 2,
-        "filesystem_size": 62725623808,
-        "filesystem_used": 50381168640,
-        "received_bytes_per_sec": 7942.038197103973,
-        "total_memory": 6237151232,
-        "used_memory": 3055149056,
-        "transferred_bytes_per_sec": 7340.780857447676,
-    }
 
     web3_mock.eth.getBlock = getBlock
 
@@ -60,15 +50,6 @@ def test_get_health(web3_mock, redis_mock, db_mock, get_monitors_mock):
     assert "maximum_healthy_block_difference" in health_results
     assert "version" in health_results
     assert "service" in health_results
-
-    assert health_results["database_connections"] == 2
-    assert health_results["filesystem_size"] == 62725623808
-    assert health_results["filesystem_used"] == 50381168640
-    assert health_results["received_bytes_per_sec"] == 7942.038197103973
-    assert health_results["total_memory"] == 6237151232
-    assert health_results["used_memory"] == 3055149056
-    assert health_results["transferred_bytes_per_sec"] == 7340.780857447676
-    assert health_results["number_of_cpus"] == os.cpu_count()
 
 
 def test_get_health_using_redis(web3_mock, redis_mock, db_mock):
