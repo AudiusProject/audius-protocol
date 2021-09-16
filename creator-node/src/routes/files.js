@@ -625,9 +625,9 @@ module.exports = function (app) {
   app.get('/file_lookup', async (req, res) => {
     const BlacklistManager = req.app.get('blacklistManager')
     const { filePath, timestamp, signature } = req.query
-    let { delegateWallet } = req.query
+    let { delegateWallet, trackId } = req.query
     delegateWallet = delegateWallet.toLowerCase()
-    const trackId = parseInt(req.params)
+    trackId = parseInt(trackId)
 
     // no filePath passed in
     if (!filePath) return sendResponse(req, res, errorResponseBadRequest(`Invalid request, no path provided`))
