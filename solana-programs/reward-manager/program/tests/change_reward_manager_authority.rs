@@ -11,7 +11,7 @@ use utils::*;
 #[tokio::test]
 /// Registered manager account can change the rewards manager manager
 async fn success_change_manager() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         token_account,
@@ -19,7 +19,6 @@ async fn success_change_manager() {
         min_votes,
         ..
     } = setup_test_environment().await;
-
 
     let new_manager = Keypair::new();
 
@@ -55,7 +54,7 @@ async fn success_change_manager() {
 #[tokio::test]
 /// Tries to change a manager, but passing in the incorrect reward_manager
 async fn failure_change_manager_bad_manager() {
-    let TestConstants { 
+    let TestConstants {
         mut context,
         manager_account,
         ..
@@ -80,17 +79,20 @@ async fn failure_change_manager_bad_manager() {
 
     let tx_result = context.banks_client.process_transaction(tx).await;
     match tx_result {
-        Err(TransportError::TransactionError(TransactionError::InstructionError(0, solana_program::instruction::InstructionError::InvalidAccountData))) => assert!(true),
-        _ => panic!("Returned bad error!")
+        Err(TransportError::TransactionError(TransactionError::InstructionError(
+            0,
+            solana_program::instruction::InstructionError::InvalidAccountData,
+        ))) => assert!(true),
+        _ => panic!("Returned bad error!"),
     }
 }
 
 #[tokio::test]
 #[should_panic(expected = "Transaction::sign failed with error KeypairPubkeyMismatch")]
-/// Tries to change a manager, but passes in a current manager which isn't 
+/// Tries to change a manager, but passes in a current manager which isn't
 /// registered as manager
 async fn failure_change_manager_authority_bad_authority() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         manager_account,

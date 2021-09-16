@@ -1,11 +1,19 @@
 #![cfg(feature = "test-bpf")]
 #![allow(dead_code)]
 
-use audius_reward_manager::{instruction, vote_message, processor::{SENDER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX}};
-use audius_reward_manager::utils::{EthereumAddress, find_derived_pair};
+use audius_reward_manager::error::AudiusProgramError;
+use audius_reward_manager::utils::{find_derived_pair, EthereumAddress};
 use audius_reward_manager::{id, processor::Processor};
+use audius_reward_manager::{
+    instruction,
+    processor::{SENDER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX},
+    vote_message,
+};
 use claimable_tokens::utils::program::AddressPair;
+use libsecp256k1::{PublicKey, SecretKey};
+use rand::{prelude::ThreadRng, thread_rng, Rng};
 use sha3::Digest;
+use solana_program::instruction::InstructionError;
 use solana_program::{
     instruction::Instruction, program_pack::Pack, pubkey::Pubkey, rent::Rent, system_instruction,
 };
@@ -19,10 +27,6 @@ use solana_sdk::{
     transaction::Transaction,
     transport::TransportError,
 };
-use audius_reward_manager::error::AudiusProgramError;
-use solana_program::instruction::InstructionError;
-use rand::{Rng, prelude::ThreadRng, thread_rng};
-use libsecp256k1::{PublicKey, SecretKey};
 
 pub fn program_test() -> ProgramTest {
     ProgramTest::new(
@@ -141,7 +145,6 @@ pub fn get_oracle_address(reward_manager: &Keypair, eth_oracle_address: [u8; 20]
     );
     oracle_derived_address
 }
-
 
 pub async fn init_reward_manager(
     context: &mut ProgramTestContext,
@@ -283,12 +286,13 @@ pub async fn mint_tokens_to(
         .unwrap()],
         Some(&program_context.payer.pubkey()),
     );
-    let recent_blockhash = program_context.banks_client.get_recent_blockhash().await.unwrap();
+    let recent_blockhash = program_context
+        .banks_client
+        .get_recent_blockhash()
+        .await
+        .unwrap();
 
-    transaction.sign(
-        &[&program_context.payer, authority],
-        recent_blockhash
-    );
+    transaction.sign(&[&program_context.payer, authority], recent_blockhash);
     program_context
         .banks_client
         .process_transaction(transaction)
@@ -319,13 +323,20 @@ pub async fn create_recipient_with_claimable_program(
         .unwrap();
 }
 
-pub fn assert_custom_error(res: Result<(), TransportError>, instruction_index: u8, audius_error: AudiusProgramError) {
+pub fn assert_custom_error(
+    res: Result<(), TransportError>,
+    instruction_index: u8,
+    audius_error: AudiusProgramError,
+) {
     match res {
-        Err(TransportError::TransactionError(TransactionError::InstructionError(idx, InstructionError::Custom(v)))) => {
+        Err(TransportError::TransactionError(TransactionError::InstructionError(
+            idx,
+            InstructionError::Custom(v),
+        ))) => {
             assert_eq!(idx, instruction_index);
             assert_eq!(v, audius_error as u32);
-        },
-        _ => panic!("Expected error")
+        }
+        _ => panic!("Expected error"),
     }
 }
 
@@ -337,18 +348,18 @@ pub struct TestConstants<'a> {
     pub context: ProgramTestContext,
     pub transfer_id: &'a str,
     pub oracle_derived_address: Pubkey,
-    pub mint: Keypair, 
+    pub mint: Keypair,
     pub recipient_eth_key: [u8; 20],
     pub token_account: Keypair,
     pub rent: Rent,
     pub rng: ThreadRng,
     pub manager_account: Keypair,
     pub tokens_amount: u64,
-    pub eth_oracle_address: [u8;20], 
+    pub eth_oracle_address: [u8; 20],
     pub recipient_sol_key: AddressPair,
     pub min_votes: u8,
-    pub oracle_operator: [u8;20],
-    pub mint_authority: Keypair
+    pub oracle_operator: [u8; 20],
+    pub mint_authority: Keypair,
 }
 
 pub async fn setup_test_environment<'a>() -> TestConstants<'a> {
@@ -397,7 +408,7 @@ pub async fn setup_test_environment<'a>() -> TestConstants<'a> {
     let oracle_operator: EthereumAddress = rng.gen();
 
     let oracle_derived_address = get_oracle_address(&reward_manager, eth_oracle_address);
-    
+
     create_sender(
         &mut context,
         &reward_manager.pubkey(),
@@ -441,7 +452,6 @@ pub async fn setup_test_environment<'a>() -> TestConstants<'a> {
     ]
     .concat());
 
-
     // Make recipient token account
 
     let recipient_sol_key = claimable_tokens::utils::program::find_address_pair(
@@ -450,9 +460,15 @@ pub async fn setup_test_environment<'a>() -> TestConstants<'a> {
         recipient_eth_key,
     )
     .unwrap();
-    println!("Creating...Recipient sol key = {:?}", &recipient_sol_key.derive.address);
+    println!(
+        "Creating...Recipient sol key = {:?}",
+        &recipient_sol_key.derive.address
+    );
     create_recipient_with_claimable_program(&mut context, &mint.pubkey(), recipient_eth_key).await;
-    println!("Created recipient sol key = {:?}", &recipient_sol_key.derive.address);
+    println!(
+        "Created recipient sol key = {:?}",
+        &recipient_sol_key.derive.address
+    );
 
     return TestConstants {
         reward_manager,
@@ -462,19 +478,19 @@ pub async fn setup_test_environment<'a>() -> TestConstants<'a> {
         context,
         transfer_id,
         oracle_derived_address,
-        mint, 
+        mint,
         recipient_eth_key,
         token_account,
         rent,
         rng,
         manager_account,
         tokens_amount,
-        eth_oracle_address, 
+        eth_oracle_address,
         recipient_sol_key,
         min_votes,
         oracle_operator,
-        mint_authority
-    }
+        mint_authority,
+    };
 }
 
 pub async fn create_sender_from(
@@ -482,7 +498,8 @@ pub async fn create_sender_from(
     manager_account: &Keypair,
     context: &mut ProgramTestContext,
     key: &[u8; 32],
-    operator: [u8; 20]) -> Pubkey {
+    operator: [u8; 20],
+) -> Pubkey {
     let sender_priv_key = SecretKey::parse(key).unwrap();
     let secp_pubkey = PublicKey::from_secret_key(&sender_priv_key);
     let eth_address = construct_eth_pubkey(&secp_pubkey);
@@ -500,7 +517,7 @@ pub async fn create_sender_from(
         &reward_manager.pubkey(),
         &manager_account,
         eth_address,
-        operator
+        operator,
     )
     .await;
 

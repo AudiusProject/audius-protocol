@@ -6,19 +6,25 @@ use audius_reward_manager::{
     state::DELETE_SENDER_MESSAGE_PREFIX,
     utils::{find_derived_pair, EthereumAddress},
 };
-use libsecp256k1::{SecretKey};
-use rand::{Rng};
-use solana_program::{instruction::InstructionError};
+use libsecp256k1::SecretKey;
+use rand::Rng;
+use solana_program::instruction::InstructionError;
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
 use solana_program_test::*;
-use solana_sdk::{secp256k1_instruction::construct_eth_pubkey, signature::Keypair, signer::Signer, transaction::{Transaction, TransactionError}, transport::TransportError};
+use solana_sdk::{
+    secp256k1_instruction::construct_eth_pubkey,
+    signature::Keypair,
+    signer::Signer,
+    transaction::{Transaction, TransactionError},
+    transport::TransportError,
+};
 use std::mem::MaybeUninit;
 use utils::*;
 
 #[tokio::test]
 /// Test able to successfully delete a sender (decentralized)
 async fn success_delete_sender_public() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         manager_account,
@@ -33,7 +39,14 @@ async fn success_delete_sender_public() {
     let mut signers: [Pubkey; 4] = unsafe { MaybeUninit::zeroed().assume_init() };
 
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -94,7 +107,7 @@ async fn success_delete_sender_public() {
 
 #[tokio::test]
 async fn failure_delete_sender_insufficient_attestations() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         manager_account,
@@ -109,7 +122,14 @@ async fn failure_delete_sender_insufficient_attestations() {
     let mut signers: [Pubkey; 4] = unsafe { MaybeUninit::zeroed().assume_init() };
 
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -152,13 +172,17 @@ async fn failure_delete_sender_insufficient_attestations() {
         context.last_blockhash,
     );
     let res = context.banks_client.process_transaction(tx).await;
-    assert_custom_error(res, 2, audius_reward_manager::error::AudiusProgramError::NotEnoughSigners);
+    assert_custom_error(
+        res,
+        2,
+        audius_reward_manager::error::AudiusProgramError::NotEnoughSigners,
+    );
 }
 
 #[tokio::test]
 /// Test deleting sender fails if signers don't match known senders
 async fn failure_delete_sender_public_mismatched_signature_to_pubkey() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         manager_account,
@@ -172,7 +196,14 @@ async fn failure_delete_sender_public_mismatched_signature_to_pubkey() {
     let mut signers: [Pubkey; 4] = unsafe { MaybeUninit::zeroed().assume_init() };
 
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -208,7 +239,7 @@ async fn failure_delete_sender_public_mismatched_signature_to_pubkey() {
             &refunder_account,
             eth_address,
             // use new signers
-            &new_signers
+            &new_signers,
         )
         .unwrap(),
     );
@@ -222,14 +253,17 @@ async fn failure_delete_sender_public_mismatched_signature_to_pubkey() {
     let tx_result = context.banks_client.process_transaction(tx).await;
 
     match tx_result {
-        Err(TransportError::TransactionError(TransactionError::InstructionError(3, InstructionError::BorshIoError(_)))) => assert!(true),
+        Err(TransportError::TransactionError(TransactionError::InstructionError(
+            3,
+            InstructionError::BorshIoError(_),
+        ))) => assert!(true),
         _ => panic!("Returned incorrect error!"),
     }
 }
 
 #[tokio::test]
 async fn failure_duplicate_operators_delete_sender() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         manager_account,
@@ -245,7 +279,14 @@ async fn failure_duplicate_operators_delete_sender() {
     let mut signers: [Pubkey; 4] = unsafe { MaybeUninit::zeroed().assume_init() };
 
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operator).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operator,
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -290,12 +331,16 @@ async fn failure_duplicate_operators_delete_sender() {
     );
     let res = context.banks_client.process_transaction(tx).await;
     assert!(res.is_err());
-    assert_custom_error(res, 3, audius_reward_manager::error::AudiusProgramError::OperatorCollision);
+    assert_custom_error(
+        res,
+        3,
+        audius_reward_manager::error::AudiusProgramError::OperatorCollision,
+    );
 }
 
 #[tokio::test]
 async fn failure_delete_sender_duplicate_attestation_senders() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         manager_account,
@@ -310,7 +355,14 @@ async fn failure_delete_sender_duplicate_attestation_senders() {
     let mut signers: [Pubkey; 4] = unsafe { MaybeUninit::zeroed().assume_init() };
 
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -361,5 +413,9 @@ async fn failure_delete_sender_duplicate_attestation_senders() {
     );
     let res = context.banks_client.process_transaction(tx).await;
     assert!(res.is_err());
-    assert_custom_error(res, 3, audius_reward_manager::error::AudiusProgramError::RepeatedSenders);
+    assert_custom_error(
+        res,
+        3,
+        audius_reward_manager::error::AudiusProgramError::RepeatedSenders,
+    );
 }

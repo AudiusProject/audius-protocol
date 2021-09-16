@@ -6,19 +6,25 @@ use audius_reward_manager::{
     state::{SenderAccount, ADD_SENDER_MESSAGE_PREFIX},
     utils::{find_derived_pair, EthereumAddress},
 };
-use libsecp256k1::{SecretKey};
-use rand::{Rng};
-use solana_program::{instruction::InstructionError, system_instruction::SystemError};
+use libsecp256k1::SecretKey;
+use rand::Rng;
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
+use solana_program::{instruction::InstructionError, system_instruction::SystemError};
 use solana_program_test::*;
-use solana_sdk::{secp256k1_instruction::construct_eth_pubkey, signature::Keypair, signer::Signer, transaction::{Transaction, TransactionError}, transport::TransportError};
+use solana_sdk::{
+    secp256k1_instruction::construct_eth_pubkey,
+    signature::Keypair,
+    signer::Signer,
+    transaction::{Transaction, TransactionError},
+    transport::TransportError,
+};
 use std::mem::MaybeUninit;
 use utils::*;
 
 #[tokio::test]
 /// Test successfully creating a sender (decentralized)
 async fn success_create_sender_public() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         manager_account,
@@ -36,7 +42,14 @@ async fn success_create_sender_public() {
 
     // Bootstrap senders through manager
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -96,7 +109,7 @@ async fn success_create_sender_public() {
 #[tokio::test]
 /// Test failure to create an existing sender
 async fn failure_create_duplicate_sender() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         manager_account,
@@ -114,7 +127,14 @@ async fn failure_create_duplicate_sender() {
 
     // Bootstrap senders through manager
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -206,7 +226,7 @@ async fn failure_create_duplicate_sender() {
 /// Test that creating a sender fails if the signatures
 /// don't match known senders
 async fn failure_create_sender_public_mismatched_signature_to_pubkey() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         manager_account,
@@ -228,7 +248,14 @@ async fn failure_create_sender_public_mismatched_signature_to_pubkey() {
 
     // Create senders
     for (i, key) in keys.iter().enumerate() {
-        create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
     }
 
     let mut instructions = Vec::<Instruction>::new();
@@ -267,7 +294,10 @@ async fn failure_create_sender_public_mismatched_signature_to_pubkey() {
     let tx_result = context.banks_client.process_transaction(tx).await;
 
     match tx_result {
-        Err(TransportError::TransactionError(TransactionError::InstructionError(3, InstructionError::BorshIoError(_)))) => assert!(true),
+        Err(TransportError::TransactionError(TransactionError::InstructionError(
+            3,
+            InstructionError::BorshIoError(_),
+        ))) => assert!(true),
         _ => panic!("Returned incorrect error!"),
     }
 }
@@ -275,7 +305,7 @@ async fn failure_create_sender_public_mismatched_signature_to_pubkey() {
 #[tokio::test]
 /// Test adding sender fails if the senders don't match the signers
 async fn failure_create_sender_public_mismatched_pubkey_to_signature() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         manager_account,
@@ -346,7 +376,10 @@ async fn failure_create_sender_public_mismatched_pubkey_to_signature() {
     println!("{:?}", tx_result);
 
     match tx_result {
-        Err(TransportError::TransactionError(TransactionError::InstructionError(3, InstructionError::BorshIoError(_)))) => assert!(true),
+        Err(TransportError::TransactionError(TransactionError::InstructionError(
+            3,
+            InstructionError::BorshIoError(_),
+        ))) => assert!(true),
         _ => panic!("Returned incorrect error!"),
     }
 }
@@ -354,8 +387,7 @@ async fn failure_create_sender_public_mismatched_pubkey_to_signature() {
 #[tokio::test]
 /// Test creating sender doesn't work if insufficient number of attestations
 async fn failure_create_sender_missing_attestations() {
-
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         manager_account,
@@ -371,7 +403,14 @@ async fn failure_create_sender_missing_attestations() {
     let mut signers: [Pubkey; 2] = unsafe { MaybeUninit::zeroed().assume_init() };
 
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -409,13 +448,17 @@ async fn failure_create_sender_missing_attestations() {
         context.last_blockhash,
     );
     let res = context.banks_client.process_transaction(tx).await;
-    assert_custom_error(res, 2, audius_reward_manager::error::AudiusProgramError::NotEnoughSigners);
+    assert_custom_error(
+        res,
+        2,
+        audius_reward_manager::error::AudiusProgramError::NotEnoughSigners,
+    );
 }
 
 #[tokio::test]
 /// Test creating sender fails if there are duplicate attestation senders
 async fn failure_create_sender_duplicate_attestation_senders() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         manager_account,
@@ -431,7 +474,14 @@ async fn failure_create_sender_duplicate_attestation_senders() {
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
 
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -476,13 +526,17 @@ async fn failure_create_sender_duplicate_attestation_senders() {
         context.last_blockhash,
     );
     let res = context.banks_client.process_transaction(tx).await;
-    assert_custom_error(res, 3, audius_reward_manager::error::AudiusProgramError::RepeatedSenders)
+    assert_custom_error(
+        res,
+        3,
+        audius_reward_manager::error::AudiusProgramError::RepeatedSenders,
+    )
 }
 
 /// Test duplicate operators fail
 #[tokio::test]
 async fn failure_duplicate_operators() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         mut context,
         manager_account,
@@ -498,7 +552,14 @@ async fn failure_duplicate_operators() {
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
 
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operator).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operator,
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -536,5 +597,9 @@ async fn failure_duplicate_operators() {
         context.last_blockhash,
     );
     let res = context.banks_client.process_transaction(tx).await;
-    assert_custom_error(res, 3, audius_reward_manager::error::AudiusProgramError::OperatorCollision);
+    assert_custom_error(
+        res,
+        3,
+        audius_reward_manager::error::AudiusProgramError::OperatorCollision,
+    );
 }
