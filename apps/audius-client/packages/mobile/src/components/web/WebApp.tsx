@@ -23,7 +23,7 @@ import StaticServer from 'react-native-static-server'
 import RNFS from 'react-native-fs'
 
 import PullToRefresh from './PullToRefresh'
-import { Message, handleMessage, MessageType } from '../../message'
+import { Message, MessageType, handleMessage } from '../../message'
 import {
   WebViewMessage,
   WebViewNavigation
@@ -565,10 +565,9 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   onMessage: (
     message: Message,
     onPostMessage: (message: Message) => void,
-    reload: () => void,
-    state: AppState
+    reload: () => void
   ) => {
-    handleMessage(message, dispatch, onPostMessage, reload, state)
+    handleMessage(message, dispatch, onPostMessage, reload)
   }
 })
 
