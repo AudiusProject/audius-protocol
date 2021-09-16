@@ -622,14 +622,12 @@ module.exports = function (app) {
    * @param req.query.timestamp the timestamp when the request was made
    * @param req.query.signature the hashed signature of the object {filePath, delegateWallet, timestamp}
    */
-
-  // TODO: do i need to update this for the blacklist call?
-  // TODO: if trackId is passed in, consider it
   app.get('/file_lookup', async (req, res) => {
     const BlacklistManager = req.app.get('blacklistManager')
-    const { filePath, timestamp, signature, trackId } = req.query
+    const { filePath, timestamp, signature } = req.query
     let { delegateWallet } = req.query
     delegateWallet = delegateWallet.toLowerCase()
+    const trackId = parseInt(req.params)
 
     // no filePath passed in
     if (!filePath) return sendResponse(req, res, errorResponseBadRequest(`Invalid request, no path provided`))
