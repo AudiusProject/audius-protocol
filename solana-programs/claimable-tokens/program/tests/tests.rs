@@ -302,7 +302,7 @@ async fn init_instruction() {
     assert_eq!(token_account.mint, mint_account.pubkey());
 }
 
-// Transfer ALL tokens from an exsiting account
+// Transfer ALL tokens from an existing account
 #[tokio::test]
 async fn transfer_all_instruction() {
     let mut program_context = program_test().start_with_context().await;
