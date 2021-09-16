@@ -246,13 +246,7 @@ describe('Test Health Check Verbose', function () {
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
 
-    const serviceRegistryMock = {
-      snapbackSM: {
-        highestEnabledReconfigMode: 'RECONFIG_DISABLED'
-      }
-    }
-
-    const res = await healthCheckVerbose(serviceRegistryMock, mockLogger, sequelizeMock, getMonitorsMock, 2, TranscodingQueueMock(4, 0).getTranscodeQueueJobs)
+    const res = await healthCheckVerbose({ snapbackSM: snapbackSMMock }, mockLogger, sequelizeMock, getMonitorsMock, 2, TranscodingQueueMock(4, 0).getTranscodeQueueJobs)
 
     assert.deepStrictEqual(res, {
       ...version,
@@ -295,5 +289,20 @@ describe('Test Health Check Verbose', function () {
       transcodeActive: 4,
       transcodeWaiting: 0
     })
+  })
+
+  it('Should be the same as default health check', async function () {
+    config.set('serviceCountry', 'US')
+    config.set('serviceLatitude', '37.7749')
+    config.set('serviceLongitude', '-122.4194')
+    config.set('maxStorageUsedPercent', 95)
+    config.set('snapbackJobInterval', 1000)
+    config.set('snapbackModuloBase', 18)
+    config.set('manualSyncsDisabled', false)
+
+    const verboseRes = await healthCheckVerbose({ libs: libsMock, snapbackSM: snapbackSMMock }, mockLogger, sequelizeMock, getMonitorsMock, 2, TranscodingQueueMock(4, 0).getTranscodeQueueJobs)
+    const defaultRes = await healthCheck({ libs: libsMock, snapbackSM: snapbackSMMock }, mockLogger, sequelizeMock, getMonitorsMock, TranscodingQueueMock(4, 0).getTranscodeQueueJobs, 2)
+
+    assert.deepStrictEqual(verboseRes, defaultRes)
   })
 })
