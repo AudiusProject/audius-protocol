@@ -345,7 +345,6 @@ impl Processor {
                 &verified_messages_account_seed.as_slice(),
                 &[bump_seed],
             ];
-
             let rent = Rent::from_account_info(rent_info)?;
             create_account(
                 program_id,
@@ -416,6 +415,11 @@ impl Processor {
         let reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
 
         let verified_messages = VerifiedMessages::unpack(&verified_messages_info.data.borrow())?;
+
+        // Ensure the transfer account doesn't yet exist
+        if transfer_account_info.lamports() != 0 {
+            return Err(AudiusProgramError::AlreadySent.into())
+        }
 
         // Check signs for minimum required votes, accounting for extra bot oracle
         // attestation

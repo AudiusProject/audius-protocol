@@ -150,32 +150,6 @@ const healthCheck = async ({ libs, snapbackSM } = {}, logger, sequelize, getMoni
     response['meetsMinRequirements'] = true
   }
 
-  // If optional `randomBytesToSign` query param provided, node will include string in signed object
-  if (randomBytesToSign) {
-    response.randomBytesToSign = randomBytesToSign
-  }
-
-  if (libs) {
-    response.selectedDiscoveryProvider = libs.discoveryProvider.discoveryProviderEndpoint
-  } else {
-    logger.warn('Health check with no libs')
-  }
-
-  // we have a /db_check route for more granular detail, but the service health check should
-  // also check that the db connection is good. having this in the health_check
-  // allows us to get auto restarts from liveness probes etc if the db connection is down
-  await sequelize.query('SELECT 1')
-
-  if (
-    !response['numberOfCPUs'] || response['numberOfCPUs'] < MIN_NUBMER_OF_CPUS ||
-    !response['totalMemory'] || response['totalMemory'] < MIN_TOTAL_MEMORY ||
-    !response['storagePathSize'] || response['storagePathSize'] < MIN_FILESYSTEM_SIZE
-  ) {
-    response['meetsMinRequirements'] = false
-  } else {
-    response['meetsMinRequirements'] = true
-  }
-
   return response
 }
 

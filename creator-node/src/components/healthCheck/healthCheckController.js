@@ -6,7 +6,6 @@ const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
 const { sequelize } = require('../../models')
 const { getMonitors } = require('../../monitors/monitors')
-const { getAggregateSyncData, getLatestSyncData } = require('../../snapbackSM/syncHistoryAggregator')
 const TranscodingQueue = require('../../TranscodingQueue')
 const { FileProcessingQueue } = require('../../FileProcessingQueue')
 
