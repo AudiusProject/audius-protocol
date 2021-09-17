@@ -50,19 +50,18 @@ pub fn assert_account_key(account_info: &AccountInfo, key: &Pubkey) -> ProgramRe
 pub fn assert_unique_senders(messages: &[VerifiedMessage]) -> ProgramResult {
     let mut uniq_senders = BTreeSet::new();
     let mut uniq_operators = BTreeSet::new();
-    let mut messages_iter = messages.iter();
 
     if messages.len() > TOTAL_VERIFIED_MESSAGES {
         return Err(AudiusProgramError::MessagesOverflow.into());
     }
 
     // Check sender address collision
-    if !messages_iter.all(move |x| uniq_senders.insert(x.address)) {
+    if !messages.iter().all(move |x| uniq_senders.insert(x.address)) {
         return Err(AudiusProgramError::RepeatedSenders.into());
     }
 
     // Check sender operator collision
-    if !messages_iter.all(move |x| uniq_operators.insert(x.operator)) {
+    if !messages.iter().all(move |x| uniq_operators.insert(x.operator)) {
         return Err(AudiusProgramError::OperatorCollision.into());
     }
 
