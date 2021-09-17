@@ -1,18 +1,15 @@
 #![cfg(feature = "test-bpf")]
 mod utils;
 
-use audius_reward_manager::{
-    instruction,
-    state::VerifiedMessages,
-    utils::{EthereumAddress},
-};
+use audius_reward_manager::{instruction, state::VerifiedMessages, utils::EthereumAddress};
 use libsecp256k1::{PublicKey, SecretKey};
-use rand::{Rng};
-use solana_program::{instruction::Instruction, program_pack::Pack, pubkey::Pubkey, system_instruction};
+use rand::Rng;
+use solana_program::{
+    instruction::Instruction, program_pack::Pack, pubkey::Pubkey, system_instruction,
+};
 use solana_program_test::*;
 use solana_sdk::{
-    secp256k1_instruction::*, signer::Signer, transaction::Transaction,
-    signature::Keypair
+    secp256k1_instruction::*, signature::Keypair, signer::Signer, transaction::Transaction,
 };
 use std::mem::MaybeUninit;
 use utils::*;
@@ -20,7 +17,7 @@ use utils::*;
 #[tokio::test]
 /// Test that we can successfully submit a single attestation in multiple transactions
 async fn success_submit_attestations_multiple_transactions() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         senders_message,
         mut context,
@@ -35,7 +32,14 @@ async fn success_submit_attestations_multiple_transactions() {
     let operators: [EthereumAddress; 3] = rng.gen();
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -91,9 +95,9 @@ async fn success_submit_attestations_multiple_transactions() {
 }
 
 #[tokio::test]
-/// Test that we can submit attestations in a single transaction 
+/// Test that we can submit attestations in a single transaction
 async fn success_multiple_recovery_1_tx() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         senders_message,
         mut context,
@@ -113,7 +117,14 @@ async fn success_multiple_recovery_1_tx() {
     let operators: [EthereumAddress; 3] = rng.gen();
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -150,7 +161,8 @@ async fn success_multiple_recovery_1_tx() {
     );
 
     // Add bot oracle signature
-    let oracle_sign = new_secp256k1_instruction_2_0(&oracle_priv_key, bot_oracle_message.as_ref(), 4);
+    let oracle_sign =
+        new_secp256k1_instruction_2_0(&oracle_priv_key, bot_oracle_message.as_ref(), 4);
     instructions.push(oracle_sign);
     instructions.push(
         instruction::submit_attestations(
@@ -222,16 +234,14 @@ async fn failure_occupy_verified_messages_account() {
     // Attempt to initialize account that will be created by submit attestation maliciously
     // Use context keypair to represent a third party attempting to take ownership
     let recent_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
-     let mut failed_tx = Transaction::new_with_payer(
-        &[
-            system_instruction::create_account(
-                &context.payer.pubkey(),
-                &verified_msgs_derived_acct,
-                rent.minimum_balance(audius_reward_manager::state::VerifiedMessages::LEN),
-                audius_reward_manager::state::VerifiedMessages::LEN as _,
-                &context.payer.pubkey(),
-            )
-        ],
+    let mut failed_tx = Transaction::new_with_payer(
+        &[system_instruction::create_account(
+            &context.payer.pubkey(),
+            &verified_msgs_derived_acct,
+            rent.minimum_balance(audius_reward_manager::state::VerifiedMessages::LEN),
+            audius_reward_manager::state::VerifiedMessages::LEN as _,
+            &context.payer.pubkey(),
+        )],
         Some(&context.payer.pubkey()),
     );
 
@@ -241,7 +251,7 @@ async fn failure_occupy_verified_messages_account() {
 /// Fails for duplicate attestations
 #[tokio::test]
 async fn failure_duplicate_attestations() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         senders_message,
         mut context,
@@ -256,7 +266,14 @@ async fn failure_duplicate_attestations() {
     let operators: [EthereumAddress; 3] = rng.gen();
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -283,7 +300,7 @@ async fn failure_duplicate_attestations() {
         &instructions,
         Some(&context.payer.pubkey()),
         &[&context.payer],
-        recent_blockhash
+        recent_blockhash,
     );
 
     context.banks_client.process_transaction(tx).await.unwrap();
@@ -311,7 +328,7 @@ async fn failure_duplicate_attestations() {
         &new_instructions,
         Some(&context.payer.pubkey()),
         &[&context.payer],
-        recent_blockhash
+        recent_blockhash,
     );
 
     context.banks_client.process_transaction(tx).await.unwrap();
@@ -323,17 +340,21 @@ async fn failure_duplicate_attestations() {
         &instructions,
         Some(&context.payer.pubkey()),
         &[&context.payer],
-        recent_blockhash
+        recent_blockhash,
     );
 
     let res = context.banks_client.process_transaction(tx).await;
-    assert_custom_error(res, 1, audius_reward_manager::error::AudiusProgramError::RepeatedSenders)
+    assert_custom_error(
+        res,
+        1,
+        audius_reward_manager::error::AudiusProgramError::RepeatedSenders,
+    )
 }
 
 #[tokio::test]
 /// Tests that duplicate service operators fail
 async fn failure_duplicate_operator() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         senders_message,
         mut context,
@@ -348,7 +369,14 @@ async fn failure_duplicate_operator() {
     let operators: [EthereumAddress; 3] = rng.gen();
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[0]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[0],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -375,7 +403,7 @@ async fn failure_duplicate_operator() {
         &instructions,
         Some(&context.payer.pubkey()),
         &[&context.payer],
-        recent_blockhash
+        recent_blockhash,
     );
 
     context.banks_client.process_transaction(tx).await.unwrap();
@@ -403,9 +431,13 @@ async fn failure_duplicate_operator() {
         &new_instructions,
         Some(&context.payer.pubkey()),
         &[&context.payer],
-        recent_blockhash
+        recent_blockhash,
     );
 
     let res = context.banks_client.process_transaction(tx).await;
-    assert_custom_error(res, 1, audius_reward_manager::error::AudiusProgramError::OperatorCollision)
+    assert_custom_error(
+        res,
+        1,
+        audius_reward_manager::error::AudiusProgramError::OperatorCollision,
+    )
 }

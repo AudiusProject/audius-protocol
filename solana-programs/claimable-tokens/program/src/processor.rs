@@ -58,35 +58,6 @@ impl Processor {
         )
     }
 
-    /// Checks that the user signed message with his ethereum private key
-    fn check_ethereum_sign(
-        instruction_info: &AccountInfo,
-        expected_signer: &EthereumAddress,
-        expected_message: &[u8],
-    ) -> ProgramResult {
-        let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
-
-        // instruction can't be first in transaction
-        // because must follow after `new_secp256k1_instruction`
-        if index == 0 {
-            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
-        }
-
-        // load previous instruction
-        let instruction = sysvar::instructions::load_instruction_at(
-            (index - 1) as usize,
-            &instruction_info.data.borrow(),
-        )
-        .map_err(to_claimable_tokens_error)?;
-
-        // is that instruction is `new_secp256k1_instruction`
-        if instruction.program_id != secp256k1_program::id() {
-            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
-        }
-
-        Self::validate_eth_signature(expected_signer, expected_message, instruction.data)
-    }
-
     /// Transfer user tokens
     /// Operation gated by SECP recovery
     pub fn process_transfer_instruction<'a>(
@@ -239,7 +210,8 @@ impl Processor {
             return Err(ProgramError::InvalidSeeds);
         }
 
-        if amount == 0 {
+        // Reject for zero or amount higher than available
+        if amount == 0 || amount > source_data.amount {
             return Err(ProgramError::InsufficientFunds);
         }
 
@@ -258,6 +230,35 @@ impl Processor {
             &[source, destination, authority],
             signers,
         )
+    }
+
+    /// Checks that the user signed message with his ethereum private key
+    fn check_ethereum_sign(
+        instruction_info: &AccountInfo,
+        expected_signer: &EthereumAddress,
+        expected_message: &[u8],
+    ) -> ProgramResult {
+        let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
+
+        // instruction can't be first in transaction
+        // because must follow after `new_secp256k1_instruction`
+        if index == 0 {
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+        }
+
+        // load previous instruction
+        let instruction = sysvar::instructions::load_instruction_at(
+            (index - 1) as usize,
+            &instruction_info.data.borrow(),
+        )
+        .map_err(to_claimable_tokens_error)?;
+
+        // is that instruction is `new_secp256k1_instruction`
+        if instruction.program_id != secp256k1_program::id() {
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+        }
+
+        Self::validate_eth_signature(expected_signer, expected_message, instruction.data)
     }
 
     /// Checks that message inside instruction was signed by expected signer

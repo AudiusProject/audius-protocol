@@ -46,7 +46,7 @@ pub fn get_secp_instructions(
 }
 
 /// Returns the eth_addresses and operators associated with `signers`.
-/// 
+///
 /// Ensures that there are no duplicate signers, that each signer
 /// is owned by the program, and that each signer account can be derived
 /// from it's known eth address.
@@ -66,7 +66,7 @@ pub fn get_and_verify_signer_metadata<'a>(
 
         assert_owned_by(signer, program_id)?;
 
-        // Derive the Solana address corresponding to the 
+        // Derive the Solana address corresponding to the
         // signer's eth address
         let (_, derived_signer, _) = find_derived_pair(
             program_id,
@@ -144,7 +144,7 @@ fn vec_into_checkmap(vec: &[EthereumAddress]) -> BTreeMap<EthereumAddress, bool>
 }
 
 /// Assert that `eth_signer` is in check_map, but hasn't previously
-/// been checked. 
+/// been checked.
 fn check_signer(
     checkmap: &mut BTreeMap<EthereumAddress, bool>,
     eth_signer: &EthereumAddress,

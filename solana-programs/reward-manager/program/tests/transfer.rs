@@ -1,20 +1,31 @@
 #![cfg(feature = "test-bpf")]
 mod utils;
 
-use audius_reward_manager::{error::AudiusProgramError, instruction, processor::{TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX}, state::{VERIFIED_MESSAGES_LEN, VerifiedMessage}, utils::{find_derived_pair, EthereumAddress}, vote_message};
+use audius_reward_manager::{
+    error::AudiusProgramError,
+    instruction,
+    processor::{TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX},
+    state::{VerifiedMessage, VERIFIED_MESSAGES_LEN},
+    utils::{find_derived_pair, EthereumAddress},
+    vote_message,
+};
 use libsecp256k1::{PublicKey, SecretKey};
-use solana_program::{instruction::{Instruction}, program_pack::Pack, pubkey::Pubkey, system_instruction};
+use rand::Rng;
+use solana_program::{
+    instruction::Instruction, program_pack::Pack, pubkey::Pubkey, system_instruction,
+};
 use solana_program_test::*;
-use solana_sdk::{secp256k1_instruction::construct_eth_pubkey, signature::Keypair, signer::Signer, transaction::{Transaction}, transport::TransportError};
-use std::{mem::MaybeUninit};
-use rand::{Rng};
+use solana_sdk::{
+    secp256k1_instruction::construct_eth_pubkey, signature::Keypair, signer::Signer,
+    transaction::Transaction, transport::TransportError,
+};
+use std::mem::MaybeUninit;
 use utils::*;
-
 
 #[tokio::test]
 /// Test a transfer can be completed successfully
 async fn success_transfer() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         bot_oracle_message,
         oracle_priv_key,
@@ -36,7 +47,14 @@ async fn success_transfer() {
     let operators: [EthereumAddress; 3] = rng.gen();
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -45,11 +63,8 @@ async fn success_transfer() {
     // Add 3 messages and AAO
     for item in keys.iter().enumerate() {
         let priv_key = SecretKey::parse(item.1).unwrap();
-        let inst = new_secp256k1_instruction_2_0(
-            &priv_key,
-            senders_message.as_ref(),
-            (2 * item.0) as u8,
-        );
+        let inst =
+            new_secp256k1_instruction_2_0(&priv_key, senders_message.as_ref(), (2 * item.0) as u8);
         instructions.push(inst);
         instructions.push(
             instruction::submit_attestations(
@@ -57,7 +72,7 @@ async fn success_transfer() {
                 &reward_manager.pubkey(),
                 &signers[item.0],
                 &context.payer.pubkey(),
-                transfer_id.to_string()
+                transfer_id.to_string(),
             )
             .unwrap(),
         );
@@ -75,7 +90,7 @@ async fn success_transfer() {
             &reward_manager.pubkey(),
             &oracle_derived_address,
             &context.payer.pubkey(),
-            transfer_id.to_string()
+            transfer_id.to_string(),
         )
         .unwrap(),
     );
@@ -89,11 +104,15 @@ async fn success_transfer() {
 
     context.banks_client.process_transaction(tx).await.unwrap();
 
-
     let transfer_account = get_transfer_account(&reward_manager, transfer_id);
     let verified_messages_account = get_messages_account(&reward_manager, transfer_id);
-    let verified_messages_data = get_account(&mut context, &verified_messages_account).await.unwrap();
-    assert_eq!(verified_messages_data.lamports, rent.minimum_balance(VERIFIED_MESSAGES_LEN));
+    let verified_messages_data = get_account(&mut context, &verified_messages_account)
+        .await
+        .unwrap();
+    assert_eq!(
+        verified_messages_data.lamports,
+        rent.minimum_balance(VERIFIED_MESSAGES_LEN)
+    );
 
     let tx = Transaction::new_signed_with_payer(
         &[instruction::evaluate_attestations(
@@ -116,9 +135,7 @@ async fn success_transfer() {
 
     context.banks_client.process_transaction(tx).await.unwrap();
 
-    let transfer_account_data = get_account(&mut context, &transfer_account)
-        .await
-        .unwrap();
+    let transfer_account_data = get_account(&mut context, &transfer_account).await.unwrap();
 
     assert_eq!(
         transfer_account_data.lamports,
@@ -127,14 +144,16 @@ async fn success_transfer() {
     assert_eq!(transfer_account_data.data.len(), TRANSFER_ACC_SPACE);
 
     // Assert that we transferred the expected amount
-    let recipient_account_data = get_account(& mut context, &recipient_sol_key.derive.address).await.unwrap();
-    let recipient_account = spl_token::state::Account::unpack(&recipient_account_data.data.as_slice()).unwrap();
+    let recipient_account_data = get_account(&mut context, &recipient_sol_key.derive.address)
+        .await
+        .unwrap();
+    let recipient_account =
+        spl_token::state::Account::unpack(&recipient_account_data.data.as_slice()).unwrap();
     assert_eq!(recipient_account.amount, 10_000u64);
 
     // Assert that we wiped the verified messages account
     let verified_messages_data = get_account(&mut context, &verified_messages_account).await;
     assert!(verified_messages_data.is_none());
-    
 }
 
 #[tokio::test]
@@ -164,8 +183,15 @@ async fn invalid_messages_are_wiped() {
     let operators: [EthereumAddress; 4] = rng.gen();
 
     let mut signers: [Pubkey; 4] = unsafe { MaybeUninit::zeroed().assume_init() };
-    for (i, key)in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context,key, operators[i]).await;
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -174,11 +200,8 @@ async fn invalid_messages_are_wiped() {
     // Add 4 DN attestations, no oracle
     for item in keys.iter().enumerate() {
         let priv_key = SecretKey::parse(item.1).unwrap();
-        let inst = new_secp256k1_instruction_2_0(
-            &priv_key,
-            senders_message.as_ref(),
-            (2 * item.0) as u8,
-        );
+        let inst =
+            new_secp256k1_instruction_2_0(&priv_key, senders_message.as_ref(), (2 * item.0) as u8);
         instructions.push(inst);
         instructions.push(
             instruction::submit_attestations(
@@ -186,7 +209,7 @@ async fn invalid_messages_are_wiped() {
                 &reward_manager.pubkey(),
                 &signers[item.0],
                 &context.payer.pubkey(),
-                transfer_id.to_string()
+                transfer_id.to_string(),
             )
             .unwrap(),
         );
@@ -237,8 +260,7 @@ async fn invalid_messages_are_wiped() {
     assert_custom_error(res, 0, AudiusProgramError::NotEnoughSigners);
 
     // Ensure that the transfer account wasn't created
-    let transfer_account_data = get_account(&mut context, &transfer_account)
-        .await;
+    let transfer_account_data = get_account(&mut context, &transfer_account).await;
     assert!(transfer_account_data.is_none());
 
     // Try again to submit, this time with correct instructions
@@ -247,11 +269,8 @@ async fn invalid_messages_are_wiped() {
     // Only use operators 1-3
     for item in keys[..3].iter().enumerate() {
         let priv_key = SecretKey::parse(item.1).unwrap();
-        let inst = new_secp256k1_instruction_2_0(
-            &priv_key,
-            senders_message.as_ref(),
-            (2 * item.0) as u8,
-        );
+        let inst =
+            new_secp256k1_instruction_2_0(&priv_key, senders_message.as_ref(), (2 * item.0) as u8);
         instructions.push(inst);
         instructions.push(
             instruction::submit_attestations(
@@ -259,7 +278,7 @@ async fn invalid_messages_are_wiped() {
                 &reward_manager.pubkey(),
                 &signers[item.0],
                 &context.payer.pubkey(),
-                transfer_id.to_string()
+                transfer_id.to_string(),
             )
             .unwrap(),
         );
@@ -277,7 +296,7 @@ async fn invalid_messages_are_wiped() {
             &reward_manager.pubkey(),
             &oracle_derived_address,
             &context.payer.pubkey(),
-            transfer_id.to_string()
+            transfer_id.to_string(),
         )
         .unwrap(),
     );
@@ -311,21 +330,22 @@ async fn invalid_messages_are_wiped() {
         .unwrap()],
         Some(&context.payer.pubkey()),
         &[&context.payer],
-        recent_blockhash
+        recent_blockhash,
     );
 
     context.banks_client.process_transaction(tx).await.unwrap();
 
     // Ensure we created the transfer account
-    let transfer_account_data = get_account(&mut context, &transfer_account)
-        .await;
+    let transfer_account_data = get_account(&mut context, &transfer_account).await;
     assert!(transfer_account_data.is_some());
 
-    let recipient_account_data = get_account(& mut context, &recipient_sol_key.derive.address).await.unwrap();
-    let recipient_account = spl_token::state::Account::unpack(&recipient_account_data.data.as_slice()).unwrap();
+    let recipient_account_data = get_account(&mut context, &recipient_sol_key.derive.address)
+        .await
+        .unwrap();
+    let recipient_account =
+        spl_token::state::Account::unpack(&recipient_account_data.data.as_slice()).unwrap();
     assert_eq!(recipient_account.amount, 10_000u64)
 }
-
 
 #[tokio::test]
 /// Purposefully send a corrupted DN attestation
@@ -345,7 +365,7 @@ async fn failure_transfer_invalid_message_format() {
         tokens_amount,
         eth_oracle_address,
         ..
-     } = setup_test_environment().await;
+    } = setup_test_environment().await;
 
     // Use invalid message format
     let senders_message = vote_message!([
@@ -364,7 +384,14 @@ async fn failure_transfer_invalid_message_format() {
     let operators: [EthereumAddress; 3] = rng.gen();
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -388,7 +415,7 @@ async fn failure_transfer_invalid_message_format() {
                 &reward_manager.pubkey(),
                 &signers[item.0],
                 &context.payer.pubkey(),
-                transfer_id.to_string()
+                transfer_id.to_string(),
             )
             .unwrap(),
         );
@@ -406,7 +433,7 @@ async fn failure_transfer_invalid_message_format() {
             &reward_manager.pubkey(),
             &oracle_derived_address,
             &context.payer.pubkey(),
-            transfer_id.to_string()
+            transfer_id.to_string(),
         )
         .unwrap(),
     );
@@ -428,9 +455,15 @@ async fn failure_transfer_invalid_message_format() {
         recipient_eth_key,
     )
     .unwrap();
-    println!("Creating...Recipient sol key = {:?}", &recipient_sol_key.derive.address);
+    println!(
+        "Creating...Recipient sol key = {:?}",
+        &recipient_sol_key.derive.address
+    );
     create_recipient_with_claimable_program(&mut context, &mint.pubkey(), recipient_eth_key).await;
-    println!("Created recipient sol key = {:?}", &recipient_sol_key.derive.address);
+    println!(
+        "Created recipient sol key = {:?}",
+        &recipient_sol_key.derive.address
+    );
 
     let tx = Transaction::new_signed_with_payer(
         &[instruction::evaluate_attestations(
@@ -458,7 +491,6 @@ async fn failure_transfer_invalid_message_format() {
 #[tokio::test]
 /// Purposefully send a corrupted AAO Attestation
 async fn failure_transfer_invalid_oracle_message_format() {
-
     let TestConstants {
         reward_manager,
         oracle_priv_key,
@@ -489,7 +521,14 @@ async fn failure_transfer_invalid_oracle_message_format() {
     let operators: [EthereumAddress; 3] = rng.gen();
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -513,7 +552,7 @@ async fn failure_transfer_invalid_oracle_message_format() {
                 &reward_manager.pubkey(),
                 &signers[item.0],
                 &context.payer.pubkey(),
-                transfer_id.to_string()
+                transfer_id.to_string(),
             )
             .unwrap(),
         );
@@ -531,7 +570,7 @@ async fn failure_transfer_invalid_oracle_message_format() {
             &reward_manager.pubkey(),
             &oracle_derived_address,
             &context.payer.pubkey(),
-            transfer_id.to_string()
+            transfer_id.to_string(),
         )
         .unwrap(),
     );
@@ -584,14 +623,21 @@ async fn failure_transfer_incorrect_number_of_verified_messages() {
         mut rng,
         manager_account,
         ..
-     } = setup_test_environment().await;
+    } = setup_test_environment().await;
 
     // Generate data and create senders
     let keys: [[u8; 32]; 3] = rng.gen();
     let operators: [EthereumAddress; 3] = rng.gen();
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&reward_manager, &manager_account, &mut context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
@@ -615,7 +661,7 @@ async fn failure_transfer_incorrect_number_of_verified_messages() {
                 &reward_manager.pubkey(),
                 &signers[item.0],
                 &context.payer.pubkey(),
-                transfer_id.to_string()
+                transfer_id.to_string(),
             )
             .unwrap(),
         );
@@ -627,7 +673,7 @@ async fn failure_transfer_incorrect_number_of_verified_messages() {
             &reward_manager.pubkey(),
             &oracle_derived_address,
             &context.payer.pubkey(),
-            transfer_id.to_string()
+            transfer_id.to_string(),
         )
         .unwrap(),
     );
@@ -675,7 +721,7 @@ async fn failure_occupy_transfer_account() {
 }
 
 #[tokio::test]
-/// Ensure we fail trying to disburse multiple times for the same challenge 
+/// Ensure we fail trying to disburse multiple times for the same challenge
 async fn failure_multiple_disbursements() {
     let mut c = setup_test_environment().await;
 
@@ -684,12 +730,23 @@ async fn failure_multiple_disbursements() {
     let operators: [EthereumAddress; 3] = c.rng.gen();
     let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
     for (i, key) in keys.iter().enumerate() {
-        let derived_address = create_sender_from(&c.reward_manager, &c.manager_account, &mut c.context, key, operators[i]).await;
+        let derived_address = create_sender_from(
+            &c.reward_manager,
+            &c.manager_account,
+            &mut c.context,
+            key,
+            operators[i],
+        )
+        .await;
         signers[i] = derived_address;
     }
 
-    async fn submit_and_evaluate<'a>(keys: [[u8;32]; 3], constants: &mut TestConstants<'a>, signers: [Pubkey;3]) -> Result<(), TransportError> {
-        let TestConstants { 
+    async fn submit_and_evaluate<'a>(
+        keys: [[u8; 32]; 3],
+        constants: &mut TestConstants<'a>,
+        signers: [Pubkey; 3],
+    ) -> Result<(), TransportError> {
+        let TestConstants {
             reward_manager,
             bot_oracle_message,
             oracle_priv_key,
@@ -704,7 +761,7 @@ async fn failure_multiple_disbursements() {
         let mut context = &mut constants.context;
 
         let mut instructions = Vec::<Instruction>::new();
-    
+
         // Add 3 messages and bot oracle
         for item in keys.iter().enumerate() {
             let priv_key = SecretKey::parse(item.1).unwrap();
@@ -720,12 +777,12 @@ async fn failure_multiple_disbursements() {
                     &reward_manager.pubkey(),
                     &signers[item.0],
                     &context.payer.pubkey(),
-                    transfer_id.to_string()
+                    transfer_id.to_string(),
                 )
                 .unwrap(),
             );
         }
-    
+
         let oracle_sign = new_secp256k1_instruction_2_0(
             &oracle_priv_key,
             bot_oracle_message.as_ref(),
@@ -738,24 +795,24 @@ async fn failure_multiple_disbursements() {
                 &reward_manager.pubkey(),
                 &oracle_derived_address,
                 &context.payer.pubkey(),
-                transfer_id.to_string()
+                transfer_id.to_string(),
             )
             .unwrap(),
         );
-    
+
         let latest_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
         let tx = Transaction::new_signed_with_payer(
             &instructions,
             Some(&context.payer.pubkey()),
             &[&context.payer],
-            latest_blockhash
+            latest_blockhash,
         );
-    
+
         context.banks_client.process_transaction(tx).await.unwrap();
-    
+
         let verified_messages_account = get_messages_account(&reward_manager, transfer_id);
         let latest_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
-    
+
         let tx = Transaction::new_signed_with_payer(
             &[instruction::evaluate_attestations(
                 &audius_reward_manager::id(),
@@ -772,14 +829,17 @@ async fn failure_multiple_disbursements() {
             .unwrap()],
             Some(&context.payer.pubkey()),
             &[&context.payer],
-            latest_blockhash
+            latest_blockhash,
         );
-    
+
         let res = context.banks_client.process_transaction(tx).await;
 
         // Assert that we transferred the expected amount
-        let recipient_account_data = get_account(& mut context, &recipient_sol_key.derive.address).await.unwrap();
-        let recipient_account = spl_token::state::Account::unpack(&recipient_account_data.data.as_slice()).unwrap();
+        let recipient_account_data = get_account(&mut context, &recipient_sol_key.derive.address)
+            .await
+            .unwrap();
+        let recipient_account =
+            spl_token::state::Account::unpack(&recipient_account_data.data.as_slice()).unwrap();
         assert_eq!(recipient_account.amount, 10_000u64);
 
         res
@@ -807,11 +867,10 @@ async fn failure_multiple_disbursements() {
     assert_custom_error(res, 0, AudiusProgramError::AlreadySent);
 }
 
-
 #[tokio::test]
 /// Ensure we fail if only AAO attestations and no Discovery Node attestations are included
 async fn failure_only_aao_attestations() {
-    let TestConstants { 
+    let TestConstants {
         reward_manager,
         bot_oracle_message,
         oracle_priv_key,
@@ -828,7 +887,7 @@ async fn failure_only_aao_attestations() {
 
     // Add three more oracles, keeping track of them in a vec
     let mut oracles = vec![(oracle_derived_address, oracle_priv_key)];
-    
+
     for _ in 0..3 {
         let key: [u8; 32] = rng.gen();
         let oracle_priv_key = SecretKey::parse(&key).unwrap();
@@ -864,7 +923,7 @@ async fn failure_only_aao_attestations() {
                 &reward_manager.pubkey(),
                 oracle_derived_address,
                 &context.payer.pubkey(),
-                transfer_id.to_string()
+                transfer_id.to_string(),
             )
             .unwrap(),
         );
