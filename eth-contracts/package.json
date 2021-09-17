@@ -38,7 +38,7 @@
     "ethlint": "^1.2.3",
     "fs-extra": "^7.0.0",
     "lodash": "^4.17.15",
-    "truffle": "5.1.35",
+    "truffle": "5.1.67",
     "truffle-hdwallet-provider": "^1.0.13"
   },
   "devDependencies": {
