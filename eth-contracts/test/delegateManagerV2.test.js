@@ -1765,7 +1765,7 @@ contract('DelegateManager', async (accounts) => {
       // Fail to modify spMinDelegationAmount for invalid SP
       await _lib.assertRevert(
         delegateManager.updateSPMinDelegationAmount(stakerAccountInvalid, spMinDelegationAmount, { from: stakerAccountInvalid }),
-        'Only callable by valid registered SP'
+        'Only callable by valid Service Provider'
       )
     })
 

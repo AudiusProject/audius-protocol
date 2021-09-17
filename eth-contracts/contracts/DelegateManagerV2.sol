@@ -165,8 +165,8 @@ contract DelegateManagerV2 is InitializableV2 {
 
     // ========================================= New State Variables =========================================
 
-    string private constant ERROR_ONLY_SP = (
-        "DelegateManager: Only callable by valid SP"
+    string private constant ERROR_ONLY_SERVICE_PROVIDER = (
+        "DelegateManager: Only callable by valid Service Provider"
     );
 
     // minDelegationAmount per service provider
@@ -261,6 +261,8 @@ contract DelegateManagerV2 is InitializableV2 {
             delegatorTotalStake[delegator].add(_amount)
         );
 
+        // Need to ensure delegationAmount is >= both minDelegationAmount and spMinDelegationAmount
+        //  since spMinDelegationAmount by default is 0
         require(
             (delegateInfo[delegator][_targetSP] >= minDelegationAmount &&
              delegateInfo[delegator][_targetSP] >= spMinDelegationAmounts[_targetSP]
@@ -417,6 +419,9 @@ contract DelegateManagerV2 is InitializableV2 {
             delegatorTotalStake[delegator].sub(unstakeAmount)
         );
 
+        // Need to ensure delegationAmount is >= both minDelegationAmount and spMinDelegationAmount
+        //  since spMinDelegationAmount by default is 0
+        // Only exception is when delegating entire stake down to 0
         require(
             (
                 delegateInfo[delegator][serviceProvider] >= minDelegationAmount &&
@@ -757,7 +762,7 @@ contract DelegateManagerV2 is InitializableV2 {
     ) external {
         _requireIsInitialized();
 
-        require(msg.sender == _serviceProvider, ERROR_ONLY_SP);
+        require(msg.sender == _serviceProvider, ERROR_ONLY_SERVICE_PROVIDER);
 
         /**
          * Ensure _serviceProvider is a valid SP
@@ -767,7 +772,7 @@ contract DelegateManagerV2 is InitializableV2 {
             ServiceProviderFactory(serviceProviderFactoryAddress)
             .getServiceProviderDetails(_serviceProvider)
         );
-        require(numEndpoints > 0, "DelegateManager: Only callable by valid registered SP");
+        require(numEndpoints > 0, ERROR_ONLY_SERVICE_PROVIDER);
 
         spMinDelegationAmounts[_serviceProvider] = _spMinDelegationAmount;
 
