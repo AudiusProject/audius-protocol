@@ -110,9 +110,7 @@ const healthCheckVerboseController = async (req) => {
     getMonitors,
     numberOfCPUs,
     TranscodingQueue.getTranscodeQueueJobs,
-    FileProcessingQueue.getFileProcessingQueueJobs,
-    getAggregateSyncData,
-    getLatestSyncData
+    FileProcessingQueue.getFileProcessingQueueJobs
   )
 
   return successResponse({

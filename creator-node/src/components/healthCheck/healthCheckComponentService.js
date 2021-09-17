@@ -180,7 +180,7 @@ const healthCheck = async ({ libs, snapbackSM } = {}, logger, sequelize, getMoni
 }
 
 // TODO remove verbose health check after fully deprecated
-const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, getMonitors, numberOfCPUs, getTranscodeQueueJobs, getFileProcessingQueueJobs, getAggregateSyncData, getLatestSyncData) => {
+const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, getMonitors, numberOfCPUs, getTranscodeQueueJobs, getFileProcessingQueueJobs) => {
   return healthCheck({ libs, snapbackSM }, logger, sequelize, getMonitors, getTranscodeQueueJobs, getFileProcessingQueueJobs, numberOfCPUs)
 }
 
