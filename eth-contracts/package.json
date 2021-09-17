@@ -38,11 +38,12 @@
     "ethlint": "^1.2.3",
     "fs-extra": "^7.0.0",
     "lodash": "^4.17.15",
-    "truffle": "5.1.23",
+    "truffle": "5.1.35",
     "truffle-hdwallet-provider": "^1.0.13"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "0.5.5",
+    "@openzeppelin/truffle-upgrades": "^1.9.1",
     "async": "^2.6.1",
     "babel-register": "^6.26.0",
     "bignumber.js": "8.0.1",

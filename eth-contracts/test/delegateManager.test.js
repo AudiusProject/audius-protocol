@@ -1,5 +1,7 @@
 import * as _lib from '../utils/lib.js'
 const { time, expectEvent } = require('@openzeppelin/test-helpers')
+const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades')
+
 
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
@@ -7,6 +9,7 @@ const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const Staking = artifacts.require('Staking')
 const DelegateManager = artifacts.require('DelegateManager')
 const DelegateManagerV2 = artifacts.require('DelegateManagerV2')
+const DelegateManagerV2Bad = artifacts.require('DelegateManagerV2Bad')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -2824,6 +2827,21 @@ contract('DelegateManager', async (accounts) => {
 
       // Without a contract change this fails as the DelegateManager does not update validBounds
       assert.isTrue(spDetails3.validBounds, 'Expected validBounds == true')
+    })
+
+    it('Test proxy upgrade safety via openzeppelin tooling', async () => {
+      // https://docs.openzeppelin.com/upgrades-plugins/1.x/truffle-upgrades#test-usage
+      // deployProxy and upgradeProxy run some tests to ensure
+
+      const delManP1 = await deployProxy(DelegateManager, [token.address, governance.address, UNDELEGATE_LOCKUP_DURATION])
+      await upgradeProxy(delManP1, DelegateManagerV2)
+
+      const delManP2 = await deployProxy(DelegateManager, [token.address, governance.address, UNDELEGATE_LOCKUP_DURATION])
+      try {
+        await upgradeProxy(delManP2, DelegateManagerV2Bad)
+      } catch (e) {
+        assert.isTrue(e.message.includes('New storage layout is incompatible'))
+      }
     })
 
   })
