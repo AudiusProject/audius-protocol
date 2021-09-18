@@ -1,4 +1,5 @@
 import { Action } from '@reduxjs/toolkit'
+import { shuffle } from 'lodash'
 import { call, put, select, takeEvery } from 'redux-saga/effects'
 
 import User from 'models/User'
@@ -55,11 +56,7 @@ function* fetchTopArtists() {
   )
   if (filteredArtists.length > 0) {
     // Pick 5 at random
-    const selectedArtists = []
-    for (let i = 0; i < 5; i++) {
-      const index = Math.floor(Math.random() * filteredArtists.length)
-      selectedArtists.push(filteredArtists[index])
-    }
+    const selectedArtists = shuffle(filteredArtists).slice(0, 5)
     return selectedArtists
   }
   return []
