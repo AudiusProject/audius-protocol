@@ -63,8 +63,11 @@ export type SignOnProps = {
     profileImg?: { url: string; file: any },
     skipEdit?: boolean
   ) => void
+  recordInstagramStart: () => void
+  recordTwitterStart: () => void
   validateHandle: (
     handle: string,
+    isOauthVerified: boolean,
     onValidate?: (error: boolean) => void
   ) => void
   onAddFollows: (followIds: ID[]) => void
@@ -106,6 +109,8 @@ const SignOnPage = ({
   onSetProfileImage,
   setTwitterProfile,
   setInstagramProfile,
+  recordTwitterStart,
+  recordInstagramStart,
   validateHandle,
   onAddFollows,
   onRemoveFollows,
@@ -230,6 +235,8 @@ const SignOnPage = ({
           setProfileImage={onSetProfileImage}
           setTwitterProfile={setTwitterProfile}
           setInstagramProfile={setInstagramProfile}
+          recordTwitterStart={recordTwitterStart}
+          recordInstagramStart={recordInstagramStart}
           validateHandle={validateHandle}
           onNextPage={onNextPage}
         />

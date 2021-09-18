@@ -41,8 +41,11 @@ type ProfilePageProps = {
   onHandleChange: (handle: string) => void
   onNameChange: (name: string) => void
   setProfileImage: (img: { url: string; file: any }) => void
+  recordTwitterStart: () => void
+  recordInstagramStart: () => void
   validateHandle: (
     handle: string,
+    isOauthVerified: boolean,
     onValidate?: (error: boolean) => void
   ) => void
 }
@@ -83,6 +86,8 @@ const ProfilePage = (props: ProfilePageProps) => {
     onNameChange,
     onNextPage,
     twitterId,
+    recordTwitterStart,
+    recordInstagramStart,
     setTwitterProfile,
     setInstagramProfile,
     validateHandle
@@ -114,18 +119,22 @@ const ProfilePage = (props: ProfilePageProps) => {
         requiresUserReview
       } = await formatTwitterProfile(twitterProfile)
 
-      validateHandle(profile.screen_name, (error: boolean) => {
-        setTwitterProfile(
-          uuid,
-          profile,
-          profileImage,
-          profileBanner,
-          !error && !requiresUserReview
-        )
-        setShowTwitterOverlay(false)
-        setIsInitial(false)
-        setIsLoading(false)
-      })
+      validateHandle(
+        profile.screen_name,
+        profile.verified,
+        (error: boolean) => {
+          setTwitterProfile(
+            uuid,
+            profile,
+            profileImage,
+            profileBanner,
+            !error && !requiresUserReview
+          )
+          setShowTwitterOverlay(false)
+          setIsInitial(false)
+          setIsLoading(false)
+        }
+      )
     } catch (err) {
       console.error(err)
       setShowTwitterOverlay(false)
@@ -144,14 +153,18 @@ const ProfilePage = (props: ProfilePageProps) => {
         profileImage,
         requiresUserReview
       } = await formatInstagramProfile(instagramProfile)
-      validateHandle(profile.username, (error: boolean) => {
-        setInstagramProfile(
-          uuid,
-          profile,
-          profileImage,
-          !error && !requiresUserReview
-        )
-      })
+      validateHandle(
+        profile.username,
+        profile.is_verified,
+        (error: boolean) => {
+          setInstagramProfile(
+            uuid,
+            profile,
+            profileImage,
+            !error && !requiresUserReview
+          )
+        }
+      )
     } catch (err) {
       // Continue if error
     } finally {
@@ -191,6 +204,8 @@ const ProfilePage = (props: ProfilePageProps) => {
           isLoading={isLoading}
           onFailure={setFinishedLoading}
           showTwitterOverlay={showTwitterOverlay}
+          onTwitterStart={recordTwitterStart}
+          onInstagramStart={recordInstagramStart}
           onTwitterLogin={onTwitterLogin}
           onInstagramLogin={onInstagramLogin}
           onToggleTwitterOverlay={onToggleTwitterOverlay}
