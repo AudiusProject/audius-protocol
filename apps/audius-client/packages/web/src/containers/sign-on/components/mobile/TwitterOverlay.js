@@ -39,6 +39,16 @@ const TwitterOverlay = props => {
     BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION
   )
 
+  const onClickTwitter = () => {
+    props.onTwitterStart()
+    props.onClick()
+  }
+
+  const onClickInstagram = () => {
+    props.onInstagramStart()
+    props.onClick()
+  }
+
   return (
     <Transition
       items={props.showTwitterOverlay}
@@ -78,7 +88,7 @@ const TwitterOverlay = props => {
                       className={styles.instagramButton}
                       textClassName={styles.btnText}
                       iconClassName={styles.btnIcon}
-                      onClick={props.onClick}
+                      onClick={onClickInstagram}
                       onSuccess={props.onInstagramLogin}
                       onFailure={props.onFailure}
                       text={messages.instagramButton}
@@ -86,7 +96,7 @@ const TwitterOverlay = props => {
                   )}
                   <TwitterAuthButton
                     showIcon={false}
-                    onClick={props.onClick}
+                    onClick={onClickTwitter}
                     className={styles.twitterButton}
                     iconClassName={styles.btnIcon}
                     textLabel={messages.twitterButton}
@@ -131,6 +141,8 @@ TwitterOverlay.propTypes = {
   header: PropTypes.string,
   showTwitterOverlay: PropTypes.bool,
   initial: PropTypes.bool,
+  onTwitterStart: PropTypes.func,
+  onInstagramStart: PropTypes.func,
   onTwitterLogin: PropTypes.func,
   onInstagramLogin: PropTypes.func,
   onToggleTwitterOverlay: PropTypes.func,
