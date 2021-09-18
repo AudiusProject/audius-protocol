@@ -108,11 +108,12 @@ export function validateEmailFailed(error) {
 /**
  * Requests the backend to check if handle is valid
  * @param {string} handle the handle to check
+ * @param {boolean} isOauthVerified whether or not the user is verified via oauth
  * @param {((error: boolean) => void) | undefined} onValidate
  *  callback to fire on successful validation
  */
-export function validateHandle(handle, onValidate) {
-  return { type: VALIDATE_HANDLE, handle, onValidate }
+export function validateHandle(handle, isOauthVerified, onValidate) {
+  return { type: VALIDATE_HANDLE, handle, isOauthVerified, onValidate }
 }
 
 export function validateHandleSucceeded() {

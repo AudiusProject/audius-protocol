@@ -70,20 +70,24 @@ export class ProfilePage extends Component {
         requiresUserReview
       } = await formatTwitterProfile(twitterProfile)
 
-      this.props.validateHandle(profile.screen_name, error => {
-        this.props.setTwitterProfile(
-          uuid,
-          profile,
-          profileImage,
-          profileBanner,
-          !error && !requiresUserReview
-        )
-        this.setState({
-          showTwitterOverlay: false,
-          initial: false,
-          isLoading: false
-        })
-      })
+      this.props.validateHandle(
+        profile.screen_name,
+        profile.verified,
+        error => {
+          this.props.setTwitterProfile(
+            uuid,
+            profile,
+            profileImage,
+            profileBanner,
+            !error && !requiresUserReview
+          )
+          this.setState({
+            showTwitterOverlay: false,
+            initial: false,
+            isLoading: false
+          })
+        }
+      )
     } catch (err) {
       console.error(err)
       this.setState({
@@ -101,19 +105,23 @@ export class ProfilePage extends Component {
         profileImage,
         requiresUserReview
       } = await formatInstagramProfile(uuid, profile)
-      this.props.validateHandle(profile.username, error => {
-        this.props.setInstagramProfile(
-          uuid,
-          profile,
-          profileImage,
-          !error && !requiresUserReview
-        )
-        this.setState({
-          showTwitterOverlay: false,
-          initial: false,
-          isLoading: false
-        })
-      })
+      this.props.validateHandle(
+        profile.username,
+        profile.is_verified,
+        error => {
+          this.props.setInstagramProfile(
+            uuid,
+            profile,
+            profileImage,
+            !error && !requiresUserReview
+          )
+          this.setState({
+            showTwitterOverlay: false,
+            initial: false,
+            isLoading: false
+          })
+        }
+      )
     } catch (err) {
       this.setState({
         showTwitterOverlay: false,
@@ -137,6 +145,8 @@ export class ProfilePage extends Component {
       isVerified,
       setProfileImage,
       twitterId,
+      recordTwitterStart,
+      recordInstagramStart,
       isMobile
     } = this.props
     const { showTwitterOverlay, initial, isLoading } = this.state
@@ -175,6 +185,8 @@ export class ProfilePage extends Component {
             isLoading={isLoading}
             showTwitterOverlay={showTwitterOverlay}
             onClick={this.setIsLoading}
+            onTwitterStart={recordTwitterStart}
+            onInstagramStart={recordInstagramStart}
             onFailure={this.setDidFinishLoading}
             onTwitterLogin={this.onTwitterLogin}
             onInstagramLogin={this.onInstagramLogin}
