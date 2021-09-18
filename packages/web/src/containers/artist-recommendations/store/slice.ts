@@ -10,21 +10,17 @@ const slice = createSlice({
   initialState,
   reducers: {
     fetchRelatedArtists: (state, action: PayloadAction<{ userId: ID }>) => {
-      return {
-        ...state,
-        [action.payload.userId]: {
-          ...state[action.payload.userId],
-          status: Status.LOADING
-        }
+      state[action.payload.userId] = {
+        ...state[action.payload.userId],
+        status: Status.LOADING
       }
     },
     fetchRelatedArtistsSucceeded: (
       state,
       action: PayloadAction<{ userId: ID; relatedArtistIds: ID[] }>
     ) => {
-      return {
-        ...state,
-        [action.payload.userId]: {
+      if (!state[action.payload.userId].relatedArtistIds) {
+        state[action.payload.userId] = {
           relatedArtistIds: action.payload.relatedArtistIds,
           status: Status.SUCCESS
         }
