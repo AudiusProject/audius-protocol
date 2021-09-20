@@ -8,8 +8,10 @@ declare global {
   }
 }
 
-const IS_WEB_HOSTNAME =
-  window.location.hostname === process.env.REACT_APP_PUBLIC_HOSTNAME
+// Check for string inclusion instead of match to catch subdomains like www.
+const IS_WEB_HOSTNAME = window.location.hostname.includes(
+  process.env.REACT_APP_PUBLIC_HOSTNAME || 'audius.co'
+)
 
 let blockList: Set<string>
 
