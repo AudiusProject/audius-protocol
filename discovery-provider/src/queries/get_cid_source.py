@@ -146,6 +146,8 @@ def get_cid_source(cid):
                         response = [dict(row) for row in cid_source]
         else:
             logger.warning("get_cid_source | Failed to acquire get_cid_source_lock")
+
+        return response
     except Exception as e:
         logger.error("get_cid_source | Error with query: %s", exc_info=True)
         raise e
@@ -153,4 +155,3 @@ def get_cid_source(cid):
         if have_lock:
             update_lock.release()
 
-        return response
