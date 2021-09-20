@@ -22,6 +22,7 @@ def get_cid_source(cid):
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
+        response = []
         if have_lock:
             db = db_session.get_db_read_replica()
             with db.scoped_session() as session:
@@ -102,54 +103,55 @@ def get_cid_source(cid):
                     cid_source_res, {"cid": cid}
                 ).fetchall()
 
-                # If something is found, return it
+                # If something is found, set response
                 if len(cid_source) != 0:
-                    return [dict(row) for row in cid_source]
+                    response = [dict(row) for row in cid_source]
 
-                # Check to see if CID is a segment
-                cid_source_res = sqlalchemy.text(
-                    """
-                    WITH cid_const AS (VALUES (:cid))
-                        SELECT
-                            "track_id" as "id",
-                            'tracks' as "table_name",
-                            'segment' as "type",
-                            "is_current"
-                        FROM
-                            (
-                                SELECT
-                                    jb -> 'duration' as "d",
-                                    jb -> 'multihash' :: varchar as "cid",
-                                    "track_id",
-                                    "is_current"
-                                FROM
-                                    (
-                                        SELECT
-                                            jsonb_array_elements("track_segments") as "jb",
-                                            "track_id",
-                                            "is_current"
-                                        FROM
-                                            "tracks"
-                                    ) as a
-                            ) as a2
-                        WHERE
-                            "cid" ? (table cid_const)
-                    """
-                )
+                # If CID was not found, check to see if it is a type segment
+                if len(response) == 0:
+                    # Check to see if CID is a segment
+                    cid_source_res = sqlalchemy.text(
+                        """
+                        WITH cid_const AS (VALUES (:cid))
+                            SELECT
+                                "track_id" as "id",
+                                'tracks' as "table_name",
+                                'segment' as "type",
+                                "is_current"
+                            FROM
+                                (
+                                    SELECT
+                                        jb -> 'duration' as "d",
+                                        jb -> 'multihash' :: varchar as "cid",
+                                        "track_id",
+                                        "is_current"
+                                    FROM
+                                        (
+                                            SELECT
+                                                jsonb_array_elements("track_segments") as "jb",
+                                                "track_id",
+                                                "is_current"
+                                            FROM
+                                                "tracks"
+                                        ) as a
+                                ) as a2
+                            WHERE
+                                "cid" ? (table cid_const)
+                        """
+                    )
 
-                cid_source = session.execute(cid_source_res, {"cid": cid}).fetchall()
+                    cid_source = session.execute(cid_source_res, {"cid": cid}).fetchall()
 
-                # If something is found, return it
-                if len(cid_source) != 0:
-                    return [dict(row) for row in cid_source]
-
-                # Nothing was found. CID is not present anywhere
-                return []
+                    # If something is found, set response
+                    if len(cid_source) != 0:
+                        response = [dict(row) for row in cid_source]
         else:
-            logger.warn("get_cid_source | Failed to acquire get_cid_source_lock")
+            logger.warning("get_cid_source | Failed to acquire get_cid_source_lock")
     except Exception as e:
         logger.error("get_cid_source | Error with query: %s", exc_info=True)
         raise e
     finally:
         if have_lock:
             update_lock.release()
+
+        return response
