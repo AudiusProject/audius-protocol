@@ -5,18 +5,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol
 import "@openzeppelin/contracts-ethereum-package/contracts/utils/Address.sol";
 import "./InitializableV2.sol";
 import "./Governance.sol";
-
-interface Wormhole {
-    function transferTokens(
-        address token,
-        uint256 amount,
-        uint16 recipientChain,
-        bytes32 recipient,
-        uint256 arbiterFee,
-        uint32 nonce
-    ) external;
-}
-
+import "./IWormhole.sol";
 
 contract EthRewardsManager is InitializableV2 {
     using SafeERC20 for ERC20;
