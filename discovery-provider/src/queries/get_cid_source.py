@@ -109,7 +109,6 @@ def get_cid_source(cid):
 
                 # If CID was not found, check to see if it is a type segment
                 if len(response) == 0:
-                    # Check to see if CID is a segment
                     cid_source_res = sqlalchemy.text(
                         """
                         WITH cid_const AS (VALUES (:cid))
