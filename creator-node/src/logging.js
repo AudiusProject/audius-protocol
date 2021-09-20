@@ -44,8 +44,8 @@ function getRequestLoggingContext (req, requestID) {
     requestHostname: req.hostname,
     requestUrl: urlParts[0],
     requestQueryParams: urlParts.length > 1 ? urlParts[1] : undefined,
-    requestWallet: req.get('user-wallet-addr'),
-    requestBlockchainUserId: req.get('user-id')
+    requestWallet: req.get('audius-user-wallet-addr') || req.get('user-wallet-addr'),
+    requestBlockchainUserId: req.get('audius-user-id') || req.get('user-id')
   }
 }
 
