@@ -154,4 +154,3 @@ def get_cid_source(cid):
     finally:
         if have_lock:
             update_lock.release()
-
