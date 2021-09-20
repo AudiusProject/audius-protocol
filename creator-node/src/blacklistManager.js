@@ -230,18 +230,17 @@ class BlacklistManager {
   static async remove ({ values, type }) {
     await this.removeFromDb({ values, type })
 
-    // remove to redis
     switch (type) {
       case 'USER':
-        // remove user ids to redis under userid key + its associated track segments
+        // Remove user ids from redis under userid key + its associated track segments
         await this.fetchCIDsAndRemoveFromRedis({ userIdsToRemove: values })
         break
       case 'TRACK':
-        // remove track ids to redis under trackid key + its associated track segments
+        // Remove track ids frmo redis under trackid key + its associated track segments
         await this.fetchCIDsAndRemoveFromRedis({ trackIdsToRemove: values })
         break
       case 'CID':
-        // remove segments to redis under segment key
+        // Remove segments from redis under segment key
         await this.fetchCIDsAndRemoveFromRedis({ segmentsToRemove: values })
         break
     }
