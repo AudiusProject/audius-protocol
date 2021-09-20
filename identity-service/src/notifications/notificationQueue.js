@@ -5,11 +5,16 @@ const { sendBrowserNotification, sendSafariNotification } = require('../webPush'
 // TODO (DM) - move this into redis
 const pushNotificationQueue = {
   PUSH_NOTIFICATIONS_BUFFER: [],
+  PUSH_SOLANA_NOTIFICATIONS_BUFFER: [],
   PUSH_ANNOUNCEMENTS_BUFFER: []
 }
 
 async function publish (message, userId, tx, playSound = true, title = null, types) {
   await addNotificationToBuffer(message, userId, tx, pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER, playSound, title, types)
+}
+
+async function publishSolanaNotification (message, userId, tx, playSound = true, title = null, types) {
+  await addNotificationToBuffer(message, userId, tx, pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER, playSound, title, types)
 }
 
 async function publishAnnouncement (message, userId, tx, playSound = true, title = null) {
@@ -47,6 +52,21 @@ async function drainPublishedMessages () {
   pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER = []
 }
 
+async function drainPublishedSolanaMessages () {
+  for (let bufferObj of pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER) {
+    if (bufferObj.types.includes(deviceType.Mobile)) {
+      await sendAwsSns(bufferObj)
+    }
+    if (bufferObj.types.includes(deviceType.Browser)) {
+      await Promise.all([
+        sendBrowserNotification(bufferObj),
+        sendSafariNotification(bufferObj)
+      ])
+    }
+  }
+  pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER = []
+}
+
 async function drainPublishedAnnouncements () {
   for (let bufferObj of pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER) {
     await Promise.all([
@@ -61,7 +81,9 @@ async function drainPublishedAnnouncements () {
 module.exports = {
   pushNotificationQueue,
   publish,
+  publishSolanaNotification,
   publishAnnouncement,
   drainPublishedMessages,
+  drainPublishedSolanaMessages,
   drainPublishedAnnouncements
 }
