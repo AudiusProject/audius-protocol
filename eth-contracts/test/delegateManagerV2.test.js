@@ -43,7 +43,7 @@ const DECREASE_STAKE_LOCKUP_DURATION = UNDELEGATE_LOCKUP_DURATION
 
 const callValue0 = _lib.toBN(0)
 
-contract('DelegateManager', async (accounts) => {
+contract('DelegateManagerV2', async (accounts) => {
   let staking, stakingAddress, token, registry, governance
   let serviceProviderFactory, serviceTypeManager, claimsManager, delegateManager
   let delegateManager0, delegateManagerProxy

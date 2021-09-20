@@ -1781,6 +1781,8 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)).eq(minDelegateStake), 'Expect min delegate stake')
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount2)).eq(minDelegateStake), 'Expect min delegate stake')
 
+      // return
+
       // proxy upgrade to DelegateManagerV2 for new SPMinDelegationAmount controls
       await upgradeDelegateManagerToV2()
 

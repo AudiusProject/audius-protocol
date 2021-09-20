@@ -5,8 +5,8 @@
   "author": "AudiusProject",
   "license": "Apache-2.0",
   "scripts": {
-    "ganache": "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 -a 50",
-    "ganache-test": "docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 -a 50",
+    "ganache": "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 trufflesuite/ganache-cli:v6.12.2 -h 0.0.0.0 -a 50",
+    "ganache-test": "docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 trufflesuite/ganache-cli:v6.12.2 -h 0.0.0.0 -a 50",
     "ganache-i": "docker ps",
     "ganache-q": "docker rm -f audius_ganache_cli_eth_contracts > /dev/null",
     "ganache-test-q": "docker rm -f audius_ganache_cli_eth_contracts_test > /dev/null",
@@ -17,7 +17,7 @@
     "truffle-console-test": "./node_modules/.bin/truffle console --network test_local",
     "test": "npm run truffle-test",
     "test-coverage": "ENABLE_OPTIMIZER=false node --max-old-space-size=4096 ./node_modules/.bin/truffle run coverage --file='test/*.js'",
-    "test-only": "./node_modules/.bin/truffle test test/*.js --network=test_local",
+    "test-only": "./node_modules/.bin/truffle test test/claimsManager.test.js test/delegateManager.test.js test/governance.test.js --network=test_local",
     "test-random": "./scripts/truffle-test.sh --audius-random",
     "truffle-test": "./scripts/truffle-test.sh",
     "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
@@ -38,7 +38,7 @@
     "ethlint": "^1.2.3",
     "fs-extra": "^7.0.0",
     "lodash": "^4.17.15",
-    "truffle": "5.1.67",
+    "truffle": "5.1.43",
     "truffle-hdwallet-provider": "^1.0.13"
   },
   "devDependencies": {
