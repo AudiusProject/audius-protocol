@@ -295,7 +295,7 @@ def test_trending_challenge_job(app):
             .all()
         )
         assert len(user_trending_tracks_challenges) == 5
-        ranks = {"1", "2", "3", "4", "5"}
+        ranks = {"2021-08-20:1", "2021-08-20:2", "2021-08-20:3", "2021-08-20:4", "2021-08-20:5"}
         for challenge in user_trending_tracks_challenges:
             assert challenge.specifier in ranks
             ranks.remove(challenge.specifier)

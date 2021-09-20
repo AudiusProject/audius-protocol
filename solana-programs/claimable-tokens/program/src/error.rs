@@ -13,7 +13,7 @@ use thiserror::Error;
 /// Errors that may be returned by the Claimable-tokens program.
 #[derive(Clone, Debug, Eq, Error, FromPrimitive, PartialEq)]
 pub enum ClaimableProgramError {
-   /// Signature verification failed
+    /// Signature verification failed
     #[error("Signature verification failed")]
     SignatureVerificationFailed,
     /// Secp256 instruction losing

@@ -35,26 +35,25 @@ class FileProcessingQueue {
       }
     )
 
-    this.queue.process(
-      PROCESS_NAMES.transcode,
-      MAX_CONCURRENCY,
-      async (job, done) => {
-        const { transcodeParams } = job.data
+    this.queue.process(PROCESS_NAMES.transcode, MAX_CONCURRENCY, async (job, done) => {
+      const { transcodeParams } = job.data
 
-        try {
-          const response = await this.monitorProgress(PROCESS_NAMES.transcode, transcodeFn, transcodeParams)
-          done(null, { response })
-        } catch (e) {
-          this.logError(transcodeParams.logContext, `Could not process taskType=${PROCESS_NAMES.transcode} uuid=${transcodeParams.logContext.requestID}: ${e.toString()}`)
-          done(e.toString())
-        }
-      })
+      try {
+        const response = await this.monitorProgress(PROCESS_NAMES.transcode, transcodeFn, transcodeParams)
+        done(null, { response })
+      } catch (e) {
+        this.logError(transcodeParams.logContext, `Could not process taskType=${PROCESS_NAMES.transcode} uuid=${transcodeParams.logContext.requestID}: ${e.toString()}`)
+        done(e.toString())
+      }
+    })
+
+    this.getFileProcessingQueueJobs = this.getFileProcessingQueueJobs.bind(this)
   }
 
   async logStatus (logContext, message) {
     const logger = genericLogger.child(logContext)
-    const count = await this.queue.count()
-    logger.info(`FileProcessingQueue: ${message}, count: ${count}`)
+    const { waiting, active, completed, failed, delayed } = await this.queue.getJobCounts()
+    logger.info(`FileProcessing Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `)
   }
 
   async logError (logContext, message) {
@@ -100,6 +99,21 @@ class FileProcessingQueue {
     }
 
     return response
+  }
+
+  async getFileProcessingQueueJobs () {
+    const queue = this.queue
+    const [
+      waiting,
+      active
+    ] = await Promise.all([
+      queue.getJobs(['waiting']),
+      queue.getJobs(['active'])
+    ])
+    return {
+      waiting: waiting.length,
+      active: active.length
+    }
   }
 }
 

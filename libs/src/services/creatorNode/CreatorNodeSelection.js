@@ -270,7 +270,9 @@ class CreatorNodeSelection extends ServiceSelection {
               receivedBytesPerSec: data.receivedBytesPerSec,
               transferredBytesPerSec: data.transferredBytesPerSec,
               transcodeWaiting: data.transcodeWaiting,
-              transcodeActive: data.transcodeActive
+              transcodeActive: data.transcodeActive,
+              fileProcessingWaiting: data.fileProcessingWaiting,
+              fileProcessingActive: data.fileProcessingActive
             })
           } catch (e) {
             // Swallow errors -- this method should not throw generally

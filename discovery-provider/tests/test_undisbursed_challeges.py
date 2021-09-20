@@ -12,7 +12,7 @@ def setup_challenges(app):
             Challenge(
                 id="test_challenge_1",
                 type=ChallengeType.numeric,
-                amount=5,
+                amount="5",
                 step_count=3,
                 active=False,
                 starting_block=100,
@@ -20,14 +20,14 @@ def setup_challenges(app):
             Challenge(
                 id="test_challenge_2",
                 type=ChallengeType.boolean,
-                amount=5,
+                amount="5",
                 active=True,
                 starting_block=100,
             ),
             Challenge(
                 id="test_challenge_3",
                 type=ChallengeType.aggregate,
-                amount=5,
+                amount="5",
                 active=True,
                 starting_block=100,
             ),

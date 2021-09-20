@@ -3,8 +3,8 @@
 use crate::{
     error::AudiusProgramError,
     instruction::{
-        CreateSenderPublicArgs, CreateSenderArgs, InitRewardManagerArgs, Instructions, EvaluateAttestationsArgs,
-        SubmitAttestationsArgs,
+        CreateSenderArgs, CreateSenderPublicArgs, EvaluateAttestationsArgs, InitRewardManagerArgs,
+        Instructions, SubmitAttestationsArgs,
     },
     state::{
         RewardManager, SenderAccount, VerifiedMessage, VerifiedMessages, ADD_SENDER_MESSAGE_PREFIX,
@@ -69,7 +69,7 @@ impl Processor {
         assert_uninitialized(&reward_manager)?;
 
         // Find the reward_manager_authority, and test it against
-        // `authority_info` to ensure the correct 
+        // `authority_info` to ensure the correct
         // account was passed in.
         let (reward_manager_authority, _) =
             find_program_address(program_id, reward_manager_info.key);
@@ -99,6 +99,9 @@ impl Processor {
         current_manager_info: &AccountInfo<'a>,
         new_manager_info: &AccountInfo<'a>,
     ) -> ProgramResult {
+        // Note: we don't have to assert that we own the `reward_manager` account
+        // as we would normally, because in writing to it the runtime
+        // enforces ownership
         if !current_manager_info.is_signer {
             return Err(ProgramError::MissingRequiredSignature);
         }
@@ -271,7 +274,7 @@ impl Processor {
             ADD_SENDER_MESSAGE_PREFIX,
         )?;
 
-        // Ensure `new_sender_info` matches `derived_sender_info`, generated 
+        // Ensure `new_sender_info` matches `derived_sender_info`, generated
         // from eth address
         let sender_seed = [SENDER_SEED_PREFIX.as_ref(), eth_address.as_ref()].concat();
         let (reward_manager_authority, derived_sender_info, bump_seed) =
@@ -318,7 +321,7 @@ impl Processor {
         assert_owned_by(reward_manager_info, program_id)?;
         assert_owned_by(sender_info, program_id)?;
 
-        // Retrieve the sender account, assert that 
+        // Retrieve the sender account, assert that
         // the sender's `reward_manager` is this `reward_manager`.
         let sender_account = SenderAccount::unpack(&sender_info.data.borrow())?;
         assert_account_key(reward_manager_info, &sender_account.reward_manager)?;
@@ -328,13 +331,18 @@ impl Processor {
         let verified_messages_account_seed = [
             VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
             verify_transfer_data.id.as_ref(),
-        ].concat();
+        ]
+        .concat();
         let (reward_manager_authority, derived_verified_messages_account, bump_seed) =
-            find_derived_pair(program_id, reward_manager_info.key, verified_messages_account_seed.as_ref());
+            find_derived_pair(
+                program_id,
+                reward_manager_info.key,
+                verified_messages_account_seed.as_ref(),
+            );
         assert_account_key(authority_info, &reward_manager_authority)?;
         assert_account_key(verified_messages_info, &derived_verified_messages_account)?;
 
-        // If the verified messages account doesn't exist, create it. Otherwise, 
+        // If the verified messages account doesn't exist, create it. Otherwise,
         // ensure that we own it before proceeding.
         if verified_messages_info.data_len() == 0 && verified_messages_info.lamports() == 0 {
             let signers_seeds = &[
@@ -342,7 +350,6 @@ impl Processor {
                 &verified_messages_account_seed.as_slice(),
                 &[bump_seed],
             ];
-
             let rent = Rent::from_account_info(rent_info)?;
             create_account(
                 program_id,
@@ -361,6 +368,12 @@ impl Processor {
             VerifiedMessages::unpack_unchecked(&verified_messages_info.data.borrow())?;
         if verified_messages.is_initialized() {
             assert_account_key(reward_manager_info, &verified_messages.reward_manager)?;
+
+            // If messages account is full from previous attempt, reset it
+            let reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
+            if verified_messages.messages.len() >= (reward_manager.min_votes + 1) as usize {
+                verified_messages.messages.clear()
+            }
         } else {
             verified_messages = VerifiedMessages::new(*reward_manager_info.key);
         }
@@ -368,7 +381,8 @@ impl Processor {
         // Check that that previous instruction was a signed vote message,
         // signed by the `sender_account`'s eth address, adding it to the verified_messages
         // account if so.
-        let message = validate_secp_submit_attestation(instruction_info, &sender_account.eth_address)?;
+        let message =
+            validate_secp_submit_attestation(instruction_info, &sender_account.eth_address)?;
 
         verified_messages.add(VerifiedMessage {
             address: sender_account.eth_address,
@@ -407,6 +421,11 @@ impl Processor {
         let reward_manager = RewardManager::unpack(&reward_manager_info.data.borrow())?;
 
         let verified_messages = VerifiedMessages::unpack(&verified_messages_info.data.borrow())?;
+
+        // Ensure the transfer account doesn't yet exist
+        if transfer_account_info.lamports() != 0 {
+            return Err(AudiusProgramError::AlreadySent.into());
+        }
 
         // Check signs for minimum required votes, accounting for extra bot oracle
         // attestation
@@ -457,15 +476,18 @@ impl Processor {
             transfer_data.amount,
         )?;
 
-        // Create the transfer account to represent this disbursement, 
+        // Create the transfer account to represent this disbursement,
         // preventing the same transfer_data from being used twice.
         let transfer_account_seed = [
             TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
             transfer_data.id.as_ref(),
         ]
         .concat();
-        let (reward_manager_authority, _, bump_seed) =
-            find_derived_pair(program_id, reward_manager_info.key, transfer_account_seed.as_ref());
+        let (reward_manager_authority, _, bump_seed) = find_derived_pair(
+            program_id,
+            reward_manager_info.key,
+            transfer_account_seed.as_ref(),
+        );
 
         let signers_seeds = &[
             &reward_manager_authority.to_bytes()[..32],

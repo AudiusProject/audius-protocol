@@ -1,5 +1,5 @@
 mod utils;
-use claimable_tokens::utils::program::get_address_pair;
+use claimable_tokens::utils::program::find_address_pair;
 use clap::{
     crate_description, crate_name, crate_version, value_t, value_t_or_exit, App, AppSettings, Arg,
     SubCommand,
@@ -486,7 +486,7 @@ fn command_transfer(
         .get_account_data(&reward_manager.token_account)?;
     let token_account = Account::unpack(token_account.as_slice())?;
 
-    let claimable_token = get_address_pair(
+    let claimable_token = find_address_pair(
         &claimable_tokens::id(),
         &token_account.mint,
         decoded_recipient_address,

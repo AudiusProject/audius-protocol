@@ -23,7 +23,7 @@ SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 
 # Maximum number of batches to process at once
-TX_SIGNATURES_MAX_BATCHES = 20
+TX_SIGNATURES_MAX_BATCHES = 100
 
 # Last N entries present in tx_signatures array during processing
 TX_SIGNATURES_RESIZE_LENGTH = 10
