@@ -30,7 +30,7 @@ set -x
 # -h = hostname
 # -l = gas limit on block
 # -a = number of accounts to generate on startup
-docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 trufflesuite/ganache-cli:latest -h 0.0.0.0 -l 8000000 -a 500 -k istanbul
+docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 trufflesuite/ganache-cli:v6.12.2 -h 0.0.0.0 -l 8000000 -a 500 -k istanbul
 
 # compile
 ./node_modules/.bin/truffle compile
@@ -38,7 +38,8 @@ docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 truffles
 # run truffle tests
 if [ $# -eq 0 ]
 	then
-		node_modules/.bin/truffle test test/*.js --network=test_local
+		node_modules/.bin/truffle test test/*.test.js --network=test_local
+		# node_modules/.bin/truffle test test/claimsManager.test.js test/delegateManager.test.js test/governance.test.js --network=test_local
 elif [ $1 == '--audius-random' ] && [ $# -eq 1 ]
 	then
 		node_modules/.bin/truffle test test/random/random.test.js --network=test_local

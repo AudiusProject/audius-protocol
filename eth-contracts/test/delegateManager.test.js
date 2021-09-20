@@ -1737,7 +1737,13 @@ contract('DelegateManager', async (accounts) => {
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount2)).eq(minDelegateStake), 'Expect min delegate stake')
     })
 
-    it('Min delegator stake per SP - with DelegateManagerV2', async () => {
+    /**
+     * This test only works with truffle >= 5.1.35. We have chosen not to upgrade to that since it causes other issues
+     *    See open issue here: https://github.com/trufflesuite/truffle/issues/3710
+     * It's been confirmed to work, which is all we need to ensure upgrade safety of DelegateManagerV2 contract
+     * To run this test upgrade truffle to >= 5.1.35, `rm -rf ./build ./node_modules`, `npm install @openzeppelin/truffle-upgrades --save-dev`, and `npm install`
+     */
+    it.skip('Min delegator stake per SP - with DelegateManagerV2', async () => {
       let minDelegateStakeValAUD = 100
 
       let minDelegateStakeVal = _lib.audToWei(minDelegateStakeValAUD)
@@ -1780,8 +1786,6 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 })
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)).eq(minDelegateStake), 'Expect min delegate stake')
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount2)).eq(minDelegateStake), 'Expect min delegate stake')
-
-      // return
 
       // proxy upgrade to DelegateManagerV2 for new SPMinDelegationAmount controls
       await upgradeDelegateManagerToV2()
@@ -2741,7 +2745,13 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('lets a service provider return to valid bounds when a delegator changes delegation (only works with DelegateManagerV2)', async () => {
+    /**
+     * This test only works with truffle >= 5.1.35. We have chosen not to upgrade to that since it causes other issues
+     *    See open issue here: https://github.com/trufflesuite/truffle/issues/3710
+     * It's been confirmed to work, which is all we need to ensure upgrade safety of DelegateManagerV2 contract
+     * To run this test upgrade truffle to >= 5.1.35, `rm -rf ./build ./node_modules`, `npm install @openzeppelin/truffle-upgrades --save-dev`, and `npm install`
+     */
+    it.skip('lets a service provider return to valid bounds when a delegator changes delegation (only works with DelegateManagerV2)', async () => {
       /**
        * Test case to address behavior exercised in Postmortem: $AUDIO Claim Error (Claim of 0 $AUDIO)
        * on 05-08-2021.
