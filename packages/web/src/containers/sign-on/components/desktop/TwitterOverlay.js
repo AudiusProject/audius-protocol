@@ -86,7 +86,7 @@ const TwitterOverlay = props => {
                     className={styles.instagramButton}
                     textClassName={styles.btnText}
                     iconClassName={styles.btnIcon}
-                    onClick={this.onClickInstagram}
+                    onClick={onClickInstagram}
                     onSuccess={props.onInstagramLogin}
                     onFailure={props.onFailure}
                     text={messages.instagramButton}
@@ -98,7 +98,7 @@ const TwitterOverlay = props => {
                   textLabel={messages.twitterButton}
                   textClassName={styles.btnText}
                   iconClassName={styles.btnIcon}
-                  onClick={this.onClickTwitter}
+                  onClick={onClickTwitter}
                   onSuccess={props.onTwitterLogin}
                   onFailure={props.onFailure}
                 />
