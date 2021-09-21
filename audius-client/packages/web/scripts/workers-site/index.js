@@ -41,7 +41,7 @@ async function handleEvent(event) {
       0,
       event.request.url.length - '-517598'.length
     )
-    return Response.redirect(newUrl, 302)
+    return Response.redirect(newUrl, 301)
   }
 
   const url = new URL(event.request.url)
@@ -66,6 +66,10 @@ async function handleEvent(event) {
     const destinationURL = SITEMAP + pathname + search + hash
     const newRequest = new Request(destinationURL, event.request)
     return await fetch(newRequest)
+  }
+  const isUndefined = pathname === '/undefined'
+  if (isUndefined) {
+    return Response.redirect(url.origin, 302)
   }
 
   const options = {}
