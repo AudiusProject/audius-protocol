@@ -66,7 +66,7 @@ class Challenge extends Base {
       })
 
       if (error) {
-        return
+        return error
       }
 
       const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
@@ -154,13 +154,12 @@ class Challenge extends Base {
       const { success: aaoAttestation, error: aaoAttestationError } = res[res.length - 1]
       console.log({ discoveryNodeAttestations, aaoAttestation })
 
-      // return error if any of the attestations erred
-      if (discoveryNodeAttestationErrors.some(Boolean) || aaoAttestationError) {
-        console.log(`Failed to aggregate attestations: one or more attestations failed`)
+      const error = aaoAttestationError || discoveryNodeAttestationErrors.find(Boolean)
+      if (error) {
         return {
           discoveryNodeAttestations: null,
           aaoAttestation: null,
-          error: GetAttestationError.UNKNOWN_ERROR
+          error
         }
       }
 
