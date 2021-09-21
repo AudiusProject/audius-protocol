@@ -647,7 +647,7 @@ contract('DelegateManager', async (accounts) => {
         totalStakedForSP.eq(spStake.add(delegatedStake)),
         'Sum of Staking.sol equals SPFactory and DelegateManager'
       )
- 
+
       // Increase delegated stake
       let increaseAmount = _lib.audToWeiBN(5)
       await token.approve(
