@@ -5,13 +5,15 @@ const config = require('./config')
 
 const CID_WHITELIST = new Set(config.get('cidWhitelist').split(','))
 
-const REDIS_SET_BLACKLIST_TRACKID_KEY = 'SET.BLACKLIST.TRACKID'
-const REDIS_SET_BLACKLIST_USERID_KEY = 'SET.BLACKLIST.USERID'
-const REDIS_SET_BLACKLIST_SEGMENTCID_KEY = 'SET.BLACKLIST.SEGMENTCID'
-const REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY = 'MAP.BLACKLIST.SEGMENTCID.TRACKID'
-const REDIS_MAP_TRACKID_TO_SEGMENTCIDS_KEY = 'MAP.TRACKID.SEGMENTCID'
+const REDIS_SET_BLACKLIST_TRACKID_KEY = 'BM.SET.BLACKLIST.TRACKID'
+const REDIS_SET_BLACKLIST_USERID_KEY = 'BM.SET.BLACKLIST.USERID'
+const REDIS_SET_BLACKLIST_SEGMENTCID_KEY = 'BM.SET.BLACKLIST.SEGMENTCID'
+const REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY = 'BM.MAP.BLACKLIST.SEGMENTCID.TRACKID'
+const REDIS_MAP_TRACKID_TO_SEGMENTCIDS_KEY = 'BM.MAP.TRACKID.SEGMENTCIDS'
+const REDIS_SET_INVALID_TRACKIDS_KEY = 'BM.SET.INVALID.TRACKIDS'
 
 const SEGMENTCID_TO_TRACKID_EXPIRATION_SECONDS = 14 /* days */ * 24 /* hours */ * 60 /* minutes */ * 60 /* seconds */
+const INVALID_TRACKID_EXPIRATION_SECONDS = 1 /* hour */ * 60 /* minutes */ * 60 /* seconds */
 
 const types = models.ContentBlacklist.Types
 
@@ -197,10 +199,12 @@ class BlacklistManager {
     }
 
     // also retrieves the CID's directly from the files table so we get copy320
-    const files = await models.File.findAll({ where: { trackBlockchainId: allTrackIds } })
-    for (const file of files) {
-      if (file.type === 'track' || file.type === 'copy320') {
-        segmentCIDs.add(file.multihash)
+    if (allTrackIds.length > 0) {
+      const files = await models.File.findAll({ where: { trackBlockchainId: allTrackIds } })
+      for (const file of files) {
+        if (file.type === 'track' || file.type === 'copy320') {
+          segmentCIDs.add(file.multihash)
+        }
       }
     }
 
@@ -236,7 +240,7 @@ class BlacklistManager {
         await this.fetchCIDsAndRemoveFromRedis({ userIdsToRemove: values })
         break
       case 'TRACK':
-        // Remove track ids frmo redis under trackid key + its associated track segments
+        // Remove track ids from redis under trackid key + its associated track segments
         await this.fetchCIDsAndRemoveFromRedis({ trackIdsToRemove: values })
         break
       case 'CID':
@@ -249,7 +253,7 @@ class BlacklistManager {
   /**
    * Adds ids and types as individual entries to ContentBlacklist table
    * @param {number} id user or track id
-   * @param {'USER'|'TRACK'} type
+   * @param {'USER'|'TRACK'|'CID'} type
    */
   static async addToDb ({ values, type }) {
     try {
@@ -268,7 +272,7 @@ class BlacklistManager {
   /**
    * Removes entry from Contentblacklist table
    * @param {number} id user or track id
-   * @param {'USER'|'TRACK'} type
+   * @param {'USER'|'TRACK'|'CID'} type
    */
   static async removeFromDb ({ values, type }) {
     let numRowsDestroyed
@@ -295,7 +299,7 @@ class BlacklistManager {
   /**
    * Adds key with value to redis.
    * @param {string} redisKey type of value
-   * @param {number[] | string[] | object} data either array of userIds, trackIds, CIDs, or <track: CIDs mapping>
+   * @param {number[] | string[] | Object} data either array of userIds, trackIds, CIDs, or <trackId: [CIDs]>
    * @param {number?} expirationSec number of seconds for entry in redis to expire
    */
   static async addToRedis (redisKey, data, expirationSec = null) {
@@ -305,15 +309,14 @@ class BlacklistManager {
         const errors = []
         for (let [trackId, cids] of Object.entries(data)) {
           trackId = parseInt(trackId)
-          const redisKey = this.getRedisTrackIdToSegmentsKey(trackId)
+          const redisTrackIdToCIDsKey = this.getRedisTrackIdToCIDsKey(trackId)
           try {
+            await redis.sadd(redisTrackIdToCIDsKey, cids)
             if (expirationSec) {
-              await redis.sadd(redisKey, cids, 'EX', expirationSec)
-            } else {
-              await redis.sadd(redisKey, cids)
+              await redis.expire(redisTrackIdToCIDsKey, expirationSec)
             }
           } catch (e) {
-            errors.push(`Unable to add ${redisKey}:${trackId}: ${e.toString()}`)
+            errors.push(`Unable to add ${redisTrackIdToCIDsKey}:${trackId}: ${e.toString()}`)
           }
         }
 
@@ -338,6 +341,7 @@ class BlacklistManager {
         if (errors.length > 0) { throw new Error(errors.toString()) }
         break
       }
+      case REDIS_SET_INVALID_TRACKIDS_KEY:
       case REDIS_SET_BLACKLIST_SEGMENTCID_KEY:
       case REDIS_SET_BLACKLIST_TRACKID_KEY:
       case REDIS_SET_BLACKLIST_USERID_KEY:
@@ -357,7 +361,7 @@ class BlacklistManager {
   /**
    * Removes key with value to redis. If value does not exist, redis should ignore.
    * @param {string} redisKey type of value
-   * @param {number[] | string[] | object} data either array of userIds, trackIds, CIDs, or <track: CIDs mapping>
+   * @param {number[] | string[] | Object} data either array of userIds, trackIds, CIDs, or <trackId: [CIDs]>
    */
   static async removeFromRedis (redisKey, data) {
     switch (redisKey) {
@@ -395,48 +399,75 @@ class BlacklistManager {
   }
 
   static async isServable (cid, trackId = null) {
+    try {
     // If the CID is not in the blacklist, allow serve
-    const CIDIsInBlacklist = await this.CIDIsInBlacklist(cid)
-    if (!CIDIsInBlacklist) return true
+      const CIDIsInBlacklist = await this.CIDIsInBlacklist(cid)
+      if (!CIDIsInBlacklist) return true
 
-    // If the CID is in the blacklist and no trackId was passed in, do not serve
-    // Also, if the CID is not of track type and is in the blacklist, do not serve anyway
-    if (!trackId) return false
+      // If the CID is in the blacklist and an invalid trackId was passed in, do not serve
+      // Also, if the CID is not of track type and is in the blacklist, do not serve anyway
+      if (!trackId || isNaN(trackId) || trackId < 0 || !Number.isInteger(trackId)) return false
 
-    // If the CID belongs to an explicitly blacklisted track, do not serve
-    const foundCIDFromExplicitBlacklistedTrack = await this.CIDIsInExplicitlyBlacklistedTrack(trackId, cid)
-    if (foundCIDFromExplicitBlacklistedTrack) return false
+      trackId = parseInt(trackId)
 
-    // If reached here, CID not found from explicitly blacklisted track.
+      // If the CID belongs to an explicitly blacklisted track and the input trackId is found in this mapping,
+      // do not serve
+      const foundCIDFromExplicitBlacklistedTrack = await this.CIDIsInExplicitlyBlacklistedTrack(trackId, cid)
+      if (foundCIDFromExplicitBlacklistedTrack) return false
 
-    // Check to see if CID belongs to input trackId from redis.
-    let cidsOfInputTrackId = await this.getAllCIDsFromTrackIdInRedis(trackId)
+      // If reached here, explicitly blacklisted track CID mapping to input trackId is not found.
 
-    // If nothing is found, check the db and add to redis for quick lookup later.
-    if (cidsOfInputTrackId.length === 0) {
-      // If track is not in db, do not serve
-      const track = (await this.getAllCIDsFromTrackIdsInDb([trackId]))[0]
-      if (!track) return false
+      // Check to see if CID belongs to input trackId from redis.
+      let cidsOfInputTrackId = await this.getAllCIDsFromTrackIdInRedis(trackId)
 
-      if (track.metadataJSON && track.metadataJSON.track_segments) {
-        // Add <trackId:cids> to redis for quick lookup later
-        cidsOfInputTrackId = track.metadataJSON.track_segments.map(s => s.multihash)
+      // If nothing is found, check redis to see if track is valid.
+      // If valid, add the <trackId:[cids]> mapping redis for quick lookup later.
+      // Else, add to invalid trackIds set
+      if (cidsOfInputTrackId.length === 0) {
+        const invalid = await this.trackIdIsInvalid(trackId)
 
-        await this.addToRedis(
-          REDIS_MAP_TRACKID_TO_SEGMENTCIDS_KEY,
-          { trackId: cidsOfInputTrackId },
-          SEGMENTCID_TO_TRACKID_EXPIRATION_SECONDS
-        )
+        // If track has been marked as invalid before, do not serve
+        if (invalid) { return false }
+
+        // Check the db for the segments
+        let track = (await this.getAllCIDsFromTrackIdsInDb([trackId]))[0]
+
+        // If segments are not found, add to invalid trackIds set
+        if (!track) {
+          await this.addToRedis(
+            REDIS_SET_INVALID_TRACKIDS_KEY,
+            [trackId],
+            'EX',
+            // Set expiry in case track with this trackId eventually gets uploaded to CN
+            INVALID_TRACKID_EXPIRATION_SECONDS
+          )
+          return false
+        }
+
+        if (track.metadataJSON && track.metadataJSON.track_segments) {
+          // Track is found. Add <trackId:[cids]> to redis for quick lookup later
+          cidsOfInputTrackId = track.metadataJSON.track_segments.map(s => s.multihash)
+
+          await this.addToRedis(
+            REDIS_MAP_TRACKID_TO_SEGMENTCIDS_KEY,
+            { [trackId]: cidsOfInputTrackId },
+            SEGMENTCID_TO_TRACKID_EXPIRATION_SECONDS
+          )
+        }
       }
+
+      cidsOfInputTrackId = new Set(cidsOfInputTrackId)
+
+      // CID belongs to input trackId and the track is not blacklisted; allow serve.
+      if (cidsOfInputTrackId.has(cid)) return true
+
+      // CID does not belong to passed in trackId; do not serve
+      return false
+    } catch (e) {
+      // Error in checking CID. Default to false.
+      this.logError(`Error in checking if CID=${cid} is servable: ${e.toString()}`)
+      return false
     }
-
-    cidsOfInputTrackId = new Set(cidsOfInputTrackId)
-
-    // CID belongs to input trackId and the track is not blacklisted; allow serve.
-    if (cidsOfInputTrackId.has(cid)) return true
-
-    // CID does not belong to passed in trackId; do not serve
-    return false
   }
 
   static getTypes () { return types }
@@ -459,8 +490,12 @@ class BlacklistManager {
     return `${REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY}:::${cid}`
   }
 
-  static getRedisTrackIdToSegmentsKey (trackId) {
+  static getRedisTrackIdToCIDsKey (trackId) {
     return `${REDIS_MAP_TRACKID_TO_SEGMENTCIDS_KEY}:::${trackId}`
+  }
+
+  static getInvalidTrackIdsKey () {
+    return REDIS_SET_INVALID_TRACKIDS_KEY
   }
 
   /** Checks if userId, trackId, and CID exists in redis  */
@@ -484,6 +519,17 @@ class BlacklistManager {
     return redis.sismember(redisCIDKey, trackId)
   }
 
+  // Check if the input CID belongs to the track with the input trackId in redis.
+  static async CIDIsInTrackRedis (trackId, cid) {
+    const redisKey = this.getRedisTrackIdToCIDsKey(trackId)
+    return redis.sismember(redisKey, cid)
+  }
+
+  // Check to see if the input trackId is invalid
+  static async trackIdIsInvalid (trackId) {
+    return redis.sismember(REDIS_SET_INVALID_TRACKIDS_KEY, trackId)
+  }
+
   // Retrieves all CIDs in redis
   static async getAllCIDs () {
     return redis.smembers(REDIS_SET_BLACKLIST_SEGMENTCID_KEY)
@@ -499,13 +545,17 @@ class BlacklistManager {
     return redis.smembers(REDIS_SET_BLACKLIST_TRACKID_KEY)
   }
 
+  static async getAllInvalidTrackIds () {
+    return redis.smembers(REDIS_SET_INVALID_TRACKIDS_KEY)
+  }
+
   /**
    * Retrieves all the blacklisted trackIds associated with the cid. This mapping is created by
    * fetching the segments from explicitly blacklisted tracks.
    * @param {string} cid the observed cid
    * @returns {string[]} the trackIds associated with the cid
    */
-  static async getRelevantTrackIdsFromCID (cid) {
+  static async getBlacklistedTrackIdsFromCID (cid) {
     const redisCIDKey = this.getRedisBlacklistSegmentToTrackIdKey(cid)
     return redis.smembers(redisCIDKey)
   }
@@ -516,16 +566,43 @@ class BlacklistManager {
    * @returns {string[]} cids associated with trackId
    */
   static async getAllCIDsFromTrackIdInRedis (trackId) {
-    const redisKey = this.getRedisTrackIdToSegmentsKey(trackId)
+    const redisKey = this.getRedisTrackIdToCIDsKey(trackId)
     return redis.smembers(redisKey)
   }
 
   // Delete all existing redis keys
   static async deleteRedisKeys () {
+    // Keep mapping of trackIds:cids
     await redis.del(this.getRedisTrackIdKey())
     await redis.del(this.getRedisUserIdKey())
     await redis.del(this.getRedisSegmentCIDKey())
-    await redis.del(this.getRedisBlacklistSegmentToTrackIdKey())
+    await redis.del(this.getInvalidTrackIdsKey())
+
+    BlacklistManager.deleteBlacklistCIDToTrackIdMappingInRedis('*')
+  }
+
+  // Deleting keys of a pattern: https://stackoverflow.com/a/36006360
+  static deleteBlacklistCIDToTrackIdMappingInRedis (pattern) {
+    // Create a readable stream (object mode)
+    const stream = redis.scanStream({
+      match: `${REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY}:::${pattern}`
+    })
+    stream.on('data', function (keys) {
+      // `keys` is an array of strings representing key names
+      if (keys.length) {
+        const pipeline = redis.pipeline()
+        keys.forEach(function (key) {
+          pipeline.del(key)
+        })
+        pipeline.exec()
+      }
+    })
+    stream.on('end', function () {
+      console.log(`Done deleting ${REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY} entries`)
+    })
+    stream.on('error', function (e) {
+      console.error(`Could not delete ${REDIS_MAP_BLACKLIST_SEGMENTCID_TO_TRACKID_KEY} entries: ${e.toString}`)
+    })
   }
 
   // Logger wrapper methods

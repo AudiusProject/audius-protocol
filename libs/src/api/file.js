@@ -56,7 +56,7 @@ class File extends Base {
 
     creatorNodeGateways.forEach(gateway => {
       let gatewayWithCid = urlJoin(gateway, cid)
-      if (trackId) gatewayWithCid += `?trackId=${trackId}`
+      if (trackId) gatewayWithCid = urlJoin(gatewayWithCid, { query: { trackId } })
       urls.push(gatewayWithCid)
     })
 

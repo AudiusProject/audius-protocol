@@ -450,7 +450,7 @@ describe('test ContentBlacklist', function () {
       .expect(400)
   })
 
-  // TODO: ?
+  // TODO: need to consider the USER case UGHUAWIFEWHUIAWFHEWI
   it('should throw an error when adding an user id to the blacklist and streaming /ipfs/:CID route', async () => {
     // Create user and upload track
     const data = await createUserAndUploadTrack()
@@ -544,6 +544,7 @@ describe('test ContentBlacklist', function () {
     )
   })
 
+  // TODO: fix :(
   it('should not throw an error when streaming a blacklisted CID of a non-blacklisted track at /ipfs/:CID?trackId=<trackIdOfNonBlacklistedTrack>', async () => {
     // Create user and upload track
     const trackId1 = await createUserAndUploadTrack()
@@ -660,6 +661,26 @@ describe('test ContentBlacklist', function () {
         signature
       })
       .expect(400)
+  })
+
+  it('should add the relevant CIDs to redis when adding a type TRACK to redis', async () => {
+    // Create user and upload track
+    const data = await createUserAndUploadTrack()
+
+    // Blacklist trackId
+    const type = BlacklistManager.getTypes().track
+    const { signature, timestamp } = generateTimestampAndSignature({ type, values: [data.track.blockchainId] }, DELEGATE_PRIVATE_KEY)
+    await request(app)
+      .post('/blacklist/add')
+      .query({ type, 'values[]': [data.track.blockchainId], signature, timestamp })
+      .expect(200)
+
+    // Hit /ipfs/:CID route for all track CIDs and ensure error response is returned because no trackId was passed
+    let blacklistedCIDs = await BlacklistManager.getAllCIDs()
+    blacklistedCIDs = new Set(blacklistedCIDs)
+    for (const segment of data.track.trackSegments) {
+      assert.deepStrictEqual(blacklistedCIDs.has(segment.multihash), true)
+    }
   })
 
   /** Helper setup method to test ContentBlacklist.  */

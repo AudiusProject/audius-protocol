@@ -121,7 +121,7 @@ const getCID = async (req, res) => {
 
   const isServable = await BlacklistManager.isServable(CID, trackId)
   if (!isServable) {
-    return sendResponse(req, res, errorResponseForbidden(`trackId=${trackId} CID=${CID} has been blacklisted by this node`))
+    return sendResponse(req, res, errorResponseForbidden(`CID=${CID} has been blacklisted by this node`))
   }
 
   const cacheKey = getStoragePathQueryCacheKey(CID)
