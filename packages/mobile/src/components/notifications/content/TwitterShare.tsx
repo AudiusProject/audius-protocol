@@ -33,7 +33,7 @@ Check it out!`
 const getAchievementText = (notification: any) => {
   switch (notification.achievement) {
     case Achievement.Followers: {
-      const link = getUserRoute(notification.user.handle, true)
+      const link = getUserRoute(notification.user, true)
       const text = `I just hit over ${notification.value} followers on @AudiusProject #Audius!`
       return { text, link }
     }
