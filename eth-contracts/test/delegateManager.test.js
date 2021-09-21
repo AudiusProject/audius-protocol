@@ -994,6 +994,7 @@ contract('DelegateManager', async (accounts) => {
           singleDelegateAmount,
           { from: delegator })
 
+        // Manually set block gas limit to ensure no out-of-gas reverts
         await delegateManager.delegateStake(
           stakerAccount,
           singleDelegateAmount,
