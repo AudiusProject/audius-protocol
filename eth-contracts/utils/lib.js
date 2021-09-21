@@ -13,8 +13,6 @@ if (typeof web3 === 'undefined') {
 
 export const testContractKey = web3New.utils.utf8ToHex('TestContract')
 
-export const blockGasLimit = 8000000
-
 /** Constant string values */
 export const strings = {
   first: web3New.utils.utf8ToHex('first'),

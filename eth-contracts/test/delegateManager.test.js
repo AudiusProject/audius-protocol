@@ -998,7 +998,7 @@ contract('DelegateManager', async (accounts) => {
         await delegateManager.delegateStake(
           stakerAccount,
           singleDelegateAmount,
-          { from: delegator, gas: 8000000 })
+          { from: delegator })
 
         let delegatorStake = await getTotalDelegatorStake(delegator)  
         let delegatorStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(

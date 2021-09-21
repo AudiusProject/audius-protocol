@@ -68,12 +68,14 @@ module.exports = {
     development: {
       host: '127.0.0.1', // Localhost (default: none)
       port: 8546, // Standard Ethereum port (default: none)
-      network_id: '*' // Any network (default: none)
+      network_id: '*', // Any network (default: none)
+      gas: 8000000 // 8,000,000 is a proxy for block gas limit even though it is now much higher
     },
     test_local: {
       host: '127.0.0.1',
       port: 8556,
-      network_id: '*'
+      network_id: '*',
+      gas: 8000000 // 8,000,000 is a proxy for block gas limit even though it is now much higher
     }
   },
   // https://solidity.readthedocs.io/en/develop/using-the-compiler.html#input-description

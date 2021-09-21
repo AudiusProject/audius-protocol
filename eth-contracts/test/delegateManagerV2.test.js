@@ -957,7 +957,7 @@ contract('DelegateManagerV2', async (accounts) => {
       )
     })
 
-    it('40 delegators to one SP + claim', async () => {
+    .only('40 delegators to one SP + claim', async () => {
       let totalStakedForSP = await staking.totalStakedFor(stakerAccount)
 
       let numDelegators = 40
@@ -984,7 +984,7 @@ contract('DelegateManagerV2', async (accounts) => {
           await delegateManager.delegateStake(
             stakerAccount,
             singleDelegateAmount,
-            { from: delegator, gas: 8000000 })
+            { from: delegator })
 
           let delegatorStake = await getTotalDelegatorStake(delegator)  
           let delegatorStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(
