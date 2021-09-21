@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { ReactNode, useCallback } from 'react'
 import {
   StyleSheet,
   View,
@@ -7,7 +7,11 @@ import {
   Animated,
   Platform
 } from 'react-native'
-import { Notification, NotificationType } from '../../store/notifications/types'
+import {
+  Notification,
+  NotificationType,
+  TierChange
+} from '../../store/notifications/types'
 import NotificationContent from './content/NotificationContent'
 import IconHeart from '../../assets/images/iconHeart.svg'
 import IconRepost from '../../assets/images/iconRepost.svg'
@@ -17,35 +21,70 @@ import IconUser from '../../assets/images/iconUser.svg'
 import IconRemix from '../../assets/images/iconRemix.svg'
 import IconTrending from '../../assets/images/iconTrending.svg'
 import IconAudius from '../../assets/images/iconAudius.svg'
+import IconBronzeBadge from '../../assets/images/IconBronzeBadge.svg'
+import IconSilverBadge from '../../assets/images/IconSilverBadge.svg'
+import IconGoldBadge from '../../assets/images/IconGoldBadge.svg'
+import IconPlatinumBadge from '../../assets/images/IconPlatinumBadge.svg'
 import { getNotificationRoute } from './routeUtil'
 import { useColor, useTheme } from '../../utils/theme'
+import { BadgeTier } from 'utils/badgeTier'
 
 const IS_IOS = Platform.OS === 'ios'
 
-const typeIconMap = {
-  [NotificationType.Announcement]: IconAudius,
-  [NotificationType.Follow]: IconUser,
-  [NotificationType.UserSubscription]: IconStars,
-  [NotificationType.Favorite]: IconHeart,
-  [NotificationType.Repost]: IconRepost,
-  [NotificationType.Milestone]: IconTrophy,
-  [NotificationType.RemixCosign]: IconRemix,
-  [NotificationType.RemixCreate]: IconRemix,
-  [NotificationType.TrendingTrack]: IconTrending,
-  [NotificationType.ChallengeReward]: IconAudius
+const tierInfoMap: Record<BadgeTier, { title: string; icon: ReactNode }> = {
+  none: {
+    title: 'NO TIER',
+    icon: IconBronzeBadge
+  },
+  bronze: {
+    title: 'BRONZE TIER UNLOCKED',
+    icon: IconBronzeBadge
+  },
+  silver: {
+    title: 'SILVER TIER UNLOCKED',
+    icon: IconSilverBadge
+  },
+  gold: {
+    title: 'GOLD TIER UNLOCKED',
+    icon: IconGoldBadge
+  },
+  platinum: {
+    title: 'PLATINUM TIER UNLOCKED',
+    icon: IconPlatinumBadge
+  }
 }
 
-const typeTitleMap = {
-  [NotificationType.Announcement]: "WHAT'S NEW",
-  [NotificationType.Follow]: 'NEW FOLLOWER',
-  [NotificationType.UserSubscription]: 'ARTIST UPDATE',
-  [NotificationType.Favorite]: 'NEW FAVORITES',
-  [NotificationType.Repost]: 'NEW REPOSTS',
-  [NotificationType.Milestone]: 'NEW MILESTONE',
-  [NotificationType.RemixCosign]: 'NEW COSIGN',
-  [NotificationType.RemixCreate]: 'NEW REMIX',
-  [NotificationType.TrendingTrack]: 'TRENDING',
-  [NotificationType.ChallengeReward]: "YOU'VE EARNED $AUDIO"
+const typeIconMap: Record<
+  NotificationType,
+  (notification: any) => ReactNode
+> = {
+  [NotificationType.Announcement]: () => IconAudius,
+  [NotificationType.Follow]: () => IconUser,
+  [NotificationType.UserSubscription]: () => IconStars,
+  [NotificationType.Favorite]: () => IconHeart,
+  [NotificationType.Repost]: () => IconRepost,
+  [NotificationType.Milestone]: () => IconTrophy,
+  [NotificationType.RemixCosign]: () => IconRemix,
+  [NotificationType.RemixCreate]: () => IconRemix,
+  [NotificationType.TrendingTrack]: () => IconTrending,
+  [NotificationType.ChallengeReward]: () => IconAudius,
+  [NotificationType.TierChange]: (notification: TierChange) =>
+    tierInfoMap[notification.tier].icon
+}
+
+const typeTitleMap: Record<NotificationType, (notification: any) => string> = {
+  [NotificationType.Announcement]: () => "WHAT'S NEW",
+  [NotificationType.Follow]: () => 'NEW FOLLOWER',
+  [NotificationType.UserSubscription]: () => 'ARTIST UPDATE',
+  [NotificationType.Favorite]: () => 'NEW FAVORITES',
+  [NotificationType.Repost]: () => 'NEW REPOSTS',
+  [NotificationType.Milestone]: () => 'NEW MILESTONE',
+  [NotificationType.RemixCosign]: () => 'NEW COSIGN',
+  [NotificationType.RemixCreate]: () => 'NEW REMIX',
+  [NotificationType.TrendingTrack]: () => 'TRENDING',
+  [NotificationType.ChallengeReward]: () => "YOU'VE EARNED $AUDIO",
+  [NotificationType.TierChange]: (notification: TierChange) =>
+    tierInfoMap[notification.tier].title
 }
 
 const styles = StyleSheet.create({
@@ -93,8 +132,8 @@ const NotificationBlock = ({
   notification,
   onGoToRoute
 }: NotificationBlockProps) => {
-  const Icon = typeIconMap[notification.type]
-  const title = typeTitleMap[notification.type]
+  const Icon = typeIconMap[notification.type](notification)
+  const title = typeTitleMap[notification.type](notification)
   const notificationRoute = getNotificationRoute(notification)
 
   const onPress = useCallback(() => {
@@ -133,6 +172,11 @@ const NotificationBlock = ({
     }).start()
   }
 
+  const iconProps =
+    notification.type === NotificationType.TierChange
+      ? { height: 32, width: 32 }
+      : {}
+
   return (
     <Animated.View style={[{ transform: [{ scale }] }]}>
       <TouchableOpacity
@@ -152,7 +196,10 @@ const NotificationBlock = ({
           ]}
         >
           <View style={styles.top}>
-            <Icon fill={notification.isViewed ? lowlight : highlight} />
+            <Icon
+              {...iconProps}
+              fill={notification.isViewed ? lowlight : highlight}
+            />
             <Text
               style={[
                 styles.title,

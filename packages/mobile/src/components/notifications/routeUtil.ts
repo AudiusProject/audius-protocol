@@ -10,7 +10,7 @@ import {
   getTrackRoute,
   getUserRoute,
   getCollectionRoute,
-  getChallengeRewardsRoute
+  getAudioPageRoute
 } from '../../utils/routes'
 
 const AUDIUS_URL = Config.AUDIUS_URL
@@ -78,6 +78,7 @@ export const getNotificationRoute = (notification: Notification) => {
     case NotificationType.TrendingTrack:
       return getEntityRoute(notification.entity, notification.entityType)
     case NotificationType.ChallengeReward:
-      return getChallengeRewardsRoute()
+    case NotificationType.TierChange:
+      return getAudioPageRoute()
   }
 }

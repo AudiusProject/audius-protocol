@@ -1,6 +1,7 @@
 import User from '../../models/User'
 import Track from '../../models/Track'
 import Collection from '../../models/Collection'
+import { BadgeTier } from 'utils/badgeTier'
 
 export type ID = number
 
@@ -14,7 +15,8 @@ export enum NotificationType {
   RemixCreate = 'RemixCreate',
   RemixCosign = 'RemixCosign',
   TrendingTrack = 'TrendingTrack',
-  ChallengeReward = 'ChallengeReward'
+  ChallengeReward = 'ChallengeReward',
+  TierChange = 'TierChange'
 }
 
 export enum Entity {
@@ -169,6 +171,11 @@ export type ChallengeReward = BaseNotification & {
   challengeId: ChallengeRewardID
 }
 
+export type TierChange = BaseNotification & {
+  type: NotificationType.TierChange
+  tier: BadgeTier
+}
+
 export type Notification =
   | Announcement
   | UserSubscription
@@ -180,3 +187,4 @@ export type Notification =
   | RemixCosign
   | TrendingTrack
   | ChallengeReward
+  | TierChange
