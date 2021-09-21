@@ -344,7 +344,7 @@ jobs:
 
   test-eth-contracts:
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:14.17.3
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8546', '-a', '50', '-l', '8000000']
     steps:

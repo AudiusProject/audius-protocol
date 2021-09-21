@@ -647,7 +647,7 @@ contract('DelegateManager', async (accounts) => {
         totalStakedForSP.eq(spStake.add(delegatedStake)),
         'Sum of Staking.sol equals SPFactory and DelegateManager'
       )
-
+ 
       // Increase delegated stake
       let increaseAmount = _lib.audToWeiBN(5)
       await token.approve(
@@ -662,7 +662,7 @@ contract('DelegateManager', async (accounts) => {
         (await getTotalDelegatorStake(delegatorAccount1)).eq(delegatedStake.add(increaseAmount)),
         'Confirm increase')
 
-      delegatedStake = await getTotalDelegatorStake(delegatorAccount1)
+       delegatedStake = await getTotalDelegatorStake(delegatorAccount1)
 
       // Submit request to undelegate all stake
       await delegateManager.requestUndelegateStake(
@@ -671,7 +671,7 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 }
       )
 
-      // Confirm lockup amount is registered
+       // Confirm lockup amount is registered
       let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
       assert.isTrue(
         undelegateRequestInfo.amount.eq(delegatedStake),
@@ -994,10 +994,11 @@ contract('DelegateManager', async (accounts) => {
           singleDelegateAmount,
           { from: delegator })
 
-        await delegateManager.delegateStake(
+        let txReceipt = await delegateManager.delegateStake(
           stakerAccount,
           singleDelegateAmount,
-          { from: delegator })
+          { from: delegator, gas: 8000000 })
+
 
         let delegatorStake = await getTotalDelegatorStake(delegator)  
         let delegatorStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(
