@@ -112,8 +112,10 @@ def get_database_index_info(**kwargs):
 
 
 # NOTE to test queries locally
-# add pg_stat_statements to shared_preload_libraries in the db docker container at /var/lib/postgresql/data/postgresql.conf
-# docker restart discovery db container and confirm config was applied (select * from pg_file_settings)
+# add pg_stat_statements to shared_preload_libraries in the db docker container
+# at /var/lib/postgresql/data/postgresql.conf
+# docker restart discovery db container and confirm config was applied
+# select * from pg_file_settings
 def get_frequent_queries(**kwargs):
     """
     Gets the most frequent queries
