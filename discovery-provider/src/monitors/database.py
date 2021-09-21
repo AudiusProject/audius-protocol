@@ -109,3 +109,43 @@ def get_database_index_info(**kwargs):
         result = session.execute(q).fetchall()
         connection_info = [dict(row) for row in result]
         return json.dumps(connection_info)
+
+
+# NOTE to test queries locally
+# add pg_stat_statements to shared_preload_libraries in the db docker container at /var/lib/postgresql/data/postgresql.conf
+# docker restart discovery db container and confirm config was applied (select * from pg_file_settings)
+def get_frequent_queries(**kwargs):
+    """
+    Gets the most frequent queries
+
+    Kwargs:
+        db: global database instance
+        redis: global redis instance
+    """
+    db = kwargs["db"]
+    with db.scoped_session() as session:
+        q = sqlalchemy.text(
+            "SELECT query, calls FROM pg_stat_statements ORDER BY calls DESC LIMIT 100"
+        )
+        result = session.execute(q).fetchall()
+        frequent_queries = [dict(row) for row in result]
+        return json.dumps(frequent_queries)
+
+
+def get_slow_queries(**kwargs):
+    """
+    Gets the queries with the highest average latency
+
+    Kwargs:
+        db: global database instance
+        redis: global redis instance
+    """
+    db = kwargs["db"]
+    with db.scoped_session() as session:
+        q = sqlalchemy.text(
+            "SELECT query, mean_time FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 100"
+        )
+        result = session.execute(q).fetchall()
+        slow_queries = [dict(row) for row in result]
+
+        return json.dumps(slow_queries)
