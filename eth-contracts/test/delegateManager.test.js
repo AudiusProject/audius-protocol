@@ -662,7 +662,7 @@ contract('DelegateManager', async (accounts) => {
         (await getTotalDelegatorStake(delegatorAccount1)).eq(delegatedStake.add(increaseAmount)),
         'Confirm increase')
 
-       delegatedStake = await getTotalDelegatorStake(delegatorAccount1)
+      delegatedStake = await getTotalDelegatorStake(delegatorAccount1)
 
       // Submit request to undelegate all stake
       await delegateManager.requestUndelegateStake(
@@ -671,7 +671,7 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 }
       )
 
-       // Confirm lockup amount is registered
+      // Confirm lockup amount is registered
       let undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
       assert.isTrue(
         undelegateRequestInfo.amount.eq(delegatedStake),
@@ -994,11 +994,10 @@ contract('DelegateManager', async (accounts) => {
           singleDelegateAmount,
           { from: delegator })
 
-        let txReceipt = await delegateManager.delegateStake(
+        await delegateManager.delegateStake(
           stakerAccount,
           singleDelegateAmount,
           { from: delegator, gas: 8000000 })
-
 
         let delegatorStake = await getTotalDelegatorStake(delegator)  
         let delegatorStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(
