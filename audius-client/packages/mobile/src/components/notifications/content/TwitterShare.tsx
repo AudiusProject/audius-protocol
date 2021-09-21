@@ -8,6 +8,7 @@ import {
   NotificationType,
   RemixCosign,
   RemixCreate,
+  TierChange,
   Track,
   TrendingTrack,
   User
@@ -16,6 +17,7 @@ import IconTwitterBird from '../../../assets/images/iconTwitterBird.svg'
 import { getEntityRoute } from '../routeUtil'
 import { getUserRoute } from '../../../utils/routes'
 import { getRankSuffix } from './Trending'
+import { BadgeTier } from 'utils/badgeTier'
 
 export const formatAchievementText = (
   type: string,
@@ -117,10 +119,28 @@ const getRemixCosignText = async (
     link
   }
 }
+
 export const getRewardsText = (notification: ChallengeReward) => ({
   text: `I earned $AUDIO for completing challenges on @AudiusProject #AudioRewards`,
   link: null
 })
+
+const tierInfoMap: Record<BadgeTier, { label: string; icon: string }> = {
+  none: { label: 'None', icon: '' },
+  bronze: { label: 'Bronze', icon: '🥉' },
+  silver: { label: 'Silver', icon: '🥈' },
+  gold: { label: 'Gold', icon: '🥇' },
+  platinum: { label: 'Platinum', icon: '🥇' }
+}
+
+export const getTierChangeText = (notif: TierChange & { user: User }) => {
+  const { label, icon } = tierInfoMap[notif.tier]
+  console.log({ handle: notif.user.handle, notif })
+  return {
+    link: getUserRoute(notif.user, true),
+    text: `I’ve reached ${label} Tier on @AudiusProject! Check out the shiny new badge next to my name ${icon}`
+  }
+}
 
 export const getNotificationTwitterText = async (notification: any) => {
   if (notification.type === NotificationType.Milestone) {
@@ -133,6 +153,8 @@ export const getNotificationTwitterText = async (notification: any) => {
     return getRemixCosignText(notification)
   } else if (notification.type === NotificationType.ChallengeReward) {
     return getRewardsText(notification)
+  } else if (notification.type === NotificationType.TierChange) {
+    return getTierChangeText(notification)
   }
 }
 
@@ -145,6 +167,8 @@ export const getTwitterButtonText = (notification: any) => {
     case NotificationType.RemixCosign:
     case NotificationType.ChallengeReward:
       return 'Share With Your Fans'
+    case NotificationType.TierChange:
+      return 'Share to Twitter'
     default:
       return ''
   }

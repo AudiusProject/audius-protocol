@@ -13,6 +13,7 @@ import Remix from './Remix'
 import Subscription from './Subscription'
 import Cosign from './Cosign'
 import ChallengeReward from './ChallengeReward'
+import TierChange from './TierChange'
 
 type NotificationContentProps = {
   notification: Notification
@@ -50,6 +51,10 @@ const NotificationContent = ({
           notification={notification}
           onGoToRoute={onGoToRoute}
         />
+      )
+    case NotificationType.TierChange:
+      return (
+        <TierChange notification={notification} onGoToRoute={onGoToRoute} />
       )
   }
 }
