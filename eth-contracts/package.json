@@ -5,8 +5,8 @@
   "author": "AudiusProject",
   "license": "Apache-2.0",
   "scripts": {
-    "ganache": "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 -a 50",
-    "ganache-test": "docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 -a 50",
+    "ganache": "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 -a 50 -l 8000000",
+    "ganache-test": "docker run --name audius_ganache_cli_eth_contracts_test -d -p 8556:8545 trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 -a 50 -l 8000000",
     "ganache-i": "docker ps",
     "ganache-q": "docker rm -f audius_ganache_cli_eth_contracts > /dev/null",
     "ganache-test-q": "docker rm -f audius_ganache_cli_eth_contracts_test > /dev/null",
