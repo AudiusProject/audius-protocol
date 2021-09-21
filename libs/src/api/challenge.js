@@ -9,7 +9,15 @@ const GetAttestationError = Object.freeze({
   INVALID_ORACLE: 'INVALID_ORACLE',
   MISSING_CHALLENGES: 'MISSING_CHALLENGES',
   INVALID_INPUT: 'INVALID_INPUT',
+  HCAPTCHA: 'HCAPTCHA',
+  COGNITO_FLOW: 'COGNITO_FLOW',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR'
+})
+
+const AttestationPhases = Object.freeze({
+  AGGREGATE_ATTESTATIONS: 'AGGREGATE_ATTESTATIONS',
+  SUBMIT_ATTESTATIONS: 'SUBMIT_ATTESTATIONS',
+  EVALUATE_ATTESTATIONS: 'EVALUATE_ATTESTATIONS'
 })
 
 const AAO_REQUEST_TIMEOUT_MS = 15 * 1000
@@ -23,8 +31,6 @@ class Challenge extends Base {
   /**
    *
    * Top level method to aggregate attestations, submit them to RewardsManager, and evalute the result.
-   *
-   * TODO: needs error handling!
    *
    * @param {{
    *   challengeId: string,
@@ -52,28 +58,41 @@ class Challenge extends Base {
   async submitAndEvaluate ({
     challengeId, encodedUserId, handle, recipientEthAddress, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint
   }) {
-    const { discoveryNodeAttestations, aaoAttestation } = await this.aggregateAttestations({
-      challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint
-    })
+    let phase
+    try {
+      phase = AttestationPhases.AGGREGATE_ATTESTATIONS
+      const { discoveryNodeAttestations, aaoAttestation, error } = await this.aggregateAttestations({
+        challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint
+      })
 
-    const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
+      if (error) {
+        return
+      }
 
-    await this.solanaWeb3Manager.submitChallengeAttestations({
-      attestations: discoveryNodeAttestations,
-      oracleAttestation: aaoAttestation,
-      challengeId,
-      specifier,
-      recipientEthAddress,
-      tokenAmount: fullTokenAmount
-    })
+      const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
 
-    await this.solanaWeb3Manager.evaluateChallengeAttestations({
-      challengeId,
-      specifier,
-      recipientEthAddress,
-      oracleEthAddress,
-      tokenAmount: fullTokenAmount
-    })
+      phase = AttestationPhases.SUBMIT_ATTESTATIONS
+      await this.solanaWeb3Manager.submitChallengeAttestations({
+        attestations: discoveryNodeAttestations,
+        oracleAttestation: aaoAttestation,
+        challengeId,
+        specifier,
+        recipientEthAddress,
+        tokenAmount: fullTokenAmount
+      })
+
+      phase = AttestationPhases.EVALUATE_ATTESTATIONS
+      await this.solanaWeb3Manager.evaluateChallengeAttestations({
+        challengeId,
+        specifier,
+        recipientEthAddress,
+        oracleEthAddress,
+        tokenAmount: fullTokenAmount
+      })
+    } catch (e) {
+      const err = e.message
+      console.log(`Failed to submit and evaluate attestations at phase ${phase}: ${err}`)
+    }
   }
 
   /**
@@ -117,25 +136,47 @@ class Challenge extends Base {
     }
     endpoints = sampleSize(endpoints, quorumSize)
 
-    const discprovAttestations = endpoints.map(e => this.getChallengeAttestation({ challengeId, encodedUserId, specifier, oracleEthAddress, discoveryProviderEndpoint: e }))
-    const AAOAttestation = this.getAAOAttestation({
-      challengeId,
-      specifier,
-      handle,
-      amount,
-      AAOEndpoint,
-      oracleEthAddress
-    })
+    try {
+      const discprovAttestations = endpoints.map(e => this.getChallengeAttestation({ challengeId, encodedUserId, specifier, oracleEthAddress, discoveryProviderEndpoint: e }))
+      const AAOAttestation = this.getAAOAttestation({
+        challengeId,
+        specifier,
+        handle,
+        amount,
+        AAOEndpoint,
+        oracleEthAddress
+      })
 
-    // TODO: this code will fail sloppily if any of these attestations error
+      const res = await Promise.all([...discprovAttestations, AAOAttestation])
+      const discoveryNodeAttestationResults = res.slice(0, -1)
+      const discoveryNodeAttestations = discoveryNodeAttestationResults.map(r => r.success)
+      const discoveryNodeAttestationErrors = discoveryNodeAttestationResults.map(r => r.error)
+      const { success: aaoAttestation, error: aaoAttestationError } = res[res.length - 1]
+      console.log({ discoveryNodeAttestations, aaoAttestation })
 
-    const res = await Promise.all([...discprovAttestations, AAOAttestation])
-    const discoveryNodeAttestations = res.slice(0, -1).map(r => r.success)
-    const aaoAttestation = res[res.length - 1].success
-    console.log({discoveryNodeAttestations, aaoAttestation})
-    return {
-      discoveryNodeAttestations,
-      aaoAttestation
+      // return error if any of the attestations erred
+      if (discoveryNodeAttestationErrors.some(Boolean) || aaoAttestationError) {
+        console.log(`Failed to aggregate attestations: one or more attestations failed`)
+        return {
+          discoveryNodeAttestations: null,
+          aaoAttestation: null,
+          error: GetAttestationError.UNKNOWN_ERROR
+        }
+      }
+
+      return {
+        discoveryNodeAttestations,
+        aaoAttestation,
+        error: null
+      }
+    } catch (e) {
+      const err = e.message
+      console.log(`Failed to aggregate attestations: ${err}`)
+      return {
+        discoveryNodeAttestations: null,
+        aaoAttestation: null,
+        error: GetAttestationError.UNKNOWN_ERROR
+      }
     }
   }
 
@@ -182,7 +223,7 @@ class Challenge extends Base {
       return { success: meta, error: null }
     } catch (e) {
       const err = e.message
-      console.log(err)
+      console.log(`Failed to get challenge attestation from ${discoveryProviderEndpoint}: ${err}`)
       const mappedErr = GetAttestationError[err] || GetAttestationError.UNKNOWN_ERROR
       return {
         success: null,
@@ -233,15 +274,33 @@ class Challenge extends Base {
       data
     }
 
-    // TODO: error handling here!
+    try {
+      const response = await axios(request)
+      const { result, needs } = response.data
 
-    const res = await axios(request)
-    return {
-      success: {
-        signature: res.data.result,
-        ethAddress: oracleEthAddress
-      },
-      error: null
+      if (needs) {
+        console.log(`Failed to get AAO attestation: needs ${needs}`)
+        const mappedErr = GetAttestationError[needs] || GetAttestationError.UNKNOWN_ERROR
+        return {
+          success: null,
+          error: mappedErr
+        }
+      }
+
+      return {
+        success: {
+          signature: result,
+          ethAddress: oracleEthAddress
+        },
+        error: null
+      }
+    } catch (e) {
+      const err = e.message
+      console.log(`Failed to get AAO attestation: ${err}`)
+      return {
+        success: null,
+        error: GetAttestationError.UNKNOWN_ERROR
+      }
     }
   }
 }
