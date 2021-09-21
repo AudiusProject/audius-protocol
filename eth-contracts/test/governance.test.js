@@ -1,4 +1,5 @@
 import * as _lib from '../utils/lib.js'
+const blockGasLimit = _lib.blockGasLimit
 const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
@@ -324,12 +325,13 @@ contract('Governance.sol', async (accounts) => {
       initializeArgumentTypesArray,
       [0x0, votingPeriod, executionDelay, votingQuorumPercent, newMaxInProgressProposals, proxyDeployerAddress]
     )
+
     await _lib.assertRevert(
       AudiusAdminUpgradeabilityProxy.new(
         governance0.address,
         proxyAdminAddress,
         governanceCallData,
-        { from: proxyDeployerAddress }
+        { from: proxyDeployerAddress, gas: _lib.blockGasLimit }
       )
     )
 
@@ -344,7 +346,7 @@ contract('Governance.sol', async (accounts) => {
         governance0.address,
         governance.address,
         governanceCallData,
-        { from: proxyDeployerAddress }
+        { from: proxyDeployerAddress, gas: _lib.blockGasLimit }
       )
     )
 
@@ -359,7 +361,7 @@ contract('Governance.sol', async (accounts) => {
         governance0.address,
         governance.address,
         governanceCallData,
-        { from: proxyDeployerAddress }
+        { from: proxyDeployerAddress, gas: _lib.blockGasLimit }
       )
     )
 
@@ -374,7 +376,7 @@ contract('Governance.sol', async (accounts) => {
         governance0.address,
         governance.address,
         governanceCallData,
-        { from: proxyDeployerAddress }
+        { from: proxyDeployerAddress, gas: _lib.blockGasLimit }
       )
     )
 
@@ -389,7 +391,7 @@ contract('Governance.sol', async (accounts) => {
         governance0.address,
         governance.address,
         governanceCallData,
-        { from: proxyDeployerAddress }
+        { from: proxyDeployerAddress, gas: _lib.blockGasLimit }
       )
     )
   })
