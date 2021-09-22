@@ -29,21 +29,6 @@ function checkIsBot(val) {
 }
 
 async function handleEvent(event) {
-  // One-off fix for old-style route shared on twitter
-  // We don't make old-style routes anymore but older mobile app versions generate bad links
-  // TODO: Remove this and make old style routes for a while longer until user sediment updates
-  if (
-    event.request.url.endsWith(
-      'hannibalburess/coach-wilson-produced-by-flux-pavilion-517598'
-    )
-  ) {
-    const newUrl = event.request.url.substring(
-      0,
-      event.request.url.length - '-517598'.length
-    )
-    return Response.redirect(newUrl, 301)
-  }
-
   const url = new URL(event.request.url)
   const { pathname, search, hash } = url
   const userAgent = event.request.headers.get('User-Agent') || ''
