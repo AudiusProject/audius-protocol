@@ -31,6 +31,12 @@ function checkIsBot(val) {
 async function handleEvent(event) {
   const url = new URL(event.request.url)
   const { pathname, search, hash } = url
+
+  const isUndefined = pathname === '/undefined'
+  if (isUndefined) {
+    return Response.redirect(url.origin, 302)
+  }
+
   const userAgent = event.request.headers.get('User-Agent') || ''
 
   const isBot = checkIsBot(userAgent)
@@ -51,10 +57,6 @@ async function handleEvent(event) {
     const destinationURL = SITEMAP + pathname + search + hash
     const newRequest = new Request(destinationURL, event.request)
     return await fetch(newRequest)
-  }
-  const isUndefined = pathname === '/undefined'
-  if (isUndefined) {
-    return Response.redirect(url.origin, 302)
   }
 
   const options = {}
