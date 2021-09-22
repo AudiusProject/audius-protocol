@@ -43,7 +43,7 @@ const DECREASE_STAKE_LOCKUP_DURATION = UNDELEGATE_LOCKUP_DURATION
 
 const callValue0 = _lib.toBN(0)
 
-contract('DelegateManager', async (accounts) => {
+contract('DelegateManagerV2', async (accounts) => {
   let staking, stakingAddress, token, registry, governance
   let serviceProviderFactory, serviceTypeManager, claimsManager, delegateManager
   let delegateManager0, delegateManagerProxy
@@ -972,29 +972,34 @@ contract('DelegateManager', async (accounts) => {
       let totalDelegationAmount = DEFAULT_AMOUNT
       let singleDelegateAmount = totalDelegationAmount.div(web3.utils.toBN(numDelegators))
       await Promise.all(delegatorAccounts.map(async(delegator) => {
-        // Transfer 1000 tokens to each delegator
-        await token.transfer(delegator, INITIAL_BAL, { from: proxyDeployerAddress })
-        // Approve staking transfer
-        await token.approve(
-          stakingAddress,
-          singleDelegateAmount,
-          { from: delegator })
+        try {
+          // Transfer 1000 tokens to each delegator
+          await token.transfer(delegator, INITIAL_BAL, { from: proxyDeployerAddress })
+          // Approve staking transfer
+          await token.approve(
+            stakingAddress,
+            singleDelegateAmount,
+            { from: delegator })
 
-        await delegateManager.delegateStake(
-          stakerAccount,
-          singleDelegateAmount,
-          { from: delegator })
+          await delegateManager.delegateStake(
+            stakerAccount,
+            singleDelegateAmount,
+            { from: delegator })
 
-        let delegatorStake = await getTotalDelegatorStake(delegator)  
-        let delegatorStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(
-          delegator,
-          stakerAccount)
-        assert.isTrue(
-          delegatorStake.eq(singleDelegateAmount),
-          'Expected total delegator stake to match input')
-        assert.isTrue(
-          delegatorStakeForSP.eq(singleDelegateAmount),
-          'Expected total delegator stake to SP to match input')
+          let delegatorStake = await getTotalDelegatorStake(delegator)  
+          let delegatorStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(
+            delegator,
+            stakerAccount)
+          assert.isTrue(
+            delegatorStake.eq(singleDelegateAmount),
+            'Expected total delegator stake to match input')
+          assert.isTrue(
+            delegatorStakeForSP.eq(singleDelegateAmount),
+            'Expected total delegator stake to SP to match input')
+        } catch(e) {
+          console.log(`Error in delegator ${delegator}` + `${e.toString()}`)
+          throw e
+        }
       }))
 
       let totalSPStakeAfterDelegation = await staking.totalStakedFor(stakerAccount)

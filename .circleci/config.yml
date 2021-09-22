@@ -31,13 +31,13 @@ jobs:
     # https://circleci.com/docs/2.0/parallelism-faster-jobs/
     # 1 is default; leaving this here for quick modification
     parallelism: 1
-    # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
-    # uses medium (2vcpu/4gb) by default
     parameters:
       mad-dog-type:
         description: "test-ci or test-nightly"
         default: 'test-ci'
         type: string
+    # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
+    # uses medium (2vcpu/4gb) by default
     resource_class: large # 4vcpu/8gb
     machine:
       image: ubuntu-1604:201903-01 # recommended linux image - includes Ubuntu 16.04, docker 18.09.3, docker-compose 1.23.1
@@ -343,8 +343,14 @@ jobs:
             cd ../
 
   test-eth-contracts:
+    # https://circleci.com/docs/2.0/parallelism-faster-jobs/
+    # 1 is default; leaving this here for quick modification
+    parallelism: 1
+    # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
+    # uses medium (2vcpu/4gb) by default
+    resource_class: medium
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:14.17.3
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8546', '-a', '50', '-l', '8000000']
     steps:
@@ -377,10 +383,11 @@ jobs:
           name: run_tests
           command: |
             cd eth-contracts
-            npm run test-circle-ci
+            npm run test-circle-ci-no-coverage
             cd ../
-      - coveralls/upload:
-          path_to_lcov: ./eth-contracts/coverage/lcov.info
+      # this is commented out since coverage is now disabled in CI
+      # - coveralls/upload:
+      #     path_to_lcov: ./eth-contracts/coverage/lcov.info
 
   test-creator-node:
     docker:
