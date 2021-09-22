@@ -20,8 +20,7 @@ class SessionManager:
             conn, cursor, statement, parameters, context, executemany
         ):
             if "src" in conn.info:
-                caller = conn.info.pop("src")
-                statement = statement + " -- %s" % caller
+                statement = statement + " -- %s" % conn.info.pop("src")
             return statement, parameters
 
         self._session_factory = sessionmaker(bind=self._engine)
@@ -69,7 +68,12 @@ class SessionManager:
         """
         session = self._session_factory()
         session.expire_on_commit = expire_on_commit
-        session.info["src"] = inspect.stack()[2][3]  # get caller's function name
+
+        try:
+            session.info["src"] = inspect.stack()[2][3]  # get caller's function name
+        except Exception:
+            pass
+
         try:
             yield session
             session.commit()
