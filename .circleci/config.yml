@@ -383,7 +383,7 @@ jobs:
           name: run_tests
           command: |
             cd eth-contracts
-            npm run test-circle-ci
+            npm run test-circle-ci-no-coverage
             cd ../
       - coveralls/upload:
           path_to_lcov: ./eth-contracts/coverage/lcov.info
