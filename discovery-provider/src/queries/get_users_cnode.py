@@ -70,7 +70,6 @@ def get_users_cnode(cnode_endpoint_string, replica_type=ReplicaType.PRIMARY):
             t.secondary1 is not NULL;
             """
         )
-        session.info['src'] = get_users_cnode.__name__
         users = session.execute(
             users_res, {"cnode_endpoint_string": cnode_endpoint_string}
         ).fetchall()
