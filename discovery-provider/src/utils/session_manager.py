@@ -1,12 +1,12 @@
 from contextlib import contextmanager
+import inspect
 import logging  # pylint: disable=C0302
 from sqlalchemy import create_engine
 from sqlalchemy.event import listen
 from sqlalchemy.orm import sessionmaker
-from src.queries.search_config import set_search_similarity
 from sqlalchemy import event
 from sqlalchemy.engine import Engine
-import inspect
+from src.queries.search_config import set_search_similarity
 
 logger = logging.getLogger(__name__)
 
