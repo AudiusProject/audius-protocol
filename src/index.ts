@@ -75,7 +75,11 @@ router.get('/error', (
   }
 )
 
-router.get('/check', (
+// Override default metatags
+router.get([
+  '/check',
+  '/undefined'
+], (
   req: express.Request,
   res: express.Response) => {
     getMetaTagsResponse(MetaTagFormat.Default, req, res)
