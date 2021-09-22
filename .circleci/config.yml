@@ -348,7 +348,7 @@ jobs:
     parallelism: 1
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
     # uses medium (2vcpu/4gb) by default
-    resource_class: xlarge # 4vcpu/8gb
+    resource_class: medium
     docker:
       - image: circleci/node:14.17.3
       - image: trufflesuite/ganache-cli:latest
@@ -385,8 +385,9 @@ jobs:
             cd eth-contracts
             npm run test-circle-ci-no-coverage
             cd ../
-      - coveralls/upload:
-          path_to_lcov: ./eth-contracts/coverage/lcov.info
+      # this is commented out since coverage is now disabled in CI
+      # - coveralls/upload:
+      #     path_to_lcov: ./eth-contracts/coverage/lcov.info
 
   test-creator-node:
     docker:

@@ -70,6 +70,7 @@ module.exports = {
       ,port: 8546 // Standard Ethereum port (default: none)
       ,network_id: '*' // Any network (default: none)
       ,gas: 8000000 // 8,000,000 is a proxy for block gas limit even though it is now much higher
+      // recommended as a ganache performance improvement https://github.com/trufflesuite/truffle/issues/3522
       ,disableConfirmationListener: true
     },
     test_local: {
@@ -77,6 +78,7 @@ module.exports = {
       ,port: 8556
       ,network_id: '*'
       ,gas: 8000000 // 8,000,000 is a proxy for block gas limit even though it is now much higher
+      // recommended as a ganache performance improvement https://github.com/trufflesuite/truffle/issues/3522
       ,disableConfirmationListener: true
     }
   },
