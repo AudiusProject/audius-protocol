@@ -42,6 +42,9 @@ impl Processor {
         message: &[u8],
         secp_instruction_data: Vec<u8>,
     ) -> Result<(), AudiusError> {
+        if secp_instruction_data[0] != 1 {
+            return Err(AudiusError::SignatureVerificationFailed.into());
+        }
         let eth_address_offset = 12;
         let instruction_signer = secp_instruction_data
             [eth_address_offset..eth_address_offset + SecpSignatureOffsets::ETH_ADDRESS_SIZE]
