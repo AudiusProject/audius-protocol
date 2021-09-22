@@ -11,4 +11,4 @@ npm run truffle-compile
 
 printf '\nSTART Truffle tests:\n\n'
 
-npm run test-coverage
+npm run test

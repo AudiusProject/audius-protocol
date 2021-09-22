@@ -4,6 +4,12 @@ module.exports = {
     'total_accounts': 20
   },
   skipFiles: [
-    'test'
+    'test/TestContract.sol',
+    'test/MockDelegateManager.sol',
+    'test/MockGovernance.sol',
+    'test/MockStakingCaller.sol',
+    'test/StakingUpgraded.sol',
+    'test/GovernanceUpgraded.sol',
+    'test/MockAccount.sol'
   ]
 }
