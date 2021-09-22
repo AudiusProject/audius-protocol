@@ -4,6 +4,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.event import listen
 from sqlalchemy.orm import sessionmaker
 from src.queries.search_config import set_search_similarity
+from sqlalchemy import event
+from sqlalchemy.engine import Engine
+
+# possibly use sqlcommenter?
+# from google.cloud.sqlcommenter.sqlalchemy.executor import BeforeExecuteFactory
 
 logger = logging.getLogger(__name__)
 
@@ -11,10 +16,34 @@ logger = logging.getLogger(__name__)
 class SessionManager:
     def __init__(self, db_url, db_engine_args):
         self._engine = create_engine(db_url, **db_engine_args)
+
+        # listener = BeforeExecuteFactory(
+        #     with_db_driver=True,
+        #     with_db_framework=True,
+        #     with_opentelemetry=True,
+        # )
+
+        @event.listens_for(Engine, "before_cursor_execute", retval=True)
+        def comment_sql_calls(conn, cursor, statement, parameters, context, executemany):
+            if 'src' in conn.info:
+                statement = statement + " -- %s" % conn.info.pop('src')
+            return statement, parameters
+
         self._session_factory = sessionmaker(bind=self._engine)
+
         # Attach a listener for new engine connection.
         # See https://docs.sqlalchemy.org/en/14/core/event.html
         listen(self._engine, "connect", self.on_connect)
+        listen(self._session_factory, "after_begin", self.session_on_after_begin)
+
+        # listen(self._engine, 'before_cursor_execute', listener, retval=True)
+
+    def session_on_after_begin(self, session, transaction, connection):
+        logger.info("isaac listened session_on_after_begin")
+        logger.info(dir(session.info))
+        if 'src' in session.info:
+            connection.info['src'] = session.info['src']
+
 
     def on_connect(self, dbapi_conn, connection_record):
         """
