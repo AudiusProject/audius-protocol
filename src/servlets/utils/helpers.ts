@@ -21,16 +21,30 @@ export const getTrack = async (id: number): Promise<any> => {
   throw new Error(`Failed to get track ${id}`)
 }
 
-export const getTrackByHandleAndSlug = async (handle: string, slug: string): Promise<any> => {
-  const track = await libs.Track.getTracksByHandleAndSlug(handle, slug)
-  if (track && track.length > 0) return track[0]
-  throw new Error(`Failed to get track ${handle}/${slug}`)
-}
-
 export const getTracks = async (ids: number[]): Promise<any> => {
   const ts =  await libs.Track.getTracks(ids.length, 0, ids)
   if (ts) return ts
   throw new Error(`Failed to get tracks ${ids}`)
+}
+
+export const getTrackByHandleAndSlug = async (handle: string, slug: string): Promise<any> => {
+  const track = await libs.Track.getTracksByHandleAndSlug(handle, slug)
+  if (track && track.length > 0) return track[0]
+
+  // Try the old route method, ensuring that the track once found has the same owner handle.
+  // Ensure at least 5 digits (anything lower has old route in the DB)
+  const matches = slug.match(/[0-9]{5,}$/)
+  if (matches) {
+    const tracks = await getTracks([parseInt(matches[0], 10)])
+    if (tracks && tracks[0] && tracks[0].permalink) {
+      const splitted = tracks[0].permalink.split('/')
+      const foundHandle = splitted.length > 0 ? splitted[1] : ''
+      if (foundHandle.toLowerCase() === handle.toLowerCase()) {
+        return tracks[0]
+      }
+    }
+  }
+  throw new Error(`Failed to get track ${handle}/${slug}`)
 }
 
 export const getCollection = async (id: number): Promise<any> => {
