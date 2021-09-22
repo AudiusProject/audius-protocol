@@ -18,10 +18,12 @@
     "test": "npm run truffle-test",
     "test-coverage": "ENABLE_OPTIMIZER=false node --max-old-space-size=4096 ./node_modules/.bin/truffle run coverage --file='test/*.js'",
     "test-only": "./node_modules/.bin/truffle test test/*.js --network=test_local",
+    "test-only-dev": "./node_modules/.bin/truffle test test/*.js --network=development",
     "test-random": "./scripts/truffle-test.sh --audius-random",
     "truffle-test": "./scripts/truffle-test.sh",
     "truffle-test-v": "./scripts/truffle-test.sh --verbose-rpc",
     "test-circle-ci": "./scripts/circleci-test.sh",
+    "test-circle-ci-no-coverage": "./scripts/circleci-test-no-coverage.sh",
     "solidity-lint": "./node_modules/.bin/solium -d contracts",
     "lint": "./node_modules/.bin/standard",
     "lint-circle-ci": "./scripts/lint.sh"
