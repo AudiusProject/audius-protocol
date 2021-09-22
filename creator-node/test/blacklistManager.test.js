@@ -1,4 +1,5 @@
 const assert = require('assert')
+const sinon = require('sinon')
 
 const BlacklistManager = require('../src/blacklistManager')
 const ipfsClient = require('../src/ipfsClient')
@@ -25,6 +26,7 @@ describe('test blacklistManager', () => {
   afterEach(async () => {
     BlacklistManager.initialized = false
     await redis.del(BlacklistManager.getRedisTrackIdToCIDsKey(1))
+    sinon.restore()
     await server.close()
   })
 
@@ -92,9 +94,9 @@ describe('test blacklistManager', () => {
     await BlacklistManager.addToRedis('BM.SET.BLACKLIST.SEGMENTCID', [CID])
 
     // Mock DB call to return nothing
-    BlacklistManager.getAllCIDsFromTrackIdsInDb = async () => {
+    sinon.stub(BlacklistManager, 'getAllCIDsFromTrackIdsInDb').callsFake(async () => {
       return []
-    }
+    })
 
     assert.deepStrictEqual(await BlacklistManager.isServable(CID, 1234), false)
     assert.deepStrictEqual(await BlacklistManager.trackIdIsInvalid(1234), 1)
@@ -103,14 +105,14 @@ describe('test blacklistManager', () => {
   it('[isServable] cid is in blacklist, cid does not belong to track from input trackId with redis check, and input track is valid with db check, and cid is in track, allow serve', async () => {
     await BlacklistManager.addToRedis('BM.SET.BLACKLIST.SEGMENTCID', [CID])
 
-    // Mock DB call to return nothing
-    BlacklistManager.getAllCIDsFromTrackIdsInDb = async () => {
+    // Mock DB call to return proper segment
+    sinon.stub(BlacklistManager, 'getAllCIDsFromTrackIdsInDb').callsFake(async () => {
       return [{
         metadataJSON: {
           track_segments: [{ duration: 6, multihash: CID }]
         }
       }]
-    }
+    })
 
     assert.deepStrictEqual(await BlacklistManager.isServable(CID, 1), true)
     assert.deepStrictEqual(await BlacklistManager.getAllCIDsFromTrackIdInRedis(1), [CID])
@@ -119,14 +121,14 @@ describe('test blacklistManager', () => {
   it('[isServable] cid is in blacklist, cid does not belong to track from input trackId with redis check, and input track is valid with db check, and cid is not in track, do not serve', async () => {
     await BlacklistManager.addToRedis('BM.SET.BLACKLIST.SEGMENTCID', [CID])
 
-    // Mock DB call to return nothing
-    BlacklistManager.getAllCIDsFromTrackIdsInDb = async () => {
+    // Mock DB call to return proper segment that is not the same as `CID`
+    sinon.stub(BlacklistManager, 'getAllCIDsFromTrackIdsInDb').callsFake(async () => {
       return [{
         metadataJSON: {
           track_segments: [{ duration: 6, multihash: 'QmABC_tinashe_and_rei_ami' }]
         }
       }]
-    }
+    })
 
     assert.deepStrictEqual(await BlacklistManager.isServable(CID, 1), false)
     assert.deepStrictEqual(await BlacklistManager.getAllCIDsFromTrackIdInRedis(1), ['QmABC_tinashe_and_rei_ami'])

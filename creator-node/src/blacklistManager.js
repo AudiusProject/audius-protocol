@@ -437,7 +437,6 @@ class BlacklistManager {
           await this.addToRedis(
             REDIS_SET_INVALID_TRACKIDS_KEY,
             [trackId],
-            'EX',
             // Set expiry in case track with this trackId eventually gets uploaded to CN
             INVALID_TRACKID_EXPIRATION_SECONDS
           )
