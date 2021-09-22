@@ -35,7 +35,7 @@ export const getTrackByHandleAndSlug = async (handle: string, slug: string): Pro
   // Ensure at least 5 digits (anything lower has old route in the DB)
   const matches = slug.match(/[0-9]{5,}$/)
   if (matches) {
-    const tracks = await getTracks([parseInt(matches[0])])
+    const tracks = await getTracks([parseInt(matches[0], 10)])
     if (tracks && tracks[0] && tracks[0].permalink) {
       const splitted = tracks[0].permalink.split('/')
       const foundHandle = splitted.length > 0 ? splitted[1] : ''
