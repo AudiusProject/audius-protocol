@@ -66,7 +66,7 @@ class Challenge extends Base {
       })
 
       if (error) {
-        return error
+        return { success: false, error }
       }
 
       const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
@@ -89,9 +89,12 @@ class Challenge extends Base {
         oracleEthAddress,
         tokenAmount: fullTokenAmount
       })
+
+      return { success: true, error: false }
     } catch (e) {
       const err = e.message
       console.log(`Failed to submit and evaluate attestations at phase ${phase}: ${err}`)
+      return { success: false, error: e }
     }
   }
 
