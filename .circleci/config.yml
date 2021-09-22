@@ -343,6 +343,9 @@ jobs:
             cd ../
 
   test-eth-contracts:
+    # https://circleci.com/docs/2.0/parallelism-faster-jobs/
+    # 1 is default; leaving this here for quick modification
+    parallelism: 5
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
     # uses medium (2vcpu/4gb) by default
     resource_class: xlarge # 4vcpu/8gb
