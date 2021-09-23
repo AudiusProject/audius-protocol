@@ -1,12 +1,24 @@
-const {
+const wormholeSdk = require('@certusone/wormhole-sdk')
+let {
   getSignedVAA,
   getEmitterAddressEth,
   getEmitterAddressSolana,
   parseSequenceFromLogEth,
   parseSequenceFromLogSolana,
   redeemOnEth,
-  redeemOnSolana
-} = require('@certusone/wormhole-sdk')
+  redeemOnSolana,
+  postVaaSolana
+} = wormholeSdk
+window.wormholeSdk = wormholeSdk
+
+window.getSignedVAA = getSignedVAA
+window.getEmitterAddressEth = getEmitterAddressEth
+window.getEmitterAddressSolana = getEmitterAddressSolana
+window.parseSequenceFromLogEth = parseSequenceFromLogEth
+window.parseSequenceFromLogSolana = parseSequenceFromLogSolana
+window.redeemOnEth = redeemOnEth
+window.redeemOnSolana = redeemOnSolana
+window.postVaaSolana = postVaaSolana
 
 /**
  * Wormhole is a wrapper around the `@certusone/wormhole` library to interface wormhole v2
@@ -58,7 +70,7 @@ class Wormhole {
     amount
   }) {
     const ethWalletAddress = this.web3Manager.getWalletAddress()
-    const solanaAccount = this.solanaWeb3Manager.getUserBank()
+    const solanaAccount = await this.solanaWeb3Manager.getUserBank()
 
     // Submit transaction - results in a Wormhole message being published
     const receipt = await transferFromEth(
@@ -108,7 +120,7 @@ class Wormhole {
   }
 
   async signSolTransaction (transaction) {
-    const solanaAccount = this.solanaWeb3Manager.getUserBank()
+    const solanaAccount = await this.solanaWeb3Manager.getUserBank()
     transaction.sign(solanaAccount)
     return transaction
   }
@@ -120,7 +132,7 @@ class Wormhole {
    */
   async transferSolToEth (amount) {
     const ethWalletAddress = this.web3Manager.getWalletAddress()
-    const solanaAccount = this.solanaWeb3Manager.getUserBank()
+    const solanaAccount = await this.solanaWeb3Manager.getUserBank()
 
     // Submit transaction - results in a Wormhole message being published
     const transaction = await transferFromSolana(

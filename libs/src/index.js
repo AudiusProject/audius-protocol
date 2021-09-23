@@ -394,6 +394,7 @@ class AudiusLibs {
         this.ethContracts
       )
       await this.wormhole.init()
+      window.wormhole = this.wormhole
     }
 
     /** Discovery Provider */

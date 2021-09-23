@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@audius/hedgehog": "1.0.9",
-    "@certusone/wormhole-sdk": "0.0.2",
+    "@certusone/wormhole-sdk": "0.0.5",
     "@ethersproject/solidity": "5.0.5",
     "@solana/spl-token": "0.1.6",
     "@solana/web3.js": "1.24.1",
@@ -41,7 +41,8 @@
     "secp256k1": "^4.0.2",
     "semver": "^6.3.0",
     "tus-js-client": "^2.3.0",
-    "web3": "1.2.8"
+    "web3": "1.2.8",
+    "ethers": "^5.4.1"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "^0.5.6",
