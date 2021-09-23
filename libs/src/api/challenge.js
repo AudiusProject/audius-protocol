@@ -11,10 +11,12 @@ const GetAttestationError = Object.freeze({
   INVALID_INPUT: 'INVALID_INPUT',
   HCAPTCHA: 'HCAPTCHA',
   COGNITO_FLOW: 'COGNITO_FLOW',
+  BLOCKED: 'BLOCKED',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR'
 })
 
 const AttestationPhases = Object.freeze({
+  SANITY_CHECKS: 'SANITY_CHECKS',
   AGGREGATE_ATTESTATIONS: 'AGGREGATE_ATTESTATIONS',
   SUBMIT_ATTESTATIONS: 'SUBMIT_ATTESTATIONS',
   EVALUATE_ATTESTATIONS: 'EVALUATE_ATTESTATIONS'
@@ -31,6 +33,10 @@ class Challenge extends Base {
   /**
    *
    * Top level method to aggregate attestations, submit them to RewardsManager, and evalute the result.
+   *
+   * @typedef {Object} GetSubmitAndEvaluateAttestationsReturn
+   * @property {Boolean} success
+   * @property {GetAttestationError} error
    *
    * @param {{
    *   challengeId: string,
@@ -53,6 +59,7 @@ class Challenge extends Base {
    *   quorumSize,
    *   AAOEndpoint
    *   }
+   * @returns {Promise<GetSubmitAndEvaluateAttestationsReturn>}
    * @memberof Challenge
    */
   async submitAndEvaluate ({
@@ -60,13 +67,20 @@ class Challenge extends Base {
   }) {
     let phase
     try {
+      phase = AttestationPhases.SANITY_CHECKS
+
+      // fail if amount is a decimal
+      if ((Number(amount) !== amount) || (amount % 1 !== 0)) {
+        throw new Error('Invalid amount')
+      }
+
       phase = AttestationPhases.AGGREGATE_ATTESTATIONS
       const { discoveryNodeAttestations, aaoAttestation, error } = await this.aggregateAttestations({
         challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint
       })
 
       if (error) {
-        return { success: false, error }
+        throw new Error(error)
       }
 
       const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
@@ -90,11 +104,11 @@ class Challenge extends Base {
         tokenAmount: fullTokenAmount
       })
 
-      return { success: true, error: false }
+      return { success: true, error: null }
     } catch (e) {
       const err = e.message
       console.log(`Failed to submit and evaluate attestations at phase ${phase}: ${err}`)
-      return { success: false, error: e }
+      return { success: false, error: err }
     }
   }
 
@@ -105,16 +119,17 @@ class Challenge extends Base {
    * @typedef {Object} AttestationsReturn
    * @property {Array<AttestationMeta>} discoveryNodeAttestations
    * @property {AttestationMeta} aaoAttestation
+   * @property {GetAttestationError} error
    *
    * @param {{
-   *   challengeId,
-   *   encodedUserId,
-   *   handle,
-   *   specifier,
-   *   oracleEthAddress,
-   *   amount,
-   *   quorumSize,
-   *   AAOEndpoint,
+   *   challengeId: string,
+   *   encodedUserId: string,
+   *   handle: string,
+   *   specifier: string,
+   *   oracleEthAddress: string,
+   *   amount: number,
+   *   quorumSize: number,
+   *   AAOEndpoint: string,
    *   endpoints = null
    * }} {
    *   challengeId,
@@ -127,7 +142,7 @@ class Challenge extends Base {
    *   AAOEndpoint,
    *   endpoints = null
    * }
-   * @returns {Promise<AttestationsReturn>} attestations
+   * @returns {Promise<AttestationsReturn>}
    * @memberof Challenge
    */
   async aggregateAttestations ({ challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints = null }) {
@@ -155,7 +170,6 @@ class Challenge extends Base {
       const discoveryNodeAttestations = discoveryNodeAttestationResults.map(r => r.success)
       const discoveryNodeAttestationErrors = discoveryNodeAttestationResults.map(r => r.error)
       const { success: aaoAttestation, error: aaoAttestationError } = res[res.length - 1]
-      console.log({ discoveryNodeAttestations, aaoAttestation })
 
       const error = aaoAttestationError || discoveryNodeAttestationErrors.find(Boolean)
       if (error) {
@@ -173,7 +187,7 @@ class Challenge extends Base {
       }
     } catch (e) {
       const err = e.message
-      console.log(`Failed to aggregate attestations: ${err}`)
+      console.error(`Failed to aggregate attestations: ${err}`)
       return {
         discoveryNodeAttestations: null,
         aaoAttestation: null,
@@ -188,7 +202,7 @@ class Challenge extends Base {
    *
    * @typedef {Object} GetAttestationReturn
    * @property {AttestationMeta} success
-   * @property {error} string
+   * @property {GetAttestationError} error
    *
    * @param {{
    *   challengeId: string,
@@ -240,14 +254,14 @@ class Challenge extends Base {
    *
    * @typedef {Object} GetAAOAttestationReturn
    * @property {AttestationMeta} success
-   * @property {error} string
+   * @property {GetAttestationError} error
    *
    * @param {{
    *   challengeId: string,
    *   specifier: string,
    *   handle: string,
    *   amount: number,
-   *   AAOEndpoint: string
+   *   AAOEndpoint: string,
    *   oracleEthAddress: string
    * }} {
    *   challengeId,
