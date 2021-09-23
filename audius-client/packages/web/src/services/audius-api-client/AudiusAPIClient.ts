@@ -720,7 +720,10 @@ class AudiusAPIClient {
       const oldTrackResponse = await this.getTrack({
         id: parseInt(matches[0])
       })
-      if (!oldTrackResponse || oldTrackResponse.user.handle !== args.handle) {
+      if (
+        !oldTrackResponse ||
+        oldTrackResponse.user.handle_lc !== args.handle.toLowerCase()
+      ) {
         return null
       }
       return oldTrackResponse
