@@ -159,60 +159,6 @@ describe('test Users', async function () {
       .expect(200)
   })
 
-  it('allows user login', async function () {
-    await createStarterCNodeUser()
-    const ts = Math.round((new Date()).getTime() / 1000)
-    const data = 'This is a message:' + ts.toString()
-    const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data })
-    await request(app)
-      .post('/users/login')
-      .send({ data, signature })
-      .expect(200)
-  })
-
-  it('login returns valid token', async function () {
-    await createStarterCNodeUser()
-    const ts = Math.round((new Date()).getTime() / 1000)
-    const data = 'This is a message:' + ts.toString()
-    const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data })
-    const resp = await request(app)
-      .post('/users/login')
-      .send({ data, signature })
-      .expect(200)
-    await request(app)
-      .post('/users/logout')
-      .set('X-Session-ID', resp.body.data.sessionToken)
-      .send({})
-      .expect(200)
-  })
-
-  it('login fails on invalid signature', async function () {
-    await createStarterCNodeUser()
-    const ts = Math.round((new Date()).getTime() / 1000)
-    const data = 'This is a message:' + ts.toString()
-
-    // a valid signature that is not correct for the given message / timestamp
-    const signature = '0x9e52d9c37a36629fa0c91481cd0c8f7754a1401452188f663e54845d6088247f4c37c811183d5c946f75dc666553f0f271eeee1491bca8988b71b4de737b17c21b'
-
-    await request(app)
-      .post('/users/login')
-      .send({ data, signature })
-      .expect(400)
-  })
-
-  /* // will only log error
-  it('login fails on old timestamp', async function () {
-    await createStarterCNodeUser()
-    const ts = Math.round((new Date()).getTime() / 1000) - 305
-    const data = 'This is a message:' + ts.toString()
-    const signature = sigUtil.personalSign(Buffer.from(testEthereumConstants.privKeyHex, 'hex'), { data })
-    await request(app)
-      .post('/users/login')
-      .send({ data, signature })
-      .expect(400)
-  })
-  */
-
   it('logout works', async function () {
     const session = await createStarterCNodeUser()
     await request(app)

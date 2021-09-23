@@ -16,6 +16,9 @@ use std::{
     convert::TryInto,
 };
 
+/// Attempts to retrieve all instructions before `index_current_instruction`
+/// as secp recovery instructions, and asserts that it finds `necessary_instructions_count`
+/// instructions.
 pub fn get_secp_instructions(
     index_current_instruction: u16,
     necessary_instructions_count: usize,
@@ -42,7 +45,12 @@ pub fn get_secp_instructions(
     Ok(secp_instructions)
 }
 
-pub fn get_eth_addresses<'a>(
+/// Returns the eth_addresses and operators associated with `signers`.
+///
+/// Ensures that there are no duplicate signers, that each signer
+/// is owned by the program, and that each signer account can be derived
+/// from it's known eth address.
+pub fn get_and_verify_signer_metadata<'a>(
     program_id: &Pubkey,
     reward_manager_key: &Pubkey,
     signers: Vec<&AccountInfo<'a>>,
@@ -58,7 +66,9 @@ pub fn get_eth_addresses<'a>(
 
         assert_owned_by(signer, program_id)?;
 
-        let (_, derived_address, _) = find_derived_pair(
+        // Derive the Solana address corresponding to the
+        // signer's eth address
+        let (_, derived_signer, _) = find_derived_pair(
             program_id,
             reward_manager_key,
             [
@@ -69,7 +79,7 @@ pub fn get_eth_addresses<'a>(
             .as_ref(),
         );
 
-        if derived_address != *signer.key {
+        if derived_signer != *signer.key {
             return Err(ProgramError::InvalidSeeds);
         }
         if senders_eth_addresses.contains(&signer_data.eth_address) {
@@ -84,6 +94,7 @@ pub fn get_eth_addresses<'a>(
     Ok((senders_eth_addresses, operators))
 }
 
+/// Retrieves an eth signer from an secp instruction
 pub fn get_signer_from_secp_instruction(secp_instruction_data: Vec<u8>) -> EthereumAddress {
     let eth_address_offset = 12;
     let instruction_signer =
@@ -95,6 +106,8 @@ pub fn get_signer_from_secp_instruction(secp_instruction_data: Vec<u8>) -> Ether
 // meta (12) + address (20) + signature (65) = 97
 const MESSAGE_DATA_OFFSET: usize = 97;
 
+/// Assert that the message contained in `secp_instruction_data`
+/// matches `expected_message`.
 pub fn check_message_from_secp_instruction(
     secp_instruction_data: Vec<u8>,
     expected_message: &[u8],
@@ -107,7 +120,8 @@ pub fn check_message_from_secp_instruction(
     }
 }
 
-pub fn get_message_from_secp_instruction(
+/// Attempts to parse out a `vote_message` from `secp_instruction_data`.
+pub fn get_vote_message_from_secp_instruction(
     secp_instruction_data: Vec<u8>,
 ) -> Result<VoteMessage, ProgramError> {
     let mut message = secp_instruction_data[MESSAGE_DATA_OFFSET..].to_vec();
@@ -129,6 +143,8 @@ fn vec_into_checkmap(vec: &[EthereumAddress]) -> BTreeMap<EthereumAddress, bool>
     map
 }
 
+/// Assert that `eth_signer` is in check_map, but hasn't previously
+/// been checked.
 fn check_signer(
     checkmap: &mut BTreeMap<EthereumAddress, bool>,
     eth_signer: &EthereumAddress,
@@ -137,7 +153,7 @@ fn check_signer(
         if !*val {
             *val = true;
         } else {
-            return Err(AudiusProgramError::SignCollission.into());
+            return Err(AudiusProgramError::SignCollision.into());
         }
     } else {
         return Err(AudiusProgramError::WrongSigner.into());
@@ -145,8 +161,8 @@ fn check_signer(
     Ok(())
 }
 
-/// Checks secp instructions for add sender
-pub fn check_secp_instructions(
+/// Validates secp instructions for add or delete sender instructions.
+pub fn validate_secp_add_delete_sender(
     program_id: &Pubkey,
     reward_manager: &Pubkey,
     instruction_info: &AccountInfo,
@@ -164,8 +180,10 @@ pub fn check_secp_instructions(
 
     // Load previous instructions
     let secp_instructions = get_secp_instructions(index, extraction_depth, instruction_info)?;
+
+    // Get the eth addresses associated with our expected_signers
     let (senders_eth_addresses, _) =
-        get_eth_addresses(program_id, reward_manager, expected_signers)?;
+        get_and_verify_signer_metadata(program_id, reward_manager, expected_signers)?;
 
     let mut checkmap = vec_into_checkmap(&senders_eth_addresses);
     let expected_message = [
@@ -175,6 +193,8 @@ pub fn check_secp_instructions(
     ]
     .concat();
 
+    // For each secp instruction, assert that the signer was expected and not duplicated
+    // and that the message is formatted correctly.
     for secp_instruction in secp_instructions {
         let eth_signer = get_signer_from_secp_instruction(secp_instruction.data.clone());
         check_signer(&mut checkmap, &eth_signer)?;
@@ -184,8 +204,10 @@ pub fn check_secp_instructions(
     Ok(())
 }
 
-/// Checks secp instruction for verify transfer
-pub fn check_secp_verify_transfer(
+/// Checks secp instruction for submit_attestation:
+/// ensures the message is signed by `expected_signer`, and
+/// returns the message.
+pub fn validate_secp_submit_attestation(
     instruction_info: &AccountInfo,
     expected_signer: &EthereumAddress,
 ) -> Result<VoteMessage, ProgramError> {
@@ -214,5 +236,5 @@ pub fn check_secp_verify_transfer(
         return Err(AudiusProgramError::WrongSigner.into());
     }
 
-    get_message_from_secp_instruction(secp_instruction.data)
+    get_vote_message_from_secp_instruction(secp_instruction.data)
 }

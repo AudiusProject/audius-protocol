@@ -1,6 +1,6 @@
 # pylint: disable=too-many-lines
 import logging
-from sqlalchemy import func, desc, text, Integer, and_, bindparam
+from sqlalchemy import func, desc, text, Integer, and_, bindparam, cast
 
 from flask import request
 
@@ -829,10 +829,12 @@ def get_karma(session, ids, time=None, is_playlist=False, xf=False):
         ).subquery()
 
     query = (
-        session.query(saves_and_reposts.c.item_id, func.count(Follow.followee_user_id))
+        session.query(
+            saves_and_reposts.c.item_id,
+            cast(func.sum(AggregateUser.follower_count), Integer),
+        )
         .select_from(saves_and_reposts)
-        .join(Follow, saves_and_reposts.c.user_id == Follow.followee_user_id)
-        .filter(Follow.is_current == True, Follow.is_delete == False)
+        .join(AggregateUser, saves_and_reposts.c.user_id == AggregateUser.user_id)
         .group_by(saves_and_reposts.c.item_id)
     )
 

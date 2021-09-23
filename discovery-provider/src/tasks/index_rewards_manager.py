@@ -2,6 +2,7 @@ import concurrent.futures
 import logging
 import time
 from typing import Callable, List, TypedDict, Optional
+from redis import Redis
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
 import base58
@@ -22,6 +23,7 @@ from src.solana.solana_parser import (
     InstructionFormat,
     SolanaInstructionType,
 )
+from src.queries.get_balances import enqueue_immediate_balance_refresh
 
 logger = logging.getLogger(__name__)
 
@@ -192,7 +194,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
 
 
 def process_batch_sol_rewards_transfer_instructions(
-    session: Session, transfer_instructions: List[RewardTransferInstruction]
+    session: Session, transfer_instructions: List[RewardTransferInstruction], redis: Redis
 ):
     """Validates that the transfer instruction is consistent with DB and inserts ChallengeDisbursement DB entries"""
     try:
@@ -230,10 +232,14 @@ def process_batch_sol_rewards_transfer_instructions(
                     f"index_rewards_manager.py | eth_recipient {eth_recipient} not found while processing disbursement"
                 )
                 continue
+
+            user_id = users_map[eth_recipient]
+            logger.info(f"index_rewards_manager.py | found successful disbursement for user_id: [{user_id}]")
+
             challenge_disbursements.append(
                 ChallengeDisbursement(
                     challenge_id=transfer_instr["challenge_id"],
-                    user_id=users_map[eth_recipient],
+                    user_id=user_id,
                     specifier=specifier,
                     amount=str(transfer_instr["amount"]),
                     slot=transfer_instr["slot"],
@@ -242,7 +248,11 @@ def process_batch_sol_rewards_transfer_instructions(
             )
 
         if challenge_disbursements:
+            # Save out the disbursements
             session.bulk_save_objects(challenge_disbursements)
+            # Enqueue balance refreshes for the users
+            user_ids = [c.user_id for c in challenge_disbursements]
+            enqueue_immediate_balance_refresh(redis, user_ids)
 
     except Exception as e:
         logger.error(f"index_rewards_manager.py | Error processing {e}", exc_info=True)
@@ -369,6 +379,7 @@ def get_transaction_signatures(
 def process_transaction_signatures(
     solana_client_manager: SolanaClientManager,
     db: SessionManager,
+    redis: Redis,
     transaction_signatures: List[str],
 ):
     """Concurrently processes the transactions to update the DB state for reward transfer instructions"""
@@ -398,7 +409,7 @@ def process_transaction_signatures(
                     raise exc
         with db.scoped_session() as session:
             process_batch_sol_rewards_transfer_instructions(
-                session, transfer_instructions
+                session, transfer_instructions, redis
             )
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
@@ -408,7 +419,7 @@ def process_transaction_signatures(
 
 
 def process_solana_rewards_manager(
-    solana_client_manager: SolanaClientManager, db: SessionManager
+    solana_client_manager: SolanaClientManager, db: SessionManager, redis: Redis
 ):
     """Fetches the next set of reward manager transactions and updates the DB with Challenge Disbursements"""
     if not is_valid_rewards_manager_program:
@@ -430,7 +441,7 @@ def process_solana_rewards_manager(
     )
     logger.info(f"index_rewards_manager.py | {transaction_signatures}")
 
-    process_transaction_signatures(solana_client_manager, db, transaction_signatures)
+    process_transaction_signatures(solana_client_manager, db, redis, transaction_signatures)
 
 
 ######## CELERY TASKS ########
@@ -450,7 +461,7 @@ def index_rewards_manager(self):
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.info("index_rewards_manager.py | Acquired lock")
-            process_solana_rewards_manager(solana_client_manager, db)
+            process_solana_rewards_manager(solana_client_manager, db, redis)
         else:
             logger.info("index_rewards_manager.py | Failed to acquire lock")
     except Exception as e:

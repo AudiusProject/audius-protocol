@@ -1,9 +1,10 @@
 import logging
 import redis
+
 from src.models import SkippedTransaction, Block
 from src.utils import helpers, db_session
 from src.utils.config import shared_config
-from src.utils.redis_cache import get_pickled_key, pickle_and_set
+from src.utils.redis_cache import get_json_cached_key, set_json_cached_key
 
 REDIS_URL = shared_config["redis"]["url"]
 REDIS = redis.Redis.from_url(url=REDIS_URL)
@@ -96,14 +97,14 @@ def get_transaction_status(blocknumber, blockhash, txhash):
 
 
 def get_indexing_error(redis_instance):
-    indexing_error = get_pickled_key(redis_instance, INDEXING_ERROR_KEY)
+    indexing_error = get_json_cached_key(redis_instance, INDEXING_ERROR_KEY)
     return indexing_error
 
 
 def set_indexing_error(
     redis_instance, blocknumber, blockhash, txhash, message, has_consensus=False
 ):
-    indexing_error = get_pickled_key(redis_instance, INDEXING_ERROR_KEY)
+    indexing_error = get_json_cached_key(redis_instance, INDEXING_ERROR_KEY)
 
     if indexing_error is None or (
         indexing_error["blocknumber"] != blocknumber
@@ -118,11 +119,11 @@ def set_indexing_error(
             "message": message,
             "has_consensus": has_consensus,
         }
-        pickle_and_set(redis_instance, INDEXING_ERROR_KEY, indexing_error)
+        set_json_cached_key(redis_instance, INDEXING_ERROR_KEY, indexing_error)
     else:
         indexing_error["count"] += 1
         indexing_error["has_consensus"] = has_consensus
-        pickle_and_set(redis_instance, INDEXING_ERROR_KEY, indexing_error)
+        set_json_cached_key(redis_instance, INDEXING_ERROR_KEY, indexing_error)
 
 
 def clear_indexing_error(redis_instance):

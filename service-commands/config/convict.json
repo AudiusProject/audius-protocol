@@ -50,5 +50,8 @@
   "identity_service": {
     "env": "IDENTITY_SERVICE",
     "default": "http://localhost:7000"
+  },
+  "aao_dir": {
+    "env": "AAO_DIR"
   }
 }

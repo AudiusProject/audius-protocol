@@ -8,84 +8,20 @@ const MIN_TOTAL_MEMORY = 15500000000 // 15.5 GB of RAM
 const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
 
 /**
- * Perform a basic health check, returning the
+ * Perform a health check, returning the
  * currently selected discovery provider (if any),
- * the current git SHA, and service version info.
+ * the current git SHA, service version info, location info, and system info.
  * @param {*} ServiceRegistry
  * @param {*} logger
  * @param {*} sequelize
  * @param {*} getMonitors
+ * @param {*} getTranscodeQueueJobs
+ * @param {*} getFileProcessingQueueJobs
  * @param {number} numberOfCPUs the number of CPUs on this machine
  * @param {string?} randomBytesToSign optional bytes string to be included in response object
  *    and used in signature generation
  */
-const healthCheck = async ({ libs } = {}, logger, sequelize, getMonitors, numberOfCPUs, randomBytesToSign = null) => {
-  // System information
-  const [
-    totalMemory,
-    storagePathSize
-  ] = await getMonitors([
-    MONITORS.TOTAL_MEMORY,
-    MONITORS.STORAGE_PATH_SIZE
-  ])
-
-  let response = {
-    ...versionInfo,
-    healthy: true,
-    git: process.env.GIT_SHA,
-    selectedDiscoveryProvider: 'none',
-    creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
-    spID: config.get('spID'),
-    spOwnerWallet: config.get('spOwnerWallet'),
-    isRegisteredOnURSM: config.get('isRegisteredOnURSM'),
-    numberOfCPUs,
-    totalMemory,
-    storagePathSize
-  }
-
-  // If optional `randomBytesToSign` query param provided, node will include string in signed object
-  if (randomBytesToSign) {
-    response.randomBytesToSign = randomBytesToSign
-  }
-
-  if (libs) {
-    response.selectedDiscoveryProvider = libs.discoveryProvider.discoveryProviderEndpoint
-  } else {
-    logger.warn('Health check with no libs')
-  }
-
-  // we have a /db_check route for more granular detail, but the service health check should
-  // also check that the db connection is good. having this in the health_check
-  // allows us to get auto restarts from liveness probes etc if the db connection is down
-  await sequelize.query('SELECT 1')
-
-  if (
-    !response['numberOfCPUs'] || response['numberOfCPUs'] < MIN_NUBMER_OF_CPUS ||
-    !response['totalMemory'] || response['totalMemory'] < MIN_TOTAL_MEMORY ||
-    !response['storagePathSize'] || response['storagePathSize'] < MIN_FILESYSTEM_SIZE
-  ) {
-    response['meetsMinRequirements'] = false
-  } else {
-    response['meetsMinRequirements'] = true
-  }
-
-  return response
-}
-
-/**
- * Perform a verbose health check, returning health check results
- * as well as location info, and system info.
- * @param {*} ServiceRegistry
- * @param {*} logger
- * @param {*} sequelize
- * @param {*} getMonitors
- * @param {number} numberOfCPUs the number of CPUs on this machine
- * @param {function} getAggregateSyncData fn to get the latest daily sync count (success, fail, triggered)
- * @param {function} getLatestSyncData fn to get the timestamps of the most recent sync (success, fail)
- */
-const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, getMonitors, numberOfCPUs, getTranscodeQueueJobs, getAggregateSyncData, getLatestSyncData) => {
-  const basicHealthCheck = await healthCheck({ libs }, logger, sequelize, getMonitors, numberOfCPUs)
-
+const healthCheck = async ({ libs, snapbackSM } = {}, logger, sequelize, getMonitors, getTranscodeQueueJobs, getFileProcessingQueueJobs, numberOfCPUs, randomBytesToSign = null) => {
   // Location information
   const country = config.get('serviceCountry')
   const latitude = config.get('serviceLatitude')
@@ -144,25 +80,33 @@ const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, 
   }
 
   const { active: transcodeActive, waiting: transcodeWaiting } = await getTranscodeQueueJobs()
+  const { active: fileProcessingActive, waiting: fileProcessingWaiting } = await getFileProcessingQueueJobs()
 
-  const response = {
-    ...basicHealthCheck,
+  let response = {
+    ...versionInfo,
+    healthy: true,
+    git: process.env.GIT_SHA,
+    selectedDiscoveryProvider: 'none',
+    creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
+    spID: config.get('spID'),
+    spOwnerWallet: config.get('spOwnerWallet'),
+    isRegisteredOnURSM: config.get('isRegisteredOnURSM'),
+    numberOfCPUs,
+    totalMemory,
+    storagePathSize,
     country,
     latitude,
     longitude,
     databaseConnections,
     databaseSize,
-    totalMemory,
     usedMemory,
     usedTCPMemory,
-    storagePathSize,
     storagePathUsed,
     maxFileDescriptors,
     allocatedFileDescriptors,
     receivedBytesPerSec,
     transferredBytesPerSec,
     maxStorageUsedPercent,
-    numberOfCPUs,
     // Rolling window days dependent on value set in monitor's sync history file
     thirtyDayRollingSyncSuccessCount,
     thirtyDayRollingSyncFailCount,
@@ -175,10 +119,43 @@ const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, 
     snapbackModuloBase,
     snapbackJobInterval,
     transcodeActive,
-    transcodeWaiting
+    transcodeWaiting,
+    fileProcessingActive,
+    fileProcessingWaiting
+  }
+
+  // If optional `randomBytesToSign` query param provided, node will include string in signed object
+  if (randomBytesToSign) {
+    response.randomBytesToSign = randomBytesToSign
+  }
+
+  if (libs) {
+    response.selectedDiscoveryProvider = libs.discoveryProvider.discoveryProviderEndpoint
+  } else {
+    logger.warn('Health check with no libs')
+  }
+
+  // we have a /db_check route for more granular detail, but the service health check should
+  // also check that the db connection is good. having this in the health_check
+  // allows us to get auto restarts from liveness probes etc if the db connection is down
+  await sequelize.query('SELECT 1')
+
+  if (
+    !response['numberOfCPUs'] || response['numberOfCPUs'] < MIN_NUBMER_OF_CPUS ||
+    !response['totalMemory'] || response['totalMemory'] < MIN_TOTAL_MEMORY ||
+    !response['storagePathSize'] || response['storagePathSize'] < MIN_FILESYSTEM_SIZE
+  ) {
+    response['meetsMinRequirements'] = false
+  } else {
+    response['meetsMinRequirements'] = true
   }
 
   return response
+}
+
+// TODO remove verbose health check after fully deprecated
+const healthCheckVerbose = async ({ libs, snapbackSM } = {}, logger, sequelize, getMonitors, numberOfCPUs, getTranscodeQueueJobs, getFileProcessingQueueJobs) => {
+  return healthCheck({ libs, snapbackSM }, logger, sequelize, getMonitors, getTranscodeQueueJobs, getFileProcessingQueueJobs, numberOfCPUs)
 }
 
 /**

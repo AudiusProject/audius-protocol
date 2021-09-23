@@ -23,7 +23,7 @@ SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 
 # Maximum number of batches to process at once
-TX_SIGNATURES_MAX_BATCHES = 20
+TX_SIGNATURES_MAX_BATCHES = 100
 
 # Last N entries present in tx_signatures array during processing
 TX_SIGNATURES_RESIZE_LENGTH = 10
@@ -62,11 +62,11 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
     except ValueError:
         # Deal with some python logging annoyances by pulling this out
         log = (
-            "Failed to parse user_id from {!r}".format(
+            "Recording anonymous listen - failed to parse user_id from {!r}".format(
                 decoded[user_id_start:user_id_end]
             ),
         )
-        logger.error(
+        logger.warning(
             log,
             exc_info=True,
         )

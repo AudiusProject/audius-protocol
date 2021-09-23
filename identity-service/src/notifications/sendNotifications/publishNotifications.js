@@ -4,7 +4,7 @@ const {
   notificationResponseTitleMap,
   pushNotificationMessagesMap
 } = require('../formatNotificationMetadata')
-const { publish } = require('../notificationQueue')
+const { publish, publishSolanaNotification } = require('../notificationQueue')
 
 // Maps a notification type to it's base notification
 const getPublishNotifBaseType = (notification) => {
@@ -30,8 +30,14 @@ const getPublishNotifBaseType = (notification) => {
     case notificationTypes.Create.album:
     case notificationTypes.Create.base:
       return notificationTypes.Create.base
+    case notificationTypes.ChallengeReward:
+      return notificationTypes.ChallengeReward
   }
 }
+
+const solanaNotificationBaseTypes = [
+  notificationTypes.ChallengeReward
+]
 
 // Gets the userId that a notification should be sent to based off the notification's base type
 const getPublishUserId = (notif, baseType) => {
@@ -41,6 +47,7 @@ const getPublishUserId = (notif, baseType) => {
   else if (baseType === notificationTypes.RemixCreate) return notif.metadata.remix_parent_track_user_id
   else if (baseType === notificationTypes.RemixCosign) return notif.metadata.entity_owner_id
   else if (baseType === notificationTypes.Create.base) return notif.subscriberId
+  else if (baseType === notificationTypes.ChallengeReward) return notif.initiator
 }
 
 // Notification types that always get send a notification, regardless of settings
@@ -95,10 +102,15 @@ const publishNotifications = async (notifications, metadata, userNotificationSet
     }
     const publishNotifType = getPublishNotifBaseType(notification)
     const msg = pushNotificationMessagesMap[publishNotifType](populatedNotification)
-    const title = notificationResponseTitleMap[notification.type]
+    const title = notificationResponseTitleMap[notification.type](populatedNotification)
     const userId = getPublishUserId(notification, publishNotifType)
     const types = getPublishTypes(userId, publishNotifType, userNotificationSettings)
-    await publish(msg, userId, tx, true, title, types)
+
+    if (solanaNotificationBaseTypes.includes(publishNotifType)) {
+      await publishSolanaNotification(msg, userId, tx, true, title, types)
+    } else {
+      await publish(msg, userId, tx, true, title, types)
+    }
   }
 }
 

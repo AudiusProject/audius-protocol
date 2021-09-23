@@ -202,7 +202,7 @@ def test_index_tracks(mock_index_task, app):
             entry,
             1,  # event track id
             block_number,
-            block_timestamp,
+            "0x",
             "0x",  # txhash
         )
 

@@ -381,6 +381,16 @@ module.exports.getNotifications = (minBlockNumber, trackIds, timeout) => {
   }
 }
 
+module.exports.getSolanaNotifications = (minSlotNumber, timeout) => {
+  return {
+    endpoint: 'solana_notifications',
+    queryParams: {
+      min_slot_number: minSlotNumber
+    },
+    timeout
+  }
+}
+
 module.exports.getTrackListenMilestones = (timout) => {
   return {
     endpoint: 'track_listen_milestones',
