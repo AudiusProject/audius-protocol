@@ -6,6 +6,7 @@ import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getUserId } from 'store/account/selectors'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
+import { setTracksIsBlocked } from 'store/cache/tracks/utils/blocklist'
 
 import mobileSagas from './mobileSagas'
 import { getSearch } from './selectors'
@@ -21,7 +22,10 @@ export function* getSearchResults(searchText) {
   })
 
   const { tracks, albums, playlists, users } = results
-  return { users, tracks, albums, playlists }
+  const checkedTracks = (yield call(setTracksIsBlocked, tracks)).filter(
+    t => !t.is_delete && !t._blocked
+  )
+  return { users, tracks: checkedTracks, albums, playlists }
 }
 
 function* fetchSearchAsync(action) {
