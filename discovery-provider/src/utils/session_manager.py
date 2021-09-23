@@ -4,8 +4,6 @@ import logging  # pylint: disable=C0302
 from sqlalchemy import create_engine
 from sqlalchemy.event import listen
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy import event
-from sqlalchemy.engine import Engine
 from src.queries.search_config import set_search_similarity
 
 logger = logging.getLogger(__name__)
