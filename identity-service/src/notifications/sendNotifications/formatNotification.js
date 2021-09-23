@@ -166,6 +166,22 @@ async function formatNotifications (notifications, notificationSettings, tx) {
       userIds.add(formattedRemixCosign.initiator)
     }
 
+    // Handle 'challenge reward' notification type
+    if (notif.type === notificationTypes.ChallengeReward) {
+      const formattedRewardNotification = {
+        ...notif,
+        challengeId: notif.metadata.challenge_id,
+        actions: [{
+          actionEntityType: actionEntityTypes.Challenge,
+          actionEntityId: notif.metadata.challenge_id,
+          slot: notif.slot
+        }],
+        type: notificationTypes.ChallengeReward
+      }
+      formattedNotifications.push(formattedRewardNotification)
+      userIds.add(formattedRewardNotification.initiator)
+    }
+
     // Handle the 'create' notification type, track/album/playlist
     if (notif.type === notificationTypes.Create.base) {
       await _processCreateNotifications(notif, tx)

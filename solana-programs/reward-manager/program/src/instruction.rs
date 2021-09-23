@@ -135,7 +135,7 @@ pub enum Instructions {
     ///   3. `[]` Reward token source
     ///   4. `[]` Reward token recipient
     ///   5. `[]` Transfer account - the account which represents a successful transfer
-    ///   6. `[]` Bot oracle - the ethereum public address of the oracle 
+    ///   6. `[]` Bot oracle - the ethereum public address of the oracle
     ///   7. `[]` Payer
     ///   8. `[]` Sysvar rent
     ///   9. `[]` Token program id
@@ -364,8 +364,7 @@ pub fn submit_attestations(
     id: String,
 ) -> Result<Instruction, ProgramError> {
     let data =
-        Instructions::SubmitAttestations(SubmitAttestationsArgs { id: id.clone() })
-            .try_to_vec()?;
+        Instructions::SubmitAttestations(SubmitAttestationsArgs { id: id.clone() }).try_to_vec()?;
 
     let (reward_manager_authority, verified_messages, _) = find_derived_pair(
         program_id,

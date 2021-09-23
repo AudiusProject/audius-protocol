@@ -8,6 +8,7 @@ const processRemixCreateNotifications = require('./remixCreateNotification')
 const processRemixCosignNotifications = require('./remixCosignNotification')
 const processCreateNotifications = require('./createNotification')
 const processPlaylistUpdateNotifications = require('./playlistUpdateNotification')
+const processChallengeRewardNotifications = require('./challengeRewardNotification')
 
 // Mapping of Notification type to processing function.
 const notificationMapping = {
@@ -17,7 +18,8 @@ const notificationMapping = {
   [notificationTypes.RemixCreate]: processRemixCreateNotifications,
   [notificationTypes.RemixCosign]: processRemixCosignNotifications,
   [notificationTypes.Create.base]: processCreateNotifications,
-  [notificationTypes.PlaylistUpdate]: processPlaylistUpdateNotifications
+  [notificationTypes.PlaylistUpdate]: processPlaylistUpdateNotifications,
+  [notificationTypes.ChallengeReward]: processChallengeRewardNotifications
 }
 
 /**

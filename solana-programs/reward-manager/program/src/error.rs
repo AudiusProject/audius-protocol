@@ -25,22 +25,6 @@ pub enum AudiusProgramError {
     #[error("Unexpected signer met")]
     WrongSigner,
 
-    /// Wrong sender account
-    #[error("Incorrect sender account")]
-    IncorrectSenderAccount,
-
-    /// Wrong manager account
-    #[error("Incorrect account manager")]
-    IncorrectManagerAccount,
-
-    /// Wrong reward manager key
-    #[error("Wrong reward manager key")]
-    WrongRewardManagerKey,
-
-    /// Wrong recipient Solana key
-    #[error("Wrong recipient Solana key")]
-    WrongRecipientKey,
-
     /// Isn't enough signers keys
     #[error("Isn't enough signers keys")]
     NotEnoughSigners,

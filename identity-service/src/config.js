@@ -320,6 +320,12 @@ const config = convict({
     default: 0,
     env: 'notificationStartBlock'
   },
+  solanaNotificationStartSlot: {
+    doc: 'First slot to start solana notification indexing from',
+    format: Number,
+    default: 0,
+    env: 'solanaNotificationStartSlot'
+  },
   ethTokenAddress: {
     doc: 'ethTokenAddress',
     format: String,

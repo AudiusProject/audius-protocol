@@ -30,7 +30,8 @@ const NotificationType = Object.freeze({
   MilestoneFollow: 'MilestoneFollow',
   RemixCreate: 'RemixCreate',
   RemixCosign: 'RemixCosign',
-  TrendingTrack: 'TrendingTrack'
+  TrendingTrack: 'TrendingTrack',
+  ChallengeReward: 'ChallengeReward'
 })
 
 const ClientNotificationTypes = new Set([

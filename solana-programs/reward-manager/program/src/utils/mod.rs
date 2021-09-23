@@ -50,19 +50,21 @@ pub fn assert_account_key(account_info: &AccountInfo, key: &Pubkey) -> ProgramRe
 pub fn assert_unique_senders(messages: &[VerifiedMessage]) -> ProgramResult {
     let mut uniq_senders = BTreeSet::new();
     let mut uniq_operators = BTreeSet::new();
-    let mut messages_iter = messages.iter();
 
     if messages.len() > TOTAL_VERIFIED_MESSAGES {
         return Err(AudiusProgramError::MessagesOverflow.into());
     }
 
     // Check sender address collision
-    if !messages_iter.all(move |x| uniq_senders.insert(x.address)) {
+    if !messages.iter().all(move |x| uniq_senders.insert(x.address)) {
         return Err(AudiusProgramError::RepeatedSenders.into());
     }
 
     // Check sender operator collision
-    if !messages_iter.all(move |x| uniq_operators.insert(x.operator)) {
+    if !messages
+        .iter()
+        .all(move |x| uniq_operators.insert(x.operator))
+    {
         return Err(AudiusProgramError::OperatorCollision.into());
     }
 
@@ -70,7 +72,7 @@ pub fn assert_unique_senders(messages: &[VerifiedMessage]) -> ProgramResult {
 }
 
 /// Assert that each message matches either the valid_message or
-/// valid_bot_oracle format, and that at least one message is from the 
+/// valid_bot_oracle format, and that at least one message is from the
 /// bot oracle
 pub fn assert_valid_attestations(
     valid_attestation: &[u8],
@@ -121,7 +123,11 @@ pub fn find_program_address(program_id: &Pubkey, pubkey: &Pubkey) -> (Pubkey, u8
 
 /// Finds a program address, using first 32 bytes of `pubkey` + `seed` as seed, and
 /// `base` as base
-pub fn find_program_address_with_seed(program_id: &Pubkey, base: &Pubkey, seed: &[u8]) -> (Pubkey, u8) {
+pub fn find_program_address_with_seed(
+    program_id: &Pubkey,
+    base: &Pubkey,
+    seed: &[u8],
+) -> (Pubkey, u8) {
     Pubkey::find_program_address(&[&base.to_bytes()[..32], seed], program_id)
 }
 

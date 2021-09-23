@@ -1,15 +1,16 @@
+/**
+ * NOTE - this file is identical to `delegateManager.test.js` except that every test uses
+ *    DelegateManagerV2 instead of DelegateManager
+ */
+
 import * as _lib from '../utils/lib.js'
 const { time, expectEvent } = require('@openzeppelin/test-helpers')
-const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades')
-
 
 const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
 const ServiceTypeManager = artifacts.require('ServiceTypeManager')
 const ServiceProviderFactory = artifacts.require('ServiceProviderFactory')
 const Staking = artifacts.require('Staking')
-const DelegateManager = artifacts.require('DelegateManager')
-const DelegateManagerV2 = artifacts.require('DelegateManagerV2')
-const DelegateManagerV2Bad = artifacts.require('DelegateManagerV2Bad')
+const DelegateManager = artifacts.require('DelegateManagerV2')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
 const serviceProviderFactoryKey = web3.utils.utf8ToHex('ServiceProviderFactory')
@@ -30,7 +31,7 @@ const testEndpoint4 = 'https://localhost:5009'
 const testEndpoint5 = 'https://localhost:5010'
 
 
-const INITIAL_BAL = _lib.audToWeiBN(1000000)
+const INITIAL_BAL = _lib.audToWeiBN(10000000)
 const DEFAULT_AMOUNT_VAL = _lib.audToWei(120)
 const DEFAULT_AMOUNT = _lib.toBN(DEFAULT_AMOUNT_VAL)
 const VOTING_PERIOD = 10
@@ -42,7 +43,7 @@ const DECREASE_STAKE_LOCKUP_DURATION = UNDELEGATE_LOCKUP_DURATION
 
 const callValue0 = _lib.toBN(0)
 
-contract('DelegateManager', async (accounts) => {
+contract('DelegateManagerV2', async (accounts) => {
   let staking, stakingAddress, token, registry, governance
   let serviceProviderFactory, serviceTypeManager, claimsManager, delegateManager
   let delegateManager0, delegateManagerProxy
@@ -59,6 +60,7 @@ contract('DelegateManager', async (accounts) => {
   const stakerAccount6 = accounts[17]
   const delegatorAccount1 = accounts[11]
   const slasherAccount = stakerAccount
+  const stakerAccountInvalid = accounts[18]
 
   /**
    * Initialize Registry, Governance, Token, Staking, ServiceTypeManager, ServiceProviderFactory, ClaimsManager, DelegateManager
@@ -447,22 +449,6 @@ contract('DelegateManager', async (accounts) => {
       `Imbalanced stake for account ${account} - totalInStakingContract=${info.totalInStakingContract.toString()}, outside=${info.outsideStake.toString()}`
     )
     return info
-  }
-
-  const upgradeDelegateManagerToV2 = async () => {
-      assert.equal(await delegateManagerProxy.implementation.call({ from: proxyAdminAddress }), delegateManager0.address)
-
-      const delegateManagerV2Logic = await DelegateManagerV2.new({ from: proxyAdminAddress })
-
-      await governance.guardianExecuteTransaction(
-        delegateManagerKey,
-        callValue0,
-        'upgradeTo(address)',
-        _lib.abiEncode(['address'], [delegateManagerV2Logic.address]),
-        { from: guardianAddress }
-      )
-
-      assert.equal(await delegateManagerProxy.implementation.call({ from: proxyAdminAddress }), delegateManagerV2Logic.address)
   }
 
   describe('Delegation tests', () => {
@@ -986,29 +972,34 @@ contract('DelegateManager', async (accounts) => {
       let totalDelegationAmount = DEFAULT_AMOUNT
       let singleDelegateAmount = totalDelegationAmount.div(web3.utils.toBN(numDelegators))
       await Promise.all(delegatorAccounts.map(async(delegator) => {
-        // Transfer 1000 tokens to each delegator
-        await token.transfer(delegator, INITIAL_BAL, { from: proxyDeployerAddress })
-        // Approve staking transfer
-        await token.approve(
-          stakingAddress,
-          singleDelegateAmount,
-          { from: delegator })
+        try {
+          // Transfer 1000 tokens to each delegator
+          await token.transfer(delegator, INITIAL_BAL, { from: proxyDeployerAddress })
+          // Approve staking transfer
+          await token.approve(
+            stakingAddress,
+            singleDelegateAmount,
+            { from: delegator })
 
-        await delegateManager.delegateStake(
-          stakerAccount,
-          singleDelegateAmount,
-          { from: delegator })
+          await delegateManager.delegateStake(
+            stakerAccount,
+            singleDelegateAmount,
+            { from: delegator })
 
-        let delegatorStake = await getTotalDelegatorStake(delegator)  
-        let delegatorStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(
-          delegator,
-          stakerAccount)
-        assert.isTrue(
-          delegatorStake.eq(singleDelegateAmount),
-          'Expected total delegator stake to match input')
-        assert.isTrue(
-          delegatorStakeForSP.eq(singleDelegateAmount),
-          'Expected total delegator stake to SP to match input')
+          let delegatorStake = await getTotalDelegatorStake(delegator)  
+          let delegatorStakeForSP = await delegateManager.getDelegatorStakeForServiceProvider(
+            delegator,
+            stakerAccount)
+          assert.isTrue(
+            delegatorStake.eq(singleDelegateAmount),
+            'Expected total delegator stake to match input')
+          assert.isTrue(
+            delegatorStakeForSP.eq(singleDelegateAmount),
+            'Expected total delegator stake to SP to match input')
+        } catch(e) {
+          console.log(`Error in delegator ${delegator}` + `${e.toString()}`)
+          throw e
+        }
       }))
 
       let totalSPStakeAfterDelegation = await staking.totalStakedFor(stakerAccount)
@@ -1735,56 +1726,8 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 })
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)).eq(minDelegateStake), 'Expect min delegate stake')
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount2)).eq(minDelegateStake), 'Expect min delegate stake')
-    })
 
-    it('Min delegator stake per SP - with DelegateManagerV2', async () => {
-      let minDelegateStakeValAUD = 100
-
-      let minDelegateStakeVal = _lib.audToWei(minDelegateStakeValAUD)
-      await updateMinDelegationAmount(minDelegateStakeVal)
-
-      // Min del stake behavior, confirm min amount is enforced PER service provider
-      let minDelegateStake = await delegateManager.getMinDelegationAmount()
-
-      // Approve staking transfer
-      await token.approve(
-        stakingAddress,
-        minDelegateStake,
-        { from: delegatorAccount1 })
-
-      // Delegate valid min to SP 1
-      await delegateManager.delegateStake(
-        stakerAccount,
-        minDelegateStake,
-        { from: delegatorAccount1 })
-
-      // Delegate invalid min for SP 2
-      let invalidMinStake = _lib.toBN(_lib.audToWei(1))
-      await token.approve(stakingAddress, invalidMinStake, { from: delegatorAccount1 })
-      await _lib.assertRevert(
-        delegateManager.delegateStake(
-          stakerAccount2,
-          invalidMinStake,
-          { from: delegatorAccount1 }),
-        'Minimum delegation amount'
-      )
-
-      // Delegate valid min for SP 2
-      await token.approve(
-        stakingAddress,
-        minDelegateStake,
-        { from: delegatorAccount1 })
-      await delegateManager.delegateStake(
-        stakerAccount2,
-        minDelegateStake,
-        { from: delegatorAccount1 })
-      assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)).eq(minDelegateStake), 'Expect min delegate stake')
-      assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount2)).eq(minDelegateStake), 'Expect min delegate stake')
-
-      // proxy upgrade to DelegateManagerV2 for new SPMinDelegationAmount controls
-      await upgradeDelegateManagerToV2()
-
-      delegateManager = await DelegateManagerV2.at(delegateManagerProxy.address)
+      /** NEW CODE */
 
       // confirm spMinDelegationAmount initially is 0
       assert.isTrue((await delegateManager.getSPMinDelegationAmount(stakerAccount)).isZero(), 'Expect spMinDelegationAmount = 0')
@@ -1796,7 +1739,7 @@ contract('DelegateManager', async (accounts) => {
       // confirm updateMinDelAmt worked
       await expectEvent.inTransaction(
         tx.tx,
-        DelegateManagerV2,
+        DelegateManager,
         'SPMinDelegationAmountUpdated',
         { _serviceProvider: stakerAccount, _spMinDelegationAmount: spMinDelegationAmount }
       )
@@ -1823,6 +1766,12 @@ contract('DelegateManager', async (accounts) => {
         { from: delegatorAccount1 }
       )
       assert.isTrue((await delegateManager.getDelegatorStakeForServiceProvider(delegatorAccount1, stakerAccount)).eq(_lib.toBN(spMinDelegationAmount)), 'Expect min delegate stake')
+
+      // Fail to modify spMinDelegationAmount for invalid SP
+      await _lib.assertRevert(
+        delegateManager.updateSPMinDelegationAmount(stakerAccountInvalid, spMinDelegationAmount, { from: stakerAccountInvalid }),
+        'Only callable by valid Service Provider'
+      )
     })
 
     it('Min delegate stake verification', async () => {
@@ -2739,7 +2688,7 @@ contract('DelegateManager', async (accounts) => {
       )
     })
 
-    it('lets a service provider return to valid bounds when a delegator changes delegation (only works with DelegateManagerV2)', async () => {
+    it('lets a service provider return to valid bounds when a delegator changes delegation', async () => {
       /**
        * Test case to address behavior exercised in Postmortem: $AUDIO Claim Error (Claim of 0 $AUDIO)
        * on 05-08-2021.
@@ -2773,7 +2722,6 @@ contract('DelegateManager', async (accounts) => {
 
       // Delegate stake to Staker, pushing them to the upper maxAmount bound
       const delegationAmount = _lib.audToWeiBN(9999880)
-      await token.transfer(delegatorAccount1, delegationAmount, { from: proxyDeployerAddress })
       await token.approve(
         stakingAddress,
         delegationAmount,
@@ -2814,8 +2762,6 @@ contract('DelegateManager', async (accounts) => {
       const undelegateRequestInfo = await delegateManager.getPendingUndelegateRequest(delegatorAccount1)
       await time.advanceBlockTo(undelegateRequestInfo.lockupExpiryBlock)
 
-      await upgradeDelegateManagerToV2()
-
       await delegateManager.undelegateStake({ from: delegatorAccount1 })
 
       const spDetails3 = await serviceProviderFactory.getServiceProviderDetails.call(stakerAccount)
@@ -2827,21 +2773,6 @@ contract('DelegateManager', async (accounts) => {
 
       // Without a contract change this fails as the DelegateManager does not update validBounds
       assert.isTrue(spDetails3.validBounds, 'Expected validBounds == true')
-    })
-
-    it('Test proxy upgrade safety via openzeppelin tooling', async () => {
-      // https://docs.openzeppelin.com/upgrades-plugins/1.x/truffle-upgrades#test-usage
-      // deployProxy and upgradeProxy run some tests to ensure
-
-      const delManP1 = await deployProxy(DelegateManager, [token.address, governance.address, UNDELEGATE_LOCKUP_DURATION])
-      await upgradeProxy(delManP1, DelegateManagerV2)
-
-      const delManP2 = await deployProxy(DelegateManager, [token.address, governance.address, UNDELEGATE_LOCKUP_DURATION])
-      try {
-        await upgradeProxy(delManP2, DelegateManagerV2Bad)
-      } catch (e) {
-        assert.isTrue(e.message.includes('New storage layout is incompatible'))
-      }
     })
 
   })
