@@ -10,6 +10,7 @@ const { logger } = require('./logging')
 const utils = require('./utils')
 const SyncQueue = require('./services/sync/syncQueue')
 const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
+const SessionExpirationQueue = require('./services/SessionExpirationQueue')
 
 /**
  * `ServiceRegistry` is a container responsible for exposing various
@@ -22,6 +23,7 @@ const SkippedCIDsRetryQueue = require('./services/sync/skippedCIDsRetryService')
  *  - `blackListManager`: responsible for handling blacklisted content
  *  - `libs`: an instance of Audius Libs
  *  - `monitoringQueue`: recurring job to monitor node state & performance metrics
+ *  - `sessionExpirationQueue`: recurring job to clear expired session tokens from Redis and DB
  *  - `nodeConfig`: exposes config object
  *  - `snapbackSM`: SnapbackStateMachine is responsible for recurring sync and reconfig operations
  *  - `URSMRegistrationManager`: registers node on L2 URSM contract, no-ops afterward
@@ -36,6 +38,7 @@ class ServiceRegistry {
     this.ipfsLatest = ipfsLatest
     this.blacklistManager = BlacklistManager
     this.monitoringQueue = new MonitoringQueue()
+    this.sessionExpirationQueue = new SessionExpirationQueue()
 
     // below services are initialized separately in below functions `initServices()` and `initServicesThatRequireServer()`
     this.libs = null
@@ -63,6 +66,7 @@ class ServiceRegistry {
 
     // Intentionally not awaitted
     this.monitoringQueue.start()
+    this.sessionExpirationQueue.start()
 
     this.servicesInitialized = true
   }
