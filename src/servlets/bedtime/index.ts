@@ -26,7 +26,7 @@ const getTrackMetadata = async (trackId: number, ownerId: number | null): Promis
       segments: track.track_segments,
       isVerified: user.is_verified,
       coverArt,
-      urlPath: track.permalink.substring(1),
+      urlPath: track.permalink.substring(1), // strip the leading slash, as it's added later
       gateways: user.creator_node_endpoint,
       id: track.track_id
     }
@@ -66,7 +66,7 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
     handle: userMap[t.owner_id].handle,
     userName: userMap[t.owner_id].name,
     segments: t.track_segments,
-    urlPath: t.permalink.substring(1),
+    urlPath: t.permalink.substring(1), // strip the leading slash, as it's added later
     id: t.track_id,
     isVerified: userMap[t.owner_id].is_verified,
     gateways: userMap[t.owner_id].creator_node_endpoint
