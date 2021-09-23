@@ -71,6 +71,8 @@ instructions!
 We welcome contributions to Audius from anyone who opens a PR. Feel free to reach out to
 our team [on Discord](https://discord.com/invite/yNUg2e2) or via other channels for feedback and/or support!
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
+
 ## Security
 
 Please report security issues to `security@audius.co` with a description of the
