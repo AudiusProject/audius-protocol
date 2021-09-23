@@ -42,9 +42,6 @@ describe('test blacklistManager', () => {
 
     resp = await BlacklistManager.getAllInvalidTrackIds()
     assert.deepStrictEqual(resp.length, 0)
-
-    resp = await BlacklistManager.getBlacklistedTrackIdsFromCID('*')
-    assert.deepStrictEqual(resp.length, 0)
   })
 
   it('[isServable] if cid is not in blacklist, serve', async () => {
