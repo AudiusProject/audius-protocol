@@ -62,11 +62,11 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
     except ValueError:
         # Deal with some python logging annoyances by pulling this out
         log = (
-            "Failed to parse user_id from {!r}".format(
+            "Recording anonymous listen - failed to parse user_id from {!r}".format(
                 decoded[user_id_start:user_id_end]
             ),
         )
-        logger.error(
+        logger.warning(
             log,
             exc_info=True,
         )
