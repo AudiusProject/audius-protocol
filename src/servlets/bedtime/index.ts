@@ -26,7 +26,7 @@ const getTrackMetadata = async (trackId: number, ownerId: number | null): Promis
       segments: track.track_segments,
       isVerified: user.is_verified,
       coverArt,
-      urlPath: track.permalnk,
+      urlPath: track.permalink,
       gateways: user.creator_node_endpoint,
       id: track.track_id
     }
