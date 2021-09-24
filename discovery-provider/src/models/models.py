@@ -532,7 +532,7 @@ class Play(Base):
     user_id = Column(Integer, nullable=True, index=False)
     source = Column(String, nullable=True, index=False)
     play_item_id = Column(Integer, nullable=False, index=False)
-    slot = Column(Integer, nullable=True, index=False)
+    slot = Column(Integer, nullable=True, index=True)
     signature = Column(String, nullable=True, index=False)
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(
