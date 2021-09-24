@@ -250,10 +250,10 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         </div>
       )}
 
-      {userHandle && modalType === 'invite-friends' && (
+      {userHandle && modalType === 'referrals' && (
         <InviteLink handle={userHandle} />
       )}
-      {modalType === 'mobile-app' && (
+      {modalType === 'mobile-install' && (
         <div className={wm(styles.qrContainer)}>
           <img className={styles.qr} src={QRCode} alt='QR Code' />
           <div className={styles.qrTextContainer}>

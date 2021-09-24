@@ -72,8 +72,25 @@ export const challengeRewardsConfig: Record<
   ChallengeRewardID,
   ChallengeRewardsInfo
 > = {
-  'invite-friends': {
-    id: 'invite-friends' as ChallengeRewardID,
+  referrals: {
+    id: 'referrals' as ChallengeRewardID,
+    title: 'Invite your Friends',
+    icon: <i className='emoji large incoming-envelope' />,
+    description: 'Earn 1 $AUDIO, for you and your friend',
+    fullDescription:
+      'Invite your Friends! You’ll earn 1 $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)',
+    progressLabel: '%0/%1 Invites',
+    amount: 10,
+    stepCount: 10,
+    panelButtonText: 'Invite your Friends',
+    modalButtonInfo: {
+      incomplete: null,
+      inProgress: null,
+      complete: null
+    }
+  },
+  referred: {
+    id: 'referrals' as ChallengeRewardID,
     title: 'Invite your Friends',
     icon: <i className='emoji large incoming-envelope' />,
     description: 'Earn 1 $AUDIO, for you and your friend',
@@ -123,8 +140,8 @@ export const challengeRewardsConfig: Record<
       complete: linkButtonMap.trendingTracks
     }
   },
-  'mobile-app': {
-    id: 'mobile-app' as ChallengeRewardID,
+  'mobile-install': {
+    id: 'mobile-install' as ChallengeRewardID,
     title: 'Get the Audius Mobile App',
     icon: <i className='emoji large mobile-phone-with-arrow' />,
     description: 'Earn 10 $AUDIO',

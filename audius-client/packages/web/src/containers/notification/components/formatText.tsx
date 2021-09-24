@@ -9,7 +9,8 @@ import {
   NotificationType,
   Achievement
 } from 'containers/notification/store/types'
-import UserBadges from 'containers/user-badges/UserBadges'
+import UserBadges, { audioTierMapPng } from 'containers/user-badges/UserBadges'
+import { badgeTiers } from 'containers/user-badges/utils'
 import { formatCount } from 'utils/formatUtil'
 import {
   fullAlbumPage,
@@ -409,6 +410,25 @@ export const formatBody = (
             {title}
           </span>
           {`You’ve earned ${rewardAmount} $AUDIO for completing this challenge!`}
+        </span>
+      )
+    }
+    case NotificationType.TierChange: {
+      const tierInfo = badgeTiers.find(info => info.tier === notification.tier)
+      if (!tierInfo) return null
+      const { tier, humanReadableAmount } = tierInfo
+
+      return (
+        <span
+          className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
+        >
+          <span
+            className={cn(styles.tierTitle, { [styles.isMobile]: isMobile })}
+          >
+            {audioTierMapPng[tier]}
+            {`${tier.toUpperCase()} TIER UNLOCKED`}
+          </span>
+          {`Congrats, you’ve reached ${tier} Tier by having over ${humanReadableAmount} $AUDIO! You now have access to exclusive features & a shiny new badge by your name.`}
         </span>
       )
     }

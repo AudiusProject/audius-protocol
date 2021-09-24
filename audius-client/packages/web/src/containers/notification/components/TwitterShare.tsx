@@ -8,8 +8,10 @@ import {
   RemixCosign,
   RemixCreate,
   TrendingTrack,
-  ChallengeReward
+  ChallengeReward,
+  TierChange
 } from 'containers/notification/store/types'
+import { BadgeTier } from 'containers/user-badges/utils'
 import Collection from 'models/Collection'
 import Track from 'models/Track'
 import User from 'models/User'
@@ -28,6 +30,32 @@ import { openTwitterLink } from 'utils/tweet'
 
 import styles from './TwitterShare.module.css'
 import { getRankSuffix } from './formatText'
+
+const messages = {
+  shareText: 'Share to Twitter',
+  shareTextFans: 'Share With Your Fans',
+  shareTextMilestone: 'Share this Milestone'
+} as const
+
+const TWITTER_NOTIFICATION_TYPE = [
+  NotificationType.ChallengeReward,
+  NotificationType.Milestone,
+  NotificationType.RemixCosign,
+  NotificationType.RemixCreate,
+  NotificationType.TierChange,
+  NotificationType.TrendingTrack
+] as const
+
+const isTwitterNotificationType = (
+  type: any
+): type is TwitterNotificationType => TWITTER_NOTIFICATION_TYPE.includes(type)
+
+type TwitterNotificationType = typeof TWITTER_NOTIFICATION_TYPE[number]
+
+type TwitterPostInfo = {
+  text: string
+  link: string | null
+}
 
 export const getEntityLink = (
   entity: (Track & { user: User }) | (Collection & { user: User }),
@@ -60,7 +88,7 @@ export const formatAchievementText = (
 Check it out!`
 }
 
-const getAchievementText = (notification: any) => {
+const getAchievementText = async (notification: any) => {
   switch (notification.achievement) {
     case Achievement.Followers: {
       const link = fullProfilePage(notification.user.handle)
@@ -86,7 +114,7 @@ const getAchievementText = (notification: any) => {
   }
 }
 
-const getTrendingTrackText = (notification: TrendingTrack) => {
+const getTrendingTrackText = async (notification: TrendingTrack) => {
   const link = getEntityLink(notification.entity, true)
   const text = `My track ${notification.entity.title} is trending ${
     notification.rank
@@ -103,11 +131,11 @@ const getTwitterHandleByUserHandle = async (userHandle: string) => {
   return twitterHandle || ''
 }
 
-export const getRemixCreateText = async (notification: RemixCreate) => {
+const getRemixCreateText = async (notification: RemixCreate) => {
   const track = notification.entities.find(
     t => t.track_id === notification.parentTrackId
   )
-  if (!track) return
+  if (!track) return null
   const link = getEntityLink(track, true)
 
   let twitterHandle = await getTwitterHandleByUserHandle(
@@ -122,7 +150,7 @@ export const getRemixCreateText = async (notification: RemixCreate) => {
   }
 }
 
-export const getRemixCosignText = async (
+const getRemixCosignText = async (
   notification: RemixCosign & {
     user: User
     entities: (Track & { user: User })[]
@@ -151,41 +179,52 @@ export const getRemixCosignText = async (
   }
 }
 
-export const getRewardsText = (notification: ChallengeReward) => ({
+const getRewardsText = async (notification: ChallengeReward) => ({
   text: `I earned $AUDIO for completing challenges on @AudiusProject #AudioRewards`,
   link: null
 })
 
-export const getNotificationTwitterText = async (notification: any) => {
-  if (notification.type === NotificationType.Milestone) {
-    return getAchievementText(notification)
-  } else if (notification.type === NotificationType.TrendingTrack) {
-    return getTrendingTrackText(notification)
-  } else if (notification.type === NotificationType.RemixCreate) {
-    return getRemixCreateText(notification)
-  } else if (notification.type === NotificationType.RemixCosign) {
-    return getRemixCosignText(notification)
-  } else if (notification.type === NotificationType.ChallengeReward) {
-    return getRewardsText(notification)
+const tierInfoMap: Record<BadgeTier, { label: string; icon: string }> = {
+  none: { label: 'None', icon: '' },
+  bronze: { label: 'Bronze', icon: '🥉' },
+  silver: { label: 'Silver', icon: '🥈' },
+  gold: { label: 'Gold', icon: '🥇' },
+  platinum: { label: 'Platinum', icon: '🥇' }
+}
+
+export const getTierChangeText = async (
+  notification: TierChange & { user: User }
+) => {
+  const { label, icon } = tierInfoMap[notification.tier]
+  return {
+    link: fullProfilePage(notification.user.handle),
+    text: `I’ve reached ${label} Tier on @AudiusProject! Check out the shiny new badge next to my name ${icon}`
   }
 }
 
-export const getTwitterButtonText = (notification: any) => {
-  switch (notification.type) {
-    case NotificationType.TrendingTrack:
-    case NotificationType.Milestone:
-      return 'Share this Milestone'
-    case NotificationType.RemixCreate:
-    case NotificationType.RemixCosign:
-    case NotificationType.ChallengeReward:
-      return 'Share With Your Fans'
-    default:
-      return ''
-  }
+const twitterPostInfoMap: Record<
+  TwitterNotificationType,
+  (notification: any) => Promise<TwitterPostInfo | null>
+> = {
+  [NotificationType.Milestone]: getAchievementText,
+  [NotificationType.RemixCreate]: getRemixCreateText,
+  [NotificationType.RemixCosign]: getRemixCosignText,
+  [NotificationType.TrendingTrack]: getTrendingTrackText,
+  [NotificationType.ChallengeReward]: getRewardsText,
+  [NotificationType.TierChange]: getTierChangeText
+} as const
+
+const twitterButtonTextMap: Record<TwitterNotificationType, string> = {
+  [NotificationType.Milestone]: messages.shareTextMilestone,
+  [NotificationType.TrendingTrack]: messages.shareTextMilestone,
+  [NotificationType.RemixCreate]: messages.shareTextFans,
+  [NotificationType.RemixCosign]: messages.shareTextFans,
+  [NotificationType.ChallengeReward]: messages.shareTextFans,
+  [NotificationType.TierChange]: messages.shareText
 }
 
 const recordTwitterShareEvent = (
-  type: NotificationType,
+  type: TwitterNotificationType,
   record: (event: TrackEvent) => void,
   text: string
 ) => {
@@ -224,27 +263,27 @@ export const TwitterShare = ({
   notification: Notification
   markNotificationAsRead: () => void
 }) => {
+  const { type } = notification
+
   const record = useRecord()
   const onClick = useCallback(
     async e => {
       e.stopPropagation()
       markNotificationAsRead()
-      const twitterText = await getNotificationTwitterText(notification)
-      if (!twitterText) return
-      openTwitterLink(twitterText.link, twitterText.text)
-      recordTwitterShareEvent(notification.type, record, twitterText.text)
+
+      if (isTwitterNotificationType(type)) {
+        const twitterPostInfo = await twitterPostInfoMap[type](notification)
+        if (!twitterPostInfo) return
+        openTwitterLink(twitterPostInfo.link, twitterPostInfo.text)
+        recordTwitterShareEvent(type, record, twitterPostInfo.text)
+      }
     },
-    [record, notification, markNotificationAsRead]
+    [record, type, notification, markNotificationAsRead]
   )
-  if (
-    notification.type !== NotificationType.Milestone &&
-    notification.type !== NotificationType.TrendingTrack &&
-    notification.type !== NotificationType.RemixCosign &&
-    notification.type !== NotificationType.RemixCreate &&
-    notification.type !== NotificationType.ChallengeReward
-  )
-    return null
-  const twitterText = getTwitterButtonText(notification)
+
+  if (!isTwitterNotificationType(type)) return null
+
+  const twitterText = twitterButtonTextMap[type]
   return (
     <div onClick={onClick} className={styles.twitterContainer}>
       <IconTwitterBird className={styles.iconTwitterBird} />
