@@ -85,6 +85,7 @@ const NavColumn = ({
   resetUploadState,
   goToRoute,
   goToSignUp: routeToSignup,
+  goToSignIn,
   goToUpload,
   averageRGBColor
 }) => {
@@ -97,8 +98,8 @@ const NavColumn = ({
     [record, routeToSignup]
   )
 
-  const onClickNavProfile = useCallback(() => goToSignUp('nav profile'), [
-    goToSignUp
+  const onClickNavProfile = useCallback(() => goToSignIn('nav profile'), [
+    goToSignIn
   ])
   const onClickNavButton = useCallback(() => goToSignUp('nav button'), [
     goToSignUp
@@ -251,9 +252,9 @@ const NavColumn = ({
                 onClick={onClickNavProfile}
               />
               <div className={styles.userInfoWrapper}>
-                <div className={styles.haveAccount}>Want to Join?</div>
+                <div className={styles.haveAccount}>Have an Account?</div>
                 <div className={styles.logIn} onClick={onClickNavProfile}>
-                  Sign Up
+                  Sign In
                 </div>
               </div>
             </div>

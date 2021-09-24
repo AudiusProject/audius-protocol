@@ -194,6 +194,13 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
 
   onNextPage = () => {
     const { page, isMobile } = this.props
+    if (page === Pages.PASSWORD) {
+      const {
+        fields: { email },
+        recordCompletePassword
+      } = this.props
+      recordCompletePassword(email.value)
+    }
     if (page === Pages.PROFILE) {
       const {
         signUp,
@@ -231,19 +238,6 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
     }
     this.addRouteHash(page)
     this.props.nextPage(isMobile)
-  }
-
-  handleOnContinue = (page: Pages) => {
-    return () => {
-      const { email } = this.props.fields
-      if (page === Pages.PASSWORD) {
-        this.props.recordCompleteEmail(email.value)
-      } else if (page === Pages.PROFILE) {
-        this.props.recordCompletePassword(email.value)
-      }
-      this.addRouteHash(page)
-      this.props.goToPage(page)
-    }
   }
 
   onPrevPage = () => {
@@ -439,10 +433,10 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
       onClickReadMetaMaskConfig: this.onClickReadMetaMaskConfig,
       closeModal: this.closeModal,
       onNextPage: this.onNextPage,
-      handleOnContinue: this.handleOnContinue,
       onPrevPage: this.onPrevPage,
       onConfigureWithMetaMask: this.onConfigureWithMetaMask,
       onEmailChange: this.onEmailChange,
+      onEmailSubmitted: this.props.onEmailSubmitted,
       onPasswordChange: this.onPasswordChange,
       onNameChange: this.onNameChange,
       onAddFollows: this.props.addFollows,
@@ -492,6 +486,8 @@ function makeMapStateToProps(state: AppState) {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
+    onEmailSubmitted: (email: string) =>
+      dispatch(signOnAction.checkEmail(email)),
     onSignIn: (email: string, password: string) =>
       dispatch(signOnAction.signIn(email, password)),
     fetchFollowArtists: () => dispatch(signOnAction.fetchAllFollowArtists()),

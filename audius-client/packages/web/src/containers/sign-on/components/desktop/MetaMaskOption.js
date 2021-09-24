@@ -19,11 +19,6 @@ export class MetaMaskOption extends Component {
   render() {
     return (
       <>
-        <div className={styles.orMetaMask}>
-          <div className={styles.border} />
-          <div className={styles.text}>or</div>
-          <div className={styles.border} />
-        </div>
         <Button
           text={<MetaMaskSignupText text={this.props.text} />}
           onClick={this.props.onClick}

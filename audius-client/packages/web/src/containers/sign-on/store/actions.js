@@ -14,6 +14,8 @@ export const VALIDATE_HANDLE_FAILED = 'SIGN_ON/VALIDATE_HANDLE_FAILED'
 export const FOLLOW_ARTISTS = 'SIGN_ON/FOLLOW_ARTISTS'
 export const SET_ACCOUNT_READY = 'SIGN_ON/SET_ACCOUNT_READY'
 
+export const CHECK_EMAIL = 'SIGN_ON/CHECK_EMAIL'
+
 export const SIGN_IN = 'SIGN_ON/SIGN_IN'
 export const SIGN_IN_SUCCEEDED = 'SIGN_ON/SIGN_IN_SUCCEEDED'
 export const SIGN_IN_FAILED = 'SIGN_ON/SIGN_IN_FAILED'
@@ -79,6 +81,10 @@ export function setField(field, value) {
  */
 export function resetSignOn() {
   return { type: RESET_SIGN_ON }
+}
+
+export function checkEmail(email) {
+  return { type: CHECK_EMAIL, email }
 }
 
 /**

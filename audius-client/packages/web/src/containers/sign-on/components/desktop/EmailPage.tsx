@@ -1,13 +1,13 @@
 import React, { Component } from 'react'
 
-import { Button, ButtonType, IconArrow } from '@audius/stems'
+import { Button, ButtonSize, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
-import PropTypes from 'prop-types'
 import { Spring } from 'react-spring/renderprops'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import Input from 'components/data-entry/Input'
 import StatusMessage from 'components/general/StatusMessage'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PreloadImage from 'components/preload-image/PreloadImage'
 
 import styles from './EmailPage.module.css'
@@ -30,53 +30,77 @@ const errorMessages = {
   inUse: 'Email is already in use, please sign-in'
 }
 
-export class EmailPage extends Component {
-  state = {
-    attempted: false,
-    isSubmitted: false
+type EmailPageProps = {
+  isMobile?: boolean
+  hasMetaMask: boolean
+  email: {
+    value: string
+    status: string
+    error: 'inUse' | 'characters'
+  }
+  onSubmit: (email: string) => void
+  onEmailChange: (email: string) => void
+  onToggleMetaMaskModal: () => void
+  onSignIn: () => void
+}
+type EmailPageState = {
+  showValidation: boolean
+  isSubmitting: boolean
+}
+
+export class EmailPage extends Component<EmailPageProps, EmailPageState> {
+  constructor(props: EmailPageProps) {
+    super(props)
+
+    this.state = {
+      showValidation: false,
+      isSubmitting: false
+    }
   }
 
-  onEmailChange = email => {
+  onEmailChange = (email: string) => {
     this.props.onEmailChange(email)
   }
 
   onBlur = () => {
-    this.setState({ attempted: true })
+    this.setState({ showValidation: true })
   }
 
-  onKeyDown = e => {
-    if (e.keyCode === 13 /** enter */) {
+  onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
       this.onSubmit()
     }
   }
 
   onSubmit = () => {
-    const { onNextPage } = this.props
-    this.setState({ attempted: true })
-    if (!this.props.email.value)
-      this.props.onEmailChange(this.props.email.value)
-    if (this.props.email.status === 'success' && !this.state.isSubmitted) {
-      onNextPage()
-      this.setState({ isSubmitted: true })
-    }
+    const { onSubmit, email } = this.props
+    this.setState({ showValidation: true, isSubmitting: true })
+    if (!email.value) this.props.onEmailChange(email.value)
+    onSubmit(email.value)
   }
 
   onToggleMetaMaskModal = () => {
     const { email, onToggleMetaMaskModal } = this.props
     this.props.onEmailChange(email.value)
-    this.setState({ attempted: true })
+    this.setState({ showValidation: true })
     if (email.status === 'success') {
       onToggleMetaMaskModal()
     }
   }
 
+  componentDidUpdate(newProps: EmailPageProps) {
+    if (this.state.isSubmitting && newProps.email.status !== 'loading') {
+      this.setState({ isSubmitting: false })
+    }
+  }
+
   render() {
     const { email, hasMetaMask, isMobile } = this.props
-    const { attempted } = this.state
+    const { showValidation, isSubmitting } = this.state
     const inputError = email.status === 'failure'
     const validInput = email.status === 'success'
-    const showError =
-      (inputError && email.error === 'inUse') || (inputError && attempted)
+    const shouldDisableInputs = isSubmitting && email.status === 'loading'
+    const showError = inputError && showValidation && email.error !== 'inUse'
     return (
       <div
         className={cn(styles.container, {
@@ -110,6 +134,7 @@ export class EmailPage extends Component {
           })}
           error={showError}
           onBlur={this.onBlur}
+          disabled={shouldDisableInputs}
         />
         {showError ? (
           <Spring
@@ -129,58 +154,45 @@ export class EmailPage extends Component {
             )}
           </Spring>
         ) : null}
-        <Button
-          text='Continue'
-          name='continue'
-          rightIcon={<IconArrow />}
-          type={ButtonType.PRIMARY_ALT}
-          onClick={this.onSubmit}
-          textClassName={styles.signInButtonText}
-          className={styles.signInButton}
-        />
-        <div
-          className={cn(styles.hasAccount, {
-            [styles.hasAccountErrMetaMask]: hasMetaMask && showError,
-            [styles.hasAccountErr]: !hasMetaMask && showError
-          })}
-        >
-          Already have an account?{' '}
-          <span className={styles.signInText} onClick={this.props.onSignIn}>
-            Sign In
-          </span>
-        </div>
-        {hasMetaMask ? (
-          <MetaMaskOption
-            text='Sign Up With'
-            subText='not recommended'
-            onClick={this.onToggleMetaMaskModal}
+        <div className={styles.buttonsContainer}>
+          <Button
+            size={ButtonSize.MEDIUM}
+            text='Continue'
+            name='continue'
+            rightIcon={
+              shouldDisableInputs ? (
+                <LoadingSpinner className={styles.spinner} />
+              ) : (
+                <IconArrow />
+              )
+            }
+            type={ButtonType.PRIMARY_ALT}
+            onClick={this.onSubmit}
+            textClassName={styles.signInButtonText}
+            className={styles.signInButton}
+            isDisabled={shouldDisableInputs}
           />
-        ) : null}
+          {hasMetaMask ? (
+            <MetaMaskOption
+              text='Sign Up With'
+              subText='not recommended'
+              onClick={this.onToggleMetaMaskModal}
+            />
+          ) : null}
+          <div className={styles.hasAccount}>
+            <Button
+              className={cn(styles.hasAccountButton, {
+                [styles.hasAccountErrMetaMask]: hasMetaMask && showError,
+                [styles.hasAccountErr]: !hasMetaMask && showError
+              })}
+              type={ButtonType.COMMON_ALT}
+              text={'Have an Account? Sign In'}
+              onClick={this.props.onSignIn}
+            />
+          </div>
+        </div>
       </div>
     )
-  }
-}
-
-EmailPage.propTypes = {
-  isMobile: PropTypes.bool,
-  hasMetaMask: PropTypes.bool,
-  email: PropTypes.shape({
-    value: PropTypes.string,
-    status: PropTypes.string,
-    error: PropTypes.string
-  }),
-  onNextPage: PropTypes.func,
-  onEmailChange: PropTypes.func,
-  onToggleMetaMaskModal: PropTypes.func
-}
-
-EmailPage.defaultProps = {
-  isMobile: false,
-  hasMetaMask: false,
-  email: {
-    value: '',
-    error: '',
-    status: 'editing'
   }
 }
 

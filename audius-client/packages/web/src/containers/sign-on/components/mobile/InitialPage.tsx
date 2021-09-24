@@ -16,6 +16,7 @@ import audiusLogoHorizontal from 'assets/img/Horizontal-Logo-Full-Color.png'
 import signupCtaImage from 'assets/img/signUpCTA.png'
 import Input from 'components/data-entry/Input'
 import StatusMessage from 'components/general/StatusMessage'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { RouterContext } from 'containers/animated-switch/RouterContextProvider'
 
@@ -52,7 +53,7 @@ type SignUpEmailProps = {
   }
   onEmailChange: (email: string) => void
   onViewSignIn: () => void
-  onNextPage: () => void
+  onEmailSubmitted: (email: string) => void
 }
 
 type SignInProps = {
@@ -87,12 +88,13 @@ type InitialPageProps = SignUpEmailProps &
 const SignUpEmail = ({
   email,
   onEmailChange,
-  onNextPage,
+  onEmailSubmitted,
   onViewSignIn
 }: SignUpEmailProps) => {
   const { value: emailValue, status: emailStatus, error } = email
 
   const [attempted, setAttempted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const onBlur = useCallback(() => {
     setAttempted(true)
@@ -100,11 +102,10 @@ const SignUpEmail = ({
 
   const onSubmitEmail = useCallback(() => {
     setAttempted(true)
+    setIsSubmitting(true)
     if (!emailValue) onEmailChange(emailValue)
-    if (emailStatus === 'success') {
-      onNextPage()
-    }
-  }, [emailValue, emailStatus, setAttempted, onNextPage, onEmailChange])
+    onEmailSubmitted(emailValue)
+  }, [emailValue, setAttempted, onEmailSubmitted, onEmailChange])
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -115,10 +116,16 @@ const SignUpEmail = ({
     [onSubmitEmail]
   )
 
+  useEffect(() => {
+    const { status } = email
+    if (isSubmitting && (status === 'success' || status === 'failure')) {
+      setIsSubmitting(false)
+    }
+  }, [email, isSubmitting, setIsSubmitting])
+
   const inputError = email.status === 'failure'
   const validInput = email.status === 'success'
-  const showError =
-    (inputError && error === 'inUse') || (inputError && attempted)
+  const showError = inputError && attempted
 
   return (
     <div className={styles.topContainer}>
@@ -148,6 +155,7 @@ const SignUpEmail = ({
         })}
         error={showError}
         onBlur={onBlur}
+        disabled={isSubmitting}
       />
       {showError ? (
         <Spring
@@ -170,11 +178,18 @@ const SignUpEmail = ({
       <Button
         text={messages.signUp}
         name='continue'
-        rightIcon={<IconArrow />}
+        rightIcon={
+          isSubmitting ? (
+            <LoadingSpinner className={styles.spinner} />
+          ) : (
+            <IconArrow />
+          )
+        }
         type={ButtonType.PRIMARY_ALT}
         onClick={onSubmitEmail}
         className={styles.signUpButton}
         textClassName={styles.signUpButtonText}
+        isDisabled={isSubmitting}
       />
     </div>
   )
@@ -262,7 +277,7 @@ const SignIn = ({
         text='Sign In'
         rightIcon={
           isLoading || (didSucceed && !hasAccount) ? (
-            <Spin className={styles.spinner} />
+            <LoadingSpinner className={styles.spinner} />
           ) : (
             <IconArrow />
           )
@@ -287,7 +302,7 @@ export const InitialPage = ({
   onViewSignIn,
   onSubmitSignIn,
   onViewSignUp,
-  onNextPage,
+  onEmailSubmitted,
   onAllowNotifications,
   hasAccount
 }: InitialPageProps) => {
@@ -329,7 +344,7 @@ export const InitialPage = ({
               email={email}
               onEmailChange={onEmailChange}
               onViewSignIn={onViewSignIn}
-              onNextPage={onNextPage}
+              onEmailSubmitted={onEmailSubmitted}
             />
           )}
         </div>

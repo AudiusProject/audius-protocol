@@ -4,7 +4,6 @@ import { delay } from 'redux-saga'
 import {
   all,
   call,
-  throttle,
   put,
   race,
   select,
@@ -52,9 +51,6 @@ const SUGGESTED_FOLLOW_USER_HANDLE_URL =
   process.env.REACT_APP_SUGGESTED_FOLLOW_HANDLES ||
   'https://download.audius.co/static-resources/signup-follows.json'
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
-
-// Wait 2 seconds between validating an email
-const THROTTLE_VALIDATE_EMAIL_MS = 2 * 1000
 
 const messages = {
   incompleteAccount:
@@ -211,25 +207,30 @@ function* validateHandle(action) {
   }
 }
 
-function* validateEmail(action) {
+function* checkEmail(action) {
+  if (!isValidEmailString(action.email)) {
+    yield put(signOnActions.validateEmailFailed('characters'))
+    return
+  }
   try {
-    if (!isValidEmailString(action.email)) {
-      yield put(signOnActions.validateEmailFailed('characters'))
-      return
+    const inUse = yield call(AudiusBackend.emailInUse, action.email)
+    if (inUse) {
+      yield put(signOnActions.goToPage(Pages.SIGNIN))
+    } else {
+      const trackEvent = make(Name.CREATE_ACCOUNT_COMPLETE_EMAIL, {
+        emailAddress: action.email
+      })
+      yield put(trackEvent)
+      yield put(signOnActions.goToPage(Pages.PASSWORD))
     }
-    yield put(signOnActions.validateEmailInUse(action.email))
   } catch (err) {
     yield put(signOnActions.validateEmailFailed(err.message))
   }
 }
 
-function* validateEmailInUse(action) {
-  yield call(waitForBackendSetup)
-  try {
-    const inUse = yield call(AudiusBackend.emailInUse, action.email)
-    yield put(signOnActions.validateEmailSucceeded(!inUse))
-  } catch (err) {
-    yield put(signOnActions.validateEmailFailed(err.message))
+function* validateEmail(action) {
+  if (!isValidEmailString(action.email)) {
+    yield put(signOnActions.validateEmailFailed('characters'))
   }
 }
 
@@ -459,16 +460,12 @@ function* watchFetchReferrer() {
   yield takeLatest(signOnActions.FETCH_REFERRER, fetchReferrer)
 }
 
-function* watchValidateEmail() {
-  yield takeLatest(signOnActions.VALIDATE_EMAIL, validateEmail)
+function* watchCheckEmail() {
+  yield takeLatest(signOnActions.CHECK_EMAIL, checkEmail)
 }
 
-function* watchValidateEmailInUse() {
-  yield throttle(
-    THROTTLE_VALIDATE_EMAIL_MS,
-    signOnActions.VALIDATE_EMAIL_IN_USE,
-    validateEmailInUse
-  )
+function* watchValidateEmail() {
+  yield takeLatest(signOnActions.VALIDATE_EMAIL, validateEmail)
 }
 
 function* watchValidateHandle() {
@@ -527,8 +524,8 @@ export default function sagas() {
   return [
     watchFetchAllFollowArtists,
     watchFetchReferrer,
+    watchCheckEmail,
     watchValidateEmail,
-    watchValidateEmailInUse,
     watchValidateHandle,
     watchSignUp,
     watchSignIn,
