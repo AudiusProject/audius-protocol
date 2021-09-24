@@ -39,8 +39,8 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
   },
   verifyAccount: {
     label: 'Verify Your Account',
-    leftIcon: <IconCheck />,
-    rightIcon: null,
+    leftIcon: null,
+    rightIcon: <IconCheck />,
     link: () => SETTINGS_PAGE
   },
   trendingTracks: {
@@ -99,7 +99,7 @@ export const challengeRewardsConfig: Record<
     progressLabel: '%0/%1 Invites',
     amount: 10,
     stepCount: 10,
-    panelButtonText: 'Invite your Friends',
+    panelButtonText: 'Invite Your Friends',
     modalButtonInfo: {
       incomplete: null,
       inProgress: null,
@@ -159,7 +159,7 @@ export const challengeRewardsConfig: Record<
   },
   'profile-completion': {
     id: 'profile-completion' as ChallengeRewardID,
-    title: 'Complete your Profile',
+    title: 'Complete Your Profile',
     icon: <i className='emoji large white-heavy-check-mark' />,
     description: 'Complete your Audius profile to earn 5 $AUDIO',
     fullDescription:
