@@ -641,7 +641,13 @@ def get_cid_source_route(request_cid):
 @bp.route("/users/history/<int:user_id>", methods=("GET",))
 def get_user_history_route(user_id):
     try:
-        user_history = get_user_history(user_id)
+        (limit, offset) = get_pagination_vars()
+        args = {
+            "user_id": user_id,
+            "limit": limit,
+            "offset": offset,
+        }
+        user_history = get_user_history(args)
         return api_helpers.success_response(user_history)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
