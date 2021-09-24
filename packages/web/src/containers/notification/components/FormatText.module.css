@@ -60,3 +60,16 @@
   margin-bottom: 4px;
   margin-right: 8px;
 }
+
+.tierTitle {
+  display: flex;
+  align-items: center;
+  color: var(--secondary-light-1);
+  font-weight: var(--font-demi-bold);
+  margin-bottom: 4px;
+}
+.tierTitle img {
+  height: 28px;
+  width: 28px;
+  margin-right: 8px;
+}

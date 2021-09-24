@@ -106,12 +106,13 @@ type RewardsTileProps = {
 }
 
 const validRewardIds: Set<ChallengeRewardID> = new Set([
-  'invite-friends',
+  'track-upload',
+  'referrals',
+  'referred',
+  'mobile-install',
   'connect-verified',
   'listen-streak',
-  'mobile-app',
-  'profile-completion',
-  'track-upload'
+  'profile-completion'
 ])
 
 /** Pulls rewards from remoteconfig */
