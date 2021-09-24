@@ -7,6 +7,25 @@ import { UserChallenge, ChallengeRewardID } from '../types'
 export type TrendingRewardsModalType = 'tracks' | 'playlists' | 'underground'
 export type ChallengeRewardsModalType = ChallengeRewardID
 
+export enum ClaimStatus {
+  NONE = 'none',
+  CLAIMING = 'claiming',
+  SUCCESS = 'success',
+  ERROR = 'error'
+}
+
+export enum HCaptchaStatus {
+  NONE = 'none',
+  SUCCESS = 'success',
+  ERROR = 'error',
+  USER_CLOSED = 'user_closed'
+}
+
+export enum CognitoFlowStatus {
+  CLOSED = 'closed',
+  OPENED = 'opened'
+}
+
 type UserChallengesPayload = {
   userChallenges: UserChallenge[] | null
 }
@@ -16,13 +35,19 @@ type RewardsUIState = {
   trendingRewardsModalType: TrendingRewardsModalType
   challengeRewardsModalType: ChallengeRewardsModalType
   userChallenges: Partial<Record<ChallengeRewardID, UserChallenge>>
+  claimStatus: ClaimStatus
+  hCaptchaStatus: HCaptchaStatus
+  cognitoFlowStatus: CognitoFlowStatus
 }
 
 const initialState: RewardsUIState = {
   trendingRewardsModalType: 'tracks',
   challengeRewardsModalType: 'track-upload',
   userChallenges: {},
-  loading: true
+  loading: true,
+  claimStatus: ClaimStatus.NONE,
+  hCaptchaStatus: HCaptchaStatus.NONE,
+  cognitoFlowStatus: CognitoFlowStatus.CLOSED
 }
 
 const slice = createSlice({
@@ -64,6 +89,30 @@ const slice = createSlice({
     ) => {
       const { modalType } = action.payload
       state.challengeRewardsModalType = modalType
+    },
+    setClaimStatus: (state, action: PayloadAction<{ status: ClaimStatus }>) => {
+      const { status } = action.payload
+      state.claimStatus = status
+    },
+    resetClaimStatus: state => {
+      state.claimStatus = ClaimStatus.NONE
+    },
+    setHCaptchaStatus: (
+      state,
+      action: PayloadAction<{ status: HCaptchaStatus }>
+    ) => {
+      const { status } = action.payload
+      state.hCaptchaStatus = status
+    },
+    resetHCaptchaStatus: state => {
+      state.hCaptchaStatus = HCaptchaStatus.NONE
+    },
+    setCognitoFlowStatus: (
+      state,
+      action: PayloadAction<{ status: CognitoFlowStatus }>
+    ) => {
+      const { status } = action.payload
+      state.cognitoFlowStatus = status
     }
   }
 })
@@ -73,7 +122,12 @@ export const {
   fetchUserChallengesSucceeded,
   fetchUserChallengesFailed,
   setTrendingRewardsModalType,
-  setChallengeRewardsModalType
+  setChallengeRewardsModalType,
+  setClaimStatus,
+  resetClaimStatus,
+  setHCaptchaStatus,
+  resetHCaptchaStatus,
+  setCognitoFlowStatus
 } = slice.actions
 
 export const getTrendingRewardsModalType = (state: AppState) =>
@@ -92,5 +146,14 @@ export const getUserChallenge = (
 
 export const getUserChallengesLoading = (state: AppState) =>
   state.application.pages.rewardsPage.loading
+
+export const getClaimStatus = (state: AppState) =>
+  state.application.pages.rewardsPage.claimStatus
+
+export const getHCaptchaStatus = (state: AppState) =>
+  state.application.pages.rewardsPage.hCaptchaStatus
+
+export const getCognitoFlowStatus = (state: AppState) =>
+  state.application.pages.rewardsPage.cognitoFlowStatus
 
 export default slice.reducer

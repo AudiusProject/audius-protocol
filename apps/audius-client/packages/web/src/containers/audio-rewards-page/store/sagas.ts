@@ -17,11 +17,12 @@ export function* watchFetchUserChallenges() {
     yield call(waitForBackendSetup)
     const currentUserId: number = yield select(getUserId)
 
-    const userChallenges: UserChallenge[] = yield apiClient.getUserChallenges({
-      userID: currentUserId
-    })
-
     try {
+      const userChallenges: UserChallenge[] = yield apiClient.getUserChallenges(
+        {
+          userID: currentUserId
+        }
+      )
       yield put(fetchUserChallengesSucceeded({ userChallenges }))
     } catch (e) {
       console.error(e)

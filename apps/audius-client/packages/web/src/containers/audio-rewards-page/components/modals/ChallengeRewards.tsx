@@ -1,6 +1,6 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useState, useContext } from 'react'
 
-import { Button, ButtonType, ProgressBar } from '@audius/stems'
+import { Button, ButtonType, ProgressBar, IconCheck } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -8,7 +8,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { ReactComponent as IconCopy } from 'assets/img/iconCopy.svg'
 import { ReactComponent as IconValidationCheck } from 'assets/img/iconValidationCheck.svg'
 import QRCode from 'assets/img/imageQR.png'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Toast from 'components/toast/Toast'
+import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { challengeRewardsConfig } from 'containers/audio-rewards-page/config'
@@ -16,7 +18,13 @@ import {
   ChallengeRewardsModalType,
   getChallengeRewardsModalType,
   getUserChallenges,
-  setChallengeRewardsModalType
+  setChallengeRewardsModalType,
+  ClaimStatus,
+  getClaimStatus,
+  resetClaimStatus,
+  resetHCaptchaStatus,
+  CognitoFlowStatus,
+  getCognitoFlowStatus
 } from 'containers/audio-rewards-page/store/slice'
 import { getHasFavoritedItem } from 'containers/profile-progress/store/selectors'
 import { useModalState } from 'hooks/useModalState'
@@ -24,14 +32,16 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getAccountUser, getUserHandle } from 'store/account/selectors'
 import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
+import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import fillString from 'utils/fillString'
 
+import ClaimRewardButton from '../ClaimRewardButton'
 import PurpleBox from '../PurpleBox'
 
 import styles from './ChallengeRewards.module.css'
 import ModalDrawer from './ModalDrawer'
 
-const useModalType = (): [
+export const useRewardsModalType = (): [
   ChallengeRewardsModalType,
   (type: ChallengeRewardsModalType) => void
 ] => {
@@ -52,7 +62,8 @@ const messages = {
   inviteLabel: 'Copy Invite Link',
   inviteLink: 'audius.co/signup?ref=%0',
   qrText: 'Download the App',
-  qrSubtext: 'Scan This QR Code with Your Phone Camera'
+  qrSubtext: 'Scan This QR Code with Your Phone Camera',
+  rewardClaimed: 'Reward claimed successfully!'
 }
 
 type InviteLinkProps = {
@@ -131,12 +142,12 @@ type BodyProps = {
 }
 
 const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
-  const [modalType, _] = useModalType()
+  const [modalType, _] = useRewardsModalType()
   const userChallenges = useSelector(getUserChallenges)
   const userHandle = useSelector(getUserHandle)
   const dispatch = useDispatch()
   const wm = useWithMobileStyle(styles.mobile)
-  const dispalyMobileContent = isMobile()
+  const displayMobileContent = isMobile()
 
   const challenge = userChallenges[modalType]
 
@@ -152,8 +163,8 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   const isIncomplete = currentStepCount === 0
   const isInProgress = currentStepCount > 0 && currentStepCount !== stepCount
   const isComplete = currentStepCount === stepCount
-  // Use for rendering the 'Claim Reward' button
-  // const isDisbursed = challenge?.is_disbursed
+  const isDisbursed = challenge?.is_disbursed ?? false
+  const specifier = challenge?.specifier ?? ''
 
   let linkType: 'complete' | 'inProgress' | 'incomplete'
   if (isComplete) {
@@ -209,9 +220,40 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     </div>
   )
 
+  const { toast } = useContext(ToastContext)
+  const claimStatus = useSelector(getClaimStatus)
+  const [hideClaimButton, setHideClaimButton] = useState(false)
+  const [displayClaimError, setDisplayClaimError] = useState(false)
+
+  const resetClaimState = useCallback(() => {
+    setHideClaimButton(true)
+    dispatch(resetClaimStatus())
+    dispatch(resetHCaptchaStatus())
+  }, [dispatch])
+
+  useEffect(() => {
+    switch (claimStatus) {
+      case ClaimStatus.ERROR:
+        // attestation failed both the first claim attempt and the attempt after hCaptcha/flow verification
+        resetClaimState()
+        setDisplayClaimError(true)
+        break
+      case ClaimStatus.SUCCESS:
+        // attestation succeeded and reward was disbursed
+        resetClaimState()
+        toast(messages.rewardClaimed, CLAIM_REWARD_TOAST_TIMEOUT_MILLIS)
+        setTimeout(resetClaimState, CLAIM_REWARD_TOAST_TIMEOUT_MILLIS)
+        break
+      case ClaimStatus.CLAIMING:
+      case ClaimStatus.NONE:
+      default:
+        break
+    }
+  }, [claimStatus, resetClaimState, setDisplayClaimError, toast])
+
   return (
     <div className={wm(styles.container)}>
-      {dispalyMobileContent ? (
+      {displayMobileContent ? (
         <>
           {progressDescription}
           <div className={wm(styles.progressCard)}>
@@ -262,25 +304,54 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           </div>
         </div>
       )}
-      {buttonLink && (
-        <Button
-          className={wm(styles.button)}
-          type={ButtonType.PRIMARY_ALT}
-          text={buttonInfo?.label}
-          onClick={goToRoute}
-          leftIcon={buttonInfo?.leftIcon}
-          rightIcon={buttonInfo?.rightIcon}
-        />
+      <div className={wm(styles.claimRewardWrapper)}>
+        {buttonLink && (
+          <Button
+            className={wm(styles.button)}
+            type={
+              isComplete && !isDisbursed
+                ? ButtonType.COMMON
+                : ButtonType.PRIMARY_ALT
+            }
+            text={buttonInfo?.label}
+            onClick={goToRoute}
+            leftIcon={buttonInfo?.leftIcon}
+            rightIcon={buttonInfo?.rightIcon}
+          />
+        )}
+        {challenge && isComplete && !isDisbursed && !hideClaimButton && (
+          <ClaimRewardButton
+            className={cn(wm(styles.button), {
+              [styles.disabled]: claimStatus !== ClaimStatus.NONE
+            })}
+            challengeId={modalType}
+            specifier={specifier}
+            amount={amount}
+            isDisabled={claimStatus !== ClaimStatus.NONE}
+            icon={
+              claimStatus === ClaimStatus.CLAIMING ? (
+                <LoadingSpinner className={styles.spinner} />
+              ) : (
+                <IconCheck />
+              )
+            }
+          />
+        )}
+      </div>
+      {displayClaimError && (
+        <div className={styles.claimError}>Oops, something’s gone wrong</div>
       )}
     </div>
   )
 }
 
 export const ChallengeRewardsModal = () => {
-  const [modalType, _] = useModalType()
+  const [modalType, _] = useRewardsModalType()
   const [isOpen, setOpen] = useModalState('ChallengeRewardsExplainer')
   const wm = useWithMobileStyle(styles.mobile)
   const onClose = () => setOpen(false)
+  const [isHCaptchaModalOpen] = useModalState('HCaptcha')
+  const cognitoFlowStatus = useSelector(getCognitoFlowStatus)
 
   const { icon, title } = challengeRewardsConfig[modalType]
 
@@ -293,13 +364,18 @@ export const ChallengeRewardsModal = () => {
         </>
       }
       showTitleHeader
-      showDismissButton
       isOpen={isOpen}
       onClose={onClose}
-      isFullscreen={false}
+      isFullscreen={true}
       useGradientTitle={false}
       titleClassName={wm(styles.title)}
       headerContainerClassName={styles.header}
+      showDismissButton={
+        !isHCaptchaModalOpen && cognitoFlowStatus === CognitoFlowStatus.CLOSED
+      }
+      dismissOnClickOutside={
+        !isHCaptchaModalOpen && cognitoFlowStatus === CognitoFlowStatus.CLOSED
+      }
     >
       <ChallengeRewardsBody dismissModal={onClose} />
     </ModalDrawer>
