@@ -4,7 +4,6 @@ from src.models import User
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import (
-    paginate_query,
     add_query_pagination
 )
 
@@ -14,7 +13,7 @@ def get_user_history(args):
     user_id = args.get("user_id")
     limit = args.get("limit")
     offset = args.get("offset")
-    
+
     db = get_db_read_replica()
     with db.scoped_session() as session:
         user_history_query = (
