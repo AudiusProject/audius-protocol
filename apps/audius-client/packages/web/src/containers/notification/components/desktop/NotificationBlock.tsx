@@ -187,7 +187,8 @@ const NotificationBlock = (props: NotificationBlockProps) => {
       type === NotificationType.Milestone &&
       props.notification.achievement === Achievement.Followers
     ) &&
-    !(type === NotificationType.TrendingTrack)
+    !(type === NotificationType.TrendingTrack) &&
+    !(type === NotificationType.TierChange)
 
   return (
     <div
@@ -269,16 +270,10 @@ const NotificationBlock = (props: NotificationBlockProps) => {
         )}
       </div>
       {trackContent}
-      {(type === NotificationType.Milestone ||
-        type === NotificationType.TrendingTrack ||
-        type === NotificationType.RemixCosign ||
-        type === NotificationType.RemixCreate ||
-        type === NotificationType.ChallengeReward) && (
-        <TwitterShare
-          notification={props.notification}
-          markNotificationAsRead={markNotificationAsRead}
-        />
-      )}
+      <TwitterShare
+        notification={props.notification}
+        markNotificationAsRead={markNotificationAsRead}
+      />
       {props.body && <div>{props.body}</div>}
       <div className={styles.timeLabel}>{props.timeLabel}</div>
     </div>

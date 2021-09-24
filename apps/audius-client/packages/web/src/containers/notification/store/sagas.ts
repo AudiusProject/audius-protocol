@@ -89,6 +89,7 @@ function* recordPlaylistUpdatesAnalytics(playlistUpdates: ID[]) {
 
 /**
  * Fetch notifications, used by notification pagination
+ * This is the function used to fetch more notifcations after the initial load in getNotifications
  */
 export function* fetchNotifications(
   action: notificationActions.FetchNotifications

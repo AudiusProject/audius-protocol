@@ -16,26 +16,37 @@ import {
 
 export type BadgeTier = 'none' | 'bronze' | 'silver' | 'gold' | 'platinum'
 
-export const badgeTiers: { tier: BadgeTier; minAudio: BNAudio }[] = [
+type BadgeTierInfo = {
+  tier: BadgeTier
+  minAudio: BNAudio
+  humanReadableAmount: number
+}
+
+export const badgeTiers: BadgeTierInfo[] = [
   {
     tier: 'platinum',
-    minAudio: stringAudioToBN('100000' as StringAudio)
+    minAudio: stringAudioToBN('100000' as StringAudio),
+    humanReadableAmount: 100000
   },
   {
     tier: 'gold',
-    minAudio: stringAudioToBN('10000' as StringAudio)
+    minAudio: stringAudioToBN('10000' as StringAudio),
+    humanReadableAmount: 10000
   },
   {
     tier: 'silver',
-    minAudio: stringAudioToBN('100' as StringAudio)
+    minAudio: stringAudioToBN('100' as StringAudio),
+    humanReadableAmount: 100
   },
   {
     tier: 'bronze',
-    minAudio: stringAudioToBN('10' as StringAudio)
+    minAudio: stringAudioToBN('10' as StringAudio),
+    humanReadableAmount: 10
   },
   {
     tier: 'none',
-    minAudio: stringAudioToBN('0' as StringAudio)
+    minAudio: stringAudioToBN('0' as StringAudio),
+    humanReadableAmount: 0
   }
 ]
 
