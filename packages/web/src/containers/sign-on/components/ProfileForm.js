@@ -14,6 +14,11 @@ import StatusMessage from 'components/general/StatusMessage'
 import { IDENTITY_SERVICE } from 'services/AudiusBackend'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
+import {
+  MAX_DISPLAY_NAME_LENGTH,
+  MAX_HANDLE_LENGTH
+} from '../utils/formatSocialProfile'
+
 import styles from './ProfileForm.module.css'
 
 const messages = {
@@ -85,9 +90,9 @@ const ProfileForm = props => {
           size='medium'
           variant={props.isMobile ? 'normal' : 'elevatedPlaceholder'}
           value={name.value}
-          characterLimit={32}
-          showCharacterLimit={name.value.length === 32}
-          warning={name.value.length === 32}
+          characterLimit={MAX_DISPLAY_NAME_LENGTH}
+          showCharacterLimit={name.value.length === MAX_DISPLAY_NAME_LENGTH}
+          warning={name.value.length === MAX_DISPLAY_NAME_LENGTH}
           onChange={props.onNameChange}
           className={cn(styles.profileInput, styles.nameInput, {
             [styles.placeholder]: props.name.value === ''
@@ -102,9 +107,9 @@ const ProfileForm = props => {
             value={handle.value}
             disabled={!props.canUpdateHandle || handle.status === 'disabled'}
             onChange={props.onHandleChange}
-            characterLimit={16}
-            showCharacterLimit={handle.value.length === 16}
-            warning={handle.value.length === 16}
+            characterLimit={MAX_HANDLE_LENGTH}
+            showCharacterLimit={handle.value.length === MAX_HANDLE_LENGTH}
+            warning={handle.value.length === MAX_HANDLE_LENGTH}
             onKeyDown={props.onHandleKeyDown}
             variant={props.isMobile ? 'normal' : 'elevatedPlaceholder'}
             onFocus={() => {

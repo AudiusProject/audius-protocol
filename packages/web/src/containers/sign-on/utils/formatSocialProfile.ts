@@ -4,6 +4,7 @@ import { resizeImage } from 'utils/imageProcessingUtil'
 const GENERAL_ADMISSION = process.env.REACT_APP_GENERAL_ADMISSION
 
 export const MAX_HANDLE_LENGTH = 16
+export const MAX_DISPLAY_NAME_LENGTH = 32
 
 export const formatTwitterProfile = async (twitterProfile: TwitterProfile) => {
   const profileUrl = twitterProfile.profile_image_url_https.replace(
@@ -40,6 +41,10 @@ export const formatTwitterProfile = async (twitterProfile: TwitterProfile) => {
         MAX_HANDLE_LENGTH
       )
     }
+  }
+  if (twitterProfile.name.length > MAX_DISPLAY_NAME_LENGTH) {
+    requiresUserReview = true
+    twitterProfile.name = twitterProfile.name.slice(0, MAX_DISPLAY_NAME_LENGTH)
   }
 
   return {
@@ -82,6 +87,16 @@ export const formatInstagramProfile = async (
         MAX_HANDLE_LENGTH
       )
     }
+  }
+  if (
+    !instagramProfile.full_name ||
+    instagramProfile.full_name.length > MAX_DISPLAY_NAME_LENGTH
+  ) {
+    requiresUserReview = true
+    instagramProfile.full_name = instagramProfile.full_name!.slice(
+      0,
+      MAX_DISPLAY_NAME_LENGTH
+    )
   }
 
   return {

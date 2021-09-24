@@ -104,7 +104,7 @@ export class ProfilePage extends Component {
         profile,
         profileImage,
         requiresUserReview
-      } = await formatInstagramProfile(uuid, profile)
+      } = await formatInstagramProfile(instagramProfile)
       this.props.validateHandle(
         profile.username,
         profile.is_verified,
