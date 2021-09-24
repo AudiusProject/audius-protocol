@@ -74,7 +74,7 @@ svg.logo path {
   flex-direction: row;
   align-items: center;
   flex-shrink: 0;
-  transition: all ease-in-out .18s;
+  transition: all ease-in-out 0.18s;
 
   color: var(--neutral);
 }
@@ -92,7 +92,7 @@ svg.logo path {
   height: 48px;
   border-radius: 30px;
   border: 1px solid var(--white);
-  box-shadow: 0 0 1px 0 rgba(133,129,153,0.5);
+  box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5);
 
   text-align: center;
   background-size: cover;
@@ -110,7 +110,7 @@ svg.logo path {
   height: 48px;
   border-radius: 30px;
   border: 1px solid var(--white);
-  box-shadow: 0 0 1px 0 rgba(133,129,153,0.5);
+  box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5);
 
   text-align: center;
   background-size: cover;
@@ -151,7 +151,6 @@ svg.logo path {
   text-decoration-color: var(--primary-light-2);
 }
 
-
 .navColumn .accountWrapper .userInfoWrapper .handleContainer {
   display: inline-flex;
   overflow: hidden;
@@ -164,7 +163,7 @@ svg.logo path {
   font-size: var(--font-xs);
   color: var(--neutral);
   font-weight: var(--font-medium);
-  transition: all .07s ease-in-out;
+  transition: all 0.07s ease-in-out;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -192,7 +191,7 @@ svg.logo path {
 }
 
 .navColumn .accountWrapper .userInfoWrapper .logIn {
-  color: var(--neutral);
+  color: var(--secondary);
   font-size: var(--font-xs);
   line-height: 14px;
   cursor: pointer;
@@ -309,7 +308,7 @@ svg.logo path {
 }
 
 .droppable {
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
   transition: background 0.07s ease-in-out;
   border-radius: 6px;
   width: 100%;
@@ -327,11 +326,11 @@ svg.logo path {
 }
 
 .droppableHover {
-  background-color: rgba(152,73,214,0.15);
+  background-color: rgba(152, 73, 214, 0.15);
 }
 
 .droppableGroupHover {
-  background-color: rgba(152,73,214,0.15);
+  background-color: rgba(152, 73, 214, 0.15);
 }
 
 .links .link:hover:before {
@@ -343,8 +342,9 @@ svg.logo path {
 .links .link:global(.active):before {
   border-right: 4px solid var(--primary);
 }
-.links .link:hover:before, .links .link:global(.active):before {
-  content: "";
+.links .link:hover:before,
+.links .link:global(.active):before {
+  content: '';
   display: block;
   width: 20px;
   height: 20px;

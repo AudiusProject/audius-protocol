@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react'
 
 import { Button, ButtonType, IconArrow } from '@audius/stems'
-import Spin from 'antd/lib/spin'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { Spring } from 'react-spring/renderprops'
@@ -9,6 +8,7 @@ import { Spring } from 'react-spring/renderprops'
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import Input from 'components/data-entry/Input'
 import StatusMessage from 'components/general/StatusMessage'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PreloadImage from 'components/preload-image/PreloadImage'
 
 import { MetaMaskOption } from './MetaMaskOption'
@@ -47,6 +47,12 @@ export class SignIn extends PureComponent {
       await this.props.onMetaMaskSignIn()
     } catch (err) {
       console.error({ err })
+    }
+  }
+
+  componentDidMount() {
+    if (this.props.email && this.props.email.value) {
+      this.passwordInput.current.focus()
     }
   }
 
@@ -126,29 +132,36 @@ export class SignIn extends PureComponent {
             )}
           </Spring>
         )}
-        <Button
-          name='sign-in'
-          text='Sign In'
-          rightIcon={
-            loading ? <Spin className={styles.spinner} /> : <IconArrow />
-          }
-          type={ButtonType.PRIMARY_ALT}
-          onClick={onSignIn}
-          textClassName={styles.signInButtonText}
-          className={styles.signInButton}
-        />
-        <div className={styles.newUserText}>
-          New to Audius?{' '}
-          <span className={styles.createAccountText} onClick={onSignUp}>
-            Create an Account
-          </span>
-        </div>
-        {hasMetaMask ? (
-          <MetaMaskOption
-            text='Sign In With'
-            onClick={this.onSignInWithMetaMask}
+        <div className={styles.buttonsContainer}>
+          <Button
+            name='sign-in'
+            text='Continue'
+            rightIcon={
+              loading ? (
+                <LoadingSpinner className={styles.spinner} />
+              ) : (
+                <IconArrow />
+              )
+            }
+            type={ButtonType.PRIMARY_ALT}
+            onClick={onSignIn}
+            textClassName={styles.signInButtonText}
+            className={styles.signInButton}
           />
-        ) : null}
+          {hasMetaMask ? (
+            <MetaMaskOption
+              text='Sign In With'
+              onClick={this.onSignInWithMetaMask}
+            />
+          ) : null}
+          <div className={styles.createAccount}>
+            <Button
+              text={'New to Audius? Create an Account'}
+              type={ButtonType.COMMON_ALT}
+              onClick={onSignUp}
+            />
+          </div>
+        </div>
       </div>
     )
   }

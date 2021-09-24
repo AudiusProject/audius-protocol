@@ -1,32 +1,11 @@
-
-/* MetaMask Option */
-.orMetaMask {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 354px;
-  margin-bottom: 19px;
-}
-
-.orMetaMask .border {
-  width: 144px;
-  border-top: 1px solid var(--neutral-light-8);
-}
-
-.orMetaMask .text {
-  color: var(--neutral-light-4);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
-  text-align: center;
-}
-
 /* Metamask Button */
 .metaMaskSignupButton {
   color: var(--neutral);
-  font-family: "Avenir Next LT Pro";
+  font-family: 'Avenir Next LT Pro';
   font-size: var(--font-s);
   font-weight: var(--font-bold);
   text-align: center;
+  margin-top: 24px;
   margin-bottom: 10px;
   height: 52px !important;
   padding-left: 16px !important;
@@ -35,9 +14,9 @@
 .metaMaskSignupButton input {
   height: 52px;
   width: 246px;
-  border: 1px solid #DAD9E0;
+  border: 1px solid #dad9e0;
   border-radius: 4px;
-  background-color: #FFFFFF;
+  background-color: #ffffff;
 }
 
 .metaMaskSignupText {
@@ -47,7 +26,7 @@
   align-items: center;
   color: var(--neutral);
   font-size: var(--font-s);
-  font-weight: var(--font-bold)
+  font-weight: var(--font-bold);
 }
 
 .metaMaskLogo {
@@ -57,6 +36,7 @@
 
 /* Not recommended */
 .subText {
+  margin-bottom: 24px;
   color: var(--neutral);
   font-size: var(--font-s);
   font-weight: var(--font-medium);

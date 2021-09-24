@@ -14,7 +14,7 @@
   width: 100%;
   border-radius: 0 0 40px 40px;
   background-color: var(--white);
-  box-shadow: 0 2px 25px -5px rgba(17,17,34,0.5);
+  box-shadow: 0 2px 25px -5px rgba(17, 17, 34, 0.5);
 }
 
 .native .topSection {
@@ -239,7 +239,7 @@
 }
 
 .signInDescription {
-  color: #7E1BCC;
+  color: #7e1bcc;
   font-size: 18px;
   font-weight: bold;
   line-height: 16px;
@@ -253,11 +253,6 @@
   width: 16px;
 }
 
-.spinner :global(.ant-spin-dot) {
-  height: 16px;
-  width: 16px;
-}
-
-.spinner :global(.ant-spin-dot i) {
-  background-color: var(--static-white);
+.spinner g path {
+  stroke: var(--white) !important;
 }
