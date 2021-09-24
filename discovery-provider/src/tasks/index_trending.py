@@ -81,6 +81,23 @@ def get_genres(session):
 
 trending_strategy_factory = TrendingStrategyFactory()
 
+AGGREGATE_INTERVAL_PLAYS = "aggregate_interval_plays"
+TRENDING_PARAMS = "trending_params"
+
+
+def update_view(session, mat_view_name):
+    start_time = time.time()
+    session.execute(f"REFRESH MATERIALIZED VIEW {mat_view_name}")
+    update_time = time.time() - start_time
+    logger.info(
+        f"index_trending.py | Finished updating {mat_view_name} in: {time.time()-start_time} sec",
+        extra={
+            "job": "index_trending",
+            "update_time": update_time,
+            "mat_view_name": mat_view_name,
+        },
+    )
+
 
 def index_trending(self, db, redis):
     logger.info("index_trending.py | starting indexing")
@@ -94,6 +111,15 @@ def index_trending(self, db, redis):
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
         ).keys()
+
+        update_view(session, AGGREGATE_INTERVAL_PLAYS)
+        update_view(session, TRENDING_PARAMS)
+        for version in trending_track_versions:
+            strategy = trending_strategy_factory.get_strategy(
+                TrendingType.TRACKS, version
+            )
+            strategy.update_track_score_query(session)
+
         for version in trending_track_versions:
             strategy = trending_strategy_factory.get_strategy(
                 TrendingType.TRACKS, version
@@ -135,7 +161,8 @@ def index_trending(self, db, redis):
     update_end = time.time()
     update_total = update_end - update_start
     logger.info(
-        f"index_trending.py | Finished indexing trending in {update_total} seconds"
+        f"index_trending.py | Finished indexing trending in {update_total} seconds",
+        extra={"job": "index_trending", "total_time": update_total},
     )
     # Update cache key to track the last time trending finished indexing
     redis.set(trending_tracks_last_completion_redis_key, int(update_end))

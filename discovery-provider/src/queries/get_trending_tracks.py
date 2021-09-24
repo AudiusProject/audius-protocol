@@ -1,3 +1,6 @@
+from sqlalchemy import desc
+
+from src.models import TrackTrendingScore, AggregateIntervalPlay
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.db_session import get_db_read_replica
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
@@ -29,18 +32,40 @@ def make_trending_cache_key(
 def generate_unpopulated_trending(
     session, genre, time_range, strategy, limit=TRENDING_LIMIT
 ):
-    trending_tracks = generate_trending(session, time_range, genre, limit, 0, strategy)
+    top_listen_tracks_subquery = session.query(AggregateIntervalPlay.track_id)
+    if genre:
+        top_listen_tracks_subquery = top_listen_tracks_subquery.filter(
+            AggregateIntervalPlay.genre == genre
+        )
+    if time_range == "week":
+        top_listen_tracks_subquery = top_listen_tracks_subquery.order_by(
+            desc(AggregateIntervalPlay.week_listen_counts)
+        )
+    elif time_range == "month":
+        top_listen_tracks_subquery = top_listen_tracks_subquery.order_by(
+            desc(AggregateIntervalPlay.month_listen_counts)
+        )
+    elif time_range == "year":
+        top_listen_tracks_subquery = top_listen_tracks_subquery.order_by(
+            desc(AggregateIntervalPlay.year_listen_counts)
+        )
+    top_listen_tracks_subquery = top_listen_tracks_subquery.limit(limit)
 
-    track_scores = [
-        strategy.get_track_score(time_range, track)
-        for track in trending_tracks["listen_counts"]
-    ]
-    # Re apply the limit just in case we did decide to include more tracks in the scoring than the limit
-    sorted_track_scores = sorted(track_scores, key=lambda k: k["score"], reverse=True)[
-        :limit
-    ]
-    track_ids = [track["track_id"] for track in sorted_track_scores]
+    trending_track_ids_query = session.query(
+        TrackTrendingScore.track_id, TrackTrendingScore.score
+    ).filter(
+        TrackTrendingScore.type == strategy.trending_type.name,
+        TrackTrendingScore.version == strategy.version.name,
+        TrackTrendingScore.time_range == time_range,
+        TrackTrendingScore.track_id.in_(top_listen_tracks_subquery),
+    )
 
+    trending_track_ids = (
+        trending_track_ids_query.order_by(desc(TrackTrendingScore.score))
+        .limit(limit)
+        .all()
+    )
+    track_ids = [track_id[0] for track_id in trending_track_ids]
     tracks = get_unpopulated_tracks(session, track_ids)
     return (tracks, track_ids)
 
