@@ -36,6 +36,7 @@ docker-compose down
 or if you want to run just the node service:
 
 ```
+# Will be running on port 8000
 npm run start
 
 # or with docker

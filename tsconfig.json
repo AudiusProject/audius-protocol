@@ -12,6 +12,9 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
   },
+  "ts-node": {
+    "files": true
+  },
   "include": [
     "src",
     "tests",

@@ -1,3 +1,4 @@
+import cors from 'cors'
 import express from 'express'
 import path from 'path'
 
@@ -17,6 +18,7 @@ import libs from './libs'
 const PORT = 8000
 
 const app = express()
+app.use(cors())
 const router = express.Router()
 
 /** Bedtime Routes */

@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "tsc": "tsc",
-    "copyfiles": "copyfiles -u 1 src/public/* src/**/*.html src/**/*.js build/src",
-    "spinup": "npm run tsc && npm run copyfiles && node build/src/index.js",
+    "spinup": "nodemon src/index.ts",
     "start": "env-cmd -f .env npm run spinup",
     "start:stage": "env-cmd -f .env.stage npm run spinup",
     "start:prod": "env-cmd -f .env.prod npm run spinup",
@@ -25,24 +24,10 @@
     "url": "https://github.com/AudiusProject/general-admission/issues"
   },
   "homepage": "https://github.com/AudiusProject/general-admission#readme",
-  "devDependencies": {
-    "@types/express": "^4.17.0",
-    "@types/jest": "^24.0.17",
-    "@types/node": "^12.7.1",
-    "@types/node-fetch": "^2.5.8",
-    "@types/request": "^2.48.2",
-    "@types/unzipper": "^0.10.3",
-    "copyfiles": "^2.4.1",
-    "env-cmd": "^9.0.3",
-    "jest": "^24.8.0",
-    "request": "^2.88.0",
-    "ts-jest": "^24.0.2",
-    "ts-lint": "^4.5.1",
-    "typescript": "^3.5.3"
-  },
   "dependencies": {
     "@audius/libs": "^1.2.17",
     "abort-controller": "^3.0.0",
+    "cors": "^2.8.5",
     "ethereumjs-tx": "^2.1.0",
     "express": "^4.17.1",
     "handlebars": "^4.1.2",
@@ -52,5 +37,23 @@
     "moment": "^2.27.0",
     "node-fetch": "^2.6.1",
     "unzipper": "^0.10.11"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.0",
+    "@types/jest": "^24.0.17",
+    "@types/node": "^12.7.1",
+    "@types/node-fetch": "^2.5.8",
+    "@types/request": "^2.48.2",
+    "@types/unzipper": "^0.10.3",
+    "copyfiles": "^2.4.1",
+    "env-cmd": "^9.0.3",
+    "jest": "^24.8.0",
+    "nodemon": "^2.0.13",
+    "request": "^2.88.0",
+    "ts-jest": "^24.0.2",
+    "ts-lint": "^4.5.1",
+    "ts-node": "^10.2.1",
+    "typescript": "^3.5.3"
   }
 }

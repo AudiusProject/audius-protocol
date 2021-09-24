@@ -4,7 +4,7 @@ jobs:
   init:
     working_directory: ~/general-admission
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.16
     steps:
       - checkout
 
@@ -37,7 +37,7 @@ jobs:
   # test-staging:
   #   working_directory: ~/general-admission
   #   docker:
-  #     - image: circleci/node:10.13
+  #     - image: circleci/node:14.16
   #   steps:
   #     - checkout
   #     - attach_workspace:
@@ -49,7 +49,7 @@ jobs:
   test-production:
     working_directory: ~/general-admission
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.16
     steps:
       - checkout
       - attach_workspace:
