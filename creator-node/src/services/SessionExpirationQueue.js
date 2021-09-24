@@ -5,10 +5,9 @@ const config = require('../config')
 const { logger } = require('../logging')
 const { SessionToken } = require('../models')
 
-
 const QUEUE_INTERVAL_MS = 60 * 1000 * 60 * 24 // daily run
-const SESSION_EXPIRATION_AGE = 60 * 1000 * 60 * 24 * 14 // 2 weeks 
-
+const SESSION_EXPIRATION_AGE = 60 * 1000 * 60 * 24 * 14 // 2 weeks
+const BATCH_COUNT = 100
 const PROCESS_NAMES = Object.freeze({
   expire_sessions: 'expire_sessions'
 })
@@ -17,7 +16,7 @@ const PROCESS_NAMES = Object.freeze({
  * A persistent cron-style queue that periodically deletes expired session tokens from Redis cache and the database.
  *
  * The queue runs daily on cron.
- * 
+ *
  */
 class SessionExpirationQueue {
   constructor () {
@@ -34,6 +33,8 @@ class SessionExpirationQueue {
         }
       }
     )
+    this.logStatus = this.logStatus.bind(this)
+    this.expireSessions = this.expireSessions.bind(this)
 
     // Clean up anything that might be still stuck in the queue on restart
     this.queue.empty()
@@ -49,24 +50,21 @@ class SessionExpirationQueue {
           const SESSION_EXPIRED_CONDITION = {
             where: {
               created_at: {
-                [Op.gt]: new Date(Date.now() - SESSION_EXPIRATION_AGE)
+                [Sequelize.Op.gt]: new Date(Date.now() - SESSION_EXPIRATION_AGE)
               }
             }
           }
-          const BATCH_COUNT = 100
 
           const numExpiredSessions = await SessionToken.count(SESSION_EXPIRED_CONDITION)
-          this.logStatus(`${numExpiredSessions} expired sessions ready for deletion.`) // TODO refactor for readability
+          this.logStatus(`${numExpiredSessions} expired sessions ready for deletion.`)
 
-          for (let numRemainingSessionsToExpire = numExpiredSessions; numRemainingSessionsToExpire >= BATCH_COUNT; numRemainingSessionsToExpire -= BATCH_COUNT) {
-            const sessionsToDelete = await SessionToken.findAll(Object.assign({}, SESSION_EXPIRED_CONDITION, { limit: BATCH_COUNT }))
-            sessionsToDelete.forEach(({ token }) => {
-              await sessionManager.deleteSession(token) // TODO is it more efficient to delete each session one-by-one in Redis (bulk delete not possible in Redis) and the DB, or to rely on Redis for delete and DBManager.deleteSessionTokensFromDB for bulk deletion on the DB side?
-            })
-            progress += BATCH_COUNT / numExpiredSessions
+          let numRemainingSessionsToExpire = numExpiredSessions
+          while (numRemainingSessionsToExpire > 0) {
+            await this.expireSessions(SESSION_EXPIRED_CONDITION, BATCH_COUNT)
+            progress += (BATCH_COUNT / numExpiredSessions) * 100
             job.progress(progress)
+            numRemainingSessionsToExpire -= BATCH_COUNT
           }
-
           done(null, {})
         } catch (e) {
           this.logStatus(`Error ${e}`)
@@ -74,6 +72,11 @@ class SessionExpirationQueue {
         }
       }
     )
+  }
+
+  async expireSessions (sessionExpiredCondition, batchCount) {
+    const sessionsToDelete = await SessionToken.findAll(Object.assign(sessionExpiredCondition, { limit: batchCount }))
+    await sessionManager.deleteSessions(sessionsToDelete)
   }
 
   /**

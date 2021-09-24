@@ -5,7 +5,7 @@ const sequelize = models.sequelize
 class DBManager {
   /**
    * Entrypoint for writes/destructive DB operations.
-   * 
+   *
    * Functionality:
    * A. Given file insert query object and cnodeUserUUID, inserts new file record in DB
    *    and handles all required clock management.
@@ -14,7 +14,7 @@ class DBManager {
    *  2. insert new ClockRecord entry with new clock value
    *  3. insert new Data Table (File, Track, AudiusUser) entry with queryObj and new clock value
    * In steps 2 and 3, clock values are read as subquery to guarantee atomicity
-   * 
+   *
    * B. Given a list of IDs, batch deletes user session tokens to expire sessions on the server-side.
    */
   static async createNewDataRecord (queryObj, cnodeUserUUID, sequelizeTableInstance, transaction) {
@@ -143,7 +143,7 @@ class DBManager {
   }
 
   /**
-   * Deletes all session tokens matching an Array of session token IDs. 
+   * Deletes all session tokens matching an Array of session token IDs.
    *
    *
    * @dev TODO add unit test
@@ -165,7 +165,8 @@ class DBManager {
         transaction
       })
       log(`deleteSessionTokensFromDB || numSessionTokensDeleted ${numSessionTokensDeleted}`)
-
+    } catch (e) {
+      error = e
     } finally {
       // Rollback transaction on error for external or internal transaction
       // TODO - consider not rolling back in case of external transaction, and just throwing instead
@@ -181,7 +182,6 @@ class DBManager {
       log(`deleteSessionTokensFromDB || completed in ${Date.now() - start}ms`)
     }
   }
-
 }
 
 /**

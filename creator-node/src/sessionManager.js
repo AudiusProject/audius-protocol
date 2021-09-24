@@ -5,6 +5,7 @@ const randomBytes = promisify(crypto.randomBytes)
 
 const models = require('./models')
 const redisClient = require('./redis')
+const DBManager = require('./dbManager')
 
 const sessionTokenHeaderKey = 'X-Session-ID'
 const sessionTokenLength = 40
@@ -40,6 +41,25 @@ class SessionManager {
     const session = await _getSessionFromDB(sessionToken, true)
     await session.destroy()
     await redisClient.del(`SESSION.${sessionToken}`)
+  }
+
+  static async deleteSessions (sessionTokens) {
+    const txCommands = sessionTokens.map(({ token }) => ['del', `SESSION.${token}`])
+    const sessionTokenIds = sessionTokens.map(({ id }) => id)
+    try {
+      await DBManager.deleteSessionTokensFromDB(sessionTokenIds)
+    } catch (e1) {
+      try {
+        await DBManager.deleteSessionTokensFromDB(sessionTokenIds)
+      } catch (e2) {
+        throw new Error(`[sessionManager]: Failure (and retry failure) when deleting expired sessions from DB: ${e1.message}\n$`)
+      }
+    }
+    try {
+      await redisClient.multi(txCommands).exec()
+    } catch (e) {
+      throw new Error(`[sessionManager]: Error when deleting expired sessions from Redis: ${e.message}`)
+    }
   }
 }
 
