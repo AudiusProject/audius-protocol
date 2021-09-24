@@ -56,7 +56,12 @@ export enum IntKeys {
   /**
    * Number of retries to a discovery node before it is thought of as unhealthy
    */
-  DISCOVERY_NODE_SELECTION_REQUEST_RETRIES = 'DISCOVERY_NODE_SELECTION_REQUEST_RETRIES'
+  DISCOVERY_NODE_SELECTION_REQUEST_RETRIES = 'DISCOVERY_NODE_SELECTION_REQUEST_RETRIES',
+
+  /**
+   * Number of services that are required to attest for a user challenge
+   */
+  ATTESTATION_QUORUM_SIZE = 'ATTESTATION_QUORUM_SIZE'
 }
 
 export enum BooleanKeys {
@@ -181,7 +186,13 @@ export enum StringKeys {
   UNDERGROUND_TRENDING_EXPERIMENT = 'UNDERGROUND_TRENDING_EXPERIMENT',
 
   /** Playlist trending experiment id */
-  PLAYLIST_TRENDING_EXPERIMENT = 'PLAYLIST_TRENDING_EXPERIMENT'
+  PLAYLIST_TRENDING_EXPERIMENT = 'PLAYLIST_TRENDING_EXPERIMENT',
+
+  /** Ethereum address for oracle */
+  ORACLE_ETH_ADDRESS = 'ORACLE_ETH_ADDRESS',
+
+  /** Endpoint of oracle */
+  ORACLE_ENDPOINT = 'ORACLE_ENDPOINT'
 }
 
 export type AllRemoteConfigKeys =

@@ -13,7 +13,8 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.INSTAGRAM_HANDLE_CHECK_TIMEOUT]: 4000,
   [IntKeys.AUTOPLAY_LIMIT]: 10,
   [IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_TIMEOUT]: 30000,
-  [IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_RETRIES]: 5
+  [IntKeys.DISCOVERY_NODE_SELECTION_REQUEST_RETRIES]: 5,
+  [IntKeys.ATTESTATION_QUORUM_SIZE]: 0
 }
 
 export const remoteConfigStringDefaults: {
@@ -46,7 +47,9 @@ export const remoteConfigStringDefaults: {
   [StringKeys.UTF]: null,
   [StringKeys.TRENDING_EXPERIMENT]: null,
   [StringKeys.PLAYLIST_TRENDING_EXPERIMENT]: null,
-  [StringKeys.UNDERGROUND_TRENDING_EXPERIMENT]: null
+  [StringKeys.UNDERGROUND_TRENDING_EXPERIMENT]: null,
+  [StringKeys.ORACLE_ETH_ADDRESS]: null,
+  [StringKeys.ORACLE_ENDPOINT]: null
 }
 export const remoteConfigDoubleDefaults: {
   [key in DoubleKeys]: number | null

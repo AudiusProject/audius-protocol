@@ -1,38 +1,63 @@
 import React, { useCallback } from 'react'
 
 import HCaptcha from '@hcaptcha/react-hcaptcha'
+import { useDispatch } from 'react-redux'
 
+import {
+  HCaptchaStatus,
+  setHCaptchaStatus
+} from 'containers/audio-rewards-page/store/slice'
 import { useModalState } from 'hooks/useModalState'
 import AudiusBackend from 'services/AudiusBackend'
 
+import styles from './HCaptchaModal.module.css'
 import ModalDrawer from './ModalDrawer'
 
 const sitekey = process.env.REACT_APP_HCAPTCHA_SITE_KEY
 
 const messages = {
-  title: 'Complete captcha verification'
+  title: 'Complete Captcha Verification'
 }
 
 export const HCaptchaModal = () => {
   const [isOpen, setOpen] = useModalState('HCaptcha')
+  const dispatch = useDispatch()
 
-  const onVerifyCaptcha = useCallback(
-    (token: string) => {
-      AudiusBackend.updateHCaptchaScore(token)
-      setOpen(false)
+  // here, we can also instead use a prop e.g. onClose to handle re-opening the reward modal if we want to decouple rewards and hcaptcha
+  const [, setRewardModalOpen] = useModalState('ChallengeRewardsExplainer')
+
+  const handleClose = useCallback(() => {
+    setRewardModalOpen(true)
+    setOpen(false)
+  }, [setRewardModalOpen, setOpen])
+
+  const onVerify = useCallback(
+    async (token: string) => {
+      const result = await AudiusBackend.updateHCaptchaScore(token)
+      if (result.error) {
+        dispatch(setHCaptchaStatus({ status: HCaptchaStatus.ERROR }))
+      } else {
+        dispatch(setHCaptchaStatus({ status: HCaptchaStatus.SUCCESS }))
+      }
+      handleClose()
     },
-    [setOpen]
+    [dispatch, handleClose]
   )
 
   return sitekey ? (
     <ModalDrawer
       isOpen={isOpen}
-      onClose={() => setOpen(false)}
+      onClose={() => {
+        dispatch(setHCaptchaStatus({ status: HCaptchaStatus.USER_CLOSED }))
+        handleClose()
+      }}
       title={messages.title}
       showTitleHeader
+      dismissOnClickOutside
       showDismissButton
+      bodyClassName={styles.modalBody}
     >
-      <HCaptcha sitekey={sitekey} onVerify={onVerifyCaptcha} />
+      <HCaptcha sitekey={sitekey} onVerify={onVerify} />
     </ModalDrawer>
   ) : null
 }

@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react'
+import React, { Suspense } from 'react'
 
 import { isMobile } from 'utils/clientUtil'
 import lazyWithPreload from 'utils/lazyWithPreload'

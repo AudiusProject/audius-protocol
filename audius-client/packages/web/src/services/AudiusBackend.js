@@ -2378,11 +2378,11 @@ class AudiusBackend {
   static async updateHCaptchaScore(token) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
-    if (!account) return
+    if (!account) return { error: true }
 
     try {
       const { data, signature } = await AudiusBackend.signData()
-      await fetch(`${IDENTITY_SERVICE}/score/hcaptcha`, {
+      return await fetch(`${IDENTITY_SERVICE}/score/hcaptcha`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2390,9 +2390,10 @@ class AudiusBackend {
           [AuthHeaders.Signature]: signature
         },
         body: JSON.stringify({ token })
-      })
+      }).then(res => res.json())
     } catch (err) {
       console.error(err.message)
+      return { error: true }
     }
   }
 
@@ -2556,6 +2557,41 @@ class AudiusBackend {
       address
     )
     return waudioBalance ?? new BN('0')
+  }
+
+  /**
+   * Aggregate, submit, and evaluate attestations for a given challenge for a user
+   */
+  static async submitAndEvaluateAttestations({
+    challengeId,
+    encodedUserId,
+    handle,
+    recipientEthAddress,
+    specifier,
+    oracleEthAddress,
+    amount,
+    quorumSize,
+    AAOEndpoint
+  }) {
+    await waitForLibsInit()
+    try {
+      const res = await audiusLibs.Challenge.submitAndEvaluate({
+        challengeId,
+        encodedUserId,
+        handle,
+        recipientEthAddress,
+        specifier,
+        oracleEthAddress,
+        amount,
+        quorumSize,
+        AAOEndpoint
+      })
+      return res
+    } catch (e) {
+      console.log(`Failed in libs call to claim reward`)
+      console.error(e)
+      return { error: true }
+    }
   }
 }
 

@@ -20,7 +20,10 @@ export enum zIndex {
   IMAGE_SELECTION_POPUP = 1001,
 
   // Web3 wallet connect modal
-  WEB3_WALLET_CONNECT_MODAL = 10001
+  WEB3_WALLET_CONNECT_MODAL = 10001,
+
+  // cognito flow modal
+  COGNITO_FLOW_MODAL = 10001
 }
 
 export default zIndex

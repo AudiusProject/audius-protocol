@@ -1,3 +1,4 @@
 :global(#cognito-flow--root) {
-  z-index: 100;
+  /* See COGNITO_FLOW_MODAL in utils/zIndex.ts */
+  z-index: 10001;
 }
