@@ -63,7 +63,6 @@ export type SignOnProps = {
   onViewSignIn: () => void
   onEmailChange: (email: string, validate?: boolean) => void
   onPasswordChange: (password: string) => void
-  handleOnContinue: (page: Pages) => () => void
   onHandleChange: (handle: string) => void
   onNameChange: (name: string) => void
   onSetProfileImage: (img: any) => void
@@ -99,6 +98,7 @@ export type SignOnProps = {
   recordInstagramStart: () => void
   suggestedFollows: User[]
   onSelectArtistCategory: (category: FollowArtistsCategory) => void
+  onEmailSubmitted: (email: string) => void
 }
 
 const pagesAfterFollow = new Set([
@@ -143,7 +143,6 @@ const SignOnProvider = ({
   onViewSignIn,
   onEmailChange,
   onPasswordChange,
-  handleOnContinue,
   onHandleChange,
   onNameChange,
   onSetProfileImage,
@@ -163,7 +162,8 @@ const SignOnProvider = ({
   suggestedFollows: suggestedFollowEntries,
   recordTwitterStart,
   recordInstagramStart,
-  onSelectArtistCategory
+  onSelectArtistCategory,
+  onEmailSubmitted
 }: SignOnProps) => {
   const {
     email,
@@ -227,7 +227,7 @@ const SignOnProvider = ({
           onSignIn={onViewSignIn}
           onToggleMetaMaskModal={onToggleMetaMaskModal}
           onEmailChange={onEmailChange}
-          onNextPage={handleOnContinue(Pages.PASSWORD)}
+          onSubmit={onEmailSubmitted}
         />
       </animated.div>
     ),
@@ -242,7 +242,7 @@ const SignOnProvider = ({
         <PasswordPage
           email={email}
           onPasswordChange={onPasswordChange}
-          onNextPage={handleOnContinue(Pages.PROFILE)}
+          onNextPage={onNextPage}
         />
       </animated.div>
     ),

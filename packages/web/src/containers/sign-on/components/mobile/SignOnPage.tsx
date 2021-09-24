@@ -45,8 +45,8 @@ export type SignOnProps = {
   onViewSignUp: () => void
   onViewSignIn: () => void
   onEmailChange: (email: string, validate?: boolean) => void
+  onEmailSubmitted: (email: string) => void
   onPasswordChange: (password: string) => void
-  handleOnContinue: (page: Pages) => () => void
   onHandleChange: (handle: string) => void
   onNameChange: (name: string) => void
   onSetProfileImage: (img: any) => void
@@ -102,8 +102,8 @@ const SignOnPage = ({
   onViewSignUp,
   onViewSignIn,
   onEmailChange,
+  onEmailSubmitted,
   onPasswordChange,
-  handleOnContinue,
   onHandleChange,
   onNameChange,
   onSetProfileImage,
@@ -185,7 +185,7 @@ const SignOnPage = ({
           onPasswordChange={onPasswordChange}
           onEmailChange={onEmailChange}
           onAllowNotifications={onAllowNotifications}
-          onNextPage={handleOnContinue(Pages.PASSWORD)}
+          onEmailSubmitted={onEmailSubmitted}
         />
       </animated.div>
     ),
@@ -206,7 +206,7 @@ const SignOnPage = ({
           password={password}
           inputStatus={''}
           onPasswordChange={onPasswordChange}
-          onNextPage={handleOnContinue(Pages.PROFILE)}
+          onNextPage={onNextPage}
           onTermsOfServiceClick={() => {}}
           onPrivacyPolicyClick={() => {}}
         />

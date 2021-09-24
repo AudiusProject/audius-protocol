@@ -9,20 +9,11 @@
 
 /*  */
 .logo {
-  max-height: 204px;
-  max-width: 180px;
-  height: 100%;
-  width: 100%;
-  margin-top: 40px;
-  margin-bottom: 31px;
-}
-
-.metaMask .logo {
   max-height: 180px;
   max-width: 159px;
   height: 100%;
   width: 100%;
-  margin: 40px auto 20px;
+  margin: 32px auto;
 }
 
 /* Title */
@@ -31,13 +22,13 @@
   font-size: var(--font-l);
   height: 26px;
   font-weight: var(--font-demi-bold);
-  margin-bottom: 3px;
+  margin-bottom: 32px;
   user-select: none;
 }
 
 /* Sign In Button */
 .signInInput {
-  margin-top: 30px;
+  margin-bottom: 16px;
   text-align: center;
   height: 66px !important;
   width: 354px !important;
@@ -47,7 +38,7 @@
   width: 100% !important;
   font-size: 20px !important;
   color: var(--neutral);
-  border: 1px solid #F2F2F4;
+  border: 1px solid #f2f2f4;
   border-radius: 4px;
 }
 .signInInput.hasMetaMask {
@@ -66,9 +57,14 @@
   transform: translate(0px, -12px) !important;
 }
 
+.buttonsContainer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 /* Sign In Button */
 .signInButton {
-  margin-top: 31px;
   transition: none;
 }
 
@@ -86,7 +82,7 @@
   margin-top: 31px;
   margin-bottom: 17px;
   color: var(--neutral);
-  font-family: "Avenir Next LT Pro";
+  font-family: 'Avenir Next LT Pro';
   font-size: var(--font-s);
   font-weight: var(--font-medium);
   user-select: none;
@@ -112,7 +108,6 @@
 .hidden {
   display: none;
 }
-
 
 .errorContainer {
   display: inline-flex;
@@ -157,8 +152,8 @@
   font-size: 16px !important;
 }
 
-.isMobile input::-webkit-input-placeholder { 
-  line-height: normal !important; 
+.isMobile input::-webkit-input-placeholder {
+  line-height: normal !important;
 }
 
 /* Sign In Button */
@@ -180,7 +175,7 @@
   margin-top: 32px;
   margin-bottom: 17px;
   color: var(--secondary);
-  font-family: "Avenir Next LT Pro";
+  font-family: 'Avenir Next LT Pro';
   font-size: var(--font-s);
   font-weight: var(--font-medium);
   user-select: none;
@@ -190,17 +185,6 @@
 .isMobile.signInError .newUserText {
   transition: none;
   margin-top: 23px;
-}
-
-.isMobile .createAccountText {
-  text-decoration: none;
-  color: var(--secondary-light-2);
-  cursor: pointer;
-}
-.isMobile .createAccountText:hover,
-.isMobile .createAccountText:active {
-  text-decoration: underline !important;
-  color: var(--secondary);
 }
 
 .isMobile .hidden {
@@ -220,11 +204,13 @@
   width: 16px;
 }
 
-.spinner :global(.ant-spin-dot) {
-  height: 16px;
-  width: 16px;
+.spinner g path {
+  stroke: var(--white) !important;
 }
 
-.spinner :global(.ant-spin-dot i) {
-  background-color: var(--static-white);
+.createAccount {
+  flex: 1;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-end;
 }

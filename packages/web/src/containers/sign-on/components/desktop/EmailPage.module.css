@@ -13,11 +13,7 @@
   max-width: 159px;
   height: 100%;
   width: 100%;
-  margin: 40px auto 52px;
-}
-
-.metaMask .logo {
-  margin-bottom: 44px;
+  margin: 32px auto;
 }
 
 /* Title */
@@ -50,12 +46,11 @@
 /* Sign In Input */
 
 .metaMask .signInInput {
-  margin-top: 37px;
-  margin-bottom: 23px;
+  margin-bottom: 24px;
 }
 
 .signInInput {
-  margin-top: 50px;
+  margin-top: 32px;
   margin-bottom: 39px;
   text-align: center;
   height: 66px;
@@ -102,27 +97,27 @@
   margin-bottom: 13px;
 }
 
+.buttonsContainer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 /* Sign In Button */
+.signInButton {
+  width: 100%;
+}
+
 .signInButton .signInButtonText {
   font-size: var(--font-l);
   font-weight: var(--font-bold);
 }
 
-/* Bottom Text */
-.metaMask .hasAccount {
-  margin-top: 18px;
-  margin-bottom: 17px;
-}
-
 .hasAccount {
-  padding: 4px 0px;
-  margin-top: 45px;
-  color: var(--neutral);
-  font-family: "Avenir Next LT Pro";
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
-  user-select: none;
-  cursor: default;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 24px;
 }
 
 .metaMask .hasAccountErrMetaMask {
@@ -145,7 +140,6 @@
   text-decoration: underline !important;
   color: var(--secondary);
 }
-
 
 /* Mobile Version */
 .isMobile.container {
@@ -201,7 +195,7 @@
   width: 100% !important;
   max-width: 354px !important;
 }
-.isMobile .signInInput > input[type=email] {   
+.isMobile .signInInput > input[type='email'] {
   /* Remove First */
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -211,14 +205,14 @@
   height: 100% !important;
   width: 100% !important;
   font-size: var(--font-m) !important;
-  border: 1px solid #F2F2F4 !important;
-  border-top: 1px solid #F2F2F4 !important;
+  border: 1px solid #f2f2f4 !important;
+  border-top: 1px solid #f2f2f4 !important;
   /* border-top: none !important; */
   box-shadow: none !important;
 }
 
-.isMobile input::-webkit-input-placeholder { 
-  line-height: normal !important; 
+.isMobile input::-webkit-input-placeholder {
+  line-height: normal !important;
 }
 
 .isMobile .signInInput.placeholder > input {
@@ -245,7 +239,7 @@
   padding: 4px 0px;
   margin: 12px 0px 6px;
   color: var(--secondary);
-  font-family: "Avenir Next LT Pro";
+  font-family: 'Avenir Next LT Pro';
   font-size: var(--font-s);
   font-weight: var(--font-medium);
   user-select: none;
@@ -268,3 +262,12 @@
   color: var(--secondary);
 }
 
+.spinner {
+  display: block;
+  height: 16px;
+  width: 16px;
+}
+
+.spinner g path {
+  stroke: var(--white) !important;
+}
