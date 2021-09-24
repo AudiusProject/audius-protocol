@@ -5,21 +5,22 @@ const config = require('../config')
 const { logger } = require('../logging')
 const { SessionToken } = require('../models')
 
-const QUEUE_INTERVAL_MS = 60 * 1000 * 60 * 24 // daily run
+const RUN_INTERVAL = 60 * 1000 * 60 * 24 // daily run
 const SESSION_EXPIRATION_AGE = 60 * 1000 * 60 * 24 * 14 // 2 weeks
-const BATCH_COUNT = 100
+const BATCH_SIZE = 100
 const PROCESS_NAMES = Object.freeze({
   expire_sessions: 'expire_sessions'
 })
 
 /**
- * A persistent cron-style queue that periodically deletes expired session tokens from Redis cache and the database.
- *
- * The queue runs daily on cron.
+ * A persistent cron-style queue that periodically deletes expired session tokens from Redis cache and the database. Runs on startup, deleting 100 sessions at a time, and then runs daily to clear sessions older than 14d.
  *
  */
 class SessionExpirationQueue {
   constructor () {
+    this.sessionExpirationAge = SESSION_EXPIRATION_AGE
+    this.batchSize = BATCH_SIZE
+    this.runInterval = RUN_INTERVAL
     this.queue = new Bull(
       'session-expiration-queue',
       {
@@ -46,24 +47,22 @@ class SessionExpirationQueue {
         try {
           this.logStatus('Starting')
           let progress = 0
-
           const SESSION_EXPIRED_CONDITION = {
             where: {
               created_at: {
-                [Sequelize.Op.gt]: new Date(Date.now() - SESSION_EXPIRATION_AGE)
+                [Sequelize.Op.gt]: new Date(Date.now() - this.sessionExpirationAge)
               }
             }
           }
-
           const numExpiredSessions = await SessionToken.count(SESSION_EXPIRED_CONDITION)
           this.logStatus(`${numExpiredSessions} expired sessions ready for deletion.`)
 
           let numRemainingSessionsToExpire = numExpiredSessions
           while (numRemainingSessionsToExpire > 0) {
-            await this.expireSessions(SESSION_EXPIRED_CONDITION, BATCH_COUNT)
-            progress += (BATCH_COUNT / numExpiredSessions) * 100
+            await this.expireSessions(SESSION_EXPIRED_CONDITION)
+            progress += (this.batchSize / numExpiredSessions) * 100
             job.progress(progress)
-            numRemainingSessionsToExpire -= BATCH_COUNT
+            numRemainingSessionsToExpire -= this.batchSize
           }
           done(null, {})
         } catch (e) {
@@ -74,8 +73,8 @@ class SessionExpirationQueue {
     )
   }
 
-  async expireSessions (sessionExpiredCondition, batchCount) {
-    const sessionsToDelete = await SessionToken.findAll(Object.assign(sessionExpiredCondition, { limit: batchCount }))
+  async expireSessions (sessionExpiredCondition) {
+    const sessionsToDelete = await SessionToken.findAll(Object.assign(sessionExpiredCondition, { limit: this.batchSize }))
     await sessionManager.deleteSessions(sessionsToDelete)
   }
 
@@ -103,7 +102,7 @@ class SessionExpirationQueue {
         } catch (e) {
           this.logStatus('Failed to enqueue!')
         }
-      }, QUEUE_INTERVAL_MS)
+      }, this.runInterval)
     } catch (e) {
       this.logStatus('Startup failed!')
     }

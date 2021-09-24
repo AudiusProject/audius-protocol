@@ -49,8 +49,6 @@ class DBManager {
    *
    * @notice This method is currently unused. It's a legacy function from non-diffed sync which might be needed in the future.
    *
-   * @dev TODO add unit test
-   *
    * @param {*} CNodeUserLookupObj
    * @param {*} sequelizeTableInstance
    * @param {*} tx
@@ -143,18 +141,15 @@ class DBManager {
   }
 
   /**
-   * Deletes all session tokens matching an Array of session token IDs.
+   * Deletes all session tokens matching an Array of SessionTokens.
    *
-   *
-   * @dev TODO add unit test
-   *
-   * @param {Array} ids
+   * @param {Array} sessionTokens
    * @param {*} tx
    */
-  static async deleteSessionTokensFromDB (ids, externalTransaction) {
+  static async deleteSessionTokensFromDB (sessionTokens, externalTransaction) {
     const transaction = (externalTransaction) || (await models.sequelize.transaction())
     const log = (msg) => logger.info(`DBManager log: ${msg}`)
-
+    const ids = sessionTokens.map(st => st.id)
     const start = Date.now()
     let error
     try {
@@ -168,8 +163,7 @@ class DBManager {
     } catch (e) {
       error = e
     } finally {
-      // Rollback transaction on error for external or internal transaction
-      // TODO - consider not rolling back in case of external transaction, and just throwing instead
+      // Rollback transaction on error
       if (error) {
         await transaction.rollback()
         log(`deleteSessionTokensFromDB || rolling back transaction due to error ${error}`)
