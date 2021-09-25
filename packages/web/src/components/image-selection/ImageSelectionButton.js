@@ -29,7 +29,8 @@ const ImageSelectionButton = ({
   onClosePopup,
   onClick,
   onAfterClose,
-  onSelect
+  onSelect,
+  source
 }) => {
   const anchorRef = useRef()
   const [showModal, setShowModal] = useState(false)
@@ -75,6 +76,7 @@ const ImageSelectionButton = ({
             onSelect={onSelect}
             onClose={closeModal}
             onAfterClose={onAfterClose}
+            source={source}
           />
         </>
       ) : (

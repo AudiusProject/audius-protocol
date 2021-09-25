@@ -67,15 +67,22 @@ const CollectiblesPage: React.FC<{
   isUserOnTheirProfile: boolean
   profile: ProfileUser
   updateProfile?: (metadata: any) => void
+  updateProfilePicture?: (
+    selectedFiles: any,
+    source: 'original' | 'unsplash' | 'url'
+  ) => void
   onLoad?: () => void
+  onSave?: () => void
 }> = ({
   userId,
   name,
   isMobile,
   profile,
   updateProfile,
+  updateProfilePicture,
   isUserOnTheirProfile,
-  onLoad
+  onLoad,
+  onSave
 }) => {
   const { isEnabled: isSolanaCollectiblesEnabled } = useFlag(
     FeatureFlags.SOLANA_COLLECTIBLES_ENABLED
@@ -414,6 +421,8 @@ const CollectiblesPage: React.FC<{
                   key={collectible.id}
                   collectible={collectible}
                   isMobile={isMobile}
+                  updateProfilePicture={updateProfilePicture}
+                  onSave={onSave}
                 />
               ))}
             </div>

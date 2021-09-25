@@ -125,11 +125,11 @@ export type ProfilePageProps = {
   updateDonation: (donation: string) => void
   updateProfilePicture: (
     selectedFiles: any,
-    source: 'original' | 'unsplash'
+    source: 'original' | 'unsplash' | 'url'
   ) => Promise<void>
   updateCoverPhoto: (
     selectedFiles: any,
-    source: 'original' | 'unsplash'
+    source: 'original' | 'unsplash' | 'url'
   ) => Promise<void>
   setNotificationSubscription: (userId: ID, isSubscribed: boolean) => void
   didChangeTabsFrom: (prevLabel: string, currentLabel: string) => void
@@ -587,7 +587,9 @@ const ProfilePage = g(
               name={name}
               isMobile={true}
               isUserOnTheirProfile={isUserOnTheirProfile}
+              updateProfilePicture={updateProfilePicture}
               profile={profile}
+              onSave={onSave}
             />
           </div>
         )

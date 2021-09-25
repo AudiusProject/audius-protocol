@@ -1,6 +1,14 @@
 .popup {
-  width: 360px;
+  width: 416px;
+  padding: var(--unit-8);
   text-align: center;
+  border-radius: var(--unit-3);
+}
+
+.slider {
+  width: 100%;
+  padding: var(--unit-2) 3px;
+  margin-top: var(--unit-4);
 }
 
 /* Dropzone page */
@@ -45,10 +53,8 @@
 
 .query {
   position: relative;
-  margin: 0 auto;
-  width: 65%;
-  margin-top: 16px;
-  margin-bottom: 8px;
+  width: 100%;
+  margin: var(--unit-6) auto var(--unit-2);
 }
 
 .query > input {
@@ -83,32 +89,31 @@
 }
 
 .buttonWrapper {
-  width: 80%;
-  margin: 0 auto;
-  padding-bottom: 12px;
+  width: 100%;
+  margin: 0 auto var(--unit-6);
 }
 
 .button {
-  height: 28px !important;
-  padding: 0px 16px !important;
-  text-transform: uppercase;
+  height: var(--unit-9) !important;
+  width: 100%;
 }
 
 .button .buttonText {
-  font-size: 11px;
+  font-size: var(--font-m);
   font-weight: var(--font-bold);
 }
 
 .suggestion {
-  margin-top: 4px;
   font-size: var(--font-s);
   font-weight: var(--font-medium);
   line-height: 18px;
 }
 
-.try {
-  color: var(--neutral);
-  padding-right: 6px;
+.suggestionHeader {
+  text-transform: uppercase;
+  font-weight: var(--font-bold);
+  color: var(--neutral-light-4);
+  margin-bottom: var(--unit-2);
 }
 
 .terms {
@@ -126,12 +131,72 @@
 }
 
 .terms .comma {
-  padding-right: 6px;
+  padding-right: 3px;
 }
 
 .credit {
-  margin-top: 20px;
+  margin-top: var(--unit-2);
   font-size: var(--font-xs);
   color: var(--neutral-light-4);
   line-height: 15px;
+}
+
+.collection {
+  display: block;
+  position: relative;
+  margin-top: var(--unit-6);
+}
+
+.collectiblesContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 7.5px;
+}
+
+.collectibleImg {
+  height: 64px;
+  width: 64px;
+  object-fit: cover;
+  border-radius: 2px;
+  transition: 0.07s ease-in-out;
+  opacity: 0;
+}
+.fadeIn {
+  animation: fadeIn 0.5s forwards;
+}
+.collectibleImg:hover {
+  cursor: pointer;
+  transform: perspective(1px) scale3d(1.04,1.04,1.04);
+}
+.collectibleImg.profileImg {
+  border-radius: 100%;
+}
+
+.collectiblesControls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--unit-2);
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-bold);
+}
+.collectiblesControls > div {
+  flex: 1 1 0;
+}
+
+.prevLabel {
+  text-align: left;
+  cursor: pointer;
+}
+.pageLabel {
+  font-weight: var(--font-medium);
+}
+.nextLabel {
+  text-align: right;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

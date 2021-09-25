@@ -9,7 +9,10 @@ import { ReactComponent as IconUpload } from 'assets/img/iconUpload.svg'
 import styles from './UploadStub.module.css'
 
 type UploadStubProps = {
-  onChange: (selectedFiles: any, source: 'original' | 'unsplash') => void
+  onChange: (
+    selectedFiles: any,
+    source: 'original' | 'unsplash' | 'url'
+  ) => void
   // Manually override the processing state
   isProcessing?: boolean
   isHidden?: boolean

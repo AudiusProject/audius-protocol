@@ -114,8 +114,14 @@ type ProfileHeaderProps = {
   switchToEditMode: () => void
   updatedCoverPhoto: string | null
   updatedProfilePicture: string | null
-  onUpdateProfilePicture: (files: any, source: 'original' | 'unsplash') => void
-  onUpdateCoverPhoto: (files: any, source: 'original' | 'unsplash') => void
+  onUpdateProfilePicture: (
+    files: any,
+    source: 'original' | 'unsplash' | 'url'
+  ) => void
+  onUpdateCoverPhoto: (
+    files: any,
+    source: 'original' | 'unsplash' | 'url'
+  ) => void
   setNotificationSubscription: (userId: ID, isSubscribed: boolean) => void
   areArtistRecommendationsVisible: boolean
   onCloseArtistRecommendations: () => void
