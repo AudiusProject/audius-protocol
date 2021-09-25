@@ -84,6 +84,7 @@ const CoverPhoto = props => {
             hasImage={!!image || props.updatedCoverPhoto}
             error={!!props.error}
             onSelect={onDrop}
+            source='CoverPhoto'
           />
         ) : null}
       </div>

@@ -6,9 +6,6 @@ import { useSpring, animated } from 'react-spring'
 
 import styles from './TabSlider.module.css'
 
-// Note, offset is the inner padding of the container div
-const OFFSET = 3
-
 const TabSlider = props => {
   const optionRefs = useRef(props.options.map(_ => React.createRef()))
   const [selected, setSelected] = useState(props.options[0].key)
@@ -33,11 +30,9 @@ const TabSlider = props => {
       selectedRefIdx = 0
     }
 
-    const selectedRef = optionRefs.current[selectedRefIdx]
-    const left = optionRefs.current
-      .slice(0, selectedRefIdx)
-      .reduce((totalWidth, ref) => totalWidth + ref.current.clientWidth, OFFSET)
-    const width = selectedRef.current.clientWidth
+    const { clientWidth: width, offsetLeft: left } = optionRefs.current[
+      selectedRefIdx
+    ].current
 
     setAnimatedProps({ to: { left: `${left}px`, width: `${width}px` } })
   }, [
@@ -48,21 +43,6 @@ const TabSlider = props => {
     selected,
     optionRefs
   ])
-
-  const getFirstOptionRef = useCallback(
-    node => {
-      if (node !== null) {
-        setAnimatedProps({
-          to: {
-            left: `${OFFSET}px`,
-            width: `${node.clientWidth}px`
-          }
-        })
-        optionRefs.current[0].current = node
-      }
-    },
-    [setAnimatedProps]
-  )
 
   return (
     <div
@@ -76,7 +56,7 @@ const TabSlider = props => {
         return (
           <React.Fragment key={option.key}>
             <div
-              ref={idx === 0 ? getFirstOptionRef : optionRefs.current[idx]}
+              ref={optionRefs.current[idx]}
               className={cn(styles.tab, {
                 [styles.tabFullWidth]: !!props.fullWidth
               })}

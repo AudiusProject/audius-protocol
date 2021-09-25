@@ -69,6 +69,7 @@ const UploadArtwork = props => {
           onOpenPopup={props.onOpenPopup}
           onClosePopup={props.onClosePopup}
           onSelect={onDrop}
+          source='UploadArtwork'
         />
       </div>
       <div className={styles.toast}>

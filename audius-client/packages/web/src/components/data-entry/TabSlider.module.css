@@ -4,13 +4,19 @@
   background-color: var(--neutral-light-7);
   position: relative;
   display: inline-flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 3px;
+  padding: var(--unit-3) 3px;
+}
+
+.isMobile {
+  padding: var(--unit-2) 3px;
 }
 
 .tab {
   z-index: 3;
-  padding: 8px 12px;
+  flex: 1 1 auto;
+  padding: 0px 12px;
   border-radius: 4px;
   cursor: pointer;
   user-select: none;
@@ -19,10 +25,6 @@
   font-family: var(--font-family);
   font-size: 15px;
   font-weight: var(--font-demi-bold);
-}
-
-.isMobile .tab {
-  padding: 4px 12px;
 }
 
 .separator {

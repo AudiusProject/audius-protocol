@@ -3,27 +3,33 @@ import React, { useState, useCallback, useRef } from 'react'
 import { Button, ButtonType, Popup } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
+import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
 import TabSlider from 'components/data-entry/TabSlider'
 import Dropzone from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
+import { useFlag } from 'containers/remote-config/hooks'
 import RandomImage from 'services/RandomImage'
+import { FeatureFlags } from 'services/remote-config'
+import { getAccountUser } from 'store/account/selectors'
 import zIndex from 'utils/zIndex'
 
 import styles from './ImageSelectionPopup.module.css'
 import { ImageSelectionProps, ImageSelectionDefaults } from './PropTypes'
 
+const COLLECTIBLES_PER_PAGE = 15
 const POPULAR_TERMS = ['neon', 'space', 'beach', 'nature', 'abstract']
 
 const messages = {
-  uploadYourOwn: 'Upload Your Own',
+  uploadYourOwn: 'Upload',
   findArtwork: 'Find Artwork',
-  search: 'SEARCH',
-  searchAgain: 'SEARCH AGAIN',
-  orTry: 'or try',
+  yourCollectibles: 'Your Collectibles',
+  suggestionHeader: 'Suggested Searches',
+  search: 'Search',
+  searchAgain: 'Search Again',
   fromUnsplash: 'Photos from Unsplash',
-  addImage: 'Add Image'
+  popupTitle: 'Add Artwork'
 }
 
 const DropzonePage = ({ error, onSelect }) => {
@@ -93,7 +99,9 @@ const RandomPage = ({ onSelect }) => {
         />
       </div>
       <div className={styles.suggestion}>
-        <span className={styles.try}>{messages.orTry}</span>
+        <div className={styles.suggestionHeader}>
+          {messages.suggestionHeader}
+        </div>
         <span className={styles.terms}>
           {POPULAR_TERMS.map((term, i) => {
             return (
@@ -114,6 +122,86 @@ const RandomPage = ({ onSelect }) => {
   )
 }
 
+const CollectionPage = ({ onSelect, source }) => {
+  const [loadedImgs, setLoadedImgs] = useState([])
+  const [page, setPage] = useState(1)
+  const { isEnabled: isSolanaCollectiblesEnabled } = useFlag(
+    FeatureFlags.SOLANA_COLLECTIBLES_ENABLED
+  )
+  const { collectibles, collectibleList, solanaCollectibleList } = useSelector(
+    getAccountUser
+  )
+  const allCollectibles = [
+    ...(collectibleList || []),
+    ...((isSolanaCollectiblesEnabled && solanaCollectibleList) || [])
+  ]
+  const visibleCollectibles = allCollectibles.filter(c =>
+    collectibles?.order?.includes(c.id)
+  )
+
+  const imgs = visibleCollectibles.filter(c => c.mediaType === 'IMAGE')
+  const maxPages = Math.ceil(imgs.length / COLLECTIBLES_PER_PAGE)
+
+  const prevPage = () => {
+    if (page > 1) setPage(page - 1)
+  }
+  const nextPage = () => {
+    if (page < maxPages) setPage(page + 1)
+  }
+
+  const selectImg = imageUrl => {
+    onSelect(
+      fetch(imageUrl).then(r => r.blob()),
+      'url'
+    )
+  }
+
+  return (
+    <div className={styles.collection}>
+      <div className={styles.collectiblesContainer}>
+        {imgs
+          .slice(
+            COLLECTIBLES_PER_PAGE * (page - 1),
+            COLLECTIBLES_PER_PAGE * page
+          )
+          .map(collectible => (
+            <img
+              key={collectible.id}
+              className={cn(styles.collectibleImg, {
+                [styles.profileImg]: source === 'ProfilePicture',
+                [styles.fadeIn]: loadedImgs.includes(collectible.id)
+              })}
+              src={collectible.imageUrl}
+              onLoad={() => setLoadedImgs([...loadedImgs, collectible.id])}
+              onClick={() => selectImg(collectible.imageUrl)}
+            />
+          ))}
+      </div>
+      {maxPages > 1 && (
+        <div className={styles.collectiblesControls}>
+          {page > 1 ? (
+            <div className={styles.prevLabel} onClick={prevPage}>
+              PREV
+            </div>
+          ) : (
+            <div />
+          )}
+          <div className={styles.pageLabel}>
+            {page}/{maxPages}
+          </div>
+          {page < maxPages ? (
+            <div className={styles.nextLabel} onClick={nextPage}>
+              NEXT
+            </div>
+          ) : (
+            <div />
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 /**
  * A popup that lets a user upload artwork or select a random image.
  */
@@ -124,13 +212,57 @@ const ImageSelectionPopup = ({
   error,
   onClose,
   onAfterClose,
-  onSelect
+  onSelect,
+  source
 }) => {
   const [page, setPage] = useState(messages.uploadYourOwn)
+  const { collectibles, collectibleList, solanaCollectibleList } = useSelector(
+    getAccountUser
+  )
+  const { isEnabled: isCollectibleOptionEnabled } = useFlag(
+    FeatureFlags.NFT_IMAGE_PICKER_TAB
+  )
+  const { isEnabled: isSolanaCollectiblesEnabled } = useFlag(
+    FeatureFlags.SOLANA_COLLECTIBLES_ENABLED
+  )
+  const allCollectibles = [
+    ...(collectibleList || []),
+    ...((isSolanaCollectiblesEnabled && solanaCollectibleList) || [])
+  ]
+  const visibleCollectibles = allCollectibles.filter(c =>
+    collectibles?.order?.includes(c.id)
+  )
 
   const handleClose = () => {
     setPage(messages.uploadYourOwn)
     onClose()
+  }
+
+  const pageMap = {
+    [messages.uploadYourOwn]: (
+      <DropzonePage error={error} onSelect={onSelect} />
+    ),
+    [messages.findArtwork]: <RandomPage onSelect={onSelect} />,
+    [messages.yourCollectibles]: (
+      <CollectionPage onSelect={onSelect} source={source} />
+    )
+  }
+
+  const tabSliderOptions = [
+    {
+      key: messages.uploadYourOwn,
+      text: messages.uploadYourOwn
+    },
+    {
+      key: messages.findArtwork,
+      text: messages.findArtwork
+    }
+  ]
+  if (isCollectibleOptionEnabled && visibleCollectibles.length) {
+    tabSliderOptions.push({
+      key: messages.yourCollectibles,
+      text: messages.yourCollectibles
+    })
   }
 
   return (
@@ -141,29 +273,16 @@ const ImageSelectionPopup = ({
       onClose={handleClose}
       onAfterClose={onAfterClose}
       showHeader={true}
-      title={messages.addImage}
+      title={messages.popupTitle}
       zIndex={zIndex.IMAGE_SELECTION_POPUP}
     >
       <TabSlider
         className={styles.slider}
-        options={[
-          {
-            key: messages.uploadYourOwn,
-            text: messages.uploadYourOwn
-          },
-          {
-            key: messages.findArtwork,
-            text: messages.findArtwork
-          }
-        ]}
+        options={tabSliderOptions}
         selected={page}
         onSelectOption={setPage}
       />
-      {page === messages.findArtwork ? (
-        <RandomPage onSelect={onSelect} />
-      ) : (
-        <DropzonePage error={error} onSelect={onSelect} />
-      )}
+      {pageMap[page]}
     </Popup>
   )
 }

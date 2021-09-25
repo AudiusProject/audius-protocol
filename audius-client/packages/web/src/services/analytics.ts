@@ -348,11 +348,11 @@ type AccountHealthMeterFull = {
 }
 type AccountHealthUploadCoverPhoto = {
   eventName: Name.ACCOUNT_HEALTH_UPLOAD_COVER_PHOTO
-  source: 'original' | 'unsplash'
+  source: 'original' | 'unsplash' | 'url'
 }
 type AccountHealthUploadProfilePhoto = {
   eventName: Name.ACCOUNT_HEALTH_UPLOAD_PROFILE_PICTURE
-  source: 'original' | 'unsplash'
+  source: 'original' | 'unsplash' | 'url'
 }
 type AccountHealthDownloadDesktop = {
   eventName: Name.ACCOUNT_HEALTH_DOWNLOAD_DESKTOP

@@ -97,6 +97,7 @@ const ProfilePicture = ({
             includePopup={includePopup}
             error={!!error}
             hasImage={hasProfilePicture}
+            source='ProfilePicture'
           />
         )}
       </div>
