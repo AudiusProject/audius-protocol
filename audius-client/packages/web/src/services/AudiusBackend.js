@@ -131,7 +131,8 @@ export const fetchCID = async (
   cid,
   creatorNodeGateways = [],
   cache = true,
-  asUrl = true
+  asUrl = true,
+  trackId = null
 ) => {
   await waitForLibsInit()
   try {
@@ -141,7 +142,8 @@ export const fetchCID = async (
       () => {},
       // If requesting a url (we mean a blob url for the file),
       // otherwise, default to JSON
-      asUrl ? 'blob' : 'json'
+      asUrl ? 'blob' : 'json',
+      trackId
     )
     if (asUrl) {
       const url = URL.createObjectURL(res.data)
