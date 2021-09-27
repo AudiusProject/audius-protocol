@@ -21,9 +21,10 @@
 		83F735A523C64C950040A4C5 /* AirplayEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 83F735A423C64C950040A4C5 /* AirplayEvent.m */; };
 		83FB60B623A4351D00DC2238 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 008F07F21AC5B25A0029DE68 /* main.jsbundle */; };
 		9204DC5D38C1495FA330CF12 /* AvenirNextLTPro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */; };
-		A30E10E3AF254D4881C3A2B8 /* AvenirNextLTPro-Demi-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8B498DEFE0774F838F5214A5 /* AvenirNextLTPro-Demi-Bold.otf */; };
 		C48560F6F96345AC8C69506F /* AvenirNextLTPro-Heavy.otf in Resources */ = {isa = PBXBuildFile; fileRef = D40C2F0A0A4641D18D426558 /* AvenirNextLTPro-Heavy.otf */; };
 		CFE33B15004249189EB75CDC /* AvenirNextLTPro-UltLt.otf in Resources */ = {isa = PBXBuildFile; fileRef = D83DC634C3DC44B588896E10 /* AvenirNextLTPro-UltLt.otf */; };
+		F50849B3CA2D48F3852465FA /* AvenirNextLTPro-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8FFE615B56774422849C5A08 /* AvenirNextLTPro-Light.otf */; };
+		9A21B5C22EF94A738EBABFED /* AvenirNextLTPro-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = BAEB40775EC64F48AC1983F7 /* AvenirNextLTPro-Thin.otf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,7 +54,6 @@
 		83F7359E23C55C2D0040A4C5 /* AirplayViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AirplayViewManager.m; sourceTree = "<group>"; };
 		83F735A423C64C950040A4C5 /* AirplayEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AirplayEvent.m; sourceTree = "<group>"; };
 		8A8648EE0E082759D49DC3B2 /* libPods-AudiusReactNative-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudiusReactNative-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		8B498DEFE0774F838F5214A5 /* AvenirNextLTPro-Demi-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "AvenirNextLTPro-Demi-Bold.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Demi-Bold.otf"; sourceTree = "<group>"; };
 		8D6F4FDAE2D3D6B687E5388B /* Pods-AudiusReactNative.bounce.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.bounce.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.bounce.release.xcconfig"; sourceTree = "<group>"; };
 		9D4842FCB22727CC9A1C85EE /* Pods-AudiusReactNative-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative-tvOSTests/Pods-AudiusReactNative-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
 		9F035DB660458A6B6919AC4D /* Pods-AudiusReactNative.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.debug.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.debug.xcconfig"; sourceTree = "<group>"; };
@@ -67,6 +67,8 @@
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
 		F4166EE30A59971CE3EBA18B /* libPods-AudiusReactNative-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AudiusReactNative-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8FFE615B56774422849C5A08 /* AvenirNextLTPro-Light.otf */ = {isa = PBXFileReference; name = "AvenirNextLTPro-Light.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Light.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		BAEB40775EC64F48AC1983F7 /* AvenirNextLTPro-Thin.otf */ = {isa = PBXFileReference; name = "AvenirNextLTPro-Thin.otf"; path = "../src/assets/fonts/AvenirNextLTPro-Thin.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -185,11 +187,12 @@
 			isa = PBXGroup;
 			children = (
 				EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */,
-				8B498DEFE0774F838F5214A5 /* AvenirNextLTPro-Demi-Bold.otf */,
 				D40C2F0A0A4641D18D426558 /* AvenirNextLTPro-Heavy.otf */,
 				33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */,
 				6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */,
 				D83DC634C3DC44B588896E10 /* AvenirNextLTPro-UltLt.otf */,
+				8FFE615B56774422849C5A08 /* AvenirNextLTPro-Light.otf */,
+				BAEB40775EC64F48AC1983F7 /* AvenirNextLTPro-Thin.otf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -265,11 +268,12 @@
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 				32FE1B49FE7E47B69CF28E06 /* AvenirNextLTPro-Bold.otf in Resources */,
-				A30E10E3AF254D4881C3A2B8 /* AvenirNextLTPro-Demi-Bold.otf in Resources */,
 				C48560F6F96345AC8C69506F /* AvenirNextLTPro-Heavy.otf in Resources */,
 				5983D8FED74747CCA45F8FC4 /* AvenirNextLTPro-Medium.otf in Resources */,
 				9204DC5D38C1495FA330CF12 /* AvenirNextLTPro-Regular.otf in Resources */,
 				CFE33B15004249189EB75CDC /* AvenirNextLTPro-UltLt.otf in Resources */,
+				F50849B3CA2D48F3852465FA /* AvenirNextLTPro-Light.otf in Resources */,
+				9A21B5C22EF94A738EBABFED /* AvenirNextLTPro-Thin.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

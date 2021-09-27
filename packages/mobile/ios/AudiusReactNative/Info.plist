@@ -75,11 +75,12 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>AvenirNextLTPro-Bold.otf</string>
-		<string>AvenirNextLTPro-Demi-Bold.otf</string>
 		<string>AvenirNextLTPro-Heavy.otf</string>
 		<string>AvenirNextLTPro-Medium.otf</string>
 		<string>AvenirNextLTPro-Regular.otf</string>
 		<string>AvenirNextLTPro-UltLt.otf</string>
+		<string>AvenirNextLTPro-Light.otf</string>
+		<string>AvenirNextLTPro-Thin.otf</string>
 	</array>
 </dict>
 </plist>
