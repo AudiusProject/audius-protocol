@@ -276,8 +276,8 @@ def process_batch_sol_reward_manager_txs(
                     user_id=user_id,
                     specifier=specifier,
                     amount=str(transfer_instr["amount"]),
-                    slot=transfer_instr["slot"],
-                    signature=transfer_instr["tx_sig"],
+                    slot=tx["slot"],
+                    signature=tx["tx_sig"],
                 )
             )
 
