@@ -56,7 +56,7 @@
     "react-native-music-control": "^1.4.0",
     "react-native-permissions": "^3.0.0",
     "react-native-push-notification": "^7.3.1",
-    "react-native-static-server": "^0.5.0",
+    "react-native-static-server": "git@github.com:futurepress/react-native-static-server.git#034c04e7a2999ae11a799fb68266c94389fc61bf",
     "react-native-svg": "^12.1.0",
     "react-native-svg-transformer": "^0.14.3",
     "react-native-version-number": "^0.3.6",
