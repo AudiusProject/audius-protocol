@@ -23,9 +23,21 @@ commands:
                   pattern: "^release.*$"
                   value: << pipeline.git.branch >>
           steps:
-            - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
-            - build-tools/merge-with-parent:
-                parent: master
+            - unless:
+                condition:
+                  or:
+                    - equal: [ mad-dog, << parameters.service >> ]
+                    - equal: [ docker-build-and-push, << parameters.service >> ]
+                steps:
+                  - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
+            - unless:
+                condition:
+                  matches:
+                    pattern: "^hotfix.*$"
+                    value: << pipeline.git.branch >>
+                steps:
+                  - build-tools/merge-with-parent:
+                      parent: master
 jobs:
   test-mad-dog-e2e:
     # https://circleci.com/docs/2.0/parallelism-faster-jobs/
@@ -44,16 +56,8 @@ jobs:
     steps:
       - add_ssh_keys
       - checkout
-      - unless:
-          condition:
-            or:
-              - equal: [ master, << pipeline.git.branch >> ]
-              - matches:
-                  pattern: "^release.*$"
-                  value: << pipeline.git.branch >>
-          steps:
-            - build-tools/merge-with-parent:
-                parent: master
+      - diff-and-merge-with-master:
+          service: mad-dog
       - run:
           name: clone tooling and mad dog
           command: |
@@ -637,16 +641,8 @@ jobs:
         type: string
     steps:
       - checkout
-      - unless:
-          condition:
-            or:
-              - equal: [ master, << pipeline.git.branch >> ]
-              - matches:
-                  pattern: "^release.*$"
-                  value: << pipeline.git.branch >>
-          steps:
-            - build-tools/merge-with-parent:
-                parent: master
+      - diff-and-merge-with-master:
+          service: docker-build-and-push
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
