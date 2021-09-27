@@ -88,9 +88,10 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
  * @param {Array} gatewaysToTry List of gateway endpoints to try
  * @param {String?} fileNameForImage file name if the multihash is image in dir.
  *                  eg original.jpg or 150x150.jpg
+ * @param {number?} trackId if the multihash is of a segment type, the trackId to which it belongs to
  * @return {Boolean} true if success, false if error
  */
-async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
+async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null, trackId = null) {
   const { ipfsLatest } = serviceRegistry
 
   // stores all the stages of this function along with associated information relevant to that step
@@ -102,7 +103,13 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     // will be modified to directory compatible route later if directory
     // TODO - don't concat url's by hand like this, use module like urljoin
     // ..replace(/\/$/, "") removes trailing slashes
-    let gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
+
+    let gatewayUrlsMapped = gatewaysToTry.map(endpoint => {
+      let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
+      if (trackId) baseUrl += `?trackId=${trackId}`
+
+      return baseUrl
+    })
 
     const parsedStoragePath = path.parse(expectedStoragePath).dir
 

@@ -7,8 +7,9 @@ from src.monitors.database import (
     get_database_size,
     get_database_index_count,
     get_database_index_info,
+    get_table_size_info,
     get_frequent_queries,
-    get_slow_queries
+    get_slow_queries,
 )
 from src.monitors.memory import get_total_memory, get_used_memory
 from src.monitors.filesystem import get_filesystem_size, get_filesystem_used
@@ -73,6 +74,12 @@ DATABASE_INDEX_INFO = {
     monitor_names.name: monitor_names.database_index_info,
     monitor_names.func: get_database_index_info,
     monitor_names.ttl: 60 * 60 * 6,  # six hours
+    monitor_names.type: "json",
+}
+
+TABLE_SIZE_INFO = {
+    monitor_names.name: monitor_names.table_size_info,
+    monitor_names.func: get_table_size_info,
     monitor_names.type: "json",
 }
 
@@ -152,6 +159,7 @@ MONITORS = {
     monitor_names.database_connection_info: DATABASE_CONNECTION_INFO,
     monitor_names.database_index_count: DATABASE_INDEX_COUNT,
     monitor_names.database_index_info: DATABASE_INDEX_INFO,
+    monitor_names.table_size_info: TABLE_SIZE_INFO,
     monitor_names.frequent_queries: FREQUENT_QUERIES,
     monitor_names.slow_queries: SLOW_QUERIES,
     monitor_names.total_memory: TOTAL_MEMORY,
@@ -180,7 +188,7 @@ def parse_value(monitor, value):
         value: string The value to parse
     """
     try:
-        if str(value) == 'None':
+        if str(value) == "None":
             return None
         # pylint: disable=R1705
         if monitor[monitor_names.type] == "bool":
