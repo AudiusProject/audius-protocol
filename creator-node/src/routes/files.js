@@ -115,11 +115,13 @@ const getCID = async (req, res) => {
   }
 
   // Do not act as a public gateway. Only serve IPFS files that are hosted by this creator node.
+  const BlacklistManager = req.app.get('blacklistManager')
   const CID = req.params.CID
+  const trackId = parseInt(req.query.trackId)
 
-  // Don't serve if blacklisted.
-  if (await req.app.get('blacklistManager').CIDIsInBlacklist(CID)) {
-    return sendResponse(req, res, errorResponseForbidden(`CID ${CID} has been blacklisted by this node.`))
+  const isServable = await BlacklistManager.isServable(CID, trackId)
+  if (!isServable) {
+    return sendResponse(req, res, errorResponseForbidden(`CID=${CID} has been blacklisted by this node`))
   }
 
   const cacheKey = getStoragePathQueryCacheKey(CID)
@@ -170,7 +172,7 @@ const getCID = async (req, res) => {
     // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
     try {
       const libs = req.app.get('audiusLibs')
-      await findCIDInNetwork(storagePath, CID, req.logger, libs)
+      await findCIDInNetwork(storagePath, CID, req.logger, libs, trackId)
       return await streamFromFileSystem(req, res, storagePath)
     } catch (e) {
       req.logger.error(`Error calling findCIDInNetwork for path ${storagePath}`, e)
@@ -619,11 +621,14 @@ module.exports = function (app) {
    * @param req.query.delegateWallet the wallet address that signed this request
    * @param req.query.timestamp the timestamp when the request was made
    * @param req.query.signature the hashed signature of the object {filePath, delegateWallet, timestamp}
+   * @param {string?} req.query.trackId the trackId of the requested file lookup
    */
   app.get('/file_lookup', async (req, res) => {
+    const BlacklistManager = req.app.get('blacklistManager')
     const { filePath, timestamp, signature } = req.query
-    let { delegateWallet } = req.query
+    let { delegateWallet, trackId } = req.query
     delegateWallet = delegateWallet.toLowerCase()
+    trackId = parseInt(trackId)
 
     // no filePath passed in
     if (!filePath) return sendResponse(req, res, errorResponseBadRequest(`Invalid request, no path provided`))
@@ -643,16 +648,19 @@ module.exports = function (app) {
     if (!matchObj) return sendResponse(req, res, errorResponseBadRequest(`Invalid filePathNormalized provided`))
 
     const { outer, inner } = matchObj
-    if (await req.app.get('blacklistManager').CIDIsInBlacklist(outer)) {
-      return sendResponse(req, res, errorResponseForbidden(`CID ${outer} has been blacklisted by this node.`))
+    let isServable = await BlacklistManager.isServable(outer, trackId)
+    if (!isServable) {
+      return sendResponse(req, res, errorResponseForbidden(`CID=${outer} has been blacklisted by this node.`))
     }
+
     res.setHeader('Content-Disposition', contentDisposition(outer))
 
     // inner will only be set for image dir CID
     // if there's an inner CID, check if CID is blacklisted and set content disposition header
     if (inner) {
-      if (await req.app.get('blacklistManager').CIDIsInBlacklist(inner)) {
-        return sendResponse(req, res, errorResponseForbidden(`CID ${inner} has been blacklisted by this node.`))
+      isServable = await BlacklistManager.isServable(inner, trackId)
+      if (!isServable) {
+        return sendResponse(req, res, errorResponseForbidden(`CID=${inner} has been blacklisted by this node.`))
       }
       res.setHeader('Content-Disposition', contentDisposition(inner))
     }
