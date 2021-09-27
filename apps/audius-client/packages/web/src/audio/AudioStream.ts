@@ -4,6 +4,7 @@ import Hls from 'hls.js'
 import { TrackSegment } from 'models/Track'
 import { fetchCID } from 'services/AudiusBackend'
 import { generateM3U8, generateM3U8Variants } from 'utils/hlsUtil'
+import { decodeHashId } from 'utils/route/hashIds'
 
 declare global {
   interface Window {
@@ -42,6 +43,7 @@ export enum AudioError {
 // eslint-disable-next-line
 class fLoader extends Hls.DefaultConfig.loader {
   getFallbacks = () => []
+  getTrackId = () => ''
 
   constructor(config: Hls.LoaderConfig) {
     super(config)
@@ -50,12 +52,16 @@ class fLoader extends Hls.DefaultConfig.loader {
       // @ts-ignore: relurl is indeed on Fragment
       const segmentUrl = context.frag.relurl
       if (!segmentUrl.startsWith('blob')) {
-        fetchCID(segmentUrl, this.getFallbacks(), /* cache */ false).then(
-          resolved => {
-            const updatedContext = { ...context, url: resolved }
-            load(updatedContext, config, callbacks)
-          }
-        )
+        fetchCID(
+          segmentUrl,
+          this.getFallbacks(),
+          /* cache */ false,
+          /* asUrl */ true,
+          decodeHashId(this.getTrackId())
+        ).then(resolved => {
+          const updatedContext = { ...context, url: resolved }
+          load(updatedContext, config, callbacks)
+        })
       } else {
         load(context, config, callbacks)
       }
@@ -189,7 +195,7 @@ class AudioStream {
     onEnd: () => void,
     prefetchedSegments = [],
     gateways = [],
-    info = { title: '', artist: '' },
+    info = { id: '', title: '', artist: '' },
     forceStreamSrc: string | null = null
   ) => {
     if (forceStreamSrc) {
@@ -212,6 +218,7 @@ class AudioStream {
         // eslint-disable-next-line
         class creatorFLoader extends fLoader {
           getFallbacks = () => gateways
+          getTrackId = () => info.id
         }
         const hlsConfig = { ...HlsConfig, fLoader: creatorFLoader }
         this.hls = new Hls(hlsConfig)
