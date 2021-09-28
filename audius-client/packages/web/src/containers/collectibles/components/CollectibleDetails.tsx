@@ -370,8 +370,8 @@ const CollectibleDetails: React.FC<{
             </div>
 
             {collectible.dateCreated && (
-              <div>
-                <div>Date Created:</div>
+              <div className={styles.dateWrapper}>
+                <div className={styles.dateTitle}>Date Created:</div>
                 <div className={styles.date}>
                   {formatDateWithTimezoneOffset(collectible.dateCreated)}
                 </div>
@@ -379,8 +379,8 @@ const CollectibleDetails: React.FC<{
             )}
 
             {collectible.dateLastTransferred && (
-              <div>
-                <div>Last Transferred:</div>
+              <div className={styles.dateWrapper}>
+                <div className={styles.dateTitle}>Last Transferred:</div>
                 <div className={styles.date}>
                   {formatDateWithTimezoneOffset(
                     collectible.dateLastTransferred
@@ -508,7 +508,7 @@ const CollectibleDetails: React.FC<{
 
             {collectible.dateCreated && (
               <div className={styles.dateWrapper}>
-                <div>Date Created:</div>
+                <div className={styles.dateTitle}>Date Created:</div>
                 <div className={styles.date}>
                   {formatDateWithTimezoneOffset(collectible.dateCreated)}
                 </div>
@@ -517,7 +517,7 @@ const CollectibleDetails: React.FC<{
 
             {collectible.dateLastTransferred && (
               <div className={styles.dateWrapper}>
-                <div>Last Transferred:</div>
+                <div className={styles.dateTitle}>Last Transferred:</div>
                 <div className={styles.date}>
                   {formatDateWithTimezoneOffset(
                     collectible.dateLastTransferred

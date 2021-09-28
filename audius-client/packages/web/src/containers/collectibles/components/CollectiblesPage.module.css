@@ -127,14 +127,14 @@
 }
 
 .created {
-  padding: 4px 6px;
+  padding: var(--unit-1) var(--unit-2);
   border-radius: 50px;
   border: 1px solid var(--white);
   background: var(--primary);
 }
 
 .owned {
-  padding: 4px 6px;
+  padding: var(--unit-1) var(--unit-2);
   border-radius: 50px;
   border: 1px solid var(--white);
   background: var(--secondary);
@@ -166,7 +166,7 @@
 
 .detailsTitle {
   margin-bottom: 20px;
-  font-size: var(--font-2xl);
+  font-size: 28px;
   line-height: 32px;
 }
 
@@ -174,7 +174,8 @@
   display: flex;
   align-items: center;
   margin-bottom: 20px;
-  font-size: var(--font-2xs);
+  font-size: var(--font-xs);
+  line-height: 15px;
   color: var(--white);
 }
 
@@ -189,9 +190,10 @@
 }
 
 .detailsDescription {
-  margin-bottom: 16px;
+  margin: var(--unit-6) 0;
+  color: var(--neutral-light-2);
   font-weight: var(--font-medium);
-  line-height: 125%;
+  line-height: 18px;
   overflow-wrap: break-word;
 }
 
@@ -199,8 +201,9 @@
   display: flex;
   align-items: center;
   color: var(--secondary);
+  font-weight: var(--font-demi-bold);
   text-decoration: underline !important;
-  margin-bottom: 16px;
+  margin-bottom: var(--unit-6);
 }
 
 .link:hover {
@@ -234,12 +237,13 @@
 
 .modalHeader {
   margin: 0 var(--unit-6);
+  padding: var(--unit-6);
   border-bottom: 1px solid var(--neutral-light-8);
 }
 
 .modalTitle {
   color: var(--neutral);
-  font-size: var(--font-l);
+  font-size: 22px;
 }
 
 .modalBody {
@@ -279,6 +283,20 @@
   overflow: hidden;
 }
 
+.dateWrapper {
+  display: flex;
+  margin: 8px 0;
+}
+
+.dateTitle {
+  color: var(--neutral-light-4);
+}
+
+.date {
+  margin: 0 8px;
+  color: var(--neutral-light-2);
+}
+
 .profPicUploadButton {
   padding: 0 var(--unit-4);
 }
@@ -301,7 +319,7 @@
 }
 .confirmModalTitle {
   color: var(--neutral-light-4);
-  font-size: var(--font-xl);
+  font-size: 22px;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -624,15 +642,6 @@
 
 .mobile .detailsStamp {
   margin-top: 28px;
-}
-
-.mobile .dateWrapper {
-  display: flex;
-  margin: 8px 0;
-}
-
-.mobile .date {
-  margin: 0 8px;
 }
 
 .mobile .detailsContainer {
