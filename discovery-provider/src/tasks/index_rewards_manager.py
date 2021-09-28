@@ -251,7 +251,7 @@ def process_batch_sol_reward_manager_txs(
             # No instruction found
             if "transfer_instruction" not in tx:
                 logger.warning(f"index_rewards_manager.py | No transfer instruction found in {tx}")
-                continue 
+                continue
             transfer_instr = tx["transfer_instruction"]
             specifier = transfer_instr["specifier"]
             eth_recipient = transfer_instr["eth_recipient"]
