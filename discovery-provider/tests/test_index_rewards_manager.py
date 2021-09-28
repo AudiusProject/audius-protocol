@@ -4,7 +4,7 @@ from src.tasks.index_rewards_manager import (
     parse_transfer_instruction_data,
     parse_transfer_instruction_id,
     fetch_and_parse_sol_rewards_transfer_instruction,
-    process_batch_sol_rewards_transfer_instructions,
+    process_batch_sol_reward_manager_txs,
 )
 from src.utils.db_session import get_db
 from src.utils.config import shared_config
@@ -254,13 +254,13 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
     }
 
     with db.scoped_session() as session:
-        process_batch_sol_rewards_transfer_instructions(session, [parsed_tx], redis)
+        process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
         disbursments = session.query(ChallengeDisbursement).all()
         assert len(disbursments) == 0
 
     populate_mock_db(db, test_entries)
     with db.scoped_session() as session:
-        process_batch_sol_rewards_transfer_instructions(session, [parsed_tx], redis)
+        process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
         disbursments = session.query(ChallengeDisbursement).all()
         assert len(disbursments) == 1
         disbursment = disbursments[0]
