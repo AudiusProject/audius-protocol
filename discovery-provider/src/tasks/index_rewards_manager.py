@@ -157,7 +157,7 @@ class RewardManagerTransactionInfo(TypedDict):
 def fetch_and_parse_sol_rewards_transfer_instruction(
     solana_client_manager: SolanaClientManager,
     tx_sig: str
-) -> Optional[RewardManagerTransactionInfo]:
+) -> RewardManagerTransactionInfo:
     """Fetches metadata for rewards transfer transactions and parses data
 
     Fetches the transaction metadata from solana using the tx signature

@@ -1,5 +1,5 @@
 from unittest.mock import create_autospec
-from src.models import ChallengeDisbursement
+from src.models import ChallengeDisbursement, RewardManagerTransaction
 from src.tasks.index_rewards_manager import (
     parse_transfer_instruction_data,
     parse_transfer_instruction_id,
@@ -227,13 +227,15 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
     solana_client_manager_mock = create_autospec(SolanaClientManager)
     solana_client_manager_mock.get_sol_tx_info.return_value = mock_tx_info
 
+    first_tx_sig = "tx_sig_one"
+    second_tx_sig = "tx_sig_two"
     parsed_tx = fetch_and_parse_sol_rewards_transfer_instruction(
-        solana_client_manager_mock, "tx_sig_one"
+        solana_client_manager_mock, first_tx_sig
     )
     assert parsed_tx["transfer_instruction"]["amount"] == 10000000000
     assert parsed_tx["transfer_instruction"]["eth_recipient"] == "0x0403be3560116a12b467855cb29a393174a59876"
     assert parsed_tx["transfer_instruction"]["challenge_id"] == "profile-completion"
-    assert parsed_tx["tx_sig"] == "tx_sig_one"
+    assert parsed_tx["tx_sig"] == first_tx_sig
     assert parsed_tx["slot"] == 72131741
 
     test_entries = {
@@ -256,9 +258,13 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
         process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
         disbursments = session.query(ChallengeDisbursement).all()
         assert len(disbursments) == 0
+        reward_manager_tx_1 = session.query(RewardManagerTransaction).filter(
+            RewardManagerTransaction.signature == first_tx_sig
+        ).all()
+        assert len(reward_manager_tx_1) == 1
 
     # Update tx sig as the prior should already be present in database
-    parsed_tx["tx_sig"] = "tx_sig_two"
+    parsed_tx["tx_sig"] = second_tx_sig
 
     populate_mock_db(db, test_entries)
     with db.scoped_session() as session:
@@ -271,3 +277,7 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
         assert disbursment.signature == "tx_sig_two"
         assert disbursment.slot == 72131741
         assert disbursment.specifier == "123456789"
+        reward_manager_tx_2 = session.query(RewardManagerTransaction).filter(
+            RewardManagerTransaction.signature == second_tx_sig
+        ).all()
+        assert len(reward_manager_tx_2) == 1
