@@ -230,9 +230,9 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
     parsed_tx = fetch_and_parse_sol_rewards_transfer_instruction(
         solana_client_manager_mock, "tx_sig_one"
     )
-    assert parsed_tx["amount"] == 10000000000
-    assert parsed_tx["eth_recipient"] == "0x0403be3560116a12b467855cb29a393174a59876"
-    assert parsed_tx["challenge_id"] == "profile-completion"
+    assert parsed_tx["transfer_instruction"]["amount"] == 10000000000
+    assert parsed_tx["transfer_instruction"]["eth_recipient"] == "0x0403be3560116a12b467855cb29a393174a59876"
+    assert parsed_tx["transfer_instruction"]["challenge_id"] == "profile-completion"
     assert parsed_tx["tx_sig"] == "tx_sig_one"
     assert parsed_tx["slot"] == 72131741
 
@@ -252,11 +252,13 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
             }
         ],
     }
-
     with db.scoped_session() as session:
         process_batch_sol_reward_manager_txs(session, [parsed_tx], redis)
         disbursments = session.query(ChallengeDisbursement).all()
         assert len(disbursments) == 0
+
+    # Update tx sig as the prior should already be present in database
+    parsed_tx["tx_sig"] = "tx_sig_two"
 
     populate_mock_db(db, test_entries)
     with db.scoped_session() as session:
@@ -266,6 +268,6 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
         disbursment = disbursments[0]
         assert disbursment.challenge_id == "profile-completion"
         assert disbursment.user_id == 1
-        assert disbursment.signature == "tx_sig_one"
+        assert disbursment.signature == "tx_sig_two"
         assert disbursment.slot == 72131741
         assert disbursment.specifier == "123456789"
