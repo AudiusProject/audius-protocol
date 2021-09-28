@@ -90,6 +90,73 @@ describe('test AudiusUsers with mocked IPFS', function () {
       .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
       .expect(200)
   })
+
+  it('successfully completes Audius user creation when retrying an existing block number', async function () {
+    const metadata = { test: 'field1' }
+
+    ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
+    ipfsMock.pin.add.once().withArgs('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    libsMock.User.getUsers.exactly(2)
+
+    const resp = await request(app)
+      .post('/audius_users/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({ metadata })
+      .expect(200)
+
+    if (resp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
+      throw new Error('invalid return data')
+    }
+
+    await request(app)
+      .post('/audius_users')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .expect(200)
+
+    const res = await request(app)
+      .post('/audius_users')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .expect(200)
+
+    assert.deepStrictEqual(res.body.data.message, 'blockNumber 10 already exists for user')
+  })
+
+  it('fails Audius user creation when too low of a block number is supplied', async function () {
+    const metadata = { test: 'field1' }
+
+    ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
+    ipfsMock.pin.add.once().withArgs('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    libsMock.User.getUsers.exactly(2)
+
+    const resp = await request(app)
+      .post('/audius_users/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({ metadata })
+      .expect(200)
+
+    if (resp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
+      throw new Error('invalid return data')
+    }
+
+    // Fast forward to block number 100
+    const cnodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID: session.cnodeUserUUID } })
+    await cnodeUser.update({ latestBlockNumber: 100 })
+
+    await request(app)
+      .post('/audius_users')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .expect(400, {
+        error: 'Invalid blockNumber param 10. Must be greater or equal to previously processed blocknumber 100.'
+      })
+  })
 })
 
 // Below block uses actual ipfsClient (unlike first describe block), hence
@@ -191,10 +258,6 @@ describe('Test AudiusUsers with real IPFS', function () {
     // check that the ipfs content matches what we expect
     const metadataBuffer = Buffer.from(JSON.stringify(metadata))
     assert.deepStrictEqual(metadataBuffer.compare(ipfsResp), 0)
-  })
-
-  it.skip('TODO - successfully completes Audius user creation (POST /audius_users/metadata -> POST /audius_users)', async function () {
-
   })
 
   it.skip('TODO - multiple uploads', async function () {
