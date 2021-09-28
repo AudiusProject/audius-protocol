@@ -193,7 +193,7 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
             return tx_metadata
 
         challenge_id, specifier = transfer_instruction
-        tx_metadata.transfer_instruction = {
+        tx_metadata["transfer_instruction"] = {
             "amount": amount,
             "eth_recipient": eth_recipient,
             "challenge_id": challenge_id,
