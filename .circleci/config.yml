@@ -8,7 +8,22 @@ orbs:
   helm: circleci/helm@0.1.2
   kubernetes: circleci/kubernetes@0.3.0
   coveralls: coveralls/coveralls@1.0.6
-  build-tools: circleci/build-tools@2.9.1
+commands:
+  diff-if-necessary:
+    parameters:
+      service:
+        type: string
+    steps:
+      - unless:
+          condition:
+            or:
+              - equal: [ master, << pipeline.git.branch >> ]
+              - matches:
+                  pattern: "^release.*$"
+                  value: << pipeline.git.branch >>
+          steps:
+            - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
+
 jobs:
   test-mad-dog-e2e:
     # https://circleci.com/docs/2.0/parallelism-faster-jobs/
@@ -22,11 +37,6 @@ jobs:
     steps:
       - add_ssh_keys
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
       - run:
           name: clone tooling and mad dog
           command: |
@@ -225,12 +235,8 @@ jobs:
       # - image: circleci/mongo:3.4.4
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh libs || (echo "no diff" && circleci-agent step halt)
+      - diff-if-necessary:
+          service: libs
       - setup_remote_docker
 
       # Download and cache dependencies
@@ -291,12 +297,8 @@ jobs:
         command: ['--port=8555', '-a', '100', '-l', '8000000']
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh contracts || (echo "no diff" && circleci-agent step halt)
+      - diff-if-necessary:
+          service: contracts
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -330,12 +332,8 @@ jobs:
         command: ['--port=8546', '-a', '50', '-l', '8000000']
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh eth-contracts || (echo "no diff" && circleci-agent step halt)
+      - diff-if-necessary:
+          service: eth-contracts
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -379,12 +377,8 @@ jobs:
       - image: redis:5.0.4
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh creator-node || (echo "no diff" && circleci-agent step halt)
+      - diff-if-necessary:
+          service: creator-node
       # Download and cache dependencies
       # - restore_cache:
       #     keys:
@@ -430,12 +424,8 @@ jobs:
         command: ['--port=8555', '-a', '100', '-l', '8000000']
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh discovery-provider || (echo "no diff" && circleci-agent step halt)
+      - diff-if-necessary:
+          service: discovery-provider
       - restore_cache:
           keys:
             - disc-prov-1-{{ checksum "discovery-provider/requirements.txt" }}
@@ -498,12 +488,8 @@ jobs:
       - image: redis:5.0.4
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh identity-service || (echo "no diff" && circleci-agent step halt)
+      - diff-if-necessary:
+          service: identity-service
       - setup_remote_docker
       # restores data-contracts
       - restore_cache:
@@ -546,12 +532,8 @@ jobs:
       - image: cimg/rust:1.53.0
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
-            - run: ./diff.sh solana-programs || (echo "no diff" && circleci-agent step halt)
+      - diff-if-necessary:
+          service: solana-programs
 
       - run:
           name: Setup solana
@@ -631,11 +613,6 @@ jobs:
         type: string
     steps:
       - checkout
-      - unless:
-          condition:
-            equal: [ master, << pipeline.git.branch >> ]
-          steps:
-            - build-tools/merge-with-parent
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
