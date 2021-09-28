@@ -217,7 +217,8 @@ def process_batch_sol_reward_manager_txs(
     try:
         logger.error(f"index_reward_manager | {reward_manager_txs}")
         eth_recipients = [
-            tx["transfer_instruction"]["eth_recipient"] for tx in reward_manager_txs if tx["transfer_instruction"] is not None
+            tx["transfer_instruction"]["eth_recipient"]
+            for tx in reward_manager_txs if tx["transfer_instruction"] is not None
         ]
         users = (
             session.query(User.wallet, User.user_id)
@@ -227,7 +228,8 @@ def process_batch_sol_reward_manager_txs(
         users_map = {user[0]: user[1] for user in users}
 
         specifiers = [
-            tx["transfer_instruction"]["specifier"] for tx in reward_manager_txs if tx["transfer_instruction"] is not None
+            tx["transfer_instruction"]["specifier"]
+            for tx in reward_manager_txs if tx["transfer_instruction"] is not None
         ]
 
         user_challenges = (
