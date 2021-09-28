@@ -8,13 +8,14 @@ const {
   updateBlockchainIds,
   // calculateTrackListenMilestones,
   calculateTrackListenMilestonesFromDiscovery,
-  getHighestBlockNumber
+  getHighestBlockNumber,
+  getHighestSlot
 } = require('./utils')
 const { processEmailNotifications } = require('./sendNotificationEmails')
 const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
 const { pushAnnouncementNotifications } = require('./pushAnnouncementNotifications')
-const { notificationJobType, announcementJobType } = require('./constants')
-const { drainPublishedMessages } = require('./notificationQueue')
+const { notificationJobType, solanaNotificationJobType, announcementJobType, unreadEmailJobType } = require('./constants')
+const { drainPublishedMessages, drainPublishedSolanaMessages } = require('./notificationQueue')
 const emailCachePath = './emailCache'
 const processNotifications = require('./processNotifications/index.js')
 const { indexTrendingTracks } = require('./trendingTrackProcessing')
@@ -22,10 +23,12 @@ const sendNotifications = require('./sendNotifications/index.js')
 const audiusLibsWrapper = require('../audiusLibsInstance')
 
 const NOTIFICATION_INTERVAL_SEC = 3 * 1000
+const NOTIFICATION_SOLANA_INTERVAL_SEC = 3 * 1000
 const NOTIFICATION_EMAILS_INTERVAL_SEC = 10 * 60 * 1000
 const NOTIFICATION_ANNOUNCEMENTS_INTERVAL_SEC = 30 * 1000
 
 const NOTIFICATION_JOB_LAST_SUCCESS_KEY = 'notifications:last-success'
+const NOTIFICATION_SOLANA_JOB_LAST_SUCCESS_KEY = 'notifications:solana:last-success'
 const NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY = 'notifications:emails:last-success'
 const NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY = 'notifications:announcements:last-success'
 
@@ -41,6 +44,15 @@ class NotificationProcessor {
   }) {
     this.notifQueue = new Bull(
       `notification-queue-${Date.now()}`,
+      {
+        redis: {
+          port: config.get('redisPort'),
+          host: config.get('redisHost')
+        },
+        defaultJobOptions
+      })
+    this.solanaNotifQueue = new Bull(
+      `solana-notification-queue-${Date.now()}`,
       {
         redis: {
           port: config.get('redisPort'),
@@ -147,6 +159,57 @@ class NotificationProcessor {
       done(error)
     })
 
+    // Solana notification processing job
+    // Indexes solana notifications
+    this.solanaNotifQueue.process(async (job, done) => {
+      let error = null
+
+      let minSlot = job.data.minSlot
+      if (!minSlot && minSlot !== 0) throw new Error('no min slot')
+
+      try {
+        const oldMaxSlot = await this.redis.get('maxSlot')
+        let maxSlot = null
+
+        // Index notifications
+        if (minSlot < oldMaxSlot) {
+          logger.debug('notification queue processing error - tried to process a minSlot < oldMaxSlot', minSlot, oldMaxSlot)
+          maxSlot = oldMaxSlot
+        } else {
+          maxSlot = await this.indexAllSolanaNotifications(audiusLibs, minSlot, oldMaxSlot)
+        }
+
+        // Update cached max slot number
+        await this.redis.set('maxSlot', maxSlot)
+
+        // Record success
+        await this.redis.set(NOTIFICATION_SOLANA_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
+
+        // Restart job with updated starting slot
+        await this.notifQueue.add({
+          type: solanaNotificationJobType,
+          minSlot: maxSlot
+        }, {
+          jobId: `${solanaNotificationJobType}:${Date.now()}`
+        })
+      } catch (e) {
+        error = e
+        logger.error(`Restarting due to error indexing notifications : ${e}`)
+        this.errorHandler(e)
+        // Restart job with same starting slot
+        await this.notifQueue.add({
+          type: solanaNotificationJobType,
+          minSlot: minSlot
+        }, {
+          jobId: `${solanaNotificationJobType}:${Date.now()}`
+        })
+      }
+      // Delay 3s
+      await new Promise(resolve => setTimeout(resolve, NOTIFICATION_SOLANA_INTERVAL_SEC))
+
+      done(error)
+    })
+
     // Email notification queue
     this.emailQueue.process(async (job, done) => {
       logger.info('processEmailNotifications')
@@ -162,7 +225,7 @@ class NotificationProcessor {
       }
       // Wait 10 minutes before re-running the job
       await new Promise(resolve => setTimeout(resolve, NOTIFICATION_EMAILS_INTERVAL_SEC))
-      await this.emailQueue.add({ type: 'unreadEmailJob' }, { jobId: `unreadEmailJob:${Date.now()}` })
+      await this.emailQueue.add({ type: unreadEmailJobType }, { jobId: `${unreadEmailJobType}:${Date.now()}` })
       done(error)
     })
 
@@ -190,7 +253,7 @@ class NotificationProcessor {
     }
 
     let startBlock = await getHighestBlockNumber()
-    logger.info(`Starting with ${startBlock}`)
+    logger.info(`Starting with block ${startBlock}`)
     await this.notifQueue.add({
       minBlock: startBlock,
       type: notificationJobType
@@ -198,7 +261,16 @@ class NotificationProcessor {
       jobId: `${notificationJobType}:${Date.now()}`
     })
 
-    await this.emailQueue.add({ type: 'unreadEmailJob' }, { jobId: Date.now() })
+    let startSlot = await getHighestSlot()
+    logger.info(`Starting with slot ${startSlot}`)
+    await this.solanaNotifQueue.add({
+      minSlot: startSlot,
+      type: solanaNotificationJobType
+    }, {
+      jobId: `${solanaNotificationJobType}:${Date.now()}`
+    })
+
+    await this.emailQueue.add({ type: unreadEmailJobType }, { jobId: `${unreadEmailJobType}:${Date.now()}` })
     await this.announcementQueue.add({ type: announcementJobType }, { jobId: `${announcementJobType}:${Date.now()}` })
   }
 
@@ -233,7 +305,7 @@ class NotificationProcessor {
     // This is required since there is no guarantee that there are indeed notifications for this user
     // The owner info is then used to target listenCount milestone notifications
     // Timeout of 2 minutes
-    const timeout = 2 /* min */ * 60 /* sec */ * 10000 /* ms */
+    const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
     const { info: metadata, notifications, owners, milestones } = await discoveryProvider.getNotifications(minBlock, trackIdOwnersToRequestList, timeout)
     logger.info(`notifications main indexAll job - query notifications from discovery node complete`)
 
@@ -280,6 +352,57 @@ class NotificationProcessor {
       await tx.rollback()
     }
     return metadata.max_block_number
+  }
+
+  /**
+   * Doing the solana notification things
+   * @param {AudiusLibs} audiusLibs
+   * @param {number} minSlot min slot number to start querying discprov for new notifications
+   * @param {number} oldMaxSlot last max slot number seen
+   */
+  async indexAllSolanaNotifications (audiusLibs, minSlot, oldMaxSlot) {
+    const startDate = Date.now()
+    const startTime = process.hrtime()
+    const logLabel = 'notifications main indexAllSolanaNotifications job'
+
+    logger.info(`${logLabel} - minSlot: ${minSlot}, oldMaxSlot: ${oldMaxSlot}, startDate: ${startDate}, startTime: ${startTime}`)
+
+    // const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+    const { discoveryProvider } = audiusLibs
+
+    // Timeout of 2 minutes
+    const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
+    const { info: metadata, notifications } = await discoveryProvider.getSolanaNotifications(minSlot, timeout)
+    logger.info(`${logLabel} - query solana notifications from discovery node complete`)
+
+    // Use a single transaction
+    const tx = await models.sequelize.transaction()
+    try {
+      // Insert the solana notifications into the DB
+      await processNotifications(notifications, tx)
+      logger.info(`${logLabel} - processNotifications complete`)
+
+      // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
+      await sendNotifications(audiusLibs, notifications, tx)
+      logger.info(`${logLabel} - sendNotifications complete`)
+
+      // Commit
+      await tx.commit()
+
+      // actually send out push notifications
+      await drainPublishedSolanaMessages()
+      logger.info(`${logLabel} - drainPublishedMessages complete`)
+
+      const endTime = process.hrtime(startTime)
+      const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
+      logger.info(`${logLabel} finished - minSlot: ${minSlot}, startDate: ${startDate}, duration: ${duration}, notifications: ${notifications.length}`)
+    } catch (e) {
+      logger.error(`Error indexing notification ${e}`)
+      logger.error(e.stack)
+      await tx.rollback()
+    }
+
+    return metadata.max_slot_number
   }
 }
 

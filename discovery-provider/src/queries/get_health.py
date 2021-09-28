@@ -74,6 +74,18 @@ def _get_db_conn_state():
     return conn_state, False
 
 
+# Returns query insights
+def _get_query_insights():
+    query_insights = monitors.get_monitors(
+        [
+            MONITORS[monitor_names.frequent_queries],
+            MONITORS[monitor_names.slow_queries],
+        ]
+    )
+
+    return query_insights, False
+
+
 # Returns the most current block in ipld blocks table and its associated block hash
 def _get_db_ipld_block_state():
     ipld_block_number = 0
@@ -289,13 +301,29 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     if verbose:
         # DB connections check
-        db_connections_json, error = _get_db_conn_state()
+        db_connections_json, db_connections_error = _get_db_conn_state()
         health_results["db_connections"] = db_connections_json
         health_results["latitude"] = shared_config["serviceLocation"]["serviceLatitude"]
-        health_results["longitude"] = shared_config["serviceLocation"]["serviceLongitude"]
+        health_results["longitude"] = shared_config["serviceLocation"][
+            "serviceLongitude"
+        ]
 
-        if error:
-            return health_results, error
+        if db_connections_error:
+            return health_results, db_connections_error
+
+        query_insights_json, query_insights_error = _get_query_insights()
+        health_results["query_insights"] = query_insights_json
+
+        if query_insights_error:
+            return health_results, query_insights_error
+
+        table_size_info_json = monitors.get_monitors(
+            [
+                MONITORS[monitor_names.table_size_info],
+            ]
+        )
+
+        health_results["tables"] = table_size_info_json
 
     unhealthy_blocks = bool(
         enforce_block_diff and block_difference > healthy_block_diff

@@ -163,7 +163,7 @@ async function processTrendingTracks (audiusLibs, blocknumber, trendingTracks, t
         logger.debug('processTrendingTrack - About to generate message for trending track milestone push notification', msgGenNotif, metadata)
         const msg = pushNotificationMessagesMap[notificationTypes.TrendingTrack](msgGenNotif)
         logger.debug(`processTrendingTrack - message: ${msg}`)
-        const title = notificationResponseTitleMap[notificationTypes.TrendingTrack]
+        const title = notificationResponseTitleMap[notificationTypes.TrendingTrack]()
         let types = []
         if (notifyMobile) types.push(deviceType.Mobile)
         if (notifyBrowserPush) types.push(deviceType.Browser)

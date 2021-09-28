@@ -44,7 +44,7 @@ def test_get_attestation(app):
             )
 
             attestation = Attestation(
-                amount=5,
+                amount="5",
                 oracle_address=oracle_address,
                 user_address="0x38C68fF3926bf4E68289672F75ee1543117dD9B3",
                 challenge_id="boolean_challenge_2",
