@@ -77,11 +77,17 @@ module.exports = function (app) {
       return errorResponseBadRequest('Must include blockchainUserId, blockNumber, and metadataFileUUID.')
     }
 
-    // Error on outdated blocknumber.
     const cnodeUser = req.session.cnodeUser
-    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber > blockNumber) {
-      return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
+    if (blockNumber === cnodeUser.latestBlockNumber) {
+      return successResponse(`blockNumber ${blockNumber} already exists for user`)
     }
+
+    if (blockNumber < cnodeUser.latestBlockNumber) {
+      return errorResponseBadRequest(
+        `Invalid blockNumber param ${blockNumber}. Must be greater or equal to previously processed blocknumber ${cnodeUser.latestBlockNumber}.`
+      )
+    }
+
     const cnodeUserUUID = req.session.cnodeUserUUID
 
     // Fetch metadataJSON for metadataFileUUID.
