@@ -53,7 +53,8 @@ import { reportSuccessAndFailureEvents } from './utils/sagaHelpers'
 const MAX_CONCURRENT_UPLOADS = 4
 const MAX_CONCURRENT_REGISTRATIONS = 4
 const MAX_CONCURRENT_TRACK_SIZE_BYTES = 40 /* MB */ * 1024 * 1024
-const UPLOAD_TIMEOUT_MILLIS = 60 /* min */ * 60 /* sec */ * 1000 /* ms */
+const UPLOAD_TIMEOUT_MILLIS =
+  2 /* hour */ * 60 /* min */ * 60 /* sec */ * 1000 /* ms */
 
 /**
  * Combines the metadata for a track and a collection (playlist or album),
