@@ -8,9 +8,8 @@ orbs:
   helm: circleci/helm@0.1.2
   kubernetes: circleci/kubernetes@0.3.0
   coveralls: coveralls/coveralls@1.0.6
-  build-tools: circleci/build-tools@2.9.1
 commands:
-  diff-and-merge-with-master:
+  diff-if-necessary:
     parameters:
       service:
         type: string
@@ -23,21 +22,8 @@ commands:
                   pattern: "^release.*$"
                   value: << pipeline.git.branch >>
           steps:
-            - unless:
-                condition:
-                  or:
-                    - equal: [ mad-dog, << parameters.service >> ]
-                    - equal: [ docker-build-and-push, << parameters.service >> ]
-                steps:
-                  - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
-            - unless:
-                condition:
-                  matches:
-                    pattern: "^hotfix.*$"
-                    value: << pipeline.git.branch >>
-                steps:
-                  - build-tools/merge-with-parent:
-                      parent: master
+            - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
+
 jobs:
   test-mad-dog-e2e:
     # https://circleci.com/docs/2.0/parallelism-faster-jobs/
@@ -56,8 +42,6 @@ jobs:
     steps:
       - add_ssh_keys
       - checkout
-      - diff-and-merge-with-master:
-          service: mad-dog
       - run:
           name: clone tooling and mad dog
           command: |
@@ -256,7 +240,7 @@ jobs:
       # - image: circleci/mongo:3.4.4
     steps:
       - checkout
-      - diff-and-merge-with-master:
+      - diff-if-necessary:
           service: libs
       - setup_remote_docker
 
@@ -318,7 +302,7 @@ jobs:
         command: ['--port=8555', '-a', '100', '-l', '8000000']
     steps:
       - checkout
-      - diff-and-merge-with-master:
+      - diff-if-necessary:
           service: contracts
       # Download and cache dependencies
       - restore_cache:
@@ -359,7 +343,7 @@ jobs:
         command: ['--port=8546', '-a', '50', '-l', '8000000']
     steps:
       - checkout
-      - diff-and-merge-with-master:
+      - diff-if-necessary:
           service: eth-contracts
       # Download and cache dependencies
       - restore_cache:
@@ -405,7 +389,7 @@ jobs:
       - image: redis:5.0.4
     steps:
       - checkout
-      - diff-and-merge-with-master:
+      - diff-if-necessary:
           service: creator-node
       # Download and cache dependencies
       # - restore_cache:
@@ -452,7 +436,7 @@ jobs:
         command: ['--port=8555', '-a', '100', '-l', '8000000']
     steps:
       - checkout
-      - diff-and-merge-with-master:
+      - diff-if-necessary:
           service: discovery-provider
       - restore_cache:
           keys:
@@ -516,7 +500,7 @@ jobs:
       - image: redis:5.0.4
     steps:
       - checkout
-      - diff-and-merge-with-master:
+      - diff-if-necessary:
           service: identity-service
       - setup_remote_docker
       # restores data-contracts
@@ -560,7 +544,7 @@ jobs:
       - image: cimg/rust:1.53.0
     steps:
       - checkout
-      - diff-and-merge-with-master:
+      - diff-if-necessary:
           service: solana-programs
 
       - run:
@@ -641,8 +625,6 @@ jobs:
         type: string
     steps:
       - checkout
-      - diff-and-merge-with-master:
-          service: docker-build-and-push
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
