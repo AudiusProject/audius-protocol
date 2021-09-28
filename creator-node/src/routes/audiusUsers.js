@@ -79,7 +79,7 @@ module.exports = function (app) {
 
     // Error on outdated blocknumber.
     const cnodeUser = req.session.cnodeUser
-    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber >= blockNumber) {
+    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber > blockNumber) {
       return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
     }
     const cnodeUserUUID = req.session.cnodeUserUUID
