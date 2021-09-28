@@ -169,10 +169,11 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         result: TransactionInfoResult = tx_info["result"]
         # Create transaction metadata
-        tx_metadata = {
+        tx_metadata: RewardManagerTransactionInfo = {
             "tx_sig": tx_sig,
             "slot": result["slot"],
-            "timestamp": result["blockTime"]
+            "timestamp": result["blockTime"],
+            "transfer_instruction": None
         }
         meta = result["meta"]
         if meta["err"]:
@@ -216,7 +217,7 @@ def process_batch_sol_reward_manager_txs(
     try:
         logger.error(f"index_reward_manager | {reward_manager_txs}")
         eth_recipients = [
-            tx["transfer_instruction"]["eth_recipient"] for tx in reward_manager_txs if "transfer_instruction" in tx
+            tx["transfer_instruction"]["eth_recipient"] for tx in reward_manager_txs if tx["transfer_instruction"] is not None
         ]
         users = (
             session.query(User.wallet, User.user_id)
@@ -226,7 +227,7 @@ def process_batch_sol_reward_manager_txs(
         users_map = {user[0]: user[1] for user in users}
 
         specifiers = [
-            tx["transfer_instruction"]["specifier"] for tx in reward_manager_txs if "transfer_instruction" in tx
+            tx["transfer_instruction"]["specifier"] for tx in reward_manager_txs if tx["transfer_instruction"] is not None
         ]
 
         user_challenges = (
@@ -249,10 +250,10 @@ def process_batch_sol_reward_manager_txs(
                 )
             )
             # No instruction found
-            if "transfer_instruction" not in tx:
+            if tx["transfer_instruction"] is None:
                 logger.warning(f"index_rewards_manager.py | No transfer instruction found in {tx}")
                 continue
-            transfer_instr = tx["transfer_instruction"]
+            transfer_instr: RewardTransferInstruction = tx["transfer_instruction"]
             specifier = transfer_instr["specifier"]
             eth_recipient = transfer_instr["eth_recipient"]
             if specifier not in user_challenge_specifiers:
@@ -421,7 +422,7 @@ def process_transaction_signatures(
         logger.info(f"index_rewards_manager.py | processing {tx_sig_batch}")
         batch_start_time = time.time()
 
-        transfer_instructions: List[RewardTransferInstruction] = []
+        transfer_instructions: List[RewardManagerTransactionInfo] = []
         # Process each batch in parallel
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             parse_sol_tx_futures = {
