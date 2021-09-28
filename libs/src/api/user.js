@@ -672,7 +672,7 @@ class Users extends Base {
       // TODO - what if one or more of these fails?
       // sort transactions by blocknumber and return most recent transaction
       ops = await Promise.all(addOps)
-      const sortedOpsDesc = ops.sort((op1, op2) => op1.txReceipt.blockNumber > op2.txReceipt.blockNumber)
+      const sortedOpsDesc = ops.sort((op1, op2) => op2.txReceipt.blockNumber - op1.txReceipt.blockNumber)
       const latestTx = sortedOpsDesc[0].txReceipt
       latestBlockNumber = latestTx.blockNumber
       latestBlockHash = latestTx.blockHash
