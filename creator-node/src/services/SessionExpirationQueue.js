@@ -57,12 +57,12 @@ class SessionExpirationQueue {
           const numExpiredSessions = await SessionToken.count(SESSION_EXPIRED_CONDITION)
           this.logStatus(`${numExpiredSessions} expired sessions ready for deletion.`)
 
-          let numRemainingSessionsToExpire = numExpiredSessions
-          while (numRemainingSessionsToExpire > 0) {
+          let sessionsToDelete = numExpiredSessions
+          while (sessionsToDelete > 0) {
             await this.expireSessions(SESSION_EXPIRED_CONDITION)
             progress += (this.batchSize / numExpiredSessions) * 100
             job.progress(progress)
-            numRemainingSessionsToExpire -= this.batchSize
+            sessionsToDelete -= this.batchSize
           }
           done(null, {})
         } catch (e) {

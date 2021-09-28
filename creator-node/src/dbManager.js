@@ -156,7 +156,7 @@ class DBManager {
       log(`deleteSessionTokensFromDB || beginning delete ops`)
 
       const numSessionTokensDeleted = await models.SessionToken.destroy({
-        id: ids,
+        where: { id: ids },
         transaction
       })
       log(`deleteSessionTokensFromDB || numSessionTokensDeleted ${numSessionTokensDeleted}`)

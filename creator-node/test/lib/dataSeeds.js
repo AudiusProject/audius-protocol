@@ -1,5 +1,6 @@
 const sessionManager = require('../../src/sessionManager')
-const { CNodeUser } = require('../../src/models')
+const { CNodeUser, SessionToken } = require('../../src/models')
+const uuid = require('uuid/v4')
 
 const testEthereumConstants = {
   pubKey: '0xadD36bad12002f1097Cdb7eE24085C28e960FC32',
@@ -35,4 +36,13 @@ async function createStarterCNodeUserWithKey (walletPublicKey, userId = null) {
   return resp
 }
 
-module.exports = { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConstants, getCNodeUser, destroyUsers }
+async function createSession () {
+  const dummyKey = uuid()
+  const user = await createStarterCNodeUserWithKey(dummyKey, null)
+  const tokenObject = await SessionToken.findOne({
+    where: { token: user.sessionToken }
+  })
+  return tokenObject
+}
+
+module.exports = { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConstants, getCNodeUser, destroyUsers, createSession }

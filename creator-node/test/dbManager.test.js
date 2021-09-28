@@ -7,11 +7,10 @@ const models = require('../src/models')
 const DBManager = require('../src/dbManager')
 const BlacklistManager = require('../src/blacklistManager')
 const utils = require('../src/utils')
-const { createStarterCNodeUser, getCNodeUser, destroyUsers } = require('./lib/dataSeeds')
+const { createStarterCNodeUser, getCNodeUser, destroyUsers, createSession } = require('./lib/dataSeeds')
 const { getApp } = require('./lib/app')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
-const { after } = require('lodash')
 
 describe('Test createNewDataRecord()', async function () {
   const req = {
@@ -486,55 +485,42 @@ describe('Test ClockRecord model', async function () {
   })
 })
 
-describe('Test deleteSessionTokensFromDB', async function () {
+describe.only('Test deleteSessionTokensFromDB when provided an Array of SessionTokens that all exist in the SessionToken table', async function () {
+  const initialClockVal = 0
+  let cnodeUserUUID, server, token1, token2
+
   /** Init server to run DB migrations */
   before(async function () {
     const appInfo = await getApp(getIPFSMock(), getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
 
+  /** Reset DB state + Create cnodeUser + confirm initial clock state + define global vars */
   beforeEach(async function () {
-    // wipe SessionToken table
+    // Wipe all CNodeUsers + dependent data
+    await destroyUsers()
+    const resp = await createStarterCNodeUser()
+    cnodeUserUUID = resp.cnodeUserUUID
+    // Confirm initial clock val in DB
+    const cnodeUser = await getCNodeUser(cnodeUserUUID)
+    assert.strictEqual(cnodeUser.clock, initialClockVal)
+    // Seed DB
+    token1 = await createSession()
+    token2 = await createSession()
+    await DBManager.deleteSessionTokensFromDB([token1, token2])
   })
 
+  /** Wipe all CNodeUsers + dependent data */
   after(async function () {
-    await // destroySessionTokens
+    await destroyUsers()
     await server.close()
   })
 
-  describe('When provided an Array of SessionTokens', async function () {
-    describe('And all SessionTokens exist in the table', async function () {
-      it('Successfully deletes the session tokens from the DB', async function () {
-
-      })
-      describe('And the ORM DB transaction fails at that layer', async function () {
-        it('Fails to delete the session tokens, throwing an error', async function () {
-
-        })
-        it('Rolls back the transaction', async function () {
-
-        })
-      })
-    })
-    describe('And one or more SessionTokens is missing from the table', async function () {
-      it('Fails to delete the session tokens, throwing an error', async function () {
-
-      })
-      it('Rolls back the transaction', async function () {
-
-      })
-    })
-  })
-
-  describe('When not provided an Array of SessionTokens', async function () {
-    it('Throws an error', async function () {
-
-    })
-
-    it('Does not delete session tokens from the DB', async function () {
-
-    })
+  it('Successfully deletes the session tokens from the DB', async function () {
+    const deletedToken1 = await models.SessionToken.findByPk(token1.id)
+    const deletedToken2 = await models.SessionToken.findByPk(token2.id)
+    assert(deletedToken1 === null)
+    assert(deletedToken2 === null)
   })
 })
-
 describe.skip('TODO - Test deleteAllCNodeUserData', async function () { })

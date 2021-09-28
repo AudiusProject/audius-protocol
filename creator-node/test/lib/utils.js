@@ -9,4 +9,10 @@ const wait = (milliseconds) => {
   return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 
-module.exports = { wait, stringifiedDateFields }
+const functionThatThrowsWithMessage = (errorMessage) => {
+  return function throwTestingError () {
+    throw new Error(errorMessage)
+  }
+}
+
+module.exports = { wait, stringifiedDateFields, functionThatThrowsWithMessage }
