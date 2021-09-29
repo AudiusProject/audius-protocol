@@ -1,10 +1,10 @@
 import logging  # pylint: disable=C0302
+from typing import List, TypedDict
 
-from sqlalchemy import func, and_, or_
+from sqlalchemy import and_, func, or_
 from sqlalchemy.sql.functions import coalesce
 from src.models import AggregatePlays, Track, TrackRoute, User
-from src.utils import helpers, redis_connection
-from src.utils.db_session import get_db_read_replica
+from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
     add_query_pagination,
     add_users_to_tracks,
@@ -12,8 +12,8 @@ from src.queries.query_helpers import (
     parse_sort_param,
     populate_track_metadata,
 )
-from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
-from typing import List, TypedDict
+from src.utils import helpers, redis_connection
+from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)
 
