@@ -722,7 +722,7 @@ class Users extends Base {
     if (updateOps.length > 0) {
       // sort transactions by blocknumber and return most recent transaction
       ops = await Promise.all(updateOps)
-      const sortedOpsDesc = ops.sort((op1, op2) => op1.txReceipt.blockNumber > op2.txReceipt.blockNumber)
+      const sortedOpsDesc = ops.sort((op1, op2) => op2.txReceipt.blockNumber - op1.txReceipt.blockNumber)
       const latestTx = sortedOpsDesc[0].txReceipt
       latestBlockNumber = latestTx.blockNumber
       latestBlockHash = latestTx.blockHash
@@ -806,3 +806,4 @@ class Users extends Base {
 }
 
 module.exports = Users
+module.exports.USER_PROP_NAME_CONSTANTS = USER_PROP_NAME_CONSTANTS
