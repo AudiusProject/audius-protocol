@@ -18,11 +18,10 @@ const SaveFileToIPFSConcurrencyLimit = 10
  * @param {Object} logContext the context of the request used to create a generic logger
  * @param {Object} requestProps more request specific context, NOT the req object from Express
  * @param {Object} ipfs ipfs instance
- * @param {Object} blacklistManager blacklistManager instance
  * @returns a success or error server response
  * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
  */
-const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs, blacklistManager) => {
+const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs) => {
   const logger = genericLogger.child(logContext)
 
   const routeTimeStart = Date.now()
@@ -100,24 +99,6 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs, black
     removeTrackFolder({ logContext }, requestProps.fileDir)
 
     throw new Error('Track upload failed - no track segments')
-  }
-
-  // Error if any segment CID is in blacklist.
-  try {
-    await Promise.all(trackSegments.map(async segmentObj => {
-      if (await blacklistManager.CIDIsInBlacklist(segmentObj.multihash)) {
-        throw new Error(`Segment CID ${segmentObj.multihash} been blacklisted by this node.`)
-      }
-    }))
-  } catch (e) {
-    // Prune upload artifacts
-    removeTrackFolder({ logContext }, requestProps.fileDir)
-
-    if (e.message.indexOf('blacklisted') >= 0) {
-      throw new Error(`Track upload failed - part or all of this track has been blacklisted by this node: ${e.toString()}`)
-    } else {
-      throw new Error(e.message)
-    }
   }
 
   // Record entries for transcode and segment files in DB

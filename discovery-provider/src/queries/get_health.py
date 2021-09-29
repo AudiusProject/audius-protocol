@@ -304,7 +304,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         db_connections_json, db_connections_error = _get_db_conn_state()
         health_results["db_connections"] = db_connections_json
         health_results["latitude"] = shared_config["serviceLocation"]["serviceLatitude"]
-        health_results["longitude"] = shared_config["serviceLocation"]["serviceLongitude"]
+        health_results["longitude"] = shared_config["serviceLocation"][
+            "serviceLongitude"
+        ]
 
         if db_connections_error:
             return health_results, db_connections_error
@@ -314,6 +316,14 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
         if query_insights_error:
             return health_results, query_insights_error
+
+        table_size_info_json = monitors.get_monitors(
+            [
+                MONITORS[monitor_names.table_size_info],
+            ]
+        )
+
+        health_results["tables"] = table_size_info_json
 
     unhealthy_blocks = bool(
         enforce_block_diff and block_difference > healthy_block_diff
