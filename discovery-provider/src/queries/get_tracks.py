@@ -1,7 +1,7 @@
 import logging  # pylint: disable=C0302
 
 from sqlalchemy import func, and_, or_
-from sqlalchemy.sql.functions import coalesce, user
+from sqlalchemy.sql.functions import coalesce
 from src.models import AggregatePlays, Track, TrackRoute, User
 from src.utils import helpers, redis_connection
 from src.utils.db_session import get_db_read_replica
