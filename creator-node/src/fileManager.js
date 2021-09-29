@@ -24,7 +24,7 @@ const SaveFileForMultihashToFSIPFSFallback = config.get('saveFileForMultihashToF
  *
  * If buffer is a metadata, wait on the ipfs add as Discovery Nodes rely on ipfs to fetch metadata.
  */
-async function saveFileFromBufferToIPFSAndDisk (req, buffer, isMetadata = false) {
+async function saveFileFromBufferToIPFSAndDisk (req, buffer, addToIPFSDaemon = false) {
   // make sure user has authenticated before saving file
   if (!req.session.cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
@@ -35,7 +35,7 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer, isMetadata = false)
   // Adding to IPFS may take a while if the system is under load. This below logic is to:
   // 1. Generate the content address hash
   // 2. A/synchronously add to ipfs depending on the env var `ENABLE_ASYNC_IPFS_ADD`
-  const multihash = await ipfsAddWrapper(ipfs, buffer, { pin: false }, '[saveFileFromBufferToIPFSAndDisk] ', isMetadata)
+  const multihash = await ipfsAddWrapper(ipfs, buffer, { pin: false }, req.logContext, addToIPFSDaemon)
 
   // Write file to disk by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
@@ -49,7 +49,8 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer, isMetadata = false)
  *
  * @dev - only call this function when file is already stored to disk, else use saveFileFromBufferToIPFSAndDisk()
  */
-async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipfs) {
+async function saveFileToIPFSFromFS (req, cnodeUserUUID, srcPath, ipfs) {
+  const { logContext } = req
   const logger = genericLogger.child(logContext)
 
   // make sure user has authenticated before saving file
@@ -58,7 +59,7 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
   }
 
   // Add to IPFS without pinning and retrieve multihash
-  const multihash = await ipfsAddToFsWrapper(ipfs, srcPath, { pin: false }, '[saveFileToIpfsFromFS] ')
+  const multihash = await ipfsAddToFsWrapper(ipfs, srcPath, { pin: false }, req.logContext)
 
   // store file copy by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)

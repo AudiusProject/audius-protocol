@@ -356,7 +356,7 @@ const _dirCIDIPFSVerificationWithRetries = async function (req, resizeResp, dirC
         onlyHash: true,
         timeout: 1000
       },
-      '[_dirCIDIPFSVerificationWithRetries] '
+      req.logContext
     )
 
     ipfsAddRespArr = []

@@ -144,7 +144,7 @@ module.exports = async (job) => {
     ipfs,
     toAdd,
     { pin: false },
-    '[resizeImage] '
+    logContext
   )
 
   // Write all the images to file storage and
