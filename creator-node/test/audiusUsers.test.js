@@ -91,7 +91,7 @@ describe('test AudiusUsers with mocked IPFS', function () {
       .expect(200)
   })
 
-  it('successfully completes Audius user creation when retrying an existing block number', async function () {
+  it('successfully completes Audius user creation when retrying an existing block number and metadata', async function () {
     const metadata = { test: 'field1' }
 
     ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata)))
@@ -116,14 +116,63 @@ describe('test AudiusUsers with mocked IPFS', function () {
       .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
       .expect(200)
 
-    const res = await request(app)
+    await request(app)
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
       .expect(200)
+  })
 
-    assert.deepStrictEqual(res.body.data.message, 'blockNumber 10 already exists for user')
+  it('successfully completes Audius user creation when retrying an existing block number and new metadata', async function () {
+    const metadata1 = { test: 'field1' }
+
+    ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata1)))
+    ipfsMock.pin.add.once().withArgs('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    libsMock.User.getUsers.exactly(2)
+
+    const resp1 = await request(app)
+      .post('/audius_users/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({ metadata: metadata1 })
+      .expect(200)
+
+    if (resp1.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
+      throw new Error('invalid return data')
+    }
+
+    const metadata2 = { test2: 'field2' }
+
+    ipfsMock.add.returns([{ hash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU7' }])
+    ipfsMock.add.twice().withArgs(Buffer.from(JSON.stringify(metadata2)))
+    ipfsMock.pin.add.once().withArgs('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU7')
+    libsMock.User.getUsers.exactly(2)
+
+    const resp2 = await request(app)
+      .post('/audius_users/metadata')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({ metadata: metadata2 })
+      .expect(200)
+
+    if (resp2.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU7') {
+      throw new Error('invalid return data')
+    }
+
+    await request(app)
+      .post('/audius_users')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp1.body.data.metadataFileUUID })
+      .expect(200)
+
+    await request(app)
+      .post('/audius_users')
+      .set('X-Session-ID', session.sessionToken)
+      .set('User-Id', session.userId)
+      .send({ blockchainUserId: 1, blockNumber: 10, metadataFileUUID: resp2.body.data.metadataFileUUID })
+      .expect(200)
   })
 
   it('fails Audius user creation when too low of a block number is supplied', async function () {

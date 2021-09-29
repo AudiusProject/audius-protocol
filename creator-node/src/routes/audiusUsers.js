@@ -78,12 +78,6 @@ module.exports = function (app) {
     }
 
     const cnodeUser = req.session.cnodeUser
-    if (blockNumber === cnodeUser.latestBlockNumber) {
-      return successResponse({
-        message: `blockNumber ${blockNumber} already exists for user`
-      })
-    }
-
     if (blockNumber < cnodeUser.latestBlockNumber) {
       return errorResponseBadRequest(
         `Invalid blockNumber param ${blockNumber}. Must be greater or equal to previously processed blocknumber ${cnodeUser.latestBlockNumber}.`
