@@ -38,8 +38,6 @@ async function logIpfsPeerIds () {
 async function ipfsAddWrapper (ipfs, buffers, ipfsConfig = {}, logContext = {}, addToIPFSDaemon = false) {
   const logger = genericLogger.child(logContext)
 
-  // Either an array of hashes, or a hash
-
   // If async ipfs add is enabled, or if `addToIPFSDaemon` flag passed in is false, asynchronously
   // add to ipfs. Else, synchronously add to ipfs and wait for the response.
   let ipfsDaemonHashes
