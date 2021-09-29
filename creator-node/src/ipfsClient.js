@@ -1,6 +1,5 @@
 const ipfsClient = require('ipfs-http-client')
 const ipfsClientLatest = require('ipfs-http-client-latest')
-// const Hash = require('ipfs-only-hash')
 const { importer } = require('ipfs-unixfs-importer')
 const fs = require('fs')
 
@@ -30,7 +29,7 @@ async function logIpfsPeerIds () {
 /**
  * Wrapper to ipfs.addToFs() -- This wrapper allows for ipfs calls to be made async or synchronous.
  * @param {Object} ipfs ipfs library -- can be two different versions (see ipfsClient.js)
- * @param {string|string[]} buffers
+ * @param {Buffer|Buffer[]} buffers
  * @param {Object?} ipfsConfig ipfs add config options
  * @param {string?} logContext the name of the caller fn
  * @param {boolean?} addToIPFSDaemon flag to override adding to ipfs daemon

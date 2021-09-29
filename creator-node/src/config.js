@@ -602,7 +602,7 @@ const config = convict({
     default: true
   },
   enableAsyncIPFSAdd: {
-    doc: 'Boolean indicating if `saveFileToIPFSFromFS()` should asynchronously add to ipfs and only calculate use the content addressing logic',
+    doc: 'Boolean indicating if `saveFileToIPFSFromFS()` should asynchronously add to ipfs and only use the content addressing logic',
     format: 'BooleanCustom',
     env: 'enableAsyncIPFSAdd',
     // TODO: probably want to change this to false if only hashing logic + async ipfs add is proven worthwhile

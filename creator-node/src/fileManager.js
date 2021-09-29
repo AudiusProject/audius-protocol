@@ -49,8 +49,7 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer, addToIPFSDaemon = f
  *
  * @dev - only call this function when file is already stored to disk, else use saveFileFromBufferToIPFSAndDisk()
  */
-async function saveFileToIPFSFromFS (req, cnodeUserUUID, srcPath, ipfs) {
-  const { logContext } = req
+async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipfs) {
   const logger = genericLogger.child(logContext)
 
   // make sure user has authenticated before saving file
@@ -59,7 +58,7 @@ async function saveFileToIPFSFromFS (req, cnodeUserUUID, srcPath, ipfs) {
   }
 
   // Add to IPFS without pinning and retrieve multihash
-  const multihash = await ipfsAddToFsWrapper(ipfs, srcPath, { pin: false }, req.logContext)
+  const multihash = await ipfsAddToFsWrapper(ipfs, srcPath, { pin: false }, logContext)
 
   // store file copy by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
