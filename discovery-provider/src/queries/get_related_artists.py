@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import List, Tuple, cast
 
 from sqlalchemy.orm import Session, aliased
-from sqlalchemy.sql.expression import case, column, desc, tablesample
+from sqlalchemy.sql.expression import column, desc, tablesample
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.selectable import FromClause
 from src.models import RelatedArtist
