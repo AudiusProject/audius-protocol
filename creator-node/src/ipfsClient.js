@@ -39,23 +39,32 @@ async function ipfsAddWrapper (ipfs, buffers, config = {}, caller = '', isMetada
   // Either an array of hashes, or a hash
   // Note: the if case is specifically written for the `ipfsLatest` add api. See ipfs add code in `resizeImage.js`
   let onlyHashes = []
+  let ipfsDaemonHashes
   if (Array.isArray(buffers)) {
     for (const { content } of buffers) {
       const hash = await Hash.of(content)
       onlyHashes.push(hash)
     }
+
+    // Either an array of hashes, or a hash
+    if (ENABLE_ASYNC_IPFS_ADD && !isMetadata) {
+      logger.info(`${caller}[ipfsClient - ipfsAddWrapper()] onlyHash=${onlyHashes}`)
+      ipfs.add(buffers, config) // Do not await it
+    } else {
+      ipfsDaemonHashes = await ipfs.add(buffers, config)
+      logger.info(`${caller}[ipfsClient - ipfsAddWrapper()] onlyHash=${onlyHashes} ipfsDaemonHash=${ipfsDaemonHashes} isSameHash=${onlyHashes === ipfsDaemonHashes}`)
+    }
   } else {
     onlyHashes = await Hash.of(buffers, { cidVersion: 0 })
-  }
-
-  // Either an array of hashes, or a hash
-  let ipfsDaemonHashes
-  if (ENABLE_ASYNC_IPFS_ADD && !isMetadata) {
-    logger.info(`${caller}[ipfsClient - ipfsAddWrapper()] onlyHash=${onlyHashes}`)
-    ipfs.add(buffers, config) // Do not await it
-  } else {
-    ipfsDaemonHashes = (await ipfs.add(buffers, config))[0].hash
-    logger.info(`${caller}[ipfsClient - ipfsAddWrapper()] onlyHash=${onlyHashes} ipfsDaemonHash=${ipfsDaemonHashes} isSameHash=${onlyHashes === ipfsDaemonHashes}`)
+    // Either an array of hashes, or a hash
+    let ipfsDaemonHashes
+    if (ENABLE_ASYNC_IPFS_ADD && !isMetadata) {
+      logger.info(`${caller}[ipfsClient - ipfsAddWrapper()] onlyHash=${onlyHashes}`)
+      ipfs.add(buffers, config) // Do not await it
+    } else {
+      ipfsDaemonHashes = (await ipfs.add(buffers, config))[0].hash
+      logger.info(`${caller}[ipfsClient - ipfsAddWrapper()] onlyHash=${onlyHashes} ipfsDaemonHash=${ipfsDaemonHashes} isSameHash=${onlyHashes === ipfsDaemonHashes}`)
+    }
   }
 
   // If content was added to ipfs daemon, prioritize using that hash response
