@@ -243,7 +243,7 @@ class FullTrackByRoute(Resource):
         routes = args.get("route")
         current_user_id = get_current_user_id(args)
         if not ((slug and handle) or routes):
-            full_ns.abort(400, "Missing required param slug or handle")
+            full_ns.abort(400, "Missing required param slug, handle, or route")
         routes_parsed = routes if routes else []
         try:
             routes_parsed = parse_routes(routes)
