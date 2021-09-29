@@ -32,9 +32,7 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer, addToIPFSDaemon = f
 
   const ipfs = req.app.get('ipfsAPI')
 
-  // Adding to IPFS may take a while if the system is under load. This below logic is to:
-  // 1. Generate the content address hash
-  // 2. A/synchronously add to ipfs depending on the env var `ENABLE_ASYNC_IPFS_ADD`
+  // Add to IPFS without pinning and retrieve multihash
   const multihash = await ipfsAddWrapper(ipfs, buffer, { pin: false }, req.logContext, addToIPFSDaemon)
 
   // Write file to disk by multihash for future retrieval
