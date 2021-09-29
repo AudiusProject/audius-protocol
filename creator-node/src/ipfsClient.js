@@ -40,35 +40,32 @@ async function ipfsAddWrapper (ipfs, buffers, ipfsConfig = {}, logContext = {}, 
   const logger = genericLogger.child(logContext)
 
   // Either an array of hashes, or a hash
-  // Note: the if case is specifically written for the `ipfsLatest` add api. See ipfs add code in `resizeImage.js`
-  let onlyHashes = []
+
+  // If async ipfs add is enabled, or if `addToIPFSDaemon` flag passed in is false, asynchronously
+  // add to ipfs. Else, synchronously add to ipfs and wait for the response.
   let ipfsDaemonHashes
+  if (ENABLE_ASYNC_IPFS_ADD && !addToIPFSDaemon) {
+    ipfs.add(buffers, ipfsConfig) // Do not await it
+  } else {
+    ipfsDaemonHashes = await ipfs.add(buffers, ipfsConfig)
+  }
+
+  // If `buffers` is an array, get the content hash of each element. Else, it will be a single element.
+  // Also, if `buffers` is a single element, get the single element hash from `ipfsDaemonHashes`
+  let onlyHashes = []
   if (Array.isArray(buffers)) {
+    // Note: See ipfs add code in `resizeImage.js` for `buffers` structure
     for (const { content } of buffers) {
       const hash = await ipfsHashOf(content)
       onlyHashes.push(hash)
     }
-
-    // Either an array of hashes, or a hash
-    if (ENABLE_ASYNC_IPFS_ADD && !addToIPFSDaemon) {
-      logger.info(`[ipfsClient - ipfsAddWrapper()] onlyHash=${onlyHashes}`)
-      ipfs.add(buffers, ipfsConfig) // Do not await it
-    } else {
-      ipfsDaemonHashes = await ipfs.add(buffers, ipfsConfig)
-      logger.info(`[ipfsClient - ipfsAddWrapper()] onlyHash=${onlyHashes} ipfsDaemonHash=${ipfsDaemonHashes} isSameHash=${onlyHashes === ipfsDaemonHashes}`)
-    }
   } else {
     onlyHashes = await ipfsHashOf(buffers)
-    // Either an array of hashes, or a hash
-    let ipfsDaemonHashes
-    if (ENABLE_ASYNC_IPFS_ADD && !addToIPFSDaemon) {
-      logger.info(`[ipfsClient - ipfsAddWrapper()] onlyHash=${onlyHashes}`)
-      ipfs.add(buffers, ipfsConfig) // Do not await it
-    } else {
-      ipfsDaemonHashes = (await ipfs.add(buffers, ipfsConfig))[0].hash
-      logger.info(`[ipfsClient - ipfsAddWrapper()] onlyHash=${onlyHashes} ipfsDaemonHash=${ipfsDaemonHashes} isSameHash=${onlyHashes === ipfsDaemonHashes}`)
-    }
+    ipfsDaemonHashes = ipfsDaemonHashes[0].hash
   }
+
+  const ipfsDaemonHashLogStr = `ipfsDaemonHash=${ipfsDaemonHashes} isSameHash=${onlyHashes === ipfsDaemonHashes}`
+  logger.info(`[ipfsClient - ipfsAddWrapper()] onlyHash=${onlyHashes} ${ipfsDaemonHashes ? ipfsDaemonHashLogStr : ''}`)
 
   // If content was added to ipfs daemon, prioritize using that hash response
   return ipfsDaemonHashes || onlyHashes
@@ -87,18 +84,15 @@ async function ipfsAddToFsWrapper (ipfs, srcPath, ipfsConfig = {}, logContext = 
 
   const stream = fs.createReadStream(srcPath)
   const onlyHash = await ipfsHashOf(stream)
-
-  let ipfsDaemonHash
   if (ENABLE_ASYNC_IPFS_ADD) {
     logger.info(`[ipfsClient - ipfsAddToFsWrapper()] onlyHash=${onlyHash}`)
     ipfs.addFromFs(srcPath, ipfsConfig) // Do not await it
-  } else {
-    ipfsDaemonHash = (await ipfs.addFromFs(srcPath, ipfsConfig))[0].hash
-    logger.info(`[ipfsClient - ipfsAddToFsWrapper()] onlyHash=${onlyHash} ipfsDaemonHash=${ipfsDaemonHash} isSameHash=${onlyHash === ipfsDaemonHash}`)
+    return onlyHash
   }
 
-  // If content was added to ipfs daemon, prioritize using that hash response
-  return ipfsDaemonHash || onlyHash
+  const ipfsDaemonHash = (await ipfs.addFromFs(srcPath, ipfsConfig))[0].hash
+  logger.info(`[ipfsClient - ipfsAddToFsWrapper()] onlyHash=${onlyHash} ipfsDaemonHash=${ipfsDaemonHash} isSameHash=${onlyHash === ipfsDaemonHash}`)
+  return ipfsDaemonHash
 }
 
 // Custom content-hashing logic. Taken from https://github.com/alanshaw/ipfs-only-hash/blob/master/index.js
