@@ -35,7 +35,9 @@ http {
 """
     )
 
+    openresty_rps = int(os.getenv("audius_openresty_rps", "10"))
     secondary = os.getenv("audius_secondary_disc_provs")
+
     if secondary:
         secondary = secondary.split(",")
         print(
@@ -44,7 +46,7 @@ http {
                 if ngx.var.arg_no_redirect ~= "yes" then
                     local limit_count = require "resty.limit.count"
 
-                    local lim, err = limit_count.new("my_limit_count_store", 10, 1)
+                    local lim, err = limit_count.new("my_limit_count_store", {openresty_rps}, 1)
                     if not lim then
                         ngx.log(ngx.ERR, "failed to instantiate a resty.limit.req object: ", err)
                         return ngx.exit(500)
