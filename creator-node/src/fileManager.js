@@ -19,6 +19,7 @@ const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
 const SaveFileForMultihashToFSIPFSFallback = config.get('saveFileForMultihashToFSIPFSFallback')
 const ENABLE_ASYNC_IPFS_ADD = config.get('enableAsyncIPFSAdd')
+
 /**
  * Adds file to IPFS then saves file to disk under /multihash name
  *
