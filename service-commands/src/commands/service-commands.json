@@ -36,6 +36,7 @@
     "path": "eth-contracts",
     "up": [
       "cd eth-contracts/",
+      "rm -rf build",
       "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100 -l 8000000",
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
@@ -43,7 +44,7 @@
       "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 11"
     ],
     "down": [
-      "cd eth-contracts/; npm run ganache-q"
+      "cd eth-contracts/; npm run ganache-q; rm -rf build"
     ]
   },
  "solana-validator": {
