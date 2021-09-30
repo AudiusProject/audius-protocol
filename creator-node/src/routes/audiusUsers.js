@@ -35,7 +35,7 @@ module.exports = function (app) {
     // Save file from buffer to IPFS and disk
     let multihash, dstPath
     try {
-      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer)
+      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer, true)
       multihash = resp.multihash
       dstPath = resp.dstPath
     } catch (e) {
