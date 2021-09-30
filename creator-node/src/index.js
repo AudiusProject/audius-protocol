@@ -17,14 +17,29 @@ const exitWithError = (...msg) => {
   process.exit(1)
 }
 
+const verifyDBConnection = async () => {
+  try {
+    logger.info('Verifying DB connection...')
+    await sequelize.authenticate() // runs SELECT 1+1 AS result to check db connection
+    logger.info('DB connected successfully!')
+  } catch (connectionError) {
+    exitWithError('Error connecting to DB:', connectionError)
+  }
+}
+
 const runDBMigrations = async () => {
   try {
     logger.info('Executing database migrations...')
     await runMigrations()
     logger.info('Migrations completed successfully')
-  } catch (err) {
-    exitWithError('Error in migrations: ', err)
+  } catch (migrationError) {
+    exitWithError('Error in migrations:', migrationError)
   }
+}
+
+const connectToDBAndRunMigrations = async () => {
+  await verifyDBConnection()
+  await runDBMigrations()
 }
 
 const getMode = () => {
@@ -61,11 +76,11 @@ const startApp = async () => {
   let appInfo
 
   if (mode === '--run-migrations') {
-    await runDBMigrations()
+    await connectToDBAndRunMigrations()
     process.exit(0)
   } else {
     if (mode === '--run-all') {
-      await runDBMigrations()
+      await connectToDBAndRunMigrations()
     }
 
     await logIpfsPeerIds()
