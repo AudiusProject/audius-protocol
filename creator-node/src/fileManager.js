@@ -18,7 +18,7 @@ const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions')
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
 const SaveFileForMultihashToFSIPFSFallback = config.get('saveFileForMultihashToFSIPFSFallback')
-
+const ENABLE_ASYNC_IPFS_ADD = config.get('enableAsyncIPFSAdd')
 /**
  * Adds file to IPFS then saves file to disk under /multihash name
  *
@@ -285,8 +285,10 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     try {
       decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
       const content = fs.createReadStream(expectedStoragePath)
-      for await (const result of ipfsLatest.add(content, { onlyHash: true, timeout: 10000 })) {
-        if (multihash !== result.cid.toString()) {
+
+      for await (const result of ipfsAddWrapper(ipfsLatest, content, { onlyHash: true, timeout: 10000 })) {
+        let match = ENABLE_ASYNC_IPFS_ADD ? multihash !== result : multihash !== result.cid.toString()
+        if (match) {
           decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: result.cid.toString(), time: Date.now() })
           // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
           await fs.unlink(expectedStoragePath)

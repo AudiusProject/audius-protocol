@@ -35,7 +35,6 @@ const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { constructProcessKey, PROCESS_NAMES } = require('../FileProcessingQueue')
-const { ipfsAddWrapper } = require('../ipfsClient')
 
 const { promisify } = require('util')
 
@@ -348,17 +347,14 @@ const _dirCIDIPFSVerificationWithRetries = async function (req, resizeResp, dirC
   // Re-compute dirCID from all image files to ensure it matches dirCID returned above
   let ipfsAddRespArr
   try {
-    const ipfsAddResp = await ipfsAddWrapper(
-      ipfs,
+    const ipfsAddResp = await ipfs.add(
       ipfsAddArray,
       {
         pin: false,
         onlyHash: true,
         timeout: 1000
-      },
-      req.logContext
+      }
     )
-
     ipfsAddRespArr = []
     for await (const resp of ipfsAddResp) {
       ipfsAddRespArr.push(resp)

@@ -5,7 +5,6 @@ const path = require('path')
 const { logger: genericLogger } = require('./logging')
 const { ipfs } = require('./ipfsClient')
 const DiskManager = require('./diskManager')
-const { ipfsAddWrapper } = require('./ipfsClient')
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.
 const COLOR_WHITE = 0xFFFFFFFF
@@ -140,11 +139,9 @@ module.exports = async (job) => {
   })
   resizes.push(original)
 
-  const ipfsAddResp = await ipfsAddWrapper(
-    ipfs,
+  const ipfsAddResp = await ipfs.add(
     toAdd,
-    { pin: false },
-    logContext
+    { pin: false }
   )
 
   // Write all the images to file storage and

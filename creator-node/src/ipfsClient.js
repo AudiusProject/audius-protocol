@@ -6,7 +6,7 @@ const fs = require('fs')
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
 
-const ENABLE_ASYNC_IPFS_ADD = config.get('enableAsyncIPFSAdd')
+const ENABLE_ASYNC_IPFS_ADD = true // config.get('enableAsyncIPFSAdd')
 
 // Make ipfs clients exportable to be used in rehydrate queue
 const ipfsAddr = config.get('ipfsHost')
