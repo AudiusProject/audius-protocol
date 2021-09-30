@@ -37,7 +37,7 @@ describe('timeRequestsAndSortByVersion', () => {
 
   it('respects an equivalency delta', async () => {
     let allResults = []
-    for (let i = 0; i < 10; ++i) {
+    for (let i = 0; i < 20; ++i) {
       const reqs = [
         setupRequest('https://cohort1a.audius.co', 1, '1.2.3'),
         setupRequest('https://cohort1b.audius.co', 1, '1.2.3'),
