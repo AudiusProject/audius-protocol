@@ -10,6 +10,7 @@ const SchemaValidator = require('../schemaValidator')
 const CHUNK_SIZE = 2000000 // 2MB
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
 const POLL_STATUS_INTERVAL = 3000 // 3s
+const BROWSER_SESSION_REFRESH_TIMEOUT = 604800000 // 1 week
 
 // Currently only supports a single logged-in audius user
 class CreatorNode {
@@ -190,7 +191,7 @@ class CreatorNode {
         console.error(e.message)
       }
     }
-    this.connected = false
+    this.clearBrowserSession()
     this.creatorNodeEndpoint = creatorNodeEndpoint
     if (!this.lazyConnect) {
       await this.connect()
@@ -563,6 +564,18 @@ class CreatorNode {
       }
     }, false)
     this.authToken = resp.data.sessionToken
+
+    setTimeout(() => {
+      this.clearBrowserSession()
+    }, BROWSER_SESSION_REFRESH_TIMEOUT)
+  }
+
+  /**
+   * Clears authToken and connection to expire browser session.
+   */
+  clearBrowserSession () {
+    this.authToken = null
+    this.connected = false
   }
 
   async _logoutNodeUser () {
@@ -573,7 +586,6 @@ class CreatorNode {
       url: '/users/logout',
       method: 'post'
     }, false)
-    this.authToken = null
   }
 
   /**
