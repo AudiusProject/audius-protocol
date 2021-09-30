@@ -42,7 +42,8 @@ const SERVICES = [
   'cn-um_creator-node_1',
   'audius_ganache_cli',
   'audius_client',
-  'audius-identity-service_identity-service_1'
+  'audius-identity-service_identity-service_1',
+  'audius-disc-prov_web-server_1'
 ]
 
 const exitWithError = () => {
