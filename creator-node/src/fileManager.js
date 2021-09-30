@@ -9,7 +9,7 @@ const Utils = require('./utils')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
-const { ipfsAddWrapper, ipfsAddToFsWrapper } = require('./ipfsClient')
+const { ipfsAddWrapper, ipfsAddFromFsWrapper } = require('./ipfsClient')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -22,7 +22,7 @@ const ENABLE_ASYNC_IPFS_ADD = config.get('enableAsyncIPFSAdd')
 /**
  * Adds file to IPFS then saves file to disk under /multihash name
  *
- * If buffer is a metadata, wait on the ipfs add as Discovery Nodes rely on ipfs to fetch metadata.
+ * If buffer is metadata, await add to ipfs daemon since discovery node checks ipfs first and benefits from increased availability
  */
 async function saveFileFromBufferToIPFSAndDisk (req, buffer, addToIPFSDaemon = false) {
   // make sure user has authenticated before saving file
@@ -56,7 +56,7 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
   }
 
   // Add to IPFS without pinning and retrieve multihash
-  const multihash = await ipfsAddToFsWrapper(ipfs, srcPath, { pin: false }, logContext)
+  const multihash = await ipfsAddFromFsWrapper(ipfs, srcPath, { pin: false }, logContext)
 
   // store file copy by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)

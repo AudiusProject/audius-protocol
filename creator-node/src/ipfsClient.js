@@ -27,37 +27,37 @@ async function logIpfsPeerIds () {
 }
 
 /**
- * Wrapper to ipfs.addToFs() -- This wrapper allows for ipfs calls to be made async or synchronous.
+ * Wrapper to ipfs.add() -- This wrapper allows for ipfs calls to be made async or synchronous.
  * @param {Object} ipfs ipfs library -- can be two different versions (see ipfsClient.js)
- * @param {Buffer|Buffer[]} buffers
+ * @param {Buffer|Object[]} inputData either a single buffer, or an Object[] with the structure { path: string, content: buffer }
  * @param {Object?} ipfsConfig ipfs add config options
- * @param {string?} logContext the name of the caller fn
+ * @param {Object?} logContext
  * @param {boolean?} addToIPFSDaemon flag to override adding to ipfs daemon
- * @returns {string|string[]} hashes
+ * @returns {string|string[]|Object|Object[]} hashes from content addressing fn, or ipfs daemon responses
  */
-async function ipfsAddWrapper (ipfs, buffers, ipfsConfig = {}, logContext = {}, addToIPFSDaemon = false) {
+async function ipfsAddWrapper (ipfs, inputData, ipfsConfig = {}, logContext = {}, addToIPFSDaemon = false) {
   const logger = genericLogger.child(logContext)
 
   // If async ipfs add is enabled, or if `addToIPFSDaemon` flag passed in is false, asynchronously
   // add to ipfs. Else, synchronously add to ipfs and wait for the response.
   let ipfsDaemonHashes
   if (ENABLE_ASYNC_IPFS_ADD && !addToIPFSDaemon) {
-    ipfs.add(buffers, ipfsConfig) // Do not await it
+    ipfs.add(inputData, ipfsConfig) // Do not await it
   } else {
-    ipfsDaemonHashes = await ipfs.add(buffers, ipfsConfig)
+    ipfsDaemonHashes = await ipfs.add(inputData, ipfsConfig)
   }
 
   // If `buffers` is an array, get the content hash of each element. Else, it will be a single element.
   // Also, if `buffers` is a single element, get the single element hash from `ipfsDaemonHashes`
   let onlyHashes = []
-  if (Array.isArray(buffers)) {
+  if (Array.isArray(inputData)) {
     // Note: See ipfs add code in `resizeImage.js` for `buffers` structure
-    for (const { content } of buffers) {
+    for (const { content } of inputData) {
       const hash = await ipfsHashOf(content)
       onlyHashes.push(hash)
     }
   } else {
-    onlyHashes = await ipfsHashOf(buffers)
+    onlyHashes = await ipfsHashOf(inputData)
     ipfsDaemonHashes = ipfsDaemonHashes[0].hash
   }
 
@@ -73,22 +73,22 @@ async function ipfsAddWrapper (ipfs, buffers, ipfsConfig = {}, logContext = {}, 
  * @param {Object} ipfs ipfs library -- can be two different versions (see ipfsClient.js)
  * @param {string|string[]} srcPath
  * @param {Object?} ipfsConfig ipfs add config options
- * @param {string?} logContext request context; used to log more info on caller
- * @returns {string|string[]} hashes
+ * @param {Object?} logContext
+ * @returns {string|string[]|Object|Object[]} hashes from content addressing fn, or ipfs daemon responses
  */
-async function ipfsAddToFsWrapper (ipfs, srcPath, ipfsConfig = {}, logContext = {}) {
+async function ipfsAddFromFsWrapper (ipfs, srcPath, ipfsConfig = {}, logContext = {}) {
   const logger = genericLogger.child(logContext)
 
   const stream = fs.createReadStream(srcPath)
   const onlyHash = await ipfsHashOf(stream)
   if (ENABLE_ASYNC_IPFS_ADD) {
-    logger.info(`[ipfsClient - ipfsAddToFsWrapper()] onlyHash=${onlyHash}`)
+    logger.info(`[ipfsClient - ipfsAddFromFsWrapper()] onlyHash=${onlyHash}`)
     ipfs.addFromFs(srcPath, ipfsConfig) // Do not await it
     return onlyHash
   }
 
   const ipfsDaemonHash = (await ipfs.addFromFs(srcPath, ipfsConfig))[0].hash
-  logger.info(`[ipfsClient - ipfsAddToFsWrapper()] onlyHash=${onlyHash} ipfsDaemonHash=${ipfsDaemonHash} isSameHash=${onlyHash === ipfsDaemonHash}`)
+  logger.info(`[ipfsClient - ipfsAddFromFsWrapper()] onlyHash=${onlyHash} ipfsDaemonHash=${ipfsDaemonHash} isSameHash=${onlyHash === ipfsDaemonHash}`)
   return ipfsDaemonHash
 }
 
@@ -115,4 +115,4 @@ async function ipfsHashOf (content, options) {
   return `${lastCid}`
 }
 
-module.exports = { ipfs, ipfsLatest, logIpfsPeerIds, ipfsAddWrapper, ipfsAddToFsWrapper, ipfsHashOf }
+module.exports = { ipfs, ipfsLatest, logIpfsPeerIds, ipfsAddWrapper, ipfsAddFromFsWrapper, ipfsHashOf }
