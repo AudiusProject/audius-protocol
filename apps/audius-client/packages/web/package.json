@@ -6,7 +6,7 @@
   "version": "0.24.31",
   "private": true,
   "dependencies": {
-    "@audius/libs": "1.2.24",
+    "@audius/libs": "1.2.25",
     "@audius/stems": "0.3.15",
     "@hcaptcha/react-hcaptcha": "0.3.6",
     "@optimizely/optimizely-sdk": "4.0.0",
