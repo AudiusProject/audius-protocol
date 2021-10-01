@@ -123,7 +123,9 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
 
   for (let notification of notifications) {
     switch (notification.type) {
-      case NotificationType.Follow: {
+      case NotificationType.Follow:
+      case NotificationType.ChallengeReward:
+      case NotificationType.TierChange: {
         userIdsToFetch.push(
           ...notification.actions
             .map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT)

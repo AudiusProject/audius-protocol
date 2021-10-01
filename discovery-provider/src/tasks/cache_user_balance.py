@@ -7,11 +7,12 @@ from sqlalchemy.orm.session import Session
 from spl.token.client import Token
 from solana.rpc.api import Client
 from solana.publickey import PublicKey
+from web3 import Web3
 
 from src.utils.session_manager import SessionManager
 from src.app import eth_abi_values
 from src.tasks.celery_app import celery
-from src.models import UserBalance, User, AssociatedWallet, UserBankAccount
+from src.models import UserBalance, UserBalanceChange, User, AssociatedWallet, UserBankAccount
 from src.queries.get_balances import (
     does_user_balance_need_refresh,
     IMMEDIATE_REFRESH_REDIS_PREFIX,
@@ -73,7 +74,6 @@ def get_lazy_refresh_user_ids(redis: Redis, session: Session) -> List[int]:
 def get_immediate_refresh_user_ids(redis: Redis) -> List[int]:
     redis_user_ids = redis.smembers(IMMEDIATE_REFRESH_REDIS_PREFIX)
     return [int(user_id.decode()) for user_id in redis_user_ids]
-
 
 # *Explanation of user balance caching*
 # In an effort to minimize eth calls, we look up users embedded in track metadata once per user,
@@ -272,8 +272,20 @@ def refresh_user_ids(
                         )
                         waudio_balance = bal_info["result"]["value"]["amount"]
 
+
                 # update the balance on the user model
                 user_balance = user_balances[user_id]
+
+                # Write to user_balance_changes table
+                session.add(
+                    UserBalanceChange(
+                        user_id=user_id,
+                        blocknumber=Web3.eth.blockNumber,
+                        current_balance=user_balance.balance,
+                        previous_balance=owner_wallet_balance,
+                    )
+                )
+
                 user_balance.balance = owner_wallet_balance
                 user_balance.associated_wallets_balance = str(associated_balance)
                 user_balance.waudio = waudio_balance

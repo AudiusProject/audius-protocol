@@ -199,6 +199,22 @@ async function formatNotifications (notifications, notificationSettings, tx) {
       }
     }
 
+    // Handle 'tier change' notification type
+    if (notif.type === notificationTypes.TierChange) {
+      const formatedTierChangeNotification = {
+        ...notif,
+        tier: notif.metadata.tier,
+        actions: [{
+          actionEntityType: actionEntityTypes.User,
+          actionEntityId: notif.initiator,
+          blocknumber
+        }],
+        type: notificationTypes.TierChange
+      }
+      formattedNotifications.push(formatedTierChangeNotification)
+      userIds.add(formatedTierChangeNotification.initiator)
+    }
+
     // Handle the 'create' notification type, track/album/playlist
     if (notif.type === notificationTypes.Create.base) {
       await _processCreateNotifications(notif, tx)
