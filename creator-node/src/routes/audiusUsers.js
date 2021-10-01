@@ -2,6 +2,7 @@ const { Buffer } = require('ipfs-http-client')
 const fs = require('fs')
 const { promisify } = require('util')
 
+const config = require('../config.js')
 const models = require('../models')
 const { saveFileFromBufferToIPFSAndDisk } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
@@ -17,6 +18,8 @@ const {
 const DBManager = require('../dbManager')
 
 const readFile = promisify(fs.readFile)
+
+const ENABLE_IPFS_ADD_METADATA = config.get('enableIPFSAddMetadata')
 
 module.exports = function (app) {
   /**
@@ -35,7 +38,7 @@ module.exports = function (app) {
     // Save file from buffer to IPFS and disk
     let multihash, dstPath
     try {
-      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer, true)
+      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer, ENABLE_IPFS_ADD_METADATA)
       multihash = resp.multihash
       dstPath = resp.dstPath
     } catch (e) {

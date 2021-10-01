@@ -9,7 +9,7 @@ const Utils = require('./utils')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
-const { ipfsAddWrapper, ipfsAddFromFsWrapper } = require('./ipfsClient')
+const { ipfsSingleAddWrapper, ipfsAddFromFsWrapper } = require('./ipfsClient')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -24,7 +24,7 @@ const SaveFileForMultihashToFSIPFSFallback = config.get('saveFileForMultihashToF
  *
  * If buffer is metadata, await add to ipfs daemon since discovery node checks ipfs first and benefits from increased availability
  */
-async function saveFileFromBufferToIPFSAndDisk (req, buffer, addToIPFSDaemon = false) {
+async function saveFileFromBufferToIPFSAndDisk (req, buffer, enableIPFSAdd = false) {
   // make sure user has authenticated before saving file
   if (!req.session.cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
@@ -33,7 +33,8 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer, addToIPFSDaemon = f
   const ipfs = req.app.get('ipfsAPI')
 
   // Add to IPFS without pinning and retrieve multihash
-  const multihash = await ipfsAddWrapper(ipfs, buffer, { pin: false }, req.logContext, addToIPFSDaemon)
+  // TODO: If used for images, use `ipfsMultipleAddWrapper`
+  const multihash = await ipfsSingleAddWrapper(ipfs, buffer, { pin: false }, req.logContext, enableIPFSAdd)
 
   // Write file to disk by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
@@ -47,7 +48,7 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer, addToIPFSDaemon = f
  *
  * @dev - only call this function when file is already stored to disk, else use saveFileFromBufferToIPFSAndDisk()
  */
-async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipfs) {
+async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipfs, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
 
   // make sure user has authenticated before saving file
@@ -56,7 +57,7 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
   }
 
   // Add to IPFS without pinning and retrieve multihash
-  const multihash = await ipfsAddFromFsWrapper(ipfs, srcPath, { pin: false }, logContext)
+  const multihash = await ipfsAddFromFsWrapper(ipfs, srcPath, { pin: false }, logContext, enableIPFSAdd)
 
   // store file copy by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)

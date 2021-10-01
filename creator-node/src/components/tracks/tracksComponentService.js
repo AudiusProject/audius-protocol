@@ -1,5 +1,6 @@
 const path = require('path')
 
+const config = require('../config.js')
 const { logger: genericLogger } = require('../../logging')
 const { getSegmentsDuration } = require('../../segmentDuration')
 const TranscodingQueue = require('../../TranscodingQueue')
@@ -9,6 +10,7 @@ const { removeTrackFolder, saveFileToIPFSFromFS } = require('../../fileManager')
 
 const SaveFileToIPFSConcurrencyLimit = 10
 
+const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
 /**
  * Upload track segment files and make avail - will later be associated with Audius track
  *
@@ -55,7 +57,8 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs) => {
     { logContext: requestProps.logContext },
     requestProps.session.cnodeUserUUID,
     transcodedFilePath,
-    ipfs
+    ipfs,
+    ENABLE_IPFS_ADD_TRACKS
   )
 
   let segmentFileIPFSResps = []
@@ -68,7 +71,8 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs) => {
         { logContext: requestProps.logContext },
         requestProps.session.cnodeUserUUID,
         segmentAbsolutePath,
-        ipfs
+        ipfs,
+        ENABLE_IPFS_ADD_TRACKS
       )
       return { multihash, srcPath: segmentFilePath, dstPath }
     }))
