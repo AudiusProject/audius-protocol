@@ -24,6 +24,7 @@ const DelegateManagerABI = Utils.importEthContractABI('DelegateManager.json').ab
 const ClaimsManagerABI = Utils.importEthContractABI('ClaimsManager.json').abi
 const ClaimDistributionABI = Utils.importEthContractABI('AudiusClaimDistributor.json').abi
 const WormholeABI = Utils.importEthContractABI('Wormhole.json').abi
+const WormholeClientABI = Utils.importEthContractABI('WormholeClient.json').abi
 const EthRewardsManagerABI = Utils.importEthContractABI('EthRewardsManager.json').abi
 
 const GovernanceRegistryKey = 'Governance'
@@ -147,7 +148,7 @@ class EthContracts {
 
     this.WormholeClient = new WormholeClient(
       this.ethWeb3Manager,
-      WormholeABI,
+      WormholeClientABI,
       this.wormholeContractAddress,
       this.AudiusTokenClient
     )

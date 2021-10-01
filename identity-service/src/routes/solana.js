@@ -2,9 +2,16 @@ const express = require('express')
 const crypto = require('crypto')
 
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
+const { getFeePayer } = require('../solana-client')
+
+const solanaEndpoint = config.get('solanaEndpoint')
 
 const {
   PublicKey,
+  Secp256k1Program,
+  sendAndConfirmTransaction,
+  sendAndConfirmRawTransaction,
+  Transaction,
   TransactionInstruction
 } = require('@solana/web3.js')
 
@@ -14,6 +21,11 @@ const solanaRouter = express.Router()
 const isValidInstruction = (instr) => {
   if (!instr || !Array.isArray(instr.keys) || !instr.programId || !instr.data) return false
   if (!instr.keys.every(key => !!key.pubkey)) return false
+  return true
+}
+
+const isValidTransactionSignature = (signature) => {
+  if (!signature || !signature.pubkey) return false
   return true
 }
 

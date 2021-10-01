@@ -2,11 +2,22 @@ const bs58 = require('bs58')
 const { toBuffer } = require('ethereumjs-util')
 const { Base, Services } = require('./base')
 const CreatorNodeService = require('../services/creatorNode/index')
+const SolanaUtils = require('../services/solanaWeb3Manager/utils')
 const Utils = require('../utils')
+
 const { AuthHeaders } = require('../constants')
 const {
   getPermitDigest, sign, getTransferTokensDigest
 } = require('../utils/signatures')
+const {
+  getSignedVAA,
+  getEmitterAddressEth,
+  parseSequenceFromLogEth,
+  redeemOnSolana,
+  postVaaSolana,
+  transferFromSolana
+} = require('@certusone/wormhole-sdk')
+const solanaWeb3 = require('@solana/web3.js')
 
 class Account extends Base {
   constructor (userApi, ...services) {
@@ -399,8 +410,103 @@ class Account extends Base {
     const transferTokensTx = await this.tranfersTokensViaWormhole(
       myWalletAddress, amount, solanaAccount, selectedEthWallet
     )
-    return transferTokensTx
+    console.log({ transferTokensTx })
+
+    const ETH_TX_RECEIPT = '0x38caa4b25fef0b2a1d27dd6998cd33e3911861c77f225d5adf9cdcae9583e025'
+    const WORMHOLE_RPC_HOST = 'https://wormhole-v2-mainnet-api.certus.one'
+    const ETH_BRIDGE_ADDRESS = '0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B'
+    const SOL_BRIDGE_ADDRESS = 'worm2ZoG2kUd4vFXhvjh93UUH596ayRfgQ2MgjNMTth'
+    const ETH_TOKEN_BRIDGE_ADDRESS = '0x3ee18B2214AFF97000D974cf647E7C347E8fa585'
+    const SOL_TOKEN_BRIDGE_ADDRESS = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
+    const CHAIN_ID_ETH = 2
+
+    const receipt = await this.ethWeb3Manager.web3.eth.getTransactionReceipt(ETH_TX_RECEIPT)
+    const sequence = parseSequenceFromLogEth(receipt, ETH_BRIDGE_ADDRESS);
+    const emitterAddress = getEmitterAddressEth(ETH_TOKEN_BRIDGE_ADDRESS);
+    let { vaaBytes } = await getSignedVAA(
+      WORMHOLE_RPC_HOST,
+      CHAIN_ID_ETH,
+      emitterAddress,
+      sequence
+    )
+
+    const signTransaction = async (transaction) => {
+      const response = await this.identityService.solanaRelay({ serializedTx: Buffer.from(transaction.serialize({requireAllSignatures: false, verifySignatures: false})) })
+      console.log({ response })
+      return {
+        'serialize': () => {}
+      }
+    } 
+    const connection = this.solanaWeb3Manager.connection
+    connection.sendRawTransaction = async () => 'mock_tx_td'
+    connection.confirmTransaction = async () => 'mock_confirmation'
+    await postVaaSolana(
+      connection,
+      signTransaction,
+      SOL_BRIDGE_ADDRESS,
+      this.solanaWeb3Manager.feePayerAddress, // payerAddress
+      vaaBytes
+    )
+    // Finally, redeem on Solana
+    const transaction = await redeemOnSolana(
+      connection,
+      SOL_BRIDGE_ADDRESS,
+      SOL_TOKEN_BRIDGE_ADDRESS,
+      this.solanaWeb3Manager.feePayerAddress, // payerAddress,
+      vaaBytes,
+      // false, // isSolanaNative,
+      // WAUDIO_MINT_ADDRESS //// mintAddress
+    )
+    console.log(transaction)
+    const response = await this.identityService.solanaRelay({ serializedTx: Buffer.from(transaction.serialize({requireAllSignatures: false, verifySignatures: false})) })
+    console.log({ response })
+    return response
+    // return transferTokensTx
   }
+
+    /**
+   * Sends `amount` tokens to `solanaAccount` by way of the wormhole
+   */
+  async sendTokensFromSolToEthViaWormhole (amount, solanaAccount, ethAccount) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+
+    const ETH_TX_RECEIPT = '0x38caa4b25fef0b2a1d27dd6998cd33e3911861c77f225d5adf9cdcae9583e025'
+    const WORMHOLE_RPC_HOST = 'https://wormhole-v2-mainnet-api.certus.one'
+    const ETH_BRIDGE_ADDRESS = '0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B'
+    const SOL_BRIDGE_ADDRESS = 'worm2ZoG2kUd4vFXhvjh93UUH596ayRfgQ2MgjNMTth'
+    const ETH_TOKEN_BRIDGE_ADDRESS = '0x3ee18B2214AFF97000D974cf647E7C347E8fa585'
+    const SOL_TOKEN_BRIDGE_ADDRESS = 'wormDTUJ6AWPNvk59vGQbDvGJmqbDTdgWgAqcLBCgUb'
+
+    const TOKEN_MINT_ADDRESS = '9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM'
+    const TOKEN_MINT_AUTHORITY_ADDRESS = 'BCD75RNBHrJJpW4dXVagL5mPjzRLnVZq4YirJdjEYMV7'
+    const AUDIO_TOKEN_ADDRESS = '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998'
+
+    const connection = this.solanaWeb3Manager.connection
+    connection.sendRawTransaction = async () => 'mock_tx_td'
+    connection.confirmTransaction = async () => 'mock_confirmation'
+
+    const CHAIN_ID_ETH = 2
+
+
+    // Submit transaction - results in a Wormhole message being published
+    const transaction = await transferFromSolana(
+      connection,
+      SOL_BRIDGE_ADDRESS,
+      SOL_TOKEN_BRIDGE_ADDRESS,
+      this.solanaWeb3Manager.feePayerAddress, // payerAddress,
+      solanaAccount, // fromAddress,
+      TOKEN_MINT_ADDRESS, // mintAddress,
+      amount,
+      toBuffer(ethAccount), // Uint8Array targetAddress, 
+      CHAIN_ID_ETH,
+      toBuffer(AUDIO_TOKEN_ADDRESS), // originAddress,
+      CHAIN_ID_ETH // originChain
+    )
+    console.log(transaction)
+
+    // const response = await this.identityService.solanaRelay({ serializedTx: Buffer.from(transaction.serialize({requireAllSignatures: false, verifySignatures: false})) })
+  }
+  
 
   /**
    * Locks assets owned by `fromAccount` into the Solana wormhole with a target
@@ -411,16 +517,17 @@ class Account extends Base {
     const web3 = this.ethWeb3Manager.getWeb3()
     const wormholeClientAddress = this.ethContracts.WormholeClient.contractAddress
 
-    const chainId = await this.ethWeb3Manager.web3.eth.getChainId()
+    const chainId = 1 // await this.ethWeb3Manager.web3.eth.getChainId()
 
     const currentBlockNumber = await web3.eth.getBlockNumber()
     const currentBlock = await web3.eth.getBlock(currentBlockNumber)
     // 1 hour, sufficiently far in future
+    // console.log({ currentBlock })
     const deadline = currentBlock.timestamp + (60 * 60 * 1)
     const solanaB58 = bs58.decode(solanaAccount).toString('hex')
     const recipient = toBuffer(`0x${solanaB58}`)
     const nonce = await this.ethContracts.WormholeClient.nonces(fromAccount)
-    const arbiterFee = 0
+    const arbiterFee = Utils.toBN('0')
 
     const digest = getTransferTokensDigest(
       web3,
@@ -439,13 +546,13 @@ class Account extends Base {
     )
     const myPrivateKey = this.web3Manager.getOwnerWalletPrivateKey()
     const signedDigest = sign(digest, myPrivateKey)
-
     const tx = await this.ethContracts.WormholeClient.transferTokens(
       fromAccount,
       amount,
       chainId,
       recipient,
       arbiterFee,
+      deadline,
       signedDigest,
       relayer
     )

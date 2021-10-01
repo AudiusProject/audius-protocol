@@ -21,11 +21,36 @@ class WormholeClient {
 
   /* ------- SETTERS ------- */
 
+  async initialize (
+    fromAcct,
+    wormholeAddress,
+    relayer
+  ) {
+
+    console.log({
+      tokenAddr: this.audiusTokenClient.contractAddress,
+      wormholeAddress
+    })
+    const method = this.WormholeContract.methods.initialize(
+      this.audiusTokenClient.contractAddress,
+      wormholeAddress
+    )
+
+    const tx = await this.ethWeb3Manager.relayTransaction(
+      method,
+      this.contractAddress,
+      fromAcct,
+      relayer,
+      /* retries */ 0
+    )
+    return { txReceipt: tx }
+  }
+
   async transferTokens (
     fromAcct,
     amount,
-    solanaAccount,
     chainId,
+    solanaAccount,
     arbiterFee,
     deadline,
     signedDigest,
@@ -42,13 +67,14 @@ class WormholeClient {
       signedDigest.r,
       signedDigest.s
     )
-
+    console.log({ method })
     const tx = await this.ethWeb3Manager.relayTransaction(
       method,
       this.contractAddress,
       fromAcct,
       relayer,
-      /* retries */ 0
+      /* retries */ 0,
+      250 * 1000
     )
     return { txReceipt: tx }
   }
