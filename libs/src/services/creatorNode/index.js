@@ -191,7 +191,7 @@ class CreatorNode {
         console.error(e.message)
       }
     }
-    this.clearBrowserSession()
+    this.connected = false
     this.creatorNodeEndpoint = creatorNodeEndpoint
     if (!this.lazyConnect) {
       await this.connect()
@@ -566,16 +566,9 @@ class CreatorNode {
     this.authToken = resp.data.sessionToken
 
     setTimeout(() => {
-      this.clearBrowserSession()
+      this.authToken = null
+      this.connected = false
     }, BROWSER_SESSION_REFRESH_TIMEOUT)
-  }
-
-  /**
-   * Clears authToken and connection to expire browser session.
-   */
-  clearBrowserSession () {
-    this.authToken = null
-    this.connected = false
   }
 
   async _logoutNodeUser () {
@@ -586,6 +579,7 @@ class CreatorNode {
       url: '/users/logout',
       method: 'post'
     }, false)
+    this.authToken = null
   }
 
   /**
