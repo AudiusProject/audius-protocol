@@ -7,6 +7,7 @@ from src.app import contract_addresses
 from src.utils import helpers, multihash
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models import (
     AssociatedWallet,
     Block,
@@ -357,6 +358,7 @@ def index_blocks(self, db, blocks_list):
 
     num_blocks = len(blocks_list)
     block_order_range = range(len(blocks_list) - 1, -1, -1)
+    latest_block_timestamp = None
     for i in block_order_range:
         update_ursm_address(self)
         block = blocks_list[i]
@@ -364,6 +366,7 @@ def index_blocks(self, db, blocks_list):
         block_number = block.number
         block_hash = block.hash
         block_timestamp = block.timestamp
+        latest_block_timestamp = block_timestamp
         logger.info(
             f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
@@ -640,22 +643,19 @@ def index_blocks(self, db, blocks_list):
                     redis, err.blocknumber, err.blockhash, err.txhash, err.message
                 )
                 raise err
-        # NOTE: This is commented out to prevent unncessary load on the DB to calculate trending
-        #       until it is fully tested on staging. The challenge was not registed so the job will
-        #       continually run for the hour interval.
-        # try:
-        #     # Check the last block's timestamp for updating the trending challenge
-        #     [should_update, date] = should_trending_challenge_update(
-        #         session, latest_block_timestamp
-        #     )
-        #     if should_update:
-        #         celery.send_task("calculate_trending_challenges", kwargs={"date": date})
-        # except Exception as e:
-        #     # Do not throw error, as this should not stop indexing
-        #     logger.error(
-        #         f"index.py | Error in calling update trending challenge {e}",
-        #         exc_info=True,
-        #     )
+        try:
+            # Check the last block's timestamp for updating the trending challenge
+            [should_update, date] = should_trending_challenge_update(
+                session, latest_block_timestamp
+            )
+            if should_update:
+                celery.send_task("calculate_trending_challenges", kwargs={"date": date})
+        except Exception as e:
+            # Do not throw error, as this should not stop indexing
+            logger.error(
+                f"index.py | Error in calling update trending challenge {e}",
+                exc_info=True,
+            )
 
         # add the block number of the most recently processed block to redis
         redis.set(most_recent_indexed_block_redis_key, block.number)
