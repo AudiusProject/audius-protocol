@@ -17,7 +17,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>$(MARKETING_VERSION)</string>
+	<string>1.0.87</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -30,7 +30,9 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>188</string>
+	<string>189</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -49,7 +51,17 @@
 	<key>NSCameraUsageDescription</key>
 	<string>This lets you take photos for uploading to Audius, including setting your profile picture and track cover art.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
+	<string></string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>AvenirNextLTPro-Bold.otf</string>
+		<string>AvenirNextLTPro-Heavy.otf</string>
+		<string>AvenirNextLTPro-Medium.otf</string>
+		<string>AvenirNextLTPro-Regular.otf</string>
+		<string>AvenirNextLTPro-UltLt.otf</string>
+		<string>AvenirNextLTPro-Light.otf</string>
+		<string>AvenirNextLTPro-Thin.otf</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
@@ -62,25 +74,13 @@
 	<array>
 		<string>armv7</string>
 	</array>
+	<key>UIStatusBarHidden</key>
+	<true/>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>UIStatusBarHidden</key>
-	<true/>
-	<key>UIAppFonts</key>
-	<array>
-		<string>AvenirNextLTPro-Bold.otf</string>
-		<string>AvenirNextLTPro-Heavy.otf</string>
-		<string>AvenirNextLTPro-Medium.otf</string>
-		<string>AvenirNextLTPro-Regular.otf</string>
-		<string>AvenirNextLTPro-UltLt.otf</string>
-		<string>AvenirNextLTPro-Light.otf</string>
-		<string>AvenirNextLTPro-Thin.otf</string>
-	</array>
 </dict>
 </plist>
