@@ -197,15 +197,6 @@ const PasswordPage = ({
     }
   }, [password, onValidatePasswordChange, onNextPage, fulfillsRequirements])
 
-  const onConfirmKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.keyCode === 13 /** enter */) {
-        onClickContinue()
-      }
-    },
-    [onClickContinue]
-  )
-
   onTermsOfServiceClick = () => {
     if (NATIVE_MOBILE) {
       new OpenLinkMessage(`${BASE_URL}${TERMS_OF_SERVICE}`).send()
@@ -273,7 +264,6 @@ const PasswordPage = ({
           value={passwordConfirm}
           variant={'normal'}
           onChange={onPasswordConfirmChange}
-          onKeyDown={onConfirmKeyDown}
           className={cn(styles.passwordInput, {
             [styles.placeholder]: passwordConfirm === '',
             [styles.inputError]: inputStatus === CheckState.ERROR,
