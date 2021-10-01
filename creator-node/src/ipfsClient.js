@@ -65,6 +65,7 @@ async function ipfsSingleAddWrapper (ipfs, inputData, ipfsConfig = {}, logContex
  * @param {boolean?} enableIPFSAdd flag to add content to ipfs daemon
  * @returns {string|string[]|Object|Object[]} hashes from content addressing fn, or ipfs daemon responses
  */
+// eslint-disable-next-line no-unused-vars
 async function ipfsMultipleAddWrapper (ipfs, inputData, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
 
