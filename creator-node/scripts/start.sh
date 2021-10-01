@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ "$WAIT_HOSTS" != "" ]]; then
-    /wait
+    /usr/bin/wait
 fi
 
 if [[ -n "$LOGGLY_TOKEN" ]]; then
