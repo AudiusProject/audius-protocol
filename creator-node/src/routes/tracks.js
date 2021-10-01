@@ -42,6 +42,9 @@ const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const DiskManager = require('../diskManager')
 
+const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
+const ENABLE_IPFS_ADD_METADATA = config.get('enableIPFSAddMetadata')
+
 const readFile = promisify(fs.readFile)
 const tmpTrackArtifactsPath = DiskManager.getTmpTrackUploadArtifactsPath()
 // This is the path used for resumable track content uploads.
@@ -215,7 +218,7 @@ module.exports = function (app) {
 
     // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
     codeBlockTimeStart = Date.now()
-    const transcodeFileIPFSResp = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, transcodedFilePath, req.app.get('ipfsAPI'))
+    const transcodeFileIPFSResp = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, transcodedFilePath, req.app.get('ipfsAPI'), ENABLE_IPFS_ADD_TRACKS)
 
     let segmentFileIPFSResps = []
     for (let i = 0; i < segmentFilePaths.length; i += SaveFileToIPFSConcurrencyLimit) {
@@ -223,7 +226,7 @@ module.exports = function (app) {
 
       const sliceResps = await Promise.all(segmentFilePathsSlice.map(async (segmentFilePath) => {
         const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
-        const { multihash, dstPath } = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, segmentAbsolutePath, req.app.get('ipfsAPI'))
+        const { multihash, dstPath } = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, segmentAbsolutePath, req.app.get('ipfsAPI'), ENABLE_IPFS_ADD_TRACKS)
         return { multihash, srcPath: segmentFilePath, dstPath }
       }))
 
@@ -362,7 +365,7 @@ module.exports = function (app) {
     // Save file from buffer to IPFS and disk
     let multihash, dstPath
     try {
-      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer, true)
+      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer, ENABLE_IPFS_ADD_METADATA)
       multihash = resp.multihash
       dstPath = resp.dstPath
     } catch (e) {

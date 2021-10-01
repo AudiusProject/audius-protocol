@@ -1,6 +1,6 @@
 const path = require('path')
 
-const config = require('../config.js')
+const config = require('../../config.js')
 const { logger: genericLogger } = require('../../logging')
 const { getSegmentsDuration } = require('../../segmentDuration')
 const TranscodingQueue = require('../../TranscodingQueue')
