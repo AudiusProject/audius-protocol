@@ -35,7 +35,7 @@ module.exports = function (app) {
     // Save file from buffer to IPFS and disk
     let multihash, dstPath
     try {
-      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer)
+      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer, true)
       multihash = resp.multihash
       dstPath = resp.dstPath
     } catch (e) {
@@ -77,11 +77,13 @@ module.exports = function (app) {
       return errorResponseBadRequest('Must include blockchainUserId, blockNumber, and metadataFileUUID.')
     }
 
-    // Error on outdated blocknumber.
     const cnodeUser = req.session.cnodeUser
-    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber >= blockNumber) {
-      return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
+    if (blockNumber < cnodeUser.latestBlockNumber) {
+      return errorResponseBadRequest(
+        `Invalid blockNumber param ${blockNumber}. Must be greater or equal to previously processed blocknumber ${cnodeUser.latestBlockNumber}.`
+      )
     }
+
     const cnodeUserUUID = req.session.cnodeUserUUID
 
     // Fetch metadataJSON for metadataFileUUID.

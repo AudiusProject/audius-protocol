@@ -16,6 +16,11 @@ from src.challenges.referral_challenge import (
     referred_challenge_manager,
 )
 from src.challenges.track_upload_challenge import track_upload_challenge_manager
+from src.challenges.trending_challenge import (
+    trending_track_challenge_manager,
+    trending_underground_track_challenge_manager,
+    trending_playlist_challenge_manager,
+)
 from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
@@ -208,6 +213,16 @@ def setup_challenge_bus():
     )
     bus.register_listener(
         ChallengeEvent.mobile_install, mobile_install_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.trending_track, trending_track_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.trending_underground,
+        trending_underground_track_challenge_manager,
+    )
+    bus.register_listener(
+        ChallengeEvent.trending_playlist, trending_playlist_challenge_manager
     )
 
     return bus

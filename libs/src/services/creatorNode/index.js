@@ -10,6 +10,7 @@ const SchemaValidator = require('../schemaValidator')
 const CHUNK_SIZE = 2000000 // 2MB
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
 const POLL_STATUS_INTERVAL = 3000 // 3s
+const BROWSER_SESSION_REFRESH_TIMEOUT = 604800000 // 1 week
 
 // Currently only supports a single logged-in audius user
 class CreatorNode {
@@ -563,6 +564,11 @@ class CreatorNode {
       }
     }, false)
     this.authToken = resp.data.sessionToken
+
+    setTimeout(() => {
+      this.authToken = null
+      this.connected = false
+    }, BROWSER_SESSION_REFRESH_TIMEOUT)
   }
 
   async _logoutNodeUser () {
