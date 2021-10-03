@@ -198,7 +198,7 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
     /** limit */ uniqueTrackIds.length,
     /** offset */ 0,
     /** idsArray */ uniqueTrackIds
-  )
+  ) || []
 
   const trackMap = tracks.reduce((tm, track) => {
     tm[track.track_id] = track
