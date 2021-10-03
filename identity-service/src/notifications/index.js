@@ -6,8 +6,6 @@ const { logger } = require('../logging')
 const { indexMilestones } = require('./milestoneProcessing')
 const {
   updateBlockchainIds,
-  // calculateTrackListenMilestones,
-  calculateTrackListenMilestonesFromDiscovery,
   getHighestBlockNumber,
   getHighestSlot
 } = require('./utils')
@@ -297,7 +295,7 @@ class NotificationProcessor {
     // Query owners for tracks relevant to track listen counts
     // Below can be toggled once milestones are calculated in discovery
     // let listenCounts = await calculateTrackListenMilestones()
-    const listenCounts = []
+    // const listenCounts = []
     // const listenCounts = await calculateTrackListenMilestonesFromDiscovery(discoveryProvider)
     // logger.info(`notifications main indexAll job - calculateTrackListenMilestonesFromDiscovery complete in ${Date.now() - time}ms`)
     // time = Date.now()

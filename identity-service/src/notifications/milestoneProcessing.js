@@ -243,7 +243,7 @@ async function updateFavoriteMilestones (favoriteCounts, owners, blocknumber, ti
  * Listens Milestones
  *
  */
-async function updateTrackListenMilestones (listenCounts, blocknumber, timestamp, audiusLibs, tx) {
+async function updateTrackListenMilestones (listenCounts, blocknumber, timestamp, audiusLibs, tx) { // eslint-disable-line no-unused-vars
   const listensMilestoneNotificationType = notificationTypes.MilestoneListen
 
   for (var entry of listenCounts) {
