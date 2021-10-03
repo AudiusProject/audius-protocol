@@ -297,32 +297,34 @@ class NotificationProcessor {
     // Query owners for tracks relevant to track listen counts
     // Below can be toggled once milestones are calculated in discovery
     // let listenCounts = await calculateTrackListenMilestones()
-    const listenCounts = await calculateTrackListenMilestonesFromDiscovery(discoveryProvider)
-    logger.info(`notifications main indexAll job - calculateTrackListenMilestonesFromDiscovery complete in ${Date.now() - time}ms`)
-    time = Date.now()
+    const listenCounts = []
+    // const listenCounts = await calculateTrackListenMilestonesFromDiscovery(discoveryProvider)
+    // logger.info(`notifications main indexAll job - calculateTrackListenMilestonesFromDiscovery complete in ${Date.now() - time}ms`)
+    // time = Date.now()
 
-    const trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
+    // // const trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
 
     // These track_id get parameters will be used to retrieve track owner info
     // This is required since there is no guarantee that there are indeed notifications for this user
     // The owner info is then used to target listenCount milestone notifications
     // Timeout of 2 minutes
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
-    const { info: metadata, notifications, owners, milestones } = await discoveryProvider.getNotifications(minBlock, trackIdOwnersToRequestList, timeout)
+    const { info: metadata, notifications, owners, milestones } = await discoveryProvider.getNotifications(minBlock, listenCounts, timeout)
     logger.info(`notifications main indexAll job - query notifications from discovery node complete in ${Date.now() - time}ms`)
     time = Date.now()
 
     // Use a single transaction
     const tx = await models.sequelize.transaction()
     try {
-      // Populate owners, used to index in milestone generation
-      const listenCountWithOwners = listenCounts.map((x) => {
-        return {
-          trackId: x.trackId,
-          listenCount: x.listenCount,
-          owner: owners.tracks[x.trackId]
-        }
-      })
+      // // Populate owners, used to index in milestone generation
+      const listenCountWithOwners = []
+      // const listenCountWithOwners = listenCounts.map((x) => {
+      //   return {
+      //     trackId: x.trackId,
+      //     listenCount: x.listenCount,
+      //     owner: owners.tracks[x.trackId]
+      //   }
+      // })
 
       // Insert the notifications into the DB to make it easy for users to query for their grouped notifications
       await processNotifications(notifications, tx)
