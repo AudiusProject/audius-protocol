@@ -617,6 +617,12 @@ const config = convict({
     format: String,
     env: 'discoveryProviderWhitelist',
     default: ''
+  },
+  HOSTNAME: {
+    doc: 'The pod hostname',
+    format: String,
+    env: 'HOSTNAME',
+    default: ''
   }
 })
 

@@ -14,6 +14,7 @@ const audiusLibsWrapper = require('./audiusLibsInstance')
 const NotificationProcessor = require('./notifications/index.js')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
+const { getShouldRunNotifications } = require('./notifications/utils')
 const { fetchAnnouncements } = require('./announcements')
 const { logger, loggingMiddleware } = require('./logging')
 const {
@@ -61,11 +62,14 @@ class App {
     // exclude these init's if running tests
     if (!config.get('isTestRun')) {
       const audiusInstance = await this.configureAudiusInstance()
-      await this.notificationProcessor.init(
-        audiusInstance,
-        this.express,
-        this.redisClient
-      )
+      const shouldRunNotifications = await getShouldRunNotifications(this.redisClient)
+      if (shouldRunNotifications) {
+        await this.notificationProcessor.init(
+          audiusInstance,
+          this.express,
+          this.redisClient
+        )
+      }
     }
 
     let server
@@ -78,6 +82,7 @@ class App {
     server.headersTimeout = config.get('headersTimeout')
 
     this.express.set('redis', this.redisClient)
+    this.express.set('notificationProcessor', this.notificationProcessor)
 
     try {
       await txRelay.fundRelayerIfEmpty()
