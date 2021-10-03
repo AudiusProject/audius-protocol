@@ -302,14 +302,15 @@ class NotificationProcessor {
     // logger.info(`notifications main indexAll job - calculateTrackListenMilestonesFromDiscovery complete in ${Date.now() - time}ms`)
     // time = Date.now()
 
-    // // const trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
+    const trackIdOwnersToRequestList = []
+    // const trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
 
     // These track_id get parameters will be used to retrieve track owner info
     // This is required since there is no guarantee that there are indeed notifications for this user
     // The owner info is then used to target listenCount milestone notifications
     // Timeout of 2 minutes
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
-    const { info: metadata, notifications, owners, milestones } = await discoveryProvider.getNotifications(minBlock, listenCounts, timeout)
+    const { info: metadata, notifications, owners, milestones } = await discoveryProvider.getNotifications(minBlock, trackIdOwnersToRequestList, timeout)
     logger.info(`notifications main indexAll job - query notifications from discovery node complete in ${Date.now() - time}ms`)
     time = Date.now()
 
