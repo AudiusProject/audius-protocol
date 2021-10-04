@@ -52,6 +52,7 @@ class App {
 
   async init () {
     let server
+    const audiusInstance = await this.configureAudiusInstance()
 
     if (cluster.isMaster) {
       // run all migrations
@@ -66,7 +67,6 @@ class App {
       // 1. start notifications processing
       // 2. fork web server worker processes
       if (!config.get('isTestRun')) {
-        const audiusInstance = await this.configureAudiusInstance()
         await this.notificationProcessor.init(
           audiusInstance,
           this.express,
@@ -83,7 +83,20 @@ class App {
           console.log("Let's fork another worker!")
           cluster.fork()
         })
+
+        try {
+          await txRelay.fundRelayerIfEmpty()
+        } catch (e) {
+          logger.error(`Failed to fund relayer - ${e}`)
+        }
+
+        try {
+          await ethTxRelay.fundEthRelayerIfEmpty()
+        } catch (e) {
+          logger.error(`Failed to fund L1 relayer - ${e}`)
+        }
       } else {
+        // if it's a test run start a server
         await new Promise(resolve => {
           server = this.express.listen(this.port, resolve)
         })
@@ -99,7 +112,6 @@ class App {
 
       return { app: this.express, server }
     } else {
-      // if it's a test run start a server
       await new Promise(resolve => {
         server = this.express.listen(this.port, resolve)
       })
@@ -109,18 +121,6 @@ class App {
       server.headersTimeout = config.get('headersTimeout')
 
       this.express.set('redis', this.redisClient)
-
-      try {
-        await txRelay.fundRelayerIfEmpty()
-      } catch (e) {
-        logger.error(`Failed to fund relayer - ${e}`)
-      }
-
-      try {
-        await ethTxRelay.fundEthRelayerIfEmpty()
-      } catch (e) {
-        logger.error(`Failed to fund L1 relayer - ${e}`)
-      }
 
       logger.info(`Listening on port ${this.port}...`)
       return { app: this.express, server }
