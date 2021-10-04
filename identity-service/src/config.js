@@ -622,7 +622,7 @@ const config = convict({
     doc: 'The number of express server processes to initialize in the this app "cluster"',
     format: Number,
     env: 'clusterForkProcessCount',
-    default: 3
+    default: 1
   }
 })
 
