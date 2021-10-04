@@ -5,6 +5,7 @@ const mailgun = require('mailgun-js')
 const Redis = require('ioredis')
 const optimizelySDK = require('@optimizely/optimizely-sdk')
 const Sentry = require('@sentry/node')
+const cluster = require('cluster')
 
 const config = require('./config.js')
 const txRelay = require('./relay/txRelay')
@@ -50,49 +51,80 @@ class App {
   }
 
   async init () {
-    // run all migrations
-    // this is a stupid solution to a timing bug, because migrations attempt to get run when
-    // the db port is exposed, not when it's ready to accept incoming connections. the timeout
-    // attempts to wait until the db is accepting connections
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    await this.runMigrations()
-    await this.getAudiusAnnouncements()
-
-    // exclude these init's if running tests
-    if (!config.get('isTestRun')) {
-      const audiusInstance = await this.configureAudiusInstance()
-      await this.notificationProcessor.init(
-        audiusInstance,
-        this.express,
-        this.redisClient
-      )
-    }
-
     let server
-    await new Promise(resolve => {
-      server = this.express.listen(this.port, resolve)
-    })
-    server.setTimeout(config.get('setTimeout'))
-    server.timeout = config.get('timeout')
-    server.keepAliveTimeout = config.get('keepAliveTimeout')
-    server.headersTimeout = config.get('headersTimeout')
 
-    this.express.set('redis', this.redisClient)
+    if (cluster.isMaster) {
+      // run all migrations
+      // this is a stupid solution to a timing bug, because migrations attempt to get run when
+      // the db port is exposed, not when it's ready to accept incoming connections. the timeout
+      // attempts to wait until the db is accepting connections
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      await this.runMigrations()
+      await this.getAudiusAnnouncements()
 
-    try {
-      await txRelay.fundRelayerIfEmpty()
-    } catch (e) {
-      logger.error(`Failed to fund relayer - ${e}`)
+      // if it's a non test run
+      // 1. start notifications processing
+      // 2. fork web server worker processes
+      if (!config.get('isTestRun')) {
+        const audiusInstance = await this.configureAudiusInstance()
+        await this.notificationProcessor.init(
+          audiusInstance,
+          this.express,
+          this.redisClient
+        )
+
+        // Fork 1 extra web server worker.
+        for (let i = 0; i < 3; i++) {
+          cluster.fork()
+        }
+
+        cluster.on('exit', (worker, code, signal) => {
+          console.log(`worker ${worker.process.pid} died`)
+          console.log("Let's fork another worker!")
+          cluster.fork()
+        })
+      } else {
+        await new Promise(resolve => {
+          server = this.express.listen(this.port, resolve)
+        })
+        server.setTimeout(config.get('setTimeout'))
+        server.timeout = config.get('timeout')
+        server.keepAliveTimeout = config.get('keepAliveTimeout')
+        server.headersTimeout = config.get('headersTimeout')
+
+        this.express.set('redis', this.redisClient)
+
+        logger.info(`Listening on port ${this.port}...`)
+      }
+
+      return { app: this.express, server }
+    } else {
+      // if it's a test run start a server
+      await new Promise(resolve => {
+        server = this.express.listen(this.port, resolve)
+      })
+      server.setTimeout(config.get('setTimeout'))
+      server.timeout = config.get('timeout')
+      server.keepAliveTimeout = config.get('keepAliveTimeout')
+      server.headersTimeout = config.get('headersTimeout')
+
+      this.express.set('redis', this.redisClient)
+
+      try {
+        await txRelay.fundRelayerIfEmpty()
+      } catch (e) {
+        logger.error(`Failed to fund relayer - ${e}`)
+      }
+
+      try {
+        await ethTxRelay.fundEthRelayerIfEmpty()
+      } catch (e) {
+        logger.error(`Failed to fund L1 relayer - ${e}`)
+      }
+
+      logger.info(`Listening on port ${this.port}...`)
+      return { app: this.express, server }
     }
-
-    try {
-      await ethTxRelay.fundEthRelayerIfEmpty()
-    } catch (e) {
-      logger.error(`Failed to fund L1 relayer - ${e}`)
-    }
-
-    logger.info(`Listening on port ${this.port}...`)
-    return { app: this.express, server }
   }
 
   configureMailgun () {
