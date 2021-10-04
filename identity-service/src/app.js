@@ -54,6 +54,15 @@ class App {
     let server
     await this.getAudiusAnnouncements()
 
+    /**
+     * From the cluster docs - https://nodejs.org/docs/latest-v14.x/api/cluster.html#cluster_cluster
+     * "A single instance of Node.js runs in a single thread. To take advantage of multi-core systems,
+     * the user will sometimes want to launch a cluster of Node.js processes to handle the load.
+     * The cluster module allows easy creation of child processes that all share server ports."
+     *
+     * We have the master node in the cluster run migrations and start notifications processor
+     * The workers start express server processes
+     */
     if (cluster.isMaster) {
       // run all migrations
       // this is a stupid solution to a timing bug, because migrations attempt to get run when
@@ -74,17 +83,16 @@ class App {
         )
 
         // Fork 1 extra web server worker.
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < config.get('clusterForkProcessCount'); i++) {
           cluster.fork()
         }
 
         cluster.on('exit', (worker, code, signal) => {
-          console.log(`worker ${worker.process.pid} died`)
-          console.log("Let's fork another worker!")
+          logger.info(`Cluster: Worker ${worker.process.pid} died, forking another worker`)
           cluster.fork()
         })
       } else {
-        // if it's a test run start a server
+        // if it's a test run only start the server
         await new Promise(resolve => {
           server = this.express.listen(this.port, resolve)
         })
