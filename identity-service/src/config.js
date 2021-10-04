@@ -622,6 +622,8 @@ const config = convict({
     doc: 'The number of express server processes to initialize in the this app "cluster"',
     format: Number,
     env: 'clusterForkProcessCount',
+    // note - we can't have more than 1 worker at the moment because POA and ETH relays
+    // use in memory wallet locks
     default: 1
   }
 })

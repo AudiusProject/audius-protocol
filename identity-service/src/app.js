@@ -83,6 +83,8 @@ class App {
         )
 
         // Fork extra web server workers
+        // note - we can't have more than 1 worker at the moment because POA and ETH relays
+        // use in memory wallet locks
         for (let i = 0; i < config.get('clusterForkProcessCount'); i++) {
           cluster.fork()
         }
