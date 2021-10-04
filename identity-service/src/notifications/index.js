@@ -154,7 +154,6 @@ class NotificationProcessor {
         })
       }
       // Delay 3s
-      console.log('awaiting next notifs tasks')
       await new Promise(resolve => setTimeout(resolve, NOTIFICATION_INTERVAL_SEC))
 
       done(error)

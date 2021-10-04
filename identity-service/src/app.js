@@ -82,7 +82,7 @@ class App {
           this.redisClient
         )
 
-        // Fork 1 extra web server worker.
+        // Fork extra web server workers
         for (let i = 0; i < config.get('clusterForkProcessCount'); i++) {
           cluster.fork()
         }
