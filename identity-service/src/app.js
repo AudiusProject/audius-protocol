@@ -52,6 +52,7 @@ class App {
 
   async init () {
     let server
+    await this.getAudiusAnnouncements()
 
     if (cluster.isMaster) {
       // run all migrations
@@ -60,7 +61,6 @@ class App {
       // attempts to wait until the db is accepting connections
       await new Promise(resolve => setTimeout(resolve, 2000))
       await this.runMigrations()
-      await this.getAudiusAnnouncements()
 
       // if it's a non test run
       // 1. start notifications processing
