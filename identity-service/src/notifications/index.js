@@ -163,11 +163,11 @@ class NotificationProcessor {
     // Indexes solana notifications
     this.solanaNotifQueue.process(async (job, done) => {
       let error = null
-
       let minSlot = job.data.minSlot
-      if (!minSlot && minSlot !== 0) throw new Error('no min slot')
 
       try {
+        if (!minSlot && minSlot !== 0) throw new Error('no min slot')
+
         const oldMaxSlot = await this.redis.get('maxSlot')
         let maxSlot = null
 
