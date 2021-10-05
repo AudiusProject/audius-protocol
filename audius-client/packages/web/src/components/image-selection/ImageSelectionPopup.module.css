@@ -150,7 +150,8 @@
 .collectiblesContainer {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 7.5px;
+  justify-content: space-between;
+  gap: 8px 0;
 }
 
 .collectibleImg {

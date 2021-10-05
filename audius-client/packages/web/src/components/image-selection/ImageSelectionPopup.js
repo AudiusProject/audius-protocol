@@ -135,9 +135,14 @@ const CollectionPage = ({ onSelect, source }) => {
     ...(collectibleList || []),
     ...((isSolanaCollectiblesEnabled && solanaCollectibleList) || [])
   ]
-  const visibleCollectibles = allCollectibles.filter(c =>
-    collectibles?.order?.includes(c.id)
-  )
+  const collectibleIdMap = allCollectibles.reduce((acc, c) => {
+    acc[c.id] = c
+    return acc
+  }, {})
+
+  const visibleCollectibles = collectibles?.order
+    ? collectibles.order.map(id => collectibleIdMap[id])
+    : allCollectibles
 
   const imgs = visibleCollectibles.filter(c => c.mediaType === 'IMAGE')
   const maxPages = Math.ceil(imgs.length / COLLECTIBLES_PER_PAGE)
@@ -229,9 +234,9 @@ const ImageSelectionPopup = ({
     ...(collectibleList || []),
     ...((isSolanaCollectiblesEnabled && solanaCollectibleList) || [])
   ]
-  const visibleCollectibles = allCollectibles.filter(c =>
-    collectibles?.order?.includes(c.id)
-  )
+  const visibleCollectibles = collectibles?.order
+    ? allCollectibles.filter(c => collectibles?.order?.includes(c.id))
+    : allCollectibles
 
   const handleClose = () => {
     setPage(messages.uploadYourOwn)
