@@ -195,7 +195,7 @@ const SignUpEmail = ({
             <IconArrow />
           )
         }
-        type={ButtonType.PRIMARY_ALT}
+        type={isSubmitting ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT}
         onClick={onSubmitEmail}
         className={styles.signUpButton}
         textClassName={styles.signUpButtonText}
