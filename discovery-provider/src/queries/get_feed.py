@@ -29,20 +29,23 @@ def get_feed(args):
     # Allow for fetching only tracks
     tracks_only = args.get("tracks_only", False)
 
+    followee_user_ids = args.get("followee_user_ids", [])
+
     # Current user - user for whom feed is being generated
     current_user_id = get_current_user_id()
     with db.scoped_session() as session:
         # Generate list of users followed by current user, i.e. 'followees'
-        followee_user_ids = (
-            session.query(Follow.followee_user_id)
-            .filter(
-                Follow.follower_user_id == current_user_id,
-                Follow.is_current == True,
-                Follow.is_delete == False,
+        if not followee_user_ids:
+            followee_user_ids = (
+                session.query(Follow.followee_user_id)
+                .filter(
+                    Follow.follower_user_id == current_user_id,
+                    Follow.is_current == True,
+                    Follow.is_delete == False,
+                )
+                .all()
             )
-            .all()
-        )
-        followee_user_ids = [f[0] for f in followee_user_ids]
+            followee_user_ids = [f[0] for f in followee_user_ids]
 
         # Fetch followee creations if requested
         if feed_filter in ["original", "all"]:

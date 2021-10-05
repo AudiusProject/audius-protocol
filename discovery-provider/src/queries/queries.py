@@ -183,6 +183,10 @@ def get_feed_route():
         args["tracks_only"] = parse_bool_param(request.args.get("tracks_only"))
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
+    if "followee_user_id" in request.args:
+        args["followee_user_ids"] = parse_id_array_param(
+            request.args.getlist("followee_user_id")
+        )
     feed_results = get_feed(args)
     return api_helpers.success_response(feed_results)
 
@@ -630,6 +634,7 @@ def get_track_listen_milestone_data():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
+
 @bp.route("/cid/source/<string:request_cid>", methods=("GET",))
 def get_cid_source_route(request_cid):
     try:
@@ -637,6 +642,7 @@ def get_cid_source_route(request_cid):
         return api_helpers.success_response(cid_source)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
+
 
 @bp.route("/users/history/<int:user_id>", methods=("GET",))
 def get_user_history_route(user_id):
