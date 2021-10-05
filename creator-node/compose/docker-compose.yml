@@ -13,7 +13,6 @@ services:
       - audius_dev
   creator-node:
     build: ../.
-    command: sh -c '/usr/bin/wait && exec ./scripts/dev-server.sh'
     depends_on:
       - creator-node-db
       - creator-node-redis
