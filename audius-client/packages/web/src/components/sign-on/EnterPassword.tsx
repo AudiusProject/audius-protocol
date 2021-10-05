@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 
 import { Button, ButtonType, IconArrow } from '@audius/stems'
-import Spin from 'antd/lib/spin'
 import cn from 'classnames'
 import commonPasswordList from 'fxa-common-password-list'
 
 import Input from 'components/data-entry/Input'
 import StatusMessage from 'components/general/StatusMessage'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './EnterPassword.module.css'
 
@@ -248,7 +248,11 @@ const EnterPassword = ({
         text={continueLabel}
         name='continue'
         rightIcon={
-          isLoading ? <Spin className={styles.spinner} /> : <IconArrow />
+          isLoading ? (
+            <LoadingSpinner className={styles.spinner} />
+          ) : (
+            <IconArrow />
+          )
         }
         type={
           isValid && !isLoading ? ButtonType.PRIMARY_ALT : ButtonType.DISABLED

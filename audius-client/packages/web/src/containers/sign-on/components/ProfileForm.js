@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
@@ -11,6 +11,9 @@ import Input from 'components/data-entry/Input'
 import InstagramAuth from 'components/general/InstagramAuth'
 import ProfilePicture from 'components/general/ProfilePicture'
 import StatusMessage from 'components/general/StatusMessage'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useDelayedEffect } from 'hooks/useDelayedEffect'
+import useInstanceVar from 'hooks/useInstanceVar'
 import { IDENTITY_SERVICE } from 'services/AudiusBackend'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
@@ -38,6 +41,16 @@ const messages = {
 const ProfileForm = props => {
   const [focus, onChangeFocus] = useState(false)
   const { profileValid, name, handle, profileImage, onContinue } = props
+  const [shouldShowLoadingSpinner, setShouldShowLoadingSpinner] = useState(
+    false
+  )
+
+  useDelayedEffect({
+    callback: () => setShouldShowLoadingSpinner(true),
+    reset: () => setShouldShowLoadingSpinner(false),
+    condition: handle.status === 'loading',
+    delay: 1000
+  })
 
   const onDropArtwork = async selectedFiles => {
     try {
@@ -196,7 +209,14 @@ const ProfileForm = props => {
       <Button
         text='Continue'
         name='continue'
-        rightIcon={<IconArrow />}
+        minWidth={160}
+        rightIcon={
+          shouldShowLoadingSpinner ? (
+            <LoadingSpinner className={styles.spinner} />
+          ) : (
+            <IconArrow />
+          )
+        }
         type={profileValid ? ButtonType.PRIMARY_ALT : ButtonType.DISABLED}
         onClick={onContinue}
         textClassName={styles.continueButtonText}

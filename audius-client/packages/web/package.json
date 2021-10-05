@@ -119,7 +119,7 @@
     "build:ipfs-stage": "env-cmd ./.env/.env.ipfs.stage npm run build:stage && rm -rf build-mobile-staging && mv build-staging build-ipfs-staging",
     "build:ipfs-prod": "env-cmd ./.env/.env.ipfs.prod npm run build:prod && rm -rf build-mobile-production && mv build-production build-ipfs-production",
     "test": "react-scripts test --resetMocks=false",
-    "test:coverage": "react-scripts test --resetMocks=false --coverage  --watchAll=false",
+    "test:coverage": "react-scripts test --resetMocks=false --coverage --watchAll=false",
     "eject": "react-scripts eject",
     "lint:fix": "eslint --cache --fix --ext=js,jsx,ts,tsx src",
     "lint": "eslint --cache --ext=js,jsx,ts,tsx src",
