@@ -264,8 +264,9 @@
 
 .spinner {
   display: block;
-  height: 16px;
-  width: 16px;
+  height: 18px;
+  width: 18px;
+  margin: 3px;
 }
 
 .spinner g path {
