@@ -7,7 +7,6 @@ import React, {
 } from 'react'
 
 import { Button, ButtonType, IconArrow } from '@audius/stems'
-import Spin from 'antd/lib/spin'
 import cn from 'classnames'
 import { Spring } from 'react-spring/renderprops'
 
@@ -19,6 +18,7 @@ import StatusMessage from 'components/general/StatusMessage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { RouterContext } from 'containers/animated-switch/RouterContextProvider'
+import { useDelayedEffect } from 'hooks/useDelayedEffect'
 
 import styles from './InitialPage.module.css'
 
@@ -123,6 +123,16 @@ const SignUpEmail = ({
     }
   }, [email, isSubmitting, setIsSubmitting])
 
+  const [shouldShowLoadingSpinner, setShouldShowLoadingSpinner] = useState(
+    false
+  )
+  useDelayedEffect({
+    callback: () => setShouldShowLoadingSpinner(true),
+    reset: () => setShouldShowLoadingSpinner(false),
+    condition: isSubmitting,
+    delay: 1000
+  })
+
   const inputError = email.status === 'failure'
   const validInput = email.status === 'success'
   const showError = inputError && attempted
@@ -179,7 +189,7 @@ const SignUpEmail = ({
         text={messages.signUp}
         name='continue'
         rightIcon={
-          isSubmitting ? (
+          isSubmitting && shouldShowLoadingSpinner ? (
             <LoadingSpinner className={styles.spinner} />
           ) : (
             <IconArrow />
