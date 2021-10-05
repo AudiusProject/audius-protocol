@@ -109,14 +109,14 @@ class NotificationProcessor {
     // Indexes network notifications
     this.notifQueue.process(async (job, done) => {
       let error = null
-
       let minBlock = job.data.minBlock
-      if (!minBlock && minBlock !== 0) throw new Error('no min block')
-
-      // Re-enable for development as needed
-      // this.emailQueue.add({ type: 'unreadEmailJob' })
 
       try {
+        if (!minBlock && minBlock !== 0) throw new Error('no min block')
+
+        // Re-enable for development as needed
+        // this.emailQueue.add({ type: 'unreadEmailJob' })
+
         const oldMaxBlockNumber = await this.redis.get('maxBlockNumber')
         let maxBlockNumber = null
         // Index notifications and milestones
