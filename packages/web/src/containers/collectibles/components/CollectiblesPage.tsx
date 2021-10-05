@@ -88,11 +88,12 @@ const CollectiblesPage: React.FC<{
     FeatureFlags.SOLANA_COLLECTIBLES_ENABLED
   )
   const ethCollectibleList = profile?.collectibleList ?? null
-  const solanaCollectibleList = useMemo(
-    () =>
-      isSolanaCollectiblesEnabled ? profile?.solanaCollectibleList ?? null : [],
-    [isSolanaCollectiblesEnabled, profile]
-  )
+  const solanaCollectibleList = useMemo(() => {
+    if (isSolanaCollectiblesEnabled === null) return null
+    return isSolanaCollectiblesEnabled
+      ? profile?.solanaCollectibleList ?? null
+      : []
+  }, [isSolanaCollectiblesEnabled, profile])
   const collectibleList =
     ethCollectibleList || solanaCollectibleList
       ? (ethCollectibleList || []).concat(solanaCollectibleList || [])
