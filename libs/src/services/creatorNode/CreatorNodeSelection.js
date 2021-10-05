@@ -23,7 +23,8 @@ class CreatorNodeSelection extends ServiceSelection {
     whitelist,
     blacklist,
     maxStorageUsedPercent = 95,
-    timeout = null
+    timeout = null,
+    equivalencyDelta = null
   }) {
     super({
       getServices: async () => {
@@ -42,6 +43,7 @@ class CreatorNodeSelection extends ServiceSelection {
     this.numberOfNodes = numberOfNodes
     this.ethContracts = ethContracts
     this.timeout = timeout
+    this.equivalencyDelta = equivalencyDelta
     this.healthCheckPath = 'health_check/verbose'
     // String array of healthy Content Node endpoints
     this.backupsList = []
@@ -201,7 +203,8 @@ class CreatorNodeSelection extends ServiceSelection {
         id: node,
         url: `${node}/${this.healthCheckPath}`
       })),
-      this.timeout
+      this.timeout,
+      this.equivalencyDelta
     )
 
     const healthyServices = healthCheckedServices.filter(resp => {

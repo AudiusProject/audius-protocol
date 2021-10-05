@@ -50,10 +50,14 @@ async function timeRequests (requests, timeout = null) {
  * Fetches multiple urls and times each request and returns the results sorted
  * first by version and then by lowest-latency.
  * @param {Array<Object>} requests [{id, url}, {id, url}]
- * @param {number?} timeout ms applied to each individual request
+ * @param {number? | null} timeout ms applied to each individual request
+ * @param {number? | null} equivalencyDelta
+ *  the number of milliseconds at which we consider services to be equally as fast
+ *  and pick randomly between them. Default of null implies that the faster service
+ *  (even if by 1ms) will be picked always.
  * @returns { Array<{url, response, millis}> }
  */
-async function timeRequestsAndSortByVersion (requests, timeout = null) {
+async function timeRequestsAndSortByVersion (requests, timeout = null, equivalencyDelta = null) {
   let timings = await Promise.all(requests.map(async request =>
     timeRequest(request, timeout)
   ))
@@ -68,7 +72,12 @@ async function timeRequestsAndSortByVersion (requests, timeout = null) {
     if (semver.lt(a.response.data.data.version, b.response.data.data.version)) return 1
 
     // If same version and transcode queue load, do a tie breaker on the response time
-    return a.millis - b.millis
+    // If the requests are near eachother (delta < equivalencyDelta), pick randomly
+    const delta = a.millis - b.millis
+    if (equivalencyDelta !== null && delta < equivalencyDelta) {
+      return 1 - 2 * Math.random() // [-1, 1]
+    }
+    return delta
   })
 }
 
