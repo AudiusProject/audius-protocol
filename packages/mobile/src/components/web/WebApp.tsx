@@ -288,7 +288,6 @@ const WebApp = ({
   const pushRoute = useCallback(
     (routeUrl: string) => {
       const trimmedRoute = `/${routeUrl
-        .toLowerCase()
         .replace(URL_SCHEME, '')
         .replace(AUDIUS_SITE_PREFIX, '')
         .replace(AUDIUS_REDIRECT_SITE_PREFIX, '')}`
