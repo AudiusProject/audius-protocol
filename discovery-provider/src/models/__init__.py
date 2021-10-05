@@ -52,6 +52,7 @@ from .user_bank import UserBankTransaction
 from .user_bank import UserBankAccount
 from .user_events import UserEvents
 from .trending_result import TrendingResult
+from .reward_manager import RewardManagerTransaction
 
 __all__ = [
     "AggregateDailyAppNameMetrics",
@@ -84,6 +85,7 @@ __all__ = [
     "Remix",
     "Repost",
     "RepostType",
+    "RewardManagerTransaction",
     "RouteMetrics",
     "RouteMetricsAllTime",
     "RouteMetricsDayMatview",
