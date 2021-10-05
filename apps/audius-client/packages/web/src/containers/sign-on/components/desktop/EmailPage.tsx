@@ -168,7 +168,9 @@ export const EmailPage = ({
               <IconArrow />
             )
           }
-          type={ButtonType.PRIMARY_ALT}
+          type={
+            shouldDisableInputs ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT
+          }
           onClick={onClickSubmit}
           textClassName={styles.signInButtonText}
           className={styles.signInButton}
