@@ -569,14 +569,12 @@ describe('test Polling Tracks with real IPFS', function () {
       owner_id: 1
     }
 
-    const resp = await request(app2)
+    await request(app2)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ metadata })
       .expect(200)
-
-    // assert.deepStrictEqual(resp.body.error, '/tracks/metadata saveFileFromBufferToIPFSAndDisk op failed: Error: ipfs add failed!')
   })
 
   it('successfully adds metadata file to filesystem, db, and ipfs', async function () {
