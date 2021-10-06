@@ -13,7 +13,7 @@ from .utils import populate_mock_db
 
 
 entities = {
-    "users": [{}] * 7,
+    "users": [{}] * 8,
     "follows": [
         # at least 200 followers for user_0
         {"follower_user_id": i, "followee_user_id": 0}
@@ -31,7 +31,8 @@ entities = {
     + [{"follower_user_id": i, "followee_user_id": 5} for i in range(151, 651)]
     # 60 mutual followers between user_5 & user_0 make up 30% of user_6 followers = score 18
     + [{"follower_user_id": i, "followee_user_id": 6} for i in range(141, 341)],
-    "tracks": [{"owner_id": i} for i in range(0, 7)],
+    # User ID 8 has no followers
+    "tracks": [{"owner_id": i} for i in range(0, 8)],
 }
 
 
@@ -73,6 +74,31 @@ def test_calculate_related_artists_scores(app):
 
         # Check unsampled
         rows = _calculate_related_artists_scores(session, 0)
+        assert rows[0].related_artist_user_id == 1 and math.isclose(
+            rows[0].score, 50, abs_tol=0.001
+        )
+        assert rows[1].related_artist_user_id == 2 and math.isclose(
+            rows[1].score, 25, abs_tol=0.001
+        )
+        assert rows[2].related_artist_user_id == 6 and math.isclose(
+            rows[2].score, 18, abs_tol=0.001
+        )
+        assert rows[3].related_artist_user_id == 3 and math.isclose(
+            rows[3].score, 10, abs_tol=0.001
+        )
+        assert rows[4].related_artist_user_id == 5 and math.isclose(
+            rows[4].score, 5, abs_tol=0.001
+        )
+        assert rows[5].related_artist_user_id == 4 and math.isclose(
+            rows[5].score, 3.2, abs_tol=0.001
+        )
+
+        # Check edge case with 0 followers
+        populate_mock_db(
+            db, {"follows": [{"follower_user_id": 100, "followee_user_id": 7}]}
+        )
+        rows = _calculate_related_artists_scores(session, 0)
+        # Same results as unsampled. Shouldn't throw DivideByZero exception
         assert rows[0].related_artist_user_id == 1 and math.isclose(
             rows[0].score, 50, abs_tol=0.001
         )
