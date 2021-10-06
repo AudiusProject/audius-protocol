@@ -9,7 +9,10 @@ import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
 import TabSlider from 'components/data-entry/TabSlider'
 import Dropzone from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
+import { MIN_COLLECTIBLES_TIER } from 'containers/profile-page/ProfilePageProvider'
 import { useFlag } from 'containers/remote-config/hooks'
+import { useSelectTierInfo } from 'containers/user-badges/hooks'
+import { badgeTiers } from 'containers/user-badges/utils'
 import RandomImage from 'services/RandomImage'
 import { FeatureFlags } from 'services/remote-config'
 import { getAccountUser } from 'store/account/selectors'
@@ -221,15 +224,24 @@ const ImageSelectionPopup = ({
   source
 }) => {
   const [page, setPage] = useState(messages.uploadYourOwn)
-  const { collectibles, collectibleList, solanaCollectibleList } = useSelector(
-    getAccountUser
-  )
-  const { isEnabled: isCollectibleOptionEnabled } = useFlag(
+  const {
+    collectibles,
+    collectibleList,
+    solanaCollectibleList,
+    user_id: userId
+  } = useSelector(getAccountUser)
+  const { isEnabled: isCollectibleOptionEnabledFlag } = useFlag(
     FeatureFlags.NFT_IMAGE_PICKER_TAB
   )
   const { isEnabled: isSolanaCollectiblesEnabled } = useFlag(
     FeatureFlags.SOLANA_COLLECTIBLES_ENABLED
   )
+
+  const { tierNumber } = useSelectTierInfo(userId ?? 0)
+  const isCollectibleOptionEnabled =
+    isCollectibleOptionEnabledFlag &&
+    tierNumber >= badgeTiers.findIndex(t => t.tier === MIN_COLLECTIBLES_TIER)
+
   const allCollectibles = [
     ...(collectibleList || []),
     ...((isSolanaCollectiblesEnabled && solanaCollectibleList) || [])

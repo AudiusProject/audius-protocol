@@ -11,6 +11,7 @@ import {
   Modal
 } from '@audius/stems'
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
 import { ReactComponent as IconMute } from 'assets/img/iconVolume0.svg'
@@ -27,9 +28,13 @@ import {
   Collectible,
   CollectibleMediaType
 } from 'containers/collectibles/types'
+import { MIN_COLLECTIBLES_TIER } from 'containers/profile-page/ProfilePageProvider'
 import { useFlag } from 'containers/remote-config/hooks'
+import { useSelectTierInfo } from 'containers/user-badges/hooks'
+import { badgeTiers } from 'containers/user-badges/utils'
 import { useScript } from 'hooks/useScript'
 import { FeatureFlags } from 'services/remote-config'
+import { getAccountUser } from 'store/account/selectors'
 import { Chain } from 'store/token-dashboard/slice'
 import { preload } from 'utils/image'
 import { getScrollParent } from 'utils/scrollParent'
@@ -160,9 +165,15 @@ const CollectibleDetails: React.FC<{
   const [frame, setFrame] = useState(frameUrl)
   const [showSpinner, setShowSpinner] = useState(false)
 
-  const { isEnabled: isCollectibleOptionEnabled } = useFlag(
+  const { isEnabled: isCollectibleOptionEnabledFlag } = useFlag(
     FeatureFlags.NFT_IMAGE_PICKER_TAB
   )
+  const accountUser = useSelector(getAccountUser)
+  const userId = accountUser?.user_id ?? 0
+  const { tierNumber } = useSelectTierInfo(userId)
+  const isCollectibleOptionEnabled =
+    isCollectibleOptionEnabledFlag &&
+    tierNumber >= badgeTiers.findIndex(t => t.tier === MIN_COLLECTIBLES_TIER)
 
   // Debounce showing the spinner for a second
   useEffect(() => {
