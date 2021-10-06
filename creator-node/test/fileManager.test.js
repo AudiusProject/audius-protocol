@@ -212,7 +212,7 @@ describe('test fileManager', () => {
 
       let resp
       try {
-        resp = await saveFileFromBufferToIPFSAndDisk(req, buffer)
+        resp = await saveFileFromBufferToIPFSAndDisk(req, buffer, true)
       } catch (e) {
         assert.fail(e.message)
       }
