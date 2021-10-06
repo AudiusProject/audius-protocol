@@ -51,6 +51,8 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer, enableIPFSAdd = fal
 async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipfs, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
 
+  logger.info(`what is enableIPFSAdd=${enableIPFSAdd}`)
+
   // make sure user has authenticated before saving file
   if (!cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
