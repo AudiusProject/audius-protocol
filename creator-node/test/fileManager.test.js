@@ -74,14 +74,13 @@ describe('test fileManager', () => {
      * When: ipfs is down
      * Then: an error is thrown
      */
-    it('should throw an error if ipfs is down', async () => {
+    it('should not throw an error if ipfs is down', async () => {
       sinon.stub(ipfs, 'addFromFs').rejects(new Error('ipfs is down!'))
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs)
-        assert.fail('Should not have passed if ipfs is down.')
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs, true)
       } catch (e) {
-        assert.deepStrictEqual(e.message, 'ipfs is down!')
+        assert.fail('Should have passed if ipfs is down.')
       }
     })
 
@@ -118,7 +117,7 @@ describe('test fileManager', () => {
       sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs)
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs, true)
       } catch (e) {
         assert.fail(e.message)
       }
@@ -181,10 +180,9 @@ describe('test fileManager', () => {
       sinon.stub(ipfs, 'add').rejects(new Error('ipfs is down!'))
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(req, buffer)
-        assert.fail('Should not have passed if ipfs is down.')
+        await saveFileFromBufferToIPFSAndDisk(req, buffer, true)
       } catch (e) {
-        assert.deepStrictEqual(e.message, 'ipfs is down!')
+        assert.fail('Should have passed if ipfs is down.')
       }
     })
 

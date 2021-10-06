@@ -6,7 +6,7 @@ const { getSegmentsDuration } = require('../../segmentDuration')
 const TranscodingQueue = require('../../TranscodingQueue')
 const models = require('../../models')
 const DBManager = require('../../dbManager')
-const { removeTrackFolder, saveFileToIPFSFromFS } = require('../../fileManager')
+const fileManager = require('../../fileManager')
 
 const SaveFileToIPFSConcurrencyLimit = 10
 
@@ -46,14 +46,14 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs) => {
     logger.info(`Time taken in /track_content_async to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
   } catch (err) {
     // Prune upload artifacts
-    removeTrackFolder({ logContext }, requestProps.fileDir)
+    fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
 
     throw new Error(err.toString())
   }
 
   // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
   codeBlockTimeStart = Date.now()
-  const transcodeFileIPFSResp = await saveFileToIPFSFromFS(
+  const transcodeFileIPFSResp = await fileManager.saveFileToIPFSFromFS(
     { logContext: requestProps.logContext },
     requestProps.session.cnodeUserUUID,
     transcodedFilePath,
@@ -67,7 +67,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs) => {
 
     const sliceResps = await Promise.all(segmentFilePathsSlice.map(async (segmentFilePath) => {
       const segmentAbsolutePath = path.join(requestProps.fileDir, 'segments', segmentFilePath)
-      const { multihash, dstPath } = await saveFileToIPFSFromFS(
+      const { multihash, dstPath } = await fileManager.saveFileToIPFSFromFS(
         { logContext: requestProps.logContext },
         requestProps.session.cnodeUserUUID,
         segmentAbsolutePath,
@@ -100,7 +100,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs) => {
   // error if there are no track segments
   if (!trackSegments || !trackSegments.length) {
     // Prune upload artifacts
-    removeTrackFolder({ logContext }, requestProps.fileDir)
+    fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
 
     throw new Error('Track upload failed - no track segments')
   }
@@ -137,14 +137,14 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs) => {
     await transaction.rollback()
 
     // Prune upload artifacts
-    removeTrackFolder({ logContext }, requestProps.fileDir)
+    fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
 
     throw new Error(e.toString())
   }
   logger.info(`Time taken in /track_content_async for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
 
   // Prune upload artifacts after success
-  removeTrackFolder({ logContext }, requestProps.fileDir)
+  fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
 
   logger.info(`Time taken in /track_content_async for full route: ${Date.now() - routeTimeStart}ms for file ${requestProps.fileName}`)
   return {

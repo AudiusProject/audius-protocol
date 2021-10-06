@@ -42,7 +42,12 @@ async function ipfsSingleAddWrapper (ipfs, inputData, ipfsConfig = {}, logContex
   // If async ipfs add is enabled, synchronously add to ipfs.
   let ipfsDaemonHash
   if (enableIPFSAdd) {
-    ipfsDaemonHash = (await ipfs.add(inputData, ipfsConfig))[0].hash
+    try {
+      ipfsDaemonHash = (await ipfs.add(inputData, ipfsConfig))[0].hash
+    } catch (e) {
+      logger.warn(`[ipfsClient - ipfsSingleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${onlyHash}: ${e.toString()}`)
+      return onlyHash
+    }
   }
 
   // Return the `ipfsDaemonHashes`, or `onlyHashes`. Prioritize `ipfsDaemonHashes`.
@@ -80,7 +85,12 @@ async function ipfsMultipleAddWrapper (ipfs, inputData, ipfsConfig = {}, logCont
 
   let ipfsDaemonResp
   if (enableIPFSAdd) {
-    ipfsDaemonResp = await ipfs.add(inputData, ipfsConfig)
+    try {
+      ipfsDaemonResp = await ipfs.add(inputData, ipfsConfig)
+    } catch (e) {
+      logger.warn(`[ipfsClient - ipfsMultipleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${onlyHashes}: ${e.toString()}`)
+      return onlyHashes
+    }
   }
 
   // Return the `ipfsDaemonHashes`, or `onlyHashes`. Prioritize `ipfsDaemonHashes`.
@@ -110,9 +120,16 @@ async function ipfsAddFromFsWrapper (ipfs, srcPath, ipfsConfig = {}, logContext 
   const onlyHash = await ipfsHashOf(stream)
 
   // If async ipfs add is enabled, synchronously add to ipfs.
+
+  // If async ipfs add is enabled, synchronously add to ipfs.
   let ipfsDaemonHash
   if (enableIPFSAdd) {
-    ipfsDaemonHash = (await ipfs.addFromFs(srcPath, ipfsConfig))[0].hash
+    try {
+      ipfsDaemonHash = (await ipfs.addFromFs(srcPath, ipfsConfig))[0].hash
+    } catch (e) {
+      logger.warn(`[ipfsClient - ipfsAddFromFsWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${onlyHash}: ${e.toString()}`)
+      return onlyHash
+    }
   }
 
   // Return the `ipfsDaemonHashes`, or `onlyHashes`. Prioritize `ipfsDaemonHashes`.
