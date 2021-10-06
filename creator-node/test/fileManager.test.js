@@ -113,7 +113,7 @@ describe('test fileManager', () => {
      *  - that segment content should match the original sourcefile
      *  - that segment should be present in IPFS
      */
-    it.only('should pass saving file to ipfs from fs (happy path)', async () => {
+    it('should pass saving file to ipfs from fs (happy path)', async () => {
       sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
 
       try {
