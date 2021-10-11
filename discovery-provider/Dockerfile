@@ -13,6 +13,7 @@ COPY requirements.txt requirements.txt
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
     apk update && \
     apk add alpine-sdk && \
+    apk add openrc && \
     apk add linux-headers && \
     apk add bash && \
     apk add libffi-dev && \
