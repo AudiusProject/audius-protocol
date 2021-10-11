@@ -1,5 +1,6 @@
 #![allow(missing_docs)]
 use super::*;
+use borsh::BorshSerialize;
 use crate::{
     error::{to_audius_program_error, AudiusProgramError},
     processor::SENDER_SEED_PREFIX,
@@ -101,6 +102,73 @@ pub fn get_signer_from_secp_instruction(secp_instruction_data: Vec<u8>) -> Ether
         secp_instruction_data[eth_address_offset..eth_address_offset + 20].to_vec();
     let instruction_signer: EthereumAddress = instruction_signer.as_slice().try_into().unwrap();
     instruction_signer
+}
+
+/// Secp256k1 signature offsets data
+#[derive(Clone, Copy, Debug, Default, PartialEq, BorshDeserialize, BorshSerialize)]
+pub struct SecpSignatureOffsets {
+    /// Offset of 64+1 bytes
+    pub signature_offset: u16,
+    /// Index of signature instruction in buffer
+    pub signature_instruction_index: u8,
+    /// Offset to eth_address of 20 bytes
+    pub eth_address_offset: u16,
+    /// Index of eth address instruction in buffer
+    pub eth_address_instruction_index: u8,
+    /// Offset to start of message data
+    pub message_data_offset: u16,
+    /// Size of message data
+    pub message_data_size: u16,
+    /// Index on message instruction in buffer
+    pub message_instruction_index: u8,
+}
+
+
+pub const SIGNATURE_OFFSETS_SERIALIZED_SIZE: usize = 11;
+pub const DATA_START: usize = SIGNATURE_OFFSETS_SERIALIZED_SIZE + 1;
+
+pub fn validate_secp_offsets(secp_instruction_data: Vec<u8>, instruction_index: u8) -> ProgramResult {
+    // First, ensure there is just a single offsets struct included
+    if secp_instruction_data[0] != 1 {
+        return Err(AudiusProgramError::SignatureVerificationFailed.into())
+    }
+
+    let start = 1;
+    let end = start + SIGNATURE_OFFSETS_SERIALIZED_SIZE;
+    let offsets = SecpSignatureOffsets::try_from_slice(&secp_instruction_data[start..end]).unwrap();
+    // Ensure indices match current instruction
+    let indicies_match = offsets.signature_instruction_index == instruction_index &&
+         offsets.eth_address_instruction_index == instruction_index &&
+         offsets.message_instruction_index == instruction_index
+    ;
+
+    if !indicies_match {
+        return Err(AudiusProgramError::SignatureVerificationFailed.into())
+    }
+
+    // Ensure offsets match expected values
+
+    // eth_address_offset = DATA_START (12)
+    if offsets.eth_address_offset != DATA_START as u16 {
+        return Err(AudiusProgramError::SignatureVerificationFailed.into())
+    }
+
+    // signature_offset = DATA_START + eth_pubkey.len (20) = 32
+    if offsets.signature_offset != DATA_START as u16 + 20 {
+        return Err(AudiusProgramError::SignatureVerificationFailed.into())
+    }
+
+    // message_data_offset = signature_offset + signature_arr.len (65) + 1 = 97
+    if offsets.message_data_offset != offsets.signature_offset as u16 + 65 {
+        return Err(AudiusProgramError::SignatureVerificationFailed.into())
+    }
+
+    // message_data_size = msgarr.len (128)
+    if offsets.message_data_size != 128 {
+        return Err(AudiusProgramError::SignatureVerificationFailed.into())
+    }
+
+    Ok(())
 }
 
 // meta (12) + address (20) + signature (65) = 97
@@ -219,9 +287,10 @@ pub fn validate_secp_submit_attestation(
         return Err(AudiusProgramError::Secp256InstructionMissing.into());
     }
 
+    let secp_index = index - 1;
     // Load previous instruction
     let secp_instruction = sysvar::instructions::load_instruction_at(
-        (index - 1) as usize,
+        secp_index as usize,
         &instruction_info.data.borrow(),
     )
     .map_err(to_audius_program_error)?;
@@ -230,6 +299,8 @@ pub fn validate_secp_submit_attestation(
     if secp_instruction.program_id != secp256k1_program::id() {
         return Err(AudiusProgramError::Secp256InstructionMissing.into());
     }
+
+    validate_secp_offsets(secp_instruction.data.clone(), secp_index.try_into().unwrap())?;
 
     let eth_signer = get_signer_from_secp_instruction(secp_instruction.data.clone());
     if eth_signer != *expected_signer {
