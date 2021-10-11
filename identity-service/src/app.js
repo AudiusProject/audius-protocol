@@ -14,6 +14,7 @@ const { runMigrations } = require('./migrationManager')
 const audiusLibsWrapper = require('./audiusLibsInstance')
 const NotificationProcessor = require('./notifications/index.js')
 const { generateWalletLockKey } = require('./relay/txRelay.js')
+const { generateETHWalletLockKey } = require('./relay/ethTxRelay.js')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
@@ -74,6 +75,7 @@ class App {
 
       // TODO - clear POA & ETH relayer keys
       await Lock.clearAllLocks(generateWalletLockKey('*'))
+      await Lock.clearAllLocks(generateETHWalletLockKey('*'))
 
       // if it's a non test run
       // 1. start notifications processing

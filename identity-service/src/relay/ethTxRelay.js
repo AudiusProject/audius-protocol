@@ -207,5 +207,6 @@ module.exports = {
   sendEthTransaction,
   queryEthRelayerWallet,
   getEthRelayerFunds,
-  getProdGasInfo
+  getProdGasInfo,
+  generateETHWalletLockKey
 }
