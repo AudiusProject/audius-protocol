@@ -44,4 +44,4 @@ else
   exec gunicorn -b :3000 --access-logfile - --error-logfile - src.wsgi:app --log-level=debug --worker-class=$WORKER_CLASS --workers=$WORKERS
 fi
 
-rc-service openresty start
+nginx -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
