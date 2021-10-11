@@ -6,7 +6,7 @@ use claimable_tokens::*;
 use libsecp256k1::{PublicKey, SecretKey};
 use rand::prelude::ThreadRng;
 use rand::{thread_rng, Rng};
-use solana_program::instruction::InstructionError;
+use solana_program::instruction::{InstructionError};
 use solana_program::{program_pack::Pack, pubkey::Pubkey, system_instruction};
 use solana_program_test::*;
 use solana_sdk::transaction::TransactionError;
@@ -17,7 +17,8 @@ use solana_sdk::{
     transaction::Transaction,
     transport::TransportError,
 };
-// construct_eth_pubkey
+
+// Construct_eth_pubkey
 pub fn program_test() -> ProgramTest {
     ProgramTest::new(
         "claimable_tokens",
