@@ -1,16 +1,16 @@
 import logging
 from datetime import datetime, timedelta
 
-from src.tasks.generate_trending import generate_trending, get_listen_counts
 from src.models import TrackTrendingScore, TrendingParam, AggregateIntervalPlay
 from src.utils.db_session import get_db
-from tests.utils import populate_mock_db
-from src.trending_strategies.ePWJD_trending_tracks_strategy import (
-    TrendingTracksStrategyePWJD,
-)
+from src.tasks.generate_trending import generate_trending
 from src.trending_strategies.aSPET_trending_tracks_strategy import (
     TrendingTracksStrategyaSPET,
 )
+from src.trending_strategies.ePWJD_trending_tracks_strategy import (
+    TrendingTracksStrategyePWJD,
+)
+from tests.utils import populate_mock_db
 
 logger = logging.getLogger(__name__)
 
@@ -263,7 +263,7 @@ def test_update_interval_plays(app):
     setup_trending(db)
 
     with db.scoped_session() as session:
-        session.execute(f"REFRESH MATERIALIZED VIEW aggregate_interval_plays")
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         aggregate_interval_plays = session.query(AggregateIntervalPlay).all()
 
         def get_track_plays(track_id):
@@ -289,11 +289,11 @@ def test_update_trending_params(app):
     setup_trending(db)
 
     with db.scoped_session() as session:
-        session.execute(f"REFRESH MATERIALIZED VIEW aggregate_user")
-        session.execute(f"REFRESH MATERIALIZED VIEW aggregate_track")
-        session.execute(f"REFRESH MATERIALIZED VIEW aggregate_plays")
-        session.execute(f"REFRESH MATERIALIZED VIEW aggregate_interval_plays")
-        session.execute(f"REFRESH MATERIALIZED VIEW trending_params")
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
+        session.execute("REFRESH MATERIALIZED VIEW trending_params")
         trending_params = session.query(TrendingParam).all()
 
         # Test that trending_params are not generated for hidden/deleted tracks
@@ -338,11 +338,11 @@ def test_update_track_score_query(app):
     udpated_strategy = TrendingTracksStrategyaSPET()
 
     with db.scoped_session() as session:
-        session.execute(f"REFRESH MATERIALIZED VIEW aggregate_user")
-        session.execute(f"REFRESH MATERIALIZED VIEW aggregate_track")
-        session.execute(f"REFRESH MATERIALIZED VIEW aggregate_plays")
-        session.execute(f"REFRESH MATERIALIZED VIEW aggregate_interval_plays")
-        session.execute(f"REFRESH MATERIALIZED VIEW trending_params")
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
+        session.execute("REFRESH MATERIALIZED VIEW trending_params")
         udpated_strategy.update_track_score_query(session)
         scores = session.query(TrackTrendingScore).all()
         # Test that scores are not generated for hidden/deleted tracks
@@ -373,12 +373,6 @@ def test_update_track_score_query(app):
         for score in scores:
             assert score.type == udpated_strategy.trending_type.name
             assert score.version == udpated_strategy.version.name
-
-        def get_track_score(track_id, time_range):
-            for score in scores:
-                if score.track_id == track_id and score.time_range == time_range:
-                    return score
-            return None
 
         def get_old_trending(time_range):
             genre = None
