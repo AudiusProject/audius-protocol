@@ -423,8 +423,8 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
         logger.info(f"index_solana_plays.py | processing {tx_sig_batch}")
         batch_start_time = time.time()
         # Process each batch in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            with db.scoped_session() as session:
+        with db.scoped_session() as session:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
                 parse_sol_tx_futures = {
                     executor.submit(
                         parse_sol_play_transaction,
