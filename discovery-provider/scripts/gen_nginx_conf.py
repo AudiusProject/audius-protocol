@@ -56,7 +56,7 @@ http {
                     if not delay then
                         if err == "rejected" then
                             local backendurl = ({{"{'","'.join(secondary)}"}})[math.random(1, {len(secondary)})]
-                            local url = "http://" ..  backendurl .. ngx.var.request_uri
+                            local url = backendurl .. ngx.var.request_uri
                             url = url .. ((ngx.var.is_args == "?") and "&" or "?") .. "no_redirect=yes"
                             return ngx.redirect(url)
                         end
