@@ -25,6 +25,9 @@ use std::mem::size_of;
 /// Known const for serialized signature offsets
 pub const SIGNATURE_OFFSETS_SERIALIZED_SIZE: usize = 11;
 
+/// Start of SECP recovery data after serialized SecpSignatureOffsets struct
+pub const DATA_START: usize = SIGNATURE_OFFSETS_SERIALIZED_SIZE + 1;
+
 /// Secp256k1 signature offsets data
 #[derive(Clone, Copy, Debug, Default, PartialEq, BorshDeserialize, BorshSerialize)]
 pub struct SecpSignatureOffsets {
@@ -313,16 +316,17 @@ impl Processor {
         )
         .map_err(|_| ClaimableProgramError::SignatureVerificationFailed)?;
 
-        msg!("sig_offsets_recovered = {:?}", sig_offsets_struct);
-        msg!("secp_instruction_data recovered = {:?}", secp_instruction_data);
-        let eth_address_offset = 12;
-        let signature_offset = 32;
-        let message_data_offset = 97;
+        // eth_address_offset = DATA_START (12)
+        let eth_address_offset = DATA_START;
+        // signature_offset = DATA_START + eth_pubkey.len (20) = 32
+        let signature_offset = eth_address_offset + 20;
+        // message_data_offset = signature_offset + signature_arr.len (65) = 97
+        // data_start (12) + address (20) + signature (65) = 97
+        let message_data_offset = signature_offset + 65;
 
         if sig_offsets_struct.message_instruction_index != instruction_index ||
             sig_offsets_struct.signature_instruction_index != instruction_index ||
             sig_offsets_struct.eth_address_instruction_index != instruction_index {
-            msg!("INDEX MISMATCH");
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
         } 
 
@@ -330,7 +334,6 @@ impl Processor {
         if sig_offsets_struct.eth_address_offset != (eth_address_offset as u16) ||
             sig_offsets_struct.signature_offset != (signature_offset as u16) ||
             sig_offsets_struct.message_data_offset != (message_data_offset as u16) {
-            msg!("OFFSET MISMATCH");
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
         }
 
@@ -341,8 +344,6 @@ impl Processor {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
         }
 
-        //NOTE: meta (12) + address (20) + signature (65) = 97
-        let message_data_offset = 97;
         let instruction_message = secp_instruction_data[message_data_offset..].to_vec();
         if instruction_message != *expected_message {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
