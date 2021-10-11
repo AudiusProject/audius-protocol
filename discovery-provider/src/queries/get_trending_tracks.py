@@ -32,6 +32,25 @@ def make_trending_cache_key(
 def generate_unpopulated_trending(
     session, genre, time_range, strategy, limit=TRENDING_LIMIT
 ):
+    trending_tracks = generate_trending(session, time_range, genre, limit, 0, strategy)
+
+    track_scores = [
+        strategy.get_track_score(time_range, track)
+        for track in trending_tracks["listen_counts"]
+    ]
+    # Re apply the limit just in case we did decide to include more tracks in the scoring than the limit
+    sorted_track_scores = sorted(track_scores, key=lambda k: k["score"], reverse=True)[
+        :limit
+    ]
+    track_ids = [track["track_id"] for track in sorted_track_scores]
+
+    tracks = get_unpopulated_tracks(session, track_ids)
+    return (tracks, track_ids)
+
+
+def generate_unpopulated_trending_from_mat_views(
+    session, genre, time_range, strategy, limit=TRENDING_LIMIT
+):
     top_listen_tracks_subquery = session.query(AggregateIntervalPlay.track_id)
     if genre:
         top_listen_tracks_subquery = top_listen_tracks_subquery.filter(

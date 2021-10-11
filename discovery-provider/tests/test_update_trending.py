@@ -8,6 +8,9 @@ from tests.utils import populate_mock_db
 from src.trending_strategies.ePWJD_trending_tracks_strategy import (
     TrendingTracksStrategyePWJD,
 )
+from src.trending_strategies.aSPET_trending_tracks_strategy import (
+    TrendingTracksStrategyaSPET,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -331,7 +334,8 @@ def test_update_track_score_query(app):
 
     # setup
     setup_trending(db)
-    strategy = TrendingTracksStrategyePWJD()
+    prev_strategy = TrendingTracksStrategyePWJD()
+    udpated_strategy = TrendingTracksStrategyaSPET()
 
     with db.scoped_session() as session:
         session.execute(f"REFRESH MATERIALIZED VIEW aggregate_user")
@@ -339,7 +343,7 @@ def test_update_track_score_query(app):
         session.execute(f"REFRESH MATERIALIZED VIEW aggregate_plays")
         session.execute(f"REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         session.execute(f"REFRESH MATERIALIZED VIEW trending_params")
-        strategy.update_track_score_query(session)
+        udpated_strategy.update_track_score_query(session)
         scores = session.query(TrackTrendingScore).all()
         # Test that scores are not generated for hidden/deleted tracks
         # There should be 7 valid tracks * 3 valid time ranges (week/month/year)
@@ -362,13 +366,13 @@ def test_update_track_score_query(app):
 
         # Check that the type and version fields are correct
         for score in scores:
-            assert score.type == strategy.trending_type.name
-            assert score.version == strategy.version.name
+            assert score.type == udpated_strategy.trending_type.name
+            assert score.version == udpated_strategy.version.name
 
         # Check that the type and version fields are correct
         for score in scores:
-            assert score.type == strategy.trending_type.name
-            assert score.version == strategy.version.name
+            assert score.type == udpated_strategy.trending_type.name
+            assert score.version == udpated_strategy.version.name
 
         def get_track_score(track_id, time_range):
             for score in scores:
@@ -376,15 +380,13 @@ def test_update_track_score_query(app):
                     return score
             return None
 
-        time_range = "week"
-
         def get_old_trending(time_range):
             genre = None
             old_trending_params = generate_trending(
-                session, time_range, genre, 10, 0, strategy
+                session, time_range, genre, 10, 0, prev_strategy
             )
             track_scores = [
-                strategy.get_track_score(time_range, track)
+                prev_strategy.get_track_score(time_range, track)
                 for track in old_trending_params["listen_counts"]
             ]
             # Re apply the limit just in case we did decide to include more tracks in the scoring than the limit
