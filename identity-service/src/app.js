@@ -73,7 +73,7 @@ class App {
       await new Promise(resolve => setTimeout(resolve, 2000))
       await this.runMigrations()
 
-      // TODO - clear POA & ETH relayer keys
+      // clear POA & ETH relayer keys
       await Lock.clearAllLocks(generateWalletLockKey('*'))
       await Lock.clearAllLocks(generateETHWalletLockKey('*'))
 

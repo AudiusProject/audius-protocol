@@ -39,12 +39,14 @@ const getEthRelayerFunds = async (walletPublicKey) => {
 const selectEthWallet = async (walletPublicKey, reqLogger) => {
   reqLogger.info(`L1 txRelay - Acquiring lock for ${walletPublicKey}`)
   let ethWalletIndex = getEthRelayerWalletIndex(walletPublicKey)
-  while ((await Lock.setLock(generateETHWalletLockKey(ethRelayerWallets[ethWalletIndex].publicKey))) !== true) {
+  const selectedRelayerWallet = ethRelayerWallets[ethWalletIndex]
+
+  while ((await Lock.setLock(generateETHWalletLockKey(selectedRelayerWallet.publicKey))) !== true) {
     await delay(200)
   }
-  reqLogger.info(`L1 txRelay - Locking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
+  reqLogger.info(`L1 txRelay - Locking ${selectedRelayerWallet.publicKey}, index=${ethWalletIndex}}`)
   return {
-    selectedEthRelayerWallet: ethRelayerWallets[ethWalletIndex],
+    selectedEthRelayerWallet: selectedRelayerWallet,
     ethWalletIndex
   }
 }
