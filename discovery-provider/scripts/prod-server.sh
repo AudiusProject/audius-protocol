@@ -35,6 +35,8 @@ if [ ! -e /usr/local/openresty/conf/nginx.conf ]; then
   mkdir -p /usr/local/openresty/conf
   ./scripts/gen_nginx_conf.py >/usr/local/openresty/conf/nginx.conf
 fi
+mkdir /usr/local/openresty/logs
+openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
 
 # If a worker class is specified, use that. Otherwise, use sync workers.
 if [[ -z "${audius_gunicorn_worker_class}" ]]; then
@@ -43,6 +45,3 @@ else
   WORKER_CLASS="${audius_gunicorn_worker_class}"
   exec gunicorn -b :3000 --access-logfile - --error-logfile - src.wsgi:app --log-level=debug --worker-class=$WORKER_CLASS --workers=$WORKERS
 fi
-
-mkdir /usr/local/openresty/logs
-openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
