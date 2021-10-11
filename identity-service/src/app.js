@@ -2,7 +2,7 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const mailgun = require('mailgun-js')
-const Redis = require('ioredis')
+const { redisClient, Lock } = require('./redis')
 const optimizelySDK = require('@optimizely/optimizely-sdk')
 const Sentry = require('@sentry/node')
 const cluster = require('cluster')
@@ -13,6 +13,7 @@ const ethTxRelay = require('./relay/ethTxRelay')
 const { runMigrations } = require('./migrationManager')
 const audiusLibsWrapper = require('./audiusLibsInstance')
 const NotificationProcessor = require('./notifications/index.js')
+const { generateWalletLockKey } = require('./relay/txRelay.js')
 
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
@@ -31,7 +32,7 @@ class App {
   constructor (port) {
     this.port = port
     this.express = express()
-    this.redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
+    this.redisClient = redisClient
     this.configureSentry()
     this.configureMailgun()
     this.configureOptimizely()
@@ -70,6 +71,9 @@ class App {
       // attempts to wait until the db is accepting connections
       await new Promise(resolve => setTimeout(resolve, 2000))
       await this.runMigrations()
+
+      // TODO - clear POA & ETH relayer keys
+      await Lock.clearAllLocks(generateWalletLockKey('*'))
 
       // if it's a non test run
       // 1. start notifications processing

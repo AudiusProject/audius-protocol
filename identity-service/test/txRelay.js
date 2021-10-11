@@ -2,10 +2,16 @@ const assert = require('assert')
 const sinon = require('sinon')
 
 const config = require('../src/config')
+const { generateWalletLockKey } = require('../src/relay/txRelay')
+const { Lock } = require('../src/redis')
 
-describe('test txRelay: selectWallet()', () => {
+describe.only('test txRelay: selectWallet()', async () => {
   let relayerWallets, selectWallet
-  beforeEach(() => {
+  beforeEach(async () => {
+    // reload the module each time for fresh state
+    delete require.cache[require.resolve('../src/relay/txRelay')]
+    delete require.cache[require.resolve('../src/web3')]
+
     relayerWallets = [
       {
         publicKey: 'publicKey1',
@@ -18,41 +24,47 @@ describe('test txRelay: selectWallet()', () => {
     ]
     sinon.stub(config, 'get').withArgs('relayerWallets').returns(relayerWallets)
     selectWallet = require('../src/relay/txRelay').selectWallet
+
+    await Lock.clearAllLocks()
+    console.log('finished clearing locks')
   })
 
-  afterEach(() => {
+  afterEach(async () => {
     // reload the module each time for fresh state
     delete require.cache[require.resolve('../src/relay/txRelay')]
     delete require.cache[require.resolve('../src/web3')]
     sinon.restore()
   })
 
-  it('should select a random wallet', () => {
-    const firstWallet = selectWallet()
-    const secondWallet = selectWallet()
+  it('should select a random wallet', async () => {
+    const firstWallet = await selectWallet()
+    const secondWallet = await selectWallet()
 
+    console.log('firstWallet', firstWallet)
+    console.log('secondWallet', secondWallet)
     assert(firstWallet.publicKey !== secondWallet.publicKey)
     assert(firstWallet.privateKey !== secondWallet.privateKey)
   })
 
-  it('should return null when attempting to select a wallet when all are in use', () => {
+  it('should return null when attempting to select a wallet when all are in use', async () => {
     let i = 0
     let nullWallet
     while (i++ < 3) {
-      nullWallet = selectWallet()
+      nullWallet = await selectWallet()
+      console.log({ nullWallet })
     }
 
     assert(nullWallet === undefined)
   })
 
-  it('should return an unlocked wallet when all wallets are reset to unlocked', () => {
-    const firstWallet = selectWallet()
-    const secondWallet = selectWallet()
+  it('should return an unlocked wallet when all wallets are reset to unlocked', async () => {
+    const firstWallet = await selectWallet()
+    const secondWallet = await selectWallet()
 
-    firstWallet.locked = false
-    secondWallet.locked = false
+    await Lock.clearLock(generateWalletLockKey(firstWallet.publicKey))
+    await Lock.clearLock(generateWalletLockKey(secondWallet.publicKey))
 
-    const thirdWallet = selectWallet()
+    const thirdWallet = await selectWallet()
     assert(thirdWallet !== undefined)
   })
 })
