@@ -146,7 +146,7 @@ def get_tracks(args: GetTrackArgs):
             if "routes" in args:
                 # Convert the handles to user_ids
                 routes = args.get("routes")
-                handles = [route["handle"] for route in routes]
+                handles = [route["handle"].lower() for route in routes]
                 user_id_tuples = (
                     session.query(User.user_id, User.handle_lc)
                     .filter(User.handle_lc.in_(handles), User.is_current == True)
