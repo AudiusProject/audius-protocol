@@ -5,7 +5,7 @@ const config = require('../src/config')
 const { generateWalletLockKey } = require('../src/relay/txRelay')
 const { Lock } = require('../src/redis')
 
-describe.only('test txRelay: selectWallet()', async () => {
+describe('test txRelay: selectWallet()', async () => {
   let relayerWallets, selectWallet
   beforeEach(async () => {
     // reload the module each time for fresh state
