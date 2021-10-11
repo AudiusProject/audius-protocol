@@ -158,7 +158,7 @@ pub fn validate_secp_offsets(secp_instruction_data: Vec<u8>, instruction_index: 
         return Err(AudiusProgramError::SignatureVerificationFailed.into())
     }
 
-    // message_data_offset = signature_offset + signature_arr.len (65) + 1 = 97
+    // message_data_offset = signature_offset + signature_arr.len (65) = 97
     if offsets.message_data_offset != offsets.signature_offset as u16 + 65 {
         return Err(AudiusProgramError::SignatureVerificationFailed.into())
     }
