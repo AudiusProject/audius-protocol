@@ -35,7 +35,7 @@ http {
 """
     )
 
-    openresty_rps = int(os.getenv("audius_openresty_rps", "10"))
+    openresty_rps = int(os.getenv("audius_openresty_rps", "1000"))
     secondary = os.getenv("audius_secondary_disc_provs")
 
     if secondary:
