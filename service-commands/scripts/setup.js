@@ -21,6 +21,7 @@ const printOptions = () => {
   console.log(Object.values(SetupCommand))
   console.log('\nUsage:')
   console.log('node setup.js run <service> <command>\n')
+  console.log('set flag -v or --verbose for verbose mode.')
   console.log('\nExamples:')
   console.log('node setup.js run network up')
   console.log('node setup.js run ipfs up')
@@ -55,6 +56,11 @@ program
   .command('up')
   .description('Bring up all services')
   .option(
+    '-v, --verbose',
+    'verbose mode - whether to output logs to console (logs are written to service-commands/output.log and service-commands/error.log by default)',
+    false
+  )
+  .option(
     '-nc, --num-cnodes <number>',
     'number of creator nodes',
     NUM_CREATOR_NODES.toString()
@@ -70,24 +76,37 @@ program
     false
   )
   .action(async opts => {
+    console.log('Bringing up services...')
+    console.log(`See ${process.env.PROTOCOL_DIR}/service-commands/output.log and ${process.env.PROTOCOL_DIR}/service-commands/error.log for troubleshooting.`) // TODO add color or put this somewhere different
     const numCreatorNodes = parseInt(opts.numCnodes)
     const numDiscoveryNodes = parseInt(opts.numDn)
     const withAAO = opts.withAao
-    await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO, opts })
+    const verbose = opts.verbose
+    await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO, verbose, opts })
   })
 
 program
   .command('down')
   .description('Bring down all services')
-  .action(async () => {
+  .option( // TODO DRY up verbose mode option for all commands
+    '-v, --verbose',
+    'verbose mode - whether to output logs to console (logs are written to service-commands/output.log and service-commands/error.log by default)',
+    false
+  )
+  .action(async opts => {
     console.log('Bringing down services...')
-    await runSetupCommand(Service.ALL, SetupCommand.DOWN)
+    await runSetupCommand(Service.ALL, SetupCommand.DOWN, opts)
   })
 
 program
   .command('restart')
   .description(
     'Convenience command to restart services: calls down and then up.'
+  )
+  .option(
+    '-v, --verbose',
+    'verbose mode - whether to output logs to console (logs are written to service-commands/output.log and service-commands/error.log by default)',
+    false
   )
   .option(
     '-nc, --num-cnodes <number>',
@@ -103,13 +122,19 @@ program
     console.log('Restarting services...')
     const numCreatorNodes = parseInt(opts.numCnodes)
     const numDiscoveryNodes = parseInt(opts.numDn)
-    await runSetupCommand(Service.ALL, SetupCommand.DOWN)
-    await allUp({ numCreatorNodes, numDiscoveryNodes })
+    const verbose = opts.verbose
+    await runSetupCommand(Service.ALL, SetupCommand.DOWN, opts)
+    await allUp({ numCreatorNodes, numDiscoveryNodes, verbose })
   })
 
 program
   .command('run <service> [command]')
   .description('Execute a service command')
+  .option(
+    '-v, --verbose',
+    'verbose mode - whether to output logs to console (logs are written to service-commands/output.log and service-commands/error.log by default)',
+    false
+  )
   .option(
     '-i, --instance-num <num>',
     'service instance number',
@@ -137,6 +162,7 @@ program
       }
       let options = {}
 
+      const verbose = opts.verbose
       const serviceName = findService(service)
       const setupCommand = findCommand(command)
 
@@ -144,7 +170,7 @@ program
         const numCreatorNodes = parseInt(opts.numCnodes)
         const numDiscoveryNodes = parseInt(opts.numDn)
         const withAAO = opts.withAao
-        await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO })
+        await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO, verbose })
         return
       }
 
@@ -159,7 +185,7 @@ program
           )
         }
         console.log(`Creator node instance ${serviceNumber}`)
-        options = { serviceNumber }
+        options = { serviceNumber, verbose }
       }
 
       await runSetupCommand(serviceName, setupCommand, options)
@@ -172,18 +198,33 @@ program
 program
   .command('discovery-node-stack up')
   .description('Bring up relevant services for discovery node')
-  .action(async () => await discoveryNodeUp())
+  .option(
+    '-v, --verbose',
+    'verbose mode - whether to output logs to console (logs are written to service-commands/output.log and service-commands/error.log by default)',
+    false
+  )
+  .action(async opts => await discoveryNodeUp(opts))
 
 program
   .command('discovery-node-web-server-stack up')
   .description(
     'Bring up relevant services for discovery node with only the web server running'
   )
-  .action(async () => await discoveryNodeWebServerUp())
+  .option(
+    '-v, --verbose',
+    'verbose mode - whether to output logs to console (logs are written to service-commands/output.log and service-commands/error.log by default)',
+    false
+  )
+  .action(async opts => await discoveryNodeWebServerUp(opts))
 
 program
   .command('identity-service-stack up')
   .description('Bring up relevant services for identity service')
-  .action(async () => await identityServiceUp())
+  .option(
+    '-v, --verbose',
+    'verbose mode - whether to output logs to console (logs are written to service-commands/output.log and service-commands/error.log by default)',
+    false
+  )
+  .action(async opts => await identityServiceUp(opts))
 
 program.parse(process.argv)
