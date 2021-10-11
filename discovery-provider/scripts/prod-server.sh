@@ -33,7 +33,7 @@ fi
 # if nginx config does not exist use default config
 if [ ! -e /usr/local/openresty/conf/nginx.conf ]; then
   mkdir -p /usr/local/openresty/conf
-  python scripts/gen_nginx_conf.py >/usr/local/openresty/conf/nginx.conf
+  ./scripts/gen_nginx_conf.py >/usr/local/openresty/conf/nginx.conf
 fi
 
 # If a worker class is specified, use that. Otherwise, use sync workers.
