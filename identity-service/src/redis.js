@@ -4,11 +4,21 @@ const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const { logger } = require('./logging')
 
 const Lock = {
+  /**
+   * Set lock for a key in redis
+   * @param {String} key redis key
+   * @returns true if lock is set, false if lock is not set
+   */
   setLock: async (key) => {
     const response = await redisClient.setnx(key, 1)
     if (response) return true
     else return false
   },
+  /**
+   * Get if a lock exists in redis
+   * @param {String} key redis key for lock
+   * @returns true if lock exists, false if lock doesn't exist
+   */
   getLock: async (key) => {
     const response = await redisClient.get(key)
     if (response) return true
