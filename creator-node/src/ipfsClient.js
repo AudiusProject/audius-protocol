@@ -75,12 +75,8 @@ async function ipfsMultipleAddWrapper (ipfs, inputData, ipfsConfig = {}, logCont
   const logger = genericLogger.child(logContext)
 
   // Generate hashes with ipfs content hashing logic
-  let onlyHashes = []
-  for (const { content } of inputData) {
-    const hash = await ipfsHashOf(content)
-    onlyHashes.push(hash)
-  }
-  const dirHash = await ipfsHashOf(inputData, {}, true)
+  const onlyHashes = await Promise.all(inputData.map(async ({ content }) => ipfsHashOf(content)))
+  const dirHash = await ipfsHashOf(inputData, {}, true /* isImgDir */)
   onlyHashes.push(dirHash)
 
   let ipfsDaemonResp
@@ -118,8 +114,6 @@ async function ipfsAddFromFsWrapper (ipfs, srcPath, ipfsConfig = {}, logContext 
   // Generate hash with ipfs content hashing logic
   const stream = fs.createReadStream(srcPath)
   const onlyHash = await ipfsHashOf(stream)
-
-  // If async ipfs add is enabled, synchronously add to ipfs.
 
   // If async ipfs add is enabled, synchronously add to ipfs.
   let ipfsDaemonHash

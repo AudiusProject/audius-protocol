@@ -560,7 +560,6 @@ describe('test Polling Tracks with real IPFS', function () {
       .expect(200)
   })
 
-  // TODO: ? should it return 200
   it('should not throw error response if saving metadata to ipfs fails', async function () {
     sinon.stub(ipfs, 'add').rejects(new Error('ipfs add failed!'))
     const metadata = {

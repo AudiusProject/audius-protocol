@@ -22,6 +22,8 @@ const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
 const testAudiusFileNumSegments = 32
 
+// NOTE: Skipping as this test file tests the legacy route. We should deprecate that route eventually, and then remove these tests. The
+// test file pollingTracks.test.js tests the same track upload logic as this file. 
 describe.skip('test non-polling Tracks with mocked IPFS (these are legacy - see pollingTracks.test.js for updated tests)', function () {
   let app, server, session, ipfsMock, libsMock, userId
 
