@@ -88,7 +88,7 @@ program
 program
   .command('down')
   .description('Bring down all services')
-  .option( // TODO DRY up verbose mode option for all commands
+  .option(
     '-v, --verbose',
     'verbose mode - whether to output logs to console (logs are written to service-commands/output.log and service-commands/error.log by default)',
     false

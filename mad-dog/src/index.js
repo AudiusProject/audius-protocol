@@ -170,7 +170,7 @@ async function main () {
   logger.info('Ensuring all nodes are healthy..')
   try {
     await Promise.all(
-      services.map(s => runSetupCommand(...s))
+      services.map(s => runSetupCommand(...s, { verbose: true }))
     )
   } catch (e) {
     logger.error('Some or all health checks failed. Please check the necessary protocol logs.\n', e)

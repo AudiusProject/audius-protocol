@@ -334,16 +334,16 @@ const discoveryNodeUp = async (options = { verbose: false }) => {
   const sequential = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
-    [Service.DISCOVERY_PROVIDER, SetupCommand.UP, { serviceNumber: 1 }],
+    [Service.DISCOVERY_PROVIDER, SetupCommand.UP, { serviceNumber: 1, ...options  }],
     [
       Service.DISCOVERY_PROVIDER,
       SetupCommand.HEALTH_CHECK,
-      { serviceNumber: 1 }
+      { serviceNumber: 1, ...options }
     ],
     [
       Service.DISCOVERY_PROVIDER,
       SetupCommand.REGISTER,
-      { retries: 2, serviceNumber: 1 }
+      { retries: 2, serviceNumber: 1, ...options }
     ]
   ]
 
@@ -391,17 +391,17 @@ const discoveryNodeWebServerUp = async (options = { verbose: false }) => {
     [
       Service.DISCOVERY_PROVIDER,
       SetupCommand.UP_WEB_SERVER,
-      { serviceNumber: 1 }
+      { serviceNumber: 1, ...options }
     ],
     [
       Service.DISCOVERY_PROVIDER,
       SetupCommand.HEALTH_CHECK,
-      { serviceNumber: 1 }
+      { serviceNumber: 1, ...options }
     ],
     [
       Service.DISCOVERY_PROVIDER,
       SetupCommand.REGISTER,
-      { retries: 2, serviceNumber: 1 }
+      { retries: 2, serviceNumber: 1, ...options }
     ]
   ]
 
@@ -434,22 +434,22 @@ const creatorNodeUp = async (serviceNumber, options = { verbose: false }) => {
     [
       Service.CREATOR_NODE,
       SetupCommand.UPDATE_DELEGATE_WALLET,
-      { serviceNumber: serviceNumber }
+      { serviceNumber, ...options }
     ],
     [
       Service.CREATOR_NODE,
       SetupCommand.UP,
-      { serviceNumber: serviceNumber, waitSec: 10 }
+      { serviceNumber, ...options, waitSec: 10 }
     ],
     [
       Service.CREATOR_NODE,
       SetupCommand.HEALTH_CHECK,
-      { serviceNumber: serviceNumber }
+      { serviceNumber, ...options }
     ],
     [
       Service.CREATOR_NODE,
       SetupCommand.REGISTER,
-      { serviceNumber: serviceNumber }
+      { serviceNumber, ...options }
     ]
   ]
 
@@ -556,6 +556,7 @@ const identityServiceUp = async (options = { verbose: false }) => {
  */
 const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = false, verbose = false }) => {
   if (verbose) {
+    console.log('Running in verbose mode.')
     console.log({withAAO})
     console.log(
       "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
@@ -582,22 +583,22 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = fal
       [
         Service.CREATOR_NODE,
         SetupCommand.UPDATE_DELEGATE_WALLET,
-        { serviceNumber }
+        { serviceNumber, ...options }
       ],
       [
         Service.CREATOR_NODE,
         SetupCommand.UP,
-        { serviceNumber, waitSec: 10 }
+        { serviceNumber, ...options, waitSec: 10 }
       ],
       [
         Service.CREATOR_NODE,
         SetupCommand.HEALTH_CHECK,
-        { serviceNumber }
+        { serviceNumber, ...options }
       ],
       [
         Service.CREATOR_NODE,
         SetupCommand.REGISTER,
-        { serviceNumber }
+        { serviceNumber, ...options }
       ]
     ]
   })
@@ -607,17 +608,17 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = fal
       [
         Service.DISCOVERY_PROVIDER,
         SetupCommand.UP,
-        { serviceNumber }
+        { serviceNumber, ...options }
       ],
       [
         Service.DISCOVERY_PROVIDER,
         SetupCommand.HEALTH_CHECK,
-        { serviceNumber }
+        { serviceNumber, ...options }
       ],
       [
         Service.DISCOVERY_PROVIDER,
         SetupCommand.REGISTER,
-        { retries: 2, serviceNumber }
+        { retries: 2, serviceNumber, ...options }
       ]
     ]
   })
@@ -645,12 +646,12 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = fal
   await runInParallel(inParallel, options)
 
   // Run sequential ops
-  await runInSequence(sequential1)
+  await runInSequence(sequential1, options)
 
-  await Promise.all(discoveryNodesCommands.map(commandGroup => runInSequence(commandGroup)))
-  await Promise.all(creatorNodeCommands.map(commandGroup => runInSequence(commandGroup)))
+  await Promise.all(discoveryNodesCommands.map(commandGroup => runInSequence(commandGroup, options)))
+  await Promise.all(creatorNodeCommands.map(commandGroup => runInSequence(commandGroup, options)))
 
-  await runInSequence(sequential2)
+  await runInSequence(sequential2, options)
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
   console.log(`All services brought up in ${durationSeconds}s`.happy)
