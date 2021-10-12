@@ -220,6 +220,10 @@ jobs:
             export ipfsHost="localhost"
             export ipfsPort=6001
             npm run start << parameters.mad-dog-type >> verbose
+      - store_artifacts:
+          path: service-commands/output.log
+      - store_artifacts:
+          path: service-commands/error.log
 
   test-libs:
     docker:
