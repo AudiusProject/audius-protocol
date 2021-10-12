@@ -106,12 +106,12 @@
     echo "Reward manager account key: $reward_manager_account_key"
     echo "Reward manager token acct key: $reward_manager_token_account_key"
     echo "Transferring funds to RewardsManager funds holder..."
-    spl-token transfer $token 100000000 $reward_manager_token_account_key 
+    spl-token transfer $token 100000000 $reward_manager_token_account_key
 
     echo "Testing create sender"
     cargo run create-sender --eth-operator-address 0xF24936714293a0FaF39A022138aF58D874289132  --eth-sender-address 0xF24936714293a0FaF39A022138aF58D874289133 --reward-manager $reward_manager_account_key
 
-} >&2
+} >solana.log 2>&1
 
 # Back up 2 directories to audius-protocol/solana-programs
 cd ../../

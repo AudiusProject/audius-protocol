@@ -69,7 +69,7 @@ const execShellCommand = (command, service, { verbose }) => {
 
     // Stream the stderr
     proc.stderr.on('data', data => {
-      process.stdout.write(`STDERRRRRR ${data}`)
+      process.stdout.write(`${data}`.error)
       ERROR_LOG.write(data)
     })
 
@@ -415,7 +415,7 @@ const discoveryNodeWebServerUp = async (options = { verbose: false }) => {
  * Brings up all services relevant to the creator node
  * @returns {Promise<void>}
  */
-const creatorNodeUp = async (serviceNumber, options = { verbose: false }) => { // TODO perhaps make this options = { serviceNumber, verbose: false } to create uniformity in how service up functions take parameters
+const creatorNodeUp = async (serviceNumber, options = { verbose: false }) => {
   console.log(
     "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
@@ -488,7 +488,7 @@ const creatorNodeUp = async (serviceNumber, options = { verbose: false }) => { /
  * Distributes 200k tokens to all wallets
  * @returns {Promise<void>}
  */
-const distribute = async (options = { verbose: false }) => { // TODO add verbose for this and getAccounts
+const distribute = async (options = { verbose: false }) => {
   await runSetupCommand(Service.DISTRIBUTE, SetupCommand.UP, options)
 }
 

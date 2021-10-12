@@ -77,7 +77,7 @@ program
   )
   .action(async opts => {
     console.log('Bringing up services...')
-    console.log(`See ${process.env.PROTOCOL_DIR}/service-commands/output.log and ${process.env.PROTOCOL_DIR}/service-commands/error.log for troubleshooting.`) // TODO add color or put this somewhere different
+    console.log(`See ${process.env.PROTOCOL_DIR}/service-commands/output.log and ${process.env.PROTOCOL_DIR}/service-commands/error.log for troubleshooting.`)
     const numCreatorNodes = parseInt(opts.numCnodes)
     const numDiscoveryNodes = parseInt(opts.numDn)
     const withAAO = opts.withAao

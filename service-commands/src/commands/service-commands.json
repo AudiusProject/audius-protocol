@@ -24,7 +24,7 @@
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 10",
       "echo 'Migrating contracts'",
-      "cd contracts/; node_modules/.bin/truffle migrate --f 1 --to 3",
+      "cd contracts/; node_modules/.bin/truffle migrate --f 1 --to 3 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
       "echo 'Writing flask config'",
       "cd contracts/; node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run"
     ],
@@ -41,7 +41,7 @@
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
       "echo 'Migrating eth contracts'",
-      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 11"
+      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 11 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log"
     ],
     "down": [
       "cd eth-contracts/; npm run ganache-q; rm -rf build"
@@ -60,6 +60,7 @@
     "path": "solana-programs",
     "up": [
       "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop > solana-program-config.json",
+      "cd solana-programs/; cat solana.log >> $PROTOCOL_DIR/service-commands/output.log",
       "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service",
       "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
     ],
@@ -101,7 +102,7 @@
   },
   "init-contracts-info": {
     "up": [
-      "cd libs/; sh ./scripts/migrate_contracts.sh"
+      "cd libs/; sh ./scripts/migrate_contracts.sh >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log"
     ]
   },
   "init-token-versions": {
@@ -221,7 +222,7 @@
   "user-replica-set-manager": {
     "up": [
       "cd libs; node initScripts/local.js update-userreplicasetmanager-init-config",
-      "cd contracts/; node_modules/.bin/truffle migrate --f 4 --to 4"
+      "cd contracts/; node_modules/.bin/truffle migrate --f 4 --to 4 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log"
     ]
   },
   "aao": {

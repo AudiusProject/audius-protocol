@@ -6,3 +6,4 @@ Cargo.lock
 .python-version
 test-ledger
 solana-program-config.json
+solana.log
