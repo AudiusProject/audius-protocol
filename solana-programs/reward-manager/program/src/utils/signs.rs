@@ -165,12 +165,12 @@ pub fn validate_secp_offsets(
     }
 
     // signature_offset = DATA_START + eth_pubkey.len (20) = 32
-    if offsets.signature_offset != DATA_START as u16 + 20 {
+    if offsets.signature_offset != 32 {
         return Err(AudiusProgramError::SignatureVerificationFailed.into());
     }
 
     // message_data_offset = signature_offset + signature_arr.len (65) = 97
-    if offsets.message_data_offset != offsets.signature_offset as u16 + 65 {
+    if offsets.message_data_offset != 97 {
         return Err(AudiusProgramError::SignatureVerificationFailed.into());
     }
 
