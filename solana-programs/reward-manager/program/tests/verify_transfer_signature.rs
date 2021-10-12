@@ -6,6 +6,7 @@ use libsecp256k1::{PublicKey, SecretKey};
 use rand::{Rng};
 use rand_073;
 use sha3::Digest;
+use solana_program::sysvar::recent_blockhashes;
 use solana_program::{
     instruction::Instruction, program_pack::Pack, pubkey::Pubkey, system_instruction, secp256k1_program
 };
@@ -14,6 +15,7 @@ use solana_sdk::{
     secp256k1_instruction::*, signature::Keypair, signer::Signer, transaction::Transaction,
 };
 use std::mem::MaybeUninit;
+use std::{thread, time};
 use utils::*;
 
 #[tokio::test]
@@ -335,14 +337,22 @@ async fn failure_duplicate_attestations() {
 
     context.banks_client.process_transaction(tx).await.unwrap();
 
+
     // Send from DN1 again for the 3rd txn (just reuse existing instructions)
-    let recent_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
+
+    // Need to poll for new blockhash; otherwise if we accidentally reuse
+    // the old one, the transaction won't be processed and a cached value returned
+    let mut new_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
+    while new_blockhash == recent_blockhash {
+        thread::sleep(time::Duration::from_millis(100));
+        new_blockhash = context.banks_client.get_recent_blockhash().await.unwrap();
+    }
 
     let tx = Transaction::new_signed_with_payer(
         &instructions,
         Some(&context.payer.pubkey()),
         &[&context.payer],
-        recent_blockhash,
+        new_blockhash,
     );
 
     let res = context.banks_client.process_transaction(tx).await;
@@ -503,7 +513,6 @@ async fn validation_fails_invalid_secp_index() {
 
     // Setup transaction
 
-
     let operator: EthereumAddress = rng.gen();
 
     // Create a sender
@@ -609,8 +618,34 @@ async fn validation_fails_incorrect_secp_offset() {
         data: secp_instr_data.clone(),
     };
 
+    // Setup transaction
+
+    let operator: EthereumAddress = rng.gen();
+
+    // Create a sender
+    let serialized_real_sk = real_sk.serialize();
+    let derived_address = create_sender_from(
+        &reward_manager,
+        &manager_account,
+        &mut context,
+        &serialized_real_sk,
+        operator,
+    ).await;
+
     let mut instructions = Vec::<Instruction>::new();
+
     instructions.push(secp_instruction);
+
+    instructions.push(
+        instruction::submit_attestations(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &derived_address,
+            &context.payer.pubkey(),
+            transfer_id.to_string(),
+        )
+        .unwrap(),
+    );
 
     let tx = Transaction::new_signed_with_payer(
         &instructions,

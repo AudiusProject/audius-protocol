@@ -20,12 +20,13 @@ use std::{
 /// Attempts to retrieve all instructions before `index_current_instruction`
 /// as secp recovery instructions, and asserts that it finds `necessary_instructions_count`
 /// instructions.
+/// Returns a vec of type (instruction, instruction_index)
 pub fn get_secp_instructions(
     index_current_instruction: u16,
     necessary_instructions_count: usize,
     instruction_info: &AccountInfo,
-) -> Result<Vec<Instruction>, AudiusProgramError> {
-    let mut secp_instructions: Vec<Instruction> = Vec::new();
+) -> Result<Vec<(Instruction, u16)>, AudiusProgramError> {
+    let mut secp_instructions: Vec<(Instruction, u16)> = Vec::new();
 
     for ind in 0..index_current_instruction {
         let instruction = sysvar::instructions::load_instruction_at(
@@ -35,7 +36,7 @@ pub fn get_secp_instructions(
         .map_err(to_audius_program_error)?;
 
         if instruction.program_id == secp256k1_program::id() {
-            secp_instructions.push(instruction);
+            secp_instructions.push((instruction, ind));
         }
     }
 
@@ -126,8 +127,16 @@ pub struct SecpSignatureOffsets {
 
 pub const SIGNATURE_OFFSETS_SERIALIZED_SIZE: usize = 11;
 pub const DATA_START: usize = SIGNATURE_OFFSETS_SERIALIZED_SIZE + 1;
+// These messages are prefix (3) + reward_manager_pubkey (32) + eth_address (20) = 55
+pub const EXPECTED_ADD_DELETE_MESSAGE_SIZE: u16 = 55;
+// All vote messages are padded to 128 bytes
+pub const VOTE_MESSAGE_LENGTH: u16 = 128;
 
-pub fn validate_secp_offsets(secp_instruction_data: Vec<u8>, instruction_index: u8) -> ProgramResult {
+/// Validates the secp offsets struct is as expected -
+/// the *_index fields must point to the `instruction_index`,
+/// the *_offset fields must be known sizes,
+/// and the message len must match the `expected_message_size`.
+pub fn validate_secp_offsets(secp_instruction_data: Vec<u8>, instruction_index: u8, expected_message_size: u16) -> ProgramResult {
     // First, ensure there is just a single offsets struct included
     if secp_instruction_data[0] != 1 {
         return Err(AudiusProgramError::SignatureVerificationFailed.into())
@@ -163,8 +172,7 @@ pub fn validate_secp_offsets(secp_instruction_data: Vec<u8>, instruction_index: 
         return Err(AudiusProgramError::SignatureVerificationFailed.into())
     }
 
-    // message_data_size = msgarr.len (128)
-    if offsets.message_data_size != 128 {
+    if offsets.message_data_size != expected_message_size {
         return Err(AudiusProgramError::SignatureVerificationFailed.into())
     }
 
@@ -263,10 +271,11 @@ pub fn validate_secp_add_delete_sender(
 
     // For each secp instruction, assert that the signer was expected and not duplicated
     // and that the message is formatted correctly.
-    for secp_instruction in secp_instructions {
+    for (secp_instruction, index) in secp_instructions {
         let eth_signer = get_signer_from_secp_instruction(secp_instruction.data.clone());
         check_signer(&mut checkmap, &eth_signer)?;
-        check_message_from_secp_instruction(secp_instruction.data, expected_message.as_ref())?;
+        validate_secp_offsets(secp_instruction.data.clone(), index as u8, EXPECTED_ADD_DELETE_MESSAGE_SIZE)?;
+        check_message_from_secp_instruction(secp_instruction.data.clone(), expected_message.as_ref())?;
     }
 
     Ok(())
@@ -300,7 +309,7 @@ pub fn validate_secp_submit_attestation(
         return Err(AudiusProgramError::Secp256InstructionMissing.into());
     }
 
-    validate_secp_offsets(secp_instruction.data.clone(), secp_index.try_into().unwrap())?;
+    // validate_secp_offsets(secp_instruction.data.clone(), secp_index.try_into().unwrap(), VOTE_MESSAGE_LENGTH)?;
 
     let eth_signer = get_signer_from_secp_instruction(secp_instruction.data.clone());
     if eth_signer != *expected_signer {
