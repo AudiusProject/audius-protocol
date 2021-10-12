@@ -9,7 +9,6 @@ use sha3::Digest;
 use solana_program::{hash::Hash, instruction::Instruction, pubkey::Pubkey, system_instruction};
 
 use solana_program_test::*;
-use solana_sdk::secp256k1_instruction::{DATA_START, SIGNATURE_SERIALIZED_SIZE, SecpSignatureOffsets};
 use solana_sdk::{
     account::Account,
     secp256k1_instruction,
@@ -53,69 +52,6 @@ async fn setup() -> (BanksClient, Keypair, Hash, Keypair, Keypair) {
         signer_group,
         group_owner,
     )
-}
-
-pub fn new_secp256k1_instruction_2_0(
-    priv_key: &libsecp256k1::SecretKey,
-    message_arr: &[u8],
-    instruction_index: u8,
-) -> Instruction {
-    let secp_pubkey = libsecp256k1::PublicKey::from_secret_key(priv_key);
-    let eth_pubkey = construct_eth_address(&secp_pubkey);
-    let mut hasher = sha3::Keccak256::new();
-    hasher.update(&message_arr);
-    let message_hash = hasher.finalize();
-    let mut message_hash_arr = [0u8; 32];
-    message_hash_arr.copy_from_slice(&message_hash.as_slice());
-    let message = libsecp256k1::Message::parse(&message_hash_arr);
-    let (signature, recovery_id) = libsecp256k1::sign(&message, priv_key);
-    let signature_arr = signature.serialize();
-    assert_eq!(signature_arr.len(), SIGNATURE_SERIALIZED_SIZE);
-
-    let mut instruction_data = vec![];
-    instruction_data.resize(
-        DATA_START
-            .saturating_add(eth_pubkey.len())
-            .saturating_add(signature_arr.len())
-            .saturating_add(message_arr.len())
-            .saturating_add(1),
-        0,
-    );
-    let eth_address_offset = DATA_START;
-    instruction_data[eth_address_offset..eth_address_offset.saturating_add(eth_pubkey.len())]
-        .copy_from_slice(&eth_pubkey);
-
-    let signature_offset = DATA_START.saturating_add(eth_pubkey.len());
-    instruction_data[signature_offset..signature_offset.saturating_add(signature_arr.len())]
-        .copy_from_slice(&signature_arr);
-
-    instruction_data[signature_offset.saturating_add(signature_arr.len())] =
-        recovery_id.serialize();
-
-    let message_data_offset = signature_offset
-        .saturating_add(signature_arr.len())
-        .saturating_add(1);
-    instruction_data[message_data_offset..].copy_from_slice(message_arr);
-
-    let num_signatures = 1;
-    instruction_data[0] = num_signatures;
-    let offsets = SecpSignatureOffsets {
-        signature_offset: signature_offset as u16,
-        signature_instruction_index: instruction_index,
-        eth_address_offset: eth_address_offset as u16,
-        eth_address_instruction_index: instruction_index,
-        message_data_offset: message_data_offset as u16,
-        message_data_size: message_arr.len() as u16,
-        message_instruction_index: instruction_index,
-    };
-    let writer = std::io::Cursor::new(&mut instruction_data[1..DATA_START]);
-    bincode::serialize_into(writer, &offsets).unwrap();
-
-    Instruction {
-        program_id: solana_sdk::secp256k1_program::id(),
-        accounts: vec![],
-        data: instruction_data,
-    }
 }
 
 async fn create_account(
@@ -223,12 +159,10 @@ fn construct_eth_address(
 fn construct_signature_data(
     priv_key_raw: &[u8; 32],
     message: &[u8],
-    index: u8,
 ) -> (instruction::SignatureData, Instruction) {
     let priv_key = SecretKey::parse(priv_key_raw).unwrap();
     let secp256_program_instruction =
-        new_secp256k1_instruction_2_0(&priv_key, message, index);
-
+        secp256k1_instruction::new_secp256k1_instruction(&priv_key, message);
     let start = 1;
     let end = start + state::SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
     let offsets =
@@ -579,11 +513,11 @@ async fn validate_3_signatures_clear_valid_signer() {
     let message = message_timestamp.to_le_bytes();
 
     let (signature_data_1, secp256_program_instruction_1) =
-        construct_signature_data(&key_1, &message, 0);
+        construct_signature_data(&key_1, &message);
     let (signature_data_2, secp256_program_instruction_2) =
-        construct_signature_data(&key_2, &message, 1);
+        construct_signature_data(&key_2, &message);
     let (signature_data_3, secp256_program_instruction_3) =
-        construct_signature_data(&key_3, &message, 2);
+        construct_signature_data(&key_3, &message);
 
     let mut transaction = Transaction::new_with_payer(
         &[
@@ -625,7 +559,7 @@ async fn validate_signature() {
     let eth_address = construct_eth_address(&secp_pubkey);
     let message = [8u8; 30];
 
-    let (signature_data, secp256_program_instruction) = construct_signature_data(&key, &message, 0);
+    let (signature_data, secp256_program_instruction) = construct_signature_data(&key, &message);
     let (mut banks_client, payer, recent_blockhash, signer_group, group_owner) = setup().await;
 
     process_tx_init_signer_group(
@@ -816,11 +750,11 @@ async fn validate_3_signatures_add_new_valid_signer() {
     let message = message_timestamp.to_le_bytes();
     // Old timestamp for testing
     let (signature_data_1, secp256_program_instruction_1) =
-        construct_signature_data(&key_1, &message, 0);
+        construct_signature_data(&key_1, &message);
     let (signature_data_2, secp256_program_instruction_2) =
-        construct_signature_data(&key_2, &message, 1);
+        construct_signature_data(&key_2, &message);
     let (signature_data_3, secp256_program_instruction_3) =
-        construct_signature_data(&key_3, &message, 2);
+        construct_signature_data(&key_3, &message);
 
     // Initialize incoming valid signer data
     let new_valid_signer = Keypair::new();
