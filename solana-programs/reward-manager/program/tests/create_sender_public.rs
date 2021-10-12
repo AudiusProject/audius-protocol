@@ -8,8 +8,8 @@ use audius_reward_manager::{
 };
 use libsecp256k1::SecretKey;
 use rand::Rng;
+use solana_program::instruction::InstructionError;
 use solana_program::{instruction::Instruction, pubkey::Pubkey};
-use solana_program::{instruction::InstructionError};
 use solana_program_test::*;
 use solana_sdk::{
     secp256k1_instruction::construct_eth_pubkey,

@@ -1,12 +1,12 @@
 #![allow(missing_docs)]
 use super::*;
-use borsh::BorshSerialize;
 use crate::{
     error::{to_audius_program_error, AudiusProgramError},
     processor::SENDER_SEED_PREFIX,
     state::{SenderAccount, VoteMessage},
 };
 use borsh::BorshDeserialize;
+use borsh::BorshSerialize;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, instruction::Instruction,
     program_error::ProgramError, program_pack::IsInitialized, pubkey::Pubkey, secp256k1_program,
@@ -124,7 +124,6 @@ pub struct SecpSignatureOffsets {
     pub message_instruction_index: u8,
 }
 
-
 pub const SIGNATURE_OFFSETS_SERIALIZED_SIZE: usize = 11;
 pub const DATA_START: usize = SIGNATURE_OFFSETS_SERIALIZED_SIZE + 1;
 // These messages are prefix (3) + reward_manager_pubkey (32) + eth_address (20) = 55
@@ -136,44 +135,47 @@ pub const VOTE_MESSAGE_LENGTH: u16 = 128;
 /// the *_index fields must point to the `instruction_index`,
 /// the *_offset fields must be known sizes,
 /// and the message len must match the `expected_message_size`.
-pub fn validate_secp_offsets(secp_instruction_data: Vec<u8>, instruction_index: u8, expected_message_size: u16) -> ProgramResult {
+pub fn validate_secp_offsets(
+    secp_instruction_data: Vec<u8>,
+    instruction_index: u8,
+    expected_message_size: u16,
+) -> ProgramResult {
     // First, ensure there is just a single offsets struct included
     if secp_instruction_data[0] != 1 {
-        return Err(AudiusProgramError::SignatureVerificationFailed.into())
+        return Err(AudiusProgramError::SignatureVerificationFailed.into());
     }
 
     let start = 1;
     let end = start + SIGNATURE_OFFSETS_SERIALIZED_SIZE;
     let offsets = SecpSignatureOffsets::try_from_slice(&secp_instruction_data[start..end]).unwrap();
     // Ensure indices match current instruction
-    let indicies_match = offsets.signature_instruction_index == instruction_index &&
-         offsets.eth_address_instruction_index == instruction_index &&
-         offsets.message_instruction_index == instruction_index
-    ;
+    let indicies_match = offsets.signature_instruction_index == instruction_index
+        && offsets.eth_address_instruction_index == instruction_index
+        && offsets.message_instruction_index == instruction_index;
 
     if !indicies_match {
-        return Err(AudiusProgramError::SignatureVerificationFailed.into())
+        return Err(AudiusProgramError::SignatureVerificationFailed.into());
     }
 
     // Ensure offsets match expected values
 
     // eth_address_offset = DATA_START (12)
     if offsets.eth_address_offset != DATA_START as u16 {
-        return Err(AudiusProgramError::SignatureVerificationFailed.into())
+        return Err(AudiusProgramError::SignatureVerificationFailed.into());
     }
 
     // signature_offset = DATA_START + eth_pubkey.len (20) = 32
     if offsets.signature_offset != DATA_START as u16 + 20 {
-        return Err(AudiusProgramError::SignatureVerificationFailed.into())
+        return Err(AudiusProgramError::SignatureVerificationFailed.into());
     }
 
     // message_data_offset = signature_offset + signature_arr.len (65) = 97
     if offsets.message_data_offset != offsets.signature_offset as u16 + 65 {
-        return Err(AudiusProgramError::SignatureVerificationFailed.into())
+        return Err(AudiusProgramError::SignatureVerificationFailed.into());
     }
 
     if offsets.message_data_size != expected_message_size {
-        return Err(AudiusProgramError::SignatureVerificationFailed.into())
+        return Err(AudiusProgramError::SignatureVerificationFailed.into());
     }
 
     Ok(())
@@ -274,8 +276,15 @@ pub fn validate_secp_add_delete_sender(
     for (secp_instruction, index) in secp_instructions {
         let eth_signer = get_signer_from_secp_instruction(secp_instruction.data.clone());
         check_signer(&mut checkmap, &eth_signer)?;
-        validate_secp_offsets(secp_instruction.data.clone(), index as u8, EXPECTED_ADD_DELETE_MESSAGE_SIZE)?;
-        check_message_from_secp_instruction(secp_instruction.data.clone(), expected_message.as_ref())?;
+        validate_secp_offsets(
+            secp_instruction.data.clone(),
+            index as u8,
+            EXPECTED_ADD_DELETE_MESSAGE_SIZE,
+        )?;
+        check_message_from_secp_instruction(
+            secp_instruction.data.clone(),
+            expected_message.as_ref(),
+        )?;
     }
 
     Ok(())

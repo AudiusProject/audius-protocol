@@ -3,12 +3,13 @@ mod utils;
 
 use audius_reward_manager::{instruction, state::VerifiedMessages, utils::EthereumAddress};
 use libsecp256k1::{PublicKey, SecretKey};
-use rand::{Rng};
+use rand::Rng;
 use rand_073;
 use sha3::Digest;
 use solana_program::sysvar::recent_blockhashes;
 use solana_program::{
-    instruction::Instruction, program_pack::Pack, pubkey::Pubkey, system_instruction, secp256k1_program
+    instruction::Instruction, program_pack::Pack, pubkey::Pubkey, secp256k1_program,
+    system_instruction,
 };
 use solana_program_test::*;
 use solana_sdk::{
@@ -337,7 +338,6 @@ async fn failure_duplicate_attestations() {
 
     context.banks_client.process_transaction(tx).await.unwrap();
 
-
     // Send from DN1 again for the 3rd txn (just reuse existing instructions)
 
     // Need to poll for new blockhash; otherwise if we accidentally reuse
@@ -478,7 +478,6 @@ async fn validation_fails_invalid_secp_index() {
     let real_sk = &libsecp256k1::SecretKey::random(&mut rand_073::thread_rng());
     let real_pk = libsecp256k1::PublicKey::from_secret_key(&real_sk);
 
-
     let real_eth_pubkey = construct_eth_pubkey(&real_pk);
 
     let eth_addr_offset = 12;
@@ -529,7 +528,8 @@ async fn validation_fails_invalid_secp_index() {
         &mut context,
         &serialized_real_sk,
         operator,
-    ).await;
+    )
+    .await;
 
     let mut instructions = Vec::<Instruction>::new();
     instructions.push(dummy2);
@@ -641,7 +641,8 @@ async fn validation_fails_incorrect_secp_offset() {
         &mut context,
         &serialized_real_sk,
         operator,
-    ).await;
+    )
+    .await;
 
     let mut instructions = Vec::<Instruction>::new();
 
