@@ -314,6 +314,47 @@ async fn init_signer_group() {
 }
 
 #[tokio::test]
+async fn disable_signer_group_wrong_owner() {
+    let (mut banks_client, payer, recent_blockhash, signer_group, group_owner) = setup().await;
+
+    let wrong_owner = Keypair::new();
+
+    process_tx_init_signer_group(
+        &signer_group.pubkey(),
+        &group_owner.pubkey(),
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+    )
+    .await
+    .unwrap();
+
+    let signer_group_account = get_account(&mut banks_client, &signer_group.pubkey()).await;
+
+    assert_eq!(signer_group_account.data.len(), state::SignerGroup::LEN);
+    assert_eq!(signer_group_account.owner, id());
+
+    let signer_group_data =
+        state::SignerGroup::try_from_slice(&signer_group_account.data.as_slice()).unwrap();
+
+    assert!(signer_group_data.is_initialized());
+    assert!(signer_group_data.owner_enabled);
+    assert_eq!(signer_group_data.owner, group_owner.pubkey());
+
+    let res = process_tx_init_disable_signer_group_owner(
+        &signer_group.pubkey(),
+        &wrong_owner,
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+    )
+    .await;
+
+    // Confirm owner cannot be updated from wrong address
+    assert!(res.is_err());
+}
+
+#[tokio::test]
 async fn disable_signer_group_owner() {
     let (mut banks_client, payer, recent_blockhash, signer_group, group_owner) = setup().await;
 

@@ -251,6 +251,7 @@ impl Processor {
             return Err(AudiusError::InvalidInstruction.into());
         }
 
+
         // Verify owner submission
         if !group_owner_info.is_signer {
             return Err(AudiusError::SignatureMissing.into());
@@ -259,6 +260,11 @@ impl Processor {
         let mut signer_group = Box::new(SignerGroup::try_from_slice(
             &signer_group_info.data.borrow(),
         )?);
+
+        // Confirm correct owner
+        if signer_group.owner != *group_owner_info.key {
+            return Err(AudiusError::WrongOwner.into());
+        }
 
         if !signer_group.is_initialized() {
             return Err(AudiusError::SignerGroupOwnerDisabled.into());
