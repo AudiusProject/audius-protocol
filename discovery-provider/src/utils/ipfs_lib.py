@@ -52,7 +52,7 @@ class IPFSClient:
             retrieved_from_gateway = api_metadata != metadata_format
         except Exception:
             logger.error(
-                f"Failed to retrieve CID from local node, {multihash}", exc_info=True
+                f"Failed to retrieve CID from gateway, {multihash}", exc_info=True
             )
 
         # Else, try to retrieve from local ipfs node.
@@ -62,7 +62,7 @@ class IPFSClient:
                 retrieved_from_local_node = api_metadata != metadata_format
             except Exception:
                 logger.error(
-                    f"Failed to retrieve CID from gateway, {multihash}", exc_info=True
+                    f"Failed to retrieve CID from local node, {multihash}", exc_info=True
                 )
 
         retrieved_metadata = retrieved_from_gateway or retrieved_from_local_node
