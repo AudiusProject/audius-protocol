@@ -300,6 +300,16 @@ const performHealthCheck = async (service, serviceNumber) => {
   }
 }
 
+const runInSequence = async (commands, options) => {
+  for (const s of commands) {
+    await runSetupCommand(...s, options)
+  }
+}
+
+const runInParallel = async (commands, options) => {
+  await Promise.all(commands.map(s => runSetupCommand(...s, options)))
+}
+
 /**
  * Brings up all services relevant to the discovery provider
  * @returns {Promise<void>}
@@ -309,6 +319,11 @@ const discoveryNodeUp = async (options = { verbose: false }) => {
     "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
   )
+
+  const setup = [
+    [Service.NETWORK, SetupCommand.UP],
+    [Service.SOLANA_VALIDATOR, SetupCommand.UP]
+  ]
 
   const inParallel = [
     [Service.CONTRACTS, SetupCommand.UP],
@@ -334,19 +349,14 @@ const discoveryNodeUp = async (options = { verbose: false }) => {
 
   const start = Date.now()
 
-  // Start up the docker network `audius_dev`
-  await runSetupCommand(Service.NETWORK, SetupCommand.UP, options)
-
-  // Start up the Solana test validator
-  await runSetupCommand(Service.SOLANA_VALIDATOR, SetupCommand.UP, options)
+  // Start up the docker network `audius_dev` and the Solana test validator
+  await runInSequence(setup, options)
 
   // Run parallel ops
-  await Promise.all(inParallel.map(s => runSetupCommand(...s, options)))
+  await runInParallel(inParallel, options)
 
   // Run sequential ops
-  for (const s of sequential) {
-    await runSetupCommand(...s, options)
-  }
+  await runInSequence(sequential, options)
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
   console.log(`Services brought up in ${durationSeconds}s`.info)
@@ -363,6 +373,11 @@ const discoveryNodeWebServerUp = async (options = { verbose: false }) => {
     "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
   )
+
+  const setup = [
+    [Service.NETWORK, SetupCommand.UP],
+    [Service.SOLANA_VALIDATOR, SetupCommand.UP]
+  ]
 
   const inParallel = [
     [Service.CONTRACTS, SetupCommand.UP],
@@ -392,19 +407,13 @@ const discoveryNodeWebServerUp = async (options = { verbose: false }) => {
 
   const start = Date.now()
 
-  // Start up the docker network `audius_dev`
-  await runSetupCommand(Service.NETWORK, SetupCommand.UP, options)
-
-  // Start up the Solana test validator
-  await runSetupCommand(Service.SOLANA_VALIDATOR, SetupCommand.UP, options)
+  // Start up the docker network `audius_dev` and the Solana test validator
+  await runInSequence(setup, options)
 
   // Run parallel ops
-  await Promise.all(inParallel.map(s => runSetupCommand(...s, options)))
+  await runInParallel(inParallel, options)
 
-  // Run sequential ops
-  for (const s of sequential) {
-    await runSetupCommand(...s, options)
-  }
+  await runInSequence(sequential, options)
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
   console.log(`Services brought up in ${durationSeconds}s`.info)
@@ -447,9 +456,8 @@ const creatorNodeUp = async (serviceNumber, options = { verbose: false }) => {
   const start = Date.now()
 
   // Run sequential ops
-  for (const s of sequential) {
-    await runSetupCommand(...s, options)
-  }
+
+  await runInSequence(sequential, options)
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
   console.log(`Creator Node Services num:${serviceNumber} brought up in ${durationSeconds}s`.info)
@@ -459,7 +467,7 @@ const creatorNodeUp = async (serviceNumber, options = { verbose: false }) => {
  * Deregisters a creator node
  * @returns {Promise<void>}
  */
- const deregisterCreatorNode = async (serviceNumber, options = { verbose: false }) => {
+const deregisterCreatorNode = async (serviceNumber, options = { verbose: false }) => {
   console.log(
     "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
@@ -476,9 +484,7 @@ const creatorNodeUp = async (serviceNumber, options = { verbose: false }) => {
   const start = Date.now()
 
   // Run sequential ops
-  for (const s of sequential) {
-    await runSetupCommand(...s, options)
-  }
+  await runInSequence(sequential, options)
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
   console.log(`Deregister Creator Node Service num:${serviceNumber} in ${durationSeconds}s`.info)
@@ -511,6 +517,10 @@ const identityServiceUp = async (options = { verbose: false }) => {
     "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
   )
+  const setup = [
+    [Service.NETWORK, SetupCommand.UP],
+    [Service.SOLANA_VALIDATOR, SetupCommand.UP]
+  ]
 
   const inParallel = [
     [Service.CONTRACTS, SetupCommand.UP],
@@ -527,19 +537,14 @@ const identityServiceUp = async (options = { verbose: false }) => {
 
   const start = Date.now()
 
-  // Start up the docker network `audius_dev`
-  await runSetupCommand(Service.NETWORK, SetupCommand.UP, options)
-
-  // Start up the Solana test validator
-  await runSetupCommand(Service.SOLANA_VALIDATOR, SetupCommand.UP, options)
+  // Start up the docker network `audius_dev` and the Solana test validator
+  await runInSequence(setup, options)
 
   // Run parallel ops
-  await Promise.all(inParallel.map(s => runSetupCommand(...s, options)))
+  await runInParallel(inParallel, options)
 
   // Run sequential ops
-  for (const s of sequential) {
-    await runSetupCommand(...s, options)
-  }
+  await runInSequence(sequential, options)
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
   console.log(`Services brought up in ${durationSeconds}s`.info)
@@ -550,13 +555,19 @@ const identityServiceUp = async (options = { verbose: false }) => {
  * @param {*} config. currently supports up to 4 Creator Nodes.
  */
 const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = false, verbose = false }) => {
-  console.log({withAAO})
-  console.log(
-    "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
-      .error
-  )
+  if (verbose) {
+    console.log({withAAO})
+    console.log(
+      "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
+        .error)
+  }
 
   const options = { verbose }
+
+  const setup = [
+    [Service.NETWORK, SetupCommand.UP],
+    [Service.SOLANA_VALIDATOR, SetupCommand.UP]
+  ]
 
   const inParallel = [
     [Service.IPFS, SetupCommand.UP],
@@ -566,88 +577,83 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = fal
     [Service.SOLANA_PROGRAMS, SetupCommand.UP]
   ]
 
-  const creatorNodeCommands = _.range(1, numCreatorNodes + 1).reduce(
-    (acc, cur) => {
-      return [
-        ...acc,
-        [
-          Service.CREATOR_NODE,
-          SetupCommand.UPDATE_DELEGATE_WALLET,
-          { ...options, serviceNumber: cur }
-        ],
-        [
-          Service.CREATOR_NODE,
-          SetupCommand.UP,
-          { ...options, serviceNumber: cur, waitSec: 10 }
-        ],
-        [
-          Service.CREATOR_NODE,
-          SetupCommand.HEALTH_CHECK,
-          { ...options, serviceNumber: cur }
-        ],
-        [
-          Service.CREATOR_NODE,
-          SetupCommand.REGISTER,
-          { ...options, serviceNumber: cur }
-        ]
+  const creatorNodeCommands = _.range(1, numCreatorNodes + 1).map(serviceNumber => {
+    return [
+      [
+        Service.CREATOR_NODE,
+        SetupCommand.UPDATE_DELEGATE_WALLET,
+        { serviceNumber }
+      ],
+      [
+        Service.CREATOR_NODE,
+        SetupCommand.UP,
+        { serviceNumber, waitSec: 10 }
+      ],
+      [
+        Service.CREATOR_NODE,
+        SetupCommand.HEALTH_CHECK,
+        { serviceNumber }
+      ],
+      [
+        Service.CREATOR_NODE,
+        SetupCommand.REGISTER,
+        { serviceNumber }
       ]
-    },
-    []
-  )
+    ]
+  })
 
-  const discoveryNodesCommands = _.range(1, numDiscoveryNodes + 1).reduce(
-    (acc, cur) => {
-      return [
-        ...acc,
-        [Service.DISCOVERY_PROVIDER, SetupCommand.UP, { serviceNumber: cur }],
-        [
-          Service.DISCOVERY_PROVIDER,
-          SetupCommand.HEALTH_CHECK,
-          { serviceNumber: cur }
-        ],
-        [
-          Service.DISCOVERY_PROVIDER,
-          SetupCommand.REGISTER,
-          { ...options, retries: 2, serviceNumber: cur }
-        ]
+  const discoveryNodesCommands = _.range(1, numDiscoveryNodes + 1).map(serviceNumber => {
+    return [
+      [
+        Service.DISCOVERY_PROVIDER,
+        SetupCommand.UP,
+        { serviceNumber }
+      ],
+      [
+        Service.DISCOVERY_PROVIDER,
+        SetupCommand.HEALTH_CHECK,
+        { serviceNumber }
+      ],
+      [
+        Service.DISCOVERY_PROVIDER,
+        SetupCommand.REGISTER,
+        { retries: 2, serviceNumber }
       ]
-    },
-    []
-  )
+    ]
+  })
 
-  const sequential = [
+  const sequential1 = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
-    [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
-    ...discoveryNodesCommands,
-    ...creatorNodeCommands,
+    [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP]
+  ]
+  const sequential2 = [
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
     [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
     [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP],
   ]
-
   if (withAAO) {
-    sequential.push([Service.AAO, SetupCommand.REGISTER])
-    sequential.push([Service.AAO, SetupCommand.UP])
+    sequential2.push([Service.AAO, SetupCommand.REGISTER])
+    sequential2.push([Service.AAO, SetupCommand.UP])
   }
 
   const start = Date.now()
 
-  // Start up the docker network `audius_dev`
-  await runSetupCommand(Service.NETWORK, SetupCommand.UP, options)
-
-  // Start up the Solana test validator
-  await runSetupCommand(Service.SOLANA_VALIDATOR, SetupCommand.UP, options)
+  // Start up the docker network `audius_dev` and the Solana test validator
+  await runInSequence(setup, options)
 
   // Run parallel ops
-  await Promise.all(inParallel.map(s => runSetupCommand(...s, options)))
+  await runInParallel(inParallel, options)
 
   // Run sequential ops
-  for (const s of sequential) {
-    await runSetupCommand(...s, options)
-  }
+  await runInSequence(sequential1)
+
+  await Promise.all(discoveryNodesCommands.map(commandGroup => runInSequence(commandGroup)))
+  await Promise.all(creatorNodeCommands.map(commandGroup => runInSequence(commandGroup)))
+
+  await runInSequence(sequential2)
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
-  console.log(`All services brought up in ${durationSeconds}s`.info)
+  console.log(`All services brought up in ${durationSeconds}s`.happy)
 }
 
 module.exports = {

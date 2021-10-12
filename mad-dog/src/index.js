@@ -55,13 +55,13 @@ const services = [
 
 async function setupAllServices () {
   logger.info('Setting up all services!')
-  await allUp({ numCreatorNodes: DEFAULT_NUM_CREATOR_NODES })
+  await allUp({ numCreatorNodes: DEFAULT_NUM_CREATOR_NODES, verbose: true })
   logger.info('All services set up!')
 }
 
 async function tearDownAllServices () {
   logger.info('Downing services.')
-  await runSetupCommand(Service.ALL, SetupCommand.DOWN)
+  await runSetupCommand(Service.ALL, SetupCommand.DOWN, { verbose: true })
   logger.info('All services downed.')
 }
 
