@@ -192,7 +192,7 @@ jobs:
           name: execute
           # https://support.circleci.com/hc/en-us/articles/360045268074-Build-Fails-with-Too-long-with-no-output-exceeded-10m0s-context-deadline-exceeded-
           # mad-dog should never hang more than a min with zero output; exit early.
-          no_output_timeout: 5m
+          no_output_timeout: 10m
           command: |
             sudo curl -L https://github.com/alexei-led/pumba/releases/download/0.7.8/pumba_linux_amd64 --output /usr/local/bin/pumba
             sudo chmod +x /usr/local/bin/pumba
@@ -214,16 +214,16 @@ jobs:
             cd /home/circleci/project/service-commands/scripts/
             sudo "$(which node)" hosts.js add
             sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            "$(which node)" setup.js up -nc 4 -v
+            "$(which node)" setup.js up -nc 4 & tail --retry -f /home/circleci/project/service-commands/output.log /home/circleci/project/service-commands/error.log
             cd /home/circleci/project/mad-dog/
             docker ps
             export ipfsHost="localhost"
             export ipfsPort=6001
             npm run start << parameters.mad-dog-type >> verbose
       - store_artifacts:
-          path: service-commands/output.log
+          path: /home/circleci/project/service-commands/output.log
       - store_artifacts:
-          path: service-commands/error.log
+          path: /home/circleci/project/service-commands/error.log
 
   test-libs:
     docker:
