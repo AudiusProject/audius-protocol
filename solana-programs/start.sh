@@ -111,7 +111,7 @@
     echo "Testing create sender"
     cargo run create-sender --eth-operator-address 0xF24936714293a0FaF39A022138aF58D874289132  --eth-sender-address 0xF24936714293a0FaF39A022138aF58D874289133 --reward-manager $reward_manager_account_key
 
-} >solana.log 2>&1
+} >&2
 
 # Back up 2 directories to audius-protocol/solana-programs
 cd ../../
