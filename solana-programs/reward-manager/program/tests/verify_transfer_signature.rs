@@ -448,7 +448,6 @@ async fn failure_duplicate_operator() {
 // Fails with index pointed to the incorrect instruction
 #[tokio::test]
 async fn validation_fails_invalid_secp_index() {
-
     let TestConstants {
         reward_manager,
         senders_message,
@@ -546,65 +545,63 @@ async fn validation_fails_invalid_secp_index() {
     assert!(context.banks_client.process_transaction(tx).await.is_err())
 }
 
-// Fails with offset pointed to something later on
 #[tokio::test]
-async fn test_eth_validation_bug() {
-    let fake_sk = libsecp256k1::SecretKey::random(&mut rand_073::thread_rng());
-    let fake_pk = libsecp256k1::PublicKey::from_secret_key(&fake_sk);
-    // Don't need the real secret key
-    let real_pk = libsecp256k1::PublicKey::from_secret_key(&libsecp256k1::SecretKey::random(&mut rand_073::thread_rng()));
+async fn validation_fails_incorrect_secp_offset() {
+    let TestConstants {
+        reward_manager,
+        senders_message,
+        mut context,
+        transfer_id,
+        mut rng,
+        manager_account,
+        ..
+    } = setup_test_environment().await;
 
-    let fake_msg: Vec<u8> = (0..100).collect();
-    let real_msg: Vec<u8> = (50..150).collect();
+    let malicious_sk = libsecp256k1::SecretKey::random(&mut rand_073::thread_rng());
+    let real_sk = &libsecp256k1::SecretKey::random(&mut rand_073::thread_rng());
+    let malicious_pk = libsecp256k1::PublicKey::from_secret_key(&malicious_sk);
+    let real_pk = libsecp256k1::PublicKey::from_secret_key(&real_sk);
+    let malicious_eth_pubkey = construct_eth_pubkey(&malicious_pk);
     let real_eth_pubkey = construct_eth_pubkey(&real_pk);
-    let fake_eth_pubkey = construct_eth_pubkey(&fake_pk);
 
-    let mut hasher = sha3::Keccak256::new();
-    hasher.update(fake_msg.clone());
-    let fake_message_hash = hasher.finalize();
-    let mut fake_message_hash_arr = [0u8; 32];
-    fake_message_hash_arr.copy_from_slice(&fake_message_hash.as_slice());
-    let fake_message = libsecp256k1::Message::parse(&fake_message_hash_arr);
-    let (fake_signature, fake_recovery_id) = libsecp256k1::sign(&fake_message, &fake_sk);
-    let fake_signature_arr = fake_signature.serialize();
-
-    let mut dummy_instr_data = vec![];
-    let eth_addr_offset = dummy_instr_data.len();
-    dummy_instr_data.extend_from_slice(&fake_eth_pubkey);
-    let eth_sig_offset = dummy_instr_data.len(); 
-    dummy_instr_data.extend_from_slice(&fake_signature_arr);
-    dummy_instr_data.push(fake_recovery_id.serialize());
-    let msg_offset = dummy_instr_data.len();
-    dummy_instr_data.append(&mut fake_msg.clone());
-
-    let dummy_instr_data_ind = 0;
+    // All offsets bumped by 20 bc we load the
+    // valid eth signature first
+    let eth_addr_offset = 32;
+    let eth_sig_offset = 52;
+    let msg_offset = 117;
 
     let secp_offsets_struct = SecpSignatureOffsets {
-        eth_address_instruction_index: dummy_instr_data_ind,
-        message_instruction_index: dummy_instr_data_ind,
-        signature_instruction_index: dummy_instr_data_ind,
+        eth_address_instruction_index: 0,
+        message_instruction_index: 0,
+        signature_instruction_index: 0,
         eth_address_offset: eth_addr_offset as u16,
         message_data_offset: msg_offset as u16,
-        message_data_size: fake_msg.len() as u16,
+        message_data_size: senders_message.len() as u16,
         signature_offset: eth_sig_offset as u16,
     };
 
     let mut secp_instr_data = vec![];
+
+    let mut hasher = sha3::Keccak256::new();
+    hasher.update(senders_message.clone());
+    let fake_message_hash = hasher.finalize();
+    let mut fake_message_hash_arr = [0u8; 32];
+    fake_message_hash_arr.copy_from_slice(&fake_message_hash.as_slice());
+    let fake_message = libsecp256k1::Message::parse(&fake_message_hash_arr);
+    let (fake_signature, fake_recovery_id) = libsecp256k1::sign(&fake_message, &malicious_sk);
+    let fake_signature_arr = fake_signature.serialize();
+
     secp_instr_data.push(1u8); // count
     secp_instr_data.append(&mut bincode::serialize(&secp_offsets_struct).unwrap());
-    // Here's where we put the real pubkey, which our processor tries to validate
+    // First place the real pubkey, which our processor tries to validate
     secp_instr_data.extend_from_slice(&real_eth_pubkey);
+    // Next, place the malicious pubkey
+    secp_instr_data.extend_from_slice(&malicious_eth_pubkey);
     // Append dummy signature data
-    let mut dummy_sig = (0..65).collect();
-    secp_instr_data.append(&mut dummy_sig);
+    secp_instr_data.extend_from_slice(&fake_signature_arr);
+    secp_instr_data.push(fake_recovery_id.serialize());
     // Append the real message
-    secp_instr_data.append(&mut real_msg.clone());
-
-    let dummy_instruction = Instruction {
-        program_id: Pubkey::new_unique(),
-        accounts: vec![],
-        data: dummy_instr_data.clone(),
-    };
+    secp_instr_data.append(&mut senders_message.to_vec());
 
     let secp_instruction = Instruction {
         program_id: secp256k1_program::id(),
@@ -612,6 +609,19 @@ async fn test_eth_validation_bug() {
         data: secp_instr_data.clone(),
     };
 
-    let tx = Transaction::new_with_payer(&[dummy_instruction, secp_instruction], None);
+    let mut instructions = Vec::<Instruction>::new();
+    instructions.push(secp_instruction);
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    // Assert that it *does* precompile - i.e. Solana runtime doesn't catch this hack
     assert!(tx.verify_precompiles(false).is_ok());
+
+    // Assert that it *doesn't* pass our processor
+    assert!(context.banks_client.process_transaction(tx).await.is_err())
 }
