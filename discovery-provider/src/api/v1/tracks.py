@@ -175,7 +175,7 @@ class TrackByRoute(Resource):
             ns.abort(400, "Missing required param slug, handle, or route")
         routes_parsed = routes if routes else []
         try:
-            routes_parsed = parse_routes(routes)
+            routes_parsed = parse_routes(routes_parsed)
         except IndexError:
             abort_bad_request_param("route", ns)
         if slug and handle:
@@ -246,7 +246,7 @@ class FullTrackByRoute(Resource):
             full_ns.abort(400, "Missing required param slug, handle, or route")
         routes_parsed = routes if routes else []
         try:
-            routes_parsed = parse_routes(routes)
+            routes_parsed = parse_routes(routes_parsed)
         except IndexError:
             abort_bad_request_param("route", full_ns)
         if slug and handle:
