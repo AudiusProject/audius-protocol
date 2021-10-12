@@ -454,8 +454,14 @@ async fn failure_duplicate_operator() {
     )
 }
 
-// Test todo:
-// Fails with index pointed to the incorrect instruction
+// This test exercises the vulnerability in which there are two secp recovery instructions,
+// the first malicious, signed from a key controlled by an attacker, and the second containing a
+// valid Discovery Node eth public key, but with secp instruction indices pointing to the
+// first recovery instruction.
+//
+// Without checking the indices, the secp recovery instructions would pass
+// the precompilation step, and we would extract valid eth address from
+// the second recovery instruction, assuming that was the recoevered address.
 #[tokio::test]
 async fn validation_fails_invalid_secp_index() {
     let TestConstants {
@@ -555,6 +561,11 @@ async fn validation_fails_invalid_secp_index() {
 }
 
 #[tokio::test]
+// This tests the vulnerability of a single secp instruction with
+// manipulated offset values. This instruction has a registered eth address in the expected location,
+// but has a malicious eth address + signature at other offsets - it thus
+// would pass precompilation, and if we didn't check the offsets, our program would assume
+// the valid eth address was the recovered address.
 async fn validation_fails_incorrect_secp_offset() {
     let TestConstants {
         reward_manager,
