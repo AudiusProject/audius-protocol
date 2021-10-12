@@ -335,7 +335,7 @@ class TrackSearchResult(Resource):
     )
     @ns.marshal_with(track_search_result)
     @ns.expect(search_parser)
-    @cache(ttl_sec=60)
+    @cache(ttl_sec=600)
     def get(self):
         """Search for a track."""
         args = search_parser.parse_args()
