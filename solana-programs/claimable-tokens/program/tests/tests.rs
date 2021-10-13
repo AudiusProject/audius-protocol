@@ -14,7 +14,9 @@ use solana_program_test::*;
 use solana_sdk::transaction::TransactionError;
 use solana_sdk::{
     account::Account,
-    secp256k1_instruction::{construct_eth_pubkey, new_secp256k1_instruction, SecpSignatureOffsets},
+    secp256k1_instruction::{
+        construct_eth_pubkey, new_secp256k1_instruction, SecpSignatureOffsets,
+    },
     signature::{Keypair, Signer},
     transaction::Transaction,
     transport::TransportError,
@@ -468,7 +470,11 @@ async fn transfer_with_amount_instruction_secp_offsets_exploit() {
     );
     // Confirm fake instruction passes verification
     assert!(tx.verify_precompiles(false).is_ok());
-    assert!(program_context.banks_client.process_transaction(tx).await.is_ok());
+    assert!(program_context
+        .banks_client
+        .process_transaction(tx)
+        .await
+        .is_ok());
 
     let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
 
@@ -502,9 +508,8 @@ async fn transfer_with_amount_instruction_secp_offsets_exploit() {
         .banks_client
         .process_transaction(transaction)
         .await;
-    
-    assert!(tx_result.is_err());
 
+    assert!(tx_result.is_err());
 }
 
 #[tokio::test]
@@ -599,7 +604,7 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
         .banks_client
         .process_transaction(transaction)
         .await;
-    
+
     assert!(tx_result.is_err());
 
     let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await;
@@ -612,7 +617,7 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
     let user_token_account =
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
     assert_eq!(user_token_account.amount, 0);
- }
+}
 
 #[tokio::test]
 async fn transfer_with_amount_instruction() {
@@ -631,7 +636,6 @@ async fn transfer_with_amount_instruction() {
 
     let message = user_token_account.pubkey().to_bytes();
     let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
-    println!("secp256_program_instruction {:?}", secp256_program_instruction);
     let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
         &mut program_context,
         mint_account,

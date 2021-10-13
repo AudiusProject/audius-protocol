@@ -289,9 +289,9 @@ impl Processor {
 
         Self::validate_eth_signature(
             expected_signer,
-            expected_message, 
+            expected_message,
             instruction.data,
-            secp_program_index as u8
+            secp_program_index as u8,
         )
     }
 
@@ -301,7 +301,7 @@ impl Processor {
         expected_signer: &EthereumAddress,
         expected_message: &[u8],
         secp_instruction_data: Vec<u8>,
-        instruction_index: u8
+        instruction_index: u8,
     ) -> Result<(), ProgramError> {
         // Only single recovery expected
         if secp_instruction_data[0] != 1 {
@@ -311,10 +311,9 @@ impl Processor {
         // Assert instruction_index = 1
         let start = 1;
         let end = start + (SIGNATURE_OFFSETS_SERIALIZED_SIZE as usize);
-        let sig_offsets_struct = SecpSignatureOffsets::try_from_slice(
-            &secp_instruction_data[start..end]
-        )
-        .map_err(|_| ClaimableProgramError::SignatureVerificationFailed)?;
+        let sig_offsets_struct =
+            SecpSignatureOffsets::try_from_slice(&secp_instruction_data[start..end])
+                .map_err(|_| ClaimableProgramError::SignatureVerificationFailed)?;
 
         // eth_address_offset = DATA_START (12)
         let eth_address_offset = DATA_START;
@@ -325,16 +324,18 @@ impl Processor {
         let message_data_offset = signature_offset + 65;
 
         // Validate the index of this instruction matches expected value
-        if sig_offsets_struct.message_instruction_index != instruction_index ||
-            sig_offsets_struct.signature_instruction_index != instruction_index ||
-            sig_offsets_struct.eth_address_instruction_index != instruction_index {
+        if sig_offsets_struct.message_instruction_index != instruction_index
+            || sig_offsets_struct.signature_instruction_index != instruction_index
+            || sig_offsets_struct.eth_address_instruction_index != instruction_index
+        {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
-        } 
+        }
 
         // Validate each offset is as expected
-        if sig_offsets_struct.eth_address_offset != (eth_address_offset as u16) ||
-            sig_offsets_struct.signature_offset != (signature_offset as u16) ||
-            sig_offsets_struct.message_data_offset != (message_data_offset as u16) {
+        if sig_offsets_struct.eth_address_offset != (eth_address_offset as u16)
+            || sig_offsets_struct.signature_offset != (signature_offset as u16)
+            || sig_offsets_struct.message_data_offset != (message_data_offset as u16)
+        {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
         }
 
