@@ -61,6 +61,11 @@ program
     false
   )
   .option(
+    '--no-parallel',
+    'Sequential provisioning - whether to provision CNs and DNs in sequence (for instance, if your machine cannot handle resource reqs for parallel prov).',
+    false
+  )
+  .option(
     '-nc, --num-cnodes <number>',
     'number of creator nodes',
     NUM_CREATOR_NODES.toString()
@@ -80,9 +85,8 @@ program
     console.log(`See ${process.env.PROTOCOL_DIR}/service-commands/output.log and ${process.env.PROTOCOL_DIR}/service-commands/error.log for troubleshooting.`)
     const numCreatorNodes = parseInt(opts.numCnodes)
     const numDiscoveryNodes = parseInt(opts.numDn)
-    const withAAO = opts.withAao
-    const verbose = opts.verbose
-    await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO, verbose, opts })
+    const { verbose, parallel, withAao: withAAO } = opts
+    await allUp({ numCreatorNodes, numDiscoveryNodes, withAAO, verbose, parallel, opts })
   })
 
 program

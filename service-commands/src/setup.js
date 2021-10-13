@@ -554,10 +554,10 @@ const identityServiceUp = async (options = { verbose: false }) => {
  * Brings up an entire Audius Protocol stack.
  * @param {*} config. currently supports up to 4 Creator Nodes.
  */
-const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = false, verbose = false }) => {
+const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = false, verbose = false, parallel = true }) => {
   if (verbose) {
     console.log('Running in verbose mode.')
-    console.log({withAAO})
+    console.log({ numCreatorNodes, numDiscoveryNodes, verbose, parallel, withAAO })
     console.log(
       "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
         .error)
@@ -648,8 +648,14 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = fal
   // Run sequential ops
   await runInSequence(sequential1, options)
 
-  await Promise.all(discoveryNodesCommands.map(commandGroup => runInSequence(commandGroup, options)))
-  await Promise.all(creatorNodeCommands.map(commandGroup => runInSequence(commandGroup, options)))
+  if (parallel) {
+    await Promise.all(discoveryNodesCommands.map(commandGroup => runInSequence(commandGroup, options)))
+    await Promise.all(creatorNodeCommands.map(commandGroup => runInSequence(commandGroup, options)))
+  } else {
+    console.log('Provisioning DNs and CNs in sequence.'.info)
+    await runInSequence(...discoveryNodesCommands)
+    await runInSequence(...creatorNodeCommands)
+  }
 
   await runInSequence(sequential2, options)
 
