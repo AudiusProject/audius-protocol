@@ -18,50 +18,58 @@ const {
 let subscriberPushNotifications = []
 
 async function indexNotifications (notifications, tx, audiusLibs) {
-  for (let notif of notifications) {
-    // blocknumber + timestamp parsed for all notification types
-    let blocknumber = notif.blocknumber
-    let timestamp = Date.parse(notif.timestamp.slice(0, -2))
-
-    // Handle the 'follow' notification type
-    if (notif.type === notificationTypes.Follow) {
-      let notificationTarget = notif.metadata.followee_user_id
+  const notificationHandlers = {
+    [notificationTypes.Follow]: async (notif, blocknumber, timestamp) => {
+      // Handle the 'follow' notification type
+      const notificationTarget = notif.metadata.followee_user_id
       const shouldNotify = await shouldNotifyUser(notificationTarget, 'followers', tx)
       await _processFollowNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
-    }
+    },
 
-    // Handle the 'repost' notification type
-    // track/album/playlist
-    if (notif.type === notificationTypes.Repost.base) {
-      let notificationTarget = notif.metadata.entity_owner_id
+    [notificationTypes.Repost.base]: async (notif, blocknumber, timestamp) => {
+      // Handle the 'repost' notification type
+      // track/album/playlist
+      const notificationTarget = notif.metadata.entity_owner_id
       const shouldNotify = await shouldNotifyUser(notificationTarget, 'reposts', tx)
       await _processBaseRepostNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
-    }
+    },
 
-    // Handle the 'favorite' notification type, track/album/playlist
-    if (notif.type === notificationTypes.Favorite.base) {
-      let notificationTarget = notif.metadata.entity_owner_id
+    [notificationTypes.Favorite.base]: async (notif, blocknumber, timestamp) => {
+      // Handle the 'favorite' notification type, track/album/playlist
+      const notificationTarget = notif.metadata.entity_owner_id
       const shouldNotify = await shouldNotifyUser(notificationTarget, 'favorites', tx)
       await _processFavoriteNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
-    }
+    },
 
-    // Handle the 'remix create' notification type
-    if (notif.type === notificationTypes.RemixCreate) {
-      let notificationTarget = notif.metadata.remix_parent_track_user_id
+    [notificationTypes.RemixCreate]: async (notif, blocknumber, timestamp) => {
+      // Handle the 'remix create' notification type
+      const notificationTarget = notif.metadata.remix_parent_track_user_id
       const shouldNotify = await shouldNotifyUser(notificationTarget, 'remixes', tx)
       await _processRemixCreateNotifications(audiusLibs, notif, blocknumber, timestamp, tx, notificationTarget, shouldNotify)
-    }
+    },
 
-    // Handle the 'favorite' notification type, track/album/playlist
-    if (notif.type === notificationTypes.RemixCosign) {
+    [notificationTypes.RemixCosign]: async (notif, blocknumber, timestamp) => {
+      // Handle the 'remix cosign' notification type
       await _processCosignNotifications(audiusLibs, notif, blocknumber, timestamp, tx)
-    }
+    },
 
+    [notificationTypes.Create.base]: async (notif, blocknumber, timestamp) => {
     // Handle the 'create' notification type, track/album/playlist
-    if (notif.type === notificationTypes.Create.base) {
       await _processCreateNotifications(audiusLibs, notif, blocknumber, timestamp, tx)
     }
   }
+
+  await Promise.all(notifications.map((notif) => {
+    // blocknumber + timestamp parsed for all notification types
+    const blocknumber = notif.blocknumber
+    const timestamp = Date.parse(notif.timestamp.slice(0, -2))
+    const handler = notificationHandlers[notif.type]
+
+    return handler && handler(notif, blocknumber, timestamp)
+  }))
+
+  // _processSubscriberPushNotifications is dependendent on subscriberPushNotifications
+  // which is modified by _processCreateNotifications
   await _processSubscriberPushNotifications(tx)
 }
 
