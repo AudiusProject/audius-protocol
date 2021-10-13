@@ -114,6 +114,7 @@
     "host": "dn1_web-server_1",
     "port": 5000,
     "up": [
+      "export COMPOSE_HTTP_TIMEOUT=360",
       "cd libs/initScripts; node configureLocalDiscProv.js",
       "cd libs/; node initScripts/local.js configure-discprov-wallet #",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
@@ -123,6 +124,7 @@
       "sleep 5"
     ],
     "up-web-server": [
+      "export COMPOSE_HTTP_TIMEOUT=360",
       "cd libs/initScripts; node configureLocalDiscProv.js",
       "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "echo 'Waiting 5 seconds...'",
@@ -137,6 +139,7 @@
       "cd service-commands/; node scripts/rewardManagerLocal.js register-discprov #"
     ],
     "restart": [
+      "export COMPOSE_HTTP_TIMEOUT=360",
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
       "docker volume prune -f",
@@ -164,6 +167,7 @@
     "host": "localhost",
     "port": 4000,
     "up": [
+      "export COMPOSE_HTTP_TIMEOUT=360",
       "cd creator-node; . compose/env/shellEnv#.sh; . compose/env/commonEnv.sh; docker-compose -f compose/docker-compose.yml up --build -d",
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ],
@@ -171,6 +175,7 @@
       "cd creator-node; . compose/env/shellEnv#.sh;  docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
     "restart": [
+      "export COMPOSE_HTTP_TIMEOUT=360",
       "cd creator-node; . compose/env/unsetShellEnv.sh",
       "cd creator-node; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans",
       "cd libs/; node initScripts/local.js update-cnode-config #",
