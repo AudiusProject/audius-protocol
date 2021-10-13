@@ -149,16 +149,15 @@ pub fn validate_secp_offsets(
     let end = start + SIGNATURE_OFFSETS_SERIALIZED_SIZE;
     let offsets = SecpSignatureOffsets::try_from_slice(&secp_instruction_data[start..end]).unwrap();
     // Ensure indices match current instruction
-    let indicies_match = offsets.signature_instruction_index == instruction_index
+    let indices_match = offsets.signature_instruction_index == instruction_index
         && offsets.eth_address_instruction_index == instruction_index
         && offsets.message_instruction_index == instruction_index;
 
-    if !indicies_match {
+    if !indices_match {
         return Err(AudiusProgramError::SignatureVerificationFailed.into());
     }
 
     // Ensure offsets match expected values
-
     // eth_address_offset = DATA_START (12)
     if offsets.eth_address_offset != DATA_START as u16 {
         return Err(AudiusProgramError::SignatureVerificationFailed.into());

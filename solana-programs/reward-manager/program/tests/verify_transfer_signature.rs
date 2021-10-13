@@ -461,7 +461,7 @@ async fn failure_duplicate_operator() {
 //
 // Without checking the indices, the secp recovery instructions would pass
 // the precompilation step, and we would extract valid eth address from
-// the second recovery instruction, assuming that was the recoevered address.
+// the second recovery instruction, assuming that was the recovered address.
 #[tokio::test]
 async fn validation_fails_invalid_secp_index() {
     let TestConstants {
