@@ -1,4 +1,4 @@
-import { TrackImage, TrackId } from '../../models/Track'
+import { TrackImage } from '../../models/Track'
 import { CollectionImage } from '../../models/Collection'
 import {
   UserImage,
@@ -36,54 +36,54 @@ export type SearchUser = UserMultihash &
     user_id: number
   }
 
-export type SearchTrack = TrackImage &
-  TrackId & {
-    description: string | null
-    genre: string
-    mood: string
-    release_date: null
-    remix_of: null
-    repost_count: number
-    tags: null
-    title: string
-    user: SearchUser
-    duration: number
-    play_count: null
-    blocknumber: number
-    create_date: null
-    created_at: string
-    credits_splits: null
-    download: {
-      cid: null
-      is_downloadable: false
-      requires_follow: false
-    }
-    isrc: null
-    license: null
-    iswc: null
-    field_visibility: {
-      mood: boolean
-      tags: boolean
-      genre: boolean
-      share: boolean
-      play_count: boolean
-      remixes: null
-    }
-    followee_reposts: {}[]
-    has_current_user_reposted: null
-    is_unlisted: boolean
-    has_current_user_saved: null
-    stem_of: null
-    updated_at: string
-    is_delete: boolean
-    track_id: number
-    owner_id: number
-    followee_saves: []
-    save_count: null
-    track_segments: { duration: number; multihash: string }[]
-    followee_favorites: null
-    user_id: number
+export type SearchTrack = TrackImage & {
+  description: string | null
+  genre: string
+  mood: string
+  release_date: null
+  remix_of: null
+  repost_count: number
+  tags: null
+  title: string
+  user: SearchUser
+  duration: number
+  play_count: null
+  blocknumber: number
+  create_date: null
+  created_at: string
+  credits_splits: null
+  download: {
+    cid: null
+    is_downloadable: false
+    requires_follow: false
   }
+  isrc: null
+  license: null
+  iswc: null
+  field_visibility: {
+    mood: boolean
+    tags: boolean
+    genre: boolean
+    share: boolean
+    play_count: boolean
+    remixes: null
+  }
+  followee_reposts: {}[]
+  has_current_user_reposted: null
+  is_unlisted: boolean
+  has_current_user_saved: null
+  stem_of: null
+  updated_at: string
+  is_delete: boolean
+  track_id: number
+  owner_id: number
+  followee_saves: []
+  save_count: null
+  track_segments: { duration: number; multihash: string }[]
+  followee_favorites: null
+  user_id: number
+  permalink: string
+}
 
 export type SearchPlaylist = CollectionImage & {
   description: string | null
