@@ -273,7 +273,7 @@ def process_user_bank_txs():
         logger.info(f"index_user_bank.py | high tx = {latest_processed_slot}")
         while not intersection_found:
             transactions_history = (
-                solana_client_manager.get_confirmed_signature_for_address2(
+                solana_client_manager.get_signatures_for_address(
                     USER_BANK_ADDRESS, before=last_tx_signature, limit=100
                 )
             )

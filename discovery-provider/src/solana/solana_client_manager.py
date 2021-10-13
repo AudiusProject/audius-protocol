@@ -64,7 +64,7 @@ class SolanaClientManager:
             f"solana_client_manager.py | get_sol_tx_info | All requests failed to fetch {tx_sig}",
         )
 
-    def get_confirmed_signature_for_address2(
+    def get_signatures_for_address(
         self,
         account: Union[str, Account, PublicKey],
         before: Optional[str] = None,
@@ -72,13 +72,13 @@ class SolanaClientManager:
     ):
         """Fetches confirmed signatures for transactions given an address."""
 
-        def handle_get_confirmed_signature_for_address2(client, _):
-            return client.get_confirmed_signature_for_address2(account, before, limit)
+        def handle_get_signatures_for_address(client, _):
+            return client.get_signatures_for_address(account, before, limit)
 
         return _try_all(
             self.clients,
-            handle_get_confirmed_signature_for_address2,
-            "solana_client_manager.py | get_confirmed_signature_for_address2 | All requests failed",
+            handle_get_signatures_for_address,
+            "solana_client_manager.py | get_signatures_for_address | All requests failed",
         )
 
 

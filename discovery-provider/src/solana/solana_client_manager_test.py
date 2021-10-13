@@ -72,7 +72,7 @@ def test_get_sol_tx_info(_):
 
 
 @mock.patch("solana.rpc.api.Client")
-def test_get_confirmed_signature_for_address2(_):
+def test_get_signatures_for_address(_):
     client_mocks = [
         mock.Mock(name="first"),
         mock.Mock(name="second"),
@@ -85,32 +85,32 @@ def test_get_confirmed_signature_for_address2(_):
     # test that it returns the client call response
     client_mocks[
         0
-    ].get_confirmed_signature_for_address2.return_value = expected_response
+    ].get_signatures_for_address.return_value = expected_response
     assert (
-        solana_client_manager.get_confirmed_signature_for_address2(
+        solana_client_manager.get_signatures_for_address(
             "account", "before", "limit"
         )
         == expected_response
     )
 
     # test that it will try subsequent clients if first one fails
-    client_mocks[0].get_confirmed_signature_for_address2.side_effect = Exception()
-    client_mocks[1].get_confirmed_signature_for_address2.side_effect = Exception()
+    client_mocks[0].get_signatures_for_address.side_effect = Exception()
+    client_mocks[1].get_signatures_for_address.side_effect = Exception()
     client_mocks[
         2
-    ].get_confirmed_signature_for_address2.return_value = expected_response
+    ].get_signatures_for_address.return_value = expected_response
     assert (
-        solana_client_manager.get_confirmed_signature_for_address2(
+        solana_client_manager.get_signatures_for_address(
             "account", "before", "limit"
         )
         == expected_response
     )
 
     # test exception raised if all requests fail
-    client_mocks[0].get_confirmed_signature_for_address2.side_effect = Exception()
-    client_mocks[1].get_confirmed_signature_for_address2.side_effect = Exception()
-    client_mocks[2].get_confirmed_signature_for_address2.side_effect = Exception()
+    client_mocks[0].get_signatures_for_address.side_effect = Exception()
+    client_mocks[1].get_signatures_for_address.side_effect = Exception()
+    client_mocks[2].get_signatures_for_address.side_effect = Exception()
     with pytest.raises(Exception):
-        solana_client_manager.get_confirmed_signature_for_address2(
+        solana_client_manager.get_signatures_for_address(
             "account", "before", "limit"
         )

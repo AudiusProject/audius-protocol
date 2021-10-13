@@ -235,7 +235,7 @@ be deployed exactly once to Solana in conjunction with the AudiusEthRegistry
 Each transaction here is signed by a trusted ethereum address authorized within the audius
 protocol.
 
-Monitoring the address is performed by leveraging the `get_confirmed_signature_for_address2`
+Monitoring the address is performed by leveraging the `get_signatures_for_address`
 function, which accepts 'limit' and 'before' parameters which are key to the logic below.
 This function returns tx signatures processed by the programId in confirmation order,
 with the most recently confirmed returned first.
@@ -338,7 +338,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
     # Traverse recent records until an intersection is found with existing Plays table
     while not intersection_found:
         transactions_history = (
-            solana_client_manager.get_confirmed_signature_for_address2(
+            solana_client_manager.get_signatures_for_address(
                 TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=100
             )
         )
