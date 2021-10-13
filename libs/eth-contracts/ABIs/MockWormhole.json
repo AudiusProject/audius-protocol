@@ -2,25 +2,19 @@
   "contractName": "MockWormhole",
   "abi": [
     {
-      "inputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
       "anonymous": false,
       "inputs": [
         {
           "indexed": false,
-          "internalType": "uint8",
-          "name": "targetChain",
-          "type": "uint8"
+          "internalType": "uint16",
+          "name": "recipientChain",
+          "type": "uint16"
         },
         {
           "indexed": false,
-          "internalType": "uint8",
+          "internalType": "uint16",
           "name": "tokenChain",
-          "type": "uint8"
+          "type": "uint16"
         },
         {
           "indexed": false,
@@ -54,12 +48,18 @@
         },
         {
           "indexed": false,
+          "internalType": "uint256",
+          "name": "arbiterFee",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
           "internalType": "uint32",
           "name": "nonce",
           "type": "uint32"
         }
       ],
-      "name": "LogTokensLocked",
+      "name": "LogTokensTransferred",
       "type": "event"
     },
     {
@@ -67,7 +67,7 @@
       "inputs": [
         {
           "internalType": "address",
-          "name": "asset",
+          "name": "token",
           "type": "address"
         },
         {
@@ -76,27 +76,27 @@
           "type": "uint256"
         },
         {
+          "internalType": "uint16",
+          "name": "recipientChain",
+          "type": "uint16"
+        },
+        {
           "internalType": "bytes32",
           "name": "recipient",
           "type": "bytes32"
         },
         {
-          "internalType": "uint8",
-          "name": "targetChain",
-          "type": "uint8"
+          "internalType": "uint256",
+          "name": "arbiterFee",
+          "type": "uint256"
         },
         {
           "internalType": "uint32",
           "name": "nonce",
           "type": "uint32"
-        },
-        {
-          "internalType": "bool",
-          "name": "refund_dust",
-          "type": "bool"
         }
       ],
-      "name": "lockAssets",
+      "name": "transferTokens",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
