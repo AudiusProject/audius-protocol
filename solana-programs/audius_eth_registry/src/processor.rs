@@ -51,13 +51,13 @@ impl Processor {
         let sig_offsets_struct =
             SecpSignatureOffsets::try_from_slice(&secp_instruction_data[start..end])
                 .map_err(|_| AudiusError::SignatureVerificationFailed)?;
-        // eth address offset = 12
-        let eth_address_offset = end;
+
+        let eth_address_offset = 12;
         // signature_offset = eth address offset (12) + eth_pubkey.len (20) = 32
-        let signature_offset = eth_address_offset + 20;
+        let signature_offset = 32;
         // message_data_offset = signature_offset + signature_arr.len (65) = 97
         // eth address (12) + address (20) + signature (65) = 97
-        let message_data_offset = signature_offset + 65;
+        let message_data_offset = 97;
 
         if sig_offsets_struct.message_instruction_index != instruction_index
             || sig_offsets_struct.signature_instruction_index != instruction_index

@@ -721,6 +721,11 @@ async fn validate_signature() {
     banks_client.process_transaction(transaction).await.unwrap();
 }
 
+// This test validates that an incorrectly configured SecpSignatureOffsets struct
+// cannot be used to bypass signature recovery
+// The exploit is to provide 2 SECP instructions, with the 2nd having all 'index' fields
+// point to the first dummy instructions, which results in validation of the SECP program passing
+// incorrectly if the program's logic does not handle this, there
 #[tokio::test]
 async fn validate_signature_index_exploit() {
     let mut rng = thread_rng();
