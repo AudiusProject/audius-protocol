@@ -318,7 +318,7 @@ pub fn validate_secp_submit_attestation(
         return Err(AudiusProgramError::Secp256InstructionMissing.into());
     }
 
-    // validate_secp_offsets(secp_instruction.data.clone(), secp_index.try_into().unwrap(), VOTE_MESSAGE_LENGTH)?;
+    validate_secp_offsets(secp_instruction.data.clone(), secp_index.try_into().unwrap(), VOTE_MESSAGE_LENGTH)?;
 
     let eth_signer = get_signer_from_secp_instruction(secp_instruction.data.clone());
     if eth_signer != *expected_signer {
