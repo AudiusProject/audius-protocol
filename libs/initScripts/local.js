@@ -104,8 +104,18 @@ const run = async () => {
       case 'configure-discprov-wallet': {
         const serviceCount = args[3]
         if (serviceCount === undefined) throw new Error('configure-discprov-wallet requires a service # as the second arg')
-        const envPath = '../discovery-provider/compose/env/commonEnv.sh'
-        await _configureDiscProv(ethAccounts, parseInt(serviceCount), envPath)
+        const workspace = '../discovery-provider/compose/env'
+        const tmpDir = `${workspace}/tmp${serviceCount}`
+        const cleanupNeeded = await fs.existsSync(tmpDir)
+        if (cleanupNeeded) {
+          await fs.rmdirSync(tmpDir, { force: true, recursive: true })
+        }
+        const templatePath = `${workspace}/commonEnv.sh`
+        envPath = `${workspace}/shellEnv${serviceCount}.sh`
+        const writePath = `${tmpDir}/shellEnv.sh`
+        await fs.mkdirSync(tmpDir)
+        await fs.copyFileSync(envPath, writePath)
+        await _configureDiscProv(ethAccounts, parseInt(serviceCount), templatePath, writePath)
         break
       }
 
@@ -157,14 +167,24 @@ const run = async () => {
         // Update arbitrary cnode
         const serviceCount = args[3]
         if (serviceCount === undefined) throw new Error('update-delegate-wallet requires a service # as the second arg')
-        envPath = '../creator-node/compose/env/commonEnv.sh'
+        const workspace = '../creator-node/compose/env'
+        const tmpDir = `${workspace}/tmp${serviceCount}`
+        const cleanupNeeded = await fs.existsSync(tmpDir)
+        if (cleanupNeeded) {
+          await fs.rmdirSync(tmpDir, { force: true, recursive: true })
+        }
+        const templatePath = `${workspace}/commonEnv.sh`
+        envPath = `${workspace}/shellEnv${serviceCount}.sh`
+        const writePath = `${tmpDir}/shellEnv.sh`
+        await fs.mkdirSync(tmpDir)
+        await fs.copyFileSync(envPath, writePath)
 
         // Local dev, delegate and owner wallet are equal
         const ownerWallet = ethAccounts[parseInt(serviceCount)]
         const delegateWallet = ownerWallet
         let endpoint = makeCreatorNodeEndpoint(serviceCount)
 
-        await _updateCreatorNodeConfig(ownerWallet, envPath, envPath, endpoint, /* isShell */ true, delegateWallet)
+        await _updateCreatorNodeConfig(ownerWallet, templatePath, writePath, endpoint, /* isShell */ true, delegateWallet)
         break
       }
 
@@ -456,7 +476,7 @@ const _updateCNodeDelegateOwnerWallet = async (ethAccounts, serviceNumber) => {
   await updateServiceDelegateOwnerWallet(audiusLibs, contentNodeType, endpoint, ethAccounts[serviceNumber + 10])
 }
 
-const _updateCreatorNodeConfig = async (ownerWallet, readPath, writePath = readPath, endpoint = null, isShell = false, delegateWallet) => {
+const _updateCreatorNodeConfig = async (ownerWallet, templatePath, writePath, endpoint = null, isShell = false, delegateWallet) => {
   delegateWallet = (delegateWallet || ownerWallet).toLowerCase()
   ownerWallet = ownerWallet.toLowerCase()
 
@@ -466,7 +486,7 @@ const _updateCreatorNodeConfig = async (ownerWallet, readPath, writePath = readP
   let ownerWalletPrivKey = ganacheEthAccounts['private_keys'][`${ownerWallet}`]
   let delegateWalletPrivKey = ganacheEthAccounts['private_keys'][`${delegateWallet}`]
 
-  await _updateCreatorNodeConfigFile(readPath, writePath, ownerWallet, ownerWalletPrivKey, delegateWallet, delegateWalletPrivKey, endpoint, isShell)
+  await _updateCreatorNodeConfigFile(templatePath, writePath, ownerWallet, ownerWalletPrivKey, delegateWallet, delegateWalletPrivKey, endpoint, isShell)
 }
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
@@ -500,76 +520,36 @@ const _initEthContractTypes = async (libs) => {
   await addServiceType(libs, discoveryNodeType, discoveryNodeTypeMin, discoveryNodeTypeMax)
 }
 
-const _configureDiscProv = async (ethAccounts, serviceNumber, envPath) => {
+const _configureDiscProv = async (ethAccounts, serviceNumber, templatePath, writePath) => {
   let ganacheEthAccounts = await getEthContractAccounts()
   let discProvAccountPubkey = ethAccounts[DISCOVERY_WALLET_OFFSET + serviceNumber].toLowerCase()
   let delegateWalletPrivKey = ganacheEthAccounts['private_keys'][`${discProvAccountPubkey}`]
-  const delegateOwnerWalletPubkeyLine = `export audius_delegate_owner_wallet=${discProvAccountPubkey}`
-  const delegateOwnerWalletPkeyLine = `export audius_delegate_private_key=${delegateWalletPrivKey}`
-  let output = []
-  output.push(delegateOwnerWalletPubkeyLine)
-  output.push(delegateOwnerWalletPkeyLine)
-  output.push(`echo $audius_delegate_owner_wallet`)
-  output.push(`echo $audius_delegate_private_key`)
-  fs.writeFileSync(envPath, output.join('\n'))
-  console.log(`Updated ${envPath}:\n${delegateOwnerWalletPubkeyLine}\n${delegateOwnerWalletPkeyLine}`)
+  let template = fs.readFileSync(templatePath, 'utf8')
+  const replaceMap = {
+    AUDIUS_DELEGATE_OWNER_WALLET: discProvAccountPubkey,
+    AUDIUS_DELEGATE_PRIVATE_KEY: delegateWalletPrivKey
+  }
+  Object.entries(replaceMap).forEach(([toReplace, replacement]) => {
+    template = template.replace(`${toReplace}`, replacement)
+  })
+  fs.appendFileSync(writePath, template)
+  console.log(`Updated ${writePath}:\n${discProvAccountPubkey}\n${delegateWalletPrivKey}`)
 }
 
-// Write an update to either the common .sh file for creator nodes or docker env file
-const _updateCreatorNodeConfigFile = async (readPath, writePath, ownerWallet, ownerWalletPkey, delegateWallet, delegateWalletPrivKey, endpoint, isShell) => {
-  const fileStream = fs.createReadStream(readPath)
-  const rl = readline.createInterface({
-    input: fileStream,
-    crlfDelay: Infinity
+// Write an update to shell env file for creator nodes or docker env file
+const _updateCreatorNodeConfigFile = async (templatePath, writePath, ownerWallet, ownerWalletPkey, delegateWallet, delegateWalletPrivKey, endpoint, isShell) => {
+  let template = fs.readFileSync(templatePath, 'utf8')
+  const replaceMap = {
+    DELEGATE_OWNER_WALLET: delegateWallet,
+    DELEGATE_PRIVATE_KEY: delegateWalletPrivKey,
+    CREATOR_NODE_ENDPOINT: endpoint,
+    SP_OWNER_WALLET: ownerWallet
+  }
+  Object.entries(replaceMap).forEach(([toReplace, replacement]) => {
+    template = template.replace(toReplace, replacement)
   })
-  let output = []
-  let delegateOwnerWalletFound = false
-  let spOwnerWalletFound = false
-  let pkeyFound = false
-  let endpointFound = false
-
-  let delegateOwnerWallet = delegateWallet
-  let delegateWalletPkey = delegateWalletPrivKey
-
-  const spOwnerWalletLine = `${isShell ? 'export ' : ''}spOwnerWallet=${ownerWallet}`
-  const delegateOwnerWalletLine = `${isShell ? 'export ' : ''}delegateOwnerWallet=${delegateOwnerWallet}`
-  const pkeyLine = `${isShell ? 'export ' : ''}delegatePrivateKey=0x${delegateWalletPkey}`
-  const endpointLine = `${isShell ? 'export ' : ''}creatorNodeEndpoint=${endpoint}`
-
-  for await (const line of rl) {
-    // Each line in input.txt will be successively available here as `line`.
-    if (line.includes('delegateOwnerWallet')) {
-      output.push(delegateOwnerWalletLine)
-      delegateOwnerWalletFound = true
-    } else if (line.includes('delegatePrivateKey')) {
-      output.push(pkeyLine)
-      pkeyFound = true
-    } else if (line.includes('creatorNodeEndpoint')) {
-      output.push(endpointLine)
-      endpointFound = true
-    } else if (line.includes('spOwnerWallet')) {
-      output.push(spOwnerWalletLine)
-      spOwnerWalletFound = true
-    } else {
-      output.push(line)
-    }
-  }
-
-  if (!delegateOwnerWalletFound) {
-    output.push(delegateOwnerWalletLine)
-  }
-  if (!pkeyFound) {
-    output.push(pkeyLine)
-  }
-  if (!endpointFound) {
-    output.push(endpointLine)
-  }
-  if (!spOwnerWalletFound) {
-    output.push(spOwnerWalletLine)
-  }
-
-  fs.writeFileSync(writePath, output.join('\n'))
-  console.log(`Updated ${writePath} with spOwnerWallet=${ownerWallet}\ndelegateOwnerWallet=${delegateOwnerWallet}\ndelegateWalletPkey=${delegateWalletPkey}\nendpoint=${endpoint}`)
+  fs.appendFileSync(writePath, template)
+  console.log(`Updated ${writePath} with spOwnerWallet=${ownerWallet}\ndelegateOwnerWallet=${delegateWallet}\ndelegateWalletPkey=${delegateWalletPrivKey}\nendpoint=${endpoint}`)
 }
 
 const _updateUserReplicaSetManagerBootstrapConfig = async (ethAccounts) => {

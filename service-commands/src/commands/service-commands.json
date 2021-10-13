@@ -118,7 +118,7 @@
       "cd libs/initScripts; node configureLocalDiscProv.js",
       "cd libs/; node initScripts/local.js configure-discprov-wallet #",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
-      "cd discovery-provider;  . compose/env/shellEnv#.sh; . compose/env/commonEnv.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/tmp#/shellEnv.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
@@ -126,12 +126,12 @@
     "up-web-server": [
       "export COMPOSE_HTTP_TIMEOUT=360",
       "cd libs/initScripts; node configureLocalDiscProv.js",
-      "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/tmp#/shellEnv.sh; docker-compose -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
     ],
     "down": [
-      "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
+      "cd discovery-provider; . compose/env/tmp#/shellEnv.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
       "cd discovery-provider; . compose/env/unsetShellEnv.sh"
     ],
     "register": [
@@ -141,11 +141,11 @@
     "restart": [
       "export COMPOSE_HTTP_TIMEOUT=360",
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
-      "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
+      "cd discovery-provider; . compose/env/tmp#/shellEnv.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
       "docker volume prune -f",
       "cd libs/initScripts; node configureLocalDiscProv.js",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
-      "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/tmp#/shellEnv.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
@@ -168,18 +168,18 @@
     "port": 4000,
     "up": [
       "export COMPOSE_HTTP_TIMEOUT=360",
-      "cd creator-node; . compose/env/shellEnv#.sh; . compose/env/commonEnv.sh; docker-compose -f compose/docker-compose.yml up --build -d",
+      "cd creator-node; . compose/env/tmp#/shellEnv.sh; docker-compose -f compose/docker-compose.yml up --build -d",
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ],
     "down": [
-      "cd creator-node; . compose/env/shellEnv#.sh;  docker-compose -f compose/docker-compose.yml down --remove-orphans"
+      "cd creator-node; . compose/env/tmp#/shellEnv.sh;  docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
     "restart": [
       "export COMPOSE_HTTP_TIMEOUT=360",
       "cd creator-node; . compose/env/unsetShellEnv.sh",
-      "cd creator-node; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans",
+      "cd creator-node; . compose/env/tmp#/shellEnv.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans",
       "cd libs/; node initScripts/local.js update-cnode-config #",
-      "cd creator-node; . compose/env/shellEnv#.sh; . compose/env/commonEnv.sh; docker-compose -f compose/docker-compose.yml up --build -d",
+      "cd creator-node; . compose/env/tmp#/shellEnv.sh; docker-compose -f compose/docker-compose.yml up --build -d",
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ],
     "register": [

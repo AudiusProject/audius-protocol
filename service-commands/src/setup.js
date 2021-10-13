@@ -262,7 +262,7 @@ const getServiceURL = (service, serviceNumber) => {
 const performHealthCheckWithRetry = async (
   service,
   serviceNumber,
-  retries = 10
+  retries = 20
 ) => {
   let attempts = retries
   while (attempts > 0) {
