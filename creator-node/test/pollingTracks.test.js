@@ -484,37 +484,6 @@ describe('test Polling Tracks with real IPFS', function () {
     }
   })
 
-  // Note: if hashing logic from ipfs ever changes, this test will fail
-  it('sends forbidden error response if track segments are in BlacklistManager', async function () {
-    // Add CIDs from testTrackData.json file to BlacklistManager
-    let testTrackJSON
-    try {
-      const testTrackData = fs.readFileSync(path.join(__dirname, 'testTrackData.json'))
-      testTrackJSON = JSON.parse(testTrackData)
-    } catch (e) {
-      assert.fail(`Could not parse testTrack metadata json: ${e}`)
-    }
-    const testTrackCIDs = testTrackJSON.map(segment => segment.multihash)
-    await BlacklistManager.addToRedis(BlacklistManager.getRedisSegmentCIDKey(), testTrackCIDs)
-
-    // Attempt to associate track content and get forbidden error
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
-    try {
-      await handleTrackContentRoute(
-        logContext,
-        getReqObj(fileUUID, fileDir, session),
-        mockServiceRegistry.ipfs,
-        mockServiceRegistry.blacklistManager
-      )
-      assert.fail('Should have thrown error if segment in blacklist')
-    } catch (e) {
-      assert.ok(e.message.includes('blacklisted'))
-    }
-
-    // Clear redis of segment CIDs
-    await BlacklistManager.removeFromRedis(BlacklistManager.getRedisSegmentCIDKey(), testTrackCIDs)
-  })
-
   it('should successfully upload track + transcode and prune upload artifacts', async function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
@@ -564,7 +533,7 @@ describe('test Polling Tracks with real IPFS', function () {
     assert.deepStrictEqual(resp.body.error, 'Metadata object must include owner_id and non-empty track_segments array')
   })
 
-  it('should throw an error if segment is blacklisted', async function () {
+  it('should not throw an error if segment is blacklisted', async function () {
     sinon.stub(BlacklistManager, 'CIDIsInBlacklist').returns(true)
     const metadata = {
       test: 'field1',
@@ -572,14 +541,12 @@ describe('test Polling Tracks with real IPFS', function () {
       owner_id: 1
     }
 
-    const resp = await request(app2)
+    await request(app2)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ metadata })
-      .expect(403)
-
-    assert.deepStrictEqual(resp.body.error, `Segment CID ${metadata.track_segments[0].multihash} has been blacklisted by this node.`)
+      .expect(200)
   })
 
   it('should throw error response if saving metadata to fails', async function () {

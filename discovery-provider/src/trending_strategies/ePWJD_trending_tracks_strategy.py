@@ -1,10 +1,15 @@
+import logging
+
 from datetime import datetime
 from dateutil.parser import parse
+
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
 from src.trending_strategies.trending_type_and_version import (
     TrendingType,
     TrendingVersion,
 )
+
+logger = logging.getLogger(__name__)
 
 N = 1
 a = max
@@ -15,6 +20,7 @@ R = 0.25
 i = 0.01
 q = 100000.0
 T = {"day": 1, "week": 7, "month": 30, "year": 365, "allTime": 100000}
+y = 3
 
 
 def z(time, track):
@@ -27,7 +33,7 @@ def z(time, track):
     o = track["created_at"]
     l = track["owner_follower_count"]
     j = track["karma"]
-    if l < 3:
+    if l < y:
         return {"score": 0, **track}
     H = (N * E + F * e + O * x + R * t + i * A) * j
     L = T[time]

@@ -19,8 +19,8 @@ const destroyUsers = async () => (
   })
 )
 
-async function createStarterCNodeUser (userId = null) {
-  return createStarterCNodeUserWithKey(testEthereumConstants.pubKey.toLowerCase(), userId)
+async function createStarterCNodeUser (userId = null, pubKey = testEthereumConstants.pubKey.toLowerCase()) {
+  return createStarterCNodeUserWithKey(pubKey, userId)
 }
 
 async function createStarterCNodeUserWithKey (walletPublicKey, userId = null) {

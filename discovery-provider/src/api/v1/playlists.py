@@ -164,7 +164,7 @@ class PlaylistSearchResult(Resource):
     )
     @ns.marshal_with(playlist_search_result)
     @ns.expect(search_parser)
-    @cache(ttl_sec=5)
+    @cache(ttl_sec=600)
     def get(self):
         """Search for a playlist."""
         args = search_parser.parse_args()

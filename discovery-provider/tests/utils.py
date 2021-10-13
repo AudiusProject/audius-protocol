@@ -144,6 +144,7 @@ def populate_mock_db(db, entities, block_offset=0):
                 handle=user_meta.get("handle", str(i)),
                 handle_lc=user_meta.get("handle", str(i)).lower(),
                 wallet=user_meta.get("wallet", str(i)),
+                bio=user_meta.get("bio", str(i)),
                 profile_picture=user_meta.get("profile_picture"),
                 profile_picture_sizes=user_meta.get("profile_picture_sizes"),
                 cover_photo=user_meta.get("cover_photo"),

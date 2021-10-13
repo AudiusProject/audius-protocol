@@ -111,7 +111,30 @@ def get_database_index_info(**kwargs):
         return json.dumps(connection_info)
 
 
-# NOTE to test queries locally
+def get_table_size_info(**kwargs):
+    """
+    Gets table information (number of rows, data size).
+
+    Kwargs:
+        db: global database instance
+        redis: global redis instance
+    """
+    db = kwargs["db"]
+    with db.scoped_session() as session:
+        sql_statement = """SELECT c.relname AS table_name,
+                c.reltuples::text AS rows,
+                pg_size_pretty(pg_relation_size(s.relid)) AS data_size
+            FROM pg_class c
+            JOIN pg_catalog.pg_statio_user_tables s ON s.relname = c.relname
+            WHERE c.relkind = 'r'
+            ORDER BY c.reltuples DESC;"""
+
+        q = sqlalchemy.text(sql_statement)
+        result = session.execute(q).fetchall()
+        table_size_info = [dict(row) for row in result]
+        return json.dumps(table_size_info)
+
+
 # add pg_stat_statements to shared_preload_libraries in the db docker container
 # at /var/lib/postgresql/data/postgresql.conf
 # docker restart discovery db container and confirm config was applied

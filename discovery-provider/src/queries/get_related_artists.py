@@ -100,7 +100,13 @@ def _calculate_related_artists_scores(
         .select_from(mutual_followers_subquery)
         .join(AggregateUser, AggregateUser.user_id == column("suggested_artist_id"))
         .join(User, User.user_id == column("suggested_artist_id"))
-        .filter(User.is_current, AggregateUser.track_count > 0)
+        .filter(
+            User.is_current,
+            AggregateUser.track_count > 0,
+            # Should never be true, but occasionally this is the mutual artist's
+            # first follow and aggregate user hasn't updated yet
+            AggregateUser.follower_count > 0,
+        )
         .order_by(desc(column("score")), User.user_id)
         .limit(limit)
     )

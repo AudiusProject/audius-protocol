@@ -278,7 +278,7 @@ async function processSync (serviceRegistry, walletPublicKeys, creatorNodeEndpoi
           await Promise.all(trackFilesSlice.map(
             async (trackFile) => {
               const success = await saveFileForMultihashToFS(
-                serviceRegistry, logger, trackFile.multihash, trackFile.storagePath, userReplicaSet
+                serviceRegistry, logger, trackFile.multihash, trackFile.storagePath, userReplicaSet, null, trackFile.trackBlockchainId
               )
 
               // If saveFile op failed, record CID for later processing
