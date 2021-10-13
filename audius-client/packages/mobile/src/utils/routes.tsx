@@ -1,5 +1,5 @@
 import Config from 'react-native-config'
-import { TrackId } from '../models/Track'
+import { TrackMetadata } from '../models/Track'
 import { UserCollection } from '../models/Collection'
 import { UserHandle } from '../models/User'
 
@@ -37,8 +37,8 @@ export const encodeUrlName = (name: string) => {
 
 const AUDIUS_URL = Config.AUDIUS_URL
 
-export const getTrackRoute = (track: TrackId, fullUrl = false) => {
-  const route = `/${track.route_id}-${track.track_id}`
+export const getTrackRoute = (track: TrackMetadata, fullUrl = false) => {
+  const route = track.permalink
   return fullUrl ? `${AUDIUS_URL}${route}` : route
 }
 
