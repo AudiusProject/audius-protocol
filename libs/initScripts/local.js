@@ -75,7 +75,7 @@ const getEnvConfigPathsForService = async ({ workspace, serviceCount }) => {
     await fs.rmdirSync(tmpDir, { force: true, recursive: true })
   }
   const templatePath = `${workspace}/commonEnv.sh`
-  envPath = `${workspace}/shellEnv${serviceCount}.sh`
+  const envPath = `${workspace}/shellEnv${serviceCount}.sh`
   const writePath = `${tmpDir}/shellEnv.sh`
   await fs.mkdirSync(tmpDir)
   await fs.copyFileSync(envPath, writePath)
@@ -89,7 +89,6 @@ const run = async () => {
     let userReplicaBootstrapAddressLibs
     let ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
     const ethAccounts = await ethWeb3.eth.getAccounts()
-    let envPath
 
     switch (args[2]) {
       case 'init':
