@@ -6,12 +6,10 @@ const { logger } = require('../logging')
 const { indexMilestones } = require('./milestoneProcessing')
 const {
   updateBlockchainIds,
-  // calculateTrackListenMilestones,
-  calculateTrackListenMilestonesFromDiscovery,
-  getHighestBlockNumber,
-  getHighestSlot
-  // calculateTrackListenMilestonesFromDiscovery,
+  getHighestSlot,
   getHighestBlockNumber
+  // calculateTrackListenMilestones,
+  // calculateTrackListenMilestonesFromDiscovery
 } = require('./utils')
 const { processEmailNotifications } = require('./sendNotificationEmails')
 const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
@@ -296,6 +294,9 @@ class NotificationProcessor {
 
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
+    // TODO: Re-enable listen milestone notifications when preprocessing is done on the discovery node side
+    // This query is extremely non-performant and needs to be restructured
+    //
     // Query owners for tracks relevant to track listen counts
     // Below can be toggled once milestones are calculated in discovery
     // let listenCounts = await calculateTrackListenMilestones()
