@@ -78,7 +78,6 @@ impl Processor {
             [eth_address_offset..eth_address_offset + SecpSignatureOffsets::ETH_ADDRESS_SIZE]
             .to_vec();
         if instruction_signer != expected_signer {
-            msg!("2 {:?} {:?}", instruction_signer, expected_signer);
             return Err(AudiusError::SignatureVerificationFailed.into());
         }
 
