@@ -2,14 +2,17 @@
 
 use audius_eth_registry::*;
 use borsh::BorshDeserialize;
+use libsecp256k1::{PublicKey, SecretKey};
 use rand::rngs::ThreadRng;
 use rand::{thread_rng, Rng};
-use libsecp256k1::{PublicKey, SecretKey};
 use sha3::Digest;
+use solana_program::secp256k1_program;
 use solana_program::{hash::Hash, instruction::Instruction, pubkey::Pubkey, system_instruction};
 
 use solana_program_test::*;
-use solana_sdk::secp256k1_instruction::{DATA_START, SIGNATURE_SERIALIZED_SIZE, SecpSignatureOffsets};
+use solana_sdk::secp256k1_instruction::{
+    new_secp256k1_instruction, SecpSignatureOffsets, DATA_START, SIGNATURE_SERIALIZED_SIZE,
+};
 use solana_sdk::{
     account::Account,
     secp256k1_instruction,
@@ -18,7 +21,6 @@ use solana_sdk::{
     transport::TransportError,
 };
 
-use chrono::prelude::*;
 use chrono::Utc;
 
 pub fn program_test() -> ProgramTest {
@@ -226,8 +228,7 @@ fn construct_signature_data(
     index: u8,
 ) -> (instruction::SignatureData, Instruction) {
     let priv_key = SecretKey::parse(priv_key_raw).unwrap();
-    let secp256_program_instruction =
-        new_secp256k1_instruction_2_0(&priv_key, message, index);
+    let secp256_program_instruction = new_secp256k1_instruction_2_0(&priv_key, message, index);
 
     let start = 1;
     let end = start + state::SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
@@ -718,6 +719,123 @@ async fn validate_signature() {
     );
     transaction.sign(&[&payer], recent_blockhash);
     banks_client.process_transaction(transaction).await.unwrap();
+}
+
+#[tokio::test]
+async fn validate_signature_index_exploit() {
+    let mut rng = thread_rng();
+    let key: [u8; 32] = rng.gen();
+    let priv_key = SecretKey::parse(&key).unwrap();
+    let secp_pubkey = PublicKey::from_secret_key(&priv_key);
+    let eth_address = construct_eth_address(&secp_pubkey);
+    let message = [8u8; 30];
+
+    let (mut banks_client, payer, recent_blockhash, signer_group, group_owner) = setup().await;
+
+    process_tx_init_signer_group(
+        &signer_group.pubkey(),
+        &group_owner.pubkey(),
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+    )
+    .await
+    .unwrap();
+
+    let valid_signer = Keypair::new();
+
+    create_account(
+        &mut banks_client,
+        &payer,
+        &recent_blockhash,
+        &valid_signer,
+        state::ValidSigner::LEN,
+    )
+    .await
+    .unwrap();
+
+    process_tx_init_valid_signer(
+        &valid_signer.pubkey(),
+        &signer_group.pubkey(),
+        &group_owner,
+        &payer,
+        recent_blockhash,
+        &mut banks_client,
+        eth_address,
+    )
+    .await
+    .unwrap();
+
+    let fake_sk = libsecp256k1::SecretKey::random(&mut rand_073::thread_rng());
+    let eth_addr_offset = 12;
+    let eth_sig_offset = 32;
+    let msg_offset = 97;
+
+    // Create signature offsets struct pointing to the wrong index (0)
+    let dummy_instr_data_ind = 0;
+    let secp_offsets_struct = SecpSignatureOffsets {
+        eth_address_instruction_index: dummy_instr_data_ind,
+        message_instruction_index: dummy_instr_data_ind,
+        signature_instruction_index: dummy_instr_data_ind,
+        eth_address_offset: eth_addr_offset as u16,
+        message_data_offset: msg_offset as u16,
+        message_data_size: message.len() as u16,
+        signature_offset: eth_sig_offset as u16,
+    };
+
+    let mut secp_instr_data = vec![];
+    secp_instr_data.push(1u8); // count
+    secp_instr_data.append(&mut bincode::serialize(&secp_offsets_struct).unwrap());
+    // Here's where we put the real pubkey, which our processor tries to validate
+    secp_instr_data.extend_from_slice(&eth_address);
+    // Append dummy signature data
+    let mut dummy_sig = (0..65).collect();
+    secp_instr_data.append(&mut dummy_sig);
+    // Append the real message
+    secp_instr_data.append(&mut message.to_vec());
+
+    // Sign the real message expected by the program with the fake secret key
+    // Ensures recovery step passes
+    let dummy2 = new_secp256k1_instruction(&fake_sk, &message);
+    let fake_secp_instruction = Instruction {
+        program_id: secp256k1_program::id(),
+        accounts: vec![],
+        data: secp_instr_data.clone(),
+    };
+
+    let start = 1;
+    let end = start + state::SecpSignatureOffsets::SIGNATURE_OFFSETS_SERIALIZED_SIZE;
+    let offsets = state::SecpSignatureOffsets::try_from_slice(&dummy2.data[start..end]).unwrap();
+
+    let sig_start = offsets.signature_offset as usize;
+    let sig_end = sig_start + state::SecpSignatureOffsets::SECP_SIGNATURE_SIZE;
+    let recovery_id = dummy2.data[sig_end];
+
+    let signature_data = instruction::SignatureData {
+        recovery_id,
+        message: message.to_vec(),
+    };
+
+    let mut transaction = Transaction::new_with_payer(
+        &[
+            dummy2,
+            fake_secp_instruction,
+            instruction::validate_signature(
+                &id(),
+                &valid_signer.pubkey(),
+                &signer_group.pubkey(),
+                signature_data,
+            )
+            .unwrap(),
+        ],
+        Some(&payer.pubkey()),
+    );
+    transaction.sign(&[&payer], recent_blockhash);
+    assert!(transaction.verify_precompiles(false).is_ok());
+    // This fails because when verifying the instructions, we verify the length of provided instructions
+    // aginst the length of the provided signature data array
+    let transaction_error = banks_client.process_transaction(transaction).await;
+    assert!(transaction_error.is_err());
 }
 
 #[tokio::test]
