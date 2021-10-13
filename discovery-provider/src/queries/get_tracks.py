@@ -1,10 +1,10 @@
 import logging  # pylint: disable=C0302
+from typing import List, TypedDict
 
-from sqlalchemy import func
+from sqlalchemy import and_, func, or_
 from sqlalchemy.sql.functions import coalesce
 from src.models import AggregatePlays, Track, TrackRoute, User
-from src.utils import helpers, redis_connection
-from src.utils.db_session import get_db_read_replica
+from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
     add_query_pagination,
     add_users_to_tracks,
@@ -12,11 +12,30 @@ from src.queries.query_helpers import (
     parse_sort_param,
     populate_track_metadata,
 )
-from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
+from src.utils import helpers, redis_connection
+from src.utils.db_session import get_db_read_replica
 
 logger = logging.getLogger(__name__)
 
 redis = redis_connection.get_redis()
+
+
+class RouteArgs(TypedDict):
+    handle: str
+    slug: str
+
+
+class GetTrackArgs(TypedDict):
+    limit: int
+    offset: int
+    handle: str
+    id: int
+    current_user_id: int
+    min_block_number: int
+    sort: str
+    filter_deleted: bool
+    routes: List[RouteArgs]
+    with_users: bool
 
 
 def _get_tracks(session, args):
@@ -24,16 +43,23 @@ def _get_tracks(session, args):
     base_query = session.query(Track)
     base_query = base_query.filter(Track.is_current == True, Track.stem_of == None)
 
-    # Note that if slug is included, we should only get one track
-    # The user ID filter should also be included
-    if "slug" in args:
-        slug = args.get("slug")
-        base_query = base_query.join(
-            TrackRoute, TrackRoute.track_id == Track.track_id
-        ).filter(TrackRoute.slug == slug)
+    if "routes" in args:
+        routes = args.get("routes")
+        # Join the routes table
+        base_query = base_query.join(TrackRoute, TrackRoute.track_id == Track.track_id)
 
-    # Only return unlisted tracks if slug and user_id are present
-    if not "slug" in args or not "user_id" in args:
+        # Add the query conditions for each route
+        filter_cond = []
+        for route in routes:
+            filter_cond.append(
+                and_(
+                    TrackRoute.slug == route["slug"],
+                    TrackRoute.owner_id == route["owner_id"],
+                )
+            )
+        base_query = base_query.filter(or_(*filter_cond))
+    else:
+        # Only return unlisted tracks if routes are present
         base_query = base_query.filter(Track.is_unlisted == False)
 
     # Conditionally process an array of tracks
@@ -90,7 +116,7 @@ def _get_tracks(session, args):
     return tracks
 
 
-def get_tracks(args):
+def get_tracks(args: GetTrackArgs):
     """
     Gets tracks.
     A note on caching strategy:
@@ -116,6 +142,26 @@ def get_tracks(args):
                     .first()
                 )
                 args["user_id"] = user_id
+
+            if "routes" in args:
+                # Convert the handles to user_ids
+                routes = args.get("routes")
+                handles = [route["handle"].lower() for route in routes]
+                user_id_tuples = (
+                    session.query(User.user_id, User.handle_lc)
+                    .filter(User.handle_lc.in_(handles), User.is_current == True)
+                    .all()
+                )
+                user_id_map = {handle: user_id for (user_id, handle) in user_id_tuples}
+                args["routes"] = []
+                for route in routes:
+                    if route["handle"] in user_id_map:
+                        args["routes"].append(
+                            {
+                                "slug": route["slug"],
+                                "owner_id": user_id_map[route["handle"].lower()],
+                            }
+                        )
 
             can_use_shared_cache = (
                 "id" in args

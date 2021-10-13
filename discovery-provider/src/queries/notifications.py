@@ -929,7 +929,7 @@ def solana_notifications():
             )
             .first()
         )
-        current_max_slot_num = current_slot_query_result.slot
+        current_max_slot_num = current_slot_query_result.slot if current_slot_query_result is not None else 0
         if current_max_slot_num < max_slot_number:
             max_slot_number = current_max_slot_num
 
