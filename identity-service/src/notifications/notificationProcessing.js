@@ -69,9 +69,7 @@ async function indexNotifications (notifications, tx, audiusLibs) {
       return handler(notif, blocknumber, timestamp)
     } else {
       logger.debug('indexNotifications - no handler defined for notification type', notif)
-      return
     }
-
   }))
 
   // _processSubscriberPushNotifications is dependendent on subscriberPushNotifications
