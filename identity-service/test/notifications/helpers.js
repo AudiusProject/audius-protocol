@@ -1,4 +1,4 @@
-const { _processFollowNotifications } = require('../../src/notifications/notificationProcessing')
+const processFollowNotifications = require('../../src/notifications/processNotifications/followNotification')
 const assert = require('assert')
 const { followNotifsPreRead, followNotifsPostRead } = require('./notificationDataSeeds')
 const models = require('../../src/models')
@@ -10,7 +10,7 @@ async function _insertFollowersPreRead () {
     const blocknumber = notif.blocknumber
     const timestamp = Date.parse(notif.timestamp.slice(0, -2))
     console.log(notif, notificationTarget, blocknumber, timestamp)
-    await _processFollowNotifications(
+    await processFollowNotifications(
       {},
       notif,
       blocknumber,
@@ -44,7 +44,7 @@ async function _insertFollowersPostRead () {
     const blocknumber = notif.blocknumber
     const timestamp = Date.parse(notif.timestamp.slice(0, -2))
     console.log(notif, notificationTarget, blocknumber, timestamp)
-    await _processFollowNotifications(
+    await processFollowNotifications(
       {},
       notif,
       blocknumber,
