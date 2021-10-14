@@ -6,18 +6,23 @@ use claimable_tokens::*;
 use libsecp256k1::{PublicKey, SecretKey};
 use rand::prelude::ThreadRng;
 use rand::{thread_rng, Rng};
-use solana_program::instruction::InstructionError;
+use sha3::Digest;
+use solana_program::instruction::{Instruction, InstructionError};
+use solana_program::secp256k1_program;
 use solana_program::{program_pack::Pack, pubkey::Pubkey, system_instruction};
 use solana_program_test::*;
 use solana_sdk::transaction::TransactionError;
 use solana_sdk::{
     account::Account,
-    secp256k1_instruction::{construct_eth_pubkey, new_secp256k1_instruction},
+    secp256k1_instruction::{
+        construct_eth_pubkey, new_secp256k1_instruction, SecpSignatureOffsets,
+    },
     signature::{Keypair, Signer},
     transaction::Transaction,
     transport::TransportError,
 };
-// construct_eth_pubkey
+
+// Construct_eth_pubkey
 pub fn program_test() -> ProgramTest {
     ProgramTest::new(
         "claimable_tokens",
@@ -378,6 +383,256 @@ async fn transfer_all_instruction() {
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
 
     assert_eq!(user_token_account.amount, tokens_amount);
+}
+
+// This test attemps to manipulate the offsets of a single SECP instruction
+// in order to insert a maliciously signed signature message at the address
+// read by the program. The real eth address is inserted at the expected offset (12)
+// and the fields signed with the attacker's secret key are followed, hence every
+// offset being increased by 20.
+// In order to prevent this exploit, the program has been modified to manually
+// check the offset of each field such that they match the expected values and such
+// manipulation cannot pass validation.
+#[tokio::test]
+async fn transfer_with_amount_instruction_secp_offsets_exploit() {
+    let mut program_context = program_test().start_with_context().await;
+    let rent = program_context.banks_client.get_rent().await.unwrap();
+    let (
+        _rng,
+        _key,
+        _priv_key,
+        _secp_pubkey,
+        mint_account,
+        mint_authority,
+        user_token_account,
+        eth_address,
+    ) = init_test_variables();
+
+    let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
+        &mut program_context,
+        mint_account,
+        rent,
+        mint_authority,
+        eth_address,
+        &user_token_account,
+    )
+    .await;
+
+    let message = user_token_account.pubkey().to_bytes();
+
+    let malicious_sk = libsecp256k1::SecretKey::random(&mut rand_073::thread_rng());
+    let malicious_pk = libsecp256k1::PublicKey::from_secret_key(&malicious_sk);
+    let malicious_eth_pubkey = construct_eth_pubkey(&malicious_pk);
+
+    let real_eth_pubkey = eth_address;
+    // All offsets bumped by 20 bc we load the
+    // valid eth signature first
+    let eth_addr_offset = 32;
+    let eth_sig_offset = 52;
+    let msg_offset = 117;
+
+    let secp_offsets_struct = SecpSignatureOffsets {
+        eth_address_instruction_index: 0,
+        message_instruction_index: 0,
+        signature_instruction_index: 0,
+        eth_address_offset: eth_addr_offset as u16,
+        message_data_offset: msg_offset as u16,
+        message_data_size: message.len() as u16,
+        signature_offset: eth_sig_offset as u16,
+    };
+
+    let mut secp_instr_data = vec![];
+
+    let mut hasher = sha3::Keccak256::new();
+    hasher.update(message.clone());
+    let fake_message_hash = hasher.finalize();
+    let mut fake_message_hash_arr = [0u8; 32];
+    fake_message_hash_arr.copy_from_slice(&fake_message_hash.as_slice());
+    let fake_message = libsecp256k1::Message::parse(&fake_message_hash_arr);
+    let (fake_signature, fake_recovery_id) = libsecp256k1::sign(&fake_message, &malicious_sk);
+    let fake_signature_arr = fake_signature.serialize();
+
+    secp_instr_data.push(1u8); // count
+    secp_instr_data.append(&mut bincode::serialize(&secp_offsets_struct).unwrap());
+    // First place the real pubkey, which our processor tries to validate
+    secp_instr_data.extend_from_slice(&real_eth_pubkey);
+    // Next, place the malicious pubkey
+    secp_instr_data.extend_from_slice(&malicious_eth_pubkey);
+    // Append dummy signature data
+    secp_instr_data.extend_from_slice(&fake_signature_arr);
+    secp_instr_data.push(fake_recovery_id.serialize());
+    // Append the real message
+    secp_instr_data.append(&mut message.to_vec());
+
+    let fake_secp_instruction_1 = Instruction {
+        program_id: secp256k1_program::id(),
+        accounts: vec![],
+        data: secp_instr_data.clone(),
+    };
+
+    let tx = Transaction::new_signed_with_payer(
+        &[fake_secp_instruction_1],
+        Some(&program_context.payer.pubkey()),
+        &[&program_context.payer],
+        program_context.last_blockhash,
+    );
+    // Confirm fake instruction passes verification
+    assert!(tx.verify_precompiles(false).is_ok());
+    assert!(program_context
+        .banks_client
+        .process_transaction(tx)
+        .await
+        .is_ok());
+
+    let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
+
+    let fake_secp_instruction_2 = Instruction {
+        program_id: secp256k1_program::id(),
+        accounts: vec![],
+        data: secp_instr_data.clone(),
+    };
+    let mut transaction = Transaction::new_with_payer(
+        &[
+            fake_secp_instruction_2,
+            instruction::transfer(
+                &id(),
+                &user_bank_account,
+                &user_token_account.pubkey(),
+                &base_acc,
+                instruction::Transfer {
+                    eth_address,
+                    amount: transfer_amount,
+                },
+            )
+            .unwrap(),
+        ],
+        Some(&program_context.payer.pubkey()),
+    );
+
+    assert!(transaction.verify_precompiles(false).is_ok());
+
+    transaction.sign(&[&program_context.payer], program_context.last_blockhash);
+    let tx_result = program_context
+        .banks_client
+        .process_transaction(transaction)
+        .await;
+
+    assert!(tx_result.is_err());
+}
+
+// This test explicitly exercises the vulnerability in which an attacker
+// submits 2 SECP instructions along with the transfer instruction
+// The 1st is a valid recovery signed by a malicious secret key
+// The 2nd is a spoofed SecpSignatureOffsets struct with all 'index'
+// fields pointed at the 1st instruction with dummy values in the other fields
+// By explicitly checking that struct index values match the instruction index
+// this vulnerability is prevented.
+// Note that prior to changes, this was indeed possible to spoof.
+#[tokio::test]
+async fn transfer_with_amount_instruction_secp_index_exploit() {
+    let mut program_context = program_test().start_with_context().await;
+    let rent = program_context.banks_client.get_rent().await.unwrap();
+    let (
+        _rng,
+        _key,
+        _priv_key,
+        _secp_pubkey,
+        mint_account,
+        mint_authority,
+        user_token_account,
+        eth_address,
+    ) = init_test_variables();
+
+    let message = user_token_account.pubkey().to_bytes();
+    let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
+        &mut program_context,
+        mint_account,
+        rent,
+        mint_authority,
+        eth_address,
+        &user_token_account,
+    )
+    .await;
+
+    let fake_sk = libsecp256k1::SecretKey::random(&mut rand_073::thread_rng());
+    let eth_addr_offset = 12;
+    let eth_sig_offset = 32;
+    let msg_offset = 97;
+
+    // Create signature offsets struct pointing to the wrong index (0)
+    let dummy_instr_data_ind = 0;
+    let secp_offsets_struct = SecpSignatureOffsets {
+        eth_address_instruction_index: dummy_instr_data_ind,
+        message_instruction_index: dummy_instr_data_ind,
+        signature_instruction_index: dummy_instr_data_ind,
+        eth_address_offset: eth_addr_offset as u16,
+        message_data_offset: msg_offset as u16,
+        message_data_size: message.len() as u16,
+        signature_offset: eth_sig_offset as u16,
+    };
+
+    let mut secp_instr_data = vec![];
+    secp_instr_data.push(1u8); // count
+    secp_instr_data.append(&mut bincode::serialize(&secp_offsets_struct).unwrap());
+    // Here's where we put the real pubkey, which our processor tries to validate
+    secp_instr_data.extend_from_slice(&eth_address);
+    // Append dummy signature data
+    let mut dummy_sig = (0..65).collect();
+    secp_instr_data.append(&mut dummy_sig);
+    // Append the real message
+    secp_instr_data.append(&mut message.to_vec());
+
+    // Sign the real message expected by the program with the fake secret key
+    // Ensures recovery step passes
+    let dummy2 = new_secp256k1_instruction(&fake_sk, &message);
+
+    let fake_secp_instruction = Instruction {
+        program_id: secp256k1_program::id(),
+        accounts: vec![],
+        data: secp_instr_data.clone(),
+    };
+
+    let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
+
+    let mut transaction = Transaction::new_with_payer(
+        &[
+            dummy2,
+            fake_secp_instruction,
+            instruction::transfer(
+                &id(),
+                &user_bank_account,
+                &user_token_account.pubkey(),
+                &base_acc,
+                instruction::Transfer {
+                    eth_address,
+                    amount: transfer_amount,
+                },
+            )
+            .unwrap(),
+        ],
+        Some(&program_context.payer.pubkey()),
+    );
+
+    assert!(transaction.verify_precompiles(false).is_ok());
+
+    transaction.sign(&[&program_context.payer], program_context.last_blockhash);
+    let tx_result = program_context
+        .banks_client
+        .process_transaction(transaction)
+        .await;
+
+    assert!(tx_result.is_err());
+
+    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await;
+    let bank_token_account =
+        spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
+    // check that program failed to send by validating data
+    assert_eq!(bank_token_account.amount, tokens_amount);
+    let user_token_account_data =
+        get_account(&mut program_context, &user_token_account.pubkey()).await;
+    let user_token_account =
+        spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
+    assert_eq!(user_token_account.amount, 0);
 }
 
 #[tokio::test]
