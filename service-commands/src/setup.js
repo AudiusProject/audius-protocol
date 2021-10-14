@@ -578,7 +578,7 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = fal
     [Service.SOLANA_PROGRAMS, SetupCommand.UP]
   ]
 
-  let creatorNodesCommands = _.range(1, numCreatorNodes + 1).map(serviceNumber => {
+  let creatorNodeCommands = _.range(1, numCreatorNodes + 1).map(serviceNumber => {
     return [
       [
         Service.CREATOR_NODE,
@@ -650,13 +650,13 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = fal
 
   if (parallel) {
     await Promise.all(discoveryNodesCommands.map(commandGroup => runInSequence(commandGroup, options)))
-    await Promise.all(creatorNodesCommands.map(commandGroup => runInSequence(commandGroup, options)))
+    await Promise.all(creatorNodeCommands.map(commandGroup => runInSequence(commandGroup, options)))
   } else {
     console.log('Provisioning DNs and CNs in sequence.'.info)
-    creatorNodesCommands = creatorNodesCommands.flat()
+    creatorNodeCommands = creatorNodeCommands.flat()
     discoveryNodesCommands = discoveryNodesCommands.flat()
     await runInSequence(discoveryNodesCommands)
-    await runInSequence(creatorNodesCommands)
+    await runInSequence(creatorNodeCommands)
   }
 
   await runInSequence(sequential2, options)
