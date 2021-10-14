@@ -29,7 +29,9 @@ export const initialLineupState = {
   inView: false,
   // Boolean if the lineup should remove duplicate content in entries
   dedupe: false,
-  // Boolean if the lineup fetch call returns deleted tracks/collections
+  // Boolean if the lineup fetch call pagination includes deleted tracks/collections
+  // e.g. This should be true if we request 10 tracks but only get 9 back because
+  // one is deleted
   // - Used to know if the lineup should stop fetching more content
   containsDeleted: true,
   // Whether the lineup is limited to a certain length
