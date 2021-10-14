@@ -65,7 +65,13 @@ async function indexNotifications (notifications, tx, audiusLibs) {
     const timestamp = Date.parse(notif.timestamp.slice(0, -2))
     const handler = notificationHandlers[notif.type]
 
-    return handler && handler(notif, blocknumber, timestamp)
+    if (handler) {
+      return handler(notif, blocknumber, timestamp)
+    } else {
+      logger.debug('indexNotifications - no handler defined for notification type', notif)
+      return
+    }
+
   }))
 
   // _processSubscriberPushNotifications is dependendent on subscriberPushNotifications
