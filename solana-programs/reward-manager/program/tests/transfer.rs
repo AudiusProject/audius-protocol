@@ -963,6 +963,9 @@ async fn failure_only_aao_attestations() {
     assert_custom_error(res, 0, AudiusProgramError::IncorrectMessages);
 }
 
+// Ensure that an attacker can't pass in an arbitrary rewards recipient - tests
+// that the processor re-derives the Solana UserBank from the provided eth_address,
+// only disbursing if it matches the Solana recipient.
 #[tokio::test]
 async fn disallows_transfers_to_invalid_account() {
     let TestConstants {
@@ -1095,7 +1098,7 @@ async fn disallows_transfers_to_invalid_account() {
     let res = context.banks_client.process_transaction(tx).await;
     assert_custom_error(res, 0, AudiusProgramError::InvalidRecipient);
 
-    // Assert that we transferred the expected amount
+    // Assert that we didn't transfer anything to the malicious recipient.
     let recipient_account_data = get_account(&mut context, &malicious_recipient.pubkey())
         .await
         .unwrap();
