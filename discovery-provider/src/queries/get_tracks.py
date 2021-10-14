@@ -162,6 +162,9 @@ def get_tracks(args: GetTrackArgs):
                                 "owner_id": user_id_map[route["handle"].lower()],
                             }
                         )
+                # If none of the handles were found, return empty lists
+                if not args["routes"]:
+                    return ([], [])
 
             can_use_shared_cache = (
                 "id" in args
