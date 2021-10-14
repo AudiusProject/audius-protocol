@@ -315,13 +315,11 @@ impl Processor {
             SecpSignatureOffsets::try_from_slice(&secp_instruction_data[start..end])
                 .map_err(|_| ClaimableProgramError::SignatureVerificationFailed)?;
 
-        // eth_address_offset = DATA_START (12)
-        let eth_address_offset = DATA_START;
-        // signature_offset = DATA_START + eth_pubkey.len (20) = 32
-        let signature_offset = eth_address_offset + 20;
-        // message_data_offset = signature_offset + signature_arr.len (65) = 97
-        // data_start (12) + address (20) + signature (65) = 97
-        let message_data_offset = signature_offset + 65;
+        let eth_address_offset = 12;
+        // signature_offset = eth_address_offset (12) + eth_pubkey.len (20) = 32
+        let signature_offset = 32;
+        // eth_address_offset (12) + address (20) + signature (65) = 97
+        let message_data_offset = 97;
 
         // Validate the index of this instruction matches expected value
         if sig_offsets_struct.message_instruction_index != instruction_index

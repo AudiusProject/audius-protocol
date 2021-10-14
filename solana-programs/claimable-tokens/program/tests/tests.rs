@@ -385,6 +385,14 @@ async fn transfer_all_instruction() {
     assert_eq!(user_token_account.amount, tokens_amount);
 }
 
+// This test attemps to manipulate the offsets of a single SECP instruction
+// in order to insert a maliciously signed signature message at the address
+// read by the program. The real eth address is inserted at the expected offset (12)
+// and the fields signed with the attacker's secret key are followed, hence every
+// offset being increased by 20.
+// In order to prevent this exploit, the program has been modified to manually
+// check the offset of each field such that they match the expected values and such
+// manipulation cannot pass validation.
 #[tokio::test]
 async fn transfer_with_amount_instruction_secp_offsets_exploit() {
     let mut program_context = program_test().start_with_context().await;
@@ -512,6 +520,14 @@ async fn transfer_with_amount_instruction_secp_offsets_exploit() {
     assert!(tx_result.is_err());
 }
 
+// This test explicitly exercises the vulnerability in which an attacker
+// submits 2 SECP instructions along with the transfer instruction
+// The 1st is a valid recovery signed by a malicious secret key
+// The 2nd is a spoofed SecpSignatureOffsets struct with all 'index'
+// fields pointed at the 1st instruction with dummy values in the other fields
+// By explicitly checking that struct index values match the instruction index
+// this vulnerability is prevented.
+// Note that prior to changes, this was indeed possible to spoof.
 #[tokio::test]
 async fn transfer_with_amount_instruction_secp_index_exploit() {
     let mut program_context = program_test().start_with_context().await;
