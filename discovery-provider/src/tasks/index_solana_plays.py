@@ -26,7 +26,7 @@ SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 TX_SIGNATURES_MAX_BATCHES = 100
 
 # Last N entries present in tx_signatures array during processing
-TX_SIGNATURES_RESIZE_LENGTH = 10
+TX_SIGNATURES_RESIZE_LENGTH = 50
 
 logger = logging.getLogger(__name__)
 
