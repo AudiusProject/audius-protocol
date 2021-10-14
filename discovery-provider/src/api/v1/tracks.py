@@ -1,9 +1,8 @@
-from typing import List
 from urllib.parse import urljoin
 import logging  # pylint: disable=C0302
 from flask import redirect
 from flask_restx import Resource, Namespace, fields, reqparse, inputs
-from src.queries.get_tracks import RouteArgs, get_tracks
+from src.queries.get_tracks import get_tracks
 from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.api.v1.helpers import (
     abort_not_found,
@@ -115,13 +114,6 @@ def get_unlisted_track(track_id, url_title, handle, current_user_id, endpoint_ns
     return success_response(single_track)
 
 
-def parse_routes(routes: List[str]) -> List[RouteArgs]:
-    return [
-        {"handle": route.split("/")[-2], "slug": route.split("/")[-1]}
-        for route in routes
-    ]
-
-
 TRACK_ROUTE = "/<string:track_id>"
 
 
@@ -142,60 +134,38 @@ class Track(Resource):
 
 
 track_slug_parser = reqparse.RequestParser()
-track_slug_parser.add_argument("handle", required=False)
-track_slug_parser.add_argument("slug", required=False)
-track_slug_parser.add_argument("route", action="append", required=False)
+track_slug_parser.add_argument("handle", required=True)
+track_slug_parser.add_argument("slug", required=True)
 
 
 @ns.route("")
-class TrackByRoute(Resource):
+class TrackBySlug(Resource):
     @record_metrics
     @ns.doc(
-        id="""Get Tracks
-
-        Gets either:
-        - A single track by either the combination of the user's handle and the track slug
-        - A list of tracks by their full route permalink, eg /username/track-title
-        """,
-        params={
-            "handle": "A User's handle",
-            "slug": "The track's slug",
-            "route": "The track's route",
-        },
+        id="""Get Track By Handle and Slug""",
+        params={"handle": "A User's handle", "slug": "The track's slug"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(track_response)
     @cache(ttl_sec=5)
     def get(self):
-        args = track_slug_parser.parse_args()
-        slug, handle = (args.get("slug"), args.get("handle"))
-        routes = args.get("route")
-
-        if not ((slug and handle) or routes):
-            ns.abort(400, "Missing required param slug, handle, or route")
-        routes_parsed = routes if routes else []
-        try:
-            routes_parsed = parse_routes(routes)
-        except IndexError:
-            abort_bad_request_param("route", ns)
-        if slug and handle:
-            routes_parsed.append({"handle": handle, "slug": slug})
-
+        args = full_track_slug_parser.parse_args()
+        slug, handle = args.get("slug"), args.get("handle")
+        if not (slug and handle):
+            full_ns.abort(400, "Missing required param slug or handle")
         tracks = get_tracks(
-            {"routes": routes_parsed, "with_users": True, "filter_deleted": True}
+            {
+                "handle": handle,
+                "slug": slug,
+                "with_users": True,
+                "filter_deleted": True,
+                "limit": 1,
+                "offset": 0,
+            }
         )
         if not tracks:
-            if handle and slug:
-                abort_not_found(f"{handle}/{slug}", ns)
-            else:
-                abort_not_found(routes, ns)
-
-        # For backwards compatibility, the old handle/slug route returned an object, not an array
-        if handle and slug:
-            tracks = extend_track(tracks[0])
-        else:
-            tracks = [extend_track(track) for track in tracks]
-        return success_response(tracks)
+            abort_not_found(f"{handle}/{slug}", ns)
+        return success_response(extend_track(tracks[0]))
 
 
 full_track_parser = reqparse.RequestParser()
@@ -226,51 +196,36 @@ class FullTrack(Resource):
 
 
 full_track_slug_parser = reqparse.RequestParser()
-full_track_slug_parser.add_argument("handle", required=False)
-full_track_slug_parser.add_argument("slug", required=False)
+full_track_slug_parser.add_argument("handle", required=True)
+full_track_slug_parser.add_argument("slug", required=True)
 full_track_slug_parser.add_argument("user_id")
-full_track_slug_parser.add_argument("route", action="append", required=False)
 
 
 @full_ns.route("")
-class FullTrackByRoute(Resource):
+class FullTrackBySlug(Resource):
     @record_metrics
     @full_ns.marshal_with(full_track_response)
     @cache(ttl_sec=5)
     def get(self):
         args = full_track_slug_parser.parse_args()
         slug, handle = args.get("slug"), args.get("handle")
-        routes = args.get("route")
         current_user_id = get_current_user_id(args)
-        if not ((slug and handle) or routes):
-            full_ns.abort(400, "Missing required param slug, handle, or route")
-        routes_parsed = routes if routes else []
-        try:
-            routes_parsed = parse_routes(routes)
-        except IndexError:
-            abort_bad_request_param("route", full_ns)
-        if slug and handle:
-            routes_parsed.append({"handle": handle, "slug": slug})
+        if not (slug and handle):
+            full_ns.abort(400, "Missing required param slug or handle")
         tracks = get_tracks(
             {
-                "routes": routes_parsed,
+                "handle": handle,
+                "slug": slug,
                 "with_users": True,
                 "filter_deleted": True,
+                "limit": 1,
+                "offset": 0,
                 "current_user_id": current_user_id,
             }
         )
         if not tracks:
-            if handle and slug:
-                abort_not_found(f"{handle}/{slug}", full_ns)
-            else:
-                abort_not_found(routes, full_ns)
-
-        # For backwards compatibility, the old handle/slug route returned an object, not an array
-        if handle and slug:
-            tracks = extend_track(tracks[0])
-        else:
-            tracks = [extend_track(track) for track in tracks]
-        return success_response(tracks)
+            abort_not_found(f"{handle}/{slug}", full_ns)
+        return success_response(extend_track(tracks[0]))
 
 
 # Stream
