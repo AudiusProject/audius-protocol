@@ -1,15 +1,20 @@
 #![cfg(feature = "test-bpf")]
 mod utils;
 
-use audius_reward_manager::{instruction, state::VerifiedMessages, utils::EthereumAddress};
+use audius_reward_manager::{
+    instruction, processor::VERIFY_TRANSFER_SEED_PREFIX, state::VerifiedMessages,
+    utils::find_derived_pair, utils::EthereumAddress,
+};
+use borsh::ser::BorshSerialize;
 use libsecp256k1::{PublicKey, SecretKey};
 use rand::Rng;
 use rand_073;
 use sha3::Digest;
-use solana_program::sysvar::recent_blockhashes;
 use solana_program::{
-    instruction::Instruction, program_pack::Pack, pubkey::Pubkey, secp256k1_program,
-    system_instruction,
+    instruction::{AccountMeta, Instruction},
+    program_pack::Pack,
+    pubkey::Pubkey,
+    secp256k1_program, system_instruction, system_program, sysvar,
 };
 use solana_program_test::*;
 use solana_sdk::{
@@ -671,4 +676,92 @@ async fn validation_fails_incorrect_secp_offset() {
 
     // Assert that it *doesn't* pass our processor
     assert!(context.banks_client.process_transaction(tx).await.is_err())
+}
+
+// Tests that passing in a spoofed sysvar instructions_info account
+// is caught
+#[tokio::test]
+async fn ensure_valid_instructions_info() {
+    let TestConstants {
+        reward_manager,
+        senders_message,
+        mut context,
+        transfer_id,
+        mut rng,
+        manager_account,
+        ..
+    } = setup_test_environment().await;
+
+    // Generate data and create senders
+    let keys: [[u8; 32]; 3] = rng.gen();
+    let operators: [EthereumAddress; 3] = rng.gen();
+    let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
+        signers[i] = derived_address;
+    }
+
+    let mut instructions = Vec::<Instruction>::new();
+    let priv_key = SecretKey::parse(&keys[0]).unwrap();
+    let sender_sign = new_secp256k1_instruction_2_0(&priv_key, senders_message.as_ref(), 0);
+    instructions.push(sender_sign);
+
+    // Construct a fake instruction with a spoofed instructions_info account
+    let data = instruction::Instructions::SubmitAttestations(instruction::SubmitAttestationsArgs {
+        id: transfer_id.to_string(),
+    })
+    .try_to_vec()
+    .unwrap();
+
+    let (reward_manager_authority, verified_messages, _) = find_derived_pair(
+        &audius_reward_manager::id(),
+        &reward_manager.pubkey(),
+        [
+            VERIFY_TRANSFER_SEED_PREFIX.as_bytes().as_ref(),
+            transfer_id.to_string().as_ref(),
+        ]
+        .concat()
+        .as_ref(),
+    );
+    let fake_keypair = Keypair::new();
+
+    let accounts = vec![
+        AccountMeta::new(verified_messages, false),
+        AccountMeta::new_readonly(reward_manager.pubkey(), false),
+        AccountMeta::new_readonly(reward_manager_authority, false),
+        AccountMeta::new(context.payer.pubkey(), true),
+        AccountMeta::new_readonly(signers[0], false),
+        AccountMeta::new_readonly(sysvar::rent::id(), false),
+        // Add fake account instead of sysvar instructions
+        AccountMeta::new_readonly(fake_keypair.pubkey(), false),
+        AccountMeta::new_readonly(system_program::id(), false),
+    ];
+
+    let fake_instruction = Instruction {
+        program_id: audius_reward_manager::id(),
+        accounts,
+        data,
+    };
+    instructions.push(fake_instruction);
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    let res = context.banks_client.process_transaction(tx).await;
+    assert_custom_error(
+        res,
+        1,
+        audius_reward_manager::error::AudiusProgramError::InstructionLoadError,
+    )
 }
