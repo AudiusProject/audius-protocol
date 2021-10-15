@@ -49,4 +49,4 @@ worker.log
 server.log
 
 # build in service-commands up
-tmp*/
+compose/env/tmp/

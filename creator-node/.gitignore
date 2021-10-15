@@ -14,5 +14,5 @@ test_file_storage/
 coverage/
 .nyc_output/
 compose/env/commonEnv.sh
+compose/env/tmp/
 file_storage/
-tmp*/
