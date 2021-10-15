@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit')
 const RedisStore = require('rate-limit-redis')
 const Redis = require('ioredis')
 const config = require('../config.js')
+const { sequelize } = require('../models')
 
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const authKeyGenerator = (req) => `${req.query.username}`
@@ -30,7 +31,19 @@ module.exports = function (app) {
 
     if (body && body.iv && body.cipherText && body.lookupKey) {
       try {
-        await models.Authentication.create({ iv: body.iv, cipherText: body.cipherText, lookupKey: body.lookupKey })
+        await sequelize.transaction(function(t) {
+          return models.Authentication.create({
+            iv: body.iv,
+            cipherText: body.cipherText,
+            lookupKey: body.lookupKey
+          }, { transaction: t })
+          .then(function (auth) {
+            const oldLookupKey = body.oldLookupKey
+            if (oldLookupKey) {
+              await models.Authentication.destroy({ where: { lookupKey: oldLookupKey } }, { transaction: t })
+            }
+          })
+        })
         return successResponse()
       } catch (err) {
         req.logger.error('Error signing up a user', err)
