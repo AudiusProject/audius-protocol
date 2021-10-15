@@ -264,6 +264,10 @@ impl Processor {
         expected_signer: &EthereumAddress,
         expected_message: &[u8],
     ) -> ProgramResult {
+        if !sysvar::instructions::check_id(&instruction_info.key) {
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+        }
+
         let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
 
         // instruction can't be first in transaction
