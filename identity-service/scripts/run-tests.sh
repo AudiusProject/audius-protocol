@@ -68,10 +68,12 @@ fi
 if [ "${debug}" ]; then
   # If the -d debug flag is provided, run the tests with no timeout so that
   # debugging does not get interrupted
-  ./node_modules/mocha/bin/mocha test/index.js --timeout 0 --exit
+  TIMEOUT=0
 else
-  ./node_modules/mocha/bin/mocha test/index.js --timeout 10000 --exit
+  TIMEOUT=10000
 fi
+
+./node_modules/mocha/bin/mocha test/index.js --timeout "${TIMEOUT}" --exit
 
 # linter
 
