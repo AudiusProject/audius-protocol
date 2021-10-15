@@ -2,9 +2,13 @@ const Jimp = require('jimp')
 const ExifParser = require('exif-parser')
 const fs = require('fs-extra')
 const path = require('path')
+
+const config = require('./config')
 const { logger: genericLogger } = require('./logging')
-const { ipfs } = require('./ipfsClient')
+const { ipfs, ipfsMultipleAddWrapper } = require('./ipfsClient')
 const DiskManager = require('./diskManager')
+
+const ENABLE_IPFS_ADD_IMAGES = config.get('enableIPFSAddImages')
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.
 const COLOR_WHITE = 0xFFFFFFFF
@@ -139,9 +143,12 @@ module.exports = async (job) => {
   })
   resizes.push(original)
 
-  const ipfsAddResp = await ipfs.add(
+  const ipfsAddResp = await ipfsMultipleAddWrapper(
+    ipfs,
     toAdd,
-    { pin: false }
+    { pin: false },
+    {} /* logContext */,
+    ENABLE_IPFS_ADD_IMAGES
   )
 
   // Write all the images to file storage and

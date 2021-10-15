@@ -75,28 +75,25 @@ async function ipfsMultipleAddWrapper (ipfs, inputData, ipfsConfig = {}, logCont
   const logger = genericLogger.child(logContext)
 
   // Generate hashes with ipfs content hashing logic
-  const onlyHashes = await Promise.all(inputData.map(async ({ content }) => ipfsHashOf(content)))
-  const dirHash = await ipfsHashOf(inputData, {}, true /* isImgDir */)
-  onlyHashes.push(dirHash)
+  const customIpfsAddResponses = await ipfsAdd(inputData, {}, true /* isImgDir */)
 
   let ipfsDaemonResp
   if (enableIPFSAdd) {
     try {
       ipfsDaemonResp = await ipfs.add(inputData, ipfsConfig)
     } catch (e) {
-      logger.warn(`[ipfsClient - ipfsMultipleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${onlyHashes}: ${e.toString()}`)
-      return onlyHashes
+      logger.warn(`[ipfsClient - ipfsMultipleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${customIpfsAddResponses}: ${e.toString()}`)
+      return customIpfsAddResponses
     }
   }
 
-  // Return the `ipfsDaemonHashes`, or `onlyHashes`. Prioritize `ipfsDaemonHashes`.
+  // Return the `ipfsDaemonResp`, or `customIpfsAddResponses`. Prioritize `ipfsDaemonResp`.
   if (ipfsDaemonResp) {
-    const ipfsDaemonHashes = ipfsDaemonResp.map(entry => entry.hash)
-    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${onlyHashes} ipfsDaemonHash=${ipfsDaemonHashes.toString()} isSameHash=${onlyHashes.toString() === ipfsDaemonHashes.toString()}`)
+    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${customIpfsAddResponses} ipfsDaemonResp=${JSON.stringify(ipfsDaemonResp, null, 2)} isSameHash=${JSON.stringify(customIpfsAddResponses) === JSON.stringify(ipfsDaemonResp)}`)
     return ipfsDaemonResp
   } else {
-    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${onlyHashes}`)
-    return onlyHashes
+    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${customIpfsAddResponses}`)
+    return customIpfsAddResponses
   }
 }
 
@@ -164,4 +161,43 @@ async function ipfsHashOf (content, options, isImgDir = false) {
   return `${lastCid}`
 }
 
-module.exports = { ipfs, ipfsLatest, logIpfsPeerIds, ipfsSingleAddWrapper, ipfsAddFromFsWrapper, ipfsHashOf }
+// Mimics the response of the ipfs.add() call.
+// NOTE: The ipfs.add() response follows the structure {path: <string>, hash: <string>, size: <number>}.
+// This fn mimics this response structure
+async function ipfsAdd (content, options, isImgDir = false) {
+  options = options || {}
+  options.onlyHash = true
+  options.cidVersion = 0
+
+  if (typeof content === 'string') {
+    content = new TextEncoder().encode(content)
+  }
+
+  // If method is used for the img dir, do not structure as [{ content }]
+  if (!isImgDir) {
+    content = [{ content }]
+  }
+
+  const files = []
+  for await (const file of importer(content, block, options)) {
+    files.push(file)
+  }
+
+  const resps = files.map(file => ({
+    path: file.path,
+    hash: `${file.cid}`,
+    size: file.size
+  }))
+
+  return resps
+}
+
+module.exports = {
+  ipfs,
+  ipfsLatest,
+  logIpfsPeerIds,
+  ipfsSingleAddWrapper,
+  ipfsAddFromFsWrapper,
+  ipfsMultipleAddWrapper,
+  ipfsHashOf
+}

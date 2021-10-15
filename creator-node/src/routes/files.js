@@ -330,6 +330,7 @@ const getDirCID = async (req, res) => {
 const _dirCIDIPFSVerificationWithRetries = async function (req, resizeResp, dirCID, retriesLeft = IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT) {
   const ipfs = req.app.get('ipfsLatestAPI')
 
+  // NOTE: if we keep this, let's move this fs stream out of this fn so this doesnt get called `retriesLeft` times
   // build ipfs add array
   let ipfsAddArray = []
   try {
@@ -436,6 +437,9 @@ module.exports = function (app) {
     const dirCID = resizeResp.dir.dirCID
 
     // Ensure image files written to disk match dirCID returned from resizeImage
+    // NOTE: this was for mad dog test failures? this adds 5 ipfs.add calls per image upload?
+    // seems unnecessary? i think we should just take the L if the cids dont match up, since it raerly happens anyway
+    // ask sid or dheeraj tomorrow
     await _dirCIDIPFSVerificationWithRetries(req, resizeResp, dirCID)
 
     // Record image file entries in DB
