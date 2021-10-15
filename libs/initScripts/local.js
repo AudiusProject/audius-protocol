@@ -70,15 +70,19 @@ if (args.length < 3) {
 
 const getEnvConfigPathsForService = async ({ workspace, serviceCount }) => {
   const tmpDir = `${workspace}/tmp`
-  const cleanupNeeded = await fs.existsSync(tmpDir)
-  if (cleanupNeeded) {
-    await fs.rmdirSync(tmpDir, { force: true, recursive: true })
+  const writePath = `${tmpDir}/shellEnv${serviceCount}.sh`
+  const dirExists = fs.existsSync(tmpDir)
+  if (!dirExists) {
+    fs.mkdirSync(tmpDir)
+  } else {
+    const cleanupNeeded = fs.existsSync(writePath)
+    if (cleanupNeeded) {
+      fs.rmSync(writePath, { force: true })
+    }
   }
   const templatePath = `${workspace}/commonEnv.sh`
   const envPath = `${workspace}/shellEnv${serviceCount}.sh`
-  const writePath = `${tmpDir}/shellEnv${serviceCount}.sh`
-  await fs.mkdirSync(tmpDir)
-  await fs.copyFileSync(envPath, writePath)
+  fs.copyFileSync(envPath, writePath)
   return { templatePath, writePath }
 }
 
