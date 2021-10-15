@@ -121,10 +121,6 @@ impl Processor {
     pub fn recover_secp_instructions(
         instruction_info: &AccountInfo,
     ) -> Result<Vec<(Instruction, u16)>, AudiusError> {
-        if !sysvar::instructions::check_id(&instruction_info.key) {
-            return Err(AudiusError::SignatureVerificationFailed.into());
-        }
-
         let mut v: Vec<(Instruction, u16)> = Vec::new();
         // Index of current instruction in tx
         let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
