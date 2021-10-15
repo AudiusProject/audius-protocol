@@ -38,15 +38,16 @@ async function processNotifications (notifications, tx) {
     return categories
   }, {})
 
-  // Loop through each notification type and batch process
-  for (const notifType in notificationCategories) {
-    if (notifType in notificationMapping) {
-      const notifications = notificationCategories[notifType]
-      const processType = notificationMapping[notifType]
+  // Process notification types in parallel
+  return Promise.all(Object.entries(notificationCategories).map(([notifType, notifications]) => {
+    const processType = notificationMapping[notifType]
+    if (processType) {
       logger.debug(`Processing: ${notifications.length} notifications of type ${notifType}`)
-      await processType(notifications, tx)
+      return processType(notifications, tx)
+    } else {
+      logger.error('processNotifications - no handler defined for notification type', notifType)
     }
-  }
+  }))
 }
 
 module.exports = processNotifications
