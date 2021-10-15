@@ -2,7 +2,7 @@
 set -o xtrace
 set -e
 
-while getopts debug flag
+while getopts d flag
 do
   case "${flag}" in
       d) debug=true;
