@@ -2,6 +2,13 @@
 set -o xtrace
 set -e
 
+while getopts d flag
+do
+  case "${flag}" in
+      d) debug=true;
+  esac
+done
+
 PG_PORT=$POSTGRES_TEST_PORT
 if [ -z "${PG_PORT}" ]; then
   PG_PORT=7432
@@ -58,7 +65,15 @@ elif [ -x "$(command -v psql)" ]; then
 fi
 
 # tests
-./node_modules/mocha/bin/mocha test/index.js --timeout 10000 --exit
+if [ "${debug}" ]; then
+  # If the -d debug flag is provided, run the tests with no timeout so that
+  # debugging does not get interrupted
+  TIMEOUT=0
+else
+  TIMEOUT=10000
+fi
+
+./node_modules/mocha/bin/mocha test/index.js --timeout "${TIMEOUT}" --exit
 
 # linter
 
