@@ -10,6 +10,7 @@
     "start": "nodemon src/index.js | ./node_modules/.bin/bunyan || exit 0",
     "render:email": "rimraf src/notifications/renderEmail && babel src/notifications/components/ -d src/notifications/renderEmail",
     "test": "./scripts/run-tests.sh",
+    "test:debug": "./scripts/run-tests.sh -d",
     "coverage": "nyc npm run test",
     "report": "nyc report --reporter=html",
     "lint": "./node_modules/.bin/standard",
