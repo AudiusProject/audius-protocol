@@ -40,7 +40,7 @@ module.exports = function (app) {
           .then(function (auth) {
             const oldLookupKey = body.oldLookupKey
             if (oldLookupKey) {
-              await models.Authentication.destroy({ where: { lookupKey: oldLookupKey } }, { transaction: t })
+              return models.Authentication.destroy({ where: { lookupKey: oldLookupKey } }, { transaction: t })
             }
           })
         })
