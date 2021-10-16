@@ -31,18 +31,18 @@ module.exports = function (app) {
 
     if (body && body.iv && body.cipherText && body.lookupKey) {
       try {
-        await sequelize.transaction(function(t) {
+        await sequelize.transaction(function (t) {
           return models.Authentication.create({
             iv: body.iv,
             cipherText: body.cipherText,
             lookupKey: body.lookupKey
           }, { transaction: t })
-          .then(function (auth) {
-            const oldLookupKey = body.oldLookupKey
-            if (oldLookupKey) {
-              return models.Authentication.destroy({ where: { lookupKey: oldLookupKey } }, { transaction: t })
-            }
-          })
+            .then(function (auth) {
+              const oldLookupKey = body.oldLookupKey
+              if (oldLookupKey) {
+                return models.Authentication.destroy({ where: { lookupKey: oldLookupKey } }, { transaction: t })
+              }
+            })
         })
         return successResponse()
       } catch (err) {
