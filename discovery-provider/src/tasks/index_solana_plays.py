@@ -305,7 +305,44 @@ is found - these limiting parameters are defined as TX_SIGNATURES_MAX_BATCHES, T
 """
 def split_list(list, n):
     for i in range(0, len(list), n): 
-        yield list[i:i + n] 
+        yield list[i:i + n]
+
+def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=10):
+    retries
+    logger.info(f"index_solana_plays.py | processing {tx_sig_batch_records}")
+    batch_start_time = time.time()
+    # Process each batch in parallel
+    with db.scoped_session() as session:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            parse_sol_tx_futures = {
+                executor.submit(
+                    parse_sol_play_transaction,
+                    session,
+                    solana_client_manager,
+                    tx_sig,
+                ): tx_sig
+                for tx_sig in tx_sig_batch_records
+            }
+            try:
+                for future in concurrent.futures.as_completed(parse_sol_tx_futures, timeout=45):
+                    # No return value expected here so we just ensure all futures are resolved
+                    future.result()
+            except Exception as exc:
+                logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
+                print(f"index_solana_plays.py | Clearing executor._threads {executor._threads}")
+                executor._threads.clear()
+                print(f"index_solana_plays.py | Clearing concurrent.futures.thread._threads_queues {concurrent.futures.thread._threads_queues}")
+                concurrent.futures.thread._threads_queues.clear()
+                if retries > 0:
+                    parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries-1)
+                else:
+                    raise exc
+
+    batch_end_time = time.time()
+    batch_duration = batch_end_time - batch_start_time
+    logger.info(
+        f"index_solana_plays.py | processed batch {len(tx_sig_batch_records)} txs in {batch_duration}s"
+    )
 
 def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
     try:
@@ -420,42 +457,10 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
 
     logger.info(f"index_solana_plays.py | {transaction_signatures}")
 
-    num_txs_processed = 0
 
     for tx_sig_batch in transaction_signatures:
         for tx_sig_batch_records in split_list(tx_sig_batch, 50):
-            logger.info(f"index_solana_plays.py | processing {tx_sig_batch_records}")
-            batch_start_time = time.time()
-            # Process each batch in parallel
-            with db.scoped_session() as session:
-                with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-                    parse_sol_tx_futures = {
-                        executor.submit(
-                            parse_sol_play_transaction,
-                            session,
-                            solana_client_manager,
-                            tx_sig,
-                        ): tx_sig
-                        for tx_sig in tx_sig_batch_records
-                    }
-                    try:
-                        for future in concurrent.futures.as_completed(parse_sol_tx_futures, timeout=30):
-                            # No return value expected here so we just ensure all futures are resolved
-                            future.result()
-                            num_txs_processed += 1
-                    except Exception as exc:
-                        logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
-                        print(f"index_solana_plays.py | Clearing executor._threads {executor._threads}")
-                        executor._threads.clear()
-                        print(f"index_solana_plays.py | Clearing concurrent.futures.thread._threads_queues {concurrent.futures.thread._threads_queues}")
-                        concurrent.futures.thread._threads_queues.clear()
-                        raise exc
-
-            batch_end_time = time.time()
-            batch_duration = batch_end_time - batch_start_time
-            logger.info(
-                f"index_solana_plays.py | processed batch {len(tx_sig_batch_records)} txs in {batch_duration}s"
-            )
+            parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records)
 
 
 ######## CELERY TASKS ########
