@@ -297,9 +297,21 @@ const performHealthCheckWithRetry = async (
  */
 const performHealthCheck = async (service, serviceNumber) => {
   const url = getServiceURL(service, serviceNumber)
+  let healthCheckRequestOptions = { method: 'get', url }
+  if (service === Service.SOLANA_VALIDATOR) {
+    healthCheckRequestOptions = {
+      method: 'post',
+      data: {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'getClusterNodes'
+      },
+      url
+    }
+  }
 
   try {
-    const resp = await axios({ method: 'get', url })
+    const resp = await axios(healthCheckRequestOptions)
     return resp
   } catch (e) {
     console.error(
@@ -308,7 +320,6 @@ const performHealthCheck = async (service, serviceNumber) => {
     throw e
   }
 }
-
 const runInSequence = async (commands, options) => {
   for (const s of commands) {
     await runSetupCommand(...s, options)
@@ -331,7 +342,8 @@ const discoveryNodeUp = async (options = { verbose: false }) => {
 
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.UP]
+    [Service.SOLANA_VALIDATOR, SetupCommand.UP],
+    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
   ]
 
   const inParallel = [
@@ -389,7 +401,8 @@ const discoveryNodeWebServerUp = async (options = { verbose: false }) => {
 
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.UP]
+    [Service.SOLANA_VALIDATOR, SetupCommand.UP],
+    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
   ]
 
   const inParallel = [
@@ -542,7 +555,8 @@ const identityServiceUp = async (options = { verbose: false }) => {
   )
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.UP]
+    [Service.SOLANA_VALIDATOR, SetupCommand.UP],
+    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
   ]
 
   const inParallel = [
