@@ -408,6 +408,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
             page_count={page_count}"
         )
         page_count = page_count + 1
+        time.sleep(2) # sleep to not overwhelm rpc pool
 
     logger.info(
         f"index_solana_plays.py | {transaction_signatures}, {len(transaction_signatures)} entries"
