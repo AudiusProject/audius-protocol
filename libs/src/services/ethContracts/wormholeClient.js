@@ -46,6 +46,30 @@ class WormholeClient {
     return { txReceipt: tx }
   }
 
+  /**
+   * Transfers in eth from the user's wallet to the wormhole contract and
+   * specifies a solana wallet to realized the tokens in SOL
+   *
+   * @param {string} fromAcct
+   * @param {BN} amount
+   * @param {number} chainId
+   * @param {*} solanaAccount
+   * @param {*} arbiterFee
+   * @param {*} deadline
+   * @param {string} signedDigest
+   * @param {string} relayer
+   * @returns {
+   *   txHash: string,
+   *   txParams: {
+   *      data: string
+   *      gasLimit: string
+   *      gasPrice: number
+   *      nonce: string
+   *      to: string
+   *      value: string
+   *   }
+   * }
+   */
   async transferTokens (
     fromAcct,
     amount,
@@ -67,16 +91,15 @@ class WormholeClient {
       signedDigest.r,
       signedDigest.s
     )
-    console.log({ method })
     const tx = await this.ethWeb3Manager.relayTransaction(
       method,
       this.contractAddress,
       fromAcct,
       relayer,
       /* retries */ 0,
-      250 * 1000
+      null
     )
-    return { txReceipt: tx }
+    return tx
   }
 }
 

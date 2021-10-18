@@ -110,6 +110,29 @@ class EthWeb3Manager {
     return contractMethod.send({ from: this.ownerWallet, gas: gasLimit, gasPrice: gasPrice })
   }
 
+  /**
+   * Relays an eth transaction via the identity service with retries
+   * The relay pays for the transaction fee on behalf of the user
+   * The gas Limit is estimated if not provided
+   *
+   * @param {*} contractMethod
+   * @param {string} contractAddress
+   * @param {string} ownerWallet
+   * @param {string} relayerWallet
+   * @param {number?} txRetries
+   * @param {number?} txGasLimit
+   * @returns {
+   *   txHash: string,
+   *   txParams: {
+   *      data: string
+   *      gasLimit: string
+   *      gasPrice: number
+   *      nonce: string
+   *      to: string
+   *      value: string
+   *   }
+   * }
+   */
   async relayTransaction (
     contractMethod,
     contractAddress,
@@ -155,8 +178,7 @@ class EthWeb3Manager {
         }
       }
     })
-
-    return response['receipt']
+    return response['resp']
   }
 }
 
