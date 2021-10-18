@@ -82,6 +82,7 @@ class SolanaClientManager:
             self.clients,
             handle_get_confirmed_signature_for_address2,
             "solana_client_manager.py | get_confirmed_signature_for_address2 | All requests failed",
+            True
         )
 
 
