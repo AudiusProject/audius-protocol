@@ -14,8 +14,6 @@ const PROTOCOL_DIR = config.get('protocol_dir')
 // `cd` command to audius-protocol
 const CD_PROTOCOL_DIR_COMMAND = `cd ${PROTOCOL_DIR};`
 
-const HEALTH_CHECK_ENDPOINT = 'health_check'
-
 const OUTPUT_LOG = fs.createWriteStream(
   `${PROTOCOL_DIR}/service-commands/output.log`
 )
@@ -245,12 +243,16 @@ const getContentNodeContainerName = serviceNumber => {
 }
 
 const getServiceURL = (service, serviceNumber) => {
-  let healthCheckEndpoint
-  if (service === Service.SOLANA_VALIDATOR) {
-    healthCheckEndpoint = ''
-  } else {
-    healthCheckEndpoint = HEALTH_CHECK_ENDPOINT
+  const commands = serviceCommands[service]
+  if (!commands) {
+    throw new Error(`Invalid service: [${service}]`)
   }
+  const {
+    protocol,
+    host,
+    port,
+    health_check_endpoint: healthCheckEndpoint
+  } = commands
   if (service === Service.CREATOR_NODE) {
     if (!serviceNumber) {
       throw new Error('Missing serviceNumber')
@@ -259,12 +261,6 @@ const getServiceURL = (service, serviceNumber) => {
       4000 + parseInt(serviceNumber) - 1
     }/${healthCheckEndpoint}`
   }
-
-  const commands = serviceCommands[service]
-  if (!commands) {
-    throw new Error(`Invalid service: [${service}]`)
-  }
-  const { protocol, host, port } = commands
   return `${protocol}://${host}:${port}/${healthCheckEndpoint}`
 }
 
@@ -621,12 +617,12 @@ const allUp = async ({
     [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
   ]
 
-  const inParallel = [
+  const ipfsAndContractsCommands = [
     [Service.IPFS, SetupCommand.UP],
     [Service.IPFS_2, SetupCommand.UP],
     [Service.CONTRACTS, SetupCommand.UP],
     [Service.ETH_CONTRACTS, SetupCommand.UP],
-    [Service.SOLANA_PROGRAMS, SetupCommand.UP]
+    [Service.SOLANA_PROGRAMS, SetupCommand.UP],
   ]
 
   let creatorNodesCommands = _.range(1, numCreatorNodes + 1).map(
@@ -680,12 +676,12 @@ const allUp = async ({
 
   const sequential1 = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
+    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP],
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP]
   ]
   const sequential2 = [
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
-    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
-    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
+    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK]
   ]
   if (withAAO) {
     sequential2.push([Service.AAO, SetupCommand.REGISTER])
@@ -697,8 +693,13 @@ const allUp = async ({
   // Start up the docker network `audius_dev` and the Solana test validator
   await runInSequence(setup, options)
 
+<<<<<<< HEAD
   Run parallel ops
   await runInParallel(inParallel, options)
+=======
+  // Run parallel ops
+  await runInParallel(ipfsAndContractsCommands, options)
+>>>>>>> c619c154 ([ASI-617] Refactor health check logic and init URSM earlier to avoid false errors in log)
 
   // Run sequential ops
   await runInSequence(sequential1, options)
