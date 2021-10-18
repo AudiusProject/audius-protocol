@@ -64,7 +64,7 @@ if [ -z "$dbUrl" ]; then
 fi
 
 if [[ "$devMode" == "true" ]]; then
-    ./node_modules/.bin/nodemon src/index.js | tee >(logger) | ./node_modules/.bin/bunyan
+    ./node_modules/.bin/nodemon --inspect=0.0.0.0:9230 src/index.js | tee >(logger) | ./node_modules/.bin/bunyan
 else
     node src/index.js | tee >(logger)
     docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 10

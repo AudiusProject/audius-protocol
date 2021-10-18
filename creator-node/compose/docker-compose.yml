@@ -32,6 +32,7 @@ services:
       - ./env/base.env
     ports:
       - '${CREATOR_NODE_HOST_PORT}:${CREATOR_NODE_HOST_PORT}'
+      - '9230:9230'
     volumes:
       - ../file_storage:/file_storage
       - ..:/usr/src/app

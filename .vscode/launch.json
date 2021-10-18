@@ -19,6 +19,22 @@
             "name": "(Identity) Test",
             "request": "launch",
             "type": "node-terminal"
+        },
+        {
+            "name": "(Content Node) Attach",
+            "type": "node",
+            "request": "attach",
+            "port": 9230,
+            "address": "localhost",
+            "localRoot": "${workspaceFolder}/creator-node/",
+            "remoteRoot": "/usr/src/app",
+            "protocol": "inspector"
+        },
+        {
+            "command": "cd creator-node; npm run test:debug",
+            "name": "(Content Node) Test",
+            "request": "launch",
+            "type": "node-terminal"
         }
     ]
 }
