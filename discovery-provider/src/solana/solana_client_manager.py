@@ -64,6 +64,7 @@ class SolanaClientManager:
             self.clients,
             handle_get_sol_tx_info,
             f"solana_client_manager.py | get_sol_tx_info | All requests failed to fetch {tx_sig}",
+            True
         )
 
     def get_confirmed_signature_for_address2(
