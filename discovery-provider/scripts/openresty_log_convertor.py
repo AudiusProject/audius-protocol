@@ -8,7 +8,10 @@ for line in sys.stdin:
         json.dumps(
             {
                 "level": sys.argv[1],
-                "log": json.dumps({"level": sys.argv[1], "message": message}),
+                "type": "openresty",
+                "log": json.dumps(
+                    {"level": sys.argv[1], "type": "openresty", "message": message}
+                ),
                 "message": message,
             }
         ),
