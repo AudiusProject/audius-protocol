@@ -629,7 +629,7 @@ const allUp = async ({
     [Service.SOLANA_PROGRAMS, SetupCommand.UP]
   ]
 
-  const creatorNodeCommands = _.range(1, numCreatorNodes + 1).map(
+  let creatorNodesCommands = _.range(1, numCreatorNodes + 1).map(
     serviceNumber => {
       return [
         [
@@ -656,7 +656,7 @@ const allUp = async ({
     }
   )
 
-  const discoveryNodesCommands = _.range(1, numDiscoveryNodes + 1).map(
+  let discoveryNodesCommands = _.range(1, numDiscoveryNodes + 1).map(
     serviceNumber => {
       return [
         [
@@ -710,16 +710,16 @@ const allUp = async ({
       )
     )
     await Promise.all(
-      creatorNodeCommands.map(commandGroup =>
+      creatorNodesCommands.map(commandGroup =>
         runInSequence(commandGroup, options)
       )
     )
   } else {
     console.log('Provisioning DNs and CNs in sequence.'.info)
-    creatorNodeCommands = creatorNodeCommands.flat()
+    creatorNodesCommands = creatorNodesCommands.flat()
     discoveryNodesCommands = discoveryNodesCommands.flat()
     await runInSequence(discoveryNodesCommands)
-    await runInSequence(creatorNodeCommands)
+    await runInSequence(creatorNodesCommands)
   }
 
   await runInSequence(sequential2, options)
