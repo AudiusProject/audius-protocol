@@ -13,6 +13,7 @@ const redis = require('./redis')
 const config = require('./config')
 const BlacklistManager = require('./blacklistManager')
 const { generateTimestampAndSignature } = require('./apiSigning')
+const { ipfsSingleAddWrapper } = require('./ipfsClient')
 
 const readFile = promisify(fs.readFile)
 
@@ -260,17 +261,18 @@ async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null) {
 
         // verify that the file written matches the hash expected if added to ipfs
         const content = fs.createReadStream(filePath)
-        for await (const result of ipfsLatest.add(content, { onlyHash: true, timeout: 2000 })) {
-          if (cid !== result.cid.toString()) {
-            await fs.unlink(filePath)
-            logger.error(`File contents don't match IPFS hash cid: ${cid} result: ${result.cid.toString()}`)
-          }
+        const ipfsHashOnly = await ipfsSingleAddWrapper(ipfsLatest, content, { onlyHash: true, timeout: 2000 })
+
+        if (cid !== ipfsHashOnly) {
+          await fs.unlink(filePath)
+          logger.error(`findCIDInNetwork - File contents don't match IPFS hash cid: ${cid} result: ${ipfsHashOnly}`)
         }
 
         logger.info(`findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`)
         break
       }
     } catch (e) {
+      logger.error(`findCIDInNetwork error - ${e.toString()}`)
       // since this is a function running in the background intended to fix state, don't error
       // and stop the flow of execution for functions that call it
       continue

@@ -14,6 +14,8 @@ if (!ipfsAddr) {
 const ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
 const ipfsLatest = ipfsClientLatest({ host: ipfsAddr, port: config.get('ipfsPort'), protocol: 'http' })
 
+const IPFS_ADD_TIMEOUT_MS = config.get('IPFSAddTimeoutMs')
+
 async function logIpfsPeerIds () {
   const identity = await ipfs.id()
   // Pretty print the JSON obj with no filter fn (e.g. filter by string or number) and spacing of size 2
@@ -35,6 +37,10 @@ async function logIpfsPeerIds () {
  */
 async function ipfsSingleAddWrapper (ipfs, inputData, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
+
+  if (!ipfsConfig.timeout) {
+    ipfsConfig.timeout = IPFS_ADD_TIMEOUT_MS
+  }
 
   // Generate hash with ipfs content hashing logic
   const onlyHash = await ipfsHashOf(inputData)
@@ -74,8 +80,12 @@ async function ipfsSingleAddWrapper (ipfs, inputData, ipfsConfig = {}, logContex
 async function ipfsMultipleAddWrapper (ipfs, inputData, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
 
+  if (!ipfsConfig.timeout) {
+    ipfsConfig.timeout = IPFS_ADD_TIMEOUT_MS
+  }
+
   // Generate hashes with ipfs content hashing logic
-  const customIpfsAddResponses = await ipfsAdd(inputData, {}, true /* isImgDir */)
+  const customIpfsAddResponses = await ipfsAdd(inputData, {})
 
   let ipfsDaemonResp
   if (enableIPFSAdd) {
@@ -164,18 +174,13 @@ async function ipfsHashOf (content, options, isImgDir = false) {
 // Mimics the response of the ipfs.add() call.
 // NOTE: The ipfs.add() response follows the structure {path: <string>, hash: <string>, size: <number>}.
 // This fn mimics this response structure
-async function ipfsAdd (content, options, isImgDir = false) {
+async function ipfsAdd (content, options) {
   options = options || {}
   options.onlyHash = true
   options.cidVersion = 0
 
   if (typeof content === 'string') {
     content = new TextEncoder().encode(content)
-  }
-
-  // If method is used for the img dir, do not structure as [{ content }]
-  if (!isImgDir) {
-    content = [{ content }]
   }
 
   const files = []

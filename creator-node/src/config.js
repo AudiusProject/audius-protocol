@@ -602,22 +602,28 @@ const config = convict({
     default: true
   },
   enableIPFSAddTracks: {
-    doc: '[TRACKS] Boolean indicating if the CN should add content to the ipfs daemon, or rely only on content addressing logic',
+    doc: '[TRACKS] Boolean indicating if the CN should add content to the ipfs daemon (true), or rely only on content addressing logic (false)',
     format: 'BooleanCustom',
     env: 'enableIPFSAddTracks',
     default: false
   },
   enableIPFSAddImages: {
-    doc: '[IMAGES] Boolean indicating if the CN should add content to the ipfs daemon, or rely only on content addressing logic',
+    doc: '[IMAGES] Boolean indicating if the CN should add content to the ipfs daemon (true), or rely only on content addressing logic (false)',
     format: 'BooleanCustom',
     env: 'enableIPFSAddImages',
     default: false
   },
   enableIPFSAddMetadata: {
-    doc: '[METADATA] Boolean indicating if the CN should add content to the ipfs daemon, or rely only on content addressing logic',
+    doc: '[METADATA] Boolean indicating if the CN should add content to the ipfs daemon (true), or rely only on content addressing logic (false)',
     format: 'BooleanCustom',
     env: 'enableIPFSAddMetadata',
     default: true
+  },
+  IPFSAddTimeoutMs: {
+    doc: 'The default timeout in ms for ipfs add',
+    format: 'nat',
+    env: 'enableIPFSAddMetadata',
+    default: 10000 // 10s
   }
 
   /**

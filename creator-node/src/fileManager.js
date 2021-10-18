@@ -286,14 +286,12 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     try {
       decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
       const content = fs.createReadStream(expectedStoragePath)
-      // NOTE -- be aware of the structure
-      for await (const result of ipfsLatest.add(content, { onlyHash: true, timeout: 10000 })) {
-        if (multihash !== result.cid.toString()) {
-          decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: result.cid.toString(), time: Date.now() })
-          // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
-          await fs.unlink(expectedStoragePath)
-          throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${result.cid.toString()}`)
-        }
+      const ipfsHashOnly = await ipfsSingleAddWrapper(ipfsLatest, content, { onlyHash: true, timeout: 10000 }, {})
+      if (multihash !== ipfsHashOnly) {
+        decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: ipfsHashOnly, time: Date.now() })
+        // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
+        await fs.unlink(expectedStoragePath)
+        throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${ipfsHashOnly}`)
       }
       decisionTree.push({ stage: 'Successfully verified the file contents for the CID', vals: multihash, time: Date.now() })
     } catch (e) {
@@ -315,7 +313,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
 
 const _printDecisionTreeObj = (decisionTree, logger) => {
   try {
-    logger.info('saveFileForMultihashToFS decision tree', JSON.stringify(decisionTree))
+    logger.info('saveFileForMultihashToFS decision tree', JSON.stringify(decisionTree, null, 2))
   } catch (e) {
     logger.error('error printing saveFileForMultihashToFS decision tree', decisionTree)
   }
