@@ -441,6 +441,10 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
                         num_txs_processed += 1
                 except Exception as exc:
                     logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
+                    print(f"index_solana_plays.py | Clearing executor._threads {executor._threads}")
+                    executor._threads.clear()
+                    print(f"index_solana_plays.py | Clearing concurrent.futures.thread._threads_queues {concurrent.futures.thread._threads_queues}")
+                    concurrent.futures.thread._threads_queues.clear()
                     raise exc
 
         batch_end_time = time.time()
