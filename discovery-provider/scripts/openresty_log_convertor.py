@@ -12,7 +12,6 @@ for line in sys.stdin:
                 "log": json.dumps(
                     {"level": sys.argv[1], "type": "openresty", "message": message}
                 ),
-                "message": message,
             }
         ),
         flush=True,
