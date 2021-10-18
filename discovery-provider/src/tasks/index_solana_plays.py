@@ -339,7 +339,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
     while not intersection_found:
         transactions_history = (
             solana_client_manager.get_confirmed_signature_for_address2(
-                TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=500
+                TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=100
             )
         )
         transactions_array = transactions_history["result"]
@@ -424,34 +424,24 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
         batch_start_time = time.time()
         # Process each batch in parallel
         with db.scoped_session() as session:
-            try:
-                parse_sol_play_transaction(
-                    session,
-                    solana_client_manager,
-                    tx_sig
-                )
-                num_txs_processed += 1
-            except Exception as exc:
-                logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
-                raise exc
-            # with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            #     parse_sol_tx_futures = {
-            #         executor.submit(
-            #             parse_sol_play_transaction,
-            #             session,
-            #             solana_client_manager,
-            #             tx_sig,
-            #         ): tx_sig
-            #         for tx_sig in tx_sig_batch
-            #     }
-            #     try:
-            #         for future in concurrent.futures.as_completed(parse_sol_tx_futures, timeout=30):
-            #             # No return value expected here so we just ensure all futures are resolved
-            #             future.result()
-            #             num_txs_processed += 1
-            #     except Exception as exc:
-            #         logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
-            #         raise exc
+            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+                parse_sol_tx_futures = {
+                    executor.submit(
+                        parse_sol_play_transaction,
+                        session,
+                        solana_client_manager,
+                        tx_sig,
+                    ): tx_sig
+                    for tx_sig in tx_sig_batch
+                }
+                try:
+                    for future in concurrent.futures.as_completed(parse_sol_tx_futures, timeout=30):
+                        # No return value expected here so we just ensure all futures are resolved
+                        future.result()
+                        num_txs_processed += 1
+                except Exception as exc:
+                    logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
+                    raise exc
 
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time
