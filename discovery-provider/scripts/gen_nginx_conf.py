@@ -27,7 +27,7 @@ http {
     server {
         listen 5000;
 
-        location = /health_check {
+        location ~* .*_(check|version) {
             proxy_pass http://127.0.0.1:3000;
         }
 
