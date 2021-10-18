@@ -339,7 +339,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
     while not intersection_found:
         transactions_history = (
             solana_client_manager.get_confirmed_signature_for_address2(
-                TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=500
+                TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=100
             )
         )
         transactions_array = transactions_history["result"]
