@@ -16,8 +16,12 @@ const CD_PROTOCOL_DIR_COMMAND = `cd ${PROTOCOL_DIR};`
 
 const HEALTH_CHECK_ENDPOINT = 'health_check'
 
-const OUTPUT_LOG = fs.createWriteStream(`${PROTOCOL_DIR}/service-commands/output.log`)
-const ERROR_LOG = fs.createWriteStream(`${PROTOCOL_DIR}/service-commands/error.log`)
+const OUTPUT_LOG = fs.createWriteStream(
+  `${PROTOCOL_DIR}/service-commands/output.log`
+)
+const ERROR_LOG = fs.createWriteStream(
+  `${PROTOCOL_DIR}/service-commands/error.log`
+)
 
 // Setting pretty print colors
 colors.setTheme({
@@ -242,13 +246,19 @@ const getContentNodeContainerName = serviceNumber => {
 }
 
 const getServiceURL = (service, serviceNumber) => {
+  let healthCheckEndpoint
+  if (service === Service.SOLANA_VALIDATOR) {
+    healthCheckEndpoint = ''
+  } else {
+    healthCheckEndpoint = HEALTH_CHECK_ENDPOINT
+  }
   if (service === Service.CREATOR_NODE) {
     if (!serviceNumber) {
       throw new Error('Missing serviceNumber')
     }
     return `http://${getContentNodeContainerName(serviceNumber)}:${
       4000 + parseInt(serviceNumber) - 1
-    }/${HEALTH_CHECK_ENDPOINT}`
+    }/${healthCheckEndpoint}`
   }
 
   const commands = serviceCommands[service]
@@ -256,7 +266,7 @@ const getServiceURL = (service, serviceNumber) => {
     throw new Error(`Invalid service: [${service}]`)
   }
   const { protocol, host, port } = commands
-  return `${protocol}://${host}:${port}/${HEALTH_CHECK_ENDPOINT}`
+  return `${protocol}://${host}:${port}/${healthCheckEndpoint}`
 }
 
 const performHealthCheckWithRetry = async (
@@ -288,9 +298,21 @@ const performHealthCheckWithRetry = async (
  */
 const performHealthCheck = async (service, serviceNumber) => {
   const url = getServiceURL(service, serviceNumber)
+  let healthCheckRequestOptions = { method: 'get', url }
+  if (service === Service.SOLANA_VALIDATOR) {
+    healthCheckRequestOptions = {
+      method: 'post',
+      data: {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'getClusterNodes'
+      },
+      url
+    }
+  }
 
   try {
-    const resp = await axios({ method: 'get', url })
+    const resp = await axios(healthCheckRequestOptions)
     return resp
   } catch (e) {
     console.error(
@@ -299,7 +321,6 @@ const performHealthCheck = async (service, serviceNumber) => {
     throw e
   }
 }
-
 const runInSequence = async (commands, options) => {
   for (const s of commands) {
     await runSetupCommand(...s, options)
@@ -322,7 +343,8 @@ const discoveryNodeUp = async (options = { verbose: false }) => {
 
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.UP]
+    [Service.SOLANA_VALIDATOR, SetupCommand.UP],
+    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
   ]
 
   const inParallel = [
@@ -334,7 +356,11 @@ const discoveryNodeUp = async (options = { verbose: false }) => {
   const sequential = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
     [Service.INIT_TOKEN_VERSIONS, SetupCommand.UP],
-    [Service.DISCOVERY_PROVIDER, SetupCommand.UP, { serviceNumber: 1, ...options  }],
+    [
+      Service.DISCOVERY_PROVIDER,
+      SetupCommand.UP,
+      { serviceNumber: 1, ...options }
+    ],
     [
       Service.DISCOVERY_PROVIDER,
       SetupCommand.HEALTH_CHECK,
@@ -376,7 +402,8 @@ const discoveryNodeWebServerUp = async (options = { verbose: false }) => {
 
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.UP]
+    [Service.SOLANA_VALIDATOR, SetupCommand.UP],
+    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
   ]
 
   const inParallel = [
@@ -418,8 +445,6 @@ const discoveryNodeWebServerUp = async (options = { verbose: false }) => {
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
   console.log(`Services brought up in ${durationSeconds}s`.info)
 }
-
-
 /**
  * Brings up all services relevant to the creator node
  * @returns {Promise<void>}
@@ -446,11 +471,7 @@ const creatorNodeUp = async (serviceNumber, options = { verbose: false }) => {
       SetupCommand.HEALTH_CHECK,
       { serviceNumber, ...options }
     ],
-    [
-      Service.CREATOR_NODE,
-      SetupCommand.REGISTER,
-      { serviceNumber, ...options }
-    ]
+    [Service.CREATOR_NODE, SetupCommand.REGISTER, { serviceNumber, ...options }]
   ]
 
   const start = Date.now()
@@ -460,14 +481,20 @@ const creatorNodeUp = async (serviceNumber, options = { verbose: false }) => {
   await runInSequence(sequential, options)
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
-  console.log(`Creator Node Services num:${serviceNumber} brought up in ${durationSeconds}s`.info)
+  console.log(
+    `Creator Node Services num:${serviceNumber} brought up in ${durationSeconds}s`
+      .info
+  )
 }
 
 /**
  * Deregisters a creator node
  * @returns {Promise<void>}
  */
-const deregisterCreatorNode = async (serviceNumber, options = { verbose: false }) => {
+const deregisterCreatorNode = async (
+  serviceNumber,
+  options = { verbose: false }
+) => {
   console.log(
     "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
       .error
@@ -487,7 +514,10 @@ const deregisterCreatorNode = async (serviceNumber, options = { verbose: false }
   await runInSequence(sequential, options)
 
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
-  console.log(`Deregister Creator Node Service num:${serviceNumber} in ${durationSeconds}s`.info)
+  console.log(
+    `Deregister Creator Node Service num:${serviceNumber} in ${durationSeconds}s`
+      .info
+  )
 }
 
 /**
@@ -503,8 +533,15 @@ const distribute = async (options = { verbose: false }) => {
  * @returns {Promise<void>}
  */
 const getAccounts = async (options = { verbose: false }) => {
-  const outputs = await runSetupCommand(Service.ACCOUNT, SetupCommand.UP, options)
-  const accountsSubstring = outputs[0].substring(outputs[0].lastIndexOf('[{"'),outputs[0].length-1);
+  const outputs = await runSetupCommand(
+    Service.ACCOUNT,
+    SetupCommand.UP,
+    options
+  )
+  const accountsSubstring = outputs[0].substring(
+    outputs[0].lastIndexOf('[{"'),
+    outputs[0].length - 1
+  )
   return JSON.parse(accountsSubstring)
 }
 
@@ -519,7 +556,8 @@ const identityServiceUp = async (options = { verbose: false }) => {
   )
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.UP]
+    [Service.SOLANA_VALIDATOR, SetupCommand.UP],
+    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
   ]
 
   const inParallel = [
@@ -554,20 +592,34 @@ const identityServiceUp = async (options = { verbose: false }) => {
  * Brings up an entire Audius Protocol stack.
  * @param {*} config. currently supports up to 4 Creator Nodes.
  */
-const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = false, verbose = false, parallel = true }) => {
+const allUp = async ({
+  numCreatorNodes = 4,
+  numDiscoveryNodes = 1,
+  withAAO = false,
+  verbose = false,
+  parallel = true
+}) => {
   if (verbose) {
     console.log('Running in verbose mode.')
-    console.log({ numCreatorNodes, numDiscoveryNodes, verbose, parallel, withAAO })
+    console.log({
+      numCreatorNodes,
+      numDiscoveryNodes,
+      verbose,
+      parallel,
+      withAAO
+    })
     console.log(
       "\n\n========================================\n\nNOTICE - Please make sure your '/etc/hosts' file is up to date.\n\n========================================\n\n"
-        .error)
+        .error
+    )
   }
 
   const options = { verbose }
 
   const setup = [
     [Service.NETWORK, SetupCommand.UP],
-    [Service.SOLANA_VALIDATOR, SetupCommand.UP]
+    [Service.SOLANA_VALIDATOR, SetupCommand.UP],
+    [Service.SOLANA_VALIDATOR, SetupCommand.HEALTH_CHECK]
   ]
 
   const inParallel = [
@@ -578,50 +630,54 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = fal
     [Service.SOLANA_PROGRAMS, SetupCommand.UP]
   ]
 
-  let creatorNodeCommands = _.range(1, numCreatorNodes + 1).map(serviceNumber => {
-    return [
-      [
-        Service.CREATOR_NODE,
-        SetupCommand.UPDATE_DELEGATE_WALLET,
-        { serviceNumber, ...options }
-      ],
-      [
-        Service.CREATOR_NODE,
-        SetupCommand.UP,
-        { serviceNumber, ...options, waitSec: 10 }
-      ],
-      [
-        Service.CREATOR_NODE,
-        SetupCommand.HEALTH_CHECK,
-        { serviceNumber, ...options }
-      ],
-      [
-        Service.CREATOR_NODE,
-        SetupCommand.REGISTER,
-        { serviceNumber, ...options }
+  const creatorNodeCommands = _.range(1, numCreatorNodes + 1).map(
+    serviceNumber => {
+      return [
+        [
+          Service.CREATOR_NODE,
+          SetupCommand.UPDATE_DELEGATE_WALLET,
+          { serviceNumber, ...options }
+        ],
+        [
+          Service.CREATOR_NODE,
+          SetupCommand.UP,
+          { serviceNumber, ...options, waitSec: 10 }
+        ],
+        [
+          Service.CREATOR_NODE,
+          SetupCommand.HEALTH_CHECK,
+          { serviceNumber, ...options }
+        ],
+        [
+          Service.CREATOR_NODE,
+          SetupCommand.REGISTER,
+          { serviceNumber, ...options }
+        ]
       ]
-    ]
-  })
+    }
+  )
 
-  let discoveryNodesCommands = _.range(1, numDiscoveryNodes + 1).map(serviceNumber => {
-    return [
-      [
-        Service.DISCOVERY_PROVIDER,
-        SetupCommand.UP,
-        { serviceNumber, ...options }
-      ],
-      [
-        Service.DISCOVERY_PROVIDER,
-        SetupCommand.HEALTH_CHECK,
-        { serviceNumber, ...options }
-      ],
-      [
-        Service.DISCOVERY_PROVIDER,
-        SetupCommand.REGISTER,
-        { retries: 2, serviceNumber, ...options }
+  const discoveryNodesCommands = _.range(1, numDiscoveryNodes + 1).map(
+    serviceNumber => {
+      return [
+        [
+          Service.DISCOVERY_PROVIDER,
+          SetupCommand.UP,
+          { serviceNumber, ...options }
+        ],
+        [
+          Service.DISCOVERY_PROVIDER,
+          SetupCommand.HEALTH_CHECK,
+          { serviceNumber, ...options }
+        ],
+        [
+          Service.DISCOVERY_PROVIDER,
+          SetupCommand.REGISTER,
+          { retries: 2, serviceNumber, ...options }
+        ]
       ]
-    ]
-  })
+    }
+  )
 
   const sequential1 = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
@@ -630,7 +686,7 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = fal
   const sequential2 = [
     [Service.IDENTITY_SERVICE, SetupCommand.UP],
     [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK],
-    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP],
+    [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP]
   ]
   if (withAAO) {
     sequential2.push([Service.AAO, SetupCommand.REGISTER])
@@ -649,8 +705,16 @@ const allUp = async ({ numCreatorNodes = 4, numDiscoveryNodes = 1, withAAO = fal
   await runInSequence(sequential1, options)
 
   if (parallel) {
-    await Promise.all(discoveryNodesCommands.map(commandGroup => runInSequence(commandGroup, options)))
-    await Promise.all(creatorNodeCommands.map(commandGroup => runInSequence(commandGroup, options)))
+    await Promise.all(
+      discoveryNodesCommands.map(commandGroup =>
+        runInSequence(commandGroup, options)
+      )
+    )
+    await Promise.all(
+      creatorNodeCommands.map(commandGroup =>
+        runInSequence(commandGroup, options)
+      )
+    )
   } else {
     console.log('Provisioning DNs and CNs in sequence.'.info)
     creatorNodeCommands = creatorNodeCommands.flat()
