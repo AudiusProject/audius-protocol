@@ -40,7 +40,9 @@ class SolanaClientManager:
             num_retries = retries
             while num_retries > 0:
                 try:
+                    logger.info(f"solana_client_manager.py | get_sol_tx_info | Fetching tx {tx_sig} {endpoint}")
                     tx_info = client.get_confirmed_transaction(tx_sig)
+                    logger.info(f"solana_client_manager.py | get_sol_tx_info | Finished fetching tx {tx_sig} {endpoint}")
                     if tx_info["result"] is not None:
                         return tx_info
                 except Exception as e:

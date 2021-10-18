@@ -368,8 +368,8 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
                         # and if not present in DB, add to processing
                         logger.info(
                             f"index_solana_plays.py | Latest slot re-traversal\
-    slot={tx_slot}, sig={tx_sig},\
-    latest_processed_slot(db)={latest_processed_slot}"
+                            slot={tx_slot}, sig={tx_sig},\
+                            latest_processed_slot(db)={latest_processed_slot}"
                         )
                         exists = get_tx_in_db(read_session, tx_sig)
                         if exists:
@@ -435,12 +435,12 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
                     for tx_sig in tx_sig_batch
                 }
                 try:
-                    for future in concurrent.futures.as_completed(parse_sol_tx_futures, timeout=5):
+                    for future in concurrent.futures.as_completed(parse_sol_tx_futures, timeout=30):
                         # No return value expected here so we just ensure all futures are resolved
                         future.result()
                         num_txs_processed += 1
                 except Exception as exc:
-                    logger.error(f"index_solana_plays.py | {exc}")
+                    logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
                     raise exc
 
         batch_end_time = time.time()
@@ -479,4 +479,7 @@ def index_solana_plays(self):
         raise e
     finally:
         if have_lock:
+            logger.info("index_solana_plays.py | Releasing lock")
             update_lock.release()
+        else:
+            logger.info("index_solana_plays.py | Not releasing lock")
