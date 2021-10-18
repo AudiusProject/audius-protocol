@@ -45,3 +45,6 @@ else
   WORKER_CLASS="${audius_gunicorn_worker_class}"
   exec gunicorn -b :3000 --access-logfile - --error-logfile - src.wsgi:app --log-level=debug --worker-class=$WORKER_CLASS --workers=$WORKERS
 fi
+
+tail -f /usr/local/openresty/logs/access.log | jq -M -R -c '{"level": "INFO", "type": "openresty", "message": .}' &
+tail -f /usr/local/openresty/logs/error.log | jq -M -R -c '{"level": "ERROR", "type": "openresty", "message": .}' &
