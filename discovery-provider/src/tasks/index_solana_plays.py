@@ -26,7 +26,7 @@ SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 TX_SIGNATURES_MAX_BATCHES = 100
 
 # Last N entries present in tx_signatures array during processing
-TX_SIGNATURES_RESIZE_LENGTH = 10
+TX_SIGNATURES_RESIZE_LENGTH = 50
 
 logger = logging.getLogger(__name__)
 
@@ -434,14 +434,14 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
-                for future in concurrent.futures.as_completed(parse_sol_tx_futures):
-                    try:
+                try:
+                    for future in concurrent.futures.as_completed(parse_sol_tx_futures, timeout=5):
                         # No return value expected here so we just ensure all futures are resolved
                         future.result()
                         num_txs_processed += 1
-                    except Exception as exc:
-                        logger.error(f"index_solana_plays.py | {exc}")
-                        raise exc
+                except Exception as exc:
+                    logger.error(f"index_solana_plays.py | {exc}")
+                    raise exc
 
         batch_end_time = time.time()
         batch_duration = batch_end_time - batch_start_time

@@ -6,10 +6,10 @@ const { logger } = require('../logging')
 const { indexMilestones } = require('./milestoneProcessing')
 const {
   updateBlockchainIds,
+  getHighestSlot,
+  getHighestBlockNumber
   // calculateTrackListenMilestones,
-  calculateTrackListenMilestonesFromDiscovery,
-  getHighestBlockNumber,
-  getHighestSlot
+  // calculateTrackListenMilestonesFromDiscovery
 } = require('./utils')
 const { processEmailNotifications } = require('./sendNotificationEmails')
 const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
@@ -288,18 +288,25 @@ class NotificationProcessor {
   async indexAll (audiusLibs, optimizelyClient, minBlock, oldMaxBlockNumber) {
     const startDate = Date.now()
     const startTime = process.hrtime()
+    let time = startDate
 
     logger.info(`notifications main indexAll job - minBlock: ${minBlock}, oldMaxBlockNumber: ${oldMaxBlockNumber}, startDate: ${startDate}, startTime: ${new Date()}`)
 
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
+    // TODO: Re-enable listen milestone notifications when preprocessing is done on the discovery node side
+    // This query is extremely non-performant and needs to be restructured
+    //
     // Query owners for tracks relevant to track listen counts
     // Below can be toggled once milestones are calculated in discovery
     // let listenCounts = await calculateTrackListenMilestones()
-    const listenCounts = await calculateTrackListenMilestonesFromDiscovery(discoveryProvider)
-    logger.info(`notifications main indexAll job - calculateTrackListenMilestonesFromDiscovery complete`)
+    // const listenCounts = []
+    // const listenCounts = await calculateTrackListenMilestonesFromDiscovery(discoveryProvider)
+    // logger.info(`notifications main indexAll job - calculateTrackListenMilestonesFromDiscovery complete in ${Date.now() - time}ms`)
+    // time = Date.now()
 
-    const trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
+    const trackIdOwnersToRequestList = []
+    // const trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
 
     // These track_id get parameters will be used to retrieve track owner info
     // This is required since there is no guarantee that there are indeed notifications for this user
@@ -307,47 +314,53 @@ class NotificationProcessor {
     // Timeout of 2 minutes
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
     const { info: metadata, notifications, owners, milestones } = await discoveryProvider.getNotifications(minBlock, trackIdOwnersToRequestList, timeout)
-    logger.info(`notifications main indexAll job - query notifications from discovery node complete`)
+    logger.info(`notifications main indexAll job - query notifications from discovery node complete in ${Date.now() - time}ms`)
+    time = Date.now()
 
     // Use a single transaction
     const tx = await models.sequelize.transaction()
     try {
-      // Populate owners, used to index in milestone generation
-      const listenCountWithOwners = listenCounts.map((x) => {
-        return {
-          trackId: x.trackId,
-          listenCount: x.listenCount,
-          owner: owners.tracks[x.trackId]
-        }
-      })
+      // // Populate owners, used to index in milestone generation
+      const listenCountWithOwners = []
+      // const listenCountWithOwners = listenCounts.map((x) => {
+      //   return {
+      //     trackId: x.trackId,
+      //     listenCount: x.listenCount,
+      //     owner: owners.tracks[x.trackId]
+      //   }
+      // })
 
       // Insert the notifications into the DB to make it easy for users to query for their grouped notifications
       await processNotifications(notifications, tx)
-      logger.info(`notifications main indexAll job - processNotifications complete`)
+      logger.info(`notifications main indexAll job - processNotifications complete in ${Date.now() - time}ms`)
+      time = Date.now()
 
       // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
       await sendNotifications(audiusLibs, notifications, tx)
-      logger.info(`notifications main indexAll job - sendNotifications complete`)
+      logger.info(`notifications main indexAll job - sendNotifications complete in ${Date.now() - time}ms`)
+      time = Date.now()
 
       await indexMilestones(milestones, owners, metadata, listenCountWithOwners, audiusLibs, tx)
-      logger.info(`notifications main indexAll job - indexMilestones complete`)
+      logger.info(`notifications main indexAll job - indexMilestones complete in ${Date.now() - time}ms`)
+      time = Date.now()
 
       // Fetch trending track milestones
       await indexTrendingTracks(audiusLibs, optimizelyClient, tx)
-      logger.info(`notifications main indexAll job - indexTrendingTracks complete`)
+      logger.info(`notifications main indexAll job - indexTrendingTracks complete in ${Date.now() - time}ms`)
+      time = Date.now()
 
       // Commit
       await tx.commit()
 
       // actually send out push notifications
       await drainPublishedMessages()
-      logger.info(`notifications main indexAll job - drainPublishedMessages complete`)
+      logger.info(`notifications main indexAll job - drainPublishedMessages complete in ${Date.now() - time}ms`)
 
       const endTime = process.hrtime(startTime)
       const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
       logger.info(`notifications main indexAll job finished - minBlock: ${minBlock}, startDate: ${startDate}, duration: ${duration}, notifications: ${notifications.length}`)
     } catch (e) {
-      logger.error(`Error indexing notification ${e}`)
+      logger.error(`Error indexing notification in ${Date.now() - startDate}ms ${e}`)
       logger.error(e.stack)
       await tx.rollback()
     }

@@ -38,6 +38,9 @@ fi
 mkdir /usr/local/openresty/logs
 openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
 
+tail -f /usr/local/openresty/logs/access.log | python3 scripts/openresty_log_convertor.py INFO &
+tail -f /usr/local/openresty/logs/error.log | python3 scripts/openresty_log_convertor.py ERROR &
+
 # If a worker class is specified, use that. Otherwise, use sync workers.
 if [[ -z "${audius_gunicorn_worker_class}" ]]; then
   exec gunicorn -b :3000 --access-logfile - --error-logfile - src.wsgi:app --log-level=debug --workers=$WORKERS --threads=$THREADS
