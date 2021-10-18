@@ -63,8 +63,7 @@ class SolanaClientManager:
         return _try_all(
             self.clients,
             handle_get_sol_tx_info,
-            f"solana_client_manager.py | get_sol_tx_info | All requests failed to fetch {tx_sig}",
-            True
+            f"solana_client_manager.py | get_sol_tx_info | All requests failed to fetch {tx_sig}"
         )
 
     def get_confirmed_signature_for_address2(
@@ -81,8 +80,7 @@ class SolanaClientManager:
         return _try_all(
             self.clients,
             handle_get_confirmed_signature_for_address2,
-            "solana_client_manager.py | get_confirmed_signature_for_address2 | All requests failed",
-            True
+            "solana_client_manager.py | get_confirmed_signature_for_address2 | All requests failed"
         )
 
 
