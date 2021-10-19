@@ -12,7 +12,7 @@ import * as searchActions from '../../store/search/actions'
 import { useTheme } from '../../utils/theme'
 import useAppState from '../../hooks/useAppState'
 import useLocation from '../../hooks/useLocation'
-import { usePushWebRoute } from '../../hooks/useWebAction'
+import { usePushRouteWeb } from '../../hooks/usePushRouteWeb'
 import TopBar from './TopBar'
 import SearchHistory from './SearchHistory'
 import SearchResults from './SearchResults'
@@ -55,7 +55,7 @@ const Search = () => {
 
   const { pathname } = useLocation() || {}
 
-  const pushWebRouteNoClose = usePushWebRoute()
+  const pushWebRouteNoClose = usePushRouteWeb()
   const fadeAnim = useRef(new Animated.Value(0)).current
   const fadeIn = useCallback(() => {
     setViewDisplay('flex')
@@ -105,7 +105,7 @@ const Search = () => {
     }
   }, [isOpen, fadeIn, fadeOut, fadeAnim, pathname, anchorRoute, setAnchorRoute])
 
-  const pushWebRoute = usePushWebRoute(close)
+  const pushWebRoute = usePushRouteWeb(close)
   const onClose = useCallback(() => {
     if (anchorRoute) {
       pushWebRoute(anchorRoute, 'search')

@@ -11,7 +11,7 @@ import {
 import useSearchHistory from '../../store/search/hooks'
 import { submitQuery } from '../../store/search/actions'
 import { useColor, useTheme } from '../../utils/theme'
-import { useDispatchWebAction } from '../../hooks/useWebAction'
+import { useDispatchWeb } from '../../hooks/useDispatchWeb'
 import { MessageType } from '../../message'
 import EmptySearch from './content/EmptySearch'
 import IconArrow from '../../assets/images/iconArrow.svg'
@@ -78,7 +78,7 @@ const SearchHistoryItem = ({ text }: SearchHistoryItemProps) => {
     borderBottomColor: 'neutralLight8'
   })
   const dispatch = useDispatch()
-  const dispatchWeb = useDispatchWebAction()
+  const dispatchWeb = useDispatchWeb()
   const pushRoute = usePushSearchRoute()
 
   const onPress = useCallback(() => {
@@ -88,8 +88,7 @@ const SearchHistoryItem = ({ text }: SearchHistoryItemProps) => {
     } else {
       dispatchWeb({
         type: MessageType.SUBMIT_SEARCH_QUERY,
-        query: text,
-        isAction: true
+        query: text
       })
     }
   }, [dispatch, text, pushRoute, dispatchWeb])
