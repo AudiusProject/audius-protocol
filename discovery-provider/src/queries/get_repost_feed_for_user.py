@@ -43,7 +43,7 @@ def get_repost_feed_for_user(user_id: int, args: GetRepostFeedForUserArgs):
 def _get_repost_feed_for_user(
     session: Session, user_id: int, args: GetRepostFeedForUserArgs
 ):
-    feed_results = {}
+    feed_results = []
     current_user_id = args.get("current_user_id")
     limit = args.get("limit")
     offset = args.get("offset")
