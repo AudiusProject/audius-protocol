@@ -123,15 +123,13 @@ def is_valid_tx(account_keys):
 
 
 def parse_sol_play_transaction(
-    session: Session, solana_client_manager: SolanaClientManager, tx_sig
+    solana_client_manager: SolanaClientManager, tx_sig
 ):
     try:
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         logger.info(f"index_solana_plays.py | Got transaction: {tx_sig} | {tx_info}")
         meta = tx_info["result"]["meta"]
         error = meta["err"]
-
-        challenge_bus = index_solana_plays.challenge_event_bus
 
         if error:
             logger.info(
@@ -161,18 +159,8 @@ def parse_sol_play_transaction(
                         f"slot: {tx_slot} "
                         f"sig: {tx_sig}"
                     )
-
-                    # Only enqueue a challenge event if it's *not*
-                    # an anonymous listen
-                    if user_id is not None:
-                        challenge_bus.dispatch(
-                            ChallengeEvent.track_listen,
-                            tx_slot,
-                            user_id,
-                            {"created_at": created_at.timestamp()},
-                        )
                     
-                    # return the data necessary to create a Play
+                    # return the data necessary to create a Play and add to challenge bus
                     return (user_id, track_id, created_at, source, tx_slot, tx_sig)
         else:
             logger.info(
@@ -307,13 +295,16 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
     """
     logger.info(f"index_solana_plays.py | processing {tx_sig_batch_records}")
     batch_start_time = time.time()
+    challenge_bus_events = []
+
+    challenge_bus = index_solana_plays.challenge_event_bus
+
     # Process each batch in parallel
     with db.scoped_session() as session:
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             parse_sol_tx_futures = {
                 executor.submit(
                     parse_sol_play_transaction,
-                    session,
                     solana_client_manager,
                     tx_sig,
                 ): tx_sig
@@ -337,6 +328,11 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
                             )
                         )
 
+                        # Only enqueue a challenge event if it's *not*
+                        # an anonymous listen
+                        if user_id is not None:
+                            challenge_bus_events.append({"tx_slot": tx_slot, "user_id": user_id, "created_at": created_at.timestamp()})
+
             except Exception as exc:
                 logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
                 # timeout in a ThreadPoolExecutor doesn't actually stop execution of the underlying thread
@@ -349,9 +345,14 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
                     return parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries-1)
                 else:
                     raise exc
-
-            # successful processing iteration, commit to the db
-            session.commit()
+            
+            for event in challenge_bus_events:
+                challenge_bus.dispatch(
+                    ChallengeEvent.track_listen,
+                    event.get('tx_slot'),
+                    event.get('user_id'),
+                    {"created_at": event.get('created_at')},
+                )
 
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
