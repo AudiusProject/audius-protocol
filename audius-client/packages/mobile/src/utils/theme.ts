@@ -148,34 +148,34 @@ const matrixTheme = {
   staticWhite: '#FFFFFF'
 }
 
-const useThemeVariant = () => {
+const themeColorsByThemeVariant = {
+  [Theme.DEFAULT]: defaultTheme,
+  [Theme.DARK]: darkTheme,
+  [Theme.MATRIX]: matrixTheme,
+}
+
+export const useThemeVariant = (): keyof typeof themeColorsByThemeVariant => {
   const theme = useSelector(state => getTheme(state))
   const isSystemDarkMode = useDarkMode()
 
-  switch (theme) {
-    case Theme.DEFAULT:
-      return defaultTheme
-    case Theme.DARK:
-      return darkTheme
-    case Theme.MATRIX:
-      return matrixTheme
-    case Theme.AUTO:
-      if (isSystemDarkMode) {
-        return darkTheme
-      }
-      return defaultTheme
-  }
+  const systemTheme = isSystemDarkMode ? Theme.DARK : Theme.DEFAULT
+  return theme === Theme.AUTO ? systemTheme : theme
+}
+
+const useThemeColors = () => {
+  const themeVariant = useThemeVariant()
+  return themeColorsByThemeVariant[themeVariant]
 }
 
 export const useColor = (color: string) => {
-  const theme = useThemeVariant()
+  const theme = useThemeColors()
   return (theme as any)[color]
 }
 
 // Uses normalColor when in light/dark mode, but "special color" when in other mode
 export const useSpecialColor = (normalColor: string, specialColor: string) => {
   const theme = useSelector(state => getTheme(state))
-  const themeVariant = useThemeVariant()
+  const themeVariant = useThemeColors()
   if (theme === Theme.MATRIX) {
     return (themeVariant as any)[specialColor]
   }
@@ -183,7 +183,7 @@ export const useSpecialColor = (normalColor: string, specialColor: string) => {
 }
 
 export const useTheme = (baseStyles: object, toTheme: object) => {
-  const themeStyles = useThemeVariant()
+  const themeStyles = useThemeColors()
 
   const newStyles = {}
   Object.keys(toTheme).forEach(key => {

@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
-import { usePushWebRoute } from '../../hooks/useWebAction'
+import { usePushRouteWeb } from '../../hooks/usePushRouteWeb'
 import * as searchActions from '../../store/search/actions'
 
 export const usePushSearchRoute = () => {
   const dispatch = useDispatch()
   const onClose = useCallback(() => dispatch(searchActions.close()), [dispatch])
-  const pushWebRoute = usePushWebRoute(onClose)
+  const pushWebRoute = usePushRouteWeb(onClose)
   return pushWebRoute
 }

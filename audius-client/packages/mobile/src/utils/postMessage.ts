@@ -4,7 +4,7 @@ export type MessageSender = {
   postMessage: (message: string) => void
 }
 
-const SPAMMY_MESSAGES = new Set([MessageType.GET_POSITION])
+const SPAMMY_MESSAGES = new Set<string>([MessageType.GET_POSITION])
 
 // Stringifies the message, logs it, and sends it
 export const postMessage = (sender: MessageSender, message: Message) => {

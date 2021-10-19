@@ -8,6 +8,7 @@ import lifecycle, { LifecycleState } from './lifecycle/reducer'
 import notifications, { NotificationsState } from './notifications/reducer'
 import search, { SearchState } from './search/reducer'
 import theme, { ThemeState } from './theme/reducer'
+import clientStore from './clientStore/slice'
 
 export type AppState = {
   audio: AudioState
@@ -18,10 +19,12 @@ export type AppState = {
   notifications: NotificationsState
   theme: ThemeState
   search: SearchState
+  clientStore: any
 }
 
 const createRootReducer = () =>
   combineReducers({
+    clientStore,
     audio,
     web,
     oauth,

@@ -4,7 +4,7 @@ import { StyleSheet, Animated, Text, TouchableOpacity } from 'react-native'
 
 import { useColor, useTheme } from '../../../utils/theme'
 import { getSearchRoute } from '../../../utils/routes'
-import { usePushWebRoute } from '../../../hooks/useWebAction'
+import { usePushRouteWeb } from '../../../hooks/usePushRouteWeb'
 import * as searchActions from '../../../store/search/actions'
 import { getSearchResultQuery } from '../../../store/search/selectors'
 import IconArrow from '../../../assets/images/iconArrow.svg'
@@ -41,7 +41,7 @@ const MoreContainer = () => {
   const moreTextStyles = useTheme(styles.moreText, { color: 'staticWhite' })
   const dispatch = useDispatch()
   const onClose = useCallback(() => dispatch(searchActions.close()), [dispatch])
-  const pushWebRoute = usePushWebRoute(onClose)
+  const pushWebRoute = usePushRouteWeb(onClose)
 
   const searchResultQuery = useSelector(getSearchResultQuery)
   const onClickMore = useCallback(() => {
