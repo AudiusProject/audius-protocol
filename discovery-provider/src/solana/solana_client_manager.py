@@ -115,7 +115,7 @@ def _try_all(iterable, func, message, randomize=False):
     """Executes a function with retries across the iterable.
     If all executions fail, raise an exception."""
     items = list(enumerate(iterable))
-    items = items if not randomize else random.sample(items, k=len(items))
+    items = [items[0]]*len(items) if not randomize else random.sample(items, k=len(items))
     for index, value in items:
         try:
             with timeout(30):
