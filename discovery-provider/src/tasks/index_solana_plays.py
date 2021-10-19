@@ -7,7 +7,6 @@ from typing import Union, Tuple
 
 import base58
 from sqlalchemy import desc
-from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -159,13 +158,14 @@ def parse_sol_play_transaction(
                         f"slot: {tx_slot} "
                         f"sig: {tx_sig}"
                     )
-                    
+
                     # return the data necessary to create a Play and add to challenge bus
                     return (user_id, track_id, created_at, source, tx_slot, tx_sig)
         else:
             logger.info(
                 f"index_solana_plays.py | tx={tx_sig} Failed to find SECP_PROGRAM"
             )
+            return
     except Exception as e:
         logger.error(
             f"index_solana_plays.py | Error processing {tx_sig}, {e}", exc_info=True
@@ -331,7 +331,11 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
                         # Only enqueue a challenge event if it's *not*
                         # an anonymous listen
                         if user_id is not None:
-                            challenge_bus_events.append({"tx_slot": tx_slot, "user_id": user_id, "created_at": created_at.timestamp()})
+                            challenge_bus_events.append({
+                                "tx_slot": tx_slot,
+                                "user_id": user_id,
+                                "created_at": created_at.timestamp()
+                            })
 
             except Exception as exc:
                 logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
@@ -345,7 +349,7 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
                     return parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries-1)
                 else:
                     raise exc
-            
+
             for event in challenge_bus_events:
                 challenge_bus.dispatch(
                     ChallengeEvent.track_listen,
@@ -359,9 +363,10 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
     logger.info(
         f"index_solana_plays.py | processed batch {len(tx_sig_batch_records)} txs in {batch_duration}s"
     )
+    return
 
 def split_list(list, n):
-    for i in range(0, len(list), n): 
+    for i in range(0, len(list), n):
         yield list[i:i + n]
 
 def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
@@ -396,10 +401,16 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
 
     # Traverse recent records until an intersection is found with existing Plays table
     while not intersection_found:
+        logger.info(
+            f"index_solana_plays.py | About to make request to get transactions before {last_tx_signature}"
+        )
         transactions_history = (
             solana_client_manager.get_confirmed_signature_for_address2(
                 TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=1000
             )
+        )
+        logger.info(
+            f"index_solana_plays.py | Finished making request to get transactions before {last_tx_signature}"
         )
         transactions_array = transactions_history["result"]
         if not transactions_array:
@@ -514,4 +525,3 @@ def index_solana_plays(self):
         if have_lock:
             logger.info("index_solana_plays.py | Releasing lock")
             update_lock.release()
-
