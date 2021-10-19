@@ -6,6 +6,8 @@ const fs = require('fs')
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
 
+const IPFS_ADD_TIMEOUT_MS = config.get('IPFSAddTimeoutMs')
+
 // Make ipfs clients exportable to be used in rehydrate queue
 const ipfsAddr = config.get('ipfsHost')
 if (!ipfsAddr) {
@@ -27,16 +29,16 @@ async function logIpfsPeerIds () {
 /**
  * Wrapper to ipfs.add() -- Allows enabling/disabling adding content to the ipfs daemon. Input must be a buffer.
  * @param {Object} ipfs ipfs library -- can be two different versions (see ipfsClient.js)
- * @param {Buffer} inputData a single buffer input
+ * @param {Buffer} content a single buffer input
  * @param {Object?} ipfsConfig ipfs add config options
  * @param {Object?} logContext
  * @param {boolean?} enableIPFSAdd flag to add content to ipfs daemon
  * @returns {string} hash from content addressing fn or ipfs daemon response
  */
-async function ipfsSingleAddWrapper (ipfs, inputData, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
+async function ipfsSingleAddWrapper (ipfs, content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
 
-  const onlyHash = await ipfsAdd(inputData)
+  const onlyHash = await ipfsAddWithoutDaemon(content)
 
   if (!enableIPFSAdd) {
     logger.info(`[ipfsClient - ipfsSingleAddWrapper()] onlyHash=${onlyHash}`)
@@ -44,7 +46,7 @@ async function ipfsSingleAddWrapper (ipfs, inputData, ipfsConfig = {}, logContex
   }
 
   try {
-    const ipfsDaemonHash = (await ipfs.add(inputData, ipfsConfig))[0].hash
+    const ipfsDaemonHash = (await ipfsAddWithTimeout(ipfs.add, content, ipfsConfig))[0].hash
     logger.info(`[ipfsClient - ipfsSingleAddWrapper()] onlyHash=${onlyHash} ipfsDaemonHash=${ipfsDaemonHash} isSameHash=${onlyHash === ipfsDaemonHash}`)
     return ipfsDaemonHash
   } catch (e) {
@@ -66,7 +68,7 @@ async function ipfsAddFromFsWrapper (ipfs, srcPath, ipfsConfig = {}, logContext 
   const logger = genericLogger.child(logContext)
 
   const stream = fs.createReadStream(srcPath)
-  const onlyHash = await ipfsAdd(stream)
+  const onlyHash = await ipfsAddWithoutDaemon(stream)
 
   if (!enableIPFSAdd) {
     logger.info(`[ipfsClient - ipfsAddFromFsWrapper()] onlyHash=${onlyHash}`)
@@ -74,7 +76,7 @@ async function ipfsAddFromFsWrapper (ipfs, srcPath, ipfsConfig = {}, logContext 
   }
 
   try {
-    const ipfsDaemonHash = (await ipfs.addFromFs(srcPath, ipfsConfig))[0].hash
+    const ipfsDaemonHash = (await ipfsAddWithTimeout(ipfs.addFromFs, srcPath, ipfsConfig))[0].hash
     logger.info(`[ipfsClient - ipfsAddFromFsWrapper()] onlyHash=${onlyHash} ipfsDaemonHash=${ipfsDaemonHash} isSameHash=${onlyHash === ipfsDaemonHash}`)
     return ipfsDaemonHash
   } catch (e) {
@@ -86,32 +88,32 @@ async function ipfsAddFromFsWrapper (ipfs, srcPath, ipfsConfig = {}, logContext 
 /**
  * Wrapper to ipfs.add() for multiple inputs -- Allows enabling/disabling adding content to the ipfs daemon. Generally used for images (to generate dirs too)
  * @param {Object} ipfs ipfs library -- can be two different versions (see ipfsClient.js)
- * @param {Object[]} inputData an Object[] with the structure { path: string, content: buffer }
+ * @param {Object[]} content an Object[] with the structure { path: string, content: buffer }
  * @param {Object?} ipfsConfig ipfs add config options
  * @param {Object?} logContext
  * @param {boolean?} enableIPFSAdd flag to add content to ipfs daemon
  * @returns {string|string[]|Object|Object[]} hashes from content addressing fn, or ipfs daemon responses
  */
-async function ipfsMultipleAddWrapper (ipfs, inputData, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
+async function ipfsMultipleAddWrapper (ipfs, content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
 
-  const customIpfsAddResp = await ipfsAdd(inputData, {}, true)
-  const customIpfsAddRespStr = JSON.stringify(customIpfsAddResp)
+  const ipfsAddWithoutDaemonResp = await ipfsAddWithoutDaemon(content, {}, true)
+  const ipfsAddWithoutDaemonRespStr = JSON.stringify(ipfsAddWithoutDaemonResp)
 
   if (!enableIPFSAdd) {
-    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${customIpfsAddRespStr}`)
-    return customIpfsAddResp
+    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${ipfsAddWithoutDaemonRespStr}`)
+    return ipfsAddWithoutDaemonResp
   }
 
   try {
-    const ipfsDaemonResp = await ipfs.add(inputData, ipfsConfig)
+    const ipfsDaemonResp = await ipfsAddWithTimeout(ipfs.add, content, ipfsConfig)
     const ipfsDaemonRespStr = JSON.stringify(ipfsDaemonResp)
-    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${customIpfsAddRespStr} ipfsDaemonResp=${ipfsDaemonRespStr} isSameHash=${customIpfsAddRespStr === ipfsDaemonRespStr}`)
+    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${ipfsAddWithoutDaemonRespStr} ipfsDaemonResp=${ipfsDaemonRespStr} isSameHash=${ipfsAddWithoutDaemonRespStr === ipfsDaemonRespStr}`)
 
     return ipfsDaemonResp
   } catch (e) {
-    logger.warn(`[ipfsClient - ipfsMultipleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${customIpfsAddRespStr}: ${e.toString()}`)
-    return customIpfsAddResp
+    logger.warn(`[ipfsClient - ipfsMultipleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${ipfsAddWithoutDaemonRespStr}: ${e.toString()}`)
+    return ipfsAddWithoutDaemonResp
   }
 }
 
@@ -135,7 +137,7 @@ const block = {
   put: async () => { throw new Error('unexpected block API put') }
 }
 
-async function ipfsAdd (content, options, isImageFlow = false) {
+async function ipfsAddWithoutDaemon (content, options, isImageFlow = false) {
   options = options || {}
   options.onlyHash = true
   options.cidVersion = 0
@@ -166,6 +168,15 @@ async function ipfsAdd (content, options, isImageFlow = false) {
   }
 }
 
+async function ipfsAddWithTimeout (ipfsAddFn, content, ipfsConfig = {}, timeout = IPFS_ADD_TIMEOUT_MS) {
+  return Promise.race([
+    ipfsAddFn(content, ipfsConfig),
+    new Promise((resolve, reject) => {
+      setTimeout(reject, timeout, `ipfs add took over ${timeout}ms` /* return value */)
+    })
+  ])
+}
+
 module.exports = {
   ipfs,
   ipfsLatest,
@@ -173,5 +184,5 @@ module.exports = {
   ipfsSingleAddWrapper,
   ipfsAddFromFsWrapper,
   ipfsMultipleAddWrapper,
-  ipfsAdd
+  ipfsAddWithoutDaemon
 }
