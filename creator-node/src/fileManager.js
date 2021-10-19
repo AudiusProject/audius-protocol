@@ -9,7 +9,7 @@ const Utils = require('./utils')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
-const { ipfsSingleAddWrapper, ipfsAddFromFsWrapper } = require('./ipfsClient')
+const { ipfsSingleAddWrapper } = require('./ipfsClient')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -33,8 +33,7 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer, enableIPFSAdd = fal
   const ipfs = req.app.get('ipfsAPI')
 
   // Add to IPFS without pinning and retrieve multihash
-  // TODO: If used for images, use `ipfsMultipleAddWrapper`
-  const multihash = await ipfsSingleAddWrapper(ipfs, buffer, { pin: false }, req.logContext, enableIPFSAdd)
+  const multihash = await ipfsSingleAddWrapper(ipfs.add, buffer, { pin: false }, req.logContext, enableIPFSAdd)
 
   // Write file to disk by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
@@ -57,7 +56,7 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
   }
 
   // Add to IPFS without pinning and retrieve multihash
-  const multihash = await ipfsAddFromFsWrapper(ipfs, srcPath, { pin: false }, logContext, enableIPFSAdd)
+  const multihash = await ipfsSingleAddWrapper(ipfs.addFromFs, srcPath, { pin: false }, logContext, enableIPFSAdd)
 
   // store file copy by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
@@ -286,7 +285,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     try {
       decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
       const content = fs.createReadStream(expectedStoragePath)
-      const ipfsHashOnly = await ipfsSingleAddWrapper(ipfsLatest, content, { onlyHash: true, timeout: 10000 }, {})
+      const ipfsHashOnly = await ipfsSingleAddWrapper(ipfsLatest.add, content, { onlyHash: true, timeout: 10000 }, {})
       if (multihash !== ipfsHashOnly) {
         decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: ipfsHashOnly, time: Date.now() })
         // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct

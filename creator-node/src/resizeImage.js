@@ -144,7 +144,7 @@ module.exports = async (job) => {
   resizes.push(original)
 
   const ipfsAddResp = await ipfsMultipleAddWrapper(
-    ipfs,
+    ipfs.add,
     toAdd,
     { pin: false },
     {} /* logContext */,
