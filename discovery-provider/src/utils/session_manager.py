@@ -63,7 +63,6 @@ class SessionManager:
         set_search_similarity(cursor)
         cursor.close()
 
-    @contextmanager
     def session(self):
         """
         Get a session for direct management/use. Use not recommended unless absolutely

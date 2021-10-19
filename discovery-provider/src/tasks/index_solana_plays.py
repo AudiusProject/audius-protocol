@@ -1,5 +1,6 @@
 import concurrent.futures
 import datetime
+from inspect import signature
 import logging
 import time
 
@@ -162,17 +163,6 @@ def parse_sol_play_transaction(
                         f"sig: {tx_sig}"
                     )
 
-                    session.add(
-                        Play(
-                            user_id=user_id,
-                            play_item_id=track_id,
-                            created_at=created_at,
-                            source=source,
-                            slot=tx_slot,
-                            signature=tx_sig,
-                        )
-                    )
-
                     # Only enqueue a challenge event if it's *not*
                     # an anonymous listen
                     if user_id is not None:
@@ -182,6 +172,9 @@ def parse_sol_play_transaction(
                             user_id,
                             {"created_at": created_at.timestamp()},
                         )
+                    
+                    # return the data necessary to create a Play
+                    return (user_id, track_id, created_at, source, tx_slot, tx_sig)
         else:
             logger.info(
                 f"index_solana_plays.py | tx={tx_sig} Failed to find SECP_PROGRAM"
@@ -316,7 +309,7 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
     logger.info(f"index_solana_plays.py | processing {tx_sig_batch_records}")
     batch_start_time = time.time()
     # Process each batch in parallel
-    with db.session() as session:
+    with db.scoped_session() as session:
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             parse_sol_tx_futures = {
                 executor.submit(
@@ -329,8 +322,22 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
             }
             try:
                 for future in concurrent.futures.as_completed(parse_sol_tx_futures, timeout=45):
-                    # No return value expected here so we just ensure all futures are resolved
-                    future.result()
+                    # Returns the properties for a Play object to be created in the db
+                    # can be None so check the value exists
+                    result = future.result()
+                    if result:
+                        user_id, track_id, created_at, source, tx_slot, tx_sig = result
+                        session.add(
+                            Play(
+                                user_id=user_id,
+                                play_item_id=track_id,
+                                created_at=created_at,
+                                source=source,
+                                slot=tx_slot,
+                                signature=tx_sig,
+                            )
+                        )
+
             except Exception as exc:
                 logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
                 # timeout in a ThreadPoolExecutor doesn't actually stop execution of the underlying thread
@@ -339,8 +346,6 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
                 executor._threads.clear()
                 concurrent.futures.thread._threads_queues.clear()
 
-                # there was an error during this processing batch, rollback the db transaction
-                session.rollback()
                 if retries > 0:
                     return parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries-1)
                 else:
