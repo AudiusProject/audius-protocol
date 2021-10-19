@@ -53,6 +53,9 @@ from .user_bank import UserBankAccount
 from .user_events import UserEvents
 from .trending_result import TrendingResult
 from .reward_manager import RewardManagerTransaction
+from .aggregate_interval_play import AggregateIntervalPlay
+from .trending_param import TrendingParam
+from .track_trending_score import TrackTrendingScore
 
 __all__ = [
     "AggregateDailyAppNameMetrics",
@@ -65,6 +68,7 @@ __all__ = [
     "AggregatePlays",
     "AggregateTrack",
     "AggregateUser",
+    "AggregateIntervalPlay",
     "AppMetricsAllTime",
     "AppMetricsTrailingMonth",
     "AppMetricsTrailingWeek",
@@ -99,6 +103,8 @@ __all__ = [
     "TagTrackUserMatview",
     "Track",
     "TrackRoute",
+    "TrackTrendingScore",
+    "TrendingParam",
     "TrendingResult",
     "URSMContentNode",
     "User",

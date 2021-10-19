@@ -9,7 +9,7 @@ use solana_program::{
     entrypoint::ProgramResult,
     program::{invoke, invoke_signed},
     program_error::ProgramError,
-    program_pack::IsInitialized,
+    program_pack::{IsInitialized, Pack},
     pubkey::Pubkey,
     rent::Rent,
     system_instruction,
@@ -211,4 +211,25 @@ pub fn create_account<'a>(
     );
 
     invoke_signed(&ix, &[from, to], signers_seeds)
+}
+
+/// Validates that the UserBank derived from `recipient_info` matches the provided `eth_address`.
+/// Uses the `mint` associated with the `reward_token_source_info` token account.
+pub fn validate_token_account_derivation(
+    reward_token_source_info: &AccountInfo,
+    recipient_info: &AccountInfo,
+    eth_address: EthereumAddress,
+) -> ProgramResult {
+    let token_account_info =
+        spl_token::state::Account::unpack(&reward_token_source_info.data.borrow())?;
+    let claimable_tokens_id = claimable_tokens::id();
+    let mint = token_account_info.mint;
+    let (base_pubkey, _) = find_program_address_with_seed(&claimable_tokens_id, &mint, &[]);
+    let seed = bs58::encode(eth_address).into_string();
+    let res = Pubkey::create_with_seed(&base_pubkey, seed.as_str(), &spl_token::id())?;
+    if res != *recipient_info.key {
+        return Err(AudiusProgramError::InvalidRecipient.into());
+    }
+
+    Ok(())
 }

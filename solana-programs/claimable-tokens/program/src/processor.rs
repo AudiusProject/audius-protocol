@@ -5,7 +5,8 @@ use crate::{
     instruction::ClaimableProgramInstruction,
     utils::program::{find_address_pair, EthereumAddress},
 };
-use borsh::BorshDeserialize;
+use borsh::{BorshDeserialize, BorshSerialize};
+// use solana_sdk::{secp256k1_instruction::{SIGNATURE_OFFSETS_SERIALIZED_SIZE}};
 use solana_program::{
     account_info::next_account_info,
     account_info::AccountInfo,
@@ -20,6 +21,31 @@ use solana_program::{
     sysvar::Sysvar,
 };
 use std::mem::size_of;
+
+/// Known const for serialized signature offsets
+pub const SIGNATURE_OFFSETS_SERIALIZED_SIZE: usize = 11;
+
+/// Start of SECP recovery data after serialized SecpSignatureOffsets struct
+pub const DATA_START: usize = SIGNATURE_OFFSETS_SERIALIZED_SIZE + 1;
+
+/// Secp256k1 signature offsets data
+#[derive(Clone, Copy, Debug, Default, PartialEq, BorshDeserialize, BorshSerialize)]
+pub struct SecpSignatureOffsets {
+    /// Offset of 64+1 bytes
+    pub signature_offset: u16,
+    /// Index of signature instruction in buffer
+    pub signature_instruction_index: u8,
+    /// Offset to eth_address of 20 bytes
+    pub eth_address_offset: u16,
+    /// Index of eth address instruction in buffer
+    pub eth_address_instruction_index: u8,
+    /// Offset to start of message data
+    pub message_data_offset: u16,
+    /// Size of message data
+    pub message_data_size: u16,
+    /// Index on message instruction in buffer
+    pub message_instruction_index: u8,
+}
 
 /// Program state handler.
 pub struct Processor;
@@ -238,6 +264,10 @@ impl Processor {
         expected_signer: &EthereumAddress,
         expected_message: &[u8],
     ) -> ProgramResult {
+        if !sysvar::instructions::check_id(&instruction_info.key) {
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+        }
+
         let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
 
         // instruction can't be first in transaction
@@ -246,9 +276,12 @@ impl Processor {
             return Err(ClaimableProgramError::Secp256InstructionLosing.into());
         }
 
+        // Current instruction - 1
+        let secp_program_index = index - 1;
+
         // load previous instruction
         let instruction = sysvar::instructions::load_instruction_at(
-            (index - 1) as usize,
+            secp_program_index as usize,
             &instruction_info.data.borrow(),
         )
         .map_err(to_claimable_tokens_error)?;
@@ -258,7 +291,12 @@ impl Processor {
             return Err(ClaimableProgramError::Secp256InstructionLosing.into());
         }
 
-        Self::validate_eth_signature(expected_signer, expected_message, instruction.data)
+        Self::validate_eth_signature(
+            expected_signer,
+            expected_message,
+            instruction.data,
+            secp_program_index as u8,
+        )
     }
 
     /// Checks that message inside instruction was signed by expected signer
@@ -267,8 +305,42 @@ impl Processor {
         expected_signer: &EthereumAddress,
         expected_message: &[u8],
         secp_instruction_data: Vec<u8>,
+        instruction_index: u8,
     ) -> Result<(), ProgramError> {
+        // Only single recovery expected
+        if secp_instruction_data[0] != 1 {
+            return Err(ClaimableProgramError::SignatureVerificationFailed.into());
+        }
+
+        // Assert instruction_index = 1
+        let start = 1;
+        let end = start + (SIGNATURE_OFFSETS_SERIALIZED_SIZE as usize);
+        let sig_offsets_struct =
+            SecpSignatureOffsets::try_from_slice(&secp_instruction_data[start..end])
+                .map_err(|_| ClaimableProgramError::SignatureVerificationFailed)?;
+
         let eth_address_offset = 12;
+        // signature_offset = eth_address_offset (12) + eth_pubkey.len (20) = 32
+        let signature_offset = 32;
+        // eth_address_offset (12) + address (20) + signature (65) = 97
+        let message_data_offset = 97;
+
+        // Validate the index of this instruction matches expected value
+        if sig_offsets_struct.message_instruction_index != instruction_index
+            || sig_offsets_struct.signature_instruction_index != instruction_index
+            || sig_offsets_struct.eth_address_instruction_index != instruction_index
+        {
+            return Err(ClaimableProgramError::SignatureVerificationFailed.into());
+        }
+
+        // Validate each offset is as expected
+        if sig_offsets_struct.eth_address_offset != (eth_address_offset as u16)
+            || sig_offsets_struct.signature_offset != (signature_offset as u16)
+            || sig_offsets_struct.message_data_offset != (message_data_offset as u16)
+        {
+            return Err(ClaimableProgramError::SignatureVerificationFailed.into());
+        }
+
         let instruction_signer = secp_instruction_data
             [eth_address_offset..eth_address_offset + size_of::<EthereumAddress>()]
             .to_vec();
@@ -276,8 +348,6 @@ impl Processor {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
         }
 
-        //NOTE: meta (12) + address (20) + signature (65) = 97
-        let message_data_offset = 97;
         let instruction_message = secp_instruction_data[message_data_offset..].to_vec();
         if instruction_message != *expected_message {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
