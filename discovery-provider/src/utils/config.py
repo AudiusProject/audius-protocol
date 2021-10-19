@@ -34,7 +34,6 @@ def env_config_update(config, section_name, key):
     env_var_name = f"audius_{env_var_base}"
     env_var_value = os.environ.get(env_var_name)
     env_var_exists = env_var_value != None
-    logger.error(f"{env_var_name} : Exists? {env_var_exists}")
     if env_var_exists:
         # Override any config values with environment variables if present
         # Variables are formatted as audius_<section_name>_<key>
@@ -134,4 +133,4 @@ try:
     shared_config["serviceLocation"]["serviceLongitude"] = longitude
 
 except (KeyError, RuntimeError) as e:
-    logger.error(f"""Failed to get latitude ({latitude}) and/or longitude ({longitude}): {e}""")
+    logger.error(f"""Failed to get latitude and/or longitude : {e}""")

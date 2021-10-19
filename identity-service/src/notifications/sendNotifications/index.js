@@ -6,26 +6,21 @@ const publishNotifications = require('./publishNotifications')
 
 function getUserIdsToNotify (notifications) {
   return notifications.reduce((userIds, notification) => {
-    // Handle the 'follow' notification type
-    if (notification.type === notificationTypes.Follow) {
-      return userIds.concat(notification.metadata.followee_user_id)
+    // Add user id from notification based on notification type
+    switch (notification.type) {
+      case notificationTypes.Follow:
+        return userIds.concat(notification.metadata.followee_user_id)
+      case notificationTypes.Repost.base:
+        return userIds.concat(notification.metadata.entity_owner_id)
+      case notificationTypes.Favorite.base:
+        return userIds.concat(notification.metadata.entity_owner_id)
+      case notificationTypes.RemixCreate:
+        return userIds.concat(notification.metadata.remix_parent_track_user_id)
+      case notificationTypes.ChallengeReward:
+        return userIds.concat(notification.initiator)
+      default:
+        return userIds
     }
-
-    // Handle the 'repost' notification type
-    if (notification.type === notificationTypes.Repost.base) {
-      return userIds.concat(notification.metadata.entity_owner_id)
-    }
-
-    // Handle the 'favorite' notification type, track/album/playlist
-    if (notification.type === notificationTypes.Favorite.base) {
-      return userIds.concat(notification.metadata.entity_owner_id)
-    }
-
-    // Handle the 'remix create' notification type
-    if (notification.type === notificationTypes.RemixCreate) {
-      return userIds.concat(notification.metadata.remix_parent_track_user_id)
-    }
-    return userIds
   }, [])
 }
 

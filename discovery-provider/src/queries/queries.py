@@ -42,6 +42,8 @@ from src.queries.get_users_cnode import get_users_cnode
 from src.queries.get_ursm_cnodes import get_ursm_cnodes
 from src.queries.get_sol_plays import get_sol_play, get_track_listen_milestones
 from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
+from src.queries.get_cid_source import get_cid_source
+from src.queries.get_user_history import get_user_history
 from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
@@ -181,6 +183,10 @@ def get_feed_route():
         args["tracks_only"] = parse_bool_param(request.args.get("tracks_only"))
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
+    if "followee_user_id" in request.args:
+        args["followee_user_ids"] = parse_id_array_param(
+            request.args.getlist("followee_user_id")
+        )
     feed_results = get_feed(args)
     return api_helpers.success_response(feed_results)
 
@@ -625,5 +631,29 @@ def get_track_listen_milestone_data():
         # Assign value only if not None or empty string
         data = get_track_listen_milestones(100)
         return api_helpers.success_response(data)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+
+@bp.route("/cid/source/<string:request_cid>", methods=("GET",))
+def get_cid_source_route(request_cid):
+    try:
+        cid_source = get_cid_source(request_cid)
+        return api_helpers.success_response(cid_source)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
+
+
+@bp.route("/users/history/<int:user_id>", methods=("GET",))
+def get_user_history_route(user_id):
+    try:
+        (limit, offset) = get_pagination_vars()
+        args = {
+            "user_id": user_id,
+            "limit": limit,
+            "offset": offset,
+        }
+        user_history = get_user_history(args)
+        return api_helpers.success_response(user_history)
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)

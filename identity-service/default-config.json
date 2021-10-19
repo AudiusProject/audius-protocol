@@ -41,6 +41,7 @@
   "minimumFunderBalance": 1,
   "ethProviderUrl": "http://audius_ganache_cli_eth_contracts:8545",
   "notificationStartBlock": 0,
+  "solanaNotificationStartSlot": 0,
   "ethTokenAddress": "",
   "ethRegistryAddress": "",
   "ethOwnerWallet": "",

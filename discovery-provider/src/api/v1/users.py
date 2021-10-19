@@ -509,6 +509,7 @@ class UserSearchResult(Resource):
     )
     @ns.marshal_with(user_search_result)
     @ns.expect(search_parser)
+    @cache(ttl_sec=600)
     def get(self):
         """Seach for a user."""
         args = search_parser.parse_args()

@@ -9,6 +9,7 @@ const Utils = require('./utils')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
+const { ipfsAddWrapper, ipfsAddFromFsWrapper } = require('./ipfsClient')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -20,8 +21,10 @@ const SaveFileForMultihashToFSIPFSFallback = config.get('saveFileForMultihashToF
 
 /**
  * Adds file to IPFS then saves file to disk under /multihash name
+ *
+ * If buffer is metadata, await add to ipfs daemon since discovery node checks ipfs first and benefits from increased availability
  */
-async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
+async function saveFileFromBufferToIPFSAndDisk (req, buffer, addToIPFSDaemon = false) {
   // make sure user has authenticated before saving file
   if (!req.session.cnodeUserUUID) {
     throw new Error('User must be authenticated to save a file')
@@ -30,7 +33,7 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer) {
   const ipfs = req.app.get('ipfsAPI')
 
   // Add to IPFS without pinning and retrieve multihash
-  const multihash = (await ipfs.add(buffer, { pin: false }))[0].hash
+  const multihash = await ipfsAddWrapper(ipfs, buffer, { pin: false }, req.logContext, addToIPFSDaemon)
 
   // Write file to disk by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
@@ -53,7 +56,7 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
   }
 
   // Add to IPFS without pinning and retrieve multihash
-  let multihash = (await ipfs.addFromFs(srcPath, { pin: false }))[0].hash
+  const multihash = await ipfsAddFromFsWrapper(ipfs, srcPath, { pin: false }, logContext)
 
   // store file copy by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
@@ -88,9 +91,10 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
  * @param {Array} gatewaysToTry List of gateway endpoints to try
  * @param {String?} fileNameForImage file name if the multihash is image in dir.
  *                  eg original.jpg or 150x150.jpg
+ * @param {number?} trackId if the multihash is of a segment type, the trackId to which it belongs to
  * @return {Boolean} true if success, false if error
  */
-async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null) {
+async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null, trackId = null) {
   const { ipfsLatest } = serviceRegistry
 
   // stores all the stages of this function along with associated information relevant to that step
@@ -102,7 +106,13 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     // will be modified to directory compatible route later if directory
     // TODO - don't concat url's by hand like this, use module like urljoin
     // ..replace(/\/$/, "") removes trailing slashes
-    let gatewayUrlsMapped = gatewaysToTry.map(endpoint => `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`)
+
+    let gatewayUrlsMapped = gatewaysToTry.map(endpoint => {
+      let baseUrl = `${endpoint.replace(/\/$/, '')}/ipfs/${multihash}`
+      if (trackId) baseUrl += `?trackId=${trackId}`
+
+      return baseUrl
+    })
 
     const parsedStoragePath = path.parse(expectedStoragePath).dir
 
@@ -275,6 +285,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     try {
       decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
       const content = fs.createReadStream(expectedStoragePath)
+
       for await (const result of ipfsLatest.add(content, { onlyHash: true, timeout: 10000 })) {
         if (multihash !== result.cid.toString()) {
           decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: result.cid.toString(), time: Date.now() })

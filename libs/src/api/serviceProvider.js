@@ -7,6 +7,10 @@ const DISCOVERY_NODE_SERVICE_NAME = 'discovery-node'
 
 // Default timeout for each content node's sync and health check
 const CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT = 7500
+// Default time at which responses are considered equal weighting.
+// Content nodes that reply within 200ms of eachother are given equal footing
+// in selection
+const CONTENT_NODE_SELECTION_EQUIVALENCY_DELTA = 200
 
 /**
  * API methods to interact with Audius service providers.
@@ -79,6 +83,7 @@ class ServiceProvider extends Base {
     blacklist = null,
     performSyncCheck = true,
     timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT,
+    equivalencyDelta = CONTENT_NODE_SELECTION_EQUIVALENCY_DELTA,
     log = true
   }) {
     const creatorNodeSelection = new CreatorNodeSelection({
@@ -87,7 +92,8 @@ class ServiceProvider extends Base {
       numberOfNodes,
       whitelist,
       blacklist,
-      timeout
+      timeout,
+      equivalencyDelta
     })
 
     const { primary, secondaries, services } = await creatorNodeSelection.select(performSyncCheck, log)

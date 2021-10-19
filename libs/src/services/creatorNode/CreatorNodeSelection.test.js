@@ -522,4 +522,39 @@ describe('test CreatorNodeSelection', () => {
     const healthyServices = [shouldBePrimary, shouldBeSecondary1, shouldBeSecondary2]
     healthyServices.map(service => assert(returnedHealthyServices.has(service)))
   })
+
+  it('does not always pick the same one with equivalency delta', async () => {
+    // Run this test a few times and make sure we eventually get something
+    // different
+    let primaries = []
+    for (let i = 0; i < 20; ++i) {
+      const one = 'https://one.audius.co'
+      nock(one)
+        .get('/health_check/verbose')
+        .delay(100)
+        .reply(200, { data: defaultHealthCheckData })
+
+      const two = 'https://two.audius.co'
+      nock(two)
+        .get('/health_check/verbose')
+        .delay(200)
+        .reply(200, { data: defaultHealthCheckData })
+
+      const cns = new CreatorNodeSelection({
+        creatorNode: mockCreatorNode,
+        numberOfNodes: 2,
+        ethContracts: mockEthContracts([one, two], '1.2.3'),
+        whitelist: null,
+        blacklist: null,
+        // Even though one and two take 100ms and 200ms respectively,
+        // we consider 200ms equivalent, so they should be randomly picked
+        equivalencyDelta: 200
+      })
+
+      const { primary } = await cns.select()
+      primaries.push(primary)
+    }
+    // Make sure there is some variance
+    assert(!primaries.every(val => val === primaries[0]))
+  }).timeout(10000)
 })

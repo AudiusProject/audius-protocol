@@ -49,11 +49,22 @@ class File extends Base {
     cid,
     creatorNodeGateways,
     callback = null,
-    responseType = 'blob'
+    responseType = 'blob',
+    trackId = null
   ) {
-    const gateways = creatorNodeGateways
-      .concat(publicGateways)
-    const urls = gateways.map(gateway => urlJoin(gateway, cid))
+    const urls = []
+
+    creatorNodeGateways.forEach(gateway => {
+      let gatewayWithCid = urlJoin(gateway, cid)
+      if (trackId) gatewayWithCid = urlJoin(gatewayWithCid, { query: { trackId } })
+      urls.push(gatewayWithCid)
+    })
+
+    publicGateways.forEach(gateway => {
+      urls.push(urlJoin(gateway, cid))
+    })
+
+    const gateways = creatorNodeGateways.concat(publicGateways)
 
     return retry(async () => {
       try {

@@ -8,6 +8,7 @@ const processRemixCreateNotifications = require('./remixCreateNotification')
 const processRemixCosignNotifications = require('./remixCosignNotification')
 const processCreateNotifications = require('./createNotification')
 const processPlaylistUpdateNotifications = require('./playlistUpdateNotification')
+const processChallengeRewardNotifications = require('./challengeRewardNotification')
 
 // Mapping of Notification type to processing function.
 const notificationMapping = {
@@ -17,7 +18,8 @@ const notificationMapping = {
   [notificationTypes.RemixCreate]: processRemixCreateNotifications,
   [notificationTypes.RemixCosign]: processRemixCosignNotifications,
   [notificationTypes.Create.base]: processCreateNotifications,
-  [notificationTypes.PlaylistUpdate]: processPlaylistUpdateNotifications
+  [notificationTypes.PlaylistUpdate]: processPlaylistUpdateNotifications,
+  [notificationTypes.ChallengeReward]: processChallengeRewardNotifications
 }
 
 /**
@@ -36,15 +38,16 @@ async function processNotifications (notifications, tx) {
     return categories
   }, {})
 
-  // Loop through each notification type and batch process
-  for (const notifType in notificationCategories) {
-    if (notifType in notificationMapping) {
-      const notifications = notificationCategories[notifType]
-      const processType = notificationMapping[notifType]
+  // Process notification types in parallel
+  return Promise.all(Object.entries(notificationCategories).map(([notifType, notifications]) => {
+    const processType = notificationMapping[notifType]
+    if (processType) {
       logger.debug(`Processing: ${notifications.length} notifications of type ${notifType}`)
-      await processType(notifications, tx)
+      return processType(notifications, tx)
+    } else {
+      logger.error('processNotifications - no handler defined for notification type', notifType)
     }
-  }
+  }))
 }
 
 module.exports = processNotifications
