@@ -303,12 +303,16 @@ does not grow unbounded over time and new discovery providers are able to safely
 This is performed by simply slicing the tx_batches array and discarding the newest transactions until an intersection
 is found - these limiting parameters are defined as TX_SIGNATURES_MAX_BATCHES, TX_SIGNATURES_RESIZE_LENGTH
 """
-def split_list(list, n):
-    for i in range(0, len(list), n): 
-        yield list[i:i + n]
 
 def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=10):
-    retries
+    """
+    Parse a batch of solana transactions in parallel by calling parse_sol_play_transaction
+    with a ThreaPoolExecutor
+
+    This function also has a recursive retry upto a certain limit in case a future doesn't complete
+    within the alloted time. It clears the futures thread queue, the db transaction
+    gets rolled back by the scoped_session and the batch is retried
+    """
     logger.info(f"index_solana_plays.py | processing {tx_sig_batch_records}")
     batch_start_time = time.time()
     # Process each batch in parallel
@@ -329,9 +333,10 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
                     future.result()
             except Exception as exc:
                 logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
-                print(f"index_solana_plays.py | Clearing executor._threads {executor._threads}")
+                # timeout in a ThreadPoolExecutor doesn't actually stop execution of the underlying thread
+                # in order to do that we need to actually clear the queue which we do here to force this
+                # task to stop execution
                 executor._threads.clear()
-                print(f"index_solana_plays.py | Clearing concurrent.futures.thread._threads_queues {concurrent.futures.thread._threads_queues}")
                 concurrent.futures.thread._threads_queues.clear()
                 if retries > 0:
                     return parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries-1)
@@ -343,6 +348,10 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
     logger.info(
         f"index_solana_plays.py | processed batch {len(tx_sig_batch_records)} txs in {batch_duration}s"
     )
+
+def split_list(list, n):
+    for i in range(0, len(list), n): 
+        yield list[i:i + n]
 
 def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
     try:
@@ -494,5 +503,4 @@ def index_solana_plays(self):
         if have_lock:
             logger.info("index_solana_plays.py | Releasing lock")
             update_lock.release()
-        else:
-            logger.info("index_solana_plays.py | Not releasing lock")
+
