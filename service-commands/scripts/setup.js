@@ -7,7 +7,8 @@ const {
   identityServiceUp,
   Service,
   SetupCommand,
-  runSetupCommand
+  runSetupCommand,
+  Seed
 } = ServiceCommands
 
 const NUM_CREATOR_NODES = 4
@@ -230,5 +231,9 @@ program
     false
   )
   .action(async opts => await identityServiceUp(opts))
+
+// TODO figure out how to decorate properly and which functionality should happen in which file
+Seed.init()
+Seed.setupCommands(program)
 
 program.parse(process.argv)

@@ -10,6 +10,7 @@ const File = require('./commands/files')
 const IpldBlacklist = require('./commands/ipldBlacklist')
 const Playlist = require('./commands/playlists')
 const DataContracts = require('./commands/dataContracts')
+const Seed = require('./commands/seed')
 
 module.exports = {
   LibsWrapper,
@@ -20,5 +21,6 @@ module.exports = {
   ...File,
   ...IpldBlacklist,
   ...Playlist,
-  ...DataContracts
+  ...DataContracts,
+  Seed
 }
