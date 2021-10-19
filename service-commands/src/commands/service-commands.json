@@ -148,17 +148,6 @@
       "sleep 5"
     ]
   },
-  "content-service": {
-    "protocol": "http",
-    "host": "localhost",
-    "port": 8432,
-    "up": [
-      "docker-compose -f content-service/docker-compose/docker-compose.full.yml up --build -d"
-    ],
-    "down": [
-      "docker-compose -f content-service/docker-compose/docker-compose.full.yml down"
-    ]
-  },
   "creator-node": {
     "protocol": "http",
     "host": "localhost",
