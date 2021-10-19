@@ -296,6 +296,7 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
     logger.info(f"index_solana_plays.py | processing {tx_sig_batch_records}")
     batch_start_time = time.time()
     challenge_bus_events = []
+    plays = []
 
     challenge_bus = index_solana_plays.challenge_event_bus
 
@@ -317,17 +318,17 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
                     result = future.result()
                     if result:
                         user_id, track_id, created_at, source, tx_slot, tx_sig = result
-                        session.add(
-                            Play(
-                                user_id=user_id,
-                                play_item_id=track_id,
-                                created_at=created_at,
-                                source=source,
-                                slot=tx_slot,
-                                signature=tx_sig,
-                            )
-                        )
 
+                        # Append plays to a list that will be written if all plays are successfully retrieved
+                        # from the rpc pool
+                        plays.append({
+                            "user_id": user_id,
+                            "track_id": track_id,
+                            "created_at": created_at,
+                            "source": source,
+                            "tx_slot": tx_slot,
+                            "tx_sig": tx_sig
+                        })
                         # Only enqueue a challenge event if it's *not*
                         # an anonymous listen
                         if user_id is not None:
@@ -349,6 +350,18 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
                     return parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries-1)
                 else:
                     raise exc
+
+            for play in plays:
+                session.add(
+                    Play(
+                        user_id=play.get('user_id'),
+                        play_item_id=play.get('track_id'),
+                        created_at=play.get('created_at'),
+                        source=play.get('source'),
+                        slot=play.get('tx_slot'),
+                        signature=play.get('tx_sig'),
+                    )
+                )
 
             for event in challenge_bus_events:
                 challenge_bus.dispatch(
@@ -394,7 +407,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
     # Current batch of transactions
     transaction_signature_batch = []
 
-    last_tx_signature = None
+    last_tx_signature = "4HxWfmkuCDfDwNwk7UWw7ig9nWJdZUCnwLMuWn32Y7FPhvvYfQL3dL2Y5FGsTFWLkMuErLnWTj6iYTFrhiX7jPJc"
 
     # Current batch
     page_count = 0
