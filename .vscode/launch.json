@@ -24,6 +24,7 @@
             "name": "(Content Node) Attach",
             "type": "node",
             "request": "attach",
+            // Increment this port to connect to a different content node instance
             "port": 9230,
             "address": "localhost",
             "localRoot": "${workspaceFolder}/creator-node/",
