@@ -84,7 +84,7 @@ class SolanaClientManager:
             logger.info(f"solana_client_manager.py | handle_get_confirmed_signature_for_address2 | Finished fetching {before} {endpoint}")
             return transactions
 
-        return _try_all(
+        return _try_all_with_timeout(
             self.clients,
             handle_get_confirmed_signature_for_address2,
             "solana_client_manager.py | get_confirmed_signature_for_address2 | All requests failed"
@@ -112,6 +112,21 @@ def raise_timeout(signum, frame):
 
 
 def _try_all(iterable, func, message, randomize=False):
+    """Executes a function with retries across the iterable.
+    If all executions fail, raise an exception."""
+    items = list(enumerate(iterable))
+    items = items if not randomize else random.sample(items, k=len(items))
+    for index, value in items:
+        try:
+            return func(value, index)
+        except Exception:
+            logger.error(f"solana_client_manager.py | _try_all | Failed attempt at index {index} for function {func}")
+            if index < len(items) - 1:
+                logger.info(f"solana_client_manager.py | _try_all | Retrying")
+            continue
+    raise Exception(message)
+
+def _try_all_with_timeout(iterable, func, message, randomize=False):
     """Executes a function with retries across the iterable.
     If all executions fail, raise an exception."""
     items = list(enumerate(iterable))
