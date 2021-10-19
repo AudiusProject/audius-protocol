@@ -67,9 +67,9 @@ describe('test resizeImage', () => {
   /**
    * Given: we are adding the successfully resized images to ipfs
    * When: adding to ipfs fails
-   * Then: an error is thrown
+   * Then: no error is thrown
    */
-  it('should throw error if ipfs is down', async () => {
+  it('should not throw error if ipfs is down', async () => {
     sinon.stub(ipfs, 'add').throws(new Error('ipfs is down!'))
     const job = {
       data: {
@@ -88,10 +88,9 @@ describe('test resizeImage', () => {
 
     try {
       await resizeImageJob(job)
-      assert.fail('Should not have passed if ipfs is down')
     } catch (e) {
       console.error(e)
-      assert.deepStrictEqual(e.message, 'ipfs is down!')
+      assert.fail('Should have passed if ipfs is down')
     }
   })
 
@@ -207,7 +206,6 @@ describe('test resizeImage', () => {
       }
     }
 
-    // let resizeImageResp
     try {
       await resizeImageJob(job)
     } catch (e) {

@@ -14,8 +14,6 @@ if (!ipfsAddr) {
 const ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
 const ipfsLatest = ipfsClientLatest({ host: ipfsAddr, port: config.get('ipfsPort'), protocol: 'http' })
 
-const IPFS_ADD_TIMEOUT_MS = config.get('IPFSAddTimeoutMs')
-
 async function logIpfsPeerIds () {
   const identity = await ipfs.id()
   // Pretty print the JSON obj with no filter fn (e.g. filter by string or number) and spacing of size 2
@@ -97,33 +95,27 @@ async function ipfsAddFromFsWrapper (ipfs, srcPath, ipfsConfig = {}, logContext 
 async function ipfsMultipleAddWrapper (ipfs, inputData, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
 
-  if (!ipfsConfig.timeout) {
-    ipfsConfig.timeout = IPFS_ADD_TIMEOUT_MS
-  }
-
-  // Generate hashes with ipfs content hashing logic and custom return structure
-  const customIpfsAddResponses = await ipfsAdd(inputData, {}, true)
+  const customIpfsAddResp = await ipfsAdd(inputData, {}, true)
+  const customIpfsAddRespStr = JSON.stringify(customIpfsAddResp)
 
   if (!enableIPFSAdd) {
-    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${customIpfsAddResponses}`)
-    return customIpfsAddResponses
+    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${customIpfsAddRespStr}`)
+    return customIpfsAddResp
   }
 
   try {
     const ipfsDaemonResp = await ipfs.add(inputData, ipfsConfig)
-    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${customIpfsAddResponses} ipfsDaemonResp=${JSON.stringify(ipfsDaemonResp, null, 2)} isSameHash=${JSON.stringify(customIpfsAddResponses) === JSON.stringify(ipfsDaemonResp)}`)
+    const ipfsDaemonRespStr = JSON.stringify(ipfsDaemonResp)
+    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${customIpfsAddRespStr} ipfsDaemonResp=${ipfsDaemonRespStr} isSameHash=${customIpfsAddRespStr === ipfsDaemonRespStr}`)
+
     return ipfsDaemonResp
   } catch (e) {
-    logger.warn(`[ipfsClient - ipfsMultipleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${customIpfsAddResponses}: ${e.toString()}`)
-    return customIpfsAddResponses
+    logger.warn(`[ipfsClient - ipfsMultipleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${customIpfsAddRespStr}: ${e.toString()}`)
+    return customIpfsAddResp
   }
 }
 
-// Custom content-hashing logic. Taken from https://github.com/alanshaw/ipfs-only-hash/blob/master/index.js
-const block = {
-  get: async cid => { throw new Error(`unexpected block API get for ${cid}`) },
-  put: async () => { throw new Error('unexpected block API put') }
-}
+// Base functionality taken from https://github.com/alanshaw/ipfs-only-hash/blob/master/index.js
 
 /**
  * Custom fn to generate the content-hashing logic without adding content to ipfs daemon. Can either just
@@ -135,8 +127,14 @@ const block = {
  * follow the structure { path: string, content: buffer } or [{ path: string, content: buffer }, ...]
  * @param {Object} options options for ipfs importer
  * @param {boolean?} isImageFlow flag to indicate if flow is for image upload
- * @returns
+ * @returns {string|Object[]} the cid, or array of ipfs add like responses
  */
+
+const block = {
+  get: async cid => { throw new Error(`unexpected block API get for ${cid}`) },
+  put: async () => { throw new Error('unexpected block API put') }
+}
+
 async function ipfsAdd (content, options, isImageFlow = false) {
   options = options || {}
   options.onlyHash = true
@@ -148,16 +146,14 @@ async function ipfsAdd (content, options, isImageFlow = false) {
 
   // If method is used for the adding images, structure the response similarly to ipfs.add()
   if (isImageFlow) {
-    const files = []
+    const resps = []
     for await (const file of importer(content, block, options)) {
-      files.push(file)
+      resps.push({
+        path: file.path,
+        hash: `${file.cid}`,
+        size: file.size
+      })
     }
-
-    const resps = files.map(file => ({
-      path: file.path,
-      hash: `${file.cid}`,
-      size: file.size
-    }))
 
     return resps
   } else {
