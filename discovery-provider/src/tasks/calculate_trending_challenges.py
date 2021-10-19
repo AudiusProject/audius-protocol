@@ -10,6 +10,7 @@ from src.tasks.celery_app import celery
 from src.queries.get_trending_tracks import (
     make_trending_cache_key,
     generate_unpopulated_trending,
+    generate_unpopulated_trending_from_mat_views,
 )
 from src.queries.get_trending_playlists import (
     make_trending_cache_key as make_trending_cache_key_playlists,
@@ -100,7 +101,14 @@ def enqueue_trending_challenges(
             strategy = trending_strategy_factory.get_strategy(
                 TrendingType.TRACKS, version
             )
-            res = generate_unpopulated_trending(session, genre, time_range, strategy)
+            if strategy.use_mat_view:
+                res = generate_unpopulated_trending_from_mat_views(
+                    session, genre, time_range, strategy
+                )
+            else:
+                res = generate_unpopulated_trending(
+                    session, genre, time_range, strategy
+                )
 
             key = make_trending_cache_key(time_range, genre, version)
             pickle_and_set(redis, key, res)

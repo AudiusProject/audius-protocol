@@ -12,7 +12,6 @@ local-test/
 contract-config.json
 eth-contract-config.json
 solana-program-config.json
-docker-compose/.development.env
 .nyc_output/
 coverage/
 

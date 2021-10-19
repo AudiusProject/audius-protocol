@@ -1,3 +1,6 @@
+from src.trending_strategies.aSPET_trending_tracks_strategy import (
+    TrendingTracksStrategyaSPET,
+)
 from src.trending_strategies.ePWJD_trending_playlists_strategy import (
     TrendingPlaylistsStrategyePWJD,
 )
@@ -22,7 +25,10 @@ DEFAULT_TRENDING_VERSIONS = {
 class TrendingStrategyFactory:
     def __init__(self):
         self.strategies = {
-            TrendingType.TRACKS: {TrendingVersion.ePWJD: TrendingTracksStrategyePWJD()},
+            TrendingType.TRACKS: {
+                TrendingVersion.ePWJD: TrendingTracksStrategyePWJD(),
+                TrendingVersion.aSPET: TrendingTracksStrategyaSPET(),
+            },
             TrendingType.UNDERGROUND_TRACKS: {
                 TrendingVersion.ePWJD: UndergroundTrendingTracksStrategyePWJD()
             },
