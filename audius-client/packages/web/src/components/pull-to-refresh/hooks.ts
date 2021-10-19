@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 
 import { config, useSpring } from 'react-spring'
 
-import useInstanceVar from 'hooks/useInstanceVar'
+import useInstanceVar from 'common/hooks/useInstanceVar'
 import {
   EnablePullToRefreshMessage,
   DisablePullToRefreshMessage

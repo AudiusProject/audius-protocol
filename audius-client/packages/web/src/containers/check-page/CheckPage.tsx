@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { getAccountUser } from 'common/store/account/selectors'
 import { useScript } from 'hooks/useScript'
 import AudiusBackend from 'services/AudiusBackend'
-import { getAccountUser } from 'store/account/selectors'
 import { COGNITO_SCRIPT_URL } from 'utils/constants'
 import { SIGN_IN_PAGE, TRENDING_PAGE } from 'utils/route'
 

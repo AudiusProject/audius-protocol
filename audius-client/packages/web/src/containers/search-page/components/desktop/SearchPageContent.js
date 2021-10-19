@@ -4,6 +4,7 @@ import Spin from 'antd/lib/spin'
 import { Redirect } from 'react-router'
 
 import { ReactComponent as IconBigSearch } from 'assets/img/iconBigSearch.svg'
+import Status from 'common/models/Status'
 import Card from 'components/card/desktop/Card'
 import Page from 'components/general/Page'
 import CategoryHeader from 'components/general/header/desktop/CategoryHeader'
@@ -12,7 +13,6 @@ import Toast from 'components/toast/Toast'
 import CardLineup from 'containers/lineup/CardLineup'
 import Lineup from 'containers/lineup/Lineup'
 import { tracksActions } from 'containers/search-page/store/lineups/tracks/actions'
-import { Status } from 'store/types'
 import { formatCount } from 'utils/formatUtil'
 import {
   albumPage,

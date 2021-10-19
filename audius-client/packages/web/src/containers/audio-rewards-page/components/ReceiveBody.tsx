@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { WalletAddress } from 'store/wallet/slice'
+import { WalletAddress } from 'common/models/Wallet'
 
 import { ModalBodyWrapper } from '../WalletModal'
 

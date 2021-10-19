@@ -3,13 +3,13 @@ import React, { useState, useCallback } from 'react'
 import { connect } from 'react-redux'
 import { animated } from 'react-spring'
 
+import { getAccountUser } from 'common/store/account/selectors'
 import MusicConfetti from 'components/background-animations/MusicConfetti'
 import ProfileCompletionPanel from 'containers/profile-progress/components/ProfileCompletionPanel'
 import {
   getOrderedCompletionStages,
   getIsAccountLoaded
 } from 'containers/profile-progress/store/selectors'
-import { getAccountUser } from 'store/account/selectors'
 
 import ProfileCompletionTooltip from './components/ProfileCompletionTooltip'
 import { useProfileCompletionDismissal, useSlideDown } from './hooks'

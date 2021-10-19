@@ -1,5 +1,10 @@
 import { select, call } from 'redux-saga/effects'
 
+import Kind from 'common/models/Kind'
+import { getUserId } from 'common/store/account/selectors'
+import { getCollections } from 'common/store/cache/collections/selectors'
+import { getTracks } from 'common/store/cache/tracks/selectors'
+import { getIdFromKindId, getKindFromKindId } from 'common/utils/uid'
 import {
   PREFIX,
   feedActions
@@ -9,13 +14,8 @@ import {
   getProfileFeedLineup,
   getProfileUserHandle
 } from 'containers/profile-page/store/selectors'
-import { getUserId } from 'store/account/selectors'
-import { getCollections } from 'store/cache/collections/selectors'
-import { getTracks } from 'store/cache/tracks/selectors'
 import { getConfirmCalls, getResult } from 'store/confirmer/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
-import { Kind } from 'store/types'
-import { getIdFromKindId, getKindFromKindId } from 'utils/uid'
 
 import { retrieveUserReposts } from './retrieveUserReposts'
 

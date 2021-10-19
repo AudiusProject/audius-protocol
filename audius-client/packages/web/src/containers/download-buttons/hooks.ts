@@ -4,18 +4,18 @@ import moment from 'moment'
 import { useSelector, shallowEqual, useDispatch } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 
+import { ID } from 'common/models/Identifiers'
+import { stemCategoryFriendlyNames, StemCategory } from 'common/models/Stems'
+import Track, { StemTrack } from 'common/models/Track'
+import { getHasAccount } from 'common/store/account/selectors'
+import { getTrack, getTracks } from 'common/store/cache/tracks/selectors'
 import {
   openSignOn,
   updateRouteOnExit,
   updateRouteOnCompletion,
   showRequiresAccountModal
 } from 'containers/sign-on/store/actions'
-import { stemCategoryFriendlyNames, StemCategory } from 'models/Stems'
-import Track, { StemTrack } from 'models/Track'
-import { ID } from 'models/common/Identifiers'
-import { getHasAccount } from 'store/account/selectors'
 import { getCurrentUploads } from 'store/application/ui/stemsUpload/selectors'
-import { getTrack, getTracks } from 'store/cache/tracks/selectors'
 import { AppState } from 'store/types'
 
 import {

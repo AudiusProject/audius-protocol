@@ -1,4 +1,4 @@
-import { ID } from 'models/common/Identifiers'
+import { ID } from 'common/models/Identifiers'
 
 export const createRemixOfMetadata = ({
   parentTrackId

@@ -5,13 +5,13 @@ import {
 } from 'connected-react-router'
 import { take, takeEvery, select, put } from 'redux-saga/effects'
 
+import { getUserHandle } from 'common/store/account/selectors'
 import {
   OnFirstPage,
   NotOnFirstPage,
   ChangedPage
 } from 'services/native-mobile-interface/lifecycle'
 import { MessageType } from 'services/native-mobile-interface/types'
-import { getUserHandle } from 'store/account/selectors'
 import {
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,

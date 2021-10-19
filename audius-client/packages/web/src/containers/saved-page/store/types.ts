@@ -1,9 +1,9 @@
 import { Moment } from 'moment'
 
-import Collection from 'models/Collection'
-import Favorite from 'models/Favorite'
-import { LineupTrack } from 'models/Track'
-import { UID, ID } from 'models/common/Identifiers'
+import Collection from 'common/models/Collection'
+import Favorite from 'common/models/Favorite'
+import { UID, ID } from 'common/models/Identifiers'
+import { LineupTrack } from 'common/models/Track'
 import { LineupState } from 'models/common/Lineup'
 
 export default interface SavesPageState {

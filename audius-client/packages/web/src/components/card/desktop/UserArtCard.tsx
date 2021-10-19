@@ -6,12 +6,13 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import placeholderArt from 'assets/img/imageBlank2x.png'
+import { ID } from 'common/models/Identifiers'
+import { SquareSizes } from 'common/models/ImageSizes'
+import { getUser } from 'common/store/cache/users/selectors'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useImageSize'
-import { ID } from 'models/common/Identifiers'
-import { SquareSizes } from 'models/common/ImageSizes'
 import {
   setUsers,
   setVisibility
@@ -20,7 +21,6 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import { getUser } from 'store/cache/users/selectors'
 import { AppState } from 'store/types'
 import { formatCount } from 'utils/formatUtil'
 import { profilePage } from 'utils/route'

@@ -1,8 +1,8 @@
 import { takeEvery, call, put } from 'redux-saga/effects'
 
-import { TrackMetadata } from 'models/Track'
+import { TrackMetadata } from 'common/models/Track'
+import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/retrieveTracks'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { retrieveTrackByHandleAndSlug } from 'store/cache/tracks/utils/retrieveTracks'
 
 import tracksSagas from './lineups/tracks/sagas'
 import { fetchTrack, fetchTrackSucceeded } from './slice'

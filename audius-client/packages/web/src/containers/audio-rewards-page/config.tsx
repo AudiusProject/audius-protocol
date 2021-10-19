@@ -2,13 +2,13 @@ import React, { ReactNode } from 'react'
 
 import { IconArrow, IconCheck, IconUpload } from '@audius/stems'
 
+import { Nullable } from 'common/utils/typeUtils'
 import {
   profilePage,
   SETTINGS_PAGE,
   TRENDING_PAGE,
   UPLOAD_PAGE
 } from 'utils/route'
-import { Nullable } from 'utils/typeUtils'
 
 import { ChallengeRewardID, TrendingRewardID } from './types'
 

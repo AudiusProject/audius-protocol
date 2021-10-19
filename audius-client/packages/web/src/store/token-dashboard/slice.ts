@@ -1,85 +1,17 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
+import { Chain } from 'common/models/Chain'
+import { BNWei, StringWei, WalletAddress } from 'common/models/Wallet'
+import { Nullable } from 'common/utils/typeUtils'
 import { AppState } from 'store/types'
+import { stringWeiToBN } from 'utils/wallet'
+
 import {
-  BNWei,
-  StringWei,
-  stringWeiToBN,
-  WalletAddress
-} from 'store/wallet/slice'
-import { Nullable } from 'utils/typeUtils'
-
-export type ConnectWalletsState =
-  | { stage: 'ADD_WALLET' }
-  | { stage: 'REMOVE_WALLET' }
-
-type ReceiveState = { stage: 'KEY_DISPLAY' }
-type SendingState =
-  | { stage: 'INPUT' }
-  | {
-      stage: 'AWAITING_CONFIRMATION'
-      amount: StringWei
-      recipientWallet: string
-    }
-  | {
-      stage: 'SENDING'
-      amount: StringWei
-      recipientWallet: WalletAddress
-    }
-  | {
-      stage: 'CONFIRMED_SEND'
-      amount: StringWei
-      recipientWallet: WalletAddress
-    }
-  | { stage: 'ERROR'; error: string }
-
-export type ModalState = Nullable<
-  | { stage: 'CONNECT_WALLETS'; flowState: ConnectWalletsState }
-  | { stage: 'RECEIVE'; flowState: ReceiveState }
-  | { stage: 'SEND'; flowState: SendingState }
-  | { stage: 'DISCORD_CODE' }
->
-
-export type AssociatedWallets = {
-  address: string
-  balance: BNWei
-  collectibleCount: number
-}[]
-
-export type ConfirmRemoveWalletAction = PayloadAction<{
-  wallet: WalletAddress
-  chain: Chain
-}>
-
-export enum Chain {
-  Eth = 'eth',
-  Sol = 'sol'
-}
-
-export type AssociatedWalletsState = {
-  status: Nullable<'Connecting' | 'Confirming' | 'Confirmed'>
-  connectedEthWallets: Nullable<AssociatedWallets>
-  connectedSolWallets: Nullable<AssociatedWallets>
-  confirmingWallet: {
-    wallet: Nullable<WalletAddress>
-    chain: Nullable<Chain>
-    balance: Nullable<BNWei>
-    collectibleCount: Nullable<number>
-  }
-  errorMessage: Nullable<string>
-  removeWallet: {
-    wallet: Nullable<string>
-    chain: Nullable<Chain>
-    status: Nullable<'Confirming'>
-  }
-}
-
-type TokenDashboardState = {
-  modalState: Nullable<ModalState>
-  modalVisible: boolean
-  discordCode: Nullable<string>
-  associatedWallets: AssociatedWalletsState
-}
+  AssociatedWallets,
+  ConfirmRemoveWalletAction,
+  ModalState,
+  TokenDashboardState
+} from './types'
 
 const initialState: TokenDashboardState = {
   modalState: null,

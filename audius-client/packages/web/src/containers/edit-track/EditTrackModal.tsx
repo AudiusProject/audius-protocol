@@ -6,6 +6,12 @@ import { matchPath } from 'react-router'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import { ID } from 'common/models/Identifiers'
+import { StemCategory } from 'common/models/Stems'
+import Track from 'common/models/Track'
+import * as cacheTrackActions from 'common/store/cache/tracks/actions'
+import { removeNullable } from 'common/utils/typeUtils'
+import { uuid } from 'common/utils/uid'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
 import {
   StemUploadWithFile,
@@ -13,9 +19,6 @@ import {
 } from 'components/source-files-modal/SourceFilesModal'
 import EditTrackModalComponent from 'components/track/EditTrackModal'
 import { processFiles } from 'containers/upload-page/store/utils/processFiles'
-import { StemCategory } from 'models/Stems'
-import Track from 'models/Track'
-import { ID } from 'models/common/Identifiers'
 import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
 import {
   getMetadata,
@@ -24,11 +27,8 @@ import {
 } from 'store/application/ui/editTrackModal/selectors'
 import { getCurrentUploads } from 'store/application/ui/stemsUpload/selectors'
 import { startStemUploads } from 'store/application/ui/stemsUpload/slice'
-import * as cacheTrackActions from 'store/cache/tracks/actions'
 import { AppState } from 'store/types'
 import { FEED_PAGE, getPathname } from 'utils/route'
-import { removeNullable } from 'utils/typeUtils'
-import { uuid } from 'utils/uid'
 
 const messages = {
   deleteTrack: 'DELETE TRACK'

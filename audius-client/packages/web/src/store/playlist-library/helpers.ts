@@ -1,10 +1,10 @@
-import { SmartCollectionVariant } from 'containers/smart-collection/types'
+import { ID } from 'common/models/Identifiers'
 import {
   PlaylistLibrary,
   PlaylistLibraryFolder,
   PlaylistLibraryIdentifier
-} from 'models/PlaylistLibrary'
-import { ID } from 'models/common/Identifiers'
+} from 'common/models/PlaylistLibrary'
+import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 
 /**
  * Finds an item by id in the playlist library

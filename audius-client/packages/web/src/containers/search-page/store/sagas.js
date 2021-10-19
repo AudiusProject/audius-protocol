@@ -1,16 +1,16 @@
 import { select, call, takeLatest, put } from 'redux-saga/effects'
 
+import { getUserId } from 'common/store/account/selectors'
+import { processAndCacheCollections } from 'common/store/cache/collections/utils'
+import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
+import { fetchUsers } from 'common/store/cache/users/sagas'
+import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import * as searchPageActions from 'containers/search-page/store/actions'
 import { tracksActions as tracksLineupActions } from 'containers/search-page/store/lineups/tracks/actions'
 import tracksSagas from 'containers/search-page/store/lineups/tracks/sagas'
 import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { getUserId } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { processAndCacheCollections } from 'store/cache/collections/utils'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
-import { fetchUsers } from 'store/cache/users/sagas'
-import { processAndCacheUsers } from 'store/cache/users/utils'
 import { trimToAlphaNumeric } from 'utils/formatUtil'
 
 export function* getTagSearchResults(tag, kind, limit, offset) {

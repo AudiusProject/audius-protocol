@@ -1,5 +1,5 @@
-import { ID } from 'models/common/Identifiers'
-import { Status } from 'store/types'
+import { ID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
 
 export enum Tabs {
   FOR_YOU = 'FOR YOU',

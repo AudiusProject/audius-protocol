@@ -3,11 +3,11 @@ import React, { useCallback } from 'react'
 import { Button, ButtonType, IconUpload } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
-import MobileUploadDrawer from 'containers/mobile-upload-drawer/MobileUploadDrawer'
 import {
   show as showUploadDrawer,
   hide as hideUploadDrawer
-} from 'containers/mobile-upload-drawer/store/slice'
+} from 'common/store/ui/mobile-upload-drawer/slice'
+import MobileUploadDrawer from 'containers/mobile-upload-drawer/MobileUploadDrawer'
 
 import styles from './UploadButton.module.css'
 

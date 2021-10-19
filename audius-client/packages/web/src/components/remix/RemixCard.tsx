@@ -1,12 +1,12 @@
 import React from 'react'
 
+import { ID } from 'common/models/Identifiers'
+import { Remix } from 'common/models/Track'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { Remix } from 'models/Track'
-import { ID } from 'models/common/Identifiers'
 
 import styles from './RemixCard.module.css'
 

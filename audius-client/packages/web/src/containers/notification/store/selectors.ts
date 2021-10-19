@@ -1,20 +1,20 @@
 import { createSelector } from 'reselect'
 
+import Collection from 'common/models/Collection'
+import Track from 'common/models/Track'
+import { getAccountUser } from 'common/store/account/selectors'
+import {
+  getCollection,
+  getCollections
+} from 'common/store/cache/collections/selectors'
+import { getTrack, getTracks } from 'common/store/cache/tracks/selectors'
+import { getUser, getUsers } from 'common/store/cache/users/selectors'
 import {
   Entity,
   Notification,
   NotificationType,
   Achievement
 } from 'containers/notification/store/types'
-import Collection from 'models/Collection'
-import Track from 'models/Track'
-import { getAccountUser } from 'store/account/selectors'
-import {
-  getCollection,
-  getCollections
-} from 'store/cache/collections/selectors'
-import { getTrack, getTracks } from 'store/cache/tracks/selectors'
-import { getUser, getUsers } from 'store/cache/users/selectors'
 import { AppState } from 'store/types'
 
 // Notification selectors

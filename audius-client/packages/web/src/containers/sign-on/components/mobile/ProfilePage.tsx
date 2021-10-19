@@ -3,6 +3,7 @@ import React, { useState, useCallback, useEffect } from 'react'
 
 import cn from 'classnames'
 
+import { InstagramProfile, TwitterProfile } from 'common/store/account/reducer'
 import { MAIN_CONTENT_ID } from 'containers/App'
 import ProfileForm from 'containers/sign-on/components/ProfileForm'
 import TwitterOverlay from 'containers/sign-on/components/mobile/TwitterOverlay'
@@ -10,7 +11,6 @@ import {
   formatInstagramProfile,
   formatTwitterProfile
 } from 'containers/sign-on/utils/formatSocialProfile'
-import { InstagramProfile, TwitterProfile } from 'store/account/reducer'
 
 import styles from './ProfilePage.module.css'
 

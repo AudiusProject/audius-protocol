@@ -1,8 +1,8 @@
 import { eventChannel } from 'redux-saga'
 import { take, put } from 'redux-saga/effects'
 
+import { uuid } from 'common/utils/uid'
 import { getIsIOS } from 'utils/browser'
-import { uuid } from 'utils/uid'
 
 import { Message, MessageType } from './types'
 

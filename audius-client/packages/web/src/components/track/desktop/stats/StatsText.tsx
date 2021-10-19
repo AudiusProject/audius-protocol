@@ -3,9 +3,9 @@ import React, { memo } from 'react'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import User from 'models/User'
-import { ID } from 'models/common/Identifiers'
-import { getUser } from 'store/cache/users/selectors'
+import { ID } from 'common/models/Identifiers'
+import User from 'common/models/User'
+import { getUser } from 'common/store/cache/users/selectors'
 import { AppState } from 'store/types'
 import { formatCount, pluralize } from 'utils/formatUtil'
 

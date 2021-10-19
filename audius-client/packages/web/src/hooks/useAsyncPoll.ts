@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react'
 
-import useInstanceVar from './useInstanceVar'
+import useInstanceVar from 'common/hooks/useInstanceVar'
 
 type UseAsyncPoll = {
   // Call to make (usually an action), doesn't have to be async

@@ -2,6 +2,10 @@ import { keyBy } from 'lodash'
 import moment from 'moment'
 import { select, call } from 'redux-saga/effects'
 
+import Kind from 'common/models/Kind'
+import { retrieveTracks } from 'common/store/cache/tracks/utils'
+import { removeNullable } from 'common/utils/typeUtils'
+import { Uid } from 'common/utils/uid'
 import {
   getCollection,
   getSmartCollectionVariant,
@@ -9,13 +13,9 @@ import {
   getCollectionTracksLineup
 } from 'containers/collection-page/store/selectors'
 import { getCollection as getSmartCollection } from 'containers/smart-collection/store/selectors'
-import { retrieveTracks } from 'store/cache/tracks/utils'
 import { LineupSagas } from 'store/lineup/sagas'
 import { getPositions } from 'store/queue/selectors'
-import { Kind } from 'store/types'
 import { waitForValue } from 'utils/sagaHelpers'
-import { removeNullable } from 'utils/typeUtils'
-import { Uid } from 'utils/uid'
 
 import { PREFIX, tracksActions } from './actions'
 

@@ -1,6 +1,5 @@
+import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
 import { AppState } from 'store/types'
-
-import { SmartCollectionVariant } from '../types'
 
 const getBaseState = (state: AppState) =>
   state.application.pages.smartCollection

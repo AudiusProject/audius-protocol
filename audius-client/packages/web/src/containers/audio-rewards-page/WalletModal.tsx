@@ -6,8 +6,10 @@ import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
+import { BNWei, StringWei, WalletAddress } from 'common/models/Wallet'
+import { getAccountUser } from 'common/store/account/selectors'
+import { Nullable } from 'common/utils/typeUtils'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { getAccountUser } from 'store/account/selectors'
 import {
   confirmSend,
   getHasAssociatedWallets,
@@ -18,20 +20,13 @@ import {
   getRemoveWallet,
   getSendData,
   inputSendData,
-  ModalState,
   setModalVisibility
 } from 'store/token-dashboard/slice'
-import {
-  BNWei,
-  getAccountBalance,
-  StringWei,
-  stringWeiToBN,
-  WalletAddress,
-  weiToString
-} from 'store/wallet/slice'
+import { ModalState } from 'store/token-dashboard/types'
+import { getAccountBalance } from 'store/wallet/selectors'
 import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
-import { Nullable } from 'utils/typeUtils'
+import { stringWeiToBN, weiToString } from 'utils/wallet'
 
 import styles from './WalletModal.module.css'
 import ConnectWalletsBody from './components/ConnectWalletsBody'

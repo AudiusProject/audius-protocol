@@ -4,11 +4,8 @@ import { Button, ButtonSize, ButtonType, Modal } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { getModalVisibility, setVisibility } from 'common/store/ui/modals/slice'
 import { Tier } from 'containers/audio-rewards-page/Tiers'
-import {
-  getModalVisibility,
-  setVisibility
-} from 'store/application/ui/modals/slice'
 import { useSelector } from 'utils/reducer'
 import { DASHBOARD_PAGE } from 'utils/route'
 

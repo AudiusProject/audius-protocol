@@ -1,9 +1,9 @@
 import { createSelector } from '@reduxjs/toolkit'
 
-import { ID } from 'models/common/Identifiers'
-import { getUsers } from 'store/cache/users/selectors'
+import { ID } from 'common/models/Identifiers'
+import { getUsers } from 'common/store/cache/users/selectors'
+import { removeNullable } from 'common/utils/typeUtils'
 import { AppState } from 'store/types'
-import { removeNullable } from 'utils/typeUtils'
 
 const getRelatedArtistIds = (state: AppState, props: { id: ID }) =>
   state.application.ui.artistRecommendations[props.id]?.relatedArtistIds

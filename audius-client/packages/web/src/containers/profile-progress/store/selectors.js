@@ -1,5 +1,5 @@
-import { getAccountUser } from 'store/account/selectors'
-import { Status } from 'store/types'
+import Status from 'common/models/Status'
+import { getAccountUser } from 'common/store/account/selectors'
 
 export const getProfileDescriptionExists = state => {
   const curUser = getAccountUser(state)

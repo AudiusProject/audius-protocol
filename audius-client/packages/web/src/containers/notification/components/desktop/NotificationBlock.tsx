@@ -3,6 +3,9 @@ import React, { useState, useCallback, useRef, MutableRefObject } from 'react'
 import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import { ID } from 'common/models/Identifiers'
+import Track from 'common/models/Track'
+import { Nullable } from 'common/utils/typeUtils'
 import Menu from 'containers/menu/Menu'
 import { OwnProps as NotificationMenuProps } from 'containers/menu/NotificationMenu'
 import {
@@ -10,13 +13,10 @@ import {
   NotificationType,
   Achievement
 } from 'containers/notification/store/types'
-import Track from 'models/Track'
-import { ID } from 'models/common/Identifiers'
 import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
 import { formatCount } from 'utils/formatUtil'
 import { profilePage } from 'utils/route'
-import { Nullable } from 'utils/typeUtils'
 import zIndex from 'utils/zIndex'
 
 import TrackContent from '../TrackContent'

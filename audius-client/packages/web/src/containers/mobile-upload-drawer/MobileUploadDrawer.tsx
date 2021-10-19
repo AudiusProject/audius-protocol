@@ -3,11 +3,11 @@ import React from 'react'
 import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconUpload } from 'assets/img/iconGradientUpload.svg'
+import { getIsOpen } from 'common/store/ui/mobile-upload-drawer/selectors'
 import Drawer from 'components/drawer/Drawer'
 import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
 
 import styles from './MobileUploadDrawer.module.css'
-import { getIsOpen } from './store/selectors'
 
 const messages = {
   start: 'Start Uploading',

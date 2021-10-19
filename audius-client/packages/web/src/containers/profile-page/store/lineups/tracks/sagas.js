@@ -1,5 +1,11 @@
 import { all, call, select, takeEvery, put } from 'redux-saga/effects'
 
+import Kind from 'common/models/Kind'
+import { getUserId } from 'common/store/account/selectors'
+import { DELETE_TRACK } from 'common/store/cache/tracks/actions'
+import { getTrack } from 'common/store/cache/tracks/selectors'
+import { retrieveTracks } from 'common/store/cache/tracks/utils'
+import { getUser } from 'common/store/cache/users/selectors'
 import {
   PREFIX,
   tracksActions,
@@ -10,14 +16,8 @@ import {
   getProfileTracksLineup,
   getProfileUserHandle
 } from 'containers/profile-page/store/selectors'
-import { getUserId } from 'store/account/selectors'
-import { DELETE_TRACK } from 'store/cache/tracks/actions'
-import { getTrack } from 'store/cache/tracks/selectors'
-import { retrieveTracks } from 'store/cache/tracks/utils'
-import { getUser } from 'store/cache/users/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 import { SET_ARTIST_PICK } from 'store/social/tracks/actions'
-import { Kind } from 'store/types'
 import { waitForValue } from 'utils/sagaHelpers'
 
 import { TracksSortMode } from '../../types'

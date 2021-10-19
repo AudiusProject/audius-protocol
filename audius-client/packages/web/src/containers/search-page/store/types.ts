@@ -1,6 +1,6 @@
-import { ID } from 'models/common/Identifiers'
+import { ID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
 import { LineupState } from 'models/common/Lineup'
-import { Status } from 'store/types'
 
 type SearchPageState = {
   status: Status

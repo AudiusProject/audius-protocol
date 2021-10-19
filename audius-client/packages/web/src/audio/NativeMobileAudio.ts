@@ -1,4 +1,4 @@
-import { TrackSegment } from 'models/Track'
+import { TrackSegment } from 'common/models/Track'
 import {
   PlayTrackMessage,
   PauseTrackMessage,

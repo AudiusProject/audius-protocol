@@ -4,11 +4,11 @@ import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { ID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import NavContext, { LeftPreset } from 'containers/nav/store/context'
 import NetworkConnectivityMonitor from 'containers/network-connectivity/NetworkConnectivityMonitor'
-import { ID } from 'models/common/Identifiers'
-import { Status } from 'store/types'
 
 import styles from './NotificationPage.module.css'
 import NotificationProvider from './NotificationProvider'

@@ -2,6 +2,9 @@ import React, { memo } from 'react'
 
 import cn from 'classnames'
 
+import { ID } from 'common/models/Identifiers'
+import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
+import { Remix } from 'common/models/Track'
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -10,9 +13,6 @@ import {
   useCollectionCoverArt,
   useLoadImageWithTimeout
 } from 'hooks/useImageSize'
-import { Remix } from 'models/Track'
-import { ID } from 'models/common/Identifiers'
-import { CoverArtSizes, SquareSizes } from 'models/common/ImageSizes'
 
 import styles from './TrackTileArt.module.css'
 

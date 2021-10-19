@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect'
 
-import { getCollections } from 'store/cache/collections/selectors'
-import { getUsers } from 'store/cache/users/selectors'
+import { getCollections } from 'common/store/cache/collections/selectors'
+import { getUsers } from 'common/store/cache/users/selectors'
 import { createShallowSelector } from 'utils/selectorHelpers'
 
 // Search Results selectors

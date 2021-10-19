@@ -1,8 +1,8 @@
 import React from 'react'
 
+import { getModalVisibility } from 'common/store/ui/modals/slice'
 import Drawer from 'components/drawer/Drawer'
 import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
-import { getModalVisibility } from 'store/application/ui/modals/slice'
 import { useSelector } from 'utils/reducer'
 
 import styles from './MobileConnectWalletsDrawer.module.css'

@@ -10,7 +10,7 @@ import React, {
 import { Switch, useLocation, useHistory } from 'react-router-dom'
 import { useTransition, animated } from 'react-spring'
 
-import useInstanceVar from 'hooks/useInstanceVar'
+import useInstanceVar from 'common/hooks/useInstanceVar'
 import { getIsIOS } from 'utils/browser'
 import {
   SIGN_IN_PAGE,

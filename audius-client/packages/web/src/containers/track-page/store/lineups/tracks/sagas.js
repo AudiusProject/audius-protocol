@@ -1,5 +1,7 @@
 import { call, select } from 'redux-saga/effects'
 
+import { getUserId } from 'common/store/account/selectors'
+import { getTrack } from 'common/store/cache/tracks/selectors'
 import { retrieveUserTracks } from 'containers/profile-page/store/lineups/tracks/retrieveUserTracks'
 import {
   PREFIX,
@@ -9,8 +11,6 @@ import {
   getSourceSelector as sourceSelector,
   getLineup
 } from 'containers/track-page/store/selectors'
-import { getUserId } from 'store/account/selectors'
-import { getTrack } from 'store/cache/tracks/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 import { waitForValue } from 'utils/sagaHelpers'
 

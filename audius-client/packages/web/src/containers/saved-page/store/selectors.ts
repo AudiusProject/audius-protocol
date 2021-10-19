@@ -1,4 +1,4 @@
-import { ID } from 'models/common/Identifiers'
+import { ID } from 'common/models/Identifiers'
 import { AppState } from 'store/types'
 
 export const getSaved = (state: AppState) => state.saved

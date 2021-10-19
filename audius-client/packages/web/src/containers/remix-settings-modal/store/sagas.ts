@@ -1,10 +1,10 @@
 import { takeEvery, call, put } from 'redux-saga/effects'
 
-import { TrackMetadata } from 'models/Track'
+import { TrackMetadata } from 'common/models/Track'
 import {
   retrieveTrackByHandleAndSlug,
   retrieveTracks
-} from 'store/cache/tracks/utils/retrieveTracks'
+} from 'common/store/cache/tracks/utils/retrieveTracks'
 import { parseTrackRoute } from 'utils/route/trackRouteParser'
 
 import { fetchTrack, fetchTrackSucceeded, fetchTrackFailed } from './slice'

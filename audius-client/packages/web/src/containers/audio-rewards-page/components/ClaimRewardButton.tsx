@@ -3,12 +3,12 @@ import React, { useCallback, useEffect } from 'react'
 import { Button, ButtonType } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { getAccountUser, getUserHandle } from 'common/store/account/selectors'
 import { useRemoteVar } from 'containers/remote-config/hooks'
 import { useModalState } from 'hooks/useModalState'
 import { useScript } from 'hooks/useScript'
 import AudiusBackend from 'services/AudiusBackend'
 import { IntKeys, StringKeys } from 'services/remote-config'
-import { getAccountUser, getUserHandle } from 'store/account/selectors'
 import { COGNITO_SCRIPT_URL } from 'utils/constants'
 import { encodeHashId } from 'utils/route/hashIds'
 

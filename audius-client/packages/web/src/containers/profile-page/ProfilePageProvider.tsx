@@ -7,6 +7,16 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import { ID, UID } from 'common/models/Identifiers'
+import Kind from 'common/models/Kind'
+import Status from 'common/models/Status'
+import { getAccountUser } from 'common/store/account/selectors'
+import { open } from 'common/store/ui/mobile-overflow-menu/actions'
+import {
+  OverflowSource,
+  OverflowAction
+} from 'common/store/ui/mobile-overflow-menu/types'
+import { makeKindId } from 'common/utils/uid'
 import { makeGetRelatedArtists } from 'containers/artist-recommendations/store/selectors'
 import { setFollowers } from 'containers/followers-page/store/actions'
 import { setFollowing } from 'containers/following-page/store/actions'
@@ -19,30 +29,22 @@ import {
 } from 'containers/profile-page/store/types'
 import * as unfollowConfirmationActions from 'containers/unfollow-confirmation-modal/store/actions'
 import { BadgeTier } from 'containers/user-badges/utils'
-import { ID, UID } from 'models/common/Identifiers'
 import { newUserMetadata } from 'schemas'
 import { Name, FollowSource, ShareSource } from 'services/analytics'
-import { getAccountUser } from 'store/account/selectors'
 import { make, TrackEvent } from 'store/analytics/actions'
 import * as createPlaylistModalActions from 'store/application/ui/createPlaylistModal/actions'
-import { open } from 'store/application/ui/mobileOverflowModal/actions'
-import {
-  OverflowSource,
-  OverflowAction
-} from 'store/application/ui/mobileOverflowModal/types'
 import { getIsDone } from 'store/confirmer/selectors'
 import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { getLocationPathname } from 'store/routing/selectors'
 import * as socialActions from 'store/social/users/actions'
-import { AppState, Kind, Status } from 'store/types'
+import { AppState } from 'store/types'
 import { formatCount } from 'utils/formatUtil'
 import { verifiedHandleWhitelist } from 'utils/handleWhitelist'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { getPathname, NOT_FOUND_PAGE, profilePage } from 'utils/route'
 import { parseUserRoute } from 'utils/route/userRouteParser'
-import { makeKindId } from 'utils/uid'
 
 import { ProfilePageProps as DesktopProfilePageProps } from './components/desktop/ProfilePage'
 import { ProfilePageProps as MobileProfilePageProps } from './components/mobile/ProfilePage'

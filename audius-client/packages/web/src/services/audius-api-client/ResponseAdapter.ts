@@ -1,17 +1,17 @@
-import { UserCollectionMetadata, Variant } from 'models/Collection'
-import Favorite from 'models/Favorite'
-import Repost from 'models/Repost'
+import { UserCollectionMetadata, Variant } from 'common/models/Collection'
+import Favorite from 'common/models/Favorite'
+import { ID } from 'common/models/Identifiers'
+import Repost from 'common/models/Repost'
 import {
   Remix,
   StemTrackMetadata,
   TrackMetadata,
   UserTrackMetadata
-} from 'models/Track'
-import { UserMetadata } from 'models/User'
-import { ID } from 'models/common/Identifiers'
-import { StringWei } from 'store/wallet/slice'
+} from 'common/models/Track'
+import { UserMetadata } from 'common/models/User'
+import { StringWei } from 'common/models/Wallet'
+import { removeNullable } from 'common/utils/typeUtils'
 import { decodeHashId } from 'utils/route/hashIds'
-import { removeNullable } from 'utils/typeUtils'
 
 import {
   APIActivity,

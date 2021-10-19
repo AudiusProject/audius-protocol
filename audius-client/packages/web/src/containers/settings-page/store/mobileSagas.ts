@@ -1,11 +1,11 @@
 import { select, call, put, takeEvery } from 'redux-saga/effects'
 
+import { getAccountUser } from 'common/store/account/selectors'
 import AudiusBackend from 'services/AudiusBackend'
 import {
   EnablePushNotificationsMessage,
   DisablePushNotificationsMessage
 } from 'services/native-mobile-interface/notifications'
-import { getAccountUser } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { waitForValue } from 'utils/sagaHelpers'
 

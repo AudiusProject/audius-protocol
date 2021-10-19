@@ -1,6 +1,6 @@
-import Collection from 'models/Collection'
-import Track from 'models/Track'
-import { Status } from 'store/types'
+import Collection from 'common/models/Collection'
+import Status from 'common/models/Status'
+import Track from 'common/models/Track'
 
 export default interface ArtistDashboardState {
   status: Status

@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import { getUserHandle } from 'common/store/account/selectors'
 import BottomBar from 'components/bottom-bar/BottomBar'
 import { setTab } from 'containers/explore-page/store/actions'
 import { Tabs } from 'containers/explore-page/store/types'
@@ -12,7 +13,6 @@ import {
   openSignOn,
   showRequiresAccountModal
 } from 'containers/sign-on/store/actions'
-import { getUserHandle } from 'store/account/selectors'
 import { AppState } from 'store/types'
 import {
   FEED_PAGE,

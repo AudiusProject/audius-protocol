@@ -1,14 +1,14 @@
 import { keyBy } from 'lodash'
 import { call } from 'redux-saga/effects'
 
+import Kind from 'common/models/Kind'
+import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import {
   PREFIX,
   tracksActions
 } from 'containers/history-page/store/lineups/tracks/actions'
 import AudiusBackend from 'services/AudiusBackend'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { LineupSagas } from 'store/lineup/sagas'
-import { Kind } from 'store/types'
 
 function* getHistoryTracks() {
   try {

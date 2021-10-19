@@ -1,11 +1,11 @@
 import { put, select } from 'redux-saga/effects'
 
+import { ID } from 'common/models/Identifiers'
+import User from 'common/models/User'
+import { getUser } from 'common/store/cache/users/selectors'
 import UserListSagaFactory from 'containers/user-list/store/sagas'
 import { createUserListProvider } from 'containers/user-list/utils'
-import User from 'models/User'
-import { ID } from 'models/common/Identifiers'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { getUser } from 'store/cache/users/selectors'
 
 import { USER_LIST_TAG } from '../FollowersPage'
 

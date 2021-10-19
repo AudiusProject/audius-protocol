@@ -1,8 +1,8 @@
 import optimizely from '@optimizely/optimizely-sdk'
 
-import { ID } from 'models/common/Identifiers'
-import { Nullable } from 'utils/typeUtils'
-import { uuid } from 'utils/uid'
+import { ID } from 'common/models/Identifiers'
+import { Nullable } from 'common/utils/typeUtils'
+import { uuid } from 'common/utils/uid'
 
 import {
   FeatureFlags,
@@ -42,7 +42,7 @@ const state: State = {
   onDidInitializeFunc: undefined,
   userId: null,
   sessionId:
-    window.localStorage.getItem(FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY) ||
+    window.localStorage?.getItem(FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY) ||
     uuid()
 }
 

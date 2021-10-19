@@ -1,17 +1,14 @@
 import { put, call, fork, select } from 'redux-saga/effects'
 
-import User from 'models/User'
+import User from 'common/models/User'
+import * as errorActions from 'common/store/errors/actions'
+import { getModalVisibility, setVisibility } from 'common/store/ui/modals/slice'
+import { Nullable } from 'common/utils/typeUtils'
 import AudiusBackend from 'services/AudiusBackend'
 import { Name } from 'services/analytics'
 import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
-import {
-  getModalVisibility,
-  setVisibility
-} from 'store/application/ui/modals/slice'
 import { setState as setAudioManagerReduxState } from 'store/audio-manager/slice'
-import * as errorActions from 'store/errors/actions'
-import { Nullable } from 'utils/typeUtils'
 
 export enum AudioManagerState {
   HasEthAudioInHedgehog = 'HAS_ETH_AUDIO_IN_HEDGEHOG',

@@ -3,6 +3,12 @@ import React from 'react'
 import cn from 'classnames'
 
 import placeholderArt from 'assets/img/imageBlank2x.png'
+import { ID } from 'common/models/Identifiers'
+import {
+  ProfilePictureSizes,
+  SquareSizes,
+  CoverArtSizes
+} from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UpdateDot from 'components/general/UpdateDot'
 import RepostFavoritesStats, {
@@ -13,12 +19,6 @@ import {
   useCollectionCoverArt,
   useUserProfilePicture
 } from 'hooks/useImageSize'
-import { ID } from 'models/common/Identifiers'
-import {
-  ProfilePictureSizes,
-  SquareSizes,
-  CoverArtSizes
-} from 'models/common/ImageSizes'
 import { pluralize } from 'utils/formatUtil'
 
 import styles from './Card.module.css'

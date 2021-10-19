@@ -4,13 +4,24 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { FavoriteType } from 'common/models/Favorite'
+import { ID } from 'common/models/Identifiers'
+import Track from 'common/models/Track'
+import { getUserId } from 'common/store/account/selectors'
+import {
+  getCollection,
+  getTracksFromCollection
+} from 'common/store/cache/collections/selectors'
+import { getUserFromCollection } from 'common/store/cache/users/selectors'
+import { open } from 'common/store/ui/mobile-overflow-menu/actions'
+import {
+  OverflowAction,
+  OverflowSource
+} from 'common/store/ui/mobile-overflow-menu/types'
 import { PlaylistTileProps } from 'components/track/types'
 import { setFavorite } from 'containers/favorites-page/store/actions'
 import { setRepost } from 'containers/reposts-page/store/actions'
 import { RepostType } from 'containers/reposts-page/store/types'
-import { FavoriteType } from 'models/Favorite'
-import Track from 'models/Track'
-import { ID } from 'models/common/Identifiers'
 import {
   FavoriteSource,
   RepostSource,
@@ -18,19 +29,8 @@ import {
   PlaybackSource,
   ShareSource
 } from 'services/analytics'
-import { getUserId } from 'store/account/selectors'
 import { useRecord, make } from 'store/analytics/actions'
-import { open } from 'store/application/ui/mobileOverflowModal/actions'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'store/application/ui/mobileOverflowModal/types'
 import { getTheme } from 'store/application/ui/theme/selectors'
-import {
-  getCollection,
-  getTracksFromCollection
-} from 'store/cache/collections/selectors'
-import { getUserFromCollection } from 'store/cache/users/selectors'
 import { getUid, getBuffering, getPlaying } from 'store/player/selectors'
 import {
   saveCollection,

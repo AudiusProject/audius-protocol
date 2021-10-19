@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import NativeMobileAudio from 'audio/NativeMobileAudio'
-import { UID, ID } from 'models/common/Identifiers'
+import { UID, ID } from 'common/models/Identifiers'
 
 import { AudioState } from './types'
 

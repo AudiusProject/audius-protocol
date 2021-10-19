@@ -6,6 +6,17 @@ import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCamera } from 'assets/img/iconCamera.svg'
 import placeholderCoverArt from 'assets/img/imageBlank2x.png'
+import Collection from 'common/models/Collection'
+import { ID } from 'common/models/Identifiers'
+import { SquareSizes } from 'common/models/ImageSizes'
+import { getAccountUser } from 'common/store/account/selectors'
+import {
+  createPlaylist,
+  editPlaylist,
+  orderPlaylist,
+  removeTrackFromPlaylist
+} from 'common/store/cache/collections/actions'
+import { Nullable } from 'common/utils/typeUtils'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import EditableRow, { Format } from 'components/groupable-list/EditableRow'
 import GroupableList from 'components/groupable-list/GroupableList'
@@ -18,28 +29,17 @@ import { useTemporaryNavContext } from 'containers/nav/store/context'
 import UploadStub from 'containers/profile-page/components/mobile/UploadStub'
 import useHasChangedRoute from 'hooks/useHasChangedRoute'
 import { useCollectionCoverArt } from 'hooks/useImageSize'
-import Collection from 'models/Collection'
-import { ID } from 'models/common/Identifiers'
-import { SquareSizes } from 'models/common/ImageSizes'
 import * as schemas from 'schemas'
 import RandomImage from 'services/RandomImage'
 import { CreatePlaylistSource } from 'services/analytics'
-import { getAccountUser } from 'store/account/selectors'
 import * as createPlaylistActions from 'store/application/ui/createPlaylistModal/actions'
 import {
   getMetadata,
   getTracks
 } from 'store/application/ui/createPlaylistModal/selectors'
-import {
-  createPlaylist,
-  editPlaylist,
-  orderPlaylist,
-  removeTrackFromPlaylist
-} from 'store/cache/collections/actions'
 import { AppState } from 'store/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { playlistPage } from 'utils/route'
-import { Nullable } from 'utils/typeUtils'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './EditPlaylistPage.module.css'

@@ -7,6 +7,8 @@ import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
+import { BNWei } from 'common/models/Wallet'
+import { Nullable } from 'common/utils/typeUtils'
 import MobileConnectWalletsDrawer from 'containers/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
 import { useModalState } from 'hooks/useModalState'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
@@ -18,13 +20,11 @@ import {
 } from 'store/token-dashboard/slice'
 import {
   getAccountBalance,
-  formatWei,
-  BNWei,
   getAccountTotalBalance
-} from 'store/wallet/slice'
+} from 'store/wallet/selectors'
 import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
-import { Nullable } from 'utils/typeUtils'
+import { formatWei } from 'utils/wallet'
 
 import styles from './Tiles.module.css'
 import TokenHoverTooltip from './components/TokenHoverTooltip'

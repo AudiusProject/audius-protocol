@@ -1,4 +1,4 @@
-import { ID } from 'models/common/Identifiers'
+import { ID } from 'common/models/Identifiers'
 
 // actions
 export const SHOW_SET_AS_ARTIST_PICK_CONFIRMATION = 'SET_AS_ARTIST_PICK/SHOW'

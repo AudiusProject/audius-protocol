@@ -1,5 +1,6 @@
 import * as allPromisesSettled from 'promise.allsettled'
 
+import { Collectible } from 'common/models/Collectible'
 import {
   isAssetValid,
   assetToCollectible,
@@ -7,7 +8,7 @@ import {
   transferEventToCollectible,
   isNotFromNullAddress
 } from 'containers/collectibles/ethCollectibleHelpers'
-import { Collectible, CollectibleState } from 'containers/collectibles/types'
+import { CollectibleState } from 'containers/collectibles/types'
 import {
   OpenSeaAsset,
   OpenSeaAssetExtended,

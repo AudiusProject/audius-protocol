@@ -4,8 +4,9 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { ID } from 'models/common/Identifiers'
-import { AppState, Status } from 'store/types'
+import { ID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
+import { AppState } from 'store/types'
 
 import {
   markAsRead,

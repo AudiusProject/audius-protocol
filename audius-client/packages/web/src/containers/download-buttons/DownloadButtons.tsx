@@ -3,10 +3,10 @@ import React, { memo } from 'react'
 import { IconDownload } from '@audius/stems'
 import cn from 'classnames'
 
+import { ID } from 'common/models/Identifiers'
 import IconButton from 'components/general/IconButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
-import { ID } from 'models/common/Identifiers'
 
 import styles from './DownloadButtons.module.css'
 import { useButtons } from './hooks'

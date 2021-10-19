@@ -9,6 +9,8 @@ import IconBronzeBadge from 'assets/img/tokenBadgeBronze108@2x.png'
 import IconGoldBadge from 'assets/img/tokenBadgeGold108@2x.png'
 import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum108@2x.png'
 import IconSilverBadge from 'assets/img/tokenBadgeSilver108@2x.png'
+import { getAccountUser } from 'common/store/account/selectors'
+import { Nullable } from 'common/utils/typeUtils'
 import { show } from 'containers/music-confetti/store/slice'
 import { BadgeTierText } from 'containers/user-badges/ProfilePageBadge'
 import { useSelectTierInfo } from 'containers/user-badges/hooks'
@@ -18,11 +20,9 @@ import {
   getTierNumber
 } from 'containers/user-badges/utils'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { getAccountUser } from 'store/account/selectors'
 import { pressDiscord } from 'store/token-dashboard/slice'
 import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
-import { Nullable } from 'utils/typeUtils'
 
 import styles from './Tiers.module.css'
 

@@ -5,12 +5,12 @@ import cn from 'classnames'
 
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
+import { ID } from 'common/models/Identifiers'
 import Skeleton from 'components/general/Skeleton'
 import FavoriteButton from 'components/general/alt-button/FavoriteButton'
 import RepostButton from 'components/general/alt-button/RepostButton'
 import { TrackTileProps } from 'components/track/types'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { ID } from 'models/common/Identifiers'
 import { formatCount } from 'utils/formatUtil'
 import { formatSeconds } from 'utils/timeUtil'
 

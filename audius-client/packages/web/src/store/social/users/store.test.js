@@ -2,13 +2,13 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 
+import Kind from 'common/models/Kind'
+import * as cacheActions from 'common/store/cache/actions'
+import { adjustUserField } from 'common/store/cache/users/sagas'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import * as cacheActions from 'store/cache/actions'
-import { adjustUserField } from 'store/cache/users/sagas'
 import * as actions from 'store/social/users/actions'
 import * as sagas from 'store/social/users/sagas'
 import { noopReducer } from 'store/testHelper'
-import { Kind } from 'store/types'
 
 const followedUser = { follower_count: 5 }
 const accountUser = { followee_count: 1 }

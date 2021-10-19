@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { PlaylistLibrary } from 'models/PlaylistLibrary'
+import { PlaylistLibrary } from 'common/models/PlaylistLibrary'
 
 const initialState = {}
 

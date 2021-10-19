@@ -4,6 +4,12 @@ import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import placeholderArt from 'assets/img/imageBlank2x.png'
+import { ID } from 'common/models/Identifiers'
+import {
+  ProfilePictureSizes,
+  SquareSizes,
+  CoverArtSizes
+} from 'common/models/ImageSizes'
 import ActionsTab from 'components/actions-tab/ActionsTab'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import RepostFavoritesStats, {
@@ -15,12 +21,6 @@ import {
   useCollectionCoverArt,
   useUserProfilePicture
 } from 'hooks/useImageSize'
-import { ID } from 'models/common/Identifiers'
-import {
-  ProfilePictureSizes,
-  SquareSizes,
-  CoverArtSizes
-} from 'models/common/ImageSizes'
 import { pluralize } from 'utils/formatUtil'
 
 import styles from './Card.module.css'

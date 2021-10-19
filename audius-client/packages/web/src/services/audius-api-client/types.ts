@@ -1,13 +1,13 @@
-import { FavoriteType } from 'models/Favorite'
-import { StemCategory } from 'models/Stems'
-import { Download, FieldVisibility, TrackSegment } from 'models/Track'
-import { CID } from 'models/common/Identifiers'
+import { FavoriteType } from 'common/models/Favorite'
+import { CID } from 'common/models/Identifiers'
 import {
   CoverArtSizes,
   CoverPhotoSizes,
   ProfilePictureSizes
-} from 'models/common/ImageSizes'
-import { Nullable } from 'utils/typeUtils'
+} from 'common/models/ImageSizes'
+import { StemCategory } from 'common/models/Stems'
+import { Download, FieldVisibility, TrackSegment } from 'common/models/Track'
+import { Nullable } from 'common/utils/typeUtils'
 
 export type OpaqueID = string
 type PlaylistContents = {

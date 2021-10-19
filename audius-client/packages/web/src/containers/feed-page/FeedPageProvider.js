@@ -7,6 +7,7 @@ import {
 import { connect } from 'react-redux'
 import { withRouter, matchPath } from 'react-router-dom'
 
+import { getHasAccount } from 'common/store/account/selectors'
 import {
   getDiscoverFeedLineup,
   makeGetSuggestedFollows,
@@ -14,7 +15,6 @@ import {
 } from 'containers/feed-page/store/selectors'
 import { openSignOn } from 'containers/sign-on/store/actions'
 import { Name } from 'services/analytics'
-import { getHasAccount } from 'store/account/selectors'
 import { make } from 'store/analytics/actions'
 import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'

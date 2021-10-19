@@ -4,8 +4,8 @@ import { Button, ButtonType, Modal } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
+import { getModalVisibility } from 'common/store/ui/modals/slice'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { getModalVisibility } from 'store/application/ui/modals/slice'
 import { confirmTransferAudioToWAudio } from 'store/audio-manager/slice'
 import { useSelector } from 'utils/reducer'
 

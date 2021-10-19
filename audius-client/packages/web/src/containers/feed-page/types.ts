@@ -1,6 +1,6 @@
+import { ID, UID } from 'common/models/Identifiers'
+import User from 'common/models/User'
 import FeedFilter from 'models/FeedFilter'
-import User from 'models/User'
-import { ID, UID } from 'models/common/Identifiers'
 import { Lineup } from 'models/common/Lineup'
 
 export interface FeedPageContentProps {

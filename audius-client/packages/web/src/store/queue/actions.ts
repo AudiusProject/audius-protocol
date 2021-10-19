@@ -1,5 +1,5 @@
-import { ID } from 'models/common/Identifiers'
-import { Nullable } from 'utils/typeUtils'
+import { ID } from 'common/models/Identifiers'
+import { Nullable } from 'common/utils/typeUtils'
 
 export const QUEUE_AUTOPLAY = 'QUEUE/QUEUE_AUTOPLAY'
 

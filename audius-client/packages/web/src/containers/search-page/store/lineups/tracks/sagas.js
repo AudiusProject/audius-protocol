@@ -1,5 +1,6 @@
 import { select, all, call } from 'redux-saga/effects'
 
+import { getTracks } from 'common/store/cache/tracks/selectors'
 import {
   getCategory,
   getQuery,
@@ -12,7 +13,6 @@ import {
 } from 'containers/search-page/store/sagas'
 import { getSearchResultsPageTracks } from 'containers/search-page/store/selectors'
 import { SearchKind } from 'containers/search-page/store/types'
-import { getTracks } from 'store/cache/tracks/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 import { isMobile } from 'utils/clientUtil'
 

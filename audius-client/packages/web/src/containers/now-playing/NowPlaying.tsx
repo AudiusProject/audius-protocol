@@ -6,6 +6,15 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
+import { ID } from 'common/models/Identifiers'
+import { SquareSizes } from 'common/models/ImageSizes'
+import { getUserId } from 'common/store/account/selectors'
+import { open } from 'common/store/ui/mobile-overflow-menu/actions'
+import {
+  OverflowAction,
+  OverflowActionCallbacks,
+  OverflowSource
+} from 'common/store/ui/mobile-overflow-menu/types'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PlayButton from 'components/play-bar/PlayButton'
@@ -18,8 +27,6 @@ import { useFlag } from 'containers/remote-config/hooks'
 import { getCastMethod } from 'containers/settings-page/store/selectors'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useImageSize'
-import { ID } from 'models/common/Identifiers'
-import { SquareSizes } from 'models/common/ImageSizes'
 import {
   FavoriteSource,
   RepostSource,
@@ -29,15 +36,8 @@ import {
 } from 'services/analytics'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 import { FeatureFlags } from 'services/remote-config'
-import { getUserId } from 'store/account/selectors'
 import { useRecord, make } from 'store/analytics/actions'
 import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
-import { open } from 'store/application/ui/mobileOverflowModal/actions'
-import {
-  OverflowAction,
-  OverflowActionCallbacks,
-  OverflowSource
-} from 'store/application/ui/mobileOverflowModal/types'
 import {
   getAudio,
   getBuffering,

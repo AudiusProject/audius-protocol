@@ -1,6 +1,6 @@
 import { put, takeEvery } from 'redux-saga/effects'
 
-import * as errorActions from 'store/errors/actions'
+import * as errorActions from 'common/store/errors/actions'
 
 import { GET_NOTIFICATION_ERROR, getNotificationError } from './actions'
 

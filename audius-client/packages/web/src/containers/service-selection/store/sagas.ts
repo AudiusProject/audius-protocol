@@ -1,10 +1,10 @@
 import { all, fork, call, put, select, takeEvery } from 'redux-saga/effects'
 
+import Kind from 'common/models/Kind'
+import { getAccountUser } from 'common/store/account/selectors'
+import * as cacheActions from 'common/store/cache/actions'
 import AudiusBackend from 'services/AudiusBackend'
-import { getAccountUser } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import * as cacheActions from 'store/cache/actions'
-import { Kind } from 'store/types'
 import { waitForValue } from 'utils/sagaHelpers'
 
 import { watchServiceSelectionErrors } from './errorSagas'

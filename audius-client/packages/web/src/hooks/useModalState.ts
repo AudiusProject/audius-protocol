@@ -8,7 +8,7 @@ import {
   getModalVisibility,
   Modals,
   setVisibility
-} from '../store/application/ui/modals/slice'
+} from '../common/store/ui/modals/slice'
 
 /**
  * Sets visibility for a modal

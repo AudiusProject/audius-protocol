@@ -3,14 +3,14 @@ import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
+import { getPlaylistLibrary } from 'common/store/account/selectors'
 import CollectionPage from 'containers/collection-page/CollectionPage'
-import { getPlaylistLibrary } from 'store/account/selectors'
 import { findInPlaylistLibrary } from 'store/playlist-library/helpers'
 import { AppState } from 'store/types'
 
 import { getCollection } from './store/selectors'
 import { fetchSmartCollection } from './store/slice'
-import { SmartCollectionVariant } from './types'
 
 type OwnProps = {
   variant: SmartCollectionVariant

@@ -7,15 +7,17 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import Track from 'models/Track'
-import { ID, UID } from 'models/common/Identifiers'
+import { ID, UID } from 'common/models/Identifiers'
+import Kind from 'common/models/Kind'
+import Track from 'common/models/Track'
+import { getUserId } from 'common/store/account/selectors'
+import * as cacheActions from 'common/store/cache/actions'
+import { getCollection } from 'common/store/cache/collections/selectors'
+import { getId } from 'common/store/cache/selectors'
+import { getTrack } from 'common/store/cache/tracks/selectors'
+import { makeUid, Uid } from 'common/utils/uid'
 import { Name, PlaybackSource } from 'services/analytics'
-import { getUserId } from 'store/account/selectors'
 import { make } from 'store/analytics/actions'
-import * as cacheActions from 'store/cache/actions'
-import { getCollection } from 'store/cache/collections/selectors'
-import { getId } from 'store/cache/selectors'
-import { getTrack } from 'store/cache/tracks/selectors'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
 import {
   getTrackId as getPlayerTrackId,
@@ -44,10 +46,8 @@ import {
   remove
 } from 'store/queue/slice'
 import { Queueable, RepeatMode, Source } from 'store/queue/types'
-import { Kind } from 'store/types'
-import { makeUid, Uid } from 'utils/uid'
 
-import { Nullable } from '../../utils/typeUtils'
+import { Nullable } from '../../common/utils/typeUtils'
 import { getRecommendedTracks } from '../recommendation/sagas'
 
 import mobileSagas from './mobileSagas'

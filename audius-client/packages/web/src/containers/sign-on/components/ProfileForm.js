@@ -13,7 +13,6 @@ import ProfilePicture from 'components/general/ProfilePicture'
 import StatusMessage from 'components/general/StatusMessage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useDelayedEffect } from 'hooks/useDelayedEffect'
-import useInstanceVar from 'hooks/useInstanceVar'
 import { IDENTITY_SERVICE } from 'services/AudiusBackend'
 import { resizeImage } from 'utils/imageProcessingUtil'
 

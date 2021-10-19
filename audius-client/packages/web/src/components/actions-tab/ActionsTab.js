@@ -7,11 +7,11 @@ import { connect } from 'react-redux'
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
 import { ReactComponent as IconShare } from 'assets/img/iconShare.svg'
+import { getUserHandle } from 'common/store/account/selectors'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import Menu from 'containers/menu/Menu'
 import { ShareSource, RepostSource } from 'services/analytics'
-import { getUserHandle } from 'store/account/selectors'
 import {
   repostCollection,
   undoRepostCollection,

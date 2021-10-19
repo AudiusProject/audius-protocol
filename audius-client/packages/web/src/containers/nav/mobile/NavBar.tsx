@@ -13,6 +13,7 @@ import { useLocation } from 'react-router-dom'
 import { useTransition, animated } from 'react-spring'
 
 import { ReactComponent as AudiusLogo } from 'assets/img/audiusLogoHorizontal.svg'
+import Status from 'common/models/Status'
 import IconButton from 'components/general/IconButton'
 import SearchBar from 'components/search-bar/SearchBar'
 import {
@@ -25,7 +26,6 @@ import NavContext, {
   RightPreset
 } from 'containers/nav/store/context'
 import { OpenNotificationsMessage } from 'services/native-mobile-interface/notifications'
-import { Status } from 'store/types'
 import { getIsIOS } from 'utils/browser'
 import { formatCount } from 'utils/formatUtil'
 import { onNativeBack } from 'utils/nativeRoute'

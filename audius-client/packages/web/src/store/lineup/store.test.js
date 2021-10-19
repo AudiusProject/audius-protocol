@@ -2,10 +2,11 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 
+import Kind from 'common/models/Kind'
+import { asCache, initialCacheState } from 'common/store/cache/reducer'
+import cacheSagas from 'common/store/cache/sagas'
+import { fetchUsers } from 'common/store/cache/users/sagas'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { asCache, initialCacheState } from 'store/cache/reducer'
-import cacheSagas from 'store/cache/sagas'
-import { fetchUsers } from 'store/cache/users/sagas'
 import { initialState as initialConfirmerState } from 'store/confirmer/reducer'
 import { LineupActions } from 'store/lineup/actions'
 import { asLineup, initialLineupState } from 'store/lineup/reducer'
@@ -17,7 +18,6 @@ import queueReducer, {
   initialState as initialQueueState
 } from 'store/queue/slice'
 import { noopReducer, allSagas } from 'store/testHelper'
-import { Kind } from 'store/types'
 
 const PREFIX = 'tracks'
 const MOCK_TIMESTAMP = 1479427200000

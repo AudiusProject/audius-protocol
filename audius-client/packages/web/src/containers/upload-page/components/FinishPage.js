@@ -5,6 +5,7 @@ import PropTypes from 'prop-types'
 
 import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
 import placeholderArt from 'assets/img/imageBlank2x.png'
+import { DefaultSizes } from 'common/models/ImageSizes'
 import Toast from 'components/toast/Toast'
 import {
   TrackArtwork,
@@ -17,7 +18,6 @@ import { TrackTileSize } from 'components/track/types'
 import { ComponentPlacement } from 'components/types'
 import ProgressBar from 'components/upload/ProgressBar'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { DefaultSizes } from 'models/common/ImageSizes'
 
 import { ProgressStatus } from '../store/types'
 

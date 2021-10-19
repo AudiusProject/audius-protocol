@@ -2,6 +2,11 @@ import { push as pushRoute } from 'connected-react-router'
 import moment from 'moment'
 import { fork, call, put, select, takeEvery } from 'redux-saga/effects'
 
+import * as trackCacheActions from 'common/store/cache/tracks/actions'
+import { getTrack as getCachedTrack } from 'common/store/cache/tracks/selectors'
+import { retrieveTracks } from 'common/store/cache/tracks/utils'
+import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/retrieveTracks'
+import { getUsers } from 'common/store/cache/users/selectors'
 import tracksSagas from 'containers/track-page/store/lineups/tracks/sagas'
 import TimeRange from 'models/TimeRange'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
@@ -11,11 +16,6 @@ import {
   waitForRemoteConfig
 } from 'services/remote-config/Provider'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import * as trackCacheActions from 'store/cache/tracks/actions'
-import { getTrack as getCachedTrack } from 'store/cache/tracks/selectors'
-import { retrieveTracks } from 'store/cache/tracks/utils'
-import { retrieveTrackByHandleAndSlug } from 'store/cache/tracks/utils/retrieveTracks'
-import { getUsers } from 'store/cache/users/selectors'
 import { getIsReachable } from 'store/reachability/selectors'
 import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
 

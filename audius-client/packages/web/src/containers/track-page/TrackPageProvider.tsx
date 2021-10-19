@@ -4,6 +4,18 @@ import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { FavoriteType } from 'common/models/Favorite'
+import { ID, CID, PlayableType } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
+import Track from 'common/models/Track'
+import { getUserId } from 'common/store/account/selectors'
+import * as cacheTrackActions from 'common/store/cache/tracks/actions'
+import { open } from 'common/store/ui/mobile-overflow-menu/actions'
+import {
+  OverflowAction,
+  OverflowSource
+} from 'common/store/ui/mobile-overflow-menu/types'
+import { Uid } from 'common/utils/uid'
 import DeletedPage from 'containers/deleted-page/DeletedPage'
 import { setFavorite } from 'containers/favorites-page/store/actions'
 import { setRepost } from 'containers/reposts-page/store/actions'
@@ -18,9 +30,6 @@ import {
   getSourceSelector
 } from 'containers/track-page/store/selectors'
 import * as unfollowConfirmationActions from 'containers/unfollow-confirmation-modal/store/actions'
-import { FavoriteType } from 'models/Favorite'
-import Track from 'models/Track'
-import { ID, CID, PlayableType } from 'models/common/Identifiers'
 import {
   FollowSource,
   FavoriteSource,
@@ -29,13 +38,7 @@ import {
   Name,
   PlaybackSource
 } from 'services/analytics'
-import { getUserId } from 'store/account/selectors'
 import { TrackEvent, make } from 'store/analytics/actions'
-import { open } from 'store/application/ui/mobileOverflowModal/actions'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'store/application/ui/mobileOverflowModal/types'
 import {
   setUsers,
   setVisibility
@@ -44,14 +47,13 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import * as cacheTrackActions from 'store/cache/tracks/actions'
 import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { getLocationPathname } from 'store/routing/selectors'
 import * as socialTracksActions from 'store/social/tracks/actions'
 import * as socialUsersActions from 'store/social/users/actions'
-import { AppState, Status } from 'store/types'
+import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 import { formatUrlName } from 'utils/formatUtil'
 import { getCannonicalName } from 'utils/genres'
@@ -68,7 +70,6 @@ import {
 import { parseTrackRoute, TrackRouteParams } from 'utils/route/trackRouteParser'
 import { getTrackPageTitle, getTrackPageDescription } from 'utils/seo'
 import { formatSeconds, formatDate } from 'utils/timeUtil'
-import { Uid } from 'utils/uid'
 
 import StemsSEOHint from './components/StemsSEOHint'
 import { OwnProps as DesktopTrackPageProps } from './components/desktop/TrackPage'

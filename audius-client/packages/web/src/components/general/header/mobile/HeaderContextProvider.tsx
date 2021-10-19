@@ -9,7 +9,7 @@ import React, {
 
 import { useLocation } from 'react-router-dom'
 
-import useInstanceVar from 'hooks/useInstanceVar'
+import useInstanceVar from 'common/hooks/useInstanceVar'
 import { useIsMobile } from 'utils/clientUtil'
 
 type HeaderContextProps = {

@@ -2,15 +2,15 @@ import React, { useContext, useEffect } from 'react'
 
 import Spin from 'antd/lib/spin'
 
+import { UserCollection } from 'common/models/Collection'
+import { ID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
 import Card from 'components/card/mobile/Card'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import Header from 'components/general/header/mobile/Header'
 import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
 import CardLineup from 'containers/lineup/CardLineup'
 import { useSubPageHeader } from 'containers/nav/store/context'
-import { UserCollection } from 'models/Collection'
-import { ID } from 'models/common/Identifiers'
-import { Status } from 'store/types'
 import { playlistPage, albumPage, BASE_URL, EXPLORE_PAGE } from 'utils/route'
 
 import styles from './CollectionsPage.module.css'

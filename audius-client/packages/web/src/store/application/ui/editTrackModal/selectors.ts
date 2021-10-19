@@ -1,5 +1,5 @@
-import { StemTrack } from 'models/Track'
-import { getTrack, getTracks } from 'store/cache/tracks/selectors'
+import { StemTrack } from 'common/models/Track'
+import { getTrack, getTracks } from 'common/store/cache/tracks/selectors'
 import { AppState } from 'store/types'
 
 export const getBaseState = (state: AppState) =>

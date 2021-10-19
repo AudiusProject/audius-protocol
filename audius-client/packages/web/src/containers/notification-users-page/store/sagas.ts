@@ -1,5 +1,6 @@
 import { call, put, select } from 'redux-saga/effects'
 
+import { fetchUsers as retrieveUsers } from 'common/store/cache/users/sagas'
 import {
   getUserIds,
   getId,
@@ -7,7 +8,6 @@ import {
 } from 'containers/notification-users-page/store/selectors'
 import { getNotificationById } from 'containers/notification/store/selectors'
 import UserListSagaFactory from 'containers/user-list/store/sagas'
-import { fetchUsers as retrieveUsers } from 'store/cache/users/sagas'
 
 import { USER_LIST_TAG } from '../NotificationUsersPage'
 

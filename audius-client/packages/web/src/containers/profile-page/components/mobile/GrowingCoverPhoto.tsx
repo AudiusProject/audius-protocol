@@ -2,10 +2,10 @@ import React, { useEffect, useCallback } from 'react'
 
 import { useSpring, animated } from 'react-spring'
 
+import useInstanceVar from 'common/hooks/useInstanceVar'
 import DynamicImage, {
   DynamicImageProps
 } from 'components/dynamic-image/DynamicImage'
-import useInstanceVar from 'hooks/useInstanceVar'
 
 // Scale the image by making it larger relative to y-pos and translate it up slightly (capping at -15px) so it
 // covers the gap made by overscroll.

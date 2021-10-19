@@ -6,8 +6,11 @@ import { animated } from 'react-spring'
 import { Transition } from 'react-spring/renderprops'
 import { Dispatch } from 'redux'
 
+import { ID } from 'common/models/Identifiers'
+import User from 'common/models/User'
+import { InstagramProfile } from 'common/store/account/reducer'
+import { show as showEnablePushNotificationsDrawer } from 'common/store/ui/push-notifications-drawer/slice'
 import MobilePageContainer from 'components/general/MobilePageContainer'
-import { show as showEnablePushNotificationsDrawer } from 'containers/enable-push-notifications-drawer/store/slice'
 import * as settingPageActions from 'containers/settings-page/store/actions'
 import { PushNotificationSetting } from 'containers/settings-page/store/types'
 import FollowPage, {
@@ -19,9 +22,6 @@ import NotificationPermissionsPage from 'containers/sign-on/components/mobile/No
 import PasswordPage from 'containers/sign-on/components/mobile/PasswordPage'
 import ProfilePage from 'containers/sign-on/components/mobile/ProfilePage'
 import { Pages, FollowArtistsCategory } from 'containers/sign-on/store/types'
-import User from 'models/User'
-import { ID } from 'models/common/Identifiers'
-import { InstagramProfile } from 'store/account/reducer'
 import { BASE_URL, SIGN_UP_PAGE } from 'utils/route'
 
 import LoadingPage from './LoadingPage'

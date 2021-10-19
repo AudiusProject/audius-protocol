@@ -1,4 +1,4 @@
-import { Status } from 'store/types'
+import Status from 'common/models/Status'
 
 export type PasswordResetState = {
   status: Status

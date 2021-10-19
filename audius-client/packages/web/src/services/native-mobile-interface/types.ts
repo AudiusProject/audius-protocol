@@ -50,6 +50,7 @@ export enum MessageType {
   SYNC_QUEUE = 'action/sync-queue',
   SYNC_PLAYER = 'action/sync-player',
   PUSH_ROUTE = 'action/push-route',
+  SCROLL_TO_TOP = 'action/scroll-to-top',
 
   // OAuth
   REQUEST_INSTAGRAM_AUTH = 'request-instagram-auth',
@@ -93,7 +94,9 @@ export enum MessageType {
   LOGGING = 'logging',
 
   // Theme
-  THEME_CHANGE = 'theme-change'
+  THEME_CHANGE = 'theme-change',
+
+  SYNC_CLIENT_STORE = 'sync-client-store'
 }
 
 export interface Message {

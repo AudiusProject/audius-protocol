@@ -1,11 +1,11 @@
 import { call, select } from 'redux-saga/effects'
 
-import Collection, { UserCollectionMetadata } from 'models/Collection'
+import Collection, { UserCollectionMetadata } from 'common/models/Collection'
+import { getUserId } from 'common/store/account/selectors'
+import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getRemoteVar, StringKeys } from 'services/remote-config'
 import { waitForRemoteConfig } from 'services/remote-config/Provider'
-import { getUserId } from 'store/account/selectors'
-import { processAndCacheCollections } from 'store/cache/collections/utils'
 import { LineupSagas } from 'store/lineup/sagas'
 
 import { PREFIX, trendingPlaylistLineupActions } from './actions'

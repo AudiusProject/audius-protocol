@@ -1,9 +1,9 @@
 import { select } from 'redux-saga/effects'
 
+import { getUserId } from 'common/store/account/selectors'
 import { retrieveTrending } from 'containers/track-page/store/retrieveTrending'
 import { getTrendingGenre } from 'containers/trending-page/store/selectors'
 import TimeRange from 'models/TimeRange'
-import { getUserId } from 'store/account/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
 
 import {

@@ -1,5 +1,7 @@
 import { RouterState } from 'connected-react-router'
 
+import { CommonState } from 'common/store'
+import modals from 'common/store/ui/modals/slice'
 import { AddToPlaylistState } from 'containers/add-to-playlist/store/reducers'
 import ArtistDashboardState from 'containers/artist-dashboard-page/store/types'
 import ArtistRecommendationsReducer from 'containers/artist-recommendations/store/slice'
@@ -8,7 +10,6 @@ import CollectionsPageState from 'containers/collection-page/store/types'
 import { DeletePlaylistConfirmationModalState } from 'containers/delete-playlist-confirmation-modal/store/types'
 import DeletedPageReducer from 'containers/deleted-page/store/slice'
 import { EmbedModalState } from 'containers/embed-modal/store/types'
-import EnablePushNotificationsDrawer from 'containers/enable-push-notifications-drawer/store/slice'
 import { CollectionsState as ExploreCollectionsState } from 'containers/explore-page/store/collections/slice'
 import ExplorePageState from 'containers/explore-page/store/types'
 import { FavoritesPageState } from 'containers/favorites-page/store/types'
@@ -17,7 +18,6 @@ import { FirstUploadModalState } from 'containers/first-upload-modal/store/slice
 import { FollowersPageState } from 'containers/followers-page/store/types'
 import { FollowingPageState } from 'containers/following-page/store/types'
 import HistoryPageState from 'containers/history-page/store/types'
-import MobileUploadDrawer from 'containers/mobile-upload-drawer/store/slice'
 import MusicConfetti from 'containers/music-confetti/store/slice'
 import { NotificationUsersPageState } from 'containers/notification-users-page/store/types'
 import NotificationState from 'containers/notification/store/types'
@@ -43,16 +43,10 @@ import trendingUndergroundReducer from 'containers/trending-underground/store/sl
 import { UnfollowConfirmationModalState } from 'containers/unfollow-confirmation-modal/store/types'
 import { UploadPageState } from 'containers/upload-page/store/types'
 import VisualizerReducer from 'containers/visualizer/store/slice'
-import Collection from 'models/Collection'
-import Track from 'models/Track'
-import Cache from 'models/common/Cache'
-import AccountReducer from 'store/account/reducer'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
 import averageColor from 'store/application/ui/average-color/slice'
-import modals from 'store/application/ui/modals/slice'
 import StemsUploadReducer from 'store/application/ui/stemsUpload/slice'
 import { AudioManagerState } from 'store/audio-manager/slice'
-import UserCacheState from 'store/cache/users/types'
 import PlayerReducer from 'store/player/slice'
 import PlaylistLibraryReducer from 'store/playlist-library/slice'
 import QueueReducer from 'store/queue/slice'
@@ -64,38 +58,22 @@ import { CreatePlaylistModalState } from './application/ui/createPlaylistModal/t
 import { EditPlaylistModalState } from './application/ui/editPlaylistModal/slice'
 import EditTrackModalState from './application/ui/editTrackModal/types'
 import { MobileKeyboardState } from './application/ui/mobileKeyboard/types'
-import { MobileOverflowModalState } from './application/ui/mobileOverflowModal/types'
 import { ScrollLockState } from './application/ui/scrollLock/types'
 import { SetAsArtistPickConfirmationState } from './application/ui/setAsArtistPickConfirmation/types'
 import { ThemeState } from './application/ui/theme/types'
 import { UserListModalState } from './application/ui/userListModal/types'
 import { BackendState } from './backend/types'
-import TracksCacheState from './cache/tracks/types'
 import { ConfirmerState } from './confirmer/types'
 import { DragNDropState } from './dragndrop/types'
 import { ReachabilityState } from './reachability/types'
 
-export enum Kind {
-  TRACKS = 'TRACKS',
-  COLLECTIONS = 'COLLECTIONS',
-  USERS = 'USERS',
-  TRACK_ROUTES = 'TRACK_ROUTES'
-}
-
-export enum Status {
-  LOADING = 'LOADING',
-  SUCCESS = 'SUCCESS',
-  ERROR = 'ERROR'
-}
-
-export type AppState = {
+export type AppState = CommonState & {
   // Config
   backend: BackendState
   confirmer: ConfirmerState
   reachability: ReachabilityState
 
   // Account
-  account: ReturnType<typeof AccountReducer>
   passwordReset: PasswordResetState
   playlistLibrary: ReturnType<typeof PlaylistLibraryReducer>
 
@@ -118,14 +96,8 @@ export type AppState = {
       editPlaylistModal: EditPlaylistModalState
       editTrackModal: EditTrackModalState
       embedModal: EmbedModalState
-      enablePushNotificationsDrawer: ReturnType<
-        typeof EnablePushNotificationsDrawer
-      >
       firstUploadModal: FirstUploadModalState
       mobileKeyboard: MobileKeyboardState
-      mobileOverflowModal: MobileOverflowModalState
-      mobileUploadDrawer: ReturnType<typeof MobileUploadDrawer>
-      modals: ReturnType<typeof modals>
       musicConfetti: ReturnType<typeof MusicConfetti>
       remixSettingsModal: ReturnType<typeof RemixSettingsModalReducer>
       scrollLock: ScrollLockState
@@ -173,11 +145,6 @@ export type AppState = {
   collection: CollectionsPageState
   track: TrackPageState
   notification: NotificationState
-
-  // Cache
-  tracks: TracksCacheState
-  collections: Cache<Collection>
-  users: UserCacheState
 
   // Playback
   queue: ReturnType<typeof QueueReducer>

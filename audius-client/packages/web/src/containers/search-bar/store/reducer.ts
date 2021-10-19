@@ -1,3 +1,4 @@
+import Status from 'common/models/Status'
 import {
   FETCH_SEARCH_REQUESTED,
   FETCH_SEARCH_SUCCEEDED,
@@ -5,7 +6,6 @@ import {
   CLEAR_SEARCH,
   SearchBarActions
 } from 'containers/search-bar/store/actions'
-import { Status } from 'store/types'
 import { ActionsMap } from 'utils/reducer'
 
 import SearchBarState from './types'

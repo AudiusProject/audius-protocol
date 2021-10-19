@@ -6,15 +6,17 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import { UID, ID } from 'common/models/Identifiers'
+import { getUserHandle } from 'common/store/account/selectors'
+import { getTrack } from 'common/store/cache/tracks/selectors'
+import { getUserFromTrack } from 'common/store/cache/users/selectors'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import { TrackArtwork } from 'components/track/desktop/Artwork'
 import Draggable from 'containers/dragndrop/Draggable'
 import Menu from 'containers/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'containers/menu/TrackMenu'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { UID, ID } from 'models/common/Identifiers'
 import { ShareSource, RepostSource, FavoriteSource } from 'services/analytics'
-import { getUserHandle } from 'store/account/selectors'
 import {
   setUsers,
   setVisibility
@@ -23,8 +25,6 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import { getTrack } from 'store/cache/tracks/selectors'
-import { getUserFromTrack } from 'store/cache/users/selectors'
 import { getUid, getPlaying, getBuffering } from 'store/player/selectors'
 import {
   saveTrack,

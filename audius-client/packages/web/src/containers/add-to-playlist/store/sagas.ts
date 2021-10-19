@@ -1,6 +1,6 @@
 import { takeEvery, put } from 'redux-saga/effects'
 
-import { fetchSavedPlaylists } from 'store/account/reducer'
+import { fetchSavedPlaylists } from 'common/store/account/reducer'
 import { requiresAccount } from 'utils/sagaHelpers'
 
 import * as actions from './actions'

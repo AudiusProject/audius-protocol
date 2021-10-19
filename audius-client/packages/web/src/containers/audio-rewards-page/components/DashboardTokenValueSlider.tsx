@@ -3,7 +3,7 @@ import React from 'react'
 import { TokenValueSlider } from '@audius/stems'
 import BN from 'bn.js'
 
-import { BNAudio } from 'store/wallet/slice'
+import { BNAudio } from 'common/models/Wallet'
 import { formatNumberCommas } from 'utils/formatUtil'
 
 import styles from './DashboardTokenValueSlider.module.css'

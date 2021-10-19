@@ -2,7 +2,8 @@ import React from 'react'
 
 import cn from 'classnames'
 
-import { BNWei, formatWei } from 'store/wallet/slice'
+import { BNWei } from 'common/models/Wallet'
+import { formatWei } from 'utils/wallet'
 
 import styles from './DisplayAudio.module.css'
 import TokenHoverTooltip from './TokenHoverTooltip'

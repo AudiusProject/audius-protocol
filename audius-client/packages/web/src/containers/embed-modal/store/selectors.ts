@@ -1,6 +1,6 @@
-import { PlayableType } from 'models/common/Identifiers'
-import { getCollection } from 'store/cache/collections/selectors'
-import { getTrack } from 'store/cache/tracks/selectors'
+import { PlayableType } from 'common/models/Identifiers'
+import { getCollection } from 'common/store/cache/collections/selectors'
+import { getTrack } from 'common/store/cache/tracks/selectors'
 import { AppState } from 'store/types'
 
 export const getIsOpen = (state: AppState) =>

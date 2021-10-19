@@ -5,21 +5,22 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import { ID, UID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
+import { getUserId } from 'common/store/account/selectors'
 import { getHistoryTracksLineup } from 'containers/history-page/store/selectors'
-import { ID, UID } from 'models/common/Identifiers'
 import {
   RepostSource,
   FavoriteSource,
   Name,
   PlaybackSource
 } from 'services/analytics'
-import { getUserId } from 'store/account/selectors'
 import { useRecord, make } from 'store/analytics/actions'
 import { makeGetTableMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import * as socialActions from 'store/social/tracks/actions'
-import { AppState, Status } from 'store/types'
+import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 

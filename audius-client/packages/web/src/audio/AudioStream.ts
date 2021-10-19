@@ -1,7 +1,7 @@
 /* globals Audio, Event, Blob */
 import Hls from 'hls.js'
 
-import { TrackSegment } from 'models/Track'
+import { TrackSegment } from 'common/models/Track'
 import { fetchCID } from 'services/AudiusBackend'
 import { generateM3U8, generateM3U8Variants } from 'utils/hlsUtil'
 import { decodeHashId } from 'utils/route/hashIds'

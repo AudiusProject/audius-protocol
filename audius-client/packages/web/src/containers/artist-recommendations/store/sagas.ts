@@ -2,12 +2,12 @@ import { Action } from '@reduxjs/toolkit'
 import { shuffle } from 'lodash'
 import { call, put, select, takeEvery } from 'redux-saga/effects'
 
-import User from 'models/User'
-import { ID } from 'models/common/Identifiers'
+import { ID } from 'common/models/Identifiers'
+import User from 'common/models/User'
+import { getUserId } from 'common/store/account/selectors'
+import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { DoubleKeys, getRemoteVar } from 'services/remote-config'
-import { getUserId } from 'store/account/selectors'
-import { processAndCacheUsers } from 'store/cache/users/utils'
 
 import * as artistRecommendationsActions from './slice'
 

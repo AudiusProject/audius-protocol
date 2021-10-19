@@ -1,8 +1,8 @@
 import { createSelector } from 'reselect'
 
-import { UID } from 'models/common/Identifiers'
-import { getTrack } from 'store/cache/tracks/selectors'
-import { getUser } from 'store/cache/users/selectors'
+import { UID } from 'common/models/Identifiers'
+import { getTrack } from 'common/store/cache/tracks/selectors'
+import { getUser } from 'common/store/cache/users/selectors'
 import {
   getUid as getPlayerUid,
   getTrackId as getPlayerTrackId

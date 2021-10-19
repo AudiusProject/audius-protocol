@@ -3,9 +3,10 @@ import React, { useEffect } from 'react'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { ID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
 import RemixSettingsModal from 'components/remix-settings-modal/RemixSettingsModal'
-import { ID } from 'models/common/Identifiers'
-import { AppState, Status } from 'store/types'
+import { AppState } from 'store/types'
 
 import { getTrack, getUser, getStatus } from './store/selectors'
 import { fetchTrack, fetchTrackSucceeded, reset } from './store/slice'

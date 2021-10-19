@@ -5,9 +5,9 @@ import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
+import Status from 'common/models/Status'
 import Tooltip from 'components/tooltip/Tooltip'
 import { OpenSearchMessage } from 'services/native-mobile-interface/search'
-import { Status } from 'store/types'
 
 import styles from './SearchBar.module.css'
 

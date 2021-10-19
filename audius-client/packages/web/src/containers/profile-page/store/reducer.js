@@ -1,3 +1,4 @@
+import Status from 'common/models/Status'
 import feedReducer from 'containers/profile-page/store/lineups/feed/reducer'
 import tracksReducer from 'containers/profile-page/store/lineups/tracks/reducer'
 import {
@@ -6,7 +7,6 @@ import {
 } from 'containers/profile-page/store/types'
 import { asLineup } from 'store/lineup/reducer'
 import { FOLLOW_USER, FOLLOW_USER_FAILED } from 'store/social/users/actions'
-import { Status } from 'store/types'
 
 import {
   FETCH_PROFILE,
