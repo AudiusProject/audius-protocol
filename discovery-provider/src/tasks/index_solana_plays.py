@@ -394,7 +394,8 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
     # Current batch of transactions
     transaction_signature_batch = []
 
-    last_tx_signature = None
+    # hardcode to speed up dev
+    last_tx_signature = 'FP2o27g85zaRswVzCaxB6tK6EZDbqyrYxykc627uC5puyuphqJ2ALiLW6ntLSh4FRRsvBexPRzW2xD9RdG4JJe8'
 
     # Current batch
     page_count = 0
