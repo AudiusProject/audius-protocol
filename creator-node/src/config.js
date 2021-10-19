@@ -622,7 +622,7 @@ const config = convict({
   IPFSAddTimeoutMs: {
     doc: 'The default timeout in ms for ipfs add',
     format: 'nat',
-    env: 'enableIPFSAddMetadata',
+    env: 'IPFSAddTimeoutMs',
     default: 10000 // 10s
   }
 
