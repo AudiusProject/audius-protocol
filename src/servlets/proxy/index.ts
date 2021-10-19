@@ -44,6 +44,9 @@ const proxyRequest = async (proxyUrl: string, formattedUrl: string) => {
           reject(new Error(`Request failed with ${res.statusCode}`))
         }
       })
+    }).on('error', (e: Error) => {
+      console.error(`Error at https.get for ${proxyUrl}`)
+      reject(e)
     })
   })
   const duration = Date.now() - start
