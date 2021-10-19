@@ -316,7 +316,7 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
     logger.info(f"index_solana_plays.py | processing {tx_sig_batch_records}")
     batch_start_time = time.time()
     # Process each batch in parallel
-    with db.scoped_session() as session:
+    with db.session() as session:
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             parse_sol_tx_futures = {
                 executor.submit(
@@ -338,10 +338,16 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
                 # task to stop execution
                 executor._threads.clear()
                 concurrent.futures.thread._threads_queues.clear()
+
+                # there was an error during this processing batch, rollback the db transaction
+                session.rollback()
                 if retries > 0:
                     return parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries-1)
                 else:
                     raise exc
+
+            # successful processing iteration, commit to the db
+            session.commit()
 
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
