@@ -32,7 +32,8 @@ class Account extends Base {
     this.searchFull = this.searchFull.bind(this)
     this.searchAutocomplete = this.searchAutocomplete.bind(this)
     this.searchTags = this.searchTags.bind(this)
-    this.permitAndSendTokensViaWormhole = this.permitAndSendTokensViaWormhole.bind(this)
+    this.sendTokensFromEthToSol = this.sendTokensFromEthToSol.bind(this)
+    this.sendTokensFromSolToEth = this.sendTokensFromSolToEth.bind(this)
   }
 
   /**
@@ -406,17 +407,21 @@ class Account extends Base {
       const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
       const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
       await this.permitProxySendTokens(myWalletAddress, wormholeAddress, amount)
+
       logs.push('Completed permit proxy send tokens')
       phase = phases.TRANSFER_TOKENS
       const transferTokensTx = await this.wormholeClient.transferTokensToEthWormhole(
         myWalletAddress, amount, solanaAccount, selectedEthWallet
       )
-      logs.push(`Completed transfer tokens with tx receipt ${transferTokensTx}`)
+
+      const transferTransactionHash = transferTokensTx.txHash
+      logs.push(`Completed transfer tokens with tx ${transferTransactionHash}`)
       phase = phases.ATTEST_AND_COMPLETE_TRANSFER
 
-      const ethTxReceipt = transferTokensTx.txHash
-      const response = await this.wormholeClient.attestAndCompleteTransferEthToSol(ethTxReceipt)
-
+      const response = await this.wormholeClient.attestAndCompleteTransferEthToSol(transferTransactionHash)
+      if (response.transactionSignature) {
+        logs.push(`Receive sol wrapped tokens in tx ${response.transactionSignature}`)
+      }
       return {
         txSignature: response.transactionSignature,
         phase: response.phase,
@@ -425,7 +430,7 @@ class Account extends Base {
       }
     } catch (error) {
       return {
-        error: e.message,
+        error: error.message,
         phase,
         logs
       }

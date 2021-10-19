@@ -6,6 +6,7 @@ const { providers } = require('ethers/lib/index')
 
 const SolanaUtils = require('../solanaWeb3Manager/utils')
 const Utils = require('../../utils')
+const { wAudioFromWeiAudio } = require('../solanaWeb3Manager/wAudio')
 const { sign, getTransferTokensDigest } = require('../../utils/signatures')
 const {
   getSignedVAA,
@@ -153,7 +154,7 @@ class Wormhole {
       }
     } catch (error) {
       return {
-        error: e.message,
+        error: error.message,
         phase,
         logs
       }
@@ -177,7 +178,7 @@ class Wormhole {
     let phase = phases.GENERATE_SOL_ROOT_ACCT
     let logs = [`Transferring ${amount} WAUDIO to ${ethTargetAddress}`]
     try {
-
+      const wAudioAmount = wAudioFromWeiAudio(amount)
       // Generate a solana keypair derived from the hedgehog private key
       // NOTE: The into to fromSeed is a 32 bytes Uint8Array
       let rootSolanaAccount = this.solanaWeb3Manager.solanaWeb3.Keypair.fromSeed(
@@ -202,7 +203,7 @@ class Wormhole {
       phase = phases.TRANSFER_WAUDIO_TO_ROOT
       // Move wrapped audio from then user bank account to the user's token wallet
       await this.solanaWeb3Manager.transferWAudio(tokenAccountInfo.address.toString(), amount)
-      logs.push(`Transferred waudio ${amount.toString()} balance to associated token account`)
+      logs.push(`Transferred waudio ${wAudioAmount.toString()} balance to associated token account`)
       phase = phases.TRANFER_FROM_SOL
 
       const connection = this.solanaWeb3Manager.connection
@@ -215,7 +216,7 @@ class Wormhole {
         this.solanaWeb3Manager.feePayerAddress, // payerAddress
         tokenAccountInfo.address.toString(), // fromAddress
         this.solanaWeb3Manager.mintAddress, // mintAddress
-        amount, // BigInt
+        wAudioAmount, // BigInt
         zeroPad(toBuffer(ethTargetAddress), 32), // Uint8Array of length 32 targetAddress 
         CHAIN_ID_ETH, // ChainId targetChain
         zeroPad(toBuffer(this.ethContracts.AudiusTokenClient.contractAddress), 32), // Uint8Array of length 32 originAddress
@@ -263,7 +264,7 @@ class Wormhole {
       return { phase, logs, error: null }
     } catch (error) {
       return {
-        error: e.message,
+        error: error.message,
         phase,
         logs
       }
