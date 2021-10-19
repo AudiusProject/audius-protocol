@@ -3,9 +3,9 @@ import React from 'react'
 import cn from 'classnames'
 
 import { ReactComponent as IconRemix } from 'assets/img/iconRemix.svg'
+import { ID } from 'common/models/Identifiers'
 import SectionButton from 'components/general/SectionButton'
 import ConnectedRemixCard from 'containers/remix/ConnectedRemixCard'
-import { ID } from 'models/common/Identifiers'
 import { isMatrix } from 'utils/theme/theme'
 
 import styles from './Remixes.module.css'

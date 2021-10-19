@@ -1,7 +1,7 @@
 import { call, put, select, takeEvery } from 'redux-saga/effects'
 
+import { getUserId } from 'common/store/account/selectors'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { getUserId } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
 
 import { UserChallenge } from '../types'

@@ -3,11 +3,11 @@ import React from 'react'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
+import { SquareSizes } from 'common/models/ImageSizes'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useImageSize'
-import { SquareSizes } from 'models/common/ImageSizes'
 import { formatCount } from 'utils/formatUtil'
 
 import styles from './ArtistChip.module.css'

@@ -11,17 +11,17 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import * as cacheActions from 'store/cache/actions'
-import { getCollection } from 'store/cache/collections/selectors'
-import { getTrack, getTracks } from 'store/cache/tracks/selectors'
+import Kind from 'common/models/Kind'
+import * as cacheActions from 'common/store/cache/actions'
+import { getCollection } from 'common/store/cache/collections/selectors'
+import { getTrack, getTracks } from 'common/store/cache/tracks/selectors'
+import { makeUid, makeUids, Uid } from 'common/utils/uid'
 import * as baseLineupActions from 'store/lineup/actions'
 import { getUid as getCurrentPlayerTrackUid } from 'store/player/selectors'
 import { getToQueue } from 'store/queue/sagas'
 import { getSource, getUid, getPositions } from 'store/queue/selectors'
 import * as queueActions from 'store/queue/slice'
-import { Kind } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
-import { makeUid, makeUids, Uid } from 'utils/uid'
 
 const makeCollectionSourceId = (source, playlistId) =>
   `${source}:collection:${playlistId}`

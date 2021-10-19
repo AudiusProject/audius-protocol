@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { Status } from 'store/types'
+import Status from 'common/models/Status'
 
 export type Service = {
   data: {

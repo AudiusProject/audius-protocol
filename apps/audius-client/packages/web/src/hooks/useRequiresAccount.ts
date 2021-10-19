@@ -3,11 +3,11 @@ import { useEffect } from 'react'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { getAccountUser } from 'common/store/account/selectors'
 import {
   showRequiresAccountModal,
   updateRouteOnExit
 } from 'containers/sign-on/store/actions'
-import { getAccountUser } from 'store/account/selectors'
 import { useSelector } from 'utils/reducer'
 import { SIGN_UP_PAGE } from 'utils/route'
 

@@ -1,11 +1,11 @@
 import React, { memo, useEffect } from 'react'
 
+import { CoverArtSizes, SquareSizes } from 'common/models/ImageSizes'
+import { Remix } from 'common/models/Track'
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useImageSize'
-import { Remix } from 'models/Track'
-import { CoverArtSizes, SquareSizes } from 'models/common/ImageSizes'
 
 import styles from './GiantArtwork.module.css'
 

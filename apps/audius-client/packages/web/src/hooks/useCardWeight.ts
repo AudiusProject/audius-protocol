@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from 'react'
 
 import { useSpring } from 'react-spring'
 
-import useInstanceVar from './useInstanceVar'
+import useInstanceVar from 'common/hooks/useInstanceVar'
 
 // Calculates how drastically cursor-position changes over length will
 // create skew

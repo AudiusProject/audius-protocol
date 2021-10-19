@@ -3,7 +3,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { ID } from 'models/common/Identifiers'
+import { ID } from 'common/models/Identifiers'
 import { FollowSource, ShareSource } from 'services/analytics'
 import * as socialActions from 'store/social/users/actions'
 import { profilePage } from 'utils/route'

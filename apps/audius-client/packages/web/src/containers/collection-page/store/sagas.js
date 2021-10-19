@@ -1,11 +1,11 @@
 import { call, put, takeLatest, takeEvery } from 'redux-saga/effects'
 
+import Kind from 'common/models/Kind'
+import * as cacheActions from 'common/store/cache/actions'
+import { retrieveCollections } from 'common/store/cache/collections/utils'
+import { makeUid } from 'common/utils/uid'
 import { tracksActions } from 'containers/collection-page/store/lineups/tracks/actions.js'
-import tracksSagas from 'containers/collection-page/store/lineups/tracks/sagas.js'
-import * as cacheActions from 'store/cache/actions'
-import { retrieveCollections } from 'store/cache/collections/utils'
-import { Kind } from 'store/types'
-import { makeUid } from 'utils/uid'
+import tracksSagas from 'containers/collection-page/store/lineups/tracks/sagas'
 
 import * as collectionActions from './actions'
 

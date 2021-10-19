@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux'
 import imageEmpty from 'assets/img/imageBlank2x.png'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
 import profilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
-import useInstanceVar from 'hooks/useInstanceVar'
+import useInstanceVar from 'common/hooks/useInstanceVar'
 import {
   CoverArtSizes,
   CoverPhotoSizes,
@@ -15,11 +15,14 @@ import {
   SquareSizes,
   URL,
   WidthSizes
-} from 'models/common/ImageSizes'
-import { fetchCoverArt as fetchCollectionCoverArt } from 'store/cache/collections/actions'
-import { fetchCoverArt as fetchTrackCoverArt } from 'store/cache/tracks/actions'
-import { fetchCoverPhoto, fetchProfilePicture } from 'store/cache/users/actions'
-import { Maybe } from 'utils/typeUtils'
+} from 'common/models/ImageSizes'
+import { fetchCoverArt as fetchCollectionCoverArt } from 'common/store/cache/collections/actions'
+import { fetchCoverArt as fetchTrackCoverArt } from 'common/store/cache/tracks/actions'
+import {
+  fetchCoverPhoto,
+  fetchProfilePicture
+} from 'common/store/cache/users/actions'
+import { Maybe } from 'common/utils/typeUtils'
 
 type Size = SquareSizes | WidthSizes
 

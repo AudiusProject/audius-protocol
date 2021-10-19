@@ -42,6 +42,7 @@ module.exports = {
           ['__mocks__', './src/__mocks__'],
           ['audio', './src/audio'],
           ['assets', './src/assets'],
+          ['common', './src/common'],
           ['components', './src/components'],
           ['containers', './src/containers'],
           ['hooks', './src/hooks'],

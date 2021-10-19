@@ -1,13 +1,15 @@
 import React, { useEffect, useCallback } from 'react'
 
 import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 import { useSpring, animated } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 
 import { ReactComponent as AudiusLogo } from 'assets/img/audiusLogoHorizontal.svg'
+import useInstanceVar from 'common/hooks/useInstanceVar'
+import { setIsOpen as _setIsNowPlayingOpen } from 'common/store/ui/now-playing/slice'
 import ConnectedBottomBar from 'containers/nav/mobile/ConnectedBottomBar'
 import MobilePlayBar from 'containers/play-bar/mobile/PlayBar'
-import useInstanceVar from 'hooks/useInstanceVar'
 import {
   EnablePullToRefreshMessage,
   DisablePullToRefreshMessage
@@ -83,6 +85,11 @@ const NowPlayingDrawer = ({
   keyboardVisible,
   shouldClose
 }: NowPlayingDrawerProps) => {
+  const dispatch = useDispatch()
+  const setIsNowPlayingOpen = useCallback(
+    (isOpen: boolean) => dispatch(_setIsNowPlayingOpen({ isOpen })),
+    [dispatch]
+  )
   // Stores the initial translation of the drawer (it's totally off-screen
   // until something is playing)
   const [initialTranslation, setInitialTranslation] = useInstanceVar(
@@ -137,6 +144,7 @@ const NowPlayingDrawer = ({
       })
     } else if (!isPlaying) {
       setIsOpen(false)
+      setIsNowPlayingOpen(false)
       setInitialTranslation(0)
       setDrawerSlideProps({
         to: {
@@ -151,6 +159,7 @@ const NowPlayingDrawer = ({
     initialTranslation,
     setInitialTranslation,
     setIsOpen,
+    setIsNowPlayingOpen,
     isOpen
   ])
 
@@ -174,6 +183,7 @@ const NowPlayingDrawer = ({
   const open = () => {
     new DisablePullToRefreshMessage().send()
     setIsOpen(true)
+    setIsNowPlayingOpen(true)
     setDrawerSlideProps({
       to: {
         y: -1 * height()
@@ -204,6 +214,7 @@ const NowPlayingDrawer = ({
 
   const close = useCallback(() => {
     new EnablePullToRefreshMessage(true).send()
+    setIsNowPlayingOpen(false)
     setDrawerSlideProps({
       to: {
         y: initialTranslation()
@@ -237,7 +248,8 @@ const NowPlayingDrawer = ({
     setDrawerSlideProps,
     setHeaderFadeProps,
     setPlayBarFadeProps,
-    setBottomBarSlideProps
+    setBottomBarSlideProps,
+    setIsNowPlayingOpen
   ])
 
   // Handle the "controlled" component

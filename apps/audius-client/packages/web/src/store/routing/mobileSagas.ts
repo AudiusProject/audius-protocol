@@ -18,8 +18,14 @@ function* watchPushRoute() {
   })
 }
 
+function* watchScrollToTop() {
+  yield takeEvery(MessageType.SCROLL_TO_TOP, function* () {
+    window.scrollTo(0, 0)
+  })
+}
+
 const sagas = () => {
-  return [watchPushRoute]
+  return [watchPushRoute, watchScrollToTop]
 }
 
 export default sagas

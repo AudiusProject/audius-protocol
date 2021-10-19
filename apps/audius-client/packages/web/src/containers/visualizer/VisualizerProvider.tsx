@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { AppState } from 'store/types'
 import { Dispatch } from 'redux'
-import { ID } from 'models/common/Identifiers'
+import { ID } from 'common/models/Identifiers'
 import { connect } from 'react-redux'
 import cn from 'classnames'
 
@@ -19,8 +19,8 @@ import { shouldShowDark } from 'utils/theme/theme'
 import { make, TrackEvent } from 'store/analytics/actions'
 import { Name } from 'services/analytics'
 import { useTrackCoverArt } from 'hooks/useImageSize'
-import Track from 'models/Track'
-import { SquareSizes } from 'models/common/ImageSizes'
+import Track from 'common/models/Track'
+import { SquareSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import AudioStream from 'audio/AudioStream'
 import { webglSupported } from './utils'
@@ -53,14 +53,14 @@ class Visualizer extends Component<VisualizerProps, VisualizerState> {
   state = {
     trackId: null,
     trackSegment: null,
-    toastText: '',
+    toastText: ''
   }
 
   messages = (browser: string) => ({
     text: `Heads Up! Visualizer is not fully supported in ${browser} 😢 Please switch to a different browser like Chrome to view!`
   })
 
-  updateVisibility () {
+  updateVisibility() {
     if (!webGLExists) return
     const { audio, playing, theme, recordOpen, recordClose } = this.props
 
@@ -130,7 +130,7 @@ class Visualizer extends Component<VisualizerProps, VisualizerState> {
             <TrackInfo
               trackTitle={track?.title ?? ''}
               artistName={user?.name ?? ''}
-              userId={user?.user_id ?? 0 }
+              userId={user?.user_id ?? 0}
               size={'extraLarge'}
               popover={false}
               shadow

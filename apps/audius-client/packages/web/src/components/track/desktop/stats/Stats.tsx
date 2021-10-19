@@ -4,8 +4,8 @@ import cn from 'classnames'
 
 import { ReactComponent as IconFavorite } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
-import Favorite from 'models/Favorite'
-import Repost from 'models/Repost'
+import Favorite from 'common/models/Favorite'
+import Repost from 'common/models/Repost'
 import { formatCount } from 'utils/formatUtil'
 
 import ProfileImage from './ProfileImage'

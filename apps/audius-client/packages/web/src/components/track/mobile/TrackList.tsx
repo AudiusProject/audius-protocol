@@ -3,8 +3,8 @@ import React, { memo, useCallback } from 'react'
 import cn from 'classnames'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 
-import { ID } from 'models/common/Identifiers'
-import { CoverArtSizes } from 'models/common/ImageSizes'
+import { ID } from 'common/models/Identifiers'
+import { CoverArtSizes } from 'common/models/ImageSizes'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 
 import TrackListItem from './ConnectedTrackListItem'

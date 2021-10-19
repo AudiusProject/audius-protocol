@@ -1,5 +1,5 @@
+import { TrackMetadata } from 'common/models/Track'
 import UploadType from 'containers/upload-page/components/uploadType'
-import { TrackMetadata } from 'models/Track'
 
 interface UploadTrack {
   file: File

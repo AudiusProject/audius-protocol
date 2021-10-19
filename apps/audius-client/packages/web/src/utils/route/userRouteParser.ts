@@ -1,7 +1,7 @@
 import { matchPath } from 'react-router-dom'
 
+import { ID } from 'common/models/Identifiers'
 import { TabRoute } from 'containers/profile-page/store/types'
-import { ID } from 'models/common/Identifiers'
 import { USER_ID_PAGE, PROFILE_PAGE, staticRoutes } from 'utils/route'
 
 import { decodeHashId } from './hashIds'

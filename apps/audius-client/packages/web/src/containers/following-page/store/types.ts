@@ -1,5 +1,5 @@
+import { ID } from 'common/models/Identifiers'
 import { UserListStoreState } from 'containers/user-list/store/types'
-import { ID } from 'models/common/Identifiers'
 
 export type FollowingOwnState = {
   id: ID | null

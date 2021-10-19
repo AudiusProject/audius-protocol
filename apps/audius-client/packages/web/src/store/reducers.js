@@ -1,6 +1,7 @@
 import { connectRouter } from 'connected-react-router'
 import { combineReducers } from 'redux'
 
+import { reducers as clientStoreReducers } from 'common/store'
 import addToPlaylist from 'containers/add-to-playlist/store/reducers'
 import dashboard from 'containers/artist-dashboard-page/store/reducer'
 import artistRecommendations from 'containers/artist-recommendations/store/slice'
@@ -9,7 +10,6 @@ import collection from 'containers/collection-page/store/reducer'
 import deletePlaylistConfirmation from 'containers/delete-playlist-confirmation-modal/store/reducers'
 import deleted from 'containers/deleted-page/store/slice'
 import embedModal from 'containers/embed-modal/store/reducers'
-import enablePushNotificationsDrawer from 'containers/enable-push-notifications-drawer/store/slice'
 import exploreCollections from 'containers/explore-page/store/collections/slice'
 import explore from 'containers/explore-page/store/reducer'
 import favorites from 'containers/favorites-page/store/reducers'
@@ -18,7 +18,6 @@ import firstUploadModal from 'containers/first-upload-modal/store/slice'
 import followers from 'containers/followers-page/store/reducers'
 import following from 'containers/following-page/store/reducers'
 import history from 'containers/history-page/store/reducer'
-import mobileUploadDrawer from 'containers/mobile-upload-drawer/store/slice'
 import musicConfetti from 'containers/music-confetti/store/slice'
 import notificationUsers from 'containers/notification-users-page/store/reducers'
 import notification from 'containers/notification/store/reducer'
@@ -44,7 +43,6 @@ import trendingUnderground from 'containers/trending-underground/store/slice'
 import unfollowConfirmation from 'containers/unfollow-confirmation-modal/store/reducers'
 import upload from 'containers/upload-page/store/reducer'
 import visualizer from 'containers/visualizer/store/slice'
-import account from 'store/account/reducer'
 import appCTAModal from 'store/application/ui/app-cta-modal/slice'
 import averageColor from 'store/application/ui/average-color/slice'
 import cookieBanner from 'store/application/ui/cookieBanner/reducer'
@@ -52,8 +50,6 @@ import createPlaylistModal from 'store/application/ui/createPlaylistModal/reduce
 import editPlaylistModal from 'store/application/ui/editPlaylistModal/slice'
 import editTrackModal from 'store/application/ui/editTrackModal/reducer'
 import mobileKeyboard from 'store/application/ui/mobileKeyboard/reducer'
-import mobileOverflowModal from 'store/application/ui/mobileOverflowModal/reducer'
-import modals from 'store/application/ui/modals/slice'
 import scrollLock from 'store/application/ui/scrollLock/reducer'
 import setAsArtistPickConfirmation from 'store/application/ui/setAsArtistPickConfirmation/reducer'
 import stemsUpload from 'store/application/ui/stemsUpload/slice'
@@ -61,10 +57,6 @@ import theme from 'store/application/ui/theme/reducer'
 import userListModal from 'store/application/ui/userListModal/slice'
 import audioManager from 'store/audio-manager/slice'
 import backend from 'store/backend/reducer'
-import collectionsReducer from 'store/cache/collections/reducer'
-import { asCache } from 'store/cache/reducer'
-import tracksReducer from 'store/cache/tracks/reducer'
-import usersReducer from 'store/cache/users/reducer'
 import confirmer from 'store/confirmer/reducer'
 import dragndrop from 'store/dragndrop/reducer'
 import player from 'store/player/slice'
@@ -72,11 +64,13 @@ import playlistLibrary from 'store/playlist-library/slice'
 import queue from 'store/queue/slice'
 import reachability from 'store/reachability/reducer'
 import tokenDashboard from 'store/token-dashboard/slice'
-import { Kind } from 'store/types'
 import wallet from 'store/wallet/slice'
 
 const createRootReducer = routeHistory =>
   combineReducers({
+    // Client store
+    ...clientStoreReducers,
+
     // Router
     router: connectRouter(routeHistory),
 
@@ -86,7 +80,6 @@ const createRootReducer = routeHistory =>
     reachability,
 
     // Account
-    account,
     passwordReset,
     playlistLibrary,
 
@@ -109,11 +102,6 @@ const createRootReducer = routeHistory =>
     notification,
     serviceSelection,
 
-    // Cache
-    tracks: asCache(tracksReducer, Kind.TRACKS),
-    collections: asCache(collectionsReducer, Kind.COLLECTIONS),
-    users: asCache(usersReducer, Kind.USERS),
-
     // Playback
     queue,
     player,
@@ -135,12 +123,8 @@ const createRootReducer = routeHistory =>
         editPlaylistModal,
         editTrackModal,
         embedModal,
-        enablePushNotificationsDrawer,
         firstUploadModal,
         mobileKeyboard,
-        mobileOverflowModal,
-        mobileUploadDrawer,
-        modals,
         musicConfetti,
         remixSettingsModal,
         scrollLock,

@@ -5,16 +5,19 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import { ID } from 'common/models/Identifiers'
+import {
+  editPlaylist,
+  deletePlaylist
+} from 'common/store/cache/collections/actions'
+import { getCollectionWithUser } from 'common/store/cache/collections/selectors'
 import CreatePlaylistModal from 'components/create-playlist/CreatePlaylistModal'
 import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
-import { ID } from 'models/common/Identifiers'
 import {
   getIsOpen,
   getCollectionId
 } from 'store/application/ui/editPlaylistModal/selectors'
 import { close } from 'store/application/ui/editPlaylistModal/slice'
-import { editPlaylist, deletePlaylist } from 'store/cache/collections/actions'
-import { getCollectionWithUser } from 'store/cache/collections/selectors'
 import { AppState } from 'store/types'
 import { FEED_PAGE, getPathname, playlistPage } from 'utils/route'
 import zIndex from 'utils/zIndex'

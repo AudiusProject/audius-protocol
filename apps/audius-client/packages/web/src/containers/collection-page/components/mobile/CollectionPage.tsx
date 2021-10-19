@@ -1,5 +1,10 @@
 import React, { useEffect, useContext } from 'react'
 
+import Collection, { SmartCollection, Variant } from 'common/models/Collection'
+import { ID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
+import User from 'common/models/User'
+import { OverflowAction } from 'common/store/ui/mobile-overflow-menu/types'
 import CollectionHeader from 'components/collection/mobile/CollectionHeader'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
@@ -15,11 +20,6 @@ import NavContext, {
   RightPreset
 } from 'containers/nav/store/context'
 import NetworkConnectivityMonitor from 'containers/network-connectivity/NetworkConnectivityMonitor'
-import Collection, { SmartCollection, Variant } from 'models/Collection'
-import User from 'models/User'
-import { ID } from 'models/common/Identifiers'
-import { OverflowAction } from 'store/application/ui/mobileOverflowModal/types'
-import { Status } from 'store/types'
 
 import styles from './CollectionPage.module.css'
 

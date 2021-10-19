@@ -5,6 +5,11 @@ import { ReactComponent as IconCollectibles } from 'assets/img/iconCollectibles.
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import { ReactComponent as IconReposts } from 'assets/img/iconRepost.svg'
+import Collection from 'common/models/Collection'
+import { ID, UID } from 'common/models/Identifiers'
+import { CoverPhotoSizes, ProfilePictureSizes } from 'common/models/ImageSizes'
+import Status from 'common/models/Status'
+import User from 'common/models/User'
 import Card from 'components/card/desktop/Card'
 import CoverPhoto from 'components/general/CoverPhoto'
 import Mask from 'components/general/Mask'
@@ -24,14 +29,9 @@ import ConnectedProfileCompletionHeroCard from 'containers/profile-progress/Conn
 import { useSelectTierInfo } from 'containers/user-badges/hooks'
 import { badgeTiers } from 'containers/user-badges/utils'
 import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
-import Collection from 'models/Collection'
-import User from 'models/User'
-import { ID, UID } from 'models/common/Identifiers'
-import { CoverPhotoSizes, ProfilePictureSizes } from 'models/common/ImageSizes'
 import { LineupState } from 'models/common/Lineup'
 import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
-import { Status } from 'store/types'
 import {
   albumPage,
   playlistPage,

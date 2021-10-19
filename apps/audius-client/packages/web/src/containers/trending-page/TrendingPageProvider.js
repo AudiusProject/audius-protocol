@@ -7,6 +7,7 @@ import {
 import { connect } from 'react-redux'
 import { withRouter, matchPath } from 'react-router-dom'
 
+import { getHasAccount } from 'common/store/account/selectors'
 import { openSignOn } from 'containers/sign-on/store/actions'
 import {
   trendingWeekActions,
@@ -25,7 +26,6 @@ import {
 } from 'containers/trending-page/store/selectors'
 import TimeRange from 'models/TimeRange'
 import { Name } from 'services/analytics'
-import { getHasAccount } from 'store/account/selectors'
 import { make } from 'store/analytics/actions'
 import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'

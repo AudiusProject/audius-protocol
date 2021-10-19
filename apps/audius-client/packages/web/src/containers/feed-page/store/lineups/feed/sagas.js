@@ -1,5 +1,8 @@
 import { call, select, all } from 'redux-saga/effects'
 
+import Kind from 'common/models/Kind'
+import { processAndCacheCollections } from 'common/store/cache/collections/utils'
+import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import {
   PREFIX,
   feedActions
@@ -10,10 +13,7 @@ import {
   getStartedSignOnProcess
 } from 'containers/sign-on/store/selectors'
 import AudiusBackend from 'services/AudiusBackend'
-import { processAndCacheCollections } from 'store/cache/collections/utils'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { LineupSagas } from 'store/lineup/sagas'
-import { Kind } from 'store/types'
 import { waitForValue } from 'utils/sagaHelpers'
 
 function* getTracks({ offset, limit }) {

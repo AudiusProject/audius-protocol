@@ -1,6 +1,6 @@
 import { createCustomAction } from 'typesafe-actions'
 
-import { ID, CID } from 'models/common/Identifiers'
+import { ID, CID } from 'common/models/Identifiers'
 import { RepostSource, FavoriteSource, ShareSource } from 'services/analytics'
 
 export const REPOST_TRACK = 'SOCIAL/REPOST_TRACK'

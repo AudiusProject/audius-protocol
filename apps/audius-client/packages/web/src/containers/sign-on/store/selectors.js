@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 
-import { getUsers } from 'store/cache/users/selectors'
+import { getUsers } from 'common/store/cache/users/selectors'
 
 // Sign On selectors
 export const getSignOn = state => state.signOn

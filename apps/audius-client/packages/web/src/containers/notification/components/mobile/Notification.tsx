@@ -3,14 +3,14 @@ import React, { useCallback } from 'react'
 import { IconKebabHorizontal } from '@audius/stems'
 import cn from 'classnames'
 
+import { ID } from 'common/models/Identifiers'
+import Track from 'common/models/Track'
 import IconButton from 'components/general/IconButton'
 import {
   Entity,
   NotificationType,
   Achievement
 } from 'containers/notification/store/types'
-import Track from 'models/Track'
-import { ID } from 'models/common/Identifiers'
 import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
 import { profilePage } from 'utils/route'

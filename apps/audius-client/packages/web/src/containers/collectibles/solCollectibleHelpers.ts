@@ -1,7 +1,6 @@
-import {
-  Collectible,
-  CollectibleMediaType
-} from 'containers/collectibles/types'
+import { Chain } from 'common/models/Chain'
+import { Collectible, CollectibleMediaType } from 'common/models/Collectible'
+import { Nullable } from 'common/utils/typeUtils'
 import {
   MetaplexNFT,
   MetaplexNFTPropertiesFile,
@@ -9,8 +8,6 @@ import {
   SolanaNFTType,
   StarAtlasNFT
 } from 'services/solana-client/types'
-import { Chain } from 'store/token-dashboard/slice'
-import { Nullable } from 'utils/typeUtils'
 
 type SolanaNFTMedia = {
   collectibleMediaType: CollectibleMediaType

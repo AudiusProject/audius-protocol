@@ -5,6 +5,8 @@ import cn from 'classnames'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { ID } from 'common/models/Identifiers'
+import { SquareSizes, CoverArtSizes } from 'common/models/ImageSizes'
 import CoSign from 'components/co-sign/CoSign'
 import { Size } from 'components/co-sign/types'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
@@ -13,8 +15,6 @@ import {
   useCollectionCoverArt,
   useLoadImageWithTimeout
 } from 'hooks/useImageSize'
-import { ID } from 'models/common/Identifiers'
-import { SquareSizes, CoverArtSizes } from 'models/common/ImageSizes'
 
 import styles from './Artwork.module.css'
 

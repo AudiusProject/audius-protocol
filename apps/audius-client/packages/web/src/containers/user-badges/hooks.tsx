@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 
+import { ID } from 'common/models/Identifiers'
+import { getAccountUser } from 'common/store/account/selectors'
 import { getProfileUser } from 'containers/profile-page/store/selectors'
-import { ID } from 'models/common/Identifiers'
-import { getAccountUser } from 'store/account/selectors'
 import { useSelector } from 'utils/reducer'
 
 import { makeGetTierAndVerifiedForUser } from './utils'

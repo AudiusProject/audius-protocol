@@ -1,8 +1,8 @@
 import { combineReducers } from 'redux'
 import { createReducer, ActionType } from 'typesafe-actions'
 
+import { FavoriteType } from 'common/models/Favorite'
 import { UserListReducerFactory } from 'containers/user-list/store/reducer'
-import { FavoriteType } from 'models/Favorite'
 
 import { USER_LIST_TAG } from '../FavoritesPage'
 

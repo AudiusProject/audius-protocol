@@ -1,14 +1,14 @@
 import { select } from 'redux-saga-test-plan/matchers'
 import { call, put } from 'redux-saga/effects'
 
+import { getUserId } from 'common/store/account/selectors'
+import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import {
   PREFIX,
   tracksActions
 } from 'containers/remixes-page/store/lineups/tracks/actions'
 import { getTrackId, getLineup } from 'containers/remixes-page/store/selectors'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { getUserId } from 'store/account/selectors'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { LineupSagas } from 'store/lineup/sagas'
 import { AppState } from 'store/types'
 

@@ -1,9 +1,9 @@
 import { call, select } from 'redux-saga/effects'
 
-import User, { UserMetadata } from 'models/User'
-import { ID } from 'models/common/Identifiers'
-import { getAccountUser, getUserId } from 'store/account/selectors'
-import { processAndCacheUsers } from 'store/cache/users/utils'
+import { ID } from 'common/models/Identifiers'
+import User, { UserMetadata } from 'common/models/User'
+import { getAccountUser, getUserId } from 'common/store/account/selectors'
+import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { AppState } from 'store/types'
 
 export type UserListProviderArgs<T> = {

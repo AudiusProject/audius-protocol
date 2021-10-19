@@ -3,7 +3,7 @@ import React, { memo, ReactNode, useEffect, useRef, RefObject } from 'react'
 import cn from 'classnames'
 
 import transparentPlaceholderImg from 'assets/img/1x1-transparent.png'
-import useInstanceVar from 'hooks/useInstanceVar'
+import useInstanceVar from 'common/hooks/useInstanceVar'
 
 import styles from './DynamicImage.module.css'
 

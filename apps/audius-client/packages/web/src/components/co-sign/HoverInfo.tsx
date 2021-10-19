@@ -2,8 +2,8 @@ import React from 'react'
 
 import { ReactComponent as IconHeart } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
+import { ID } from 'common/models/Identifiers'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { ID } from 'models/common/Identifiers'
 
 import styles from './HoverInfo.module.css'
 

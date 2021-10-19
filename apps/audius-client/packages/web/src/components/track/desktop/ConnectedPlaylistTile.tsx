@@ -14,6 +14,14 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import { UID, ID } from 'common/models/Identifiers'
+import Track from 'common/models/Track'
+import { getUserHandle } from 'common/store/account/selectors'
+import {
+  getCollection,
+  getTracksFromCollection
+} from 'common/store/cache/collections/selectors'
+import { getUserFromCollection } from 'common/store/cache/users/selectors'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import { CollectionArtwork } from 'components/track/desktop/Artwork'
 import { TrackTileSize } from 'components/track/types'
@@ -21,8 +29,6 @@ import Draggable from 'containers/dragndrop/Draggable'
 import { OwnProps as CollectionkMenuProps } from 'containers/menu/CollectionMenu'
 import Menu from 'containers/menu/Menu'
 import UserBadges from 'containers/user-badges/UserBadges'
-import Track from 'models/Track'
-import { UID, ID } from 'models/common/Identifiers'
 import {
   ShareSource,
   RepostSource,
@@ -30,7 +36,6 @@ import {
   PlaybackSource,
   Name
 } from 'services/analytics'
-import { getUserHandle } from 'store/account/selectors'
 import { TrackEvent, make } from 'store/analytics/actions'
 import {
   setUsers,
@@ -40,11 +45,6 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import {
-  getCollection,
-  getTracksFromCollection
-} from 'store/cache/collections/selectors'
-import { getUserFromCollection } from 'store/cache/users/selectors'
 import { getUid, getBuffering, getPlaying } from 'store/player/selectors'
 import {
   saveCollection,

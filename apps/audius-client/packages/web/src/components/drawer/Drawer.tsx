@@ -6,7 +6,7 @@ import cn from 'classnames'
 import { useSpring, animated, useTransition } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 
-import useInstanceVar from 'hooks/useInstanceVar'
+import useInstanceVar from 'common/hooks/useInstanceVar'
 import { usePortal } from 'hooks/usePortal'
 import {
   EnablePullToRefreshMessage,

@@ -1,6 +1,6 @@
+import Status from 'common/models/Status'
 import tracksReducer from 'containers/collection-page/store/lineups/tracks/reducer'
 import { asLineup } from 'store/lineup/reducer'
-import { Status } from 'store/types'
 
 import {
   FETCH_COLLECTION,

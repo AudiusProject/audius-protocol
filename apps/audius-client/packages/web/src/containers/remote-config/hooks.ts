@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 
+import { getAccountUser } from 'common/store/account/selectors'
 import {
   getFeatureEnabled,
   FeatureFlags,
@@ -14,7 +15,6 @@ import {
   FeatureFlagCohortType,
   flagCohortType
 } from 'services/remote-config/FeatureFlags'
-import { getAccountUser } from 'store/account/selectors'
 import { useSelector } from 'utils/reducer'
 
 import { isRemoteConfigLoaded } from './selectors'

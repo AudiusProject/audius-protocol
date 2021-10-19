@@ -7,9 +7,9 @@ import Lottie from 'react-lottie'
 import SimpleBar from 'simplebar-react'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import { ID } from 'models/common/Identifiers'
-import { Status } from 'store/types'
-import { Nullable } from 'utils/typeUtils'
+import { ID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
+import { Nullable } from 'common/utils/typeUtils'
 import zIndex from 'utils/zIndex'
 
 import styles from './NotificationPanel.module.css'

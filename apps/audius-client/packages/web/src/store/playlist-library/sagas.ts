@@ -8,30 +8,30 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
-import * as profileActions from 'containers/profile-page/store/actions'
-import { updateProfileAsync } from 'containers/profile-page/store/sagas'
+import { ID } from 'common/models/Identifiers'
+import Kind from 'common/models/Kind'
 import {
   PlaylistIdentifier,
   PlaylistLibrary,
   PlaylistLibraryFolder,
   PlaylistLibraryIdentifier
-} from 'models/PlaylistLibrary'
-import User from 'models/User'
-import { ID } from 'models/common/Identifiers'
-import { Name } from 'services/analytics'
-import { AccountCollection } from 'store/account/reducer'
+} from 'common/models/PlaylistLibrary'
+import User from 'common/models/User'
+import { AccountCollection } from 'common/store/account/reducer'
 import {
   getAccountNavigationPlaylists,
   getAccountUser,
   getPlaylistLibrary
-} from 'store/account/selectors'
+} from 'common/store/account/selectors'
+import * as cacheActions from 'common/store/cache/actions'
+import { makeKindId } from 'common/utils/uid'
+import * as profileActions from 'containers/profile-page/store/actions'
+import { updateProfileAsync } from 'containers/profile-page/store/sagas'
+import { Name } from 'services/analytics'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import * as cacheActions from 'store/cache/actions'
 import { getResult } from 'store/confirmer/selectors'
-import { Kind } from 'store/types'
 import { waitForValue } from 'utils/sagaHelpers'
-import { makeKindId } from 'utils/uid'
 
 import {
   containsTempPlaylist,

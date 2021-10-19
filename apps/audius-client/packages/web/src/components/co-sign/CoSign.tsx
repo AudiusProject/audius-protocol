@@ -2,8 +2,8 @@ import React, { useMemo, ReactNode, RefObject } from 'react'
 
 import cn from 'classnames'
 
+import { ID } from 'common/models/Identifiers'
 import Tooltip from 'components/tooltip/Tooltip'
-import { ID } from 'models/common/Identifiers'
 import { useIsMobile } from 'utils/clientUtil'
 
 import Check from './Check'

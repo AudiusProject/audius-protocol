@@ -1,14 +1,14 @@
 import { takeEvery, put, call, select } from 'redux-saga/effects'
 
+import Track from 'common/models/Track'
+import User from 'common/models/User'
+import { getTrack } from 'common/store/cache/tracks/selectors'
+import { retrieveTracks } from 'common/store/cache/tracks/utils'
+import { getUser } from 'common/store/cache/users/selectors'
 import { handleUploads } from 'containers/upload-page/store/sagas'
 import { createStemMetadata } from 'containers/upload-page/store/utils/stems'
-import Track from 'models/Track'
-import User from 'models/User'
 import { Name } from 'services/analytics'
 import { make } from 'store/analytics/actions'
-import { getTrack } from 'store/cache/tracks/selectors'
-import { retrieveTracks } from 'store/cache/tracks/utils'
-import { getUser } from 'store/cache/users/selectors'
 
 import { startStemUploads, stemUploadsSucceeded } from './slice'
 

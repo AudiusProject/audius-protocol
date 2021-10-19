@@ -1,6 +1,6 @@
-import Collection from 'models/Collection'
-import Track from 'models/Track'
-import User from 'models/User'
+import Collection from 'common/models/Collection'
+import Track from 'common/models/Track'
+import User from 'common/models/User'
 
 export const getTrackWithFallback = (track: Track | null) => {
   return (

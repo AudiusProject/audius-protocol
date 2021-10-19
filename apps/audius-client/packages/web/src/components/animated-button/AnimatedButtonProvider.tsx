@@ -3,7 +3,7 @@ import React, { memo, useState, useEffect, useRef, useCallback } from 'react'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
-import useInstanceVar from 'hooks/useInstanceVar'
+import useInstanceVar from 'common/hooks/useInstanceVar'
 
 import styles from './AnimatedButtonProvider.module.css'
 

@@ -6,7 +6,7 @@ import { animated } from 'react-spring'
 
 import iconRefreshPull from 'assets/animations/iconRefreshPull.json'
 import iconRefreshSpin from 'assets/animations/iconRefreshSpin.json'
-import useInstanceVar from 'hooks/useInstanceVar'
+import useInstanceVar from 'common/hooks/useInstanceVar'
 import { getIsIOS } from 'utils/browser'
 
 import styles from './PullToRefresh.module.css'

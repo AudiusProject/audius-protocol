@@ -10,10 +10,21 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
+import { DefaultSizes } from 'common/models/ImageSizes'
+import Kind from 'common/models/Kind'
+import { getUserId } from 'common/store/account/selectors'
+import * as cacheActions from 'common/store/cache/actions'
+import {
+  fetchUsers,
+  fetchUserByHandle,
+  fetchUserCollections
+} from 'common/store/cache/users/sagas'
+import { getUser } from 'common/store/cache/users/selectors'
+import { processAndCacheUsers } from 'common/store/cache/users/utils'
+import { makeUid, makeKindId } from 'common/utils/uid'
 import * as artistRecommendationsActions from 'containers/artist-recommendations/store/slice'
 import feedSagas from 'containers/profile-page/store/lineups/feed/sagas.js'
 import tracksSagas from 'containers/profile-page/store/lineups/tracks/sagas.js'
-import { DefaultSizes } from 'models/common/ImageSizes'
 import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
 import { setAudiusAccountUser } from 'services/LocalStorage'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
@@ -25,25 +36,14 @@ import {
   waitForRemoteConfig
 } from 'services/remote-config/Provider'
 import SolanaClient from 'services/solana-client/SolanaClient'
-import { getUserId } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import * as cacheActions from 'store/cache/actions'
-import {
-  fetchUsers,
-  fetchUserByHandle,
-  fetchUserCollections
-} from 'store/cache/users/sagas'
-import { getUser } from 'store/cache/users/selectors'
-import { processAndCacheUsers } from 'store/cache/users/utils'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
 import { getIsReachable } from 'store/reachability/selectors'
-import { Kind } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 import { squashNewLines } from 'utils/formatUtil'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { waitForValue } from 'utils/sagaHelpers'
-import { makeUid, makeKindId } from 'utils/uid'
 
 import * as profileActions from './actions'
 import {

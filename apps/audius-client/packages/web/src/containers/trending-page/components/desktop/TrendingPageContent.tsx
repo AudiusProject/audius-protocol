@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react'
 
+import Status from 'common/models/Status'
 import Page from 'components/general/Page'
 import Header from 'components/general/header/desktop/Header'
 import EndOfLineup from 'containers/lineup/EndOfLineup'
@@ -15,7 +16,6 @@ import useTabs from 'hooks/useTabs/useTabs'
 import TimeRange from 'models/TimeRange'
 import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
-import { Status } from 'store/types'
 import { GENRES, ELECTRONIC_PREFIX } from 'utils/genres'
 
 import RewardsBanner from '../RewardsBanner'

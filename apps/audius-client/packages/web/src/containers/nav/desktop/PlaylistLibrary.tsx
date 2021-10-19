@@ -4,6 +4,16 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { NavLink, NavLinkProps } from 'react-router-dom'
 
+import { SmartCollection } from 'common/models/Collection'
+import { ID } from 'common/models/Identifiers'
+import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
+import { AccountCollection } from 'common/store/account/reducer'
+import {
+  getAccountNavigationPlaylists,
+  getAccountUser,
+  getPlaylistLibrary
+} from 'common/store/account/selectors'
+import { addTrackToPlaylist } from 'common/store/cache/collections/actions'
 import UpdateDot from 'components/general/UpdateDot'
 import Tooltip from 'components/tooltip/Tooltip'
 import Draggable from 'containers/dragndrop/Draggable'
@@ -11,18 +21,8 @@ import Droppable from 'containers/dragndrop/Droppable'
 import { getPlaylistUpdates } from 'containers/notification/store/selectors'
 import { useArePlaylistUpdatesEnabled } from 'containers/remote-config/hooks'
 import { SMART_COLLECTION_MAP } from 'containers/smart-collection/smartCollections'
-import { SmartCollectionVariant } from 'containers/smart-collection/types'
-import { SmartCollection } from 'models/Collection'
-import { ID } from 'models/common/Identifiers'
 import { Name } from 'services/analytics'
-import { AccountCollection } from 'store/account/reducer'
-import {
-  getAccountNavigationPlaylists,
-  getAccountUser,
-  getPlaylistLibrary
-} from 'store/account/selectors'
 import { make, useRecord } from 'store/analytics/actions'
-import { addTrackToPlaylist } from 'store/cache/collections/actions'
 import { getIsDragging } from 'store/dragndrop/selectors'
 import { reorderPlaylistLibrary } from 'store/playlist-library/helpers'
 import { update } from 'store/playlist-library/slice'

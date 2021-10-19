@@ -2,7 +2,7 @@ import React, { memo, createContext, useCallback } from 'react'
 
 import { matchPath } from 'react-router-dom'
 
-import useInstanceVar from 'hooks/useInstanceVar'
+import useInstanceVar from 'common/hooks/useInstanceVar'
 import { useIsMobile } from 'utils/clientUtil'
 import { TRACK_PAGE, NOTIFICATION_PAGE } from 'utils/route'
 

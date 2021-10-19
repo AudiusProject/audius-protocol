@@ -3,6 +3,8 @@ import React, { MutableRefObject } from 'react'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { ID } from 'common/models/Identifiers'
+import { Nullable } from 'common/utils/typeUtils'
 import ErrorWrapper from 'components/general/ErrorWrapper'
 import { OwnProps as NotificationMenuProps } from 'containers/menu/NotificationMenu'
 import {
@@ -12,9 +14,7 @@ import {
   getNotificationEntities
 } from 'containers/notification/store/selectors'
 import { NotificationType } from 'containers/notification/store/types'
-import { ID } from 'models/common/Identifiers'
 import { AppState } from 'store/types'
-import { Nullable } from 'utils/typeUtils'
 
 import Announcement from './Announcement'
 import NotificationBlock, { USER_LENGTH_LIMIT } from './NotificationBlock'

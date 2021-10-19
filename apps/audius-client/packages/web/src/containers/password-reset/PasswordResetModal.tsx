@@ -4,10 +4,11 @@ import { Modal } from '@audius/stems'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import Status from 'common/models/Status'
+import { getNeedsAccountRecovery } from 'common/store/account/selectors'
 import EnterPassword from 'components/sign-on/EnterPassword'
 import { RESET_REQUIRED_KEY } from 'store/account/mobileSagas'
-import { getNeedsAccountRecovery } from 'store/account/selectors'
-import { AppState, Status } from 'store/types'
+import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 
 import styles from './PasswordResetModal.module.css'

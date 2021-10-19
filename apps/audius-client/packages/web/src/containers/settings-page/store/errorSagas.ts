@@ -1,4 +1,4 @@
-import createErrorSagas from 'utils/errorSagas'
+import createErrorSagas from 'common/utils/errorSagas'
 
 import * as actions from './actions'
 

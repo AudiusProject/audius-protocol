@@ -1,6 +1,6 @@
+import { FavoriteType } from 'common/models/Favorite'
+import { ID } from 'common/models/Identifiers'
 import { UserListStoreState } from 'containers/user-list/store/types'
-import { FavoriteType } from 'models/Favorite'
-import { ID } from 'models/common/Identifiers'
 
 export type FavoritesOwnState = {
   id: ID | null

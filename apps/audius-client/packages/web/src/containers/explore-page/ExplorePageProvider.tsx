@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { getAccountUser } from 'store/account/selectors'
+import { getAccountUser } from 'common/store/account/selectors'
 import { AppState } from 'store/types'
 import { formatCount } from 'utils/formatUtil'
 

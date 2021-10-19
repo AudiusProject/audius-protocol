@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
+import { Nullable } from 'common/utils/typeUtils'
 import { AppState } from 'store/types'
-import { Nullable } from 'utils/typeUtils'
 
 export type AudioManagerState = {
   state: Nullable<string>

@@ -1,4 +1,4 @@
-import { Nullable } from 'utils/typeUtils'
+import { Nullable } from 'common/utils/typeUtils'
 
 export enum SolanaNFTType {
   METAPLEX = 'METAPLEX',
