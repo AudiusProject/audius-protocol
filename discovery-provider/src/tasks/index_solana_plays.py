@@ -134,7 +134,7 @@ def parse_sol_play_transaction(
             logger.info(
                 f"index_solana_plays.py | Skipping error transaction from chain {tx_info}"
             )
-            return
+            return None
         if is_valid_tx(tx_info["result"]["transaction"]["message"]["accountKeys"]):
             audius_program_index = tx_info["result"]["transaction"]["message"][
                 "accountKeys"
@@ -161,12 +161,13 @@ def parse_sol_play_transaction(
 
                     # return the data necessary to create a Play and add to challenge bus
                     return (user_id, track_id, created_at, source, tx_slot, tx_sig)
-            return
-        else:
-            logger.info(
-                f"index_solana_plays.py | tx={tx_sig} Failed to find SECP_PROGRAM"
-            )
-            return
+
+            return None
+
+        logger.info(
+            f"index_solana_plays.py | tx={tx_sig} Failed to find SECP_PROGRAM"
+        )
+        return None
     except Exception as e:
         logger.error(
             f"index_solana_plays.py | Error processing {tx_sig}, {e}", exc_info=True
@@ -382,7 +383,7 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
     logger.info(
         f"index_solana_plays.py | processed batch {len(tx_sig_batch_records)} txs in {batch_duration}s"
     )
-    return
+    return None
 
 def split_list(list, n):
     for i in range(0, len(list), n):
