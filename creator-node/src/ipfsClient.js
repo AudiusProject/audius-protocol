@@ -41,16 +41,16 @@ async function ipfsSingleAddWrapper (ipfs, inputData, ipfsConfig = {}, logContex
   const onlyHash = await ipfsAdd(inputData)
 
   if (!enableIPFSAdd) {
-    logger.info(`[ipfsClient PLS - ipfsSingleAddWrapper()] onlyHash=${onlyHash}`)
+    logger.info(`[ipfsClient - ipfsSingleAddWrapper()] onlyHash=${onlyHash}`)
     return onlyHash
   }
 
   try {
     const ipfsDaemonHash = (await ipfs.add(inputData, ipfsConfig))[0].hash
-    logger.info(`[ipfsClient PLS - ipfsSingleAddWrapper()] onlyHash=${onlyHash} ipfsDaemonHash=${ipfsDaemonHash} isSameHash=${onlyHash === ipfsDaemonHash}`)
+    logger.info(`[ipfsClient - ipfsSingleAddWrapper()] onlyHash=${onlyHash} ipfsDaemonHash=${ipfsDaemonHash} isSameHash=${onlyHash === ipfsDaemonHash}`)
     return ipfsDaemonHash
   } catch (e) {
-    logger.warn(`[ipfsClient PLS - ipfsSingleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${onlyHash}: ${e.toString()}`)
+    logger.warn(`[ipfsClient - ipfsSingleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${onlyHash}: ${e.toString()}`)
     return onlyHash
   }
 }
@@ -71,16 +71,16 @@ async function ipfsAddFromFsWrapper (ipfs, srcPath, ipfsConfig = {}, logContext 
   const onlyHash = await ipfsAdd(stream)
 
   if (!enableIPFSAdd) {
-    logger.info(`[ipfsClient PLS - ipfsAddFromFsWrapper()] onlyHash=${onlyHash}`)
+    logger.info(`[ipfsClient - ipfsAddFromFsWrapper()] onlyHash=${onlyHash}`)
     return onlyHash
   }
 
   try {
     const ipfsDaemonHash = (await ipfs.addFromFs(srcPath, ipfsConfig))[0].hash
-    logger.info(`[ipfsClient PLS - ipfsAddFromFsWrapper()] onlyHash=${onlyHash} ipfsDaemonHash=${ipfsDaemonHash} isSameHash=${onlyHash === ipfsDaemonHash}`)
+    logger.info(`[ipfsClient - ipfsAddFromFsWrapper()] onlyHash=${onlyHash} ipfsDaemonHash=${ipfsDaemonHash} isSameHash=${onlyHash === ipfsDaemonHash}`)
     return ipfsDaemonHash
   } catch (e) {
-    logger.warn(`[ipfsClient PLS - ipfsAddFromFsWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${onlyHash}: ${e.toString()}`)
+    logger.warn(`[ipfsClient - ipfsAddFromFsWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${onlyHash}: ${e.toString()}`)
     return onlyHash
   }
 }
@@ -105,16 +105,16 @@ async function ipfsMultipleAddWrapper (ipfs, inputData, ipfsConfig = {}, logCont
   const customIpfsAddResponses = await ipfsAdd(inputData, {}, true)
 
   if (!enableIPFSAdd) {
-    logger.info(`[ipfsClient PLS - ipfsMultipleAddWrapper()] onlyHash=${customIpfsAddResponses}`)
+    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${customIpfsAddResponses}`)
     return customIpfsAddResponses
   }
 
   try {
     const ipfsDaemonResp = await ipfs.add(inputData, ipfsConfig)
-    logger.info(`[ipfsClient PLS - ipfsMultipleAddWrapper()] onlyHash=${customIpfsAddResponses} ipfsDaemonResp=${JSON.stringify(ipfsDaemonResp, null, 2)} isSameHash=${JSON.stringify(customIpfsAddResponses) === JSON.stringify(ipfsDaemonResp)}`)
+    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${customIpfsAddResponses} ipfsDaemonResp=${JSON.stringify(ipfsDaemonResp, null, 2)} isSameHash=${JSON.stringify(customIpfsAddResponses) === JSON.stringify(ipfsDaemonResp)}`)
     return ipfsDaemonResp
   } catch (e) {
-    logger.warn(`[ipfsClient PLS - ipfsMultipleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${customIpfsAddResponses}: ${e.toString()}`)
+    logger.warn(`[ipfsClient - ipfsMultipleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${customIpfsAddResponses}: ${e.toString()}`)
     return customIpfsAddResponses
   }
 }
