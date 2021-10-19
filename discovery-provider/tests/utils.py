@@ -95,6 +95,7 @@ def populate_mock_db(db, entities, block_offset=0):
                 blockhash=hex(i),
                 blocknumber=i,
                 track_id=track_meta.get("track_id", i),
+                title=track_meta.get("title", f"track_{i}"),
                 is_current=track_meta.get("is_current", True),
                 is_delete=track_meta.get("is_delete", False),
                 owner_id=track_meta.get("owner_id", 1),
