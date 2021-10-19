@@ -1,6 +1,7 @@
 from typing import Optional, TypedDict, cast
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql.elements import and_, or_
 
 from src.models import Track, Repost, RepostType, Playlist, SaveType, User
 from src.utils import helpers
@@ -56,13 +57,39 @@ def _get_repost_feed_for_user(
             .first(),
         )
 
-    # query all reposts by user
+    # Query all reposts by a user.
+    # Outerjoin both tracks and playlists to collect both
+    # so that a single limit/offset pagination does what we intend when tracks or playlists
+    # are deleted.
     repost_query = (
-        session.query(Repost)
+        session.query(Repost, Track, Playlist)
+        .outerjoin(
+            Track,
+            and_(
+                Repost.repost_item_id == Track.track_id,
+                Repost.repost_type == "track",
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.is_unlisted == False,
+                Track.stem_of == None,
+            ),
+        )
+        .outerjoin(
+            Playlist,
+            and_(
+                Repost.repost_item_id == Playlist.playlist_id,
+                or_(Repost.repost_type == "playlist", Repost.repost_type == "album"),
+                Playlist.is_current == True,
+                Playlist.is_delete == False,
+                Playlist.is_private == False,
+            ),
+        )
         .filter(
             Repost.is_current == True,
             Repost.is_delete == False,
             Repost.user_id == user_id,
+            # Drop rows that have no join found for either track or playlist
+            or_(Track.track_id != None, Playlist.playlist_id != None),
         )
         .order_by(
             desc(Repost.created_at),
@@ -72,24 +99,12 @@ def _get_repost_feed_for_user(
     )
 
     reposts = add_query_pagination(repost_query, limit, offset).all()
-
     # get track reposts from above
-    track_reposts = [r for r in reposts if r.repost_type == RepostType.track]
-
-    # get reposted track ids
-    repost_track_ids = [r.repost_item_id for r in track_reposts]
+    track_reposts = [r[0] for r in reposts if r[1] is not None]
+    track_reposts = helpers.query_result_to_list(track_reposts)
 
     # get playlist reposts from above
-    playlist_reposts = [
-        r
-        for r in reposts
-        if r.repost_type == RepostType.playlist or r.repost_type == RepostType.album
-    ]
-
-    # get reposted playlist ids
-    repost_playlist_ids = [r.repost_item_id for r in playlist_reposts]
-
-    track_reposts = helpers.query_result_to_list(track_reposts)
+    playlist_reposts = [r[0] for r in reposts if r[2] is not None]
     playlist_reposts = helpers.query_result_to_list(playlist_reposts)
 
     # build track/playlist id --> repost dict from repost lists
@@ -98,37 +113,15 @@ def _get_repost_feed_for_user(
         repost["repost_item_id"]: repost for repost in playlist_reposts
     }
 
-    # query tracks for repost_track_ids
-    track_query = (
-        session.query(Track)
-        .filter(
-            Track.is_current == True,
-            Track.is_delete == False,
-            Track.is_unlisted == False,
-            Track.stem_of == None,
-            Track.track_id.in_(repost_track_ids),
-        )
-        .order_by(desc(Track.created_at))
+    tracks = helpers.query_result_to_list(
+        filter(None, [repost[1] for repost in reposts])
     )
-    tracks = track_query.all()
-    tracks = helpers.query_result_to_list(tracks)
+    playlists = helpers.query_result_to_list(
+        filter(None, [repost[2] for repost in reposts])
+    )
 
     # get track ids
     track_ids = [track["track_id"] for track in tracks]
-
-    # query playlists for repost_playlist_ids
-    playlist_query = (
-        session.query(Playlist)
-        .filter(
-            Playlist.is_current == True,
-            Playlist.is_delete == False,
-            Playlist.is_private == False,
-            Playlist.playlist_id.in_(repost_playlist_ids),
-        )
-        .order_by(desc(Playlist.created_at))
-    )
-    playlists = playlist_query.all()
-    playlists = helpers.query_result_to_list(playlists)
 
     # get playlist ids
     playlist_ids = [playlist["playlist_id"] for playlist in playlists]
