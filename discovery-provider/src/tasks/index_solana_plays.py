@@ -334,7 +334,7 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
                 print(f"index_solana_plays.py | Clearing concurrent.futures.thread._threads_queues {concurrent.futures.thread._threads_queues}")
                 concurrent.futures.thread._threads_queues.clear()
                 if retries > 0:
-                    parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries-1)
+                    return parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries-1)
                 else:
                     raise exc
 
