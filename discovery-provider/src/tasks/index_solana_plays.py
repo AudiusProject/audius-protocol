@@ -161,6 +161,7 @@ def parse_sol_play_transaction(
 
                     # return the data necessary to create a Play and add to challenge bus
                     return (user_id, track_id, created_at, source, tx_slot, tx_sig)
+            return
         else:
             logger.info(
                 f"index_solana_plays.py | tx={tx_sig} Failed to find SECP_PROGRAM"
@@ -346,11 +347,16 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
                 executor._threads.clear()
                 concurrent.futures.thread._threads_queues.clear()
 
+                # if we have retries left, recursively call this function again
                 if retries > 0:
                     return parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries-1)
-                else:
-                    raise exc
 
+                # if no more retries, raise
+                raise exc
+
+            # if the thread pool executor completes successfully without raising an exception
+            # the data is successfully fetched so we can add it to the db session and dispatch
+            # events to challenge bus
             for play in plays:
                 session.add(
                     Play(
