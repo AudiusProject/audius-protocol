@@ -12,7 +12,7 @@ import LottieView from 'lottie-react-native'
 import IconCaretRight from '../../assets/images/iconCaretRight.svg'
 import IconRemove from '../../assets/images/iconRemove.svg'
 import { useColor, useTheme } from '../../utils/theme'
-import { useDispatchWebAction } from '../../hooks/useWebAction'
+import { useDispatchWeb } from '../../hooks/useDispatchWeb'
 import { MessageType } from '../../message'
 import { getTagSearchRoute } from '../../utils/routes'
 import {
@@ -105,7 +105,7 @@ const TopBar = ({ onClose, isOpen }: TopBarProps) => {
     }
   }, [textRef, isOpen])
 
-  const dispatchWeb = useDispatchWebAction()
+  const dispatchWeb = useDispatchWeb()
   const { appendSearchItem } = useSearchHistory()
   const query = useSelector(getSearchQuery)
   const dispatch = useDispatch()
@@ -140,8 +140,7 @@ const TopBar = ({ onClose, isOpen }: TopBarProps) => {
         setQuery(text)
         dispatchWeb({
           type: MessageType.UPDATE_SEARCH_QUERY,
-          query: text,
-          isAction: true
+          query: text
         })
       }
     },
