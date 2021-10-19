@@ -7,6 +7,11 @@ import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import placeholderArt from 'assets/img/imageBlank2x.png'
+import { ID } from 'common/models/Identifiers'
+import { SquareSizes } from 'common/models/ImageSizes'
+import { getUserId } from 'common/store/account/selectors'
+import { getCollection } from 'common/store/cache/collections/selectors'
+import { getUserFromCollection } from 'common/store/cache/users/selectors'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
@@ -15,9 +20,6 @@ import RepostFavoritesStats, {
 } from 'components/repost-favorites-stats/RepostFavoritesStats'
 import Menu, { MenuType } from 'containers/menu/Menu'
 import { useCollectionCoverArt } from 'hooks/useImageSize'
-import { ID } from 'models/common/Identifiers'
-import { SquareSizes } from 'models/common/ImageSizes'
-import { getUserId } from 'store/account/selectors'
 import {
   setUsers,
   setVisibility
@@ -26,8 +28,6 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import { getCollection } from 'store/cache/collections/selectors'
-import { getUserFromCollection } from 'store/cache/users/selectors'
 import { AppState } from 'store/types'
 import { playlistPage, albumPage, profilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'

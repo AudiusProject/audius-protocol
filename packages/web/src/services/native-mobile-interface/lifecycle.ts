@@ -1,4 +1,4 @@
-import User from 'models/User'
+import User from 'common/models/User'
 
 import { NativeMobileMessage } from './helpers'
 import { MessageType } from './types'

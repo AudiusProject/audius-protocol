@@ -1,10 +1,10 @@
+import Collection from 'common/models/Collection'
+import { ID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
+import Track from 'common/models/Track'
+import User from 'common/models/User'
 import { ChallengeRewardID } from 'containers/audio-rewards-page/types'
 import { BadgeTier } from 'containers/user-badges/utils'
-import Collection from 'models/Collection'
-import Track from 'models/Track'
-import User from 'models/User'
-import { ID } from 'models/common/Identifiers'
-import { Status } from 'store/types'
 
 import {
   getNotificationEntities,

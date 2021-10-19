@@ -2,7 +2,7 @@ import React from 'react'
 
 import { connect } from 'react-redux'
 
-import { SmartCollection } from 'models/Collection'
+import { SmartCollection } from 'common/models/Collection'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 

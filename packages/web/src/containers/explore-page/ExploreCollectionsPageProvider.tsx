@@ -6,11 +6,11 @@ import { matchPath } from 'react-router'
 import { useLocation } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import { FavoriteType } from 'common/models/Favorite'
+import { ID } from 'common/models/Identifiers'
 import { setFavorite } from 'containers/favorites-page/store/actions'
 import { setRepost } from 'containers/reposts-page/store/actions'
 import { RepostType } from 'containers/reposts-page/store/types'
-import { FavoriteType } from 'models/Favorite'
-import { ID } from 'models/common/Identifiers'
 import {
   setUsers,
   setVisibility

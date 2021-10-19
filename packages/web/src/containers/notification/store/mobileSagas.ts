@@ -1,5 +1,6 @@
 import { all, call, put, select, takeEvery } from 'redux-saga/effects'
 
+import { getHasAccount } from 'common/store/account/selectors'
 import AudiusBackend from 'services/AudiusBackend'
 import {
   FetchNotificationsSuccessMessage,
@@ -8,7 +9,6 @@ import {
   ResetNotificationsBadgeCount
 } from 'services/native-mobile-interface/notifications'
 import { MessageType } from 'services/native-mobile-interface/types'
-import { getHasAccount } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
 
 import * as notificationActions from './actions'

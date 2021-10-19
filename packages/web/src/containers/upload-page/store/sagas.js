@@ -13,6 +13,20 @@ import {
   race
 } from 'redux-saga/effects'
 
+import Kind from 'common/models/Kind'
+import Status from 'common/models/Status'
+import * as accountActions from 'common/store/account/reducer'
+import {
+  getAccountUser,
+  getUserHandle,
+  getUserId
+} from 'common/store/account/selectors'
+import * as cacheActions from 'common/store/cache/actions'
+import { reformat } from 'common/store/cache/collections/utils'
+import * as tracksActions from 'common/store/cache/tracks/actions'
+import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
+import { getUser } from 'common/store/cache/users/selectors'
+import { makeUid } from 'common/utils/uid'
 import {
   getSelectedServices,
   getStatus
@@ -24,26 +38,13 @@ import { updateAndFlattenStems } from 'containers/upload-page/store/utils/stems'
 import AudiusBackend from 'services/AudiusBackend'
 import { Name } from 'services/analytics'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import * as accountActions from 'store/account/reducer'
-import {
-  getAccountUser,
-  getUserHandle,
-  getUserId
-} from 'store/account/selectors'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import * as cacheActions from 'store/cache/actions'
-import { reformat } from 'store/cache/collections/utils'
-import * as tracksActions from 'store/cache/tracks/actions'
-import { trackNewRemixEvent } from 'store/cache/tracks/sagas'
-import { getUser } from 'store/cache/users/selectors'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
-import { Kind, Status } from 'store/types'
 import { formatUrlName } from 'utils/formatUtil'
 import { ERROR_PAGE } from 'utils/route'
 import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'
-import { makeUid } from 'utils/uid'
 
 import * as uploadActions from './actions'
 import { watchUploadErrors } from './errorSagas'

@@ -1,5 +1,5 @@
-import { ID } from 'models/common/Identifiers'
-import { Kind } from 'store/types'
+import { ID } from 'common/models/Identifiers'
+import Kind from 'common/models/Kind'
 
 export interface DragNDropState {
   dragging: boolean

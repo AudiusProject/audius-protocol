@@ -12,11 +12,11 @@ import {
   takeEvery
 } from 'redux-saga/effects'
 
+import { getAccountUser } from 'common/store/account/selectors'
 import {
   updateRouteOnExit,
   showRequiresAccountModal
 } from 'containers/sign-on/store/actions'
-import { getAccountUser } from 'store/account/selectors'
 
 import { SIGN_UP_PAGE } from './route'
 

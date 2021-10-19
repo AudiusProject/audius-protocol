@@ -2,13 +2,21 @@ import { select } from 'redux-saga-test-plan/matchers'
 import { all, call, put, race, take, takeLatest } from 'redux-saga/effects'
 import { WalletLinkProvider } from 'walletlink'
 
+import { Chain } from 'common/models/Chain'
+import { ID } from 'common/models/Identifiers'
+import Kind from 'common/models/Kind'
+import { BNWei, WalletAddress } from 'common/models/Wallet'
+import { fetchAccountSucceeded } from 'common/store/account/reducer'
+import { getUserId, getAccountUser } from 'common/store/account/selectors'
+import * as cacheActions from 'common/store/cache/actions'
+import { upgradeToCreator } from 'common/store/cache/users/sagas'
+import { Nullable } from 'common/utils/typeUtils'
 import { CollectibleState } from 'containers/collectibles/types'
 import {
   fetchOpenSeaAssetsForWallets,
   fetchSolanaCollectiblesForWallets
 } from 'containers/profile-page/store/sagas'
 import { fetchServices } from 'containers/service-selection/store/slice'
-import { ID } from 'models/common/Identifiers'
 import { newUserMetadata } from 'schemas'
 import AudiusBackend from 'services/AudiusBackend'
 import apiClient, {
@@ -21,24 +29,16 @@ import connectWeb3Wallet, {
   loadBitski,
   loadWalletConnect
 } from 'services/web3-modal/index'
-import { fetchAccountSucceeded } from 'store/account/reducer'
-import { getUserId, getAccountUser } from 'store/account/selectors'
-import * as cacheActions from 'store/cache/actions'
-import { upgradeToCreator } from 'store/cache/users/sagas'
 import { requestConfirmation } from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
-import { Kind } from 'store/types'
 import {
-  BNWei,
   send as walletSend,
   claimFailed,
-  weiToString,
   sendSucceeded,
   getBalance,
-  sendFailed,
-  WalletAddress
+  sendFailed
 } from 'store/wallet/slice'
-import { Nullable } from 'utils/typeUtils'
+import { weiToString } from 'utils/wallet'
 
 import {
   fetchAssociatedWallets,
@@ -47,7 +47,6 @@ import {
   pressSend,
   setModalState,
   setModalVisibility,
-  ModalState,
   inputSendData,
   confirmSend,
   getSendData,
@@ -56,13 +55,12 @@ import {
   setWalletAddedConfirmed,
   setAssociatedWallets,
   confirmRemoveWallet,
-  ConfirmRemoveWalletAction,
   getAssociatedWallets,
   updateWalletError,
   preloadWalletProviders,
-  Chain,
   resetStatus
 } from './slice'
+import { ConfirmRemoveWalletAction, ModalState } from './types'
 
 const CONNECT_WALLET_CONFIRMATION_UID = 'CONNECT_WALLET'
 

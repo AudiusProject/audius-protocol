@@ -5,6 +5,11 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import Status from 'common/models/Status'
+import {
+  getAccountUser,
+  getAccountStatus
+} from 'common/store/account/selectors'
 import {
   RouterContext,
   SlideDirection
@@ -13,9 +18,8 @@ import { getNotificationUnreadCount } from 'containers/notification/store/select
 import { getSearchStatus } from 'containers/search-page/store/selectors'
 import { openSignOn } from 'containers/sign-on/store/actions'
 import { Name } from 'services/analytics'
-import { getAccountUser, getAccountStatus } from 'store/account/selectors'
 import { make, useRecord } from 'store/analytics/actions'
-import { AppState, Status } from 'store/types'
+import { AppState } from 'store/types'
 import { getIsIOS } from 'utils/browser'
 import {
   TRENDING_PAGE,

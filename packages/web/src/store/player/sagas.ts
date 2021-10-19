@@ -1,11 +1,12 @@
 import { delay, eventChannel, END } from 'redux-saga'
 import { select, take, call, put, spawn, takeLatest } from 'redux-saga/effects'
 
+import Kind from 'common/models/Kind'
+import * as cacheActions from 'common/store/cache/actions'
+import { getTrack } from 'common/store/cache/tracks/selectors'
+import { getUser } from 'common/store/cache/users/selectors'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getRemoteVar, StringKeys } from 'services/remote-config'
-import * as cacheActions from 'store/cache/actions'
-import { getTrack } from 'store/cache/tracks/selectors'
-import { getUser } from 'store/cache/users/selectors'
 import {
   getAudio,
   getTrackId,
@@ -27,7 +28,6 @@ import {
 } from 'store/player/slice'
 import * as queueActions from 'store/queue/slice'
 import { recordListen } from 'store/social/tracks/actions'
-import { Kind } from 'store/types'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { encodeHashId } from 'utils/route/hashIds'
 import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'

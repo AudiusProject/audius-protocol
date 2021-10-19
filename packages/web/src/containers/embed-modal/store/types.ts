@@ -1,4 +1,4 @@
-import { ID, PlayableType } from 'models/common/Identifiers'
+import { ID, PlayableType } from 'common/models/Identifiers'
 
 export type EmbedModalState = {
   isOpen: boolean

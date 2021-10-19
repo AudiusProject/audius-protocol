@@ -2,8 +2,8 @@ import React, { createContext, memo, useState, useCallback } from 'react'
 
 import { useTransition, animated } from 'react-spring'
 
+import { uuid } from 'common/utils/uid'
 import { getSafeArea, SafeAreaDirection } from 'utils/safeArea'
-import { uuid } from 'utils/uid'
 
 import styles from './ToastContext.module.css'
 import Toast from './mobile/Toast'

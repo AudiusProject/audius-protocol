@@ -4,8 +4,9 @@ import * as matchers from 'redux-saga-test-plan/matchers'
 import { take } from 'redux-saga/effects'
 
 import AudioStream from 'audio/AudioStream'
-import accountReducer from 'store/account/reducer'
-import * as cacheActions from 'store/cache/actions'
+import Kind from 'common/models/Kind'
+import accountSlice from 'common/store/account/reducer'
+import * as cacheActions from 'common/store/cache/actions'
 import playerReducer, * as playerActions from 'store/player/slice'
 import * as queueActions from 'store/queue/actions'
 import * as sagas from 'store/queue/sagas'
@@ -14,7 +15,6 @@ import reducer, * as actions from 'store/queue/slice'
 import { RepeatMode, Source } from 'store/queue/types'
 import { getRecommendedTracks } from 'store/recommendation/sagas'
 import { noopReducer } from 'store/testHelper'
-import { Kind } from 'store/types'
 
 const initialTracks = {
   entries: {
@@ -157,7 +157,7 @@ describe('watchNext', () => {
           tracks: noopReducer(initialTracks),
           queue: reducer,
           player: playerReducer,
-          account: accountReducer
+          account: accountSlice.reducer
         }),
         {
           player: initialPlayer,
@@ -375,7 +375,7 @@ describe('watchNext', () => {
           tracks: noopReducer(initialTracks),
           queue: reducer,
           player: playerReducer,
-          account: accountReducer
+          account: accountSlice.reducer
         }),
         {
           player: initialPlayer,

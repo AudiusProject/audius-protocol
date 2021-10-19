@@ -8,8 +8,11 @@ import moment from 'moment-timezone'
 import placeholderCoverArt from 'assets/img/imageBlank2x.png'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
 import placeholderProfilePicture from 'assets/img/imageProfilePicEmpty2X.png'
+import { DefaultSizes } from 'common/models/ImageSizes'
+import CIDCache from 'common/store/cache/CIDCache'
+import { Nullable } from 'common/utils/typeUtils'
+import { uuid } from 'common/utils/uid'
 import FeedFilter from 'models/FeedFilter'
-import { DefaultSizes } from 'models/common/ImageSizes'
 import * as schemas from 'schemas'
 import { Name } from 'services/analytics'
 import {
@@ -21,12 +24,9 @@ import {
 } from 'services/remote-config'
 import { IS_MOBILE_USER_KEY } from 'store/account/mobileSagas'
 import { track } from 'store/analytics/providers/segment'
-import CIDCache from 'store/cache/CIDCache'
 import { isElectron } from 'utils/clientUtil'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { Timer } from 'utils/performance'
-import { Nullable } from 'utils/typeUtils'
-import { uuid } from 'utils/uid'
 
 import {
   waitForLibsInit,
@@ -44,13 +44,17 @@ export const USER_NODE = process.env.REACT_APP_USER_NODE
 export const LEGACY_USER_NODE = process.env.REACT_APP_LEGACY_USER_NODE
 
 const REGISTRY_ADDRESS = process.env.REACT_APP_REGISTRY_ADDRESS
-const WEB3_PROVIDER_URLS = process.env.REACT_APP_WEB3_PROVIDER_URL.split(',')
+const WEB3_PROVIDER_URLS = (
+  process.env.REACT_APP_WEB3_PROVIDER_URL || ''
+).split(',')
 const WEB3_NETWORK_ID = process.env.REACT_APP_WEB3_NETWORK_ID
 
 const ETH_REGISTRY_ADDRESS = process.env.REACT_APP_ETH_REGISTRY_ADDRESS
 const ETH_TOKEN_ADDRESS = process.env.REACT_APP_ETH_TOKEN_ADDRESS
 const ETH_OWNER_WALLET = process.env.REACT_APP_ETH_OWNER_WALLET
-const ETH_PROVIDER_URLS = process.env.REACT_APP_ETH_PROVIDER_URL.split(',')
+const ETH_PROVIDER_URLS = (process.env.REACT_APP_ETH_PROVIDER_URL || '').split(
+  ','
+)
 const CLAIM_DISTRIBUTION_CONTRACT_ADDRESS =
   process.env.REACT_APP_CLAIM_DISTRIBUTION_CONTRACT_ADDRESS
 

@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import Track from 'models/Track'
-import Color from 'models/common/Color'
-import { CID } from 'models/common/Identifiers'
+import Color from 'common/models/Color'
+import { CID } from 'common/models/Identifiers'
+import Track from 'common/models/Track'
+import { Nullable } from 'common/utils/typeUtils'
 import { AppState } from 'store/types'
-import { Nullable } from 'utils/typeUtils'
 
 const initialState: { colors: { [multihash: string]: Color } } = {
   colors: {}

@@ -1,7 +1,7 @@
-import { UserCollectionMetadata } from 'models/Collection'
-import { UserTrackMetadata } from 'models/Track'
-import { UserMetadata } from 'models/User'
-import { removeNullable } from 'utils/typeUtils'
+import { UserCollectionMetadata } from 'common/models/Collection'
+import { UserTrackMetadata } from 'common/models/Track'
+import { UserMetadata } from 'common/models/User'
+import { removeNullable } from 'common/utils/typeUtils'
 
 import * as adapter from './ResponseAdapter'
 import { APIResponse, APISearch } from './types'

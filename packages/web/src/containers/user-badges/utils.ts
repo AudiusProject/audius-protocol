@@ -1,18 +1,13 @@
 import BN from 'bn.js'
 import { createSelector } from 'reselect'
 
-import User from 'models/User'
-import { ID } from 'models/common/Identifiers'
-import { getAccountUser } from 'store/account/selectors'
-import { getUser } from 'store/cache/users/selectors'
+import { ID } from 'common/models/Identifiers'
+import User from 'common/models/User'
+import { BNAudio, StringAudio, StringWei } from 'common/models/Wallet'
+import { getAccountUser } from 'common/store/account/selectors'
+import { getUser } from 'common/store/cache/users/selectors'
 import { AppState } from 'store/types'
-import {
-  BNAudio,
-  StringAudio,
-  stringAudioToBN,
-  StringWei,
-  stringWeiToAudioBN
-} from 'store/wallet/slice'
+import { stringAudioToBN, stringWeiToAudioBN } from 'utils/wallet'
 
 export type BadgeTier = 'none' | 'bronze' | 'silver' | 'gold' | 'platinum'
 

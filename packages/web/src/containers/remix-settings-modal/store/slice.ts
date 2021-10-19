@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID } from 'models/common/Identifiers'
-import { Status } from 'store/types'
+import { ID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
 
 type State = {
   trackId: ID | null

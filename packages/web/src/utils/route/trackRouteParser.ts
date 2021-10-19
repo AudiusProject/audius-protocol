@@ -1,6 +1,6 @@
 import { matchPath } from 'react-router-dom'
 
-import { ID } from 'models/common/Identifiers'
+import { ID } from 'common/models/Identifiers'
 import { TRACK_ID_PAGE, TRACK_PAGE } from 'utils/route'
 
 import { decodeHashId } from './hashIds'

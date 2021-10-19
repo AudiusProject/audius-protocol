@@ -1,3 +1,4 @@
+import Status from 'common/models/Status'
 import {
   FETCH_LINEUP_METADATAS_REQUESTED,
   FETCH_LINEUP_METADATAS_SUCCEEDED,
@@ -10,7 +11,6 @@ import {
   SET_PAGE,
   stripPrefix
 } from 'store/lineup/actions'
-import { Status } from 'store/types'
 
 export const initialLineupState = {
   // Contains identifiers for cache entries as well as retained metadata.

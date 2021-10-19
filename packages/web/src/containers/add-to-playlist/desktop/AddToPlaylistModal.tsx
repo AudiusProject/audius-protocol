@@ -6,21 +6,21 @@ import { useDispatch, useSelector } from 'react-redux'
 import SimpleBar from 'simplebar-react'
 
 import { ReactComponent as IconMultiselectAdd } from 'assets/img/iconMultiselectAdd.svg'
+import Collection from 'common/models/Collection'
+import { SquareSizes } from 'common/models/ImageSizes'
+import { getAccountWithOwnPlaylists } from 'common/store/account/selectors'
+import {
+  addTrackToPlaylist,
+  createPlaylist
+} from 'common/store/cache/collections/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'
 import { ToastContext } from 'components/toast/ToastContext'
 import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 import { getCollectionId } from 'containers/collection-page/store/selectors'
 import { useCollectionCoverArt } from 'hooks/useImageSize'
-import Collection from 'models/Collection'
-import { SquareSizes } from 'models/common/ImageSizes'
 import { newCollectionMetadata } from 'schemas'
 import { CreatePlaylistSource } from 'services/analytics'
-import { getAccountWithOwnPlaylists } from 'store/account/selectors'
-import {
-  addTrackToPlaylist,
-  createPlaylist
-} from 'store/cache/collections/actions'
 import { AppState } from 'store/types'
 import { playlistPage } from 'utils/route'
 

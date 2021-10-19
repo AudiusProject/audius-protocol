@@ -1,8 +1,8 @@
 import { range } from 'lodash'
 import { all, put, select } from 'redux-saga/effects'
 
+import { getAccountUser } from 'common/store/account/selectors'
 import { Name } from 'services/analytics'
-import { getAccountUser } from 'store/account/selectors'
 import { make } from 'store/analytics/actions'
 
 export function* reportSuccessAndFailureEvents({

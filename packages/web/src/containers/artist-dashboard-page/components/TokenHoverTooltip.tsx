@@ -1,7 +1,8 @@
 import React from 'react'
 
+import { BNWei } from 'common/models/Wallet'
 import Tooltip from 'components/tooltip/Tooltip'
-import { BNWei, formatWei } from 'store/wallet/slice'
+import { formatWei } from 'utils/wallet'
 
 type TokenHoverTooltipProps = {
   children: React.ReactNode

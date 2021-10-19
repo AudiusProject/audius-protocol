@@ -4,8 +4,8 @@ import Tooltip from 'antd/lib/tooltip'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 
+import { getHasAccount } from 'common/store/account/selectors'
 import { ComponentPlacement, MountPlacement } from 'components/types'
-import { getHasAccount } from 'store/account/selectors'
 import { AppState } from 'store/types'
 
 import styles from './Toast.module.css'

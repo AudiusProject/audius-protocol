@@ -6,15 +6,34 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import Collection, { SmartCollection } from 'common/models/Collection'
+import { FavoriteType } from 'common/models/Favorite'
+import { ID, UID, PlayableType } from 'common/models/Identifiers'
+import Kind from 'common/models/Kind'
+import Status from 'common/models/Status'
+import {
+  getUserId,
+  getAccountCollections
+} from 'common/store/account/selectors'
+import {
+  editPlaylist,
+  removeTrackFromPlaylist,
+  orderPlaylist,
+  publishPlaylist,
+  deletePlaylist
+} from 'common/store/cache/collections/actions'
+import { open } from 'common/store/ui/mobile-overflow-menu/actions'
+import {
+  OverflowAction,
+  OverflowSource
+} from 'common/store/ui/mobile-overflow-menu/types'
+import { Uid } from 'common/utils/uid'
 import DeletedPage from 'containers/deleted-page/DeletedPage'
 import { setFavorite } from 'containers/favorites-page/store/actions'
 import { updatePlaylistLastViewedAt } from 'containers/notification/store/actions'
 import { getPlaylistUpdates } from 'containers/notification/store/selectors'
 import { setRepost } from 'containers/reposts-page/store/actions'
 import { RepostType } from 'containers/reposts-page/store/types'
-import Collection, { SmartCollection } from 'models/Collection'
-import { FavoriteType } from 'models/Favorite'
-import { ID, UID, PlayableType } from 'models/common/Identifiers'
 import {
   RepostSource,
   FavoriteSource,
@@ -23,14 +42,8 @@ import {
   ShareSource,
   FollowSource
 } from 'services/analytics'
-import { getUserId, getAccountCollections } from 'store/account/selectors'
 import { TrackEvent, make } from 'store/analytics/actions'
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
-import { open } from 'store/application/ui/mobileOverflowModal/actions'
-import {
-  OverflowAction,
-  OverflowSource
-} from 'store/application/ui/mobileOverflowModal/types'
 import {
   setUsers,
   setVisibility
@@ -39,13 +52,6 @@ import {
   UserListType,
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
-import {
-  editPlaylist,
-  removeTrackFromPlaylist,
-  orderPlaylist,
-  publishPlaylist,
-  deletePlaylist
-} from 'store/cache/collections/actions'
 import {
   makeGetTableMetadatas,
   makeGetLineupOrder
@@ -56,7 +62,7 @@ import { getLocationPathname } from 'store/routing/selectors'
 import * as socialCollectionsActions from 'store/social/collections/actions'
 import * as socialTracksActions from 'store/social/tracks/actions'
 import * as socialUsersActions from 'store/social/users/actions'
-import { AppState, Status, Kind } from 'store/types'
+import { AppState } from 'store/types'
 import { formatUrlName } from 'utils/formatUtil'
 import {
   profilePage,
@@ -69,7 +75,6 @@ import {
   getPathname
 } from 'utils/route'
 import { parseCollectionRoute } from 'utils/route/collectionRouteParser'
-import { Uid } from 'utils/uid'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'

@@ -9,13 +9,13 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
+import { StemCategory, stemCategoryFriendlyNames } from 'common/models/Stems'
+import Track, { Download } from 'common/models/Track'
 import IconButton from 'components/general/IconButton'
 import Switch from 'components/general/Switch'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Dropdown from 'components/navigation/Dropdown'
 import Dropzone from 'components/upload/Dropzone'
-import { StemCategory, stemCategoryFriendlyNames } from 'models/Stems'
-import Track, { Download } from 'models/Track'
 
 import styles from './SourceFilesModal.module.css'
 

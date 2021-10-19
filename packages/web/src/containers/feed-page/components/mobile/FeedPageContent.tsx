@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect, useCallback } from 'react'
 
 import cn from 'classnames'
 
+import Status from 'common/models/Status'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import Header from 'components/general/header/mobile/Header'
 import { HeaderContext } from 'components/general/header/mobile/HeaderContextProvider'
@@ -14,7 +15,6 @@ import useAsyncPoll from 'hooks/useAsyncPoll'
 import FeedFilter from 'models/FeedFilter'
 import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
-import { Status } from 'store/types'
 import { BASE_URL, FEED_PAGE } from 'utils/route'
 
 import Filters from './FeedFilterButton'

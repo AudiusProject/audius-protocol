@@ -1,10 +1,10 @@
 import { createSelector } from 'reselect'
 
+import { getTracksByUid } from 'common/store/cache/tracks/selectors'
+import { getUsers } from 'common/store/cache/users/selectors'
+import { removeNullable } from 'common/utils/typeUtils'
 import { LineupState } from 'models/common/Lineup'
-import { getTracksByUid } from 'store/cache/tracks/selectors'
-import { getUsers } from 'store/cache/users/selectors'
 import { AppState } from 'store/types'
-import { removeNullable } from 'utils/typeUtils'
 
 // Some lineups can have additional properties (T)
 // e.g. collections have dateAdded in entries

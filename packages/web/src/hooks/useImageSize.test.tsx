@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 
 import { render } from '@testing-library/react'
 
-import { DefaultSizes, SquareSizes } from 'models/common/ImageSizes'
+import { DefaultSizes, SquareSizes } from 'common/models/ImageSizes'
 
 import { useImageSize } from './useImageSize'
 

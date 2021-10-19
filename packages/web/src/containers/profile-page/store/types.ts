@@ -1,7 +1,7 @@
-import User from 'models/User'
-import { ID, UID } from 'models/common/Identifiers'
+import { ID, UID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
+import User from 'common/models/User'
 import { LineupState } from 'models/common/Lineup'
-import { Status } from 'store/types'
 
 export enum FollowType {
   FOLLOWERS = 'followers',

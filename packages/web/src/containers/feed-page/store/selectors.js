@@ -1,4 +1,4 @@
-import { getUsers } from 'store/cache/users/selectors'
+import { getUsers } from 'common/store/cache/users/selectors'
 import { createShallowSelector } from 'utils/selectorHelpers'
 
 export const getSuggestedFollows = state => state.feed.suggestedFollows

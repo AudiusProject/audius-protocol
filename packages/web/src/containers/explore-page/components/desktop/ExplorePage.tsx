@@ -3,6 +3,12 @@ import React, { useCallback } from 'react'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import {
+  UserCollection,
+  Variant as CollectionVariant
+} from 'common/models/Collection'
+import Status from 'common/models/Status'
+import User from 'common/models/User'
 import CollectionArtCard from 'components/card/desktop/CollectionArtCard'
 import UserArtCard from 'components/card/desktop/UserArtCard'
 import Page from 'components/general/Page'
@@ -33,10 +39,7 @@ import {
   FEELING_LUCKY
 } from 'containers/smart-collection/smartCollections'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
-import { UserCollection, Variant as CollectionVariant } from 'models/Collection'
-import User from 'models/User'
 import { FeatureFlags } from 'services/remote-config'
-import { Status } from 'store/types'
 import { BASE_URL, EXPLORE_PAGE, stripBaseUrl } from 'utils/route'
 
 import styles from './ExplorePage.module.css'

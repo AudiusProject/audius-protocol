@@ -1,5 +1,10 @@
 import { call, put, select } from 'redux-saga/effects'
 
+import { ID } from 'common/models/Identifiers'
+import Track, { UserTrackMetadata } from 'common/models/Track'
+import { getTracks } from 'common/store/cache/tracks/selectors'
+import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
+import { Nullable } from 'common/utils/typeUtils'
 import { setLastFetchedTrendingGenre } from 'containers/trending-page/store/actions'
 import { getTrendingEntries } from 'containers/trending-page/store/lineups/trending/selectors'
 import {
@@ -7,15 +12,10 @@ import {
   getTrendingGenre
 } from 'containers/trending-page/store/selectors'
 import TimeRange from 'models/TimeRange'
-import Track, { UserTrackMetadata } from 'models/Track'
-import { ID } from 'models/common/Identifiers'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getRemoteVar, StringKeys } from 'services/remote-config'
 import { waitForRemoteConfig } from 'services/remote-config/Provider'
-import { getTracks } from 'store/cache/tracks/selectors'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
 import { AppState } from 'store/types'
-import { Nullable } from 'utils/typeUtils'
 
 type RetrieveTrendingArgs = {
   timeRange: TimeRange

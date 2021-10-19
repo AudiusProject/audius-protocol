@@ -1,9 +1,9 @@
 /* globals fetch */
 import { call, put, takeEvery } from 'redux-saga/effects'
 
+import { retrieveCollections } from 'common/store/cache/collections/utils'
+import { fetchUsers } from 'common/store/cache/users/sagas'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { retrieveCollections } from 'store/cache/collections/utils'
-import { fetchUsers } from 'store/cache/users/sagas'
 
 import * as actions from './actions'
 

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID, UID } from 'models/common/Identifiers'
+import { ID, UID } from 'common/models/Identifiers'
 import { RepeatMode, Queueable } from 'store/queue/types'
 
 type State = {

@@ -1,4 +1,4 @@
-import { Status } from 'store/types'
+import Status from 'common/models/Status'
 import { ActionsMap } from 'utils/reducer'
 
 import {

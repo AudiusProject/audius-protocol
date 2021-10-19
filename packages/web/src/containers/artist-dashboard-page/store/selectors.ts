@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 
-import { getAccountUser } from 'store/account/selectors'
+import { getAccountUser } from 'common/store/account/selectors'
 import { AppState } from 'store/types'
 
 // Dashboard selectors

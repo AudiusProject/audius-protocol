@@ -5,12 +5,17 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { ID, PlayableType } from 'common/models/Identifiers'
+import { getAccountOwnedPlaylists } from 'common/store/account/selectors'
+import {
+  createPlaylist,
+  addTrackToPlaylist
+} from 'common/store/cache/collections/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { requestOpen as openAddToPlaylist } from 'containers/add-to-playlist/store/actions'
 import { getCollectionId } from 'containers/collection-page/store/selectors'
 import * as embedModalActions from 'containers/embed-modal/store/actions'
 import { requestOpen as openTikTokModal } from 'containers/share-sound-to-tiktok-modal/store/slice'
-import { ID, PlayableType } from 'models/common/Identifiers'
 import { newCollectionMetadata } from 'schemas'
 import {
   FavoriteSource,
@@ -19,13 +24,8 @@ import {
   CreatePlaylistSource
 } from 'services/analytics'
 import { FeatureFlags, getFeatureEnabled } from 'services/remote-config'
-import { getAccountOwnedPlaylists } from 'store/account/selectors'
 import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
 import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
-import {
-  createPlaylist,
-  addTrackToPlaylist
-} from 'store/cache/collections/actions'
 import {
   saveTrack,
   unsaveTrack,

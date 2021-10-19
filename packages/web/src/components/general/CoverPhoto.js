@@ -6,10 +6,10 @@ import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
+import { WidthSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
 import { useUserCoverPhoto } from 'hooks/useImageSize'
-import { WidthSizes } from 'models/common/ImageSizes'
 
 import styles from './CoverPhoto.module.css'
 

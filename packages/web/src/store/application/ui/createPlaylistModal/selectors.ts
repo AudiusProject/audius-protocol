@@ -1,6 +1,6 @@
-import { getCollection } from 'store/cache/collections/selectors'
-import { getTracks as getCachedTracks } from 'store/cache/tracks/selectors'
-import { getUsers } from 'store/cache/users/selectors'
+import { getCollection } from 'common/store/cache/collections/selectors'
+import { getTracks as getCachedTracks } from 'common/store/cache/tracks/selectors'
+import { getUsers } from 'common/store/cache/users/selectors'
 import { AppState } from 'store/types'
 
 export const getBaseState = (state: AppState) =>

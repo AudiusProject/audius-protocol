@@ -1,5 +1,9 @@
 import React, { useEffect } from 'react'
 
+import Collection, { SmartCollection, Variant } from 'common/models/Collection'
+import { ID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
+import User from 'common/models/User'
 import CollectionHeader from 'components/collection/desktop/CollectionHeader'
 import Page from 'components/general/Page'
 import TracksTable from 'components/tracks-table/TracksTable'
@@ -9,10 +13,6 @@ import {
   CollectionsPageType
 } from 'containers/collection-page/store/types'
 import { computeCollectionMetadataProps } from 'containers/collection-page/store/utils'
-import Collection, { SmartCollection, Variant } from 'models/Collection'
-import User from 'models/User'
-import { ID } from 'models/common/Identifiers'
-import { Status } from 'store/types'
 
 import styles from './CollectionPage.module.css'
 

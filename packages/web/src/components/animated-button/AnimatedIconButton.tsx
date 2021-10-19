@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import { uuid } from 'utils/uid'
+import { uuid } from 'common/utils/uid'
 
 import AnimatedButtonProvider from './AnimatedButtonProvider'
 

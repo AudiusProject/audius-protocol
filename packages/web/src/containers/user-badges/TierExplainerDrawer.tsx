@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 
 import { useDispatch } from 'react-redux'
 
+import { getModalVisibility, setVisibility } from 'common/store/ui/modals/slice'
 import Drawer from 'components/drawer/Drawer'
 import {
   audioTierMapPng,
@@ -9,7 +10,6 @@ import {
   TierNumber
 } from 'containers/audio-rewards-page/Tiers'
 import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
-import { setVisibility } from 'store/application/ui/modals/slice'
 import { useSelector } from 'utils/reducer'
 
 import { BadgeTierText } from './ProfilePageBadge'
@@ -19,8 +19,8 @@ import { useProfileTier } from './hooks'
 
 const TierExplainerDrawer = () => {
   // use the modal visibility state
-  const isOpen = useSelector(
-    state => state.application.ui.modals.TiersExplainer
+  const isOpen = useSelector(state =>
+    getModalVisibility(state, 'TiersExplainer')
   )
   const keyboardVisible = useSelector(getKeyboardVisibility)
   const dispatch = useDispatch()

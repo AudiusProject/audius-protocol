@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/browser'
 
-import User from 'models/User'
+import User from 'common/models/User'
 
 const analyticsBlacklist = [
   'google-analytics',

@@ -1,13 +1,10 @@
-import {
-  Collectible,
-  CollectibleMediaType
-} from 'containers/collectibles/types'
+import { Chain } from 'common/models/Chain'
+import { Collectible, CollectibleMediaType } from 'common/models/Collectible'
 import {
   OpenSeaAssetExtended,
   OpenSeaEvent,
   OpenSeaEventExtended
 } from 'services/opensea-client/types'
-import { Chain } from 'store/token-dashboard/slice'
 import { gifPreview } from 'utils/imageProcessingUtil'
 
 /**

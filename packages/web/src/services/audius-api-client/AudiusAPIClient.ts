@@ -1,14 +1,14 @@
+import { ID } from 'common/models/Identifiers'
+import { StemTrackMetadata } from 'common/models/Track'
+import { Nullable, removeNullable } from 'common/utils/typeUtils'
 import { SearchKind } from 'containers/search-page/store/types'
 import TimeRange from 'models/TimeRange'
-import { StemTrackMetadata } from 'models/Track'
-import { ID } from 'models/common/Identifiers'
 import AudiusBackend from 'services/AudiusBackend'
 import {
   getEagerDiscprov,
   waitForLibsInit
 } from 'services/audius-backend/eagerLoadUtils'
 import { decodeHashId, encodeHashId } from 'utils/route/hashIds'
-import { Nullable, removeNullable } from 'utils/typeUtils'
 
 import { getRemoteVar, IntKeys, StringKeys } from '../remote-config'
 

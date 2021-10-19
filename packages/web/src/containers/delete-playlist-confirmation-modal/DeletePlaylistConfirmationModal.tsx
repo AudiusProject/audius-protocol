@@ -4,9 +4,9 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { ID } from 'common/models/Identifiers'
+import { deletePlaylist } from 'common/store/cache/collections/actions'
 import { RouterContext } from 'containers/animated-switch/RouterContextProvider'
-import { ID } from 'models/common/Identifiers'
-import { deletePlaylist } from 'store/cache/collections/actions'
 import { AppState } from 'store/types'
 import { TRENDING_PAGE } from 'utils/route'
 

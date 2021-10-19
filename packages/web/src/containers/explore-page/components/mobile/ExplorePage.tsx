@@ -14,6 +14,13 @@ import { ReactComponent as IconForYou } from 'assets/img/iconExploreMobileForYou
 import { ReactComponent as IconMoods } from 'assets/img/iconExploreMobileMoods.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
+import {
+  UserCollection,
+  SmartCollection,
+  Variant as CollectionVariant
+} from 'common/models/Collection'
+import Status from 'common/models/Status'
+import User from 'common/models/User'
 import Card from 'components/card/mobile/Card'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import Header from 'components/general/header/mobile/Header'
@@ -38,14 +45,7 @@ import { useMainPageHeader } from 'containers/nav/store/context'
 import { useFlag } from 'containers/remote-config/hooks'
 import { REMIXABLES } from 'containers/smart-collection/smartCollections'
 import useTabs from 'hooks/useTabs/useTabs'
-import {
-  UserCollection,
-  SmartCollection,
-  Variant as CollectionVariant
-} from 'models/Collection'
-import User from 'models/User'
 import { FeatureFlags } from 'services/remote-config'
-import { Status } from 'store/types'
 import {
   playlistPage,
   albumPage,

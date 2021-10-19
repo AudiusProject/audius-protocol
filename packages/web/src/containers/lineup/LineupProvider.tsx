@@ -8,18 +8,20 @@ import { connect } from 'react-redux'
 import { Transition } from 'react-spring/renderprops'
 import { Dispatch } from 'redux'
 
+import { ID, UID } from 'common/models/Identifiers'
+import Kind from 'common/models/Kind'
+import Status from 'common/models/Status'
 import {
   TrackTileProps,
   PlaylistTileProps,
   TrackTileSize,
   TileProps
 } from 'components/track/types'
-import { ID, UID } from 'models/common/Identifiers'
 import { Lineup } from 'models/common/Lineup'
 import { Name, PlaybackSource } from 'services/analytics'
 import { TrackEvent, make } from 'store/analytics/actions'
 import { LineupActions } from 'store/lineup/actions'
-import { Status, AppState, Kind } from 'store/types'
+import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 
 import styles from './Lineup.module.css'

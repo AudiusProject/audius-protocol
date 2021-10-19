@@ -1,6 +1,6 @@
 import Hashids from 'hashids'
 
-import { Nullable } from 'utils/typeUtils'
+import { Nullable } from 'common/utils/typeUtils'
 
 const HASH_SALT = 'azowernasdfoia'
 const MIN_LENGTH = 5

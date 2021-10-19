@@ -1,15 +1,16 @@
 import { takeEvery, put, call, select } from 'redux-saga/effects'
 
+import { ID } from 'common/models/Identifiers'
+import { SmartCollectionVariant } from 'common/models/SmartCollectionVariant'
+import Status from 'common/models/Status'
+import Track, { TrackMetadata } from 'common/models/Track'
+import { getAccountStatus, getUserId } from 'common/store/account/selectors'
+import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
+import { fetchUsers } from 'common/store/cache/users/sagas'
 import { setSmartCollection } from 'containers/collection-page/store/actions'
-import Track, { TrackMetadata } from 'models/Track'
-import { ID } from 'models/common/Identifiers'
 import Explore from 'services/audius-backend/Explore'
-import { getAccountStatus, getUserId } from 'store/account/selectors'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { processAndCacheTracks } from 'store/cache/tracks/utils'
-import { fetchUsers } from 'store/cache/users/sagas'
 import { getLuckyTracks } from 'store/recommendation/sagas'
-import { Status } from 'store/types'
 import { EXPLORE_PAGE } from 'utils/route'
 import { requiresAccount, waitForValue } from 'utils/sagaHelpers'
 
@@ -21,7 +22,6 @@ import {
   UNDER_THE_RADAR,
   REMIXABLES
 } from '../smartCollections'
-import { SmartCollectionVariant } from '../types'
 
 import { fetchSmartCollection, fetchSmartCollectionSucceeded } from './slice'
 

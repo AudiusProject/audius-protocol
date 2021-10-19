@@ -2,15 +2,15 @@ import React, { useCallback, MouseEvent } from 'react'
 
 import Spin from 'antd/lib/spin'
 
+import { UserCollection } from 'common/models/Collection'
+import { ID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import Card from 'components/card/desktop/Card'
 import Page from 'components/general/Page'
 import Header from 'components/general/header/desktop/Header'
 import CardLineup from 'containers/lineup/CardLineup'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
-import { UserCollection } from 'models/Collection'
-import { ID } from 'models/common/Identifiers'
-import { Status } from 'store/types'
 import {
   playlistPage,
   fullPlaylistPage,

@@ -5,6 +5,7 @@ import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 
+import { getUserId } from 'common/store/account/selectors'
 import FavoriteButton from 'components/general/FavoriteButton'
 import RepostButton from 'components/general/RepostButton'
 import PlayButton from 'components/play-bar/PlayButton'
@@ -20,7 +21,6 @@ import {
   Name,
   PlaybackSource
 } from 'services/analytics'
-import { getUserId } from 'store/account/selectors'
 import { make } from 'store/analytics/actions'
 import { getTheme } from 'store/application/ui/theme/selectors'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'

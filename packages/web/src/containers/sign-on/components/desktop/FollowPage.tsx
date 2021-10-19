@@ -5,10 +5,10 @@ import cn from 'classnames'
 import SimpleBar from 'simplebar-react-legacy'
 
 import { ReactComponent as IconWand } from 'assets/img/iconWand.svg'
+import { ID } from 'common/models/Identifiers'
+import User from 'common/models/User'
 import UserCard from 'components/card/UserCard'
 import SelectablePills from 'components/selectable-pill/SelectablePills'
-import User from 'models/User'
-import { ID } from 'models/common/Identifiers'
 
 import { FollowArtistsCategory, artistCategories } from '../../store/types'
 

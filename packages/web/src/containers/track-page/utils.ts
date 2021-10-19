@@ -1,4 +1,4 @@
-import Track from 'models/Track'
+import Track from 'common/models/Track'
 
 // return the original string if it exists, or ''
 export const emptyStringGuard = (str: string | null | undefined) => str ?? ''

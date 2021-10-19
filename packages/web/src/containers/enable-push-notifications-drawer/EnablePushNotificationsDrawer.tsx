@@ -13,13 +13,13 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconNotification } from 'assets/img/iconGradientNotification.svg'
+import { getIsOpen } from 'common/store/ui/push-notifications-drawer/selectors'
+import { hide } from 'common/store/ui/push-notifications-drawer/slice'
 import Drawer from 'components/drawer/Drawer'
 import { togglePushNotificationSetting } from 'containers/settings-page/store/actions'
 import { PushNotificationSetting } from 'containers/settings-page/store/types'
 
 import styles from './EnablePushNotificationsDrawer.module.css'
-import { getIsOpen } from './store/selectors'
-import { hide } from './store/slice'
 
 const messages = {
   dontMiss: `Don't Miss a Beat!`,

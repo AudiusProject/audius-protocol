@@ -1,10 +1,10 @@
-import { PREFIX } from 'containers/track-page/store/lineups/tracks/actions'
-import { ID } from 'models/common/Identifiers'
+import { ID } from 'common/models/Identifiers'
 import {
   getTrack as getCachedTrack,
   getStatus as getCachedTrackStatus
-} from 'store/cache/tracks/selectors'
-import { getUser as getCachedUser } from 'store/cache/users/selectors'
+} from 'common/store/cache/tracks/selectors'
+import { getUser as getCachedUser } from 'common/store/cache/users/selectors'
+import { PREFIX } from 'containers/track-page/store/lineups/tracks/actions'
 import { AppState } from 'store/types'
 
 export const getBaseState = (state: AppState) => state.track
