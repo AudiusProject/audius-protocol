@@ -1,6 +1,5 @@
 import concurrent.futures
 import datetime
-from inspect import signature
 import logging
 import time
 
