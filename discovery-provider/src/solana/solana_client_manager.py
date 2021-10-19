@@ -1,6 +1,9 @@
 import random
 import time
 import logging
+import signal
+
+from contextlib import contextmanager
 from typing import Optional, Union
 from solana.account import Account
 from solana.publickey import PublicKey
@@ -74,14 +77,38 @@ class SolanaClientManager:
     ):
         """Fetches confirmed signatures for transactions given an address."""
 
-        def handle_get_confirmed_signature_for_address2(client, _):
-            return client.get_confirmed_signature_for_address2(account, before, limit)
+        def handle_get_confirmed_signature_for_address2(client, index):
+            endpoint = self.endpoints[index]
+            logger.info(f"solana_client_manager.py | handle_get_confirmed_signature_for_address2 | Fetching {before} {endpoint}")
+            transactions = client.get_confirmed_signature_for_address2(account, before, limit)
+            logger.info(f"solana_client_manager.py | handle_get_confirmed_signature_for_address2 | Finished fetching {before} {endpoint}")
+            return transactions
 
         return _try_all(
             self.clients,
             handle_get_confirmed_signature_for_address2,
             "solana_client_manager.py | get_confirmed_signature_for_address2 | All requests failed"
         )
+
+@contextmanager
+def timeout(time):
+    # Register a function to raise a TimeoutError on the signal.
+    signal.signal(signal.SIGALRM, raise_timeout)
+    # Schedule the signal to be sent after ``time``.
+    signal.alarm(time)
+
+    try:
+        yield
+    except TimeoutError:
+        raise
+    finally:
+        # Unregister the signal so it won't be triggered
+        # if the timeout is not reached.
+        signal.signal(signal.SIGALRM, signal.SIG_IGN)
+
+
+def raise_timeout(signum, frame):
+    raise TimeoutError
 
 
 def _try_all(iterable, func, message, randomize=False):
@@ -91,7 +118,8 @@ def _try_all(iterable, func, message, randomize=False):
     items = items if not randomize else random.sample(items, k=len(items))
     for index, value in items:
         try:
-            return func(value, index)
+            with timeout(30):
+                return func(value, index)
         except Exception:
             logger.error(f"solana_client_manager.py | _try_all | Failed attempt at index {index} for function {func}")
             if index < len(items) - 1:
