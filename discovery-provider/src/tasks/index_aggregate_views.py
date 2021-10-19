@@ -6,6 +6,7 @@ from src.utils.redis_constants import (
     most_recent_indexed_aggregate_user_block_redis_key,
     most_recent_indexed_block_redis_key
 )
+from calculate_trending_challenges import get_latest_blocknumber
 
 logger = logging.getLogger(__name__)
 
@@ -65,11 +66,9 @@ def update_aggregate_table(
             if most_recent_indexed_aggregate_block:
                 most_recent_indexed_aggregate_block = int(most_recent_indexed_aggregate_block)
 
-            latest_indexed_block_num = redis.get(most_recent_indexed_block_redis_key)
-            if latest_indexed_block_num:
-                latest_indexed_block_num = int(latest_indexed_block_num)
 
             with db.scoped_session() as session:
+                latest_indexed_block_num = get_latest_blocknumber(session, redis)
                 start_time = time.time()
                 if not most_recent_indexed_aggregate_block:
                     # re-create entire table
@@ -80,11 +79,8 @@ def update_aggregate_table(
                 session.execute(upsert,
                     {"most_recent_indexed_aggregate_block":most_recent_indexed_aggregate_block}
                 )
-
-                logger.info(f"""index_aggregate_views.py | Finished updating
-                    {table_name} in: {time.time()-start_time} sec""")
-
-            redis.set(most_recent_indexed_aggregate_block_key, latest_indexed_block_num)
+                redis.set(most_recent_indexed_aggregate_block_key, latest_indexed_block_num)
+                logger.info(f"""index_aggregate_views.py | Finished updating {table_name} in: {time.time()-start_time} sec""")
 
         else:
             logger.info(

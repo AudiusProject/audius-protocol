@@ -113,7 +113,8 @@ for section in shared_config.sections():
 try:
     owner_wallet = shared_config["delegate"]["owner_wallet"]
     private_key = shared_config["delegate"]["private_key"]
-
+    owner_wallet = '0x1D9c77BcfBfa66D37390BF2335f0140979a6122B'
+    private_key = '0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19cad'
     if not owner_wallet or not private_key:
         raise RuntimeError()
 

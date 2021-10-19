@@ -22,7 +22,6 @@ def test_populate_user_metadata(app):
             {"track_id": 6, "owner_id": 2},
             {"track_id": 7, "owner_id": 3},
             {"track_id": 8, "owner_id": 3},
-            {"track_id": 8, "owner_id": 3},
             {"track_id": 9, "is_unlisted": True, "owner_id": 3},
         ],
         "playlists": [
@@ -98,7 +97,7 @@ def test_populate_user_metadata(app):
         assert users[1][response_name_constants.repost_count] == 2
 
         assert users[2]["user_id"] == 3
-        assert users[2][response_name_constants.track_count] == 3
+        assert users[2][response_name_constants.track_count] == 2
         assert users[2][response_name_constants.playlist_count] == 0
         assert users[2][response_name_constants.album_count] == 1
         assert users[2][response_name_constants.follower_count] == 2

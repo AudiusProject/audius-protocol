@@ -2,6 +2,7 @@ from datetime import datetime
 from src import models
 from src.utils import helpers
 from src.utils.db_session import get_db
+import collections, functools, operator
 
 
 def query_creator_by_name(app, creator_name=None):
@@ -246,4 +247,19 @@ def populate_mock_db(db, entities, block_offset=0):
                 current_step_count=user_challenge_meta.get("current_step_count", None),
             )
             session.add(user_challenge)
+
+        # populate aggregate user table
+        for i, user_meta in enumerate(users):
+            aggregate_user = models.AggregateUser(
+                user_id=user_meta.get("user_id", user_meta["user_id"]),
+                track_count=sum(1 for track in tracks if track["owner_id"] == user_meta["user_id"] and "is_unlisted" not in track),
+                playlist_count=sum(1 for playlist in playlists if playlist.get("playlist_owner_id") == user_meta["user_id"] and not playlist.get("is_album") and not playlist.get("is_delete") and not playlist.get("is_private")),
+                album_count=sum(1 for playlist in playlists if playlist.get("playlist_owner_id") == user_meta["user_id"] and playlist.get("is_album") and not playlist.get("is_delete") and not playlist.get("is_private")),
+                follower_count=sum(1 for follow in follows if follow.get("followee_user_id") == user_meta["user_id"]),
+                following_count=sum(1 for follow in follows if follow.get("follower_user_id") == user_meta["user_id"]),
+                repost_count=sum(1 for repost in reposts if repost.get("user_id") == user_meta["user_id"]),
+                track_save_count=sum(1 for save in saves if save.get("user_id") == user_meta["user_id"]),
+            )
+            session.add(aggregate_user)
+
         session.flush()

@@ -13,7 +13,7 @@ from .utils import populate_mock_db
 
 
 entities = {
-    "users": [{}] * 8,
+    "users": [{"user_id": i} for i in range(8)],
     "follows": [
         # at least 200 followers for user_0
         {"follower_user_id": i, "followee_user_id": 0}
@@ -45,7 +45,7 @@ def test_calculate_related_artists_scores(app):
 
     with db.scoped_session() as session:
 
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
+        # session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
 
         # Check sampled (with large enough sample to get all rows for deterministic result)
         rows = _calculate_related_artists_scores(

@@ -268,6 +268,7 @@ def configure_flask(test_config, app, mode="app"):
         if "db" in test_config:
             if "url" in test_config["db"]:
                 database_url = test_config["db"]["url"]
+    print("isaac database_url: " + database_url)
 
     # Sometimes ECS latency causes the create_database function to fail because db connection is not ready
     # Give it some more time to get set up, up to 5 times
