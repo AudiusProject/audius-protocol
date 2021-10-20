@@ -354,7 +354,7 @@ class SnapbackSM {
    * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
   */
   async issueUpdateReplicaSetOp (userId, wallet, primary, secondary1, secondary2, unhealthyReplicas, healthyNodes, replicaSetNodesToUserClockStatusesMap) {
-    this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=[${unhealthyReplicas}] healthyNodes=[${healthyNodes}]`)
+    this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=[${unhealthyReplicas}] healthyNodes type=${typeof healthyNodes}`)
 
     const unhealthyReplicasSet = new Set(unhealthyReplicas)
     let response = { errorMsg: null, issuedReconfig: false }
@@ -538,7 +538,9 @@ class SnapbackSM {
    * @returns a string[] of the new replica set nodes
    */
   async selectRandomReplicaSetNodes ({ healthyReplicaSet, numberOfUnhealthyReplicas, healthyNodes, wallet }) {
-    this.log(`[selectRandomReplicaSetNode] healthyNodes: ${healthyNodes}`)
+    this.log(`[selectRandomReplicaSetNode] SIDTEST`)
+    this.log(`[selectRandomReplicaSetNode] healthyreplicaset:${healthyReplicaSet}`)
+    this.log(`[selectRandomReplicaSetNode] healthynodes:${healthyNodes}`)
     let newReplicaNodesSet = new Set()
     let selectNewReplicaSetAttemptCounter = 0
     while (newReplicaNodesSet.size < numberOfUnhealthyReplicas && selectNewReplicaSetAttemptCounter++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS) {
