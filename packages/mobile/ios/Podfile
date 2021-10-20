@@ -45,10 +45,10 @@ target 'AudiusReactNative' do
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 
   # Analytics
-  pod 'Fabric', '~> 1.10.2'
-  pod 'Crashlytics', '~> 3.14.0'
+  pod 'Fabric', '1.10.2'
+  pod 'Crashlytics', '3.14.0'
 
-  pod 'Firebase/Analytics'
+  pod 'Firebase/Analytics',  '8.7.0'
 
   pod 'react-native-google-cast/NoBluetooth', path: '../node_modules/react-native-google-cast/ios/'
 
