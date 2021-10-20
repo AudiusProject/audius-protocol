@@ -530,13 +530,13 @@ describe('test CreatorNodeSelection', () => {
     for (let i = 0; i < 20; ++i) {
       const one = 'https://one.audius.co'
       nock(one)
-        .get('/health_check/verbose')
+        .get('/health_check')
         .delay(100)
         .reply(200, { data: defaultHealthCheckData })
 
       const two = 'https://two.audius.co'
       nock(two)
-        .get('/health_check/verbose')
+        .get('/health_check')
         .delay(200)
         .reply(200, { data: defaultHealthCheckData })
 
