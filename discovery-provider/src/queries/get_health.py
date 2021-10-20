@@ -2,6 +2,7 @@ import logging
 import os
 import time
 from typing import Dict, Optional, Tuple, TypedDict, cast
+import requests
 
 from src.models import Block, IPLDBlacklistBlock
 from src.monitors import monitors, monitor_names
@@ -258,6 +259,13 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         ]
     )
 
+    try:
+        openresty_public_key = requests.get(
+            "http://localhost:5000/openresty_pubkey"
+        ).text
+    except ConnectionError:
+        openresty_public_key = None
+
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -277,6 +285,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "last_scanned_block_for_balance_refresh": last_scanned_block_for_balance_refresh,
         "index_eth_age_sec": index_eth_age_sec,
         "number_of_cpus": number_of_cpus,
+        "openresty_public_key": openresty_public_key,
         **sys_info,
     }
 
