@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius decentralized application",
   "author": "Audius",
-  "version": "0.24.32",
+  "version": "0.24.33",
   "private": true,
   "dependencies": {
     "@audius/libs": "1.2.25",
