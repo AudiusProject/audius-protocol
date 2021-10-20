@@ -2,10 +2,7 @@ import logging
 import time
 import sqlalchemy as sa
 from src.tasks.celery_app import celery
-from src.utils.redis_constants import (
-    most_recent_indexed_aggregate_user_block_redis_key,
-    most_recent_indexed_block_redis_key
-)
+from src.utils.redis_constants import most_recent_indexed_aggregate_user_block_redis_key
 from src.tasks.calculate_trending_challenges import get_latest_blocknumber
 
 logger = logging.getLogger(__name__)
@@ -330,9 +327,14 @@ UPDATE_AGGREGATE_USER_QUERY = """
 DEFAULT_UPDATE_TIMEOUT = 60
 REFRESH_COUNTER = 3
 
+
 def update_aggregate_table(
-    db, redis, table_name, most_recent_indexed_aggregate_block_key,
-    query, timeout=DEFAULT_UPDATE_TIMEOUT
+    db,
+    redis,
+    table_name,
+    most_recent_indexed_aggregate_block_key,
+    query,
+    timeout=DEFAULT_UPDATE_TIMEOUT,
 ):
     have_lock = False
     update_lock = redis.lock(f"update_aggregate_table:{table_name}", timeout=timeout)
@@ -340,25 +342,41 @@ def update_aggregate_table(
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            most_recent_indexed_aggregate_block = redis.get(most_recent_indexed_aggregate_block_key)
+            most_recent_indexed_aggregate_block = redis.get(
+                most_recent_indexed_aggregate_block_key
+            )
             if most_recent_indexed_aggregate_block:
-                most_recent_indexed_aggregate_block = int(most_recent_indexed_aggregate_block)
-            logger.info(f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block}")
+                most_recent_indexed_aggregate_block = int(
+                    most_recent_indexed_aggregate_block
+                )
+            logger.info(
+                f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block}"
+            )
 
             with db.scoped_session() as session:
                 latest_indexed_block_num = get_latest_blocknumber(session, redis)
                 start_time = time.time()
-                if not most_recent_indexed_aggregate_block or latest_indexed_block_num % REFRESH_COUNTER == 0:
+                if (
+                    not most_recent_indexed_aggregate_block
+                    or latest_indexed_block_num % REFRESH_COUNTER == 0
+                ):
                     # re-create entire table
                     most_recent_indexed_aggregate_block = 0
                     session.execute("TRUNCATE TABLE {}".format(table_name))
                 logger.info(f"index_aggregate_user.py | Updating {table_name}")
                 upsert = sa.text(query)
-                session.execute(upsert,
-                    {"most_recent_indexed_aggregate_block":most_recent_indexed_aggregate_block}
+                session.execute(
+                    upsert,
+                    {
+                        "most_recent_indexed_aggregate_block": most_recent_indexed_aggregate_block
+                    },
                 )
-                redis.set(most_recent_indexed_aggregate_block_key, latest_indexed_block_num)
-                logger.info(f"""index_aggregate_user.py | Finished updating {table_name} in: {time.time()-start_time} sec""")
+                redis.set(
+                    most_recent_indexed_aggregate_block_key, latest_indexed_block_num
+                )
+                logger.info(
+                    f"""index_aggregate_user.py | Finished updating {table_name} in: {time.time()-start_time} sec"""
+                )
         else:
             logger.info(
                 f"index_aggregate_user.py | Failed to acquire lock update_aggregate_table:{table_name}"
@@ -378,4 +396,10 @@ def update_aggregate_table(
 def update_aggregate_user(self):
     db = update_aggregate_user.db
     redis = update_aggregate_user.redis
-    update_aggregate_table(db, redis, AGGREGATE_USER, most_recent_indexed_aggregate_user_block_redis_key, UPDATE_AGGREGATE_USER_QUERY)
+    update_aggregate_table(
+        db,
+        redis,
+        AGGREGATE_USER,
+        most_recent_indexed_aggregate_user_block_redis_key,
+        UPDATE_AGGREGATE_USER_QUERY,
+    )

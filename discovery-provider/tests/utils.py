@@ -4,6 +4,7 @@ from src.utils import helpers
 from src.utils.db_session import get_db
 from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
 
+
 def query_creator_by_name(app, creator_name=None):
     """Return list of creators filtered by name (if present)"""
     query_results = None
@@ -249,7 +250,6 @@ def populate_mock_db(db, entities, block_offset=0):
 
         session.flush()
 
-        session.execute(UPDATE_AGGREGATE_USER_QUERY,
-            {"most_recent_indexed_aggregate_block":0}
+        session.execute(
+            UPDATE_AGGREGATE_USER_QUERY, {"most_recent_indexed_aggregate_block": 0}
         )
-

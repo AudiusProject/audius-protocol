@@ -10,10 +10,11 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'e2a8aea2e2e1'
-down_revision = '92571f94989a'
+revision = "e2a8aea2e2e1"
+down_revision = "92571f94989a"
 branch_labels = None
 depends_on = None
+
 
 def upgrade():
     op.execute("CREATE TABLE aggregate_user_table AS TABLE aggregate_user")
@@ -22,7 +23,8 @@ def upgrade():
 
     op.execute("ALTER TABLE aggregate_user_table RENAME TO aggregate_user")
 
-    op.execute("""
+    op.execute(
+        """
         DROP MATERIALIZED VIEW IF EXISTS trending_params;
 
         CREATE MATERIALIZED VIEW trending_params as
@@ -202,9 +204,11 @@ def upgrade():
             t.is_unlisted is False AND
             t.stem_of is Null;
 
-        CREATE INDEX trending_params_track_id_idx ON trending_params (track_id);""")
+        CREATE INDEX trending_params_track_id_idx ON trending_params (track_id);"""
+    )
 
-    op.execute("""
+    op.execute(
+        """
         DROP MATERIALIZED VIEW IF EXISTS user_lexeme_dict;
         DROP INDEX IF EXISTS user_words_idx;
 
@@ -379,9 +383,13 @@ def upgrade():
         CREATE INDEX album_user_name_idx ON album_lexeme_dict USING gin(user_name gin_trgm_ops);
         CREATE INDEX album_user_handle_idx ON album_lexeme_dict(handle);
         CREATE UNIQUE INDEX album_row_number_idx ON album_lexeme_dict(row_number);
-        """)
+        """
+    )
+
 
 def downgrade():
-    op.execute("CREATE MATERIALIZED VIEW aggregate_user_view AS SELECT * FROM aggregate_user")
+    op.execute(
+        "CREATE MATERIALIZED VIEW aggregate_user_view AS SELECT * FROM aggregate_user"
+    )
     op.drop_table("aggregate_user")
     op.execute("ALTER MATERIALIZED VIEW aggregate_user_view RENAME TO aggregate_user")
