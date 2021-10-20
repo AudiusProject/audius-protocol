@@ -83,7 +83,6 @@ class SolanaClientManager:
             num_retries = retries
             while num_retries > 0:
                 try:
-                    endpoint = self.endpoints[index]
                     logger.info(f"solana_client_manager.py | handle_get_confirmed_signature_for_address2 | Fetching {before} {endpoint}")
                     transactions = client.get_confirmed_signature_for_address2(account, before, limit)
                     logger.info(f"solana_client_manager.py | handle_get_confirmed_signature_for_address2 | Finished fetching {before} {endpoint}")
