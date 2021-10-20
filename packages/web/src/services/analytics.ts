@@ -390,7 +390,8 @@ export enum FavoriteSource {
   HISTORY_PAGE = 'history page',
   FAVORITES_PAGE = 'favorites page',
   OVERFLOW = 'overflow',
-  TRACK_LIST = 'track list'
+  TRACK_LIST = 'track list',
+  SIGN_UP = 'sign up'
 }
 export enum FollowSource {
   PROFILE_PAGE = 'profile page',
