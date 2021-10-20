@@ -13,12 +13,13 @@ import {
 } from 'redux-saga/effects'
 
 import * as accountActions from 'common/store/account/reducer'
+import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { getIGUserUrl } from 'components/general/InstagramAuth'
 import AudiusBackend from 'services/AudiusBackend'
 import { getCityAndRegion } from 'services/Location'
-import { Name } from 'services/analytics'
+import { FavoriteSource, Name } from 'services/analytics'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getRemoteVar, IntKeys, StringKeys } from 'services/remote-config'
 import { fetchAccountAsync } from 'store/account/sagas'
@@ -27,6 +28,7 @@ import * as backendActions from 'store/backend/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
+import { saveCollection } from 'store/social/collections/actions'
 import * as socialActions from 'store/social/users/actions'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { isValidEmailString } from 'utils/email'
@@ -45,6 +47,7 @@ import { checkHandle } from './verifiedChecker'
 
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 const IS_PRODUCTION = process.env.REACT_APP_ENVIRONMENT === 'production'
+const IS_STAGING = process.env.REACT_APP_ENVIRONMENT === 'staging'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const SUGGESTED_FOLLOW_USER_HANDLE_URL =
@@ -58,8 +61,14 @@ const messages = {
 }
 
 // Users ID to filter out of the suggested artists to follow list and to follow by default
-/* user id 51: official audius account */
-const defaultFollowUserIds = new Set([51])
+let defaultFollowUserIds = new Set([])
+if (IS_PRODUCTION) {
+  // user id 51: official audius account
+  defaultFollowUserIds = new Set([51])
+} else if (IS_STAGING) {
+  // user id 12372: official audius account
+  defaultFollowUserIds = new Set([12372])
+}
 
 export const fetchSuggestedFollowUserIds = async () => {
   return fetch(SUGGESTED_FOLLOW_USER_HANDLE_URL).then(d => d.json())
@@ -409,9 +418,30 @@ function* signIn(action) {
   }
 }
 
+function* followCollections(collectionIds, favoriteSource) {
+  yield call(waitForBackendSetup)
+  try {
+    const result = yield retrieveCollections(null, collectionIds)
+
+    for (let i = 0; i < collectionIds.length; i++) {
+      const id = collectionIds[i]
+      if (result?.collections?.[id]) {
+        yield put(saveCollection(id, favoriteSource))
+      }
+    }
+  } catch (err) {
+    console.error({ err })
+  }
+}
+
 function* followArtists() {
   yield call(waitForBackendSetup)
   try {
+    // Auto-follow Hot & New Playlist
+    if (IS_PRODUCTION) {
+      yield fork(followCollections, [4281], FavoriteSource.SIGN_UP)
+    }
+
     const signOn = yield select(getSignOn)
     const {
       followArtists: { selectedUserIds }
@@ -432,6 +462,7 @@ function* followArtists() {
       const userIndex = userIdsToFollow.findIndex(fId => fId === userId)
       if (userIndex > -1) hasFollowConfirmed[userIndex] = true
     }
+
     // Reload feed is in view
     yield put(signOnActions.setAccountReady())
     // The update user location depends on the user being discoverable in discprov
