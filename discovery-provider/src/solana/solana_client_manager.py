@@ -102,7 +102,6 @@ class SolanaClientManager:
                 f"solana_client_manager.py | get_confirmed_signature_for_address2 | Failed to fetch {tx_sig} with endpoint {endpoint}"
             )
 
-
         return _try_all_with_timeout(
             self.clients,
             handle_get_confirmed_signature_for_address2,
@@ -146,7 +145,10 @@ def _try_all(iterable, func, message, randomize=False):
     raise Exception(message)
 
 def _try_all_with_timeout(iterable, func, message, randomize=False):
-    """Executes a function with retries across the iterable.
+    """Do not use this function with ThreadPoolExecutor,
+    doesn't play well with futures
+
+    Executes a function with retries across the iterable.
     If all executions fail, raise an exception."""
     items = list(enumerate(iterable))
     items = items if not randomize else random.sample(items, k=len(items))

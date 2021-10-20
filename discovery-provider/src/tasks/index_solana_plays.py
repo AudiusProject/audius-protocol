@@ -21,6 +21,9 @@ TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
 SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
 SECP_PROGRAM = "KeccakSecp256k11111111111111111111111111111"
 
+# The size of the tx signatures for the program coming from the RPC pool per batch
+TX_SIGNATURES_BATCH_SIZE = 1000
+
 # Maximum number of batches to process at once
 TX_SIGNATURES_MAX_BATCHES = 100
 
@@ -292,8 +295,7 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
     with a ThreaPoolExecutor
 
     This function also has a recursive retry upto a certain limit in case a future doesn't complete
-    within the alloted time. It clears the futures thread queue, the db transaction
-    gets rolled back by the scoped_session and the batch is retried
+    within the alloted time. It clears the futures thread queue and the batch is retried
     """
     logger.info(f"index_solana_plays.py | processing {tx_sig_batch_records}")
     batch_start_time = time.time()
@@ -303,61 +305,61 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
     challenge_bus = index_solana_plays.challenge_event_bus
 
     # Process each batch in parallel
-    with db.scoped_session() as session:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            parse_sol_tx_futures = {
-                executor.submit(
-                    parse_sol_play_transaction,
-                    solana_client_manager,
-                    tx_sig,
-                ): tx_sig
-                for tx_sig in tx_sig_batch_records
-            }
-            try:
-                for future in concurrent.futures.as_completed(parse_sol_tx_futures, timeout=45):
-                    # Returns the properties for a Play object to be created in the db
-                    # can be None so check the value exists
-                    result = future.result()
-                    if result:
-                        user_id, track_id, created_at, source, tx_slot, tx_sig = result
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        parse_sol_tx_futures = {
+            executor.submit(
+                parse_sol_play_transaction,
+                solana_client_manager,
+                tx_sig,
+            ): tx_sig
+            for tx_sig in tx_sig_batch_records
+        }
+        try:
+            for future in concurrent.futures.as_completed(parse_sol_tx_futures, timeout=45):
+                # Returns the properties for a Play object to be created in the db
+                # can be None so check the value exists
+                result = future.result()
+                if result:
+                    user_id, track_id, created_at, source, tx_slot, tx_sig = result
 
-                        # Append plays to a list that will be written if all plays are successfully retrieved
-                        # from the rpc pool
-                        plays.append({
-                            "user_id": user_id,
-                            "track_id": track_id,
-                            "created_at": created_at,
-                            "source": source,
+                    # Append plays to a list that will be written if all plays are successfully retrieved
+                    # from the rpc pool
+                    plays.append({
+                        "user_id": user_id,
+                        "track_id": track_id,
+                        "created_at": created_at,
+                        "source": source,
+                        "tx_slot": tx_slot,
+                        "tx_sig": tx_sig
+                    })
+                    # Only enqueue a challenge event if it's *not*
+                    # an anonymous listen
+                    if user_id is not None:
+                        challenge_bus_events.append({
                             "tx_slot": tx_slot,
-                            "tx_sig": tx_sig
+                            "user_id": user_id,
+                            "created_at": created_at.timestamp()
                         })
-                        # Only enqueue a challenge event if it's *not*
-                        # an anonymous listen
-                        if user_id is not None:
-                            challenge_bus_events.append({
-                                "tx_slot": tx_slot,
-                                "user_id": user_id,
-                                "created_at": created_at.timestamp()
-                            })
 
-            except Exception as exc:
-                logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
-                # timeout in a ThreadPoolExecutor doesn't actually stop execution of the underlying thread
-                # in order to do that we need to actually clear the queue which we do here to force this
-                # task to stop execution
-                executor._threads.clear()
-                concurrent.futures.thread._threads_queues.clear()
+        except Exception as exc:
+            logger.error(f"index_solana_plays.py | Error parsing sol play transaction: {exc}")
+            # timeout in a ThreadPoolExecutor doesn't actually stop execution of the underlying thread
+            # in order to do that we need to actually clear the queue which we do here to force this
+            # task to stop execution
+            executor._threads.clear()
+            concurrent.futures.thread._threads_queues.clear()
 
-                # if we have retries left, recursively call this function again
-                if retries > 0:
-                    return parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries-1)
+            # if we have retries left, recursively call this function again
+            if retries > 0:
+                return parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries-1)
 
-                # if no more retries, raise
-                raise exc
+            # if no more retries, raise
+            raise exc
 
-            # if the thread pool executor completes successfully without raising an exception
-            # the data is successfully fetched so we can add it to the db session and dispatch
-            # events to challenge bus
+        # if the thread pool executor completes successfully without raising an exception
+        # the data is successfully fetched so we can add it to the db session and dispatch
+        # events to challenge bus
+        with db.scoped_session() as session:
             for play in plays:
                 session.add(
                     Play(
@@ -370,13 +372,13 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
                     )
                 )
 
-            for event in challenge_bus_events:
-                challenge_bus.dispatch(
-                    ChallengeEvent.track_listen,
-                    event.get('tx_slot'),
-                    event.get('user_id'),
-                    {"created_at": event.get('created_at')},
-                )
+        for event in challenge_bus_events:
+            challenge_bus.dispatch(
+                ChallengeEvent.track_listen,
+                event.get('tx_slot'),
+                event.get('user_id'),
+                {"created_at": event.get('created_at')},
+            )
 
     batch_end_time = time.time()
     batch_duration = batch_end_time - batch_start_time
@@ -426,7 +428,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
         )
         transactions_history = (
             solana_client_manager.get_confirmed_signature_for_address2(
-                TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=1000
+                TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=TX_SIGNATURES_BATCH_SIZE
             )
         )
         logger.info(
@@ -543,5 +545,4 @@ def index_solana_plays(self):
         raise e
     finally:
         if have_lock:
-            logger.info("index_solana_plays.py | Releasing lock")
             update_lock.release()
