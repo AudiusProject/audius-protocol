@@ -260,7 +260,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
 
     try:
-        openresty_public_key = requests.get(
+        openresty_public_key: Optional[str] = requests.get(
             "http://localhost:5000/openresty_pubkey"
         ).text
     except requests.ConnectionError:
