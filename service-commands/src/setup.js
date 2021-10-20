@@ -150,7 +150,6 @@ const Service = Object.freeze({
   INIT_CONTRACTS_INFO: 'init-contracts-info',
   INIT_TOKEN_VERSIONS: 'init-token-versions',
   DISCOVERY_PROVIDER: 'discovery-provider',
-  CONTENT_SERVICE: 'content-service',
   CREATOR_NODE: 'creator-node',
   IDENTITY_SERVICE: 'identity-service',
   DISTRIBUTE: 'distribute',

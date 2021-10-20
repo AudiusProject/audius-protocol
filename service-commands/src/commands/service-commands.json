@@ -35,8 +35,7 @@
   "eth-contracts": {
     "path": "eth-contracts",
     "up": [
-      "cd eth-contracts/",
-      "rm -rf build",
+      "cd eth-contracts/; rm -rf build",
       "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100 -l 8000000",
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
@@ -146,17 +145,6 @@
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
-    ]
-  },
-  "content-service": {
-    "protocol": "http",
-    "host": "localhost",
-    "port": 8432,
-    "up": [
-      "docker-compose -f content-service/docker-compose/docker-compose.full.yml up --build -d"
-    ],
-    "down": [
-      "docker-compose -f content-service/docker-compose/docker-compose.full.yml down"
     ]
   },
   "creator-node": {
