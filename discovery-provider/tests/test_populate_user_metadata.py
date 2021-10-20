@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_populate_user_metadata(app):
-    """Tests that populate_user_metadata works after aggregate_user refresh"""
+    """Tests that populate_user_metadata works after aggregate_user update"""
     with app.app_context():
         db = get_db()
 
@@ -67,7 +67,6 @@ def test_populate_user_metadata(app):
     populate_mock_db(db, test_entities)
 
     with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
         user_ids = [1, 2, 3, 4, 5]
         users = [
             {"user_id": 1, "is_verified": False},

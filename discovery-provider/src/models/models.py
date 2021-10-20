@@ -951,7 +951,7 @@ chain={self.chain})>"
 
 
 class AggregateUser(Base):
-    __tablename__ = "aggregate_user_table"
+    __tablename__ = "aggregate_user"
 
     user_id = Column(Integer, primary_key=True, nullable=False, index=True)
     track_count = Column(Integer, nullable=False)

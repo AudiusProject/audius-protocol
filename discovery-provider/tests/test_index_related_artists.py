@@ -26,7 +26,7 @@ def test_index_related_artists(app):
         db = get_db()
 
     entities = {
-        "users": [{"user_id":i} for i in range(7)],
+        "users": [{}] * 7,
         "follows": [
             # at least 200 followers for user_0
             {"follower_user_id": i, "followee_user_id": 0}

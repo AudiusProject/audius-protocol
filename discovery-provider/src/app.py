@@ -268,7 +268,6 @@ def configure_flask(test_config, app, mode="app"):
         if "db" in test_config:
             if "url" in test_config["db"]:
                 database_url = test_config["db"]["url"]
-    print("isaac database_url: " + database_url)
 
     # Sometimes ECS latency causes the create_database function to fail because db connection is not ready
     # Give it some more time to get set up, up to 5 times
@@ -364,6 +363,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.cache_trending_playlists",
             "src.tasks.index_solana_plays",
             "src.tasks.index_aggregate_views",
+            "src.tasks.index_aggregate_user",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
             "src.tasks.index_eth",
