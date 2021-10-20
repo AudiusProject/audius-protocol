@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 # Names of the aggregate tables to update
 AGGREGATE_USER = "aggregate_user"
+DEFAULT_UPDATE_TIMEOUT = 60
+REFRESH_COUNTER = 10
 
 UPDATE_AGGREGATE_USER_QUERY = """
         WITH aggregate_user_latest_blocknumber AS (
@@ -323,9 +325,6 @@ UPDATE_AGGREGATE_USER_QUERY = """
             repost_count = EXCLUDED.repost_count,
             track_save_count = EXCLUDED.track_save_count
     """
-
-DEFAULT_UPDATE_TIMEOUT = 60
-REFRESH_COUNTER = 3
 
 
 def update_aggregate_table(
