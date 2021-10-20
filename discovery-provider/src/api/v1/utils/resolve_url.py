@@ -33,7 +33,7 @@ def resolve_url(session, url):
     if match:
         slug = match.group("slug")
         handle = match.group("handle")
-        return ns_url_for(tracks_ns, "track_by_route", slug=slug, handle=handle)
+        return ns_url_for(tracks_ns, "track_by_slug", slug=slug, handle=handle)
 
     match = playlist_url_regex.match(path)
     if match:

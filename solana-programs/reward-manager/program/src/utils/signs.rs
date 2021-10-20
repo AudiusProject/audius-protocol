@@ -126,10 +126,6 @@ pub struct SecpSignatureOffsets {
 
 pub const SIGNATURE_OFFSETS_SERIALIZED_SIZE: usize = 11;
 pub const DATA_START: usize = SIGNATURE_OFFSETS_SERIALIZED_SIZE + 1;
-// These messages are prefix (3) + reward_manager_pubkey (32) + eth_address (20) = 55
-pub const EXPECTED_ADD_DELETE_MESSAGE_SIZE: u16 = 55;
-// All vote messages are padded to 128 bytes
-pub const VOTE_MESSAGE_LENGTH: u16 = 128;
 
 /// Validates the secp offsets struct is as expected -
 /// the *_index fields must point to the `instruction_index`,
@@ -138,7 +134,6 @@ pub const VOTE_MESSAGE_LENGTH: u16 = 128;
 pub fn validate_secp_offsets(
     secp_instruction_data: Vec<u8>,
     instruction_index: u8,
-    expected_message_size: u16,
 ) -> ProgramResult {
     // First, ensure there is just a single offsets struct included
     if secp_instruction_data[0] != 1 {
@@ -170,10 +165,6 @@ pub fn validate_secp_offsets(
 
     // message_data_offset = signature_offset + signature_arr.len (65) = 97
     if offsets.message_data_offset != 97 {
-        return Err(AudiusProgramError::SignatureVerificationFailed.into());
-    }
-
-    if offsets.message_data_size != expected_message_size {
         return Err(AudiusProgramError::SignatureVerificationFailed.into());
     }
 
@@ -248,6 +239,11 @@ pub fn validate_secp_add_delete_sender(
     new_sender: EthereumAddress,
     message_prefix: &str,
 ) -> ProgramResult {
+    // Ensure that `instructions_info` is indeed the instructions sysvar
+    if !sysvar::instructions::check_id(&instruction_info.key) {
+        return Err(AudiusProgramError::InstructionLoadError.into());
+    }
+
     let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
     // Instruction can't be first in transaction
     // because must follow after `new_secp256k1_instruction`
@@ -278,7 +274,6 @@ pub fn validate_secp_add_delete_sender(
         validate_secp_offsets(
             secp_instruction.data.clone(),
             index as u8,
-            EXPECTED_ADD_DELETE_MESSAGE_SIZE,
         )?;
         check_message_from_secp_instruction(
             secp_instruction.data.clone(),
@@ -296,6 +291,11 @@ pub fn validate_secp_submit_attestation(
     instruction_info: &AccountInfo,
     expected_signer: &EthereumAddress,
 ) -> Result<VoteMessage, ProgramError> {
+    // Ensure that `instructions_info` is indeed the instructions sysvar
+    if !sysvar::instructions::check_id(&instruction_info.key) {
+        return Err(AudiusProgramError::InstructionLoadError.into());
+    }
+
     let index = sysvar::instructions::load_current_index(&instruction_info.data.borrow());
 
     // Instruction can't be first in transaction
@@ -317,7 +317,10 @@ pub fn validate_secp_submit_attestation(
         return Err(AudiusProgramError::Secp256InstructionMissing.into());
     }
 
-    validate_secp_offsets(secp_instruction.data.clone(), secp_index.try_into().unwrap(), VOTE_MESSAGE_LENGTH)?;
+    validate_secp_offsets(
+        secp_instruction.data.clone(),
+        secp_index.try_into().unwrap(),
+    )?;
 
     let eth_signer = get_signer_from_secp_instruction(secp_instruction.data.clone());
     if eth_signer != *expected_signer {
