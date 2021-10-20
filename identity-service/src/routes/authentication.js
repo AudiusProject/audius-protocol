@@ -37,7 +37,7 @@ module.exports = function (app) {
             cipherText: body.cipherText,
             lookupKey: body.lookupKey
           }, { transaction: t })
-            .then(function (auth) {
+            .then(function () {
               const oldLookupKey = body.oldLookupKey
               if (oldLookupKey && oldLookupKey !== body.lookupKey) {
                 return models.Authentication.destroy({ where: { lookupKey: oldLookupKey } }, { transaction: t })
