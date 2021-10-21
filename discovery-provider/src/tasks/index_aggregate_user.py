@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 # Names of the aggregate tables to update
 AGGREGATE_USER = "aggregate_user"
-DEFAULT_UPDATE_TIMEOUT = 60
+DEFAULT_UPDATE_TIMEOUT = 60 * 5  # 5 minutes
 REFRESH_COUNTER = 100
 
 UPDATE_AGGREGATE_USER_QUERY = """
