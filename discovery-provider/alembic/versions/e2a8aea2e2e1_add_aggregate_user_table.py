@@ -17,15 +17,20 @@ depends_on = None
 
 
 def upgrade():
+    # create aggregate_user table
     op.execute("CREATE TABLE aggregate_user_table AS TABLE aggregate_user")
     op.execute("ALTER TABLE aggregate_user_table ADD PRIMARY KEY (user_id)")
+
+    # drop existing aggregate_user mat view and its dependencies
     op.execute("DROP MATERIALIZED VIEW IF EXISTS user_lexeme_dict")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS trending_params")
-
     op.execute("DROP MATERIALIZED VIEW IF EXISTS aggregate_user")
 
+    # rename table to replace mat view
     op.execute("ALTER TABLE aggregate_user_table RENAME TO aggregate_user")
 
+    # recreate mat views
+    # trending_params from 92571f94989a
     op.execute(
         """
         CREATE MATERIALIZED VIEW trending_params as
@@ -208,6 +213,7 @@ def upgrade():
         CREATE INDEX trending_params_track_id_idx ON trending_params (track_id);"""
     )
 
+    # user_lexeme_dict from af43df9fbde0
     op.execute(
         """
         DROP INDEX IF EXISTS user_words_idx;
@@ -229,7 +235,7 @@ def upgrade():
                             'audius_ts_config',
                             COALESCE(u.handle, '')
                         )
-                    )
+                    ) || lower(COALESCE(u.name, ''))
                 ) as word
             FROM
                 users u
@@ -251,147 +257,18 @@ def upgrade():
         CREATE INDEX user_words_idx ON user_lexeme_dict USING gin(word gin_trgm_ops);
         CREATE INDEX user_handles_idx ON user_lexeme_dict(handle);
         CREATE UNIQUE INDEX user_row_number_idx ON user_lexeme_dict(row_number);
-
-        DROP MATERIALIZED VIEW IF EXISTS track_lexeme_dict;
-        DROP INDEX IF EXISTS track_words_idx;
-
-        CREATE MATERIALIZED VIEW track_lexeme_dict as
-        SELECT row_number() OVER (PARTITION BY true), * FROM (
-            SELECT
-                t.track_id,
-                t.owner_id as owner_id,
-                lower(t.title) as track_title,
-                lower(u.handle) as handle,
-                lower(u.name) as user_name,
-                a.repost_count as repost_count,
-                unnest(
-                    tsvector_to_array(
-                        to_tsvector(
-                            'audius_ts_config',
-                            replace(COALESCE(t."title", ''), '&', 'and')
-                        )
-                    )
-                ) as word
-            FROM
-                tracks t
-            INNER JOIN users u ON t.owner_id = u.user_id
-            INNER JOIN aggregate_track a on a.track_id = t.track_id
-            WHERE t.is_current = true AND t.is_unlisted = false AND t.is_delete = false AND t.stem_of IS NULL AND u.is_current = true and
-            u.user_id not in (
-                select u.user_id from users u
-                inner join
-                    (
-                        select distinct lower(u1.handle) as handle, u1.user_id from users u1
-                        where u1.is_current = true and u1.is_verified = true
-                    ) as sq
-                on lower(u.name) = sq.handle and u.user_id != sq.user_id
-                where u.is_current = true
-            )
-            GROUP BY t.track_id, t.title, t.owner_id, u.handle, u.name, a.repost_count
-        ) AS words;
-
-        CREATE INDEX track_words_idx ON track_lexeme_dict USING gin(word gin_trgm_ops);
-        CREATE INDEX track_user_name_idx ON track_lexeme_dict USING gin(user_name gin_trgm_ops);
-        CREATE INDEX tracks_user_handle_idx ON track_lexeme_dict(handle);
-        CREATE UNIQUE INDEX track_row_number_idx ON track_lexeme_dict(row_number);
-
-        DROP MATERIALIZED VIEW IF EXISTS playlist_lexeme_dict;
-        DROP MATERIALIZED VIEW IF EXISTS album_lexeme_dict;
-        DROP INDEX IF EXISTS playlist_words_idx;
-        DROP INDEX IF EXISTS album_words_idx;
-
-        CREATE MATERIALIZED VIEW playlist_lexeme_dict as
-        SELECT row_number() OVER (PARTITION BY true), * FROM (
-            SELECT
-                p.playlist_id,
-                lower(p.playlist_name) as playlist_name,
-                p.playlist_owner_id as owner_id,
-                lower(u.handle) as handle,
-                lower(u.name) as user_name,
-                a.repost_count as repost_count,
-                unnest(
-                    tsvector_to_array(
-                        to_tsvector(
-                            'audius_ts_config',
-                            replace(COALESCE(p.playlist_name, ''), '&', 'and')
-                        )
-                    )
-                ) as word
-            FROM
-                    playlists p
-            INNER JOIN users u ON p.playlist_owner_id = u.user_id
-            INNER JOIN aggregate_playlist a on a.playlist_id = p.playlist_id
-            WHERE
-                    p.is_current = true and p.is_album = false and p.is_private = false and p.is_delete = false
-                    and u.is_current = true and
-                    u.user_id not in (
-                        select u.user_id from users u
-                        inner join
-                            (
-                                select distinct lower(u1.handle) as handle, u1.user_id from users u1
-                                where u1.is_current = true and u1.is_verified = true
-                            ) as sq
-                        on lower(u.name) = sq.handle and u.user_id != sq.user_id
-                        where u.is_current = true
-                    )
-            GROUP BY p.playlist_id, p.playlist_name, p.playlist_owner_id, u.handle, u.name, a.repost_count
-        ) AS words;
-
-        CREATE MATERIALIZED VIEW album_lexeme_dict as
-        SELECT row_number() OVER (PARTITION BY true), * FROM (
-            SELECT
-                p.playlist_id,
-                lower(p.playlist_name) as playlist_name,
-                p.playlist_owner_id as owner_id,
-                lower(u.handle) as handle,
-                lower(u.name) as user_name,
-                a.repost_count as repost_count,
-                unnest(
-                    tsvector_to_array(
-                        to_tsvector(
-                            'audius_ts_config',
-                            replace(COALESCE(p.playlist_name, ''), '&', 'and')
-                        )
-                    )
-                ) as word
-            FROM
-                    playlists p
-            INNER JOIN users u ON p.playlist_owner_id = u.user_id
-            INNER JOIN aggregate_playlist a on a.playlist_id = p.playlist_id
-            WHERE
-                    p.is_current = true and p.is_album = true and p.is_private = false and p.is_delete = false
-                    and u.is_current = true and
-                    u.user_id not in (
-                        select u.user_id from users u
-                        inner join
-                            (
-                                select distinct lower(u1.handle) as handle, u1.user_id from users u1
-                                where u1.is_current = true and u1.is_verified = true
-                            ) as sq
-                        on lower(u.name) = sq.handle and u.user_id != sq.user_id
-                        where u.is_current = true
-                    )
-            GROUP BY p.playlist_id, p.playlist_name, p.playlist_owner_id, u.handle, u.name, a.repost_count
-        ) AS words;
-
-        CREATE INDEX playlist_words_idx ON playlist_lexeme_dict USING gin(word gin_trgm_ops);
-        CREATE INDEX playlist_user_name_idx ON playlist_lexeme_dict USING gin(user_name gin_trgm_ops);
-        CREATE INDEX playlist_user_handle_idx ON playlist_lexeme_dict(handle);
-        CREATE UNIQUE INDEX playlist_row_number_idx ON playlist_lexeme_dict(row_number);
-
-        CREATE INDEX album_words_idx ON album_lexeme_dict USING gin(word gin_trgm_ops);
-        CREATE INDEX album_user_name_idx ON album_lexeme_dict USING gin(user_name gin_trgm_ops);
-        CREATE INDEX album_user_handle_idx ON album_lexeme_dict(handle);
-        CREATE UNIQUE INDEX album_row_number_idx ON album_lexeme_dict(row_number);
         """
     )
 
 
 def downgrade():
+    # drop dependent mat views and aggregate_user table
     op.execute("DROP MATERIALIZED VIEW IF EXISTS trending_params")
     op.execute("DROP MATERIALIZED VIEW IF EXISTS user_lexeme_dict")
     op.drop_table("aggregate_user")
 
+    # re-create mat views
+    # aggregate_user from 5bcbe23f6c70
     op.execute(
         """
         --- ======================= AGGREGATE USER =======================
@@ -507,6 +384,7 @@ def downgrade():
         CREATE UNIQUE INDEX aggregate_user_idx ON aggregate_user (user_id);"""
     )
 
+    # trending_params from 92571f94989a
     op.execute(
         """
         CREATE MATERIALIZED VIEW trending_params as
@@ -689,6 +567,7 @@ def downgrade():
         CREATE INDEX trending_params_track_id_idx ON trending_params (track_id);"""
     )
 
+    # user_lexeme_dict from af43df9fbde0
     op.execute(
         """
         DROP INDEX IF EXISTS user_words_idx;
@@ -710,7 +589,7 @@ def downgrade():
                             'audius_ts_config',
                             COALESCE(u.handle, '')
                         )
-                    )
+                    ) || lower(COALESCE(u.name, ''))
                 ) as word
             FROM
                 users u
@@ -732,137 +611,5 @@ def downgrade():
         CREATE INDEX user_words_idx ON user_lexeme_dict USING gin(word gin_trgm_ops);
         CREATE INDEX user_handles_idx ON user_lexeme_dict(handle);
         CREATE UNIQUE INDEX user_row_number_idx ON user_lexeme_dict(row_number);
-
-        DROP MATERIALIZED VIEW IF EXISTS track_lexeme_dict;
-        DROP INDEX IF EXISTS track_words_idx;
-
-        CREATE MATERIALIZED VIEW track_lexeme_dict as
-        SELECT row_number() OVER (PARTITION BY true), * FROM (
-            SELECT
-                t.track_id,
-                t.owner_id as owner_id,
-                lower(t.title) as track_title,
-                lower(u.handle) as handle,
-                lower(u.name) as user_name,
-                a.repost_count as repost_count,
-                unnest(
-                    tsvector_to_array(
-                        to_tsvector(
-                            'audius_ts_config',
-                            replace(COALESCE(t."title", ''), '&', 'and')
-                        )
-                    )
-                ) as word
-            FROM
-                tracks t
-            INNER JOIN users u ON t.owner_id = u.user_id
-            INNER JOIN aggregate_track a on a.track_id = t.track_id
-            WHERE t.is_current = true AND t.is_unlisted = false AND t.is_delete = false AND t.stem_of IS NULL AND u.is_current = true and
-            u.user_id not in (
-                select u.user_id from users u
-                inner join
-                    (
-                        select distinct lower(u1.handle) as handle, u1.user_id from users u1
-                        where u1.is_current = true and u1.is_verified = true
-                    ) as sq
-                on lower(u.name) = sq.handle and u.user_id != sq.user_id
-                where u.is_current = true
-            )
-            GROUP BY t.track_id, t.title, t.owner_id, u.handle, u.name, a.repost_count
-        ) AS words;
-
-        CREATE INDEX track_words_idx ON track_lexeme_dict USING gin(word gin_trgm_ops);
-        CREATE INDEX track_user_name_idx ON track_lexeme_dict USING gin(user_name gin_trgm_ops);
-        CREATE INDEX tracks_user_handle_idx ON track_lexeme_dict(handle);
-        CREATE UNIQUE INDEX track_row_number_idx ON track_lexeme_dict(row_number);
-
-        DROP MATERIALIZED VIEW IF EXISTS playlist_lexeme_dict;
-        DROP MATERIALIZED VIEW IF EXISTS album_lexeme_dict;
-        DROP INDEX IF EXISTS playlist_words_idx;
-        DROP INDEX IF EXISTS album_words_idx;
-
-        CREATE MATERIALIZED VIEW playlist_lexeme_dict as
-        SELECT row_number() OVER (PARTITION BY true), * FROM (
-            SELECT
-                p.playlist_id,
-                lower(p.playlist_name) as playlist_name,
-                p.playlist_owner_id as owner_id,
-                lower(u.handle) as handle,
-                lower(u.name) as user_name,
-                a.repost_count as repost_count,
-                unnest(
-                    tsvector_to_array(
-                        to_tsvector(
-                            'audius_ts_config',
-                            replace(COALESCE(p.playlist_name, ''), '&', 'and')
-                        )
-                    )
-                ) as word
-            FROM
-                    playlists p
-            INNER JOIN users u ON p.playlist_owner_id = u.user_id
-            INNER JOIN aggregate_playlist a on a.playlist_id = p.playlist_id
-            WHERE
-                    p.is_current = true and p.is_album = false and p.is_private = false and p.is_delete = false
-                    and u.is_current = true and
-                    u.user_id not in (
-                        select u.user_id from users u
-                        inner join
-                            (
-                                select distinct lower(u1.handle) as handle, u1.user_id from users u1
-                                where u1.is_current = true and u1.is_verified = true
-                            ) as sq
-                        on lower(u.name) = sq.handle and u.user_id != sq.user_id
-                        where u.is_current = true
-                    )
-            GROUP BY p.playlist_id, p.playlist_name, p.playlist_owner_id, u.handle, u.name, a.repost_count
-        ) AS words;
-
-        CREATE MATERIALIZED VIEW album_lexeme_dict as
-        SELECT row_number() OVER (PARTITION BY true), * FROM (
-            SELECT
-                p.playlist_id,
-                lower(p.playlist_name) as playlist_name,
-                p.playlist_owner_id as owner_id,
-                lower(u.handle) as handle,
-                lower(u.name) as user_name,
-                a.repost_count as repost_count,
-                unnest(
-                    tsvector_to_array(
-                        to_tsvector(
-                            'audius_ts_config',
-                            replace(COALESCE(p.playlist_name, ''), '&', 'and')
-                        )
-                    )
-                ) as word
-            FROM
-                    playlists p
-            INNER JOIN users u ON p.playlist_owner_id = u.user_id
-            INNER JOIN aggregate_playlist a on a.playlist_id = p.playlist_id
-            WHERE
-                    p.is_current = true and p.is_album = true and p.is_private = false and p.is_delete = false
-                    and u.is_current = true and
-                    u.user_id not in (
-                        select u.user_id from users u
-                        inner join
-                            (
-                                select distinct lower(u1.handle) as handle, u1.user_id from users u1
-                                where u1.is_current = true and u1.is_verified = true
-                            ) as sq
-                        on lower(u.name) = sq.handle and u.user_id != sq.user_id
-                        where u.is_current = true
-                    )
-            GROUP BY p.playlist_id, p.playlist_name, p.playlist_owner_id, u.handle, u.name, a.repost_count
-        ) AS words;
-
-        CREATE INDEX playlist_words_idx ON playlist_lexeme_dict USING gin(word gin_trgm_ops);
-        CREATE INDEX playlist_user_name_idx ON playlist_lexeme_dict USING gin(user_name gin_trgm_ops);
-        CREATE INDEX playlist_user_handle_idx ON playlist_lexeme_dict(handle);
-        CREATE UNIQUE INDEX playlist_row_number_idx ON playlist_lexeme_dict(row_number);
-
-        CREATE INDEX album_words_idx ON album_lexeme_dict USING gin(word gin_trgm_ops);
-        CREATE INDEX album_user_name_idx ON album_lexeme_dict USING gin(user_name gin_trgm_ops);
-        CREATE INDEX album_user_handle_idx ON album_lexeme_dict(handle);
-        CREATE UNIQUE INDEX album_row_number_idx ON album_lexeme_dict(row_number);
         """
     )

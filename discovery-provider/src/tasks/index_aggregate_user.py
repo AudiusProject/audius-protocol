@@ -12,6 +12,11 @@ AGGREGATE_USER = "aggregate_user"
 DEFAULT_UPDATE_TIMEOUT = 60 * 5  # 5 minutes
 REFRESH_COUNTER = 100
 
+### UPDATE_AGGREGATE_USER_QUERY ###
+# Get a lower bound blocknumber to check for new entity counts for a user
+# Find a subset of users that have changed since that blocknumber
+# For that subset of users reclaculate the entire counts for each entity
+# Insert that count for new users or update it to an existing row
 UPDATE_AGGREGATE_USER_QUERY = """
         WITH aggregate_user_latest_blocknumber AS (
             SELECT
@@ -370,6 +375,8 @@ def update_aggregate_table(
                         "most_recent_indexed_aggregate_block": most_recent_indexed_aggregate_block
                     },
                 )
+
+                # set new block to be the lower bound for the next indexing
                 redis.set(
                     most_recent_indexed_aggregate_block_key, latest_indexed_block_num
                 )
