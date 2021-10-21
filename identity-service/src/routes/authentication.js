@@ -8,16 +8,6 @@ const config = require('../config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const authKeyGenerator = (req) => `${req.query.username}`
 
-const authRateLimiter = rateLimit({
-  store: new RedisStore({
-    client: redisClient,
-    prefix: 'authRateLimiter:',
-    expiry: 60 * 60 * 24 // one day in seconds
-  }),
-  max: 40, // max requests per day
-  keyGenerator: authKeyGenerator
-})
-
 module.exports = function (app) {
   /**
    * This signup function writes the encryption values from the user's browser(iv, cipherText, lookupKey)
@@ -39,7 +29,7 @@ module.exports = function (app) {
     } else return errorResponseBadRequest('Missing one of the required fields: iv, cipherText, lookupKey')
   }))
 
-  app.get('/authentication', authRateLimiter, handleResponse(async (req, res, next) => {
+  app.get('/authentication', handleResponse(async (req, res, next) => {
     let queryParams = req.query
 
     if (queryParams && queryParams.lookupKey) {
