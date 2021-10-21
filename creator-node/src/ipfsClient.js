@@ -28,6 +28,8 @@ async function logIpfsPeerIds () {
 
 /**
  * Wrapper to ipfs.add() -- Allows enabling/disabling adding content to the ipfs daemon.
+ *
+ * VERY IMPORTANT ! ! ! ONLY PASS IN `ipfs.add` OR `ipfsLatest.add` AS `ipfsAddFn`
  * @param {function} ipfsAddFn ipfs add fn
  * @param {Buffer|ReadStream|string} content a single buffer input, a read stream, or a src path to the file
  * @param {Object?} ipfsConfig ipfs add config options
@@ -38,11 +40,11 @@ async function logIpfsPeerIds () {
 async function ipfsSingleAddWrapper (ipfsAddFn, content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
 
-  // If content happens to be a path, create a read stream. This fn does not throw if input is invalid.
-  // https://github.com/nodejs/node/blob/f85d5b21fda925b879cf27bdcde81478fc134b31/lib/fs.js#L324-L333
-  if (fs.existsSync(content)) { content = fs.createReadStream(content) }
+  // If the input is not a buffer, then it will be a file path or ReadStream.
+  // In the latter case, convert either to a buffer.
+  let buffer = await _convertToBuffer(content, logger)
 
-  const onlyHash = await ipfsAddWithoutDaemon(content)
+  const onlyHash = await ipfsAddWithoutDaemon(buffer)
 
   if (!enableIPFSAdd) {
     logger.info(`[ipfsClient - ipfsSingleAddWrapper()] onlyHash=${onlyHash}`)
@@ -50,11 +52,33 @@ async function ipfsSingleAddWrapper (ipfsAddFn, content, ipfsConfig = {}, logCon
   }
 
   try {
-    const ipfsDaemonHash = (await ipfsAddWithTimeout(ipfsAddFn, content, ipfsConfig))[0].hash
+    let ipfsDaemonHash
+    if (ipfsAddFn === ipfsLatest.add) {
+      /* ipfs.add with the v43.0.1 returns a async generator. To access this response, use a `for await... of` loop. Then,
+        the response will have the structure:
+        {
+          path: 'docs/assets/anchor.js',
+          cid: CID('QmVHxRocoWgUChLEvfEyDuuD6qJ4PhdDL2dTLcpUy3dSC2'),
+          size: 15347
+        }
+        See https://www.npmjs.com/package/ipfs-http-client/v/43.0.1#example
+      */
+
+      if (!ipfsConfig.timeout) {
+        ipfsConfig.timeout = IPFS_ADD_TIMEOUT_MS
+      }
+
+      for await (const ipfsLatestAddWithDaemonResp of ipfsLatest.add(buffer, ipfsConfig)) {
+        ipfsDaemonHash = `${ipfsLatestAddWithDaemonResp.cid}`
+      }
+    } else {
+      ipfsDaemonHash = (await ipfsAddWithTimeout(ipfsAddFn, buffer, ipfsConfig))[0].hash
+    }
+
     logger.info(`[ipfsClient - ipfsSingleAddWrapper()] onlyHash=${onlyHash} ipfsDaemonHash=${ipfsDaemonHash} isSameHash=${onlyHash === ipfsDaemonHash}`)
     return ipfsDaemonHash
   } catch (e) {
-    logger.warn(`[ipfsClient - ipfsSingleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${onlyHash}: ${e.toString()}`)
+    logger.warn(`[ipfsClient - ipfsSingleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${onlyHash}: ${e.toString()}\n${e.stack}`)
     return onlyHash
   }
 }
@@ -151,11 +175,37 @@ async function ipfsAddWithTimeout (ipfsAddFn, content, ipfsConfig = {}, timeout 
   ])
 }
 
+async function _convertToBuffer (content, logger) {
+  if (Buffer.isBuffer(content)) return content
+
+  let buffer = []
+  try {
+    if (fs.existsSync(content)) {
+      // is a file path
+      buffer = fs.readFileSync(content)
+    } else {
+      // is a ReadStream
+      await new Promise((resolve, reject) => {
+        content.on('data', (chunk) => buffer.push(chunk))
+        content.on('end', () => resolve(Buffer.concat(buffer)))
+        content.on('error', (err) => reject(err))
+      })
+    }
+  } catch (e) {
+    const errMsg = `[ipfsClient - ipfsSingleAddWrapper()] Could not convert content into buffer: ${e.toString()}`
+    logger.error(errMsg)
+    throw new Error(errMsg)
+  }
+
+  return buffer
+}
+
 module.exports = {
   ipfs,
   ipfsLatest,
   logIpfsPeerIds,
   ipfsSingleAddWrapper,
   ipfsMultipleAddWrapper,
-  ipfsAddWithoutDaemon
+  ipfsAddWithoutDaemon,
+  ipfsAddWithTimeout
 }

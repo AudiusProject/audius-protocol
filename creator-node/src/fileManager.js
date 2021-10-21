@@ -56,7 +56,7 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
   }
 
   // Add to IPFS without pinning and retrieve multihash
-  const multihash = await ipfsSingleAddWrapper(ipfs.addFromFs, srcPath, { pin: false }, logContext, enableIPFSAdd)
+  const multihash = await ipfsSingleAddWrapper(ipfs.add, srcPath, { pin: false }, logContext, enableIPFSAdd)
 
   // store file copy by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
@@ -284,8 +284,9 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     // verify that the contents of the file match the file's cid
     try {
       decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
-      const content = fs.createReadStream(expectedStoragePath)
-      const ipfsHashOnly = await ipfsSingleAddWrapper(ipfsLatest.add, content, { onlyHash: true, timeout: 10000 }, {})
+      const ipfsHashOnly = await ipfsSingleAddWrapper(ipfsLatest.add, expectedStoragePath, { onlyHash: true, timeout: 10000 }, {})
+
+      // TODO: verify ipfs and ipfsLatest return results
       if (multihash !== ipfsHashOnly) {
         decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: ipfsHashOnly, time: Date.now() })
         // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct

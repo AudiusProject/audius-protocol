@@ -260,8 +260,7 @@ async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null) {
         await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
 
         // verify that the file written matches the hash expected if added to ipfs
-        const content = fs.createReadStream(filePath)
-        const ipfsHashOnly = await ipfsSingleAddWrapper(ipfsLatest.add, content, { onlyHash: true, timeout: 2000 })
+        const ipfsHashOnly = await ipfsSingleAddWrapper(ipfsLatest.add, filePath, { onlyHash: true, timeout: 2000 })
 
         if (cid !== ipfsHashOnly) {
           await fs.unlink(filePath)
