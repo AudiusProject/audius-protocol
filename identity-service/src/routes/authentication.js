@@ -1,12 +1,7 @@
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
-const rateLimit = require('express-rate-limit')
-const RedisStore = require('rate-limit-redis')
 const Redis = require('ioredis')
 const config = require('../config.js')
-
-const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
-const authKeyGenerator = (req) => `${req.query.username}`
 
 module.exports = function (app) {
   /**
