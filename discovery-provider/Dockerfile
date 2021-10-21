@@ -72,8 +72,7 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/reposit
 
 COPY . .
 
-RUN cp ./nginx_conf/nginx.conf /usr/local/openresty/conf && \
-    cp ./nginx_conf/main.lua /usr/local/openresty/conf
+RUN cp ./nginx_conf/* /usr/local/openresty/conf/
 
 # Add the wait script to the image
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait
