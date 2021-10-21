@@ -1,7 +1,5 @@
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
-const Redis = require('ioredis')
-const config = require('../config.js')
 
 module.exports = function (app) {
   /**
