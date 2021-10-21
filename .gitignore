@@ -2,7 +2,10 @@
 *.swp
 *.swo
 *.swn
-.vscode
 node_modules/
+
+# VSCode
+.vscode/*
+!.vscode/launch.json
 
 .idea

@@ -4,8 +4,8 @@ mod utils;
 use audius_reward_manager::{
     error::AudiusProgramError,
     instruction,
-    processor::{TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX, VERIFY_TRANSFER_SEED_PREFIX},
-    state::{VerifiedMessage, VERIFIED_MESSAGES_LEN},
+    processor::{TRANSFER_ACC_SPACE, TRANSFER_SEED_PREFIX},
+    state::VERIFIED_MESSAGES_LEN,
     utils::{find_derived_pair, EthereumAddress},
     vote_message,
 };
@@ -961,6 +961,150 @@ async fn failure_only_aao_attestations() {
 
     let res = context.banks_client.process_transaction(tx).await;
     assert_custom_error(res, 0, AudiusProgramError::IncorrectMessages);
+}
+
+// Ensure that an attacker can't pass in an arbitrary rewards recipient - tests
+// that the processor re-derives the Solana UserBank from the provided eth_address,
+// only disbursing if it matches the Solana recipient.
+#[tokio::test]
+async fn disallows_transfers_to_invalid_account() {
+    let TestConstants {
+        reward_manager,
+        bot_oracle_message,
+        oracle_priv_key,
+        senders_message,
+        mut context,
+        transfer_id,
+        oracle_derived_address,
+        recipient_eth_key,
+        token_account,
+        rent,
+        mut rng,
+        manager_account,
+        mint,
+        ..
+    } = setup_test_environment().await;
+
+    // Generate data and create senders
+    let keys: [[u8; 32]; 3] = rng.gen();
+    let operators: [EthereumAddress; 3] = rng.gen();
+    let mut signers: [Pubkey; 3] = unsafe { MaybeUninit::zeroed().assume_init() };
+    for (i, key) in keys.iter().enumerate() {
+        let derived_address = create_sender_from(
+            &reward_manager,
+            &manager_account,
+            &mut context,
+            key,
+            operators[i],
+        )
+        .await;
+        signers[i] = derived_address;
+    }
+
+    let mut instructions = Vec::<Instruction>::new();
+
+    // Add 3 messages and AAO
+    for item in keys.iter().enumerate() {
+        let priv_key = SecretKey::parse(item.1).unwrap();
+        let inst =
+            new_secp256k1_instruction_2_0(&priv_key, senders_message.as_ref(), (2 * item.0) as u8);
+        instructions.push(inst);
+        instructions.push(
+            instruction::submit_attestations(
+                &audius_reward_manager::id(),
+                &reward_manager.pubkey(),
+                &signers[item.0],
+                &context.payer.pubkey(),
+                transfer_id.to_string(),
+            )
+            .unwrap(),
+        );
+    }
+
+    let oracle_sign = new_secp256k1_instruction_2_0(
+        &oracle_priv_key,
+        bot_oracle_message.as_ref(),
+        (keys.len() * 2) as u8,
+    );
+    instructions.push(oracle_sign);
+    instructions.push(
+        instruction::submit_attestations(
+            &audius_reward_manager::id(),
+            &reward_manager.pubkey(),
+            &oracle_derived_address,
+            &context.payer.pubkey(),
+            transfer_id.to_string(),
+        )
+        .unwrap(),
+    );
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    let verified_messages_account = get_messages_account(&reward_manager, transfer_id);
+
+    let malicious_recipient = Keypair::new();
+
+    let instructions = vec![
+        system_instruction::create_account(
+            &context.payer.pubkey(),
+            &malicious_recipient.pubkey(),
+            rent.minimum_balance(spl_token::state::Account::LEN),
+            spl_token::state::Account::LEN as _,
+            &spl_token::id(),
+        ),
+        spl_token::instruction::initialize_account(
+            &spl_token::id(),
+            &malicious_recipient.pubkey(),
+            &mint.pubkey(),
+            &spl_token::id(),
+        )
+        .unwrap(),
+    ];
+
+    let tx = Transaction::new_signed_with_payer(
+        &instructions,
+        Some(&context.payer.pubkey()),
+        &[&context.payer, &malicious_recipient],
+        context.last_blockhash,
+    );
+    context.banks_client.process_transaction(tx).await.unwrap();
+
+    let tx = Transaction::new_signed_with_payer(
+        &[instruction::evaluate_attestations(
+            &audius_reward_manager::id(),
+            &verified_messages_account,
+            &reward_manager.pubkey(),
+            &token_account.pubkey(),
+            &malicious_recipient.pubkey(),
+            &oracle_derived_address,
+            &context.payer.pubkey(),
+            10_000u64,
+            transfer_id.to_string(),
+            recipient_eth_key,
+        )
+        .unwrap()],
+        Some(&context.payer.pubkey()),
+        &[&context.payer],
+        context.last_blockhash,
+    );
+
+    let res = context.banks_client.process_transaction(tx).await;
+    assert_custom_error(res, 0, AudiusProgramError::InvalidRecipient);
+
+    // Assert that we didn't transfer anything to the malicious recipient.
+    let recipient_account_data = get_account(&mut context, &malicious_recipient.pubkey())
+        .await
+        .unwrap();
+    let recipient_account =
+        spl_token::state::Account::unpack(&recipient_account_data.data.as_slice()).unwrap();
+    assert_eq!(recipient_account.amount, 0);
 }
 
 // Helpers
