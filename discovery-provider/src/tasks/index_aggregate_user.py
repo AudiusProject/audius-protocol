@@ -336,8 +336,7 @@ def update_aggregate_table(
     timeout=DEFAULT_UPDATE_TIMEOUT,
 ):
     have_lock = False
-    update_lock = redis.lock(
-        f"update_aggregate_table:{table_name}", timeout=timeout)
+    update_lock = redis.lock(f"update_aggregate_table:{table_name}", timeout=timeout)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
@@ -354,8 +353,7 @@ def update_aggregate_table(
             )
 
             with db.scoped_session() as session:
-                latest_indexed_block_num = get_latest_blocknumber(
-                    session, redis)
+                latest_indexed_block_num = get_latest_blocknumber(session, redis)
                 start_time = time.time()
                 if (
                     not most_recent_indexed_aggregate_block
