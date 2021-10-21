@@ -15,19 +15,18 @@ def update_view(mat_view_name, db):
     with db.scoped_session() as session:
         start_time = time.time()
         logger.info(f"index_aggregate_views.py | Updating {mat_view_name}")
-        session.execute(
-            f"REFRESH MATERIALIZED VIEW CONCURRENTLY {mat_view_name}")
+        session.execute(f"REFRESH MATERIALIZED VIEW CONCURRENTLY {mat_view_name}")
 
         logger.info(
-            f"index_aggregate_views.py | Finished updating {mat_view_name} in: {time.time()-start_time} sec")
+            f"index_aggregate_views.py | Finished updating {mat_view_name} in: {time.time()-start_time} sec"
+        )
 
 
 def update_materialized_view(db, redis, mat_view_name, timeout=DEFAULT_UPDATE_TIMEOUT):
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock(
-        f"refresh_mat_view:{mat_view_name}", timeout=timeout)
+    update_lock = redis.lock(f"refresh_mat_view:{mat_view_name}", timeout=timeout)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
@@ -46,9 +45,8 @@ def update_materialized_view(db, redis, mat_view_name, timeout=DEFAULT_UPDATE_TI
         if have_lock:
             update_lock.release()
 
+
 ######## CELERY TASKS ########
-
-
 @celery.task(name="update_aggregate_track", bind=True)
 def update_aggregate_track(self):
     db = update_aggregate_track.db
