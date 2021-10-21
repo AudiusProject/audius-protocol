@@ -27,10 +27,13 @@ const Lock = {
   clearLock: async (key) => {
     redisClient.del(key)
   },
-  clearAllLocks: async (keyPrefix) => {
+  /**
+   * Clears all locks that match a redis key pattern
+   * @param {String} keyPattern redis key for lock, must include '*' to select all records for a pattern
+   */
+  clearAllLocks: async (keyPattern) => {
     const stream = redisClient.scanStream({
-      // only returns keys following the pattern of `user:*`
-      match: keyPrefix
+      match: keyPattern
     })
     const multi = redisClient.multi({ pipeline: true })
 
