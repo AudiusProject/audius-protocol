@@ -538,7 +538,7 @@ class SnapbackSM {
    * @returns a string[] of the new replica set nodes
    */
   async selectRandomReplicaSetNodes ({ healthyReplicaSet, numberOfUnhealthyReplicas, healthyNodes, wallet }) {
-    const logStr = `[selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[${healthyReplicaSet}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} numberHealthyNodes=${healthyNodes.length} ||`
+    const logStr = `[selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[${[...healthyReplicaSet]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} numberHealthyNodes=${healthyNodes.length} ||`
 
     let newReplicaNodesSet = new Set()
     let selectNewReplicaSetAttemptCounter = 0
