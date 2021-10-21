@@ -7,7 +7,6 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
 import { getIsOpen as getIsMobileOverflowModalOpen } from 'audius-client/src/common/store/ui/mobile-overflow-menu/selectors'
-import { getIsOpen as getIsUploadDrawerOpen } from 'audius-client/src/common/store/ui/mobile-upload-drawer/selectors'
 import { getModalIsOpen } from 'audius-client/src/common/store/ui/modals/slice'
 import { getIsOpen as getIsPushNotificationsDrawerOpen } from 'audius-client/src/common/store/ui/push-notifications-drawer/selectors'
 import { getIsOpen as getIsNowPlayingOpen } from 'audius-client/src/common/store/ui/now-playing/selectors'
@@ -71,7 +70,6 @@ const BottomBar = () => {
   const handle = useSelectorWeb(getUserHandle)
   const location = useSelector(getLocation)
   const isOverflowModalOpen = useSelectorWeb(getIsMobileOverflowModalOpen)
-  const isUploadDrawerOpen = useSelectorWeb(getIsUploadDrawerOpen)
   const isPushNotificationDrawerOpen = useSelectorWeb(
     getIsPushNotificationsDrawerOpen
   )
@@ -123,7 +121,6 @@ const BottomBar = () => {
       onSignOn ||
       onErrorPage ||
       isOverflowModalOpen ||
-      isUploadDrawerOpen ||
       isPushNotificationDrawerOpen ||
       isModalOpen ||
       isNowPlayingOpen
@@ -131,7 +128,6 @@ const BottomBar = () => {
   }, [
     onSignOn,
     isOverflowModalOpen,
-    isUploadDrawerOpen,
     isPushNotificationDrawerOpen,
     isModalOpen,
     isNowPlayingOpen

@@ -3,11 +3,7 @@ import React, { memo } from 'react'
 import AnimatedBottomButton from './AnimatedBottomButton'
 import { ButtonProps } from './types'
 
-const TrendingButton = ({
-  isDarkMode,
-  onClick,
-  isActive,
-}: ButtonProps) => {
+const TrendingButton = ({ isDarkMode, onClick, isActive }: ButtonProps) => {
   return (
     <AnimatedBottomButton
       uniqueKey='trending-button'
