@@ -29,15 +29,6 @@ module.exports = function (app) {
       const lookupKey = queryParams.lookupKey
       const existingUser = await models.Authentication.findOne({ where: { lookupKey } })
 
-      // If username (email) provided, log if not found for future reference.
-      if (queryParams.username) {
-        const email = queryParams.username.toLowerCase()
-        const userObj = await models.User.findOne({ where: { email } })
-        if (existingUser && !userObj) {
-          req.logger.warn(`No user found with email ${email} for auth record with lookupKey ${lookupKey}`)
-        }
-      }
-
       if (existingUser) {
         return successResponse(existingUser)
       } else {
