@@ -1,4 +1,4 @@
-import { AppState } from 'src/store'
+import { AppState } from '../../store'
 
 const getBaseState = (state: AppState) => state.lifecycle
 

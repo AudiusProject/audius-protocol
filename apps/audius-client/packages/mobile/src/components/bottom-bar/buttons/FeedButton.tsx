@@ -3,11 +3,7 @@ import React, { memo } from 'react'
 import AnimatedBottomButton from './AnimatedBottomButton'
 import { ButtonProps } from './types'
 
-const FeedButton = ({
-  isDarkMode,
-  onClick,
-  isActive,
-}: ButtonProps) => {
+const FeedButton = ({ isDarkMode, onClick, isActive }: ButtonProps) => {
   return (
     <AnimatedBottomButton
       uniqueKey='feed-button'

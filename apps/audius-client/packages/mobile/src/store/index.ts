@@ -1,4 +1,6 @@
-import { combineReducers } from 'redux'
+import { createStore, combineReducers, applyMiddleware } from 'redux'
+import createSagaMiddleware from 'redux-saga'
+import { composeWithDevTools } from 'redux-devtools-extension'
 
 import googleCast, { GoogleCastState } from './googleCast/reducer'
 import audio, { AudioState } from './audio/reducer'
@@ -10,6 +12,9 @@ import search, { SearchState } from './search/reducer'
 import theme, { ThemeState } from './theme/reducer'
 import clientStore from './clientStore/slice'
 
+import rootSaga from './sagas'
+import { KeyboardState } from './keyboard/slice'
+
 export type AppState = {
   audio: AudioState
   web: WebState
@@ -20,6 +25,7 @@ export type AppState = {
   theme: ThemeState
   search: SearchState
   clientStore: any
+  keyboard: KeyboardState
 }
 
 const createRootReducer = () =>
@@ -35,4 +41,11 @@ const createRootReducer = () =>
     search
   })
 
-export default createRootReducer
+export default () => {
+  const sagaMiddleware = createSagaMiddleware()
+  const middlewares = applyMiddleware(sagaMiddleware)
+  const composeEnhancers = composeWithDevTools({ trace: true, traceLimit: 25 })
+  const store = createStore(createRootReducer(), composeEnhancers(middlewares))
+  sagaMiddleware.run(rootSaga)
+  return store
+}
