@@ -9,8 +9,8 @@ const ipfs = ipfsClient.ipfs
 const ipfsLatest = ipfsClient.ipfsLatest
 
 const createRandomText = () => {
-  // return uuid.v4()
-  return 'i love bts'
+  return uuid.v4()
+  // return 'i love bts'
 }
 
 // TODO: IF THE LGOGER EVER PRINTS OUT AN ERROR -> FAIL TEST IF NOT INTENTIONAL
