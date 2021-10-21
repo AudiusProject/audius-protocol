@@ -125,7 +125,7 @@ def test_get_tracks_by_date(app):
         assert tracks[4]["permalink"] == "/some-test-user/track-2"
 
 
-def test_get_track_by_route(app):
+def test_get_track_by_handle_slug(app):
     """Test getting track by user handle and slug for route resolution"""
     with app.app_context():
         db = get_db()
@@ -136,25 +136,27 @@ def test_get_track_by_route(app):
             tracks = _get_tracks(
                 session,
                 {
-                    "routes": [{"owner_id": 1287289, "slug": "track-1"}],
+                    "user_id": 1287289,
+                    "slug": "track-1",
                     "offset": 0,
                     "limit": 10,
                 },
             )
 
-            assert len(tracks) == 1, "track-1 is found for some-test-user"
+            assert len(tracks) == 1
             assert tracks[0]["owner_id"] == 1287289
             assert tracks[0]["permalink"] == "/some-test-user/track-1"
 
             tracks = _get_tracks(
                 session,
                 {
-                    "routes": [{"owner_id": 4, "slug": "track-1"}],
+                    "user_id": 4,
+                    "slug": "track-1",
                     "offset": 0,
                     "limit": 10,
                 },
             )
-            assert len(tracks) == 1, "track-1 is still found for some-other-user"
+            assert len(tracks) == 1
             assert tracks[0]["owner_id"] == 4
             assert tracks[0]["permalink"] == "/some-other-user/track-1"
 
@@ -162,7 +164,8 @@ def test_get_track_by_route(app):
             tracks = _get_tracks(
                 session,
                 {
-                    "routes": [{"owner_id": 4, "slug": "hidden-track"}],
+                    "user_id": 4,
+                    "slug": "hidden-track",
                     "offset": 0,
                     "limit": 10,
                 },

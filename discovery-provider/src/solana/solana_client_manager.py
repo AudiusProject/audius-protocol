@@ -1,6 +1,9 @@
 import random
 import time
 import logging
+import signal
+
+from contextlib import contextmanager
 from typing import Optional, Union
 from solana.account import Account
 from solana.publickey import PublicKey
@@ -40,7 +43,9 @@ class SolanaClientManager:
             num_retries = retries
             while num_retries > 0:
                 try:
+                    logger.info(f"solana_client_manager.py | get_sol_tx_info | Fetching tx {tx_sig} {endpoint}")
                     tx_info = client.get_confirmed_transaction(tx_sig)
+                    logger.info(f"solana_client_manager.py | get_sol_tx_info | Finished fetching tx {tx_sig} {endpoint}")
                     if tx_info["result"] is not None:
                         return tx_info
                 except Exception as e:
@@ -61,7 +66,7 @@ class SolanaClientManager:
         return _try_all(
             self.clients,
             handle_get_sol_tx_info,
-            f"solana_client_manager.py | get_sol_tx_info | All requests failed to fetch {tx_sig}",
+            f"solana_client_manager.py | get_sol_tx_info | All requests failed to fetch {tx_sig}"
         )
 
     def get_confirmed_signature_for_address2(
@@ -69,17 +74,59 @@ class SolanaClientManager:
         account: Union[str, Account, PublicKey],
         before: Optional[str] = None,
         limit: Optional[int] = None,
+        retries: Optional[int] = DEFAULT_MAX_RETRIES
     ):
         """Fetches confirmed signatures for transactions given an address."""
 
-        def handle_get_confirmed_signature_for_address2(client, _):
-            return client.get_confirmed_signature_for_address2(account, before, limit)
+        def handle_get_confirmed_signature_for_address2(client, index):
+            endpoint = self.endpoints[index]
+            num_retries = retries
+            while num_retries > 0:
+                try:
+                    logger.info(f"solana_client_manager.py | handle_get_confirmed_signature_for_address2 | Fetching {before} {endpoint}")
+                    transactions = client.get_confirmed_signature_for_address2(account, before, limit)
+                    logger.info(f"solana_client_manager.py | handle_get_confirmed_signature_for_address2 | Finished fetching {before} {endpoint}")
+                    return transactions
+                except Exception as e:
+                    logger.error(
+                        f"solana_client_manager.py | get_confirmed_signature_for_address2 | \
+                            Error fetching tx {tx_sig} from endpoint {endpoint}, {e}",
+                        exc_info=True,
+                    )
+                num_retries -= 1
+                time.sleep(DELAY_SECONDS)
+                logger.error(
+                    f"solana_client_manager.py | get_confirmed_signature_for_address2 | Retrying tx fetch: {tx_sig} with endpoint {endpoint}"
+                )
+            raise Exception(
+                f"solana_client_manager.py | get_confirmed_signature_for_address2 | Failed to fetch {tx_sig} with endpoint {endpoint}"
+            )
 
-        return _try_all(
+        return _try_all_with_timeout(
             self.clients,
             handle_get_confirmed_signature_for_address2,
-            "solana_client_manager.py | get_confirmed_signature_for_address2 | All requests failed",
+            "solana_client_manager.py | get_confirmed_signature_for_address2 | All requests failed"
         )
+
+@contextmanager
+def timeout(time):
+    # Register a function to raise a TimeoutError on the signal.
+    signal.signal(signal.SIGALRM, raise_timeout)
+    # Schedule the signal to be sent after ``time``.
+    signal.alarm(time)
+
+    try:
+        yield
+    except TimeoutError:
+        raise
+    finally:
+        # Unregister the signal so it won't be triggered
+        # if the timeout is not reached.
+        signal.signal(signal.SIGALRM, signal.SIG_IGN)
+
+
+def raise_timeout(signum, frame):
+    raise TimeoutError
 
 
 def _try_all(iterable, func, message, randomize=False):
@@ -90,6 +137,25 @@ def _try_all(iterable, func, message, randomize=False):
     for index, value in items:
         try:
             return func(value, index)
+        except Exception:
+            logger.error(f"solana_client_manager.py | _try_all | Failed attempt at index {index} for function {func}")
+            if index < len(items) - 1:
+                logger.info(f"solana_client_manager.py | _try_all | Retrying")
+            continue
+    raise Exception(message)
+
+def _try_all_with_timeout(iterable, func, message, randomize=False):
+    """Do not use this function with ThreadPoolExecutor,
+    doesn't play well with futures
+
+    Executes a function with retries across the iterable.
+    If all executions fail, raise an exception."""
+    items = list(enumerate(iterable))
+    items = items if not randomize else random.sample(items, k=len(items))
+    for index, value in items:
+        try:
+            with timeout(30):
+                return func(value, index)
         except Exception:
             logger.error(f"solana_client_manager.py | _try_all | Failed attempt at index {index} for function {func}")
             if index < len(items) - 1:
