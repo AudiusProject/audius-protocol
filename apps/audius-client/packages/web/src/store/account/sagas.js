@@ -230,9 +230,12 @@ function* cacheAccount(account) {
   yield put(accountActions.fetchAccountSucceeded(formattedAccount))
 }
 
-function* reCacheAccount(action) {
+// Pull from redux cache and persist to local storage cache
+export function* reCacheAccount(action) {
   const account = yield select(getAccountToCache)
+  const accountUser = yield select(getAccountUser)
   setAudiusAccount(account)
+  setAudiusAccountUser(accountUser)
 }
 
 const setBrowerPushPermissionConfirmationModal = setVisibility({
