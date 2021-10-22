@@ -4,7 +4,7 @@ from flask import Blueprint, request
 from src.queries.get_latest_play import get_latest_play
 from src.queries.queries import parse_bool_param
 from src.queries.get_health import get_health, get_latest_ipld_indexed_block
-from src.queries.get_sol_plays import get_sol_health_info
+from src.queries.get_sol_plays import get_sol_play_health_info
 from src.api_helpers import success_response
 from src.utils import helpers, redis_connection
 
@@ -35,6 +35,7 @@ def health_check():
         "challenge_events_age_max_drift": request.args.get(
             "challenge_events_age_max_drift", type=int
         ),
+        "plays_max_drift": request.args.get("plays_max_drift", type=int)
     }
 
     (health_results, error) = get_health(args)
@@ -84,7 +85,7 @@ def sol_play_check():
     max_drift = request.args.get("max_drift", type=int)
     redis = redis_connection.get_redis()
 
-    response = get_sol_health_info(limit, redis)
+    response = get_sol_play_health_info(limit, redis)
 
     error = None
     latest_db_sol_plays = response["db_info"]

@@ -24,6 +24,9 @@ from src.queries.get_balances import (
     LAZY_REFRESH_REDIS_PREFIX,
     IMMEDIATE_REFRESH_REDIS_PREFIX,
 )
+from src.queries.get_sol_plays import (
+    get_sol_play_health_info
+)
 from src.utils.helpers import redis_get_or_restore
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 
@@ -151,6 +154,9 @@ class GetHealthArgs(TypedDict):
     # Number of seconds the challenge events are allowed to drift
     challenge_events_age_max_drift: Optional[int]
 
+    # Number of seconds play counts are allowed to drift
+    plays_max_drift: Optional[int]
+
 
 def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict, bool]:
     """
@@ -165,6 +171,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     enforce_block_diff = args.get("enforce_block_diff")
     qs_healthy_block_diff = cast(Optional[int], args.get("healthy_block_diff"))
     challenge_events_age_max_drift = args.get("challenge_events_age_max_drift")
+    plays_max_drift = args.get("plays_max_drift")
 
     # If healthy block diff is given in url and positive, override config value
     healthy_block_diff = (
@@ -201,6 +208,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_block = web3.eth.getBlock("latest", True)
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
+
+    # Fetch plays from solana specifically
+    sol_play_info = get_sol_play_health_info(1, redis)
 
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
@@ -278,6 +288,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "index_eth_age_sec": index_eth_age_sec,
         "number_of_cpus": number_of_cpus,
         **sys_info,
+        "solana": {
+            "play_info": sol_play_info
+        }
     }
 
     block_difference = abs(latest_block_num - latest_indexed_block_num)
