@@ -30,127 +30,197 @@ describe('test ipfsClient', () => {
     randomTextFilePath = createRandomTextFile()
   })
 
-  it('ipfs.add() and ipfs.addFromFs() should return the same cid when adding the same content', async () => {
-    const buffer = fs.readFileSync(randomTextFilePath)
-    const ipfsAddResp = (await ipfs.add(buffer))[0].hash
-    const ipfsAddFromFsResp = (await ipfs.addFromFs(randomTextFilePath))[0].hash
+  // TEST IPFS ADD
 
-    assert.deepStrictEqual(ipfsAddResp, ipfsAddFromFsResp)
-  })
-
-  it('[buffer] ipfs.add() and ipfsLatest.add() should reutrn the same cid when adding the same content', async () => {
+  it('[buffer] when adding a buffer, the cids should be consistent', async () => {
     const buffer = fs.readFileSync(randomTextFilePath)
 
-    const ipfsAddResp = (await ipfs.add(buffer))[0].hash
-    let ipfsLatestAddResp
+    // Original IPFS instance
+    const ipfsAddBufferResp = (await ipfs.add(buffer))[0].hash
+
+    // Original IPFS instance with `onlyHash` flag
+    const ipfsAddBufferRespOnlyHashFlag = (await ipfs.add(buffer, { onlyHash: true }))[0].hash
+
+    // Newer IPFS instance
+    let ipfsLatestAddBufferResp
     for await (const resp of ipfsLatest.add(buffer)) {
-      ipfsLatestAddResp = `${resp.cid}`
+      ipfsLatestAddBufferResp = `${resp.cid}`
     }
-    assert.deepStrictEqual(ipfsAddResp, ipfsLatestAddResp)
+
+    // Newer IPFS instance with `onlyHash` flag
+    let ipfsLatestAddBufferRespWithOnlyHashFlag
+    for await (const resp of ipfsLatest.add(buffer, { onlyHash: true })) {
+      ipfsLatestAddBufferRespWithOnlyHashFlag = `${resp.cid}`
+    }
+
+    // Only hash logic
+    const onlyHash = await ipfsClient.ipfsAddWithoutDaemon(buffer)
+
+    console.log('buffers', {
+      ipfsAddBufferResp,
+      ipfsAddBufferRespOnlyHashFlag,
+      ipfsLatestAddBufferResp,
+      ipfsLatestAddBufferRespWithOnlyHashFlag,
+      onlyHash
+    })
+
+    const allResults = [
+      ipfsAddBufferResp,
+      ipfsAddBufferRespOnlyHashFlag,
+      ipfsLatestAddBufferResp,
+      ipfsLatestAddBufferRespWithOnlyHashFlag,
+      onlyHash
+    ]
+
+    assert.ok(!!allResults.reduce(function (a, b) { return (a === b) ? a : NaN }))
   })
 
-  // Fails. interesting.
-  it('[readstream] ipfs.add() and ipfsLatest.add() should reutrn the same cid when adding the same content', async () => {
+  it('[readstream] when adding a readstream, the cids should be consistent', async () => {
     const readstream1 = fs.createReadStream(randomTextFilePath)
     const readstream2 = fs.createReadStream(randomTextFilePath)
+    const readstream3 = fs.createReadStream(randomTextFilePath)
+    const readstream4 = fs.createReadStream(randomTextFilePath)
+    const readstream5 = fs.createReadStream(randomTextFilePath)
 
-    const ipfsAddResp = (await ipfs.add(readstream1))[0].hash
-    let ipfsLatestAddResp
-    for await (const resp of ipfsLatest.add(readstream2)) {
-      ipfsLatestAddResp = `${resp.cid}`
+    // Original IPFS instance
+    const ipfsAddReadstreamResp = (await ipfs.add(readstream1))[0].hash
+
+    // Original IPFS instance with `onlyHash` flag
+    const ipfsAddReadstreamRespOnlyHashFlag = (await ipfs.add(readstream2, { onlyHash: true }))[0].hash
+
+    // Newer IPFS instance
+    let ipfsLatestAddReadstreamResp
+    for await (const resp of ipfsLatest.add(readstream3)) {
+      ipfsLatestAddReadstreamResp = `${resp.cid}`
     }
-    assert.deepStrictEqual(ipfsAddResp, ipfsLatestAddResp)
+
+    // Newer IPFS instance with `onlyHash` flag
+    let ipfsLatestAddReadstreamRespWithOnlyHashFlag
+    for await (const resp of ipfsLatest.add(readstream4, { onlyHash: true })) {
+      ipfsLatestAddReadstreamRespWithOnlyHashFlag = `${resp.cid}`
+    }
+
+    // Only hash logic
+    const onlyHash = await ipfsClient.ipfsAddWithoutDaemon(readstream5)
+
+    console.log('readstream', {
+      ipfsAddReadstreamResp,
+      ipfsAddReadstreamRespOnlyHashFlag,
+      ipfsLatestAddReadstreamResp,
+      ipfsLatestAddReadstreamRespWithOnlyHashFlag,
+      onlyHash
+    })
+
+    const allResults = [
+      ipfsAddReadstreamResp,
+      ipfsAddReadstreamRespOnlyHashFlag,
+      ipfsLatestAddReadstreamResp,
+      ipfsLatestAddReadstreamRespWithOnlyHashFlag,
+      onlyHash
+    ]
+
+    // Check that every response in `allResults` is equal to each other
+    assert.ok(!!allResults.reduce(function (a, b) { return (a === b) ? a : NaN }))
   })
 
-  it('[ipfsAddWithTimeout] If the ipfs add fn takes over the timeout, throw an error', async () => {
-    try {
-      const fnThatTakes20Sec = () => { return new Promise((resolve, reject) => setTimeout(resolve, 20000, 'should not have succeeded with this promise')) }
-      await ipfsClient.ipfsAddWithTimeout(fnThatTakes20Sec, randomText, {}, 2000)
-      assert.fail('Should have not waited 20 seconds')
-    } catch (e) {
-      // If reached here, good
-    }
-  })
+  // Note: ipfsLatest does not have a `addFromFs()` fn
+  it('[file path] when adding a file path, the cids should be consistent', async () => {
+    // Original IPFS instance
+    const ipfsAddFromFsFilePathResp = (await ipfs.addFromFs(randomTextFilePath))[0].hash
 
-  it('[ipfsAddWithTimeout] If the ipfs add fn takes under the timeout, do not throw an error', async () => {
-    try {
-      const fnThatTakes1Sec = () => { return new Promise((resolve, reject) => setTimeout(resolve, 1000, 'should have succeeded with this promise')) }
-      await ipfsClient.ipfsAddWithTimeout(fnThatTakes1Sec, randomText, {}, 2000)
-    } catch (e) {
-      console.error(e)
-      assert.fail('Should not have failed when the fn takes under the input timeout')
-    }
+    // Original IPFS instance with `onlyHash` flag
+    const ipfsAddFromFsFilePathRespOnlyHashFlag = (await ipfs.addFromFs(randomTextFilePath, { onlyHash: true }))[0].hash
+
+    // Only hash logic -- used in conjunction with convert to buffer fn
+    const buffer = await ipfsClient._convertToBuffer(randomTextFilePath)
+    const onlyHash = await ipfsClient.ipfsAddWithoutDaemon(buffer)
+
+    console.log('file path', {
+      ipfsAddFromFsFilePathResp,
+      ipfsAddFromFsFilePathRespOnlyHashFlag,
+      onlyHash
+    })
+
+    const allResults = [
+      ipfsAddFromFsFilePathResp,
+      ipfsAddFromFsFilePathRespOnlyHashFlag,
+      onlyHash
+    ]
+
+    assert.ok(!!allResults.reduce(function (a, b) { return (a === b) ? a : NaN }))
   })
 
   it('[ipfsSingleAddWrapper] passing in a Buffer should work', async () => {
     const buffer = Buffer.from(randomText)
 
-    const ipfsAddResp = await ipfsClient.ipfsSingleAddWrapper(ipfs.add, buffer)
-    const ipfsLatestAddResp = await ipfsClient.ipfsSingleAddWrapper(ipfsLatest.add, buffer)
-    const ipfsAddWithDaemonResp = await ipfsClient.ipfsSingleAddWrapper(ipfs.add, buffer, {}, {}, true)
-    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsSingleAddWrapper(ipfsLatest.add, buffer, {}, {}, true)
+    const onlyHash = await ipfsClient.ipfsSingleAddWrapper(buffer)
+    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsSingleAddWrapper(buffer, {}, {}, true)
 
     console.log('buffer', {
-      ipfsAddResp,
-      ipfsLatestAddResp,
-      ipfsAddWithDaemonResp,
+      onlyHash,
       ipfsLatestAddWithDaemonResp
     })
 
-    assert.deepStrictEqual(ipfsAddResp, ipfsLatestAddResp)
-    assert.deepStrictEqual(ipfsAddWithDaemonResp, ipfsLatestAddWithDaemonResp)
-    assert.deepStrictEqual(ipfsAddResp, ipfsAddWithDaemonResp)
+    assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
   })
 
   it('[ipfsSingleAddWrapper] passing in a ReadStream should work', async () => {
     const readStream1 = fs.createReadStream(randomTextFilePath)
-    const ipfsAddResp = await ipfsClient.ipfsSingleAddWrapper(ipfs.add, readStream1)
+    const onlyHash = await ipfsClient.ipfsSingleAddWrapper(readStream1)
 
     const readStream2 = fs.createReadStream(randomTextFilePath)
-    const ipfsLatestAddResp = await ipfsClient.ipfsSingleAddWrapper(ipfsLatest.add, readStream2)
-
-    const readStream3 = fs.createReadStream(randomTextFilePath)
-    const ipfsAddWithDaemonResp = await ipfsClient.ipfsSingleAddWrapper(ipfs.add, readStream3, {}, {}, true)
-
-    const readStream4 = fs.createReadStream(randomTextFilePath)
-    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsSingleAddWrapper(ipfsLatest.add, readStream4, { onlyHash: true }, {}, true)
+    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsSingleAddWrapper(readStream2, {}, {}, true)
 
     console.log('readstream', {
-      ipfsAddResp,
-      ipfsLatestAddResp,
-      ipfsAddWithDaemonResp,
+      onlyHash,
       ipfsLatestAddWithDaemonResp
     })
 
-    assert.deepStrictEqual(ipfsAddResp, ipfsLatestAddResp)
-    assert.deepStrictEqual(ipfsAddWithDaemonResp, ipfsLatestAddWithDaemonResp)
-    assert.deepStrictEqual(ipfsAddResp, ipfsAddWithDaemonResp)
+    assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
   })
 
   it('[ipfsSingleAddWrapper] passing in a source path should work', async () => {
     const pathToFile = path.join(__dirname, './assets/random.txt')
 
-    const ipfsAddResp = await ipfsClient.ipfsSingleAddWrapper(ipfs.add, pathToFile)
-    const ipfsLatestAddResp = await ipfsClient.ipfsSingleAddWrapper(ipfsLatest.add, pathToFile)
-    const ipfsAddWithDaemonResp = await ipfsClient.ipfsSingleAddWrapper(ipfs.add, pathToFile, {}, {}, true)
-    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsSingleAddWrapper(ipfsLatest.add, pathToFile, {}, {}, true)
+    const onlyHash = await ipfsClient.ipfsSingleAddWrapper(pathToFile)
+    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsSingleAddWrapper(pathToFile, {}, {}, true)
 
     console.log('source path', {
-      ipfsAddResp,
-      ipfsLatestAddResp,
-      ipfsAddWithDaemonResp,
+      onlyHash,
       ipfsLatestAddWithDaemonResp
     })
-    assert.deepStrictEqual(ipfsAddResp, ipfsLatestAddResp)
-    assert.deepStrictEqual(ipfsAddWithDaemonResp, ipfsLatestAddWithDaemonResp)
-    assert.deepStrictEqual(ipfsAddResp, ipfsAddWithDaemonResp)
+
+    assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
   })
 
-  // it('[ipfsSingleAddWrapper] ipfs add and only hash fn should return the same thing', async () => {
+  // TODO: fix thiss
+  it.only('[ipfsMultipleAddWrapper] passing in Object[] of the structure {path, content} should work', async () => {
+    let p = path.join('assets', 'random.txt')
 
-  // })
+    const content = [{
+      path: p,
+      buffer: fs.readFileSync(randomTextFilePath)
+    },
+    {
+      path: p,
+      buffer: fs.readFileSync(randomTextFilePath)
+    },
+    {
+      path: p,
+      buffer: fs.readFileSync(randomTextFilePath)
+    },
+    {
+      path: p,
+      buffer: fs.readFileSync(randomTextFilePath)
+    }]
 
-  //   it('[ipfsMultipleAddWrapper] ipfs add and only hash fn should return the same thing', async () => {
+    const onlyHash = await ipfsClient.ipfsMultipleAddWrapper(content)
+    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsMultipleAddWrapper(content, {}, {}, true)
 
-  //   })
+    console.log('object[] with structure {path, content}', {
+      onlyHash, ipfsLatestAddWithDaemonResp
+    })
+
+    assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
+  })
 })
