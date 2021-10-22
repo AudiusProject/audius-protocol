@@ -1,3 +1,4 @@
+
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
 
@@ -13,18 +14,18 @@ module.exports = function (app) {
 
     if (body && body.iv && body.cipherText && body.lookupKey) {
       try {
-        await sequelize.transaction()
+        const transaction = await models.sequelize.transaction()
         await models.Authentication.create({
           iv: body.iv,
           cipherText: body.cipherText,
           lookupKey: body.lookupKey
-        }, { transaction: t })
+        }, { transaction })
 
         const oldLookupKey = body.oldLookupKey
         if (oldLookupKey && oldLookupKey !== body.lookupKey) {
-          await models.Authentication.destroy({ where: { lookupKey: oldLookupKey } }, { transaction: t })
+          await models.Authentication.destroy({ where: { lookupKey: oldLookupKey } }, { transaction })
         }
-        await sequelize.commit()
+        await models.sequelize.commit()
         return successResponse()
       } catch (err) {
         req.logger.error('Error signing up a user', err)
