@@ -40,6 +40,7 @@ enum PathType {
 }
 
 const ROOT_ENDPOINT_MAP = {
+  feed: `/feed`,
   healthCheck: '/health_check',
   blockConfirmation: '/block_confirmation'
 }
@@ -313,6 +314,15 @@ type GetUserChallengesArgs = {
 }
 
 type UserChallengesResponse = {}
+
+export type GetSocialFeedArgs = QueryParams & {
+  filter: string
+  with_users?: boolean
+  tracks_only?: boolean
+  followee_user_ids?: ID[]
+}
+
+type GetSocialFeedResponse = {}
 
 type InitializationState =
   | { state: 'uninitialized' }
@@ -1153,6 +1163,20 @@ class AudiusAPIClient {
       PathType.RootPath
     )
     if (!response) return {}
+    return response.data
+  }
+
+  async getSocialFeed(args: GetSocialFeedArgs) {
+    this._assertInitialized()
+    const response: Nullable<APIResponse<
+      GetSocialFeedResponse
+    >> = await this._getResponse(
+      ROOT_ENDPOINT_MAP.feed,
+      args,
+      true,
+      PathType.RootPath
+    )
+    if (!response) return []
     return response.data
   }
 
