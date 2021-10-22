@@ -390,7 +390,8 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
 
 # Function that ensures we always cache the latest known transaction in redis
 # Performed outside of lock acquisition
-# Ensures a lock held for a long time (usually during catchup scenarios) does not prevent a refresh of latest known transaction
+# Ensures a lock held for a long time (usually during catchup scenarios)
+#   does not prevent a refresh of latest known transaction
 def fetch_and_cache_latest_tx_redis(solana_client_manager: SolanaClientManager, redis):
     transactions_history = (
         solana_client_manager.get_confirmed_signature_for_address2(

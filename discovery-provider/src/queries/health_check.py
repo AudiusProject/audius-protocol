@@ -7,8 +7,6 @@ from src.queries.get_health import get_health, get_latest_ipld_indexed_block
 from src.queries.get_sol_plays import get_sol_health_info
 from src.api_helpers import success_response
 from src.utils import helpers, redis_connection
-from src.utils.redis_cache import get_pickled_key
-from src.utils.redis_constants import latest_sol_play_tx_key
 
 logger = logging.getLogger(__name__)
 
