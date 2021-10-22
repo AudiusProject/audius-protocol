@@ -51,7 +51,7 @@ class ServiceProvider extends Base {
     const timings = await timeRequestsAndSortByVersion(
       creatorNodes.map(node => ({
         id: node.endpoint,
-        url: `${node.endpoint}/health_check`
+        url: `${node.endpoint}/health_check/verbose`
       })),
       timeout
     )
