@@ -81,13 +81,13 @@ class Challenge extends Base {
       })
 
       if (aggregateError) {
-        throw new Error(error)
+        throw new Error(aggregateError)
       }
 
       const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
 
       phase = AttestationPhases.SUBMIT_ATTESTATIONS
-      const { error: submitError } = await this.solanaWeb3Manager.submitChallengeAttestations({
+      const { errorCode: submitErrorCode } = await this.solanaWeb3Manager.submitChallengeAttestations({
         attestations: discoveryNodeAttestations,
         oracleAttestation: aaoAttestation,
         challengeId,
@@ -96,18 +96,22 @@ class Challenge extends Base {
         tokenAmount: fullTokenAmount
       })
 
-      if (submitError) {
-        throw new Error(submitError)
+      if (submitErrorCode) {
+        throw new Error(submitErrorCode)
       }
 
       phase = AttestationPhases.EVALUATE_ATTESTATIONS
-      await this.solanaWeb3Manager.evaluateChallengeAttestations({
+      const { errorCode: evaluateErrorCode} = await this.solanaWeb3Manager.evaluateChallengeAttestations({
         challengeId,
         specifier,
         recipientEthAddress,
         oracleEthAddress,
         tokenAmount: fullTokenAmount
       })
+
+      if (evaluateErrorCode) {
+        throw new Error(evaluateErrorCode)
+      }
 
       return { success: true, error: null }
     } catch (e) {

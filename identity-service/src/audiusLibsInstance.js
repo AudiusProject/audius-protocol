@@ -36,7 +36,13 @@ class AudiusLibsWrapper {
         }
       },
       isServer: true,
-      captchaConfig: { serviceKey: config.get('recaptchaServiceKey') }
+      captchaConfig: { serviceKey: config.get('recaptchaServiceKey') },
+      solanaWeb3Config: AudiusLibs.configSolanaWeb3({
+        solanaClusterEndpoint: config.get('solanaEndpoint'),
+        shouldUseRelay: false,
+        // TODO: this is a risky line, need to handle it not existing
+        feePayerSecretKey: Uint8Array.from(config.get('solanaFeePayerWallet'))
+      })
     })
 
     await audiusInstance.init()

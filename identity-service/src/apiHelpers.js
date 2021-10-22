@@ -52,10 +52,10 @@ module.exports.successResponse = (obj = {}) => {
   }
 }
 
-const errorResponse = module.exports.errorResponse = (statusCode, message) => {
+const errorResponse = module.exports.errorResponse = (statusCode, message, extra = {}) => {
   return {
     statusCode: statusCode,
-    object: { error: message }
+    object: { error: message, ...extra }
   }
 }
 
@@ -71,6 +71,6 @@ module.exports.errorResponseBadRequest = (message) => {
   return errorResponse(400, message)
 }
 
-module.exports.errorResponseServerError = (message) => {
-  return errorResponse(500, message)
+module.exports.errorResponseServerError = (message, extra = {}) => {
+  return errorResponse(500, message, extra)
 }

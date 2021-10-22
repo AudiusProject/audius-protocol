@@ -4,6 +4,7 @@ const crypto = require('crypto')
 const config = require('../config')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { getFeePayer } = require('../solana-client')
+const audiusLibsWrapper = require('../audiusLibsInstance')
 
 const solanaEndpoint = config.get('solanaEndpoint')
 
@@ -28,59 +29,37 @@ const isValidInstruction = (instr) => {
 
 solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
   const redis = req.app.get('redis')
-  const { recentBlockhash, secpInstruction, instruction = {}, instructions = [] } = req.body
+  const libs = req.app.get('audiusLibs')
 
-  const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ secpInstruction, instruction })).digest('hex')
+  let { instructions = [] } = req.body
 
-  try {
-    const tx = new Transaction({ recentBlockhash })
+  const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ instructions })).digest('hex')
 
-    if (secpInstruction) {
-      const secpTransactionInstruction = Secp256k1Program.createInstructionWithPublicKey({
-        publicKey: Buffer.from(secpInstruction.publicKey),
-        message: (new PublicKey(secpInstruction.message)).toBytes(),
-        signature: Buffer.from(secpInstruction.signature),
-        recoveryId: secpInstruction.recoveryId
-      })
-      tx.add(secpTransactionInstruction)
-    }
-
-    [instruction].concat(instructions).filter(isValidInstruction).forEach((instr) => {
-      const keys = instr.keys.map(key => ({
-        pubkey: new PublicKey(key.pubkey),
-        isSigner: key.isSigner,
-        isWritable: key.isWritable
-      }))
-      const txInstruction = new TransactionInstruction({
-        keys,
-        programId: new PublicKey(instr.programId),
-        data: Buffer.from(instr.data)
-      })
-      tx.add(txInstruction)
+  instructions = instructions.filter(isValidInstruction).map((instr) => {
+    const keys = instr.keys.map(key => ({
+      pubkey: new PublicKey(key.pubkey),
+      isSigner: key.isSigner,
+      isWritable: key.isWritable
+    }))
+    return new TransactionInstruction({
+      keys,
+      programId: new PublicKey(instr.programId),
+      data: Buffer.from(instr.data)
     })
+  })
 
-    const feePayerAccount = getFeePayer()
-    tx.sign(feePayerAccount)
+  const transactionHandler = libs.solanaWeb3Manager.transactionHandler
+  const { res, error, errorCode } = await transactionHandler.handleTransaction(instructions)
 
-    const transactionSignature = await sendAndConfirmTransaction(
-      connection,
-      tx,
-      [feePayerAccount],
-      {
-        skipPreflight: true,
-        commitment: 'processed',
-        preflightCommitment: 'processed'
-      }
-    )
-
-    return successResponse({ transactionSignature })
-  } catch (e) {
+  if (error) {
     // if the tx fails, store it in redis with a 24 hour expiration
     await redis.setex(`solanaFailedTx:${reqBodySHA}`, 60 /* seconds */ * 60 /* minutes */ * 24 /* hours */, JSON.stringify(req.body))
-
-    req.logger.error('Error in solana transaction:', e.message, reqBodySHA)
-    return errorResponseServerError(`Something caused the solana transaction to fail for payload ${reqBodySHA}`)
+    req.logger.error('Error in solana transaction:', error, reqBodySHA)
+    const errorString = `Something caused the solana transaction to fail for payload ${reqBodySHA}`
+    return errorResponseServerError(errorString, { errorCode, error } )
   }
+
+  return successResponse({ transactionSignature: res })
 }))
 
 module.exports = function (app) {

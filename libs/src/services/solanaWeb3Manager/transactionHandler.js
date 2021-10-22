@@ -7,70 +7,64 @@ const {
 // Should return
 // { signature, error }
 class TransactionHandler {
-  constructor({ connection, useRelay, identityService = null, feePayerSecretKey = null, feePayerPublicKey = null }) {
+  constructor({ connection, useRelay, identityService = null, feePayerKeypair = null }){
     this.connection = connection
     this.useRelay = useRelay
     this.identityService = identityService
-    this.feePayerSecretKey = feePayerSecretKey
-    this.feePayerPublicKey = feePayerPublicKey
+    this.feePayerKeypair = feePayerKeypair
   }
 
-  async handleTransaction(instructions, errorMapping = {}) {
+  async handleTransaction(instructions, errorMapping = null) {
     let result = null
     if (this.useRelay) {
-      result = await this._relayTransaction(instructions, errorMapping)
+      result = await this._relayTransaction(instructions)
     } else {
-      result = await this._locallyConfirmTransaction(instructions, errorMapping)
+      result = await this._locallyConfirmTransaction(instructions)
     }
-    console.log({result, errorMapping})
-    if (result.error && errorMapping) {
+    if (result.errorCode && errorMapping) {
       result.error = errorMapping.fromErrorCode(result.error)
     }
     return result
   }
 
-  async _relayTransaction(instructions, errorMapping) {
+  async _relayTransaction(instructions) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
-    const { blockhash: recentBlockhash } = await this.connection.getRecentBlockhash()
 
     const transactionData = {
-      recentBlockhash,
       instructions: relayable
     }
 
     try {
       const response = await this.identityService.solanaRelay(transactionData)
-      return { res: response, error: null }
+      return { res: response, error: null, errorCode: null }
     } catch (e) {
-      const error = e.response.data.errorCode
-      return { res: null, error }
+      const { errorCode, error } = e.response.data.errorCode
+      return { res: null, error, errorCode }
     }
   }
 
-  async _locallyConfirmTransaction(instructions, errorMapping) {
-    if (!(this.feePayerPublicKey && this.feePayerPublicKey)) {
+  async _locallyConfirmTransaction(instructions) {
+    if (!this.feePayerKeypair) {
       console.error('Local feepayer keys missing for direct confirmation!')
       return {
         res: null,
-        error: 'Missing keys'
+        error: 'Missing keys',
+        errorCode: null
       }
     }
+
+    const { blockhash: recentBlockhash } = await this.connection.getRecentBlockhash()
     const tx = new Transaction({ recentBlockhash })
 
     instructions.forEach(i => tx.add(i))
 
-    const signer = {
-      publicKey: this.feePayerPublicKey,
-      secretKey: this.feePayerSecretKey,
-    }
-
-    tx.sign(signer)
+    tx.sign(this.feePayerKeypair)
 
     try {
       const transactionSignature = await sendAndConfirmTransaction(
-        connection,
+        this.connection,
         tx,
-        [signer],
+        [this.feePayerKeypair],
         {
           skipPreflight: false,
           commitment: 'processed',
@@ -79,14 +73,14 @@ class TransactionHandler {
       )
       return transactionSignature
     } catch (e) {
-      const { message: errorMessage, logs: errorLogs } = e
-      const error = this._parseSolanaErrorCode(errorMessage)
+      const { message: error } = e
+      const errorCode = this._parseSolanaErrorCode(error)
       return {
         res: null,
-        error
+        error,
+        errorCode
       }
     }
-
   }
 
   _parseSolanaErrorCode(errorMessage) {

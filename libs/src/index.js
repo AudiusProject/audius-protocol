@@ -27,7 +27,7 @@ const Web3 = require('./web3')
 const Captcha = require('./utils/captcha')
 const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 
-const { PublicKey } = require('@solana/web3.js')
+const { Keypair } = require('@solana/web3.js')
 
 class AudiusLibs {
   /**
@@ -217,7 +217,6 @@ class AudiusLibs {
     rewardsManagerTokenPDA,
     useRelay,
     feePayerSecretKey = null,
-    feePayerPublicKey = null
   }) {
     return {
       solanaClusterEndpoint,
@@ -230,8 +229,7 @@ class AudiusLibs {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerSecretKey,
-      feePayerPublicKey: feePayerPublicKey ? new PublicKey(feePayerPublicKey): null
+      feePayerKeypair: feePayerSecretKey ? Keypair.fromSecretKey(feePayerSecretKey) : null,
     }
   }
 

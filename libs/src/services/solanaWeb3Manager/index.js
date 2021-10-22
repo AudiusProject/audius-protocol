@@ -79,9 +79,10 @@ class SolanaWeb3Manager {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerSecretKey,
-      feePayerPublicKey,
+      feePayerKeypair
     } = this.solanaWeb3Config
+    const newPublicKeySafe = (val) => val ? new PublicKey(val) : null
+
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint)
 
@@ -89,27 +90,26 @@ class SolanaWeb3Manager {
       connection: this.connection,
       useRelay,
       identityService: this.identityService,
-      feePayerSecretKey,
-      feePayerPublicKey
+      feePayerKeypair
     })
 
     this.mintAddress = mintAddress
-    this.mintKey = new PublicKey(mintAddress)
+    this.mintKey = newPublicKeySafe(mintAddress)
 
     this.solanaTokenAddress = solanaTokenAddress
-    this.solanaTokenKey = new PublicKey(solanaTokenAddress)
+    this.solanaTokenKey = newPublicKeySafe(solanaTokenAddress)
 
     this.feePayerAddress = feePayerAddress
-    this.feePayerKey = new PublicKey(feePayerAddress)
+    this.feePayerKey = newPublicKeySafe(feePayerAddress)
 
-    this.claimableTokenProgramKey = new PublicKey(claimableTokenProgramAddress)
+    this.claimableTokenProgramKey = newPublicKeySafe(claimableTokenProgramAddress)
     this.claimableTokenPDA = claimableTokenPDA || (
-      (await SolanaUtils.findProgramAddressFromPubkey(this.claimableTokenProgramKey, this.mintKey))[0].toString()
+      this.claimableTokenProgramKey ? ((await SolanaUtils.findProgramAddressFromPubkey(this.claimableTokenProgramKey, this.mintKey))[0].toString()) : null
     )
-    this.claimableTokenPDAKey = new PublicKey(this.claimableTokenPDA)
-    this.rewardManagerProgramId = new PublicKey(rewardsManagerProgramId)
-    this.rewardManagerProgramPDA = new PublicKey(rewardsManagerProgramPDA)
-    this.rewardManagerTokenPDA = new PublicKey(rewardsManagerTokenPDA)
+    this.claimableTokenPDAKey = newPublicKeySafe(this.claimableTokenPDA)
+    this.rewardManagerProgramId = newPublicKeySafe(rewardsManagerProgramId)
+    this.rewardManagerProgramPDA = newPublicKeySafe(rewardsManagerProgramPDA)
+    this.rewardManagerTokenPDA = newPublicKeySafe(rewardsManagerTokenPDA)
   }
 
   /**
