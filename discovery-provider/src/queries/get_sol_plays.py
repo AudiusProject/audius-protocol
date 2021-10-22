@@ -5,6 +5,8 @@ from src.models import Play
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import get_track_play_counts
+from src.utils.redis_cache import get_pickled_key
+from src.utils.redis_constants import latest_sol_play_tx_key
 
 logger = logging.getLogger(__name__)
 
@@ -64,3 +66,15 @@ def get_track_listen_milestones(limit=100):
         track_id_play_counts = get_track_play_counts(session, track_ids)
 
     return track_id_play_counts
+
+# Retrieve sol plays health object
+def get_sol_health_info(limit, redis):
+    # Query latest dplays
+    latest_db_sol_plays = get_latest_sol_plays(limit)
+    latest_cached_sol_tx = get_pickled_key(redis, latest_sol_play_tx_key)
+    slot_diff = latest_cached_sol_tx["slot"] - latest_db_sol_plays[0]["slot"]
+    return {
+        "slot_diff": slot_diff,
+        "chain_tx": latest_cached_sol_tx,
+        "db_info": latest_db_sol_plays
+    }

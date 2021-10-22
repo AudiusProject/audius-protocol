@@ -101,6 +101,7 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
 # Cache the latest value in redis
 def cache_latest_tx_redis(redis, tx):
     try:
+        logger.error(f"Caching latest transaction {tx}")
         tx_sig = tx["signature"]
         tx_slot = tx["slot"]
         pickle_and_set(
@@ -387,6 +388,19 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
     )
     return None
 
+# Function that ensures we always cache the latest known transaction in redis
+# Performed outside of lock acquisition
+# Ensures a lock held for a long time (usually during catchup scenarios) does not prevent a refresh of latest known transaction
+def fetch_and_cache_latest_tx_redis(solana_client_manager: SolanaClientManager, redis):
+    transactions_history = (
+        solana_client_manager.get_confirmed_signature_for_address2(
+            TRACK_LISTEN_PROGRAM, before=None, limit=1
+        )
+    )
+    transactions_array = transactions_history["result"]
+    # Cache latest transaction from chain
+    cache_latest_tx_redis(redis, transactions_array[0])
+
 def split_list(list, n):
     for i in range(0, len(list), n):
         yield list[i:i + n]
@@ -443,9 +457,6 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
                 f"index_solana_plays.py | No transactions found before {last_tx_signature}"
             )
         else:
-            # Cache latest transaction from chain
-            if page_count == 0:
-                cache_latest_tx_redis(redis, transactions_array[0])
             with db.scoped_session() as read_session:
                 for tx in transactions_array:
                     tx_sig = tx["signature"]

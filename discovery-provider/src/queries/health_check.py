@@ -4,7 +4,7 @@ from flask import Blueprint, request
 from src.queries.get_latest_play import get_latest_play
 from src.queries.queries import parse_bool_param
 from src.queries.get_health import get_health, get_latest_ipld_indexed_block
-from src.queries.get_sol_plays import get_latest_sol_plays
+from src.queries.get_sol_plays import get_sol_health_info
 from src.api_helpers import success_response
 from src.utils import helpers, redis_connection
 from src.utils.redis_cache import get_pickled_key
@@ -86,12 +86,10 @@ def sol_play_check():
     max_drift = request.args.get("max_drift", type=int)
     redis = redis_connection.get_redis()
 
-    latest_db_sol_plays = get_latest_sol_plays(limit)
-    latest_cached_sol_tx = get_pickled_key(redis, latest_sol_play_tx_key)
-
-    response = {"chain_tx": latest_cached_sol_tx, "db_info": latest_db_sol_plays}
+    response = get_sol_health_info(limit, redis)
 
     error = None
+    latest_db_sol_plays = response["db_info"]
 
     if latest_db_sol_plays:
         latest_db_play = latest_db_sol_plays[0]
