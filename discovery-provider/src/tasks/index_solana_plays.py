@@ -543,6 +543,8 @@ def index_solana_plays(self):
     update_lock = redis.lock("solana_plays_lock", blocking_timeout=25, timeout=14400)
 
     try:
+        # Cache latest tx outside of lock 
+        fetch_and_cache_latest_tx_redis(solana_client_manager, redis)
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
