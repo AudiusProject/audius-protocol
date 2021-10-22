@@ -25,7 +25,7 @@ describe('test txRelay: selectWallet()', async () => {
     sinon.stub(config, 'get').withArgs('relayerWallets').returns(relayerWallets)
     selectWallet = require('../src/relay/txRelay').selectWallet
 
-    await Lock.clearAllLocks()
+    await Lock.clearAllLocks('*')
   })
 
   afterEach(async () => {
