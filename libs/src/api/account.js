@@ -20,6 +20,8 @@ class Account extends Base {
     this.logout = this.logout.bind(this)
     this.signUp = this.signUp.bind(this)
     this.generateRecoveryLink = this.generateRecoveryLink.bind(this)
+    this.confirmCredentials = this.confirmCredentials.bind(this)
+    this.changePassword = this.changePassword.bind(this)
     this.resetPassword = this.resetPassword.bind(this)
     this.checkIfEmailRegistered = this.checkIfEmailRegistered.bind(this)
     this.associateTwitterUser = this.associateTwitterUser.bind(this)
@@ -198,6 +200,14 @@ class Account extends Base {
 
   async resetPassword (email, newpassword) {
     return this.hedgehog.resetPassword(email, newpassword)
+  }
+
+  async changePassword (email, newpassword, oldpassword) {
+    return this.hedgehog.resetPassword(email, newpassword, oldpassword)
+  }
+
+  async confirmCredentials (email, password) {
+    return this.hedgehog.confirmCredentials(email, password)
   }
 
   /**

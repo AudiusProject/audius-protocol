@@ -354,7 +354,7 @@ class SnapbackSM {
    * @param {Object} replicaSetNodesToUserClockStatusesMap map of secondary endpoint strings to (map of user wallet strings to clock value of secondary for user)
   */
   async issueUpdateReplicaSetOp (userId, wallet, primary, secondary1, secondary2, unhealthyReplicas, healthyNodes, replicaSetNodesToUserClockStatusesMap) {
-    this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=[${unhealthyReplicas}]`)
+    this.log(`[issueUpdateReplicaSetOp] userId=${userId} wallet=${wallet} unhealthy replica set=[${unhealthyReplicas}] numHealthyNodes=${healthyNodes.length}`)
 
     const unhealthyReplicasSet = new Set(unhealthyReplicas)
     let response = { errorMsg: null, issuedReconfig: false }
@@ -538,6 +538,8 @@ class SnapbackSM {
    * @returns a string[] of the new replica set nodes
    */
   async selectRandomReplicaSetNodes ({ healthyReplicaSet, numberOfUnhealthyReplicas, healthyNodes, wallet }) {
+    const logStr = `[selectRandomReplicaSetNodes] wallet=${wallet} healthyReplicaSet=[${[...healthyReplicaSet]}] numberOfUnhealthyReplicas=${numberOfUnhealthyReplicas} numberHealthyNodes=${healthyNodes.length} ||`
+
     let newReplicaNodesSet = new Set()
     let selectNewReplicaSetAttemptCounter = 0
     while (newReplicaNodesSet.size < numberOfUnhealthyReplicas && selectNewReplicaSetAttemptCounter++ < MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS) {
@@ -549,15 +551,20 @@ class SnapbackSM {
       // Check to make sure that the newly selected secondary does not have existing user state
       try {
         const clockValue = await this._retrieveClockValueForUserFromReplica(randomHealthyNode, wallet)
-        if (clockValue === -1) { newReplicaNodesSet.add(randomHealthyNode) }
+        if (clockValue === -1) {
+          newReplicaNodesSet.add(randomHealthyNode)
+        } else if (clockValue === 0) {
+          newReplicaNodesSet.add(randomHealthyNode)
+          this.logWarn(`${logStr} Found a node with clock value of 0, selecting anyway`)
+        }
       } catch (e) {
         // Something went wrong in checking clock value. Reselect another secondary.
-        this.logError(`[selectRandomReplicaSetNode] ${e.message}`)
+        this.logError(`${logStr} ${e.message}`)
       }
     }
 
     if (newReplicaNodesSet.size < numberOfUnhealthyReplicas) {
-      throw new Error('[selectRandomReplicaSetNode] Not enough healthy nodes found to issue new replica set')
+      throw new Error(`${logStr} Not enough healthy nodes found to issue new replica set after ${MAX_SELECT_NEW_REPLICA_SET_ATTEMPTS} attempts`)
     }
 
     return Array.from(newReplicaNodesSet)
