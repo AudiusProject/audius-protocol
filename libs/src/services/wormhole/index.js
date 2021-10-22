@@ -3,6 +3,7 @@ const bs58 = require('bs58')
 const { toBuffer } = require('ethereumjs-util')
 const { zeroPad } = require('ethers/lib/utils')
 const { providers } = require('ethers/lib/index')
+const requireESM = require("esm")(module)
 
 const SolanaUtils = require('../solanaWeb3Manager/utils')
 const Utils = require('../../utils')
@@ -20,7 +21,7 @@ const {
   redeemOnEth,
   CHAIN_ID_SOLANA,
   CHAIN_ID_ETH
-} = require('@certusone/wormhole-sdk')
+} = requireESM('@certusone/wormhole-sdk')
 
 /** Singleton state-manager for Audius Eth Contracts */
 class Wormhole {
