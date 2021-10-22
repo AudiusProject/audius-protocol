@@ -76,7 +76,7 @@ def get_sol_play_health_info(limit, redis):
     slot_diff = latest_cached_sol_tx["slot"] - latest_db_sol_plays[0]["slot"]
     time_diff = 0
     if latest_db_sol_plays:
-        last_created_at_time = datetime.fromisoformat(latest_db_sol_plays[0]["created_at"])
+        last_created_at_time = datetime.datetime.strptime(latest_db_sol_plays[0]["created_at"][:-2], "%Y-%m-%dT%H:%M:%S")
         current_time_utc = datetime.datetime.utcnow()
         time_diff = (current_time_utc - last_created_at_time).total_seconds()
     return {
