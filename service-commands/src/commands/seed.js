@@ -1,125 +1,165 @@
+const fs = require('fs')
+const { LocalStorage } = require('node-localstorage')
 const AudiusLibs = require('@audius/libs')
 
-// CONFIG - from sauron https://github.com/AudiusProject/sauron/blob/master/config.js
-// Dummy values
-const ETH_REGISTRY_ADDRESS = ''
-const ETH_TOKEN_ADDRESS = ''
-const ETH_OWNER_WALLET = ''
-const DATA_CONTRACTS_REGISTRY_ADDRESS = ''
-const ETH_PROVIDER_ENDPOINT = ''
+const {
+  getLibsConfig,
+  camelToKebabCase,
+  kebabToCamelCase,
+  getRandomEmail,
+  getRandomPassword,
+  getRandomUserMetadata
+} = require('./utils')
 
-const getLibsConfig = () => {
-  const contentNodeAllowlist = process.env.CONTENT_NODE_ALLOWLIST
-    ? new Set(process.env.CONTENT_NODE_ALLOWLIST.split(','))
-    : undefined
-    // TODO do these process env vars all come from services being up?
-  const audiusLibsConfig = {
-    ethWeb3Config: AudiusLibs.configEthWeb3(
-      process.env.ETH_TOKEN_ADDRESS || ETH_TOKEN_ADDRESS,
-      process.env.ETH_REGISTRY_ADDRESS || ETH_REGISTRY_ADDRESS,
-      process.env.ETH_PROVIDER_ENDPOINT || ETH_PROVIDER_ENDPOINT,
-      process.env.ETH_OWNER_WALLET || ETH_OWNER_WALLET
-    ),
-    web3Config: AudiusLibs.configInternalWeb3(
-      process.env.DATA_CONTRACTS_REGISTRY_ADDRESS || DATA_CONTRACTS_REGISTRY_ADDRESS,
-      [process.env.DATA_CONTRACTS_PROVIDER_ENDPOINT]
-    ),
-    creatorNodeConfig: AudiusLibs.configCreatorNode(
-      process.env.USER_METADATA_ENDPOINT,
-      true,
-      contentNodeAllowlist
-    ),
-    discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
-    identityServiceConfig: AudiusLibs.configIdentityService(
-      process.env.IDENTITY_SERVICE_ENDPOINT,
-      false
-    ),
-    isServer: true,
-    enableUserReplicaSetManagerContract: true,
-    useTrackContentPolling: true
+const localStorage = new LocalStorage('./local-storage')
+
+const HEDGEHOG_ENTROPY_KEY = 'hedgehog-entropy-key'
+const USER_CACHE_PATH = `${process.env.PROTOCOL_DIR}/../.audius/seed-users-config.json`
+
+const updateUserCache = (cacheObject) => {
+  fs.writeFileSync(USER_CACHE_PATH, JSON.stringify(cacheObject))
+}
+
+const addToUserCache = ({ alias, hedgehogEntropyKey, userId = null }) => {
+  let userCache = getUserCache()
+  userCache[alias] = {
+    userId,
+    hedgehogEntropyKey
   }
-
-  return audiusLibsConfig
-}
-// TODO move these to utils.js
-const camelToKebabCase = str => str
-    .replace(/([A-Z])([A-Z])/g, '$1-$2')
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replace(/[\s_]+/g, '-')
-    .toLowerCase()
-
-const kebabToCamelCase = str => str.replace(/-./g, x => x[1].toUpperCase())
-
-const isUpperCase = char => char !== char.toLowerCase() && char === char.toUpperCase()
-
-const getParamNames = func => {
-    const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg
-    const ARGUMENT_NAMES = /([^\s,]+)/g
-    let fnStr = func.toString().replace(STRIP_COMMENTS, '')
-    let paramNames = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES)
-    if (paramNames === null) {
-        paramNames = []
-    }
-    return paramNames
+  updateUserCache(userCache)
 }
 
-const setupCommands = (api, apiName, program) => {
-    const apiMethods = Object.getOwnPropertyNames(api).filter(prop => typeof api[prop] === 'function')
-    console.log(apiMethods)
-    apiMethods.forEach(fn => {
-        const params = getParamNames(api[fn])
-        const cliApiName = camelToKebabCase(apiName)
-        const cliMethodName = camelToKebabCase(fn)
-        console.log('PARAMS', params, fn)
-        let cmd = program.command(`seed ${cliApiName} ${cliMethodName}`)
-        params.forEach(p => {
-            const optionName = camelToKebabCase(p)
-            console.log('PARAM', p, optionName)
-            cmd = cmd
-            .option(`--${optionName} <value>`)
-        })
-        cmd.action((options) => {
-            console.log("options", options.opts())
-            api[fn](options.opts()) // TODO figure out option ordering dynamically
-        })
-    })
+const addLoginDetailsToCache = ({ entropy, email, password }) => {
+  const match = (alias, { hedgehogEntropyKey }) => {
+    hedgehogEntropyKey === entropy
+  }
+  let userCache = getUserCache()
+  const [alias, info] = Object.entries(userCache).find(match)
+  userCache[alias] = Object.assign(info, { email, password })
+  updateUserCache(userCache)
 }
-// TODO should the below be derived dynamically?
-const LIBS_API_CLASSES = [
-    'Account',
-    'User',
-    'Track',
-    'Playlist',
-    'File',
-    'Challenge'
-  ]
+const getUserCache = () => {
+  let userCache
+  if (fs.existsSync(USER_CACHE_PATH)) {
+    userCache = JSON.parse(fs.readFileSync(USER_CACHE_PATH))
+  } else {
+    userCache = {}
+  }
+  return userCache
+}
+
+const clearUserCache = () => {
+  updateUserCache({})
+}
+
+// TODO
+const seedCLIToCommandMap = {
+  'upload-track': {
+    api: 'Track',
+    method: 'uploadTrack',
+    options: [
+      'trackFile',
+      'coverArtFile',
+      'metadata',
+      'onProgress' // pass in onProgress from wrapper?
+    ]
+  },
+  'follow-user': {
+    api: 'User',
+    method: 'addUserFollow',
+    options: [
+      'followeeUserId'
+    ]
+  },
+  'add-track-repost': {
+    api: 'Track',
+    method: 'addTrackRepost',
+    options: [
+      'userId',
+      'trackId'
+    ]
+  }
+}
+
 const Seed = {}
 
 Seed.init = async () => {
+    clearUserCache()
     const libsConfig = getLibsConfig()
     this.libs = new AudiusLibs(libsConfig)
-    // await this.libs.init() // TODO troubleshoot why libs.init isn't working
-    this.mapOfUserIdsToEntropyKeys = {}
+    await this.libs.init()
+    const hedgehogEntropyKey = localStorage.getItem(HEDGEHOG_ENTROPY_KEY)
+    addToUserCache({ alias: 'root', hedgehogEntropyKey })
     // TODO set up seed dump file
+}
+
+Seed.getUsers = async () => {
+  return getUserCache()
 }
 
 Seed.clearSession = async () => {
     this.libs = undefined
-    this.mapOfUserIdsToEntropyKeys = {}
+    clearUserCache()
 }
 
-Seed.setUser = async (userId) => {
-    const newEntropyKey = this.mapOfUserIdsToEntropyKeys[userId]
-    // TODO set entropy key in localStorage (node-localstorage)
+Seed.setUser = async ({ alias = '', userId = '' }) => {
+    const userCache = this.getUsers()
+    const match = (alias, { userId }) => {
+      return alias === alias || userId === userId
+    }
+    const user = Object.entries(userCache).find(match) || {}
+    if (!user.hedgehogEntropyKey) {
+      console.error(`No user with alias ${alias} or id ${userId} found in local seed cache.`)
+    } else {
+      localStorage.setItem(HEDGEHOG_ENTROPY_KEY, user.hedgehogEntropyKey)
+    }
     await this.libs.init()
 }
 
-Seed.setupCommands = (program) => {
-    LIBS_API_CLASSES.forEach(className => {
-        const api = this.libs[className]
-        setupCommands(api, className, program) // TODO why aren't libs API classes appearing? maybe not instantiating correclty
-    })
+Seed.createUser = async (alias, options) => {
+  let { email, password, metadata } = options
+  if (!email) {
+    email = getRandomEmail()
+  }
+  if (!password) {
+    password = getRandomPassword()
+  }
+  const randomMetadata = getRandomUserMetadata(email, password)
+  if (!metadata) {
+    metadata = randomMetadata
+  } else {
+    metadata = Object.assign(randomMetadata, metadata)
+  }
+  const signUpResponse = await this.libs.Account.signUp(email, password, metadata)
+  if (signUpResponse.error) {
+    throw new Error(signUpResponse.error)
+  } else {
+    const hedgehogEntropyKey = localStorage.getItem(HEDGEHOG_ENTROPY_KEY)
+    const userId = signUpResponse.userId
+    if (!alias) {
+      alias = hedgehogEntropyKey
+    }
+    addToUserCache({ alias, hedgehogEntropyKey, userId })
+    addLoginDetailsToCache({ entropy: hedgehogEntropyKey, email, password })
+  }
 }
+
+// Seed.setupCommands = (program) => {
+//     Object.entries(seedCLIToCommandMap).forEach(({ cliCommand, config }) => {
+//       program.command(cliCommand)
+//       // call command.option for each option in config.options
+//       .action(async (options) => {
+//         if (!this.libs) {
+//           await this.init() // TODO accept userId - or make this explicit via seed.setUser?
+//         }
+//         this.libs[config.api][config.method](...options)
+//       })
+//     })
+//     LIBS_API_CLASSES.forEach(className => {
+//         const api = this.libs[className]
+//         setupCommands(api, className, program)
+//     })
+// }
 
 // TODO seed with --file argument that parses JSON or iterates through?
 module.exports = Seed

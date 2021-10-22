@@ -232,8 +232,34 @@ program
   )
   .action(async opts => await identityServiceUp(opts))
 
-// TODO figure out how to decorate properly and which functionality should happen in which file
-Seed.init()
-Seed.setupCommands(program)
+program
+    .command('seed create-user')
+    .description('Create a user. If no options are provided, seed will generate values and write them to file.')
+    .option(
+      '-a, --user-alias',
+      'alias by which to reference user for this seed session',
+      null
+    )
+    .option(
+      '-e', '--email',
+      'email for user account creation',
+      ''
+    )
+    .option(
+      '-p, --password',
+      'password for user account',
+      ''
+    )
+    .option(
+      '-m, --metadata',
+      'metadata to associate with user',
+      {}
+    )
+    .action(async (opts) => {
+      const { userAlias: alias, ...options } = opts.opts()
+      await Seed.init()
+      await Seed.createUser(alias, options)
+    })
+
 
 program.parse(process.argv)
