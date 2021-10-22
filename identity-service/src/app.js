@@ -23,6 +23,7 @@ const {
   getIP
 } = require('./rateLimiter.js')
 const cors = require('./corsMiddleware')
+const { AudiusABIDecoder } = require('@audius/libs')
 
 const DOMAIN = 'mail.audius.co'
 
@@ -250,17 +251,27 @@ class App {
       prefix: `poaRelayWalletRateLimiter`,
       expiry: ONE_HOUR_IN_SECONDS,
       max: config.get('rateLimitingPOARelaysPerWalletPerHour'),
-      statusCode: 200, // don't return a 429, make it appear successful
-      keyGenerator: function (req) {
+      statusCode: 211, // don't return a 429, make it appear successful so libs won't retry
+      skip: function (req) {
         if (!req.body || !req.body.senderAddress || !req.body.encodedABI || !req.body.contractRegistryKey) throw new Error('Missing relay parameters')
 
-        const { contractRegistryKey, encodedABI, senderAddress } = req.body
+        const { contractRegistryKey, encodedABI } = req.body
+
         const contractName = contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
         const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
         req.decodedABI = decodedABI
         req.contractName = contractName
 
-        return `${senderAddress}:::${decodedABI.name}`
+        const includesRateLimitedFn = ['addTrackSave', 'deleteTrackSave', 'addTrackRepost', 'deleteTrackRepost'].includes(decodedABI.name)
+
+        if (includesRateLimitedFn) return false
+        return true
+      },
+      keyGenerator: function (req) {
+        const { senderAddress } = req.body
+        const decodedABI = req.decodedABI
+
+        return `:::${senderAddress}:::${decodedABI.name}`
       }
     })
 
@@ -273,6 +284,7 @@ class App {
 
   setRoutes () {
     // import routes
+
     require('./routes')(this.express)
   }
 

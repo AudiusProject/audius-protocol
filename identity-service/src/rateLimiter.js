@@ -119,7 +119,8 @@ const getRateLimiter = ({
   max,
   expiry = DEFAULT_EXPIRY,
   keyGenerator = (req) => getIP(req).ip,
-  skip
+  skip,
+  statusCode
 }) => {
   return rateLimit({
     store: new RedisStore({
@@ -129,6 +130,7 @@ const getRateLimiter = ({
     }),
     max, // max requests per hour
     skip,
+    statusCode,
     keyGenerator,
     onLimitReached
   })

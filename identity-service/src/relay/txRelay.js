@@ -5,8 +5,6 @@ const models = require('../models')
 const config = require('../config')
 const { logger } = require('../logging')
 
-const { AudiusABIDecoder } = require('@audius/libs')
-
 const { primaryWeb3, secondaryWeb3 } = require('../web3')
 
 // L2 relayerWallets
@@ -99,7 +97,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   }
 
   try {
-    req.logger.info(`L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`)
+    req.logger.info(`L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`, decodedABI)
     const { receipt, txParams } = await createAndSendTransaction(wallet, contractAddress, '0x00', web3, req.logger, gasLimit, encodedABI)
     txReceipt = receipt
 
