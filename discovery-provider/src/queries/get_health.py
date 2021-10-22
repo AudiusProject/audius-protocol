@@ -346,7 +346,12 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         and challenge_events_age_sec
         and challenge_events_age_sec > challenge_events_age_max_drift
     )
-    is_unhealthy = unhealthy_blocks or unhealthy_challenges
+
+    unhealthy_plays = bool(
+        plays_max_drift > sol_play_info["time_diff"]
+    )
+    
+    is_unhealthy = unhealthy_blocks or unhealthy_challenges or unhealthy_plays
 
     return health_results, is_unhealthy
 
