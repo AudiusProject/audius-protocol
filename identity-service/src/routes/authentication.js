@@ -1,23 +1,5 @@
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
-const rateLimit = require('express-rate-limit')
-const RedisStore = require('rate-limit-redis')
-const Redis = require('ioredis')
-const config = require('../config.js')
-const { sequelize } = require('../models')
-
-const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
-const authKeyGenerator = (req) => `${req.query.username}`
-
-const authRateLimiter = rateLimit({
-  store: new RedisStore({
-    client: redisClient,
-    prefix: 'authRateLimiter:',
-    expiry: 60 * 60 * 24 // one day in seconds
-  }),
-  max: 40, // max requests per day
-  keyGenerator: authKeyGenerator
-})
 
 module.exports = function (app) {
   /**
@@ -51,21 +33,12 @@ module.exports = function (app) {
     } else return errorResponseBadRequest('Missing one of the required fields: iv, cipherText, lookupKey')
   }))
 
-  app.get('/authentication', authRateLimiter, handleResponse(async (req, res, next) => {
+  app.get('/authentication', handleResponse(async (req, res, next) => {
     let queryParams = req.query
 
     if (queryParams && queryParams.lookupKey) {
       const lookupKey = queryParams.lookupKey
       const existingUser = await models.Authentication.findOne({ where: { lookupKey } })
-
-      // If username (email) provided, log if not found for future reference.
-      if (queryParams.username) {
-        const email = queryParams.username.toLowerCase()
-        const userObj = await models.User.findOne({ where: { email } })
-        if (existingUser && !userObj) {
-          req.logger.warn(`No user found with email ${email} for auth record with lookupKey ${lookupKey}`)
-        }
-      }
 
       if (existingUser) {
         return successResponse(existingUser)

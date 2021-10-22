@@ -39,7 +39,7 @@ describe('test authentication routes', function () {
     // Try getting data without the correct query params, should fail
     request(app)
       .get('/authentication')
-      .query({ 'lookupKey': '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77', 'username': 'dheeraj@audius.co' })
+      .query({ 'lookupKey': '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77' })
       .expect(400, done)
   })
 
@@ -63,7 +63,7 @@ describe('test authentication routes', function () {
     // Try getting data with the right params
     let response = await request(app)
       .get('/authentication')
-      .query({ 'lookupKey': '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77', 'username': 'dheeraj@audius.co' })
+      .query({ 'lookupKey': '9bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77' })
 
     assert.deepStrictEqual(response.statusCode, 200)
   })
