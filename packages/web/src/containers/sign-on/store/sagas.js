@@ -438,7 +438,7 @@ function* followArtists() {
   try {
     // Auto-follow Hot & New Playlist
     if (IS_PRODUCTION) {
-      yield fork(followCollections, [4281], FavoriteSource.SIGN_UP)
+      yield call(followCollections, [4281], FavoriteSource.SIGN_UP)
     }
 
     const signOn = yield select(getSignOn)
