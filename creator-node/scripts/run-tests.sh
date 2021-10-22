@@ -3,6 +3,14 @@
 set -o xtrace
 set -e
 
+while getopts d flag
+do
+  echo ${flag}
+  case "${flag}" in
+      d) debug=true;
+  esac
+done
+
 IPFS_CONTAINER=cn-test-ipfs-node
 DB_CONTAINER='cn_test_db'
 REDIS_CONTAINER='cn_test_redis'
@@ -15,6 +23,16 @@ fi
 export storagePath='./test_file_storage'
 export logLevel='info'
 export printSequelizeLogs=false
+
+if [ "${debug}" ]; then
+  # If the -d debug flag is provided, run the tests with no timeout so that
+  # debugging does not get interrupted
+  UNIT_TIMEOUT=0
+  INTEGRATION_TIMEOUT=0
+else
+  UNIT_TIMEOUT=2000
+  INTEGRATION_TIMEOUT=30000
+fi
 
 tear_down () {
   set +e
@@ -30,15 +48,17 @@ tear_down () {
 
 run_unit_tests () {
   echo Running unit tests...
-  ./node_modules/mocha/bin/mocha --recursive 'src/**/*.test.js' --exit
+  ./node_modules/mocha/bin/mocha --timeout "${UNIT_TIMEOUT}" --recursive 'src/**/*.test.js' --exit
 }
 
 run_integration_tests () {
   echo Running integration tests...
-  ./node_modules/mocha/bin/mocha test/*.test.js --timeout 30000 --exit
+  ./node_modules/mocha/bin/mocha test/*.test.js --timeout "${INTEGRATION_TIMEOUT}" --exit
 }
 
-if [ "$1" == "standalone_creator" ]; then
+ARG1=${@:$OPTIND:1}
+
+if [ "${ARG1}" == "standalone_creator" ]; then
   export ipfsPort=6901
   export redisPort=4377
   PG_PORT=1432
@@ -62,9 +82,9 @@ if [ "$1" == "standalone_creator" ]; then
     docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$redisPort:6379 redis:5.0.4
     sleep 1
   fi
-elif [ "$1" == "teardown" ]; then
+elif [ "${ARG1}" == "teardown" ]; then
   tear_down
-elif [ "$1" == "unit_test" ]; then
+elif [ "${ARG1}" == "unit_test" ]; then
   run_unit_tests
   exit
 fi

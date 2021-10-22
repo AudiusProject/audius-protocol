@@ -14,7 +14,7 @@
     "coverage": "nyc npm run test",
     "report": "nyc report --reporter=html",
     "lint": "./node_modules/.bin/standard",
-    "lint-fix": "./node_modules/.bin/standard --fix"
+    "lint:fix": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
     "@audius/libs": "1.2.16",
