@@ -105,7 +105,7 @@ def cache_latest_chain_tx_redis(redis, tx):
         logger.error(f"Caching latest transaction {tx}")
         tx_sig = tx["signature"]
         tx_slot = tx["slot"]
-        tx_timestamp = tx["timestamp"]
+        tx_timestamp = tx["blockTime"]
         pickle_and_set(
             redis,
             latest_sol_play_tx_key,
