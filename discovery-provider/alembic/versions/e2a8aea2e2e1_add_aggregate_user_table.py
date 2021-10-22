@@ -1,7 +1,7 @@
 """Add aggregate user table
 
 Revision ID: e2a8aea2e2e1
-Revises: 92571f94989a
+Revises: 7857f02c8438
 Create Date: 2021-10-14 19:38:41.776025
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "e2a8aea2e2e1"
-down_revision = "92571f94989a"
+down_revision = "7857f02c8438"
 branch_labels = None
 depends_on = None
 
