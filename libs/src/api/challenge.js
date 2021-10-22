@@ -12,6 +12,7 @@ const GetAttestationError = Object.freeze({
   HCAPTCHA: 'HCAPTCHA',
   COGNITO_FLOW: 'COGNITO_FLOW',
   BLOCKED: 'BLOCKED',
+  INSUFFICIENT_DISCOVERY_NODE_COUNT: 'INSUFFICIENT_DISCOVERY_NODE_COUNT',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR'
 })
 
@@ -75,18 +76,18 @@ class Challenge extends Base {
       }
 
       phase = AttestationPhases.AGGREGATE_ATTESTATIONS
-      const { discoveryNodeAttestations, aaoAttestation, error } = await this.aggregateAttestations({
+      const { discoveryNodeAttestations, aaoAttestation, error: aggregateError } = await this.aggregateAttestations({
         challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint
       })
 
-      if (error) {
+      if (aggregateError) {
         throw new Error(error)
       }
 
       const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
 
       phase = AttestationPhases.SUBMIT_ATTESTATIONS
-      await this.solanaWeb3Manager.submitChallengeAttestations({
+      const { error: submitError } = await this.solanaWeb3Manager.submitChallengeAttestations({
         attestations: discoveryNodeAttestations,
         oracleAttestation: aaoAttestation,
         challengeId,
@@ -94,6 +95,10 @@ class Challenge extends Base {
         recipientEthAddress,
         tokenAmount: fullTokenAmount
       })
+
+      if (submitError) {
+        throw new Error(submitError)
+      }
 
       phase = AttestationPhases.EVALUATE_ATTESTATIONS
       await this.solanaWeb3Manager.evaluateChallengeAttestations({
@@ -152,7 +157,15 @@ class Challenge extends Base {
     if (!endpoints) {
       endpoints = await this.discoveryProvider.serviceSelector.findAll()
     }
-    endpoints = sampleSize(endpoints, quorumSize)
+    if (endpoints.length < quorumSize) {
+      console.error(`Tried to fetch [${quorumSize}] attestations, but only found [${endpoints.length}] registered nodes.`)
+
+      return {
+        discoveryNodeAttestations: null,
+        aaoAttestation: null,
+        error: GetAttestationError.INSUFFICIENT_DISCOVERY_NODE_COUNT
+      }
+    }
 
     try {
       const discprovAttestations = endpoints.map(e => this.getChallengeAttestation({ challengeId, encodedUserId, specifier, oracleEthAddress, discoveryProviderEndpoint: e }))

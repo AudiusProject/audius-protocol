@@ -11,6 +11,7 @@ const { wAudioFromWeiAudio } = require('./wAudio')
 const Utils = require('../../utils')
 const { submitAttestations, evaluateAttestations } = require('./rewards')
 const SolanaUtils = require('./utils')
+const { TransactionHandler } = require('./transactionHandler')
 
 const { PublicKey } = solanaWeb3
 
@@ -48,13 +49,15 @@ class SolanaWeb3Manager {
    *  the manager account of the rewards manager program
    * @param {string} solanaWeb3Config.rewardsManagerTokenPDA
    *  the token holder account of the rewards manager program
+   * @param {boolean} solanaWeb3Config.shouldUseRelay
+   *  whether to submit transactions via a relay, or locally
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
    */
   constructor (
     solanaWeb3Config,
     identityService,
-    web3Manager
+    web3Manager,
   ) {
     this.solanaWeb3Config = solanaWeb3Config
     this.identityService = identityService
@@ -74,10 +77,21 @@ class SolanaWeb3Manager {
       claimableTokenProgramAddress,
       rewardsManagerProgramId,
       rewardsManagerProgramPDA,
-      rewardsManagerTokenPDA
+      rewardsManagerTokenPDA,
+      useRelay,
+      feePayerSecretKey,
+      feePayerPublicKey,
     } = this.solanaWeb3Config
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint)
+
+    this.transactionHandler = new TransactionHandler({
+      connection: this.connection,
+      useRelay,
+      identityService: this.identityService,
+      feePayerSecretKey,
+      feePayerPublicKey
+    })
 
     this.mintAddress = mintAddress
     this.mintKey = new PublicKey(mintAddress)
@@ -287,8 +301,7 @@ class SolanaWeb3Manager {
       feePayer: this.feePayerKey,
       recipientEthAddress,
       tokenAmount,
-      identityService: this.identityService,
-      connection: this.connection
+      transactionHandler: this.transactionHandler
     })
   }
 
@@ -327,8 +340,7 @@ class SolanaWeb3Manager {
       oracleEthAddress,
       feePayer: this.feePayerKey,
       tokenAmount,
-      identityService: this.identityService,
-      connection: this.connection
+      transactionHandler: this.transactionHandler
     })
   }
 }

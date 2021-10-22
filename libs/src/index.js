@@ -27,6 +27,8 @@ const Web3 = require('./web3')
 const Captcha = require('./utils/captcha')
 const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 
+const { PublicKey } = require('@solana/web3.js')
+
 class AudiusLibs {
   /**
    * Configures a discovery provider wrapper
@@ -199,6 +201,9 @@ class AudiusLibs {
    * @param {string} rewardsManagerProgramId address for the Rewards Manager program
    * @param {string} rewardsManagerProgramPDA Rewards Manager PDA
    * @param {string} rewardsManagerTokenPDA The PDA of the rewards manager funds holder account
+   * @param {boolean} useRelay Whether to use identity as a relay or submit transactions locally
+   * @param {Uint8Array} [feePayerSecretKey] optional fee payer secret key, if not using relay
+   * @param {string} [feePayerPublicKey] optional fee payer public key, if not using relay
    */
   static configSolanaWeb3 ({
     solanaClusterEndpoint,
@@ -209,7 +214,10 @@ class AudiusLibs {
     claimableTokenProgramAddress,
     rewardsManagerProgramId,
     rewardsManagerProgramPDA,
-    rewardsManagerTokenPDA
+    rewardsManagerTokenPDA,
+    useRelay,
+    feePayerSecretKey = null,
+    feePayerPublicKey = null
   }) {
     return {
       solanaClusterEndpoint,
@@ -220,7 +228,10 @@ class AudiusLibs {
       claimableTokenProgramAddress,
       rewardsManagerProgramId,
       rewardsManagerProgramPDA,
-      rewardsManagerTokenPDA
+      rewardsManagerTokenPDA,
+      useRelay,
+      feePayerSecretKey,
+      feePayerPublicKey: feePayerPublicKey ? new PublicKey(feePayerPublicKey): null
     }
   }
 
