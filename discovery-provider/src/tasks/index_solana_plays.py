@@ -14,7 +14,7 @@ from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.redis_cache import pickle_and_set
-from src.utils.redis_constants import latest_sol_play_tx_key
+from src.utils.redis_constants import latest_sol_play_tx_key, latest_indexed_sol_play_tx_key
 from src.solana.solana_client_manager import SolanaClientManager
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
@@ -98,8 +98,9 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
     return user_id, track_id, source, timestamp
 
 
-# Cache the latest value in redis
-def cache_latest_tx_redis(redis, tx):
+# Cache the latest chain tx value in redis
+# Represents most recently seen value from the TrackListenCount program
+def cache_latest_chain_tx_redis(redis, tx):
     try:
         logger.error(f"Caching latest transaction {tx}")
         tx_sig = tx["signature"]
@@ -216,7 +217,6 @@ def get_tx_in_db(session, tx_sig):
     logger.info(f"index_solana_plays.py | {tx_sig} exists={exists}")
     return exists
 
-
 # pylint: disable=W0105
 """
 Processing of plays through the Solana TrackListenCount program is handled differently
@@ -332,14 +332,15 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
 
                     # Append plays to a list that will be written if all plays are successfully retrieved
                     # from the rpc pool
-                    plays.append({
+                    play = {
                         "user_id": user_id,
                         "track_id": track_id,
                         "created_at": created_at,
                         "source": source,
                         "tx_slot": tx_slot,
                         "tx_sig": tx_sig
-                    })
+                    }
+                    plays.append(play)
                     # Only enqueue a challenge event if it's *not*
                     # an anonymous listen
                     if user_id is not None:
@@ -379,6 +380,11 @@ def parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records, retries=
                         signature=play.get('tx_sig'),
                     )
                 )
+        
+        # Cache the latest play stored in the database
+        # Sort by slot desc
+        sorted_plays = sorted(plays, key=lambda k: k["slot"], reverse=True)
+        logger.error(f"TESTING | {sorted_plays}")
 
         for event in challenge_bus_events:
             challenge_bus.dispatch(
@@ -407,7 +413,7 @@ def fetch_and_cache_latest_tx_redis(solana_client_manager: SolanaClientManager, 
     )
     transactions_array = transactions_history["result"]
     # Cache latest transaction from chain
-    cache_latest_tx_redis(redis, transactions_array[0])
+    cache_latest_chain_tx_redis(redis, transactions_array[0])
 
 def split_list(list, n):
     for i in range(0, len(list), n):
@@ -529,10 +535,11 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
 
     logger.info(f"index_solana_plays.py | {transaction_signatures}")
 
-
+    last_processed_tx = None
     for tx_sig_batch in transaction_signatures:
         for tx_sig_batch_records in split_list(tx_sig_batch, 50):
             parse_sol_tx_batch(db, solana_client_manager, tx_sig_batch_records)
+            last_processed_tx = tx_sig_batch_records[-1]
 
 
 ######## CELERY TASKS ########

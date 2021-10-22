@@ -690,8 +690,8 @@ workflows:
           requires:
             - test-creator-node
 
-      - test-discovery-provider:
-          name: test-discovery-provider
+      # - test-discovery-provider:
+      #     name: test-discovery-provider
       - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
