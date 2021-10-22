@@ -1,18 +1,20 @@
 import { call, put, take, fork, takeEvery } from 'redux-saga/effects'
 
+import { ID } from 'common/models/Identifiers'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as discoverActions from 'containers/feed-page/store/actions'
 import { feedActions } from 'containers/feed-page/store/lineups/feed/actions'
 import { fetchSuggestedFollowUserIds } from 'containers/sign-on/store/sagas'
+import { FollowSource } from 'services/analytics'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as socialActions from 'store/social/users/actions'
 
-import feedSagas from './lineups/feed/sagas.js'
+import feedSagas from './lineups/feed/sagas'
 
 function* fetchSuggestedFollowUsers() {
   yield call(waitForBackendSetup)
   try {
-    const userIds = yield call(fetchSuggestedFollowUserIds)
+    const userIds: ID[] = yield call(fetchSuggestedFollowUserIds)
     yield put(discoverActions.setSuggestedFollows(userIds))
     yield call(fetchUsers, userIds)
   } catch (err) {
@@ -20,10 +22,12 @@ function* fetchSuggestedFollowUsers() {
   }
 }
 
-function* waitForFollow(userIds) {
+function* waitForFollow(userIds: ID[]) {
   const usersConfirmed = Array.from(Array(userIds.length)).map(() => false)
   while (!usersConfirmed.every(Boolean)) {
-    const action = yield take([
+    const action:
+      | ReturnType<typeof socialActions.followUserSucceeded>
+      | ReturnType<typeof socialActions.followUserFailed> = yield take([
       socialActions.FOLLOW_USER_SUCCEEDED,
       socialActions.FOLLOW_USER_FAILED
     ])
@@ -32,18 +36,18 @@ function* waitForFollow(userIds) {
   }
 }
 
-function* confirmFollowsAndRefresh(userIds) {
+function* confirmFollowsAndRefresh(userIds: ID[]) {
   yield call(waitForFollow, userIds)
   yield put(feedActions.refreshInView(true))
 }
 
-function* followUsers(action) {
+function* followUsers(action: ReturnType<typeof discoverActions.followUsers>) {
   yield call(waitForBackendSetup)
   try {
-    yield put(feedActions.setLoading(true))
+    yield put(feedActions.setLoading())
     yield fork(confirmFollowsAndRefresh, action.userIds)
     for (const userId of action.userIds) {
-      yield put(socialActions.followUser(userId))
+      yield put(socialActions.followUser(userId, FollowSource.EMPTY_FEED))
     }
   } catch (err) {
     console.error(err.message)
