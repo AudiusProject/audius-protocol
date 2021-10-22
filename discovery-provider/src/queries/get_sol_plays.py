@@ -74,7 +74,7 @@ def get_sol_play_health_info(limit, redis):
     latest_db_sol_plays = get_latest_sol_plays(limit)
     latest_cached_sol_tx = get_pickled_key(redis, latest_sol_play_tx_key)
     slot_diff = latest_cached_sol_tx["slot"] - latest_db_sol_plays[0]["slot"]
-    time_diff = 0 
+    time_diff = 0
     if latest_db_sol_plays:
         last_created_at_time = datetime.fromisoformat(latest_db_sol_plays[0]["created_at"])
         current_time_utc = datetime.datetime.utcnow()
