@@ -363,6 +363,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.cache_trending_playlists",
             "src.tasks.index_solana_plays",
             "src.tasks.index_aggregate_views",
+            "src.tasks.index_aggregate_user",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
             "src.tasks.index_eth",

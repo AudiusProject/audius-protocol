@@ -2,6 +2,7 @@ from datetime import datetime
 from src import models
 from src.utils import helpers
 from src.utils.db_session import get_db
+from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
 
 
 def query_creator_by_name(app, creator_name=None):
@@ -247,4 +248,9 @@ def populate_mock_db(db, entities, block_offset=0):
                 current_step_count=user_challenge_meta.get("current_step_count", None),
             )
             session.add(user_challenge)
+
         session.flush()
+
+        session.execute(
+            UPDATE_AGGREGATE_USER_QUERY, {"most_recent_indexed_aggregate_block": 0}
+        )
