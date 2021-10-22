@@ -25,7 +25,7 @@ module.exports = function (app) {
         if (oldLookupKey && oldLookupKey !== body.lookupKey) {
           await models.Authentication.destroy({ where: { lookupKey: oldLookupKey } }, { transaction })
         }
-        await models.sequelize.commit()
+        await transaction.commit()
         return successResponse()
       } catch (err) {
         req.logger.error('Error signing up a user', err)
