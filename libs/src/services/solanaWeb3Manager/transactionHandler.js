@@ -22,7 +22,7 @@ class TransactionHandler {
       result = await this._locallyConfirmTransaction(instructions)
     }
     if (result.errorCode && errorMapping) {
-      result.error = errorMapping.fromErrorCode(result.error)
+      result.errorCode = errorMapping.fromErrorCode(result.errorCode)
     }
     return result
   }
@@ -38,7 +38,7 @@ class TransactionHandler {
       const response = await this.identityService.solanaRelay(transactionData)
       return { res: response, error: null, errorCode: null }
     } catch (e) {
-      const { errorCode, error } = e.response.data.errorCode
+      const { errorCode, error } = e.response.data
       return { res: null, error, errorCode }
     }
   }
@@ -49,7 +49,7 @@ class TransactionHandler {
       return {
         res: null,
         error: 'Missing keys',
-        errorCode: null
+        errorCode: -1,
       }
     }
 
@@ -74,7 +74,7 @@ class TransactionHandler {
       return transactionSignature
     } catch (e) {
       const { message: error } = e
-      const errorCode = this._parseSolanaErrorCode(error)
+      const errorCode = this._parseSolanaErrorCode(error) || -1
       return {
         res: null,
         error,
