@@ -5,6 +5,7 @@ const fs = require('fs')
 
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
+const { sortKeys } = require('./apiSigning')
 
 const IPFS_ADD_TIMEOUT_MS = config.get('IPFSAddTimeoutMs')
 
@@ -36,6 +37,8 @@ async function logIpfsPeerIds () {
  * @returns {string} hash from content addressing fn or ipfs daemon response
  */
 async function ipfsSingleAddWrapper (content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
+  enableIPFSAdd = true
+
   const logger = genericLogger.child(logContext)
 
   let buffer = await _convertToBuffer(content, logger)
@@ -84,10 +87,11 @@ async function ipfsSingleAddWrapper (content, ipfsConfig = {}, logContext = {}, 
  * @returns {string|string[]|Object|Object[]} hashes from content addressing fn, or ipfs daemon responses
  */
 async function ipfsMultipleAddWrapper (content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
+  enableIPFSAdd = true
   const logger = genericLogger.child(logContext)
 
   const ipfsAddWithoutDaemonResp = await ipfsAddWithoutDaemon(content, {}, true)
-  const ipfsAddWithoutDaemonRespStr = JSON.stringify(ipfsAddWithoutDaemonResp)
+  const ipfsAddWithoutDaemonRespStr = JSON.stringify(sortKeys(ipfsAddWithoutDaemonResp), null, 2)
 
   if (!enableIPFSAdd) {
     logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${ipfsAddWithoutDaemonRespStr}`)
@@ -95,16 +99,19 @@ async function ipfsMultipleAddWrapper (content, ipfsConfig = {}, logContext = {}
   }
 
   try {
-    let ipfsAddWithDaemonResp
     if (!ipfsConfig.timeout) {
       ipfsConfig.timeout = IPFS_ADD_TIMEOUT_MS
     }
 
+    let ipfsAddWithDaemonResp = []
     for await (const resp of ipfsLatest.add(content, ipfsConfig)) {
-      ipfsAddWithDaemonResp = resp
+      resp.cid = `${resp.cid}`
+      ipfsAddWithDaemonResp.push(resp)
     }
 
-    const ipfsAddWithDaemonRespStr = JSON.stringify(ipfsAddWithDaemonResp)
+    // const ipfsAddWithDaemonResp = await ipfs.add(content, ipfsConfig)
+
+    const ipfsAddWithDaemonRespStr = JSON.stringify(sortKeys(ipfsAddWithDaemonResp), null, 2)
     logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${ipfsAddWithoutDaemonRespStr} ipfsAddWithDaemonResp=${ipfsAddWithDaemonRespStr} isSameHash=${ipfsAddWithoutDaemonRespStr === ipfsAddWithDaemonRespStr}`)
     return ipfsAddWithDaemonResp
   } catch (e) {
@@ -148,14 +155,14 @@ async function ipfsAddWithoutDaemon (content, options, isImageFlow = false) {
     for await (const file of importer(content, block, options)) {
       resps.push({
         path: file.path,
-        hash: `${file.cid}`,
+        cid: `${file.cid}`,
         size: file.size
       })
     }
 
     return resps
   } else {
-    // Else, just return the hash
+    // Else, just return the cid
     let lastCid
     for await (const { cid } of importer([{ content }], block, options)) {
       lastCid = cid
