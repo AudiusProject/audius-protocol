@@ -13,7 +13,18 @@ module.exports = function (app) {
 
     if (body && body.iv && body.cipherText && body.lookupKey) {
       try {
-        await models.Authentication.create({ iv: body.iv, cipherText: body.cipherText, lookupKey: body.lookupKey })
+        const transaction = await models.sequelize.transaction()
+        await models.Authentication.create({
+          iv: body.iv,
+          cipherText: body.cipherText,
+          lookupKey: body.lookupKey
+        }, { transaction })
+
+        const oldLookupKey = body.oldLookupKey
+        if (oldLookupKey && oldLookupKey !== body.lookupKey) {
+          await models.Authentication.destroy({ where: { lookupKey: oldLookupKey } }, { transaction })
+        }
+        await transaction.commit()
         return successResponse()
       } catch (err) {
         req.logger.error('Error signing up a user', err)
