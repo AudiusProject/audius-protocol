@@ -1,4 +1,5 @@
 import logging
+import datetime
 from sqlalchemy import desc, func
 from src import exceptions
 from src.models import Play
@@ -73,8 +74,14 @@ def get_sol_play_health_info(limit, redis):
     latest_db_sol_plays = get_latest_sol_plays(limit)
     latest_cached_sol_tx = get_pickled_key(redis, latest_sol_play_tx_key)
     slot_diff = latest_cached_sol_tx["slot"] - latest_db_sol_plays[0]["slot"]
+    time_diff = 0 
+    if latest_db_sol_plays:
+        last_created_at_time = datetime.fromisoformat(latest_db_sol_plays[0]["created_at"])
+        current_time_utc = datetime.datetime.utcnow()
+        time_diff = (current_time_utc - last_created_at_time).total_seconds()
     return {
         "slot_diff": slot_diff,
         "chain_tx": latest_cached_sol_tx,
-        "db_info": latest_db_sol_plays
+        "db_info": latest_db_sol_plays,
+        "time_diff": time_diff
     }

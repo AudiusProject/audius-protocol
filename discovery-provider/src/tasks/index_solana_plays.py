@@ -104,8 +104,15 @@ def cache_latest_tx_redis(redis, tx):
         logger.error(f"Caching latest transaction {tx}")
         tx_sig = tx["signature"]
         tx_slot = tx["slot"]
+        tx_timestamp = tx["timestamp"]
         pickle_and_set(
-            redis, latest_sol_play_tx_key, {"signature": tx_sig, "slot": tx_slot}
+            redis,
+            latest_sol_play_tx_key,
+            {
+                "signature": tx_sig,
+                "slot": tx_slot,
+                "timestamp": tx_timestamp
+            }
         )
     except Exception as e:
         logger.error(
