@@ -31,19 +31,18 @@ module.exports = function (app) {
 
     if (body && body.iv && body.cipherText && body.lookupKey) {
       try {
-        await sequelize.transaction(function (t) {
-          return models.Authentication.create({
-            iv: body.iv,
-            cipherText: body.cipherText,
-            lookupKey: body.lookupKey
-          }, { transaction: t })
-            .then(function () {
-              const oldLookupKey = body.oldLookupKey
-              if (oldLookupKey && oldLookupKey !== body.lookupKey) {
-                return models.Authentication.destroy({ where: { lookupKey: oldLookupKey } }, { transaction: t })
-              }
-            })
-        })
+        await sequelize.transaction()
+        await models.Authentication.create({
+          iv: body.iv,
+          cipherText: body.cipherText,
+          lookupKey: body.lookupKey
+        }, { transaction: t })
+
+        const oldLookupKey = body.oldLookupKey
+        if (oldLookupKey && oldLookupKey !== body.lookupKey) {
+          await models.Authentication.destroy({ where: { lookupKey: oldLookupKey } }, { transaction: t })
+        }
+        await sequelize.commit()
         return successResponse()
       } catch (err) {
         req.logger.error('Error signing up a user', err)
