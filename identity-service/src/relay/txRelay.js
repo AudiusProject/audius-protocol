@@ -97,7 +97,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   }
 
   try {
-    req.logger.info(`L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`, decodedABI)
+    req.logger.info(`L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`)
     const { receipt, txParams } = await createAndSendTransaction(wallet, contractAddress, '0x00', web3, req.logger, gasLimit, encodedABI)
     txReceipt = receipt
 

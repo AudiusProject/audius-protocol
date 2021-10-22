@@ -251,7 +251,7 @@ class App {
       prefix: `poaRelayWalletRateLimiter`,
       expiry: ONE_HOUR_IN_SECONDS,
       max: config.get('rateLimitingPOARelaysPerWalletPerHour'),
-      statusCode: 211, // don't return a 429, make it appear successful so libs won't retry
+      statusCode: 211, // don't return a 429, so libs won't retry
       skip: function (req) {
         if (!req.body || !req.body.senderAddress || !req.body.encodedABI || !req.body.contractRegistryKey) throw new Error('Missing relay parameters')
 
