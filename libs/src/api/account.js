@@ -203,7 +203,7 @@ class Account extends Base {
   }
 
   async changePassword (email, newpassword, oldpassword) {
-    return this.hedgehog.resetPassword(email, newpassword, oldpassword)
+    return this.hedgehog.changePassword(email, newpassword, oldpassword)
   }
 
   async confirmCredentials (email, password) {
