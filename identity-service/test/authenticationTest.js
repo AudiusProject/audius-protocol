@@ -66,7 +66,6 @@ describe('test authentication routes', function () {
       .get('/authentication')
       .query({ 'lookupKey': '1bdc91e1bb7ef60177131690b18349625778c14656dc17814945b52a3f07ac77' })
       .expect(200)
-
   })
 
   it('responds 400 for lookup authentication with invalid lookupKey', function (done) {
