@@ -244,6 +244,30 @@ class App {
       ethRelayWalletRateLimiter,
       ethRelayIPRateLimiter
     )
+
+    // POA relay rate limits
+    const poaRelayWalletRateLimiter = getRateLimiter({
+      prefix: `poaRelayWalletRateLimiter`,
+      expiry: ONE_HOUR_IN_SECONDS,
+      max: config.get('rateLimitingPOARelaysPerWalletPerHour'),
+      statusCode: 200, // don't return a 429, make it appear successful
+      keyGenerator: function (req) {
+        if (!req.body || !req.body.senderAddress || !req.body.encodedABI || !req.body.contractRegistryKey) throw new Error('Missing relay parameters')
+
+        const { contractRegistryKey, encodedABI, senderAddress } = req.body
+        const contractName = contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
+        const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
+        req.decodedABI = decodedABI
+        req.contractName = contractName
+
+        return `${senderAddress}:::${decodedABI.name}`
+      }
+    })
+
+    this.express.use(
+      '/relay',
+      poaRelayWalletRateLimiter
+    )
     this.express.use(getRateLimiterMiddleware())
   }
 

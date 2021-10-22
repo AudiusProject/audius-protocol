@@ -228,6 +228,12 @@ const config = convict({
     env: 'rateLimitingEthRelaysPerWalletPerDay',
     default: 10
   },
+  rateLimitingPOARelaysPerWalletPerHour: {
+    doc: 'POA relay operations per wallet per hour',
+    format: 'nat',
+    env: 'rateLimitingPOARelaysPerWalletPerHour',
+    default: 1600
+  },
   rateLimitingListensPerTrackPerWeek: {
     doc: 'Listens per track per user per Week',
     format: 'nat',

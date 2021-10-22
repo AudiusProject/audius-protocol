@@ -84,8 +84,8 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     return existingTx.receipt
   }
 
-  const contractName = contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
-  const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
+  // decodedABI is set in the poaRelayWalletRateLimiter
+  const decodedABI = req.decodedABI
 
   // will be set later. necessary for code outside scope of try block
   let txReceipt
