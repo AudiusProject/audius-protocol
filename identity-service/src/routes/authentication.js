@@ -24,7 +24,7 @@ module.exports = function (app) {
             cipherText: body.cipherText,
             lookupKey: body.lookupKey
           }, { transaction })
-        } else {
+        } else if (existingRecord.isSoftDeleted()) {
           await existingRecord.restore({ transaction })
         }
 
