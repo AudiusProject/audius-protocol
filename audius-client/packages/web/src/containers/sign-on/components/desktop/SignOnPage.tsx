@@ -11,8 +11,10 @@ import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import imagePhone from 'assets/img/imagePhone.png'
 import CTAImage from 'assets/img/signUpCTA.png'
 import { ID } from 'common/models/Identifiers'
+import Status from 'common/models/Status'
 import User from 'common/models/User'
 import { InstagramProfile } from 'common/store/account/reducer'
+import { getAccountStatus } from 'common/store/account/selectors'
 import BackgroundWaves from 'components/background-animations/BackgroundWaves'
 import Page from 'components/general/Page'
 import SignOnModal from 'components/sign-on/SignOnModal'
@@ -25,8 +27,10 @@ import PasswordPage from 'containers/sign-on/components/desktop/PasswordPage'
 import ProfilePage from 'containers/sign-on/components/desktop/ProfilePage'
 import SignInPage from 'containers/sign-on/components/desktop/SignInPage'
 import StartPlatformPage from 'containers/sign-on/components/desktop/StartPlatformPage'
+import { getStatus } from 'containers/sign-on/store/selectors'
 import { Pages, FollowArtistsCategory } from 'containers/sign-on/store/types'
 import lazyWithPreload from 'utils/lazyWithPreload'
+import { useSelector } from 'utils/reducer'
 import { BASE_URL, SIGN_UP_PAGE } from 'utils/route'
 
 import AppCTA from './AppCTA'
@@ -174,14 +178,20 @@ const SignOnProvider = ({
     verified,
     profileImage,
     status,
-    accountReady,
     followArtists: { selectedCategory, selectedUserIds }
   } = fields
+
+  const accountStatus = useSelector(getAccountStatus)
+  const signOnStatus = useSelector(getStatus)
   useEffect(() => {
-    if (accountReady && page === Pages.LOADING) {
+    if (
+      accountStatus === Status.SUCCESS &&
+      signOnStatus === 'success' &&
+      page === Pages.LOADING
+    ) {
       onNextPage()
     }
-  }, [accountReady, onNextPage, page])
+  }, [accountStatus, signOnStatus, onNextPage, page])
 
   let backgroundImage = null
   let backgroundOverlayGradient = null

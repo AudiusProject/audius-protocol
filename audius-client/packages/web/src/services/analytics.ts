@@ -400,7 +400,8 @@ export enum FollowSource {
   HOVER_TILE = 'hover tile',
   OVERFLOW = 'overflow',
   USER_LIST = 'user list',
-  ARTIST_RECOMMENDATIONS_POPUP = 'artist recommendations popup'
+  ARTIST_RECOMMENDATIONS_POPUP = 'artist recommendations popup',
+  EMPTY_FEED = 'empty feed'
 }
 
 type Share = {
