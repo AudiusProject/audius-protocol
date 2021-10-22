@@ -3,6 +3,11 @@ const config = require('./config.js')
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const { logger } = require('./logging')
 
+/**
+ * Generic locking class with the ability to set, get and clear
+ * Primarily used in POA and ETH relay transactions to lock
+ * relay wallets during a transaction
+ */
 const Lock = {
   /**
    * Set lock for a key in redis

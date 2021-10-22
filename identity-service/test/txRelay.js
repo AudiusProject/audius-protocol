@@ -26,7 +26,6 @@ describe('test txRelay: selectWallet()', async () => {
     selectWallet = require('../src/relay/txRelay').selectWallet
 
     await Lock.clearAllLocks()
-    console.log('finished clearing locks')
   })
 
   afterEach(async () => {
@@ -51,7 +50,6 @@ describe('test txRelay: selectWallet()', async () => {
     let nullWallet
     while (i++ < 3) {
       nullWallet = await selectWallet()
-      console.log({ nullWallet })
     }
 
     assert(nullWallet === undefined)
