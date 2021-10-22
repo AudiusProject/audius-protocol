@@ -7,9 +7,23 @@ local httpc = require "resty.http"
 local config = require "config"
 local utils = require "utils"
 
+-- Set seed for lua's random number generator by generating a random byte with openssl
 math.randomseed(string.byte(resty_random.bytes(1)))
 
 local _M = {}
+
+function get_cached_public_key (discovery_provider)
+    local public_key = ngx.shared.rsa_public_key_store:get(discovery_provider)
+    if not public_key then
+        local res, err = httpc:request_uri(discovery_provider .. "/openresty_pubkey", { method = "GET" })
+        if not res then
+            return nil, err
+        end
+        ngx.shared.rsa_public_key_store:set(discovery_provider, res, 60) -- cache key for 60 seconds
+        public_key = res
+    end
+    return public_key, nil
+end
 
 function _M.get_redirect_target ()
     return config.redirect_targets[math.random(1, #config.redirect_targets)]
@@ -31,24 +45,25 @@ function _M.verify_signature (discovery_provider, nonce, signature)
         return false
     end
 
-    local public_key = ngx.shared.rsa_public_key_store:get(discovery_provider)
+    local public_key, err = get_cached_public_key(discovery_provider)
     if not public_key then
-        local res, err = httpc:request_uri(discovery_provider .. "/openresty_pubkey", { method = "GET" })
-        if not res then
-            ngx.log(ngx.ERR, "failed to get rsa key: ", err)
-            return false
-        end
-        ngx.shared.rsa_public_key_store:set(discovery_provider, res, 60) -- cache key for 60 seconds
-        public_key = res
+        ngx.log(ngx.ERR, "failed to get rsa key: ", err)
+        return false
+    end
+
+    local decoded_signature = ngx.decode_base64(signature)
+    if not decoded_signature then
+        return false
     end
 
     ok = resty_rsa:new({
         public_key = public_key,
         key_type = resty_rsa.KEY_TYPE.PKCS1,
         algorithm = "sha1",
-    }):verify(nonce, utils.from_hex(signature))
+    }):verify(nonce, decoded_signature)
 
     if ok then
+        -- set nonce as used for discovery provider for next 60 seconds
         ngx.shared.nonce_store:set(discovery_provider .. ";" .. nonce, true, 60)
     end
 
@@ -62,7 +77,7 @@ function _M.get_redirect_args ()
         ngx.log(ngx.ERR, "Failed to sign nonce for redirect: ", err)
         return
     end
-    return "redirect_from=" .. config.public_url .. "&redirect_nonce=" .. nonce .. "&redirect_sig=" .. utils.to_hex(sig)
+    return config.public_url, nonce, ngx.encode_base64(sig)
 end
 
 return _M

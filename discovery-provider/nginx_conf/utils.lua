@@ -9,20 +9,6 @@ function _M.generate_nonce ()
     return res
 end
 
--- convert hexadecimal to a byte string
-function _M.from_hex (str)
-    return (str:gsub('..', function (cc)
-        return string.char(tonumber(cc, 16))
-    end))
-end
-
--- convert byte string to hexadecimal
-function _M.to_hex (str)
-    return (str:gsub('.', function (c)
-        return string.format('%02X', string.byte(c))
-    end))
-end
-
 -- split string on comma
 function _M.split_on_comma (str)
     local result = {}
