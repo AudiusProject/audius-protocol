@@ -49,7 +49,7 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
   })
 
   const transactionHandler = libs.solanaWeb3Manager.transactionHandler
-  const { res, error, errorCode } = await transactionHandler.handleTransaction(instructions)
+  const { res: transactionSignature, error, errorCode } = await transactionHandler.handleTransaction(instructions)
 
   if (error) {
     // if the tx fails, store it in redis with a 24 hour expiration
@@ -59,7 +59,7 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
     return errorResponseServerError(errorString, { errorCode, error } )
   }
 
-  return successResponse({ transactionSignature: res })
+  return successResponse({ transactionSignature })
 }))
 
 module.exports = function (app) {
