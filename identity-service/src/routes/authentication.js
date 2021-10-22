@@ -14,11 +14,19 @@ module.exports = function (app) {
     if (body && body.iv && body.cipherText && body.lookupKey) {
       try {
         const transaction = await models.sequelize.transaction()
-        await models.Authentication.create({
-          iv: body.iv,
-          cipherText: body.cipherText,
-          lookupKey: body.lookupKey
-        }, { transaction })
+        const existingRecord = models.Authentication.findOne({
+          where: { lookupKey: body.lookupKey }, 
+          paranoid: false 
+        })
+        if (!existingRecord) {
+          await models.Authentication.create({
+            iv: body.iv,
+            cipherText: body.cipherText,
+            lookupKey: body.lookupKey
+          }, { transaction })
+        } else {
+          existingRecord.restore({ transaction })
+        }
 
         const oldLookupKey = body.oldLookupKey
         if (oldLookupKey && oldLookupKey !== body.lookupKey) {
