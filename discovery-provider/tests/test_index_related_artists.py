@@ -47,8 +47,6 @@ def test_index_related_artists(app):
         "tracks": [{"owner_id": i} for i in range(0, 7)],
     }
     populate_mock_db(db, entities)
-    with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
     queue_related_artist_calculation(redis_conn, 0)
     process_related_artists_queue(db, redis_conn)
     with db.scoped_session() as session:
