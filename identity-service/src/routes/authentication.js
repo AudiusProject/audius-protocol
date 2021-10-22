@@ -15,8 +15,8 @@ module.exports = function (app) {
       try {
         const transaction = await models.sequelize.transaction()
         const existingRecord = await models.Authentication.findOne({
-          where: { lookupKey: body.lookupKey }, 
-          paranoid: false 
+          where: { lookupKey: body.lookupKey },
+          paranoid: false
         })
         if (!existingRecord) {
           await models.Authentication.create({
