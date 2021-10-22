@@ -14,6 +14,11 @@ module.exports = function (app) {
     if (body && body.iv && body.cipherText && body.lookupKey) {
       try {
         const transaction = await models.sequelize.transaction()
+
+        // Check if an existing record exists but is soft deleted (since the Authentication model is 'paranoid'
+        // Setting the option paranoid to true searches both soft-deleted and non-deleted objects
+        // https://sequelize.org/master/manual/paranoid.html
+        // https://sequelize.org/master/class/lib/model.js~Model.html#static-method-findAll
         const existingRecord = await models.Authentication.findOne({
           where: { lookupKey: body.lookupKey },
           paranoid: false
