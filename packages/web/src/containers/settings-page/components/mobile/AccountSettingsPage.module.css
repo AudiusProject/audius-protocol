@@ -36,7 +36,9 @@
   font-weight: var(--font-medium);
 }
 
-.resetButton, .signOutButton {
+.resetButton,
+.signOutButton,
+.changePasswordButton {
   width: 100%;
 }
 
@@ -64,5 +66,5 @@
   opacity: 0.5;
   transform: none !important;
   background: var(--white) !important;
-  border: 1px solid #DAD9E0 !important;
+  border: 1px solid #dad9e0 !important;
 }

@@ -12,7 +12,8 @@
 
 .settings {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .signOutButton {
@@ -32,13 +33,8 @@
 .signOutButton .signOutButtonIcon path {
   fill: var(--neutral-light-4);
 }
-
-.resetButton {
-  height: 64px !important;
-  padding: 0px 35px !important;
-}
-
-.resetButton .resetButtonIcon path {
+.resetButton .resetButtonIcon path,
+.changePasswordButton .changePasswordIcon path {
   fill: var(--secondary);
 }
 
@@ -59,11 +55,6 @@
 
 .version span {
   line-height: 20px;
-}
-
-.downloadButton {
-  height: 64px !important;
-  padding: 0px 35px !important;
 }
 
 .selectedServices > * {
@@ -95,6 +86,13 @@
   font-size: var(--font-l) !important;
 }
 
+.cardButton,
+.cardSlider,
+.cardToast {
+  width: 176px;
+  margin: 4px auto;
+}
 .cardButton {
-  margin-left: 16px;
+  display: block;
+  height: 52px !important;
 }
