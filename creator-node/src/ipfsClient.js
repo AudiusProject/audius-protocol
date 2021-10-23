@@ -1,7 +1,10 @@
+/* global BigInt */
+
 const ipfsClient = require('ipfs-http-client')
 const ipfsClientLatest = require('ipfs-http-client-latest')
 const { importer } = require('ipfs-unixfs-importer')
 const fs = require('fs')
+const { hrtime } = require('process')
 
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
@@ -37,16 +40,18 @@ async function logIpfsPeerIds () {
  * @returns {string} hash from content addressing fn or ipfs daemon response
  */
 async function ipfsSingleAddWrapper (content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
-  enableIPFSAdd = true
+  // enableIPFSAdd = true
 
   const logger = genericLogger.child(logContext)
 
   let buffer = await _convertToBuffer(content, logger)
 
+  const startOnlyHash = hrtime.bigint()
   const onlyHash = await ipfsAddWithoutDaemon(buffer)
+  const durationOnlyHashMs = (hrtime.bigint() - startOnlyHash) / BigInt(1000000) // convert ns -> ms
 
   if (!enableIPFSAdd) {
-    logger.info(`[ipfsClient - ipfsSingleAddWrapper()] onlyHash=${onlyHash}`)
+    logger.info(`[ipfsClient - ipfsSingleAddWrapper()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms`)
     return onlyHash
   }
 
@@ -58,18 +63,20 @@ async function ipfsSingleAddWrapper (content, ipfsConfig = {}, logContext = {}, 
         size: 15347
       }
       See https://www.npmjs.com/package/ipfs-http-client/v/43.0.1#example
-    */
+  */
   try {
     let ipfsDaemonHash
     if (!ipfsConfig.timeout) {
       ipfsConfig.timeout = IPFS_ADD_TIMEOUT_MS
     }
 
+    const startIpfsLatestAdd = hrtime.bigint()
     for await (const ipfsLatestAddWithDaemonResp of ipfsLatest.add(buffer, ipfsConfig)) {
       ipfsDaemonHash = `${ipfsLatestAddWithDaemonResp.cid}`
     }
+    const durationIpfsLatestAddMs = (hrtime.bigint() - startIpfsLatestAdd) / BigInt(1000000) // convert ns -> ms
 
-    logger.info(`[ipfsClient - ipfsSingleAddWrapper()] onlyHash=${onlyHash} ipfsDaemonHash=${ipfsDaemonHash} isSameHash=${onlyHash === ipfsDaemonHash}`)
+    logger.info(`[ipfsClient - ipfsSingleAddWrapper()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms ipfsDaemonHash=${ipfsDaemonHash} ipfsDaemonHashDuration=${durationIpfsLatestAddMs}ms isSameHash=${onlyHash === ipfsDaemonHash}`)
     return ipfsDaemonHash
   } catch (e) {
     logger.warn(`[ipfsClient - ipfsSingleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${onlyHash}: ${e.toString()}\n${e.stack}`)
@@ -87,14 +94,17 @@ async function ipfsSingleAddWrapper (content, ipfsConfig = {}, logContext = {}, 
  * @returns {string|string[]|Object|Object[]} hashes from content addressing fn, or ipfs daemon responses
  */
 async function ipfsMultipleAddWrapper (content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
-  enableIPFSAdd = true
+  // enableIPFSAdd = true
   const logger = genericLogger.child(logContext)
 
+  const startOnlyHash = hrtime.bigint()
   const ipfsAddWithoutDaemonResp = await ipfsAddWithoutDaemon(content, {}, true)
-  const ipfsAddWithoutDaemonRespStr = JSON.stringify(sortKeys(ipfsAddWithoutDaemonResp), null, 2)
+  const durationOnlyHashMs = (hrtime.bigint() - startOnlyHash) / BigInt(1000000) // convert ns -> ms
+
+  const ipfsAddWithoutDaemonRespStr = JSON.stringify(sortKeys(ipfsAddWithoutDaemonResp))
 
   if (!enableIPFSAdd) {
-    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${ipfsAddWithoutDaemonRespStr}`)
+    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms`)
     return ipfsAddWithoutDaemonResp
   }
 
@@ -103,16 +113,18 @@ async function ipfsMultipleAddWrapper (content, ipfsConfig = {}, logContext = {}
       ipfsConfig.timeout = IPFS_ADD_TIMEOUT_MS
     }
 
+    const startIpfsLatestAdd = hrtime.bigint()
     let ipfsAddWithDaemonResp = []
     for await (const resp of ipfsLatest.add(content, ipfsConfig)) {
       resp.cid = `${resp.cid}`
       ipfsAddWithDaemonResp.push(resp)
     }
+    const durationIpfsLatestAddMs = (hrtime.bigint() - startIpfsLatestAdd) / BigInt(1000000) // convert ns -> ms
 
     // const ipfsAddWithDaemonResp = await ipfs.add(content, ipfsConfig)
 
-    const ipfsAddWithDaemonRespStr = JSON.stringify(sortKeys(ipfsAddWithDaemonResp), null, 2)
-    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${ipfsAddWithoutDaemonRespStr} ipfsAddWithDaemonResp=${ipfsAddWithDaemonRespStr} isSameHash=${ipfsAddWithoutDaemonRespStr === ipfsAddWithDaemonRespStr}`)
+    const ipfsAddWithDaemonRespStr = JSON.stringify(sortKeys(ipfsAddWithDaemonResp))
+    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms ipfsAddWithDaemonResp=${ipfsAddWithDaemonRespStr} ipfsDaemonHashDuration=${durationIpfsLatestAddMs}ms isSameHash=${ipfsAddWithoutDaemonRespStr === ipfsAddWithDaemonRespStr}`)
     return ipfsAddWithDaemonResp
   } catch (e) {
     logger.warn(`[ipfsClient - ipfsMultipleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${ipfsAddWithoutDaemonRespStr}: ${e.toString()}`)

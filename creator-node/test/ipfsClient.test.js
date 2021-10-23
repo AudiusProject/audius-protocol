@@ -10,7 +10,6 @@ const ipfsLatest = ipfsClient.ipfsLatest
 
 const createRandomText = () => {
   return uuid.v4()
-  // return 'i love bts'
 }
 
 // TODO: IF THE LGOGER EVER PRINTS OUT AN ERROR -> FAIL TEST IF NOT INTENTIONAL
@@ -188,37 +187,6 @@ describe('test ipfsClient', () => {
     console.log('source path', {
       onlyHash,
       ipfsLatestAddWithDaemonResp
-    })
-
-    assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
-  })
-
-  // TODO: fix thiss
-  it.only('[ipfsMultipleAddWrapper] passing in Object[] of the structure {path, content} should work', async () => {
-    let p = path.join('assets', 'random.txt')
-
-    const content = [{
-      path: p,
-      buffer: fs.readFileSync(randomTextFilePath)
-    },
-    {
-      path: p,
-      buffer: fs.readFileSync(randomTextFilePath)
-    },
-    {
-      path: p,
-      buffer: fs.readFileSync(randomTextFilePath)
-    },
-    {
-      path: p,
-      buffer: fs.readFileSync(randomTextFilePath)
-    }]
-
-    const onlyHash = await ipfsClient.ipfsMultipleAddWrapper(content)
-    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsMultipleAddWrapper(content, {}, {}, true)
-
-    console.log('object[] with structure {path, content}', {
-      onlyHash, ipfsLatestAddWithDaemonResp
     })
 
     assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
