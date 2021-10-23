@@ -85,6 +85,9 @@
 .emoji.heart-with-arrow.xxl {
 	background-image: url('../fonts/emojis/heart-with-arrow-160.png');
 }
+.emoji.lock {
+	background-image: url('../fonts/emojis/lock.png');
+}
 .emoji.multiple-musical-notes {
 	background-image: url('../fonts/emojis/multiple-musical-notes.png');
 }
