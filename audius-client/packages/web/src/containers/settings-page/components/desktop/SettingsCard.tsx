@@ -1,10 +1,8 @@
 import React from 'react'
 
-import PropTypes from 'prop-types'
-
 import styles from './SettingsCard.module.css'
 
-const SettingsCard = props => {
+const SettingsCard = (props: SettingsCardProps) => {
   return (
     <div className={styles.settingsCard}>
       <div className={styles.content}>
@@ -16,10 +14,10 @@ const SettingsCard = props => {
   )
 }
 
-SettingsCard.propTypes = {
-  title: PropTypes.string,
-  description: PropTypes.string,
-  children: PropTypes.node
+type SettingsCardProps = {
+  title: string
+  description: string
+  children: JSX.Element
 }
 
 export default SettingsCard

@@ -125,6 +125,7 @@ import {
   REPOSTING_USERS_ROUTE,
   FAVORITING_USERS_ROUTE,
   ACCOUNT_SETTINGS_PAGE,
+  CHANGE_PASSWORD_SETTINGS_PAGE,
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,
   NOTIFICATION_SETTINGS_PAGE,
   ABOUT_SETTINGS_PAGE,
@@ -756,6 +757,14 @@ class App extends Component {
                 path={ACCOUNT_VERIFICATION_SETTINGS_PAGE}
                 isMobile={isMobileClient}
                 render={() => <SettingsPage subPage={SubPage.VERIFICATION} />}
+              />
+              <MobileRoute
+                exact
+                path={CHANGE_PASSWORD_SETTINGS_PAGE}
+                isMobile={isMobileClient}
+                render={() => (
+                  <SettingsPage subPage={SubPage.CHANGE_PASSWORD} />
+                )}
               />
               <MobileRoute
                 exact

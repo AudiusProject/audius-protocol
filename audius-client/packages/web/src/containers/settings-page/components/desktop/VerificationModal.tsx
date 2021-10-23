@@ -34,6 +34,7 @@ import styles from './VerificationModal.module.css'
 
 const messages = {
   title: 'Verification',
+  buttonText: 'Verify',
   description:
     'Getting verified on Audius is easy! Just link your verified Twitter or Instagram account and you’ll be verified immediately.',
   warning: (
@@ -301,7 +302,7 @@ const VerificationModal = (props: VerificationModalProps) => {
         />
       ) : (
         <Button
-          text={messages.title}
+          text={messages.buttonText}
           onClick={onOpen}
           className={styles.btn}
           textClassName={styles.btnText}

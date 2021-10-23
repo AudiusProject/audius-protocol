@@ -36,6 +36,7 @@ import {
 
 import AboutSettingsPage from './AboutSettingsPage'
 import AccountSettingsPage from './AccountSettingsPage'
+import { ChangePasswordPage } from './ChangePasswordPage'
 import NotificationsSettingsPage from './NotificationsSettingsPage'
 import styles from './SettingsPage.module.css'
 import VerificationPage from './VerificationPage'
@@ -46,7 +47,8 @@ export enum SubPage {
   ACCOUNT = 'account',
   NOTIFICATIONS = 'notifications',
   ABOUT = 'about',
-  VERIFICATION = 'verification'
+  VERIFICATION = 'verification',
+  CHANGE_PASSWORD = 'change-password'
 }
 
 const messages = {
@@ -73,6 +75,7 @@ type OwnProps = {
   toggleTheme: (theme: any) => void
   profilePictureSizes: ProfilePictureSizes | null
   goToRoute: (route: string) => void
+  goBack: () => void
   isVerified: boolean
   onInstagramLogin: (uuid: string, profile: InstagramProfile) => void
   onTwitterLogin: (uuid: string, profile: TwitterProfile) => void
@@ -105,7 +108,8 @@ const SubPages = {
   [SubPage.NOTIFICATIONS]: NotificationsSettingsPage as React.FC<
     SettingsPageProps
   >,
-  [SubPage.VERIFICATION]: VerificationPage as React.FC<SettingsPageProps>
+  [SubPage.VERIFICATION]: VerificationPage as React.FC<SettingsPageProps>,
+  [SubPage.CHANGE_PASSWORD]: ChangePasswordPage as React.FC<SettingsPageProps>
 }
 
 const SettingsPage = (props: SettingsPageProps) => {

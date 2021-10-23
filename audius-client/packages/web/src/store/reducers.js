@@ -6,6 +6,7 @@ import addToPlaylist from 'containers/add-to-playlist/store/reducers'
 import dashboard from 'containers/artist-dashboard-page/store/reducer'
 import artistRecommendations from 'containers/artist-recommendations/store/slice'
 import rewardsPage from 'containers/audio-rewards-page/store/slice'
+import changePassword from 'containers/change-password/store/slice'
 import collection from 'containers/collection-page/store/reducer'
 import deletePlaylistConfirmation from 'containers/delete-playlist-confirmation-modal/store/reducers'
 import deleted from 'containers/deleted-page/store/slice'
@@ -118,6 +119,7 @@ const createRootReducer = routeHistory =>
         appCTAModal,
         artistRecommendations,
         averageColor,
+        changePassword,
         cookieBanner,
         createPlaylistModal,
         editPlaylistModal,

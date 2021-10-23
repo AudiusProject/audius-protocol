@@ -23,7 +23,10 @@ import { useUserProfilePicture } from 'hooks/useImageSize'
 import AudiusBackend from 'services/AudiusBackend'
 import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
-import { ACCOUNT_VERIFICATION_SETTINGS_PAGE } from 'utils/route'
+import {
+  ACCOUNT_VERIFICATION_SETTINGS_PAGE,
+  CHANGE_PASSWORD_SETTINGS_PAGE
+} from 'utils/route'
 
 import styles from './AccountSettingsPage.module.css'
 import { SettingsPageProps } from './SettingsPage'
@@ -39,7 +42,10 @@ This email is the only way to recover your account if you forget your password.`
   emailNotSent: 'Something broke! Please try again!',
   holdUp: 'HOLD UP!',
   verify: 'Verification',
-  isVerified: 'You’re Verified!'
+  isVerified: 'You’re Verified!',
+  changePassword: 'Change Password',
+  changePasswordPrompt: 'Change your password',
+  changePasswordButton: 'Change'
 }
 
 const AccountSettingsPage = ({
@@ -81,6 +87,10 @@ const AccountSettingsPage = ({
 
   const goToVerificationPage = useCallback(() => {
     goToRoute(ACCOUNT_VERIFICATION_SETTINGS_PAGE)
+  }, [goToRoute])
+
+  const goToChangePasswordSettingsPage = useCallback(() => {
+    goToRoute(CHANGE_PASSWORD_SETTINGS_PAGE)
   }, [goToRoute])
 
   return (
@@ -141,6 +151,21 @@ const AccountSettingsPage = ({
                   leftIcon={<IconVerified className={styles.verifiedIcon} />}
                 />
               )}
+            </Row>
+          </Grouping>
+          <Grouping>
+            <Row
+              prefix={<i className='emoji small lock' />}
+              title={messages.changePassword}
+              body={messages.changePasswordPrompt}
+            >
+              <Button
+                text={messages.changePasswordButton}
+                onClick={goToChangePasswordSettingsPage}
+                type={ButtonType.COMMON_ALT}
+                className={styles.changePasswordButton}
+                leftIcon={<IconMail />}
+              />
             </Row>
           </Grouping>
           <Grouping>

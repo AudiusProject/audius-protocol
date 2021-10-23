@@ -5,6 +5,7 @@ import {
   Button,
   ButtonType,
   IconMail,
+  IconLock,
   IconNotification,
   IconSignOut
 } from '@audius/stems'
@@ -20,6 +21,7 @@ import Page from 'components/general/Page'
 import Header from 'components/general/header/desktop/Header'
 import Toast from 'components/toast/Toast'
 import { ComponentPlacement } from 'components/types'
+import { ChangePasswordModal } from 'containers/change-password/ChangePasswordModal'
 import SelectedServices from 'containers/service-selection/SelectedServices'
 import { OS } from 'models/OS'
 import Theme from 'models/Theme'
@@ -55,9 +57,11 @@ const messages = {
   darkModeOn: 'On',
   darkModeOff: 'Off',
   darkModeAuto: 'Auto',
-  verifiedTitle: 'Verified on twitter or Instagram?',
+  verifiedTitle: 'Verify your account',
   getVerified: 'Get verified by linking a verified social account to Audius',
-  matrixMode: '🕳 🐇 Matrix'
+  matrixMode: '🕳 🐇 Matrix',
+  changePassword: 'Change Password',
+  changePasswordDescription: 'Change the password to your Audius account'
 }
 
 type OwnProps = {
@@ -98,12 +102,14 @@ type SettingsPageState = {
   showNotificationSettings: boolean
   showModalSignOut: boolean
   emailToastText: string
+  showChangePasswordModal: boolean
 }
 
 class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
   state = {
     showNotificationSettings: false,
     showModalSignOut: false,
+    showChangePasswordModal: false,
     emailToastText: ''
   }
 
@@ -149,6 +155,14 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
     this.props.recordDownloadDesktopApp()
   }
 
+  showChangePasswordModal = () => {
+    this.setState({ showChangePasswordModal: true })
+  }
+
+  closeChangePasswordModal = () => {
+    this.setState({ showChangePasswordModal: false })
+  }
+
   renderThemeCard() {
     const { showMatrix, theme, toggleTheme } = this.props
 
@@ -172,10 +186,11 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
 
     return (
       <SettingsCard
-        title='Dark Mode'
+        title='Appearance'
         description="Enable dark mode or choose 'Auto' to change with your system settings"
       >
         <TabSlider
+          className={styles.cardSlider}
           options={options}
           selected={theme || Theme.DEFAULT}
           onSelectOption={option => toggleTheme(option)}
@@ -216,6 +231,7 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
         header={header}
       >
         <div className={styles.settings}>
+          {this.renderThemeCard()}
           <SettingsCard
             title={messages.verifiedTitle}
             description={messages.getVerified}
@@ -230,6 +246,41 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
               onInstagramLogin={onInstagramLogin}
               onTwitterLogin={onTwitterLogin}
             />
+          </SettingsCard>
+          <SettingsCard
+            title='NOTIFICATIONS'
+            description='Review your notifications preferences'
+          >
+            <Button
+              onClick={this.showNotificationSettings}
+              className={cn(styles.cardButton, styles.resetButton)}
+              textClassName={styles.settingButtonText}
+              type={ButtonType.COMMON_ALT}
+              text='Review'
+              leftIcon={<IconNotification className={styles.reviewIcon} />}
+            />
+          </SettingsCard>
+          <SettingsCard
+            title='Account Recovery Email'
+            description='Resend your password reset email and store it safely. This email is the only way to recover your account if you forget your password.'
+          >
+            <Toast
+              tooltipClassName={styles.cardToast}
+              text={this.state.emailToastText}
+              open={!!this.state.emailToastText}
+              placement={ComponentPlacement.RIGHT}
+              fillParent={false}
+            >
+              <Button
+                onClick={this.showEmailToast}
+                className={cn(styles.cardButton, styles.resetButton)}
+                textClassName={styles.settingButtonText}
+                iconClassName={styles.resetButtonIcon}
+                type={ButtonType.COMMON_ALT}
+                text='Resend'
+                leftIcon={<IconMail />}
+              />
+            </Toast>
           </SettingsCard>
           {!isMobile() && !isElectron() && (
             <SettingsCard
@@ -253,38 +304,16 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
             </SettingsCard>
           )}
           <SettingsCard
-            title='Account Recovery Email'
-            description='Resend your password reset email and store it safely. This email is the only way to recover your account if you forget your password.'
-          >
-            <Toast
-              text={this.state.emailToastText}
-              open={!!this.state.emailToastText}
-              placement={ComponentPlacement.RIGHT}
-              fillParent={false}
-            >
-              <Button
-                onClick={this.showEmailToast}
-                className={cn(styles.cardButton, styles.resetButton)}
-                textClassName={styles.settingButtonText}
-                iconClassName={styles.resetButtonIcon}
-                type={ButtonType.COMMON_ALT}
-                text='Resend'
-                leftIcon={<IconMail />}
-              />
-            </Toast>
-          </SettingsCard>
-          {this.renderThemeCard()}
-          <SettingsCard
-            title='NOTIFICATIONS'
-            description='Review your notifications preferences'
+            title={messages.changePassword}
+            description={messages.changePasswordDescription}
           >
             <Button
-              onClick={this.showNotificationSettings}
-              className={cn(styles.cardButton, styles.resetButton)}
+              onClick={this.showChangePasswordModal}
+              className={cn(styles.cardButton, styles.changePasswordButton)}
               textClassName={styles.settingButtonText}
               type={ButtonType.COMMON_ALT}
-              text='Review'
-              leftIcon={<IconNotification className={styles.reviewIcon} />}
+              text='Change'
+              leftIcon={<IconLock className={styles.changePasswordIcon} />}
             />
           </SettingsCard>
         </div>
@@ -328,6 +357,10 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
             leftClick={this.onSignOut}
           />
         </Modal>
+        <ChangePasswordModal
+          showModal={this.state.showChangePasswordModal}
+          onClose={this.closeChangePasswordModal}
+        />
         <NotificationSettings
           isOpen={this.state.showNotificationSettings}
           toggleBrowserPushNotificationPermissions={

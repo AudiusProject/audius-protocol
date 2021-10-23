@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react'
 
-import { push as pushRoute } from 'connected-react-router'
+import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -158,6 +158,7 @@ class SettingsPage extends PureComponent<
       updateEmailFrequency,
       updateCastMethod,
       goToRoute,
+      goBack,
       recordSignOut,
       recordAccountRecovery,
       recordDownloadDesktopApp,
@@ -193,6 +194,7 @@ class SettingsPage extends PureComponent<
       updateEmailFrequency,
       recordDownloadDesktopApp,
       goToRoute,
+      goBack,
       showMatrix
     }
 
@@ -275,6 +277,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     updateEmailFrequency: (frequency: EmailFrequency) =>
       dispatch(settingPageActions.updateEmailFrequency(frequency)),
     goToRoute: (route: string) => dispatch(pushRoute(route)),
+    goBack: () => dispatch(goBack()),
     updateCastMethod: (castMethod: Cast) =>
       dispatch(settingPageActions.updateCastMethod(castMethod)),
     recordThemeChange: (themeSettings: string) => {

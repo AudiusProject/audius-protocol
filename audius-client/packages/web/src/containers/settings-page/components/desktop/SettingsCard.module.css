@@ -1,5 +1,8 @@
 .settingsCard {
-  height: 112px;
+  flex: 1 470px; /* 246px (description) + 48px (padding) + 176px (button) */
+  width: 50%;
+  min-width: 300px;
+  min-height: 120px;
   border-radius: 6px;
   background-color: var(--white);
   box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
@@ -8,11 +11,14 @@
   justify-content: space-between;
   align-items: center;
   user-select: none;
-
-  margin-bottom: 16px;
+  margin: 0 4px 16px;
   text-align: left;
+  flex-wrap: wrap;
 }
-
+.content {
+  flex: 1;
+  align-self: flex-start;
+}
 
 .title {
   color: var(--secondary);
@@ -29,4 +35,7 @@
   font-family: var(--font-famliy);
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
+  line-height: 1.2;
+  width: 246px;
+  margin-bottom: 4px;
 }

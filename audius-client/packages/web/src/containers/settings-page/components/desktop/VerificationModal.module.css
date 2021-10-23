@@ -25,7 +25,6 @@
   font-weight: var(--font-bold);
 }
 
-
 .headerContainer {
   margin: 0px 8px;
   position: relative;
@@ -43,8 +42,9 @@
 }
 
 .btn {
-  height: 64px !important;
-  padding: 0px 35px;
+  height: 52px !important;
+  width: 176px;
+  margin: 4px auto;
 }
 
 .disabledBtn .btnIcon path,
@@ -116,7 +116,7 @@
   font-weight: normal;
   font-size: var(--font-m);
   color: var(--neutral-light-4);
-  margin-bottom: 24px
+  margin-bottom: 24px;
 }
 
 .iconVerified {
@@ -134,7 +134,6 @@
   text-transform: capitalize;
   color: var(--neutral);
 }
-
 
 .disabledBtn {
   background-color: var(--white);

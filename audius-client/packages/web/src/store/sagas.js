@@ -10,6 +10,7 @@ import addToPlaylistSagas from 'containers/add-to-playlist/store/sagas'
 import dashboardSagas from 'containers/artist-dashboard-page/store/sagas'
 import artistRecommendationsSagas from 'containers/artist-recommendations/store/sagas'
 import rewardsPageSagas from 'containers/audio-rewards-page/store/sagas'
+import changePasswordSagas from 'containers/change-password/store/sagas'
 import collectionSagas from 'containers/collection-page/store/sagas'
 import deletedSagas from 'containers/deleted-page/store/sagas'
 import exploreCollectionsPageSagas from 'containers/explore-page/store/collections/sagas'
@@ -117,6 +118,7 @@ export default function* rootSaga() {
     // Application
     addToPlaylistSagas(),
     artistRecommendationsSagas(),
+    changePasswordSagas(),
     deletedSagas(),
     enablePushNotificationsSagas(),
     favoritePageSagas(),
