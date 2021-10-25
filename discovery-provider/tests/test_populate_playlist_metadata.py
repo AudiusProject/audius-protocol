@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_populate_playlist_metadata(app):
-    """Tests that populate_playlist_metadata works after aggregate_user refresh"""
+    """Tests that populate_playlist_metadata works after aggregate_user update"""
     with app.app_context():
         db = get_db()
 

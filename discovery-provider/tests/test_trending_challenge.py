@@ -267,7 +267,6 @@ def test_trending_challenge_job(app):
 
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
         session.commit()
 
     enqueue_trending_challenges(db, redis_conn, bus, trending_date)

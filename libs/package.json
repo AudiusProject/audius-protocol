@@ -1,6 +1,6 @@
 {
   "name": "@audius/libs",
-  "version": "1.2.26",
+  "version": "1.2.27",
   "description": "",
   "main": "src/index.js",
   "browser": {
@@ -18,7 +18,7 @@
     "lint-fix": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
-    "@audius/hedgehog": "1.0.9",
+    "@audius/hedgehog": "1.0.12",
     "@ethersproject/solidity": "5.0.5",
     "@solana/spl-token": "0.1.6",
     "@solana/web3.js": "1.24.1",
