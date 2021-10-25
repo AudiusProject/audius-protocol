@@ -9,7 +9,7 @@ local accept_redirect_from = os.getenv("audius_openresty_accept_redirect_from") 
 local rsa_public_key = os.getenv("audius_openresty_rsa_public_key") or ""
 local rsa_private_key = os.getenv("audius_openresty_rsa_private_key") or ""
 
-if rsa_public_Key == "" or rsa_private_key == "" then
+if rsa_public_key == "" or rsa_private_key == "" then
     ngx.log(ngx.WARN, "audius_openresty_rsa_private_key or audius_openresty_rsa_public_key was not set; generating new key")
     rsa_public_key, rsa_private_key, err = resty_rsa:generate_rsa_keys(2048)
     if not rsa_private_key then
