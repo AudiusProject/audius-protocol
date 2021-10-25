@@ -18,7 +18,7 @@ const storagePath = config.get('storagePath')
 
 const reqFnStubs = {
   ipfsAPI: ipfs,
-  ipfsAPILatest: ipfsLatest,
+  ipfsLatestAPI: ipfsLatest,
   storagePath
 }
 const req = {

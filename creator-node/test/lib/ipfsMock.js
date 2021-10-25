@@ -30,12 +30,17 @@ function getIPFSMock (isLatest = false) {
   let addResp
   if (isLatest) {
     addResp = { cid: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6' }
+    const asyncIterableIpfsAddResp = {
+      async * [Symbol.asyncIterator] () {
+        yield { cid: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6' }
+      }
+    }
+    ipfsMock.add.returns(asyncIterableIpfsAddResp)
   } else {
     addResp = { hash: 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6' }
+    ipfsMock.add.returns([addResp])
+    ipfsMock.addFromFs.returns([addResp])
   }
-
-  ipfsMock.add.returns([addResp])
-  ipfsMock.addFromFs.returns([addResp])
 
   return ipfsMock
 }
