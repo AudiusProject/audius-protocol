@@ -87,7 +87,7 @@ class TransactionHandler {
     const matcher = /(?<=custom program error: 0x)(.*)$/
     const res = errorMessage.match(matcher)
     if (!res || !res.length) return null
-    return parseInt(res[0])
+    return parseInt(res[0], 16)
   }
 }
 
