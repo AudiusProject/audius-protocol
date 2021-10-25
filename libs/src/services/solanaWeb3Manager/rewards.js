@@ -157,18 +157,17 @@ async function submitAttestations ({
         transferId,
         feePayer
       })
-      // const secpInstruction = Promise.resolve(
-      //   generateSecpInstruction({
-      //     attestationMeta: meta,
-      //     recipientEthAddress,
-      //     oracleAddress: oracleAttestation.ethAddress,
-      //     tokenAmount,
-      //     transferId,
-      //     instructionIndex: 2 * i
-      //   })
-      // )
-      // return [...instructions, secpInstruction, verifyInstruction]
-      return [...instructions, verifyInstruction]
+      const secpInstruction = Promise.resolve(
+        generateSecpInstruction({
+          attestationMeta: meta,
+          recipientEthAddress,
+          oracleAddress: oracleAttestation.ethAddress,
+          tokenAmount,
+          transferId,
+          instructionIndex: 2 * i
+        })
+      )
+      return [...instructions, secpInstruction, verifyInstruction]
     }, [])
   )
 
@@ -360,7 +359,7 @@ const evaluateAttestations = async ({
     data: serializedInstructionEnum
   })
 
-  return transactionHandler.handleTransaction(instructions, RewardsManagerError)
+  return transactionHandler.handleTransaction([transferInstruction], RewardsManagerError)
 }
 
 // Helpers
