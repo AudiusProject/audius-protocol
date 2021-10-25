@@ -5,10 +5,10 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { Spring } from 'react-spring/renderprops'
 
+import Status from 'common/models/Status'
 import Input from 'components/data-entry/Input'
 import StatusMessage from 'components/general/StatusMessage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { Status } from 'store/types'
 import { useSelector } from 'utils/reducer'
 
 import styles from './ConfirmCredentials.module.css'

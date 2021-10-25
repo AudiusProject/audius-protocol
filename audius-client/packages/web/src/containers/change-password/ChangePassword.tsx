@@ -4,9 +4,9 @@ import { Button, ButtonType, IconLock } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
+import Status from 'common/models/Status'
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import EnterPassword from 'components/sign-on/EnterPassword'
-import { Status } from 'store/types'
 
 import styles from './ChangePassword.module.css'
 import { ConfirmCredentials } from './ConfirmCredentials'
