@@ -47,7 +47,8 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/reposit
     opm get spacewander/lua-resty-rsa && \
     opm get ledgetech/lua-resty-http && \
     mkdir /usr/local/openresty/conf && \
-    mkdir /usr/local/openresty/logs
+    mkdir /usr/local/openresty/logs && \
+    mkdir /usr/local/openresty/cache
 
 # versions
 # alpine-sdk 1.0-r0
