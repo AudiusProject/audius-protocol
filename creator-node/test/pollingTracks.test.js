@@ -50,7 +50,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     process.env.enableIPFSAddMetadata = true
     const { getApp } = require('./lib/app')
-    
+
     const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock, null, userId)
     await BlacklistManager.init()
 
@@ -96,6 +96,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     await server.close()
 
     ipfsMock = getIPFSMock()
+    const { getApp } = require('./lib/app')
     const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, null, null, userId)
     app = appInfo.app
     server = appInfo.server
@@ -125,6 +126,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
     // Reset app
     await server.close()
     ipfsMock = getIPFSMock()
+    const { getApp } = require('./lib/app')
     const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, null, null, userId)
     app = appInfo.app
     server = appInfo.server
@@ -443,6 +445,7 @@ describe('test Polling Tracks with real IPFS', function () {
 
     userId = 1
 
+    const { getApp } = require('./lib/app')
     const appInfo = await getApp(ipfs, libsMock, BlacklistManager, null, null, userId)
     await BlacklistManager.init()
 
