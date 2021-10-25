@@ -7,6 +7,7 @@ const proxyquire = require('proxyquire')
 
 const { serviceRegistry } = require('../src/serviceRegistry')
 const ipfs = serviceRegistry.ipfs
+const ipfsLatest = serviceRegistry.ipfsLatest
 const { saveFileToIPFSFromFS, removeTrackFolder, saveFileFromBufferToIPFSAndDisk } = require('../src/fileManager')
 const config = require('../src/config')
 const models = require('../src/models')
@@ -62,7 +63,7 @@ describe('test fileManager', () => {
      */
     it('should throw error if cnodeUserUUID is not present', async () => {
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, null, srcPath, ipfs)
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, null, srcPath, ipfsLatest)
         assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
@@ -78,7 +79,7 @@ describe('test fileManager', () => {
       sinon.stub(ipfs, 'addFromFs').rejects(new Error('ipfs is down!'))
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs, true /* enableIPFSAdd */)
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfsLatest, true /* enableIPFSAdd */)
       } catch (e) {
         assert.fail('Should have passed if ipfs is down.')
       }
@@ -98,7 +99,7 @@ describe('test fileManager', () => {
       )
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs)
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfsLatest)
         assert.fail('Should not have passed if file copying fails.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'Failed to copy files!!')
@@ -117,7 +118,7 @@ describe('test fileManager', () => {
       sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs, true /* enableIPFSAdd */)
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfsLatest, true /* enableIPFSAdd */)
       } catch (e) {
         assert.fail(e.message)
       }

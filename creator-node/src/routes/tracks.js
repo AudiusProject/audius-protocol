@@ -173,6 +173,7 @@ module.exports = function (app) {
     return successResponse({ uuid: req.logContext.requestID })
   }))
 
+  // TODO: Deprecate this route
   /**
    * upload track segment files and make avail - will later be associated with Audius track
    * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.

@@ -172,7 +172,8 @@ const getCID = async (req, res) => {
     // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
     try {
       const libs = req.app.get('audiusLibs')
-      await findCIDInNetwork(storagePath, CID, req.logger, libs, trackId)
+      const ipfsLatest = req.app.get('ipfsLatestAPI')
+      await findCIDInNetwork(ipfsLatest, storagePath, CID, req.logger, libs, trackId)
       return await streamFromFileSystem(req, res, storagePath)
     } catch (e) {
       req.logger.error(`Error calling findCIDInNetwork for path ${storagePath}`, e)
@@ -294,7 +295,8 @@ const getDirCID = async (req, res) => {
       // CID is the file CID, parse it from the storagePath
       const CID = storagePath.split('/').slice(-1).join('')
       const libs = req.app.get('audiusLibs')
-      await findCIDInNetwork(storagePath, CID, req.logger, libs)
+      const ipfsLatest = req.app.get('ipfsLatestAPI')
+      await findCIDInNetwork(ipfsLatest, storagePath, CID, req.logger, libs)
       return await streamFromFileSystem(req, res, storagePath)
     } catch (e) {
       req.logger.error(`Error calling findCIDInNetwork for path ${storagePath}`, e)

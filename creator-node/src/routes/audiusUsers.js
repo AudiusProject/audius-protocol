@@ -26,7 +26,6 @@ module.exports = function (app) {
    * Create AudiusUser from provided metadata, and make metadata available to network
    */
   app.post('/audius_users/metadata', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
-    // TODO - input validation
     const metadataJSON = req.body.metadata
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const cnodeUserUUID = req.session.cnodeUserUUID

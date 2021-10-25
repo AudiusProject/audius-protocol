@@ -33,15 +33,14 @@ async function logIpfsPeerIds () {
 /**
  * Wrapper to ipfsLatest.add() -- Allows enabling/disabling adding content to the ipfs daemon.
  *
- * @param {Buffer|string} content a single buffer input, a read stream, or a src path to the file
+ * @param {Object} ipfsLatest ipfs instance (should be v43.0.1)
+ * @param {Buffer|ReadStream|string} content a single buffer input, a read stream, or a src path to the file
  * @param {Object?} ipfsConfig ipfs add config options
  * @param {Object?} logContext
  * @param {boolean?} enableIPFSAdd flag to add content to ipfs daemon
  * @returns {string} hash from content addressing fn or ipfs daemon response
  */
-async function ipfsSingleAddWrapper (content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
-  // enableIPFSAdd = true
-
+async function ipfsSingleAddWrapper (ipfsLatest, content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
 
   let buffer = await _convertToBuffer(content, logger)
@@ -86,15 +85,14 @@ async function ipfsSingleAddWrapper (content, ipfsConfig = {}, logContext = {}, 
 
 /**
  * Wrapper to ipfs.add() for multiple inputs -- Allows enabling/disabling adding content to the ipfs daemon. Generally used for images (to generate dirs too)
- * @param {function} ipfsAddFn ipfs add fn
+ * @param {Object} ipfsLatest ipfs instance (should be v43.0.1)
  * @param {Object[]} content an Object[] with the structure { path: string, content: buffer }
  * @param {Object?} ipfsConfig ipfs add config options
  * @param {Object?} logContext
  * @param {boolean?} enableIPFSAdd flag to add content to ipfs daemon
  * @returns {string|string[]|Object|Object[]} hashes from content addressing fn, or ipfs daemon responses
  */
-async function ipfsMultipleAddWrapper (content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
-  // enableIPFSAdd = true
+async function ipfsMultipleAddWrapper (ipfsLatest, content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
 
   const startOnlyHash = hrtime.bigint()
@@ -120,8 +118,6 @@ async function ipfsMultipleAddWrapper (content, ipfsConfig = {}, logContext = {}
       ipfsAddWithDaemonResp.push(resp)
     }
     const durationIpfsLatestAddMs = (hrtime.bigint() - startIpfsLatestAdd) / BigInt(1000000) // convert ns -> ms
-
-    // const ipfsAddWithDaemonResp = await ipfs.add(content, ipfsConfig)
 
     const ipfsAddWithDaemonRespStr = JSON.stringify(sortKeys(ipfsAddWithDaemonResp))
     logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms ipfsAddWithDaemonResp=${ipfsAddWithDaemonRespStr} ipfsDaemonHashDuration=${durationIpfsLatestAddMs}ms isSameHash=${ipfsAddWithoutDaemonRespStr === ipfsAddWithDaemonRespStr}`)
@@ -191,12 +187,6 @@ async function ipfsAddWithoutDaemon (content, options, isImageFlow = false) {
  * @returns buffer version of content
  */
 async function _convertToBuffer (content, logger) {
-  // if (
-  //   Buffer.isBuffer(content) ||
-  //   (content.path && content.content) ||
-  //   (content[0] && content[0].path && content[0].content)
-  // ) return content
-
   if (Buffer.isBuffer(content)) return content
 
   let buffer = []

@@ -5,7 +5,7 @@ const path = require('path')
 
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
-const { ipfsMultipleAddWrapper } = require('./ipfsClient')
+const { ipfsLatest, ipfsMultipleAddWrapper } = require('./ipfsClient')
 const DiskManager = require('./diskManager')
 
 const ENABLE_IPFS_ADD_IMAGES = config.get('enableIPFSAddImages')
@@ -144,6 +144,7 @@ module.exports = async (job) => {
   resizes.push(original)
 
   const ipfsAddResp = await ipfsMultipleAddWrapper(
+    ipfsLatest,
     toAdd,
     { pin: false } /* ipfs add config */,
     {} /* logContext */,

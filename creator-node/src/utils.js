@@ -227,7 +227,7 @@ const ipfsGet = ({ ipfsLatest }, logger, path, timeout = 1000) => new Promise(as
   }
 })
 
-async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null) {
+async function findCIDInNetwork (ipfsLatest, filePath, cid, logger, libs, trackId = null) {
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
   if (attemptedStateFix) return
 
@@ -260,7 +260,7 @@ async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null) {
         await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
 
         // verify that the file written matches the hash expected if added to ipfs
-        const ipfsHashOnly = await ipfsSingleAddWrapper(filePath, { onlyHash: true, timeout: 2000 })
+        const ipfsHashOnly = await ipfsSingleAddWrapper(ipfsLatest, filePath, { onlyHash: true, timeout: 2000 })
 
         if (cid !== ipfsHashOnly) {
           await fs.unlink(filePath)

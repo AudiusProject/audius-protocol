@@ -19,11 +19,11 @@ const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
  *
  * @param {Object} logContext the context of the request used to create a generic logger
  * @param {Object} requestProps more request specific context, NOT the req object from Express
- * @param {Object} ipfs ipfs instance
+ * @param {Object} ipfsLatest ipfsLatest instance
  * @returns a success or error server response
  * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
  */
-const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs) => {
+const handleTrackContentRoute = async ({ logContext }, requestProps, ipfsLatest) => {
   const logger = genericLogger.child(logContext)
 
   const routeTimeStart = Date.now()
@@ -57,7 +57,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs) => {
     { logContext: requestProps.logContext },
     requestProps.session.cnodeUserUUID,
     transcodedFilePath,
-    ipfs,
+    ipfsLatest,
     ENABLE_IPFS_ADD_TRACKS
   )
 
@@ -71,7 +71,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs) => {
         { logContext: requestProps.logContext },
         requestProps.session.cnodeUserUUID,
         segmentAbsolutePath,
-        ipfs,
+        ipfsLatest,
         ENABLE_IPFS_ADD_TRACKS
       )
       return { multihash, srcPath: segmentFilePath, dstPath }
