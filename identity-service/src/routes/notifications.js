@@ -44,7 +44,7 @@ const ClientNotificationTypes = new Set([
   NotificationType.Milestone,
   NotificationType.TrendingTrack,
   NotificationType.ChallengeReward,
-  NotificationType.TierChange,
+  NotificationType.TierChange
 ])
 
 const Entity = Object.freeze({

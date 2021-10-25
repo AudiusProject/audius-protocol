@@ -458,18 +458,20 @@ def notifications():
         tier_change_notifications = []
 
         for entry in balance_change_results:
+            prev = int(entry.previous_balance)
+            current = int(entry.current_balance)
             # Check for a tier change and add to tier_change_notification
             tier = None
-            if (entry.current_balance >= 100000 and entry.previous_balance < 100000):
+            if prev < 100000 <= current:
                 tier = 'platinum'
-            elif (entry.current_balance >= 10000 and entry.previous_balance < 10000):
+            elif prev < 10000 <= current:
                 tier = 'gold'
-            elif (entry.current_balance >= 100 and entry.previous_balance < 100):
+            elif prev < 100 <= current:
                 tier = 'silver'
-            elif (entry.current_balance >= 10 and entry.previous_balance < 10):
+            elif prev < 10 <= current:
                 tier = 'bronze'
 
-            if (tier is not None):
+            if tier is not None:
                 tier_change_notif = {
                     const.notification_type: const.notification_type_tier_change,
                     const.notification_blocknumber: entry.blocknumber,

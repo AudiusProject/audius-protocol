@@ -11,9 +11,9 @@ const {
  * @param {Array<Object>} notifications
  * @param {*} tx The DB transaction to attach to DB requests
  */
-async function processTierChangeNotifications(notifications, tx) {
+async function processTierChangeNotifications (notifications, tx) {
   for (const notification of notifications) {
-    const { tier } = notification.metadata
+    const { tier } = notification.metadata
 
     // Create/Find a Notification and NotificationAction for this event
     // NOTE: TierChange Notifications do NOT stack. A new notification is created for each tier change

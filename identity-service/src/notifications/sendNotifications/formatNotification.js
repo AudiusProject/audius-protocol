@@ -201,7 +201,7 @@ async function formatNotifications (notifications, notificationSettings, tx) {
 
     // Handle 'tier change' notification type
     if (notif.type === notificationTypes.TierChange) {
-      const formatedTierChangeNotification = {
+      const formattedTierChangeNotification = {
         ...notif,
         tier: notif.metadata.tier,
         actions: [{
@@ -211,8 +211,8 @@ async function formatNotifications (notifications, notificationSettings, tx) {
         }],
         type: notificationTypes.TierChange
       }
-      formattedNotifications.push(formatedTierChangeNotification)
-      userIds.add(formatedTierChangeNotification.initiator)
+      formattedNotifications.push(formattedTierChangeNotification)
+      userIds.add(formattedTierChangeNotification.initiator)
     }
 
     // Handle the 'create' notification type, track/album/playlist
