@@ -1,24 +1,14 @@
 const express = require('express')
 const crypto = require('crypto')
 
-const config = require('../config')
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
-const { getFeePayer } = require('../solana-client')
-const audiusLibsWrapper = require('../audiusLibsInstance')
-
-const solanaEndpoint = config.get('solanaEndpoint')
 
 const {
-  Connection,
   PublicKey,
-  Secp256k1Program,
-  sendAndConfirmTransaction,
-  Transaction,
   TransactionInstruction
 } = require('@solana/web3.js')
 
 const solanaRouter = express.Router()
-const connection = new Connection(solanaEndpoint)
 
 // Check that an instruction has all the necessary data
 const isValidInstruction = (instr) => {
