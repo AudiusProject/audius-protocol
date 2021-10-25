@@ -7,7 +7,7 @@ from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import get_track_play_counts
 from src.utils.redis_cache import get_pickled_key
-from src.utils.redis_constants import latest_sol_play_tx_key
+from src.utils.redis_constants import latest_sol_play_tx_key, latest_indexed_sol_play_tx_key
 
 logger = logging.getLogger(__name__)
 
@@ -69,19 +69,28 @@ def get_track_listen_milestones(limit=100):
     return track_id_play_counts
 
 # Retrieve sol plays health object
-def get_sol_play_health_info(limit, redis):
+def get_sol_play_health_info(redis, current_time_utc):
     # Query latest dplays
-    latest_db_sol_plays = get_latest_sol_plays(limit)
+    # Latest play tx committed to DB
+    latest_cached_db_sol_play = get_pickled_key(redis, latest_indexed_sol_play_tx_key)
+    if not latest_cached_db_sol_play:
+        # If nothing found in cache, pull from db
+        latest_cached_db_sol_play = get_latest_sol_plays(1)[0]
+        logger.error(latest_cached_db_sol_play)
+
+    # Latest 
     latest_cached_sol_tx = get_pickled_key(redis, latest_sol_play_tx_key)
-    slot_diff = latest_cached_sol_tx["slot"] - latest_db_sol_plays[0]["slot"]
-    time_diff = 0
-    if latest_db_sol_plays:
-        last_created_at_time = latest_db_sol_plays[0]["created_at"]
-        current_time_utc = datetime.datetime.utcnow()
+    time_diff = -1
+    slot_diff = -1
+    if latest_cached_db_sol_play:
+        slot_diff = latest_cached_sol_tx["slot"] - latest_cached_db_sol_play["slot"]
+        last_created_at_time = latest_cached_db_sol_play["created_at"]
         time_diff = (current_time_utc - last_created_at_time).total_seconds()
     return {
         "slot_diff": slot_diff,
-        "chain_tx": latest_cached_sol_tx,
-        "db_info": latest_db_sol_plays,
-        "time_diff": time_diff
+        "tx_info": {
+            "chain_tx": latest_cached_sol_tx,
+            "db_tx": latest_cached_db_sol_play,
+        },
+        "time_diff": time_diff,
     }

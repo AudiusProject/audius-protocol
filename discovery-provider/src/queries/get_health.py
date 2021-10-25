@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 import time
@@ -19,11 +20,14 @@ from src.utils.redis_constants import (
     challenges_last_processed_event_redis_key,
     user_balances_refresh_last_completion_redis_key,
     index_eth_last_completion_redis_key,
+    latest_db_play_key
 )
+from src.utils.redis_cache import get_pickled_key, pickle_and_set
 from src.queries.get_balances import (
     LAZY_REFRESH_REDIS_PREFIX,
     IMMEDIATE_REFRESH_REDIS_PREFIX,
 )
+from src.queries.get_latest_play import get_latest_play
 from src.queries.get_sol_plays import (
     get_sol_play_health_info
 )
@@ -210,7 +214,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_block_hash = latest_block.hash.hex()
 
     # Fetch plays from solana specifically
-    sol_play_info = get_sol_play_health_info(1, redis)
+    # sol_play_info = get_sol_play_health_info(redis)
+
+    # TESTING
+    (unhealthy_plays, sol_play_info, time_diff_general) = get_play_health_info(plays_max_drift, redis)
+    logger.error(f"get play health info {unhealthy_plays}, {sol_play_info}, {time_diff_general} ")
 
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
@@ -288,8 +296,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "index_eth_age_sec": index_eth_age_sec,
         "number_of_cpus": number_of_cpus,
         **sys_info,
-        "solana": {
-            "play_info": sol_play_info
+        "plays": {
+            "solana": sol_play_info,
+            "time_diff_general": time_diff_general
         }
     }
 
@@ -347,13 +356,44 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         and challenge_events_age_sec > challenge_events_age_max_drift
     )
 
-    unhealthy_plays = bool(
-        plays_max_drift > sol_play_info["time_diff"]
-    )
-
     is_unhealthy = unhealthy_blocks or unhealthy_challenges or unhealthy_plays
 
     return health_results, is_unhealthy
+
+
+def get_play_health_info(plays_max_drift, redis=None):
+    if redis is None:
+        raise Exception("Invalid arguments for get_play_health")
+
+    current_time_utc = datetime.datetime.utcnow()
+
+    # Fetch plays info from Solana
+    sol_play_info = get_sol_play_health_info(redis, current_time_utc)
+
+    # Fetch latest plays info
+    unhealthy_plays = bool(
+        plays_max_drift < sol_play_info["time_diff"]
+    )
+
+    latest_db_play = get_pickled_key(redis, latest_db_play_key)
+    if not latest_db_play:
+        latest_db_play = get_latest_play()
+        pickle_and_set(
+            redis,
+            latest_db_play_key,
+            latest_db_play,
+            15
+        )
+
+    # Calculate time diff from now to latest play (regardless of slot)
+    time_diff_general = (current_time_utc - latest_db_play).total_seconds() 
+    if unhealthy_plays:
+        unhealthy_plays = bool(
+            plays_max_drift < time_diff_general
+        )
+
+    return (unhealthy_plays, sol_play_info, time_diff_general)
+
 
 
 def get_latest_chain_block_set_if_nx(redis=None, web3=None):

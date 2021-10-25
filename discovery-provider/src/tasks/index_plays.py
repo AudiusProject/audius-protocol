@@ -7,6 +7,8 @@ import dateutil.parser
 from sqlalchemy import func, desc, or_, and_
 from src.models import Play
 from src.tasks.celery_app import celery
+from src.utils.redis_cache import pickle_and_set
+from src.utils.redis_constants import latest_db_play_key
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +28,7 @@ def get_time_diff(previous_time):
 # NOTE: indexing the plays will eventually be a part of `index_blocks`
 
 
-def get_track_plays(self, db, lock):
+def get_track_plays(self, db, lock, redis):
     start_time = time.time()
     job_extra_info = {"job": JOB}
     with db.scoped_session() as session:
@@ -205,6 +207,7 @@ def get_track_plays(self, db, lock):
         has_lock = lock.owned()
         if plays and has_lock:
             session.bulk_save_objects(plays)
+            pickle_and_set(redis, latest_db_play_key, plays[-1].created_at, 60)
 
         job_extra_info["has_lock"] = has_lock
         job_extra_info["number_rows_insert"] = len(plays)
@@ -231,7 +234,7 @@ def update_play_count(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            get_track_plays(self, db, update_lock)
+            get_track_plays(self, db, update_lock, redis)
         else:
             logger.error(
                 f"index_plays.py | update_play_count | {self.request.id} | Failed to acquire update_play_count_lock",
