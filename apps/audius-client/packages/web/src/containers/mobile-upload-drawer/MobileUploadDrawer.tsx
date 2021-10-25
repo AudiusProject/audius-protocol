@@ -9,6 +9,8 @@ import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selec
 
 import styles from './MobileUploadDrawer.module.css'
 
+const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+
 const messages = {
   start: 'Start Uploading',
   visit: 'Visit audius.co from a desktop browser',
@@ -21,7 +23,11 @@ const MobileUploadDrawer = ({ onClose }: { onClose: () => void }) => {
   const isOpen = useSelector(getIsOpen)
   const keyboardVisible = useSelector(getKeyboardVisibility)
   return (
-    <Drawer isOpen={isOpen} keyboardVisible={keyboardVisible} onClose={onClose}>
+    <Drawer
+      isOpen={!NATIVE_MOBILE && isOpen}
+      keyboardVisible={keyboardVisible}
+      onClose={onClose}
+    >
       <div className={styles.drawer}>
         <div className={styles.top}>
           <div className={styles.cta}>
