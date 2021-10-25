@@ -442,7 +442,7 @@ module.exports = function (app) {
     // NOTE: this was for mad dog test failures? this adds 5 ipfs.add calls per image upload?
     // seems unnecessary? i think we should just take the L if the cids dont match up, since it raerly happens anyway
     // ask sid or dheeraj tomorrow
-    await _dirCIDIPFSVerificationWithRetries(req, resizeResp, dirCID)
+    // await _dirCIDIPFSVerificationWithRetries(req, resizeResp, dirCID)
 
     // Record image file entries in DB
     const transaction = await models.sequelize.transaction()
