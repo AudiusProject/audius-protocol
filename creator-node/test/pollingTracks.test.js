@@ -16,7 +16,6 @@ const fileManager = require('../src/fileManager')
 
 const { handleTrackContentRoute } = require('../src/components/tracks/tracksComponentService')
 
-const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
@@ -49,6 +48,9 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     userId = 1
 
+    process.env.enableIPFSAddMetadata = true
+    const { getApp } = require('./lib/app')
+    
     const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock, null, userId)
     await BlacklistManager.init()
 
