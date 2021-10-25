@@ -284,7 +284,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     // verify that the contents of the file match the file's cid
     try {
       decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
-      const ipfsHashOnly = await ipfsSingleAddWrapper(ipfsLatest, expectedStoragePath, { onlyHash: true, timeout: 10000 }, {})
+      const ipfsHashOnly = await ipfsSingleAddWrapper(ipfsLatest, expectedStoragePath, { onlyHash: true, timeout: 10000 })
       if (multihash !== ipfsHashOnly) {
         decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: ipfsHashOnly, time: Date.now() })
         // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
@@ -311,7 +311,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
 
 const _printDecisionTreeObj = (decisionTree, logger) => {
   try {
-    logger.info('saveFileForMultihashToFS decision tree', JSON.stringify(decisionTree, null, 2))
+    logger.info('saveFileForMultihashToFS decision tree', JSON.stringify(decisionTree))
   } catch (e) {
     logger.error('error printing saveFileForMultihashToFS decision tree', decisionTree)
   }
