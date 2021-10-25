@@ -13,9 +13,11 @@ const { getLibsMock } = require('./lib/libsMock')
 const libsMock = getLibsMock()
 const { createStarterCNodeUser, testEthereumConstants, destroyUsers } = require('./lib/dataSeeds')
 const BlacklistManager = require('../src/blacklistManager')
-const ipfsImport = require('../src/ipfsClient')
+const ipfsClient = require('../src/ipfsClient')
 // TODO - upgrade to newer ipfs client
-const ipfsClient = ipfsImport.ipfs
+const ipfs = ipfsClient.ipfs
+const ipfsLatest = ipfsClient.ipfsLatest
+
 const redisClient = require('../src/redis')
 const { stringifiedDateFields } = require('./lib/utils')
 const processSync = require('../src/services/sync/processSync')
@@ -34,7 +36,7 @@ describe('test nodesync', async function () {
   userId = 1
 
   const setupDepsAndApp = async function () {
-    const appInfo = await getApp(ipfsClient, libsMock, BlacklistManager, null, null, userId)
+    const appInfo = await getApp(ipfs, libsMock, BlacklistManager, ipfsLatest, null, userId)
     server = appInfo.server
     app = appInfo.app
     mockServiceRegistry = appInfo.mockServiceRegistry
@@ -645,13 +647,13 @@ describe('test nodesync', async function () {
       process.env.maxExportClockValueRange = maxExportClockValueRange
 
       // Mock ipfs.swarm.connect() function for test purposes
-      ipfsImport.ipfs.swarm.connect = async function () { return { 'Strings': [] } }
+      ipfsClient.ipfs.swarm.connect = async function () { return { 'Strings': [] } }
 
-      const appInfo = await getApp(ipfsImport.ipfs, libsMock, BlacklistManager, ipfsImport.ipfsLatest, null, userId)
+      const appInfo = await getApp(ipfsClient.ipfs, libsMock, BlacklistManager, ipfsClient.ipfsLatest, null, userId)
       server = appInfo.server
       app = appInfo.app
 
-      serviceRegistryMock = getServiceRegistryMock(ipfsImport.ipfs, libsMock, BlacklistManager, ipfsImport.ipfsLatest)
+      serviceRegistryMock = getServiceRegistryMock(ipfsClient.ipfs, libsMock, BlacklistManager, ipfsClient.ipfsLatest)
     })
 
     it('Syncs correctly from clean user state with mocked export object', async function () {

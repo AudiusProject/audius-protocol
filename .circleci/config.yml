@@ -418,7 +418,6 @@ jobs:
             export redisPort=6379
             export spOwnerWallet='yes'
             export isCIBuild=true
-            export storagePath="test_file_storage"
             export ipfsPort=5001
             npm run test:unit
             npm run test:ci

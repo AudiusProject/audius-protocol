@@ -26,6 +26,8 @@ describe('test ContentBlacklist', function () {
 
   beforeEach(async () => {
     const ipfs = ipfsClient.ipfs
+    const ipfsLatest = ipfsClient.ipfsLatest
+
     libsMock = setupLibsMock(libsMock)
 
     process.env.delegateOwnerWallet = DELEGATE_OWNER_WALLET
@@ -33,7 +35,7 @@ describe('test ContentBlacklist', function () {
 
     userId = 1
 
-    const appInfo = await getApp(ipfs, libsMock, BlacklistManager, null, null, userId)
+    const appInfo = await getApp(ipfs, libsMock, BlacklistManager, ipfsLatest, null, userId)
     await BlacklistManager.init()
 
     app = appInfo.app

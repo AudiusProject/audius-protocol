@@ -1,4 +1,4 @@
-const { ipfs } = require('../src/ipfsClient')
+const { ipfs, ipfsLatest } = require('../src/ipfsClient')
 const resizeImageJob = require('../src/resizeImage')
 const config = require('../src/config')
 const DiskManager = require('../src/diskManager')
@@ -70,7 +70,7 @@ describe('test resizeImage', () => {
    * Then: no error is thrown
    */
   it('should not throw error if ipfs is down', async () => {
-    sinon.stub(ipfs, 'add').throws(new Error('ipfs is down!'))
+    sinon.stub(ipfsLatest, 'add').throws(new Error('ipfs is down!'))
     const job = {
       data: {
         file: imageBuffer,
