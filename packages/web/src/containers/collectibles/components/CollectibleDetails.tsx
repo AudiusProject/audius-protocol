@@ -149,7 +149,14 @@ const CollectibleDetails: React.FC<{
     source: 'original' | 'unsplash' | 'url'
   ) => void
   onSave?: () => void
-}> = ({ collectible, isMobile, updateProfilePicture, onSave }) => {
+  isUserOnTheirProfile: boolean
+}> = ({
+  collectible,
+  isMobile,
+  isUserOnTheirProfile,
+  updateProfilePicture,
+  onSave
+}) => {
   const { mediaType, frameUrl, videoUrl, gifUrl, name } = collectible
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
@@ -426,6 +433,7 @@ const CollectibleDetails: React.FC<{
             )}
 
             {isCollectibleOptionEnabled &&
+              isUserOnTheirProfile &&
               collectible.mediaType === CollectibleMediaType.IMAGE && (
                 <Button
                   className={styles.profPicUploadButton}
