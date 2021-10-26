@@ -27,9 +27,11 @@ export const HCaptchaModal = () => {
   const [, setRewardModalOpen] = useModalState('ChallengeRewardsExplainer')
 
   const handleClose = useCallback(() => {
-    setRewardModalOpen(true)
-    setOpen(false)
-  }, [setRewardModalOpen, setOpen])
+    if (isOpen) {
+      setRewardModalOpen(true)
+      setOpen(false)
+    }
+  }, [setRewardModalOpen, isOpen, setOpen])
 
   const onVerify = useCallback(
     async (token: string) => {
