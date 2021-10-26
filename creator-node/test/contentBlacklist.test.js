@@ -755,7 +755,7 @@ describe('test ContentBlacklist', function () {
     let trackUploadResponse = await uploadTrack(
       testAudioFilePath,
       cnodeUserUUID,
-      mockServiceRegistry.ipfs,
+      mockServiceRegistry.ipfsLatest,
       mockServiceRegistry.blacklistManager
     )
 

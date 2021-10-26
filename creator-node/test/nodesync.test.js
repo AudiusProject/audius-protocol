@@ -14,7 +14,6 @@ const libsMock = getLibsMock()
 const { createStarterCNodeUser, testEthereumConstants, destroyUsers } = require('./lib/dataSeeds')
 const BlacklistManager = require('../src/blacklistManager')
 const ipfsClient = require('../src/ipfsClient')
-// TODO - upgrade to newer ipfs client
 const ipfs = ipfsClient.ipfs
 const ipfsLatest = ipfsClient.ipfsLatest
 
@@ -103,7 +102,7 @@ describe('test nodesync', async function () {
       const trackUploadResponse = await uploadTrack(
         testAudioFilePath,
         cnodeUserUUID,
-        mockServiceRegistry.ipfs,
+        mockServiceRegistry.ipfsLatest,
         mockServiceRegistry.blacklistManager
       )
 
