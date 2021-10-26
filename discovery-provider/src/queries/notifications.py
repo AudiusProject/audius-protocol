@@ -1,9 +1,9 @@
 import logging  # pylint: disable=C0302
 import functools as ft
 from datetime import date, datetime, timedelta
+from typing import Tuple, List
 from flask import Blueprint, request
 from sqlalchemy import desc
-from typing import Tuple, TypedDict, List, Optional, Dict, Set
 
 from src import api_helpers
 from src.models import (
@@ -18,7 +18,6 @@ from src.models import (
     Remix,
     AggregateUser,
     ChallengeDisbursement,
-    RewardManagerTransaction,
 )
 from src.models.milestone import Milestone
 from src.queries import response_name_constants as const
@@ -926,13 +925,13 @@ def solana_notifications():
     # TODO: This needs to be updated when more notification types are added to the solana notifications queue
     # Need to write a system to keep track of the proper latest slot to index based on all of the applicable table
     with db.scoped_session() as session:
-        current_slot_query_result = (
-            session.query(RewardManagerTransaction.slot)
-            .order_by(
-                desc(RewardManagerTransaction.slot)
-            )
-            .first()
-        )
+        # current_slot_query_result = (
+        #     session.query(RewardManagerTransaction.slot)
+        #     .order_by(
+        #         desc(RewardManagerTransaction.slot)
+        #     )
+        #     .first()
+        # )
         milestone_slot_query_result = (
             session.query(Milestone.slot)
             .order_by(

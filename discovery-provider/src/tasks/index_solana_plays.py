@@ -568,8 +568,14 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
             last_tx_sig = transaction_signatures[-1][-1]
             tx_info = solana_client_manager.get_sol_tx_info(last_tx_sig)
             tx_result = tx_info["result"]
-            set_json_cached_key(redis, CURRENT_PLAY_INDEXING, { 'slot': tx_result["slot"], 'timestamp': tx_result["blockTime"] })
-            slot = tx_result["slot"]
+            set_json_cached_key(
+                redis,
+                CURRENT_PLAY_INDEXING,
+                {
+                    'slot': tx_result["slot"],
+                    'timestamp': tx_result["blockTime"]
+                }
+            )
     except Exception as e:
         logger.error("index_solana_plays.py | Unable to set redis current play indexing", exc_info=True)
         raise e

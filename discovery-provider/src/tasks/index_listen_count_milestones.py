@@ -19,12 +19,12 @@ TRACK_LISTEN_IDS = 'TRACK_LISTEN_IDS'
 
 LISTEN_COUNT_MILESTONE = 'LISTEN_COUNT'
 milestone_threshold = [10, 25, 50, 100, 250, 500, 1000, 5000, 10000, 20000, 50000, 100000, 1000000]
-next_threshold = { prev: next for prev, next in zip(milestone_threshold[:-1], milestone_threshold[1:]) }
+next_threshold = dict(zip(milestone_threshold[:-1], milestone_threshold[1:]))
 
 
 def get_next_track_milestone(play_count: int, prev_milestone: Optional[int]=None):
     """
-    Gets the next hightest milstone threshold avaiable given the play count, 
+    Gets the next hightest milstone threshold avaiable given the play count,
     if past the last threshold or given an invalid previous milestone, will return None
     """
     next_milestone = milestone_threshold[0]
@@ -34,7 +34,7 @@ def get_next_track_milestone(play_count: int, prev_milestone: Optional[int]=None
         else:
             # track is past the last milestone, so return none and stop
             return None
-    
+
     # If play counts have not passed the next threshold, return None
     if play_count < next_milestone:
         return None
@@ -89,8 +89,8 @@ def index_listen_count_milestones(db: SessionManager, redis: Redis):
             ).all()
         )
 
-        milestones = {track_id: threshold for track_id, threshold in existing_milestone}
-        play_counts = {track_id: plays for track_id, plays in aggregate_play_counts}
+        milestones = dict(existing_milestone)
+        play_counts = dict(aggregate_play_counts)
 
         # Bulk fetch track's next milestone threshold
         listen_milestones = []
