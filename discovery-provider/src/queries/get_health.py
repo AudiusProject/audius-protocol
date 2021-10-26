@@ -31,7 +31,7 @@ from src.queries.get_latest_play import get_latest_play
 from src.queries.get_sol_plays import (
     get_sol_play_health_info
 )
-from src.utils.helpers import redis_get_or_restore
+from src.utils.helpers import redis_get_or_restore, redis_get_json_cached_key_or_restore, redis_set_and_dump, redis_set_json_and_dump
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 
 logger = logging.getLogger(__name__)
@@ -371,29 +371,30 @@ def get_play_health_info(plays_max_drift, redis=None):
     sol_play_info = get_sol_play_health_info(redis, current_time_utc)
 
     # Fetch latest plays info
-    unhealthy_plays = bool(
+    unhealthy_sol_plays = bool(
         plays_max_drift < sol_play_info["time_diff"]
     )
 
-    latest_db_play = get_pickled_key(redis, latest_db_play_key)
-    if not latest_db_play:
-        latest_db_play = get_latest_play()
-        pickle_and_set(
-            redis,
-            latest_db_play_key,
-            latest_db_play,
-            15
-        )
+    # If unhealthy sol plays, this will be overwritten 
+    time_diff_general = sol_play_info["time_diff"] 
 
-    # Calculate time diff from now to latest play (regardless of slot)
-    time_diff_general = (current_time_utc - latest_db_play).total_seconds() 
-    if unhealthy_plays:
-        unhealthy_plays = bool(
-            plays_max_drift < time_diff_general
-        )
+    # Calculate time diff from now to latest play if solana plays unhealthy
+    if unhealthy_sol_plays:
+        latest_db_play = redis_get_json_cached_key_or_restore(redis, latest_db_play_key)
+        if not latest_db_play:
+            latest_db_play = get_latest_play()
+            logger.error(f"SETTING VAL {latest_db_play_key} {latest_db_play}")
+            redis_set_json_and_dump(redis, latest_db_play_key, latest_db_play.isoformat())
+        else:
+            latest_db_play = datetime.datetime.fromisoformat(latest_db_play)
+
+        time_diff_general = (current_time_utc - latest_db_play).total_seconds() 
+
+    unhealthy_plays = bool(
+        unhealthy_sol_plays or plays_max_drift < time_diff_general
+    )
 
     return (unhealthy_plays, sol_play_info, time_diff_general)
-
 
 
 def get_latest_chain_block_set_if_nx(redis=None, web3=None):

@@ -13,7 +13,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
-from src.utils.redis_cache import pickle_and_set
+from src.utils.helpers import redis_set_json_and_dump
 from src.utils.redis_constants import latest_sol_play_tx_key, latest_indexed_sol_play_tx_key
 from src.solana.solana_client_manager import SolanaClientManager
 
@@ -102,7 +102,7 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
 # Used for quick retrieval in health check
 def cache_latest_processed_tx_redis(redis, tx):
     try:
-        pickle_and_set(
+        redis_set_json_and_dump(
             redis,
             latest_indexed_sol_play_tx_key,
             tx
@@ -120,7 +120,7 @@ def cache_latest_chain_tx_redis(redis, tx):
         sig = tx["signature"]
         slot = tx["slot"]
         timestamp = tx["blockTime"]
-        pickle_and_set(
+        redis_set_json_and_dump(
             redis,
             latest_sol_play_tx_key,
             {
