@@ -86,6 +86,8 @@ function _M.verify_signature (discovery_provider, nonce, signature)
     if ok then
         -- set nonce as used for discovery provider for next 60 seconds
         ngx.shared.nonce_store:set(discovery_provider .. ";" .. nonce, true, 60)
+    else
+        ngx.log(ngx.ERR, "invalid signature: signature=", signature, ", nonce=", nonce, ", discovery_provider=", discovery_provider)
     end
 
     return ok
