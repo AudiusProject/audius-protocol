@@ -4,9 +4,27 @@ const {
   sendAndConfirmTransaction
 } = require('@solana/web3.js')
 
-// Should return
-// { signature, error }
+/**
+ * Handles sending Solana transactions, either directly via `sendAndConfirmTransaction`,
+ * or via IdentityService's relay.
+ */
 class TransactionHandler {
+  /**
+   * Creates an instance of TransactionHandler.
+   *
+   * @param {{
+   *  connection: Connection,
+   *  useRelay: boolean,
+   *  identityService: Object,
+   *  feePayerKeypair: KeyPair
+   * }} {
+   *  connection,
+   *  useRelay,
+   *  identityService = null,
+   *  feePayerKeypair = null
+   * }
+   * @memberof TransactionHandler
+   */
   constructor ({ connection, useRelay, identityService = null, feePayerKeypair = null }) {
     this.connection = connection
     this.useRelay = useRelay
@@ -14,6 +32,20 @@ class TransactionHandler {
     this.feePayerKeypair = feePayerKeypair
   }
 
+  /**
+   * Primary method to send a Solana transaction.
+   *
+   * @typedef {Object} HandleTransactionReturn
+   * @property {Object} res the result
+   * @property {string} [error=null] the optional error
+   * @property {string|number} [error_code=null] the optional error code.
+   *  Will be a string if `errorMapping` is passed to the handler.
+   *
+   * @param {Array<TransactionInstruction>} instructions an array of `TransactionInstructions`
+   * @param {*} [errorMapping=null] an optional error mapping. Should expose a `fromErrorCode` method.
+   * @returns {Promise<HandleTransactionReturn>}
+   * @memberof TransactionHandler
+   */
   async handleTransaction (instructions, errorMapping = null) {
     let result = null
     if (this.useRelay) {

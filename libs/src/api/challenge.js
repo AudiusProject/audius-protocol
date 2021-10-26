@@ -1,6 +1,7 @@
 const axios = require('axios')
 const { Base, Services } = require('./base')
 const BN = require('bn.js')
+const { RewardsManagerError } = require('../services/solanaWeb3Manager/errors')
 
 const GetAttestationError = Object.freeze({
   CHALLENGE_INCOMPLETE: 'CHALLENGE_INCOMPLETE',
@@ -11,8 +12,21 @@ const GetAttestationError = Object.freeze({
   HCAPTCHA: 'HCAPTCHA',
   COGNITO_FLOW: 'COGNITO_FLOW',
   BLOCKED: 'BLOCKED',
-  INSUFFICIENT_DISCOVERY_NODE_COUNT: 'INSUFFICIENT_DISCOVERY_NODE_COUNT',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR'
+})
+
+const AggregateAttestationError = Object.freeze(
+  {
+    INSUFFICIENT_DISCOVERY_NODE_COUNT: 'INSUFFICIENT_DISCOVERY_NODE_COUNT',
+    UNKNOWN_ERROR: 'UNKNOWN_ERROR'
+  }
+)
+
+/// Combined error type for `SubmitAndEvaluate`
+const SubmitAndEvaluateError = Object.freeze({
+  ...GetAttestationError,
+  ...AggregateAttestationError,
+  ...RewardsManagerError
 })
 
 const AttestationPhases = Object.freeze({
@@ -166,7 +180,7 @@ class Challenge extends Base {
       return {
         discoveryNodeAttestations: null,
         aaoAttestation: null,
-        error: GetAttestationError.INSUFFICIENT_DISCOVERY_NODE_COUNT
+        error: AggregateAttestationError.INSUFFICIENT_DISCOVERY_NODE_COUNT
       }
     }
 
@@ -338,3 +352,4 @@ class Challenge extends Base {
 }
 
 module.exports = Challenge
+module.exports.SubmitAndEvaluateError = SubmitAndEvaluateError

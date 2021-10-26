@@ -51,6 +51,8 @@ class SolanaWeb3Manager {
    *  the token holder account of the rewards manager program
    * @param {boolean} solanaWeb3Config.shouldUseRelay
    *  whether to submit transactions via a relay, or locally
+   * @param {KeyPair} solanaWeb3Config.feePayerKepair
+   *  KeyPair for feepayer
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
    */
@@ -81,7 +83,9 @@ class SolanaWeb3Manager {
       useRelay,
       feePayerKeypair
     } = this.solanaWeb3Config
-    const newPublicKeySafe = (val) => val ? new PublicKey(val) : null
+
+    // Helper to safely create pubkey from nullable val
+    const newPublicKeyNullable = (val) => val ? new PublicKey(val) : null
 
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint)
@@ -94,22 +98,22 @@ class SolanaWeb3Manager {
     })
 
     this.mintAddress = mintAddress
-    this.mintKey = newPublicKeySafe(mintAddress)
+    this.mintKey = newPublicKeyNullable(mintAddress)
 
     this.solanaTokenAddress = solanaTokenAddress
-    this.solanaTokenKey = newPublicKeySafe(solanaTokenAddress)
+    this.solanaTokenKey = newPublicKeyNullable(solanaTokenAddress)
 
     this.feePayerAddress = feePayerAddress
-    this.feePayerKey = newPublicKeySafe(feePayerAddress)
+    this.feePayerKey = newPublicKeyNullable(feePayerAddress)
 
-    this.claimableTokenProgramKey = newPublicKeySafe(claimableTokenProgramAddress)
+    this.claimableTokenProgramKey = newPublicKeyNullable(claimableTokenProgramAddress)
     this.claimableTokenPDA = claimableTokenPDA || (
       this.claimableTokenProgramKey ? ((await SolanaUtils.findProgramAddressFromPubkey(this.claimableTokenProgramKey, this.mintKey))[0].toString()) : null
     )
-    this.claimableTokenPDAKey = newPublicKeySafe(this.claimableTokenPDA)
-    this.rewardManagerProgramId = newPublicKeySafe(rewardsManagerProgramId)
-    this.rewardManagerProgramPDA = newPublicKeySafe(rewardsManagerProgramPDA)
-    this.rewardManagerTokenPDA = newPublicKeySafe(rewardsManagerTokenPDA)
+    this.claimableTokenPDAKey = newPublicKeyNullable(this.claimableTokenPDA)
+    this.rewardManagerProgramId = newPublicKeyNullable(rewardsManagerProgramId)
+    this.rewardManagerProgramPDA = newPublicKeyNullable(rewardsManagerProgramPDA)
+    this.rewardManagerTokenPDA = newPublicKeyNullable(rewardsManagerTokenPDA)
   }
 
   /**
