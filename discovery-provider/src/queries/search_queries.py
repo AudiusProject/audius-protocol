@@ -248,17 +248,6 @@ def perform_search_query(db, search_type, args):
                 current_user_id,
                 only_downloadable,
             )
-        elif search_type == "saved_tracks":
-            results = track_search_query(
-                session,
-                search_str,
-                limit,
-                offset,
-                True,
-                is_auto_complete,
-                current_user_id,
-                only_downloadable,
-            )
         elif search_type == "users":
             results = user_search_query(
                 session,
@@ -266,16 +255,6 @@ def perform_search_query(db, search_type, args):
                 limit,
                 offset,
                 False,
-                is_auto_complete,
-                current_user_id,
-            )
-        elif search_type == "followed_users":
-            results = user_search_query(
-                session,
-                search_str,
-                limit,
-                offset,
-                True,
                 is_auto_complete,
                 current_user_id,
             )
@@ -290,17 +269,6 @@ def perform_search_query(db, search_type, args):
                 is_auto_complete,
                 current_user_id,
             )
-        elif search_type == "saved_playlists":
-            results = playlist_search_query(
-                session,
-                search_str,
-                limit,
-                offset,
-                False,
-                True,
-                is_auto_complete,
-                current_user_id,
-            )
         elif search_type == "albums":
             results = playlist_search_query(
                 session,
@@ -309,17 +277,6 @@ def perform_search_query(db, search_type, args):
                 offset,
                 True,
                 False,
-                is_auto_complete,
-                current_user_id,
-            )
-        elif search_type == "saved_albums":
-            results = playlist_search_query(
-                session,
-                search_str,
-                limit,
-                offset,
-                True,
-                True,
                 is_auto_complete,
                 current_user_id,
             )
@@ -401,33 +358,34 @@ def search(args):
 
             if searchKind in [SearchKind.all, SearchKind.tracks]:
                 submit_and_add("tracks")
-                if current_user_id:
-                    submit_and_add("saved_tracks")
 
             if searchKind in [SearchKind.all, SearchKind.users]:
                 submit_and_add("users")
-                if current_user_id:
-                    submit_and_add("followed_users")
-
             if searchKind in [SearchKind.all, SearchKind.playlists]:
                 submit_and_add("playlists")
-                if current_user_id:
-                    submit_and_add("saved_playlists")
 
             if searchKind in [SearchKind.all, SearchKind.albums]:
                 submit_and_add("albums")
-                if current_user_id:
-                    submit_and_add("saved_albums")
 
             for future in concurrent.futures.as_completed(futures):
                 search_result = future.result()
                 future_type = futures_map[future]
 
                 # Add to the final results
-                results[future_type] = search_result
-
                 # Add to user_ids
-                user_ids.update(get_users_ids(search_result))
+                if future_type == "tracks":
+                    results["tracks"] = search_result["all"]
+                    results["saved_tracks"] = search_result["saved"]
+                elif future_type == "users":
+                    results["users"] = search_result["all"]
+                    results["followed_users"] = search_result["followed"]
+                elif future_type == "playlists":
+                    results["playlists"] = search_result["all"]
+                    results["saved_playlists"] = search_result["saved"]
+                elif future_type == "albums":
+                    results["albums"] = search_result["all"]
+                    results["saved_albums"] = search_result["saved"]
+                user_ids.update(get_users_ids(search_result["all"]))
 
             with db.scoped_session() as session:
                 # Add users back
@@ -482,22 +440,11 @@ def track_search_query(
                         d."repost_count" as repost_count, d."owner_id" as owner_id
                     from "track_lexeme_dict" d
                     {
-                        'inner join "saves" s on s.save_item_id = d.track_id'
-                        if personalized and current_user_id
-                        else ""
-                    }
-                    {
                         'inner join "tracks" t on t.track_id = d.track_id'
                         if only_downloadable
                         else ""
                     }
                     where (d."word" % lower(:query) or d."handle" = lower(:query) or d."user_name" % lower(:query))
-                    {
-                        "and s.save_type='track' and s.is_current=true and " +
-                        "s.is_delete=false and s.user_id = :current_user_id"
-                        if personalized and current_user_id
-                        else ""
-                    }
                     {
                         "and (t.download->>'is_downloadable')::boolean is True"
                         if only_downloadable
@@ -564,7 +511,12 @@ def track_search_query(
         tracks_map[t["track_id"]] = t
     tracks = [tracks_map[track_id] for track_id in track_ids]
 
-    return tracks[0:limit]
+    tracks_response = {
+        "all": tracks,
+        "saved": list(filter(lambda track: track["has_current_user_saved"], tracks)),
+    }
+
+    return tracks_response
 
 
 def user_search_query(
@@ -643,7 +595,12 @@ def user_search_query(
     # Sort users by extra criteria for "best match"
     users.sort(key=cmp_to_key(compare_users))
 
-    return users[0:limit]
+    users_response = {
+        "all": users,
+        "followed": list(filter(lambda user: user["does_current_user_follow"], users)),
+    }
+
+    return users_response
 
 
 def playlist_search_query(
@@ -686,18 +643,7 @@ def playlist_search_query(
                         d."playlist_name" as playlist_name, :query as query, d."repost_count" as repost_count,
                         d."handle" as handle, d."user_name" as user_name, d."owner_id" as owner_id
                     from "{table_name}" d
-                    {
-                        'inner join "saves" s on s.save_item_id = d.playlist_id'
-                        if personalized and current_user_id
-                        else ""
-                    }
                     where (d."word" % lower(:query) or d."handle" = lower(:query) or d."user_name" % lower(:query))
-                    {
-                        "and s.save_type='" + save_type +
-                        "' and s.is_current=true and s.is_delete=false and s.user_id=:current_user_id"
-                        if personalized and current_user_id
-                        else ""
-                    }
                 ) as results
                 group by playlist_id, playlist_name, query, repost_count, user_name, handle, owner_id
             ) as results2
@@ -769,4 +715,11 @@ def playlist_search_query(
         playlists_map[p["playlist_id"]] = p
     playlists = [playlists_map[playlist_id] for playlist_id in playlist_ids]
 
-    return playlists[0:limit]
+    playlists_resp = {
+        "all": playlists,
+        "saved": list(
+            filter(lambda playlist: playlist["has_current_user_saved"], playlists)
+        ),
+    }
+
+    return playlists_resp
