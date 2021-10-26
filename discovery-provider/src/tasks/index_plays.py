@@ -7,7 +7,7 @@ import dateutil.parser
 from sqlalchemy import func, desc, or_, and_
 from src.models import Play
 from src.tasks.celery_app import celery
-from src.utils.helpers import redis_set_and_dump 
+from src.utils.helpers import redis_set_and_dump
 from src.utils.redis_constants import latest_db_play_key
 
 logger = logging.getLogger(__name__)

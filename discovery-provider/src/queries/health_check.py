@@ -4,7 +4,7 @@ from flask import Blueprint, request
 from src.queries.get_latest_play import get_latest_play
 from src.queries.queries import parse_bool_param
 from src.queries.get_health import get_health, get_latest_ipld_indexed_block
-from src.queries.get_sol_plays import get_latest_sol_plays, get_latest_sol_play_check_info
+from src.queries.get_sol_plays import get_latest_sol_play_check_info
 from src.api_helpers import success_response
 from src.utils import helpers, redis_connection
 

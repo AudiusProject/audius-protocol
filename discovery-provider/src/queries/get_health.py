@@ -368,8 +368,8 @@ def get_play_health_info(plays_max_drift, redis=None):
         plays_max_drift < sol_play_info["time_diff"]
     )
 
-    # If unhealthy sol plays, this will be overwritten 
-    time_diff_general = sol_play_info["time_diff"] 
+    # If unhealthy sol plays, this will be overwritten
+    time_diff_general = sol_play_info["time_diff"]
 
     # Calculate time diff from now to latest play if solana plays unhealthy
     if unhealthy_sol_plays:
