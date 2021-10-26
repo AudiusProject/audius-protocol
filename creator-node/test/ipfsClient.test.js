@@ -53,7 +53,7 @@ describe('test ipfsClient', () => {
     }
 
     // Only hash logic
-    const onlyHash = await ipfsClient.ipfsAddWithoutDaemon(buffer)
+    const onlyHash = await ipfsClient.ipfsOnlyHashNonImages(buffer)
 
     console.log('buffers', {
       ipfsAddBufferResp,
@@ -75,32 +75,26 @@ describe('test ipfsClient', () => {
   })
 
   it('[readstream] when adding a readstream, the cids should be consistent', async () => {
-    const readstream1 = fs.createReadStream(randomTextFilePath)
-    const readstream2 = fs.createReadStream(randomTextFilePath)
-    const readstream3 = fs.createReadStream(randomTextFilePath)
-    const readstream4 = fs.createReadStream(randomTextFilePath)
-    const readstream5 = fs.createReadStream(randomTextFilePath)
-
     // Original IPFS instance
-    const ipfsAddReadstreamResp = (await ipfs.add(readstream1))[0].hash
+    const ipfsAddReadstreamResp = (await ipfs.add(fs.createReadStream(randomTextFilePath)))[0].hash
 
     // Original IPFS instance with `onlyHash` flag
-    const ipfsAddReadstreamRespOnlyHashFlag = (await ipfs.add(readstream2, { onlyHash: true }))[0].hash
+    const ipfsAddReadstreamRespOnlyHashFlag = (await ipfs.add(fs.createReadStream(randomTextFilePath), { onlyHash: true }))[0].hash
 
     // Newer IPFS instance
     let ipfsLatestAddReadstreamResp
-    for await (const resp of ipfsLatest.add(readstream3)) {
+    for await (const resp of ipfsLatest.add(fs.createReadStream(randomTextFilePath))) {
       ipfsLatestAddReadstreamResp = `${resp.cid}`
     }
 
     // Newer IPFS instance with `onlyHash` flag
     let ipfsLatestAddReadstreamRespWithOnlyHashFlag
-    for await (const resp of ipfsLatest.add(readstream4, { onlyHash: true })) {
+    for await (const resp of ipfsLatest.add(fs.createReadStream(randomTextFilePath), { onlyHash: true })) {
       ipfsLatestAddReadstreamRespWithOnlyHashFlag = `${resp.cid}`
     }
 
     // Only hash logic
-    const onlyHash = await ipfsClient.ipfsAddWithoutDaemon(readstream5)
+    const onlyHash = await ipfsClient.ipfsOnlyHashNonImages(fs.createReadStream(randomTextFilePath))
 
     console.log('readstream', {
       ipfsAddReadstreamResp,
@@ -134,7 +128,7 @@ describe('test ipfsClient', () => {
 
     // Only hash logic -- used in conjunction with convert to buffer fn
     const buffer = await ipfsClient._convertToBuffer(randomTextFilePath)
-    const onlyHash = await ipfsClient.ipfsAddWithoutDaemon(buffer)
+    const onlyHash = await ipfsClient.ipfsOnlyHashNonImages(buffer)
 
     console.log('file path', {
       ipfsAddFromFsFilePathResp,
@@ -151,11 +145,11 @@ describe('test ipfsClient', () => {
     assert.ok(!!allResults.reduce(function (a, b) { return (a === b) ? a : NaN }))
   })
 
-  it('[ipfsSingleAddWrapper] passing in a Buffer should work', async () => {
+  it('[ipfsAddNonImages] passing in a Buffer should work', async () => {
     const buffer = Buffer.from(randomText)
 
-    const onlyHash = await ipfsClient.ipfsSingleAddWrapper(ipfsLatest, buffer)
-    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsSingleAddWrapper(ipfsLatest, buffer, {}, {}, true)
+    const onlyHash = await ipfsClient.ipfsAddNonImages(ipfsLatest, buffer)
+    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsAddNonImages(ipfsLatest, buffer, {}, {}, true)
 
     console.log('buffer', {
       onlyHash,
@@ -165,12 +159,12 @@ describe('test ipfsClient', () => {
     assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
   })
 
-  it('[ipfsSingleAddWrapper] passing in a ReadStream should work', async () => {
+  it('[ipfsAddNonImages] passing in a ReadStream should work', async () => {
     const readStream1 = fs.createReadStream(randomTextFilePath)
-    const onlyHash = await ipfsClient.ipfsSingleAddWrapper(ipfsLatest, readStream1)
+    const onlyHash = await ipfsClient.ipfsAddNonImages(ipfsLatest, readStream1)
 
     const readStream2 = fs.createReadStream(randomTextFilePath)
-    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsSingleAddWrapper(ipfsLatest, readStream2, {}, {}, true)
+    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsAddNonImages(ipfsLatest, readStream2, {}, {}, true)
 
     console.log('readstream', {
       onlyHash,
@@ -180,11 +174,11 @@ describe('test ipfsClient', () => {
     assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
   })
 
-  it('[ipfsSingleAddWrapper] passing in a source path should work', async () => {
+  it('[ipfsAddNonImages] passing in a source path should work', async () => {
     const pathToFile = path.join(__dirname, './assets/random.txt')
 
-    const onlyHash = await ipfsClient.ipfsSingleAddWrapper(ipfsLatest, pathToFile)
-    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsSingleAddWrapper(ipfsLatest, pathToFile, {}, {}, true)
+    const onlyHash = await ipfsClient.ipfsAddNonImages(ipfsLatest, pathToFile)
+    const ipfsLatestAddWithDaemonResp = await ipfsClient.ipfsAddNonImages(ipfsLatest, pathToFile, {}, {}, true)
 
     console.log('source path', {
       onlyHash,
