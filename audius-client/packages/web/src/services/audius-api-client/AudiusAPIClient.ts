@@ -1167,18 +1167,35 @@ class AudiusAPIClient {
     return response.data
   }
 
-  async getSocialFeed(args: GetSocialFeedArgs) {
+  async getSocialFeed({
+    offset,
+    limit,
+    with_users,
+    filter,
+    tracks_only,
+    followee_user_ids,
+    current_user_id
+  }: GetSocialFeedArgs) {
     this._assertInitialized()
-    const headers = args.current_user_id
+    const headers = current_user_id
       ? {
-          'X-User-Id': args.current_user_id.toString()
+          'X-User-Id': current_user_id.toString()
         }
       : undefined
     const response: Nullable<APIResponse<
       GetSocialFeedResponse
     >> = await this._getResponse(
       ROOT_ENDPOINT_MAP.feed,
-      args,
+      {
+        offset,
+        limit,
+        with_users,
+        filter,
+        tracks_only,
+        followee_user_id: followee_user_ids
+          ? followee_user_ids.map(id => id.toString())
+          : undefined
+      },
       true,
       PathType.RootPath,
       headers
