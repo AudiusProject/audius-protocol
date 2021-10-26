@@ -146,6 +146,35 @@ export const EmptyTab = (props: EmptyTabProps) => {
   return <div className={styles.emptyTab}>{props.message}</div>
 }
 
+const artistTabs = [
+  { icon: <IconNote />, text: 'Tracks', label: Tabs.TRACKS },
+  { icon: <IconAlbum />, text: 'Albums', label: Tabs.ALBUMS },
+  { icon: <IconPlaylists />, text: 'Playlists', label: Tabs.PLAYLISTS },
+  {
+    icon: <IconReposts className={styles.iconReposts} />,
+    text: 'Reposts',
+    label: Tabs.REPOSTS
+  }
+]
+
+const userTabs = [
+  {
+    icon: <IconReposts className={styles.iconReposts} />,
+    text: 'Reposts',
+    label: Tabs.REPOSTS
+  },
+  { icon: <IconPlaylists />, text: 'Playlists', label: Tabs.PLAYLISTS }
+]
+
+const collectiblesTab = {
+  icon: <IconCollectibles />,
+  text: 'Collectibles',
+  label: Tabs.COLLECTIBLES
+}
+
+const artistTabsWithCollectibles = [...artistTabs, collectiblesTab]
+const userTabsWithCollectibles = [...userTabs, collectiblesTab]
+
 const getMessages = ({
   name,
   isOwner
@@ -414,16 +443,7 @@ const ProfilePage = g(
           />
         ))
 
-        profileTabs = [
-          { icon: <IconNote />, text: 'Tracks', label: Tabs.TRACKS },
-          { icon: <IconAlbum />, text: 'Albums', label: Tabs.ALBUMS },
-          { icon: <IconPlaylists />, text: 'Playlists', label: Tabs.PLAYLISTS },
-          {
-            icon: <IconReposts className={styles.iconReposts} />,
-            text: 'Reposts',
-            label: Tabs.REPOSTS
-          }
-        ]
+        profileTabs = artistTabs
         profileElements = [
           <div className={styles.tracksLineupContainer} key='artistTracks'>
             {profile.track_count === 0 ? (
@@ -512,14 +532,7 @@ const ProfilePage = g(
           </div>
         ]
       } else {
-        profileTabs = [
-          {
-            icon: <IconReposts className={styles.iconReposts} />,
-            text: 'Reposts',
-            label: Tabs.REPOSTS
-          },
-          { icon: <IconPlaylists />, text: 'Playlists', label: Tabs.PLAYLISTS }
-        ]
+        profileTabs = userTabs
         profileElements = [
           <div className={styles.tracksLineupContainer} key='tracks'>
             {profile.repost_count === 0 ? (
@@ -575,11 +588,9 @@ const ProfilePage = g(
           (profileHasVisibleImageOrVideoCollectibles ||
             (profileHasCollectibles && isUserOnTheirProfile)))
       ) {
-        profileTabs.push({
-          icon: <IconCollectibles />,
-          text: 'Collectibles',
-          label: Tabs.COLLECTIBLES
-        })
+        profileTabs = isArtist
+          ? artistTabsWithCollectibles
+          : userTabsWithCollectibles
         profileElements.push(
           <div key='collectibles' className={styles.tracksLineupContainer}>
             <CollectiblesPage
