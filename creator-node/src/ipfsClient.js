@@ -5,10 +5,13 @@ const ipfsClientLatest = require('ipfs-http-client-latest')
 const { importer } = require('ipfs-unixfs-importer')
 const fs = require('fs')
 const { hrtime } = require('process')
+const { promisify } = require('util')
+const readFile = promisify(fs.readFile)
 
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
 const { sortKeys } = require('./apiSigning')
+const { Stream } = require('stream')
 
 const IPFS_ADD_TIMEOUT_MS = config.get('IPFSAddTimeoutMs')
 
@@ -31,30 +34,30 @@ async function logIpfsPeerIds () {
 }
 
 /**
- * Wrapper to ipfsLatest.add() -- Allows enabling/disabling adding content to the ipfs daemon.
- *
+ * Wrapper for ipfs.add() with flag to exclusively generate the CID using the only hash logic, or to also add content to the ipfs daemon.
+ * Used for adding non-images (track segments, track transcode, metadata).
  * @param {Object} ipfsLatest ipfs instance (should be v43.0.1)
- * @param {Buffer|ReadStream|string} content a single buffer input, a read stream, or a src path to the file
+ * @param {Buffer|ReadStream|string} content a single Buffer, a ReadStream, or path to an existing file
  * @param {Object?} ipfsConfig ipfs add config options
  * @param {Object?} logContext
  * @param {boolean?} enableIPFSAdd flag to add content to ipfs daemon
- * @returns {string} hash from content addressing fn or ipfs daemon response
+ * @returns {string} only hash response cid or ipfs daemon response cid
  */
-async function ipfsSingleAddWrapper (ipfsLatest, content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
+async function ipfsAddNonImages (ipfsLatest, content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
 
   let buffer = await _convertToBuffer(content, logger)
 
   const startOnlyHash = hrtime.bigint()
-  const onlyHash = await ipfsAddWithoutDaemon(buffer)
+  const onlyHash = await ipfsOnlyHashNonImages(buffer)
   const durationOnlyHashMs = (hrtime.bigint() - startOnlyHash) / BigInt(1000000) // convert ns -> ms
 
   if (!enableIPFSAdd) {
-    logger.info(`[ipfsClient - ipfsSingleAddWrapper()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms`)
+    logger.info(`[ipfsClient - ipfsAddNonImages()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms`)
     return onlyHash
   }
 
-  /* ipfs.add with the v43.0.1 (aka ipfsLatest.add) returns a async generator. To access this response, use a `for await... of` loop. Then,
+  /* ipfs.add with the v43.0.1 (aka ipfsLatest.add) returns a async iterator. To access this response, use a `for await... of` loop. Then,
       the response will have the structure:
       {
         path: 'docs/assets/anchor.js',
@@ -75,34 +78,35 @@ async function ipfsSingleAddWrapper (ipfsLatest, content, ipfsConfig = {}, logCo
     }
     const durationIpfsLatestAddMs = (hrtime.bigint() - startIpfsLatestAdd) / BigInt(1000000) // convert ns -> ms
 
-    logger.info(`[ipfsClient - ipfsSingleAddWrapper()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms ipfsDaemonHash=${ipfsDaemonHash} ipfsDaemonHashDuration=${durationIpfsLatestAddMs}ms isSameHash=${onlyHash === ipfsDaemonHash}`)
+    logger.info(`[ipfsClient - ipfsAddNonImages()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms ipfsDaemonHash=${ipfsDaemonHash} ipfsDaemonHashDuration=${durationIpfsLatestAddMs}ms isSameHash=${onlyHash === ipfsDaemonHash}`)
     return ipfsDaemonHash
   } catch (e) {
-    logger.warn(`[ipfsClient - ipfsSingleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${onlyHash}: ${e.toString()}\n${e.stack}`)
+    logger.warn(`[ipfsClient - ipfsAddNonImages()] Could not add content to ipfs. Defaulting to onlyHash=${onlyHash}: ${e.toString()}\n${e.stack}`)
     return onlyHash
   }
 }
 
 /**
- * Wrapper to ipfs.add() for multiple inputs -- Allows enabling/disabling adding content to the ipfs daemon. Generally used for images (to generate dirs too)
+ * Wrapper for ipfs.add() with flag to exclusively generate the CID using the only hash logic, or to also add content to the ipfs daemon.
+ * Used for adding images to also generate dir CIDs.
  * @param {Object} ipfsLatest ipfs instance (should be v43.0.1)
- * @param {Object[]} content an Object[] with the structure { path: string, content: buffer }
+ * @param {Object[]} content an Object[] with the structure [{ path: string, content: buffer }, ...]
  * @param {Object?} ipfsConfig ipfs add config options
  * @param {Object?} logContext
  * @param {boolean?} enableIPFSAdd flag to add content to ipfs daemon
- * @returns {string|string[]|Object|Object[]} hashes from content addressing fn, or ipfs daemon responses
+ * @returns {Object[]} only hash responses or ipfs daemon responses with the structure [{path: <string>, cid: <string>, size: <number>}]
  */
-async function ipfsMultipleAddWrapper (ipfsLatest, content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
+async function ipfsAddImages (ipfsLatest, content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
 
   const startOnlyHash = hrtime.bigint()
-  const ipfsAddWithoutDaemonResp = await ipfsAddWithoutDaemon(content, {}, true)
+  const ipfsAddWithoutDaemonResp = await ipfsOnlyHashImages(content)
   const durationOnlyHashMs = (hrtime.bigint() - startOnlyHash) / BigInt(1000000) // convert ns -> ms
 
   const ipfsAddWithoutDaemonRespStr = JSON.stringify(sortKeys(ipfsAddWithoutDaemonResp))
 
   if (!enableIPFSAdd) {
-    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms`)
+    logger.info(`[ipfsClient - ipfsAddImages()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms`)
     return ipfsAddWithoutDaemonResp
   }
 
@@ -120,35 +124,93 @@ async function ipfsMultipleAddWrapper (ipfsLatest, content, ipfsConfig = {}, log
     const durationIpfsLatestAddMs = (hrtime.bigint() - startIpfsLatestAdd) / BigInt(1000000) // convert ns -> ms
 
     const ipfsAddWithDaemonRespStr = JSON.stringify(sortKeys(ipfsAddWithDaemonResp))
-    logger.info(`[ipfsClient - ipfsMultipleAddWrapper()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms ipfsAddWithDaemonResp=${ipfsAddWithDaemonRespStr} ipfsDaemonHashDuration=${durationIpfsLatestAddMs}ms isSameHash=${ipfsAddWithoutDaemonRespStr === ipfsAddWithDaemonRespStr}`)
+    logger.info(`[ipfsClient - ipfsAddImages()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms ipfsAddWithDaemonResp=${ipfsAddWithDaemonRespStr} ipfsDaemonHashDuration=${durationIpfsLatestAddMs}ms isSameHash=${ipfsAddWithoutDaemonRespStr === ipfsAddWithDaemonRespStr}`)
     return ipfsAddWithDaemonResp
   } catch (e) {
-    logger.warn(`[ipfsClient - ipfsMultipleAddWrapper()] Could not add content to ipfs. Defaulting to onlyHash=${ipfsAddWithoutDaemonRespStr}: ${e.toString()}`)
+    logger.warn(`[ipfsClient - ipfsAddImages()] Could not add content to ipfs. Defaulting to onlyHash=${ipfsAddWithoutDaemonRespStr}: ${e.toString()}`)
     return ipfsAddWithoutDaemonResp
   }
 }
 
-// Base functionality taken from https://github.com/alanshaw/ipfs-only-hash/blob/master/index.js
-
-/**
- * Custom fn to generate the content-hashing logic without adding content to ipfs daemon. Can either just
- * return the CID, or the ipfs add response strucutre.
- *
- * At the moment, the image flow requires the entire ipfs.add() response, while other upload flows only
- * require the CID from the ipfs add response.
- * @param {Buffer|ReadStream|Object|Object[]|string} content content to generate a CID for. If an Object or Object[], will
- * follow the structure { path: string, content: buffer } or [{ path: string, content: buffer }, ...]. Can directly pass in string as well.
- * @param {Object} options options for ipfs importer
- * @param {boolean?} isImageFlow flag to indicate if flow is for image upload
- * @returns {string|Object[]} the cid, or array of ipfs add like responses
- */
+// Base functionality for only hash logic taken from https://github.com/alanshaw/ipfs-only-hash/blob/master/index.js
 
 const block = {
   get: async cid => { throw new Error(`unexpected block API get for ${cid}`) },
   put: async () => { throw new Error('unexpected block API put') }
 }
 
-async function ipfsAddWithoutDaemon (content, options, isImageFlow = false) {
+/**
+ * Custom fn to generate the content-hashing logic without adding content to ipfs daemon. Used for adding images to ipfs.
+ * @param {Object[]} content an Object[] with the structure [{ path: string, content: buffer }, ...]
+ * @param {Object?} options options for importer
+ * @returns an Object[] with the structure [{path: <string>, cid: <string>, size: <number>}]
+ *
+ * Example with adding a profile picture:
+ * [
+    {
+        "cid": "QmSRyKvnXwoxPZ9UxqxXPR8NXjcPYBEf1qbNrXyo5USqLL",
+        "path": "blob/150x150.jpg",
+        "size": 3091
+    },
+    {
+        "cid": "QmQQMV9TXxRmDKafZiRvMVkqUNtUu9WGAfukUBS1yCk2ht",
+        "path": "blob/480x480.jpg",
+        "size": 20743
+    },
+    {
+        "cid": "Qmd8cDdDGcWVaLEoJPVFtkKhYMqvHXZTvXcisYjubFxv1F",
+        "path": "blob/1000x1000.jpg",
+        "size": 72621
+    },
+    {
+        "cid": "QmaYCPUH8G14yxetsMgW5J5tpTqPaTp3HMd3EAyffZKSvm",
+        "path": "blob/original.jpg",
+        "size": 185844
+    },
+    {
+        "cid": "QmW8FUFhvaxv1MZmVcUcmR7Tg9WZhGf8xDNBesT9XepwrK",
+        "path": "blob",
+        "size": 282525
+    }
+  ]
+*/
+async function ipfsOnlyHashImages (content, options = {}) {
+  ({ options, content } = _initializeIPFSOnlyHash(content, options))
+
+  const resps = []
+  for await (const file of importer(content, block, options)) {
+    resps.push({
+      path: file.path,
+      cid: `${file.cid}`,
+      size: file.size
+    })
+  }
+
+  return resps
+}
+
+/**
+ * Custom fn to generate the content-hashing logic without adding content to ipfs daemon. Used for adding non-images
+ * (track segments, transcoded track, metadata) to ipfs.
+ * @param {Buffer} content a buffer of the content to be added to ipfs
+ * @param {Object?} options options for importer
+ * @returns the cid from content addressing logic only
+ */
+async function ipfsOnlyHashNonImages (content, options = {}) {
+  ({ options, content } = _initializeIPFSOnlyHash(content, options))
+
+  let lastCid
+  for await (const { cid } of importer([{ content }], block, options)) {
+    lastCid = cid
+  }
+
+  return `${lastCid}`
+}
+
+/**
+ * Used to iniitalize the only hash fns. See Alan Shaw's reference code for more context.
+ */
+function _initializeIPFSOnlyHash (content, options) {
   options = options || {}
   options.onlyHash = true
   options.cidVersion = 0
@@ -157,32 +219,12 @@ async function ipfsAddWithoutDaemon (content, options, isImageFlow = false) {
     content = new TextEncoder().encode(content)
   }
 
-  // If method is used for the adding images, structure the response similarly to ipfs.add()
-  if (isImageFlow) {
-    const resps = []
-    for await (const file of importer(content, block, options)) {
-      resps.push({
-        path: file.path,
-        cid: `${file.cid}`,
-        size: file.size
-      })
-    }
-
-    return resps
-  } else {
-    // Else, just return the cid
-    let lastCid
-    for await (const { cid } of importer([{ content }], block, options)) {
-      lastCid = cid
-    }
-    return `${lastCid}`
-  }
+  return { options, content }
 }
 
 /**
- * If the input is not a buffer, then it will be a file path or ReadStream. In the latter case, convert either to a buffer.
- * Used in `ipfsSingleAddWrapper()`.
- *  @param {ReadStream|Buffer|string} content if string, should be file path
+ * Convert content to a buffer; used in `ipfsAddNonImages()`.
+ * @param {ReadStream|Buffer|string} content if string, should be file path
  * @param {Object} logger
  * @returns buffer version of content
  */
@@ -192,18 +234,18 @@ async function _convertToBuffer (content, logger) {
   let buffer = []
   try {
     if (fs.existsSync(content)) {
-      // is a file path
-      buffer = fs.readFileSync(content)
-    } else {
-      // is a ReadStream
+      buffer = await readFile(content)
+    } else if (content instanceof Stream.Readable) {
       await new Promise((resolve, reject) => {
         content.on('data', (chunk) => buffer.push(chunk))
         content.on('end', () => resolve(Buffer.concat(buffer)))
         content.on('error', (err) => reject(err))
       })
+    } else {
+      throw new Error('Content is not a Buffer, ReadStream, nor existing file path.')
     }
   } catch (e) {
-    const errMsg = `[ipfsClient - ipfsSingleAddWrapper()] Could not convert content into buffer: ${e.toString()}`
+    const errMsg = `[ipfsClient - _convertToBuffer()] Could not convert content into buffer: ${e.toString()}`
     logger.error(errMsg)
     throw new Error(errMsg)
   }
@@ -215,8 +257,9 @@ module.exports = {
   ipfs,
   ipfsLatest,
   logIpfsPeerIds,
-  ipfsSingleAddWrapper,
-  ipfsMultipleAddWrapper,
-  ipfsAddWithoutDaemon,
+  ipfsAddNonImages,
+  ipfsAddImages,
+  ipfsOnlyHashImages,
+  ipfsOnlyHashNonImages,
   _convertToBuffer
 }

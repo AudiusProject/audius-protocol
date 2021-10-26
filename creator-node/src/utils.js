@@ -13,7 +13,7 @@ const redis = require('./redis')
 const config = require('./config')
 const BlacklistManager = require('./blacklistManager')
 const { generateTimestampAndSignature } = require('./apiSigning')
-const { ipfsSingleAddWrapper } = require('./ipfsClient')
+const { ipfsAddNonImages } = require('./ipfsClient')
 
 const readFile = promisify(fs.readFile)
 
@@ -260,7 +260,7 @@ async function findCIDInNetwork (ipfsLatest, filePath, cid, logger, libs, trackI
         await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
 
         // verify that the file written matches the hash expected if added to ipfs
-        const ipfsHashOnly = await ipfsSingleAddWrapper(ipfsLatest, filePath, { onlyHash: true, timeout: 2000 })
+        const ipfsHashOnly = await ipfsAddNonImages(ipfsLatest, filePath, { onlyHash: true, timeout: 2000 })
 
         if (cid !== ipfsHashOnly) {
           await fs.unlink(filePath)

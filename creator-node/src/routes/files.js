@@ -35,7 +35,7 @@ const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { constructProcessKey, PROCESS_NAMES } = require('../FileProcessingQueue')
-const { ipfsMultipleAddWrapper } = require('../ipfsClient')
+const { ipfsAddImages } = require('../ipfsClient')
 
 const { promisify } = require('util')
 
@@ -365,7 +365,7 @@ async function _generateIpfsAddContent (resizeResp, dirCID) {
 }
 
 async function _addToIpfsWithRetries ({ ipfsLatest, content, enableIPFSAdd, dirCID, retriesLeft, maxRetries, logContext, logger }) {
-  const ipfsAddRespArr = await ipfsMultipleAddWrapper(
+  const ipfsAddRespArr = await ipfsAddImages(
     ipfsLatest,
     content,
     {
