@@ -419,6 +419,7 @@ const CollectiblesPage: React.FC<{
                   key={collectible.id}
                   collectible={collectible}
                   isMobile={isMobile}
+                  isUserOnTheirProfile={isUserOnTheirProfile}
                   updateProfilePicture={updateProfilePicture}
                   onSave={onSave}
                 />
