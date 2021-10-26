@@ -35,10 +35,9 @@ const logContext = {
   }
 }
 
-// NOTE: there will be logs that indicate that `isSameHash=false` when adding content to
-// ipfs. This is because the only hashing logic is not mocked.
-// Quick fix solution: set `enableIPFSAddTracks` = true and ignore this log
-
+// NOTE: there will be logs that have `isSameHash=false` when adding content to
+// ipfs. This is because the only hashing logic is not mocked, while the ipfs instance is (some issues with mocking)
+// See ipfsClient.test.js for cid tests.
 describe('test Polling Tracks with mocked IPFS', function () {
   let app, server, session, ipfsMock, ipfsLatestMock, libsMock, handleTrackContentRoute, mockServiceRegistry, userId
 
@@ -62,8 +61,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     session = await createStarterCNodeUser(userId)
 
     handleTrackContentRoute = require('../src/components/tracks/tracksComponentService').handleTrackContentRoute
-
-    sinon.stub(ipfsClient, 'ipfsAddWithoutDaemon').returns(new Promise((resolve, reject) => resolve('QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')))
   })
 
   afterEach(async () => {
