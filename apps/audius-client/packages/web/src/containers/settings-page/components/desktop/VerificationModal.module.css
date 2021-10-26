@@ -46,10 +46,20 @@
   width: 176px;
   margin: 4px auto;
 }
+/** Breakpoint for settings card **/
+@media (max-width: 780px) {
+  .btn {
+    margin: 8px auto;
+  }
+}
 
-.disabledBtn .btnIcon path,
-.btn .btnIcon path {
-  fill: var(--primary) !important;
+.disabledBtn .btnIcon path:first-child,
+.btn .btnIcon path:first-child {
+  fill: #cc0fe0 !important;
+}
+.disabledBtn .btnIcon path:first-child,
+.btn .btnIcon path:nth-child(2) {
+  fill: white !important;
 }
 
 .btn .btnText {

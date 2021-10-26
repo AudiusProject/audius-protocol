@@ -19,7 +19,7 @@ const messages = {
     'Create A New Password That Is\n Secure And Easy To Remember!',
     'Changing Password, Please wait',
     'Your Password Has Been Changed',
-    'Something went wrong. Please try again.'
+    'Something went wrong. Please try again'
   ],
   changePassword: 'Change Password'
 }
@@ -127,6 +127,9 @@ export const ChangePassword = ({
           })}
         >
           {messages.helpTexts[currentPage]}
+          {currentPage === Page.FAILURE && (
+            <i className='emoji confused-face'></i>
+          )}
         </div>
       )}
       {getPageContents()}
