@@ -69,27 +69,40 @@ def get_track_listen_milestones(limit=100):
     return track_id_play_counts
 
 # Retrieve sol plays health object
-def get_sol_play_health_info(redis, current_time_utc):
+def get_sol_play_health_info(redis, current_time_utc, limit=1):
     # Query latest dplays
     # Latest play tx committed to DB
-    latest_cached_db_sol_play = redis_get_json_cached_key_or_restore(redis, latest_indexed_sol_play_tx_key)
-    if not latest_cached_db_sol_play:
+    latest_db_sol_play = redis_get_json_cached_key_or_restore(redis, latest_indexed_sol_play_tx_key)
+    plays_from_db = None
+    if not latest_db_sol_play:
         # If nothing found in cache, pull from db
-        latest_cached_db_sol_play = get_latest_sol_plays(1)[0]
+        plays_from_db = get_latest_sol_plays(1)
+        latest_db_sol_play = plays_from_db[0] if plays_from_db else None
 
     # Latest play tx from chain 
     latest_cached_sol_tx = redis_get_json_cached_key_or_restore(redis, latest_sol_play_tx_key)
     time_diff = -1
     slot_diff = -1
-    if latest_cached_db_sol_play:
-        slot_diff = latest_cached_sol_tx["slot"] - latest_cached_db_sol_play["slot"]
-        last_created_at_time = latest_cached_db_sol_play["created_at"]
+    if latest_db_sol_play:
+        slot_diff = latest_cached_sol_tx["slot"] - latest_db_sol_play["slot"]
+        last_created_at_time = datetime.datetime.fromisoformat(latest_db_sol_play["created_at"])
         time_diff = (current_time_utc - last_created_at_time).total_seconds()
-    return {
+    return_val = {
         "slot_diff": slot_diff,
         "tx_info": {
             "chain_tx": latest_cached_sol_tx,
-            "db_tx": latest_cached_db_sol_play,
+            "db_tx": latest_db_sol_play,
         },
         "time_diff": time_diff,
     }
+    return return_val
+
+def get_latest_sol_play_check_info(redis, limit):
+    response = {}
+    # Latest play tx from chain 
+    latest_cached_sol_tx = redis_get_json_cached_key_or_restore(redis, latest_sol_play_tx_key)
+    latest_db_sol_play = redis_get_json_cached_key_or_restore(redis, latest_indexed_sol_play_tx_key)
+    response["latest_chain_tx"] = latest_cached_sol_tx
+    response["latest_db_tx"] = latest_db_sol_play
+    response["tx_history"] = get_latest_sol_plays(limit)
+    return response

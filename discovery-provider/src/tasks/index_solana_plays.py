@@ -100,16 +100,17 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
 
 # Cache the latest indexed value in redis
 # Used for quick retrieval in health check
-def cache_latest_processed_tx_redis(redis, tx):
+def cache_latest_processed_play_redis(redis, play):
     try:
+        play["created_at"] = play["created_at"].isoformat()
         redis_set_json_and_dump(
             redis,
             latest_indexed_sol_play_tx_key,
-            tx
+            play
         )
     except Exception as e:
         logger.error(
-            f"index_solana_plays.py | Failed to cache latest processed transaction {tx}, {e}"
+            f"index_solana_plays.py | Failed to cache latest processed transaction {play}, {e}"
         )
         raise e
 
@@ -401,7 +402,7 @@ def parse_sol_tx_batch(db, redis, solana_client_manager, tx_sig_batch_records, r
                     # Cache the latest play from this batch
                     # This reflects the ordering from chain
                     most_recent_db_play = play
-                    cache_latest_processed_tx_redis(redis, most_recent_db_play)
+                    cache_latest_processed_play_redis(redis, most_recent_db_play)
                     logger.error(f"index_solana_plays.py TESTING | {most_recent_db_play}")
 
         for event in challenge_bus_events:

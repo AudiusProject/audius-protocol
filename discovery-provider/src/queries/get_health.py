@@ -361,16 +361,14 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     return health_results, is_unhealthy
 
 
-def get_play_health_info(plays_max_drift, redis=None):
+def get_play_health_info(plays_max_drift=1000, redis=None):
     if redis is None:
         raise Exception("Invalid arguments for get_play_health")
 
     current_time_utc = datetime.datetime.utcnow()
-
     # Fetch plays info from Solana
     sol_play_info = get_sol_play_health_info(redis, current_time_utc)
-
-    # Fetch latest plays info
+   
     unhealthy_sol_plays = bool(
         plays_max_drift < sol_play_info["time_diff"]
     )
@@ -380,13 +378,13 @@ def get_play_health_info(plays_max_drift, redis=None):
 
     # Calculate time diff from now to latest play if solana plays unhealthy
     if unhealthy_sol_plays:
-        latest_db_play = redis_get_json_cached_key_or_restore(redis, latest_db_play_key)
+        # Strip Z character stored, ex. "2021-10-26T19:01:09.814Z"
+        latest_db_play = redis_get_or_restore(redis, latest_db_play_key)[:-1]
         if not latest_db_play:
             latest_db_play = get_latest_play()
-            logger.error(f"SETTING VAL {latest_db_play_key} {latest_db_play}")
-            redis_set_json_and_dump(redis, latest_db_play_key, latest_db_play.isoformat())
+            redis_set_and_dump(redis, latest_db_play_key, latest_db_play.isoformat())
         else:
-            latest_db_play = datetime.datetime.fromisoformat(latest_db_play)
+            latest_db_play = datetime.datetime.fromisoformat(latest_db_play.decode())
 
         time_diff_general = (current_time_utc - latest_db_play).total_seconds() 
 

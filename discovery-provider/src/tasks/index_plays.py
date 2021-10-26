@@ -207,7 +207,7 @@ def get_track_plays(self, db, lock, redis):
         has_lock = lock.owned()
         if plays and has_lock:
             session.bulk_save_objects(plays)
-            redis_set_and_dump(redis, latest_db_play_key, plays[-1].created_at.toisoformat())
+            redis_set_and_dump(redis, latest_db_play_key, plays[-1].created_at)
 
         job_extra_info["has_lock"] = has_lock
         job_extra_info["number_rows_insert"] = len(plays)
