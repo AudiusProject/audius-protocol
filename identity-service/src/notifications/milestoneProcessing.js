@@ -39,9 +39,6 @@ async function indexMilestones (milestones, owners, metadata, listenCounts, audi
 
   // Index favorite milestones
   await updateFavoriteMilestones(milestones.favorite_counts, owners, blocknumber, timestamp, audiusLibs, tx)
-
-  // Index listens
-  // await updateTrackListenMilestones(listenCounts, blocknumber, timestamp, audiusLibs, tx)
 }
 
 /**

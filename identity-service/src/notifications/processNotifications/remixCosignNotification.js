@@ -8,11 +8,12 @@ const {
 } = require('../constants')
 
 /**
- * Process cosign notifications, note that a unique cosign event is created only once time.
+ * Process cosign notifications, note that a unique cosign event is created only once.
  * @param {Array<Object>} notifications
  * @param {*} tx The DB transaction to attach to DB requests
  */
 async function processCosignNotifications (notifications, tx) {
+  const validNotifications = []
   for (const notification of notifications) {
     const {
       entity_id: childTrackId,
@@ -38,8 +39,9 @@ async function processCosignNotifications (notifications, tx) {
       transaction: tx
     })
 
-    // If this track is already cosigned, ignore
-    if (cosignNotifications.length > 0) return false
+    // If this track is already cosigned, ignore this notification
+    if (cosignNotifications.length > 0) continue
+
     const blocknumber = notification.blocknumber
     const timestamp = Date.parse(notification.timestamp.slice(0, -2))
     const momentTimestamp = moment(timestamp)
@@ -62,7 +64,9 @@ async function processCosignNotifications (notifications, tx) {
       actionEntityId: parentTrackUserId,
       blocknumber
     }, { transaction: tx })
+    validNotifications.push(notiifcation)
   }
+  return validNotifications
 }
 
 module.exports = processCosignNotifications
