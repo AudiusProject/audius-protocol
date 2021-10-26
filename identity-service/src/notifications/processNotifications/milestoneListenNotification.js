@@ -6,8 +6,7 @@ const {
 } = require('../constants')
 
 /**
- * Batch process favorite notifications, creating a notification (if prev unread) and notification action
- * for the owner of the favorited track/playlist/album
+ * Batch process milestone listen notifications
  * @param {Array<Object>} notifications
  * @param {*} tx The DB transaction to attach to DB requests
  */
@@ -37,11 +36,6 @@ async function processMilestoneListenNotifications (notifications, tx) {
       transaction: tx
     })
     if (existingMilestoneQuery.length === 0) {
-      // MilestoneListen/Favorite/Repost
-      // userId=user achieving milestone
-      // entityId=Entity reaching milestone, one of track/collection
-      // actionEntityType=Entity achieving milestone, can be track/collection
-      // actionEntityId=Milestone achieved
       let createMilestoneTx = await models.SolanaNotification.create({
         userId: trackOwnerId,
         type: notificationTypes.MilestoneListen,
