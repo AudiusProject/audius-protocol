@@ -19,8 +19,6 @@ from src import exceptions
 
 from . import multihash
 
-logger = logging.getLogger(__name__)
-
 def get_ip(request_obj):
     """Gets the IP address from a request using the X-Forwarded-For header if present"""
     ip = request_obj.headers.get("X-Forwarded-For", request_obj.remote_addr)
@@ -53,6 +51,7 @@ def redis_get_or_restore(redis, key):
     return value if value else redis_restore(redis, key)
 
 def redis_get_json_cached_key_or_restore(redis, key):
+    logger = logging.getLogger(__name__)
     cached_value = redis.get(key)
     if not cached_value:
         logger.info(f"Redis Cache - miss {key}, restoring")

@@ -22,7 +22,6 @@ from src.utils.redis_constants import (
     index_eth_last_completion_redis_key,
     latest_db_play_key
 )
-from src.utils.redis_cache import get_pickled_key, pickle_and_set
 from src.queries.get_balances import (
     LAZY_REFRESH_REDIS_PREFIX,
     IMMEDIATE_REFRESH_REDIS_PREFIX,
@@ -364,7 +363,7 @@ def get_play_health_info(plays_max_drift, redis=None):
     current_time_utc = datetime.datetime.utcnow()
     # Fetch plays info from Solana
     sol_play_info = get_sol_play_health_info(redis, current_time_utc)
-   
+
     unhealthy_sol_plays = bool(
         plays_max_drift < sol_play_info["time_diff"]
     )
@@ -382,7 +381,7 @@ def get_play_health_info(plays_max_drift, redis=None):
         else:
             latest_db_play = datetime.datetime.fromisoformat(latest_db_play.decode())
 
-        time_diff_general = (current_time_utc - latest_db_play).total_seconds() 
+        time_diff_general = (current_time_utc - latest_db_play).total_seconds()
 
     unhealthy_plays = bool(
         unhealthy_sol_plays or (plays_max_drift < time_diff_general)

@@ -79,7 +79,7 @@ def get_sol_play_health_info(redis, current_time_utc, limit=1):
         plays_from_db = get_latest_sol_plays(1)
         latest_db_sol_play = plays_from_db[0] if plays_from_db else None
 
-    # Latest play tx from chain 
+    # Latest play tx from chain
     latest_cached_sol_tx = redis_get_json_cached_key_or_restore(redis, latest_sol_play_tx_key)
     time_diff = -1
     slot_diff = -1
@@ -99,7 +99,7 @@ def get_sol_play_health_info(redis, current_time_utc, limit=1):
 
 def get_latest_sol_play_check_info(redis, limit):
     response = {}
-    # Latest play tx from chain 
+    # Latest play tx from chain
     latest_cached_sol_tx = redis_get_json_cached_key_or_restore(redis, latest_sol_play_tx_key)
     latest_db_sol_play = redis_get_json_cached_key_or_restore(redis, latest_indexed_sol_play_tx_key)
     response["latest_chain_tx"] = latest_cached_sol_tx
