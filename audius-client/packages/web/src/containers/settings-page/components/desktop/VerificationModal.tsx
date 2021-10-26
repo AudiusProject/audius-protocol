@@ -1,17 +1,11 @@
 import React, { useCallback, useState } from 'react'
 
-import {
-  Modal,
-  IconVerified,
-  Button,
-  ButtonType,
-  IconNote,
-  ButtonSize
-} from '@audius/stems'
+import { Modal, Button, ButtonType, IconNote, ButtonSize } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconValidationX } from 'assets/img/iconValidationX.svg'
+import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import { ID } from 'common/models/Identifiers'
 import { ProfilePictureSizes, SquareSizes } from 'common/models/ImageSizes'
 import Status from 'common/models/Status'

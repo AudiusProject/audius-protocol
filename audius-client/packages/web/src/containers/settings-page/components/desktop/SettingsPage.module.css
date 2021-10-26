@@ -86,8 +86,11 @@
   font-size: var(--font-l) !important;
 }
 
+.cardSlider {
+  min-width: 176px;
+  margin: 8px 0 8px auto;
+}
 .cardButton,
-.cardSlider,
 .cardToast {
   width: 176px;
   margin: 4px auto;
@@ -95,4 +98,12 @@
 .cardButton {
   display: block;
   height: 52px !important;
+}
+/** Breakpoint for collapsed cards **/
+@media (max-width: 780px) {
+  .cardSlider,
+  .cardButton,
+  .cardToast {
+    margin: 8px auto;
+  }
 }

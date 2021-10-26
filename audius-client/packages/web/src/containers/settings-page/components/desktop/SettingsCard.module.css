@@ -36,6 +36,13 @@
   font-size: var(--font-xs);
   font-weight: var(--font-medium);
   line-height: 1.2;
-  width: 246px;
+  min-width: 246px;
+  margin-right: 16px;
   margin-bottom: 4px;
+}
+/** Breakpoint for collapsed cards **/
+@media (max-width: 780px) {
+  .settingsCard {
+    text-align: center;
+  }
 }

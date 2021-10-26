@@ -1,11 +1,11 @@
 import React from 'react'
 
-import { IconVerified } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { Transition } from 'react-spring/renderprops'
 
 import { ReactComponent as IconGradientSave } from 'assets/img/gradientSave.svg'
+import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import InstagramButton from 'components/general/InstagramButton'
 import TwitterAuthButton from 'components/general/TwitterAuthButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
