@@ -35,7 +35,7 @@ def health_check():
         "challenge_events_age_max_drift": request.args.get(
             "challenge_events_age_max_drift", type=int
         ),
-        "plays_max_drift": request.args.get("plays_max_drift", type=int, default=240)
+        "plays_max_drift": request.args.get("plays_max_drift", type=int, default=900)
     }
 
     (health_results, error) = get_health(args)

@@ -31,7 +31,7 @@ from src.queries.get_latest_play import get_latest_play
 from src.queries.get_sol_plays import (
     get_sol_play_health_info
 )
-from src.utils.helpers import redis_get_or_restore, redis_get_json_cached_key_or_restore, redis_set_and_dump, redis_set_json_and_dump
+from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 
 logger = logging.getLogger(__name__)
@@ -213,12 +213,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
 
-    # Fetch plays from solana specifically
-    # sol_play_info = get_sol_play_health_info(redis)
-
-    # TESTING
     (unhealthy_plays, sol_play_info, time_diff_general) = get_play_health_info(plays_max_drift, redis)
-    logger.error(f"get play health info {unhealthy_plays}, {sol_play_info}, {time_diff_general} ")
 
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
@@ -361,7 +356,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     return health_results, is_unhealthy
 
 
-def get_play_health_info(plays_max_drift=1000, redis=None):
+# Aggregate play health info across Solana and base storage
+def get_play_health_info(plays_max_drift, redis=None):
     if redis is None:
         raise Exception("Invalid arguments for get_play_health")
 
@@ -389,7 +385,7 @@ def get_play_health_info(plays_max_drift=1000, redis=None):
         time_diff_general = (current_time_utc - latest_db_play).total_seconds() 
 
     unhealthy_plays = bool(
-        unhealthy_sol_plays or plays_max_drift < time_diff_general
+        unhealthy_sol_plays or (plays_max_drift < time_diff_general)
     )
 
     return (unhealthy_plays, sol_play_info, time_diff_general)
