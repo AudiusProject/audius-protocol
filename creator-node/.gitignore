@@ -13,6 +13,5 @@ local-storage/
 test_file_storage/
 coverage/
 .nyc_output/
-compose/env/commonEnv.sh
-compose/env/tmp/
+compose/env/tmp*/
 file_storage/
