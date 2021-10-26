@@ -58,7 +58,7 @@ def create_instance(name, azure, image_project, image_family, size, machine_type
                 "--boot-disk-size",
                 size,
                 "--machine-type",
-                machine_type,
+                machine_type or "n2-custom-12-24576",
             ]
         )
 
@@ -86,7 +86,7 @@ def create_instance(name, azure, image_project, image_family, size, machine_type
                 "group",
                 "create",
                 "-n",
-                "TestResourceGroup",
+                "audius-azure",
             ],
         )
 
@@ -98,9 +98,13 @@ def create_instance(name, azure, image_project, image_family, size, machine_type
                 "-n",
                 name,
                 "-g",
-                "TestResourceGroup",
+                "audius-azure",
                 "--image",
                 "UbuntuLTS",
+                "--size",
+                machine_type or "Standard_F8s_v2",
+                "--os-disk-size-gb",
+                size,
             ],
         )
 
@@ -113,12 +117,15 @@ def create_instance(name, azure, image_project, image_family, size, machine_type
                     "--name",
                     name,
                     "--resource-group",
-                    "TestResourceGroup",
+                    "audius-azure",
+                    "--query",
+                    "[0].virtualMachine.network.publicIpAddresses[0].ipAddress",
                 ],
                 capture_output=True,
             )
             .stdout.decode()
             .strip()
+            .strip('"')
         )  # TODO: process ip
         print("IP address:", ip)
 
@@ -324,7 +331,7 @@ def main():
 
     parser_create_instance.add_argument(
         "--machine-type",
-        default="n2-custom-12-24576",
+        default=None,
         help="Machine type to use for the instance",
     )
 
