@@ -1,16 +1,10 @@
 import React, { useState, useContext, useCallback } from 'react'
 
-import {
-  Modal,
-  Button,
-  ButtonType,
-  IconMail,
-  IconSignOut,
-  IconVerified
-} from '@audius/stems'
+import { Modal, Button, ButtonType, IconMail, IconSignOut } from '@audius/stems'
 import cn from 'classnames'
 import { debounce } from 'lodash'
 
+import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import { SquareSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import MobilePageContainer from 'components/general/MobilePageContainer'
