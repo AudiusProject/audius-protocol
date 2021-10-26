@@ -248,6 +248,12 @@ UPDATE_AGGREGATE_USER_QUERY = """
                 WHERE
                     f.is_current IS TRUE
                     AND f.is_delete IS FALSE
+                    AND f.followee_user_id IN ( -- to calculate follower count for changed users, changed user id must match followee user id
+                        SELECT
+                            user_id
+                        FROM
+                            changed_users
+                    )
                 GROUP BY
                     f.followee_user_id
             ) user_follower ON user_follower.followee_user_id = u.user_id
@@ -260,6 +266,12 @@ UPDATE_AGGREGATE_USER_QUERY = """
                 WHERE
                     f.is_current IS TRUE
                     AND f.is_delete IS FALSE
+                    AND f.follower_user_id IN (
+                        SELECT
+                            user_id
+                        FROM
+                            changed_users
+                    )
                 GROUP BY
                     f.follower_user_id
             ) user_followee ON user_followee.follower_user_id = u.user_id
