@@ -4,15 +4,12 @@ const {
   SystemProgram,
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SYSVAR_RENT_PUBKEY,
-  TransactionInstruction,
-  Transaction,
-  PublicKey
+  TransactionInstruction
 } = require('@solana/web3.js')
 const borsh = require('borsh')
 const { getBankAccountAddress } = require('./userBank')
 const BN = require('bn.js')
 const SolanaUtils = require('./utils')
-const { TransactionHandler } = require('./transactionHandler')
 const { RewardsManagerError } = require('./errors')
 
 // Various prefixes used for rewards
@@ -262,6 +259,8 @@ const evaluateAttestations = async ({
     userBankProgramAccount,
     TOKEN_PROGRAM_ID
   )
+
+  console.log({ recipientEthAddress, recipientBankAccount })
   // Derive the AAO's Solana pubkey from it's eth address
   const derivedAAOAddress = await deriveSolanaSenderFromEthAddress(
     oracleEthAddress,

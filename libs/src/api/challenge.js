@@ -1,6 +1,5 @@
 const axios = require('axios')
 const { Base, Services } = require('./base')
-const { sampleSize } = require('lodash')
 const BN = require('bn.js')
 
 const GetAttestationError = Object.freeze({
@@ -101,7 +100,7 @@ class Challenge extends Base {
       }
 
       phase = AttestationPhases.EVALUATE_ATTESTATIONS
-      const { errorCode: evaluateErrorCode} = await this.solanaWeb3Manager.evaluateChallengeAttestations({
+      const { errorCode: evaluateErrorCode } = await this.solanaWeb3Manager.evaluateChallengeAttestations({
         challengeId,
         specifier,
         recipientEthAddress,

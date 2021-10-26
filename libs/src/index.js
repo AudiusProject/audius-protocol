@@ -216,7 +216,7 @@ class AudiusLibs {
     rewardsManagerProgramPDA,
     rewardsManagerTokenPDA,
     useRelay,
-    feePayerSecretKey = null,
+    feePayerSecretKey = null
   }) {
     return {
       solanaClusterEndpoint,
@@ -229,7 +229,7 @@ class AudiusLibs {
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
       useRelay,
-      feePayerKeypair: feePayerSecretKey ? Keypair.fromSecretKey(feePayerSecretKey) : null,
+      feePayerKeypair: feePayerSecretKey ? Keypair.fromSecretKey(feePayerSecretKey) : null
     }
   }
 

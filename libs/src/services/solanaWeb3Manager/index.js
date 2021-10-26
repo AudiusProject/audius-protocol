@@ -57,7 +57,7 @@ class SolanaWeb3Manager {
   constructor (
     solanaWeb3Config,
     identityService,
-    web3Manager,
+    web3Manager
   ) {
     this.solanaWeb3Config = solanaWeb3Config
     this.identityService = identityService

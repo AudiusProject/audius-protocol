@@ -1,20 +1,20 @@
 const SolanaUtils = require('./utils')
 const {
   Transaction,
-  sendAndConfirmTransaction,
+  sendAndConfirmTransaction
 } = require('@solana/web3.js')
 
 // Should return
 // { signature, error }
 class TransactionHandler {
-  constructor({ connection, useRelay, identityService = null, feePayerKeypair = null }){
+  constructor ({ connection, useRelay, identityService = null, feePayerKeypair = null }) {
     this.connection = connection
     this.useRelay = useRelay
     this.identityService = identityService
     this.feePayerKeypair = feePayerKeypair
   }
 
-  async handleTransaction(instructions, errorMapping = null) {
+  async handleTransaction (instructions, errorMapping = null) {
     let result = null
     if (this.useRelay) {
       result = await this._relayTransaction(instructions)
@@ -27,7 +27,7 @@ class TransactionHandler {
     return result
   }
 
-  async _relayTransaction(instructions) {
+  async _relayTransaction (instructions) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
 
     const transactionData = {
@@ -43,13 +43,13 @@ class TransactionHandler {
     }
   }
 
-  async _locallyConfirmTransaction(instructions) {
+  async _locallyConfirmTransaction (instructions) {
     if (!this.feePayerKeypair) {
       console.error('Local feepayer keys missing for direct confirmation!')
       return {
         res: null,
         error: 'Missing keys',
-        errorCode: -1,
+        errorCode: -1
       }
     }
 
@@ -83,7 +83,7 @@ class TransactionHandler {
     }
   }
 
-  _parseSolanaErrorCode(errorMessage) {
+  _parseSolanaErrorCode (errorMessage) {
     const matcher = /(?<=custom program error: 0x)(.*)$/
     const res = errorMessage.match(matcher)
     if (!res || !res.length) return null
