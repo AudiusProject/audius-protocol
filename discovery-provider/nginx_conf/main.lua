@@ -3,7 +3,7 @@ require "resty.core"
 local resty_random = require "resty.random"
 local resty_rsa = require "resty.rsa"
 local cjson = require "cjson"
-local httpc = require("resty.http").new()
+local resty_http = require "resty.http"
 
 local config = require "config"
 local utils = require "utils"
@@ -16,7 +16,9 @@ local _M = {}
 function get_cached_public_key (discovery_provider)
     local public_key = ngx.shared.rsa_public_key_store:get(discovery_provider)
     if not public_key then
+        local httpc = resty_http.new()
         local res, err = httpc:request_uri(discovery_provider .. "/openresty_pubkey", { method = "GET" })
+        httpc:close()
         if not res then
             return nil, err
         end
@@ -27,7 +29,9 @@ function get_cached_public_key (discovery_provider)
 end
 
 function _M.health_check ()
+    local httpc = resty_http.new()
     local res, err = httpc:request_uri("http://127.0.0.1:3000/health_check", { method = "GET" })
+    httpc:close()
     if not res then
         ngx.log(ngx.ERR, "failed to get health check: ", err)
         return nil
