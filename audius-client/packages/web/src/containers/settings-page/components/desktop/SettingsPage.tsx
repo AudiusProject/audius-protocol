@@ -28,6 +28,7 @@ import Theme from 'models/Theme'
 import AudiusBackend from 'services/AudiusBackend'
 import DownloadApp from 'services/download-app/DownloadApp'
 import { isMobile, isElectron, getOS } from 'utils/clientUtil'
+import { COPYRIGHT_TEXT } from 'utils/copyright'
 import { signOut } from 'utils/signOut'
 
 import { version } from '../../../../../package.json'
@@ -51,7 +52,7 @@ const EMAIL_TOAST_TIMEOUT = 2000
 
 const messages = {
   version: 'Audius Version',
-  copyright: 'Copyright © 2019 Audius',
+  copyright: COPYRIGHT_TEXT,
   emailSent: 'Email Sent!',
   emailNotSent: 'Something broke! Please try again!',
   darkModeOn: 'On',

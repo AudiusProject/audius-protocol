@@ -11,6 +11,7 @@ import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
 import Row from 'components/groupable-list/Row'
 import { GetVersion } from 'services/native-mobile-interface/version'
+import { COPYRIGHT_TEXT } from 'utils/copyright'
 
 import { version } from '../../../../../package.json'
 
@@ -41,7 +42,7 @@ const messages = {
 
   title: 'Audius Music',
   version: 'Audius Version',
-  copyright: 'Copyright © 2019 Audius'
+  copyright: COPYRIGHT_TEXT
 }
 
 /** Gets the latest app or dapp version */
