@@ -4,6 +4,7 @@ import Collection, { UserCollectionMetadata } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import { LineupTrack, TrackMetadata } from 'common/models/Track'
+import { getAccountUser } from 'common/store/account/selectors'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import {
@@ -16,6 +17,7 @@ import {
   getFollowIds,
   getStartedSignOnProcess
 } from 'containers/sign-on/store/selectors'
+import FeedFilter from 'models/FeedFilter'
 import apiClient, {
   GetSocialFeedArgs
 } from 'services/audius-api-client/AudiusAPIClient'
@@ -24,6 +26,12 @@ import { AppState } from 'store/types'
 
 type FeedItem = LineupTrack | Collection
 
+const filterMap = {
+  [FeedFilter.ALL]: 'all',
+  [FeedFilter.ORIGINAL]: 'original',
+  [FeedFilter.REPOST]: 'repost'
+}
+
 function* getTracks({
   offset,
   limit
@@ -31,13 +39,17 @@ function* getTracks({
   offset: number
   limit: number
 }): Generator<any, FeedItem[], any> {
-  const filter = yield select(getFeedFilter)
+  const currentUser = yield select(getAccountUser)
+  const filterEnum: FeedFilter = yield select(getFeedFilter)
+  const filter = filterMap[filterEnum]
 
   // NOTE: The `/feed` does not paginate, so the feed is requested from 0 to N
   const params: GetSocialFeedArgs = {
     offset: 0,
     limit: offset + limit,
-    filter: filter
+    filter: filter,
+    with_users: true,
+    current_user_id: currentUser.user_id
   }
 
   // If the user just signed up, we might not have a feed ready.

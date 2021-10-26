@@ -320,6 +320,7 @@ export type GetSocialFeedArgs = QueryParams & {
   with_users?: boolean
   tracks_only?: boolean
   followee_user_ids?: ID[]
+  current_user_id?: ID
 }
 
 type GetSocialFeedResponse = {}
@@ -1168,13 +1169,19 @@ class AudiusAPIClient {
 
   async getSocialFeed(args: GetSocialFeedArgs) {
     this._assertInitialized()
+    const headers = args.current_user_id
+      ? {
+          'X-User-Id': args.current_user_id.toString()
+        }
+      : undefined
     const response: Nullable<APIResponse<
       GetSocialFeedResponse
     >> = await this._getResponse(
       ROOT_ENDPOINT_MAP.feed,
       args,
       true,
-      PathType.RootPath
+      PathType.RootPath,
+      headers
     )
     if (!response) return []
     return response.data
@@ -1240,7 +1247,8 @@ class AudiusAPIClient {
     path: string,
     params: QueryParams = {},
     retry = true,
-    pathType: PathType = PathType.VersionFullPath
+    pathType: PathType = PathType.VersionFullPath,
+    headers?: { [key: string]: string }
   ): Promise<Nullable<T>> {
     if (this.initializationState.state !== 'initialized')
       throw new Error('_constructURL called uninitialized')
@@ -1269,7 +1277,7 @@ class AudiusAPIClient {
     // Initialization type is manual. Make requests with fetch and handle failures.
     const resource = this._constructUrl(formattedPath, sanitizedParams)
     try {
-      const response = await fetch(resource)
+      const response = await fetch(resource, { headers })
       if (!response.ok) {
         if (response.status === 404) return null
         throw new Error(response.statusText)
