@@ -248,7 +248,7 @@ UPDATE_AGGREGATE_USER_QUERY = """
                 WHERE
                     f.is_current IS TRUE
                     AND f.is_delete IS FALSE
-                    AND f.follower_user_id IN (
+                    AND f.followee_user_id IN ( -- to calculate follower count for changed users, changed user id must match followee user id
                         SELECT
                             user_id
                         FROM
