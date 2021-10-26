@@ -12,9 +12,11 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Play
 from src.tasks.celery_app import celery
+from src.tasks.index_listen_count_milestones import CURRENT_PLAY_INDEXING, TRACK_LISTEN_IDS
 from src.utils.config import shared_config
 from src.utils.helpers import redis_set_json_and_dump
 from src.utils.redis_constants import latest_sol_play_program_tx_key, latest_sol_play_db_tx_key
+from src.utils.redis_cache import pickle_and_set, set_json_cached_key
 from src.solana.solana_client_manager import SolanaClientManager
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
@@ -312,7 +314,7 @@ This is performed by simply slicing the tx_batches array and discarding the newe
 is found - these limiting parameters are defined as TX_SIGNATURES_MAX_BATCHES, TX_SIGNATURES_RESIZE_LENGTH
 """
 
-def parse_sol_tx_batch(db, redis, solana_client_manager, tx_sig_batch_records, retries=10):
+def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, retries=10):
     """
     Parse a batch of solana transactions in parallel by calling parse_sol_play_transaction
     with a ThreaPoolExecutor
@@ -378,7 +380,7 @@ def parse_sol_tx_batch(db, redis, solana_client_manager, tx_sig_batch_records, r
 
             # if we have retries left, recursively call this function again
             if retries > 0:
-                return parse_sol_tx_batch(db, redis, solana_client_manager, tx_sig_batch_records, retries-1)
+                return parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, retries-1)
 
             # if no more retries, raise
             raise exc
@@ -403,6 +405,10 @@ def parse_sol_tx_batch(db, redis, solana_client_manager, tx_sig_batch_records, r
                     # This reflects the ordering from chain
                     most_recent_db_play = play
                     cache_latest_sol_play_db_tx(redis, most_recent_db_play)
+
+        track_play_ids = [play["track_id"] for play in plays]
+        if track_play_ids:
+            redis.sadd(TRACK_LISTEN_IDS, *track_play_ids)
 
         for event in challenge_bus_events:
             challenge_bus.dispatch(
@@ -555,7 +561,18 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
 
     for tx_sig_batch in transaction_signatures:
         for tx_sig_batch_records in split_list(tx_sig_batch, 50):
-            parse_sol_tx_batch(db, redis, solana_client_manager, tx_sig_batch_records)
+            parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records)
+
+    try:
+        if transaction_signatures and transaction_signatures[-1]:
+            last_tx_sig = transaction_signatures[-1][-1]
+            tx_info = solana_client_manager.get_sol_tx_info(last_tx_sig)
+            tx_result = tx_info["result"]
+            set_json_cached_key(redis, CURRENT_PLAY_INDEXING, { 'slot': tx_result["slot"], 'timestamp': tx_result["blockTime"] })
+            slot = tx_result["slot"]
+    except Exception as e:
+        logger.error("index_solana_plays.py | Unable to set redis current play indexing", exc_info=True)
+        raise e
 
 
 ######## CELERY TASKS ########

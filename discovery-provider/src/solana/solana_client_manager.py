@@ -88,16 +88,16 @@ class SolanaClientManager:
                 except Exception as e:
                     logger.error(
                         f"solana_client_manager.py | get_confirmed_signature_for_address2 | \
-                            Error fetching tx {tx_sig} from endpoint {endpoint}, {e}",
+                            Error fetching account {account} from endpoint {endpoint}, {e}",
                         exc_info=True,
                     )
                 num_retries -= 1
                 time.sleep(DELAY_SECONDS)
                 logger.error(
-                    f"solana_client_manager.py | get_confirmed_signature_for_address2 | Retrying tx fetch: {tx_sig} with endpoint {endpoint}"
+                    f"solana_client_manager.py | get_confirmed_signature_for_address2 | Retrying account fetch: {account} with endpoint {endpoint}"
                 )
             raise Exception(
-                f"solana_client_manager.py | get_confirmed_signature_for_address2 | Failed to fetch {tx_sig} with endpoint {endpoint}"
+                f"solana_client_manager.py | get_confirmed_signature_for_address2 | Failed to fetch account {account} with endpoint {endpoint}"
             )
 
         return _try_all_with_timeout(

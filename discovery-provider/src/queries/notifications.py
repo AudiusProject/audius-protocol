@@ -3,6 +3,7 @@ import functools as ft
 from datetime import date, datetime, timedelta
 from flask import Blueprint, request
 from sqlalchemy import desc
+from typing import Tuple, TypedDict, List, Optional, Dict, Set
 
 from src import api_helpers
 from src.models import (
@@ -17,13 +18,16 @@ from src.models import (
     Remix,
     AggregateUser,
     ChallengeDisbursement,
+    RewardManagerTransaction,
 )
+from src.models.milestone import Milestone
 from src.queries import response_name_constants as const
 from src.queries.query_helpers import (
     get_repost_counts,
     get_save_counts,
     get_follower_count_dict,
 )
+from src.tasks.index_listen_count_milestones import LISTEN_COUNT_MILESTONE
 from src.utils.db_session import get_db_read_replica
 from src.utils.config import shared_config
 
@@ -900,7 +904,7 @@ def solana_notifications():
 
     Response - Json object w/ the following fields
         notifications: Array of notifications of shape:
-            type: 'ChallengeReward'
+            type: 'ChallengeReward' | 'MilestoneListen'
             slot: (int) slot number of notification
             initiator: (int) the user id that caused this notification
             metadata?: (any) additional information about the notification
@@ -923,13 +927,25 @@ def solana_notifications():
     # Need to write a system to keep track of the proper latest slot to index based on all of the applicable table
     with db.scoped_session() as session:
         current_slot_query_result = (
-            session.query(ChallengeDisbursement.slot)
+            session.query(RewardManagerTransaction.slot)
             .order_by(
-                desc(ChallengeDisbursement.slot)
+                desc(RewardManagerTransaction.slot)
             )
             .first()
         )
-        current_max_slot_num = current_slot_query_result.slot if current_slot_query_result is not None else 0
+        milestone_slot_query_result = (
+            session.query(Milestone.slot)
+            .order_by(
+                desc(Milestone.slot)
+            )
+            .first()
+        )
+        # TODO: Get min of all most current solana slots
+        # current_max_slot_num = min(
+            # (current_slot_query_result.slot if current_slot_query_result is not None else 0),
+            # (milestone_slot_query_result.slot if milestone_slot_query_result is not None else 0),
+        # )
+        current_max_slot_num = milestone_slot_query_result.slot if milestone_slot_query_result is not None else 0
         if current_max_slot_num < max_slot_number:
             max_slot_number = current_max_slot_num
 
@@ -965,7 +981,35 @@ def solana_notifications():
                 }
             )
 
+        track_listen_milestone: List[Tuple(Milestone, int)] = (
+            session.query(Milestone, Track.owner_id)
+            .filter(
+                Milestone.name == LISTEN_COUNT_MILESTONE,
+                Milestone.slot >= min_slot_number,
+                Milestone.slot <= max_slot_number,
+            )
+            .join(Track, Track.track_id == Milestone.id and Track.is_current == True)
+            .all()
+        )
+
+        track_listen_milestones = []
+        for result in track_listen_milestone:
+            track_milestone, track_owner_id = result
+            track_listen_milestones.append(
+                {
+                    const.solana_notification_type: const.solana_notification_type_listen_milestone,
+                    const.solana_notification_slot: track_milestone.slot,
+                    const.solana_notification_initiator: track_owner_id, # owner_id
+                    const.solana_notification_metadata: {
+                        const.solana_notification_threshold: track_milestone.threshold,
+                        const.notification_entity_id: track_milestone.id, # track_id
+                        const.notification_entity_type: "track"
+                    },
+                }
+            )
+
         notifications_unsorted.extend(challenge_reward_notifications)
+        notifications_unsorted.extend(track_listen_milestones)
 
     # Final sort
     sorted_notifications = sorted(

@@ -101,6 +101,7 @@ notification_playlist_update_users = "playlist_update_users"
 # solana notification metadata
 solana_notification_type = "type"
 solana_notification_type_challenge_reward = "ChallengeReward"
+solana_notification_type_listen_milestone = "MilestoneListen"
 
 solana_notification_slot = "slot"
 solana_notification_timestamp = "timestamp"
@@ -108,6 +109,7 @@ solana_notification_initiator = "initiator"
 solana_notification_metadata = "metadata"
 
 solana_notification_challenge_id = "challenge_id"
+solana_notification_threshold = "threshold"
 
 # Trending
 owner_follower_count = "owner_follower_count"
