@@ -22,7 +22,9 @@ const AggregateAttestationError = Object.freeze(
   }
 )
 
-/// Combined error type for `SubmitAndEvaluate`
+/**
+ * Combined error type for `SubmitAndEvaluate`
+ */
 const SubmitAndEvaluateError = Object.freeze({
   ...GetAttestationError,
   ...AggregateAttestationError,

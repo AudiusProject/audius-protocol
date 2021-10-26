@@ -260,7 +260,6 @@ const evaluateAttestations = async ({
     TOKEN_PROGRAM_ID
   )
 
-  console.log({ recipientEthAddress, recipientBankAccount })
   // Derive the AAO's Solana pubkey from it's eth address
   const derivedAAOAddress = await deriveSolanaSenderFromEthAddress(
     oracleEthAddress,

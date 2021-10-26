@@ -115,6 +115,11 @@ class TransactionHandler {
     }
   }
 
+  /**
+   * Attempts to parse an error code out of a message of the form:
+   * "... custom program error: 0x1", where the return in this case would be the number 1.
+   * Returns null for unparsable strings.
+   */
   _parseSolanaErrorCode (errorMessage) {
     const matcher = /(?<=custom program error: 0x)(.*)$/
     const res = errorMessage.match(matcher)
