@@ -12,19 +12,6 @@
   padding: 16px 11px 0px;
 }
 
-.contentContainer {
-  overflow-x: hidden;
-  overflow-y: visible;
-  border-top: 1px solid var(--neutral-light-8);
-}
-
-.tabs {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
 /* Empty Section */
 .emptyTab {
   margin: 8px 12px;
