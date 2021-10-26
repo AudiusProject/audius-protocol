@@ -381,7 +381,7 @@ async function _addToIpfsWithRetries ({ ipfsLatest, content, enableIPFSAdd, dirC
   const ipfsAddRetryDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
   if (ipfsAddRetryDirCID !== dirCID) {
     if (--retriesLeft > 0) {
-      logger.error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. ${retriesLeft} retries remaining out of ${maxRetries}. Retrying...`)
+      logger.warn(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. ${retriesLeft} retries remaining out of ${maxRetries}. Retrying...`)
       // If the only hash logic fails on first attempt, successive only hash logic attempts will produce the same results. Toggle `enableIPFSAdd` to true.
       await _addToIpfsWithRetries({
         ipfsLatest,
@@ -394,6 +394,7 @@ async function _addToIpfsWithRetries ({ ipfsLatest, content, enableIPFSAdd, dirC
         logger
       })
     } else {
+      logger.error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. Failed after all ${maxRetries} retries.`)
       throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. Failed after all ${maxRetries} retries.`)
     }
   }
