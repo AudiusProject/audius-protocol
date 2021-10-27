@@ -354,6 +354,14 @@ def setup(name, azure, service, config, user, fast, protocol_git_ref, client_git
             "Follow https://www.notion.so/audiusproject/Remote-Dev-Setup-Services-Client-Linux-2597a6467d1f4dae824c0593582ad671#88c7365275c645f0be45acc2a9b87319 to setup github ssh key"
         )
 
+def run_and_pass_args_to_node(script_name, args):
+    subprocess.run(
+        [
+            "node",
+            f"{os.getenv('PROTOCOL_DIR', './')}/service-commands/scripts/{script_name}",
+            *args,
+        ]
+    )
 
 def main():
     parser = argparse.ArgumentParser(
@@ -485,13 +493,13 @@ def main():
                 args.client_git_ref
             )
     except argparse.ArgumentError:
-        subprocess.run(
-            [
-                "node",
-                f"{os.getenv('PROTOCOL_DIR', './')}/service-commands/scripts/setup.js",
-                *sys.argv[1:],
-            ]
-        )
+        if sys.argv[1] == 'seed':
+            script_name = 'seedCli.js'
+            args = sys.argv[2:]
+        else:
+            script_name = 'setup.js'
+            args = sys.argv[1:]
+        run_and_pass_args_to_node(script_name, args)
 
 
 if __name__ == "__main__":

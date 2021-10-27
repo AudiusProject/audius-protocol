@@ -12,7 +12,7 @@ const ETH_TOKEN_ADDRESS = ethContractsConfig.audiusTokenAddress
 const ETH_OWNER_WALLET = ethContractsConfig.ownerWallet
 const DATA_CONTRACTS_REGISTRY_ADDRESS = dataContractsConfig.registryAddress
 
-const getLibsConfig = () => {
+const getLibsConfig = (overrideConfig) => {
   const contentNodeAllowlist = process.env.CONTENT_NODE_ALLOWLIST
     ? new Set(process.env.CONTENT_NODE_ALLOWLIST.split(','))
     : undefined
@@ -36,14 +36,14 @@ const getLibsConfig = () => {
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
     identityServiceConfig: AudiusLibs.configIdentityService(
       process.env.IDENTITY_SERVICE_ENDPOINT,
-      true // use Hedgehog local storage
+      false // use Hedgehog local storage
     ),
     isServer: true,
     enableUserReplicaSetManagerContract: true,
     useTrackContentPolling: true
   }
 
-  return audiusLibsConfig
+  return Object.assign(audiusLibsConfig, overrideConfig)
 }
 
 const camelToKebabCase = str => str
@@ -67,9 +67,16 @@ const getParamNames = func => {
     return paramNames
 }
 
-// TODO suss out requirements and flesh these out
-const getRandomEmail = () => {
-    return 'test@audius.co'
+const getRandomEmail = (root = '') => {
+    const sauronSuffix = moment().format('YYMMDD') + Math.random().toString(36).substring(2, 6)
+    let email
+    if (root) {
+      const [user, domain] = root.split('@')
+      email = [user, '+', sauronSuffix, '@', domain].join('')
+    } else {
+      email = ['service-commands-seed', '+', sauronSuffix, '@', 'audius.co'].join('')
+    }
+    return email
 }
 
 const getRandomPassword = () => {

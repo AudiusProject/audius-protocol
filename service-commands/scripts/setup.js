@@ -8,7 +8,6 @@ const {
   Service,
   SetupCommand,
   runSetupCommand,
-  Seed
 } = ServiceCommands
 
 const NUM_CREATOR_NODES = 4
@@ -231,35 +230,5 @@ program
     false
   )
   .action(async opts => await identityServiceUp(opts))
-
-program
-    .command('seed create-user')
-    .description('Create a user. If no options are provided, seed will generate values and write them to file.')
-    .option(
-      '-a, --user-alias',
-      'alias by which to reference user for this seed session',
-      null
-    )
-    .option(
-      '-e', '--email',
-      'email for user account creation',
-      ''
-    )
-    .option(
-      '-p, --password',
-      'password for user account',
-      ''
-    )
-    .option(
-      '-m, --metadata',
-      'metadata to associate with user',
-      {}
-    )
-    .action(async (opts) => {
-      const { userAlias: alias, ...options } = opts.opts()
-      await Seed.init()
-      await Seed.createUser(alias, options)
-    })
-
 
 program.parse(process.argv)

@@ -11,13 +11,26 @@ const {
   getRandomUserMetadata
 } = require('./utils')
 
-const localStorage = new LocalStorage('./local-storage')
-
 const HEDGEHOG_ENTROPY_KEY = 'hedgehog-entropy-key'
 const USER_CACHE_PATH = `${process.env.PROTOCOL_DIR}/../.audius/seed-users-config.json`
 
+const UserCache = {} // TODO refactor into a real-deal class
+
 const updateUserCache = (cacheObject) => {
   fs.writeFileSync(USER_CACHE_PATH, JSON.stringify(cacheObject))
+  return
+}
+
+const getActiveUserFromCache = () => {
+  const userCache = getUserCache()
+  const activeAlias = userCache['active']
+  return userCache[activeAlias]
+}
+
+const setActiveUserInCache = alias => {
+  let userCache = getUserCache()
+  userCache['active'] = alias
+  updateUserCache(userCache)
 }
 
 const addToUserCache = ({ alias, hedgehogEntropyKey, userId = null }) => {
@@ -30,8 +43,8 @@ const addToUserCache = ({ alias, hedgehogEntropyKey, userId = null }) => {
 }
 
 const addLoginDetailsToCache = ({ entropy, email, password }) => {
-  const match = (alias, { hedgehogEntropyKey }) => {
-    hedgehogEntropyKey === entropy
+  const match = ([alias, { hedgehogEntropyKey }]) => {
+    return hedgehogEntropyKey === entropy
   }
   let userCache = getUserCache()
   const [alias, info] = Object.entries(userCache).find(match)
@@ -52,95 +65,94 @@ const clearUserCache = () => {
   updateUserCache({})
 }
 
-// TODO
-const seedCLIToCommandMap = {
-  'upload-track': {
-    api: 'Track',
-    method: 'uploadTrack',
-    options: [
-      'trackFile',
-      'coverArtFile',
-      'metadata',
-      'onProgress' // pass in onProgress from wrapper?
-    ]
-  },
-  'follow-user': {
-    api: 'User',
-    method: 'addUserFollow',
-    options: [
-      'followeeUserId'
-    ]
-  },
-  'add-track-repost': {
-    api: 'Track',
-    method: 'addTrackRepost',
-    options: [
-      'userId',
-      'trackId'
-    ]
+const getLocalStorageReference = () => {
+  const localStorage = new LocalStorage(`${process.env.PROTOCOL_DIR}/service-commands/local-storage`)
+  return localStorage
+}
+
+class Seed {
+  constructor() {
   }
-}
 
-const Seed = {}
+  getUserEntropyFromLocalStorage = () => {
+    const localStorage = getLocalStorageReference()
+    const entropy = localStorage.getItem(HEDGEHOG_ENTROPY_KEY)
+    return entropy
+  }
 
-Seed.init = async () => {
-    clearUserCache()
-    const libsConfig = getLibsConfig()
-    this.libs = new AudiusLibs(libsConfig)
-    await this.libs.init()
-    const hedgehogEntropyKey = localStorage.getItem(HEDGEHOG_ENTROPY_KEY)
-    addToUserCache({ alias: 'root', hedgehogEntropyKey })
-    // TODO set up seed dump file
-}
+  init = async (libsConfigOverride = {}) => {
+      const libsConfig = getLibsConfig(libsConfigOverride)
+      this.libs = new AudiusLibs(libsConfig)
+      await this.libs.init()
+      // TODO set up seed dump file
+  }
 
-Seed.getUsers = async () => {
-  return getUserCache()
-}
+  setUserEntropyInLocalStorage = hedgehogEntropyKey => {
+    const localStorage = getLocalStorageReference()
+    localStorage.setItem(HEDGEHOG_ENTROPY_KEY, hedgehogEntropyKey)
+  }
 
-Seed.clearSession = async () => {
-    this.libs = undefined
-    clearUserCache()
-}
+  clearLocalStorage = () => {
+    const localStorage = getLocalStorageReference()
+    localStorage.clear()
+  }
 
-Seed.setUser = async ({ alias = '', userId = '' }) => {
-    const userCache = this.getUsers()
-    const match = (alias, { userId }) => {
-      return alias === alias || userId === userId
+  clearSession = async () => {
+      this.clearLocalStorage()
+      this.libs = undefined
+      clearUserCache()
+  }
+
+  setUser = async ({ alias = '', userId = null }) => {
+      const userCache = getUserCache()
+      const match = ([cacheAlias, { userId: cacheUserId }]) => {
+        console.log(cacheAlias, cacheUserId)
+        return alias === cacheAlias || userId == cacheUserId
+      }
+      const [userAlias, userDetails] = Object.entries(userCache).find(match) || {}
+      if (!userDetails.hedgehogEntropyKey) {
+        console.error(`No user with alias ${alias} or id ${userId} found in local seed cache.`)
+      } else {
+        this.setUserEntropyInLocalStorage(userDetails.hedgehogEntropyKey)
+        setActiveUserInCache(userAlias)
+        console.log(`Successfully set user with alias ${alias} / id ${userId} as active.`)
+      }
+      const libsConfigOverride = {
+        identityServiceConfig: {
+          useHedgehogLocalStorage: true
+        }
+      }
+      await this.init(libsConfigOverride)
+  }
+
+  createUser = async (alias, options) => {
+    let { email, password, metadata } = options
+    if (!email) {
+      email = getRandomEmail()
     }
-    const user = Object.entries(userCache).find(match) || {}
-    if (!user.hedgehogEntropyKey) {
-      console.error(`No user with alias ${alias} or id ${userId} found in local seed cache.`)
+    if (!password) {
+      password = getRandomPassword()
+    }
+    const randomMetadata = getRandomUserMetadata(email, password)
+    if (!metadata) {
+      metadata = randomMetadata
     } else {
-      localStorage.setItem(HEDGEHOG_ENTROPY_KEY, user.hedgehogEntropyKey)
+      metadata = Object.assign(randomMetadata, metadata)
     }
-    await this.libs.init()
-}
-
-Seed.createUser = async (alias, options) => {
-  let { email, password, metadata } = options
-  if (!email) {
-    email = getRandomEmail()
-  }
-  if (!password) {
-    password = getRandomPassword()
-  }
-  const randomMetadata = getRandomUserMetadata(email, password)
-  if (!metadata) {
-    metadata = randomMetadata
-  } else {
-    metadata = Object.assign(randomMetadata, metadata)
-  }
-  const signUpResponse = await this.libs.Account.signUp(email, password, metadata)
-  if (signUpResponse.error) {
-    throw new Error(signUpResponse.error)
-  } else {
-    const hedgehogEntropyKey = localStorage.getItem(HEDGEHOG_ENTROPY_KEY)
-    const userId = signUpResponse.userId
-    if (!alias) {
-      alias = hedgehogEntropyKey
+    const signUpResponse = await this.libs.Account.signUp(email, password, metadata)
+    if (signUpResponse.error) {
+      throw new Error(signUpResponse.error)
+    } else {
+      const hedgehogEntropyKey = this.getUserEntropyFromLocalStorage()
+      const userId = signUpResponse.userId
+      if (!alias) {
+        alias = hedgehogEntropyKey
+      }
+      addToUserCache({ alias, hedgehogEntropyKey, userId })
+      addLoginDetailsToCache({ entropy: hedgehogEntropyKey, email, password })
+      setActiveUserInCache(alias)
+      return
     }
-    addToUserCache({ alias, hedgehogEntropyKey, userId })
-    addLoginDetailsToCache({ entropy: hedgehogEntropyKey, email, password })
   }
 }
 
