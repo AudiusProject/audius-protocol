@@ -17,22 +17,28 @@ depends_on = None
 
 
 def upgrade():
-    # create aggregate_user table
-    op.execute("CREATE TABLE aggregate_user_table AS TABLE aggregate_user")
-    op.execute("ALTER TABLE aggregate_user_table ADD PRIMARY KEY (user_id)")
+    conn = op.get_bind()
+    query = """
+        begin;
+        -- create aggregate_user table
 
-    # drop existing aggregate_user mat view and its dependencies
-    op.execute("DROP MATERIALIZED VIEW IF EXISTS user_lexeme_dict")
-    op.execute("DROP MATERIALIZED VIEW IF EXISTS trending_params")
-    op.execute("DROP MATERIALIZED VIEW IF EXISTS aggregate_user")
+        DROP TABLE IF EXISTS aggregate_user_table;
+        CREATE TABLE aggregate_user_table AS TABLE aggregate_user;
+        ALTER TABLE aggregate_user_table ADD PRIMARY KEY (user_id);
 
-    # rename table to replace mat view
-    op.execute("ALTER TABLE aggregate_user_table RENAME TO aggregate_user")
+        -- drop existing aggregate_user mat view and its dependencies
 
-    # recreate mat views
-    # trending_params from 92571f94989a
-    op.execute(
-        """
+        DROP MATERIALIZED VIEW IF EXISTS user_lexeme_dict;
+        DROP MATERIALIZED VIEW IF EXISTS trending_params;
+        DROP MATERIALIZED VIEW IF EXISTS aggregate_user;
+
+        -- rename table to replace mat view
+        ALTER TABLE aggregate_user_table RENAME TO aggregate_user;
+
+
+        -- recreate mat views
+        -- trending_params from 92571f94989a
+
         CREATE MATERIALIZED VIEW trending_params as
         SELECT
             t.track_id as track_id,
@@ -210,12 +216,11 @@ def upgrade():
             t.is_unlisted is False AND
             t.stem_of is Null;
 
-        CREATE INDEX trending_params_track_id_idx ON trending_params (track_id);"""
-    )
+        CREATE INDEX trending_params_track_id_idx ON trending_params (track_id);
 
-    # user_lexeme_dict from af43df9fbde0
-    op.execute(
-        """
+
+        -- user_lexeme_dict from af43df9fbde0
+
         DROP INDEX IF EXISTS user_words_idx;
 
         CREATE MATERIALIZED VIEW user_lexeme_dict as
@@ -257,21 +262,25 @@ def upgrade():
         CREATE INDEX user_words_idx ON user_lexeme_dict USING gin(word gin_trgm_ops);
         CREATE INDEX user_handles_idx ON user_lexeme_dict(handle);
         CREATE UNIQUE INDEX user_row_number_idx ON user_lexeme_dict(row_number);
-        """
-    )
+
+        commit;"""
+
+    conn.execute(query)
+
 
 
 def downgrade():
-    # drop dependent mat views and aggregate_user table
-    op.execute("DROP MATERIALIZED VIEW IF EXISTS trending_params")
-    op.execute("DROP MATERIALIZED VIEW IF EXISTS user_lexeme_dict")
-    op.drop_table("aggregate_user")
+    conn = op.get_bind()
+    query = """
+        begin;
 
-    # re-create mat views
-    # aggregate_user from 5bcbe23f6c70
-    op.execute(
-        """
-        --- ======================= AGGREGATE USER =======================
+        -- drop dependent mat views and aggregate_user table
+
+        DROP MATERIALIZED VIEW IF EXISTS trending_params;
+        DROP MATERIALIZED VIEW IF EXISTS user_lexeme_dict;
+        DROP TABLE IF EXISTS aggregate_user;
+
+        --- ======================= AGGREGATE USER ======================= from version 5bcbe23f6c70
         DROP MATERIALIZED VIEW IF EXISTS aggregate_user;
         DROP INDEX IF EXISTS aggregate_user_idx;
 
@@ -381,12 +390,11 @@ def downgrade():
         WHERE
             u.is_current is True;
 
-        CREATE UNIQUE INDEX aggregate_user_idx ON aggregate_user (user_id);"""
-    )
+        CREATE UNIQUE INDEX aggregate_user_idx ON aggregate_user (user_id);
 
-    # trending_params from 92571f94989a
-    op.execute(
-        """
+
+        -- trending_params from 92571f94989a
+
         CREATE MATERIALIZED VIEW trending_params as
         SELECT
             t.track_id as track_id,
@@ -564,12 +572,10 @@ def downgrade():
             t.is_unlisted is False AND
             t.stem_of is Null;
 
-        CREATE INDEX trending_params_track_id_idx ON trending_params (track_id);"""
-    )
+        CREATE INDEX trending_params_track_id_idx ON trending_params (track_id);
 
-    # user_lexeme_dict from af43df9fbde0
-    op.execute(
-        """
+
+        -- user_lexeme_dict from af43df9fbde0
         DROP INDEX IF EXISTS user_words_idx;
 
         CREATE MATERIALIZED VIEW user_lexeme_dict as
@@ -611,5 +617,8 @@ def downgrade():
         CREATE INDEX user_words_idx ON user_lexeme_dict USING gin(word gin_trgm_ops);
         CREATE INDEX user_handles_idx ON user_lexeme_dict(handle);
         CREATE UNIQUE INDEX user_row_number_idx ON user_lexeme_dict(row_number);
+
+        commit;
         """
-    )
+
+    conn.execute(query)
