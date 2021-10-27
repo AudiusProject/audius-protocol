@@ -1,8 +1,8 @@
-import datetime
 import logging
 import os
 import time
 from typing import Dict, Optional, Tuple, TypedDict, cast
+from datetime import datetime
 
 from src.models import Block, IPLDBlacklistBlock
 from src.monitors import monitors, monitor_names
@@ -212,7 +212,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
 
-    (unhealthy_plays, sol_play_info, time_diff_general) = get_play_health_info(plays_max_drift, redis)
+    (unhealthy_plays, sol_play_info, time_diff_general) = get_play_health_info(redis, plays_max_drift)
 
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
@@ -356,15 +356,15 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
 
 # Aggregate play health info across Solana and legacy storage
-def get_play_health_info(plays_max_drift, redis):
+def get_play_health_info(redis, plays_max_drift):
     if redis is None:
         raise Exception("Invalid arguments for get_play_health_info")
 
-    current_time_utc = datetime.datetime.utcnow()
+    current_time_utc = datetime.utcnow()
     # Fetch plays info from Solana
     sol_play_info = get_sol_play_health_info(redis, current_time_utc)
 
-    unhealthy_sol_plays = bool(
+    is_unhealthy_sol_plays = bool(
         plays_max_drift < sol_play_info["time_diff"]
     )
 
@@ -372,22 +372,22 @@ def get_play_health_info(plays_max_drift, redis):
     time_diff_general = sol_play_info["time_diff"]
 
     # Calculate time diff from now to latest play if solana plays unhealthy
-    if unhealthy_sol_plays:
+    if is_unhealthy_sol_plays:
         # Strip Z character stored, ex. "2021-10-26T19:01:09.814Z"
         latest_db_play = redis_get_or_restore(redis, latest_legacy_play_db_key)[:-1]
         if not latest_db_play:
             latest_db_play = get_latest_play()
             redis_set_and_dump(redis, latest_legacy_play_db_key, latest_db_play.isoformat())
         else:
-            latest_db_play = datetime.datetime.fromisoformat(latest_db_play.decode())
+            latest_db_play = datetime.fromisoformat(latest_db_play.decode())
 
         time_diff_general = (current_time_utc - latest_db_play).total_seconds()
 
-    unhealthy_plays = bool(
-        unhealthy_sol_plays or (plays_max_drift < time_diff_general)
+    is_unhealthy_plays = bool(
+        is_unhealthy_sol_plays or (plays_max_drift < time_diff_general)
     )
 
-    return (unhealthy_plays, sol_play_info, time_diff_general)
+    return (is_unhealthy_plays, sol_play_info, time_diff_general)
 
 
 def get_latest_chain_block_set_if_nx(redis=None, web3=None):

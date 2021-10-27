@@ -69,7 +69,7 @@ def get_track_listen_milestones(limit=100):
     return track_id_play_counts
 
 # Retrieve sol plays health object
-def get_sol_play_health_info(redis, current_time_utc, limit=1):
+def get_sol_play_health_info(redis, current_time_utc):
     # Query latest plays information
     # Latest play tx committed to DB
     latest_sol_play_db = redis_get_json_cached_key_or_restore(redis, latest_sol_play_db_tx_key)
