@@ -53,6 +53,7 @@
   }
 }
 
+/** Verified icon should always be primary/white */
 .disabledBtn .btnIcon path:first-child,
 .btn .btnIcon path:first-child {
   fill: #cc0fe0 !important;
