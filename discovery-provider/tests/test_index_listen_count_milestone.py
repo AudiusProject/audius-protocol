@@ -11,7 +11,7 @@ from src.models import (
     Milestone,
 )
 from src.utils.config import shared_config
-from src.utils.redis_cache import get_json_cached_key, set_json_cached_key
+from src.utils.redis_cache import set_json_cached_key
 
 from tests.utils import populate_mock_db
 
@@ -80,7 +80,12 @@ def test_listen_count_milestone_processing(app):
             milestones = session.query(Milestone).all()
             assert len(milestones) == 9
             sorted_milestones = sorted(milestones, key=lambda m: m.id)
-            sorted_milestones = [(milestone.id, milestone.threshold, milestone.slot, milestone.timestamp) for milestone in sorted_milestones] 
+            sorted_milestones = [(
+                milestone.id,
+                milestone.threshold,
+                milestone.slot,
+                milestone.timestamp
+            ) for milestone in sorted_milestones]
 
             assert sorted_milestones == [
                 (2, 10, 12, datetime.fromtimestamp(1634836054)),
@@ -122,7 +127,7 @@ def test_listen_count_milestone_processing(app):
             milestones = session.query(Milestone).filter(Milestone.slot==14).all()
             assert len(milestones) == 4
             sorted_milestones = sorted(milestones, key=lambda m: m.id)
-            sorted_milestones = [(milestone.id, milestone.threshold) for milestone in sorted_milestones] 
+            sorted_milestones = [(milestone.id, milestone.threshold) for milestone in sorted_milestones]
 
             assert sorted_milestones == [
                 (1, 10),
