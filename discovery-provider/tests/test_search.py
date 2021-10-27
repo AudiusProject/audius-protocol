@@ -1,6 +1,7 @@
 from datetime import datetime
-from src.models import Track, Block, User
-from src.queries.search_queries import track_search_query
+from src.models import Track, Block, User, Follow
+from src.queries.search_queries import track_search_query, user_search_query
+from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
 from src.utils.db_session import get_db
 
 
@@ -87,6 +88,7 @@ def setup_search(db):
             is_current=True,
             handle="",
             wallet="",
+            name="user 1",
             updated_at=now,
             created_at=now,
         ),
@@ -96,6 +98,7 @@ def setup_search(db):
             user_id=2,
             is_current=True,
             handle="",
+            name="user 2",
             wallet="",
             updated_at=now,
             created_at=now,
@@ -107,9 +110,22 @@ def setup_search(db):
             is_current=True,
             handle="",
             wallet="",
+            name="fdwea",
             updated_at=now,
             created_at=now,
         ),
+    ]
+
+    follows = [
+        Follow(
+            blockhash=hex(1),
+            blocknumber=1,
+            follower_user_id=2,
+            followee_user_id=1,
+            is_current=True,
+            is_delete=False,
+            created_at=now
+        )
     ]
 
     with db.scoped_session() as session:
@@ -121,27 +137,54 @@ def setup_search(db):
         for user in users:
             session.add(user)
             session.flush()
+        for follow in follows:
+            session.add(follow)
+            session.flush()
 
         # Refresh the lexeme matview
         session.execute("REFRESH MATERIALIZED VIEW aggregate_track;")
         session.execute("REFRESH MATERIALIZED VIEW track_lexeme_dict;")
 
+        session.execute(
+            UPDATE_AGGREGATE_USER_QUERY, {"most_recent_indexed_aggregate_block": 0}
+        )
+        session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict;")
 
-def test_gets_all_results(app):
+
+def test_gets_all_tracks(app):
     """Tests we get all results, including downloaded"""
     with app.app_context():
         db = get_db()
     setup_search(db)
     with db.scoped_session() as session:
-        res = track_search_query(session, "the track", 10, 0, False, False, None, False)["all"]
-        assert len(res) == 2
+        res = track_search_query(session, "the track", 10, 0, False, False, None, False)
+        assert len(res["all"]) == 2
 
 
-def test_gets_downloadable_results(app):
+def test_gets_downloadable_tracks(app):
     """Tests we get only downloadable results"""
     with app.app_context():
         db = get_db()
     setup_search(db)
     with db.scoped_session() as session:
-        res = track_search_query(session, "the track", 10, 0, False, False, None, True)["all"]
-        assert len(res) == 1
+        res = track_search_query(session, "the track", 10, 0, False, False, None, True)
+        assert len(res["all"]) == 1
+
+def test_gets_all_users(app):
+    """Tests we get all users"""
+    with app.app_context():
+        db = get_db()
+    setup_search(db)
+    with db.scoped_session() as session:
+        res = user_search_query(session, "user", 10, 0, False, False, None)
+        assert len(res["all"]) == 2
+
+
+def test_gets_followed_users(app):
+    """Tests we get all followed users"""
+    with app.app_context():
+        db = get_db()
+    setup_search(db)
+    with db.scoped_session() as session:
+        res = user_search_query(session, "user", 10, 0, False, False, 1)
+        assert len(res["followed"]) == 2
