@@ -31,10 +31,6 @@
   padding: 0px 12px;
 }
 
-.btnIcon path {
-  fill: var(--primary) !important;
-}
-
 .error {
   color: var(--accent-red);
   font-weight: var(--font-medium);
@@ -113,7 +109,6 @@
   text-transform: capitalize;
   color: var(--neutral);
 }
-
 
 .disabledBtn {
   background-color: var(--white);
