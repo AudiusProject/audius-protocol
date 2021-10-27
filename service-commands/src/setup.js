@@ -1,4 +1,4 @@
-const { exec } = require('child_process')
+const { exec, execSync } = require('child_process')
 const fs = require('fs')
 const colors = require('colors')
 const config = require('../config/config.js')
@@ -112,6 +112,11 @@ const execShellCommands = async (commands, service, { verbose }) => {
   }
 }
 
+const countInstances = async ({ containerNameSearchString }) => {
+  const numInstances = await execSync(`docker ps --filter 'name=${containerNameSearchString}' --format '{{.ID}}' | wc -l`)
+  return Number(numInstances)
+}
+
 // API
 
 /**
@@ -127,7 +132,11 @@ const SetupCommand = Object.freeze({
   HEALTH_CHECK: 'health-check',
   UNSET_SHELL_ENV: 'unset-shell-env',
   UP_UM: 'up-um',
-  UP_WEB_SERVER: 'up-web-server'
+  UP_WEB_SERVER: 'up-web-server',
+  START: 'start',
+  STOP: 'stop',
+  RESET_STATE: 'reset-state',
+  COUNT_INSTANCES: 'count-instances'
 })
 
 /**
@@ -257,9 +266,8 @@ const getServiceURL = (service, serviceNumber) => {
     if (!serviceNumber) {
       throw new Error('Missing serviceNumber')
     }
-    return `http://${getContentNodeContainerName(serviceNumber)}:${
-      4000 + parseInt(serviceNumber) - 1
-    }/${healthCheckEndpoint}`
+    return `http://${getContentNodeContainerName(serviceNumber)}:${4000 + parseInt(serviceNumber) - 1
+      }/${healthCheckEndpoint}`
   }
   return `${protocol}://${host}:${port}/${healthCheckEndpoint}`
 }
@@ -326,6 +334,58 @@ const runInParallel = async (commands, options) => {
   await Promise.all(commands.map(s => runSetupCommand(...s, options)))
 }
 
+const provisionDiscoveryNodeCommands = ({ numDiscoveryNodes, options }) => {
+  return _.range(1, numDiscoveryNodes + 1).map(
+    serviceNumber => {
+      return [
+        [
+          Service.DISCOVERY_PROVIDER,
+          SetupCommand.UP,
+          { serviceNumber, ...options }
+        ],
+        [
+          Service.DISCOVERY_PROVIDER,
+          SetupCommand.HEALTH_CHECK,
+          { serviceNumber, ...options }
+        ],
+        [
+          Service.DISCOVERY_PROVIDER,
+          SetupCommand.REGISTER,
+          { retries: 2, serviceNumber, ...options }
+        ]
+      ]
+    }
+  )
+}
+
+const provisionCreatorNodeCommands = ({ numCreatorNodes, options }) => {
+  return _.range(1, numCreatorNodes + 1).map(
+    serviceNumber => {
+      return [
+        [
+          Service.CREATOR_NODE,
+          SetupCommand.UPDATE_DELEGATE_WALLET,
+          { serviceNumber, ...options }
+        ],
+        [
+          Service.CREATOR_NODE,
+          SetupCommand.UP,
+          { serviceNumber, ...options, waitSec: 10 }
+        ],
+        [
+          Service.CREATOR_NODE,
+          SetupCommand.HEALTH_CHECK,
+          { serviceNumber, ...options }
+        ],
+        [
+          Service.CREATOR_NODE,
+          SetupCommand.REGISTER,
+          { serviceNumber, ...options }
+        ]
+      ]
+    }
+  )
+}
 /**
  * Brings up all services relevant to the discovery provider
  * @returns {Promise<void>}
@@ -625,54 +685,8 @@ const allUp = async ({
     [Service.SOLANA_PROGRAMS, SetupCommand.UP]
   ]
 
-  let creatorNodesCommands = _.range(1, numCreatorNodes + 1).map(
-    serviceNumber => {
-      return [
-        [
-          Service.CREATOR_NODE,
-          SetupCommand.UPDATE_DELEGATE_WALLET,
-          { serviceNumber, ...options }
-        ],
-        [
-          Service.CREATOR_NODE,
-          SetupCommand.UP,
-          { serviceNumber, ...options, waitSec: 10 }
-        ],
-        [
-          Service.CREATOR_NODE,
-          SetupCommand.HEALTH_CHECK,
-          { serviceNumber, ...options }
-        ],
-        [
-          Service.CREATOR_NODE,
-          SetupCommand.REGISTER,
-          { serviceNumber, ...options }
-        ]
-      ]
-    }
-  )
-
-  let discoveryNodesCommands = _.range(1, numDiscoveryNodes + 1).map(
-    serviceNumber => {
-      return [
-        [
-          Service.DISCOVERY_PROVIDER,
-          SetupCommand.UP,
-          { serviceNumber, ...options }
-        ],
-        [
-          Service.DISCOVERY_PROVIDER,
-          SetupCommand.HEALTH_CHECK,
-          { serviceNumber, ...options }
-        ],
-        [
-          Service.DISCOVERY_PROVIDER,
-          SetupCommand.REGISTER,
-          { retries: 2, serviceNumber, ...options }
-        ]
-      ]
-    }
-  )
+  let creatorNodesCommands = provisionCreatorNodeCommands({ numCreatorNodes, options })
+  let discoveryNodesCommands = provisionDiscoveryNodeCommands({ numDiscoveryNodes, options })
 
   const sequential1 = [
     [Service.INIT_CONTRACTS_INFO, SetupCommand.UP],
@@ -711,7 +725,7 @@ const allUp = async ({
     )
   } else {
     console.log('Provisioning DNs and CNs in sequence.'.info)
-    creatorNodesCommands = creatorNodesCommands.flat()
+    creatorNodesCommands = creatorNodesCommands
     discoveryNodesCommands = discoveryNodesCommands.flat()
     await runInSequence(discoveryNodesCommands)
     await runInSequence(creatorNodesCommands)
@@ -722,6 +736,111 @@ const allUp = async ({
   const durationSeconds = Math.abs((Date.now() - start) / 1000)
   console.log(`All services brought up in ${durationSeconds}s`.happy)
 }
+
+/**
+ * Wipes local state for all running services without reprovisioning services.
+ * @param {*} config.
+ */
+const resetState = async ({
+  verbose = false,
+  resetDataContracts = false,
+  resetEthContracts = false
+}) => {
+  if (verbose) {
+    console.log('Running in verbose mode.')
+    console.log({
+      verbose,
+      resetDataContracts,
+      resetEthContracts
+    })
+  }
+  const numCreatorNodes = await countInstances({ containerNameSearchString: '_creator-node_' })
+  const numDiscoveryNodes = await countInstances({ containerNameSearchString: '_web-server_' })
+
+  const options = { verbose }
+
+  const downServicesCommands = [
+    [Service.CREATOR_NODE, SetupCommand.DOWN],
+    [Service.DISCOVERY_PROVIDER, SetupCommand.DOWN]
+  ]
+
+  const stopServicesCommands = [
+    [Service.DISCOVERY_PROVIDER, SetupCommand.STOP],
+    [Service.CREATOR_NODE, SetupCommand.STOP],
+    [Service.IDENTITY_SERVICE, SetupCommand.STOP]
+  ]
+
+  const dropDatabasesCommands = [
+    [Service.DISCOVERY_PROVIDER, SetupCommand.RESET_STATE],
+    [Service.CREATOR_NODE, SetupCommand.RESET_STATE],
+    [Service.IDENTITY_SERVICE, SetupCommand.RESET_STATE]
+  ]
+
+  const startServicesCommands = [
+    [Service.DISCOVERY_PROVIDER, SetupCommand.START],
+    [Service.CREATOR_NODE, SetupCommand.START],
+    [Service.IDENTITY_SERVICE, SetupCommand.START]
+  ]
+
+  const contentNodeHealthChecks = _.range(1, numCreatorNodes + 1).map(
+    serviceNumber => [
+      Service.CREATOR_NODE,
+      SetupCommand.HEALTH_CHECK,
+      { serviceNumber, ...options }
+    ]
+  )
+  const discoveryNodeHealthChecks = _.range(1, numDiscoveryNodes + 1).map(
+    serviceNumber => [
+      Service.DISCOVERY_PROVIDER,
+      SetupCommand.HEALTH_CHECK,
+      { serviceNumber, ...options }
+    ]
+  )
+
+  const healthCheckServicesCommands = [
+    ...contentNodeHealthChecks,
+    ...discoveryNodeHealthChecks,
+    [Service.IDENTITY_SERVICE, SetupCommand.HEALTH_CHECK]
+  ]
+
+  let resetLocalBlockchainStateCommands = []
+
+  const start = Date.now()
+  if (resetDataContracts) {
+    resetLocalBlockchainStateCommands.push([Service.CONTRACTS, SetupCommand.RESET_STATE])
+  }
+  if (!resetEthContracts) {
+    await runInParallel(stopServicesCommands, options)
+    await runInParallel(dropDatabasesCommands, options)
+    await runInParallel(resetLocalBlockchainStateCommands, options)
+    await runInParallel(startServicesCommands, options)
+    await runInParallel(healthCheckServicesCommands, options)
+  }
+
+  if (resetEthContracts) {
+    resetLocalBlockchainStateCommands.push([Service.ETH_CONTRACTS, SetupCommand.RESET_STATE])
+    const creatorUpCommands = provisionCreatorNodeCommands({ numCreatorNodes, options })
+    const discoveryUpCommands = provisionDiscoveryNodeCommands({ numDiscoveryNodes, options })
+    const ursmUpCommands = [
+      [Service.USER_REPLICA_SET_MANAGER, SetupCommand.UP],
+    ]
+    await Promise.all(
+      discoveryUpCommands.map(commandGroup =>
+        runInSequence(commandGroup, options)
+      )
+    )
+    await Promise.all(
+      creatorUpCommands.map(commandGroup =>
+        runInSequence(commandGroup, options)
+      )
+    )
+    await runInSequence(ursmUpCommands)
+  }
+
+  const durationSeconds = Math.abs((Date.now() - start) / 1000)
+  console.log(`All state reset in ${durationSeconds}s`.happy)
+}
+
 
 module.exports = {
   runSetupCommand,
@@ -737,6 +856,7 @@ module.exports = {
   discoveryNodeUp,
   discoveryNodeWebServerUp,
   identityServiceUp,
+  resetState,
   SetupCommand,
   Service
 }

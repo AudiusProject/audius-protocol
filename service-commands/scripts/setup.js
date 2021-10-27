@@ -7,7 +7,8 @@ const {
   identityServiceUp,
   Service,
   SetupCommand,
-  runSetupCommand
+  runSetupCommand,
+  resetState
 } = ServiceCommands
 
 const NUM_CREATOR_NODES = 4
@@ -230,5 +231,25 @@ program
     false
   )
   .action(async opts => await identityServiceUp(opts))
+
+program
+  .command('reset-state')
+  .description('Reset state on all running services without having to reprovision')
+  .option(
+    '-v, --verbose',
+    'verbose mode - whether to output logs to console (logs are written to service-commands/output.log and service-commands/error.log by default)',
+    false
+  )
+  .option(
+    '-poa, --reset-data-contracts',
+    'whether to reset data contracts dev blockchain to initial state',
+    false
+  )
+  .option(
+    '-eth, --reset-eth-contracts',
+    'whether to reset eth contracts dev blockchain to initial state',
+    false
+  )
+  .action(async opts => await resetState(opts))
 
 program.parse(process.argv)

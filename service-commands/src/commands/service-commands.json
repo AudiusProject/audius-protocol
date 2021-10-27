@@ -30,6 +30,9 @@
     ],
     "down": [
       "cd contracts/; npm run ganache-q"
+    ],
+    "reset-state": [
+      "cd contracts/; node_modules/.bin/truffle migrate --reset >> $PROTOCOL_DIR/service-commands/output.log"
     ]
   },
   "eth-contracts": {
@@ -44,6 +47,9 @@
     ],
     "down": [
       "cd eth-contracts/; npm run ganache-q; rm -rf build"
+    ],
+    "reset-state": [
+      "cd eth-contracts/; node_modules/.bin/truffle migrate --reset >> $PROTOCOL_DIR/service-commands/output.log"
     ]
   },
  "solana-validator": {
@@ -150,6 +156,21 @@
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
+    ],
+    "start": [
+      "docker ps --filter 'name=_web-server_' --filter 'status=exited' --format '{{.ID}}' | xargs docker start || echo 'no discovery node service(s) to start'",
+      "echo 'Waiting 5 seconds for services to start...'",
+      "sleep 5",
+      "docker ps --filter 'name=_web-server_' --format 'table {{.Names}}\t{{.ID}}\t{{.Status}}'"
+    ],
+    "stop": [
+      "docker ps --filter 'name=_web-server_' --format '{{.ID}}' | xargs docker stop || echo 'no discovery node service(s) to stop'",
+      "echo 'Waiting 5 seconds for services to stop...'",
+      "sleep 5",
+      "docker ps --filter 'name=_web-server_' --format 'table {{.Names}}\t{{.ID}}\t{{.Status}}'"
+    ],
+    "reset-state": [
+      "for container in $(docker ps --filter 'name=discovery-provider-db' --format '{{.ID}}'); do docker exec --user postgres:postgres $container psql --echo-queries --command='drop schema public cascade;' ; done"
     ]
   },
   "content-service": {
@@ -194,6 +215,21 @@
     ],
     "unset-shell-env": [
       "cd creator-node; . compose/env/unsetShellEnv.sh"
+    ],
+    "start": [
+      "docker ps --filter 'name=_creator-node_' --filter 'status=exited' --format '{{.ID}}' | xargs docker start || echo 'no content node service(s) to start'",
+      "echo 'Waiting 5 seconds for services to start...'",
+      "sleep 5",
+      "docker ps --filter 'name=_creator-node_' --format 'table {{.Names}}\t{{.ID}}\t{{.Status}}'"
+    ],
+    "stop": [
+      "docker ps --filter 'name=_creator-node_' --format '{{.ID}}' | xargs docker stop || echo 'no content node service(s) to stop'",
+      "echo 'Waiting 5 seconds for services to stop...'",
+      "sleep 5",
+      "docker ps --filter 'name=_creator-node_' --format 'table {{.Names}}\t{{.ID}}\t{{.Status}}'"
+    ],
+    "reset-state": [
+      "for container in $(docker ps --filter 'name=creator-node-db' --format '{{.ID}}'); do docker exec --user postgres:postgres $container psql --echo-queries --command='drop schema public cascade;' ; done"
     ]
   },
   "identity-service": {
@@ -208,6 +244,21 @@
     ],
     "down": [
       "cd identity-service/; docker-compose -f compose/docker-compose.full.yml down"
+    ],
+    "start": [
+      "docker ps --filter 'name=_identity-service_' --filter 'status=exited' --format '{{.ID}}' | xargs docker start || echo 'no identity service to start'",
+      "echo 'Waiting 5 seconds for services to start...'",
+      "sleep 5",
+      "docker ps --filter 'name=_identity-service_' --format 'table {{.Names}}\t{{.ID}}\t{{.Status}}'"
+    ],
+    "stop": [
+      "docker ps --filter 'name=_identity-service_' --format '{{.ID}}' | xargs docker stop || echo 'no identity service to stop'",
+      "echo 'Waiting 5 seconds for services to stop...'",
+      "sleep 5",
+      "docker ps --filter 'name=_identity-service_' --format 'table {{.Names}}\t{{.ID}}\t{{.Status}}'"
+    ],
+    "reset-state": [
+      "docker ps --filter 'name=identity-db' --format '{{.ID}}' | xargs -I container docker exec --user postgres:postgres container psql --echo-queries --command='drop schema public cascade;' || echo 'no identity state to reset'"
     ]
   },
   "distribute": {
