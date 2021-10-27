@@ -12,6 +12,7 @@ const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
 const DiskManager = require('../src/diskManager')
+const FileManager = require('../src/fileManager')
 
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
@@ -35,9 +36,6 @@ const logContext = {
   }
 }
 
-// NOTE: there will be logs that have `isSameHash=false` when adding content to
-// ipfs. This is because the only hashing logic is not mocked, while the ipfs instance is (some issues with mocking)
-// See ipfsClient.test.js for cid tests.
 describe('test Polling Tracks with mocked IPFS', function () {
   let app, server, session, ipfsMock, ipfsLatestMock, libsMock, handleTrackContentRoute, mockServiceRegistry, userId
 
@@ -51,6 +49,17 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     process.env.enableIPFSAddTracks = true
 
+    sinon.stub(FileManager, 'saveFileFromBufferToIPFSAndDisk').returns(new Promise((resolve, reject) => {
+      const multihash = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+      return resolve({
+        multihash,
+        dstPath: DiskManager.computeFilePath(multihash)
+      })
+    }))
+
+    // stackoverflow says to create the mock with a proxyquire import inject
+    // https://stackoverflow.com/questions/42540734/how-to-mock-an-import-express-js-supertest?answertab=active#tab-top
+
     const { getApp } = require('./lib/app')
     const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock, null, userId)
     await BlacklistManager.init()
@@ -60,7 +69,18 @@ describe('test Polling Tracks with mocked IPFS', function () {
     mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser(userId)
 
-    handleTrackContentRoute = require('../src/components/tracks/tracksComponentService').handleTrackContentRoute
+    // Mock `saveFileToIPFSFromFS()` in `handleTrackContentRoute()` to succeed
+    ;({ handleTrackContentRoute } = proxyquire('../src/components/tracks/tracksComponentService.js', {
+      '../../fileManager': {
+        saveFileToIPFSFromFS: sinon.stub(FileManager, 'saveFileToIPFSFromFS').returns(new Promise((resolve, reject) => {
+          const multihash = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+          return resolve({
+            multihash,
+            dstPath: DiskManager.computeFilePath(multihash)
+          })
+        }))
+      }
+    }))
   })
 
   afterEach(async () => {
@@ -147,7 +167,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     let resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfsLatest,
       mockServiceRegistry.blacklistManager
     )
 
@@ -161,7 +180,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
   })
 
   // depends on "uploads /track_content_async"; if that test fails, this test will fail to due to similarity
-  it('creates Audius track using application logic for /track_content_async', async function () {
+  it.only('creates Audius track using application logic for /track_content_async', async function () {
     ipfsLatestMock.add.exactly(34)
     ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
@@ -170,7 +189,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfsLatest,
       mockServiceRegistry.blacklistManager
     )
 
@@ -206,7 +224,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfsLatest,
       mockServiceRegistry.blacklistManager
     )
 
@@ -240,7 +257,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfsLatest,
       mockServiceRegistry.blacklistManager
     )
 
@@ -275,7 +291,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfsLatest,
       mockServiceRegistry.blacklistManager
     )
 
@@ -305,7 +320,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfsLatest,
       mockServiceRegistry.blacklistManager
     )
     const { track_segments: trackSegments, source_file: sourceFile } = resp
@@ -345,7 +359,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfsLatest,
       mockServiceRegistry.blacklistManager
     )
 
@@ -382,7 +395,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfsLatest,
       mockServiceRegistry.blacklistManager
     )
 
@@ -466,7 +478,6 @@ describe('test Polling Tracks with real IPFS', function () {
       await handleTrackContentRoute(
         logContext,
         getReqObj(fileUUID, fileDir, session),
-        mockServiceRegistry.ipfsLatest,
         mockServiceRegistry.blacklistManager
       )
       assert.fail('Should have thrown error if segmenting failed')
@@ -485,7 +496,6 @@ describe('test Polling Tracks with real IPFS', function () {
       await handleTrackContentRoute(
         logContext,
         getReqObj(fileUUID, fileDir, session),
-        mockServiceRegistry.ipfsLatest,
         mockServiceRegistry.blacklistManager
       )
       assert.fail('Should have thrown error if transcoding failed')
@@ -499,7 +509,6 @@ describe('test Polling Tracks with real IPFS', function () {
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfsLatest,
       mockServiceRegistry.blacklistManager
     )
 

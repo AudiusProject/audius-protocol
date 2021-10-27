@@ -35,7 +35,7 @@ const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { constructProcessKey, PROCESS_NAMES } = require('../FileProcessingQueue')
-const { ipfsAddImages } = require('../ipfsClient')
+const { ipfsAddImages } = require('../ipfsAdd')
 
 const { promisify } = require('util')
 
@@ -173,8 +173,7 @@ const getCID = async (req, res) => {
     // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
     try {
       const libs = req.app.get('audiusLibs')
-      const ipfsLatest = req.app.get('ipfsLatestAPI')
-      await findCIDInNetwork(ipfsLatest, storagePath, CID, req.logger, libs, trackId)
+      await findCIDInNetwork(storagePath, CID, req.logger, libs, trackId)
       return await streamFromFileSystem(req, res, storagePath)
     } catch (e) {
       req.logger.error(`Error calling findCIDInNetwork for path ${storagePath}`, e)
@@ -296,8 +295,7 @@ const getDirCID = async (req, res) => {
       // CID is the file CID, parse it from the storagePath
       const CID = storagePath.split('/').slice(-1).join('')
       const libs = req.app.get('audiusLibs')
-      const ipfsLatest = req.app.get('ipfsLatestAPI')
-      await findCIDInNetwork(ipfsLatest, storagePath, CID, req.logger, libs)
+      await findCIDInNetwork(storagePath, CID, req.logger, libs)
       return await streamFromFileSystem(req, res, storagePath)
     } catch (e) {
       req.logger.error(`Error calling findCIDInNetwork for path ${storagePath}`, e)
@@ -366,7 +364,6 @@ async function _generateIpfsAddContent (resizeResp, dirCID) {
 
 async function _addToIpfsWithRetries ({ ipfsLatest, content, enableIPFSAdd, dirCID, retriesLeft, maxRetries, logContext, logger }) {
   const ipfsAddRespArr = await ipfsAddImages(
-    ipfsLatest,
     content,
     {
       pin: false,

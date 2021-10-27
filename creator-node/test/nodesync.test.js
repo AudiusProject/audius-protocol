@@ -102,7 +102,6 @@ describe('test nodesync', async function () {
       const trackUploadResponse = await uploadTrack(
         testAudioFilePath,
         cnodeUserUUID,
-        mockServiceRegistry.ipfsLatest,
         mockServiceRegistry.blacklistManager
       )
 

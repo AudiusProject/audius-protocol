@@ -75,8 +75,6 @@ class FileProcessingQueue {
   }
 
   async monitorProgress (taskType, func, { logContext, req }) {
-    const ipfsLatest = serviceRegistry.getIPFSLatest()
-
     const uuid = logContext.requestID
     const redisKey = constructProcessKey(taskType, uuid)
 
@@ -86,7 +84,7 @@ class FileProcessingQueue {
 
     let response
     try {
-      response = await func({ logContext }, req, ipfsLatest)
+      response = await func({ logContext }, req)
       state = { status: PROCESS_STATES.DONE, resp: response }
       this.logStatus(logContext, `Successful ${taskType}! uuid=${uuid}}`)
       await redisClient.set(redisKey, JSON.stringify(state), 'EX', EXPIRATION)

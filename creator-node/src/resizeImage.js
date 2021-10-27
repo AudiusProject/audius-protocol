@@ -3,9 +3,12 @@ const ExifParser = require('exif-parser')
 const fs = require('fs-extra')
 const path = require('path')
 
+process.env.enableIPFSAddImages = true
+
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
-const { ipfsLatest, ipfsAddImages } = require('./ipfsClient')
+const { ipfsLatest } = require('./ipfsClient')
+const { ipfsAddImages } = require('./ipfsAdd')
 const DiskManager = require('./diskManager')
 
 const ENABLE_IPFS_ADD_IMAGES = config.get('enableIPFSAddImages')
@@ -144,7 +147,6 @@ module.exports = async (job) => {
   resizes.push(original)
 
   const ipfsAddResp = await ipfsAddImages(
-    ipfsLatest,
     toAdd,
     { pin: false } /* ipfs add config */,
     {} /* logContext */,

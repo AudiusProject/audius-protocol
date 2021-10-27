@@ -9,7 +9,7 @@ const Utils = require('./utils')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
-const { ipfsAddNonImages } = require('./ipfsClient')
+const { ipfsAddNonImages } = require('./ipfsAdd')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -30,10 +30,8 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer, enableIPFSAdd = fal
     throw new Error('User must be authenticated to save a file')
   }
 
-  const ipfsLatest = req.app.get('ipfsLatestAPI')
-
   // Add to IPFS without pinning and retrieve multihash
-  const multihash = await ipfsAddNonImages(ipfsLatest, buffer, { pin: false }, req.logContext, enableIPFSAdd)
+  const multihash = await ipfsAddNonImages(buffer, { pin: false }, req.logContext, enableIPFSAdd)
 
   // Write file to disk by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
@@ -47,7 +45,7 @@ async function saveFileFromBufferToIPFSAndDisk (req, buffer, enableIPFSAdd = fal
  *
  * @dev - only call this function when file is already stored to disk, else use saveFileFromBufferToIPFSAndDisk()
  */
-async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipfsLatest, enableIPFSAdd = false) {
+async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, enableIPFSAdd = false) {
   const logger = genericLogger.child(logContext)
 
   // make sure user has authenticated before saving file
@@ -56,7 +54,7 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
   }
 
   // Add to IPFS without pinning and retrieve multihash
-  const multihash = await ipfsAddNonImages(ipfsLatest, srcPath, { pin: false }, logContext, enableIPFSAdd)
+  const multihash = await ipfsAddNonImages(srcPath, { pin: false }, logContext, enableIPFSAdd)
 
   // store file copy by multihash for future retrieval
   const dstPath = DiskManager.computeFilePath(multihash)
@@ -95,8 +93,6 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ipf
  * @return {Boolean} true if success, false if error
  */
 async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null, trackId = null) {
-  const { ipfsLatest } = serviceRegistry
-
   // stores all the stages of this function along with associated information relevant to that step
   // in the try catch below, if any of the nested try/catches throw, it will be caught by the top level try/catch
   // so we only need to print it once in the global catch or after everthing finishes except for any return statements
@@ -284,7 +280,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     // verify that the contents of the file match the file's cid
     try {
       decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
-      const ipfsHashOnly = await ipfsAddNonImages(ipfsLatest, expectedStoragePath, { onlyHash: true, timeout: 10000 })
+      const ipfsHashOnly = await ipfsAddNonImages(expectedStoragePath, { onlyHash: true, timeout: 10000 })
       if (multihash !== ipfsHashOnly) {
         decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: ipfsHashOnly, time: Date.now() })
         // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
