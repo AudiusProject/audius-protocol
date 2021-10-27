@@ -52,8 +52,12 @@
   width: 20px;
 }
 
-.verificationBtn .verifiedIcon path {
-  fill: var(--primary);
+/** Verified icon should always be primary/white */
+.verificationBtn .verifiedIcon path:first-child {
+  fill: #cc0fe0 !important;
+}
+.verificationBtn .verifiedIcon path:nth-child(2) {
+  fill: white !important;
 }
 
 .isVerified .verifiedText {
