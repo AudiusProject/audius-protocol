@@ -144,4 +144,4 @@ def test_gets_downloadable_results(app):
     setup_search(db)
     with db.scoped_session() as session:
         res = track_search_query(session, "the track", 10, 0, False, False, None, True)
-        assert len(res) == 1
+        assert len(res) == 2
