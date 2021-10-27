@@ -14,7 +14,7 @@ from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.config import shared_config
 from src.utils.helpers import redis_set_json_and_dump
-from src.utils.redis_constants import latest_sol_play_tx_key, latest_indexed_sol_play_tx_key
+from src.utils.redis_constants import latest_sol_play_program_tx_key, latest_sol_play_db_tx_key
 from src.solana.solana_client_manager import SolanaClientManager
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
@@ -105,7 +105,7 @@ def cache_latest_processed_play_redis(redis, play):
         play["created_at"] = play["created_at"].isoformat()
         redis_set_json_and_dump(
             redis,
-            latest_indexed_sol_play_tx_key,
+            latest_sol_play_db_tx_key,
             play
         )
     except Exception as e:
@@ -123,7 +123,7 @@ def cache_latest_chain_tx_redis(redis, tx):
         timestamp = tx["blockTime"]
         redis_set_json_and_dump(
             redis,
-            latest_sol_play_tx_key,
+            latest_sol_play_program_tx_key,
             {
                 "signature": sig,
                 "slot": slot,

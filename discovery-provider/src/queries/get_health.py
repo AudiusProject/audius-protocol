@@ -20,7 +20,7 @@ from src.utils.redis_constants import (
     challenges_last_processed_event_redis_key,
     user_balances_refresh_last_completion_redis_key,
     index_eth_last_completion_redis_key,
-    latest_db_play_key
+    latest_legacy_play_db_key
 )
 from src.queries.get_balances import (
     LAZY_REFRESH_REDIS_PREFIX,
@@ -355,10 +355,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     return health_results, is_unhealthy
 
 
-# Aggregate play health info across Solana and base storage
-def get_play_health_info(plays_max_drift, redis=None):
+# Aggregate play health info across Solana and legacy storage
+def get_play_health_info(plays_max_drift, redis):
     if redis is None:
-        raise Exception("Invalid arguments for get_play_health")
+        raise Exception("Invalid arguments for get_play_health_info")
 
     current_time_utc = datetime.datetime.utcnow()
     # Fetch plays info from Solana
@@ -374,10 +374,10 @@ def get_play_health_info(plays_max_drift, redis=None):
     # Calculate time diff from now to latest play if solana plays unhealthy
     if unhealthy_sol_plays:
         # Strip Z character stored, ex. "2021-10-26T19:01:09.814Z"
-        latest_db_play = redis_get_or_restore(redis, latest_db_play_key)[:-1]
+        latest_db_play = redis_get_or_restore(redis, latest_legacy_play_db_key)[:-1]
         if not latest_db_play:
             latest_db_play = get_latest_play()
-            redis_set_and_dump(redis, latest_db_play_key, latest_db_play.isoformat())
+            redis_set_and_dump(redis, latest_legacy_play_db_key, latest_db_play.isoformat())
         else:
             latest_db_play = datetime.datetime.fromisoformat(latest_db_play.decode())
 

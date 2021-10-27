@@ -8,7 +8,7 @@ from sqlalchemy import func, desc, or_, and_
 from src.models import Play
 from src.tasks.celery_app import celery
 from src.utils.helpers import redis_set_and_dump
-from src.utils.redis_constants import latest_db_play_key
+from src.utils.redis_constants import latest_legacy_play_db_key
 
 logger = logging.getLogger(__name__)
 
@@ -207,7 +207,7 @@ def get_track_plays(self, db, lock, redis):
         has_lock = lock.owned()
         if plays and has_lock:
             session.bulk_save_objects(plays)
-            redis_set_and_dump(redis, latest_db_play_key, plays[-1].created_at)
+            redis_set_and_dump(redis, latest_legacy_play_db_key, plays[-1].created_at)
 
         job_extra_info["has_lock"] = has_lock
         job_extra_info["number_rows_insert"] = len(plays)

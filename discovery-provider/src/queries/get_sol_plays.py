@@ -6,7 +6,7 @@ from src.models import Play
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import get_track_play_counts
-from src.utils.redis_constants import latest_sol_play_tx_key, latest_indexed_sol_play_tx_key
+from src.utils.redis_constants import latest_sol_play_program_tx_key, latest_sol_play_db_tx_key
 from src.utils.helpers import redis_get_json_cached_key_or_restore
 
 logger = logging.getLogger(__name__)
@@ -70,28 +70,29 @@ def get_track_listen_milestones(limit=100):
 
 # Retrieve sol plays health object
 def get_sol_play_health_info(redis, current_time_utc, limit=1):
-    # Query latest dplays
+    # Query latest plays information
     # Latest play tx committed to DB
-    latest_db_sol_play = redis_get_json_cached_key_or_restore(redis, latest_indexed_sol_play_tx_key)
+    latest_sol_play_db = redis_get_json_cached_key_or_restore(redis, latest_sol_play_db_tx_key)
     plays_from_db = None
-    if not latest_db_sol_play:
+    if not latest_sol_play_db:
         # If nothing found in cache, pull from db
         plays_from_db = get_latest_sol_plays(1)
-        latest_db_sol_play = plays_from_db[0] if plays_from_db else None
+        latest_sol_play_db = plays_from_db[0] if plays_from_db else None
 
     # Latest play tx from chain
-    latest_cached_sol_tx = redis_get_json_cached_key_or_restore(redis, latest_sol_play_tx_key)
+    latest_sol_play_program_tx = redis_get_json_cached_key_or_restore(redis, latest_sol_play_program_tx_key)
     time_diff = -1
     slot_diff = -1
-    if latest_db_sol_play:
-        slot_diff = latest_cached_sol_tx["slot"] - latest_db_sol_play["slot"]
-        last_created_at_time = datetime.datetime.fromisoformat(latest_db_sol_play["created_at"])
+    if latest_sol_play_db:
+        slot_diff = latest_sol_play_program_tx["slot"] - latest_sol_play_db["slot"]
+        last_created_at_time = datetime.datetime.fromisoformat(latest_sol_play_db["created_at"])
         time_diff = (current_time_utc - last_created_at_time).total_seconds()
+
     return_val = {
         "slot_diff": slot_diff,
         "tx_info": {
-            "chain_tx": latest_cached_sol_tx,
-            "db_tx": latest_db_sol_play,
+            "chain_tx": latest_sol_play_program_tx,
+            "db_tx": latest_sol_play_db,
         },
         "time_diff": time_diff,
     }
@@ -99,10 +100,10 @@ def get_sol_play_health_info(redis, current_time_utc, limit=1):
 
 def get_latest_sol_play_check_info(redis, limit):
     response = {}
-    # Latest play tx from chain
-    latest_cached_sol_tx = redis_get_json_cached_key_or_restore(redis, latest_sol_play_tx_key)
-    latest_db_sol_play = redis_get_json_cached_key_or_restore(redis, latest_indexed_sol_play_tx_key)
-    response["latest_chain_tx"] = latest_cached_sol_tx
-    response["latest_db_tx"] = latest_db_sol_play
+    # Latest play information from chain
+    latest_sol_play_program_tx = redis_get_json_cached_key_or_restore(redis, latest_sol_play_program_tx_key)
+    latest_sol_play_db_tx = redis_get_json_cached_key_or_restore(redis, latest_sol_play_db_tx_key)
+    response["latest_chain_tx"] = latest_sol_play_program_tx
+    response["latest_db_tx"] = latest_sol_play_db_tx
     response["tx_history"] = get_latest_sol_plays(limit)
     return response
