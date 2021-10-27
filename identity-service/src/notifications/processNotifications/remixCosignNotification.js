@@ -64,7 +64,7 @@ async function processCosignNotifications (notifications, tx) {
       actionEntityId: parentTrackUserId,
       blocknumber
     }, { transaction: tx })
-    validNotifications.push(notiifcation)
+    validNotifications.push(notification)
   }
   return validNotifications
 }

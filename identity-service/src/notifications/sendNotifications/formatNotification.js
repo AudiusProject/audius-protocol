@@ -198,7 +198,7 @@ async function formatNotifications (notifications, notificationSettings, tx) {
         }
         formattedNotifications.push(formattedListenMilstoneNotification)
         userIds.add(formattedListenMilstoneNotification.initiator)
-        }
+      }
     }
 
     // Handle the 'create' notification type, track/album/playlist

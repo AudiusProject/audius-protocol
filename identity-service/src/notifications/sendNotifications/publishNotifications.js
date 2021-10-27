@@ -37,7 +37,7 @@ const getPublishNotifBaseType = (notification) => {
     case notificationTypes.MilestoneFollow:
     case notificationTypes.MilestoneRepost:
       return notificationTypes.Milestone
-    }
+  }
 }
 
 const solanaNotificationBaseTypes = [
@@ -88,8 +88,8 @@ const getPublishTypes = (userId, baseNotificationType, userNotificationSettings)
   const userSettings = userNotificationSettings[userId]
   const types = []
   const settingKey = mapNotificationBaseTypeToSettings[baseNotificationType]
-  if (userSettings?.mobile && userSettings.mobile[settingKey]) types.push(deviceType.Mobile)
-  if (userSettings?.browser && userSettings.browser[settingKey]) types.push(deviceType.Browser)
+  if (userSettings && userSettings.mobile && userSettings.mobile[settingKey]) types.push(deviceType.Mobile)
+  if (userSettings && userSettings.browser && userSettings.browser[settingKey]) types.push(deviceType.Browser)
   return types
 }
 

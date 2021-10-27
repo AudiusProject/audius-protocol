@@ -1,4 +1,3 @@
-const { logger } = require('../../logging')
 const models = require('../../models')
 const {
   notificationTypes,
@@ -17,7 +16,7 @@ async function processMilestoneListenNotifications (notifications, tx) {
     const trackId = notification.metadata.entity_id
     const threshold = notification.metadata.threshold
     const slot = notification.slot
-  
+
     // Check for existing milestone
     let existingMilestoneQuery = await models.SolanaNotification.findAll({
       where: {
@@ -52,13 +51,10 @@ async function processMilestoneListenNotifications (notifications, tx) {
         },
         transaction: tx
       })
-
       validNotifications.push(notification)
     }
- 
   }
   return validNotifications
-
 }
 
 module.exports = processMilestoneListenNotifications

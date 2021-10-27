@@ -21,7 +21,7 @@ const notificationMapping = {
   [notificationTypes.Create.base]: processCreateNotifications,
   [notificationTypes.PlaylistUpdate]: processPlaylistUpdateNotifications,
   [notificationTypes.ChallengeReward]: processChallengeRewardNotifications,
-  [notificationTypes.MilestoneListen]: processMilestoneListenNotifications,
+  [notificationTypes.MilestoneListen]: processMilestoneListenNotifications
 }
 
 /**
