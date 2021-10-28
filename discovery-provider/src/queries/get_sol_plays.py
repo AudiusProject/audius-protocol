@@ -137,9 +137,15 @@ def get_sol_play_health_info(redis, current_time_utc):
 def get_latest_sol_play_check_info(redis, limit):
     response = {}
     # Latest play information from chain
-    latest_sol_play_program_tx = redis_get_json_cached_key_or_restore(redis, latest_sol_play_program_tx_key)
-    latest_sol_play_db_tx = redis_get_json_cached_key_or_restore(redis, latest_sol_play_db_tx_key)
+    latest_sol_play_program_tx = redis_get_json_cached_key_or_restore(
+        redis,
+        latest_sol_play_program_tx_key
+    )
+    latest_sol_play_db_tx = redis_get_json_cached_key_or_restore(
+        redis,
+        latest_sol_play_db_tx_key
+    )
     response["latest_chain_tx"] = latest_sol_play_program_tx
     response["latest_db_tx"] = latest_sol_play_db_tx
-    response["tx_history"] = get_latest_sol_plays(limit)
+    response["latest_db_sol_plays"] = get_latest_sol_plays(limit)
     return response

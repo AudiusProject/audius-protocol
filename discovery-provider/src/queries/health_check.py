@@ -90,7 +90,7 @@ def sol_play_check():
 
     response = {}
     response = get_latest_sol_play_check_info(redis, limit)
-    latest_db_sol_plays = response["tx_history"]
+    latest_db_sol_plays = response["latest_db_sol_plays"]
 
     if latest_db_sol_plays:
         latest_db_play = latest_db_sol_plays[0]
