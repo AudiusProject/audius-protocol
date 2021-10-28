@@ -76,7 +76,7 @@ class CachedDBListenTxInfo(TypedDict):
     track_id: int
     # UTC timestamp this was created at
     created_at: int
-    # Source of relay tx submission (should only be 'relay')
+    # Source of tx submission (should only be 'relay')
     source: str
     # Slot in which tx was processed
     slot: int
