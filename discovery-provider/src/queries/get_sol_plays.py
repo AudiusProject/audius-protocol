@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import Optional, TypedDict
 from sqlalchemy import desc, func
 from src import exceptions
 from src.models import Play
@@ -8,7 +9,6 @@ from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import get_track_play_counts
 from src.utils.redis_constants import latest_sol_play_program_tx_key, latest_sol_play_db_tx_key
 from src.utils.helpers import redis_get_json_cached_key_or_restore
-from typing import Dict, Optional, Tuple, TypedDict, cast
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +70,7 @@ def get_track_listen_milestones(limit=100):
     return track_id_play_counts
 
 class CachedDBListenTxInfo(TypedDict):
-    # User ID for listen  
+    # User ID for listen
     user_id: Optional[int]
     # Track ID for listen
     track_id: int
