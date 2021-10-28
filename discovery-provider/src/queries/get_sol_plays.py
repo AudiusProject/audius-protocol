@@ -92,7 +92,6 @@ def get_latest_cached_sol_play_db(redis) -> CachedDBListenTxInfo:
         # If nothing found in cache, pull from db
         plays_from_db = get_latest_sol_plays(1)
         latest_sol_play_db = plays_from_db[0] if plays_from_db else None
-    logger.error(f"get_sol_play_health_info {latest_sol_play_db}")
     # TODO - If fetch from DB, recache to avoid repeated DB hit
     return latest_sol_play_db
 
