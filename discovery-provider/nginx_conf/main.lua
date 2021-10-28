@@ -37,13 +37,14 @@ function _M.health_check ()
         return nil
     end
 
-    local data = cjson.decode(res.body)
-    data["openresty"] = {
-        ["rsa_public_key"] = config.rsa_public_key,
-        ["public_url"] = config.public_url,
-    }
+    -- remove spaces at begining and end of response
+    local body = string.gsub(res.body, "^%s*(.-)%s*$", "%1")
 
-    return cjson.encode(data)
+    return body:sub(1, -2) .. string.format(
+        [[,"openresty":{"rsa_public_key":%s,"public_url":%s}}]],
+        cjson.encode(config.rsa_public_key),
+        cjson.encode(config.public_url)
+    )
 end
 
 function _M.get_redirect_target ()
