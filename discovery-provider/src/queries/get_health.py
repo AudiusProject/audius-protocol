@@ -158,7 +158,7 @@ class GetHealthArgs(TypedDict):
     challenge_events_age_max_drift: Optional[int]
 
     # Number of seconds play counts are allowed to drift
-    plays_max_drift: Optional[int]
+    plays_count_max_drift: Optional[int]
 
 
 def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict, bool]:
@@ -174,7 +174,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     enforce_block_diff = args.get("enforce_block_diff")
     qs_healthy_block_diff = cast(Optional[int], args.get("healthy_block_diff"))
     challenge_events_age_max_drift = args.get("challenge_events_age_max_drift")
-    plays_max_drift = args.get("plays_max_drift")
+    plays_count_max_drift = args.get("plays_count_max_drift")
 
     # If healthy block diff is given in url and positive, override config value
     healthy_block_diff = (
@@ -212,7 +212,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
 
-    (unhealthy_plays, sol_play_info, time_diff_general) = get_play_health_info(redis, plays_max_drift)
+    (unhealthy_plays, sol_play_info, time_diff_general) = get_play_health_info(
+        redis,
+        plays_count_max_drift
+    )
 
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
@@ -356,7 +359,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
 
 # Aggregate play health info across Solana and legacy storage
-def get_play_health_info(redis, plays_max_drift):
+def get_play_health_info(redis, plays_count_max_drift: Optional[int]) -> Tuple[bool, Dict, int]:
     if redis is None:
         raise Exception("Invalid arguments for get_play_health_info")
 
@@ -364,27 +367,34 @@ def get_play_health_info(redis, plays_max_drift):
     # Fetch plays info from Solana
     sol_play_info = get_sol_play_health_info(redis, current_time_utc)
 
+    # If play count max drift provided, perform comparison
     is_unhealthy_sol_plays = bool(
-        plays_max_drift < sol_play_info["time_diff"]
+        plays_count_max_drift
+        and plays_count_max_drift < sol_play_info["time_diff"]
     )
 
     # If unhealthy sol plays, this will be overwritten
     time_diff_general = sol_play_info["time_diff"]
 
-    # Calculate time diff from now to latest play if solana plays unhealthy
-    if is_unhealthy_sol_plays:
-        # Strip Z character stored, ex. "2021-10-26T19:01:09.814Z"
-        latest_db_play = redis_get_or_restore(redis, latest_legacy_play_db_key)[:-1]
+    if is_unhealthy_sol_plays or not plays_count_max_drift:
+        # Calculate time diff from now to latest play
+        latest_db_play = redis_get_or_restore(redis, latest_legacy_play_db_key)
+        # Decode bytes into float for latest timestamp
+        latest_db_play = float(latest_db_play.decode())
         if not latest_db_play:
             latest_db_play = get_latest_play()
-            redis_set_and_dump(redis, latest_legacy_play_db_key, latest_db_play.isoformat())
+            redis_set_and_dump(redis, latest_legacy_play_db_key, latest_db_play.timestamp())
         else:
-            latest_db_play = datetime.fromisoformat(latest_db_play.decode())
+            latest_db_play = datetime.utcfromtimestamp(latest_db_play)
 
         time_diff_general = (current_time_utc - latest_db_play).total_seconds()
 
     is_unhealthy_plays = bool(
-        is_unhealthy_sol_plays or (plays_max_drift < time_diff_general)
+        plays_count_max_drift
+        and (
+            is_unhealthy_sol_plays
+            and (plays_count_max_drift < time_diff_general)
+        )
     )
 
     return (is_unhealthy_plays, sol_play_info, time_diff_general)

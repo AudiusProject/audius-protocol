@@ -102,7 +102,7 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
 # Used for quick retrieval in health check
 def cache_latest_sol_play_db_tx(redis, play):
     try:
-        play["created_at"] = play["created_at"].isoformat()
+        play["created_at"] = play["created_at"].timestamp()
         redis_set_json_and_dump(
             redis,
             latest_sol_play_db_tx_key,
@@ -403,7 +403,6 @@ def parse_sol_tx_batch(db, redis, solana_client_manager, tx_sig_batch_records, r
                     # This reflects the ordering from chain
                     most_recent_db_play = play
                     cache_latest_sol_play_db_tx(redis, most_recent_db_play)
-                    logger.error(f"index_solana_plays.py TESTING | {most_recent_db_play}")
 
         for event in challenge_bus_events:
             challenge_bus.dispatch(

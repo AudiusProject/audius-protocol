@@ -1,9 +1,9 @@
 import logging
 import time
 from urllib.parse import urljoin
-import datetime
 import requests
 import dateutil.parser
+from datetime import datetime
 from sqlalchemy import func, desc, or_, and_
 from src.models import Play
 from src.tasks.celery_app import celery
@@ -42,7 +42,7 @@ def get_track_plays(self, db, lock, redis):
         )
         if most_recent_play_date == None:
             # Make the date way back in the past to get the first play count onwards
-            most_recent_play_date = datetime.datetime(2000, 1, 1, 0, 0).timestamp()
+            most_recent_play_date = datetime(2000, 1, 1, 0, 0).timestamp()
         else:
             most_recent_play_date = most_recent_play_date[0].timestamp()
 
@@ -207,7 +207,10 @@ def get_track_plays(self, db, lock, redis):
         has_lock = lock.owned()
         if plays and has_lock:
             session.bulk_save_objects(plays)
-            redis_set_and_dump(redis, latest_legacy_play_db_key, plays[-1].created_at)
+            # Parse returned UTC timestamp into datetime object and write timestam to redis
+            # Format example 2021-10-26T19:01:09.814Z = '%Y-%m-%dT%H:%M:%S.%fZ'
+            cache_timestamp = datetime.strptime(plays[-1].created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+            redis_set_and_dump(redis, latest_legacy_play_db_key, cache_timestamp.timestamp())
 
         job_extra_info["has_lock"] = has_lock
         job_extra_info["number_rows_insert"] = len(plays)
