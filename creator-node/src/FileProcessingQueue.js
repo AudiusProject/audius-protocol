@@ -3,7 +3,6 @@ const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
 const { handleTrackContentRoute: transcodeFn } = require('./components/tracks/tracksComponentService')
-const { serviceRegistry } = require('./serviceRegistry')
 
 const MAX_CONCURRENCY = 100
 const EXPIRATION = 86400 // 24 hours in seconds
