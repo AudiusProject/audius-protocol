@@ -49,17 +49,6 @@ describe('test Polling Tracks with mocked IPFS', function () {
 
     process.env.enableIPFSAddTracks = true
 
-    sinon.stub(FileManager, 'saveFileFromBufferToIPFSAndDisk').returns(new Promise((resolve, reject) => {
-      const multihash = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
-      return resolve({
-        multihash,
-        dstPath: DiskManager.computeFilePath(multihash)
-      })
-    }))
-
-    // stackoverflow says to create the mock with a proxyquire import inject
-    // https://stackoverflow.com/questions/42540734/how-to-mock-an-import-express-js-supertest?answertab=active#tab-top
-
     const { getApp } = require('./lib/app')
     const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock, null, userId)
     await BlacklistManager.init()
@@ -180,7 +169,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
   })
 
   // depends on "uploads /track_content_async"; if that test fails, this test will fail to due to similarity
-  it.only('creates Audius track using application logic for /track_content_async', async function () {
+  it('creates Audius track using application logic for /track_content_async', async function () {
     ipfsLatestMock.add.exactly(34)
     ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
@@ -211,7 +200,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .send({ metadata, sourceFile })
       .expect(200)
 
-    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmYhusD7qFv7gxNqi9nyaoiqaRXYQvoCvVgXY75nSoydmy')
   })
 
   // depends on "uploads /track_content_async"
@@ -337,9 +326,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .send({ metadata, sourceFile })
       .expect(200)
 
-    if (trackMetadataResp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
-      throw new Error('invalid return data')
-    }
+    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmTWhw49RfSMSJJmfm8cMHFBptgWoBGpNwjAc5jy2qeJfs')
 
     await request(app)
       .post('/tracks')
@@ -423,9 +410,7 @@ describe('test Polling Tracks with mocked IPFS', function () {
       .send({ metadata, sourceFile })
       .expect(200)
 
-    if (trackMetadataResp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
-      throw new Error('invalid return data')
-    }
+    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmPjrvx9MBcvf495t43ZhiMpKWwu1JnqkcNUN3Z9EBWm49')
 
     await request(app)
       .post('/tracks')

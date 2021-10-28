@@ -3,6 +3,7 @@ const fs = require('fs-extra')
 const path = require('path')
 var contentDisposition = require('content-disposition')
 
+const { logger: genericLogger } = require('../logging')
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
 const { uploadTempDiskStorage } = require('../fileManager')
 const {
@@ -327,25 +328,33 @@ const getDirCID = async (req, res) => {
  *
  * Use retries because for some reason IPFS (very rarely) fails due to some non-deterministic error. Seems to be with the verification step; the files are correct.
  * Wait fixed timeout between each retry, hopefully addresses IPFS non-deterministic errors
+ * @param {Object} req
+ * @param {File[]} resizeResp resizeImage.js response; should be a File[] of resized images
+ * @param {string} dirCID the directory CID from `resizeResp`
+ * @param {number?} maxRetries the max number of retries for ipfs verification
+ * @param {boolean?} enableIPFSAdd flag to enable or disable ipfs daemon add
  */
-const _dirCIDIPFSVerificationWithRetries = async function (req, resizeResp, dirCID, retriesLeft = IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT, enableIPFSAdd = false) {
-  const ipfsLatest = req.app.get('ipfsLatestAPI')
-
+const _dirCIDIPFSVerificationWithRetries = async function (req, resizeResp, dirCID, maxRetries = IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT, enableIPFSAdd = false) {
   let ipfsAddContent = await _generateIpfsAddContent(resizeResp, dirCID)
 
   // Re-compute dirCID from all image files to ensure it matches dirCID returned above
   await _addToIpfsWithRetries({
-    ipfsLatest,
     content: ipfsAddContent,
     enableIPFSAdd,
     dirCID,
-    retriesLeft,
-    maxRetries: retriesLeft,
-    logContext: req.logContext,
-    logger: req.logger
+    retriesLeft: maxRetries,
+    maxRetries,
+    logContext: req.logContext
   })
 }
 
+/**
+ * Helper fn to generate the input for `ipfsAddImages()`
+ * @param {File[]} resizeResp resizeImage.js response; should be a File[] of resized images
+ * @param {string} dirCID the directory CID from `resizeResp`
+ * @returns {Object[]} follows the structure [{path: <string>, cid: <string>}, ...] with the same number of elements
+ * as the size of `resizeResp`
+ */
 async function _generateIpfsAddContent (resizeResp, dirCID) {
   let ipfsAddContent = []
   try {
@@ -359,10 +368,23 @@ async function _generateIpfsAddContent (resizeResp, dirCID) {
   } catch (e) {
     throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
   }
+
   return ipfsAddContent
 }
 
-async function _addToIpfsWithRetries ({ ipfsLatest, content, enableIPFSAdd, dirCID, retriesLeft, maxRetries, logContext, logger }) {
+/**
+ * Helper fn that recurisvely calls itself `maxRetries` amount of times. Will throw if inconsistency still
+ * occurs after `maxRetries` attempts.
+ * @param {Object[]} content content to add to ipfs. Has the structure [{path: <string>, content: <Buffer>}, ...]
+ * @param {boolean} enableIPFSAdd flag to enable adding to ipfs daemon
+ * @param {string} dirCID the directory CID from `resizeResp`
+ * @param {number} retriesLeft the number of retires left for ipfs verification
+ * @param {number} maxRetries the max number of retries for ipfs verification
+ * @param {Object} logContext
+ */
+async function _addToIpfsWithRetries ({ content, enableIPFSAdd, dirCID, retriesLeft, maxRetries, logContext }) {
+  const logger = genericLogger.child(logContext)
+
   const ipfsAddRespArr = await ipfsAddImages(
     content,
     {
@@ -379,9 +401,8 @@ async function _addToIpfsWithRetries ({ ipfsLatest, content, enableIPFSAdd, dirC
   if (ipfsAddRetryDirCID !== dirCID) {
     if (--retriesLeft > 0) {
       logger.warn(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. ${retriesLeft} retries remaining out of ${maxRetries}. Retrying...`)
-      // If the only hash logic fails on first attempt, successive only hash logic attempts will produce the same results. Toggle `enableIPFSAdd` to true.
+      // If the only hash logic fails on first attempt, successive only hash logic attempts will produce the same results. At this point, add to ipfs
       await _addToIpfsWithRetries({
-        ipfsLatest,
         content,
         enableIPFSAdd: true,
         dirCID,
@@ -391,8 +412,9 @@ async function _addToIpfsWithRetries ({ ipfsLatest, content, enableIPFSAdd, dirC
         logger
       })
     } else {
-      logger.error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. Failed after all ${maxRetries} retries.`)
-      throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. Failed after all ${maxRetries} retries.`)
+      const errMsg = `Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. Failed after all ${maxRetries} retries.`
+      logger.error(errMsg)
+      throw new Error(errMsg)
     }
   }
 }

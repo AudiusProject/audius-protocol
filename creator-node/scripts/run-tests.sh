@@ -130,6 +130,8 @@ export minimumDailySyncCount=5
 export minimumRollingSyncCount=10
 export minimumSuccessfulSyncCountPercentage=50
 export enableIPFSAddImages=true
+# 10s
+export IPFSAddTimeoutMs=10000 
 
 # tests
 run_unit_tests

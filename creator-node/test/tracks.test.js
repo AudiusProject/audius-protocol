@@ -24,7 +24,7 @@ const testAudiusFileNumSegments = 32
 
 // NOTE: Skipping as this test file tests the legacy route. We should deprecate that route eventually, and then remove these tests. The
 // test file pollingTracks.test.js tests the same track upload logic as this file.
-describe('test non-polling Tracks with mocked IPFS (these are legacy - see pollingTracks.test.js for updated tests)', function () {
+describe.skip('test non-polling Tracks with mocked IPFS (these are legacy - see pollingTracks.test.js for updated tests)', function () {
   let app, server, session, ipfsMock, libsMock, userId
 
   beforeEach(async () => {
@@ -486,7 +486,7 @@ describe('test non-polling Tracks with mocked IPFS (these are legacy - see polli
   })
 })
 
-describe('test non-polling Tracks with real IPFS (these are legacy - see pollingTracks.test.js for updated tests)', function () {
+describe.skip('test non-polling Tracks with real IPFS (these are legacy - see pollingTracks.test.js for updated tests)', function () {
   let app, server, session, libsMock, ipfs, userId
 
   // Will need a '.' in front of storagePath to look at current dir
@@ -520,7 +520,7 @@ describe('test non-polling Tracks with real IPFS (these are legacy - see polling
   })
 
   // ~~~~~~~~~~~~~~~~~~~~~~~~~ /track_content TESTS ~~~~~~~~~~~~~~~~~~~~~~~~~
-  it.only('sends server error response if segmenting fails', async function () {
+  it('sends server error response if segmenting fails', async function () {
     const file = fs.readFileSync(testAudioFilePath)
     sinon.stub(TranscodingQueue, 'segment').rejects(new Error('failed to segment'))
 

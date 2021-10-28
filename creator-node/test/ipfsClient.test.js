@@ -2,10 +2,10 @@ const assert = require('assert')
 const fs = require('fs')
 const path = require('path')
 const uuid = require('uuid')
+const sinon = require('sinon')
 
-// const sinon = require('sinon')
 const ipfsClient = require('../src/ipfsClient')
-const { ipfsOnlyHashNonImages, ipfsAddNonImages } = require('../src/ipfsAdd')
+const ipfsAdd = require('../src/ipfsAdd')
 
 const ipfs = ipfsClient.ipfs
 const ipfsLatest = ipfsClient.ipfsLatest
@@ -13,8 +13,6 @@ const ipfsLatest = ipfsClient.ipfsLatest
 const createRandomText = () => {
   return uuid.v4()
 }
-
-// TODO: IF THE LGOGER EVER PRINTS OUT AN ERROR -> FAIL TEST IF NOT INTENTIONAL
 
 const createRandomTextFile = () => {
   const filePath = path.join(__dirname, './assets/random.txt')
@@ -29,6 +27,10 @@ describe('test ipfsClient', () => {
   before(() => {
     randomText = createRandomText()
     randomTextFilePath = createRandomTextFile()
+  })
+
+  afterEach(() => {
+    sinon.restore()
   })
 
   // TEST IPFS ADD
@@ -55,7 +57,7 @@ describe('test ipfsClient', () => {
     }
 
     // Only hash logic
-    const onlyHash = await ipfsOnlyHashNonImages(buffer)
+    const onlyHash = await ipfsAdd.ipfsOnlyHashNonImages(buffer)
 
     console.log('buffers', {
       ipfsAddBufferResp,
@@ -96,7 +98,7 @@ describe('test ipfsClient', () => {
     }
 
     // Only hash logic
-    const onlyHash = await ipfsOnlyHashNonImages(fs.createReadStream(randomTextFilePath))
+    const onlyHash = await ipfsAdd.ipfsOnlyHashNonImages(fs.createReadStream(randomTextFilePath))
 
     console.log('readstream', {
       ipfsAddReadstreamResp,
@@ -130,7 +132,7 @@ describe('test ipfsClient', () => {
 
     // Only hash logic
     const buffer = await fs.readFileSync(randomTextFilePath)
-    const onlyHash = await ipfsOnlyHashNonImages(buffer)
+    const onlyHash = await ipfsAdd.ipfsOnlyHashNonImages(buffer)
 
     console.log('file path', {
       ipfsAddFromFsFilePathResp,
@@ -147,11 +149,11 @@ describe('test ipfsClient', () => {
     assert.ok(!!allResults.reduce(function (a, b) { return (a === b) ? a : NaN }))
   })
 
-  it('[ipfsAddNonImages] passing in a Buffer should work', async () => {
+  it('[ipfsAddNonImages] passing in a Buffer and `enableIPFSAdd` = true should work', async () => {
     const buffer = Buffer.from(randomText)
 
-    const onlyHash = await ipfsAddNonImages(buffer)
-    const ipfsLatestAddWithDaemonResp = await ipfsAddNonImages(buffer, {}, {}, true)
+    const onlyHash = await ipfsAdd.ipfsAddNonImages(buffer)
+    const ipfsLatestAddWithDaemonResp = await ipfsAdd.ipfsAddNonImages(buffer, {}, {}, true)
 
     console.log('buffer', {
       onlyHash,
@@ -161,12 +163,12 @@ describe('test ipfsClient', () => {
     assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
   })
 
-  it('[ipfsAddNonImages] passing in a ReadStream should work', async () => {
+  it('[ipfsAddNonImages] passing in a ReadStream and `enableIPFSAdd` = true should work', async () => {
     const readStream1 = fs.createReadStream(randomTextFilePath)
-    const onlyHash = await ipfsAddNonImages(readStream1)
+    const onlyHash = await ipfsAdd.ipfsAddNonImages(readStream1)
 
     const readStream2 = fs.createReadStream(randomTextFilePath)
-    const ipfsLatestAddWithDaemonResp = await ipfsAddNonImages(readStream2, {}, {}, true)
+    const ipfsLatestAddWithDaemonResp = await ipfsAdd.ipfsAddNonImages(readStream2, {}, {}, true)
 
     console.log('readstream', {
       onlyHash,
@@ -176,11 +178,11 @@ describe('test ipfsClient', () => {
     assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
   })
 
-  it('[ipfsAddNonImages] passing in a source path should work', async () => {
+  it('[ipfsAddNonImages] passing in a source path and `enableIPFSAdd` = true should work', async () => {
     const pathToFile = path.join(__dirname, './assets/random.txt')
 
-    const onlyHash = await ipfsAddNonImages(pathToFile)
-    const ipfsLatestAddWithDaemonResp = await ipfsAddNonImages(pathToFile, {}, {}, true)
+    const onlyHash = await ipfsAdd.ipfsAddNonImages(pathToFile)
+    const ipfsLatestAddWithDaemonResp = await ipfsAdd.ipfsAddNonImages(pathToFile, {}, {}, true)
 
     console.log('source path', {
       onlyHash,
@@ -188,5 +190,39 @@ describe('test ipfsClient', () => {
     })
 
     assert.deepStrictEqual(onlyHash, ipfsLatestAddWithDaemonResp)
+  })
+
+  it('[ipfsAddNonImages] passing in improper content throws', async () => {
+    try {
+      await ipfsAdd.ipfsAddNonImages('vicky was here')
+      throw new Error('passing in improper data should have failed')
+    } catch (e) {
+      assert.ok(e.toString().includes('Could not convert content into buffer'))
+    }
+  })
+
+  it('[ipfsAddNonImages] if `ipfsOnlyHashImages()` errors, `ipfsAddNonImages()` throws', async () => {
+    const pathToFile = path.join(__dirname, './assets/random.txt')
+    sinon.stub(ipfsAdd, 'ipfsOnlyHashNonImages').throws(new Error('failed to generate only hash'))
+
+    try {
+      await ipfsAdd.ipfsAddNonImages(pathToFile)
+      throw new Error('`ipfsAddNonImages` should throw if `ipfsOnlyHashNonImages` fails')
+    } catch (e) {
+      assert.ok(e.toString().includes('failed to generate only hash'))
+    }
+  })
+
+  it('[ipfsAddNonImages] if `ipfsOnlyHashImages()` and ipfs daemon hash resp diverges, `ipfsAddNonImages()` throws', async () => {
+    const pathToFile = path.join(__dirname, './assets/random.txt')
+    sinon.stub(ipfsAdd, 'ipfsOnlyHashNonImages').returns('QmVHxRocoWgUChLEvfEyDuuD6qJ4PhdDL2dTLcpUy3dSC2'
+    )
+
+    try {
+      await ipfsAdd.ipfsAddNonImages(pathToFile, {}, {}, true)
+      throw new Error('`ipfsAddNonImages` should throw if only hash and daemon hash diverges')
+    } catch (e) {
+      assert.ok(e.toString().includes('are not consistent'))
+    }
   })
 })

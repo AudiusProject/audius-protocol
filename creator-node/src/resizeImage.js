@@ -3,11 +3,8 @@ const ExifParser = require('exif-parser')
 const fs = require('fs-extra')
 const path = require('path')
 
-process.env.enableIPFSAddImages = true
-
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
-const { ipfsLatest } = require('./ipfsClient')
 const { ipfsAddImages } = require('./ipfsAdd')
 const DiskManager = require('./diskManager')
 
