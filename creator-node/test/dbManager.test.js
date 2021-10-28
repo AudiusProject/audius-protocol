@@ -485,7 +485,7 @@ describe('Test ClockRecord model', async function () {
   })
 })
 
-describe.only('Test deleteSessionTokensFromDB when provided an Array of SessionTokens that all exist in the SessionToken table', async function () {
+describe('Test deleteSessionTokensFromDB when provided an Array of SessionTokens that all exist in the SessionToken table', async function () {
   const initialClockVal = 0
   let cnodeUserUUID, server, token1, token2
 

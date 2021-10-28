@@ -55,7 +55,7 @@ class DBManager {
    */
   static async deleteAllCNodeUserDataFromDB ({ lookupCnodeUserUUID, lookupWallet }, externalTransaction) {
     const transaction = (externalTransaction) || (await models.sequelize.transaction())
-    const log = (msg) => logger.info(`DBManager log: ${msg}`)
+    const log = (msg) => logger.info(`DBManager.deleteAllCNodeUserDataFromDB log: ${msg}`)
 
     const start = Date.now()
     let error
@@ -74,13 +74,14 @@ class DBManager {
       }
 
       const cnodeUserUUID = cnodeUser.cnodeUserUUID
-      log(`deleteAllCNodeUserDataFromDB || cnodeUserUUID: ${cnodeUserUUID} || beginning delete ops`)
+      const cnodeUserUUIDLog = `cnodeUserUUID: ${cnodeUserUUID}`
+      log(`${cnodeUserUUIDLog} || beginning delete ops`)
 
       const numAudiusUsersDeleted = await models.AudiusUser.destroy({
         where: { cnodeUserUUID },
         transaction
       })
-      log(`deleteAllCNodeUserDataFromDB || cnodeUserUUID: ${cnodeUserUUID} || numAudiusUsersDeleted ${numAudiusUsersDeleted}`)
+      log(`${cnodeUserUUIDLog} || numAudiusUsersDeleted ${numAudiusUsersDeleted}`)
 
       // TrackFiles must be deleted before associated Tracks can be deleted
       const numTrackFilesDeleted = await models.File.destroy({
@@ -90,36 +91,36 @@ class DBManager {
         },
         transaction
       })
-      log(`deleteAllCNodeUserDataFromDB || cnodeUserUUID: ${cnodeUserUUID} || numTrackFilesDeleted ${numTrackFilesDeleted}`)
+      log(`${cnodeUserUUIDLog} || numTrackFilesDeleted ${numTrackFilesDeleted}`)
 
       const numTracksDeleted = await models.Track.destroy({
         where: { cnodeUserUUID },
         transaction
       })
-      log(`deleteAllCNodeUserDataFromDB || cnodeUserUUID: ${cnodeUserUUID} || numTracksDeleted ${numTracksDeleted}`)
+      log(`${cnodeUserUUIDLog} || numTracksDeleted ${numTracksDeleted}`)
 
       // Delete all remaining files (image / metadata files).
       const numNonTrackFilesDeleted = await models.File.destroy({
         where: { cnodeUserUUID },
         transaction
       })
-      log(`deleteAllCNodeUserDataFromDB || cnodeUserUUID: ${cnodeUserUUID} || numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`)
+      log(`${cnodeUserUUIDLog} || numNonTrackFilesDeleted ${numNonTrackFilesDeleted}`)
 
       const numClockRecordsDeleted = await models.ClockRecord.destroy({
         where: { cnodeUserUUID },
         transaction
       })
-      log(`deleteAllCNodeUserDataFromDB || cnodeUserUUID: ${cnodeUserUUID} || numClockRecordsDeleted ${numClockRecordsDeleted}`)
+      log(`${cnodeUserUUIDLog} || numClockRecordsDeleted ${numClockRecordsDeleted}`)
 
       const numSessionTokensDeleted = await models.SessionToken.destroy({
         where: { cnodeUserUUID },
         transaction
       })
-      log(`deleteAllCNodeUserDataFromDB || cnodeUserUUID: ${cnodeUserUUID} || numSessionTokensDeleted ${numSessionTokensDeleted}`)
+      log(`${cnodeUserUUIDLog} || numSessionTokensDeleted ${numSessionTokensDeleted}`)
 
       // Delete cnodeUser entry
       await cnodeUser.destroy({ transaction })
-      log(`deleteAllCNodeUserDataFromDB || cnodeUserUUID: ${cnodeUserUUID} || cnodeUser entry deleted`)
+      log(`${cnodeUserUUIDLog} || cnodeUser entry deleted`)
     } catch (e) {
       if (e.message !== 'No cnodeUser found') {
         error = e
@@ -129,51 +130,51 @@ class DBManager {
       // TODO - consider not rolling back in case of external transaction, and just throwing instead
       if (error) {
         await transaction.rollback()
-        log(`deleteAllCNodeUserDataFromDB || rolling back transaction due to error ${error}`)
+        log(`rolling back transaction due to error ${error}`)
       } else if (!externalTransaction) {
         // Commit transaction if no error and no external transaction provided
         await transaction.commit()
-        log(`deleteAllCNodeUserDataFromDB || commited internal transaction`)
+        log(`commited internal transaction`)
       }
 
-      log(`deleteAllCNodeUserDataFromDB || completed in ${Date.now() - start}ms`)
+      log(`completed in ${Date.now() - start}ms`)
     }
   }
 
   /**
    * Deletes all session tokens matching an Array of SessionTokens.
    *
-   * @param {Array} sessionTokens
+   * @param {Array} sessionTokens from the SessionTokens table
    * @param {*} tx
    */
   static async deleteSessionTokensFromDB (sessionTokens, externalTransaction) {
     const transaction = (externalTransaction) || (await models.sequelize.transaction())
-    const log = (msg) => logger.info(`DBManager log: ${msg}`)
+    const log = (msg) => logger.info(`DBManager.deleteSessionTokensFromDB || log: ${msg}`)
     const ids = sessionTokens.map(st => st.id)
     const start = Date.now()
     let error
     try {
-      log(`deleteSessionTokensFromDB || beginning delete ops`)
+      log(`beginning delete ops`)
 
       const numSessionTokensDeleted = await models.SessionToken.destroy({
         where: { id: ids },
         transaction
       })
-      log(`deleteSessionTokensFromDB || numSessionTokensDeleted ${numSessionTokensDeleted}`)
+      log(`numSessionTokensDeleted ${numSessionTokensDeleted}`)
     } catch (e) {
       error = e
     } finally {
       // Rollback transaction on error
       if (error) {
         await transaction.rollback()
-        log(`deleteSessionTokensFromDB || rolling back transaction due to error ${error}`)
+        log(`rolling back transaction due to error ${error}`)
       } else if (!externalTransaction) {
         // Commit transaction if no error and no external transaction provided
         await transaction.commit()
-        log(`deleteSessionTokensFromDB || commited internal transaction`)
+        log(`commited internal transaction`)
       }
 
-      log(`deleteSessionTokensFromDB || completed in ${Date.now() - start}ms`)
+      log(`completed in ${Date.now() - start}ms`)
     }
   }
 }
