@@ -1,6 +1,6 @@
 from datetime import datetime
-from src.models import Track, Block, User, Follow
-from src.queries.search_queries import track_search_query, user_search_query
+from src.models import Track, Block, User, Follow, Playlist
+from src.queries.search_queries import playlist_search_query, track_search_query, user_search_query
 from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
 from src.utils.db_session import get_db
 
@@ -128,6 +128,38 @@ def setup_search(db):
         )
     ]
 
+    playlists = [
+        Playlist(
+            blockhash=hex(1),
+            blocknumber=1,
+            playlist_id=1,
+            playlist_owner_id=1,
+            is_album=False,
+            is_private=False,
+            playlist_name="playlist 1",
+            playlist_contents={"track_ids": [{"track": 1}]},
+            is_current=True,
+            is_delete=False,
+            updated_at=now,
+            created_at=now
+        ),
+        Playlist(
+            blockhash=hex(2),
+            blocknumber=2,
+            playlist_id=2,
+            playlist_owner_id=2,
+            is_album=True,
+            is_private=False,
+            playlist_name="album 1",
+            playlist_contents={"track_ids": [{"track": 2}]},
+            is_current=True,
+            is_delete=False,
+            updated_at=now,
+            created_at=now
+        )
+
+    ]
+
     with db.scoped_session() as session:
         for block in blocks:
             session.add(block)
@@ -140,6 +172,9 @@ def setup_search(db):
         for follow in follows:
             session.add(follow)
             session.flush()
+        for playlist in playlists:
+            session.add(playlist)
+            session.flush()
 
         # Refresh the lexeme matview
         session.execute("REFRESH MATERIALIZED VIEW aggregate_track;")
@@ -150,9 +185,13 @@ def setup_search(db):
         )
         session.execute("REFRESH MATERIALIZED VIEW user_lexeme_dict;")
 
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_playlist;")
+        session.execute("REFRESH MATERIALIZED VIEW playlist_lexeme_dict;")
+        session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict;")
+
 
 def test_gets_all_tracks(app):
-    """Tests we get all results, including downloaded"""
+    """Tests we get all tracks, including downloaded"""
     with app.app_context():
         db = get_db()
     setup_search(db)
@@ -181,10 +220,28 @@ def test_gets_all_users(app):
 
 
 def test_gets_followed_users(app):
-    """Tests we get all followed users"""
+    """Tests we get followed users"""
     with app.app_context():
         db = get_db()
     setup_search(db)
     with db.scoped_session() as session:
-        res = user_search_query(session, "user", 10, 0, False, False, 1)
-        assert len(res["followed"]) == 2
+        res = user_search_query(session, "user", 10, 0, False, False, 2)
+        assert len(res["followed"]) == 1
+
+def test_gets_all_playlists(app):
+    """Tests we get all playlists"""
+    with app.app_context():
+        db = get_db()
+    setup_search(db)
+    with db.scoped_session() as session:
+        res = playlist_search_query(session, "playlist", 10, 0, False, False, False, None)
+        assert len(res["all"]) == 1
+
+def test_gets_all_albums(app):
+    """Tests we get all albums"""
+    with app.app_context():
+        db = get_db()
+    setup_search(db)
+    with db.scoped_session() as session:
+        res = playlist_search_query(session, "album", 10, 0, True, False, False, None)
+        assert len(res["all"]) == 1
