@@ -8,6 +8,7 @@ const proxyquire = require('proxyquire')
 const { serviceRegistry } = require('../src/serviceRegistry')
 const ipfs = serviceRegistry.ipfs
 const ipfsLatest = serviceRegistry.ipfsLatest
+const ipfsAdd = require('../src/ipfsAdd')
 const { saveFileToIPFSFromFS, removeTrackFolder, saveFileFromBufferToIPFSAndDisk } = require('../src/fileManager')
 const config = require('../src/config')
 const models = require('../src/models')
@@ -76,13 +77,13 @@ describe('test fileManager', () => {
      * When: ipfs is down
      * Then: an error is thrown
      */
-    it('should not throw an error if ipfs is down', async () => {
-      sinon.stub(ipfs, 'addFromFs').rejects(new Error('ipfs is down!'))
+    it('should throw an error if ipfs wrapper add fails', async () => {
+      sinon.stub(ipfsAdd, 'ipfsAddNonImages').rejects(new Error('ipfs wrapper add failed!'))
 
       try {
         await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, true /* enableIPFSAdd */)
       } catch (e) {
-        assert.fail('Should have passed if ipfs is down.')
+        assert.deepStrictEqual(e.message, 'ipfs wrapper add failed!')
       }
     })
 
@@ -178,13 +179,13 @@ describe('test fileManager', () => {
      * When: ipfs is down
      * Then: an error is thrown
      */
-    it('should throw an error if ipfs is down', async () => {
-      sinon.stub(ipfs, 'add').rejects(new Error('ipfs is down!'))
+    it('should throw an error if ipfs wrapper add fails', async () => {
+      sinon.stub(ipfsAdd, 'ipfsAddNonImages').rejects(new Error('ipfs wrapper add failed!'))
 
       try {
         await saveFileFromBufferToIPFSAndDisk(req, buffer, true /* enableIPFSAdd */)
       } catch (e) {
-        assert.fail('Should have passed if ipfs is down.')
+        assert.deepStrictEqual(e.message, 'ipfs wrapper add failed!')
       }
     })
 

@@ -7,15 +7,14 @@ const uuid = require('uuid/v4')
 
 const config = require('../config.js')
 const models = require('../models')
-// const {
-//   fileManager.saveFileFromBufferToIPFSAndDisk,
-//   fileManager.saveFileToIPFSFromFS,
-//   fileManager.removeTrackFolder,
-//   fileManager.handleTrackContentUpload,
-//   fileManager.getFileExtension,
-//   fileManager.checkFileMiddleware
-// } = require('../fileManager')
-const fileManager = require('../fileManager')
+const {
+  saveFileFromBufferToIPFSAndDisk,
+  saveFileToIPFSFromFS,
+  removeTrackFolder,
+  handleTrackContentUpload,
+  getFileExtension,
+  checkFileMiddleware
+} = require('../fileManager')
 const {
   handleResponse,
   handleResponseWithHeartbeat,
@@ -58,7 +57,7 @@ const resumableUploadRoute = path.join(tmpTrackArtifactsPath, '*', '*')
 
 // Structure: <uuid>.<file_extension>. e.g. 1234-1234-1234-1234.mp3
 const getFileName = (req) => {
-  return req.storedFolderName + '/' + req.storedFileName + fileManager.getFileExtension(req.headers.filename)
+  return req.storedFolderName + '/' + req.storedFileName + getFileExtension(req.headers.filename)
 }
 
 const server = new tus.Server()
@@ -115,7 +114,7 @@ module.exports = function (app) {
   /**
    * Initiate an upload using resumable and chunking logic for a track
    */
-  app.post('/track_content_upload', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, fileManager.checkFileMiddleware, async function (req, res, next) {
+  app.post('/track_content_upload', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, checkFileMiddleware, async function (req, res, next) {
     // Use the tus-node-server package to handle track upload
 
     // Save file under randomly named folders to avoid collisions
@@ -152,9 +151,9 @@ module.exports = function (app) {
    * Add a track transcode task into the worker queue. If the track file is uploaded properly (not transcoded), return successResponse
    * @note this track content route is used in conjunction with the polling.
    */
-  app.post('/track_content_async', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, fileManager.handleTrackContentUpload, handleResponse(async (req, res) => {
+  app.post('/track_content_async', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponse(async (req, res) => {
     if (req.fileSizeError || req.fileFilterError) {
-      fileManager.removeTrackFolder({ logContext: req.logContext }, req.fileDir)
+      removeTrackFolder({ logContext: req.logContext }, req.fileDir)
       return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
     }
 
@@ -174,21 +173,20 @@ module.exports = function (app) {
     return successResponse({ uuid: req.logContext.requestID })
   }))
 
-  // TODO: Deprecate this route
   /**
    * upload track segment files and make avail - will later be associated with Audius track
    * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
    */
-  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, fileManager.handleTrackContentUpload, handleResponseWithHeartbeat(async (req, res) => {
+  app.post('/track_content', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleTrackContentUpload, handleResponseWithHeartbeat(async (req, res) => {
     if (req.fileSizeError) {
       // Prune upload artifacts
-      fileManager.removeTrackFolder(req, req.fileDir)
+      removeTrackFolder(req, req.fileDir)
 
       return errorResponseBadRequest(req.fileSizeError)
     }
     if (req.fileFilterError) {
       // Prune upload artifacts
-      fileManager.removeTrackFolder(req, req.fileDir)
+      removeTrackFolder(req, req.fileDir)
 
       return errorResponseBadRequest(req.fileFilterError)
     }
@@ -213,14 +211,14 @@ module.exports = function (app) {
       req.logger.info(`Time taken in /track_content to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
     } catch (err) {
       // Prune upload artifacts
-      fileManager.removeTrackFolder(req, req.fileDir)
+      removeTrackFolder(req, req.fileDir)
 
       return errorResponseServerError(err)
     }
 
     // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
     codeBlockTimeStart = Date.now()
-    const transcodeFileIPFSResp = await fileManager.saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, transcodedFilePath, ENABLE_IPFS_ADD_TRACKS)
+    const transcodeFileIPFSResp = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, transcodedFilePath, ENABLE_IPFS_ADD_TRACKS)
 
     let segmentFileIPFSResps = []
     for (let i = 0; i < segmentFilePaths.length; i += SaveFileToIPFSConcurrencyLimit) {
@@ -228,7 +226,7 @@ module.exports = function (app) {
 
       const sliceResps = await Promise.all(segmentFilePathsSlice.map(async (segmentFilePath) => {
         const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
-        const { multihash, dstPath } = await fileManager.saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, segmentAbsolutePath, ENABLE_IPFS_ADD_TRACKS)
+        const { multihash, dstPath } = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, segmentAbsolutePath, ENABLE_IPFS_ADD_TRACKS)
         return { multihash, srcPath: segmentFilePath, dstPath }
       }))
 
@@ -255,7 +253,7 @@ module.exports = function (app) {
     // error if there are no track segments
     if (!trackSegments || !trackSegments.length) {
       // Prune upload artifacts
-      fileManager.removeTrackFolder(req, req.fileDir)
+      removeTrackFolder(req, req.fileDir)
 
       return errorResponseServerError('Track upload failed - no track segments')
     }
@@ -292,14 +290,14 @@ module.exports = function (app) {
       await transaction.rollback()
 
       // Prune upload artifacts
-      fileManager.removeTrackFolder(req, req.fileDir)
+      removeTrackFolder(req, req.fileDir)
 
       return errorResponseServerError(e)
     }
     req.logger.info(`Time taken in /track_content for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${req.fileName}`)
 
     // Prune upload artifacts after success
-    fileManager.removeTrackFolder(req, req.fileDir)
+    removeTrackFolder(req, req.fileDir)
 
     req.logger.info(`Time taken in /track_content for full route: ${Date.now() - routeTimeStart}ms for file ${req.fileName}`)
     return successResponse({
@@ -367,11 +365,11 @@ module.exports = function (app) {
     // Save file from buffer to IPFS and disk
     let multihash, dstPath
     try {
-      const resp = await fileManager.saveFileFromBufferToIPFSAndDisk(req, metadataBuffer, ENABLE_IPFS_ADD_METADATA)
+      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer, ENABLE_IPFS_ADD_METADATA)
       multihash = resp.multihash
       dstPath = resp.dstPath
     } catch (e) {
-      return errorResponseServerError(`/tracks/metadata fileManager.saveFileFromBufferToIPFSAndDisk op failed: ${e}`)
+      return errorResponseServerError(`/tracks/metadata saveFileFromBufferToIPFSAndDisk op failed: ${e}`)
     }
 
     // Record metadata file entry in DB

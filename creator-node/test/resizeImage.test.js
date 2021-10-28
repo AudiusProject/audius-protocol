@@ -1,4 +1,5 @@
-const { ipfs, ipfsLatest } = require('../src/ipfsClient')
+const { ipfs } = require('../src/ipfsClient')
+const ipfsAdd = require('../src/ipfsAdd')
 const resizeImageJob = require('../src/resizeImage')
 const config = require('../src/config')
 const DiskManager = require('../src/diskManager')
@@ -62,10 +63,10 @@ describe('test resizeImage', () => {
   /**
    * Given: we are adding the successfully resized images to ipfs
    * When: adding to ipfs fails
-   * Then: no error is thrown
+   * Then: an error is thrown
    */
   it('should not throw error if ipfs is down', async () => {
-    sinon.stub(ipfsLatest, 'add').throws(new Error('ipfs is down!'))
+    sinon.stub(ipfsAdd, 'ipfsAddImages').throws(new Error('ipfs add wrapper failed!'))
     const job = {
       data: {
         file: imageBuffer,
@@ -84,8 +85,7 @@ describe('test resizeImage', () => {
     try {
       await resizeImageJob(job)
     } catch (e) {
-      console.error(e)
-      assert.fail('Should have passed if ipfs is down')
+      assert.ok(e.message.includes('ipfs add wrapper failed!'))
     }
   })
 
