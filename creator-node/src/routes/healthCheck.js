@@ -20,7 +20,7 @@ module.exports = function (app) {
       return errorResponseServerError()
     }
 
-    const timeout = req.query.timeout || HEALTH_CHECK_IPFS_TIMEOUT_MS
+    const timeout = parseInt(req.query.timeout) || HEALTH_CHECK_IPFS_TIMEOUT_MS
 
     const [value] = await getMonitors([MONITORS.IPFS_READ_WRITE_STATUS])
     if (!value) {
@@ -33,7 +33,7 @@ module.exports = function (app) {
       return errorResponseServerError({ error: `IPFS took over the specified timeout of ${timeout}ms. Time taken ${duration}ms` })
     }
 
-    return successResponse({ hash, duration })
+    return successResponse({ hash, duration: `${duration}ms` })
   }))
 
   /**
