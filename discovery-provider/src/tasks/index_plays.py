@@ -1,9 +1,9 @@
 import logging
 import time
 from urllib.parse import urljoin
+from datetime import datetime
 import requests
 import dateutil.parser
-from datetime import datetime
 from sqlalchemy import func, desc, or_, and_
 from src.models import Play
 from src.tasks.celery_app import celery
