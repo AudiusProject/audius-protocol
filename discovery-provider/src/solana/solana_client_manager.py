@@ -12,8 +12,6 @@ from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
 
-SOLANA_ENDPOINTS = shared_config["solana"]["endpoint"]
-
 # maximum number of times to retry get_confirmed_transaction call
 DEFAULT_MAX_RETRIES = 5
 # number of seconds to wait between calls to get_confirmed_transaction
@@ -21,8 +19,8 @@ DELAY_SECONDS = 0.2
 
 
 class SolanaClientManager:
-    def __init__(self) -> None:
-        self.endpoints = SOLANA_ENDPOINTS.split(",")
+    def __init__(self, solana_endpoints) -> None:
+        self.endpoints = solana_endpoints.split(",")
         self.clients = [Client(endpoint) for endpoint in self.endpoints]
 
     def get_client(self, randomize=False) -> Client:
