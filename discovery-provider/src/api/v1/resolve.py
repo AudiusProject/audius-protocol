@@ -1,4 +1,5 @@
 import logging
+import os
 from urllib.parse import urljoin
 
 from flask import redirect, request, url_for
@@ -46,13 +47,11 @@ class Resolve(Resource):
                 print(
                     "DEBUGGING HERE 1729",
                     resolved_url,
-                    urljoin(
-                        "https://discoveryprovider.sandbox.audius.co/", resolved_url
-                    ),
+                    urljoin(os.getenv("audius_openresty_public_url"), resolved_url),
                 )
                 return redirect(
                     urljoin(
-                        "https://discoveryprovider.sandbox.audius.co/", resolved_url
+                        urljoin(os.getenv("audius_openresty_public_url"), resolved_url
                     )
                 )
 
