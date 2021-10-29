@@ -44,7 +44,7 @@ class Resolve(Resource):
                 if not resolved_url:
                     return abort_not_found(url)
                 print("DEBUGGING HERE 1729", request.remote_addr, resolved_url)
-                return redirect(urljoin(request.remote_addr, resolved_url))
+                return redirect(urljoin(request.host_url, resolved_url))
 
         except Exception as e:
             logger.warning(e)
