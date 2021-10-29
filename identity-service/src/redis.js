@@ -8,35 +8,38 @@ const { logger } = require('./logging')
  * Primarily used in POA and ETH relay transactions to lock
  * relay wallets during a transaction
  */
-const Lock = {
+class Lock {
   /**
    * Set lock for a key in redis
    * @param {String} key redis key
    * @returns true if lock is set, false if lock is not set
    */
-  setLock: async (key) => {
+  static async setLock (key) {
     const response = await redisClient.setnx(key, 1)
     if (response) return true
     else return false
-  },
+  }
+
   /**
    * Get if a lock exists in redis
    * @param {String} key redis key for lock
    * @returns true if lock exists, false if lock doesn't exist
    */
-  getLock: async (key) => {
+  static async getLock (key) {
     const response = await redisClient.get(key)
     if (response) return true
     else return false
-  },
-  clearLock: async (key) => {
+  }
+
+  static async clearLock (key) {
     redisClient.del(key)
-  },
+  }
+
   /**
    * Clears all locks that match a redis key pattern
    * @param {String} keyPattern redis key for lock, must include '*' to select all records for a pattern
    */
-  clearAllLocks: async (keyPattern) => {
+  static async clearAllLocks (keyPattern) {
     const stream = redisClient.scanStream({
       match: keyPattern
     })
