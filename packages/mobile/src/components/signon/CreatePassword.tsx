@@ -147,13 +147,17 @@ const styles = StyleSheet.create({
     alignSelf: 'center'
   },
   terms: {
+    marginTop: 26
+  },
+  termsText: {
     color: '#858199',
     fontSize: 12,
     lineHeight: 21,
-    fontFamily: 'AvenirNextLTPro-Regular',
-    textAlign: 'left',
-    paddingTop: 26,
-    width: '100%'
+    fontFamily: 'AvenirNextLTPro-Regular'
+  },
+  clickable: {
+    marginTop: 24,
+    color: '#CC0FE0'
   }
 })
 
@@ -411,6 +415,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
     <SafeAreaView style={{ backgroundColor: 'white' }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ overflow: 'hidden' }}
       >
         <SignupHeader />
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -528,16 +533,22 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
                   shouldShowRedErrors={shouldShowRedErrors}
                 />
               ))}
+
               <Text style={styles.terms}>
-                {messages.termsAndPrivacy}
-                <Text style={{ color: '#CC0FE0' }} onPress={onTermsOfUse}>
-                  &nbsp;{messages.terms}
-                </Text>
-                <Text> {messages.and}</Text>
-                <Text style={{ color: '#CC0FE0' }} onPress={onPrivacyPolicy}>
-                  &nbsp;{messages.privacy}
-                </Text>
+                <Text style={styles.termsText}>{messages.termsAndPrivacy}</Text>
+                <TouchableOpacity activeOpacity={0.6} onPress={onTermsOfUse}>
+                  <Text style={{ ...styles.termsText, ...styles.clickable }}>
+                    &nbsp;{messages.terms}
+                  </Text>
+                </TouchableOpacity>
+                <Text style={styles.termsText}> {messages.and}</Text>
+                <TouchableOpacity activeOpacity={0.6} onPress={onPrivacyPolicy}>
+                  <Text style={{ ...styles.termsText, ...styles.clickable }}>
+                    &nbsp;{messages.privacy}
+                  </Text>
+                </TouchableOpacity>
               </Text>
+
               <TouchableOpacity
                 style={[styles.formBtn, isDisabled ? styles.btnDisabled : {}]}
                 disabled={isDisabled}
