@@ -50,7 +50,7 @@ class Resolve(Resource):
                     request.remote_addr,
                     request.host_url,
                 )
-                return redirect(resolved_url, code=302)
+                return redirect(urljoin(request.host_url, resolved_url), code=302)
         except Exception as e:
             logger.warning(e)
             abort_not_found(url, ns)
