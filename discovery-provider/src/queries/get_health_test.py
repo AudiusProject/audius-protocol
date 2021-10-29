@@ -1,4 +1,5 @@
 import os
+import json
 from time import time
 from unittest.mock import MagicMock
 from hexbytes import HexBytes
@@ -8,10 +9,41 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_hash_redis_key,
     most_recent_indexed_block_redis_key,
     challenges_last_processed_event_redis_key,
+    latest_sol_play_db_tx_key,
+    latest_sol_play_program_tx_key,
+    latest_legacy_play_db_key
 )
 from src.models import Block
 from src.queries.get_health import get_health
 
+
+# Cache values as expected in redis
+def cache_play_health_vars(redis_mock):
+    # Set latest processed
+    redis_mock.set(
+        latest_sol_play_db_tx_key,
+        json.dumps({
+            "user_id": 0,
+            "track_id": 1,
+            "created_at": 1635477758,
+            "slot": 12,
+            "tx_sig": "5SD9fJhsuMKb1dnJtKszoLLHGve5qmubTvfJX6eLQKRT71XWXkAGXw5faj2uJPhqngzT2V4zucocGiyXYXYMv7QK"
+        })
+    )
+    # Set latest legacy
+    redis_mock.set(
+        latest_legacy_play_db_key,
+        1632885758
+    )
+    # Set latest chain tx
+    redis_mock.set(
+        latest_sol_play_program_tx_key,
+        json.dumps({
+            "signature": "5SD9fJhsuMKb1dnJtKszoLLHGve5qmubTvfJX6eLQKRT71XWXkAGXw5faj2uJPhqngzT2V4zucocGiyXYXYMv7QK",
+            "slot": 15,
+            "timestamp":1635477758 
+        })
+    )
 
 def test_get_health(web3_mock, redis_mock, db_mock):
     """Tests that the health check returns db data"""
@@ -22,6 +54,7 @@ def test_get_health(web3_mock, redis_mock, db_mock):
         block.hash = HexBytes(b"\x02")
         return block
 
+    cache_play_health_vars(redis_mock)
     web3_mock.eth.getBlock = getBlock
 
     # Set up db state
@@ -46,11 +79,11 @@ def test_get_health(web3_mock, redis_mock, db_mock):
     assert health_results["db"]["number"] == 1
     assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 1
+    assert health_results["plays"]["solana"]["slot_diff"] == 3
 
     assert "maximum_healthy_block_difference" in health_results
     assert "version" in health_results
     assert "service" in health_results
-
 
 def test_get_health_using_redis(web3_mock, redis_mock, db_mock):
     """Tests that the health check returns redis data first"""
@@ -61,6 +94,7 @@ def test_get_health_using_redis(web3_mock, redis_mock, db_mock):
         block.hash = HexBytes(b"\x02")
         return block
 
+    cache_play_health_vars(redis_mock)
     web3_mock.eth.getBlock = getBlock
 
     # Set up redis state
@@ -106,6 +140,7 @@ def test_get_health_partial_redis(web3_mock, redis_mock, db_mock):
         block.hash = HexBytes(b"\x02")
         return block
 
+    cache_play_health_vars(redis_mock)
     web3_mock.eth.getBlock = getBlock
 
     # Set up redis state
@@ -149,6 +184,7 @@ def test_get_health_with_invalid_db_state(web3_mock, redis_mock, db_mock):
         block.hash = HexBytes(b"\x02")
         return block
 
+    cache_play_health_vars(redis_mock)
     web3_mock.eth.getBlock = getBlock
 
     # Set up db state
@@ -188,6 +224,7 @@ def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
         block.hash = HexBytes(b"\x02")
         return block
 
+    cache_play_health_vars(redis_mock)
     web3_mock.eth.getBlock = getBlock
 
     # Set up redis state
@@ -233,6 +270,7 @@ def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
         block.hash = HexBytes(b"\x50")
         return block
 
+    cache_play_health_vars(redis_mock)
     web3_mock.eth.getBlock = getBlock
 
     # Set up db state
@@ -283,6 +321,7 @@ def test_get_health_with_monitors(web3_mock, redis_mock, db_mock, get_monitors_m
         return block
 
     web3_mock.eth.getBlock = getBlock
+    cache_play_health_vars(redis_mock)
 
     # Set up db state
     with db_mock.scoped_session() as session:
@@ -337,6 +376,7 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
         block.hash = HexBytes(b"\x02")
         return block
 
+    cache_play_health_vars(redis_mock)
     web3_mock.eth.getBlock = getBlock
 
     # Set up db state
@@ -388,6 +428,7 @@ def test_get_health_challenge_events_max_drift(web3_mock, redis_mock, db_mock):
         block.hash = HexBytes(b"\x50")
         return block
 
+    cache_play_health_vars(redis_mock)
     web3_mock.eth.getBlock = getBlock
 
     # Set up redis state

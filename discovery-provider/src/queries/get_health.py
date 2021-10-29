@@ -380,11 +380,11 @@ def get_play_health_info(redis, plays_count_max_drift: Optional[int]) -> Tuple[b
         # Calculate time diff from now to latest play
         latest_db_play = redis_get_or_restore(redis, latest_legacy_play_db_key)
         # Decode bytes into float for latest timestamp
-        latest_db_play = float(latest_db_play.decode())
         if not latest_db_play:
             latest_db_play = get_latest_play()
             redis_set_and_dump(redis, latest_legacy_play_db_key, latest_db_play.timestamp())
         else:
+            latest_db_play = float(latest_db_play.decode())
             latest_db_play = datetime.utcfromtimestamp(latest_db_play)
 
         time_diff_general = (current_time_utc - latest_db_play).total_seconds()
