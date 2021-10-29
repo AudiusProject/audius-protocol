@@ -52,6 +52,7 @@ import themeSagas from 'store/application/ui/theme/sagas'
 import userListModalSagas from 'store/application/ui/userListModal/sagas'
 import backendSagas, { setupBackend } from 'store/backend/sagas'
 import confirmerSagas from 'store/confirmer/sagas'
+import oauthSagas from 'store/oauth/sagas'
 import playerSagas from 'store/player/sagas'
 import playlistLibrarySagas from 'store/playlist-library/sagas'
 import queueSagas from 'store/queue/sagas'
@@ -136,6 +137,7 @@ export default function* rootSaga() {
     themeSagas(),
     tokenDashboardSagas(),
     userListModalSagas(),
+    oauthSagas(),
 
     // Remote config
     remoteConfigSagas(),

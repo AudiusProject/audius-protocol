@@ -5,6 +5,7 @@ import {
   clearAudiusAccount,
   clearAudiusAccountUser
 } from 'services/LocalStorage'
+import { SignedOut } from 'services/native-mobile-interface/lifecycle'
 import { ReloadMessage } from 'services/native-mobile-interface/linking'
 import { IS_MOBILE_USER_KEY } from 'store/account/mobileSagas'
 import { removeHasRequestedBrowserPermission } from 'utils/browserNotifications'
@@ -34,6 +35,7 @@ export const signOut = () => {
   clearTheme()
 
   if (NATIVE_MOBILE) {
+    new SignedOut().send()
     new ReloadMessage().send()
   } else {
     window.location.reload()

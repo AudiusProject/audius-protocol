@@ -119,7 +119,7 @@ const InstagramAuth = ({
         return onSuccess(igUserProfile.username, igUserProfile)
       } catch (err) {
         console.log(err)
-        onFailure(err.message)
+        onFailure((err as Error).message)
         Sentry.captureException(`Instagram getProfile failed with ${err}`)
       }
     },

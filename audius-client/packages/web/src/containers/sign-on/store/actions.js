@@ -22,6 +22,7 @@ export const SIGN_IN_FAILED = 'SIGN_ON/SIGN_IN_FAILED'
 
 export const SIGN_UP = 'SIGN_ON/SIGN_UP'
 export const SIGN_UP_SUCCEEDED = 'SIGN_ON/SIGN_UP_SUCCEEDED'
+export const SIGN_UP_SUCCEEDED_WITH_ID = 'SIGN_ON/SIGN_UP_SUCCEEDED_WITH_ID'
 export const SIGN_UP_FAILED = 'SIGN_ON/SIGN_UP_FAILED'
 export const SIGN_UP_TIMEOUT = 'SIGN_ON/SIGN_UP_TIMEOUT'
 
@@ -43,6 +44,8 @@ export const SET_TOAST = 'SIGN_ON/SET_TOAST'
 export const UPDATE_ROUTE_ON_COMPLETION = 'SIGN_ON/UPDATE_ROUTE_ON_COMPLETION'
 export const UPDATE_ROUTE_ON_EXIT = 'SIGN_ON/UPDATE_ROUTE_ON_EXIT'
 
+export const GET_USERS_TO_FOLLOW = 'SIGN_ON/GET_USERS_TO_FOLLOW'
+export const SET_USERS_TO_FOLLOW = 'SIGN_ON/SET_USERS'
 export const FETCH_ALL_FOLLOW_ARTISTS = 'SIGN_ON/FETCH_ALL_FOLLOW_ARTISTS'
 export const FETCH_FOLLOW_ARTISTS_SUCCEEDED =
   'SIGN_ON/FETCH_FOLLOW_ARTISTS_SUCCEEDED'
@@ -128,7 +131,7 @@ export function validateHandleSucceeded() {
 
 /**
  * handle is not valid
- * @param {string} error The reason the handle is not vallid
+ * @param {string} error The reason the handle is not valid
  */
 export function validateHandleFailed(error) {
   return { type: VALIDATE_HANDLE_FAILED, error }
@@ -136,14 +139,16 @@ export function validateHandleFailed(error) {
 
 /**
  * sign up
- * @param {string} email account email
- * @param {string} password account password
+ * takes params from store signon state
  */
-export function signUp(email, password, handle) {
-  return { type: SIGN_UP, email, password, handle }
+export function signUp() {
+  return { type: SIGN_UP }
 }
 
 export const signUpSucceeded = () => ({ type: SIGN_UP_SUCCEEDED })
+export function signUpSucceededWithId(userId) {
+  return { type: SIGN_UP_SUCCEEDED_WITH_ID, userId }
+}
 export const signUpFailed = (error, phase) => ({
   type: SIGN_UP_FAILED,
   error,
@@ -168,10 +173,24 @@ export const signInFailed = (error, phase, shouldReport = true) => ({
 })
 
 /**
- * Requests all the follow artst metadata is fetched
+ * Requests all the follow artist metadata is fetched
  */
 export function fetchAllFollowArtists() {
   return { type: FETCH_ALL_FOLLOW_ARTISTS }
+}
+
+/**
+ * Requests all the users from which to pick suggested followed artists
+ */
+export function getUsersToFollow() {
+  return { type: GET_USERS_TO_FOLLOW }
+}
+
+/**
+ * Requests all the users from which to pick suggested followed artists
+ */
+export function setUsersToFollow(users) {
+  return { type: SET_USERS_TO_FOLLOW, users }
 }
 
 /**

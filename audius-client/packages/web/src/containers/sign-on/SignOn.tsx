@@ -11,6 +11,8 @@ import SignOnDesktopPage from './components/desktop/SignOnPage'
 import SignOnMobilePage from './components/mobile/SignOnPage'
 import { getPage } from './store/selectors'
 
+const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+
 type OwnProps = {
   signIn: boolean
   initialPage: boolean
@@ -26,7 +28,7 @@ const SignOn = ({
   initialPage
 }: SignOnContentProps) => {
   const content = isMobile ? SignOnMobilePage : SignOnDesktopPage
-  return (
+  return !NATIVE_MOBILE ? (
     <SignOnProvider
       isMobile={isMobile}
       signIn={signIn}
@@ -35,7 +37,7 @@ const SignOn = ({
     >
       {content}
     </SignOnProvider>
-  )
+  ) : null
 }
 
 function mapStateToProps(state: AppState) {

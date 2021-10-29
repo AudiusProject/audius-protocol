@@ -5,6 +5,7 @@ import User from 'common/models/User'
 import * as accountActions from 'common/store/account/reducer'
 import { updateProfileAsync } from 'containers/profile-page/store/sagas'
 import AudiusBackend from 'services/AudiusBackend'
+import { FetchAccountFailed } from 'services/native-mobile-interface/lifecycle'
 import { ReloadMessage } from 'services/native-mobile-interface/linking'
 import { MessageType } from 'services/native-mobile-interface/types'
 import { SIGN_UP_PAGE, SIGN_IN_PAGE, doesMatchRoute } from 'utils/route'
@@ -14,6 +15,7 @@ import { setNeedsAccountRecovery } from '../../common/store/account/reducer'
 export const RESET_REQUIRED_KEY = 'password-reset-required'
 export const ENTROPY_KEY = 'hedgehog-entropy-key'
 export const IS_MOBILE_USER_KEY = 'is-mobile-user'
+const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 function* watchFetchAccountFailed() {
   yield takeEvery(accountActions.fetchAccountFailed.type, function* () {
@@ -21,6 +23,9 @@ function* watchFetchAccountFailed() {
     // or else it will toggle the UI page.
     if (!doesMatchRoute(SIGN_IN_PAGE) && !doesMatchRoute(SIGN_UP_PAGE)) {
       yield put(pushRoute(SIGN_UP_PAGE))
+    }
+    if (NATIVE_MOBILE) {
+      new FetchAccountFailed().send()
     }
   })
 }

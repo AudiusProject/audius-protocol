@@ -15,6 +15,7 @@ import {
 import * as accountActions from 'common/store/account/reducer'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
+import { getUsers } from 'common/store/cache/users/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { getIGUserUrl } from 'components/general/InstagramAuth'
 import AudiusBackend from 'services/AudiusBackend'
@@ -41,6 +42,7 @@ import { MAX_HANDLE_LENGTH } from '../utils/formatSocialProfile'
 
 import * as signOnActions from './actions'
 import { watchSignOnError } from './errorSagas'
+import mobileSagas from './mobileSagas'
 import { getRouteOnCompletion, getSignOn } from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
 import { checkHandle } from './verifiedChecker'
@@ -82,6 +84,11 @@ const followArtistCategoryGenreMappings = {
   [FollowArtistsCategory.HIP_HOP_RAP]: [Genre.HIP_HOP_RAP],
   [FollowArtistsCategory.ALTERNATIVE]: [Genre.ALTERNATIVE],
   [FollowArtistsCategory.POP]: [Genre.POP]
+}
+
+function* getArtistsToFollow() {
+  const users = yield select(getUsers)
+  yield put(signOnActions.setUsersToFollow(users))
 }
 
 function* fetchAllFollowArtist() {
@@ -225,11 +232,14 @@ function* checkEmail(action) {
     const inUse = yield call(AudiusBackend.emailInUse, action.email)
     if (inUse) {
       yield put(signOnActions.goToPage(Pages.SIGNIN))
+      // let mobile client know that email is in use
+      yield put(signOnActions.validateEmailSucceeded(false))
     } else {
       const trackEvent = make(Name.CREATE_ACCOUNT_COMPLETE_EMAIL, {
         emailAddress: action.email
       })
       yield put(trackEvent)
+      yield put(signOnActions.validateEmailSucceeded(true))
       yield put(signOnActions.goToPage(Pages.PASSWORD))
     }
   } catch (err) {
@@ -240,10 +250,12 @@ function* checkEmail(action) {
 function* validateEmail(action) {
   if (!isValidEmailString(action.email)) {
     yield put(signOnActions.validateEmailFailed('characters'))
+  } else {
+    yield put(signOnActions.validateEmailSucceeded(true))
   }
 }
 
-function* signUp(action) {
+function* signUp() {
   yield call(waitForBackendSetup)
   const signOn = yield select(getSignOn)
   const location = yield call(getCityAndRegion)
@@ -255,7 +267,6 @@ function* signUp(action) {
     isVerified: signOn.verified,
     location: location
   }
-
   const name = signOn.name.value
   const email = signOn.email.value
   const password = signOn.password.value
@@ -318,6 +329,8 @@ function* signUp(action) {
             userId
           })
         )
+
+        yield put(signOnActions.signUpSucceededWithId(userId))
 
         // Set the has request browser permission to true as the signon provider will open it
         setHasRequestedBrowserPermission()
@@ -486,6 +499,10 @@ function* configureMetaMask() {
   }
 }
 
+function* watchGetArtistsToFollow() {
+  yield takeEvery(signOnActions.GET_USERS_TO_FOLLOW, getArtistsToFollow)
+}
+
 function* watchFetchAllFollowArtists() {
   yield takeEvery(signOnActions.FETCH_ALL_FOLLOW_ARTISTS, fetchAllFollowArtist)
 }
@@ -555,7 +572,7 @@ function* watchSendWelcomeEmail() {
 }
 
 export default function sagas() {
-  return [
+  const sagas = [
     watchFetchAllFollowArtists,
     watchFetchReferrer,
     watchCheckEmail,
@@ -564,10 +581,12 @@ export default function sagas() {
     watchSignUp,
     watchSignIn,
     watchFollowArtists,
+    watchGetArtistsToFollow,
     watchConfigureMetaMask,
     watchShowToast,
     watchOpenSignOn,
     watchSignOnError,
     watchSendWelcomeEmail
   ]
+  return NATIVE_MOBILE ? sagas.concat(mobileSagas()) : sagas
 }

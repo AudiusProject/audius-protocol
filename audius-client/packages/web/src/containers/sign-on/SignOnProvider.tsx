@@ -209,7 +209,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
       } = this.props
 
       // Dispatch event to create account
-      signUp(email.value, password.value, handle.value)
+      signUp()
       recordCompleteProfile(email.value, handle.value)
     }
     if (page === Pages.FOLLOW) {
@@ -493,8 +493,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     fetchFollowArtists: () => dispatch(signOnAction.fetchAllFollowArtists()),
     fetchReferrer: (handle: string) =>
       dispatch(signOnAction.fetchReferrer(handle)),
-    signUp: (email: string, password: string, handle: string) =>
-      dispatch(signOnAction.signUp(email, password, handle)),
+    signUp: () => dispatch(signOnAction.signUp()),
     setTwitterProfile: (
       twitterId: string,
       profile: object,
@@ -566,12 +565,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     recordGoToUpload: () => {
       const trackEvent: TrackEvent = make(Name.TRACK_UPLOAD_OPEN, {
         source: 'signup' as const
-      })
-      dispatch(trackEvent)
-    },
-    recordCompleteEmail: (emailAddress: string) => {
-      const trackEvent: TrackEvent = make(Name.CREATE_ACCOUNT_COMPLETE_EMAIL, {
-        emailAddress
       })
       dispatch(trackEvent)
     },

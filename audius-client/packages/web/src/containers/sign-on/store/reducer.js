@@ -137,7 +137,6 @@ const actionsMap = {
     }
     return {
       ...state,
-      startedSignOnProcess: true,
       page: newPage
     }
   },
@@ -297,6 +296,7 @@ const actionsMap = {
   [SIGN_UP](state, action) {
     return {
       ...state,
+      startedSignOnProcess: true,
       status: 'loading'
     }
   },
