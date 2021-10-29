@@ -2,7 +2,7 @@ import { RefObject, useEffect } from 'react'
 import { useNetInfo } from '@react-native-community/netinfo'
 import { MessagePostingWebView } from '../../types/MessagePostingWebView'
 import { checkConnectivity } from '../../utils/connectivity'
-import { MessageType } from '../../message'
+import { MessageType } from '../../message/types'
 import { postMessage } from '../../utils/postMessage'
 
 type ConnectivityProps = {

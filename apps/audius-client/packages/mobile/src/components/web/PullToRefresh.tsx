@@ -14,7 +14,7 @@ import { getIsEnabled, getMessageId } from '../../store/web/selectors'
 import { AppState } from 'src/store'
 import { MessagePostingWebView } from 'src/types/MessagePostingWebView'
 import { postMessage } from '../../utils/postMessage'
-import { MessageType } from '../../message'
+import { MessageType } from '../../message/types'
 
 // How far the user needs to drag before the refresh fires
 const MAX_OFFSET = 140
