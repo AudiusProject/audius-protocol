@@ -379,15 +379,21 @@ def get_play_health_info(redis, plays_count_max_drift: Optional[int]) -> Tuple[b
     if is_unhealthy_sol_plays or not plays_count_max_drift:
         # Calculate time diff from now to latest play
         latest_db_play = redis_get_or_restore(redis, latest_legacy_play_db_key)
-        # Decode bytes into float for latest timestamp
         if not latest_db_play:
+            # Query and cache latest db play if found
             latest_db_play = get_latest_play()
-            redis_set_and_dump(redis, latest_legacy_play_db_key, latest_db_play.timestamp())
+            if latest_db_play:
+                redis_set_and_dump(redis, latest_legacy_play_db_key, latest_db_play.timestamp())
         else:
+            # Decode bytes into float for latest timestamp
             latest_db_play = float(latest_db_play.decode())
             latest_db_play = datetime.utcfromtimestamp(latest_db_play)
-
-        time_diff_general = (current_time_utc - latest_db_play).total_seconds()
+    
+        time_diff_general = (
+            (current_time_utc - latest_db_play).total_seconds()
+                if latest_db_play
+                else time_diff_general
+        ) 
 
     is_unhealthy_plays = bool(
         plays_count_max_drift

@@ -9,6 +9,7 @@ from src.utils.db_session import get_db_read_replica
 from src.queries.query_helpers import get_track_play_counts
 from src.utils.redis_constants import latest_sol_play_program_tx_key, latest_sol_play_db_tx_key
 from src.utils.helpers import redis_get_json_cached_key_or_restore
+from src.tasks.index_solana_plays import cache_latest_sol_play_db_tx
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +93,9 @@ def get_latest_cached_sol_play_db(redis) -> CachedDBListenTxInfo:
         # If nothing found in cache, pull from db
         plays_from_db = get_latest_sol_plays(1)
         latest_sol_play_db = plays_from_db[0] if plays_from_db else None
-    # TODO - If fetch from DB, recache to avoid repeated DB hit
+        # If found, re-cache value to avoid repeated DB hits
+        if latest_sol_play_db:
+            cache_latest_sol_play_db_tx(redis, latest_sol_play_db)
     return latest_sol_play_db
 
 class CachedProgramTxInfo(TypedDict):
