@@ -196,7 +196,7 @@ def test_gets_all_tracks(app):
         db = get_db()
     setup_search(db)
     with db.scoped_session() as session:
-        res = track_search_query(session, "the track", 10, 0, False, False, None, False)
+        res = track_search_query(session, "the track", 10, 0, False, None, False)
         assert len(res["all"]) == 2
 
 
@@ -206,7 +206,7 @@ def test_gets_downloadable_tracks(app):
         db = get_db()
     setup_search(db)
     with db.scoped_session() as session:
-        res = track_search_query(session, "the track", 10, 0, False, False, None, True)
+        res = track_search_query(session, "the track", 10, 0, False, None, True)
         assert len(res["all"]) == 1
 
 def test_gets_all_users(app):
@@ -215,7 +215,7 @@ def test_gets_all_users(app):
         db = get_db()
     setup_search(db)
     with db.scoped_session() as session:
-        res = user_search_query(session, "user", 10, 0, False, False, None)
+        res = user_search_query(session, "user", 10, 0, False, None)
         assert len(res["all"]) == 2
 
 
@@ -225,7 +225,7 @@ def test_gets_followed_users(app):
         db = get_db()
     setup_search(db)
     with db.scoped_session() as session:
-        res = user_search_query(session, "user", 10, 0, False, False, 2)
+        res = user_search_query(session, "user", 10, 0, False, 2)
         assert len(res["followed"]) == 1
 
 def test_gets_all_playlists(app):
@@ -234,7 +234,7 @@ def test_gets_all_playlists(app):
         db = get_db()
     setup_search(db)
     with db.scoped_session() as session:
-        res = playlist_search_query(session, "playlist", 10, 0, False, False, False, None)
+        res = playlist_search_query(session, "playlist", 10, 0, False, False, None)
         assert len(res["all"]) == 1
 
 def test_gets_all_albums(app):
@@ -243,5 +243,5 @@ def test_gets_all_albums(app):
         db = get_db()
     setup_search(db)
     with db.scoped_session() as session:
-        res = playlist_search_query(session, "album", 10, 0, True, False, False, None)
+        res = playlist_search_query(session, "album", 10, 0, True, False, None)
         assert len(res["all"]) == 1

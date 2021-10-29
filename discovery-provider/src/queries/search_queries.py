@@ -243,7 +243,6 @@ def perform_search_query(db, search_type, args):
                 search_str,
                 limit,
                 offset,
-                False,
                 is_auto_complete,
                 current_user_id,
                 only_downloadable,
@@ -254,7 +253,6 @@ def perform_search_query(db, search_type, args):
                 search_str,
                 limit,
                 offset,
-                False,
                 is_auto_complete,
                 current_user_id,
             )
@@ -264,7 +262,6 @@ def perform_search_query(db, search_type, args):
                 search_str,
                 limit,
                 offset,
-                False,
                 False,
                 is_auto_complete,
                 current_user_id,
@@ -276,7 +273,6 @@ def perform_search_query(db, search_type, args):
                 limit,
                 offset,
                 True,
-                False,
                 is_auto_complete,
                 current_user_id,
             )
@@ -343,7 +339,7 @@ def search(args):
         # to perform the different search types in parallel.
         # After each future resolves, we then add users for each entity in a single
         # db round trip.
-        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
             # Keep a mapping of future -> search_type
             futures_map = {}
             futures = []
@@ -410,13 +406,10 @@ def track_search_query(
     search_str,
     limit,
     offset,
-    personalized,
     is_auto_complete,
     current_user_id,
     only_downloadable,
 ):
-    if personalized and not current_user_id:
-        return []
 
     res = sqlalchemy.text(
         # pylint: disable=C0301
@@ -520,10 +513,8 @@ def track_search_query(
 
 
 def user_search_query(
-    session, search_str, limit, offset, personalized, is_auto_complete, current_user_id
+    session, search_str, limit, offset, is_auto_complete, current_user_id
 ):
-    if personalized and not current_user_id:
-        return []
 
     res = sqlalchemy.text(
         """
@@ -609,12 +600,9 @@ def playlist_search_query(
     limit,
     offset,
     is_album,
-    personalized,
     is_auto_complete,
     current_user_id,
 ):
-    if personalized and not current_user_id:
-        return []
 
     table_name = "album_lexeme_dict" if is_album else "playlist_lexeme_dict"
     repost_type = RepostType.album if is_album else RepostType.playlist
