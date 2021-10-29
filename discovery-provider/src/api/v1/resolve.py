@@ -1,10 +1,11 @@
 import logging
-from flask import redirect, url_for
-from flask_restx import Resource, Namespace, reqparse
+from urllib.parse import urljoin
+
+from flask import redirect, request, url_for
+from flask_restx import Namespace, Resource, reqparse
 from src.api.v1.helpers import abort_bad_request_param, abort_not_found
 from src.api.v1.utils.resolve_url import resolve_url
 from src.utils import db_session
-
 
 logger = logging.getLogger(__name__)
 
@@ -42,8 +43,8 @@ class Resolve(Resource):
                 resolved_url = resolve_url(session, url)
                 if not resolved_url:
                     return abort_not_found(url)
-
-                return redirect(url_for(resolved_url, _external=True))
+                print("DEBUGGING HERE 1729", request.remote_addr, resolved_url)
+                return redirect(urljoin(request.remote_addr, resolved_url))
 
         except Exception as e:
             logger.warning(e)
