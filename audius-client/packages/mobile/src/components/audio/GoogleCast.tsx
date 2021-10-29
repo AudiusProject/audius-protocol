@@ -1,7 +1,7 @@
 import React, { useEffect, RefObject, useCallback } from 'react'
 import { Dispatch } from 'redux'
 import { connect } from 'react-redux'
-import { MessageType } from '../../message'
+import { MessageType } from '../../message/types'
 import { postMessage } from '../../utils/postMessage'
 import { MessagePostingWebView } from '../../types/MessagePostingWebView'
 import * as googleCastActions from '../../store/googleCast/actions'

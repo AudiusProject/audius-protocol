@@ -15,6 +15,7 @@ import { messageHandlers as logging } from './handlers/logging'
 import { messageHandlers as notification } from './handlers/notification'
 import { messageHandlers as oauth } from './handlers/oauth'
 import { messageHandlers as search } from './handlers/search'
+import { messageHandlers as signon } from './handlers/signon'
 import { messageHandlers as theme } from './handlers/theme'
 import { messageHandlers as version } from './handlers/version'
 import { Message, MessageHandlers } from './types'
@@ -34,6 +35,7 @@ const messageHandlers: Partial<MessageHandlers> = {
   ...notification,
   ...oauth,
   ...search,
+  ...signon,
   ...theme,
   ...version
 }

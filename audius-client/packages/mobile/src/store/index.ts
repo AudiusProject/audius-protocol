@@ -9,6 +9,7 @@ import web, { WebState } from './web/reducer'
 import lifecycle, { LifecycleState } from './lifecycle/reducer'
 import notifications, { NotificationsState } from './notifications/reducer'
 import search, { SearchState } from './search/reducer'
+import signon, { SignonState } from './signon/reducer'
 import theme, { ThemeState } from './theme/reducer'
 import clientStore from './clientStore/slice'
 
@@ -26,6 +27,7 @@ export type AppState = {
   search: SearchState
   clientStore: any
   keyboard: KeyboardState
+  signon: SignonState
 }
 
 const createRootReducer = () =>
@@ -38,7 +40,8 @@ const createRootReducer = () =>
     googleCast,
     notifications,
     theme,
-    search
+    search,
+    signon
   })
 
 export default () => {

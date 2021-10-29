@@ -13,7 +13,7 @@ import IconCaretRight from '../../assets/images/iconCaretRight.svg'
 import IconRemove from '../../assets/images/iconRemove.svg'
 import { useColor, useTheme } from '../../utils/theme'
 import { useDispatchWeb } from '../../hooks/useDispatchWeb'
-import { MessageType } from '../../message'
+import { MessageType } from '../../message/types'
 import { getTagSearchRoute } from '../../utils/routes'
 import {
   getSearchQuery,
