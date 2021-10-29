@@ -44,7 +44,6 @@ import { identify } from 'store/analytics/actions'
 import { confirmTransferAudioToWAudio } from 'store/audio-manager/slice'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { addPlaylistsNotInLibrary } from 'store/playlist-library/sagas'
-import { update as updatePlaylistLibrary } from 'store/playlist-library/slice'
 import {
   Permission,
   isPushManagerAvailable,
