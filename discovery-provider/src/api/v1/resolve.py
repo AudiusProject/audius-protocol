@@ -43,9 +43,17 @@ class Resolve(Resource):
                 resolved_url = resolve_url(session, url)
                 if not resolved_url:
                     return abort_not_found(url)
-                print("DEBUGGING HERE 1729", request.remote_addr, resolved_url)
+                print(
+                    "DEBUGGING HERE 1729",
+                    resolved_url,
+                    urljoin(
+                        "https://discoveryprovider.sandbox.audius.co/", resolved_url
+                    ),
+                )
                 return redirect(
-                    url_for(urljoin(request.host_url, resolved_url), _external=True)
+                    urljoin(
+                        "https://discoveryprovider.sandbox.audius.co/", resolved_url
+                    )
                 )
 
         except Exception as e:
