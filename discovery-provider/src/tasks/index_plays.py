@@ -1,12 +1,14 @@
 import logging
 import time
 from urllib.parse import urljoin
-import datetime
+from datetime import datetime
 import requests
 import dateutil.parser
 from sqlalchemy import func, desc, or_, and_
 from src.models import Play
 from src.tasks.celery_app import celery
+from src.utils.helpers import redis_set_and_dump
+from src.utils.redis_constants import latest_legacy_play_db_key
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +28,7 @@ def get_time_diff(previous_time):
 # NOTE: indexing the plays will eventually be a part of `index_blocks`
 
 
-def get_track_plays(self, db, lock):
+def get_track_plays(self, db, lock, redis):
     start_time = time.time()
     job_extra_info = {"job": JOB}
     with db.scoped_session() as session:
@@ -40,7 +42,7 @@ def get_track_plays(self, db, lock):
         )
         if most_recent_play_date == None:
             # Make the date way back in the past to get the first play count onwards
-            most_recent_play_date = datetime.datetime(2000, 1, 1, 0, 0).timestamp()
+            most_recent_play_date = datetime(2000, 1, 1, 0, 0).timestamp()
         else:
             most_recent_play_date = most_recent_play_date[0].timestamp()
 
@@ -205,6 +207,10 @@ def get_track_plays(self, db, lock):
         has_lock = lock.owned()
         if plays and has_lock:
             session.bulk_save_objects(plays)
+            # Parse returned UTC timestamp into datetime object and write timestam to redis
+            # Format example 2021-10-26T19:01:09.814Z = '%Y-%m-%dT%H:%M:%S.%fZ'
+            cache_timestamp = datetime.strptime(plays[-1].created_at, '%Y-%m-%dT%H:%M:%S.%fZ')
+            redis_set_and_dump(redis, latest_legacy_play_db_key, cache_timestamp.timestamp())
 
         job_extra_info["has_lock"] = has_lock
         job_extra_info["number_rows_insert"] = len(plays)
@@ -231,7 +237,7 @@ def update_play_count(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            get_track_plays(self, db, update_lock)
+            get_track_plays(self, db, update_lock, redis)
         else:
             logger.error(
                 f"index_plays.py | update_play_count | {self.request.id} | Failed to acquire update_play_count_lock",

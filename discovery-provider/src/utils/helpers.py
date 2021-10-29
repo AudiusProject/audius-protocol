@@ -19,7 +19,6 @@ from src import exceptions
 
 from . import multihash
 
-
 def get_ip(request_obj):
     """Gets the IP address from a request using the X-Forwarded-For header if present"""
     ip = request_obj.headers.get("X-Forwarded-For", request_obj.remote_addr)
@@ -51,6 +50,23 @@ def redis_get_or_restore(redis, key):
     value = redis.get(key)
     return value if value else redis_restore(redis, key)
 
+def redis_get_json_cached_key_or_restore(redis, key):
+    logger = logging.getLogger(__name__)
+    cached_value = redis.get(key)
+    if not cached_value:
+        logger.info(f"Redis Cache - miss {key}, restoring")
+        cached_value = redis_restore(redis, key)
+
+    if cached_value:
+        logger.info(f"Redis Cache - hit {key}")
+        try:
+            deserialized = json.loads(cached_value)
+            return deserialized
+        except Exception as e:
+            logger.warning(f"Unable to deserialize json cached response: {e}")
+            return None
+    logger.info(f"Redis Cache - miss {key}")
+    return None
 
 def redis_dump(redis, key):
     logger = logging.getLogger(__name__)
@@ -64,6 +80,10 @@ def redis_dump(redis, key):
         logger.error(f"could not perform redis dump for key: {key}")
         logger.error(e)
 
+
+def redis_set_json_and_dump(redis, key, value):
+    serialized = json.dumps(value)
+    redis_set_and_dump(redis, key, serialized)
 
 def redis_set_and_dump(redis, key, value):
     redis.set(key, value)
