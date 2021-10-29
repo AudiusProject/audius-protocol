@@ -21,7 +21,7 @@ import { ERROR_PAGE } from 'utils/route'
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 const onSagaError = (error, extraInfo) => {
-  console.error(`Caught saga error: ${error}`)
+  console.error(`Caught saga error: ${error} ${extraInfo}`)
   store.dispatch(replaceRoute(ERROR_PAGE))
 
   // Get sagaStack if it exists, attaching

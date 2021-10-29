@@ -208,12 +208,13 @@ type CreateAccountOpen = {
     | 'account icon'
     | 'social action'
     | 'sign in page'
+  // todo: are we missing 'restricted page' in this list?
 }
 type CreateAccountCompleteEmail = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_EMAIL
   emailAddress: string
 }
-type CreateAccoutCompletePassword = {
+type CreateAccountCompletePassword = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_PASSWORD
   emailAddress: string
 }
@@ -898,7 +899,7 @@ export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 export type AllTrackingEvents =
   | CreateAccountOpen
   | CreateAccountCompleteEmail
-  | CreateAccoutCompletePassword
+  | CreateAccountCompletePassword
   | CreateAccountStartTwitter
   | CreateAccountCompleteTwitter
   | CreateAccountStartInstagram
