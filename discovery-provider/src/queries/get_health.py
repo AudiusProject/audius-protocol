@@ -388,12 +388,12 @@ def get_play_health_info(redis, plays_count_max_drift: Optional[int]) -> Tuple[b
             # Decode bytes into float for latest timestamp
             latest_db_play = float(latest_db_play.decode())
             latest_db_play = datetime.utcfromtimestamp(latest_db_play)
-    
+
         time_diff_general = (
             (current_time_utc - latest_db_play).total_seconds()
                 if latest_db_play
                 else time_diff_general
-        ) 
+        )
 
     is_unhealthy_plays = bool(
         plays_count_max_drift
