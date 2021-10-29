@@ -27,7 +27,7 @@ import {
   getShuffleIndex
 } from '../../store/audio/selectors'
 
-import { MessageType } from '../../message'
+import { MessageType } from '../../message/types'
 import { logListen } from './listens'
 import { postMessage } from '../../utils/postMessage'
 import { Genre } from '../../utils/genres'

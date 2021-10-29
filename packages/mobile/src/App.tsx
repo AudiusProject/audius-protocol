@@ -16,6 +16,7 @@ import useConnectivity from './components/web/useConnectivity'
 import { incrementSessionCount } from './hooks/useSessionCount'
 import Notifications from './components/notifications/Notifications'
 import Search from './components/search/Search'
+import SignOnNav from './components/signon/NavigationStack'
 import { WebRefContextProvider } from './components/web/WebRef'
 import BottomBar from './components/bottom-bar'
 import MobileUploadDrawer from './components/mobile-upload-drawer'
@@ -55,6 +56,7 @@ const App = () => {
           <WebRefContextProvider>
             <GoogleCast webRef={webRef} />
             <WebApp webRef={webRef} />
+            <SignOnNav />
             <Search />
             {/*
         Note: it is very important that Notifications is rendered after WebApp.

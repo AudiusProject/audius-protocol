@@ -24,6 +24,25 @@ export enum MessageType {
   // Google Cast
   GOOGLE_CAST = 'show-google-cast-picker',
 
+  // Sign On
+  SUBMIT_SIGNIN = 'submit-signin',
+  SIGN_IN_FAILURE = 'sign-in-failure',
+  SIGN_UP_VALIDATE_AND_CHECK_EMAIL = 'sign-up-validate-and-check-email',
+  SIGN_UP_VALIDATE_EMAIL_SUCCESS = 'sign-up-validate-email-success',
+  SIGN_UP_VALIDATE_EMAIL_FAILURE = 'sign-up-validate-email-failure',
+  SIGN_UP_VALIDATE_HANDLE = 'sign-up-validate-handle',
+  SIGN_UP_VALIDATE_HANDLE_SUCCESS = 'sign-up-validate-handle-success',
+  SIGN_UP_VALIDATE_HANDLE_FAILURE = 'sign-up-validate-handle-failure',
+  GET_USERS_TO_FOLLOW = 'get_users_to_follow',
+  SET_USERS_TO_FOLLOW = 'set_users_to_follow',
+  SET_ACCOUNT_AVAILABLE = 'set_account_available',
+  FETCH_ALL_FOLLOW_ARTISTS = 'fetch_all_follow_artists',
+  FETCH_ALL_FOLLOW_ARTISTS_SUCCEEDED = 'fetch_all_follow_artists_succeeded',
+  FETCH_ALL_FOLLOW_ARTISTS_FAILED = 'fetch_all_follow_artists_failed',
+  SET_FOLLOW_ARTISTS = 'set_follow_artists',
+  SUBMIT_SIGNUP = 'submit-signup',
+  SIGN_UP_SUCCESS = 'sign-up-success',
+
   // Notifications
   ENABLE_PUSH_NOTIFICATIONS = 'enable-push-notifications',
   DISABLE_PUSH_NOTIFICATIONS = 'disable-push-notifications',
@@ -58,7 +77,11 @@ export enum MessageType {
 
   // OAuth
   REQUEST_TWITTER_AUTH = 'request-twitter-auth',
+  REQUEST_TWITTER_AUTH_SUCCEEDED = 'request-twitter-auth-succeeded',
+  REQUEST_TWITTER_AUTH_FAILED = 'request-twitter-auth-failed',
   REQUEST_INSTAGRAM_AUTH = 'request-instagram-auth',
+  REQUEST_INSTAGRAM_AUTH_SUCCEEDED = 'request-instagram-auth-succeeded',
+  REQUEST_INSTAGRAM_AUTH_FAILED = 'request-instagram-auth-failed',
   REQUEST_TIKTOK_AUTH = 'request-tiktok-auth',
 
   // Lifecycle
@@ -67,6 +90,14 @@ export enum MessageType {
   REQUEST_NETWORK_CONNECTED = 'request-network-connected',
   IS_NETWORK_CONNECTED = 'is-network-connected',
   SIGNED_IN = 'signed-in',
+  SIGNED_OUT = 'signed-out',
+  FETCH_ACCOUNT_FAILED = 'fetch_account_failed',
+
+  // Navigation
+  ON_FIRST_PAGE = 'nav-on-first-page',
+  NOT_ON_FIRST_PAGE = 'nav-not-on-first-page',
+  GO_BACK = 'nav-go-back',
+  CHANGED_PAGE = 'nav-changed-page',
 
   KEYBOARD_VISIBLE = 'keyboard-visible',
   KEYBOARD_HIDDEN = 'keyboard-hidden',
@@ -79,12 +110,6 @@ export enum MessageType {
   PREFERS_COLOR_SCHEME = 'prefers-color-scheme',
 
   SHARE = 'share',
-
-  // Navigation
-  ON_FIRST_PAGE = 'nav-on-first-page',
-  NOT_ON_FIRST_PAGE = 'nav-not-on-first-page',
-  GO_BACK = 'nav-go-back',
-  CHANGED_PAGE = 'nav-changed-page',
 
   // Analytics
   ANALYTICS_IDENTIFY = 'analytics-identify',

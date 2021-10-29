@@ -4,7 +4,6 @@ import { remindUserToTurnOnNotifications } from '../../components/notification-r
 import { Status } from '../../types/status'
 
 import { MessageType, MessageHandlers } from '../types'
-import { dispatch } from 'App'
 
 export const messageHandlers: Partial<MessageHandlers> = {
   [MessageType.ENABLE_PUSH_NOTIFICATIONS]: async ({ message, postMessage }) => {

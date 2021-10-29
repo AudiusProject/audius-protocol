@@ -203,7 +203,7 @@ const Drawer = ({ isOpen, children, onClose, isFullscreen }: DrawerProps) => {
         >
           {children}
         </SafeAreaView>
-        <View style={styles.skirt}></View>
+        <View style={styles.skirt} />
       </Animated.View>
     </Portal>
   )

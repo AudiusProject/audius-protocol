@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.2.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill-rule:evenodd;clip-rule:evenodd;fill:url(#Fill_1_);}
+</style>
+<g id="icon_x2F_Notification" transform="translate(760.000000, 2641.000000)">
+	
+		<linearGradient id="Fill_1_" gradientUnits="userSpaceOnUse" x1="-1023.1248" y1="-2236.0293" x2="-1022.1248" y2="-2236.0293" gradientTransform="matrix(11.3137 11.3137 11.3137 -11.3137 36116.5312 -16358.8623)">
+		<stop  offset="0" style="stop-color:#000000"/>
+		<stop  offset="1" style="stop-color:#000000"/>
+	</linearGradient>
+	<path id="Fill" class="st0" d="M-746-2623c0,1.1-0.9,2-2,2s-2-0.9-2-2H-746z M-741-2626c0.6,0,1,0.4,1,1s-0.4,1-1,1h-14
+		c-0.6,0-1-0.4-1-1s0.4-1,1-1h0.5c0.7-0.7,1.5-1.7,1.5-3v-3c0-2.8,2.2-5,5-5s5,2.2,5,5v3c0,1.3,0.8,2.3,1.5,3H-741z"/>
+</g>
+</svg>
