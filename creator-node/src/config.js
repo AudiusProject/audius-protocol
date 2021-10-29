@@ -607,6 +607,12 @@ const config = convict({
     env: 'enableAsyncIPFSAdd',
     // TODO: probably want to change this to true if only hashing logic + async ipfs add is proven worthwhile
     default: false
+  },
+  healthCheckIpfsTimeoutMs: {
+    doc: 'Default timeout for the ipfs health check route in timing add content',
+    format: 'nat',
+    env: 'healthCheckIpfsTimeoutMs',
+    default: 30000 // 30s
   }
 
   /**
