@@ -17,9 +17,9 @@ commands:
       - unless:
           condition:
             or:
-              - equal: [ master, << pipeline.git.branch >> ]
+              - equal: [master, << pipeline.git.branch >>]
               - matches:
-                  pattern: "^release.*$"
+                  pattern: '^release.*$'
                   value: << pipeline.git.branch >>
           steps:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
@@ -31,7 +31,7 @@ jobs:
     parallelism: 1
     parameters:
       mad-dog-type:
-        description: "test-ci or test-nightly"
+        description: 'test-ci or test-nightly'
         default: 'test-ci'
         type: string
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
@@ -428,7 +428,7 @@ jobs:
   test-discovery-provider:
     docker:
       - image: circleci/python:3.8-node-browsers
-        # Discovery provider dependencies
+      # Discovery provider dependencies
       - image: circleci/postgres:11.1
         environment:
           POSTGRES_USER: postgres
@@ -695,8 +695,8 @@ workflows:
       - docker-build-and-push:
           name: build-discovery-provider
           repo: discovery-provider
-          requires:
-            - test-discovery-provider
+          # requires:
+          #   - test-discovery-provider
 
       - test-identity-service:
           name: test-identity-service
