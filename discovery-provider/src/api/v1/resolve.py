@@ -45,16 +45,12 @@ class Resolve(Resource):
                 if not resolved_url:
                     return abort_not_found(url)
                 print(
-                    "DEBUGGING HERE 1729",
+                    "DEBUGGING HERE 1738",
                     resolved_url,
-                    urljoin(os.getenv("audius_openresty_public_url"), resolved_url),
+                    request.remote_addr,
+                    request.host_url,
                 )
-                return redirect(
-                    urljoin(
-                        urljoin(os.getenv("audius_openresty_public_url"), resolved_url
-                    )
-                )
-
+                return redirect(resolved_url, code=302)
         except Exception as e:
             logger.warning(e)
             abort_not_found(url, ns)
