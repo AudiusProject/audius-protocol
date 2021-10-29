@@ -163,7 +163,7 @@ const REDIS_TOTAL_MEMORY = {
 const IPFS_READ_WRITE_STATUS = {
   name: 'IPFSReadWriteStatus',
   func: getIPFSReadWriteStatus,
-  ttl: 60 * 5,
+  ttl: 60 * 1,
   type: 'json'
 }
 
