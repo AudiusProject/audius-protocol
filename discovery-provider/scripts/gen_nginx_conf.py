@@ -31,6 +31,10 @@ http {
             proxy_pass http://127.0.0.1:3000;
         }
 
+        location ~* .*v1\/resolve.* {
+            proxy_pass http://127.0.0.1:3000;
+        }
+
         location / {
 """
     )
