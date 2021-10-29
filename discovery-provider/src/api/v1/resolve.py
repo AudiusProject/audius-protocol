@@ -43,7 +43,7 @@ class Resolve(Resource):
                 if not resolved_url:
                     return abort_not_found(url)
 
-                return redirect(resolved_url, code=302)
+                return redirect(resolved_url)
 
         except Exception as e:
             logger.warning(e)
