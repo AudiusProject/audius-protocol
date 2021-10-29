@@ -1,5 +1,5 @@
 import logging
-from flask import redirect
+from flask import redirect, url_for
 from flask_restx import Resource, Namespace, reqparse
 from src.api.v1.helpers import abort_bad_request_param, abort_not_found
 from src.api.v1.utils.resolve_url import resolve_url
@@ -43,7 +43,7 @@ class Resolve(Resource):
                 if not resolved_url:
                     return abort_not_found(url)
 
-                return redirect(resolved_url)
+                return redirect(url_for(resolved_url, _external=True))
 
         except Exception as e:
             logger.warning(e)
