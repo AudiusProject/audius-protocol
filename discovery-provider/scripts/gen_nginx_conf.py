@@ -29,10 +29,14 @@ http {
 
         location ~* .*_(check|version) {
             proxy_pass http://127.0.0.1:3000;
+            proxy_set_header Host            $host;
+            proxy_set_header X-Forwarded-For $remote_addr;
         }
 
         location ~* .*v1\/resolve.* {
             proxy_pass http://127.0.0.1:3000;
+            proxy_set_header Host            $host;
+            proxy_set_header X-Forwarded-For $remote_addr;
         }
 
         location / {
