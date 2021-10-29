@@ -41,7 +41,7 @@ def cache_play_health_vars(redis_mock):
         json.dumps({
             "signature": "5SD9fJhsuMKb1dnJtKszoLLHGve5qmubTvfJX6eLQKRT71XWXkAGXw5faj2uJPhqngzT2V4zucocGiyXYXYMv7QK",
             "slot": 15,
-            "timestamp":1635477758 
+            "timestamp":1635477758
         })
     )
 
