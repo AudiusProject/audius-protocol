@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 40,
     padding: 28,
     paddingBottom: 38,
-    paddingTop: 50
+    paddingTop: 80
   },
 
   containerCTA: {
