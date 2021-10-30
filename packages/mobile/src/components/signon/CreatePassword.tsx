@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import {
   Animated,
   Easing,
@@ -34,7 +34,7 @@ import { RootStackParamList } from './NavigationStack'
 declare module 'fxa-common-password-list'
 
 const defaultBorderColor = '#F7F7F9'
-const validBorderColor = '#7E1BCC'
+const purpleBorderColor = '#7E1BCC'
 const errorBorderColor = '#E03D51'
 
 const styles = StyleSheet.create({
@@ -230,16 +230,16 @@ const ContinueButton = ({ isWorking }: { isWorking: boolean }) => {
 const opacityArr = messages.checks.map(() => new Animated.Value(0))
 const Checkbox = ({
   i,
-  meetsReq,
-  shouldShowRedErrors
+  met,
+  error
 }: {
   i: number
-  meetsReq: boolean
-  shouldShowRedErrors: boolean
+  met: boolean
+  error: boolean
 }) => {
   const opacity = opacityArr[i]
 
-  if (meetsReq || shouldShowRedErrors) {
+  if (met || error) {
     Animated.timing(opacity, {
       toValue: 1,
       duration: 700,
@@ -263,7 +263,7 @@ const Checkbox = ({
     }
   ]
 
-  if (meetsReq) {
+  if (met) {
     return (
       <View style={styles.checkboxContainer}>
         <Animated.View style={animatedStyles}>
@@ -273,7 +273,7 @@ const Checkbox = ({
         <Text style={styles.uncheckedDescription}>{messages.checks[i]}</Text>
       </View>
     )
-  } else if (shouldShowRedErrors) {
+  } else if (error) {
     return (
       <View style={styles.checkboxContainer}>
         <Animated.View style={animatedStyles}>
@@ -317,36 +317,32 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
   const [isDisabled, setIsDisabled] = useState(false)
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
-  const [meetsNumberReq, setMeetsNumberReq] = useState(false)
-  const [meetsLengthReq, setMeetsLengthReq] = useState(false)
-  const [meetsMatchReq, setMeetsMatchReq] = useState(false)
-  const [meetsCommonReq, setMeetsCommonReq] = useState(false)
-  const [shouldShowRedErrors, setShouldShowRedErrors] = useState(false)
-  const [shouldShowRedMatchError, setShowRedMatchError] = useState(false)
-  const [focusedField, setFocusedField] = useState(0)
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false)
+  const [
+    isPasswordConfirmationFocused,
+    setIsPasswordConfirmationFocused
+  ] = useState(false)
 
-  const checkboxes = [
-    {
-      meetsReq: meetsNumberReq,
-      shouldShowRedErrors: shouldShowRedErrors
+  // the first 3 requirements are based on the password field
+  // the last one is based on both fields as it requires a match
+  const [areRequirementsMet, setAreRequirementsAreMet] = useState({
+    number: {
+      met: false,
+      error: false
     },
-    {
-      meetsReq: meetsLengthReq,
-      shouldShowRedErrors: shouldShowRedErrors
+    length: {
+      met: false,
+      error: false
     },
-    {
-      meetsReq: meetsCommonReq,
-      shouldShowRedErrors: shouldShowRedErrors
+    hardToGuess: {
+      met: false,
+      error: false
     },
-    {
-      meetsReq: meetsMatchReq,
-      shouldShowRedErrors:
-        passwordConfirmation.length >= password.length ||
-        shouldShowRedMatchError
-          ? shouldShowRedErrors
-          : false
+    match: {
+      met: false,
+      error: false
     }
-  ]
+  })
 
   useEffect(() => {
     if (!didFetchArtists) {
@@ -359,38 +355,91 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
   }, [didFetchArtists, dispatchWeb])
 
   useEffect(() => {
-    setIsDisabled(isWorking || checkboxes.some(c => !c.meetsReq))
-  }, [isWorking, checkboxes])
+    setIsDisabled(
+      isWorking || Object.values(areRequirementsMet).some(v => !v.met)
+    )
+  }, [isWorking, areRequirementsMet])
 
   useEffect(() => {
-    const newMeetsLengthReq = password.length >= MIN_PASSWORD_LEN
-    setMeetsLengthReq(newMeetsLengthReq)
-
-    const newMeetsMatchReq =
-      password.length > 0 && password === passwordConfirmation
-    setMeetsMatchReq(newMeetsMatchReq)
-    if (newMeetsMatchReq && focusedField === 1) {
-      setPasswordConfirmationBorderColor(defaultBorderColor)
+    const hasError = Object.values(areRequirementsMet).some(v => v.error)
+    // if in an error state, show red borders on each field
+    if (hasError) {
+      setPasswordBorderColor(errorBorderColor)
+      setPasswordConfirmationBorderColor(errorBorderColor)
+    } else {
+      // if one of the fields is focused, show purple border on that field
+      if (isPasswordFocused) {
+        setPasswordBorderColor(purpleBorderColor)
+        setPasswordConfirmationBorderColor(defaultBorderColor)
+      } else if (isPasswordConfirmationFocused) {
+        setPasswordConfirmationBorderColor(purpleBorderColor)
+        setPasswordBorderColor(defaultBorderColor)
+      } else {
+        // if no error and no focus, set default borders
+        setPasswordBorderColor(defaultBorderColor)
+        setPasswordConfirmationBorderColor(defaultBorderColor)
+      }
     }
+  }, [areRequirementsMet, isPasswordFocused, isPasswordConfirmationFocused])
 
-    const newMeetsNumberReq = /\d/.test(password)
-    setMeetsNumberReq(newMeetsNumberReq)
-
-    const newMeetsCommonReq =
-      !commonPasswordList.test(password) && password.length >= MIN_PASSWORD_LEN
-    setMeetsCommonReq(newMeetsCommonReq)
-
-    if (
-      focusedField === 2 &&
-      password !== passwordConfirmation &&
-      newMeetsLengthReq &&
-      newMeetsMatchReq &&
-      newMeetsNumberReq &&
-      newMeetsCommonReq
-    ) {
-      setPasswordBorderColor(defaultBorderColor)
-    }
-  }, [password, passwordConfirmation, focusedField])
+  const updateRequirementsStatus = useCallback(
+    (
+      previousRequirements: any,
+      newPassword: string,
+      newPasswordConfirmation: string,
+      isBlur
+    ) => {
+      // set error if field in question is not empty and
+      // - requirement previously met, or
+      // - on blur (except hard to guess?)
+      setAreRequirementsAreMet({
+        number: {
+          ...previousRequirements.number,
+          met: /\d/.test(newPassword),
+          error:
+            !!newPassword.length &&
+            !/\d/.test(newPassword) &&
+            (isBlur ||
+              previousRequirements.number.met ||
+              previousRequirements.number.error)
+        },
+        length: {
+          ...previousRequirements.length,
+          met: newPassword.length >= MIN_PASSWORD_LEN,
+          error:
+            !!newPassword.length &&
+            newPassword.length < MIN_PASSWORD_LEN &&
+            (isBlur ||
+              previousRequirements.length.met ||
+              previousRequirements.length.error)
+        },
+        hardToGuess: {
+          ...previousRequirements.hardToGuess,
+          met:
+            newPassword.length >= MIN_PASSWORD_LEN &&
+            !commonPasswordList.test(newPassword),
+          error:
+            !!newPassword.length &&
+            commonPasswordList.test(newPassword) &&
+            (isBlur ||
+              previousRequirements.hardToGuess.met ||
+              previousRequirements.hardToGuess.error)
+        },
+        match: {
+          ...previousRequirements.match,
+          met: !!newPassword.length && newPassword === newPasswordConfirmation,
+          error:
+            !!newPassword.length &&
+            !!newPasswordConfirmation.length &&
+            newPassword !== newPasswordConfirmation &&
+            (isBlur ||
+              previousRequirements.match.met ||
+              previousRequirements.match.error)
+        }
+      })
+    },
+    []
+  )
 
   // Set Lifecycle onSignUp(true) so signup flow isn't hidden even if signed in
   const setOnSignOn = () => {
@@ -436,34 +485,24 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
                 secureTextEntry={true}
                 onChangeText={newText => {
                   setPassword(newText)
-                  if (newText === '') {
-                    setShouldShowRedErrors(false)
-                  } else if (newText === passwordConfirmation) {
-                    setPasswordBorderColor(validBorderColor)
-                    setPasswordConfirmationBorderColor(validBorderColor)
-                  }
+                  updateRequirementsStatus(
+                    { ...areRequirementsMet },
+                    newText,
+                    passwordConfirmation,
+                    false
+                  )
                 }}
                 onFocus={() => {
-                  setFocusedField(1)
-                  setPasswordBorderColor(validBorderColor)
+                  setIsPasswordFocused(true)
                 }}
                 onBlur={() => {
-                  setPasswordBorderColor(defaultBorderColor)
-                  setShouldShowRedErrors(password !== '')
-                  if (
-                    password !== '' &&
-                    (!meetsCommonReq || !meetsLengthReq || !meetsNumberReq)
-                  ) {
-                    setPasswordBorderColor(errorBorderColor)
-                  }
-                  if (
-                    password !== '' &&
-                    passwordConfirmation !== '' &&
-                    !meetsMatchReq
-                  ) {
-                    setPasswordBorderColor(errorBorderColor)
-                    setPasswordConfirmationBorderColor(errorBorderColor)
-                  }
+                  setIsPasswordFocused(false)
+                  updateRequirementsStatus(
+                    { ...areRequirementsMet },
+                    password,
+                    passwordConfirmation,
+                    true
+                  )
                 }}
                 keyboardAppearance='dark'
               />
@@ -487,51 +526,29 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
                 secureTextEntry={true}
                 onChangeText={newText => {
                   setPasswordConfirmation(newText)
-                  if (newText === password) {
-                    setPasswordBorderColor(validBorderColor)
-                    setPasswordConfirmationBorderColor(validBorderColor)
-                  }
+                  updateRequirementsStatus(
+                    { ...areRequirementsMet },
+                    password,
+                    newText,
+                    false
+                  )
                 }}
                 onFocus={() => {
-                  setFocusedField(2)
-                  setPasswordConfirmationBorderColor(validBorderColor)
-                  setShowRedMatchError(false)
+                  setIsPasswordConfirmationFocused(true)
                 }}
                 onBlur={() => {
-                  setPasswordConfirmationBorderColor(defaultBorderColor)
-
-                  if (password === '') {
-                    setShouldShowRedErrors(false)
-                  } else {
-                    setShouldShowRedErrors(true)
-                    setShowRedMatchError(true)
-                  }
-                  if (
-                    passwordConfirmation !== '' &&
-                    password !== '' &&
-                    !meetsMatchReq
-                  ) {
-                    setPasswordConfirmationBorderColor(errorBorderColor)
-                    setPasswordBorderColor(errorBorderColor)
-                  }
-                  if (
-                    meetsMatchReq &&
-                    meetsCommonReq &&
-                    meetsLengthReq &&
-                    meetsNumberReq
-                  ) {
-                    setPasswordBorderColor(defaultBorderColor)
-                  }
+                  setIsPasswordConfirmationFocused(false)
+                  updateRequirementsStatus(
+                    { ...areRequirementsMet },
+                    password,
+                    passwordConfirmation,
+                    true
+                  )
                 }}
                 keyboardAppearance='dark'
               />
-              {checkboxes.map(({ meetsReq, shouldShowRedErrors }, i) => (
-                <Checkbox
-                  key={i}
-                  i={i}
-                  meetsReq={meetsReq}
-                  shouldShowRedErrors={shouldShowRedErrors}
-                />
+              {Object.values(areRequirementsMet).map(({ met, error }, i) => (
+                <Checkbox key={i} i={i} met={met} error={error} />
               ))}
 
               <Text style={styles.terms}>
