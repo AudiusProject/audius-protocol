@@ -10,7 +10,8 @@ import {
   TouchableOpacity,
   Dimensions,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Easing
 } from 'react-native'
 
 import { useSelector, useDispatch } from 'react-redux'
@@ -120,7 +121,8 @@ const styles = StyleSheet.create({
   },
   audiusLogoHorizontal: {
     width: 194,
-    height: 51
+    height: 51,
+    marginTop: 24
   },
   signupCTAContainer: {
     flex: 1,
@@ -363,8 +365,9 @@ const SignOn = ({ navigation }: SignOnProps) => {
   const animateDrawer = useCallback(() => {
     Animated.timing(topDrawer, {
       toValue: 0,
-      duration: 700,
+      duration: 880,
       delay: 500,
+      easing: Easing.inOut(Easing.quad),
       useNativeDriver: true
     }).start()
   }, [topDrawer])
@@ -468,12 +471,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
       <Text style={styles.switchFormBtnTitle}>
         {isSignin ? `${messages.newToAudius}` : `${messages.hasAccountAlready}`}
         &nbsp;
-        <Text
-          style={{ textDecorationLine: 'underline' }}
-          onPress={() => {
-            switchForm()
-          }}
-        >
+        <Text style={{ textDecorationLine: 'underline' }}>
           {isSignin ? `${messages.createAccount}` : `${messages.signIn}`}
         </Text>
       </Text>
@@ -687,7 +685,13 @@ const SignOn = ({ navigation }: SignOnProps) => {
             </View>
           )}
 
-          <TouchableOpacity style={styles.switchFormBtn} activeOpacity={0.6}>
+          <TouchableOpacity
+            style={styles.switchFormBtn}
+            activeOpacity={0.6}
+            onPress={() => {
+              switchForm()
+            }}
+          >
             <FormSwitchButton />
           </TouchableOpacity>
         </Animated.View>
