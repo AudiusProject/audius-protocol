@@ -11,8 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActionSheetIOS,
-  Alert,
-  Image
+  Alert
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
@@ -28,10 +27,10 @@ import {
 import { MessageType } from '../../message/types'
 import SignupHeader from './SignupHeader'
 import PhotoButton from './PhotoButton'
+import ProfileImage from './ProfileImage'
 import * as signonActions from '../../store/signon/actions'
 
 import IconArrow from '../../assets/images/iconArrow.svg'
-import NoPicture from '../../assets/images/noPicture.png'
 import ValidationIconX from '../../assets/images/iconValidationX.svg'
 import {
   getHandleIsValid,
@@ -40,6 +39,7 @@ import {
 } from '../../store/signon/selectors'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { RootStackParamList } from './NavigationStack'
+import { useColor } from '../../utils/theme'
 
 const styles = StyleSheet.create({
   container: {
@@ -139,33 +139,18 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24
   },
+  photoLoadingIconContainer: {
+    position: 'absolute',
+    top: 88,
+    left: 78
+  },
+  photoLoadingIcon: {
+    width: 48,
+    height: 48
+  },
   profilePicContainer: {
     flex: 0,
     alignContent: 'center'
-  },
-  profilePicEmpty: {
-    flex: 0,
-    width: 226,
-    height: 226
-  },
-  profilePicShadow: {
-    marginTop: 8,
-    flex: 0,
-    shadowColor: '#858199',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 6,
-    width: 206,
-    height: 206,
-    marginBottom: 12
-  },
-  profilePic: {
-    flex: 0,
-    width: 206,
-    height: 206,
-    borderRadius: 113,
-    borderWidth: 3,
-    borderColor: '#FFFFFF'
   },
   errorText: {
     flex: 1,
@@ -270,6 +255,7 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
     profilePictureUrl = null,
     coverPhotoUrl = null
   } = route.params
+  const spinnerColor = useColor('staticWhite')
   const dispatch = useDispatch()
   const dispatchWeb = useDispatchWeb()
   const handleIsValid = useSelector(getHandleIsValid)
@@ -297,6 +283,7 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
         }
   )
   const [imageSet, setImageSet] = useState(!!profilePictureUrl)
+  const [isPhotoLoading, setIsPhotoLoading] = useState(false)
   const [isSubmitDisabled, setIsSubmitDisabled] = useState(false)
 
   useEffect(() => {
@@ -321,30 +308,27 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
     setPhotoBtnIsHidden(profileImage.file !== '')
   }, [profileImage])
 
-  const ProfileImage = () => {
-    return imageSet ? (
-      <TouchableOpacity
-        style={styles.profilePicShadow}
-        activeOpacity={1}
-        onPress={() => {
-          setPhotoBtnIsHidden(!photoBtnIsHidden)
-        }}
-      >
-        <Image
-          source={profileImage}
-          height={206}
-          width={206}
-          style={[styles.profilePic]}
+  const LoadingPhoto = () => {
+    return isPhotoLoading ? (
+      <View style={styles.photoLoadingIconContainer}>
+        <LottieView
+          style={styles.photoLoadingIcon}
+          source={require('../../assets/animations/loadingSpinner.json')}
+          autoPlay
+          loop
+          colorFilters={[
+            {
+              keypath: 'Shape Layer 1',
+              color: spinnerColor
+            },
+            {
+              keypath: 'Shape Layer 2',
+              color: spinnerColor
+            }
+          ]}
         />
-      </TouchableOpacity>
-    ) : (
-      <Image
-        height={226}
-        width={226}
-        source={NoPicture}
-        style={styles.profilePicEmpty}
-      />
-    )
+      </View>
+    ) : null
   }
 
   const photoOptions = {
@@ -356,7 +340,10 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
 
   const handlePhoto = ({ assets }: { assets: Asset[] | undefined }) => {
     const response = assets?.[0]
-    if (response?.base64) {
+    const selectedPhoto = !!response?.base64
+    setIsPhotoLoading(selectedPhoto)
+    if (selectedPhoto) {
+      setImageSet(true)
       const image = {
         height: response.height ?? 0,
         width: response.width ?? 0,
@@ -367,7 +354,6 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
         file: `data:${response.type};base64,${response.base64}`
       }
       setProfileImage(image)
-      setImageSet(true)
     }
   }
 
@@ -518,12 +504,20 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
             <View style={styles.containerForm}>
               <FormTitle />
               <View style={styles.profilePicContainer}>
-                <ProfileImage />
+                <ProfileImage
+                  isPhotoLoading={isPhotoLoading}
+                  setIsPhotoLoading={setIsPhotoLoading}
+                  imageSet={imageSet}
+                  photoBtnIsHidden={photoBtnIsHidden}
+                  setPhotoBtnIsHidden={setPhotoBtnIsHidden}
+                  profileImage={profileImage}
+                />
                 <PhotoButton
                   imageSet={imageSet}
                   photoBtnIsHidden={photoBtnIsHidden}
                   doAction={openPhotoMenu}
                 />
+                <LoadingPhoto />
               </View>
               <TextInput
                 style={[styles.input, { borderColor: nameBorderColor }]}
