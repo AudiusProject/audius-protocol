@@ -5,7 +5,7 @@ apply plugin: 'io.fabric'
 import com.android.build.OutputFile
 
 /**
- * The react.gradle file registers a task for each build variant (e.g. bundleDebugJsAndAssets
+ * The react.gradle file registers a task for each build variant (e.gl/. bundleDebugJsAndAssets
  * and bundleReleaseJsAndAssets).
  * These basically call `react-native bundle` with the correct arguments during the Android build
  * cycle. By default, bundleDebugJsAndAssets is skipped, as in debug/dev mode we prefer to load the
@@ -142,7 +142,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         multiDexEnabled true
 
-        versionCode 135
+        versionCode 136
         versionName "1.0.103"
         resValue "string", "build_config_package", "co.audius.app"
     }
