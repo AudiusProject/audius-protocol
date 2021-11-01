@@ -5,11 +5,11 @@ const fs = require('fs')
 const { hrtime } = require('process')
 const { promisify } = require('util')
 const fsReadFile = promisify(fs.readFile)
+const _ = require('lodash')
 
 const { ipfsLatest } = require('./ipfsClient')
 const config = require('./config')
 const { logger: genericLogger } = require('./logging')
-const { sortKeys } = require('./apiSigning')
 const { Stream } = require('stream')
 
 const IPFS_ADD_TIMEOUT_MS = config.get('IPFSAddTimeoutMs')
@@ -171,7 +171,7 @@ ipfsAdd.ipfsAddImages = async (content, ipfsConfig = {}, logContext = {}, enable
   const ipfsAddWithoutDaemonResp = await ipfsAdd.ipfsOnlyHashImages(content)
   const durationOnlyHashMs = (hrtime.bigint() - startOnlyHash) / BigInt(1000000) // convert ns -> ms
 
-  const ipfsAddWithoutDaemonRespStr = JSON.stringify(sortKeys(ipfsAddWithoutDaemonResp))
+  const ipfsAddWithoutDaemonRespStr = JSON.stringify(ipfsAddWithoutDaemonResp)
 
   if (!enableIPFSAdd) {
     logger.info(`[ipfsClient - ipfsAddImages()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms`)
@@ -191,9 +191,9 @@ ipfsAdd.ipfsAddImages = async (content, ipfsConfig = {}, logContext = {}, enable
     }
     const durationIpfsLatestAddMs = (hrtime.bigint() - startIpfsLatestAdd) / BigInt(1000000) // convert ns -> ms
 
-    const ipfsAddWithDaemonRespStr = JSON.stringify(sortKeys(ipfsAddWithDaemonResp))
+    const ipfsAddWithDaemonRespStr = JSON.stringify(ipfsAddWithDaemonResp)
 
-    const isSameResp = ipfsAddWithoutDaemonRespStr === ipfsAddWithDaemonRespStr
+    const isSameResp = _.isEqual(ipfsAddWithoutDaemonResp, ipfsAddWithDaemonResp)
     logger.info(`[ipfsClient - ipfsAddImages()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms ipfsAddWithDaemonResp=${ipfsAddWithDaemonRespStr} ipfsAddWithDaemonRespDuration=${durationIpfsLatestAddMs}ms isSameHash=${isSameResp}`)
 
     if (!isSameResp) {
