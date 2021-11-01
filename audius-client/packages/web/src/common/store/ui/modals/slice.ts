@@ -15,6 +15,7 @@ export type Modals =
   | 'ConfirmAudioToWAudio'
   | 'BrowserPushPermissionConfirmation'
   | 'AudioBreakdown'
+  | 'CollectibleDetails'
 
 export type ModalsState = { [modal in Modals]: boolean }
 
@@ -30,7 +31,8 @@ const initialState: ModalsState = {
   HCaptcha: false,
   ConfirmAudioToWAudio: false,
   BrowserPushPermissionConfirmation: false,
-  AudioBreakdown: false
+  AudioBreakdown: false,
+  CollectibleDetails: false
 }
 
 const slice = createSlice({

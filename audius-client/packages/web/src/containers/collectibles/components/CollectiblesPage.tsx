@@ -31,6 +31,8 @@ import { useFlag } from 'containers/remote-config/hooks'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { FeatureFlags } from 'services/remote-config/FeatureFlags'
 
+import CollectibleDetailsModal from './CollectibleDetailsModal'
+
 export const editTableContainerClass = 'editTableContainer'
 
 const VISIBLE_COLLECTIBLES_DROPPABLE_ID = 'visible-collectibles-droppable'
@@ -418,16 +420,19 @@ const CollectiblesPage: React.FC<{
                 <CollectibleDetails
                   key={collectible.id}
                   collectible={collectible}
-                  isMobile={isMobile}
-                  isUserOnTheirProfile={isUserOnTheirProfile}
-                  updateProfilePicture={updateProfilePicture}
-                  onSave={onSave}
                 />
               ))}
             </div>
           )}
         </div>
       </div>
+
+      <CollectibleDetailsModal
+        isMobile={isMobile}
+        isUserOnTheirProfile={isUserOnTheirProfile}
+        updateProfilePicture={updateProfilePicture}
+        onSave={onSave}
+      />
 
       <Modal
         title={collectibleMessages.sortCollectibles}

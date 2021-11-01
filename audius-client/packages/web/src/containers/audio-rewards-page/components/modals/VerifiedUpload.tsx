@@ -8,9 +8,9 @@ import {
   IconUpload
 } from '@audius/stems'
 
+import { useModalState } from 'common/hooks/useModalState'
 import { InstagramButton } from 'components/general/InstagramButton'
 import TwitterButton from 'components/general/TwitterButton'
-import { useModalState } from 'hooks/useModalState'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'

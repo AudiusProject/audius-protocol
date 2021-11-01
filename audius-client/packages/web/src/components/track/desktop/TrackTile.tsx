@@ -5,6 +5,7 @@ import cn from 'classnames'
 
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
+import { formatSeconds } from 'common/utils/timeUtil'
 import Skeleton from 'components/general/Skeleton'
 import FavoriteButton from 'components/general/alt-button/FavoriteButton'
 import RepostButton from 'components/general/alt-button/RepostButton'
@@ -14,7 +15,6 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { SHARE_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { formatCount, pluralize } from 'utils/formatUtil'
-import { formatSeconds } from 'utils/timeUtil'
 
 import ArtistPick from '../ArtistPick'
 import {

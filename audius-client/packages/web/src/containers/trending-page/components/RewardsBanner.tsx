@@ -4,11 +4,11 @@ import { IconArrow, IconCrown } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
+import { useModalState } from 'common/hooks/useModalState'
 import {
   setTrendingRewardsModalType,
   TrendingRewardsModalType
 } from 'containers/audio-rewards-page/store/slice'
-import { useModalState } from 'hooks/useModalState'
 import { isMobile } from 'utils/clientUtil'
 
 import styles from './RewardsBanner.module.css'
