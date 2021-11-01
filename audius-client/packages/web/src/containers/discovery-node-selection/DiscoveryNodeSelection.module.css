@@ -1,0 +1,43 @@
+.container {
+  position: absolute;
+  bottom: 300px;
+  right: 30px;
+  min-height: 200px;
+  width: 400px;
+  border-radius: 20px;
+  box-shadow: 0 0 ;
+  background-color: var(--white);
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  text-align: center;
+}
+
+.title {
+  font-size: 20;
+  font-weight: bold;
+  width: 100%;
+  margin: 10px 0;
+}
+
+.inputContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.inputContainer input {
+  width: 80%;
+  padding: 4px;
+  margin-bottom: 10px;
+  border: 2px solid var(--neutral-light-7);
+}
+
+.success {
+  color: var(--secondary);
+}
+
+.error {
+  color: red;
+}

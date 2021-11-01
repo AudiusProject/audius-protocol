@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'
 
@@ -28,6 +28,25 @@ const useHotkeys = (mapping: Mapping) => {
       removeHotkeys(hook)
     }
   }, [mapping])
+}
+
+const ENABLE_DEV_MODE_KEY = 'enable-dev-mode'
+export const useDevModeHotkey = (keyCode: number) => {
+  const [isEnabled, setIsEnabled] = useState(false)
+
+  const listener = useCallback(() => {
+    if (
+      process.env.REACT_APP_ENVIRONMENT === 'production' &&
+      (!window.localStorage ||
+        !window.localStorage.getItem(ENABLE_DEV_MODE_KEY))
+    )
+      return
+    setIsEnabled(e => !e)
+  }, [])
+
+  useHotkeys({ [keyCode]: listener })
+
+  return isEnabled
 }
 
 export default useHotkeys
