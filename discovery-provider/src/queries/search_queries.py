@@ -477,26 +477,7 @@ def track_search_query(
 
     # TODO: Populate track metadata should be sped up to be able to be
     # used in search autocomplete as that'll give us better results.
-    if is_auto_complete:
-        # fetch users for tracks
-        track_owner_ids = list(map(lambda track: track["owner_id"], tracks))
-        users = get_unpopulated_users(session, track_owner_ids)
-        users_dict = {user["user_id"]: user for user in users}
-
-        # attach user objects to track objects
-        for i, track in enumerate(tracks):
-            user = users_dict[track["owner_id"]]
-            # Add user balance
-            balance = track_data[i][1]
-            associated_balance = track_data[i][2]
-            user[response_name_constants.balance] = balance
-            user[
-                response_name_constants.associated_wallets_balance
-            ] = associated_balance
-            track["user"] = user
-    else:
-        # bundle peripheral info into track results
-        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+    tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
     # Preserve order from track_ids above
     tracks_map = {}
@@ -559,23 +540,12 @@ def user_search_query(
             "handle_match_boost": user_handle_exact_match_boost,
         },
     ).fetchall()
-
     # user_ids is list of tuples - simplify to 1-D list
     user_ids = [i[0] for i in user_info]
 
     users = get_unpopulated_users(session, user_ids)
 
-    if is_auto_complete:
-        for i, user in enumerate(users):
-            balance = user_info[i][1]
-            associated_wallets_balance = user_info[i][2]
-            user[response_name_constants.balance] = balance
-            user[
-                response_name_constants.associated_wallets_balance
-            ] = associated_wallets_balance
-    else:
-        # bundle peripheral info into user results
-        users = populate_user_metadata(session, user_ids, users, current_user_id)
+    users = populate_user_metadata(session, user_ids, users, current_user_id)
 
     # Preserve order from user_ids above
     user_map = {}
@@ -666,36 +636,14 @@ def playlist_search_query(
 
     # TODO: Populate playlist metadata should be sped up to be able to be
     # used in search autocomplete as that'll give us better results.
-    if is_auto_complete:
-        # fetch users for playlists
-        playlist_owner_ids = list(
-            map(lambda playlist: playlist["playlist_owner_id"], playlists)
-        )
-        users = get_unpopulated_users(session, playlist_owner_ids)
-        users_dict = {user["user_id"]: user for user in users}
-
-        # attach user objects to playlist objects
-        for i, playlist in enumerate(playlists):
-            user = users_dict[playlist["playlist_owner_id"]]
-            # Add user balance
-            balance = playlist_data[i][1]
-            associated_balance = playlist_data[i][2]
-            user[response_name_constants.balance] = balance
-            user[
-                response_name_constants.associated_wallets_balance
-            ] = associated_balance
-            playlist["user"] = user
-
-    else:
-        # bundle peripheral info into playlist results
-        playlists = populate_playlist_metadata(
-            session,
-            playlist_ids,
-            playlists,
-            [repost_type],
-            [save_type],
-            current_user_id,
-        )
+    playlists = populate_playlist_metadata(
+        session,
+        playlist_ids,
+        playlists,
+        [repost_type],
+        [save_type],
+        current_user_id,
+    )
 
     # Preserve order from playlist_ids above
     playlists_map = {}
