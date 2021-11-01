@@ -1,18 +1,18 @@
 import React from 'react'
 
-import { Image, StyleSheet, Text, View } from 'react-native'
+import { Image, StyleSheet, View } from 'react-native'
 import MaskedView from '@react-native-masked-view/masked-view'
 
 import IconUpload from '../../assets/images/iconGradientUpload.svg'
 import HeavyCheckMark from '../../assets/images/emojis/white-heavy-check-mark.png'
+import Text from '../../components/text'
 import { getIsOpen } from 'audius-client/src/common/store/ui/mobile-upload-drawer/selectors'
 import { hide } from 'audius-client/src/common/store/ui/mobile-upload-drawer/slice'
 
 import Drawer from '../drawer'
-import { getIsKeyboardOpen } from '../../store/keyboard/selectors'
 import { useSelectorWeb } from '../../hooks/useSelectorWeb'
 import { useDispatchWeb } from '../../hooks/useDispatchWeb'
-import { useColor, useTheme } from '../../utils/theme'
+import { useThemeColors } from '../../utils/theme'
 import LinearGradient from 'react-native-linear-gradient'
 
 const styles = StyleSheet.create({
@@ -25,14 +25,8 @@ const styles = StyleSheet.create({
     padding: 16
   },
 
-  iconUpload: {
-    width: 66,
-    height: 66
-  },
-
   cta: {
     marginTop: 16,
-    fontFamily: 'AvenirNextLTPro-Heavy',
     fontSize: 32,
     lineHeight: 34,
     textAlign: 'center'
@@ -63,7 +57,6 @@ const styles = StyleSheet.create({
   },
 
   actionLabel: {
-    fontFamily: 'AvenirNextLTPro-Bold',
     fontSize: 24,
     lineHeight: 40
   },
@@ -88,15 +81,10 @@ const MobileUploadDrawer = () => {
   const dispatchWeb = useDispatchWeb()
   const close = () => dispatchWeb(hide())
 
-  const bodyTextColorStyle = useTheme(
-    {},
-    {
-      color: 'neutral'
-    }
-  )
-
-  const gradientColor1 = useColor('pageHeaderGradientColor1')
-  const gradientColor2 = useColor('pageHeaderGradientColor2')
+  const {
+    pageHeaderGradientColor1,
+    pageHeaderGradientColor2
+  } = useThemeColors()
 
   const CheckMark = () => (
     <Image style={styles.iconCheck} source={HeavyCheckMark} />
@@ -109,32 +97,38 @@ const MobileUploadDrawer = () => {
           <IconUpload
             height={66}
             width={66}
-            fill={gradientColor2}
-            fillSecondary={gradientColor1}
+            fill={pageHeaderGradientColor2}
+            fillSecondary={pageHeaderGradientColor1}
           />
 
           <MaskedView
-            maskElement={<Text style={styles.cta}>{messages.start}</Text>}
+            maskElement={
+              <Text style={styles.cta} weight='heavy'>
+                {messages.start}
+              </Text>
+            }
           >
             <LinearGradient
-              colors={[gradientColor1, gradientColor2]}
+              colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
               start={{ x: 1, y: 1 }}
               end={{ x: 0, y: 0 }}
             >
-              <Text style={[styles.cta, { opacity: 0 }]}>{messages.start}</Text>
+              <Text style={[styles.cta, { opacity: 0 }]} weight='heavy'>
+                {messages.start}
+              </Text>
             </LinearGradient>
           </MaskedView>
           <View>
-            <Text style={[styles.visit, bodyTextColorStyle]}>
-              {messages.visit}
-            </Text>
+            <Text style={styles.visit}>{messages.visit}</Text>
           </View>
         </View>
         <View style={styles.bottom}>
           {[messages.unlimited, messages.clear, messages.exclusive].map(m => (
             <View style={styles.action} key={m}>
               <CheckMark />
-              <Text style={[styles.actionLabel, bodyTextColorStyle]}>{m}</Text>
+              <Text style={styles.actionLabel} weight='bold'>
+                {m}
+              </Text>
             </View>
           ))}
         </View>

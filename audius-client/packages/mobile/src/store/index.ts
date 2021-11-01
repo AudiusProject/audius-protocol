@@ -1,3 +1,4 @@
+import { CommonState } from 'audius-client/src/common/store'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 import { composeWithDevTools } from 'redux-devtools-extension'
@@ -11,6 +12,7 @@ import notifications, { NotificationsState } from './notifications/reducer'
 import search, { SearchState } from './search/reducer'
 import signon, { SignonState } from './signon/reducer'
 import theme, { ThemeState } from './theme/reducer'
+import drawers, { DrawersState } from './drawers/slice'
 import clientStore from './clientStore/slice'
 
 import rootSaga from './sagas'
@@ -18,30 +20,32 @@ import { KeyboardState } from './keyboard/slice'
 
 export type AppState = {
   audio: AudioState
-  web: WebState
-  oauth: OAuthState
-  lifecycle: LifecycleState
+  clientStore: CommonState
+  drawers: DrawersState
   googleCast: GoogleCastState
-  notifications: NotificationsState
-  theme: ThemeState
-  search: SearchState
-  clientStore: any
   keyboard: KeyboardState
+  lifecycle: LifecycleState
+  notifications: NotificationsState
+  oauth: OAuthState
+  search: SearchState
   signon: SignonState
+  theme: ThemeState
+  web: WebState
 }
 
 const createRootReducer = () =>
   combineReducers({
-    clientStore,
     audio,
-    web,
-    oauth,
-    lifecycle,
+    clientStore,
+    drawers,
     googleCast,
+    lifecycle,
     notifications,
-    theme,
+    oauth,
     search,
-    signon
+    signon,
+    theme,
+    web
   })
 
 export default () => {

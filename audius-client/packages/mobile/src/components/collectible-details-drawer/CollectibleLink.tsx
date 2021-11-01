@@ -3,13 +3,13 @@ import React, { useCallback } from 'react'
 import {
   Linking,
   StyleSheet,
-  Text,
   TouchableWithoutFeedback,
   View
 } from 'react-native'
 
 import IconLink from '../../assets/images/iconLink.svg'
-import { useColor } from '../../utils/theme'
+import Text from '../../components/text'
+import { useThemeColors } from '../../utils/theme'
 import { ThemeColors, useThemedStyles } from '../../hooks/useThemedStyles'
 
 const createStyles = (themeColors: ThemeColors) =>
@@ -23,7 +23,6 @@ const createStyles = (themeColors: ThemeColors) =>
 
     linkText: {
       color: themeColors.secondary,
-      fontFamily: 'AvenirNextLTPro-Heavy',
       textDecorationLine: 'underline'
     },
 
@@ -44,18 +43,20 @@ export const CollectibleLink = ({
     Linking.openURL(url)
   }, [url])
 
-  const secondaryColor = useColor('secondary')
+  const { secondary } = useThemeColors()
 
   return (
     <TouchableWithoutFeedback onPress={handleLinkPress}>
       <View style={styles.link}>
         <IconLink
-          fill={secondaryColor}
+          fill={secondary}
           style={styles.linkIcon}
           height={16}
           width={16}
         />
-        <Text style={styles.linkText}>{text}</Text>
+        <Text style={styles.linkText} weight='heavy'>
+          {text}
+        </Text>
       </View>
     </TouchableWithoutFeedback>
   )
