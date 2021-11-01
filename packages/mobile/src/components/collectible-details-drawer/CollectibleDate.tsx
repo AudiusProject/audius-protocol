@@ -1,9 +1,10 @@
 import React from 'react'
 
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 
 import { formatDateWithTimezoneOffset } from 'audius-client/src/common/utils/timeUtil'
 
+import Text from '../../components/text'
 import { ThemeColors, useThemedStyles } from '../../hooks/useThemedStyles'
 
 const createStyles = (themeColors: ThemeColors) =>
@@ -16,8 +17,7 @@ const createStyles = (themeColors: ThemeColors) =>
     },
 
     dateTitle: {
-      color: themeColors.neutralLight4,
-      fontFamily: 'AvenirNextLTPro-Bold'
+      color: themeColors.neutralLight4
     },
 
     date: {
@@ -38,7 +38,9 @@ export const CollectibleDate = ({
 
   return (
     <View style={styles.dateWrapper}>
-      <Text style={styles.dateTitle}>{label}</Text>
+      <Text style={styles.dateTitle} weight='bold'>
+        {label}
+      </Text>
       <Text style={styles.date}>{formatDateWithTimezoneOffset(date)}</Text>
     </View>
   )

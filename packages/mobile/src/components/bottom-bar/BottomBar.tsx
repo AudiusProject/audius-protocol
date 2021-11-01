@@ -78,10 +78,10 @@ const BottomBar = () => {
 
   // Actions
   const dispatchWeb = useDispatchWeb()
-  const openSignOn = () => {
+  const openSignOn = useCallback(() => {
     dispatchWeb(_openSignOn(false))
     dispatchWeb(showRequiresAccountModal())
-  }
+  }, [dispatchWeb])
   const goToRoute = (route: string) => dispatchWeb(push(route))
   const resetExploreTab = () => dispatchWeb(setTab(Tabs.FOR_YOU))
   const scrollToTop = () =>

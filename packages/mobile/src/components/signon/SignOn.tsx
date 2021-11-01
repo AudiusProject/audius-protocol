@@ -35,8 +35,10 @@ import {
 import { getIsSignedIn, getDappLoaded } from '../../store/lifecycle/selectors'
 import { track, make } from '../../utils/analytics'
 import { EventNames } from '../../types/analytics'
+import { setVisibility } from '../../store/drawers/slice'
 import { RootStackParamList } from './NavigationStack'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { remindUserToTurnOnNotifications } from '../../components/notification-reminder/NotificationReminder'
 
 const image = backgImage
 const windowWidth = Dimensions.get('window').width
@@ -361,6 +363,9 @@ const SignOn = ({ navigation }: SignOnProps) => {
   const emailIsValid = useSelector(getEmailIsValid)
   const emailStatus = useSelector(getEmailStatus)
 
+  const setPushNotificationsReminderVisible = (visible: boolean) =>
+    dispatch(setVisibility({ drawer: 'EnablePushNotifications', visible }))
+
   const topDrawer = useRef(new Animated.Value(-800)).current
   const animateDrawer = useCallback(() => {
     Animated.timing(topDrawer, {
@@ -401,8 +406,12 @@ const SignOn = ({ navigation }: SignOnProps) => {
       setIsWorking(false)
       setEmail('')
       setPassword('')
+
+      if (isSignin) {
+        remindUserToTurnOnNotifications(setPushNotificationsReminderVisible)
+      }
     }
-  }, [signedIn])
+  }, [signedIn, isSignin])
 
   useEffect(() => {
     if (dappLoaded) {

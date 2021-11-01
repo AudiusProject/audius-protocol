@@ -1,21 +1,18 @@
-import React, { RefObject, useCallback } from 'react'
+import React, { useCallback } from 'react'
 import { checkNotifications, RESULTS } from 'react-native-permissions'
 
-import { MessagePostingWebView } from '../../types/MessagePostingWebView'
-import { postMessage as postMessageUtil } from '../../utils/postMessage'
+import { useDrawer } from '../../hooks/useDrawer'
 import useSessionCount from '../../hooks/useSessionCount'
-import { Message, MessageType } from '../../message'
 
 const REMINDER_EVERY_N_SESSIONS = 10
 
 type OwnProps = {
-  webRef: RefObject<MessagePostingWebView>
   isSignedIn: boolean
 }
 
-const NotificationReminderWrapper = ({ webRef, isSignedIn }: OwnProps) => {
+const NotificationReminderWrapper = ({ isSignedIn }: OwnProps) => {
   if (isSignedIn) {
-    return <NotificationReminder webRef={webRef} />
+    return <NotificationReminder />
   }
   return null
 }
@@ -23,7 +20,7 @@ const NotificationReminderWrapper = ({ webRef, isSignedIn }: OwnProps) => {
 // Sends a notification to the WebApp to turn on push notifications if we're in the DENIED
 // state. Is called from the `NotificationsReminder` component as well as `handleMessage`
 export const remindUserToTurnOnNotifications = (
-  postMessage: (message: Message) => void
+  setIsReminderOpen: (isVisible: boolean) => void
 ) => {
   checkNotifications()
     .then(({ status }) => {
@@ -48,10 +45,7 @@ export const remindUserToTurnOnNotifications = (
         case RESULTS.DENIED:
           // The permission has not been requested or has been denied but it still requestable
           // Appeal to the user to enable notifications
-          postMessage({
-            type: MessageType.ENABLE_PUSH_NOTIFICATIONS_REMINDER,
-            isAction: true
-          })
+          setIsReminderOpen(true)
       }
     })
     .catch(error => {
@@ -60,20 +54,16 @@ export const remindUserToTurnOnNotifications = (
     })
 }
 
-const NotificationReminder = ({
-  webRef
-}: {
-  webRef: RefObject<MessagePostingWebView>
-}) => {
+const NotificationReminder = () => {
+  const [_, setIsOpen] = useDrawer('EnablePushNotifications')
+
   // Sets up reminders to turn on push notifications
   const reminder = useCallback(() => {
-    const sender = webRef.current
-    if (!sender) return
-    remindUserToTurnOnNotifications((msg: Message) =>
-      postMessageUtil(sender, msg)
-    )
-  }, [webRef])
+    remindUserToTurnOnNotifications(setIsOpen)
+  }, [setIsOpen])
+
   useSessionCount(reminder, REMINDER_EVERY_N_SESSIONS)
+
   // No UI component
   return null
 }

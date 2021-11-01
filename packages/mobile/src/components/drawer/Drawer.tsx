@@ -13,6 +13,7 @@ import {
   PanResponder,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View
 } from 'react-native'
 import { Portal } from '@gorhom/portal'
@@ -66,6 +67,14 @@ const createStyles = (themeColors: ThemeColors) =>
         width: 50,
         height: 15
       }
+    },
+
+    background: {
+      position: 'absolute',
+      top: 0,
+      height: '100%',
+      width: '100%',
+      opacity: 0
     },
 
     skirt: {
@@ -201,10 +210,6 @@ const Drawer = ({ isOpen, children, onClose, isFullscreen }: DrawerProps) => {
     }
   })
 
-  // TODO: sk - click outside
-  // NOTE: This is currently handled by the web app
-  //   const clickOutsideRef = useClickOutside(() => close())
-
   // NOTE: sk - Need to interpolate the border radius bc of a funky
   // issue with border radius under 1 in ios
   const interpolatedBorderRadius = borderRadiusAnim.interpolate({
@@ -214,47 +219,54 @@ const Drawer = ({ isOpen, children, onClose, isFullscreen }: DrawerProps) => {
 
   return (
     <Portal>
-      <Animated.View
-        {...panResponder.panHandlers}
-        style={[
-          styles.drawer,
-          ...(isFullscreen ? [styles.fullDrawer] : []),
-          {
-            shadowOpacity: shadowAnim,
-            transform: [
-              {
-                translateY: translationAnim
-              }
-            ],
-            borderTopRightRadius: interpolatedBorderRadius,
-            borderTopLeftRadius: interpolatedBorderRadius
-          }
-        ]}
-      >
-        <View style={styles.drawerContent}>
-          <SafeAreaView
-            edges={['bottom', ...((isFullscreen ? ['top'] : []) as Edge[])]}
-            onLayout={(event: LayoutChangeEvent) => {
-              if (!isFullscreen) {
-                const { height } = event.nativeEvent.layout
-                setDrawerHeight(height)
-              }
-            }}
-          >
-            {isFullscreen && (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={onClose}
-                style={{ marginBottom: 8, width: 30 }}
-              >
-                <IconRemove width={30} height={30} fill={closeColor} />
-              </TouchableOpacity>
-            )}
-            {children}
-          </SafeAreaView>
-        </View>
-        <View style={styles.skirt} />
-      </Animated.View>
+      <>
+        {isOpen && (
+          <TouchableWithoutFeedback onPress={onClose}>
+            <View style={styles.background} />
+          </TouchableWithoutFeedback>
+        )}
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={[
+            styles.drawer,
+            ...(isFullscreen ? [styles.fullDrawer] : []),
+            {
+              shadowOpacity: shadowAnim,
+              transform: [
+                {
+                  translateY: translationAnim
+                }
+              ],
+              borderTopRightRadius: interpolatedBorderRadius,
+              borderTopLeftRadius: interpolatedBorderRadius
+            }
+          ]}
+        >
+          <View style={styles.drawerContent}>
+            <SafeAreaView
+              edges={['bottom', ...((isFullscreen ? ['top'] : []) as Edge[])]}
+              onLayout={(event: LayoutChangeEvent) => {
+                if (!isFullscreen) {
+                  const { height } = event.nativeEvent.layout
+                  setDrawerHeight(height)
+                }
+              }}
+            >
+              {isFullscreen && (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={onClose}
+                  style={{ marginBottom: 8, width: 30 }}
+                >
+                  <IconRemove width={30} height={30} fill={closeColor} />
+                </TouchableOpacity>
+              )}
+              {children}
+            </SafeAreaView>
+          </View>
+          <View style={styles.skirt} />
+        </Animated.View>
+      </>
     </Portal>
   )
 }

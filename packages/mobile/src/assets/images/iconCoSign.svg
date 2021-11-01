@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <g id="iconCoSign" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g transform="translate(2.000000, 2.000000)">
+            <rect id="Background" stroke="#f00" stroke-width="2" fill="#000" x="-1" y="-1" width="26" height="26" rx="2"></rect>
+            <path d="M7.27360729,11.7464406 L9.96371536,14.9890238 L17.8239427,5.26142007 C18.412256,4.60425089 19.3373122,5.30530722 18.8748191,6.05024486 L11.1408459,18.3626644 C10.5525326,19.1514892 9.75370245,19.2392694 9.08116843,18.4504387 L5.17177052,13.5869287 C4.41505778,12.447567 6.348957,10.8265818 7.2735793,11.7465515 L7.27360729,11.7464406 Z" id="Path" fill="#f00" fill-rule="nonzero"></path>
+        </g>
+    </g>
+</svg>

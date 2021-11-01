@@ -12,8 +12,9 @@ import { getCollectible } from 'audius-client/src/common/store/ui/collectible-de
 import { Chain } from 'audius-client/src/common/models/Chain'
 
 import { useDispatchWeb } from '../../hooks/useDispatchWeb'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { ThemeColors, useThemedStyles } from '../../hooks/useThemedStyles'
+import Text from '../../components/text'
 
 import { CollectibleMedia } from './CollectibleMedia'
 import { CollectibleDate } from './CollectibleDate'
@@ -34,13 +35,10 @@ const createStyles = (themeColors: ThemeColors) =>
     },
 
     detailsDescription: {
-      color: themeColors.neutralLight2,
       marginBottom: 24
     },
 
     detailsTitle: {
-      color: themeColors.neutral,
-      fontFamily: 'AvenirNextLTPro-Bold',
       textAlign: 'center',
       fontSize: 16,
       marginBottom: 24
@@ -56,7 +54,6 @@ const createStyles = (themeColors: ThemeColors) =>
 
     badge: {
       color: themeColors.white,
-      fontFamily: 'AvenirNextLTPro-Bold',
       textAlign: 'center',
       paddingTop: 4,
       paddingRight: 8,
@@ -120,13 +117,16 @@ const CollectibleDetails = () => {
           <CollectibleMedia collectible={collectible} />
 
           <View style={styles.details}>
-            <Text style={styles.detailsTitle}>{collectible.name}</Text>
+            <Text style={styles.detailsTitle} weight='bold'>
+              {collectible.name}
+            </Text>
             <View style={styles.detailsStamp}>
               <Text
                 style={[
                   styles.badge,
                   collectible.isOwned ? styles.owned : styles.created
                 ]}
+                weight='bold'
               >
                 {collectible.isOwned ? messages.owned : messages.created}
               </Text>
