@@ -200,7 +200,7 @@ ipfsAdd.ipfsAddImages = async (content, ipfsConfig = {}, logContext = {}, enable
       throw new Error(`onlyHash=${ipfsAddWithoutDaemonRespStr} and ipfsAddWithDaemonResp=${ipfsAddWithDaemonRespStr} are not consistent`)
     }
   } catch (e) {
-    const errorMsg = `[ipfsClient - ipfsAddImages()] Could not add content to ipfs. Defaulting to onlyHash=${ipfsAddWithoutDaemonRespStr}: ${e.toString()}`
+    const errorMsg = `[ipfsClient - ipfsAddImages()] Could not add content to ipfs: ${e.toString()}`
     logger.error(errorMsg)
     throw new Error(errorMsg)
   }
