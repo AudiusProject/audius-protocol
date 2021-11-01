@@ -125,10 +125,6 @@ def search_tags():
         if searchKind in [SearchKind.all, SearchKind.tracks]:
             # Query saved tracks for the current user that contain this tag
             track_ids = [track["track_id"] for track in results["tracks"]]
-            track_play_counts = {
-                track["track_id"]: track[response_name_constants.play_count]
-                for track in results["tracks"]
-            }
 
             saves_query = (
                 session.query(Save.save_item_id)
@@ -141,40 +137,9 @@ def search_tags():
                 )
                 .all()
             )
-            saved_track_ids = [i[0] for i in saves_query]
-            saved_tracks = (
-                session.query(Track)
-                .filter(
-                    Track.is_current == True,
-                    Track.is_delete == False,
-                    Track.is_unlisted == False,
-                    Track.stem_of == None,
-                    Track.track_id.in_(saved_track_ids),
-                )
-                .all()
-            )
-            saved_tracks = helpers.query_result_to_list(saved_tracks)
-            for saved_track in saved_tracks:
-                saved_track_id = saved_track["track_id"]
-                saved_track[response_name_constants.play_count] = track_play_counts.get(
-                    saved_track_id, 0
-                )
-            saved_tracks = populate_track_metadata(
-                session, saved_track_ids, saved_tracks, current_user_id
-            )
-
-            # Sort and paginate
-            play_count_sorted_saved_tracks = sorted(
-                saved_tracks,
-                key=lambda i: i[response_name_constants.play_count],
-                reverse=True,
-            )
-
-            play_count_sorted_saved_tracks = play_count_sorted_saved_tracks[
-                slice(offset, offset + limit, 1)
-            ]
-
-            results["saved_tracks"] = play_count_sorted_saved_tracks
+            saved_track_ids = {i[0] for i in saves_query}
+            saved_tracks = list(filter(lambda track: track["track_id"] in saved_track_ids, results["tracks"]))
+            results["saved_tracks"] = saved_tracks
 
         if searchKind in [SearchKind.all, SearchKind.users]:
             # Query followed users that have referenced this tag
@@ -189,23 +154,9 @@ def search_tags():
                 )
                 .all()
             )
-            followed_user_ids = [i[0] for i in followed_user_query]
-            followed_users = get_unpopulated_users(session, followed_user_ids)
-            followed_users = populate_user_metadata(
-                session, followed_user_ids, followed_users, current_user_id
-            )
-
-            followed_users_followee_sorted = sorted(
-                followed_users,
-                key=lambda i: i[response_name_constants.follower_count],
-                reverse=True,
-            )
-
-            followed_users_followee_sorted = followed_users_followee_sorted[
-                slice(offset, offset + limit, 1)
-            ]
-
-            results["followed_users"] = followed_users_followee_sorted
+            followed_user_ids = {i[0] for i in followed_user_query}
+            followed_users = list(filter(lambda user: user["user_id"] in followed_user_ids, results["users"]))
+            results["followed_users"] = followed_users
 
     return api_helpers.success_response(results)
 
