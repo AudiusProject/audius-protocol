@@ -21,7 +21,7 @@ const createRandomTextFile = () => {
   return filePath
 }
 
-describe.only('test ipfsClient with randomized text content', () => {
+describe('test ipfsClient with randomized text content', () => {
   let randomText, filePath, randomTextFilePath
 
   before(() => {
@@ -222,7 +222,7 @@ describe.only('test ipfsClient with randomized text content', () => {
   })
 })
 
-describe.only('test ipfsClient with static content', () => {
+describe('test ipfsClient with static content', () => {
   const staticTextPath = path.join(__dirname, './assets/static_text.txt')
   const staticImagePath = path.join(__dirname, './assets/static_image.png')
 
