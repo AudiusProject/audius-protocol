@@ -61,9 +61,7 @@ const Airplay = ({ webRef }: OwnProps) => {
     )
 
     return () => {
-      if (listenerRef.current) {
-        listenerRef.current.stop()
-      }
+      listenerRef.current?.stop?.()
     }
   }, [webRef, listenerRef])
 

@@ -120,7 +120,7 @@ PODS:
   - Permission-Notifications (3.0.5):
     - RNPermissions
   - PromisesObjC (2.0.0)
-  - Protobuf (3.18.0)
+  - Protobuf (3.17.0)
   - RCTRequired (0.63.4)
   - RCTTypeSafety (0.63.4):
     - FBLazyVector (= 0.63.4)
@@ -609,7 +609,7 @@ SPEC CHECKSUMS:
   nanopb: a0ba3315591a9ae0a16a309ee504766e90db0c96
   Permission-Notifications: 2662b6885535a98892b8e48da04b74fc898d70f8
   PromisesObjC: 68159ce6952d93e17b2dfe273b8c40907db5ba58
-  Protobuf: 1a37ebea1338949e9ac35a3f06e80b3f536eec8d
+  Protobuf: 7327d4444215b5f18e560a97f879ff5503c4581c
   RCTRequired: 082f10cd3f905d6c124597fd1c14f6f2655ff65e
   RCTTypeSafety: 8c9c544ecbf20337d069e4ae7fd9a377aadf504b
   React: b0a957a2c44da4113b0c4c9853d8387f8e64e615
@@ -655,4 +655,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 795c5ebf358fc982ab170ebd99fd145a29c95222
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.10.2

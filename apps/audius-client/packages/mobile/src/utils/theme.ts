@@ -154,10 +154,15 @@ const matrixTheme = {
   pageHeaderGradientColor2: '#1D211B'
 }
 
+export type ThemeColors =
+  | typeof defaultTheme
+  | typeof darkTheme
+  | typeof matrixTheme
+
 const themeColorsByThemeVariant = {
   [Theme.DEFAULT]: defaultTheme,
   [Theme.DARK]: darkTheme,
-  [Theme.MATRIX]: matrixTheme,
+  [Theme.MATRIX]: matrixTheme
 }
 
 export const useThemeVariant = (): keyof typeof themeColorsByThemeVariant => {
@@ -168,7 +173,7 @@ export const useThemeVariant = (): keyof typeof themeColorsByThemeVariant => {
   return theme === Theme.AUTO ? systemTheme : theme
 }
 
-const useThemeColors = () => {
+export const useThemeColors = () => {
   const themeVariant = useThemeVariant()
   return themeColorsByThemeVariant[themeVariant]
 }
