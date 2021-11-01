@@ -1,7 +1,7 @@
 #![allow(missing_docs)]
 
 //! Extended functionality for Pubkey
-use solana_program::{pubkey::Pubkey, pubkey::PubkeyError};
+use solana_program::{msg, pubkey::Pubkey, pubkey::PubkeyError};
 
 /// Represent Ethereum pubkey bytes
 pub type EthereumAddress = [u8; 20];
@@ -22,6 +22,29 @@ pub struct Derived {
 pub struct AddressPair {
     pub base: Base,
     pub derive: Derived,
+}
+
+/// Sender nonce account seed
+pub const NONCE_ACCOUNT_PREFIX: &str = "N_";
+
+pub fn find_nonce_address(
+    program_id: &Pubkey,
+    mint: &Pubkey,
+    expected_signer: &EthereumAddress
+) -> AddressPair {
+    // Check that the incremented nonce provided matches expected value
+    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), expected_signer.as_ref()].concat();
+
+    // Generating base address for nonce acct from mint
+    let (base_pubkey, base_seed) = find_base_address(mint, program_id);
+
+    // Generating derived address for nonce account with nonce acct seed
+    let derived_seed = bs58::encode(nonce_acct_seed).into_string();
+    let (derived_key, derived_seed_return) = Pubkey::create_with_seed(&base_pubkey, derived_seed.as_str(), program_id).map(|i| (i, derived_seed)).unwrap();
+    return AddressPair {
+        base: Base { address: base_pubkey, seed: base_seed },
+        derive: Derived { address: derived_key, seed: derived_seed_return }
+    };
 }
 
 /// Return `Base` account with seed and corresponding derived address

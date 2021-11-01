@@ -1,25 +1,9 @@
 //! Program state processor
 
-use crate::{
-    error::{to_claimable_tokens_error, ClaimableProgramError},
-    instruction::ClaimableProgramInstruction,
-    utils::program::{find_address_pair, EthereumAddress},
-};
+use crate::{error::{to_claimable_tokens_error, ClaimableProgramError}, instruction::ClaimableProgramInstruction, state::TransferInstructionData, utils::program::{EthereumAddress, find_address_pair, find_nonce_address}};
 use borsh::{BorshDeserialize, BorshSerialize};
 // use solana_sdk::{secp256k1_instruction::{SIGNATURE_OFFSETS_SERIALIZED_SIZE}};
-use solana_program::{
-    account_info::next_account_info,
-    account_info::AccountInfo,
-    entrypoint::ProgramResult,
-    msg,
-    program::{invoke, invoke_signed},
-    program_error::ProgramError,
-    program_pack::Pack,
-    pubkey::Pubkey,
-    secp256k1_program, system_instruction, sysvar,
-    sysvar::rent::Rent,
-    sysvar::Sysvar,
-};
+use solana_program::{account_info::AccountInfo, account_info::{Account, next_account_info}, entrypoint::ProgramResult, msg, program::{invoke, invoke_signed}, program_error::ProgramError, program_pack::Pack, pubkey::Pubkey, secp256k1_program, system_instruction, sysvar, sysvar::Sysvar, sysvar::rent::Rent};
 use std::mem::size_of;
 
 /// Known const for serialized signature offsets
@@ -65,7 +49,7 @@ impl Processor {
     ) -> ProgramResult {
         // check that mint is initialized
         spl_token::state::Mint::unpack(&mint_account_info.data.borrow())?;
-        Self::create_account(
+        Self::create_token_account(
             program_id,
             funder_account_info.clone(),
             acc_to_create_info.clone(),
@@ -88,15 +72,21 @@ impl Processor {
     /// Operation gated by SECP recovery
     pub fn process_transfer_instruction<'a>(
         program_id: &Pubkey,
+        funder_account_info: &AccountInfo<'a>,
         banks_token_account_info: &AccountInfo<'a>,
         destination_account_info: &AccountInfo<'a>,
+        nonce_account_info: &AccountInfo<'a>,
         authority_account_info: &AccountInfo<'a>,
         instruction_info: &AccountInfo<'a>,
         eth_address: EthereumAddress,
         amount: u64,
     ) -> ProgramResult {
         Self::check_ethereum_sign(
+            program_id,
+            funder_account_info,
             instruction_info,
+            banks_token_account_info,
+            nonce_account_info,
             &eth_address,
             &destination_account_info.key.to_bytes(),
         )?;
@@ -143,15 +133,19 @@ impl Processor {
             ClaimableProgramInstruction::Transfer(instruction) => {
                 msg!("Instruction: Transfer");
 
+                let funder_account_info = next_account_info(account_info_iter)?;
                 let banks_token_account_info = next_account_info(account_info_iter)?;
                 let destination_account_info = next_account_info(account_info_iter)?;
+                let nonce_account_info = next_account_info(account_info_iter)?;
                 let authority_account_info = next_account_info(account_info_iter)?;
                 let instruction_info = next_account_info(account_info_iter)?;
 
                 Self::process_transfer_instruction(
                     program_id,
+                    funder_account_info,
                     banks_token_account_info,
                     destination_account_info,
+                    nonce_account_info,
                     authority_account_info,
                     instruction_info,
                     instruction.eth_address,
@@ -163,7 +157,7 @@ impl Processor {
 
     // Helper functions below
     #[allow(clippy::too_many_arguments)]
-    fn create_account<'a>(
+    fn create_token_account<'a>(
         program_id: &Pubkey,
         funder: AccountInfo<'a>,
         account_to_create: AccountInfo<'a>,
@@ -260,7 +254,11 @@ impl Processor {
 
     /// Checks that the user signed message with his ethereum private key
     fn check_ethereum_sign(
+        program_id: &Pubkey,
+        funder_account_info: &AccountInfo,
         instruction_info: &AccountInfo,
+        banks_token_account_info: &AccountInfo,
+        nonce_account_info: &AccountInfo,
         expected_signer: &EthereumAddress,
         expected_message: &[u8],
     ) -> ProgramResult {
@@ -291,12 +289,36 @@ impl Processor {
             return Err(ClaimableProgramError::Secp256InstructionLosing.into());
         }
 
-        Self::validate_eth_signature(
+        let res = Self::validate_eth_signature(
             expected_signer,
             expected_message,
             instruction.data,
             secp_program_index as u8,
-        )
+        );
+
+        msg!("validate_eth_signature_result {:?}", res);
+        // TODO: ERROR IF THIS FAILS
+        msg!("banks_token_acct_info {:?}", banks_token_account_info);
+        let token_account_info =
+            spl_token::state::Account::unpack(&banks_token_account_info.data.borrow())?;
+        let nonce_acct_address_pair = find_nonce_address(
+            program_id,
+            &token_account_info.mint,
+            expected_signer
+        );
+
+        msg!("derived_key {:?}, ", nonce_acct_address_pair.derive.address);
+        msg!("provided nonce_acc_info {:?}", nonce_account_info);
+        // TODO: ERROR IF MISMATCH ABOVE
+
+        let nonce_acct_lamports = nonce_account_info.lamports();
+        msg!("nonce_acct_lamports {:?}", nonce_acct_lamports);
+        if nonce_acct_lamports == 0 {
+            msg!("Creating nonce acct {:?}", nonce_account_info);
+
+        }
+
+        Ok(())
     }
 
     /// Checks that message inside instruction was signed by expected signer
@@ -311,6 +333,8 @@ impl Processor {
         if secp_instruction_data[0] != 1 {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
         }
+
+        msg!("secp_instruction_data = {:?}", secp_instruction_data);
 
         // Assert instruction_index = 1
         let start = 1;
@@ -349,10 +373,14 @@ impl Processor {
         }
 
         let instruction_message = secp_instruction_data[message_data_offset..].to_vec();
-        if instruction_message != *expected_message {
+        let decoded_instr_data = TransferInstructionData::try_from_slice(&instruction_message).unwrap();
+        msg!("decoded_instr_data {:?}", decoded_instr_data);
+        msg!("decoded_instr_data2 {:?}", decoded_instr_data.target_pubkey.to_bytes());
+
+        if decoded_instr_data.target_pubkey.to_bytes() != *expected_message {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
         }
 
-        Ok(())
+       Ok(())
     }
 }

@@ -1,7 +1,8 @@
 #![cfg(feature = "test-bpf")]
 
 use claimable_tokens::error::ClaimableProgramError;
-use claimable_tokens::utils::program::{find_address_pair, EthereumAddress};
+use claimable_tokens::state::TransferInstructionData;
+use claimable_tokens::utils::program::{EthereumAddress, find_address_pair, find_nonce_address};
 use claimable_tokens::*;
 use libsecp256k1::{PublicKey, SecretKey};
 use rand::prelude::ThreadRng;
@@ -21,6 +22,7 @@ use solana_sdk::{
     transaction::Transaction,
     transport::TransportError,
 };
+use borsh::{BorshDeserialize, BorshSerialize};
 
 // Construct_eth_pubkey
 pub fn program_test() -> ProgramTest {
@@ -268,6 +270,7 @@ async fn prepare_transfer(
     (pair.base.address, pair.derive.address, tokens_amount)
 }
 
+/*
 // Initialize a user token account
 #[tokio::test]
 async fn init_instruction() {
@@ -634,6 +637,118 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
     assert_eq!(user_token_account.amount, 0);
 }
+*/
+
+
+#[tokio::test]
+async fn transfer_replay_instruction() {
+    let mut program_context = program_test().start_with_context().await;
+    let rent = program_context.banks_client.get_rent().await.unwrap();
+    let (
+        _rng,
+        _key,
+        priv_key,
+        _secp_pubkey,
+        mint_account,
+        mint_authority,
+        user_token_account,
+        eth_address,
+    ) = init_test_variables();
+
+    let mint_pubkey = mint_account.pubkey();
+    // let message = user_token_account.pubkey().to_bytes();
+    // let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
+    let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
+        &mut program_context,
+        mint_account,
+        rent,
+        mint_authority,
+        eth_address,
+        &user_token_account,
+    )
+    .await;
+    let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
+
+    let instr_test = TransferInstructionData {
+        target_pubkey: user_token_account.pubkey(),
+        amount: 10,
+        nonce: 0
+    };
+
+    let encoded = instr_test.try_to_vec().unwrap();
+    let decoded = TransferInstructionData::try_from_slice(&encoded).unwrap();
+    println!("{:?}", instr_test);
+    println!("test {:?}", encoded);
+    println!("test decode {:?}", decoded);
+    let secp256_program_instruction_2 = new_secp256k1_instruction(&priv_key, &encoded);
+    println!("secp256_program_instruction_2 {:?}", secp256_program_instruction_2);
+
+    let nonce_addr_info = find_nonce_address(
+        &id(),
+        &mint_pubkey,
+        &eth_address);
+
+    println!("nonce_addr_info TEST {:?}", nonce_addr_info.derive.address);
+
+    let instructions = [
+        secp256_program_instruction_2.clone(),
+        instruction::transfer(
+            &id(),
+            &program_context.payer.pubkey(),
+            &user_bank_account,
+            &user_token_account.pubkey(),
+            &nonce_addr_info.derive.address,
+            &base_acc,
+            instruction::Transfer {
+                eth_address,
+                amount: transfer_amount,
+            },
+        )
+        .unwrap()
+    ];
+
+    print!("INSTRUCTIONS - {:?}", instructions);
+
+    let mut transaction = Transaction::new_with_payer(
+        &instructions,
+        Some(&program_context.payer.pubkey()),
+    );
+
+    transaction.sign(&[&program_context.payer], program_context.last_blockhash);
+    program_context
+        .banks_client
+        .process_transaction(transaction)
+        .await
+        .unwrap();
+
+    return;
+    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await;
+    let bank_token_account =
+        spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
+    // check that program sent required number tokens from bank token account to user token account
+    assert_eq!(bank_token_account.amount, tokens_amount - transfer_amount);
+
+    let user_token_account_data =
+        get_account(&mut program_context, &user_token_account.pubkey()).await;
+    let user_token_account =
+        spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
+
+    assert_eq!(user_token_account.amount, transfer_amount);
+
+    print!("INSTRUCTIONS - {:?}", instructions);
+    let mut transaction2 = Transaction::new_with_payer(
+        &instructions,
+        Some(&program_context.payer.pubkey()),
+    );
+    transaction2.sign(&[&program_context.payer], program_context.last_blockhash);
+    program_context
+        .banks_client
+        .process_transaction(transaction2)
+        .await
+        .unwrap();
+}
+
+/*
 
 #[tokio::test]
 async fn transfer_with_amount_instruction() {
@@ -1025,3 +1140,5 @@ async fn transfer_invalid_amount() {
         _ => panic!("Unexpected error scenario {:?}", tx_result),
     }
 }
+
+*/
