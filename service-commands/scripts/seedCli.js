@@ -3,6 +3,7 @@ const { program } = require('commander')
 const {
   Seed
 } = ServiceCommands
+const { parseMetadataIntoObject } = require('../src/commands/utils')
 
 console.warn('WARNING: `A seed` must be run from the service-commands directory. This is because of the way relative paths for node-localstorage work.')
 
@@ -37,29 +38,24 @@ program
     .command('create-user')
     .description('Create a user and set them to the new active user. If no options are provided, seed will generate values and write them to file.')
     .option(
-      '-a, --user-alias',
-      'alias by which to reference user for this seed session',
+      '-a, --user-alias <alias>',
+      'alias by which to reference user for this seed session. If you do not specify an alias, alias used will be user entropy key.',
       null
     )
     .option(
-      '-n, --create-new',
-      'whether to create new user for this seed session',
-      true
-    )
-    .option(
-      '-e', '--email',
+      '-e, --email <email>',
       'email for user account creation',
       ''
     )
     .option(
-      '-p, --password',
+      '-p, --password <password>',
       'password for user account',
       ''
     )
     .option(
-      '-m, --metadata',
-      'metadata to associate with user',
-      {}
+      '-m, --metadata <metadata-object>',
+      'metadata to associate with user. Write this as a series of comma-separated key-values e.g. -m email=test@audius.co,password=2343,handle=christinus,is_verified=true',
+      parseMetadataIntoObject
     )
     .action(async (opts) => {
       const { userAlias: alias, ...options } = opts.opts()

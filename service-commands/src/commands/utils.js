@@ -113,7 +113,19 @@ const getRandomPassword = () => {
       cover_photo_sizes: null,
       creator_node_endpoint: process.env.USER_METADATA_ENDPOINT
     }
-  }
+}
+
+const parseMetadataIntoObject = (commaSeparatedKeyValuePairs, rootObject = {}) => {
+  let metadata = rootObject
+  commaSeparatedKeyValuePairs.split(',').forEach(kvPair => {
+    let [key, value] = kvPair.split('=')
+    if (value === 'true') {
+      value = true
+    }
+    metadata[key] = value
+  })
+  return metadata
+}
 
 module.exports = {
     getLibsConfig,
@@ -122,5 +134,6 @@ module.exports = {
     isUpperCase,
     getRandomUserMetadata,
     getRandomPassword,
-    getRandomEmail
+    getRandomEmail,
+    parseMetadataIntoObject
 }
