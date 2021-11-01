@@ -11,6 +11,7 @@ import {
 } from 'react-beautiful-dnd'
 
 import { ReactComponent as IconCarrotDown } from 'assets/img/iconCaretDown.svg'
+import { formatSeconds } from 'common/utils/timeUtil'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import Tooltip from 'components/tooltip/Tooltip'
 import TableDragHandle from 'components/tracks-table/TableDragHandle'
@@ -22,7 +23,6 @@ import Draggable from 'containers/dragndrop/Draggable'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { formatCount } from 'utils/formatUtil'
 import { fullTrackPage } from 'utils/route'
-import { formatSeconds } from 'utils/timeUtil'
 
 import styles from './TracksTable.module.css'
 

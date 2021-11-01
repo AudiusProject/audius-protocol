@@ -1,20 +1,8 @@
-import {
-  useSelector as untypedUseSelector,
-  TypedUseSelectorHook
-} from 'react-redux'
+import { useSelector as untypedUseSelector } from 'react-redux'
 import { Action } from 'redux'
 
+import { UseSelectorHook } from 'common/hooks/useSelector'
 import { AppState } from 'store/types'
-
-// The TypedUseSelectorHook can't handle selectors created by reselect,
-// as the OutputSelector and OutputParameterSelector take additional
-// args beyond state: TState. Override the UserSelectorHook here to play ball.
-interface UseSelectorHook<TState> extends TypedUseSelectorHook<TState> {
-  <TSelected>(
-    selector: (state: TState, ...args: any[]) => TSelected,
-    equalityFn?: (left: TSelected, right: TSelected) => boolean
-  ): TSelected
-}
 
 /**
  * Typed version of Redux useSelector

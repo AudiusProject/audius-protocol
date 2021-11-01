@@ -6,6 +6,7 @@ import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
 import { ReactComponent as IconShow } from 'assets/img/iconMultiselectAdd.svg'
 import { ReactComponent as IconHide } from 'assets/img/iconRemoveTrack.svg'
 import { Collectible, CollectibleMediaType } from 'common/models/Collectible'
+import { formatDateWithTimezoneOffset } from 'common/utils/timeUtil'
 import Tooltip from 'components/tooltip/Tooltip'
 import {
   collectibleMessages,
@@ -13,7 +14,6 @@ import {
 } from 'containers/collectibles/components/CollectiblesPage'
 import styles from 'containers/collectibles/components/CollectiblesPage.module.css'
 import { findAncestor } from 'utils/domUtils'
-import { formatDateWithTimezoneOffset } from 'utils/timeUtil'
 
 // @ts-ignore
 export const VisibleCollectibleRow = props => {

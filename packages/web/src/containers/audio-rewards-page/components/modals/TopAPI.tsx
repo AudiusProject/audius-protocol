@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 
 import AudiusAPI from 'assets/img/audiusAPI.png'
-import { useModalState } from 'hooks/useModalState'
+import { useModalState } from 'common/hooks/useModalState'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
 import ButtonWithArrow from '../ButtonWithArrow'

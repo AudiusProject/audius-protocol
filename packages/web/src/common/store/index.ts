@@ -15,6 +15,9 @@ import TracksCacheState from 'common/store/cache/tracks/types'
 import usersReducer from 'common/store/cache/users/reducer'
 import usersSagas from 'common/store/cache/users/sagas'
 import UserCacheState from 'common/store/cache/users/types'
+import collectibleDetailsReducer, {
+  CollectibleDetailsState
+} from 'common/store/ui/collectible-details/slice'
 import mobileOverflowModalReducer from 'common/store/ui/mobile-overflow-menu/reducer'
 import { MobileOverflowModalState } from 'common/store/ui/mobile-overflow-menu/types'
 import mobileUploadDrawerReducer, {
@@ -43,6 +46,7 @@ export const reducers = {
 
   // UI
   ui: combineReducers({
+    collectibleDetails: collectibleDetailsReducer,
     enablePushNotificationsDrawer: pushNotificationsDrawerReducer,
     mobileOverflowModal: mobileOverflowModalReducer,
     mobileUploadDrawer: mobileUploadDrawerReducer,
@@ -68,6 +72,7 @@ export type CommonState = {
   users: UserCacheState
 
   ui: {
+    collectibleDetails: CollectibleDetailsState
     enablePushNotificationsDrawer: PushNotificationsDrawerState
     mobileOverflowModal: MobileOverflowModalState
     mobileUploadDrawer: MobileUploadDrawerState
