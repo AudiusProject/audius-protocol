@@ -1,5 +1,6 @@
 const AudiusLibs = require('@audius/libs')
 const moment = require('moment')
+const { LocalStorage } = require('node-localstorage')
 const dotenv = require('dotenv').config({
   path: `${process.env.PROTOCOL_DIR}/service-commands/.env.dev`
 })

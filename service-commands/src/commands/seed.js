@@ -1,6 +1,6 @@
 const fs = require('fs')
-const { LocalStorage } = require('node-localstorage')
 const AudiusLibs = require('@audius/libs')
+const { LocalStorage } = require('node-localstorage')
 
 const {
   getLibsConfig,
@@ -12,72 +12,100 @@ const {
 } = require('./utils')
 
 const HEDGEHOG_ENTROPY_KEY = 'hedgehog-entropy-key'
-const USER_CACHE_PATH = `${process.env.PROTOCOL_DIR}/../.audius/seed-users-config.json`
-
-const UserCache = {} // TODO refactor into a real-deal class
-
-const updateUserCache = (cacheObject) => {
-  fs.writeFileSync(USER_CACHE_PATH, JSON.stringify(cacheObject))
-  return
-}
-
-const getActiveUserFromCache = () => {
-  const userCache = getUserCache()
-  const activeAlias = userCache['active']
-  return userCache[activeAlias]
-}
-
-const setActiveUserInCache = alias => {
-  let userCache = getUserCache()
-  userCache['active'] = alias
-  updateUserCache(userCache)
-}
-
-const addToUserCache = ({ alias, hedgehogEntropyKey, userId = null }) => {
-  let userCache = getUserCache()
-  userCache[alias] = {
-    userId,
-    hedgehogEntropyKey
-  }
-  updateUserCache(userCache)
-}
-
-const addLoginDetailsToCache = ({ entropy, email, password }) => {
-  const match = ([alias, { hedgehogEntropyKey }]) => {
-    return hedgehogEntropyKey === entropy
-  }
-  let userCache = getUserCache()
-  const [alias, info] = Object.entries(userCache).find(match)
-  userCache[alias] = Object.assign(info, { email, password })
-  updateUserCache(userCache)
-}
-const getUserCache = () => {
-  let userCache
-  if (fs.existsSync(USER_CACHE_PATH)) {
-    userCache = JSON.parse(fs.readFileSync(USER_CACHE_PATH))
-  } else {
-    userCache = {}
-  }
-  return userCache
-}
-
-const clearUserCache = () => {
-  updateUserCache({})
-}
-
-const getLocalStorageReference = () => {
-  const localStorage = new LocalStorage(`${process.env.PROTOCOL_DIR}/service-commands/local-storage`)
-  return localStorage
-}
-
-class Seed {
+class UserCache {
   constructor() {
+    this.USER_CACHE_PATH = `${process.env.PROTOCOL_DIR}/../.audius/seed-users-config.json`
   }
 
-  getUserEntropyFromLocalStorage = () => {
-    const localStorage = getLocalStorageReference()
+  update = (cacheObject) => {
+    fs.writeFileSync(this.USER_CACHE_PATH, JSON.stringify(cacheObject))
+    return
+  }
+
+  getActiveUser = () => {
+    const cache = this.get()
+    const activeAlias = cache['active']
+    return cache[activeAlias]
+  }
+
+  setActiveUser = alias => {
+    let cache = this.get()
+    cache['active'] = alias
+    this.update(cache)
+  }
+
+  addUser = ({ alias, hedgehogEntropyKey, userId = null }) => {
+    let cache = this.get()
+    cache[alias] = {
+      userId,
+      hedgehogEntropyKey
+    }
+    this.update(cache)
+  }
+
+  addLoginDetails = ({ entropy, email, password }) => {
+    const match = ([alias, { hedgehogEntropyKey }]) => {
+      return hedgehogEntropyKey === entropy
+    }
+    let cache = this.get()
+    const [alias, info] = Object.entries(cache).find(match)
+    cache[alias] = Object.assign(info, { email, password })
+    this.update(cache)
+  }
+
+  get = () => {
+    let cache
+    if (fs.existsSync(this.USER_CACHE_PATH)) {
+      cache = JSON.parse(fs.readFileSync(this.USER_CACHE_PATH))
+    } else {
+      cache = {}
+    }
+    return cache
+  }
+
+  findUser = ({ alias, userId }) => {
+    const cache = this.get()
+    const match = ([cacheAlias, { userId: cacheUserId }]) => {
+      return alias === cacheAlias || userId == cacheUserId
+    }
+    const [userAlias, userDetails] = Object.entries(cache).find(match) || {}
+    return Object.assign(userDetails, { userAlias })
+  }
+
+  clear = () => {
+    this.update({})
+  }
+}
+class LocalStorageWrapper {
+  // local storage wrapper functions - because different instances of
+  // localstorage in node don't sync, we must reinstantiate from the path
+  // with each read/write to ensure we're getting the correct reference.
+  constructor () {}
+
+  get = () => {
+    return new LocalStorage(`${process.env.PROTOCOL_DIR}/service-commands/local-storage`)
+  }
+
+  getUserEntropy = () => {
+    const localStorage = this.get()
     const entropy = localStorage.getItem(HEDGEHOG_ENTROPY_KEY)
     return entropy
+  }
+
+  setUserEntropy = hedgehogEntropyKey => {
+    const localStorage = this.get()
+    localStorage.setItem(HEDGEHOG_ENTROPY_KEY, hedgehogEntropyKey)
+  }
+
+  clear = () => {
+    const localStorage = this.get()
+    localStorage.clear()
+  }
+}
+class Seed {
+  constructor() {
+    this.cache = new UserCache()
+    this.localstorage = new LocalStorageWrapper()
   }
 
   init = async (libsConfigOverride = {}) => {
@@ -87,34 +115,20 @@ class Seed {
       // TODO set up seed dump file
   }
 
-  setUserEntropyInLocalStorage = hedgehogEntropyKey => {
-    const localStorage = getLocalStorageReference()
-    localStorage.setItem(HEDGEHOG_ENTROPY_KEY, hedgehogEntropyKey)
-  }
-
-  clearLocalStorage = () => {
-    const localStorage = getLocalStorageReference()
-    localStorage.clear()
-  }
-
   clearSession = async () => {
-      this.clearLocalStorage()
+      this.localstorage.clear()
       this.libs = undefined
-      clearUserCache()
+      this.cache.clear()
   }
 
   setUser = async ({ alias = '', userId = null }) => {
-      const userCache = getUserCache()
-      const match = ([cacheAlias, { userId: cacheUserId }]) => {
-        console.log(cacheAlias, cacheUserId)
-        return alias === cacheAlias || userId == cacheUserId
-      }
-      const [userAlias, userDetails] = Object.entries(userCache).find(match) || {}
+      const userDetails = this.cache.findUser({ alias, userId })
+      const { hedgehogEntropyKey, userAlias } = userDetails
       if (!userDetails.hedgehogEntropyKey) {
         console.error(`No user with alias ${alias} or id ${userId} found in local seed cache.`)
       } else {
-        this.setUserEntropyInLocalStorage(userDetails.hedgehogEntropyKey)
-        setActiveUserInCache(userAlias)
+        this.localstorage.setUserEntropy(hedgehogEntropyKey)
+        this.cache.setActiveUser(userAlias)
         console.log(`Successfully set user with alias ${alias} / id ${userId} as active.`)
       }
       const libsConfigOverride = {
@@ -143,14 +157,14 @@ class Seed {
     if (signUpResponse.error) {
       throw new Error(signUpResponse.error)
     } else {
-      const hedgehogEntropyKey = this.getUserEntropyFromLocalStorage()
+      const hedgehogEntropyKey = this.localstorage.getUserEntropy()
       const userId = signUpResponse.userId
       if (!alias) {
         alias = hedgehogEntropyKey
       }
-      addToUserCache({ alias, hedgehogEntropyKey, userId })
-      addLoginDetailsToCache({ entropy: hedgehogEntropyKey, email, password })
-      setActiveUserInCache(alias)
+      this.cache.addUser({ alias, hedgehogEntropyKey, userId })
+      this.cache.addLoginDetails({ entropy: hedgehogEntropyKey, email, password })
+      this.cache.setActiveUser(alias)
       return
     }
   }
