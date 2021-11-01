@@ -624,6 +624,12 @@ const config = convict({
     format: 'nat',
     env: 'IPFSAddTimeoutMs',
     default: 90000 // 90s
+  },
+  healthCheckIpfsTimeoutMs: {
+    doc: 'Default timeout for the ipfs health check route in timing add content',
+    format: 'nat',
+    env: 'healthCheckIpfsTimeoutMs',
+    default: 30000 // 30s
   }
 
   /**
