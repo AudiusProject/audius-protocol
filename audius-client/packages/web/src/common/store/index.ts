@@ -27,9 +27,6 @@ import modalsReducer, { ModalsState } from 'common/store/ui/modals/slice'
 import nowPlayingReducer, {
   NowPlayingState
 } from 'common/store/ui/now-playing/slice'
-import pushNotificationsDrawerReducer, {
-  PushNotificationsDrawerState
-} from 'common/store/ui/push-notifications-drawer/slice'
 
 // In the future, these state slices will live in @audius/client-common.
 // For now they live in the web client. As features get migrated to RN
@@ -47,7 +44,6 @@ export const reducers = {
   // UI
   ui: combineReducers({
     collectibleDetails: collectibleDetailsReducer,
-    enablePushNotificationsDrawer: pushNotificationsDrawerReducer,
     mobileOverflowModal: mobileOverflowModalReducer,
     mobileUploadDrawer: mobileUploadDrawerReducer,
     modals: modalsReducer,
@@ -73,7 +69,6 @@ export type CommonState = {
 
   ui: {
     collectibleDetails: CollectibleDetailsState
-    enablePushNotificationsDrawer: PushNotificationsDrawerState
     mobileOverflowModal: MobileOverflowModalState
     mobileUploadDrawer: MobileUploadDrawerState
     modals: ModalsState

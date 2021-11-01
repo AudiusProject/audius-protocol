@@ -9,7 +9,6 @@ import { Dispatch } from 'redux'
 import { ID } from 'common/models/Identifiers'
 import User from 'common/models/User'
 import { InstagramProfile } from 'common/store/account/reducer'
-import { show as showEnablePushNotificationsDrawer } from 'common/store/ui/push-notifications-drawer/slice'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import * as settingPageActions from 'containers/settings-page/store/actions'
 import { PushNotificationSetting } from 'containers/settings-page/store/types'
@@ -22,6 +21,7 @@ import NotificationPermissionsPage from 'containers/sign-on/components/mobile/No
 import PasswordPage from 'containers/sign-on/components/mobile/PasswordPage'
 import ProfilePage from 'containers/sign-on/components/mobile/ProfilePage'
 import { Pages, FollowArtistsCategory } from 'containers/sign-on/store/types'
+import { PromptPushNotificationPermissions } from 'services/native-mobile-interface/notifications'
 import { BASE_URL, SIGN_UP_PAGE } from 'utils/route'
 
 import LoadingPage from './LoadingPage'
@@ -118,8 +118,7 @@ const SignOnPage = ({
   onSelectArtistCategory,
   onNextPage,
   suggestedFollows: suggestedFollowEntries,
-  togglePushNotificationSetting,
-  showEnablePushNotificationsDrawer
+  togglePushNotificationSetting
 }: SignOnProps & ReturnType<typeof mapDispatchToProps>) => {
   const {
     email,
@@ -144,7 +143,7 @@ const SignOnPage = ({
     if (NATIVE_MOBILE) {
       if (page === Pages.SIGNIN) {
         // Trigger enable push notifs drawer
-        showEnablePushNotificationsDrawer()
+        new PromptPushNotificationPermissions().send()
       } else {
         // Sign up flow
         // Enable push notifications (will trigger device popup)
@@ -152,12 +151,7 @@ const SignOnPage = ({
         onNextPage()
       }
     }
-  }, [
-    togglePushNotificationSetting,
-    onNextPage,
-    page,
-    showEnablePushNotificationsDrawer
-  ])
+  }, [togglePushNotificationSetting, onNextPage, page])
 
   const pages = {
     // Captures Pages.EMAIL and Pages.SIGNIN
@@ -361,9 +355,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     ) =>
       dispatch(
         settingPageActions.togglePushNotificationSetting(notificationType, isOn)
-      ),
-    showEnablePushNotificationsDrawer: () =>
-      dispatch(showEnablePushNotificationsDrawer())
+      )
   }
 }
 
