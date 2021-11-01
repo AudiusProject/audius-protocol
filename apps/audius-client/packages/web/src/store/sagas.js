@@ -5,7 +5,6 @@ import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
 import errorSagas from 'common/store/errors/sagas'
-import enablePushNotificationsSagas from 'common/store/ui/push-notifications-drawer/sagas'
 import addToPlaylistSagas from 'containers/add-to-playlist/store/sagas'
 import dashboardSagas from 'containers/artist-dashboard-page/store/sagas'
 import artistRecommendationsSagas from 'containers/artist-recommendations/store/sagas'
@@ -121,7 +120,6 @@ export default function* rootSaga() {
     artistRecommendationsSagas(),
     changePasswordSagas(),
     deletedSagas(),
-    enablePushNotificationsSagas(),
     favoritePageSagas(),
     firstUploadModalSagas(),
     followersPageSagas(),
