@@ -2,8 +2,8 @@ import React, { ReactNode } from 'react'
 
 import { useDispatch } from 'react-redux'
 
+import { useSetVisibility } from 'common/hooks/useModalState'
 import { useRemoteVar } from 'containers/remote-config/hooks'
-import { useSetVisibility } from 'hooks/useModalState'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { StringKeys } from 'services/remote-config'
 

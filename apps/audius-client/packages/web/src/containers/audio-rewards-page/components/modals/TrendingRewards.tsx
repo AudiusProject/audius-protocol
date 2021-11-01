@@ -5,6 +5,7 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { TwitterTweetEmbed } from 'react-twitter-embed'
 
+import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import {
   getTrendingRewardsModalType,
@@ -12,7 +13,6 @@ import {
   setTrendingRewardsModalType
 } from 'containers/audio-rewards-page/store/slice'
 import { useRemoteVar } from 'containers/remote-config/hooks'
-import { useModalState } from 'hooks/useModalState'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import Theme from 'models/Theme'

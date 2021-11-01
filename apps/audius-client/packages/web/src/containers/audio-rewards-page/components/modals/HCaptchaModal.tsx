@@ -3,11 +3,11 @@ import React, { useCallback } from 'react'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useDispatch } from 'react-redux'
 
+import { useModalState } from 'common/hooks/useModalState'
 import {
   HCaptchaStatus,
   setHCaptchaStatus
 } from 'containers/audio-rewards-page/store/slice'
-import { useModalState } from 'hooks/useModalState'
 import AudiusBackend from 'services/AudiusBackend'
 
 import styles from './HCaptchaModal.module.css'
