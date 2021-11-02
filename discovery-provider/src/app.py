@@ -165,7 +165,7 @@ def create_celery(test_config=None):
     eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
 
     # Initialize Solana web3 provider
-    solana_client_manager = SolanaClientManager()
+    solana_client_manager = SolanaClientManager(shared_config["solana"]["endpoint"])
 
     global registry
     global user_factory

@@ -2,9 +2,13 @@ const Jimp = require('jimp')
 const ExifParser = require('exif-parser')
 const fs = require('fs-extra')
 const path = require('path')
+
+const config = require('./config')
 const { logger: genericLogger } = require('./logging')
-const { ipfs } = require('./ipfsClient')
+const { ipfsAddImages } = require('./ipfsAdd')
 const DiskManager = require('./diskManager')
+
+const ENABLE_IPFS_ADD_IMAGES = config.get('enableIPFSAddImages')
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.
 const COLOR_WHITE = 0xFFFFFFFF
@@ -139,15 +143,17 @@ module.exports = async (job) => {
   })
   resizes.push(original)
 
-  const ipfsAddResp = await ipfs.add(
+  const ipfsAddResp = await ipfsAddImages(
     toAdd,
-    { pin: false }
+    { pin: false } /* ipfs add config */,
+    {} /* logContext */,
+    ENABLE_IPFS_ADD_IMAGES
   )
 
   // Write all the images to file storage and
   // return the CIDs and storage paths to write to db
   // in the main thread
-  const dirCID = ipfsAddResp[ipfsAddResp.length - 1].hash
+  const dirCID = ipfsAddResp[ipfsAddResp.length - 1].cid
   const dirDestPath = DiskManager.computeFilePath(dirCID)
 
   const resp = {
@@ -165,12 +171,12 @@ module.exports = async (job) => {
 
     await Promise.all(ipfsFileResps.map(async (fileResp, i) => {
       // Save file to disk
-      const destPath = DiskManager.computeFilePathInDir(dirCID, fileResp.hash)
+      const destPath = DiskManager.computeFilePathInDir(dirCID, fileResp.cid)
       await fs.writeFile(destPath, resizes[i])
 
       // Append saved file info to response object
       resp.files.push({
-        multihash: fileResp.hash,
+        multihash: fileResp.cid,
         sourceFile: fileResp.path,
         storagePath: destPath
       })
