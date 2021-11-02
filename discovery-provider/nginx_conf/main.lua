@@ -90,7 +90,17 @@ function _M.rate_limit ()
         return
     end
 
-    if verify_signature(ngx.var.redirect_from, ngx.var.redirect_nonce, ngx.var.redirect_sig) then
+    if verify_signature(ngx.var.openresty_redirect_from, ngx.var.openresty_redirect_nonce, ngx.var.openresty_redirect_sig) then
+        -- if signature is correct remove signature args and skip rate limit logic
+        local args, err = ngx.req.get_uri_args()
+        if err then
+            ngx.log(ngx.ERR, "failed to get uri args: ", err)
+            return ngx.exit(500)
+        end
+        args.openresty_redirect_from = nil
+        args.openresty_redirect_nonce = nil
+        args.openresty_redirect_sig = nil
+        ngx.req.set_uri_args(args)
         return
     end
 
@@ -109,7 +119,7 @@ function _M.rate_limit ()
         if rate_limit_hit then
             -- Redirect request after setting redirect args
             local args, err = ngx.req.get_uri_args()
-            args.redirect_from, args.redirect_nonce, args.redirect_sig = get_redirect_args()
+            args.openresty_redirect_from, args.openresty_redirect_nonce, args.openresty_redirect_sig = get_redirect_args()
             ngx.req.set_uri_args(args)
             local url = get_redirect_target() .. ngx.var.request_uri
             return ngx.redirect(url)
