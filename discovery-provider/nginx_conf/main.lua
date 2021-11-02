@@ -1,9 +1,10 @@
 require "resty.core"
 
+local cjson = require "cjson"
+local limit_count = require "resty.limit.count"
+local resty_http = require "resty.http"
 local resty_random = require "resty.random"
 local resty_rsa = require "resty.rsa"
-local cjson = require "cjson"
-local resty_http = require "resty.http"
 
 local config = require "config"
 local utils = require "utils"
@@ -46,11 +47,11 @@ function _M.health_check ()
     return cjson.encode(data)
 end
 
-function _M.get_redirect_target ()
+function get_redirect_target ()
     return config.redirect_targets[math.random(1, #config.redirect_targets)]
 end
 
-function _M.verify_signature (discovery_provider, nonce, signature)
+function verify_signature (discovery_provider, nonce, signature)
     -- reject if one of the parameter is not provided
     if discovery_provider == nil or nonce == nil or signature == nil then
         return false
@@ -93,7 +94,7 @@ function _M.verify_signature (discovery_provider, nonce, signature)
     return ok
 end
 
-function _M.get_redirect_args ()
+function get_redirect_args ()
     local nonce = utils.generate_nonce()
     local sig, err = config.private_key:sign(nonce)
     if not sig then
@@ -101,6 +102,41 @@ function _M.get_redirect_args ()
         return
     end
     return config.public_url, nonce, ngx.encode_base64(sig)
+end
+
+function _M.rate_limit ()
+    if not config.rate_limiting_enabled then
+        return
+    end
+
+    if verify_signature(ngx.var.redirect_from, ngx.var.redirect_nonce, ngx.var.redirect_sig) then
+        return
+    end
+
+    -- limit_count.new(store, count, time_window in seconds)
+    local lim, err = limit_count.new("limit_count_store", config.rate_limit, 1)
+    if not lim then
+        ngx.log(ngx.ERR, "failed to instantiate a resty.limit.req object: ", err)
+        return ngx.exit(500)
+    end
+
+    -- set a dummy key since we are not rate limiting separately for each user
+    -- lim:incoming(key, no_dry_run)
+    local delay, err = lim:incoming("k", true)
+    if not delay then
+        local rate_limit_hit = err == "rejected"
+        if rate_limit_hit then
+            -- Redirect request after setting redirect args
+            local args, err = ngx.req.get_uri_args()
+            args.redirect_from, args.redirect_nonce, args.redirect_sig = get_redirect_args()
+            ngx.req.set_uri_args(args)
+            local url = get_redirect_target() .. ngx.var.request_uri
+            return ngx.redirect(url)
+        end
+
+        ngx.log(ngx.ERR, "failed to limit req: ", err)
+        return ngx.exit(500)
+    end
 end
 
 return _M
