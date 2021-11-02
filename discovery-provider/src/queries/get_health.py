@@ -61,7 +61,7 @@ def _get_db_block_state():
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
         # Fetch latest block from DB
-        db_block_query = session.query(Block).filter(Block.is_current is True).all()
+        db_block_query = session.query(Block).filter(Block.is_current == True).all()
         assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
         return helpers.model_to_dictionary(db_block_query[0])
 
@@ -101,7 +101,7 @@ def _get_db_ipld_block_state():
     with db.scoped_session() as session:
         db_ipld_block_query = (
             session.query(IPLDBlacklistBlock)
-            .filter(IPLDBlacklistBlock.is_current is True)
+            .filter(IPLDBlacklistBlock.is_current == True)
             .all()
         )
         assert (
