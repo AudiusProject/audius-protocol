@@ -12,7 +12,7 @@ const {
 // seconds to allow for the case an album or playlist shows up. That album or playlist replaces
 // all the track notifications that occurred over the debounce.
 // As a TODO, we should implement track => playlist or track => album tracking so this is a non-issue.
-const PENDING_CREATE_DEDUPE_SEC = 3 * 60 * 1000
+const PENDING_CREATE_DEDUPE_MS = 3 * 60 * 1000
 
 const shouldNotifyUser = (userId, prop, settings) => {
   const userNotification = { notifyMobile: false, notifyBrowserPush: false }
@@ -206,7 +206,7 @@ async function _processSubscriberPushNotifications () {
   for (var i = 0; i < subscriberPushNotifications.length; i++) {
     let entry = subscriberPushNotifications[i]
     let timeSince = currentTime - entry.time
-    if (timeSince > PENDING_CREATE_DEDUPE_SEC) {
+    if (timeSince > PENDING_CREATE_DEDUPE_MS) {
       filteredFormattedCreateNotifications.push(entry)
       users.push(entry.initiator)
       entry.pending = false
