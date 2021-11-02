@@ -428,7 +428,7 @@ def track_search_query(
                         (case when (lower(query) = handle) then :handle_match_boost else 0 end) +
                         (case when (lower(query) = user_name) then :user_name_match_boost else 0 end)
                         {
-                            '+ (case when (user_id = :current_user_id) then :current_user_saved_match_boost else 0 end)'
+                            '+ (case when (user_id is not null) then :current_user_saved_match_boost else 0 end)'
                             if current_user_id
                             else ""
                         }
@@ -549,7 +549,7 @@ def user_search_query(
                     (case when (handle=query) then :handle_match_boost else 0 end) +
                     (:name_weight * similarity(coalesce(name, ''), query))
                     {
-                        "+ (case when (follower_user_id=:current_user_id) " +
+                        "+ (case when (follower_user_id is not null) " +
                         "then :current_user_saved_match_boost else 0 end)"
                         if current_user_id
                         else ""
@@ -570,9 +570,11 @@ def user_search_query(
                                 }
                         from "user_lexeme_dict" d
                         {
-                            "left outer join (select follower_user_id from follows where follows.is_current = true" +
-                            " and  follows.is_delete = false and follows.follower_user_id = :current_user_id ) f " +
-                            "on f.follower_user_id = d.user_id"
+                            "left outer join (select follower_user_id, followee_user_id from follows " +
+                            "where follows.is_current = true " +
+                            "and follows.is_delete = false " +
+                            "and follows.follower_user_id = :current_user_id) f " +
+                            "on f.followee_user_id = d.user_id"
                             if current_user_id
                             else ""
                         }
@@ -671,7 +673,7 @@ def playlist_search_query(
                     (case when (lower(query) = handle) then :handle_match_boost else 0 end) +
                     (case when (lower(query) = user_name) then :user_name_match_boost else 0 end)
                     {
-                        '+ (case when (saved_user_id = :current_user_id) then ' +
+                        '+ (case when (saved_user_id is not null) then ' +
                         ':current_user_saved_match_boost else 0 end)'
                         if current_user_id
                         else ""
