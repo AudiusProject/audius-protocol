@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
+import React, { ChangeEvent, useState } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
-import { ChangeEvent } from 'react-slick/node_modules/@types/react'
 
 import { useDevModeHotkey } from 'hooks/useHotkey'
 
