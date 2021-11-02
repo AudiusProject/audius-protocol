@@ -53,7 +53,7 @@ class TransactionHandler {
     } else {
       result = await this._locallyConfirmTransaction(instructions)
     }
-    if (result.errorCode && errorMapping) {
+    if (result.errorCode !== null && errorMapping) {
       result.errorCode = errorMapping.fromErrorCode(result.errorCode)
     }
     return result
@@ -81,7 +81,7 @@ class TransactionHandler {
       return {
         res: null,
         error: 'Missing keys',
-        errorCode: -1
+        errorCode: null
       }
     }
 
@@ -106,7 +106,7 @@ class TransactionHandler {
       return transactionSignature
     } catch (e) {
       const { message: error } = e
-      const errorCode = this._parseSolanaErrorCode(error) || -1
+      const errorCode = this._parseSolanaErrorCode(error)
       return {
         res: null,
         error,
@@ -124,7 +124,7 @@ class TransactionHandler {
     const matcher = /(?<=custom program error: 0x)(.*)$/
     const res = errorMessage.match(matcher)
     if (!res || !res.length) return null
-    return parseInt(res[0], 16)
+    return parseInt(res[0], 16) || null
   }
 }
 
