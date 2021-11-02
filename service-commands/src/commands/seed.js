@@ -4,8 +4,6 @@ const { LocalStorage } = require('node-localstorage')
 
 const {
   getLibsConfig,
-  camelToKebabCase,
-  kebabToCamelCase,
   getRandomEmail,
   getRandomPassword,
   getRandomUserMetadata
@@ -25,7 +23,7 @@ class UserCache {
   getActiveUser = () => {
     const cache = this.get()
     const activeAlias = cache['active']
-    return cache[activeAlias]
+    return cache[activeAlias] || {}
   }
 
   setActiveUser = alias => {
@@ -168,25 +166,8 @@ class Seed {
       return
     }
   }
+  // TODO API methods that call through to CLI things (wrapper layer)?
 }
-
-// Seed.setupCommands = (program) => {
-//     Object.entries(seedCLIToCommandMap).forEach(({ cliCommand, config }) => {
-//       program.command(cliCommand)
-//       // call command.option for each option in config.options
-//       .action(async (options) => {
-//         if (!this.libs) {
-//           await this.init() // TODO accept userId - or make this explicit via seed.setUser?
-//         }
-//         this.libs[config.api][config.method](...options)
-//       })
-//     })
-//     LIBS_API_CLASSES.forEach(className => {
-//         const api = this.libs[className]
-//         setupCommands(api, className, program)
-//     })
-// }
 
 // TODO seed with --file argument that parses JSON or iterates through?
 module.exports = Seed
-

@@ -1,9 +1,17 @@
 const AudiusLibs = require('@audius/libs')
 const moment = require('moment')
-const { LocalStorage } = require('node-localstorage')
 const dotenv = require('dotenv').config({
   path: `${process.env.PROTOCOL_DIR}/service-commands/.env.dev`
 })
+
+const {
+  getRandomTrackMetadata,
+  getRandomTrackFilePath,
+  getRandomImageFilePath
+} = require(`${process.env.PROTOCOL_DIR}/mad-dog/src/helpers`)
+
+const TEMP_TRACK_STORAGE_PATH = `${process.env.PROTOCOL_DIR}/service-commands/local-storage/tmp-tracks`
+const TEMP_IMAGE_STORAGE_PATH = `${process.env.PROTOCOLPROTOCOL_DIR}/service-commands/local-storage/tmp-imgs`
 
 // CONFIG - from sauron https://github.com/AudiusProject/sauron/blob/master/config.js
 const ethContractsConfig = require(`${process.env.PROTOCOL_DIR}/../.audius/eth-config.json`)
@@ -13,12 +21,12 @@ const ETH_TOKEN_ADDRESS = ethContractsConfig.audiusTokenAddress
 const ETH_OWNER_WALLET = ethContractsConfig.ownerWallet
 const DATA_CONTRACTS_REGISTRY_ADDRESS = dataContractsConfig.registryAddress
 
-const getLibsConfig = (overrideConfig) => {
+const getLibsConfig = overrideConfig => {
   const contentNodeAllowlist = process.env.CONTENT_NODE_ALLOWLIST
     ? new Set(process.env.CONTENT_NODE_ALLOWLIST.split(','))
     : undefined
 
-    const audiusLibsConfig = {
+  const audiusLibsConfig = {
     ethWeb3Config: AudiusLibs.configEthWeb3(
       process.env.ETH_TOKEN_ADDRESS || ETH_TOKEN_ADDRESS,
       process.env.ETH_REGISTRY_ADDRESS || ETH_REGISTRY_ADDRESS,
@@ -26,7 +34,8 @@ const getLibsConfig = (overrideConfig) => {
       process.env.ETH_OWNER_WALLET || ETH_OWNER_WALLET
     ),
     web3Config: AudiusLibs.configInternalWeb3(
-      process.env.DATA_CONTRACTS_REGISTRY_ADDRESS || DATA_CONTRACTS_REGISTRY_ADDRESS,
+      process.env.DATA_CONTRACTS_REGISTRY_ADDRESS ||
+        DATA_CONTRACTS_REGISTRY_ADDRESS,
       [process.env.DATA_CONTRACTS_PROVIDER_ENDPOINT]
     ),
     creatorNodeConfig: AudiusLibs.configCreatorNode(
@@ -47,37 +56,39 @@ const getLibsConfig = (overrideConfig) => {
   return Object.assign(audiusLibsConfig, overrideConfig)
 }
 
-const camelToKebabCase = str => str
-    .replace(/([A-Z])([A-Z])/g, '$1-$2')
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replace(/[\s_]+/g, '-')
-    .toLowerCase()
+const camelToKebabCase = str =>
+  str
+  .replace(/([A-Z])([A-Z])/g, '$1-$2')
+  .replace(/([a-z])([A-Z])/g, '$1-$2')
+  .replace(/[\s_]+/g, '-')
+  .toLowerCase()
 
 const kebabToCamelCase = str => str.replace(/-./g, x => x[1].toUpperCase())
 
-const isUpperCase = char => char !== char.toLowerCase() && char === char.toUpperCase()
+const isUpperCase = char =>
+  char !== char.toLowerCase() && char === char.toUpperCase()
 
 const getParamNames = func => {
-    const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg
-    const ARGUMENT_NAMES = /([^\s,]+)/g
-    let fnStr = func.toString().replace(STRIP_COMMENTS, '')
-    let paramNames = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES)
-    if (paramNames === null) {
-        paramNames = []
-    }
-    return paramNames
+  const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg
+  const ARGUMENT_NAMES = /([^\s,]+)/g
+  const fnStr = func.toString().replace(STRIP_COMMENTS, '')
+  let paramNames = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES)
+  if (paramNames === null) {
+    paramNames = []
+  }
+  return paramNames
 }
 
 const getRandomEmail = (root = '') => {
-    const sauronSuffix = moment().format('YYMMDD') + Math.random().toString(36).substring(2, 6)
-    let email
-    if (root) {
-      const [user, domain] = root.split('@')
-      email = [user, '+', sauronSuffix, '@', domain].join('')
-    } else {
-      email = ['service-commands-seed', '+', sauronSuffix, '@', 'audius.co'].join('')
-    }
-    return email
+  const sauronSuffix = moment().format('YYMMDD') + Math.random().toString(36).substring(2, 6)
+  let email
+  if (root) {
+    const [user, domain] = root.split('@')
+    email = [user, '+', sauronSuffix, '@', domain].join('')
+  } else {
+    email = ['service-commands-seed', '+', sauronSuffix, '@', 'audius.co'].join('')
+  )
+  return email
 }
 
 const getRandomPassword = () => {
@@ -128,13 +139,54 @@ const parseMetadataIntoObject = (commaSeparatedKeyValuePairs, rootObject = {}) =
   return metadata
 }
 
+const getUserProvidedOrRandomTrackFilePath = async manualOverridePath => {
+  let result
+  if (manualOverridePath) {
+    result = manualOverridePath
+  } else {
+    result = await getRandomTrackFilePath(TEMP_TRACK_STORAGE_PATH)
+  }
+  return result
+}
+
+const getUserProvidedOrRandomImageFilePath = async manualOverridePath => {
+  let result
+  if (manualOverridePath) {
+    result = manualOverridePath
+  } else {
+    result = await getRandomImageFilePath(TEMP_IMAGE_STORAGE_PATH)
+  }
+  return result
+}
+
+const getProgressCallback = () => {
+  const progressCallback = percentComplete => {
+    console.log(`${percentComplete} track upload completed...`)
+  }
+  return progressCallback
+}
+
+const getUserProvidedOrRandomTrackMetadata = userProvidedMetadataInput => {
+  // TODO userId passthrough
+  let metadataObj = getRandomTrackMetadata()
+  if (userProvidedMetadataInput) {
+    const userProvidedMetadata = parseMetadataIntoObject(userProvidedMetadataInput)
+    metadataObj = Object.assign(metadataObj, userProvidedMetadata)
+  }
+  return metadataObj
+}
+
 module.exports = {
-    getLibsConfig,
-    camelToKebabCase,
-    kebabToCamelCase,
-    isUpperCase,
-    getRandomUserMetadata,
-    getRandomPassword,
-    getRandomEmail,
-    parseMetadataIntoObject
+  getLibsConfig,
+  camelToKebabCase,
+  kebabToCamelCase,
+  isUpperCase,
+  getRandomUserMetadata,
+  getRandomPassword,
+  getRandomEmail,
+  parseMetadataIntoObject,
+  getUserProvidedOrRandomTrackFilePath,
+  getUserProvidedOrRandomImageFilePath,
+  getUserProvidedOrRandomTrackMetadata,
+  getProgressCallback
 }
