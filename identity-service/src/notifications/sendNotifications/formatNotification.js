@@ -4,7 +4,7 @@ const {
   notificationTypes,
   actionEntityTypes
 } = require('../constants')
-const { getPendingCreateDedupeMs } = require('./utils')
+const notificationUtils = require('./utils')
 
 const shouldNotifyUser = (userId, prop, settings) => {
   const userNotification = { notifyMobile: false, notifyBrowserPush: false }
@@ -198,7 +198,7 @@ async function _processSubscriberPushNotifications () {
   for (var i = 0; i < subscriberPushNotifications.length; i++) {
     let entry = subscriberPushNotifications[i]
     let timeSince = currentTime - entry.time
-    if (timeSince > getPendingCreateDedupeMs()) {
+    if (timeSince > notificationUtils.getPendingCreateDedupeMs()) {
       filteredFormattedCreateNotifications.push(entry)
       users.push(entry.initiator)
       entry.pending = false
