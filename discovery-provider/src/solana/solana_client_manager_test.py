@@ -2,7 +2,7 @@ import pytest
 from src.solana.solana_client_manager import SolanaClientManager
 from unittest import mock
 
-solana_client_manager = SolanaClientManager()
+solana_client_manager = SolanaClientManager("https://audius.rpcpool.com,https://api.mainnet-beta.solana.com,https://solana-api.projectserum.com")
 
 
 @mock.patch("solana.rpc.api.Client")

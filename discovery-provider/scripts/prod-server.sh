@@ -30,12 +30,6 @@ if [ "$audius_db_run_migrations" != false ]; then
   echo "Finished running migrations"
 fi
 
-# if nginx config does not exist use default config
-if [ ! -e /usr/local/openresty/conf/nginx.conf ]; then
-  mkdir -p /usr/local/openresty/conf
-  ./scripts/gen_nginx_conf.py >/usr/local/openresty/conf/nginx.conf
-fi
-mkdir /usr/local/openresty/logs
 openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
 
 tail -f /usr/local/openresty/logs/access.log | python3 scripts/openresty_log_convertor.py INFO &

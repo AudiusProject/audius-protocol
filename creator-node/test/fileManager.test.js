@@ -7,6 +7,8 @@ const proxyquire = require('proxyquire')
 
 const { serviceRegistry } = require('../src/serviceRegistry')
 const ipfs = serviceRegistry.ipfs
+const ipfsLatest = serviceRegistry.ipfsLatest
+const ipfsAdd = require('../src/ipfsAdd')
 const { saveFileToIPFSFromFS, removeTrackFolder, saveFileFromBufferToIPFSAndDisk } = require('../src/fileManager')
 const config = require('../src/config')
 const models = require('../src/models')
@@ -17,6 +19,7 @@ const storagePath = config.get('storagePath')
 
 const reqFnStubs = {
   ipfsAPI: ipfs,
+  ipfsLatestAPI: ipfsLatest,
   storagePath
 }
 const req = {
@@ -62,7 +65,7 @@ describe('test fileManager', () => {
      */
     it('should throw error if cnodeUserUUID is not present', async () => {
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, null, srcPath, ipfs)
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, null, srcPath)
         assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
@@ -74,14 +77,13 @@ describe('test fileManager', () => {
      * When: ipfs is down
      * Then: an error is thrown
      */
-    it('should throw an error if ipfs is down', async () => {
-      sinon.stub(ipfs, 'addFromFs').rejects(new Error('ipfs is down!'))
+    it('should throw an error if ipfs wrapper add fails', async () => {
+      sinon.stub(ipfsAdd, 'ipfsAddNonImages').rejects(new Error('ipfs wrapper add failed!'))
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs)
-        assert.fail('Should not have passed if ipfs is down.')
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, true /* enableIPFSAdd */)
       } catch (e) {
-        assert.deepStrictEqual(e.message, 'ipfs is down!')
+        assert.deepStrictEqual(e.message, 'ipfs wrapper add failed!')
       }
     })
 
@@ -99,7 +101,7 @@ describe('test fileManager', () => {
       )
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs)
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath)
         assert.fail('Should not have passed if file copying fails.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'Failed to copy files!!')
@@ -118,7 +120,7 @@ describe('test fileManager', () => {
       sinon.stub(models.File, 'create').returns({ dataValues: { fileUUID: 'uuid' } })
 
       try {
-        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, ipfs)
+        await saveFileToIPFSFromFS({ logContext: { requestID: uuid() } }, req.session.cnodeUserUUID, srcPath, true /* enableIPFSAdd */)
       } catch (e) {
         assert.fail(e.message)
       }
@@ -165,7 +167,7 @@ describe('test fileManager', () => {
       }
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(reqOverride, buffer)
+        await saveFileFromBufferToIPFSAndDisk(reqOverride, buffer, true /* enableIPFSAdd */)
         assert.fail('Should not have passed if cnodeUserUUID is not present in request.')
       } catch (e) {
         assert.deepStrictEqual(e.message, 'User must be authenticated to save a file')
@@ -177,14 +179,13 @@ describe('test fileManager', () => {
      * When: ipfs is down
      * Then: an error is thrown
      */
-    it('should throw an error if ipfs is down', async () => {
-      sinon.stub(ipfs, 'add').rejects(new Error('ipfs is down!'))
+    it('should throw an error if ipfs wrapper add fails', async () => {
+      sinon.stub(ipfsAdd, 'ipfsAddNonImages').rejects(new Error('ipfs wrapper add failed!'))
 
       try {
-        await saveFileFromBufferToIPFSAndDisk(req, buffer)
-        assert.fail('Should not have passed if ipfs is down.')
+        await saveFileFromBufferToIPFSAndDisk(req, buffer, true /* enableIPFSAdd */)
       } catch (e) {
-        assert.deepStrictEqual(e.message, 'ipfs is down!')
+        assert.deepStrictEqual(e.message, 'ipfs wrapper add failed!')
       }
     })
 
@@ -214,7 +215,7 @@ describe('test fileManager', () => {
 
       let resp
       try {
-        resp = await saveFileFromBufferToIPFSAndDisk(req, buffer)
+        resp = await saveFileFromBufferToIPFSAndDisk(req, buffer, true /* enableIPFSAdd */)
       } catch (e) {
         assert.fail(e.message)
       }
