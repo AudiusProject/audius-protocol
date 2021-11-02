@@ -1,4 +1,5 @@
 const assert = require('assert')
+const sinon = require('sinon')
 
 const models = require('../../src/models')
 const processNotifications = require('../../src/notifications/processNotifications/index.js')
@@ -6,7 +7,7 @@ const sendNotifications = require('../../src/notifications/sendNotifications/ind
 const { processTrendingTracks } = require('../../src/notifications/trendingTrackProcessing')
 const { pushNotificationQueue } = require('../../src/notifications/notificationQueue')
 const { clearDatabase, runMigrations } = require('../lib/app')
-const notificationUtils = require('../../src/notifications/sendNotifications/utils)
+const notificationUtils = require('../../src/notifications/sendNotifications/utils')
 
 // Mock Notifications
 const remixCreate = require('./mockNotifications/remixCreate.json')
@@ -20,8 +21,8 @@ const trendingTrack = require('./mockNotifications/trendingTrack.json')
 const mockAudiusLibs = require('./mockLibs')
 
 describe('Test Send Notifications', function () {
-  before(async () => {
-    sinon.stub(utils, 'getPendingCreateDedupeMs')
+  before(() => {
+    sinon.stub(notificationUtils, 'getPendingCreateDedupeMs')
       .returns(5 * 1000) // 5 second dedupe
   })
 

@@ -6,7 +6,6 @@ const {
 } = require('../constants')
 const { getPendingCreateDedupeMs } = require('./utils')
 
-
 const shouldNotifyUser = (userId, prop, settings) => {
   const userNotification = { notifyMobile: false, notifyBrowserPush: false }
   if (!(userId in settings)) return userNotification
