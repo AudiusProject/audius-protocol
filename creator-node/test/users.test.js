@@ -9,14 +9,15 @@ const { getIPFSMock } = require('./lib/ipfsMock')
 const { getLibsMock } = require('./lib/libsMock')
 
 describe('test Users', async function () {
-  let app, server, ipfsMock, libsMock
+  let app, server, ipfsMock, ipfsLatestMock, libsMock
 
   /** Setup app + global test vars */
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
+    ipfsLatestMock = getIPFSMock(true)
     libsMock = getLibsMock()
 
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager)
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock)
     await BlacklistManager.init()
 
     app = appInfo.app
