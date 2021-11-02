@@ -601,12 +601,29 @@ const config = convict({
     env: 'saveFileForMultihashToFSIPFSFallback',
     default: true
   },
-  enableAsyncIPFSAdd: {
-    doc: 'Boolean indicating if `saveFileToIPFSFromFS()` should asynchronously add to ipfs and only use the content addressing logic',
+  enableIPFSAddTracks: {
+    doc: '[TRACKS] Boolean indicating if the CN should add content to the ipfs daemon (true), or rely only on content addressing logic (false)',
     format: 'BooleanCustom',
-    env: 'enableAsyncIPFSAdd',
-    // TODO: probably want to change this to true if only hashing logic + async ipfs add is proven worthwhile
+    env: 'enableIPFSAddTracks',
     default: false
+  },
+  enableIPFSAddImages: {
+    doc: '[IMAGES] Boolean indicating if the CN should add content to the ipfs daemon (true), or rely only on content addressing logic (false)',
+    format: 'BooleanCustom',
+    env: 'enableIPFSAddImages',
+    default: false
+  },
+  enableIPFSAddMetadata: {
+    doc: '[METADATA] Boolean indicating if the CN should add content to the ipfs daemon (true), or rely only on content addressing logic (false)',
+    format: 'BooleanCustom',
+    env: 'enableIPFSAddMetadata',
+    default: true
+  },
+  IPFSAddTimeoutMs: {
+    doc: 'The default timeout in ms for ipfs add',
+    format: 'nat',
+    env: 'IPFSAddTimeoutMs',
+    default: 90000 // 90s
   },
   healthCheckIpfsTimeoutMs: {
     doc: 'Default timeout for the ipfs health check route in timing add content',

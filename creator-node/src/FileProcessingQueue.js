@@ -3,7 +3,6 @@ const { logger: genericLogger } = require('./logging')
 const config = require('./config')
 const redisClient = require('./redis')
 const { handleTrackContentRoute: transcodeFn } = require('./components/tracks/tracksComponentService')
-const { serviceRegistry } = require('./serviceRegistry')
 
 const MAX_CONCURRENCY = 100
 const EXPIRATION = 86400 // 24 hours in seconds
@@ -75,8 +74,6 @@ class FileProcessingQueue {
   }
 
   async monitorProgress (taskType, func, { logContext, req }) {
-    const ipfs = serviceRegistry.getIPFS()
-
     const uuid = logContext.requestID
     const redisKey = constructProcessKey(taskType, uuid)
 
@@ -86,7 +83,7 @@ class FileProcessingQueue {
 
     let response
     try {
-      response = await func({ logContext }, req, ipfs)
+      response = await func({ logContext }, req)
       state = { status: PROCESS_STATES.DONE, resp: response }
       this.logStatus(logContext, `Successful ${taskType}! uuid=${uuid}}`)
       await redisClient.set(redisKey, JSON.stringify(state), 'EX', EXPIRATION)
