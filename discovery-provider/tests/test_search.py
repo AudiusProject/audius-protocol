@@ -1,5 +1,7 @@
 from datetime import datetime
-from src.models import Track, Block, User, Follow, Playlist
+
+from sqlalchemy.sql.elements import SavepointClause
+from src.models import Track, Block, User, Follow, Playlist, Save, SaveType
 from src.queries.search_queries import playlist_search_query, track_search_query, user_search_query
 from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
 from src.utils.db_session import get_db
@@ -157,7 +159,19 @@ def setup_search(db):
             updated_at=now,
             created_at=now
         )
+    ]
 
+    saves = [
+        Save(
+            blockhash=hex(1),
+            blocknumber=1,
+            user_id=1,
+            save_item_id=1,
+            save_type=SaveType.track,
+            created_at=now,
+            is_current=True,
+            is_delete=False
+        )
     ]
 
     with db.scoped_session() as session:
@@ -175,6 +189,9 @@ def setup_search(db):
         for playlist in playlists:
             session.add(playlist)
             session.flush()
+        for save in saves:
+            session.add(save)
+            session.flush()
 
         # Refresh the lexeme matview
         session.execute("REFRESH MATERIALIZED VIEW aggregate_track;")
@@ -190,7 +207,7 @@ def setup_search(db):
         session.execute("REFRESH MATERIALIZED VIEW album_lexeme_dict;")
 
 
-def test_gets_all_tracks(app):
+def test_gets_tracks_external(app):
     """Tests we get all tracks, including downloaded"""
     with app.app_context():
         db = get_db()
@@ -198,7 +215,17 @@ def test_gets_all_tracks(app):
     with db.scoped_session() as session:
         res = track_search_query(session, "the track", 10, 0, False, None, False)
         assert len(res["all"]) == 2
+        assert len(res["saved"]) == 0
 
+def test_get_tracks_internal(app):
+    """Tests we get all tracks, including downloaded"""
+    with app.app_context():
+        db = get_db()
+    setup_search(db)
+    with db.scoped_session() as session:
+        res = track_search_query(session, "the track", 10, 0, False, 1, False)
+        assert len(res["all"]) == 2
+        assert len(res["saved"]) == 1
 
 def test_gets_downloadable_tracks(app):
     """Tests we get only downloadable results"""

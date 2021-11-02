@@ -17,6 +17,7 @@ from src.queries.search_config import (
     search_handle_exact_match_boost,
     search_user_name_exact_match_boost,
     user_handle_exact_match_boost,
+    current_user_saved_match_boost,
 )
 from src.models import Track, RepostType, Save, SaveType, Follow
 from src.utils import helpers
@@ -414,9 +415,10 @@ def track_search_query(
     res = sqlalchemy.text(
         # pylint: disable=C0301
         f"""
-        select track_id, b.balance, b.associated_wallets_balance from (
-            select distinct on (owner_id) track_id, owner_id, total_score from (
-                select track_id, owner_id,
+        select track_id, u.user_id from (
+            select distinct on (owner_id) track_id, owner_id, user_id, total_score
+            from (
+                select track_id, owner_id, user_id,
                     (
                         (:similarity_weight * sum(score)) +
                         (:title_weight * similarity(coalesce(title, ''), query)) +
@@ -425,13 +427,28 @@ def track_search_query(
                         (case when (lower(query) = coalesce(title, '')) then :title_match_boost else 0 end) +
                         (case when (lower(query) = handle) then :handle_match_boost else 0 end) +
                         (case when (lower(query) = user_name) then :user_name_match_boost else 0 end)
+                        {
+                            '+ (case when (lower(query) = user_name) then :user_name_match_boost else 0 end)'
+                            if current_user_id
+                            else ""
+                        }
                     ) as total_score
                 from (
                     select
                         d."track_id" as track_id, d."word" as word, similarity(d."word", :query) as score,
                         d."track_title" as title, :query as query, d."user_name" as user_name, d."handle" as handle,
                         d."repost_count" as repost_count, d."owner_id" as owner_id
+                        {
+                            ',s."user_id" as user_id'
+                            if current_user_id
+                            else ", null as user_id"
+                        }
                     from "track_lexeme_dict" d
+                    {
+                        "left outer join (select save_item_id, save_type, is_current, is_delete, user_id from saves where saves.save_type = 'track' and saves.is_current = true and saves.is_delete = false and saves.user_id = :current_user_id ) s on s.save_item_id = d.track_id"
+                        if current_user_id
+                        else ""
+                    }
                     {
                         'inner join "tracks" t on t.track_id = d.track_id'
                         if only_downloadable
@@ -444,7 +461,7 @@ def track_search_query(
                         else ""
                     }
                 ) as results
-                group by track_id, title, query, user_name, handle, repost_count, owner_id
+                group by track_id, title, query, user_name, handle, repost_count, owner_id, user_id
             ) as results2
             order by owner_id, total_score desc
         ) as u left join user_balances b on u.owner_id = b.user_id
@@ -454,9 +471,7 @@ def track_search_query(
         """
     )
 
-    track_data = session.execute(
-        res,
-        {
+    params = {
             "query": search_str,
             "limit": limit,
             "offset": offset,
@@ -468,16 +483,44 @@ def track_search_query(
             "title_match_boost": search_title_exact_match_boost,
             "handle_match_boost": search_handle_exact_match_boost,
             "user_name_match_boost": search_user_name_exact_match_boost,
-        },
+            "current_user_saved_match_boost": current_user_saved_match_boost
+        }
+    logger.info(f"isaac params {params}")
+
+
+    track_data = session.execute(
+        res,
+        params
     ).fetchall()
 
     # track_ids is list of tuples - simplify to 1-D list
     track_ids = [i[0] for i in track_data]
+    saved_tracks = set([i[0] for i in track_data if i[1]]) # if track has user ID it's a saved track
+
     tracks = get_unpopulated_tracks(session, track_ids, True)
 
     # TODO: Populate track metadata should be sped up to be able to be
     # used in search autocomplete as that'll give us better results.
-    tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+    if is_auto_complete:
+        # fetch users for tracks
+        track_owner_ids = list(map(lambda track: track["owner_id"], tracks))
+        users = get_unpopulated_users(session, track_owner_ids)
+        users_dict = {user["user_id"]: user for user in users}
+
+        # attach user objects to track objects
+        for i, track in enumerate(tracks):
+            user = users_dict[track["owner_id"]]
+            # Add user balance
+            balance = track_data[i][1]
+            associated_balance = track_data[i][2]
+            user[response_name_constants.balance] = balance
+            user[
+                response_name_constants.associated_wallets_balance
+            ] = associated_balance
+            track["user"] = user
+    else:
+        # bundle peripheral info into track results
+        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
     # Preserve order from track_ids above
     tracks_map = {}
@@ -487,7 +530,7 @@ def track_search_query(
 
     tracks_response = {
         "all": tracks,
-        "saved": list(filter(lambda track: track["has_current_user_saved"], tracks)),
+        "saved": list(filter(lambda track: track["track_id"] in saved_tracks, tracks)),
     }
 
     return tracks_response
@@ -540,12 +583,23 @@ def user_search_query(
             "handle_match_boost": user_handle_exact_match_boost,
         },
     ).fetchall()
+
     # user_ids is list of tuples - simplify to 1-D list
     user_ids = [i[0] for i in user_info]
 
     users = get_unpopulated_users(session, user_ids)
 
-    users = populate_user_metadata(session, user_ids, users, current_user_id)
+    if is_auto_complete:
+        for i, user in enumerate(users):
+            balance = user_info[i][1]
+            associated_wallets_balance = user_info[i][2]
+            user[response_name_constants.balance] = balance
+            user[
+                response_name_constants.associated_wallets_balance
+            ] = associated_wallets_balance
+    else:
+        # bundle peripheral info into user results
+        users = populate_user_metadata(session, user_ids, users, current_user_id)
 
     # Preserve order from user_ids above
     user_map = {}
@@ -636,14 +690,36 @@ def playlist_search_query(
 
     # TODO: Populate playlist metadata should be sped up to be able to be
     # used in search autocomplete as that'll give us better results.
-    playlists = populate_playlist_metadata(
-        session,
-        playlist_ids,
-        playlists,
-        [repost_type],
-        [save_type],
-        current_user_id,
-    )
+    if is_auto_complete:
+        # fetch users for playlists
+        playlist_owner_ids = list(
+            map(lambda playlist: playlist["playlist_owner_id"], playlists)
+        )
+        users = get_unpopulated_users(session, playlist_owner_ids)
+        users_dict = {user["user_id"]: user for user in users}
+
+        # attach user objects to playlist objects
+        for i, playlist in enumerate(playlists):
+            user = users_dict[playlist["playlist_owner_id"]]
+            # Add user balance
+            balance = playlist_data[i][1]
+            associated_balance = playlist_data[i][2]
+            user[response_name_constants.balance] = balance
+            user[
+                response_name_constants.associated_wallets_balance
+            ] = associated_balance
+            playlist["user"] = user
+
+    else:
+        # bundle peripheral info into playlist results
+        playlists = populate_playlist_metadata(
+            session,
+            playlist_ids,
+            playlists,
+            [repost_type],
+            [save_type],
+            current_user_id,
+        )
 
     # Preserve order from playlist_ids above
     playlists_map = {}
