@@ -1,6 +1,5 @@
 require "resty.core"
 
-local cjson = require "cjson"
 local limit_count = require "resty.limit.count"
 local resty_http = require "resty.http"
 local resty_random = require "resty.random"
@@ -27,24 +26,6 @@ function get_cached_public_key (discovery_provider)
         public_key = res.body
     end
     return public_key, nil
-end
-
-function _M.health_check ()
-    local httpc = resty_http.new()
-    local res, err = httpc:request_uri("http://127.0.0.1:3000/health_check", { method = "GET" })
-    httpc:close()
-    if not res then
-        ngx.log(ngx.ERR, "failed to get health check: ", err)
-        return nil
-    end
-
-    local data = cjson.decode(res.body)
-    data["openresty"] = {
-        ["rsa_public_key"] = config.rsa_public_key,
-        ["public_url"] = config.public_url,
-    }
-
-    return cjson.encode(data)
 end
 
 function get_redirect_target ()

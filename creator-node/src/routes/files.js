@@ -3,6 +3,7 @@ const fs = require('fs-extra')
 const path = require('path')
 var contentDisposition = require('content-disposition')
 
+const { logger: genericLogger } = require('../logging')
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
 const { uploadTempDiskStorage } = require('../fileManager')
 const {
@@ -35,6 +36,7 @@ const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { constructProcessKey, PROCESS_NAMES } = require('../FileProcessingQueue')
+const { ipfsAddImages } = require('../ipfsAdd')
 
 const { promisify } = require('util')
 
@@ -326,16 +328,39 @@ const getDirCID = async (req, res) => {
  *
  * Use retries because for some reason IPFS (very rarely) fails due to some non-deterministic error. Seems to be with the verification step; the files are correct.
  * Wait fixed timeout between each retry, hopefully addresses IPFS non-deterministic errors
+ * @param {Object} req
+ * @param {File[]} resizeResp resizeImage.js response; should be a File[] of resized images
+ * @param {string} dirCID the directory CID from `resizeResp`
+ * @param {number?} maxRetries the max number of retries for ipfs verification
+ * @param {boolean?} enableIPFSAdd flag to enable or disable ipfs daemon add
  */
-const _dirCIDIPFSVerificationWithRetries = async function (req, resizeResp, dirCID, retriesLeft = IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT) {
-  const ipfs = req.app.get('ipfsLatestAPI')
+const _dirCIDIPFSVerificationWithRetries = async function (req, resizeResp, dirCID, maxRetries = IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT, enableIPFSAdd = false) {
+  let ipfsAddContent = await _generateIpfsAddContent(resizeResp, dirCID)
 
-  // build ipfs add array
-  let ipfsAddArray = []
+  // Re-compute dirCID from all image files to ensure it matches dirCID returned above
+  await _addToIpfsWithRetries({
+    content: ipfsAddContent,
+    enableIPFSAdd,
+    dirCID,
+    retriesLeft: maxRetries,
+    maxRetries,
+    logContext: req.logContext
+  })
+}
+
+/**
+ * Helper fn to generate the input for `ipfsAddImages()`
+ * @param {File[]} resizeResp resizeImage.js response; should be a File[] of resized images
+ * @param {string} dirCID the directory CID from `resizeResp`
+ * @returns {Object[]} follows the structure [{path: <string>, cid: <string>}, ...] with the same number of elements
+ * as the size of `resizeResp`
+ */
+async function _generateIpfsAddContent (resizeResp, dirCID) {
+  let ipfsAddContent = []
   try {
     await Promise.all(resizeResp.files.map(async function (file) {
       const fileBuffer = await fs.readFile(file.storagePath)
-      ipfsAddArray.push({
+      ipfsAddContent.push({
         path: file.sourceFile,
         content: fileBuffer
       })
@@ -344,34 +369,52 @@ const _dirCIDIPFSVerificationWithRetries = async function (req, resizeResp, dirC
     throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
   }
 
-  // Re-compute dirCID from all image files to ensure it matches dirCID returned above
-  let ipfsAddRespArr
-  try {
-    const ipfsAddResp = await ipfs.add(
-      ipfsAddArray,
-      {
-        pin: false,
-        onlyHash: true,
-        timeout: 1000
-      }
-    )
-    ipfsAddRespArr = []
-    for await (const resp of ipfsAddResp) {
-      ipfsAddRespArr.push(resp)
-    }
-  } catch (e) {
-    // If ipfs.add op fails, log error and move on, since this is an ipfs error and not an image upload error
-    req.logger.info(`Error calling ipfs.add on dir to re-compute dirCID ${dirCID} ${e}`)
-  }
+  return ipfsAddContent
+}
+
+/**
+ * Helper fn that recurisvely calls itself `maxRetries` amount of times. Will throw if inconsistency still
+ * occurs after `maxRetries` attempts.
+ * @param {Object[]} content content to add to ipfs. Has the structure [{path: <string>, content: <Buffer>}, ...]
+ * @param {boolean} enableIPFSAdd flag to enable adding to ipfs daemon
+ * @param {string} dirCID the directory CID from `resizeResp`
+ * @param {number} retriesLeft the number of retires left for ipfs verification
+ * @param {number} maxRetries the max number of retries for ipfs verification
+ * @param {Object} logContext
+ */
+async function _addToIpfsWithRetries ({ content, enableIPFSAdd, dirCID, retriesLeft, maxRetries, logContext }) {
+  const logger = genericLogger.child(logContext)
+
+  const ipfsAddRespArr = await ipfsAddImages(
+    content,
+    {
+      pin: false,
+      onlyHash: true,
+      timeout: 1000
+    },
+    logContext,
+    enableIPFSAdd
+  )
 
   // Ensure actual and expected dirCIDs match
-  const expectedDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
-  if (expectedDirCID !== dirCID) {
-    if (retriesLeft > 0) {
-      req.logger.error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}. ${retriesLeft} retries remaining out of ${IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT}. Retrying...`)
-      await _dirCIDIPFSVerificationWithRetries(req, resizeResp, dirCID, retriesLeft - 1)
+  const ipfsAddRetryDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
+  if (ipfsAddRetryDirCID !== dirCID) {
+    if (--retriesLeft > 0) {
+      logger.warn(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. ${retriesLeft} retries remaining out of ${maxRetries}. Retrying...`)
+      // If the only hash logic fails on first attempt, successive only hash logic attempts will produce the same results. At this point, add to ipfs
+      await _addToIpfsWithRetries({
+        content,
+        enableIPFSAdd: true,
+        dirCID,
+        retriesLeft,
+        maxRetries,
+        logContext,
+        logger
+      })
     } else {
-      throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}. Failed after all ${IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT} retries.`)
+      const errMsg = `Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. Failed after all ${maxRetries} retries.`
+      logger.error(errMsg)
+      throw new Error(errMsg)
     }
   }
 }
