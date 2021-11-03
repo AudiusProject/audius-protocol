@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Optional, List, Dict, TypedDict
+from typing import Optional, List, TypedDict
 from redis import Redis
 from sqlalchemy import desc, func
 from src import exceptions
