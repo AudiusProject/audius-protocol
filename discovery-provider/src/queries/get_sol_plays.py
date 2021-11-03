@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, TypedDict
 from redis import Redis
 from sqlalchemy import desc, func
 from src import exceptions
@@ -29,8 +29,18 @@ def get_sol_play(sol_tx_signature):
 
     return sol_play
 
+class PlayDict(TypedDict):
+    id: int
+    user_id: int
+    source: Optional[str]
+    play_item_id: int
+    slot: Optional[int]
+    signature: Optional[str]
+    created_at: datetime
+    updated_at: datetime
+
 # Get last x sol specific plays
-def get_latest_sol_plays(limit=10) -> Optional[List[Dict]]:
+def get_latest_sol_plays(limit=10) -> Optional[List[PlayDict]]:
     db = get_db_read_replica()
 
     # Cap max returned db entries
@@ -84,7 +94,7 @@ def get_latest_cached_sol_play_db(redis) -> CachedProgramTxInfo:
             latest_sol_play_db = {
                 "signature": latest_sol_play.get("signature"),
                 "slot": latest_sol_play.get("slot"),
-                "timestamp": int(latest_sol_play.get("created_at").timestamp())
+                "timestamp": int(latest_sol_play["created_at"].timestamp())
             }
             # If found, re-cache value to avoid repeated DB hits
             if latest_sol_play_db:
