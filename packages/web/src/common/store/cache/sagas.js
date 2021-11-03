@@ -1,3 +1,4 @@
+import { pick } from 'lodash'
 import { all, call, put, select, takeEvery, spawn } from 'redux-saga/effects'
 
 import Kind from 'common/models/Kind'
@@ -8,7 +9,7 @@ import { CACHE_PRUNE_MIN } from 'common/store/cache/config'
 import { getCache } from 'common/store/cache/selectors'
 import { getTracks } from 'common/store/cache/tracks/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
-import { makeUids, makeKindId } from 'common/utils/uid'
+import { makeUids, makeKindId, getIdFromKindId } from 'common/utils/uid'
 import { getConfirmCalls } from 'store/confirmer/selectors'
 import * as persistentCache from 'utils/persistentCache'
 
@@ -297,12 +298,21 @@ function* retrieveFromSourceThenCache({
 }
 
 export function* add(kind, entries, replace, persist) {
+  // Get cached things that are confirming
   const confirmCalls = yield select(getConfirmCalls)
+  const cache = yield select(getCache, { kind })
+  const confirmCallsInCache = pick(
+    cache.entries,
+    Object.keys(confirmCalls).map(kindId => getIdFromKindId(kindId))
+  )
 
   const entriesToAdd = []
   const entriesToSubscribe = []
   entries.forEach(entry => {
-    if (!replace && makeKindId(kind, entry.id) in confirmCalls) {
+    // If something is confirming and in the cache, we probably don't
+    // want to replace it (unless explicit) because we would lose client
+    // state, e.g. "has_current_user_reposted"
+    if (!replace && entry.id in confirmCallsInCache) {
       entriesToSubscribe.push({ uid: entry.uid, id: entry.id })
     } else {
       entriesToAdd.push(entry)
