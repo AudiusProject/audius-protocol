@@ -59,6 +59,7 @@ playlist_factory = None
 user_library_factory = None
 ipld_blacklist_factory = None
 user_replica_set_manager = None
+discovery_provider_factory = None
 contract_addresses: Dict[str, Any] = defaultdict()
 
 logger = logging.getLogger(__name__)
@@ -122,6 +123,14 @@ def init_contracts():
         abi=abi_values["UserReplicaSetManager"]["abi"],
     )
 
+    discovery_provider_factory_address = registry_instance.functions.getContract(
+        bytes("DiscoveryProviderFactory", "utf-8")
+    ).call()
+    discovery_provider_factory_inst = web3.eth.contract(
+        address=user_replica_set_manager_address,
+        abi=abi_values["DiscoveryProviderFactory"]["abi"],
+    )
+
     contract_address_dict = {
         "registry": registry_address,
         "user_factory": user_factory_address,
@@ -131,6 +140,7 @@ def init_contracts():
         "user_library_factory": user_library_factory_address,
         "ipld_blacklist_factory": ipld_blacklist_factory_address,
         "user_replica_set_manager": user_replica_set_manager_address,
+        "discovery_provider_factory": discovery_provider_factory_address,
     }
 
     return (
@@ -142,6 +152,7 @@ def init_contracts():
         user_library_factory_inst,
         ipld_blacklist_factory_inst,
         user_replica_set_manager_inst,
+        discovery_provider_factory_inst,
         contract_address_dict,
     )
 
@@ -166,7 +177,6 @@ def create_celery(test_config=None):
 
     # Initialize Solana web3 provider
     solana_client_manager = SolanaClientManager(shared_config["solana"]["endpoint"])
-
     global registry
     global user_factory
     global track_factory
@@ -175,6 +185,7 @@ def create_celery(test_config=None):
     global user_library_factory
     global ipld_blacklist_factory
     global user_replica_set_manager
+    global discovery_provider_factory
     global contract_addresses
     # pylint: enable=W0603
 
@@ -187,6 +198,7 @@ def create_celery(test_config=None):
         user_library_factory,
         ipld_blacklist_factory,
         user_replica_set_manager,
+        discovery_provider_factory,
         contract_addresses,
     ) = init_contracts()
 
@@ -251,6 +263,13 @@ def register_exception_handlers(flask_app):
 def configure_flask(test_config, app, mode="app"):
     with app.app_context():
         app.iniconfig.read(config_files)
+
+    if app.config["SERVER_NAME"] is None:
+        events = discovery_provider_factory.events.NewDiscoveryProvider.createFilter(
+            argument_filters={"_wallet": shared_config["delegate"]["owner_wallet"]}
+        ).get_all_entries()
+        if events:
+            app.config["SERVER_NAME"] = events[0].args._endpoint
 
     # custom JSON serializer for timestamps
     class TimestampJSONEncoder(JSONEncoder):
@@ -325,10 +344,14 @@ def configure_flask(test_config, app, mode="app"):
 
     return app
 
+
 def delete_last_scanned_eth_block_redis(redis_inst):
     logger.info("index_eth.py | deleting existing redis scanned block on start")
     redis_inst.delete(eth_indexing_last_scanned_block_key)
-    logger.info("index_eth.py | successfully deleted existing redis scanned block on start")
+    logger.info(
+        "index_eth.py | successfully deleted existing redis scanned block on start"
+    )
+
 
 def configure_celery(flask_app, celery, test_config=None):
     database_url = shared_config["db"]["url"]
