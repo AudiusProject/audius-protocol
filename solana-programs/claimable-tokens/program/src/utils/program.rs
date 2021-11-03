@@ -40,11 +40,9 @@ pub fn find_program_address_with_seed(
 pub fn find_nonce_address(
     program_id: &Pubkey,
     mint: &Pubkey,
-    expected_signer: &EthereumAddress
+    nonce_acct_seed: &[u8]
 ) -> (AddressPair, u8) {
     // Check that the incremented nonce provided matches expected value
-    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), expected_signer.as_ref()].concat();
-
     // Generating base address for nonce acct from mint
     let (base_pubkey, base_seed) = find_base_address(mint, program_id);
 

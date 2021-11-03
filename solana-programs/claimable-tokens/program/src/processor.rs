@@ -358,7 +358,7 @@ impl Processor {
         let (nonce_acct_address_pair, bump_seed) = find_nonce_address(
             program_id,
             &token_account_info.mint,
-            expected_signer
+            &nonce_acct_seed
         );
 
         // msg!("derived_key {:?}, ", nonce_acct_address_pair.derive.address);

@@ -2,7 +2,7 @@
 
 use claimable_tokens::error::ClaimableProgramError;
 use claimable_tokens::state::TransferInstructionData;
-use claimable_tokens::utils::program::{EthereumAddress, find_address_pair, find_nonce_address};
+use claimable_tokens::utils::program::{EthereumAddress, find_address_pair, find_nonce_address, NONCE_ACCOUNT_PREFIX};
 use claimable_tokens::*;
 use libsecp256k1::{PublicKey, SecretKey};
 use rand::prelude::ThreadRng;
@@ -680,10 +680,12 @@ async fn transfer_replay_instruction() {
     let secp256_program_instruction_2 = new_secp256k1_instruction(&priv_key, &encoded);
     println!("secp256_program_instruction_2 {:?}", secp256_program_instruction_2);
 
+    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
     let (nonce_addr_info, _) = find_nonce_address(
         &id(),
         &mint_pubkey,
-        &eth_address);
+        &nonce_acct_seed
+    );
 
     println!("nonce_addr_info TEST {:?}", nonce_addr_info.derive.address);
 
