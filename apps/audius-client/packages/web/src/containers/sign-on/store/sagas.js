@@ -4,6 +4,7 @@ import { delay } from 'redux-saga'
 import {
   all,
   call,
+  fork,
   put,
   race,
   select,
@@ -68,8 +69,8 @@ if (IS_PRODUCTION) {
   // user id 51: official audius account
   defaultFollowUserIds = new Set([51])
 } else if (IS_STAGING) {
-  // user id 12372: official audius account
-  defaultFollowUserIds = new Set([12372])
+  // user id 1964: stage testing account
+  defaultFollowUserIds = new Set([1964])
 }
 
 export const fetchSuggestedFollowUserIds = async () => {
@@ -451,7 +452,9 @@ function* followArtists() {
   try {
     // Auto-follow Hot & New Playlist
     if (IS_PRODUCTION) {
-      yield call(followCollections, [4281], FavoriteSource.SIGN_UP)
+      yield fork(followCollections, [4281], FavoriteSource.SIGN_UP)
+    } else if (IS_STAGING) {
+      yield fork(followCollections, [555], FavoriteSource.SIGN_UP)
     }
 
     const signOn = yield select(getSignOn)

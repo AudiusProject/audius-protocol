@@ -74,7 +74,12 @@ describe('add', () => {
           confirmer: noopReducer()
         }),
         {
-          tracks: { ...initialCacheState },
+          tracks: {
+            ...initialCacheState,
+            entries: {
+              1: { metadata: { data: 10 } }
+            }
+          },
           confirmer: {
             ...initialConfirmerState,
             confirm: {
@@ -102,7 +107,8 @@ describe('add', () => {
       )
       .silentRun()
     expect(storeState.tracks.entries).toEqual({
-      ...initialCacheState.entries
+      ...initialCacheState.entries,
+      1: { metadata: { data: 10 } }
     })
     expect(storeState.tracks.uids).toEqual({
       '111': 1
