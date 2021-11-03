@@ -46,7 +46,7 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
     await redis.setex(`solanaFailedTx:${reqBodySHA}`, 60 /* seconds */ * 60 /* minutes */ * 24 /* hours */, JSON.stringify(req.body))
     req.logger.error('Error in solana transaction:', error, reqBodySHA)
     const errorString = `Something caused the solana transaction to fail for payload ${reqBodySHA}`
-    return errorResponseServerError(errorString, { errorCode, error } )
+    return errorResponseServerError(errorString, { errorCode, error })
   }
 
   return successResponse({ transactionSignature })

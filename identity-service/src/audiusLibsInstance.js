@@ -46,7 +46,7 @@ class AudiusLibsWrapper {
         solanaClusterEndpoint: config.get('solanaEndpoint'),
         // Never use the relay path in identity
         shouldUseRelay: false,
-        feePayerSecretKey,
+        feePayerSecretKey
       })
     })
 
