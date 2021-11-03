@@ -347,29 +347,25 @@ impl Processor {
             return Err(ClaimableProgramError::Secp256InstructionLosing.into());
         }
 
-        // msg!("validate_eth_signature_result {:?}", res);
-        // TODO: ERROR IF THIS FAILS
-        // msg!("banks_token_acct_info {:?}", banks_token_account_info);
         let token_account_info =
             spl_token::state::Account::unpack(&banks_token_account_info.data.borrow())?;
 
-        // TODO: Don't recreate seed below, pass in
         let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), expected_signer.as_ref()].concat();
-        let (nonce_acct_address_pair, bump_seed) = find_nonce_address(
+        let (base_address, derived_nonce_address, bump_seed) = find_nonce_address(
             program_id,
             &token_account_info.mint,
             &nonce_acct_seed
         );
 
-        // msg!("derived_key {:?}, ", nonce_acct_address_pair.derive.address);
-        // msg!("provided nonce_acc_info {:?}", nonce_account_info);
-        // TODO: ERROR IF MISMATCH ABOVE
-        // msg!("authority_key {:?}", authority.key);
-        // msg!("base_key {:?}", nonce_acct_address_pair.base.address);
+        if derived_nonce_address != *nonce_account_info.key {
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+        }
+        if base_address != *authority.key {
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+        }
 
         let nonce_acct_lamports = nonce_account_info.lamports();
         if nonce_acct_lamports == 0 {
-            msg!("Creating nonce acct {:?}", nonce_account_info);
             let signature = &[
                 &authority.key.to_bytes()[..32],
                 &nonce_acct_seed.as_slice(),

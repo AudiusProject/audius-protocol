@@ -41,10 +41,10 @@ pub fn find_nonce_address(
     program_id: &Pubkey,
     mint: &Pubkey,
     nonce_acct_seed: &[u8]
-) -> (AddressPair, u8) {
+) -> (Pubkey, Pubkey, u8) {
     // Check that the incremented nonce provided matches expected value
     // Generating base address for nonce acct from mint
-    let (base_pubkey, base_seed) = find_base_address(mint, program_id);
+    let (base_pubkey, _) = find_base_address(mint, program_id);
 
     // Generating derived address for nonce account with nonce acct seed
     // let derived_seed = bs58::encode(nonce_acct_seed).into_string();
@@ -56,11 +56,7 @@ pub fn find_nonce_address(
     let (derived_address, bump_seed) =
         find_program_address_with_seed(program_id, &base_pubkey, &nonce_acct_seed);
 
-    return (AddressPair {
-        base: Base { address: base_pubkey, seed: base_seed },
-        derive: Derived { address: derived_address, seed: "".to_string() }
-    },
-    bump_seed);
+    return (base_pubkey, derived_address, bump_seed)
 }
 
 /// Return `Base` account with seed and corresponding derived address

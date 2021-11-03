@@ -1,10 +1,11 @@
 #![cfg(feature = "test-bpf")]
 
 use claimable_tokens::error::ClaimableProgramError;
-use claimable_tokens::state::TransferInstructionData;
+use claimable_tokens::state::{NonceAccount, TransferInstructionData};
 use claimable_tokens::utils::program::{EthereumAddress, find_address_pair, find_nonce_address, NONCE_ACCOUNT_PREFIX};
 use claimable_tokens::*;
 use libsecp256k1::{PublicKey, SecretKey};
+use rand::distributions::uniform::SampleBorrow;
 use rand::prelude::ThreadRng;
 use rand::{thread_rng, Rng};
 use sha3::Digest;
@@ -669,25 +670,22 @@ async fn transfer_replay_instruction() {
     .await;
     let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
 
-    let instr_test = TransferInstructionData {
+    let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: transfer_amount,
         nonce: 1
     };
 
-    let encoded = instr_test.try_to_vec().unwrap();
+    let encoded = transfer_instr_data.try_to_vec().unwrap();
     let decoded = TransferInstructionData::try_from_slice(&encoded).unwrap();
     let secp256_program_instruction_2 = new_secp256k1_instruction(&priv_key, &encoded);
-    println!("secp256_program_instruction_2 {:?}", secp256_program_instruction_2);
 
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
-    let (nonce_addr_info, _) = find_nonce_address(
+    let (base_key,nonce_account, _) = find_nonce_address(
         &id(),
         &mint_pubkey,
         &nonce_acct_seed
     );
-
-    println!("nonce_addr_info TEST {:?}", nonce_addr_info.derive.address);
 
     let instructions = [
         secp256_program_instruction_2.clone(),
@@ -696,7 +694,7 @@ async fn transfer_replay_instruction() {
             &program_context.payer.pubkey(),
             &user_bank_account,
             &user_token_account.pubkey(),
-            &nonce_addr_info.derive.address,
+            &nonce_account,
             &base_acc,
             instruction::Transfer {
                 eth_address,
@@ -705,8 +703,6 @@ async fn transfer_replay_instruction() {
         )
         .unwrap()
     ];
-
-    print!("INSTRUCTIONS - {:?}", instructions);
 
     let mut transaction = Transaction::new_with_payer(
         &instructions,
@@ -719,6 +715,12 @@ async fn transfer_replay_instruction() {
         .process_transaction(transaction)
         .await
         .unwrap();
+
+    println!("Verifying NONCE");
+    let nonce_acct_info = get_account(&mut program_context, &nonce_account).await;
+    let nonce_acct_data = NonceAccount::unpack(&nonce_acct_info.data.as_slice()).unwrap();
+    println!("nonce_acct_data {:?}", nonce_acct_data);
+    assert_eq!(nonce_acct_data.nonce, transfer_instr_data.nonce);
 
     return;
     let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await;
