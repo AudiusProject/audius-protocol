@@ -64,7 +64,7 @@ const getTrackContext = async (handle: string, slug: string, canEmbed: boolean):
       description: track.description || '',
       tags,
       labels,
-      image: coverArt ? getImageUrl(coverArt, gateway) : track.artwork["1000x1000"],
+      image: coverArt ? getImageUrl(coverArt, gateway) : track.artwork['1000x1000'],
       embed: canEmbed,
       embedUrl: getEmbedUrl(Playable.TRACK, track.track_id, track.owner_id)
     }
