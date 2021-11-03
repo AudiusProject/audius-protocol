@@ -19,6 +19,59 @@ def fetch_discovery_node_info(sp_id, sp_factory_instance):
     ).call()
 
 
+def get_node_endpoint() -> str:
+    """
+    Get endpoint for this discovery node
+    At each node, get the service info which includes the endpoint
+    return node endpoint of node with matching delegate_owner_wallet
+    """
+    eth_web3 = web3_provider.get_eth_web3()
+
+    eth_registry_address = eth_web3.toChecksumAddress(
+        shared_config["eth_contracts"]["registry"]
+    )
+    eth_registry_instance = eth_web3.eth.contract(
+        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+    )
+    sp_factory_address = eth_registry_instance.functions.getContract(
+        SP_FACTORY_REGISTRY_KEY
+    ).call()
+    sp_factory_inst = eth_web3.eth.contract(
+        address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
+    )
+    num_discovery_nodes = sp_factory_inst.functions.getTotalServiceTypeProviders(
+        DISCOVERY_NODE_SERVICE_TYPE
+    ).call()
+    logger.info(f"number of discovery nodes: {num_discovery_nodes}")
+
+    ids_list = list(range(1, num_discovery_nodes + 1))
+
+    endpoint = None
+
+    # fetch all discovery nodes info in parallel
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        discovery_node_futures = {
+            executor.submit(fetch_discovery_node_info, i, sp_factory_inst): i
+            for i in ids_list
+        }
+        for future in concurrent.futures.as_completed(discovery_node_futures):
+            node_op = discovery_node_futures[future]
+            try:
+                node_info = future.result()
+                wallet = node_info[3]
+                if wallet == shared_config["delegate"]["owner_wallet"]:
+                    endpoint = node_info[1]
+                    break
+            except Exception as e:
+                logger.error(
+                    f"get_all_other_nodes.py | ERROR in discovery_node_futures {node_op} generated {e}"
+                )
+
+    logger.info(f"this node's endpoint: {endpoint}")
+
+    return endpoint
+
+
 def get_all_other_nodes() -> Tuple[List[str], List[str]]:
     """
     Get number of discovery nodes
