@@ -24,6 +24,7 @@ import EnablePushNotificationsDrawer from './components/enable-push-notification
 import CollectibleDetailsDrawer from './components/collectible-details-drawer'
 
 const store = createStore()
+export const dispatch = store.dispatch
 
 const Airplay = Platform.select({
   ios: () => require('./components/audio/Airplay').default,
