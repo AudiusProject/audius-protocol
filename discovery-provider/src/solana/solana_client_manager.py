@@ -8,6 +8,7 @@ from typing import Optional, Union
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
+from src.solana.solana_transaction_types import ConfirmedSignatureForAddressResponse
 from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
@@ -82,7 +83,7 @@ class SolanaClientManager:
             while num_retries > 0:
                 try:
                     logger.info(f"solana_client_manager.py | handle_get_confirmed_signature_for_address2 | Fetching {before} {endpoint}")
-                    transactions = client.get_confirmed_signature_for_address2(account, before, limit)
+                    transactions: ConfirmedSignatureForAddressResponse = client.get_confirmed_signature_for_address2(account, before, limit)
                     logger.info(f"solana_client_manager.py | handle_get_confirmed_signature_for_address2 | Finished fetching {before} {endpoint}")
                     return transactions
                 except Exception as e:

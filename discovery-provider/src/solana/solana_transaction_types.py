@@ -71,3 +71,16 @@ class TransactionInfoResult(TypedDict):
     meta: ResultMeta
     slot: int
     transaction: ResultTransction
+
+class ConfirmedSignatureForAddressResult(TypedDict):
+    err: Any
+    memo: Any
+    signature: str
+    slot: int
+    blockTime: int
+    confirmationStatus: str
+
+class ConfirmedSignatureForAddressResponse(TypedDict):
+    jsonrpc: str
+    result: List[ConfirmedSignatureForAddressResult]
+    id: int

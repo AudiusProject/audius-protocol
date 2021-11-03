@@ -1,9 +1,9 @@
 import concurrent.futures
-import datetime
+from datetime import datetime
 import logging
 import time
-
-from typing import Union, Tuple
+from typing import TypedDict, Union, Tuple
+from redis import Redis
 
 import base58
 from sqlalchemy import desc
@@ -13,11 +13,16 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models import Play
 from src.tasks.celery_app import celery
 from src.tasks.index_listen_count_milestones import CURRENT_PLAY_INDEXING, TRACK_LISTEN_IDS
+from src.utils.cache_solana_program import (
+    CachedProgramTxInfo,
+    cache_latest_sol_db_tx,
+    fetch_and_cache_latest_program_tx_redis
+)
 from src.utils.config import shared_config
-from src.utils.helpers import redis_set_json_and_dump
 from src.utils.redis_constants import latest_sol_play_program_tx_key, latest_sol_play_db_tx_key
-from src.utils.redis_cache import pickle_and_set, set_json_cached_key
+from src.utils.redis_cache import set_json_cached_key
 from src.solana.solana_client_manager import SolanaClientManager
+from src.solana.solana_transaction_types import TransactionInfoResult
 
 TRACK_LISTEN_PROGRAM = shared_config["solana"]["track_listen_count_address"]
 SIGNER_GROUP = shared_config["solana"]["signer_group_address"]
@@ -100,44 +105,18 @@ def parse_instruction_data(data) -> Tuple[Union[int, None], int, Union[str, None
     return user_id, track_id, source, timestamp
 
 
+class PlayInfo(TypedDict):
+    user_id: int
+    track_id: int
+    created_at: datetime
+    source: str
+    slot: int
+    tx_sig: str
+
 # Cache the latest value committed to DB in redis
 # Used for quick retrieval in health check
-def cache_latest_sol_play_db_tx(redis, play):
-    try:
-        play["created_at"] = play["created_at"].timestamp()
-        redis_set_json_and_dump(
-            redis,
-            latest_sol_play_db_tx_key,
-            play
-        )
-    except Exception as e:
-        logger.error(
-            f"index_solana_plays.py | Failed to cache latest processed transaction {play}, {e}"
-        )
-        raise e
-
-# Cache the latest chain tx value in redis
-# Represents most recently seen value from the TrackListenCount program
-def cache_latest_sol_play_program_tx(redis, tx):
-    try:
-        sig = tx["signature"]
-        slot = tx["slot"]
-        timestamp = tx["blockTime"]
-        redis_set_json_and_dump(
-            redis,
-            latest_sol_play_program_tx_key,
-            {
-                "signature": sig,
-                "slot": slot,
-                "timestamp": timestamp
-            }
-        )
-    except Exception as e:
-        logger.error(
-            f"index_solana_plays.py | Failed to cache chain latest transaction {tx}, {e}"
-        )
-        raise e
-
+def cache_latest_sol_play_db_tx(redis: Redis, latest_tx: CachedProgramTxInfo):
+    cache_latest_sol_db_tx(redis, latest_sol_play_db_tx_key, latest_tx)
 
 # Check for both SECP and SignerGroup
 # Ensures that a signature recovery was performed within the expected SignerGroup
@@ -176,7 +155,7 @@ def parse_sol_play_transaction(
                     user_id, track_id, source, timestamp = parse_instruction_data(
                         instruction["data"]
                     )
-                    created_at = datetime.datetime.utcfromtimestamp(timestamp)
+                    created_at = datetime.utcfromtimestamp(timestamp)
 
                     logger.info(
                         "index_solana_plays.py | "
@@ -352,7 +331,7 @@ def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, r
 
                     # Append plays to a list that will be written if all plays are successfully retrieved
                     # from the rpc pool
-                    play = {
+                    play: PlayInfo = {
                         "user_id": user_id,
                         "track_id": track_id,
                         "created_at": created_at,
@@ -403,7 +382,11 @@ def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, r
                 if play.get('tx_sig') == last_tx_in_batch:
                     # Cache the latest play from this batch
                     # This reflects the ordering from chain
-                    most_recent_db_play = play
+                    most_recent_db_play = {
+                        "signature": play.get("tx_sig"),
+                        "slot": play.get("slot"),
+                        "timestamp": int(play.get("created_at").timestamp())
+                    }
                     cache_latest_sol_play_db_tx(redis, most_recent_db_play)
 
         track_play_ids = [play["track_id"] for play in plays]
@@ -424,20 +407,6 @@ def parse_sol_tx_batch(db, solana_client_manager, redis, tx_sig_batch_records, r
         f"index_solana_plays.py | processed batch {len(tx_sig_batch_records)} txs in {batch_duration}s"
     )
     return None
-
-# Function that ensures we always cache the latest known transaction in redis
-# Performed outside of lock acquisition
-# Ensures a lock held for a long time (usually during catchup scenarios)
-#   does not prevent a refresh of latest known transaction
-def fetch_and_cache_latest_program_tx_redis(solana_client_manager: SolanaClientManager, redis):
-    transactions_history = (
-        solana_client_manager.get_confirmed_signature_for_address2(
-            TRACK_LISTEN_PROGRAM, before=None, limit=1
-        )
-    )
-    transactions_array = transactions_history["result"]
-    # Cache latest transaction from chain
-    cache_latest_sol_play_program_tx(redis, transactions_array[0])
 
 def split_list(list, n):
     for i in range(0, len(list), n):
@@ -567,7 +536,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
         if transaction_signatures and transaction_signatures[-1]:
             last_tx_sig = transaction_signatures[-1][-1]
             tx_info = solana_client_manager.get_sol_tx_info(last_tx_sig)
-            tx_result = tx_info["result"]
+            tx_result: TransactionInfoResult = tx_info["result"]
             set_json_cached_key(
                 redis,
                 CURRENT_PLAY_INDEXING,
@@ -597,7 +566,12 @@ def index_solana_plays(self):
 
     try:
         # Cache latest tx outside of lock
-        fetch_and_cache_latest_program_tx_redis(solana_client_manager, redis)
+        fetch_and_cache_latest_program_tx_redis(
+            solana_client_manager,
+            redis,
+            TRACK_LISTEN_PROGRAM,
+            latest_sol_play_program_tx_key
+        )
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:

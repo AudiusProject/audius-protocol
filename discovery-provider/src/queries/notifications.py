@@ -3,7 +3,9 @@ import functools as ft
 from datetime import date, datetime, timedelta
 from typing import Tuple, List
 from flask import Blueprint, request
+from redis import Redis
 from sqlalchemy import desc
+from src.utils.redis_connection import get_redis
 
 from src import api_helpers
 from src.models import (
@@ -21,12 +23,16 @@ from src.models import (
 )
 from src.models.milestone import Milestone
 from src.queries import response_name_constants as const
+from src.queries.get_sol_rewards_manager import (
+    get_latest_cached_sol_rewards_manager_db,
+    get_latest_cached_sol_rewards_manager_program_tx
+)
 from src.queries.query_helpers import (
     get_repost_counts,
     get_save_counts,
     get_follower_count_dict,
 )
-from src.tasks.index_listen_count_milestones import LISTEN_COUNT_MILESTONE
+from src.tasks.index_listen_count_milestones import LISTEN_COUNT_MILESTONE, PROCESSED_LISTEN_MILESTONE
 from src.utils.db_session import get_db_read_replica
 from src.utils.config import shared_config
 
@@ -892,6 +898,28 @@ def notifications():
     )
 
 
+def get_max_slot(redis: Redis):
+    logger.error("GET MAX CLOST")
+    max_slot = 0
+
+    listen_milestone_slot = redis.get(PROCESSED_LISTEN_MILESTONE)
+    logger.error(listen_milestone_slot)
+    if listen_milestone_slot:
+        max_slot = int(listen_milestone_slot)
+    logger.error(max_slot)
+
+    rewards_manager_db_cache = get_latest_cached_sol_rewards_manager_db(redis)
+    tx_cache = get_latest_cached_sol_rewards_manager_program_tx(redis)
+    logger.error(rewards_manager_db_cache)
+    logger.error(tx_cache)
+
+    if tx_cache and rewards_manager_db_cache:
+        if tx_cache["slot"] != rewards_manager_db_cache["slot"]:
+            max_slot = min(rewards_manager_db_cache["slot"], max_slot)
+    logger.error(max_slot)
+
+    return max_slot
+
 @bp.route("/solana_notifications", methods=("GET",))
 def solana_notifications():
     """
@@ -912,6 +940,7 @@ def solana_notifications():
         info: Dictionary of metadata w/ min_slot_number & max_slot_number fields
     """
     db = get_db_read_replica()
+    redis = get_redis()
     min_slot_number = request.args.get("min_slot_number", type=int)
     max_slot_number = request.args.get("max_slot_number", type=int)
 
@@ -922,31 +951,8 @@ def solana_notifications():
     if not max_slot_number or (max_slot_number - min_slot_number) > max_slot_diff:
         max_slot_number = min_slot_number + max_slot_diff
 
-    # TODO: This needs to be updated when more notification types are added to the solana notifications queue
-    # Need to write a system to keep track of the proper latest slot to index based on all of the applicable table
-    with db.scoped_session() as session:
-        # current_slot_query_result = (
-        #     session.query(RewardManagerTransaction.slot)
-        #     .order_by(
-        #         desc(RewardManagerTransaction.slot)
-        #     )
-        #     .first()
-        # )
-        milestone_slot_query_result = (
-            session.query(Milestone.slot)
-            .order_by(
-                desc(Milestone.slot)
-            )
-            .first()
-        )
-        # TODO: Get min of all most current solana slots
-        # current_max_slot_num = min(
-            # (current_slot_query_result.slot if current_slot_query_result is not None else 0),
-            # (milestone_slot_query_result.slot if milestone_slot_query_result is not None else 0),
-        # )
-        current_max_slot_num = milestone_slot_query_result.slot if milestone_slot_query_result is not None else 0
-        if current_max_slot_num < max_slot_number:
-            max_slot_number = current_max_slot_num
+    max_valid_slot = get_max_slot(redis)
+    max_slot_number = min(max_slot_number, max_valid_slot)
 
     notifications_unsorted = []
     notification_metadata = {
