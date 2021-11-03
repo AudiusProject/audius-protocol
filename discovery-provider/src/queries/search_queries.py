@@ -18,8 +18,7 @@ from src.queries.search_config import (
     search_user_name_exact_match_boost,
     user_handle_exact_match_boost,
 )
-from src.models import Track, RepostType, Save, SaveType, Follow
-from src.utils import helpers
+from src.models import RepostType, Save, SaveType, Follow
 from src.utils.db_session import get_db_read_replica
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_users import get_unpopulated_users
