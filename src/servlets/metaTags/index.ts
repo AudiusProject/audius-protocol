@@ -36,7 +36,7 @@ const getTrackContext = async (handle: string, slug: string, canEmbed: boolean):
   if (!handle || !slug) return getDefaultContext()
   try {
     const track = await getTrackByHandleAndSlug(handle, slug)
-    const user = await getUser(track.owner_id)
+    const user = track.user ? track.user : await getUser(track.owner_id)
     const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
 
     const coverArt = track.cover_art_sizes
@@ -47,7 +47,7 @@ const getTrackContext = async (handle: string, slug: string, canEmbed: boolean):
     tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
 
     const date = track.release_date ? new Date(track.release_date) : track.created_at
-    const duration = track.track_segments.reduce(
+    const duration = track.duration ? track.duration : track.track_segments.reduce(
       (acc: number, v: any) => acc = acc + v.duration,
       0
     )
@@ -64,7 +64,7 @@ const getTrackContext = async (handle: string, slug: string, canEmbed: boolean):
       description: track.description || '',
       tags,
       labels,
-      image: getImageUrl(coverArt, gateway),
+      image: coverArt ? getImageUrl(coverArt, gateway) : track.artwork["1000x1000"],
       embed: canEmbed,
       embedUrl: getEmbedUrl(Playable.TRACK, track.track_id, track.owner_id)
     }
