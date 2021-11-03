@@ -29,7 +29,7 @@ export const getTracks = async (ids: number[]): Promise<any> => {
 
 export const getTrackByHandleAndSlug = async (handle: string, slug: string): Promise<any> => {
   const track = await libs.Track.getTracksByHandleAndSlug(handle, slug)
-  if (track && track.length > 0) return track[0]
+  if (track) return Array.isArray(track) ? track[0] : track
 
   // Try the old route method, ensuring that the track once found has the same owner handle.
   // Ensure at least 5 digits (anything lower has old route in the DB)
