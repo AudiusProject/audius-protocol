@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/AudiusProject/general-admission#readme",
   "dependencies": {
-    "@audius/libs": "^1.2.29",
+    "@audius/libs": "1.2.30",
     "abort-controller": "^3.0.0",
     "cors": "^2.8.5",
     "ethereumjs-tx": "^2.1.0",
