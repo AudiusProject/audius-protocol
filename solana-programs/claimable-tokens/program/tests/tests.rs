@@ -671,15 +671,12 @@ async fn transfer_replay_instruction() {
 
     let instr_test = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
-        amount: 10,
-        nonce: 0
+        amount: transfer_amount,
+        nonce: 1
     };
 
     let encoded = instr_test.try_to_vec().unwrap();
     let decoded = TransferInstructionData::try_from_slice(&encoded).unwrap();
-    println!("{:?}", instr_test);
-    println!("test {:?}", encoded);
-    println!("test decode {:?}", decoded);
     let secp256_program_instruction_2 = new_secp256k1_instruction(&priv_key, &encoded);
     println!("secp256_program_instruction_2 {:?}", secp256_program_instruction_2);
 

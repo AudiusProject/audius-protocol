@@ -35,7 +35,7 @@ impl NonceAccount {
     ) -> Self {
         Self {
             version: PROGRAM_VERSION,
-            nonce: 1,
+            nonce: 0,
         }
     }
 }
@@ -47,7 +47,6 @@ impl Pack for NonceAccount {
 
     fn pack_into_slice(&self, dst: &mut [u8]) {
         let mut slice = dst;
-        msg!("packing {:?}", slice);
         self.serialize(&mut slice).unwrap()
     }
 

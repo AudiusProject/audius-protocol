@@ -94,6 +94,7 @@ impl Processor {
             authority_account_info,
             &eth_address,
             &destination_account_info.key.to_bytes(),
+            amount,
             rent,
         )?;
         Self::token_transfer(
@@ -305,6 +306,7 @@ impl Processor {
         authority: &AccountInfo<'a>,
         expected_signer: &EthereumAddress,
         expected_message: &[u8],
+        amount: u64,
         rent: &Rent,
     ) -> ProgramResult {
         if !sysvar::instructions::check_id(&instruction_info.key) {
@@ -334,12 +336,16 @@ impl Processor {
             return Err(ClaimableProgramError::Secp256InstructionLosing.into());
         }
 
-        let res = Self::validate_eth_signature(
+        let transfer_data = Self::validate_eth_signature(
             expected_signer,
             expected_message,
             instruction.data,
             secp_program_index as u8,
-        );
+        )?;
+
+        if amount != transfer_data.amount {
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+        }
 
         // msg!("validate_eth_signature_result {:?}", res);
         // TODO: ERROR IF THIS FAILS
@@ -358,42 +364,38 @@ impl Processor {
         // msg!("derived_key {:?}, ", nonce_acct_address_pair.derive.address);
         // msg!("provided nonce_acc_info {:?}", nonce_account_info);
         // TODO: ERROR IF MISMATCH ABOVE
-
         // msg!("authority_key {:?}", authority.key);
         // msg!("base_key {:?}", nonce_acct_address_pair.base.address);
 
         let nonce_acct_lamports = nonce_account_info.lamports();
         if nonce_acct_lamports == 0 {
             msg!("Creating nonce acct {:?}", nonce_account_info);
-
             let signature = &[
                 &authority.key.to_bytes()[..32],
                 &nonce_acct_seed.as_slice(),
                 &[bump_seed]
             ];
-            // let test_space = 200;
-
-            let ix = system_instruction::create_account(
-                funder_account_info.key,
-                nonce_account_info.key,
-                rent.minimum_balance(NonceAccount::LEN),
-                NonceAccount::LEN as u64,
+            Self::create_account(
                 program_id,
-            );
+                funder_account_info.clone(),
+                nonce_account_info.clone(),
+                NonceAccount::LEN,
+                &[signature],
+                rent)?;
 
-            msg!("Issuing instructions {:?}", ix);
-            let res = invoke_signed(
-                &ix,
-                &[
-                    funder_account_info.clone(),
-                    nonce_account_info.clone()
-                ],
-                &[signature]
-            );
-            msg!("passed invoke_signed res {:?} | {:?}", res.is_err(), res);
             let nonce = NonceAccount::new();
-            msg!("NonceAccount = {:?} ", nonce);
             NonceAccount::pack(nonce, *nonce_account_info.data.borrow_mut())?;
+        }
+
+        // Increment on chain nonce
+        let mut current_nonce_account = NonceAccount::unpack(&nonce_account_info.data.borrow())?;
+        current_nonce_account.nonce += 1;
+        let current_chain_nonce = current_nonce_account.nonce;
+        NonceAccount::pack(current_nonce_account, *nonce_account_info.data.borrow_mut())?;
+
+        // Error if invalid
+        if transfer_data.nonce != current_chain_nonce {
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
         }
 
         Ok(())
@@ -406,13 +408,11 @@ impl Processor {
         expected_message: &[u8],
         secp_instruction_data: Vec<u8>,
         instruction_index: u8,
-    ) -> Result<(), ProgramError> {
+    ) -> Result<TransferInstructionData, ProgramError> {
         // Only single recovery expected
         if secp_instruction_data[0] != 1 {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
         }
-
-        msg!("secp_instruction_data = {:?}", secp_instruction_data);
 
         // Assert instruction_index = 1
         let start = 1;
@@ -459,6 +459,6 @@ impl Processor {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
         }
 
-       Ok(())
+       Ok(decoded_instr_data)
     }
 }
