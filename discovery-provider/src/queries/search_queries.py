@@ -415,10 +415,10 @@ def track_search_query(
     res = sqlalchemy.text(
         # pylint: disable=C0301
         f"""
-        select track_id, b.balance, b.associated_wallets_balance, u.user_id from (
-            select distinct on (owner_id) track_id, owner_id, user_id, total_score
+        select track_id, b.balance, b.associated_wallets_balance, u.saved_user_id from (
+            select distinct on (owner_id) track_id, owner_id, saved_user_id, total_score
             from (
-                select track_id, owner_id, user_id,
+                select track_id, owner_id, saved_user_id,
                     (
                         (:similarity_weight * sum(score)) +
                         (:title_weight * similarity(coalesce(title, ''), query)) +
@@ -428,7 +428,7 @@ def track_search_query(
                         (case when (lower(query) = handle) then :handle_match_boost else 0 end) +
                         (case when (lower(query) = user_name) then :user_name_match_boost else 0 end)
                         {
-                            '+ (case when (user_id is not null) then :current_user_saved_match_boost else 0 end)'
+                            '+ (case when (saved_user_id is not null) then :current_user_saved_match_boost else 0 end)'
                             if current_user_id
                             else ""
                         }
@@ -439,9 +439,9 @@ def track_search_query(
                         d."track_title" as title, :query as query, d."user_name" as user_name, d."handle" as handle,
                         d."repost_count" as repost_count, d."owner_id" as owner_id
                         {
-                            ',s."user_id" as user_id'
+                            ',s."user_id" as saved_user_id'
                             if current_user_id
-                            else ", null as user_id"
+                            else ", null as saved_user_id"
                         }
                     from "track_lexeme_dict" d
                     {
@@ -464,7 +464,7 @@ def track_search_query(
                         else ""
                     }
                 ) as results
-                group by track_id, title, query, user_name, handle, repost_count, owner_id, user_id
+                group by track_id, title, query, user_name, handle, repost_count, owner_id, saved_user_id
             ) as results2
             order by owner_id, total_score desc
         ) as u left join user_balances b on u.owner_id = b.user_id
