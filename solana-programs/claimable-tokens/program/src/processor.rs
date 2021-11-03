@@ -1,6 +1,6 @@
 //! Program state processor
 
-use crate::{error::{to_claimable_tokens_error, ClaimableProgramError}, instruction::ClaimableProgramInstruction, state::TransferInstructionData, utils::program::{EthereumAddress, find_address_pair, find_nonce_address}};
+use crate::{error::{to_claimable_tokens_error, ClaimableProgramError}, instruction::ClaimableProgramInstruction, state::{NonceAccount, TransferInstructionData}, utils::program::{EthereumAddress, find_address_pair, find_nonce_address}};
 use borsh::{BorshDeserialize, BorshSerialize};
 // use solana_sdk::{secp256k1_instruction::{SIGNATURE_OFFSETS_SERIALIZED_SIZE}};
 use solana_program::{account_info::AccountInfo, account_info::{Account, next_account_info}, entrypoint::ProgramResult, msg, program::{invoke, invoke_signed}, program_error::ProgramError, program_pack::Pack, pubkey::Pubkey, secp256k1_program, system_instruction, sysvar, sysvar::Sysvar, sysvar::rent::Rent};
@@ -30,6 +30,9 @@ pub struct SecpSignatureOffsets {
     /// Index on message instruction in buffer
     pub message_instruction_index: u8,
 }
+
+/// Sender nonce account seed
+pub const NONCE_ACCOUNT_PREFIX: &str = "N_";
 
 /// Program state handler.
 pub struct Processor;
@@ -72,6 +75,7 @@ impl Processor {
     /// Operation gated by SECP recovery
     pub fn process_transfer_instruction<'a>(
         program_id: &Pubkey,
+        rent: &Rent,
         funder_account_info: &AccountInfo<'a>,
         banks_token_account_info: &AccountInfo<'a>,
         destination_account_info: &AccountInfo<'a>,
@@ -87,8 +91,10 @@ impl Processor {
             instruction_info,
             banks_token_account_info,
             nonce_account_info,
+            authority_account_info,
             &eth_address,
             &destination_account_info.key.to_bytes(),
+            rent,
         )?;
         Self::token_transfer(
             banks_token_account_info.clone(),
@@ -138,10 +144,15 @@ impl Processor {
                 let destination_account_info = next_account_info(account_info_iter)?;
                 let nonce_account_info = next_account_info(account_info_iter)?;
                 let authority_account_info = next_account_info(account_info_iter)?;
+                let rent_account_info = next_account_info(account_info_iter)?;
+                let rent = &Rent::from_account_info(rent_account_info)?;
                 let instruction_info = next_account_info(account_info_iter)?;
+                let _token_program = next_account_info(account_info_iter)?;
+                let _system_program = next_account_info(account_info_iter)?;
 
                 Self::process_transfer_instruction(
                     program_id,
+                    rent,
                     funder_account_info,
                     banks_token_account_info,
                     destination_account_info,
@@ -169,6 +180,16 @@ impl Processor {
     ) -> ProgramResult {
         // Calculate target bank account PDA
         let pair = find_address_pair(program_id, mint_key, eth_address)?;
+        msg!(
+            "create_token_account base pair {:?}, {:?}",
+            &pair.base.address,
+            &pair.base.seed
+        );
+        msg!(
+            "create_token_account derived pair {:?}, {:?}",
+            &pair.derive.address,
+            &pair.derive.seed
+        );
         // Verify base and incoming account match expected
         if *base.key != pair.base.address {
             return Err(ProgramError::InvalidSeeds);
@@ -179,6 +200,7 @@ impl Processor {
 
         // Create user bank account signature and invoke from program
         let signature = &[&mint_key.to_bytes()[..32], &[pair.base.seed]];
+        msg!("create_token_account signature {:?}", signature);
 
         invoke_signed(
             &system_instruction::create_account_with_seed(
@@ -193,6 +215,27 @@ impl Processor {
             &[funder.clone(), account_to_create.clone(), base.clone()],
             &[signature],
         )
+    }
+
+    /// Create account
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_account<'a>(
+        program_id: &Pubkey,
+        from: AccountInfo<'a>,
+        to: AccountInfo<'a>,
+        space: usize,
+        signers_seeds: &[&[&[u8]]],
+        rent: &Rent,
+    ) -> ProgramResult {
+        let ix = system_instruction::create_account(
+            from.key,
+            to.key,
+            rent.minimum_balance(space),
+            space as u64,
+            program_id,
+        );
+
+        invoke_signed(&ix, &[from, to], signers_seeds)
     }
 
     /// Helper to initialize user token account
@@ -253,14 +296,16 @@ impl Processor {
     }
 
     /// Checks that the user signed message with his ethereum private key
-    fn check_ethereum_sign(
+    fn check_ethereum_sign<'a>(
         program_id: &Pubkey,
-        funder_account_info: &AccountInfo,
-        instruction_info: &AccountInfo,
-        banks_token_account_info: &AccountInfo,
-        nonce_account_info: &AccountInfo,
+        funder_account_info: &AccountInfo<'a>,
+        instruction_info: &AccountInfo<'a>,
+        banks_token_account_info: &AccountInfo<'a>,
+        nonce_account_info: &AccountInfo<'a>,
+        authority: &AccountInfo<'a>,
         expected_signer: &EthereumAddress,
         expected_message: &[u8],
+        rent: &Rent,
     ) -> ProgramResult {
         if !sysvar::instructions::check_id(&instruction_info.key) {
             return Err(ClaimableProgramError::Secp256InstructionLosing.into());
@@ -296,26 +341,59 @@ impl Processor {
             secp_program_index as u8,
         );
 
-        msg!("validate_eth_signature_result {:?}", res);
+        // msg!("validate_eth_signature_result {:?}", res);
         // TODO: ERROR IF THIS FAILS
-        msg!("banks_token_acct_info {:?}", banks_token_account_info);
+        // msg!("banks_token_acct_info {:?}", banks_token_account_info);
         let token_account_info =
             spl_token::state::Account::unpack(&banks_token_account_info.data.borrow())?;
-        let nonce_acct_address_pair = find_nonce_address(
+
+        // TODO: Don't recreate seed below, pass in
+        let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), expected_signer.as_ref()].concat();
+        let (nonce_acct_address_pair, bump_seed) = find_nonce_address(
             program_id,
             &token_account_info.mint,
             expected_signer
         );
 
-        msg!("derived_key {:?}, ", nonce_acct_address_pair.derive.address);
-        msg!("provided nonce_acc_info {:?}", nonce_account_info);
+        // msg!("derived_key {:?}, ", nonce_acct_address_pair.derive.address);
+        // msg!("provided nonce_acc_info {:?}", nonce_account_info);
         // TODO: ERROR IF MISMATCH ABOVE
 
+        // msg!("authority_key {:?}", authority.key);
+        // msg!("base_key {:?}", nonce_acct_address_pair.base.address);
+
         let nonce_acct_lamports = nonce_account_info.lamports();
-        msg!("nonce_acct_lamports {:?}", nonce_acct_lamports);
         if nonce_acct_lamports == 0 {
             msg!("Creating nonce acct {:?}", nonce_account_info);
 
+            let signature = &[
+                &authority.key.to_bytes()[..32],
+                &nonce_acct_seed.as_slice(),
+                &[bump_seed]
+            ];
+            // let test_space = 200;
+
+            let ix = system_instruction::create_account(
+                funder_account_info.key,
+                nonce_account_info.key,
+                rent.minimum_balance(NonceAccount::LEN),
+                NonceAccount::LEN as u64,
+                program_id,
+            );
+
+            msg!("Issuing instructions {:?}", ix);
+            let res = invoke_signed(
+                &ix,
+                &[
+                    funder_account_info.clone(),
+                    nonce_account_info.clone()
+                ],
+                &[signature]
+            );
+            msg!("passed invoke_signed res {:?} | {:?}", res.is_err(), res);
+            let nonce = NonceAccount::new();
+            msg!("NonceAccount = {:?} ", nonce);
+            NonceAccount::pack(nonce, *nonce_account_info.data.borrow_mut())?;
         }
 
         Ok(())

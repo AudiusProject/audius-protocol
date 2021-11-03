@@ -27,11 +27,21 @@ pub struct AddressPair {
 /// Sender nonce account seed
 pub const NONCE_ACCOUNT_PREFIX: &str = "N_";
 
+/// Finds a program address, using first 32 bytes of `pubkey` + `seed` as seed, and
+/// `base` as base
+pub fn find_program_address_with_seed(
+    program_id: &Pubkey,
+    base: &Pubkey,
+    seed: &[u8],
+) -> (Pubkey, u8) {
+    Pubkey::find_program_address(&[&base.to_bytes()[..32], seed], program_id)
+}
+
 pub fn find_nonce_address(
     program_id: &Pubkey,
     mint: &Pubkey,
     expected_signer: &EthereumAddress
-) -> AddressPair {
+) -> (AddressPair, u8) {
     // Check that the incremented nonce provided matches expected value
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), expected_signer.as_ref()].concat();
 
@@ -39,12 +49,20 @@ pub fn find_nonce_address(
     let (base_pubkey, base_seed) = find_base_address(mint, program_id);
 
     // Generating derived address for nonce account with nonce acct seed
-    let derived_seed = bs58::encode(nonce_acct_seed).into_string();
-    let (derived_key, derived_seed_return) = Pubkey::create_with_seed(&base_pubkey, derived_seed.as_str(), program_id).map(|i| (i, derived_seed)).unwrap();
-    return AddressPair {
+    // let derived_seed = bs58::encode(nonce_acct_seed).into_string();
+    // let (derived_key, derived_seed_return) = Pubkey::create_with_seed(
+    //     &base_pubkey,
+    //     derived_seed.as_str(),
+    //     program_id
+    // ).map(|i| (i, derived_seed)).unwrap();
+    let (derived_address, bump_seed) =
+        find_program_address_with_seed(program_id, &base_pubkey, &nonce_acct_seed);
+
+    return (AddressPair {
         base: Base { address: base_pubkey, seed: base_seed },
-        derive: Derived { address: derived_key, seed: derived_seed_return }
-    };
+        derive: Derived { address: derived_address, seed: "".to_string() }
+    },
+    bump_seed);
 }
 
 /// Return `Base` account with seed and corresponding derived address

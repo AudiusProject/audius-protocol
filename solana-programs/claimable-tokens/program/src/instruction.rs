@@ -97,8 +97,10 @@ pub fn transfer(
         AccountMeta::new(*users_token_acc, false),
         AccountMeta::new(*users_nonce_acc, false),
         AccountMeta::new_readonly(*authority, false),
+        AccountMeta::new_readonly(sysvar::rent::id(), false),
         AccountMeta::new_readonly(sysvar::instructions::id(), false),
         AccountMeta::new_readonly(spl_token::id(), false),
+        AccountMeta::new_readonly(system_program::id(), false),
     ];
     Ok(Instruction {
         program_id: *program_id,

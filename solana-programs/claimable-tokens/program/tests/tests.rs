@@ -683,7 +683,7 @@ async fn transfer_replay_instruction() {
     let secp256_program_instruction_2 = new_secp256k1_instruction(&priv_key, &encoded);
     println!("secp256_program_instruction_2 {:?}", secp256_program_instruction_2);
 
-    let nonce_addr_info = find_nonce_address(
+    let (nonce_addr_info, _) = find_nonce_address(
         &id(),
         &mint_pubkey,
         &eth_address);
