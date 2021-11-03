@@ -1,6 +1,6 @@
 import concurrent.futures
 import logging
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from src.utils import web3_provider
 from src.utils.helpers import is_fqdn, load_eth_abi_values
 from src.utils.config import shared_config
@@ -12,6 +12,7 @@ REWARDS_CONTRACT_ABI = eth_abi_values["EthRewardsManager"]["abi"]
 SP_FACTORY_REGISTRY_KEY = bytes("ServiceProviderFactory", "utf-8")
 DISCOVERY_NODE_SERVICE_TYPE = bytes("discovery-node", "utf-8")
 
+
 # Perform eth web3 call to fetch endpoint info
 def fetch_discovery_node_info(sp_id, sp_factory_instance):
     return sp_factory_instance.functions.getServiceEndpointInfo(
@@ -19,7 +20,7 @@ def fetch_discovery_node_info(sp_id, sp_factory_instance):
     ).call()
 
 
-def get_node_endpoint() -> str:
+def get_node_endpoint() -> Optional[str]:
     """
     Get endpoint for this discovery node
     At each node, get the service info which includes the endpoint
@@ -46,7 +47,7 @@ def get_node_endpoint() -> str:
 
     ids_list = list(range(1, num_discovery_nodes + 1))
 
-    endpoint = None
+    endpoint: Optional[str] = None
 
     # fetch all discovery nodes info in parallel
     with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
