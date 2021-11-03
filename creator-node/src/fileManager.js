@@ -10,6 +10,7 @@ const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 const ipfsAdd = require('./ipfsAdd')
+const { findCIDInNetwork } = require('./utils')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -267,6 +268,19 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
       } catch (e) {
         logger.warn(`Failed to retrieve file for multihash ${multihash} from IPFS ${e.message}`)
         decisionTree.push({ stage: 'File not available on local ipfs node with ipfs get', vals: multihash, time: Date.now() })
+      }
+    }
+
+    // if not found in gateways or IPFS, check nodes on the rest of the network
+    if (!fileFound) {
+      try {
+        const libs = serviceRegistry.libs
+        await findCIDInNetwork(expectedStoragePath, multihash, logger, libs)
+        decisionTree.push({ stage: `Found file ${multihash} by calling "findCIDInNetwork"`, vals: multihash, time: Date.now() })
+        fileFound = true
+      } catch (e) {
+        logger.warn(`Failed to retrieve file for multihash ${multihash} by calling findCIDInNetwork ${e.message}`)
+        decisionTree.push({ stage: `Failed to retrieve file for multihash ${multihash} by calling findCIDInNetwork`, vals: multihash, time: Date.now() })
       }
     }
 
