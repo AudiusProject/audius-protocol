@@ -1,4 +1,5 @@
 import contextlib
+import concurrent
 import datetime
 import functools
 import json
@@ -15,7 +16,9 @@ import requests
 from flask import g, request
 from hashids import Hashids
 from jsonformatter import JsonFormatter
+from web3 import Web3
 from src import exceptions
+from src.utils.multi_provider import MultiProvider
 
 from . import multihash
 
@@ -26,6 +29,71 @@ def get_ip(request_obj):
     if not ip:
         return ""
     return ip.split(",")[0].strip()
+
+
+def fetch_discovery_node_info(sp_id, sp_factory_instance):
+    discovery_node_service_type = bytes("discovery-node", "utf-8")
+    return sp_factory_instance.functions.getServiceEndpointInfo(
+        discovery_node_service_type, sp_id
+    ).call()
+
+
+def get_endpoint(shared_config):
+    """
+    Get number of discovery nodes
+    At each node, get the service info which includes the endpoint
+    Return all node endpoints except that of this node
+    """
+    logger = logging.getLogger(__name__)
+    sp_factory_registry_key = bytes("ServiceProviderFactory", "utf-8")
+    discovery_node_service_type = bytes("discovery-node", "utf-8")
+    eth_abi_values = load_eth_abi_values()
+    eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
+    eth_registry_address = eth_web3.toChecksumAddress(
+        shared_config["eth_contracts"]["registry"]
+    )
+    eth_registry_instance = eth_web3.eth.contract(
+        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
+    )
+    sp_factory_address = eth_registry_instance.functions.getContract(
+        sp_factory_registry_key
+    ).call()
+    sp_factory_inst = eth_web3.eth.contract(
+        address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
+    )
+    num_discovery_nodes = sp_factory_inst.functions.getTotalServiceTypeProviders(
+        discovery_node_service_type
+    ).call()
+    logger.info(f"number of discovery nodes: {num_discovery_nodes}")
+
+    ids_list = list(range(1, num_discovery_nodes + 1))
+
+    endpoint = None
+
+    # fetch all discovery nodes info in parallel
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        discovery_node_futures = {
+            executor.submit(fetch_discovery_node_info, i, sp_factory_inst): i
+            for i in ids_list
+        }
+        for future in concurrent.futures.as_completed(discovery_node_futures):
+            node_op = discovery_node_futures[future]
+            try:
+                node_info = future.result()
+                if node_info[3] == shared_config["delegate"]["owner_wallet"]:
+                    endpoint = node_info[1]
+                    break
+            except Exception as e:
+                logger.error(
+                    f"index_metrics.py | ERROR in discovery_node_futures {node_op} generated {e}"
+                )
+
+    if endpoint is None:
+        logger.info("failed to get this node's endpoint")
+    else:
+        logger.info(f"this node's endpoint: {endpoint}")
+
+    return endpoint
 
 
 def get_openresty_public_key():
