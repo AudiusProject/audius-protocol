@@ -5,7 +5,7 @@ use claimable_tokens::state::{NonceAccount, TransferInstructionData};
 use claimable_tokens::utils::program::{EthereumAddress, find_address_pair, find_nonce_address, NONCE_ACCOUNT_PREFIX};
 use claimable_tokens::*;
 use libsecp256k1::{PublicKey, SecretKey};
-use rand::distributions::uniform::SampleBorrow;
+
 use rand::prelude::ThreadRng;
 use rand::{thread_rng, Rng};
 use sha3::Digest;
@@ -13,7 +13,7 @@ use solana_program::instruction::{Instruction, InstructionError};
 use solana_program::secp256k1_program;
 use solana_program::{program_pack::Pack, pubkey::Pubkey, system_instruction};
 use solana_program_test::*;
-use solana_sdk::nonce_account;
+
 use solana_sdk::transaction::TransactionError;
 use solana_sdk::{
     account::Account,
@@ -419,7 +419,6 @@ async fn transfer_all_instruction() {
 
     assert_eq!(user_token_account.amount, tokens_amount);
 }
-/*
 
 // This test attemps to manipulate the offsets of a single SECP instruction
 // in order to insert a maliciously signed signature message at the address
@@ -443,7 +442,7 @@ async fn transfer_with_amount_instruction_secp_offsets_exploit() {
         user_token_account,
         eth_address,
     ) = init_test_variables();
-
+    let mint_pubkey = mint_account.pubkey();
     let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
         &mut program_context,
         mint_account,
@@ -454,7 +453,22 @@ async fn transfer_with_amount_instruction_secp_offsets_exploit() {
     )
     .await;
 
-    let message = user_token_account.pubkey().to_bytes();
+    let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
+    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
+    let (_, nonce_account, _) = find_nonce_address(
+        &id(),
+        &mint_pubkey,
+        &nonce_acct_seed
+    );
+
+    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let transfer_instr_data = TransferInstructionData {
+        target_pubkey: user_token_account.pubkey(),
+        amount: transfer_amount,
+        nonce: current_user_nonce + 1
+    };
+
+    let message = transfer_instr_data.try_to_vec().unwrap();
 
     let malicious_sk = libsecp256k1::SecretKey::random(&mut rand_073::thread_rng());
     let malicious_pk = libsecp256k1::PublicKey::from_secret_key(&malicious_sk);
@@ -532,8 +546,10 @@ async fn transfer_with_amount_instruction_secp_offsets_exploit() {
             fake_secp_instruction_2,
             instruction::transfer(
                 &id(),
+                &program_context.payer.pubkey(),
                 &user_bank_account,
                 &user_token_account.pubkey(),
+                &nonce_account,
                 &base_acc,
                 instruction::Transfer {
                     eth_address,
@@ -578,8 +594,7 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
         user_token_account,
         eth_address,
     ) = init_test_variables();
-
-    let message = user_token_account.pubkey().to_bytes();
+    let mint_pubkey = mint_account.pubkey();
     let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
         &mut program_context,
         mint_account,
@@ -589,6 +604,24 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
         &user_token_account,
     )
     .await;
+
+    let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
+    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
+    let (_, nonce_account, _) = find_nonce_address(
+        &id(),
+        &mint_pubkey,
+        &nonce_acct_seed
+    );
+
+    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let transfer_instr_data = TransferInstructionData {
+        target_pubkey: user_token_account.pubkey(),
+        amount: transfer_amount,
+        nonce: current_user_nonce + 1
+    };
+
+    // Use real message
+    let message = transfer_instr_data.try_to_vec().unwrap();
 
     let fake_sk = libsecp256k1::SecretKey::random(&mut rand_073::thread_rng());
     let eth_addr_offset = 12;
@@ -628,16 +661,16 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
         data: secp_instr_data.clone(),
     };
 
-    let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
-
     let mut transaction = Transaction::new_with_payer(
         &[
             dummy2,
             fake_secp_instruction,
             instruction::transfer(
                 &id(),
+                &program_context.payer.pubkey(),
                 &user_bank_account,
                 &user_token_account.pubkey(),
+                &nonce_account,
                 &base_acc,
                 instruction::Transfer {
                     eth_address,
@@ -659,20 +692,17 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
 
     assert!(tx_result.is_err());
 
-    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await;
+    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await.unwrap();
     let bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     // check that program failed to send by validating data
     assert_eq!(bank_token_account.amount, tokens_amount);
     let user_token_account_data =
-        get_account(&mut program_context, &user_token_account.pubkey()).await;
+        get_account(&mut program_context, &user_token_account.pubkey()).await.unwrap();
     let user_token_account =
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
     assert_eq!(user_token_account.amount, 0);
 }
-*/
-
-
 
 // Verify that identical instructions cannot be reused 2x
 #[tokio::test]
