@@ -184,7 +184,8 @@ function* watchAccountAvailable(): any {
   while (
     yield all([
       take(signOnActions.SIGN_UP_SUCCEEDED),
-      take(accountActions.fetchAccountSucceeded.type)
+      take(accountActions.fetchAccountSucceeded.type),
+      take(signOnActions.FOLLOW_ARTISTS)
     ])
   ) {
     yield put(pushRoute(FEED_PAGE, { noAnimation: true }))
