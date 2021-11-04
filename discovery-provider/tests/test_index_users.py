@@ -188,6 +188,7 @@ ipfs_client = IPFSClient(
                 "is_mobile_user": True,
             },
             "user_id": 1,
+            "is_delete": True,
         }
     }
 )
@@ -486,6 +487,9 @@ def test_index_users(bus_mock: mock.MagicMock, app):
         assert user_record.cover_photo_sizes == ipfs_metadata["cover_photo_sizes"]
         assert user_record.has_collectibles == True
         assert user_record.playlist_library == ipfs_metadata["playlist_library"]
+
+        # IPFS metadata sets is_delete to true to test deactivation
+        assert user_record.is_delete == True
 
         ipfs_associated_wallets = ipfs_metadata["associated_wallets"]
         associated_wallets = (

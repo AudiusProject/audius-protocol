@@ -358,6 +358,9 @@ def parse_user_event(
             ):
                 user_record.playlist_library = ipfs_metadata["playlist_library"]
 
+            if "is_delete" in ipfs_metadata:
+                user_record.is_delete = ipfs_metadata["is_delete"]
+
             if "events" in ipfs_metadata and ipfs_metadata["events"]:
                 update_user_events(
                     session,
