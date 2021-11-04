@@ -12,6 +12,7 @@ const BlacklistManager = require('../src/blacklistManager')
 const TranscodingQueue = require('../src/TranscodingQueue')
 const models = require('../src/models')
 const DiskManager = require('../src/diskManager')
+const FileManager = require('../src/fileManager')
 
 const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
@@ -35,17 +36,21 @@ const logContext = {
   }
 }
 
-describe('test Tracks with mocked IPFS', function () {
-  let app, server, session, ipfsMock, libsMock, handleTrackContentRoute, mockServiceRegistry, userId
+describe('test Polling Tracks with mocked IPFS', function () {
+  let app, server, session, ipfsMock, ipfsLatestMock, libsMock, handleTrackContentRoute, mockServiceRegistry, userId
 
   beforeEach(async () => {
     ipfsMock = getIPFSMock()
+    ipfsLatestMock = getIPFSMock(true)
     libsMock = getLibsMock()
     libsMock.useTrackContentPolling = true
 
     userId = 1
 
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, null, null, userId)
+    process.env.enableIPFSAddTracks = true
+
+    const { getApp } = require('./lib/app')
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock, null, userId)
     await BlacklistManager.init()
 
     app = appInfo.app
@@ -53,7 +58,18 @@ describe('test Tracks with mocked IPFS', function () {
     mockServiceRegistry = appInfo.mockServiceRegistry
     session = await createStarterCNodeUser(userId)
 
-    handleTrackContentRoute = require('../src/components/tracks/tracksComponentService').handleTrackContentRoute
+    // Mock `saveFileToIPFSFromFS()` in `handleTrackContentRoute()` to succeed
+    ;({ handleTrackContentRoute } = proxyquire('../src/components/tracks/tracksComponentService.js', {
+      '../../fileManager': {
+        saveFileToIPFSFromFS: sinon.stub(FileManager, 'saveFileToIPFSFromFS').returns(new Promise((resolve, reject) => {
+          const multihash = 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6'
+          return resolve({
+            multihash,
+            dstPath: DiskManager.computeFilePath(multihash)
+          })
+        }))
+      }
+    }))
   })
 
   afterEach(async () => {
@@ -82,14 +98,13 @@ describe('test Tracks with mocked IPFS', function () {
     // Reset app
     await server.close()
 
-    ipfsMock = getIPFSMock()
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, null, null, userId)
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock, null, userId)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser(userId)
 
-    ipfsMock.add.exactly(64)
-    ipfsMock.pin.add.exactly(32)
+    ipfsLatestMock.add.exactly(64)
+    ipfsLatestMock.pin.add.exactly(32)
 
     // Confirm max audio file size is respected by multer
     let file = fs.readFileSync(testAudioFilePath)
@@ -111,14 +126,13 @@ describe('test Tracks with mocked IPFS', function () {
 
     // Reset app
     await server.close()
-    ipfsMock = getIPFSMock()
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, null, null, userId)
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock, null, userId)
     app = appInfo.app
     server = appInfo.server
     session = await createStarterCNodeUser(userId)
 
-    ipfsMock.add.exactly(64)
-    ipfsMock.pin.add.exactly(32)
+    ipfsLatestMock.add.exactly(64)
+    ipfsLatestMock.pin.add.exactly(32)
 
     // Confirm max audio file size is respected by multer
     let file = fs.readFileSync(testAudioFileWrongFormatPath)
@@ -135,14 +149,13 @@ describe('test Tracks with mocked IPFS', function () {
   })
 
   it('uploads /track_content_async', async function () {
-    ipfsMock.addFromFs.exactly(33)
-    ipfsMock.pin.add.exactly(33)
+    ipfsLatestMock.add.exactly(33)
+    ipfsLatestMock.pin.add.exactly(33)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     let resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfs,
       mockServiceRegistry.blacklistManager
     )
 
@@ -157,15 +170,14 @@ describe('test Tracks with mocked IPFS', function () {
 
   // depends on "uploads /track_content_async"; if that test fails, this test will fail to due to similarity
   it('creates Audius track using application logic for /track_content_async', async function () {
-    ipfsMock.addFromFs.exactly(34)
-    ipfsMock.pin.add.exactly(34)
+    ipfsLatestMock.add.exactly(34)
+    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfs,
       mockServiceRegistry.blacklistManager
     )
 
@@ -188,20 +200,19 @@ describe('test Tracks with mocked IPFS', function () {
       .send({ metadata, sourceFile })
       .expect(200)
 
-    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6')
+    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmYhusD7qFv7gxNqi9nyaoiqaRXYQvoCvVgXY75nSoydmy')
   })
 
   // depends on "uploads /track_content_async"
   it('fails to create Audius track when segments not provided', async function () {
-    ipfsMock.addFromFs.exactly(34)
-    ipfsMock.pin.add.exactly(34)
+    ipfsLatestMock.add.exactly(34)
+    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfs,
       mockServiceRegistry.blacklistManager
     )
 
@@ -227,15 +238,14 @@ describe('test Tracks with mocked IPFS', function () {
 
   // depends on "uploads /track_content_async"
   it('fails to create Audius track when invalid segment multihashes are provided', async function () {
-    ipfsMock.addFromFs.exactly(34)
-    ipfsMock.pin.add.exactly(34)
+    ipfsLatestMock.add.exactly(34)
+    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfs,
       mockServiceRegistry.blacklistManager
     )
 
@@ -262,15 +272,14 @@ describe('test Tracks with mocked IPFS', function () {
 
   // depends on "uploads /track_content_async"
   it('fails to create Audius track when owner_id is not provided', async function () {
-    ipfsMock.addFromFs.exactly(34)
-    ipfsMock.pin.add.exactly(34)
+    ipfsLatestMock.add.exactly(34)
+    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfs,
       mockServiceRegistry.blacklistManager
     )
 
@@ -292,15 +301,14 @@ describe('test Tracks with mocked IPFS', function () {
 
   // depends on "uploads /track_content_async" and "creates Audius track" tests
   it('completes Audius track creation', async function () {
-    ipfsMock.addFromFs.exactly(34)
-    ipfsMock.pin.add.exactly(34)
+    ipfsLatestMock.add.exactly(34)
+    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(4)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfs,
       mockServiceRegistry.blacklistManager
     )
     const { track_segments: trackSegments, source_file: sourceFile } = resp
@@ -318,9 +326,7 @@ describe('test Tracks with mocked IPFS', function () {
       .send({ metadata, sourceFile })
       .expect(200)
 
-    if (trackMetadataResp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
-      throw new Error('invalid return data')
-    }
+    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmTWhw49RfSMSJJmfm8cMHFBptgWoBGpNwjAc5jy2qeJfs')
 
     await request(app)
       .post('/tracks')
@@ -332,15 +338,14 @@ describe('test Tracks with mocked IPFS', function () {
 
   // depends on "uploads /track_content_async"
   it('fails to create downloadable track with no track_id and no source_id present', async function () {
-    ipfsMock.addFromFs.exactly(34)
-    ipfsMock.pin.add.exactly(34)
+    ipfsLatestMock.add.exactly(34)
+    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(2)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfs,
       mockServiceRegistry.blacklistManager
     )
 
@@ -369,15 +374,14 @@ describe('test Tracks with mocked IPFS', function () {
 
   // depends on "uploads /track_content_async" and "creates Audius track" tests
   it('creates a downloadable track', async function () {
-    ipfsMock.addFromFs.exactly(34)
-    ipfsMock.pin.add.exactly(34)
+    ipfsLatestMock.add.exactly(34)
+    ipfsLatestMock.pin.add.exactly(34)
     libsMock.User.getUsers.exactly(4)
 
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfs,
       mockServiceRegistry.blacklistManager
     )
 
@@ -406,9 +410,7 @@ describe('test Tracks with mocked IPFS', function () {
       .send({ metadata, sourceFile })
       .expect(200)
 
-    if (trackMetadataResp.body.data.metadataMultihash !== 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6') {
-      throw new Error('invalid return data')
-    }
+    assert.deepStrictEqual(trackMetadataResp.body.data.metadataMultihash, 'QmPjrvx9MBcvf495t43ZhiMpKWwu1JnqkcNUN3Z9EBWm49')
 
     await request(app)
       .post('/tracks')
@@ -419,17 +421,22 @@ describe('test Tracks with mocked IPFS', function () {
   })
 })
 
-describe('test Tracks with real IPFS', function () {
-  let app2, server, session, libsMock, ipfs, handleTrackContentRoute, mockServiceRegistry, userId
+describe('test Polling Tracks with real IPFS', function () {
+  let app2, server, session, libsMock, ipfs, ipfsLatest, handleTrackContentRoute, mockServiceRegistry, userId
 
   /** Inits ipfs client, libs mock, web server app, blacklist manager, and creates starter CNodeUser */
   beforeEach(async () => {
     ipfs = ipfsClient.ipfs
+    ipfsLatest = ipfsClient.ipfsLatest
+
     libsMock = getLibsMock()
 
     userId = 1
 
-    const appInfo = await getApp(ipfs, libsMock, BlacklistManager, null, null, userId)
+    process.env.enableIPFSAddTracks = true
+
+    const { getApp } = require('./lib/app')
+    const appInfo = await getApp(ipfs, libsMock, BlacklistManager, ipfsLatest, null, userId)
     await BlacklistManager.init()
 
     app2 = appInfo.app
@@ -456,7 +463,6 @@ describe('test Tracks with real IPFS', function () {
       await handleTrackContentRoute(
         logContext,
         getReqObj(fileUUID, fileDir, session),
-        mockServiceRegistry.ipfs,
         mockServiceRegistry.blacklistManager
       )
       assert.fail('Should have thrown error if segmenting failed')
@@ -475,7 +481,6 @@ describe('test Tracks with real IPFS', function () {
       await handleTrackContentRoute(
         logContext,
         getReqObj(fileUUID, fileDir, session),
-        mockServiceRegistry.ipfs,
         mockServiceRegistry.blacklistManager
       )
       assert.fail('Should have thrown error if transcoding failed')
@@ -484,43 +489,11 @@ describe('test Tracks with real IPFS', function () {
     }
   })
 
-  // Note: if hashing logic from ipfs ever changes, this test will fail
-  it('sends forbidden error response if track segments are in BlacklistManager', async function () {
-    // Add CIDs from testTrackData.json file to BlacklistManager
-    let testTrackJSON
-    try {
-      const testTrackData = fs.readFileSync(path.join(__dirname, 'testTrackData.json'))
-      testTrackJSON = JSON.parse(testTrackData)
-    } catch (e) {
-      assert.fail(`Could not parse testTrack metadata json: ${e}`)
-    }
-    const testTrackCIDs = testTrackJSON.map(segment => segment.multihash)
-    await BlacklistManager.addToRedis(BlacklistManager.getRedisSegmentCIDKey(), testTrackCIDs)
-
-    // Attempt to associate track content and get forbidden error
-    const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
-    try {
-      await handleTrackContentRoute(
-        logContext,
-        getReqObj(fileUUID, fileDir, session),
-        mockServiceRegistry.ipfs,
-        mockServiceRegistry.blacklistManager
-      )
-      assert.fail('Should have thrown error if segment in blacklist')
-    } catch (e) {
-      assert.ok(e.message.includes('blacklisted'))
-    }
-
-    // Clear redis of segment CIDs
-    await BlacklistManager.removeFromRedis(BlacklistManager.getRedisSegmentCIDKey(), testTrackCIDs)
-  })
-
   it('should successfully upload track + transcode and prune upload artifacts', async function () {
     const { fileUUID, fileDir } = saveFileToStorage(testAudioFilePath)
     const resp = await handleTrackContentRoute(
       logContext,
       getReqObj(fileUUID, fileDir, session),
-      mockServiceRegistry.ipfs,
       mockServiceRegistry.blacklistManager
     )
 
@@ -564,7 +537,7 @@ describe('test Tracks with real IPFS', function () {
     assert.deepStrictEqual(resp.body.error, 'Metadata object must include owner_id and non-empty track_segments array')
   })
 
-  it('should throw an error if segment is blacklisted', async function () {
+  it('should not throw an error if segment is blacklisted', async function () {
     sinon.stub(BlacklistManager, 'CIDIsInBlacklist').returns(true)
     const metadata = {
       test: 'field1',
@@ -572,32 +545,28 @@ describe('test Tracks with real IPFS', function () {
       owner_id: 1
     }
 
-    const resp = await request(app2)
+    await request(app2)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ metadata })
-      .expect(403)
-
-    assert.deepStrictEqual(resp.body.error, `Segment CID ${metadata.track_segments[0].multihash} has been blacklisted by this node.`)
+      .expect(200)
   })
 
-  it('should throw error response if saving metadata to fails', async function () {
-    sinon.stub(ipfs, 'add').rejects(new Error('ipfs add failed!'))
+  it.skip('should not throw error response if saving metadata to ipfs fails', async function () {
+    sinon.stub(ipfsClient, 'add').rejects(new Error('ipfs add failed!'))
     const metadata = {
       test: 'field1',
       track_segments: [{ 'multihash': 'QmYfSQCgCwhxwYcdEwCkFJHicDe6rzCAb7AtLz3GrHmuU6', 'duration': 1000 }],
       owner_id: 1
     }
 
-    const resp = await request(app2)
+    await request(app2)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ metadata })
       .expect(500)
-
-    assert.deepStrictEqual(resp.body.error, '/tracks/metadata saveFileFromBufferToIPFSAndDisk op failed: Error: ipfs add failed!')
   })
 
   it('successfully adds metadata file to filesystem, db, and ipfs', async function () {

@@ -5,12 +5,6 @@ from flask import Blueprint, request
 from sqlalchemy import desc
 
 from src import api_helpers
-from src.queries import response_name_constants as const
-from src.queries.query_helpers import (
-    get_repost_counts,
-    get_save_counts,
-    get_follower_count_dict,
-)
 from src.models import (
     Block,
     Follow,
@@ -22,6 +16,13 @@ from src.models import (
     RepostType,
     Remix,
     AggregateUser,
+    ChallengeDisbursement,
+)
+from src.queries import response_name_constants as const
+from src.queries.query_helpers import (
+    get_repost_counts,
+    get_save_counts,
+    get_follower_count_dict,
 )
 from src.utils.db_session import get_db_read_replica
 from src.utils.config import shared_config
@@ -30,6 +31,7 @@ logger = logging.getLogger(__name__)
 bp = Blueprint("notifications", __name__)
 
 max_block_diff = int(shared_config["discprov"]["notifications_max_block_diff"])
+max_slot_diff = int(shared_config["discprov"]["notifications_max_slot_diff"])
 
 
 # pylint: disable=R0911
@@ -233,7 +235,7 @@ def notifications():
 
     # Max block number is not explicitly required (yet)
     if not min_block_number and min_block_number != 0:
-        return api_helpers.error_response({"msg": "Missing min block number"}, 500)
+        return api_helpers.error_response({"msg": "Missing min block number"}, 400)
 
     if not max_block_number:
         max_block_number = min_block_number + max_block_diff
@@ -262,7 +264,9 @@ def notifications():
     # List of notifications generated from current protocol state
     notifications_unsorted = []
     with db.scoped_session() as session:
+        #
         # Query relevant follow information
+        #
         follow_query = session.query(Follow)
 
         # Impose min block number restriction
@@ -301,7 +305,9 @@ def notifications():
 
         notifications_unsorted.extend(follow_notifications)
 
+        #
         # Query relevant favorite information
+        #
         favorites_query = session.query(Save)
         favorites_query = favorites_query.filter(
             Save.is_current == True,
@@ -561,7 +567,9 @@ def notifications():
         # Query relevant created entity notification - tracks/albums/playlists
         created_notifications = []
 
+        #
         # Query relevant created tracks for remix information
+        #
         remix_created_notifications = []
 
         # Aggregate track notifs
@@ -877,6 +885,99 @@ def notifications():
             "info": notification_metadata,
             "milestones": milestone_info,
             "owners": owner_info,
+        }
+    )
+
+
+@bp.route("/solana_notifications", methods=("GET",))
+def solana_notifications():
+    """
+    Fetches the notifications events that occurred between the given slot numbers
+
+    URL Params:
+        min_slot_number: (int) The start slot number for querying for notifications
+        max_slot_number?: (int) The end slot number for querying for notifications
+
+    Response - Json object w/ the following fields
+        notifications: Array of notifications of shape:
+            type: 'ChallengeReward'
+            slot: (int) slot number of notification
+            initiator: (int) the user id that caused this notification
+            metadata?: (any) additional information about the notification
+                challenge_id?: (int) completed challenge id for challenge reward notifications
+
+        info: Dictionary of metadata w/ min_slot_number & max_slot_number fields
+    """
+    db = get_db_read_replica()
+    min_slot_number = request.args.get("min_slot_number", type=int)
+    max_slot_number = request.args.get("max_slot_number", type=int)
+
+    # Max slot number is not explicitly required (yet)
+    if not min_slot_number and min_slot_number != 0:
+        return api_helpers.error_response({"msg": "Missing min slot number"}, 400)
+
+    if not max_slot_number or (max_slot_number - min_slot_number) > max_slot_diff:
+        max_slot_number = min_slot_number + max_slot_diff
+
+    # TODO: This needs to be updated when more notification types are added to the solana notifications queue
+    # Need to write a system to keep track of the proper latest slot to index based on all of the applicable table
+    with db.scoped_session() as session:
+        current_slot_query_result = (
+            session.query(ChallengeDisbursement.slot)
+            .order_by(
+                desc(ChallengeDisbursement.slot)
+            )
+            .first()
+        )
+        current_max_slot_num = current_slot_query_result.slot if current_slot_query_result is not None else 0
+        if current_max_slot_num < max_slot_number:
+            max_slot_number = current_max_slot_num
+
+    notifications_unsorted = []
+    notification_metadata = {
+        "min_slot_number": min_slot_number,
+        "max_slot_number": max_slot_number,
+    }
+
+    with db.scoped_session() as session:
+        #
+        # Query relevant challenge disbursement information for challenge reward notifications
+        #
+        challenge_disbursement_results = (
+            session.query(ChallengeDisbursement)
+            .filter(
+                ChallengeDisbursement.slot >= min_slot_number,
+                ChallengeDisbursement.slot <= max_slot_number,
+            )
+            .all()
+        )
+
+        challenge_reward_notifications = []
+        for result in challenge_disbursement_results:
+            challenge_reward_notifications.append(
+                {
+                    const.solana_notification_type: const.solana_notification_type_challenge_reward,
+                    const.solana_notification_slot: result.slot,
+                    const.solana_notification_initiator: result.user_id,
+                    const.solana_notification_metadata: {
+                        const.solana_notification_challenge_id: result.challenge_id,
+                    },
+                }
+            )
+
+        notifications_unsorted.extend(challenge_reward_notifications)
+
+    # Final sort
+    sorted_notifications = sorted(
+        notifications_unsorted,
+        key=lambda i: i[const.solana_notification_slot],
+        reverse=False,
+    )
+
+    return api_helpers.success_response(
+        {
+            "notifications": sorted_notifications,
+            "info": notification_metadata,
         }
     )
 

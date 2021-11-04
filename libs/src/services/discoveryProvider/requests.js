@@ -52,7 +52,7 @@ module.exports.getTracks = (limit = 100, offset = 0, idsArray = null, targetUser
 
 module.exports.getTracksByHandleAndSlug = (handle, slug) => {
   return {
-    endpoint: 'tracks',
+    endpoint: 'v1/tracks',
     method: 'get',
     queryParams: { handle, slug }
   }
@@ -381,9 +381,30 @@ module.exports.getNotifications = (minBlockNumber, trackIds, timeout) => {
   }
 }
 
+module.exports.getSolanaNotifications = (minSlotNumber, timeout) => {
+  return {
+    endpoint: 'solana_notifications',
+    queryParams: {
+      min_slot_number: minSlotNumber
+    },
+    timeout
+  }
+}
+
 module.exports.getTrackListenMilestones = (timout) => {
   return {
     endpoint: 'track_listen_milestones',
     timout
+  }
+}
+
+module.exports.getChallengeAttestation = (challengeId, encodedUserId, specifier, oracleAddress) => {
+  return {
+    endpoint: `/v1/challenges/${challengeId}/attest`,
+    queryParams: {
+      user_id: encodedUserId,
+      specifier,
+      oracle: oracleAddress
+    }
   }
 }

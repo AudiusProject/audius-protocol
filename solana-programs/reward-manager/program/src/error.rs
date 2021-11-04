@@ -19,27 +19,11 @@ pub enum AudiusProgramError {
 
     /// Signature with an already met principal
     #[error("Signature with an already met principal")]
-    SignCollission,
+    SignCollision,
 
     /// Unexpected signer met
     #[error("Unexpected signer met")]
     WrongSigner,
-
-    /// Wrong sender account
-    #[error("Incorect sender account")]
-    IncorectSenderAccount,
-
-    /// Wrong manager account
-    #[error("Incorect account manager")]
-    IncorectManagerAccount,
-
-    /// Wrong reward manager key
-    #[error("Wrong reward manager key")]
-    WrongRewardManagerKey,
-
-    /// Wrong recipient Solana key
-    #[error("Wrong recipient Solana key")]
-    WrongRecipientKey,
 
     /// Isn't enough signers keys
     #[error("Isn't enough signers keys")]
@@ -80,6 +64,10 @@ pub enum AudiusProgramError {
     /// Math overflow
     #[error("Math overflow")]
     MathOverflow,
+
+    /// Invalid recipient
+    #[error("Invalid Recipient")]
+    InvalidRecipient,
 }
 impl From<AudiusProgramError> for ProgramError {
     fn from(e: AudiusProgramError) -> Self {

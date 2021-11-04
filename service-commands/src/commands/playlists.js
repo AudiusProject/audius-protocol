@@ -38,7 +38,15 @@ Playlist.getPlaylists = async (
   targetUserId = null,
   withUsers = false
 ) => {
-  return libs.getPlaylists(limit, offset, idsArray, targetUserId, withUsers)
+  return await libs.getPlaylists(limit, offset, idsArray, targetUserId, withUsers)
+}
+
+Playlist.addPlaylistTrack = async (
+  libs,
+  playlistId,
+  trackId
+) => {
+  return await libs.addPlaylistTrack(playlistId, trackId)
 }
 
 module.exports = Playlist

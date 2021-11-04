@@ -55,7 +55,7 @@ class Attestation:
         )
 
     def _get_combined_id(self):
-        return f"{self.challenge_id}::{self.challenge_specifier}"
+        return f"{self.challenge_id}:{self.challenge_specifier}"
 
     def _get_encoded_amount(self):
         amt = int(self.amount) * 10 ** ATTESTATION_DECIMALS

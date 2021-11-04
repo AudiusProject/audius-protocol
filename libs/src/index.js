@@ -21,9 +21,13 @@ const User = require('./api/user')
 const Track = require('./api/track')
 const Playlist = require('./api/playlist')
 const File = require('./api/file')
+const Challenge = require('./api/challenge')
 const ServiceProvider = require('./api/serviceProvider')
 const Web3 = require('./web3')
 const Captcha = require('./utils/captcha')
+const SolanaUtils = require('./services/solanaWeb3Manager/utils')
+
+const { Keypair } = require('@solana/web3.js')
 
 class AudiusLibs {
   /**
@@ -194,6 +198,11 @@ class AudiusLibs {
    *  bank program can take ownership of accounts
    * @param {string} feePayerAddress address for the fee payer for transactions
    * @param {string} claimableTokenProgramAddress address of the audius user bank program
+   * @param {string} rewardsManagerProgramId address for the Rewards Manager program
+   * @param {string} rewardsManagerProgramPDA Rewards Manager PDA
+   * @param {string} rewardsManagerTokenPDA The PDA of the rewards manager funds holder account
+   * @param {boolean} useRelay Whether to use identity as a relay or submit transactions locally
+   * @param {Uint8Array} [feePayerSecretKey] optional fee payer secret key, if not using relay
    */
   static configSolanaWeb3 ({
     solanaClusterEndpoint,
@@ -201,7 +210,12 @@ class AudiusLibs {
     solanaTokenAddress,
     claimableTokenPDA,
     feePayerAddress,
-    claimableTokenProgramAddress
+    claimableTokenProgramAddress,
+    rewardsManagerProgramId,
+    rewardsManagerProgramPDA,
+    rewardsManagerTokenPDA,
+    useRelay,
+    feePayerSecretKey = null
   }) {
     return {
       solanaClusterEndpoint,
@@ -209,7 +223,12 @@ class AudiusLibs {
       solanaTokenAddress,
       claimableTokenPDA,
       feePayerAddress,
-      claimableTokenProgramAddress
+      claimableTokenProgramAddress,
+      rewardsManagerProgramId,
+      rewardsManagerProgramPDA,
+      rewardsManagerTokenPDA,
+      useRelay,
+      feePayerKeypair: feePayerSecretKey ? Keypair.fromSecretKey(feePayerSecretKey) : null
     }
   }
 
@@ -271,6 +290,7 @@ class AudiusLibs {
     this.Track = null
     this.Playlist = null
     this.File = null
+    this.Challenge = null
 
     this.useTrackContentPolling = useTrackContentPolling
     this.useResumableTrackUpload = useResumableTrackUpload
@@ -417,6 +437,7 @@ class AudiusLibs {
     this.Track = new Track(...services)
     this.Playlist = new Playlist(...services)
     this.File = new File(this.User, ...services)
+    this.Challenge = new Challenge(...services)
   }
 }
 
@@ -424,4 +445,5 @@ module.exports = AudiusLibs
 
 module.exports.AudiusABIDecoder = AudiusABIDecoder
 module.exports.Utils = Utils
+module.exports.SolanaUtils = SolanaUtils
 module.exports.SanityChecks = SanityChecks

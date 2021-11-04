@@ -1,19 +1,22 @@
+import contextlib
 import datetime
+import functools
+import json
 import logging
 import os
 import re
 import time
-import contextlib
-import json
+from functools import reduce
 from json.encoder import JSONEncoder
 from typing import Optional, cast
 from urllib.parse import urljoin
-from functools import reduce
+
 import requests
-from hashids import Hashids
 from flask import g, request
+from hashids import Hashids
 from jsonformatter import JsonFormatter
 from src import exceptions
+
 from . import multihash
 
 
@@ -23,6 +26,16 @@ def get_ip(request_obj):
     if not ip:
         return ""
     return ip.split(",")[0].strip()
+
+
+def get_openresty_public_key():
+    """Get public key for openresty if it is running"""
+    try:
+        resp = requests.get("http://localhost:5000/openresty_pubkey", timeout=1)
+        resp.raise_for_status()
+        return resp.text
+    except requests.exceptions.RequestException:
+        return None
 
 
 def redis_restore(redis, key):
@@ -49,6 +62,25 @@ def redis_get_or_restore(redis, key):
     return value if value else redis_restore(redis, key)
 
 
+def redis_get_json_cached_key_or_restore(redis, key):
+    logger = logging.getLogger(__name__)
+    cached_value = redis.get(key)
+    if not cached_value:
+        logger.info(f"Redis Cache - miss {key}, restoring")
+        cached_value = redis_restore(redis, key)
+
+    if cached_value:
+        logger.info(f"Redis Cache - hit {key}")
+        try:
+            deserialized = json.loads(cached_value)
+            return deserialized
+        except Exception as e:
+            logger.warning(f"Unable to deserialize json cached response: {e}")
+            return None
+    logger.info(f"Redis Cache - miss {key}")
+    return None
+
+
 def redis_dump(redis, key):
     logger = logging.getLogger(__name__)
     try:
@@ -60,6 +92,11 @@ def redis_dump(redis, key):
     except Exception as e:
         logger.error(f"could not perform redis dump for key: {key}")
         logger.error(e)
+
+
+def redis_set_json_and_dump(redis, key, value):
+    serialized = json.dumps(value)
+    redis_set_and_dump(redis, key, serialized)
 
 
 def redis_set_and_dump(redis, key, value):
@@ -89,6 +126,7 @@ def bytes32_to_str(bytes32input):
 fqdn_regex = re.compile(
     r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
 )
+
 
 # Helper function to check if a given string is a valid FQDN
 def is_fqdn(endpoint_str):
@@ -380,9 +418,10 @@ def create_track_route_id(title, handle):
     Constructs a track's route_id from an unsanitized title and handle.
     Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
     """
+    sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
     # Strip out invalid character
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00", "", title
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00", "", sanitized_title
     )
 
     # Convert whitespaces to dashes
@@ -412,13 +451,16 @@ def create_track_slug(title, track_id, collision_id=0):
     Example:
     (Title="My Awesome Track!", collision_id=2) => "my-awesome-track-2"
     """
+    sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
     # Strip out invalid character
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^", "", title
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.",
+        "",
+        sanitized_title,
     )
 
     # Convert whitespaces to dashes
-    sanitized_title = re.sub(r"\s+", "-", sanitized_title)
+    sanitized_title = re.sub(r"\s+", "-", sanitized_title.strip())
     sanitized_title = re.sub(r"-+", "-", sanitized_title)
 
     sanitized_title = sanitized_title.lower()
@@ -450,3 +492,17 @@ class DateTimeEncoder(JSONEncoder):
         if isinstance(o, (datetime.date, datetime.datetime)):
             return o.isoformat()
         return super().default(o)
+
+
+def time_method(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kargs):
+        tick = time.perf_counter()
+        result = func(*args, **kargs)
+        tock = time.perf_counter()
+        elapsed = tock - tick
+        logger = logging.getLogger(__name__)
+        logger.info(f"TIME_METHOD Function={func.__name__} Elapsed={elapsed:0.6f}s")
+        return result
+
+    return wrapper

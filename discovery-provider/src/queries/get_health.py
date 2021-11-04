@@ -2,6 +2,7 @@ import logging
 import os
 import time
 from typing import Dict, Optional, Tuple, TypedDict, cast
+from datetime import datetime
 
 from src.models import Block, IPLDBlacklistBlock
 from src.monitors import monitors, monitor_names
@@ -19,12 +20,15 @@ from src.utils.redis_constants import (
     challenges_last_processed_event_redis_key,
     user_balances_refresh_last_completion_redis_key,
     index_eth_last_completion_redis_key,
+    latest_legacy_play_db_key,
 )
 from src.queries.get_balances import (
     LAZY_REFRESH_REDIS_PREFIX,
     IMMEDIATE_REFRESH_REDIS_PREFIX,
 )
-from src.utils.helpers import redis_get_or_restore
+from src.queries.get_latest_play import get_latest_play
+from src.queries.get_sol_plays import get_sol_play_health_info
+from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 
 logger = logging.getLogger(__name__)
@@ -32,6 +36,8 @@ MONITORS = monitors.MONITORS
 number_of_cpus = os.cpu_count()
 
 disc_prov_version = helpers.get_discovery_provider_version()
+
+openresty_public_key = helpers.get_openresty_public_key()
 
 default_healthy_block_diff = int(shared_config["discprov"]["healthy_block_diff"])
 default_indexing_interval_seconds = int(
@@ -72,6 +78,18 @@ def _get_db_conn_state():
     )
 
     return conn_state, False
+
+
+# Returns query insights
+def _get_query_insights():
+    query_insights = monitors.get_monitors(
+        [
+            MONITORS[monitor_names.frequent_queries],
+            MONITORS[monitor_names.slow_queries],
+        ]
+    )
+
+    return query_insights, False
 
 
 # Returns the most current block in ipld blocks table and its associated block hash
@@ -139,6 +157,9 @@ class GetHealthArgs(TypedDict):
     # Number of seconds the challenge events are allowed to drift
     challenge_events_age_max_drift: Optional[int]
 
+    # Number of seconds play counts are allowed to drift
+    plays_count_max_drift: Optional[int]
+
 
 def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict, bool]:
     """
@@ -153,6 +174,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     enforce_block_diff = args.get("enforce_block_diff")
     qs_healthy_block_diff = cast(Optional[int], args.get("healthy_block_diff"))
     challenge_events_age_max_drift = args.get("challenge_events_age_max_drift")
+    plays_count_max_drift = args.get("plays_count_max_drift")
 
     # If healthy block diff is given in url and positive, override config value
     healthy_block_diff = (
@@ -189,6 +211,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_block = web3.eth.getBlock("latest", True)
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
+
+    (unhealthy_plays, sol_play_info, time_diff_general) = get_play_health_info(
+        redis, plays_count_max_drift
+    )
 
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
@@ -266,6 +292,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "index_eth_age_sec": index_eth_age_sec,
         "number_of_cpus": number_of_cpus,
         **sys_info,
+        "plays": {"solana": sol_play_info, "time_diff_general": time_diff_general},
+        "openresty_public_key": openresty_public_key,
     }
 
     block_difference = abs(latest_block_num - latest_indexed_block_num)
@@ -289,10 +317,29 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     if verbose:
         # DB connections check
-        db_connections_json, error = _get_db_conn_state()
+        db_connections_json, db_connections_error = _get_db_conn_state()
         health_results["db_connections"] = db_connections_json
-        if error:
-            return health_results, error
+        health_results["latitude"] = shared_config["serviceLocation"]["serviceLatitude"]
+        health_results["longitude"] = shared_config["serviceLocation"][
+            "serviceLongitude"
+        ]
+
+        if db_connections_error:
+            return health_results, db_connections_error
+
+        query_insights_json, query_insights_error = _get_query_insights()
+        health_results["query_insights"] = query_insights_json
+
+        if query_insights_error:
+            return health_results, query_insights_error
+
+        table_size_info_json = monitors.get_monitors(
+            [
+                MONITORS[monitor_names.table_size_info],
+            ]
+        )
+
+        health_results["tables"] = table_size_info_json
 
     unhealthy_blocks = bool(
         enforce_block_diff and block_difference > healthy_block_diff
@@ -302,9 +349,58 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         and challenge_events_age_sec
         and challenge_events_age_sec > challenge_events_age_max_drift
     )
-    is_unhealthy = unhealthy_blocks or unhealthy_challenges
+
+    is_unhealthy = unhealthy_blocks or unhealthy_challenges or unhealthy_plays
 
     return health_results, is_unhealthy
+
+
+# Aggregate play health info across Solana and legacy storage
+def get_play_health_info(
+    redis, plays_count_max_drift: Optional[int]
+) -> Tuple[bool, Dict, int]:
+    if redis is None:
+        raise Exception("Invalid arguments for get_play_health_info")
+
+    current_time_utc = datetime.utcnow()
+    # Fetch plays info from Solana
+    sol_play_info = get_sol_play_health_info(redis, current_time_utc)
+
+    # If play count max drift provided, perform comparison
+    is_unhealthy_sol_plays = bool(
+        plays_count_max_drift and plays_count_max_drift < sol_play_info["time_diff"]
+    )
+
+    # If unhealthy sol plays, this will be overwritten
+    time_diff_general = sol_play_info["time_diff"]
+
+    if is_unhealthy_sol_plays or not plays_count_max_drift:
+        # Calculate time diff from now to latest play
+        latest_db_play = redis_get_or_restore(redis, latest_legacy_play_db_key)
+        if not latest_db_play:
+            # Query and cache latest db play if found
+            latest_db_play = get_latest_play()
+            if latest_db_play:
+                redis_set_and_dump(
+                    redis, latest_legacy_play_db_key, latest_db_play.timestamp()
+                )
+        else:
+            # Decode bytes into float for latest timestamp
+            latest_db_play = float(latest_db_play.decode())
+            latest_db_play = datetime.utcfromtimestamp(latest_db_play)
+
+        time_diff_general = (
+            (current_time_utc - latest_db_play).total_seconds()
+            if latest_db_play
+            else time_diff_general
+        )
+
+    is_unhealthy_plays = bool(
+        plays_count_max_drift
+        and (is_unhealthy_sol_plays and (plays_count_max_drift < time_diff_general))
+    )
+
+    return (is_unhealthy_plays, sol_play_info, time_diff_general)
 
 
 def get_latest_chain_block_set_if_nx(redis=None, web3=None):

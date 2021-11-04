@@ -22,7 +22,9 @@ const testAudioFilePath = path.resolve(__dirname, 'testTrack.mp3')
 const testAudioFileWrongFormatPath = path.resolve(__dirname, 'testTrackWrongFormat.jpg')
 const testAudiusFileNumSegments = 32
 
-describe('test Tracks with mocked IPFS', function () {
+// NOTE: Skipping as this test file tests the legacy route. We should deprecate that route eventually, and then remove these tests. The
+// test file pollingTracks.test.js tests the same track upload logic as this file.
+describe.skip('test non-polling Tracks with mocked IPFS (these are legacy - see pollingTracks.test.js for updated tests)', function () {
   let app, server, session, ipfsMock, libsMock, userId
 
   beforeEach(async () => {
@@ -484,7 +486,7 @@ describe('test Tracks with mocked IPFS', function () {
   })
 })
 
-describe('test Tracks with real IPFS', function () {
+describe.skip('test non-polling Tracks with real IPFS (these are legacy - see pollingTracks.test.js for updated tests)', function () {
   let app, server, session, libsMock, ipfs, userId
 
   // Will need a '.' in front of storagePath to look at current dir
@@ -622,7 +624,7 @@ describe('test Tracks with real IPFS', function () {
     assert.deepStrictEqual(resp.body.error, 'Metadata object must include owner_id and non-empty track_segments array')
   })
 
-  it('should throw an error if segment is blacklisted', async function () {
+  it('should not throw an error if segment is blacklisted', async function () {
     sinon.stub(BlacklistManager, 'CIDIsInBlacklist').returns(true)
     const metadata = {
       test: 'field1',
@@ -630,14 +632,12 @@ describe('test Tracks with real IPFS', function () {
       owner_id: 1
     }
 
-    const resp = await request(app)
+    await request(app)
       .post('/tracks/metadata')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
       .send({ metadata })
-      .expect(403)
-
-    assert.deepStrictEqual(resp.body.error, `Segment CID ${metadata.track_segments[0].multihash} has been blacklisted by this node.`)
+      .expect(200)
   })
 
   it('should throw error response if saving metadata to fails', async function () {

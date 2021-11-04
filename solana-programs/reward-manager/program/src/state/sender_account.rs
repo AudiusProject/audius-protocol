@@ -15,9 +15,9 @@ pub struct SenderAccount {
     pub version: u8,
     /// Reward manager
     pub reward_manager: Pubkey,
-    /// Ethereum address
+    /// Ethereum address of the sender node
     pub eth_address: EthereumAddress,
-    /// Sender operator
+    /// Sender operator ethereum address - a single operator can run multiple nodes
     pub operator: EthereumAddress,
 }
 

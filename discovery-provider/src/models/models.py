@@ -4,6 +4,7 @@ import enum
 
 from typing import Any
 from jsonschema import ValidationError
+from sqlalchemy import event
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
@@ -22,12 +23,32 @@ from sqlalchemy import (
     PrimaryKeyConstraint,
     Index,
     func,
+    Unicode,
+    UnicodeText,
 )
 from src.model_validator import ModelValidator
 
 
 Base: Any = declarative_base()
 logger = logging.getLogger(__name__)
+
+# Listen for instrumentation of attributes on the base class
+# to add a listener on that attribute whenever it is set
+@event.listens_for(Base, "attribute_instrument")
+def configure_listener(class_, key_, inst):
+    # Check that the attribute is a column (we only validate columns)
+    if not hasattr(inst.property, "columns"):
+        return
+
+    # Listen for set events on the attribute to run our default validations
+    @event.listens_for(inst, "set", retval=True)
+    def set_(target, value, oldvalue, initiator):
+        column_type = getattr(target.__class__, inst.key).type
+        if type(column_type) in (String, Text, Unicode, UnicodeText) and value and isinstance(value, str):
+            value = value.encode("utf-8", "ignore").decode("utf-8", "ignore")
+            value = value.replace("\x00", "")
+        return value
+
 
 # field_type is the sqlalchemy type from the model object
 def validate_field_helper(field, value, model, field_type):
@@ -43,6 +64,7 @@ def validate_field_helper(field, value, model, field_type):
     # the fix is to replace those characters with empty with empty string
     # https://stackoverflow.com/questions/1347646/postgres-error-on-insert-error-invalid-byte-sequence-for-encoding-utf8-0x0
     if type(field_type) in (String, Text) and value:
+        value = value.encode("utf-8", "ignore").decode("utf-8", "ignore")
         value = value.replace("\x00", "")
 
     to_validate = {field: value}
@@ -352,6 +374,16 @@ class Playlist(Base):
 
     PrimaryKeyConstraint(is_current, playlist_id, playlist_owner_id, blockhash, txhash)
 
+    ModelValidator.init_model_schemas("Playlist")
+    fields = ["playlist_name", "description"]
+
+    # unpacking args into @validates
+    @validates(*fields)
+    def validate_field(self, field, value):
+        return validate_field_helper(
+            field, value, "Playlist", getattr(Playlist, field).type
+        )
+
     def __repr__(self):
         return f"<Playlist(blockhash={self.blockhash},\
 blocknumber={self.blocknumber},\
@@ -500,7 +532,7 @@ class Play(Base):
     user_id = Column(Integer, nullable=True, index=False)
     source = Column(String, nullable=True, index=False)
     play_item_id = Column(Integer, nullable=False, index=False)
-    slot = Column(Integer, nullable=True, index=False)
+    slot = Column(Integer, nullable=True, index=True)
     signature = Column(String, nullable=True, index=False)
     created_at = Column(DateTime, nullable=False, default=func.now())
     updated_at = Column(

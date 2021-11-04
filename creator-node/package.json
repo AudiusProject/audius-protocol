@@ -5,6 +5,7 @@
   "scripts": {
     "start": "nodemon src/index.js | ./node_modules/.bin/bunyan || exit 0",
     "test": "./scripts/run-tests.sh standalone_creator",
+    "test:debug": "./scripts/run-tests.sh -d standalone_creator",
     "test:ci": "./scripts/run-tests.sh",
     "test:local:teardown": "./scripts/run-tests.sh standalone_creator teardown",
     "test:teardown": "./scripts/run-tests.sh teardown",
@@ -47,7 +48,8 @@
     "hashids": "^2.2.8",
     "ioredis": "^4.27.5",
     "ipfs-http-client": "33.1.1",
-    "ipfs-http-client-latest": "npm:ipfs-http-client@^43.0.0",
+    "ipfs-http-client-latest": "npm:ipfs-http-client@43.0.1",
+    "ipfs-unixfs-importer": "9.0.6",
     "jimp": "^0.6.1",
     "lodash": "4.17.21",
     "multer": "^1.4.0",

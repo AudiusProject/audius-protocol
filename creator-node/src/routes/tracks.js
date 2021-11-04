@@ -21,8 +21,7 @@ const {
   sendResponse,
   successResponse,
   errorResponseBadRequest,
-  errorResponseServerError,
-  errorResponseForbidden
+  errorResponseServerError
 } = require('../apiHelpers')
 const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
 const {
@@ -42,6 +41,9 @@ const { FileProcessingQueue } = require('../FileProcessingQueue')
 const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning.js')
 const DiskManager = require('../diskManager')
+
+const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
+const ENABLE_IPFS_ADD_METADATA = config.get('enableIPFSAddMetadata')
 
 const readFile = promisify(fs.readFile)
 const tmpTrackArtifactsPath = DiskManager.getTmpTrackUploadArtifactsPath()
@@ -216,7 +218,7 @@ module.exports = function (app) {
 
     // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
     codeBlockTimeStart = Date.now()
-    const transcodeFileIPFSResp = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, transcodedFilePath, req.app.get('ipfsAPI'))
+    const transcodeFileIPFSResp = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, transcodedFilePath, ENABLE_IPFS_ADD_TRACKS)
 
     let segmentFileIPFSResps = []
     for (let i = 0; i < segmentFilePaths.length; i += SaveFileToIPFSConcurrencyLimit) {
@@ -224,7 +226,7 @@ module.exports = function (app) {
 
       const sliceResps = await Promise.all(segmentFilePathsSlice.map(async (segmentFilePath) => {
         const segmentAbsolutePath = path.join(req.fileDir, 'segments', segmentFilePath)
-        const { multihash, dstPath } = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, segmentAbsolutePath, req.app.get('ipfsAPI'))
+        const { multihash, dstPath } = await saveFileToIPFSFromFS({ logContext: req.logContext }, req.session.cnodeUserUUID, segmentAbsolutePath, ENABLE_IPFS_ADD_TRACKS)
         return { multihash, srcPath: segmentFilePath, dstPath }
       }))
 
@@ -254,24 +256,6 @@ module.exports = function (app) {
       removeTrackFolder(req, req.fileDir)
 
       return errorResponseServerError('Track upload failed - no track segments')
-    }
-
-    // Error if any segment CID is in blacklist.
-    try {
-      await Promise.all(trackSegments.map(async segmentObj => {
-        if (await req.app.get('blacklistManager').CIDIsInBlacklist(segmentObj.multihash)) {
-          throw new Error(`Segment CID ${segmentObj.multihash} been blacklisted by this node.`)
-        }
-      }))
-    } catch (e) {
-      // Prune upload artifacts
-      removeTrackFolder(req, req.fileDir)
-
-      if (e.message.indexOf('blacklisted') >= 0) {
-        return errorResponseForbidden(`Track upload failed - part or all of this track has been blacklisted by this node: ${e}`)
-      } else {
-        return errorResponseServerError(e.message)
-      }
     }
 
     // Record entries for transcode and segment files in DB
@@ -341,17 +325,6 @@ module.exports = function (app) {
       return errorResponseBadRequest('Metadata object must include owner_id and non-empty track_segments array')
     }
 
-    // Error if any of provided segment multihashes are blacklisted.
-    try {
-      await Promise.all(metadataJSON.track_segments.map(async segment => {
-        if (await req.app.get('blacklistManager').CIDIsInBlacklist(segment.multihash)) {
-          throw new Error(`Segment CID ${segment.multihash} has been blacklisted by this node.`)
-        }
-      }))
-    } catch (e) {
-      return errorResponseForbidden(e.message)
-    }
-
     // If metadata indicates track is downloadable but doesn't provide a transcode CID,
     //    ensure that a transcoded master record exists in DB
     if (metadataJSON.download && metadataJSON.download.is_downloadable && !metadataJSON.download.cid) {
@@ -392,7 +365,7 @@ module.exports = function (app) {
     // Save file from buffer to IPFS and disk
     let multihash, dstPath
     try {
-      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer)
+      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer, ENABLE_IPFS_ADD_METADATA)
       multihash = resp.multihash
       dstPath = resp.dstPath
     } catch (e) {
@@ -438,8 +411,10 @@ module.exports = function (app) {
 
     // Error on outdated blocknumber
     const cnodeUser = req.session.cnodeUser
-    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber > blockNumber) {
-      return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
+    if (blockNumber < cnodeUser.latestBlockNumber) {
+      return errorResponseBadRequest(
+        `Invalid blockNumber param ${blockNumber}. Must be greater or equal to previously processed blocknumber ${cnodeUser.latestBlockNumber}.`
+      )
     }
     const cnodeUserUUID = req.session.cnodeUserUUID
 

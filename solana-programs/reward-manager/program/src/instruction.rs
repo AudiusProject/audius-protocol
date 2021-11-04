@@ -30,7 +30,7 @@ pub struct CreateSenderArgs {
 
 /// `CreateSenderPublic` instruction args
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
-pub struct AddSenderArgs {
+pub struct CreateSenderPublicArgs {
     /// Ethereum address
     pub eth_address: EthereumAddress,
     /// Sender operator
@@ -39,14 +39,14 @@ pub struct AddSenderArgs {
 
 /// Verify `Transfer` instruction args
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
-pub struct VerifyTransferSignatureArgs {
+pub struct SubmitAttestationsArgs {
     /// ID generated on backend
     pub id: String,
 }
 
 /// `Transfer` instruction args
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
-pub struct TransferArgs {
+pub struct EvaluateAttestationsArgs {
     /// Amount to transfer
     pub amount: u64,
     /// ID generated on backend
@@ -60,8 +60,8 @@ pub struct TransferArgs {
 pub enum Instructions {
     ///   Initialize Reward manager
     ///
-    ///   0. `[writable]` Account that will be initialized as Reward manager.
-    ///   1. `[writable]` The new account that to be initialized as the token account.
+    ///   0. `[writable]` Reward manager - Account that will be initialized as Reward manager.
+    ///   1. `[writable]` Token account - The new account that to be initialized as the token account.
     ///   2. `[]` Mint with which the new token account will be associated on initialization.
     ///   3. `[]` Manager account to be set as the Reward manager.
     ///   4. `[]` Reward manager authority.
@@ -69,12 +69,12 @@ pub enum Instructions {
     ///   6. `[]` Rent sysvar
     InitRewardManager(InitRewardManagerArgs),
 
-    ///   Change RewardManager authority
+    ///   Change RewardManager manager account
     ///
     ///   0. `[writable]` Reward manager
-    ///   1. `[signer]` Current authority
-    ///   2. `[]` New authority
-    ChangeRewardManagerAuthority,
+    ///   1. `[signer]` Current manager
+    ///   2. `[]` New manager
+    ChangeManagerAccount,
 
     ///   Admin method creating new authorized sender
     ///
@@ -87,7 +87,7 @@ pub enum Instructions {
     ///   6. `[]` Rent sysvar
     CreateSender(CreateSenderArgs),
 
-    ///   Admin method removing sender
+    ///   Admin method for removing sender
     ///  
     ///   0. `[]` Reward manager
     ///   1. `[signer]` Manager account
@@ -96,7 +96,7 @@ pub enum Instructions {
     ///   4. `[]` Refunder account
     DeleteSender,
 
-    ///
+    ///   Add sender with other senders attesting as proof
     ///
     /// 0. `[]` Reward manager
     /// 1. `[]` Reward manager authority
@@ -104,9 +104,9 @@ pub enum Instructions {
     /// 3. `[writable]` new_sender
     /// 4. `[]` Bunch of old senders which prove adding new one
     /// ...
-    CreateSenderPublic(AddSenderArgs),
+    CreateSenderPublic(CreateSenderPublicArgs),
 
-    ///   Delete sender with other senders proof
+    ///   Delete sender with other senders attesting as proof
     ///
     ///   0. `[]` Reward manager
     ///   1. `[writable]` Sender account to delete
@@ -115,9 +115,9 @@ pub enum Instructions {
     ///   4. `[]` Bunch of senders which prove removing another one
     DeleteSenderPublic,
 
-    ///   Verify transfer signature
+    ///   Submit attestations
     ///
-    ///   0. `[writable]` New or existing account PDA storing verified messages
+    ///   0. `[writable]` Verified messages - New or existing account PDA storing verified messages
     ///   1. `[]` Reward manager
     ///   2. `[]` Reward manager authority
     ///   3. `[signer]` Funder
@@ -125,22 +125,22 @@ pub enum Instructions {
     ///   5. `[]` Sysvar rent
     ///   6. `[]` Instruction info
     ///   7. `[]` System program id
-    VerifyTransferSignature(VerifyTransferSignatureArgs),
+    SubmitAttestations(SubmitAttestationsArgs),
 
-    ///   Transfer tokens to pointed receiver
+    ///   Evaluate attestations, transferring tokens to token recipient
     ///
-    ///   0. `[]` Verified messages
+    ///   0. `[]` Verified messages - New or existing account PDA storing verified messages-
     ///   1. `[]` Reward manager
     ///   2. `[]` Reward manager authority
     ///   3. `[]` Reward token source
     ///   4. `[]` Reward token recipient
-    ///   5. `[]` Transfer account
-    ///   6. `[]` Bot oracle
+    ///   5. `[]` Transfer account - the account which represents a successful transfer
+    ///   6. `[]` Bot oracle - the ethereum public address of the oracle
     ///   7. `[]` Payer
     ///   8. `[]` Sysvar rent
     ///   9. `[]` Token program id
     ///  10. `[]` System program id
-    Transfer(TransferArgs),
+    EvaluateAttestations(EvaluateAttestationsArgs),
 }
 
 /// Create `InitRewardManager` instruction
@@ -173,14 +173,14 @@ pub fn init(
     })
 }
 
-/// Create `ChangeRewardManagerAuthority` instruction
+/// Create `ChangeManagerAccount` instruction
 pub fn change_manager_authority(
     program_id: &Pubkey,
     reward_manager: &Pubkey,
     current_authority: &Pubkey,
     new_authority: &Pubkey,
 ) -> Result<Instruction, ProgramError> {
-    let data = Instructions::ChangeRewardManagerAuthority.try_to_vec()?;
+    let data = Instructions::ChangeManagerAccount.try_to_vec()?;
 
     let accounts = vec![
         AccountMeta::new(*reward_manager, false),
@@ -281,7 +281,7 @@ pub fn create_sender_public<'a, I>(
 where
     I: IntoIterator<Item = &'a Pubkey>,
 {
-    let data = Instructions::CreateSenderPublic(AddSenderArgs {
+    let data = Instructions::CreateSenderPublic(CreateSenderPublicArgs {
         eth_address,
         operator,
     })
@@ -355,8 +355,8 @@ where
     })
 }
 
-/// Create `VerifyTransferSignature` instruction
-pub fn verify_transfer_signature(
+/// Create `SubmitAttestations` instruction
+pub fn submit_attestations(
     program_id: &Pubkey,
     reward_manager: &Pubkey,
     sender: &Pubkey,
@@ -364,8 +364,7 @@ pub fn verify_transfer_signature(
     id: String,
 ) -> Result<Instruction, ProgramError> {
     let data =
-        Instructions::VerifyTransferSignature(VerifyTransferSignatureArgs { id: id.clone() })
-            .try_to_vec()?;
+        Instructions::SubmitAttestations(SubmitAttestationsArgs { id: id.clone() }).try_to_vec()?;
 
     let (reward_manager_authority, verified_messages, _) = find_derived_pair(
         program_id,
@@ -393,9 +392,9 @@ pub fn verify_transfer_signature(
     })
 }
 
-/// Create `Transfer` instruction
+/// Create `Evaluate attestation` instruction
 #[allow(clippy::too_many_arguments)]
-pub fn transfer(
+pub fn evaluate_attestations(
     program_id: &Pubkey,
     verified_messages: &Pubkey,
     reward_manager: &Pubkey,
@@ -407,7 +406,7 @@ pub fn transfer(
     id: String,
     eth_recipient: [u8; 20],
 ) -> Result<Instruction, ProgramError> {
-    let data = Instructions::Transfer(TransferArgs {
+    let data = Instructions::EvaluateAttestations(EvaluateAttestationsArgs {
         amount,
         id: id.clone(),
         eth_recipient,

@@ -24,7 +24,7 @@
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 10",
       "echo 'Migrating contracts'",
-      "cd contracts/; node_modules/.bin/truffle migrate --f 1 --to 3",
+      "cd contracts/; node_modules/.bin/truffle migrate --f 1 --to 3 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
       "echo 'Writing flask config'",
       "cd contracts/; node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run"
     ],
@@ -35,20 +35,24 @@
   "eth-contracts": {
     "path": "eth-contracts",
     "up": [
-      "cd eth-contracts/",
-      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100",
+      "cd eth-contracts/; rm -rf build",
+      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100 -l 8000000",
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
       "echo 'Migrating eth contracts'",
-      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 9"
+      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 11 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log"
     ],
     "down": [
-      "cd eth-contracts/; npm run ganache-q"
+      "cd eth-contracts/; npm run ganache-q; rm -rf build"
     ]
   },
  "solana-validator": {
+   "protocol": "http",
+   "host": "localhost",
+   "port": 8899,
+   "health_check_endpoint": "",
    "up": [
-      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.7.1 sh -c 'solana-test-validator --gossip-host solana'"
+      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.7.1 sh -c 'solana-test-validator --gossip-host solana --limit-ledger-size 100000000'"
    ],
     "down": [
       "docker container stop solana || true",
@@ -58,7 +62,7 @@
  "solana-programs": {
     "path": "solana-programs",
     "up": [
-      "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop > solana-program-config.json",
+      "cd solana-programs/; docker run --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:develop > solana-program-config.json 2>$PROTOCOL_DIR/service-commands/output.log",
       "cd solana-programs/; cat solana-program-config.json; cp solana-program-config.json ../identity-service",
       "mkdir -p ~/.audius; cd solana-programs/; cp solana-program-config.json ~/.audius/solana-program-config.json"
     ],
@@ -100,7 +104,7 @@
   },
   "init-contracts-info": {
     "up": [
-      "cd libs/; sh ./scripts/migrate_contracts.sh"
+      "cd libs/; sh ./scripts/migrate_contracts.sh >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log"
     ]
   },
   "init-token-versions": {
@@ -112,22 +116,25 @@
     "protocol": "http",
     "host": "dn1_web-server_1",
     "port": 5000,
+    "health_check_endpoint": "health_check",
     "up": [
       "cd libs/initScripts; node configureLocalDiscProv.js",
+      "cd libs/; node initScripts/local.js configure-discprov-wallet #",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
-      "cd discovery-provider;  . compose/env/shellEnv#.sh;  docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; rm -f *_dump",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
     ],
     "up-web-server": [
       "cd libs/initScripts; node configureLocalDiscProv.js",
-      "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.redis.yml -f compose/docker-compose.web-server.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
     ],
     "down": [
-      "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
       "cd discovery-provider; . compose/env/unsetShellEnv.sh"
     ],
     "register": [
@@ -136,11 +143,12 @@
     ],
     "restart": [
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
-      "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
       "docker volume prune -f",
       "cd libs/initScripts; node configureLocalDiscProv.js",
+      "cd discovery-provider; rm -f *_dump",
       "cd discovery-provider; [ ! -e celerybeat.pid ] || rm celerybeat.pid",
-      "cd discovery-provider; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml up --build -d",
       "cd discovery-provider; . compose/env/unsetShellEnv.sh",
       "echo 'Waiting 5 seconds...'",
       "sleep 5"
@@ -150,6 +158,7 @@
     "protocol": "http",
     "host": "localhost",
     "port": 8432,
+    "health_check_endpoint": "health_check",
     "up": [
       "docker-compose -f content-service/docker-compose/docker-compose.full.yml up --build -d"
     ],
@@ -161,18 +170,19 @@
     "protocol": "http",
     "host": "localhost",
     "port": 4000,
+    "health_check_endpoint": "health_check",
     "up": [
-      "cd creator-node; . compose/env/shellEnv#.sh; . compose/env/commonEnv.sh; docker-compose -f compose/docker-compose.yml up --build -d",
+      "cd creator-node; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml up --build -d",
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ],
     "down": [
-      "cd creator-node; . compose/env/shellEnv#.sh;  docker-compose -f compose/docker-compose.yml down --remove-orphans"
+      "cd creator-node; . compose/env/tmp/shellEnv#.sh;  docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
     "restart": [
       "cd creator-node; . compose/env/unsetShellEnv.sh",
-      "cd creator-node; . compose/env/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans",
+      "cd creator-node; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml down --remove-orphans",
       "cd libs/; node initScripts/local.js update-cnode-config #",
-      "cd creator-node; . compose/env/shellEnv#.sh; . compose/env/commonEnv.sh; docker-compose -f compose/docker-compose.yml up --build -d",
+      "cd creator-node; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml up --build -d",
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ],
     "register": [
@@ -192,6 +202,7 @@
     "protocol": "http",
     "host": "audius-identity-service_identity-service_1",
     "port": 7000,
+    "health_check_endpoint": "health_check",
     "up": [
       "cd identity-service/; docker-compose -f compose/docker-compose.full.yml up --build -d",
       "echo 'Waiting 15 seconds...'",
@@ -219,7 +230,24 @@
   "user-replica-set-manager": {
     "up": [
       "cd libs; node initScripts/local.js update-userreplicasetmanager-init-config",
-      "cd contracts/; node_modules/.bin/truffle migrate --f 4 --to 4"
+      "cd contracts/; node_modules/.bin/truffle migrate --f 4 --to 4 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log"
+    ]
+  },
+  "aao": {
+    "up": [
+      "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
+      "echo 'Starting AAO...'",
+      "cd $AAO_DIR; ./scripts/configureLocal.sh; docker-compose -f docker-compose-dev.yml up -d",
+      "sleep 5",
+      "echo 'AAO Started'"
+    ],
+    "register": [
+      "cd service-commands; ./scripts/registerAAO.sh"
+    ],
+    "down": [
+      "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
+      "echo 'Stopping AAO...'",
+      "cd $AAO_DIR; docker-compose -f docker-compose-dev.yml down"
     ]
   }
 }

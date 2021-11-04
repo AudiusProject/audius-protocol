@@ -5,7 +5,7 @@ const {
 } = require('@solana/web3.js')
 const BN = require('bn.js')
 const borsh = require('borsh')
-const keccak256 = require('keccak256')
+const SolanaUtils = require('./utils')
 const secp256k1 = require('secp256k1')
 
 /**
@@ -69,17 +69,9 @@ async function transferWAudioBalance ({
     ...new BN(strippedEthAddress, 'hex').toArray('be')
   )
 
-  const ethPrivateKeyArr = Buffer.from(senderEthPrivateKey, 'hex')
-
   const senderSolanaPubkey = new PublicKey(senderSolanaAddress)
   const recipientPubkey = new PublicKey(recipientSolanaAddress)
-
-  // Hash the recipient solana pubkey and create signature
-  const msgHash = keccak256(recipientPubkey.toBytes())
-  const signatureObj = secp256k1.ecdsaSign(
-    Uint8Array.from(msgHash),
-    ethPrivateKeyArr
-  )
+  const { signature, recoveryId } = SolanaUtils.signBytes(recipientPubkey.toBytes(), senderEthPrivateKey)
 
   const instructionData = new TransferInstructionData({
     ethAddress: ethAddressArr,
@@ -130,13 +122,14 @@ async function transferWAudioBalance ({
   ]
 
   // eth pubkey is different from the ethAddress - addresses are len 20, pub keys are len 64
+  const ethPrivateKeyArr = Buffer.from(senderEthPrivateKey, 'hex')
   const ethPubkey = secp256k1.publicKeyCreate(ethPrivateKeyArr, false).slice(1)
   const { blockhash } = await connection.getRecentBlockhash()
   const secpTransactionInstruction = Secp256k1Program.createInstructionWithPublicKey({
     publicKey: Buffer.from(ethPubkey),
     message: recipientPubkey.toBytes(),
-    signature: Buffer.from(signatureObj.signature),
-    recoveryId: signatureObj.recid
+    signature,
+    recoveryId
   })
 
   const transactionData = {

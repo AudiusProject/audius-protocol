@@ -14,7 +14,7 @@ class DatabaseTask(Task):
         ipfs_client=None,
         redis=None,
         eth_web3_provider=None,
-        solana_client=None,
+        solana_client_manager=None,
         challenge_event_bus=None,
     ):
         self._db = db
@@ -24,7 +24,7 @@ class DatabaseTask(Task):
         self._ipfs_client = ipfs_client
         self._redis = redis
         self._eth_web3_provider = eth_web3_provider
-        self._solana_client = solana_client
+        self._solana_client_manager = solana_client_manager
         self._challenge_event_bus = challenge_event_bus
 
     @property
@@ -56,8 +56,8 @@ class DatabaseTask(Task):
         return self._eth_web3_provider
 
     @property
-    def solana_client(self):
-        return self._solana_client
+    def solana_client_manager(self):
+        return self._solana_client_manager
 
     @property
     def challenge_event_bus(self) -> ChallengeEventBus:

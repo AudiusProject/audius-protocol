@@ -70,7 +70,7 @@ describe('ServiceSelection', () => {
     // Many bad services
     const haystack = Array.from({ length: 20 }, (v, i) => `https://${i}.audius.co`)
     haystack.forEach(hay => {
-      nock(hay).get('./health_check').reply(400)
+      nock(hay).get('/health_check').reply(400)
     })
 
     const s = new ServiceSelection({
@@ -234,7 +234,7 @@ describe('ServiceSelection withBackupCriteria', () => {
     // Many bad services
     const haystack = Array.from({ length: 20 }, (v, i) => `https://${i}.audius.co`)
     haystack.forEach(hay => {
-      nock(hay).get('./health_check').reply(400)
+      nock(hay).get('/health_check').reply(400)
     })
 
     const s = new ServiceSelectionWithBackupCriteria({
@@ -264,7 +264,7 @@ describe('ServiceSelection withBackupCriteria', () => {
     // Many bad services
     const haystack = Array.from({ length: 20 }, (v, i) => `https://${i}.audius.co`)
     haystack.forEach(hay => {
-      nock(hay).get('./health_check').reply(400)
+      nock(hay).get('/health_check').reply(400)
     })
 
     const s = new ServiceSelectionWithBackupCriteria({

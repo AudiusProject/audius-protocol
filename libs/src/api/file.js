@@ -49,11 +49,22 @@ class File extends Base {
     cid,
     creatorNodeGateways,
     callback = null,
-    responseType = 'blob'
+    responseType = 'blob',
+    trackId = null
   ) {
-    const gateways = creatorNodeGateways
-      .concat(publicGateways)
-    const urls = gateways.map(gateway => urlJoin(gateway, cid))
+    const urls = []
+
+    creatorNodeGateways.forEach(gateway => {
+      let gatewayWithCid = urlJoin(gateway, cid)
+      if (trackId) gatewayWithCid = urlJoin(gatewayWithCid, { query: { trackId } })
+      urls.push(gatewayWithCid)
+    })
+
+    publicGateways.forEach(gateway => {
+      urls.push(urlJoin(gateway, cid))
+    })
+
+    const gateways = creatorNodeGateways.concat(publicGateways)
 
     return retry(async () => {
       try {
@@ -150,14 +161,14 @@ class File extends Base {
    * Uploads an image to the connected creator node.
    * @param {File} file
    */
-  async uploadImage (file, square) {
+  async uploadImage (file, square, timeoutMs = null) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(file)
 
     // Assign a creator_node_endpoint to the user if necessary
     await this.User.assignReplicaSetIfNecessary()
 
-    const resp = await this.creatorNode.uploadImage(file, square)
+    const resp = await this.creatorNode.uploadImage(file, square, /* onProgress */ undefined, timeoutMs)
     return resp
   }
 }

@@ -325,7 +325,15 @@ class Users extends Base {
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.user_id = userId
 
-    this.userStateManager.setCurrentUser({ ...newMetadata })
+    this.userStateManager.setCurrentUser({
+      ...newMetadata,
+      // Initialize counts to be 0. We don't want to write this data to backends ever really
+      // (hence the _cleanUserMetadata above), but we do want to make sure clients
+      // can properly "do math" on these numbers.
+      followee_count: 0,
+      follower_count: 0,
+      repost_count: 0
+    })
     return { blockHash, blockNumber, userId }
   }
 
@@ -672,7 +680,7 @@ class Users extends Base {
       // TODO - what if one or more of these fails?
       // sort transactions by blocknumber and return most recent transaction
       ops = await Promise.all(addOps)
-      const sortedOpsDesc = ops.sort((op1, op2) => op1.txReceipt.blockNumber > op2.txReceipt.blockNumber)
+      const sortedOpsDesc = ops.sort((op1, op2) => op2.txReceipt.blockNumber - op1.txReceipt.blockNumber)
       const latestTx = sortedOpsDesc[0].txReceipt
       latestBlockNumber = latestTx.blockNumber
       latestBlockHash = latestTx.blockHash
@@ -722,7 +730,7 @@ class Users extends Base {
     if (updateOps.length > 0) {
       // sort transactions by blocknumber and return most recent transaction
       ops = await Promise.all(updateOps)
-      const sortedOpsDesc = ops.sort((op1, op2) => op1.txReceipt.blockNumber > op2.txReceipt.blockNumber)
+      const sortedOpsDesc = ops.sort((op1, op2) => op2.txReceipt.blockNumber - op1.txReceipt.blockNumber)
       const latestTx = sortedOpsDesc[0].txReceipt
       latestBlockNumber = latestTx.blockNumber
       latestBlockHash = latestTx.blockHash
@@ -806,3 +814,4 @@ class Users extends Base {
 }
 
 module.exports = Users
+module.exports.USER_PROP_NAME_CONSTANTS = USER_PROP_NAME_CONSTANTS

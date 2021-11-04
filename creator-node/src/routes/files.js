@@ -3,6 +3,7 @@ const fs = require('fs-extra')
 const path = require('path')
 var contentDisposition = require('content-disposition')
 
+const { logger: genericLogger } = require('../logging')
 const { getRequestRange, formatContentRange } = require('../utils/requestRange')
 const { uploadTempDiskStorage } = require('../fileManager')
 const {
@@ -35,6 +36,7 @@ const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { constructProcessKey, PROCESS_NAMES } = require('../FileProcessingQueue')
+const { ipfsAddImages } = require('../ipfsAdd')
 
 const { promisify } = require('util')
 
@@ -43,6 +45,7 @@ const fsStat = promisify(fs.stat)
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 const BATCH_CID_ROUTE_LIMIT = 500
 const BATCH_CID_EXISTS_CONCURRENCY_LIMIT = 50
+const IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT = 5
 
 /**
  * Helper method to stream file from file system on creator node
@@ -114,11 +117,13 @@ const getCID = async (req, res) => {
   }
 
   // Do not act as a public gateway. Only serve IPFS files that are hosted by this creator node.
+  const BlacklistManager = req.app.get('blacklistManager')
   const CID = req.params.CID
+  const trackId = parseInt(req.query.trackId)
 
-  // Don't serve if blacklisted.
-  if (await req.app.get('blacklistManager').CIDIsInBlacklist(CID)) {
-    return sendResponse(req, res, errorResponseForbidden(`CID ${CID} has been blacklisted by this node.`))
+  const isServable = await BlacklistManager.isServable(CID, trackId)
+  if (!isServable) {
+    return sendResponse(req, res, errorResponseForbidden(`CID=${CID} has been blacklisted by this node`))
   }
 
   const cacheKey = getStoragePathQueryCacheKey(CID)
@@ -169,7 +174,7 @@ const getCID = async (req, res) => {
     // ugly nested try/catch but don't want findCIDInNetwork to stop execution of the rest of the route
     try {
       const libs = req.app.get('audiusLibs')
-      await findCIDInNetwork(storagePath, CID, req.logger, libs)
+      await findCIDInNetwork(storagePath, CID, req.logger, libs, trackId)
       return await streamFromFileSystem(req, res, storagePath)
     } catch (e) {
       req.logger.error(`Error calling findCIDInNetwork for path ${storagePath}`, e)
@@ -318,6 +323,102 @@ const getDirCID = async (req, res) => {
   }
 }
 
+/**
+ * Perform IPFS verification with retries
+ *
+ * Use retries because for some reason IPFS (very rarely) fails due to some non-deterministic error. Seems to be with the verification step; the files are correct.
+ * Wait fixed timeout between each retry, hopefully addresses IPFS non-deterministic errors
+ * @param {Object} req
+ * @param {File[]} resizeResp resizeImage.js response; should be a File[] of resized images
+ * @param {string} dirCID the directory CID from `resizeResp`
+ * @param {number?} maxRetries the max number of retries for ipfs verification
+ * @param {boolean?} enableIPFSAdd flag to enable or disable ipfs daemon add
+ */
+const _dirCIDIPFSVerificationWithRetries = async function (req, resizeResp, dirCID, maxRetries = IMAGE_UPLOAD_IPFS_VERIFICATION_RETRY_COUNT, enableIPFSAdd = false) {
+  let ipfsAddContent = await _generateIpfsAddContent(resizeResp, dirCID)
+
+  // Re-compute dirCID from all image files to ensure it matches dirCID returned above
+  await _addToIpfsWithRetries({
+    content: ipfsAddContent,
+    enableIPFSAdd,
+    dirCID,
+    retriesLeft: maxRetries,
+    maxRetries,
+    logContext: req.logContext
+  })
+}
+
+/**
+ * Helper fn to generate the input for `ipfsAddImages()`
+ * @param {File[]} resizeResp resizeImage.js response; should be a File[] of resized images
+ * @param {string} dirCID the directory CID from `resizeResp`
+ * @returns {Object[]} follows the structure [{path: <string>, cid: <string>}, ...] with the same number of elements
+ * as the size of `resizeResp`
+ */
+async function _generateIpfsAddContent (resizeResp, dirCID) {
+  let ipfsAddContent = []
+  try {
+    await Promise.all(resizeResp.files.map(async function (file) {
+      const fileBuffer = await fs.readFile(file.storagePath)
+      ipfsAddContent.push({
+        path: file.sourceFile,
+        content: fileBuffer
+      })
+    }))
+  } catch (e) {
+    throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
+  }
+
+  return ipfsAddContent
+}
+
+/**
+ * Helper fn that recurisvely calls itself `maxRetries` amount of times. Will throw if inconsistency still
+ * occurs after `maxRetries` attempts.
+ * @param {Object[]} content content to add to ipfs. Has the structure [{path: <string>, content: <Buffer>}, ...]
+ * @param {boolean} enableIPFSAdd flag to enable adding to ipfs daemon
+ * @param {string} dirCID the directory CID from `resizeResp`
+ * @param {number} retriesLeft the number of retires left for ipfs verification
+ * @param {number} maxRetries the max number of retries for ipfs verification
+ * @param {Object} logContext
+ */
+async function _addToIpfsWithRetries ({ content, enableIPFSAdd, dirCID, retriesLeft, maxRetries, logContext }) {
+  const logger = genericLogger.child(logContext)
+
+  const ipfsAddRespArr = await ipfsAddImages(
+    content,
+    {
+      pin: false,
+      onlyHash: true,
+      timeout: 1000
+    },
+    logContext,
+    enableIPFSAdd
+  )
+
+  // Ensure actual and expected dirCIDs match
+  const ipfsAddRetryDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
+  if (ipfsAddRetryDirCID !== dirCID) {
+    if (--retriesLeft > 0) {
+      logger.warn(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. ${retriesLeft} retries remaining out of ${maxRetries}. Retrying...`)
+      // If the only hash logic fails on first attempt, successive only hash logic attempts will produce the same results. At this point, add to ipfs
+      await _addToIpfsWithRetries({
+        content,
+        enableIPFSAdd: true,
+        dirCID,
+        retriesLeft,
+        maxRetries,
+        logContext,
+        logger
+      })
+    } else {
+      const errMsg = `Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. Failed after all ${maxRetries} retries.`
+      logger.error(errMsg)
+      throw new Error(errMsg)
+    }
+  }
+}
+
 module.exports = function (app) {
   app.get('/track_content_status', handleResponse(async (req, res) => {
     const redisKey = constructProcessKey(PROCESS_NAMES.transcode, req.query.uuid)
@@ -375,60 +476,17 @@ module.exports = function (app) {
       return errorResponseServerError(e)
     }
 
-    /**
-     * Ensure image files written to disk match dirCID returned from resizeImage
-     */
-
-    const ipfs = req.app.get('ipfsLatestAPI')
-
     const dirCID = resizeResp.dir.dirCID
 
-    // build ipfs add array
-    let ipfsAddArray = []
-    try {
-      await Promise.all(resizeResp.files.map(async function (file) {
-        const fileBuffer = await fs.readFile(file.storagePath)
-        ipfsAddArray.push({
-          path: file.sourceFile,
-          content: fileBuffer
-        })
-      }))
-    } catch (e) {
-      throw new Error(`Failed to build ipfs add array for dirCID ${dirCID} ${e}`)
-    }
-
-    // Re-compute dirCID from all image files to ensure it matches dirCID returned above
-    let ipfsAddRespArr
-    try {
-      const ipfsAddResp = await ipfs.add(
-        ipfsAddArray,
-        {
-          pin: false,
-          onlyHash: true,
-          timeout: 1000
-        }
-      )
-      ipfsAddRespArr = []
-      for await (const resp of ipfsAddResp) {
-        ipfsAddRespArr.push(resp)
-      }
-    } catch (e) {
-      // If ipfs.add op fails, log error and move on, since this is an ipfs error and not an image upload error
-      req.logger.info(`Error calling ipfs.add on dir to re-compute dirCID ${dirCID} ${e}`)
-    }
-
-    // Ensure actual and expected dirCIDs match
-    const expectedDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
-    if (expectedDirCID !== dirCID) {
-      throw new Error(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} expectedCID=${expectedDirCID}`)
-    }
+    // Ensure image files written to disk match dirCID returned from resizeImage
+    await _dirCIDIPFSVerificationWithRetries(req, resizeResp, dirCID)
 
     // Record image file entries in DB
     const transaction = await models.sequelize.transaction()
     try {
       // Record dir file entry in DB
       const createDirFileQueryObj = {
-        multihash: resizeResp.dir.dirCID,
+        multihash: dirCID,
         sourceFile: null,
         storagePath: resizeResp.dir.dirDestPath,
         type: 'dir' // TODO - replace with models enum
@@ -606,11 +664,14 @@ module.exports = function (app) {
    * @param req.query.delegateWallet the wallet address that signed this request
    * @param req.query.timestamp the timestamp when the request was made
    * @param req.query.signature the hashed signature of the object {filePath, delegateWallet, timestamp}
+   * @param {string?} req.query.trackId the trackId of the requested file lookup
    */
   app.get('/file_lookup', async (req, res) => {
+    const BlacklistManager = req.app.get('blacklistManager')
     const { filePath, timestamp, signature } = req.query
-    let { delegateWallet } = req.query
+    let { delegateWallet, trackId } = req.query
     delegateWallet = delegateWallet.toLowerCase()
+    trackId = parseInt(trackId)
 
     // no filePath passed in
     if (!filePath) return sendResponse(req, res, errorResponseBadRequest(`Invalid request, no path provided`))
@@ -630,16 +691,19 @@ module.exports = function (app) {
     if (!matchObj) return sendResponse(req, res, errorResponseBadRequest(`Invalid filePathNormalized provided`))
 
     const { outer, inner } = matchObj
-    if (await req.app.get('blacklistManager').CIDIsInBlacklist(outer)) {
-      return sendResponse(req, res, errorResponseForbidden(`CID ${outer} has been blacklisted by this node.`))
+    let isServable = await BlacklistManager.isServable(outer, trackId)
+    if (!isServable) {
+      return sendResponse(req, res, errorResponseForbidden(`CID=${outer} has been blacklisted by this node.`))
     }
+
     res.setHeader('Content-Disposition', contentDisposition(outer))
 
     // inner will only be set for image dir CID
     // if there's an inner CID, check if CID is blacklisted and set content disposition header
     if (inner) {
-      if (await req.app.get('blacklistManager').CIDIsInBlacklist(inner)) {
-        return sendResponse(req, res, errorResponseForbidden(`CID ${inner} has been blacklisted by this node.`))
+      isServable = await BlacklistManager.isServable(inner, trackId)
+      if (!isServable) {
+        return sendResponse(req, res, errorResponseForbidden(`CID=${inner} has been blacklisted by this node.`))
       }
       res.setHeader('Content-Disposition', contentDisposition(inner))
     }

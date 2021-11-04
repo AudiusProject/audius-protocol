@@ -69,19 +69,19 @@ def setup_db(session):
             id="boolean_challenge_1",
             type=ChallengeType.boolean,
             active=True,
-            amount=5,
+            amount="5",
         ),
         Challenge(
             id="boolean_challenge_2",
             type=ChallengeType.boolean,
             active=True,
-            amount=5,
+            amount="5",
         ),
         Challenge(
             id="boolean_challenge_3",
             type=ChallengeType.boolean,
             active=True,
-            amount=5,
+            amount="5",
         ),
         # No progress on this, but active
         # should be returned
@@ -89,52 +89,58 @@ def setup_db(session):
             id="boolean_challenge_4",
             type=ChallengeType.boolean,
             active=True,
-            amount=5,
+            amount="5",
         ),
         # Inactive, with no progress
         Challenge(
             id="boolean_challenge_5",
             type=ChallengeType.boolean,
             active=False,
-            amount=5,
+            amount="5",
         ),
         # Inactive, WITH progress
         Challenge(
             id="boolean_challenge_6",
             type=ChallengeType.boolean,
             active=False,
-            amount=5,
+            amount="5",
         ),
         Challenge(
             id="trending_challenge_1",
             type=ChallengeType.trending,
             active=True,
-            amount=5,
+            amount="5",
         ),
         Challenge(
             id="aggregate_challenge_1",
             type=ChallengeType.aggregate,
             active=True,
-            amount=5,
+            amount="5",
             step_count=3,
         ),
         Challenge(
             id="aggregate_challenge_2",
             type=ChallengeType.aggregate,
             active=True,
-            amount=5,
+            amount="5",
             step_count=2,
         ),
         Challenge(
             id="aggregate_challenge_3",
             type=ChallengeType.aggregate,
             active=True,
-            amount=5,
+            amount="5",
             step_count=2,
         ),
-        Challenge(id="trending_1", type=ChallengeType.trending, active=True, amount=5),
-        Challenge(id="trending_2", type=ChallengeType.trending, active=True, amount=5),
-        Challenge(id="trending_3", type=ChallengeType.trending, active=True, amount=5),
+        Challenge(
+            id="trending_1", type=ChallengeType.trending, active=True, amount="5"
+        ),
+        Challenge(
+            id="trending_2", type=ChallengeType.trending, active=True, amount="5"
+        ),
+        Challenge(
+            id="trending_3", type=ChallengeType.trending, active=True, amount="5"
+        ),
     ]
     user_challenges = [
         # Finished the first challenge, disbursed
@@ -210,8 +216,8 @@ def setup_db(session):
         ChallengeDisbursement(
             challenge_id="boolean_challenge_1",
             user_id=1,
-            amount=5,
-            signature='1',
+            amount="5",
+            signature="1",
             slot=1,
             specifier="1",
         )
@@ -370,7 +376,7 @@ def setup_extra_metadata_test(session):
             id="numeric_1",
             type=ChallengeType.numeric,
             active=True,
-            amount=5,
+            amount="5",
             step_count=5,
         ),
         # Numeric 2 with some extra data
@@ -378,7 +384,7 @@ def setup_extra_metadata_test(session):
             id="numeric_2",
             type=ChallengeType.numeric,
             active=True,
-            amount=5,
+            amount="5",
             step_count=5,
         ),
     ]

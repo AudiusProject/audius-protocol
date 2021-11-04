@@ -41,3 +41,17 @@ def test_create_track_slug_unicode():
     title = "ñóนมนุษşoföre"
     assert create_track_slug(title, 15633, 0) == "ñóนมนุษşoföre"
     assert create_track_slug(title, 15633, 3) == "ñóนมนุษşoföre-3"
+
+
+def test_create_track_slug_periods_and_punctuation():
+    title = "Some: track; that has, like, punctuation!? everywhere."
+    assert (
+        create_track_slug(title, 0, 0)
+        == "some-track-that-has-like-punctuation-everywhere"
+    )
+
+
+def test_create_track_slug_trailing_spaces():
+    assert create_track_slug(" some track title ", 0, 0) == "some-track-title"
+    assert create_track_slug("some ( original mix )", 0, 0) == "some-original-mix"
+    assert create_track_slug("( some track title )", 0, 0) == "some-track-title"

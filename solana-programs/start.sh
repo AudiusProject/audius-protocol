@@ -8,7 +8,7 @@
     solana config set -u $SOLANA_HOST
 
     solana-keygen new -s --no-bip39-passphrase
-    solana-keygen new -s --no-bip39-passphrase -o feepayer.json
+    solana-keygen new -s --no-bip39-passphrase -o feepayer.json --force
     feepayer_pubkey=$(solana-keygen pubkey feepayer.json)
 
     while test $(solana balance feepayer.json | sed 's/\(\.\| \).*//') -lt 10; do
@@ -106,7 +106,7 @@
     echo "Reward manager account key: $reward_manager_account_key"
     echo "Reward manager token acct key: $reward_manager_token_account_key"
     echo "Transferring funds to RewardsManager funds holder..."
-    spl-token transfer $token 100000000 $reward_manager_token_account_key 
+    spl-token transfer $token 100000000 $reward_manager_token_account_key
 
     echo "Testing create sender"
     cargo run create-sender --eth-operator-address 0xF24936714293a0FaF39A022138aF58D874289132  --eth-sender-address 0xF24936714293a0FaF39A022138aF58D874289133 --reward-manager $reward_manager_account_key

@@ -2,6 +2,7 @@ from datetime import datetime
 from src import models
 from src.utils import helpers
 from src.utils.db_session import get_db
+from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
 
 
 def query_creator_by_name(app, creator_name=None):
@@ -54,7 +55,7 @@ def populate_mock_db_blocks(db, min, max):
             session.flush()
 
 
-def populate_mock_db(db, entities):
+def populate_mock_db(db, entities, block_offset=0):
     """
     Helper function to populate the mock DB with tracks, users, plays, and follows
 
@@ -75,23 +76,27 @@ def populate_mock_db(db, entities):
         challenges = entities.get("challenges", [])
         user_challenges = entities.get("user_challenges", [])
 
-        num_blocks = max(len(tracks), len(users), len(follows))
-
-        for i in range(num_blocks):
-            block = models.Block(
-                blockhash=hex(i),
-                number=i,
-                parenthash="0x01",
-                is_current=(i == 0),
+        num_blocks = max(len(tracks), len(users), len(follows), len(saves))
+        for i in range(block_offset, block_offset + num_blocks):
+            max_block = (
+                session.query(models.Block).filter(models.Block.number == i).first()
             )
-            session.add(block)
-            session.flush()
+            if not max_block:
+                block = models.Block(
+                    blockhash=hex(i),
+                    number=i,
+                    parenthash="0x01",
+                    is_current=(i == 0),
+                )
+                session.add(block)
+                session.flush()
 
         for i, track_meta in enumerate(tracks):
             track = models.Track(
                 blockhash=hex(i),
                 blocknumber=i,
                 track_id=track_meta.get("track_id", i),
+                title=track_meta.get("title", f"track_{i}"),
                 is_current=track_meta.get("is_current", True),
                 is_delete=track_meta.get("is_delete", False),
                 owner_id=track_meta.get("owner_id", 1),
@@ -138,9 +143,10 @@ def populate_mock_db(db, entities):
                 blocknumber=i,
                 user_id=user_meta.get("user_id", i),
                 is_current=True,
-                handle=user_meta.get("handle", i),
-                handle_lc=user_meta.get("handle", i).lower(),
-                wallet=user_meta.get("wallet", i),
+                handle=user_meta.get("handle", str(i)),
+                handle_lc=user_meta.get("handle", str(i)).lower(),
+                wallet=user_meta.get("wallet", str(i)),
+                bio=user_meta.get("bio", str(i)),
                 profile_picture=user_meta.get("profile_picture"),
                 profile_picture_sizes=user_meta.get("profile_picture_sizes"),
                 cover_photo=user_meta.get("cover_photo"),
@@ -242,4 +248,9 @@ def populate_mock_db(db, entities):
                 current_step_count=user_challenge_meta.get("current_step_count", None),
             )
             session.add(user_challenge)
+
         session.flush()
+
+        session.execute(
+            UPDATE_AGGREGATE_USER_QUERY, {"most_recent_indexed_aggregate_block": 0}
+        )

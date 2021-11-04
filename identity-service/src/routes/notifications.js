@@ -30,7 +30,8 @@ const NotificationType = Object.freeze({
   MilestoneFollow: 'MilestoneFollow',
   RemixCreate: 'RemixCreate',
   RemixCosign: 'RemixCosign',
-  TrendingTrack: 'TrendingTrack'
+  TrendingTrack: 'TrendingTrack',
+  ChallengeReward: 'ChallengeReward'
 })
 
 const ClientNotificationTypes = new Set([
@@ -409,6 +410,7 @@ module.exports = function (app) {
         playlistUpdates
       })
     } catch (err) {
+      req.logger.error(`[Error] Unable to retrieve notifications for user: ${userId}`, err)
       return errorResponseBadRequest({
         message: `[Error] Unable to retrieve notifications for user: ${userId}`
       })

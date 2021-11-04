@@ -16,7 +16,7 @@ pub type VoteMessage = [u8; 128];
 pub const ADD_SENDER_MESSAGE_PREFIX: &str = "add";
 
 /// Delete sender message prefix
-pub const DELETE_SENDER_MESSAGE_PREFIX: &str = "delete";
+pub const DELETE_SENDER_MESSAGE_PREFIX: &str = "del";
 
 /// Generates fixed vote message from slice
 #[macro_export]
@@ -39,7 +39,8 @@ pub struct VerifiedMessage {
     pub operator: EthereumAddress,
 }
 
-/// Verified messages
+/// Transient account to store verified messages, created in
+/// `submit_attestations`.
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
 pub struct VerifiedMessages {
     /// Version
@@ -54,8 +55,8 @@ pub struct VerifiedMessages {
 pub const TOTAL_VERIFIED_MESSAGES: usize = 5;
 // 20 + 128 + 20
 const VERIFIED_MESSAGE_LEN: usize = 168;
-// 1 + 32 + 1 + (168 * 5)
-const VERIFIED_MESSAGES_LEN: usize = 874;
+/// Size of verified messages account: 1 + 32 + 1 + (168 * 5)
+pub const VERIFIED_MESSAGES_LEN: usize = 874;
 
 impl VerifiedMessages {
     /// Creates new `VerifiedMessages`

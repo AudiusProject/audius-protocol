@@ -1,14 +1,16 @@
 const path = require('path')
 
+const config = require('../../config.js')
 const { logger: genericLogger } = require('../../logging')
 const { getSegmentsDuration } = require('../../segmentDuration')
 const TranscodingQueue = require('../../TranscodingQueue')
 const models = require('../../models')
 const DBManager = require('../../dbManager')
-const { removeTrackFolder, saveFileToIPFSFromFS } = require('../../fileManager')
+const fileManager = require('../../fileManager')
 
 const SaveFileToIPFSConcurrencyLimit = 10
 
+const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
 /**
  * Upload track segment files and make avail - will later be associated with Audius track
  *
@@ -17,12 +19,10 @@ const SaveFileToIPFSConcurrencyLimit = 10
  *
  * @param {Object} logContext the context of the request used to create a generic logger
  * @param {Object} requestProps more request specific context, NOT the req object from Express
- * @param {Object} ipfs ipfs instance
- * @param {Object} blacklistManager blacklistManager instance
  * @returns a success or error server response
  * @dev - Prune upload artifacts after successful and failed uploads. Make call without awaiting, and let async queue clean up.
  */
-const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs, blacklistManager) => {
+const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   const logger = genericLogger.child(logContext)
 
   const routeTimeStart = Date.now()
@@ -45,18 +45,18 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs, black
     logger.info(`Time taken in /track_content_async to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
   } catch (err) {
     // Prune upload artifacts
-    removeTrackFolder({ logContext }, requestProps.fileDir)
+    fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
 
     throw new Error(err.toString())
   }
 
   // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
   codeBlockTimeStart = Date.now()
-  const transcodeFileIPFSResp = await saveFileToIPFSFromFS(
+  const transcodeFileIPFSResp = await fileManager.saveFileToIPFSFromFS(
     { logContext: requestProps.logContext },
     requestProps.session.cnodeUserUUID,
     transcodedFilePath,
-    ipfs
+    ENABLE_IPFS_ADD_TRACKS
   )
 
   let segmentFileIPFSResps = []
@@ -65,11 +65,11 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs, black
 
     const sliceResps = await Promise.all(segmentFilePathsSlice.map(async (segmentFilePath) => {
       const segmentAbsolutePath = path.join(requestProps.fileDir, 'segments', segmentFilePath)
-      const { multihash, dstPath } = await saveFileToIPFSFromFS(
+      const { multihash, dstPath } = await fileManager.saveFileToIPFSFromFS(
         { logContext: requestProps.logContext },
         requestProps.session.cnodeUserUUID,
         segmentAbsolutePath,
-        ipfs
+        ENABLE_IPFS_ADD_TRACKS
       )
       return { multihash, srcPath: segmentFilePath, dstPath }
     }))
@@ -97,27 +97,9 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs, black
   // error if there are no track segments
   if (!trackSegments || !trackSegments.length) {
     // Prune upload artifacts
-    removeTrackFolder({ logContext }, requestProps.fileDir)
+    fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
 
     throw new Error('Track upload failed - no track segments')
-  }
-
-  // Error if any segment CID is in blacklist.
-  try {
-    await Promise.all(trackSegments.map(async segmentObj => {
-      if (await blacklistManager.CIDIsInBlacklist(segmentObj.multihash)) {
-        throw new Error(`Segment CID ${segmentObj.multihash} been blacklisted by this node.`)
-      }
-    }))
-  } catch (e) {
-    // Prune upload artifacts
-    removeTrackFolder({ logContext }, requestProps.fileDir)
-
-    if (e.message.indexOf('blacklisted') >= 0) {
-      throw new Error(`Track upload failed - part or all of this track has been blacklisted by this node: ${e.toString()}`)
-    } else {
-      throw new Error(e.message)
-    }
   }
 
   // Record entries for transcode and segment files in DB
@@ -152,14 +134,14 @@ const handleTrackContentRoute = async ({ logContext }, requestProps, ipfs, black
     await transaction.rollback()
 
     // Prune upload artifacts
-    removeTrackFolder({ logContext }, requestProps.fileDir)
+    fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
 
     throw new Error(e.toString())
   }
   logger.info(`Time taken in /track_content_async for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
 
   // Prune upload artifacts after success
-  removeTrackFolder({ logContext }, requestProps.fileDir)
+  fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
 
   logger.info(`Time taken in /track_content_async for full route: ${Date.now() - routeTimeStart}ms for file ${requestProps.fileName}`)
   return {

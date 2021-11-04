@@ -202,7 +202,7 @@ def test_index_tracks(mock_index_task, app):
             entry,
             1,  # event track id
             block_number,
-            block_timestamp,
+            "0x",
             "0x",  # txhash
         )
 
@@ -236,6 +236,12 @@ def test_index_tracks(mock_index_task, app):
         )
         session.add(track_owner)
 
+        entry_multihash = helpers.multihash_digest_to_cid(
+            b"@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}"
+            + b"\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg"
+        )
+        track_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
+
         parse_track_event(
             None,  # self - not used
             session,
@@ -245,6 +251,7 @@ def test_index_tracks(mock_index_task, app):
             track_record,  # User ORM instance
             block_number,  # Used to forward to track uploads challenge
             block_timestamp,  # Used to update the user.updated_at field
+            track_metadata,
             pending_track_routes,
         )
 
@@ -255,12 +262,6 @@ def test_index_tracks(mock_index_task, app):
         assert track_record.created_at == datetime.utcfromtimestamp(block_timestamp)
         assert track_record.owner_id == entry.args._trackOwnerId
         assert track_record.is_delete == False
-
-        entry_multihash = helpers.multihash_digest_to_cid(
-            b"@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}"
-            + b"\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg"
-        )
-        track_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
 
         assert track_record.title == track_metadata["title"]
         assert track_record.length == 0
@@ -313,6 +314,13 @@ def test_index_tracks(mock_index_task, app):
         )
 
         event_type, entry = get_update_track_event()
+
+        entry_multihash = helpers.multihash_digest_to_cid(
+            b"\x93\x7f\xa2\xe6\xf0\xe5\xb5f\xca\x14(4m.B"
+            + b"\xba3\xf8\xc8<|%*{\x11\xc1\xe2/\xd7\xee\xd7q"
+        )
+        track_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
+
         parse_track_event(
             None,
             session,
@@ -322,13 +330,14 @@ def test_index_tracks(mock_index_task, app):
             track_record,
             block_number,
             block_timestamp,
+            track_metadata,
             pending_track_routes,
         )
 
         # Check that track routes are updated appropriately
         track_routes = session.query(TrackRoute).filter(TrackRoute.track_id == 1).all()
         # Should have the two routes created on track creation as well as two more for the update
-        assert len(track_routes) == 4, "Has four total routes after a track name update"
+        assert len(track_routes) == 2, "Has two total routes after a track name update"
         assert (
             len(
                 [
@@ -341,19 +350,8 @@ def test_index_tracks(mock_index_task, app):
             == 1
         ), "The current route is 'real-magic-bassy-flip-2'"
         assert (
-            len([route for route in track_routes if route.is_current is False]) == 3
-        ), "Three routes are marked non-current"
-        assert (
-            len(
-                [
-                    route
-                    for route in track_routes
-                    if route.slug == "real-magic-bassy-flip-2-1"
-                    or route.slug == "real-magic-bassy-flip-1"
-                ]
-            )
-            == 2
-        ), "Has both of the 'old-style' routes"
+            len([route for route in track_routes if route.is_current is False]) == 1
+        ), "One route is marked non-current"
         assert (
             len(
                 [
@@ -369,9 +367,9 @@ def test_index_tracks(mock_index_task, app):
         # ============== Test Track Route Collisions ===================
 
         # Attempts to insert a new track with the route "real-magic-bassy-flip"
-        # Should attempt to try to route to "real-magic-bassy-flip-1", but
+        # Should attempt to try to route to "real-magic-bassy-flip", but
         # that should be taken by the rename above, so the fallback logic
-        # should trigger making it go to "real-magic-bassy-flip-2"
+        # should trigger making it go to "real-magic-bassy-flip-1"
         event_type, entry = get_new_track_event_dupe()
         track_record_dupe = lookup_track_record(
             update_task,
@@ -383,6 +381,12 @@ def test_index_tracks(mock_index_task, app):
             "0x",  # txhash
         )
 
+        entry_multihash = helpers.multihash_digest_to_cid(
+            b"@\xfe\x1f\x02\xf3i%\xa5+\xec\x8dh\x82\xc5}"
+            + b"\x17\x91\xb9\xa1\x8dg j\xc0\xcd\x879K\x80\xf2\xdbg"
+        )
+        track_metadata = update_task.ipfs_client.get_metadata(entry_multihash, "", "")
+
         parse_track_event(
             None,
             session,
@@ -392,6 +396,7 @@ def test_index_tracks(mock_index_task, app):
             track_record_dupe,
             block_number,
             block_timestamp,
+            track_metadata,
             pending_track_routes,
         )
 
@@ -400,14 +405,15 @@ def test_index_tracks(mock_index_task, app):
         assert [
             route
             for route in track_routes
-            if route.slug == "real-magic-bassy-flip-3"
-            and route.collision_id == 3
+            if route.slug == "real-magic-bassy-flip-1"
+            and route.collision_id == 1
             and route.is_current is True
             and route.title_slug == "real-magic-bassy-flip"
-        ], "New route should be current and go to collision id 3"
+        ], "New route should be current and go to collision id 1"
 
-        # Another "real-magic-bassy-flip", which should find collision id 2 and
-        # easily jump to collision id 3 and not need fallback logic
+        # Another "real-magic-bassy-flip", which should find collision id 1 and
+        # easily jump to collision id 2, but then conflict with the rename above
+        # and require the additional failsafe collision detection to go to collision id 3
         event_type, entry = get_new_track_event_dupe()
 
         track_record_dupe = lookup_track_record(
@@ -429,6 +435,7 @@ def test_index_tracks(mock_index_task, app):
             track_record_dupe,
             block_number,
             block_timestamp,
+            track_metadata,
             pending_track_routes,
         )
 
@@ -439,9 +446,9 @@ def test_index_tracks(mock_index_task, app):
             for route in track_routes
             if route.is_current is True
             and route.title_slug == "real-magic-bassy-flip"
-            and route.slug == "real-magic-bassy-flip-4"
-            and route.collision_id == 4
-        ], "New route should be current and go to collision id 4"
+            and route.slug == "real-magic-bassy-flip-3"
+            and route.collision_id == 3
+        ], "New route should be current and go to collision id 3"
 
         # ================== Test Revert TrackRoute ===================
 
@@ -494,6 +501,7 @@ def test_index_tracks(mock_index_task, app):
             track_record,  # User ORM instance
             block_number,  # Used to forward to track uploads challenge
             block_timestamp,  # Used to update the user.updated_at field
+            None,
             pending_track_routes,
         )
 

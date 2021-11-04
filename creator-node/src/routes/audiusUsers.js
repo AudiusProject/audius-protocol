@@ -2,6 +2,7 @@ const { Buffer } = require('ipfs-http-client')
 const fs = require('fs')
 const { promisify } = require('util')
 
+const config = require('../config.js')
 const models = require('../models')
 const { saveFileFromBufferToIPFSAndDisk } = require('../fileManager')
 const { handleResponse, successResponse, errorResponseBadRequest, errorResponseServerError } = require('../apiHelpers')
@@ -18,12 +19,13 @@ const DBManager = require('../dbManager')
 
 const readFile = promisify(fs.readFile)
 
+const ENABLE_IPFS_ADD_METADATA = config.get('enableIPFSAddMetadata')
+
 module.exports = function (app) {
   /**
    * Create AudiusUser from provided metadata, and make metadata available to network
    */
   app.post('/audius_users/metadata', authMiddleware, ensurePrimaryMiddleware, ensureStorageMiddleware, syncLockMiddleware, handleResponse(async (req, res) => {
-    // TODO - input validation
     const metadataJSON = req.body.metadata
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const cnodeUserUUID = req.session.cnodeUserUUID
@@ -35,7 +37,7 @@ module.exports = function (app) {
     // Save file from buffer to IPFS and disk
     let multihash, dstPath
     try {
-      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer)
+      const resp = await saveFileFromBufferToIPFSAndDisk(req, metadataBuffer, ENABLE_IPFS_ADD_METADATA)
       multihash = resp.multihash
       dstPath = resp.dstPath
     } catch (e) {
@@ -77,11 +79,13 @@ module.exports = function (app) {
       return errorResponseBadRequest('Must include blockchainUserId, blockNumber, and metadataFileUUID.')
     }
 
-    // Error on outdated blocknumber.
     const cnodeUser = req.session.cnodeUser
-    if (!cnodeUser.latestBlockNumber || cnodeUser.latestBlockNumber >= blockNumber) {
-      return errorResponseBadRequest(`Invalid blockNumber param. Must be higher than previously processed blocknumber.`)
+    if (blockNumber < cnodeUser.latestBlockNumber) {
+      return errorResponseBadRequest(
+        `Invalid blockNumber param ${blockNumber}. Must be greater or equal to previously processed blocknumber ${cnodeUser.latestBlockNumber}.`
+      )
     }
+
     const cnodeUserUUID = req.session.cnodeUserUUID
 
     // Fetch metadataJSON for metadataFileUUID.

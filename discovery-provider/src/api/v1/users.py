@@ -1,4 +1,6 @@
 import logging
+from src.queries.get_top_users import get_top_users
+from src.queries.get_related_artists import get_related_artists
 from src.utils.helpers import encode_int_id
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.api.v1.playlists import get_tracks_for_playlist
@@ -507,6 +509,7 @@ class UserSearchResult(Resource):
     )
     @ns.marshal_with(user_search_result)
     @ns.expect(search_parser)
+    @cache(ttl_sec=600)
     def get(self):
         """Seach for a user."""
         args = search_parser.parse_args()
@@ -603,6 +606,35 @@ class FollowingUsers(Resource):
         return success_response(users)
 
 
+related_artist_route_parser = reqparse.RequestParser()
+related_artist_route_parser.add_argument("user_id", required=False)
+related_artist_route_parser.add_argument("limit", required=False, type=int)
+related_artist_response = make_full_response(
+    "related_artist_response", full_ns, fields.List(fields.Nested(user_model_full))
+)
+
+
+@full_ns.route("/<string:user_id>/related")
+class RelatedUsers(Resource):
+    @record_metrics
+    @full_ns.expect(related_artist_route_parser)
+    @full_ns.doc(
+        id="""Gets a list of users that might be of interest to followers of this user.""",
+        params={"user_id": "A User ID", "limit": "Limit"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.marshal_with(related_artist_response)
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        args = following_route_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        current_user_id = get_current_user_id(args)
+        decoded_id = decode_with_abort(user_id, full_ns)
+        users = get_related_artists(decoded_id, current_user_id, limit)
+        users = list(map(extend_user, users))
+        return success_response(users)
+
+
 top_genre_users_route_parser = reqparse.RequestParser()
 top_genre_users_route_parser.add_argument("genre", required=False, action="append")
 top_genre_users_route_parser.add_argument("limit", required=False, type=int)
@@ -636,6 +668,34 @@ class FullTopGenreUsers(Resource):
             get_top_genre_users_args["genre"] = args["genre"]
         top_users = get_top_genre_users(get_top_genre_users_args)
         users = list(map(extend_user, top_users["users"]))
+        return success_response(users)
+
+
+top_users_response_parser = reqparse.RequestParser()
+top_users_response_parser.add_argument("user_id", required=False)
+top_users_response_parser.add_argument("limit", required=False, type=int)
+top_users_response_parser.add_argument("offset", required=False, type=int)
+top_users_response = make_full_response(
+    "top_users_response", full_ns, fields.List(fields.Nested(user_model_full))
+)
+
+
+@full_ns.route("/top")
+class FullTopUsers(Resource):
+    @full_ns.expect(top_users_response)
+    @full_ns.doc(
+        id="""Get the Top Users having at least one track by follower count""",
+        params={"limit": "Limit", "offset": "Offset"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.marshal_with(top_users_response)
+    @cache(ttl_sec=60 * 60 * 24)
+    def get(self):
+        args = top_users_response_parser.parse_args()
+        current_user_id = get_current_user_id(args)
+
+        top_users = get_top_users(current_user_id)
+        users = list(map(extend_user, top_users))
         return success_response(users)
 
 
