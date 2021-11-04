@@ -1,4 +1,4 @@
-"""Add is_delete to users
+"""Add is_deactivated to users
 
 Revision ID: edccccc274a7
 Revises: e2a8aea2e2e1
@@ -19,9 +19,13 @@ depends_on = None
 def upgrade():
     op.add_column(
         "users",
-        sa.Column("is_deactivated", sa.Boolean(), server_default="false", nullable=False),
+        sa.Column(
+            "is_deactivated", sa.Boolean(), server_default="false", nullable=False
+        ),
     )
-    op.create_index(op.f("ix_users_is_deactivated"), "users", ["is_deactivated"], unique=False)
+    op.create_index(
+        op.f("ix_users_is_deactivated"), "users", ["is_deactivated"], unique=False
+    )
 
 
 def downgrade():
