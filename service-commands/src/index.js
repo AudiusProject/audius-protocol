@@ -10,7 +10,12 @@ const File = require('./commands/files')
 const IpldBlacklist = require('./commands/ipldBlacklist')
 const Playlist = require('./commands/playlists')
 const DataContracts = require('./commands/dataContracts')
-const Seed = require('./commands/seed')
+const SeedSession = require('./commands/seed')
+const {
+  RandomUtils,
+  SeedUtils,
+  Constants
+} = require('./utils')
 
 module.exports = {
   LibsWrapper,
@@ -22,5 +27,8 @@ module.exports = {
   ...IpldBlacklist,
   ...Playlist,
   ...DataContracts,
-  Seed
+  SeedSession,
+  RandomUtils,
+  SeedUtils,
+  Constants
 }

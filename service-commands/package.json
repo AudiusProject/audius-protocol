@@ -18,7 +18,17 @@
     "lodash": "^4.17.21",
     "node-fetch": "^2.6.0",
     "untildify": "^4.0.0",
+<<<<<<< HEAD
     "web3": "^1.2.7"
+=======
+    "web3": "^1.2.7",
+    "@solana/web3.js": "1.20.0",
+    "borsh": "^0.4.0",
+    "winston": "^3.2.1",
+    "lodash": "^4.17.15",
+    "fs-extra": "^9.0.1",
+    "random-picture": "^4.0.4"
+>>>>>>> [ASI-587] Refactor random utils used by both mad dog and seed into service commands to avoid circular dependency with mad dog
   },
   "devDependencies": {
     "dotenv": "^8.6.0",

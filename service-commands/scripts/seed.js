@@ -1,17 +1,27 @@
 const ServiceCommands = require('../src/index')
 const { program } = require('commander')
-const { Seed } = ServiceCommands
+const {
+    SeedSession,
+    RandomUtils,
+    SeedUtils,
+    Constants
+} = ServiceCommands
 const {
   parseMetadataIntoObject,
   camelToKebabCase,
-  getProgressCallback,
+  getProgressCallback
+} = SeedUtils
+const {
   getUserProvidedOrRandomTrackFilePath,
   getUserProvidedOrRandomImageFilePath,
   getUserProvidedOrRandomTrackMetadata,
-} = require('../src/commands/utils')
+} = RandomUtils
+const {
+  SERVICE_COMMANDS_PATH
+} = Constants
 
 const checkExecutedFromCorrectDirectory = () => {
-  if (process.cwd() !== `${process.env.PROTOCOL_DIR}/service-commands`) {
+  if (process.cwd() !== SERVICE_COMMANDS_PATH) {
     console.warn(
       'WARNING: `A seed` must be run from the service-commands directory. This is because of the way relative paths for node-localstorage work.'
     )
@@ -94,8 +104,8 @@ program
   )
   .action(async opts => {
     const { userAlias: alias, ...options } = opts.opts()
-    console.log(`Creating user with alias ${alias} and options: ${options}`)
-    const seed = new Seed()
+    console.log(`Creating user with alias ${alias} and options: ${JSON.stringify(options)}`)
+    const seed = new SeedSession()
     await seed.init()
     await seed.createUser(alias, options)
     process.exit(0)
@@ -108,7 +118,7 @@ program
   .action(async opts => {
     // TODO add reset state
     console.log('Clearing seed session...')
-    const seed = new Seed()
+    const seed = new SeedSession()
     await seed.clearSession()
     console.log('Seed session cleared.')
     process.exit(0)
@@ -131,11 +141,12 @@ program
       console.log(
         `Setting active user for seed session to userId ${userId} / alias ${alias}.`
       )
-      const seed = new Seed()
+      const seed = new SeedSession()
       await seed.setUser({ alias, userId })
       console.log(
         `Active user for seed session set to userId ${userId} / alias ${alias}.`
       )
+      process.exit(0)
     }
   })
 
@@ -163,8 +174,8 @@ Object.entries(CLI_TO_COMMAND_MAP).forEach(
 
     configuredProgram.action(async opts => {
       const { userId, ...options } = opts.opts()
-      const seed = new Seed()
-      console.log(`Running seed ${cliCommand} with options: ${options}`)
+      const seed = new SeedSession()
+      console.log(`Running seed ${cliCommand} with options: ${JSON.stringify(options)}`)
       let userIdToSet = userId
       if (!userIdToSet) {
         // try to set from cache

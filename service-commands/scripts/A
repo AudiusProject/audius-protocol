@@ -494,7 +494,7 @@ def main():
             )
     except argparse.ArgumentError:
         if sys.argv[1] == 'seed':
-            script_name = 'seedCli.js'
+            script_name = 'seed.js'
             args = sys.argv[2:]
         else:
             script_name = 'setup.js'

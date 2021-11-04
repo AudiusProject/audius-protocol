@@ -1,0 +1,76 @@
+const fs = require('fs')
+
+const {
+  Constants
+} = require('../../utils')
+
+const {
+  SEED_USER_CACHE_PATH
+} = Constants
+
+class UserCache {
+    constructor() {
+      this.USER_CACHE_PATH = SEED_USER_CACHE_PATH
+    }
+
+    update = (cacheObject) => {
+      fs.writeFileSync(this.USER_CACHE_PATH, JSON.stringify(cacheObject))
+      return
+    }
+
+    getActiveUser = () => {
+      const cache = this.get()
+      const activeAlias = cache['active']
+      return cache[activeAlias] || {}
+    }
+
+    setActiveUser = alias => {
+      let cache = this.get()
+      cache['active'] = alias
+      this.update(cache)
+    }
+
+    addUser = ({ alias, hedgehogEntropyKey, userId = null }) => {
+      let cache = this.get()
+      cache[alias] = {
+        userId,
+        hedgehogEntropyKey
+      }
+      this.update(cache)
+    }
+
+    addLoginDetails = ({ entropy, email, password }) => {
+      const match = ([alias, { hedgehogEntropyKey }]) => {
+        return hedgehogEntropyKey === entropy
+      }
+      let cache = this.get()
+      const [alias, info] = Object.entries(cache).find(match)
+      cache[alias] = Object.assign(info, { email, password })
+      this.update(cache)
+    }
+
+    get = () => {
+      let cache
+      if (fs.existsSync(this.USER_CACHE_PATH)) {
+        cache = JSON.parse(fs.readFileSync(this.USER_CACHE_PATH))
+      } else {
+        cache = {}
+      }
+      return cache
+    }
+
+    findUser = ({ alias, userId }) => {
+      const cache = this.get()
+      const match = ([cacheAlias, { userId: cacheUserId }]) => {
+        return alias === cacheAlias || userId == cacheUserId
+      }
+      const [userAlias, userDetails] = Object.entries(cache).find(match) || {}
+      return Object.assign(userDetails, { userAlias })
+    }
+
+    clear = () => {
+      this.update({})
+    }
+  }
+
+  module.exports = UserCache
