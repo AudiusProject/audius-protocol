@@ -32,7 +32,9 @@ TEST_CONFIG_OVERRIDE = {
         "run_migrations": "true",
     },
     "web3": {
-        "eth_provider_url": "http://127.0.0.1:8555",
+        "host": "localhost",
+        "port": "8545",
+        "eth_provider_url": "http://localhost:8545",
     },
 }
 
