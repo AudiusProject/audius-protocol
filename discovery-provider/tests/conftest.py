@@ -30,7 +30,10 @@ TEST_CONFIG_OVERRIDE = {
         "url_read_replica": DB_URL,
         "engine_args_literal": ENGINE_ARGS_LITERAL,
         "run_migrations": "true",
-    }
+    },
+    "web3": {
+        "eth_provider_url": "http://127.0.0.1:8555",
+    },
 }
 
 
@@ -135,6 +138,7 @@ def contracts(app):  # pylint: disable=redefined-outer-name
 
 
 postgresql_my = factories.postgresql("postgresql_nooproc")
+
 
 # Returns Postgres DB session, and configures
 # SQLAlchemy to use said connection.
