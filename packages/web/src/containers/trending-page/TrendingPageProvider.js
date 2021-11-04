@@ -110,8 +110,6 @@ class TrendingPageProvider extends PureComponent {
       this.props.makeResetTrending(TimeRange.WEEK)()
       this.props.makeResetTrending(TimeRange.MONTH)()
       this.props.makeResetTrending(TimeRange.YEAR)()
-      this.props.setTrendingGenre(null)
-      this.props.setTrendingTimeRange(TimeRange.WEEK)
     }
   }
 
