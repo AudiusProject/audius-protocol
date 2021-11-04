@@ -37,6 +37,8 @@ pub fn find_program_address_with_seed(
     Pubkey::find_program_address(&[&base.to_bytes()[..32], seed], program_id)
 }
 
+/// Finds a program address, using nonce account as seed
+/// 'base'
 pub fn find_nonce_address(
     program_id: &Pubkey,
     mint: &Pubkey,
@@ -46,13 +48,6 @@ pub fn find_nonce_address(
     // Generating base address for nonce acct from mint
     let (base_pubkey, _) = find_base_address(mint, program_id);
 
-    // Generating derived address for nonce account with nonce acct seed
-    // let derived_seed = bs58::encode(nonce_acct_seed).into_string();
-    // let (derived_key, derived_seed_return) = Pubkey::create_with_seed(
-    //     &base_pubkey,
-    //     derived_seed.as_str(),
-    //     program_id
-    // ).map(|i| (i, derived_seed)).unwrap();
     let (derived_address, bump_seed) =
         find_program_address_with_seed(program_id, &base_pubkey, &nonce_acct_seed);
 

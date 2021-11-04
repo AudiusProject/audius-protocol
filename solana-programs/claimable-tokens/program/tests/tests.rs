@@ -13,6 +13,7 @@ use solana_program::instruction::{Instruction, InstructionError};
 use solana_program::secp256k1_program;
 use solana_program::{program_pack::Pack, pubkey::Pubkey, system_instruction};
 use solana_program_test::*;
+use solana_sdk::nonce_account;
 use solana_sdk::transaction::TransactionError;
 use solana_sdk::{
     account::Account,
@@ -82,13 +83,27 @@ fn assert_custom_error(
     }
 }
 
-pub async fn get_account(program_context: &mut ProgramTestContext, pubkey: &Pubkey) -> Account {
+async fn get_user_account_nonce(context: & mut ProgramTestContext, account: &Pubkey) -> u64 {
+    let nonce_acct_info = get_account(
+        context,
+        &account
+    ).await;
+    if nonce_acct_info.is_none() {
+        return 0;
+    }
+    let nonce_acct_data = NonceAccount::unpack(&nonce_acct_info.unwrap().data.as_slice()).unwrap();
+    return nonce_acct_data.nonce;
+}
+
+pub async fn get_account(
+    program_context: &mut ProgramTestContext,
+    pubkey: &Pubkey,
+) -> Option<Account> {
     program_context
         .banks_client
         .get_account(*pubkey)
         .await
         .expect("account not found")
-        .expect("account empty")
 }
 
 async fn create_token_account(
@@ -641,6 +656,8 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
 */
 
 
+
+// Verify that identical instructions cannot be reused 2x
 #[tokio::test]
 async fn transfer_replay_instruction() {
     let mut program_context = program_test().start_with_context().await;
@@ -657,8 +674,6 @@ async fn transfer_replay_instruction() {
     ) = init_test_variables();
 
     let mint_pubkey = mint_account.pubkey();
-    // let message = user_token_account.pubkey().to_bytes();
-    // let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
     let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
         &mut program_context,
         mint_account,
@@ -669,26 +684,25 @@ async fn transfer_replay_instruction() {
     )
     .await;
     let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
-
-    let transfer_instr_data = TransferInstructionData {
-        target_pubkey: user_token_account.pubkey(),
-        amount: transfer_amount,
-        nonce: 1
-    };
-
-    let encoded = transfer_instr_data.try_to_vec().unwrap();
-    let decoded = TransferInstructionData::try_from_slice(&encoded).unwrap();
-    let secp256_program_instruction_2 = new_secp256k1_instruction(&priv_key, &encoded);
-
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
-    let (base_key,nonce_account, _) = find_nonce_address(
+    let (_, nonce_account, _) = find_nonce_address(
         &id(),
         &mint_pubkey,
         &nonce_acct_seed
     );
 
+    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let transfer_instr_data = TransferInstructionData {
+        target_pubkey: user_token_account.pubkey(),
+        amount: transfer_amount,
+        nonce: current_user_nonce + 1
+    };
+
+    let encoded = transfer_instr_data.try_to_vec().unwrap();
+    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &encoded);
+
     let instructions = [
-        secp256_program_instruction_2.clone(),
+        secp256_program_instruction.clone(),
         instruction::transfer(
             &id(),
             &program_context.payer.pubkey(),
@@ -716,37 +730,36 @@ async fn transfer_replay_instruction() {
         .await
         .unwrap();
 
-    println!("Verifying NONCE");
-    let nonce_acct_info = get_account(&mut program_context, &nonce_account).await;
-    let nonce_acct_data = NonceAccount::unpack(&nonce_acct_info.data.as_slice()).unwrap();
-    println!("nonce_acct_data {:?}", nonce_acct_data);
-    assert_eq!(nonce_acct_data.nonce, transfer_instr_data.nonce);
+    let final_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
+    assert_eq!(transfer_instr_data.nonce, final_user_nonce);
 
-    return;
-    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await;
+    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await.unwrap();
     let bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     // check that program sent required number tokens from bank token account to user token account
     assert_eq!(bank_token_account.amount, tokens_amount - transfer_amount);
 
     let user_token_account_data =
-        get_account(&mut program_context, &user_token_account.pubkey()).await;
+        get_account(&mut program_context, &user_token_account.pubkey()).await.unwrap();
     let user_token_account =
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
 
     assert_eq!(user_token_account.amount, transfer_amount);
-
-    print!("INSTRUCTIONS - {:?}", instructions);
     let mut transaction2 = Transaction::new_with_payer(
         &instructions,
         Some(&program_context.payer.pubkey()),
     );
-    transaction2.sign(&[&program_context.payer], program_context.last_blockhash);
-    program_context
+    let recent_blockhash = program_context.banks_client.get_recent_blockhash().await.unwrap();
+    transaction2.sign(&[&program_context.payer], recent_blockhash);
+    let tx_result = program_context
         .banks_client
         .process_transaction(transaction2)
-        .await
-        .unwrap();
+        .await;
+    assert_custom_error(
+        tx_result,
+        1,
+        ClaimableProgramError::NonceVerificationError,
+    );
 }
 
 /*

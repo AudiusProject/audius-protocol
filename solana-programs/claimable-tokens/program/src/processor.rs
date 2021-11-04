@@ -309,6 +309,7 @@ impl Processor {
         amount: u64,
         rent: &Rent,
     ) -> ProgramResult {
+        println!("checking ethereum sign");
         if !sysvar::instructions::check_id(&instruction_info.key) {
             return Err(ClaimableProgramError::Secp256InstructionLosing.into());
         }
@@ -366,6 +367,7 @@ impl Processor {
 
         let nonce_acct_lamports = nonce_account_info.lamports();
         if nonce_acct_lamports == 0 {
+            // Create user nonce account if not found
             let signature = &[
                 &authority.key.to_bytes()[..32],
                 &nonce_acct_seed.as_slice(),
@@ -389,9 +391,9 @@ impl Processor {
         let current_chain_nonce = current_nonce_account.nonce;
         NonceAccount::pack(current_nonce_account, *nonce_account_info.data.borrow_mut())?;
 
-        // Error if invalid
+        // Error if invalid nonce provided by user
         if transfer_data.nonce != current_chain_nonce {
-            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+            return Err(ClaimableProgramError::NonceVerificationError.into());
         }
 
         Ok(())
@@ -448,8 +450,6 @@ impl Processor {
 
         let instruction_message = secp_instruction_data[message_data_offset..].to_vec();
         let decoded_instr_data = TransferInstructionData::try_from_slice(&instruction_message).unwrap();
-        msg!("decoded_instr_data {:?}", decoded_instr_data);
-        msg!("decoded_instr_data2 {:?}", decoded_instr_data.target_pubkey.to_bytes());
 
         if decoded_instr_data.target_pubkey.to_bytes() != *expected_message {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
