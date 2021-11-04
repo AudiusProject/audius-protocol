@@ -388,10 +388,7 @@ async fn transfer_all_instruction() {
                 &user_token_account.pubkey(),
                 &nonce_account,
                 &base_acc,
-                instruction::Transfer {
-                    eth_address,
-                    amount: bank_token_account.amount,
-                },
+                eth_address.clone(),
             )
             .unwrap(),
         ],
@@ -532,8 +529,6 @@ async fn transfer_with_amount_instruction_secp_offsets_exploit() {
         .await
         .is_ok());
 
-    let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
-
     let fake_secp_instruction_2 = Instruction {
         program_id: secp256k1_program::id(),
         accounts: vec![],
@@ -549,10 +544,7 @@ async fn transfer_with_amount_instruction_secp_offsets_exploit() {
                 &user_token_account.pubkey(),
                 &nonce_account,
                 &base_acc,
-                instruction::Transfer {
-                    eth_address,
-                    amount: transfer_amount,
-                },
+                eth_address.clone(),
             )
             .unwrap(),
         ],
@@ -666,10 +658,7 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
                 &user_token_account.pubkey(),
                 &nonce_account,
                 &base_acc,
-                instruction::Transfer {
-                    eth_address,
-                    amount: transfer_amount,
-                },
+                eth_address.clone(),
             )
             .unwrap(),
         ],
@@ -699,80 +688,6 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
     let user_token_account =
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
     assert_eq!(user_token_account.amount, 0);
-}
-
-// Test to verify signed amount requirement
-// Ensures that a different amount from the signed data cannot be invoked
-#[tokio::test]
-async fn transfer_amount_mismatch() {
-    let mut program_context = program_test().start_with_context().await;
-    let rent = program_context.banks_client.get_rent().await.unwrap();
-    let (
-        _rng,
-        _key,
-        priv_key,
-        _secp_pubkey,
-        mint_account,
-        mint_authority,
-        user_token_account,
-        eth_address,
-    ) = init_test_variables();
-
-    let mint_pubkey = mint_account.pubkey();
-    let (base_acc, user_bank_account, _) = prepare_transfer(
-        &mut program_context,
-        mint_account,
-        rent,
-        mint_authority,
-        eth_address,
-        &user_token_account,
-    )
-    .await;
-    // Transfer a single token for reuse
-    let transfer_amount = 1;
-    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
-    let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
-
-    let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
-    let transfer_instr_data = TransferInstructionData {
-        target_pubkey: user_token_account.pubkey(),
-        amount: transfer_amount + 1,
-        nonce: current_user_nonce + 1,
-    };
-
-    let encoded = transfer_instr_data.try_to_vec().unwrap();
-    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &encoded);
-
-    let instructions = [
-        secp256_program_instruction.clone(),
-        instruction::transfer(
-            &id(),
-            &program_context.payer.pubkey(),
-            &user_bank_account,
-            &user_token_account.pubkey(),
-            &nonce_account,
-            &base_acc,
-            instruction::Transfer {
-                eth_address,
-                amount: transfer_amount,
-            },
-        )
-        .unwrap(),
-    ];
-
-    let mut transaction =
-        Transaction::new_with_payer(&instructions, Some(&program_context.payer.pubkey()));
-
-    transaction.sign(&[&program_context.payer], program_context.last_blockhash);
-    let tx_result = program_context
-        .banks_client
-        .process_transaction(transaction)
-        .await;
-    assert_custom_error(
-        tx_result,
-        1,
-        ClaimableProgramError::SignatureVerificationFailed,
-    )
 }
 
 // Test to verify nonce incrementing across multiple transfers
@@ -830,10 +745,7 @@ async fn transfer_nonce_increment() {
                 &user_token_account.pubkey(),
                 &nonce_account,
                 &base_acc,
-                instruction::Transfer {
-                    eth_address,
-                    amount: transfer_amount,
-                },
+                eth_address.clone(),
             )
             .unwrap(),
         ];
@@ -920,10 +832,7 @@ async fn transfer_replay_instruction() {
             &user_token_account.pubkey(),
             &nonce_account,
             &base_acc,
-            instruction::Transfer {
-                eth_address,
-                amount: transfer_amount,
-            },
+            eth_address.clone(),
         )
         .unwrap(),
     ];
@@ -1020,10 +929,7 @@ async fn transfer_with_amount_instruction() {
                 &user_token_account.pubkey(),
                 &nonce_account,
                 &base_acc,
-                instruction::Transfer {
-                    eth_address,
-                    amount: transfer_amount,
-                },
+                eth_address.clone(),
             )
             .unwrap(),
         ],
@@ -1103,10 +1009,7 @@ async fn transfer_with_zero_amount_failure() {
                 &user_token_account.pubkey(),
                 &nonce_account,
                 &base_acc,
-                instruction::Transfer {
-                    eth_address,
-                    amount: transfer_amount,
-                },
+                eth_address.clone(),
             )
             .unwrap(),
         ],
@@ -1176,10 +1079,7 @@ async fn transfer_with_wrong_signature_instruction() {
                 &user_token_account.pubkey(),
                 &nonce_account,
                 &base_acc,
-                instruction::Transfer {
-                    eth_address,
-                    amount: 0,
-                },
+                eth_address.clone(),
             )
             .unwrap(),
         ],
@@ -1256,10 +1156,7 @@ async fn transfer_with_wrong_token_account() {
                 &Keypair::new().pubkey(),
                 &nonce_account,
                 &base_acc,
-                instruction::Transfer {
-                    eth_address,
-                    amount: 0,
-                },
+                eth_address.clone(),
             )
             .unwrap(),
         ],
@@ -1307,7 +1204,6 @@ async fn missing_secp_instruction() {
         &user_token_account,
     )
     .await;
-    let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
     let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
 
@@ -1320,10 +1216,7 @@ async fn missing_secp_instruction() {
             &user_token_account.pubkey(),
             &nonce_account,
             &base_acc,
-            instruction::Transfer {
-                eth_address,
-                amount: transfer_amount,
-            },
+            eth_address.clone(),
         )
         .unwrap()],
         Some(&program_context.payer.pubkey()),
@@ -1396,10 +1289,7 @@ async fn transfer_invalid_amount() {
                 &user_token_account.pubkey(),
                 &nonce_account,
                 &base_acc,
-                instruction::Transfer {
-                    eth_address,
-                    amount: transfer_amount,
-                },
+                eth_address.clone(),
             )
             .unwrap(),
         ],

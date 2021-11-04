@@ -47,7 +47,7 @@ pub enum ClaimableProgramInstruction {
     ///   2. `[r]` Banks token account authority
     ///   3. `[r]` Sysvar instruction id
     ///   4. `[r]` SPL token account id
-    Transfer(Transfer),
+    Transfer(EthereumAddress),
 }
 
 /// Create `CreateTokenAccount` instruction
@@ -88,7 +88,7 @@ pub fn transfer(
     users_token_acc: &Pubkey,
     users_nonce_acc: &Pubkey,
     authority: &Pubkey,
-    eth_address: Transfer,
+    eth_address: EthereumAddress,
 ) -> Result<Instruction, ProgramError> {
     let data = ClaimableProgramInstruction::Transfer(eth_address).try_to_vec()?;
     let accounts = vec![

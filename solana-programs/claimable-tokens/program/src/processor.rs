@@ -98,9 +98,8 @@ impl Processor {
         authority_account_info: &AccountInfo<'a>,
         instruction_info: &AccountInfo<'a>,
         eth_address: EthereumAddress,
-        amount: u64,
     ) -> ProgramResult {
-        Self::check_ethereum_sign(
+        let signed_amount = Self::check_ethereum_sign(
             program_id,
             funder_account_info,
             instruction_info,
@@ -109,7 +108,6 @@ impl Processor {
             authority_account_info,
             &eth_address,
             &destination_account_info.key.to_bytes(),
-            amount,
             rent,
         )?;
         Self::token_transfer(
@@ -118,7 +116,7 @@ impl Processor {
             authority_account_info.clone(),
             program_id,
             eth_address,
-            amount,
+            signed_amount,
         )
     }
 
@@ -152,7 +150,7 @@ impl Processor {
                     eth_address.eth_address,
                 )
             }
-            ClaimableProgramInstruction::Transfer(instruction) => {
+            ClaimableProgramInstruction::Transfer(eth_address) => {
                 msg!("Instruction: Transfer");
 
                 let funder_account_info = next_account_info(account_info_iter)?;
@@ -175,8 +173,7 @@ impl Processor {
                     nonce_account_info,
                     authority_account_info,
                     instruction_info,
-                    instruction.eth_address,
-                    instruction.amount,
+                    eth_address,
                 )
             }
         }
@@ -310,9 +307,8 @@ impl Processor {
         authority: &AccountInfo<'a>,
         expected_signer: &EthereumAddress,
         expected_message: &[u8],
-        amount: u64,
         rent: &Rent,
-    ) -> ProgramResult {
+    ) -> Result<u64, ProgramError> {
         if !sysvar::instructions::check_id(&instruction_info.key) {
             return Err(ClaimableProgramError::Secp256InstructionLosing.into());
         }
@@ -346,10 +342,6 @@ impl Processor {
             instruction.data,
             secp_program_index as u8,
         )?;
-
-        if amount != transfer_data.amount {
-            return Err(ClaimableProgramError::SignatureVerificationFailed.into());
-        }
 
         let token_account_info =
             spl_token::state::Account::unpack(&banks_token_account_info.data.borrow())?;
@@ -397,7 +389,7 @@ impl Processor {
             return Err(ClaimableProgramError::NonceVerificationError.into());
         }
 
-        Ok(())
+        Ok(transfer_data.amount)
     }
 
     /// Checks that message inside instruction was signed by expected signer
