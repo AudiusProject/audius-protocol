@@ -847,6 +847,7 @@ async fn transfer_with_amount_instruction() {
 
     assert_eq!(user_token_account.amount, transfer_amount);
 }
+*/
 
 #[tokio::test]
 async fn transfer_with_zero_amount_failure() {
@@ -863,8 +864,7 @@ async fn transfer_with_zero_amount_failure() {
         eth_address,
     ) = init_test_variables();
 
-    let message = user_token_account.pubkey().to_bytes();
-    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
+    let mint_pubkey = mint_account.pubkey();
     let (base_acc, user_bank_account, _tokens_amount) = prepare_transfer(
         &mut program_context,
         mint_account,
@@ -874,14 +874,34 @@ async fn transfer_with_zero_amount_failure() {
         &user_token_account,
     )
     .await;
+
     let transfer_amount = 0;
+    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
+    let (_, nonce_account, _) = find_nonce_address(
+        &id(),
+        &mint_pubkey,
+        &nonce_acct_seed
+    );
+
+    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let transfer_instr_data = TransferInstructionData {
+        target_pubkey: user_token_account.pubkey(),
+        amount: transfer_amount,
+        nonce: current_user_nonce + 1
+    };
+
+    let encoded = transfer_instr_data.try_to_vec().unwrap();
+    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &encoded);
+
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction,
             instruction::transfer(
                 &id(),
+                &program_context.payer.pubkey(),
                 &user_bank_account,
                 &user_token_account.pubkey(),
+                &nonce_account,
                 &base_acc,
                 instruction::Transfer {
                     eth_address,
@@ -928,8 +948,16 @@ async fn transfer_with_wrong_signature_instruction() {
         eth_address,
     ) = init_test_variables();
 
-    // Use bad_message instead of the user token account pubkey for the program instruction
-    let bad_message = [8u8; 30];
+    let mint_pubkey = mint_account.pubkey();
+
+    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
+    let (_, nonce_account, _) = find_nonce_address(
+        &id(),
+        &mint_pubkey,
+        &nonce_acct_seed
+    );
+    // Use bad_message instead of the TransferInstructionData for the program instruction
+    let bad_message = [8u8; 48];
     let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &bad_message);
 
     let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
@@ -947,8 +975,10 @@ async fn transfer_with_wrong_signature_instruction() {
             secp256_program_instruction,
             instruction::transfer(
                 &id(),
+                &program_context.payer.pubkey(),
                 &user_bank_account,
                 &user_token_account.pubkey(),
+                &nonce_account,
                 &base_acc,
                 instruction::Transfer {
                     eth_address,
@@ -967,21 +997,19 @@ async fn transfer_with_wrong_signature_instruction() {
         .await;
     assert!(tx_result.is_err());
 
-    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await;
+    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await.unwrap();
     let bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     // check that bank token accounts balance the same
     assert_eq!(bank_token_account.amount, tokens_amount);
 
     let user_token_account_data =
-        get_account(&mut program_context, &user_token_account.pubkey()).await;
+        get_account(&mut program_context, &user_token_account.pubkey()).await.unwrap();
     let user_token_account =
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
 
     assert_eq!(user_token_account.amount, 0);
 }
-
-*/
 
 #[tokio::test]
 async fn transfer_with_wrong_token_account() {

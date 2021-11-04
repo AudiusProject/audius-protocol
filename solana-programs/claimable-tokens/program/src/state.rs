@@ -3,6 +3,7 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{msg, program_error::ProgramError, program_pack::{IsInitialized, Pack, Sealed}, pubkey::Pubkey};
 
 /// Transfer instruction data
+/// Size = 32 (Pubkey) + 8 (u64) + 8 (u64)
 #[derive(BorshSerialize, BorshDeserialize, Clone, Debug, PartialEq)]
 pub struct TransferInstructionData {
     /// Transfer target pub key
