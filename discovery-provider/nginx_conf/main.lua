@@ -85,7 +85,7 @@ function get_redirect_args ()
     return config.public_url, nonce, ngx.encode_base64(sig)
 end
 
-function _M.rate_limit ()
+function _M.limit_to_rps ()
     if not config.rate_limiting_enabled then
         return
     end
@@ -105,7 +105,7 @@ function _M.rate_limit ()
     end
 
     -- limit_count.new(store, count, time_window in seconds)
-    local lim, err = limit_count.new("limit_count_store", config.rate_limit, 1)
+    local lim, err = limit_count.new("limit_count_store", config.limit_to_rps, 1)
     if not lim then
         ngx.log(ngx.ERR, "failed to instantiate a resty.limit.req object: ", err)
         return ngx.exit(500)
