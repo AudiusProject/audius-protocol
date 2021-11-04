@@ -67,7 +67,12 @@ class SeedSession {
     } else {
       metadata = Object.assign(randomMetadata, metadata)
     }
-    const signUpResponse = await this.libs.Account.signUp(email, password, metadata)
+    let signUpResponse
+    try {
+      signUpResponse = await this.libs.Account.signUp(email, password, metadata)
+    } catch (error) {
+      console.log(error, signUpResponse)
+    }
     if (signUpResponse.error) {
       throw new Error(signUpResponse.error)
     } else {
@@ -79,6 +84,7 @@ class SeedSession {
       this.cache.addUser({ alias, hedgehogEntropyKey, userId })
       this.cache.addLoginDetails({ entropy: hedgehogEntropyKey, email, password })
       this.cache.setActiveUser(alias)
+      console.log(`Successfully seeded user with id: ${userId} and alias: ${alias}`)
       return
     }
   }

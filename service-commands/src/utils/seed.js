@@ -107,6 +107,18 @@ const getUserProvidedOrRandomTrackMetadata = userProvidedMetadataInput => {
   return metadataObj
 }
 
+const parseSeedActionRepeatCount = userInput => {
+  let count
+  if (userInput) {
+    try {
+      count = Number(userInput)
+    } catch (e) {
+      throw new Error(`${userInput} cannot be converted to a number for repeating seed actions.`)
+    }
+  }
+  return count
+}
+
 module.exports = {
   getLibsConfig,
   camelToKebabCase,
@@ -115,5 +127,6 @@ module.exports = {
   getUserProvidedOrRandomTrackFilePath,
   getUserProvidedOrRandomImageFilePath,
   getUserProvidedOrRandomTrackMetadata,
-  getProgressCallback
+  getProgressCallback,
+  parseSeedActionRepeatCount
 }
