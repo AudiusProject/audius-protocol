@@ -1,3 +1,4 @@
+const fs = require('fs')
 const AudiusLibs = require('@audius/libs')
 const {
   TEMP_IMAGE_STORAGE_PATH,
@@ -70,24 +71,24 @@ const parseMetadataIntoObject = (commaSeparatedKeyValuePairs, rootObject = {}) =
   return metadata
 }
 
-const getUserProvidedOrRandomTrackFilePath = async manualOverridePath => {
-  let result
-  if (manualOverridePath) {
-    result = manualOverridePath
+const getUserProvidedOrRandomTrackFile = async userInputPath => {
+  let path
+  if (userInputPath !== 'random') {
+    path = userInputPath
   } else {
-    result = await getRandomTrackFilePath(TEMP_TRACK_STORAGE_PATH)
+    path = await getRandomTrackFilePath(TEMP_TRACK_STORAGE_PATH)
   }
-  return result
+  return fs.createReadStream(path)
 }
 
-const getUserProvidedOrRandomImageFilePath = async manualOverridePath => {
-  let result
-  if (manualOverridePath) {
-    result = manualOverridePath
+const getUserProvidedOrRandomImageFile = async userInputPath => {
+  let path
+  if (userInputPath !== 'random') {
+    path = userInputPath
   } else {
-    result = await getRandomImageFilePath(TEMP_IMAGE_STORAGE_PATH)
+    path = await getRandomImageFilePath(TEMP_IMAGE_STORAGE_PATH)
   }
-  return result
+  return fs.createReadStream(path)
 }
 
 const getProgressCallback = () => {
@@ -100,7 +101,7 @@ const getProgressCallback = () => {
 const getUserProvidedOrRandomTrackMetadata = userProvidedMetadataInput => {
   // TODO userId passthrough
   let metadataObj = getRandomTrackMetadata()
-  if (userProvidedMetadataInput) {
+  if (userProvidedMetadataInput !== 'random') {
     const userProvidedMetadata = parseMetadataIntoObject(userProvidedMetadataInput)
     metadataObj = Object.assign(metadataObj, userProvidedMetadata)
   }
@@ -119,14 +120,23 @@ const parseSeedActionRepeatCount = userInput => {
   return count
 }
 
+const passThroughUserInput = userInput => userInput
+
+const getRandomUserIdFromCurrentSeedSessionCache = () => {}
+
+const getRandomTrackIdFromCurrentSeedSessionCache = () => {}
+
 module.exports = {
   getLibsConfig,
   camelToKebabCase,
   kebabToCamelCase,
   parseMetadataIntoObject,
-  getUserProvidedOrRandomTrackFilePath,
-  getUserProvidedOrRandomImageFilePath,
+  getUserProvidedOrRandomTrackFile,
+  getUserProvidedOrRandomImageFile,
   getUserProvidedOrRandomTrackMetadata,
   getProgressCallback,
-  parseSeedActionRepeatCount
+  parseSeedActionRepeatCount,
+  passThroughUserInput,
+  getRandomUserIdFromCurrentSeedSessionCache,
+  getRandomTrackIdFromCurrentSeedSessionCache
 }

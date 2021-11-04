@@ -1,5 +1,6 @@
+const fs = require('fs')
+const { program, option } = require('commander')
 const ServiceCommands = require('../src/index')
-const { program } = require('commander')
 const _ = require('lodash')
 const colors = require('colors')
 
@@ -14,14 +15,14 @@ const {
   parseMetadataIntoObject,
   camelToKebabCase,
   getProgressCallback,
-  parseSeedActionRepeatCount
-} = SeedUtils
-
-const {
-  getUserProvidedOrRandomTrackFilePath,
-  getUserProvidedOrRandomImageFilePath,
+  parseSeedActionRepeatCount,
+  getUserProvidedOrRandomTrackFile,
+  getUserProvidedOrRandomImageFile,
   getUserProvidedOrRandomTrackMetadata,
-} = RandomUtils
+  getRandomUserIdFromCurrentSeedSessionCache,
+  getRandomTrackIdFromCurrentSeedSessionCache,
+  passThroughUserInput
+} = SeedUtils
 
 const {
   SERVICE_COMMANDS_PATH
@@ -43,8 +44,13 @@ const checkExecutedFromCorrectDirectory = () => {
   }
 }
 
+// This is the entrypoint for adding new methods.
+
 // params must be in order of original params in fn signature of libs API method
 // all commands accept -id or --user-id param to set user that is performing the action.
+
+// each param has an optional defaultHandler which combines/handles user-provided value asynchronously/
+// provides randomized or default value for option when user-provided value is unavailable.
 const CLI_TO_COMMAND_MAP = {
   'upload-track': {
     api: 'Track',
@@ -54,22 +60,26 @@ const CLI_TO_COMMAND_MAP = {
       {
         name: 'trackFile',
         description: 'path to track file on local FS',
-        handler: getUserProvidedOrRandomTrackFilePath
+        userInputHandler: fs.ensureFileSync,
+        defaultHandler: getUserProvidedOrRandomTrackFile,
+        // successHandler:
       },
       {
         name: 'coverArtFile',
         description: 'path to cover art file on local FS',
-        handler: getUserProvidedOrRandomImageFilePath
+        userInputHandler: fs.ensureFileSync,
+        defaultHandler: getUserProvidedOrRandomImageFile,
       },
       {
         name: 'metadata',
         description: 'metadata for track in comma-separated string',
-        handler: getUserProvidedOrRandomTrackMetadata
+        userInputHandler: parseMetadataIntoObject,
+        defaultHandler: getUserProvidedOrRandomTrackMetadata,
       },
       {
         name: 'onProgress',
-        description: 'optional non-configurable callback to be called on progress that ',
-        handler: getProgressCallback
+        description: 'non-configurable; this is hardcoded to log out upload progress to console',
+        defaultHandler: getProgressCallback
       }
     ]
   },
@@ -80,20 +90,20 @@ const CLI_TO_COMMAND_MAP = {
     params: [
       {
         name: 'followeeUserId',
-        description: 'user ID of user receiving the follow'
-        // TODO add random existing user ID from current cached seed session, when available?
+        description: 'user ID of user receiving the follow',
+        defaultHandler: getRandomUserIdFromCurrentSeedSessionCache
       }
     ]
   },
-  'add-track-repost': {
+  'repost-track': {
     api: 'Track',
     description: 'add track repost by user',
     method: 'addTrackRepost',
     params: [
       {
         name: 'trackId',
-        description: 'track ID of track receiving the repost'
-        // TODO add random existing track ID from current cached seed session, when available?
+        description: 'track ID of track receiving the repost',
+        defaultHandler: getRandomTrackIdFromCurrentSeedSessionCache
       }
     ]
   }
@@ -186,13 +196,17 @@ Object.entries(CLI_TO_COMMAND_MAP).forEach(
       )
 
     params.forEach(param => {
-      const { name, description, handler } = param
+      let { name, description, userInputHandler } = param
+      if (!userInputHandler) {
+        userInputHandler = passThroughUserInput
+      }
       const cliOption = camelToKebabCase(name)
       const shortOption = cliOption.charAt(0)
       configuredProgram = configuredProgram.option(
         `-${shortOption} --${cliOption} <value>`,
         description,
-        handler
+        userInputHandler,
+        ''
       )
     })
 
@@ -216,8 +230,13 @@ Object.entries(CLI_TO_COMMAND_MAP).forEach(
       }
       await seed.setUser({ userId: userIdToSet })
       console.log(`Calling libs.${api}.${method} to seed...`.info)
-      // TODO pass through current seed session so that helper methods to hadnle options can pull from cache
-      await seed.libs[api][method](Object.values(options))
+      // TODO pass through current seed session so that helper methods to handle options can pull from cache
+      for (const option of Object.entries(options)) {
+        let [optionName, userProvidedValue] = option
+        const defaultHandler = params.find(param => param.name === optionName).defaultHandler || passThroughUserInput
+        options[optionName] = await defaultHandler(userProvidedValue)
+      }
+      await seed.libs[api][method](...Object.values(options))
       // TODO record in cache somehow?
     })
   }
