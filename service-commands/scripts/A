@@ -87,6 +87,8 @@ def create_instance(name, azure, image_project, image_family, size, machine_type
                 "create",
                 "-n",
                 "audius-azure",
+                "--location",
+                "eastus",
             ],
         )
 
@@ -105,6 +107,7 @@ def create_instance(name, azure, image_project, image_family, size, machine_type
                 machine_type or "Standard_F8s_v2",
                 "--os-disk-size-gb",
                 size,
+                "--generate-ssh-keys",
             ],
         )
 
