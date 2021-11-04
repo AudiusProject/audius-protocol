@@ -66,7 +66,7 @@ const ProfileImage = ({
       setFirstRender(false)
       Animated.timing(opacity, {
         toValue: 0.2,
-        duration: 500,
+        duration: 100,
         useNativeDriver: true
       }).start(() => {
         setIsPhotoLoading(false)

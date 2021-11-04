@@ -15,7 +15,6 @@ export const FETCH_ALL_FOLLOW_ARTISTS_FAILED =
   'SIGN_ON/FETCH_ALL_FOLLOW_ARTISTS_FAILED'
 export const SET_FOLLOW_ARTISTS_CATEGORY = 'SIGN_ON/SET_FOLLOW_ARTISTS_CATEGORY'
 export const SET_FOLLOWED_ARTISTS = 'SIGN_ON/SET_FOLLOWED_ARTISTS'
-export const SUBMIT_FOLLOWED_ARTISTS = 'SIGN_ON/SUBMIT_FOLLOWED_ARTISTS'
 export const SET_USERS_TO_FOLLOW = 'SIGN_ON/SET_USERS_TO_FOLLOW'
 export const SET_ACCOUNT_AVAILABLE = 'SIGN_ON/SET_ACCOUNT_AVAILABLE'
 export const SIGN_UP_SUCCEEDED = 'SIGN_ON/SIGN_UP_SUCCEEDED'
@@ -83,10 +82,6 @@ type SetFollowedArtistsAction = {
   userIds: number[]
 }
 
-type SubmitFollowedArtistsAction = {
-  type: typeof SUBMIT_FOLLOWED_ARTISTS
-}
-
 type SetUsersToFollowAction = {
   type: typeof SET_USERS_TO_FOLLOW
   users: any[]
@@ -121,7 +116,6 @@ export type SignonActions =
   | FetchAllFollowArtistsFailedAction
   | SetFollowArtistsCategoryAction
   | SetFollowedArtistsAction
-  | SubmitFollowedArtistsAction
   | SignupSuceededAction
   | SetUsersToFollowAction
   | SetAccountAvailableAction
@@ -194,9 +188,6 @@ export const setFollowedArtists = (
 ): SetFollowedArtistsAction => ({
   type: SET_FOLLOWED_ARTISTS,
   userIds
-})
-export const submitFollowedArtists = (): SubmitFollowedArtistsAction => ({
-  type: SUBMIT_FOLLOWED_ARTISTS
 })
 export const setUsersToFollow = (users: any[]): SetUsersToFollowAction => ({
   type: SET_USERS_TO_FOLLOW,

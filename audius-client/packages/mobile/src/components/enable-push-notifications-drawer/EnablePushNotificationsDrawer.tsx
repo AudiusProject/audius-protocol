@@ -194,7 +194,7 @@ const EnablePushNotificationsDrawer = () => {
         <Button
           title={messages.enable}
           onPress={enablePushNotifications}
-          style={styles.button}
+          containerStyle={styles.button}
         />
       </View>
     </Drawer>

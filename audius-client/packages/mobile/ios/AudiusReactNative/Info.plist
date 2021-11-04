@@ -30,7 +30,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>195</string>
+	<string>196</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
@@ -58,6 +58,7 @@
 	<array>
 		<string>AvenirNextLTPro-Bold.otf</string>
 		<string>AvenirNextLTPro-Heavy.otf</string>
+		<string>AvenirNextLTPro-DemiBold.otf</string>
 		<string>AvenirNextLTPro-Medium.otf</string>
 		<string>AvenirNextLTPro-Regular.otf</string>
 		<string>AvenirNextLTPro-UltLt.otf</string>
