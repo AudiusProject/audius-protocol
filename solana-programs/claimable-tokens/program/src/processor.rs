@@ -181,16 +181,6 @@ impl Processor {
     ) -> ProgramResult {
         // Calculate target bank account PDA
         let pair = find_address_pair(program_id, mint_key, eth_address)?;
-        msg!(
-            "create_token_account base pair {:?}, {:?}",
-            &pair.base.address,
-            &pair.base.seed
-        );
-        msg!(
-            "create_token_account derived pair {:?}, {:?}",
-            &pair.derive.address,
-            &pair.derive.seed
-        );
         // Verify base and incoming account match expected
         if *base.key != pair.base.address {
             return Err(ProgramError::InvalidSeeds);
@@ -201,7 +191,6 @@ impl Processor {
 
         // Create user bank account signature and invoke from program
         let signature = &[&mint_key.to_bytes()[..32], &[pair.base.seed]];
-        msg!("create_token_account signature {:?}", signature);
 
         invoke_signed(
             &system_instruction::create_account_with_seed(
