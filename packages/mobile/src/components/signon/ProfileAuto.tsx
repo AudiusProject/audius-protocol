@@ -31,6 +31,7 @@ import { track, make } from '../../utils/analytics'
 import { EventNames } from '../../types/analytics'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { RootStackParamList } from './NavigationStack'
+import Button from '../../components/button'
 
 const styles = StyleSheet.create({
   container: {
@@ -56,26 +57,18 @@ const styles = StyleSheet.create({
     marginLeft: 22,
     marginRight: 22
   },
-  formBtn: {
-    flexDirection: 'row',
+  buttonContainer: {
     marginTop: 12,
     marginBottom: 12,
-    height: 50,
     width: '100%',
-    alignItems: 'center',
-    padding: 10,
-    justifyContent: 'center',
-    backgroundColor: '#CC0FE0',
-    borderRadius: 4
+    backgroundColor: '#CC0FE0'
+  },
+  buttonText: {
+    fontSize: 20
   },
   formButtonTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center'
-  },
-  formButtonTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontFamily: 'AvenirNextLTPro-Bold'
   },
   icon: {
     height: 20,
@@ -178,21 +171,39 @@ const FormTitle = () => {
   )
 }
 
-const TwitterButton = () => {
+const TwitterButton = ({ onPress }: { onPress: () => void }) => {
   return (
-    <View style={styles.formButtonTitleContainer}>
-      <IconTwitter style={styles.icon} fill='white' />
-      <Text style={styles.formButtonTitle}>{messages.twitter}</Text>
-    </View>
+    <Button
+      title={messages.twitter}
+      containerStyle={{ ...styles.buttonContainer, backgroundColor: '#1BA1F1' }}
+      textStyle={styles.buttonText}
+      onPress={onPress}
+      icon={
+        <IconTwitter style={styles.icon} fill='white' width={32} height={32} />
+      }
+      iconPosition='left'
+      underlayColor='#1BA1F1'
+    />
   )
 }
 
-const InstagramButton = () => {
+const InstagramButton = ({ onPress }: { onPress: () => void }) => {
   return (
-    <View style={styles.formButtonTitleContainer}>
-      <IconInstagram style={styles.icon} fill='white' />
-      <Text style={styles.formButtonTitle}>{messages.instagram}</Text>
-    </View>
+    <Button
+      title={messages.instagram}
+      containerStyle={{ ...styles.buttonContainer }}
+      textStyle={styles.buttonText}
+      onPress={onPress}
+      icon={
+        <IconInstagram
+          style={styles.icon}
+          fill='white'
+          width={32}
+          height={32}
+        />
+      }
+      iconPosition='left'
+    />
   )
 }
 
@@ -265,7 +276,7 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
         }
       }
 
-      navigation.push(page, routeParams)
+      navigation.replace(page, routeParams)
     },
     [navigation, email, password, twitterInfo, instagramInfo]
   )
@@ -483,21 +494,8 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
               </Text>
             ) : null}
 
-            <TouchableOpacity
-              style={[styles.formBtn, { backgroundColor: '#1BA1F1' }]}
-              activeOpacity={0.6}
-              onPress={onTwitterPress}
-            >
-              <TwitterButton />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.formBtn}
-              activeOpacity={0.6}
-              onPress={onInstagramPress}
-            >
-              <InstagramButton />
-            </TouchableOpacity>
+            <TwitterButton onPress={onTwitterPress} />
+            <InstagramButton onPress={onInstagramPress} />
 
             <View
               style={{

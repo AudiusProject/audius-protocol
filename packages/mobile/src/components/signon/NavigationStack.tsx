@@ -16,7 +16,6 @@ import {
 } from '../../store/lifecycle/selectors'
 import {
   getAccountAvailable,
-  getAllFollowArtists,
   getFinalEmail,
   getFinalHandle
 } from '../../store/signon/selectors'
@@ -67,9 +66,6 @@ const SignOnNav = () => {
   const isAccountAvailable = useSelector(getAccountAvailable)
   const finalEmail = useSelector(getFinalEmail)
   const finalHandle = useSelector(getFinalHandle)
-  const { submitted: submittedFollowedArtists } = useSelector(
-    getAllFollowArtists
-  )
   const [isHidden, setIsHidden] = useState(true)
 
   useEffect(() => {
@@ -77,15 +73,9 @@ const SignOnNav = () => {
       !dappLoaded ||
         signedIn === null ||
         (signedIn && !onSignUp) ||
-        (submittedFollowedArtists && isAccountAvailable)
+        isAccountAvailable
     )
-  }, [
-    dappLoaded,
-    submittedFollowedArtists,
-    isAccountAvailable,
-    signedIn,
-    onSignUp
-  ])
+  }, [dappLoaded, isAccountAvailable, signedIn, onSignUp])
 
   useEffect(() => {
     if (onSignUp && isAccountAvailable) {

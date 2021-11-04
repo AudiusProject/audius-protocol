@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   cameraBtnTitle: {
     color: '#7E1BCC',
     fontSize: 16,
-    fontFamily: 'AvenirNextLTPro-Medium',
+    fontFamily: 'AvenirNextLTPro-Bold',
     marginLeft: 11
   }
 })
