@@ -9,7 +9,7 @@ import { decodeHashId } from 'utils/route/hashIds'
 declare global {
   interface Window {
     audio: HTMLAudioElement
-    webkitAudioContext: AudioContext
+    webkitAudioContext: typeof AudioContext
   }
 }
 
