@@ -206,7 +206,9 @@ class User(Base):
         Boolean, nullable=False, default=False, server_default="false"
     )
     playlist_library = Column(JSONB, nullable=True)
-    is_delete = Column(Boolean, nullable=False, default=False)
+    is_delete = Column(
+        Boolean, nullable=False, default=False, server_default="false", index=True
+    )
 
     PrimaryKeyConstraint(is_current, user_id, blockhash, txhash)
 
