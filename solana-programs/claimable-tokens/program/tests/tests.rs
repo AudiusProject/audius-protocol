@@ -981,6 +981,8 @@ async fn transfer_with_wrong_signature_instruction() {
     assert_eq!(user_token_account.amount, 0);
 }
 
+*/
+
 #[tokio::test]
 async fn transfer_with_wrong_token_account() {
     let mut program_context = program_test().start_with_context().await;
@@ -995,10 +997,7 @@ async fn transfer_with_wrong_token_account() {
         user_token_account,
         eth_address,
     ) = init_test_variables();
-
-    let message = user_token_account.pubkey().to_bytes();
-    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
-
+    let mint_pubkey = mint_account.pubkey();
     let (base_acc, user_bank_account, _) = prepare_transfer(
         &mut program_context,
         mint_account,
@@ -1008,15 +1007,31 @@ async fn transfer_with_wrong_token_account() {
         &user_token_account,
     )
     .await;
+    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
+    let (_, nonce_account, _) = find_nonce_address(
+        &id(),
+        &mint_pubkey,
+        &nonce_acct_seed
+    );
+    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let transfer_instr_data = TransferInstructionData {
+        target_pubkey: user_token_account.pubkey(),
+        amount: 0,
+        nonce: current_user_nonce + 1
+    };
 
+    let encoded = transfer_instr_data.try_to_vec().unwrap();
+    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &encoded);
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction,
             instruction::transfer(
                 &id(),
+                &program_context.payer.pubkey(),
                 &user_bank_account,
                 // use incorrect user token account
                 &Keypair::new().pubkey(),
+                &nonce_account,
                 &base_acc,
                 instruction::Transfer {
                     eth_address,
@@ -1043,6 +1058,7 @@ async fn transfer_with_wrong_token_account() {
     );
 }
 
+
 // Submit instruction with SECP missing
 // Confirm failure as expected
 #[tokio::test]
@@ -1059,6 +1075,7 @@ async fn missing_secp_instruction() {
         user_token_account,
         eth_address,
     ) = init_test_variables();
+    let mint_pubkey = mint_account.pubkey();
     let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
         &mut program_context,
         mint_account,
@@ -1069,13 +1086,21 @@ async fn missing_secp_instruction() {
     )
     .await;
     let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
+    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
+    let (_, nonce_account, _) = find_nonce_address(
+        &id(),
+        &mint_pubkey,
+        &nonce_acct_seed
+    );
 
     // Submit transaction with missing secp256 program instruction
     let mut transaction = Transaction::new_with_payer(
         &[instruction::transfer(
             &id(),
+            &program_context.payer.pubkey(),
             &user_bank_account,
             &user_token_account.pubkey(),
+            &nonce_account,
             &base_acc,
             instruction::Transfer {
                 eth_address,
@@ -1116,8 +1141,7 @@ async fn transfer_invalid_amount() {
         eth_address,
     ) = init_test_variables();
 
-    let message = user_token_account.pubkey().to_bytes();
-    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
+    let mint_pubkey = mint_account.pubkey();
     let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
         &mut program_context,
         mint_account,
@@ -1128,16 +1152,35 @@ async fn transfer_invalid_amount() {
     )
     .await;
 
+    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
+    let (_, nonce_account, _) = find_nonce_address(
+        &id(),
+        &mint_pubkey,
+        &nonce_acct_seed
+    );
+
     // Increment amount to greater than available
     let transfer_amount = tokens_amount + 100;
+
+    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let transfer_instr_data = TransferInstructionData {
+        target_pubkey: user_token_account.pubkey(),
+        amount: transfer_amount,
+        nonce: current_user_nonce + 1
+    };
+
+    let encoded = transfer_instr_data.try_to_vec().unwrap();
+    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &encoded);
 
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction,
             instruction::transfer(
                 &id(),
+                &program_context.payer.pubkey(),
                 &user_bank_account,
                 &user_token_account.pubkey(),
+                &nonce_account,
                 &base_acc,
                 instruction::Transfer {
                     eth_address,
@@ -1155,7 +1198,6 @@ async fn transfer_invalid_amount() {
         .process_transaction(transaction)
         .await;
 
-    println!("{:?}", tx_result);
     assert!(tx_result.is_err());
     // Confirm a transfer of 0 is not permitted
     match tx_result {
@@ -1171,5 +1213,3 @@ async fn transfer_invalid_amount() {
         _ => panic!("Unexpected error scenario {:?}", tx_result),
     }
 }
-
-*/
