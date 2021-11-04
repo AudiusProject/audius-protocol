@@ -415,10 +415,10 @@ def track_search_query(
     res = sqlalchemy.text(
         # pylint: disable=C0301
         f"""
-        select track_id, b.balance, b.associated_wallets_balance, u.saved_user_id from (
-            select distinct on (owner_id) track_id, owner_id, saved_user_id, total_score
+        select track_id, b.balance, b.associated_wallets_balance, u.is_saved from (
+            select distinct on (owner_id) track_id, owner_id, is_saved, total_score
             from (
-                select track_id, owner_id, saved_user_id,
+                select track_id, owner_id, is_saved,
                     (
                         (:similarity_weight * sum(score)) +
                         (:title_weight * similarity(coalesce(title, ''), query)) +
@@ -428,7 +428,7 @@ def track_search_query(
                         (case when (lower(query) = handle) then :handle_match_boost else 0 end) +
                         (case when (lower(query) = user_name) then :user_name_match_boost else 0 end)
                         {
-                            '+ (case when (saved_user_id is not null) then :current_user_saved_match_boost else 0 end)'
+                            '+ (case when (is_saved) then :current_user_saved_match_boost else 0 end)'
                             if current_user_id
                             else ""
                         }
@@ -439,9 +439,9 @@ def track_search_query(
                         d."track_title" as title, :query as query, d."user_name" as user_name, d."handle" as handle,
                         d."repost_count" as repost_count, d."owner_id" as owner_id
                         {
-                            ',s."user_id" as saved_user_id'
+                            ',s."user_id" is not null as is_saved'
                             if current_user_id
-                            else ", null as saved_user_id"
+                            else ", false as is_saved"
                         }
                     from "track_lexeme_dict" d
                     {
@@ -464,7 +464,7 @@ def track_search_query(
                         else ""
                     }
                 ) as results
-                group by track_id, title, query, user_name, handle, repost_count, owner_id, saved_user_id
+                group by track_id, title, query, user_name, handle, repost_count, owner_id, is_saved
             ) as results2
             order by owner_id, total_score desc
         ) as u left join user_balances b on u.owner_id = b.user_id
@@ -474,7 +474,7 @@ def track_search_query(
         """
     )
 
-    track_data = session.execute(
+    track_result_proxy = session.execute(
         res,
         params = {
             "query": search_str,
@@ -490,11 +490,14 @@ def track_search_query(
             "user_name_match_boost": search_user_name_exact_match_boost,
             "current_user_saved_match_boost": current_user_saved_match_boost,
         }
-    ).fetchall()
+    )
+
+    track_data = track_result_proxy.fetchall()
+    track_cols =  track_result_proxy.keys()
 
     # track_ids is list of tuples - simplify to 1-D list
-    track_ids = [i[0] for i in track_data]
-    saved_tracks = set([i[0] for i in track_data if i[3]]) # if track has user ID, the current user saved that track
+    track_ids = [track[track_cols.index("track_id")] for track in track_data]
+    saved_tracks = set([track[0] for track in track_data if track[track_cols.index("is_saved")]])
 
     tracks = get_unpopulated_tracks(session, track_ids, True)
 
@@ -541,15 +544,15 @@ def user_search_query(
 
     res = sqlalchemy.text(
         f"""
-        select u.user_id, b.balance, b.associated_wallets_balance, follower_user_id from (
-            select user_id, follower_user_id from (
-                select user_id, follower_user_id, (
+        select u.user_id, b.balance, b.associated_wallets_balance, is_followed from (
+            select user_id, is_followed from (
+                select user_id, is_followed, (
                     sum(score) +
                     (:follower_weight * log(case when (follower_count = 0) then 1 else follower_count end)) +
                     (case when (handle=query) then :handle_match_boost else 0 end) +
                     (:name_weight * similarity(coalesce(name, ''), query))
                     {
-                        "+ (case when (follower_user_id is not null) " +
+                        "+ (case when (is_followed) " +
                         "then :current_user_saved_match_boost else 0 end)"
                         if current_user_id
                         else ""
@@ -564,9 +567,9 @@ def user_search_query(
                                 :query as query,
                                 d."follower_count" as follower_count
                                 {
-                                    ',f."follower_user_id" as follower_user_id'
+                                    ', f."follower_user_id" is not null as is_followed'
                                     if current_user_id
-                                    else ", null as follower_user_id"
+                                    else ", false as is_followed"
                                 }
                         from "user_lexeme_dict" d
                         {
@@ -582,7 +585,7 @@ def user_search_query(
                             d."word" % :query OR
                             d."handle" = :query
                     ) as results
-                group by user_id, name, query, handle, follower_count, follower_user_id
+                group by user_id, name, query, handle, follower_count, is_followed
             ) as results2
             order by total_score desc, user_id asc
             limit :limit
@@ -591,7 +594,7 @@ def user_search_query(
         """
     )
 
-    user_info = session.execute(
+    user_result_proxy = session.execute(
         res,
         {
             "query": search_str,
@@ -603,13 +606,15 @@ def user_search_query(
             "handle_match_boost": user_handle_exact_match_boost,
             "current_user_saved_match_boost": current_user_saved_match_boost,
         },
-    ).fetchall()
+    )
+    user_info = user_result_proxy.fetchall()
+    user_cols = user_result_proxy.keys()
 
     # user_ids is list of tuples - simplify to 1-D list
-    user_ids = [i[0] for i in user_info]
+    user_ids = [user[user_cols.index("user_id")] for user in user_info]
 
     # if user has a follower_user_id, the current user has followed that user
-    followed_users = set([i[0] for i in user_info if i[3]])
+    followed_users = set([user[0] for user in user_info if user[user_cols.index("is_followed")]])
 
     users = get_unpopulated_users(session, user_ids)
 
@@ -662,9 +667,9 @@ def playlist_search_query(
     res = sqlalchemy.text(
         # pylint: disable=C0301
         f"""
-        select p.playlist_id, b.balance, b.associated_wallets_balance, saved_user_id from (
-            select distinct on (owner_id) playlist_id, owner_id, saved_user_id, total_score from (
-                select playlist_id, owner_id, saved_user_id, (
+        select p.playlist_id, b.balance, b.associated_wallets_balance, is_saved from (
+            select distinct on (owner_id) playlist_id, owner_id, is_saved, total_score from (
+                select playlist_id, owner_id, is_saved, (
                     (:similarity_weight * sum(score)) +
                     (:title_weight * similarity(coalesce(playlist_name, ''), query)) +
                     (:user_name_weight * similarity(coalesce(user_name, ''), query)) +
@@ -673,7 +678,7 @@ def playlist_search_query(
                     (case when (lower(query) = handle) then :handle_match_boost else 0 end) +
                     (case when (lower(query) = user_name) then :user_name_match_boost else 0 end)
                     {
-                        '+ (case when (saved_user_id is not null) then ' +
+                        '+ (case when (is_saved) then ' +
                         ':current_user_saved_match_boost else 0 end)'
                         if current_user_id
                         else ""
@@ -685,9 +690,9 @@ def playlist_search_query(
                         d."playlist_name" as playlist_name, :query as query, d."repost_count" as repost_count,
                         d."handle" as handle, d."user_name" as user_name, d."owner_id" as owner_id
                         {
-                            ',s."user_id" as saved_user_id'
+                            ', s."user_id" is not null as is_saved'
                             if current_user_id
-                            else ", null as saved_user_id"
+                            else ", false as is_saved"
                         }
                     from "{table_name}" d
                     {
@@ -700,7 +705,7 @@ def playlist_search_query(
                     }
                     where (d."word" % lower(:query) or d."handle" = lower(:query) or d."user_name" % lower(:query))
                 ) as results
-                group by playlist_id, playlist_name, query, repost_count, user_name, handle, owner_id, saved_user_id
+                group by playlist_id, playlist_name, query, repost_count, user_name, handle, owner_id, is_saved
             ) as results2
             order by owner_id, total_score desc
         ) as p left join user_balances b on p.owner_id = b.user_id
@@ -710,7 +715,7 @@ def playlist_search_query(
         """
     )
 
-    playlist_data = session.execute(
+    playlist_result_proxy = session.execute(
         res,
         {
             "query": search_str,
@@ -726,11 +731,13 @@ def playlist_search_query(
             "user_name_match_boost": search_user_name_exact_match_boost,
             "current_user_saved_match_boost": current_user_saved_match_boost,
         },
-    ).fetchall()
+    )
+    playlist_data = playlist_result_proxy.fetchall()
+    playlist_cols = playlist_result_proxy.keys()
 
     # playlist_ids is list of tuples - simplify to 1-D list
-    playlist_ids = [i[0] for i in playlist_data]
-    saved_playlists = set([i[0] for i in playlist_data if i[3]]) # if playlist has a saved user ID it's considered saved
+    playlist_ids = [playlist[playlist_cols.index("playlist_id")] for playlist in playlist_data]
+    saved_playlists = set([playlist[0] for playlist in playlist_data if playlist[playlist_cols.index("is_saved")]])
 
     playlists = get_unpopulated_playlists(session, playlist_ids, True)
 

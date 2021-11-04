@@ -359,7 +359,7 @@ def test_get_external_albums(app):
         assert len(res["saved"]) == 0
 
 def test_get_autocomplete_albums(app):
-    """Tests we get all albums"""
+    """Tests we get all albums with autocomplete"""
     with app.app_context():
         db = get_db()
     setup_search(db)
