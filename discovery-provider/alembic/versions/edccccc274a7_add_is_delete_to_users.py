@@ -19,11 +19,11 @@ depends_on = None
 def upgrade():
     op.add_column(
         "users",
-        sa.Column("is_delete", sa.Boolean(), server_default="false", nullable=False),
+        sa.Column("is_deactivated", sa.Boolean(), server_default="false", nullable=False),
     )
-    op.create_index(op.f("ix_users_is_delete"), "users", ["is_delete"], unique=False)
+    op.create_index(op.f("ix_users_is_deactivated"), "users", ["is_deactivated"], unique=False)
 
 
 def downgrade():
-    op.drop_index(op.f("ix_users_is_delete"), table_name="users")
-    op.drop_column("users", "is_delete")
+    op.drop_index(op.f("ix_users_is_deactivated"), table_name="users")
+    op.drop_column("users", "is_deactivated")

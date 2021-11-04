@@ -206,7 +206,7 @@ class User(Base):
         Boolean, nullable=False, default=False, server_default="false"
     )
     playlist_library = Column(JSONB, nullable=True)
-    is_delete = Column(
+    is_deactivated = Column(
         Boolean, nullable=False, default=False, server_default="false", index=True
     )
 
