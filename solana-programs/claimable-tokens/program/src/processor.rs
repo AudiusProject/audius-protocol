@@ -313,7 +313,6 @@ impl Processor {
         amount: u64,
         rent: &Rent,
     ) -> ProgramResult {
-        println!("checking ethereum sign");
         if !sysvar::instructions::check_id(&instruction_info.key) {
             return Err(ClaimableProgramError::Secp256InstructionLosing.into());
         }
@@ -349,7 +348,7 @@ impl Processor {
         )?;
 
         if amount != transfer_data.amount {
-            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+            return Err(ClaimableProgramError::SignatureVerificationFailed.into());
         }
 
         let token_account_info =
