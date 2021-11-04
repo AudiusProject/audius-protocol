@@ -286,7 +286,6 @@ async fn prepare_transfer(
     (pair.base.address, pair.derive.address, tokens_amount)
 }
 
-/*
 // Initialize a user token account
 #[tokio::test]
 async fn init_instruction() {
@@ -318,7 +317,7 @@ async fn init_instruction() {
         .await
         .unwrap();
 
-    let token_account_data = get_account(&mut program_context, &pair.derive.address).await;
+    let token_account_data = get_account(&mut program_context, &pair.derive.address).await.unwrap();
     // check that token account is initialized
     let token_account =
         spl_token::state::Account::unpack(&token_account_data.data.as_slice()).unwrap();
@@ -341,9 +340,7 @@ async fn transfer_all_instruction() {
         user_token_account,
         eth_address,
     ) = init_test_variables();
-
-    let message = user_token_account.pubkey().to_bytes();
-    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &message);
+   let mint_pubkey = mint_account.pubkey();
 
     let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
         &mut program_context,
@@ -356,7 +353,7 @@ async fn transfer_all_instruction() {
     .await;
 
     // Query current balance
-    let mut bank_token_account_data = get_account(&mut program_context, &user_bank_account).await;
+    let mut bank_token_account_data = get_account(&mut program_context, &user_bank_account).await.unwrap();
     let mut bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     println!(
@@ -364,14 +361,33 @@ async fn transfer_all_instruction() {
         bank_token_account.amount, user_bank_account
     );
 
+    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
+    let (_, nonce_account, _) = find_nonce_address(
+        &id(),
+        &mint_pubkey,
+        &nonce_acct_seed
+    );
+
+    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let transfer_instr_data = TransferInstructionData {
+        target_pubkey: user_token_account.pubkey(),
+        amount: bank_token_account.amount,
+        nonce: current_user_nonce + 1
+    };
+
+    let encoded = transfer_instr_data.try_to_vec().unwrap();
+    let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &encoded);
+
     // Transfer ALL tokens
     let mut transaction = Transaction::new_with_payer(
         &[
             secp256_program_instruction,
             instruction::transfer(
                 &id(),
+                &program_context.payer.pubkey(),
                 &user_bank_account,
                 &user_token_account.pubkey(),
+                &nonce_account,
                 &base_acc,
                 instruction::Transfer {
                     eth_address,
@@ -390,19 +406,20 @@ async fn transfer_all_instruction() {
         .await
         .unwrap();
 
-    bank_token_account_data = get_account(&mut program_context, &user_bank_account).await;
+    bank_token_account_data = get_account(&mut program_context, &user_bank_account).await.unwrap();
     bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     // check that program sent all the tokens from bank token account to user token account
     assert_eq!(bank_token_account.amount, 0);
 
     let user_token_account_data =
-        get_account(&mut program_context, &user_token_account.pubkey()).await;
+        get_account(&mut program_context, &user_token_account.pubkey()).await.unwrap();
     let user_token_account =
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
 
     assert_eq!(user_token_account.amount, tokens_amount);
 }
+/*
 
 // This test attemps to manipulate the offsets of a single SECP instruction
 // in order to insert a maliciously signed signature message at the address
