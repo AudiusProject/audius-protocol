@@ -16,7 +16,6 @@ import {
   SET_ACCOUNT_AVAILABLE,
   RESET_SIGNON_STATE,
   SignupHandleStatusType,
-  SUBMIT_FOLLOWED_ARTISTS,
   SET_EMAIL_STATUS,
   SignupEmailStatusType
 } from './actions'
@@ -37,7 +36,6 @@ export type SignonState = {
     categories: { [key in FollowArtistsCategory]?: number[] }
     selectedUserIds: number[]
     usersToFollow: any[]
-    submitted: boolean
   }
   finalEmail: string
   finalHandle: string
@@ -57,8 +55,7 @@ const initialSignonState: SignonState = {
     selectedCategory: FollowArtistsCategory.FEATURED,
     categories: {},
     selectedUserIds: [],
-    usersToFollow: [],
-    submitted: false
+    usersToFollow: []
   },
   finalEmail: '',
   finalHandle: ''
@@ -149,14 +146,6 @@ const reducer = (
         followArtists: {
           ...state.followArtists,
           selectedUserIds: action.userIds
-        }
-      }
-    case SUBMIT_FOLLOWED_ARTISTS:
-      return {
-        ...state,
-        followArtists: {
-          ...state.followArtists,
-          submitted: true
         }
       }
     case SET_USERS_TO_FOLLOW:

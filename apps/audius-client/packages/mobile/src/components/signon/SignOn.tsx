@@ -1,47 +1,47 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import LottieView from 'lottie-react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Animated,
+  Dimensions,
+  Easing,
+  Image,
   ImageBackground,
+  Keyboard,
   StyleSheet,
   Text,
-  View,
-  Image,
   TextInput,
   TouchableOpacity,
-  Dimensions,
   TouchableWithoutFeedback,
-  Keyboard,
-  Easing
+  View
 } from 'react-native'
-
-import { useSelector, useDispatch } from 'react-redux'
-import { useDispatchWeb } from '../../hooks/useDispatchWeb'
-import { MessageType } from '../../message/types'
-
 import RadialGradient from 'react-native-radial-gradient'
+import { useDispatch, useSelector } from 'react-redux'
 import backgImage from '../../assets/images/DJportrait.jpg'
 import audiusLogoHorizontal from '../../assets/images/Horizontal-Logo-Full-Color.png'
-import signupCTA from '../../assets/images/signUpCTA.png'
 import IconArrow from '../../assets/images/iconArrow.svg'
 import ValidationIconX from '../../assets/images/iconValidationX.svg'
-import LottieView from 'lottie-react-native'
+import signupCTA from '../../assets/images/signUpCTA.png'
+import Button from '../../components/button'
+import { remindUserToTurnOnNotifications } from '../../components/notification-reminder/NotificationReminder'
+import { useDispatchWeb } from '../../hooks/useDispatchWeb'
+import { MessageType } from '../../message/types'
+import { setVisibility } from '../../store/drawers/slice'
+import { getDappLoaded, getIsSignedIn } from '../../store/lifecycle/selectors'
 import * as signonActions from '../../store/signon/actions'
 import {
-  getIsSigninError,
   getEmailIsAvailable,
   getEmailIsValid,
-  getEmailStatus
+  getEmailStatus,
+  getIsSigninError
 } from '../../store/signon/selectors'
-import { getIsSignedIn, getDappLoaded } from '../../store/lifecycle/selectors'
-import { track, make } from '../../utils/analytics'
 import { EventNames } from '../../types/analytics'
-import { setVisibility } from '../../store/drawers/slice'
+import { make, track } from '../../utils/analytics'
 import { RootStackParamList } from './NavigationStack'
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { remindUserToTurnOnNotifications } from '../../components/notification-reminder/NotificationReminder'
 
 const image = backgImage
 const windowWidth = Dimensions.get('window').width
+const defaultBorderColor = '#F2F2F4'
 
 const styles = StyleSheet.create({
   container: {
@@ -143,12 +143,12 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 16,
     borderWidth: 1,
-    borderColor: '#F7F7F9',
+    borderColor: defaultBorderColor,
     backgroundColor: '#FCFCFC',
     borderRadius: 4,
     padding: 10,
     color: '#858199',
-    fontFamily: 'AvenirNextLTPro-Regular',
+    fontFamily: 'AvenirNextLTPro-DemiBold',
     fontSize: 16
   },
   inputPass: {
@@ -157,13 +157,13 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     paddingRight: 16,
     borderWidth: 1,
-    borderColor: '#F7F7F9',
+    borderColor: defaultBorderColor,
     backgroundColor: '#FCFCFC',
     borderRadius: 4,
     marginTop: 16,
     padding: 10,
     color: '#858199',
-    fontFamily: 'AvenirNextLTPro-Regular',
+    fontFamily: 'AvenirNextLTPro-DemiBold',
     fontSize: 16
   },
   formBtn: {
@@ -178,16 +178,15 @@ const styles = StyleSheet.create({
     borderRadius: 4
   },
   formButtonTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center'
+    width: '100%'
   },
-  formButtonTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontFamily: 'AvenirNextLTPro-Bold',
-    marginRight: 12
+  mainButtonContainer: {
+    width: '100%'
   },
-  arrow: {
+  mainButton: {
+    padding: 12
+  },
+  arrowIcon: {
     height: 20,
     width: 20
   },
@@ -258,48 +257,8 @@ const errorMessages = {
 }
 
 let formContainerHeight = 0
-
 let lastIsSignin = false
-const MainButton = ({
-  isSignin,
-  isWorking
-}: {
-  isSignin: boolean
-  isWorking: boolean
-}) => {
-  let opacity = new Animated.Value(1)
-
-  // fade the sign up/in button out and in when switch between signup and signin
-  if (lastIsSignin !== isSignin) {
-    opacity = new Animated.Value(0)
-    Animated.timing(opacity, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true
-    }).start(() => {
-      lastIsSignin = isSignin
-    })
-  }
-
-  return (
-    <Animated.View style={[styles.formButtonTitleContainer, { opacity }]}>
-      <Text style={styles.formButtonTitle}>
-        {isSignin ? messages.signIn : messages.signUp}
-      </Text>
-      {isWorking ? (
-        <View style={styles.loadingIcon}>
-          <LottieView
-            source={require('../../assets/animations/loadingSpinner.json')}
-            autoPlay
-            loop
-          />
-        </View>
-      ) : (
-        <IconArrow style={styles.arrow} fill='white' />
-      )}
-    </Animated.View>
-  )
-}
+let errorOpacity = new Animated.Value(0)
 
 const FormTitle = ({ isSignin }: { isSignin: boolean }) => {
   let opacity = new Animated.Value(1)
@@ -346,8 +305,8 @@ const SignOn = ({ navigation }: SignOnProps) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignin, setisSignIn] = useState(false)
-  const [emailBorderColor, setEmailBorderColor] = useState('#F7F7F9')
-  const [passBorderColor, setPassBorderColor] = useState('#F7F7F9')
+  const [emailBorderColor, setEmailBorderColor] = useState(defaultBorderColor)
+  const [passBorderColor, setPassBorderColor] = useState(defaultBorderColor)
   const [formButtonMarginTop, setFormButtonMarginTop] = useState(28)
   const [cpaContainerHeight, setcpaContainerHeight] = useState(0)
   const [attemptedEmail, setAttemptedEmail] = useState(false)
@@ -415,21 +374,49 @@ const SignOn = ({ navigation }: SignOnProps) => {
 
   useEffect(() => {
     if (dappLoaded) {
-      console.log('dappLOADED')
       animateDrawer()
       fadeCTA()
     }
   }, [dappLoaded, animateDrawer, fadeCTA])
 
+  useEffect(() => {
+    if (
+      (isSignin && isSigninError && showDefaultError) ||
+      (!isSignin && !emailIsAvailable && email !== '') ||
+      showInvalidEmailError ||
+      showEmptyPasswordError
+    ) {
+      // fade in the error message
+      Animated.timing(errorOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true
+      }).start()
+    } else {
+      errorOpacity = new Animated.Value(0)
+    }
+  }, [
+    isSignin,
+    isSigninError,
+    showDefaultError,
+    emailIsAvailable,
+    email,
+    showInvalidEmailError,
+    showEmptyPasswordError
+  ])
+
   const errorView = () => {
     if (isSignin && isSigninError && showDefaultError) {
       return (
-        <View style={styles.errorContainer}>
+        <Animated.View
+          style={[styles.errorContainer, { opacity: errorOpacity }]}
+        >
           <ValidationIconX style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.default}</Text>
-        </View>
+        </Animated.View>
       )
-    } else if (!isSignin && !emailIsAvailable && email !== '') {
+    }
+    if (!isSignin && !emailIsAvailable && email !== '') {
       return (
         <TouchableOpacity
           style={styles.errorButton}
@@ -437,7 +424,9 @@ const SignOn = ({ navigation }: SignOnProps) => {
             switchForm(true)
           }}
         >
-          <View style={styles.errorContainer}>
+          <Animated.View
+            style={[styles.errorContainer, { opacity: errorOpacity }]}
+          >
             <ValidationIconX style={styles.errorIcon} />
             <Text
               style={[
@@ -448,31 +437,36 @@ const SignOn = ({ navigation }: SignOnProps) => {
               {errorMessages.emailInUse}
             </Text>
             <Text style={[styles.errorText, { fontSize: 13 }]}> ➔</Text>
-          </View>
+          </Animated.View>
         </TouchableOpacity>
       )
-    } else if (showInvalidEmailError) {
+    }
+    if (showInvalidEmailError) {
       return (
-        <View style={styles.errorContainer}>
+        <Animated.View
+          style={[styles.errorContainer, { opacity: errorOpacity }]}
+        >
           <ValidationIconX style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.invalidEmail}</Text>
-        </View>
-      )
-    } else if (showEmptyPasswordError) {
-      return (
-        <View style={styles.errorContainer}>
-          <ValidationIconX style={styles.errorIcon} />
-          <Text style={styles.errorText}>{errorMessages.emptyPassword}</Text>
-        </View>
-      )
-    } else {
-      return (
-        <View style={styles.errorContainer}>
-          <ValidationIconX style={[styles.errorIcon, { opacity: 0 }]} />
-          <Text />
-        </View>
+        </Animated.View>
       )
     }
+    if (showEmptyPasswordError) {
+      return (
+        <Animated.View
+          style={[styles.errorContainer, { opacity: errorOpacity }]}
+        >
+          <ValidationIconX style={styles.errorIcon} />
+          <Text style={styles.errorText}>{errorMessages.emptyPassword}</Text>
+        </Animated.View>
+      )
+    }
+    return (
+      <View style={styles.errorContainer}>
+        <ValidationIconX style={[styles.errorIcon, { opacity: 0 }]} />
+        <Text />
+      </View>
+    )
   }
 
   const FormSwitchButton = () => {
@@ -545,12 +539,83 @@ const SignOn = ({ navigation }: SignOnProps) => {
             setPassBorderColor('#7E1BCC')
           }}
           onBlur={() => {
-            setPassBorderColor('#F7F7F9')
+            setPassBorderColor(defaultBorderColor)
           }}
         />
       )
     }
     return <></>
+  }
+
+  const MainButton = ({
+    isSignin,
+    isWorking
+  }: {
+    isSignin: boolean
+    isWorking: boolean
+  }) => {
+    let opacity = new Animated.Value(1)
+
+    // fade the sign up/in button out and in when switch between signup and signin
+    if (lastIsSignin !== isSignin) {
+      opacity = new Animated.Value(0)
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true
+      }).start(() => {
+        lastIsSignin = isSignin
+      })
+    }
+
+    return (
+      <Animated.View style={[styles.formButtonTitleContainer, { opacity }]}>
+        <Button
+          title={isSignin ? messages.signIn : messages.signUp}
+          onPress={() => {
+            Keyboard.dismiss()
+            setAttemptedEmail(true)
+            if (isValidEmailString(email)) {
+              if (isSignin) {
+                setAttemptedPassword(true)
+                if (password === '') {
+                  setShowEmptyPasswordError(true)
+                } else {
+                  signIn()
+                  // in case email is what was wrong with the credentials
+                  setShowDefaultError(true)
+                }
+              } else if (emailIsAvailable && emailStatus === 'done') {
+                dispatch(signonActions.signinFailedReset())
+                setIsWorking(false)
+                navigation.replace('CreatePassword', { email })
+              }
+            } else {
+              setShowInvalidEmailError(true)
+            }
+          }}
+          disabled={isWorking}
+          containerStyle={{
+            ...styles.mainButtonContainer,
+            marginTop: formButtonMarginTop
+          }}
+          style={styles.mainButton}
+          icon={
+            isWorking ? (
+              <LottieView
+                style={styles.loadingIcon}
+                source={require('../../assets/animations/loadingSpinner.json')}
+                autoPlay
+                loop
+              />
+            ) : (
+              <IconArrow style={styles.arrowIcon} fill='white' />
+            )
+          }
+          ignoreDisabledStyle
+        />
+      </Animated.View>
+    )
   }
 
   const validateEmail = (email: string) => {
@@ -636,7 +701,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
                 setEmailBorderColor('#7E1BCC')
               }}
               onBlur={() => {
-                setEmailBorderColor('#F7F7F9')
+                setEmailBorderColor(defaultBorderColor)
                 if (email !== '') {
                   setShowInvalidEmailError(!isValidEmailString(email))
                   // wait a bit for email validation to come back
@@ -644,40 +709,9 @@ const SignOn = ({ navigation }: SignOnProps) => {
                 }
               }}
             />
-
             {passwordField()}
-
             {errorView()}
-
-            <TouchableOpacity
-              style={[styles.formBtn, { marginTop: formButtonMarginTop }]}
-              activeOpacity={0.6}
-              disabled={isWorking}
-              onPress={() => {
-                Keyboard.dismiss()
-                setAttemptedEmail(true)
-                if (isValidEmailString(email)) {
-                  if (isSignin) {
-                    setAttemptedPassword(true)
-                    if (password === '') {
-                      setShowEmptyPasswordError(true)
-                    } else {
-                      signIn()
-                      // in case email is what was wrong with the credentials
-                      setShowDefaultError(true)
-                    }
-                  } else if (emailIsAvailable && emailStatus === 'done') {
-                    dispatch(signonActions.signinFailedReset())
-                    setIsWorking(false)
-                    navigation.push('CreatePassword', { email })
-                  }
-                } else {
-                  setShowInvalidEmailError(true)
-                }
-              }}
-            >
-              <MainButton isWorking={isWorking} isSignin={isSignin} />
-            </TouchableOpacity>
+            <MainButton isWorking={isWorking} isSignin={isSignin} />
           </Animated.View>
         </TouchableWithoutFeedback>
         <Animated.View

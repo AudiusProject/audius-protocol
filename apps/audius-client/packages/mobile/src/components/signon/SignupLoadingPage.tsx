@@ -28,9 +28,8 @@ const styles = StyleSheet.create({
   },
   title: {
     color: '#7E1BCC',
-    fontFamily: 'Avenir Next LT Pro',
+    fontFamily: 'AvenirNextLTPro-Bold',
     fontSize: 28,
-    fontWeight: 'bold',
     textAlign: 'center',
     lineHeight: 38,
     maxWidth: 314,
@@ -38,9 +37,8 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     color: '#9849D6',
-    fontFamily: 'Avenir Next LT Pro',
+    fontFamily: 'AvenirNextLTPro-Bold',
     fontSize: 16,
-    fontWeight: 'bold',
     lineHeight: 25,
     textAlign: 'center',
     marginBottom: 64

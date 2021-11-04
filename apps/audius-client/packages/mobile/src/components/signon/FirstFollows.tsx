@@ -12,8 +12,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { sampleSize } from 'lodash'
 import {
   setFollowArtistsCategory,
-  setFollowedArtists,
-  submitFollowedArtists
+  setFollowedArtists
 } from '../../store/signon/actions'
 import IconArrow from '../../assets/images/iconArrow.svg'
 import IconWand from '../../assets/images/iconWand.svg'
@@ -35,6 +34,7 @@ import { track, make } from '../../utils/analytics'
 import { EventNames } from '../../types/analytics'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { RootStackParamList } from './NavigationStack'
+import Button from '../../components/button'
 
 const styles = StyleSheet.create({
   container: {
@@ -73,12 +73,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexWrap: 'wrap'
   },
-  cardHide: {
-    opacity: 0
-  },
-  cardShow: {
-    opacity: 1
-  },
   containerButton: {
     position: 'absolute',
     left: 0,
@@ -111,19 +105,18 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     paddingLeft: 10
   },
-  btnDisabled: {
-    backgroundColor: '#E7E6EB'
+  buttonContainer: {
+    marginTop: 24,
+    width: '100%'
+  },
+  button: {
+    padding: 12
   },
   formButtonTitleContainer: {
     flexDirection: 'row',
     alignItems: 'center'
   },
-  formButtonTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontFamily: 'AvenirNextLTPro-Bold'
-  },
-  icon: {
+  arrowIcon: {
     height: 20,
     width: 20
   },
@@ -137,8 +130,11 @@ const styles = StyleSheet.create({
   },
   wandButtonTitle: {
     color: '#858199',
-    fontSize: 14,
-    fontFamily: 'AvenirNextLTPro-Regular'
+    fontSize: 16,
+    fontFamily: 'AvenirNextLTPro-DemiBold'
+  },
+  underline: {
+    textDecorationLine: 'underline'
   },
   wandIcon: {
     marginRight: 10
@@ -173,7 +169,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     height: 24,
     borderRadius: 8,
-    borderColor: '#858199',
+    borderColor: '#C2C0CC',
     borderWidth: 1,
     paddingHorizontal: 12,
     backgroundColor: 'white',
@@ -188,7 +184,7 @@ const styles = StyleSheet.create({
     fontFamily: 'AvenirNextLTPro-Medium',
     textAlign: 'center',
     fontSize: 14,
-    color: '#858199'
+    color: '#AAA7B8'
   },
   pillTextActive: {
     color: 'white'
@@ -197,11 +193,12 @@ const styles = StyleSheet.create({
     color: '#858199',
     fontSize: 14,
     textAlign: 'center',
-    fontFamily: 'AvenirNextLTPro-Regular'
+    fontFamily: 'AvenirNextLTPro-Regular',
+    marginTop: 12
   },
   card: {
-    width: 140,
-    height: 160,
+    width: 168,
+    height: 208,
     borderRadius: 8,
     borderColor: '#6A677A40',
     borderWidth: 0.7,
@@ -231,27 +228,28 @@ const styles = StyleSheet.create({
   },
   cardName: {
     color: '#858199',
-    fontSize: 14,
+    fontSize: 16,
     textAlign: 'center',
-    fontFamily: 'AvenirNextLTPro-Bold'
+    fontFamily: 'AvenirNextLTPro-Bold',
+    marginBottom: 8
   },
   cardFollowers: {
     color: '#858199',
-    fontSize: 12,
+    fontSize: 14,
     textAlign: 'center',
     fontFamily: 'AvenirNextLTPro-Regular',
     paddingHorizontal: 8
   },
   cardImage: {
-    height: 80,
-    width: 80,
-    borderRadius: 40,
+    height: 120,
+    width: 120,
+    borderRadius: 60,
     borderWidth: 2,
     borderColor: '#F7F7F9',
-    marginBottom: 10
+    marginBottom: 14
   },
   userImage: {
-    borderRadius: 50,
+    borderRadius: 60,
     height: '100%',
     width: '100%',
     marginRight: 12
@@ -292,16 +290,26 @@ const FormTitle = () => {
   )
 }
 
-const ContinueButton = () => {
+const ContinueButton = ({
+  onPress,
+  disabled
+}: {
+  onPress: () => void
+  disabled: boolean
+}) => {
   return (
-    <View style={styles.formButtonTitleContainer}>
-      <Text style={styles.formButtonTitle}>{messages.continue}</Text>
-      <IconArrow style={styles.icon} fill='white' />
-    </View>
+    <Button
+      title={messages.continue}
+      containerStyle={styles.buttonContainer}
+      style={styles.button}
+      onPress={onPress}
+      disabled={disabled}
+      icon={<IconArrow style={styles.arrowIcon} fill='white' />}
+    />
   )
 }
 
-const PickForMeButton = () => {
+const PickForMeButton = ({ active }: { active: boolean }) => {
   return (
     <View style={styles.formButtonTitleContainer}>
       <IconWand
@@ -310,7 +318,9 @@ const PickForMeButton = () => {
         width={16}
         height={16}
       />
-      <Text style={styles.wandButtonTitle}>{messages.pickForMe}</Text>
+      <Text style={[styles.wandButtonTitle, active ? styles.underline : {}]}>
+        {messages.pickForMe}
+      </Text>
     </View>
   )
 }
@@ -326,7 +336,7 @@ const FollowArtistCard = ({
     <View>
       <LinearGradient
         colors={isSelected ? ['#9849d6', '#6516a3'] : ['white', 'white']}
-        style={[styles.card]}
+        style={styles.card}
       >
         <View style={styles.cardImage}>
           <UserImage user={user} imageStyle={styles.userImage} />
@@ -372,7 +382,9 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
   } = followArtists
   const [isDisabled, setIsDisabled] = useState(false)
   const [didFetchArtistsToFollow, setDidFetchArtistsToFollow] = useState(false)
-  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [isPickForMeActive, setIsPickForMeActive] = useState(false)
+  const pickForMeScale = useRef(new Animated.Value(1)).current
+  const cardOpacity = useRef(new Animated.Value(1)).current
 
   useEffect(() => {
     if (!didFetchArtistsToFollow) {
@@ -389,8 +401,12 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
   }, [followedArtistIds])
 
   useEffect(() => {
-    setIsTransitioning(false)
-  }, [selectedCategory])
+    Animated.timing(cardOpacity, {
+      toValue: 1,
+      duration: 0,
+      useNativeDriver: true
+    }).start()
+  }, [selectedCategory, cardOpacity])
 
   const toggleFollowedArtist = useCallback(
     (userId: number) => {
@@ -436,13 +452,7 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
     addFollowedArtists(followUsers)
   }
 
-  const Pill = ({
-    category,
-    setIsTransitioning
-  }: {
-    category: FollowArtistsCategory
-    setIsTransitioning: (value: boolean) => void
-  }) => {
+  const Pill = ({ category }: { category: FollowArtistsCategory }) => {
     const dispatch = useDispatch()
     const isActive = selectedCategory === category
     const scalePill = new Animated.Value(1)
@@ -458,10 +468,13 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
 
     const updateSelectedCategory = useCallback(async () => {
       if (!isActive) {
-        setIsTransitioning(true)
-        dispatch(setFollowArtistsCategory(category))
+        Animated.timing(cardOpacity, {
+          toValue: 0,
+          duration: 0,
+          useNativeDriver: true
+        }).start(() => dispatch(setFollowArtistsCategory(category)))
       }
-    }, [isActive, category, setIsTransitioning, dispatch])
+    }, [isActive, category, dispatch])
 
     return (
       <Animated.View
@@ -491,8 +504,6 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
       isAction: true
     })
 
-    dispatch(submitFollowedArtists())
-
     track(
       make({
         eventName: EventNames.CREATE_ACCOUNT_COMPLETE_FOLLOW,
@@ -503,7 +514,7 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
       })
     )
 
-    navigation.push('SignupLoadingPage')
+    navigation.replace('SignupLoadingPage')
   }
 
   return (
@@ -517,11 +528,7 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
               <Text style={styles.instruction}>{messages.subTitle}</Text>
               <View style={styles.pillsContainer}>
                 {artistCategories.map(category => (
-                  <Pill
-                    key={category}
-                    category={category}
-                    setIsTransitioning={setIsTransitioning}
-                  />
+                  <Pill key={category} category={category} />
                 ))}
               </View>
             </View>
@@ -530,29 +537,49 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
                 style={styles.wandBtn}
                 activeOpacity={0.6}
                 onPress={onPickForMe}
+                onPressIn={() => {
+                  setIsPickForMeActive(true)
+                  Animated.timing(pickForMeScale, {
+                    toValue: 1.03,
+                    duration: 100,
+                    delay: 0,
+                    useNativeDriver: true
+                  }).start()
+                }}
+                onPressOut={() => {
+                  setIsPickForMeActive(false)
+                  Animated.timing(pickForMeScale, {
+                    toValue: 1,
+                    duration: 100,
+                    delay: 0,
+                    useNativeDriver: true
+                  }).start()
+                }}
               >
-                <PickForMeButton />
+                <Animated.View
+                  style={{ transform: [{ scale: pickForMeScale }] }}
+                >
+                  <PickForMeButton active={isPickForMeActive} />
+                </Animated.View>
               </TouchableOpacity>
-              <View
-                style={[
-                  styles.containerCards,
-                  isTransitioning ? styles.cardHide : styles.cardShow
-                ]}
-              >
+              <View style={styles.containerCards}>
                 {(categories[selectedCategory] || [])
                   .filter(artistId => suggestedFollowArtistsMap[artistId])
                   .map(artistId => (
-                    <TouchableOpacity
+                    <Animated.View
+                      style={{ opacity: cardOpacity }}
                       key={`${selectedCategory}-${artistId}`}
-                      style={{}}
-                      activeOpacity={1}
-                      onPress={() => toggleFollowedArtist(artistId)}
                     >
-                      <FollowArtistCard
-                        user={suggestedFollowArtistsMap[artistId]}
-                        isSelected={followedArtistIds.includes(artistId)}
-                      />
-                    </TouchableOpacity>
+                      <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={() => toggleFollowedArtist(artistId)}
+                      >
+                        <FollowArtistCard
+                          user={suggestedFollowArtistsMap[artistId]}
+                          isSelected={followedArtistIds.includes(artistId)}
+                        />
+                      </TouchableOpacity>
+                    </Animated.View>
                   ))}
               </View>
             </View>
@@ -560,14 +587,7 @@ const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {
         </ScrollView>
 
         <View style={styles.containerButton}>
-          <TouchableOpacity
-            style={[styles.formBtn, isDisabled ? styles.btnDisabled : {}]}
-            activeOpacity={0.6}
-            disabled={isDisabled}
-            onPress={onContinuePress}
-          >
-            <ContinueButton />
-          </TouchableOpacity>
+          <ContinueButton onPress={onContinuePress} disabled={isDisabled} />
           <Text style={styles.followCounter}>
             {`${messages.following} ${
               followedArtistIds.length > MINIMUM_FOLLOWER_COUNT

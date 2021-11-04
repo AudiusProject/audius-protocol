@@ -12,7 +12,8 @@ import {
   Keyboard,
   Linking,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  ScrollView
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useSelector, useDispatch } from 'react-redux'
@@ -30,16 +31,17 @@ import { EventNames } from '../../types/analytics'
 import { useDispatchWeb } from '../../hooks/useDispatchWeb'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { RootStackParamList } from './NavigationStack'
+import Button from '../../components/button'
 
 declare module 'fxa-common-password-list'
 
-const defaultBorderColor = '#F7F7F9'
+const isIos = Platform.OS === 'ios'
+const defaultBorderColor = '#F2F2F4'
 const purpleBorderColor = '#7E1BCC'
 const errorBorderColor = '#E03D51'
 
 const styles = StyleSheet.create({
   container: {
-    top: -47,
     width: '100%',
     height: '100%',
     backgroundColor: 'white',
@@ -80,33 +82,17 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     padding: 10,
     color: '#858199',
-    fontFamily: 'AvenirNextLTPro-Regular',
+    fontFamily: 'AvenirNextLTPro-DemiBold',
     fontSize: 16
   },
-  formBtn: {
-    flexDirection: 'row',
-    marginTop: 26,
-    height: 48,
+  mainButtonContainer: {
     width: '100%',
-    alignItems: 'center',
-    padding: 10,
-    justifyContent: 'center',
-    backgroundColor: '#CC0FE0',
-    borderRadius: 4
+    marginTop: 32
   },
-  btnDisabled: {
-    backgroundColor: '#E7E6EB'
+  mainButton: {
+    padding: 12
   },
-  formButtonTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  formButtonTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontFamily: 'AvenirNextLTPro-Bold'
-  },
-  arrow: {
+  arrowIcon: {
     height: 20,
     width: 20
   },
@@ -156,7 +142,7 @@ const styles = StyleSheet.create({
     fontFamily: 'AvenirNextLTPro-Regular'
   },
   clickable: {
-    marginTop: 24,
+    marginTop: isIos ? 24.5 : 30,
     color: '#CC0FE0'
   }
 })
@@ -210,23 +196,6 @@ const FormTitle = () => {
   )
 }
 
-const ContinueButton = ({ isWorking }: { isWorking: boolean }) => {
-  return isWorking ? (
-    <View style={styles.loadingIcon}>
-      <LottieView
-        source={require('../../assets/animations/loadingSpinner.json')}
-        autoPlay
-        loop
-      />
-    </View>
-  ) : (
-    <View style={styles.formButtonTitleContainer}>
-      <Text style={styles.formButtonTitle}>{messages.continue}</Text>
-      <IconArrow style={styles.arrow} fill='white' />
-    </View>
-  )
-}
-
 const opacityArr = messages.checks.map(() => new Animated.Value(0))
 const Checkbox = ({
   i,
@@ -242,8 +211,8 @@ const Checkbox = ({
   if (met || error) {
     Animated.timing(opacity, {
       toValue: 1,
-      duration: 700,
-      easing: Easing.in(Easing.bounce),
+      duration: 300,
+      easing: Easing.in(Easing.quad),
       useNativeDriver: true
     }).start(() => {})
   }
@@ -325,7 +294,7 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
 
   // the first 3 requirements are based on the password field
   // the last one is based on both fields as it requires a match
-  const [areRequirementsMet, setAreRequirementsAreMet] = useState({
+  const [areRequirementsMet, setAreRequirementsMet] = useState({
     number: {
       met: false,
       error: false
@@ -391,8 +360,8 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
     ) => {
       // set error if field in question is not empty and
       // - requirement previously met, or
-      // - on blur (except hard to guess?)
-      setAreRequirementsAreMet({
+      // - on blur
+      setAreRequirementsMet({
         number: {
           ...previousRequirements.number,
           met: /\d/.test(newPassword),
@@ -460,137 +429,177 @@ const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
     )
   }
 
+  const ContinueButton = ({ isWorking }: { isWorking: boolean }) => {
+    return (
+      <Button
+        title={messages.continue}
+        onPress={() => {
+          Keyboard.dismiss()
+          setisWorking(true)
+          setOnSignOn()
+          track(
+            make({
+              eventName: EventNames.CREATE_ACCOUNT_COMPLETE_PASSWORD,
+              emailAddress: route.params.email
+            })
+          )
+          navigation.replace('ProfileAuto', {
+            email: route.params.email,
+            password
+          })
+        }}
+        disabled={isDisabled}
+        containerStyle={styles.mainButtonContainer}
+        style={styles.mainButton}
+        icon={
+          isWorking ? (
+            <LottieView
+              style={styles.loadingIcon}
+              source={require('../../assets/animations/loadingSpinner.json')}
+              autoPlay
+              loop
+            />
+          ) : (
+            <IconArrow style={styles.arrowIcon} fill='white' />
+          )
+        }
+      />
+    )
+  }
+
   return (
     <SafeAreaView style={{ backgroundColor: 'white' }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ overflow: 'hidden' }}
       >
-        <SignupHeader />
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-          <View style={styles.container}>
-            <View style={styles.containerForm}>
-              <FormTitle />
-              <TextInput
-                style={[styles.input, { borderColor: passwordBorderColor }]}
-                placeholderTextColor='#C2C0CC'
-                underlineColorAndroid='transparent'
-                placeholder='Password'
-                autoCompleteType='off'
-                autoCorrect={false}
-                autoCapitalize='none'
-                enablesReturnKeyAutomatically={true}
-                maxLength={100}
-                textContentType='newPassword'
-                secureTextEntry={true}
-                onChangeText={newText => {
-                  setPassword(newText)
-                  updateRequirementsStatus(
-                    { ...areRequirementsMet },
-                    newText,
-                    passwordConfirmation,
-                    false
-                  )
-                }}
-                onFocus={() => {
-                  setIsPasswordFocused(true)
-                }}
-                onBlur={() => {
-                  setIsPasswordFocused(false)
-                  updateRequirementsStatus(
-                    { ...areRequirementsMet },
-                    password,
-                    passwordConfirmation,
-                    true
-                  )
-                }}
-                keyboardAppearance='dark'
-              />
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    borderColor: passwordConfirmationBorderColor,
-                    marginBottom: 10
-                  }
-                ]}
-                placeholderTextColor='#C2C0CC'
-                underlineColorAndroid='transparent'
-                placeholder='Confirm Password'
-                autoCompleteType='off'
-                autoCorrect={false}
-                autoCapitalize='none'
-                enablesReturnKeyAutomatically={true}
-                maxLength={100}
-                textContentType='newPassword'
-                secureTextEntry={true}
-                onChangeText={newText => {
-                  setPasswordConfirmation(newText)
-                  updateRequirementsStatus(
-                    { ...areRequirementsMet },
-                    password,
-                    newText,
-                    false
-                  )
-                }}
-                onFocus={() => {
-                  setIsPasswordConfirmationFocused(true)
-                }}
-                onBlur={() => {
-                  setIsPasswordConfirmationFocused(false)
-                  updateRequirementsStatus(
-                    { ...areRequirementsMet },
-                    password,
-                    passwordConfirmation,
-                    true
-                  )
-                }}
-                keyboardAppearance='dark'
-              />
-              {Object.values(areRequirementsMet).map(({ met, error }, i) => (
-                <Checkbox key={i} i={i} met={met} error={error} />
-              ))}
+        <ScrollView
+          style={{ height: '100%' }}
+          keyboardShouldPersistTaps='always'
+        >
+          <View>
+            <SignupHeader />
+            <TouchableWithoutFeedback
+              onPress={Keyboard.dismiss}
+              accessible={false}
+            >
+              <View style={styles.container}>
+                <View style={styles.containerForm}>
+                  <FormTitle />
+                  <TextInput
+                    style={[styles.input, { borderColor: passwordBorderColor }]}
+                    placeholderTextColor='#C2C0CC'
+                    underlineColorAndroid='transparent'
+                    placeholder='Password'
+                    autoCompleteType='off'
+                    autoCorrect={false}
+                    autoCapitalize='none'
+                    enablesReturnKeyAutomatically={true}
+                    maxLength={100}
+                    textContentType='newPassword'
+                    secureTextEntry={true}
+                    onChangeText={newText => {
+                      setPassword(newText)
+                      updateRequirementsStatus(
+                        { ...areRequirementsMet },
+                        newText,
+                        passwordConfirmation,
+                        false
+                      )
+                    }}
+                    onFocus={() => {
+                      setIsPasswordFocused(true)
+                    }}
+                    onBlur={() => {
+                      setIsPasswordFocused(false)
+                      updateRequirementsStatus(
+                        { ...areRequirementsMet },
+                        password,
+                        passwordConfirmation,
+                        true
+                      )
+                    }}
+                    keyboardAppearance='dark'
+                  />
+                  <TextInput
+                    style={[
+                      styles.input,
+                      {
+                        borderColor: passwordConfirmationBorderColor,
+                        marginBottom: 10
+                      }
+                    ]}
+                    placeholderTextColor='#C2C0CC'
+                    underlineColorAndroid='transparent'
+                    placeholder='Confirm Password'
+                    autoCompleteType='off'
+                    autoCorrect={false}
+                    autoCapitalize='none'
+                    enablesReturnKeyAutomatically={true}
+                    maxLength={100}
+                    textContentType='newPassword'
+                    secureTextEntry={true}
+                    onChangeText={newText => {
+                      setPasswordConfirmation(newText)
+                      updateRequirementsStatus(
+                        { ...areRequirementsMet },
+                        password,
+                        newText,
+                        false
+                      )
+                    }}
+                    onFocus={() => {
+                      setIsPasswordConfirmationFocused(true)
+                    }}
+                    onBlur={() => {
+                      setIsPasswordConfirmationFocused(false)
+                      updateRequirementsStatus(
+                        { ...areRequirementsMet },
+                        password,
+                        passwordConfirmation,
+                        true
+                      )
+                    }}
+                    keyboardAppearance='dark'
+                  />
+                  {Object.values(areRequirementsMet).map(
+                    ({ met, error }, i) => (
+                      <Checkbox key={i} i={i} met={met} error={error} />
+                    )
+                  )}
 
-              <Text style={styles.terms}>
-                <Text style={styles.termsText}>{messages.termsAndPrivacy}</Text>
-                <TouchableOpacity activeOpacity={0.6} onPress={onTermsOfUse}>
-                  <Text style={{ ...styles.termsText, ...styles.clickable }}>
-                    &nbsp;{messages.terms}
+                  <Text style={styles.terms}>
+                    <Text style={styles.termsText}>
+                      {messages.termsAndPrivacy}
+                    </Text>
+                    <TouchableOpacity
+                      activeOpacity={0.6}
+                      onPress={onTermsOfUse}
+                    >
+                      <Text
+                        style={{ ...styles.termsText, ...styles.clickable }}
+                      >
+                        &nbsp;{messages.terms}
+                      </Text>
+                    </TouchableOpacity>
+                    <Text style={styles.termsText}> {messages.and}</Text>
+                    <TouchableOpacity
+                      activeOpacity={0.6}
+                      onPress={onPrivacyPolicy}
+                    >
+                      <Text
+                        style={{ ...styles.termsText, ...styles.clickable }}
+                      >
+                        &nbsp;{messages.privacy}
+                      </Text>
+                    </TouchableOpacity>
                   </Text>
-                </TouchableOpacity>
-                <Text style={styles.termsText}> {messages.and}</Text>
-                <TouchableOpacity activeOpacity={0.6} onPress={onPrivacyPolicy}>
-                  <Text style={{ ...styles.termsText, ...styles.clickable }}>
-                    &nbsp;{messages.privacy}
-                  </Text>
-                </TouchableOpacity>
-              </Text>
-
-              <TouchableOpacity
-                style={[styles.formBtn, isDisabled ? styles.btnDisabled : {}]}
-                disabled={isDisabled}
-                activeOpacity={0.6}
-                onPress={() => {
-                  Keyboard.dismiss()
-                  setisWorking(true)
-                  setOnSignOn()
-                  track(
-                    make({
-                      eventName: EventNames.CREATE_ACCOUNT_COMPLETE_PASSWORD,
-                      emailAddress: route.params.email
-                    })
-                  )
-                  navigation.push('ProfileAuto', {
-                    email: route.params.email,
-                    password
-                  })
-                }}
-              >
-                <ContinueButton isWorking={isWorking} />
-              </TouchableOpacity>
-            </View>
+                  <ContinueButton isWorking={isWorking} />
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
-        </TouchableWithoutFeedback>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   )
