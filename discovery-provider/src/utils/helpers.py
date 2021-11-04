@@ -34,7 +34,7 @@ def get_openresty_public_key():
         resp = requests.get("http://localhost:5000/openresty_pubkey")
         resp.raise_for_status()
         return resp.text
-    except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError):
+    except requests.exceptions.RequestException:
         return None
 
 
