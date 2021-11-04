@@ -31,10 +31,10 @@ def get_ip(request_obj):
 def get_openresty_public_key():
     """Get public key for openresty if it is running"""
     try:
-        resp = requests.get("http://localhost:5000/openresty_pubkey")
+        resp = requests.get("http://localhost:5000/openresty_pubkey", timeout=1)
         resp.raise_for_status()
         return resp.text
-    except Exception:
+    except requests.exceptions.RequestException:
         return None
 
 
