@@ -7,10 +7,8 @@ use crate::{
     utils::program::{find_address_pair, find_nonce_address, EthereumAddress},
 };
 use borsh::{BorshDeserialize, BorshSerialize};
-// use solana_sdk::{secp256k1_instruction::{SIGNATURE_OFFSETS_SERIALIZED_SIZE}};
 use solana_program::{
-    account_info::AccountInfo,
-    account_info::{next_account_info, Account},
+    account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
     msg,
     program::{invoke, invoke_signed},
