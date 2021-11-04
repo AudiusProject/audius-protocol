@@ -2,7 +2,9 @@
 
 use claimable_tokens::error::ClaimableProgramError;
 use claimable_tokens::state::{NonceAccount, TransferInstructionData};
-use claimable_tokens::utils::program::{EthereumAddress, find_address_pair, find_nonce_address, NONCE_ACCOUNT_PREFIX};
+use claimable_tokens::utils::program::{
+    find_address_pair, find_nonce_address, EthereumAddress, NONCE_ACCOUNT_PREFIX,
+};
 use claimable_tokens::*;
 use libsecp256k1::{PublicKey, SecretKey};
 
@@ -14,6 +16,7 @@ use solana_program::secp256k1_program;
 use solana_program::{program_pack::Pack, pubkey::Pubkey, system_instruction};
 use solana_program_test::*;
 
+use borsh::{BorshDeserialize, BorshSerialize};
 use solana_sdk::transaction::TransactionError;
 use solana_sdk::{
     account::Account,
@@ -24,7 +27,6 @@ use solana_sdk::{
     transaction::Transaction,
     transport::TransportError,
 };
-use borsh::{BorshDeserialize, BorshSerialize};
 
 // Construct_eth_pubkey
 pub fn program_test() -> ProgramTest {
@@ -83,11 +85,8 @@ fn assert_custom_error(
     }
 }
 
-async fn get_user_account_nonce(context: & mut ProgramTestContext, account: &Pubkey) -> u64 {
-    let nonce_acct_info = get_account(
-        context,
-        &account
-    ).await;
+async fn get_user_account_nonce(context: &mut ProgramTestContext, account: &Pubkey) -> u64 {
+    let nonce_acct_info = get_account(context, &account).await;
     if nonce_acct_info.is_none() {
         return 0;
     }
@@ -317,7 +316,9 @@ async fn init_instruction() {
         .await
         .unwrap();
 
-    let token_account_data = get_account(&mut program_context, &pair.derive.address).await.unwrap();
+    let token_account_data = get_account(&mut program_context, &pair.derive.address)
+        .await
+        .unwrap();
     // check that token account is initialized
     let token_account =
         spl_token::state::Account::unpack(&token_account_data.data.as_slice()).unwrap();
@@ -340,7 +341,7 @@ async fn transfer_all_instruction() {
         user_token_account,
         eth_address,
     ) = init_test_variables();
-   let mint_pubkey = mint_account.pubkey();
+    let mint_pubkey = mint_account.pubkey();
 
     let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
         &mut program_context,
@@ -353,7 +354,9 @@ async fn transfer_all_instruction() {
     .await;
 
     // Query current balance
-    let mut bank_token_account_data = get_account(&mut program_context, &user_bank_account).await.unwrap();
+    let mut bank_token_account_data = get_account(&mut program_context, &user_bank_account)
+        .await
+        .unwrap();
     let mut bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     println!(
@@ -362,17 +365,13 @@ async fn transfer_all_instruction() {
     );
 
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
-    let (_, nonce_account, _) = find_nonce_address(
-        &id(),
-        &mint_pubkey,
-        &nonce_acct_seed
-    );
+    let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
 
-    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: bank_token_account.amount,
-        nonce: current_user_nonce + 1
+        nonce: current_user_nonce + 1,
     };
 
     let encoded = transfer_instr_data.try_to_vec().unwrap();
@@ -406,14 +405,17 @@ async fn transfer_all_instruction() {
         .await
         .unwrap();
 
-    bank_token_account_data = get_account(&mut program_context, &user_bank_account).await.unwrap();
+    bank_token_account_data = get_account(&mut program_context, &user_bank_account)
+        .await
+        .unwrap();
     bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     // check that program sent all the tokens from bank token account to user token account
     assert_eq!(bank_token_account.amount, 0);
 
-    let user_token_account_data =
-        get_account(&mut program_context, &user_token_account.pubkey()).await.unwrap();
+    let user_token_account_data = get_account(&mut program_context, &user_token_account.pubkey())
+        .await
+        .unwrap();
     let user_token_account =
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
 
@@ -455,17 +457,13 @@ async fn transfer_with_amount_instruction_secp_offsets_exploit() {
 
     let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
-    let (_, nonce_account, _) = find_nonce_address(
-        &id(),
-        &mint_pubkey,
-        &nonce_acct_seed
-    );
+    let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
 
-    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: transfer_amount,
-        nonce: current_user_nonce + 1
+        nonce: current_user_nonce + 1,
     };
 
     let message = transfer_instr_data.try_to_vec().unwrap();
@@ -607,17 +605,13 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
 
     let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
-    let (_, nonce_account, _) = find_nonce_address(
-        &id(),
-        &mint_pubkey,
-        &nonce_acct_seed
-    );
+    let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
 
-    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: transfer_amount,
-        nonce: current_user_nonce + 1
+        nonce: current_user_nonce + 1,
     };
 
     // Use real message
@@ -692,13 +686,16 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
 
     assert!(tx_result.is_err());
 
-    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await.unwrap();
+    let bank_token_account_data = get_account(&mut program_context, &user_bank_account)
+        .await
+        .unwrap();
     let bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     // check that program failed to send by validating data
     assert_eq!(bank_token_account.amount, tokens_amount);
-    let user_token_account_data =
-        get_account(&mut program_context, &user_token_account.pubkey()).await.unwrap();
+    let user_token_account_data = get_account(&mut program_context, &user_token_account.pubkey())
+        .await
+        .unwrap();
     let user_token_account =
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
     assert_eq!(user_token_account.amount, 0);
@@ -732,17 +729,13 @@ async fn transfer_replay_instruction() {
     .await;
     let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
-    let (_, nonce_account, _) = find_nonce_address(
-        &id(),
-        &mint_pubkey,
-        &nonce_acct_seed
-    );
+    let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
 
-    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: transfer_amount,
-        nonce: current_user_nonce + 1
+        nonce: current_user_nonce + 1,
     };
 
     let encoded = transfer_instr_data.try_to_vec().unwrap();
@@ -762,13 +755,11 @@ async fn transfer_replay_instruction() {
                 amount: transfer_amount,
             },
         )
-        .unwrap()
+        .unwrap(),
     ];
 
-    let mut transaction = Transaction::new_with_payer(
-        &instructions,
-        Some(&program_context.payer.pubkey()),
-    );
+    let mut transaction =
+        Transaction::new_with_payer(&instructions, Some(&program_context.payer.pubkey()));
 
     transaction.sign(&[&program_context.payer], program_context.last_blockhash);
     program_context
@@ -780,35 +771,35 @@ async fn transfer_replay_instruction() {
     let final_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
     assert_eq!(transfer_instr_data.nonce, final_user_nonce);
 
-    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await.unwrap();
+    let bank_token_account_data = get_account(&mut program_context, &user_bank_account)
+        .await
+        .unwrap();
     let bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     // check that program sent required number tokens from bank token account to user token account
     assert_eq!(bank_token_account.amount, tokens_amount - transfer_amount);
 
-    let user_token_account_data =
-        get_account(&mut program_context, &user_token_account.pubkey()).await.unwrap();
+    let user_token_account_data = get_account(&mut program_context, &user_token_account.pubkey())
+        .await
+        .unwrap();
     let user_token_account =
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
 
     assert_eq!(user_token_account.amount, transfer_amount);
-    let mut transaction2 = Transaction::new_with_payer(
-        &instructions,
-        Some(&program_context.payer.pubkey()),
-    );
-    let recent_blockhash = program_context.banks_client.get_recent_blockhash().await.unwrap();
+    let mut transaction2 =
+        Transaction::new_with_payer(&instructions, Some(&program_context.payer.pubkey()));
+    let recent_blockhash = program_context
+        .banks_client
+        .get_recent_blockhash()
+        .await
+        .unwrap();
     transaction2.sign(&[&program_context.payer], recent_blockhash);
     let tx_result = program_context
         .banks_client
         .process_transaction(transaction2)
         .await;
-    assert_custom_error(
-        tx_result,
-        1,
-        ClaimableProgramError::NonceVerificationError,
-    );
+    assert_custom_error(tx_result, 1, ClaimableProgramError::NonceVerificationError);
 }
-
 
 #[tokio::test]
 async fn transfer_with_amount_instruction() {
@@ -837,17 +828,13 @@ async fn transfer_with_amount_instruction() {
     .await;
     let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
-    let (_, nonce_account, _) = find_nonce_address(
-        &id(),
-        &mint_pubkey,
-        &nonce_acct_seed
-    );
+    let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
 
-    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: transfer_amount,
-        nonce: current_user_nonce + 1
+        nonce: current_user_nonce + 1,
     };
 
     let encoded = transfer_instr_data.try_to_vec().unwrap();
@@ -880,14 +867,17 @@ async fn transfer_with_amount_instruction() {
         .await
         .unwrap();
 
-    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await.unwrap();
+    let bank_token_account_data = get_account(&mut program_context, &user_bank_account)
+        .await
+        .unwrap();
     let bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     // check that program sent required number tokens from bank token account to user token account
     assert_eq!(bank_token_account.amount, tokens_amount - transfer_amount);
 
-    let user_token_account_data =
-        get_account(&mut program_context, &user_token_account.pubkey()).await.unwrap();
+    let user_token_account_data = get_account(&mut program_context, &user_token_account.pubkey())
+        .await
+        .unwrap();
     let user_token_account =
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
     assert_eq!(user_token_account.amount, transfer_amount);
@@ -921,17 +911,13 @@ async fn transfer_with_zero_amount_failure() {
 
     let transfer_amount = 0;
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
-    let (_, nonce_account, _) = find_nonce_address(
-        &id(),
-        &mint_pubkey,
-        &nonce_acct_seed
-    );
+    let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
 
-    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: transfer_amount,
-        nonce: current_user_nonce + 1
+        nonce: current_user_nonce + 1,
     };
 
     let encoded = transfer_instr_data.try_to_vec().unwrap();
@@ -995,11 +981,7 @@ async fn transfer_with_wrong_signature_instruction() {
     let mint_pubkey = mint_account.pubkey();
 
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
-    let (_, nonce_account, _) = find_nonce_address(
-        &id(),
-        &mint_pubkey,
-        &nonce_acct_seed
-    );
+    let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
     // Use bad_message instead of the TransferInstructionData for the program instruction
     let bad_message = [8u8; 48];
     let secp256_program_instruction = new_secp256k1_instruction(&priv_key, &bad_message);
@@ -1041,14 +1023,17 @@ async fn transfer_with_wrong_signature_instruction() {
         .await;
     assert!(tx_result.is_err());
 
-    let bank_token_account_data = get_account(&mut program_context, &user_bank_account).await.unwrap();
+    let bank_token_account_data = get_account(&mut program_context, &user_bank_account)
+        .await
+        .unwrap();
     let bank_token_account =
         spl_token::state::Account::unpack(&bank_token_account_data.data.as_slice()).unwrap();
     // check that bank token accounts balance the same
     assert_eq!(bank_token_account.amount, tokens_amount);
 
-    let user_token_account_data =
-        get_account(&mut program_context, &user_token_account.pubkey()).await.unwrap();
+    let user_token_account_data = get_account(&mut program_context, &user_token_account.pubkey())
+        .await
+        .unwrap();
     let user_token_account =
         spl_token::state::Account::unpack(&user_token_account_data.data.as_slice()).unwrap();
 
@@ -1080,16 +1065,12 @@ async fn transfer_with_wrong_token_account() {
     )
     .await;
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
-    let (_, nonce_account, _) = find_nonce_address(
-        &id(),
-        &mint_pubkey,
-        &nonce_acct_seed
-    );
-    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
+    let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: 0,
-        nonce: current_user_nonce + 1
+        nonce: current_user_nonce + 1,
     };
 
     let encoded = transfer_instr_data.try_to_vec().unwrap();
@@ -1130,7 +1111,6 @@ async fn transfer_with_wrong_token_account() {
     );
 }
 
-
 // Submit instruction with SECP missing
 // Confirm failure as expected
 #[tokio::test]
@@ -1159,11 +1139,7 @@ async fn missing_secp_instruction() {
     .await;
     let transfer_amount = rand::thread_rng().gen_range(1..tokens_amount);
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
-    let (_, nonce_account, _) = find_nonce_address(
-        &id(),
-        &mint_pubkey,
-        &nonce_acct_seed
-    );
+    let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
 
     // Submit transaction with missing secp256 program instruction
     let mut transaction = Transaction::new_with_payer(
@@ -1225,20 +1201,16 @@ async fn transfer_invalid_amount() {
     .await;
 
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
-    let (_, nonce_account, _) = find_nonce_address(
-        &id(),
-        &mint_pubkey,
-        &nonce_acct_seed
-    );
+    let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
 
     // Increment amount to greater than available
     let transfer_amount = tokens_amount + 100;
 
-    let current_user_nonce = get_user_account_nonce(& mut program_context, &nonce_account).await;
+    let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: transfer_amount,
-        nonce: current_user_nonce + 1
+        nonce: current_user_nonce + 1,
     };
 
     let encoded = transfer_instr_data.try_to_vec().unwrap();

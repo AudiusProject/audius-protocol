@@ -1,9 +1,26 @@
 //! Program state processor
 
-use crate::{error::{to_claimable_tokens_error, ClaimableProgramError}, instruction::ClaimableProgramInstruction, state::{NonceAccount, TransferInstructionData}, utils::program::{EthereumAddress, find_address_pair, find_nonce_address}};
+use crate::{
+    error::{to_claimable_tokens_error, ClaimableProgramError},
+    instruction::ClaimableProgramInstruction,
+    state::{NonceAccount, TransferInstructionData},
+    utils::program::{find_address_pair, find_nonce_address, EthereumAddress},
+};
 use borsh::{BorshDeserialize, BorshSerialize};
 // use solana_sdk::{secp256k1_instruction::{SIGNATURE_OFFSETS_SERIALIZED_SIZE}};
-use solana_program::{account_info::AccountInfo, account_info::{Account, next_account_info}, entrypoint::ProgramResult, msg, program::{invoke, invoke_signed}, program_error::ProgramError, program_pack::Pack, pubkey::Pubkey, secp256k1_program, system_instruction, sysvar, sysvar::Sysvar, sysvar::rent::Rent};
+use solana_program::{
+    account_info::AccountInfo,
+    account_info::{next_account_info, Account},
+    entrypoint::ProgramResult,
+    msg,
+    program::{invoke, invoke_signed},
+    program_error::ProgramError,
+    program_pack::Pack,
+    pubkey::Pubkey,
+    secp256k1_program, system_instruction, sysvar,
+    sysvar::rent::Rent,
+    sysvar::Sysvar,
+};
 use std::mem::size_of;
 
 /// Known const for serialized signature offsets
@@ -341,11 +358,8 @@ impl Processor {
             spl_token::state::Account::unpack(&banks_token_account_info.data.borrow())?;
 
         let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), expected_signer.as_ref()].concat();
-        let (base_address, derived_nonce_address, bump_seed) = find_nonce_address(
-            program_id,
-            &token_account_info.mint,
-            &nonce_acct_seed
-        );
+        let (base_address, derived_nonce_address, bump_seed) =
+            find_nonce_address(program_id, &token_account_info.mint, &nonce_acct_seed);
 
         if derived_nonce_address != *nonce_account_info.key {
             return Err(ClaimableProgramError::Secp256InstructionLosing.into());
@@ -360,7 +374,7 @@ impl Processor {
             let signature = &[
                 &authority.key.to_bytes()[..32],
                 &nonce_acct_seed.as_slice(),
-                &[bump_seed]
+                &[bump_seed],
             ];
             Self::create_account(
                 program_id,
@@ -368,7 +382,8 @@ impl Processor {
                 nonce_account_info.clone(),
                 NonceAccount::LEN,
                 &[signature],
-                rent)?;
+                rent,
+            )?;
 
             let nonce = NonceAccount::new();
             NonceAccount::pack(nonce, *nonce_account_info.data.borrow_mut())?;
@@ -438,12 +453,13 @@ impl Processor {
         }
 
         let instruction_message = secp_instruction_data[message_data_offset..].to_vec();
-        let decoded_instr_data = TransferInstructionData::try_from_slice(&instruction_message).unwrap();
+        let decoded_instr_data =
+            TransferInstructionData::try_from_slice(&instruction_message).unwrap();
 
         if decoded_instr_data.target_pubkey.to_bytes() != *expected_message {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
         }
 
-       Ok(decoded_instr_data)
+        Ok(decoded_instr_data)
     }
 }

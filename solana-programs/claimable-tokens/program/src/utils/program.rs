@@ -42,7 +42,7 @@ pub fn find_program_address_with_seed(
 pub fn find_nonce_address(
     program_id: &Pubkey,
     mint: &Pubkey,
-    nonce_acct_seed: &[u8]
+    nonce_acct_seed: &[u8],
 ) -> (Pubkey, Pubkey, u8) {
     // Check that the incremented nonce provided matches expected value
     // Generating base address for nonce acct from mint
@@ -51,7 +51,7 @@ pub fn find_nonce_address(
     let (derived_address, bump_seed) =
         find_program_address_with_seed(program_id, &base_pubkey, &nonce_acct_seed);
 
-    return (base_pubkey, derived_address, bump_seed)
+    return (base_pubkey, derived_address, bump_seed);
 }
 
 /// Return `Base` account with seed and corresponding derived address
