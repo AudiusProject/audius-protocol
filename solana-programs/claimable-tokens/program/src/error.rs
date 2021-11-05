@@ -22,7 +22,7 @@ pub enum ClaimableProgramError {
     /// Instruction load error
     #[error("Instruction load error")]
     InstructionLoadError,
-    /// Instruction load error
+    /// User nonce verification error
     #[error("Nonce verification failed")]
     NonceVerificationError,
 }
