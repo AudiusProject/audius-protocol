@@ -729,14 +729,15 @@ async fn transfer_amount_mismatch() {
     )
     .await;
     // Transfer a single token for reuse
-    let transfer_amount = 1;
+    let stated_transfer_amount = 1;
+    let attempted_transfer_amount = 1000;
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
     let (_, nonce_account, _) = find_nonce_address(&id(), &mint_pubkey, &nonce_acct_seed);
 
     let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
-        amount: transfer_amount + 1,
+        amount: stated_transfer_amount,
         nonce: current_user_nonce + 1,
     };
 
@@ -754,7 +755,7 @@ async fn transfer_amount_mismatch() {
             &base_acc,
             instruction::Transfer {
                 eth_address,
-                amount: transfer_amount,
+                amount: attempted_transfer_amount,
             },
         )
         .unwrap(),
@@ -848,8 +849,8 @@ async fn transfer_nonce_increment() {
             .await
             .unwrap();
 
-        let final_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
-        assert_eq!(transfer_instr_data.nonce, final_user_nonce);
+        let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
+        assert_eq!(transfer_instr_data.nonce, current_user_nonce);
 
         // Verify transfer occurred
         let bank_token_account_data = get_account(&mut program_context, &user_bank_account)
@@ -863,11 +864,13 @@ async fn transfer_nonce_increment() {
             outgoing_account_balance - transfer_amount
         );
         outgoing_account_balance = bank_token_account.amount;
-        println!("Nonce incremented to {:?}", final_user_nonce);
+        println!("Nonce incremented to {:?}", current_user_nonce);
         println!("Outgoing account balance = {:?}", outgoing_account_balance);
 
         i += 1;
     }
+    let final_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
+    assert_eq!(5, final_user_nonce);
 }
 
 // Verify that identical instructions cannot be reused 2x
