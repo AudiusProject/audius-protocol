@@ -1,8 +1,5 @@
 from __future__ import absolute_import
 import os
-
-os.environ["audius_web3_eth_provider_url"] = "http://127.0.0.1:8555"
-
 import pytest
 from sqlalchemy_utils import database_exists, drop_database, create_database
 from web3 import HTTPProvider, Web3
