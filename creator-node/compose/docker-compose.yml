@@ -35,7 +35,7 @@ services:
       - '${CREATOR_NODE_HOST_PORT}:${CREATOR_NODE_HOST_PORT}'
       - '${CREATOR_NODE_DEBUGGER_PORT}:${CREATOR_NODE_DEBUGGER_PORT}'
     volumes:
-      - env/tmp/file-storage-${serviceNumber}:/file_storage
+      - ./env/tmp/file-storage-${serviceNumber}:/file_storage
       - ..:/usr/src/app
       # Prevent hiding node_modules on container with host volume
       # From https://github.com/barrysteyn/node-scrypt/issues/148
