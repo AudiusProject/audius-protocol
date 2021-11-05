@@ -142,8 +142,8 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         multiDexEnabled true
 
-        versionCode 137
-        versionName "1.0.103"
+        versionCode 138
+        versionName "1.0.104"
         resValue "string", "build_config_package", "co.audius.app"
     }
     productFlavors {
