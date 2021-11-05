@@ -5,3 +5,4 @@ export delegatePrivateKey=DELEGATE_PRIVATE_KEY
 export creatorNodeEndpoint=CREATOR_NODE_ENDPOINT
 export spOwnerWallet=SP_OWNER_WALLET
 export COMPOSE_HTTP_TIMEOUT=200
+export serviceNumber=SERVICE_NUMBER

@@ -182,7 +182,7 @@ const run = async () => {
         const delegateWallet = ownerWallet
         let endpoint = makeCreatorNodeEndpoint(serviceCount)
 
-        await _updateCreatorNodeConfig(ownerWallet, templatePath, writePath, endpoint, /* isShell */ true, delegateWallet)
+        await _updateCreatorNodeConfig(ownerWallet, templatePath, writePath, endpoint, /* isShell */ true, delegateWallet, serviceCount)
         break
       }
 
@@ -474,7 +474,7 @@ const _updateCNodeDelegateOwnerWallet = async (ethAccounts, serviceNumber) => {
   await updateServiceDelegateOwnerWallet(audiusLibs, contentNodeType, endpoint, ethAccounts[serviceNumber + 10])
 }
 
-const _updateCreatorNodeConfig = async (ownerWallet, templatePath, writePath, endpoint = null, isShell = false, delegateWallet) => {
+const _updateCreatorNodeConfig = async (ownerWallet, templatePath, writePath, endpoint = null, isShell = false, delegateWallet, serviceCount) => {
   delegateWallet = (delegateWallet || ownerWallet).toLowerCase()
   ownerWallet = ownerWallet.toLowerCase()
 
@@ -484,7 +484,7 @@ const _updateCreatorNodeConfig = async (ownerWallet, templatePath, writePath, en
   let ownerWalletPrivKey = ganacheEthAccounts['private_keys'][`${ownerWallet}`]
   let delegateWalletPrivKey = ganacheEthAccounts['private_keys'][`${delegateWallet}`]
 
-  await _updateCreatorNodeConfigFile(templatePath, writePath, ownerWallet, ownerWalletPrivKey, delegateWallet, delegateWalletPrivKey, endpoint, isShell)
+  await _updateCreatorNodeConfigFile(templatePath, writePath, ownerWallet, ownerWalletPrivKey, delegateWallet, delegateWalletPrivKey, endpoint, isShell, serviceCount)
 }
 
 const _deregisterAllSPs = async (audiusLibs, ethAccounts) => {
@@ -541,12 +541,13 @@ const _configureDiscProv = async (ethAccounts, serviceNumber, templatePath, writ
 }
 
 // Write an update to shell env file for creator nodes or docker env file
-const _updateCreatorNodeConfigFile = async (templatePath, writePath, ownerWallet, ownerWalletPkey, delegateWallet, delegateWalletPrivKey, endpoint, isShell) => {
+const _updateCreatorNodeConfigFile = async (templatePath, writePath, ownerWallet, ownerWalletPkey, delegateWallet, delegateWalletPrivKey, endpoint, isShell, serviceCount) => {
   const replaceMap = {
     DELEGATE_OWNER_WALLET: delegateWallet,
     DELEGATE_PRIVATE_KEY: delegateWalletPrivKey,
     CREATOR_NODE_ENDPOINT: endpoint,
-    SP_OWNER_WALLET: ownerWallet
+    SP_OWNER_WALLET: ownerWallet,
+    SERVICE_NUMBER: serviceCount
   }
   writeEnvConfigFromTemplate({ templatePath, writePath, replaceMap })
 }

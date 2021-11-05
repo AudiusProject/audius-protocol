@@ -172,11 +172,11 @@
     "port": 4000,
     "health_check_endpoint": "health_check",
     "up": [
-      "cd creator-node; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml up --build -d",
+      "cd creator-node; mkdir compose/env/tmp/file-storage-#; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.yml up --build -d",
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ],
     "down": [
-      "cd creator-node; . compose/env/tmp/shellEnv#.sh;  docker-compose -f compose/docker-compose.yml down --remove-orphans"
+      "cd creator-node; . compose/env/tmp/shellEnv#.sh; rm -rf compose/env/tmp/file-storage-#;  docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
     "restart": [
       "cd creator-node; . compose/env/unsetShellEnv.sh",
