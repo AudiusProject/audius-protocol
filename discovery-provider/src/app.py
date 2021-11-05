@@ -378,6 +378,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_rewards_manager",
             "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
+            "src.tasks.index_listen_count_milestones",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -475,6 +476,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "index_related_artists": {
                 "task": "index_related_artists",
                 "schedule": timedelta(seconds=60),
+            },
+            "index_listen_count_milestones": {
+                "task": "index_listen_count_milestones",
+                "schedule": timedelta(seconds=5),
             },
         },
         task_serializer="json",
