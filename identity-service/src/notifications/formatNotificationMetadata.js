@@ -208,10 +208,10 @@ const notificationResponseMap = {
     return formatChallengeReward(notification, metadata)
   },
   [NotificationType.Announcement]: formatAnnouncement,
-  [NotificationType.MilestoneRepost]: formatMilestone('Repost'),
-  [NotificationType.MilestoneFavorite]: formatMilestone('Favorite'),
-  [NotificationType.MilestoneListen]: formatMilestone('Listen'),
-  [NotificationType.MilestoneFollow]: formatMilestone('Follow')
+  [NotificationType.MilestoneRepost]: formatMilestone('repost'),
+  [NotificationType.MilestoneFavorite]: formatMilestone('favorite'),
+  [NotificationType.MilestoneListen]: formatMilestone('listen'),
+  [NotificationType.MilestoneFollow]: formatMilestone('follow')
 }
 
 const NewFavoriteTitle = 'New Favorite'
@@ -266,6 +266,7 @@ const notificationResponseTitleMap = {
   [NotificationType.CreateTrack]: () => NewSubscriptionUpdateTitle,
   [NotificationType.CreateAlbum]: () => NewSubscriptionUpdateTitle,
   [NotificationType.CreatePlaylist]: () => NewSubscriptionUpdateTitle,
+  [NotificationType.MilestoneListen]: () => NewMilestoneTitle,
   [NotificationType.Milestone]: () => NewMilestoneTitle,
   [NotificationType.TrendingTrack]: () => TrendingTrackTitle,
   [NotificationType.RemixCreate]: () => RemixCreateTitle,
@@ -301,9 +302,9 @@ const pushNotificationMessagesMap = {
   [notificationTypes.Milestone] (notification) {
     if (notification.entity) {
       const entity = notification.entity.type.toLowerCase()
-      return `Your ${entity} ${notification.entity.name} has reached over ${notification.value} ${notification.achievement}s`
+      return `Your ${entity} ${notification.entity.name} has reached over ${notification.value.toLocaleString()} ${notification.achievement}s`
     } else {
-      return `You have reached over ${notification.value} Followers `
+      return `You have reached over ${notification.value.toLocaleString()} Followers `
     }
   },
   [notificationTypes.Create.base] (notification) {

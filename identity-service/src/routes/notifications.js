@@ -348,6 +348,28 @@ module.exports = function (app) {
         }],
         limit
       })
+
+      const solanaNotifications = await models.SolanaNotification.findAll({
+        where: {
+          userId,
+          isHidden: false,
+          ...queryFilter,
+          createdAt: {
+            [models.Sequelize.Op.lt]: timeOffset.toDate()
+          }
+        },
+        order: [
+          ['createdAt', 'DESC'],
+          ['entityId', 'ASC']
+        ],
+        include: [{
+          model: models.SolanaNotificationAction,
+          required: true,
+          as: 'actions'
+        }],
+        limit
+      })
+
       let unViewedCount = await models.Notification.findAll({
         where: {
           userId,
@@ -360,7 +382,20 @@ module.exports = function (app) {
         attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('Notification.id')), 'total']],
         group: ['Notification.id']
       })
-      unViewedCount = unViewedCount.length
+      let unViewedSolanaCount = await models.SolanaNotification.findAll({
+        where: {
+          userId,
+          isViewed: false,
+          isRead: false,
+          isHidden: false,
+          ...queryFilter
+        },
+        include: [{ model: models.SolanaNotificationAction, as: 'actions', required: true, attributes: [] }],
+        attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('SolanaNotification.id')), 'total']],
+        group: ['SolanaNotification.id']
+      })
+
+      unViewedCount = unViewedCount.length + unViewedSolanaCount.length
 
       const viewedAnnouncements = await models.Notification.findAll({
         where: { userId, isViewed: true, type: NotificationType.Announcement }
@@ -379,7 +414,7 @@ module.exports = function (app) {
 
       const unreadAnnouncementCount = validUserAnnouncements.length - viewedAnnouncementCount
       const userNotifications = formatNotifications(
-        notifications.concat(filteredViewedAnnouncements),
+        notifications.concat(solanaNotifications).concat(filteredViewedAnnouncements),
         announcementsAfterFilter
       )
 
@@ -469,6 +504,10 @@ module.exports = function (app) {
           update,
           { where: { id: notificationId } }
         )
+        await models.SolanaNotification.update(
+          update,
+          { where: { id: notificationId } }
+        )
         return successResponse({ message: 'success' })
       }
     } catch (err) {
@@ -498,6 +537,11 @@ module.exports = function (app) {
       }
 
       await models.Notification.update(
+        update,
+        { where: { userId } }
+      )
+
+      await models.SolanaNotification.update(
         update,
         { where: { userId } }
       )
