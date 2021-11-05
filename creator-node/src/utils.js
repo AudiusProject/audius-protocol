@@ -236,7 +236,7 @@ async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null, ex
   if (!creatorNodes.length) return
 
   // Remove excluded nodes from list of creator nodes, no-op if empty list or nothing passed in
-  const creatorNodesFiltered = creatorNodes.filter(c => excludeList.includes(c.endpoint))
+  const creatorNodesFiltered = creatorNodes.filter(c => !excludeList.includes(c.endpoint))
 
   // generate signature
   const delegateWallet = config.get('delegateOwnerWallet').toLowerCase()
