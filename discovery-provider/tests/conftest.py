@@ -30,7 +30,7 @@ TEST_CONFIG_OVERRIDE = {
         "url_read_replica": DB_URL,
         "engine_args_literal": ENGINE_ARGS_LITERAL,
         "run_migrations": "true",
-    }
+    },
 }
 
 
@@ -135,6 +135,7 @@ def contracts(app):  # pylint: disable=redefined-outer-name
 
 
 postgresql_my = factories.postgresql("postgresql_nooproc")
+
 
 # Returns Postgres DB session, and configures
 # SQLAlchemy to use said connection.
