@@ -161,9 +161,6 @@ impl Processor {
                 let rent_account_info = next_account_info(account_info_iter)?;
                 let rent = &Rent::from_account_info(rent_account_info)?;
                 let instruction_info = next_account_info(account_info_iter)?;
-                let _token_program = next_account_info(account_info_iter)?;
-                let _system_program = next_account_info(account_info_iter)?;
-
                 Self::process_transfer_instruction(
                     program_id,
                     rent,

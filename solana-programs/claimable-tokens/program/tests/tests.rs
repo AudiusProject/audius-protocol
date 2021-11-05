@@ -760,8 +760,8 @@ async fn transfer_nonce_increment() {
             .await
             .unwrap();
 
-        let final_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
-        assert_eq!(transfer_instr_data.nonce, final_user_nonce);
+        let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
+        assert_eq!(transfer_instr_data.nonce, current_user_nonce);
 
         // Verify transfer occurred
         let bank_token_account_data = get_account(&mut program_context, &user_bank_account)
@@ -775,11 +775,13 @@ async fn transfer_nonce_increment() {
             outgoing_account_balance - transfer_amount
         );
         outgoing_account_balance = bank_token_account.amount;
-        println!("Nonce incremented to {:?}", final_user_nonce);
+        println!("Nonce incremented to {:?}", current_user_nonce);
         println!("Outgoing account balance = {:?}", outgoing_account_balance);
 
         i += 1;
     }
+    let final_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
+    assert_eq!(5, final_user_nonce);
 }
 
 // Verify that identical instructions cannot be reused 2x
@@ -1195,7 +1197,7 @@ async fn missing_secp_instruction() {
         eth_address,
     ) = init_test_variables();
     let mint_pubkey = mint_account.pubkey();
-    let (base_acc, user_bank_account, tokens_amount) = prepare_transfer(
+    let (base_acc, user_bank_account, _) = prepare_transfer(
         &mut program_context,
         mint_account,
         rent,

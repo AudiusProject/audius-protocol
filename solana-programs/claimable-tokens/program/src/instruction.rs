@@ -99,8 +99,10 @@ pub fn transfer(
         AccountMeta::new_readonly(*authority, false),
         AccountMeta::new_readonly(sysvar::rent::id(), false),
         AccountMeta::new_readonly(sysvar::instructions::id(), false),
-        AccountMeta::new_readonly(spl_token::id(), false),
+        // A reference to the token and system programs is needed even if unused directly
+        // Below are required in function scope for allocation of a new account
         AccountMeta::new_readonly(system_program::id(), false),
+        AccountMeta::new_readonly(spl_token::id(), false),
     ];
     Ok(Instruction {
         program_id: *program_id,
