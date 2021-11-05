@@ -33,6 +33,7 @@ const getNotifType = (entityType) => {
  * @param {*} tx The DB transcation to attach to DB requests
  */
 async function processCreateNotifications (notifications, tx) {
+  const validNotifications = []
   for (const notification of notifications) {
     const blocknumber = notification.blocknumber
     const timestamp = Date.parse(notification.timestamp.slice(0, -2))
@@ -51,7 +52,7 @@ async function processCreateNotifications (notifications, tx) {
     })
 
     // No operation if no users subscribe to this creator
-    if (subscribers.length === 0) return
+    if (subscribers.length === 0) continue
 
     // The notification entity id is the uploader id for tracks
     // Each track will added to the notification actions table
@@ -142,7 +143,9 @@ async function processCreateNotifications (notifications, tx) {
         }
       }
     }
+    validNotifications.push(notification)
   }
+  return validNotifications
 }
 
 module.exports = processCreateNotifications
