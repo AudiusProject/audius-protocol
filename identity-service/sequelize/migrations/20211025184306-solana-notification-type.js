@@ -1,14 +1,14 @@
 'use strict'
 const models = require('../../src/models')
 
+/**
+ * Adds enum value `MilestoneListen` to the solana notifications table, column "type"
+ */
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.sequelize.query("ALTER TYPE \"enum_SolanaNotifications_type\" ADD VALUE 'MilestoneListen'")
   },
   down: (queryInterface, Sequelize) => {
-    /**
-     * Remove 'TrendingTrack' from enum 'enum_Notifications_type'
-     */
     const tableName = 'SolanaNotifications'
     const columnName = 'type'
     const enumName = 'enum_SolanaNotifications_type'

@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 from typing import Optional, Dict
 from redis import Redis
@@ -10,9 +9,6 @@ from src.utils.cache_solana_program import CachedProgramTxInfo, get_cache_latest
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_constants import latest_sol_rewards_manager_db_tx_key
 from src.utils import helpers
-
-logger = logging.getLogger(__name__)
-
 
 # Get last sol rewards manager transaction in the db
 def get_latest_sol_rewards_manager() -> Optional[Dict]:

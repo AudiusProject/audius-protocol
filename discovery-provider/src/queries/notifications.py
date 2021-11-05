@@ -899,24 +899,18 @@ def notifications():
 
 
 def get_max_slot(redis: Redis):
-    logger.error("GET MAX CLOST")
     max_slot = 0
 
     listen_milestone_slot = redis.get(PROCESSED_LISTEN_MILESTONE)
-    logger.error(listen_milestone_slot)
     if listen_milestone_slot:
         max_slot = int(listen_milestone_slot)
-    logger.error(max_slot)
 
     rewards_manager_db_cache = get_latest_cached_sol_rewards_manager_db(redis)
     tx_cache = get_latest_cached_sol_rewards_manager_program_tx(redis)
-    logger.error(rewards_manager_db_cache)
-    logger.error(tx_cache)
 
     if tx_cache and rewards_manager_db_cache:
         if tx_cache["slot"] != rewards_manager_db_cache["slot"]:
             max_slot = min(rewards_manager_db_cache["slot"], max_slot)
-    logger.error(max_slot)
 
     return max_slot
 
