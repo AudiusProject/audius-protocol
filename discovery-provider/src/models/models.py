@@ -44,7 +44,11 @@ def configure_listener(class_, key_, inst):
     @event.listens_for(inst, "set", retval=True)
     def set_(target, value, oldvalue, initiator):
         column_type = getattr(target.__class__, inst.key).type
-        if type(column_type) in (String, Text, Unicode, UnicodeText) and value and isinstance(value, str):
+        if (
+            type(column_type) in (String, Text, Unicode, UnicodeText)
+            and value
+            and isinstance(value, str)
+        ):
             value = value.encode("utf-8", "ignore").decode("utf-8", "ignore")
             value = value.replace("\x00", "")
         return value
@@ -202,6 +206,9 @@ class User(Base):
         Boolean, nullable=False, default=False, server_default="false"
     )
     playlist_library = Column(JSONB, nullable=True)
+    is_deactivated = Column(
+        Boolean, nullable=False, default=False, server_default="false", index=True
+    )
 
     PrimaryKeyConstraint(is_current, user_id, blockhash, txhash)
 

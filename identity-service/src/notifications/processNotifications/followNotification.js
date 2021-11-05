@@ -88,6 +88,7 @@ async function processFollowNotifications (notifications, tx) {
       }
     }
   }
+  return notifications
 }
 
 module.exports = processFollowNotifications
