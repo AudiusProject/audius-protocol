@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     type: {
       type: DataTypes.ENUM({
-        values: ['ChallengeReward']
+        values: ['ChallengeReward', 'MilestoneListen']
       }),
       allowNull: false
     },

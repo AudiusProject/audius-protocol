@@ -11,7 +11,11 @@ from src.utils.redis_constants import (
     challenges_last_processed_event_redis_key,
     latest_sol_play_db_tx_key,
     latest_sol_play_program_tx_key,
-    latest_legacy_play_db_key
+    latest_legacy_play_db_key,
+    latest_sol_rewards_manager_program_tx_key,
+    latest_sol_rewards_manager_db_tx_key,
+    latest_sol_user_bank_program_tx_key,
+    latest_sol_user_bank_db_tx_key
 )
 from src.models import Block
 from src.queries.get_health import get_health
@@ -23,11 +27,9 @@ def cache_play_health_vars(redis_mock):
     redis_mock.set(
         latest_sol_play_db_tx_key,
         json.dumps({
-            "user_id": 0,
-            "track_id": 1,
-            "created_at": 1635477758,
+            "timestamp": 1635477758,
             "slot": 12,
-            "tx_sig": "5SD9fJhsuMKb1dnJtKszoLLHGve5qmubTvfJX6eLQKRT71XWXkAGXw5faj2uJPhqngzT2V4zucocGiyXYXYMv7QK"
+            "signature": "5SD9fJhsuMKb1dnJtKszoLLHGve5qmubTvfJX6eLQKRT71XWXkAGXw5faj2uJPhqngzT2V4zucocGiyXYXYMv7QK"
         })
     )
     # Set latest legacy
@@ -38,6 +40,42 @@ def cache_play_health_vars(redis_mock):
     # Set latest chain tx
     redis_mock.set(
         latest_sol_play_program_tx_key,
+        json.dumps({
+            "signature": "5SD9fJhsuMKb1dnJtKszoLLHGve5qmubTvfJX6eLQKRT71XWXkAGXw5faj2uJPhqngzT2V4zucocGiyXYXYMv7QK",
+            "slot": 15,
+            "timestamp":1635477758
+        })
+    )
+    # Set latest chain tx
+    redis_mock.set(
+        latest_sol_rewards_manager_program_tx_key,
+        json.dumps({
+            "signature": "5SD9fJhsuMKb1dnJtKszoLLHGve5qmubTvfJX6eLQKRT71XWXkAGXw5faj2uJPhqngzT2V4zucocGiyXYXYMv7QK",
+            "slot": 15,
+            "timestamp":1635477758
+        })
+    )
+    # Set latest chain tx
+    redis_mock.set(
+        latest_sol_rewards_manager_db_tx_key,
+        json.dumps({
+            "signature": "5SD9fJhsuMKb1dnJtKszoLLHGve5qmubTvfJX6eLQKRT71XWXkAGXw5faj2uJPhqngzT2V4zucocGiyXYXYMv7QK",
+            "slot": 15,
+            "timestamp":1635477758
+        })
+    )
+    # Set latest chain tx
+    redis_mock.set(
+        latest_sol_user_bank_program_tx_key,
+        json.dumps({
+            "signature": "5SD9fJhsuMKb1dnJtKszoLLHGve5qmubTvfJX6eLQKRT71XWXkAGXw5faj2uJPhqngzT2V4zucocGiyXYXYMv7QK",
+            "slot": 15,
+            "timestamp":1635477758
+        })
+    )
+    # Set latest chain tx
+    redis_mock.set(
+        latest_sol_user_bank_db_tx_key,
         json.dumps({
             "signature": "5SD9fJhsuMKb1dnJtKszoLLHGve5qmubTvfJX6eLQKRT71XWXkAGXw5faj2uJPhqngzT2V4zucocGiyXYXYMv7QK",
             "slot": 15,
@@ -79,7 +117,7 @@ def test_get_health(web3_mock, redis_mock, db_mock):
     assert health_results["db"]["number"] == 1
     assert health_results["db"]["blockhash"] == "0x01"
     assert health_results["block_difference"] == 1
-    assert health_results["plays"]["solana"]["slot_diff"] == 3
+    assert health_results["plays"]["tx_info"]["slot_diff"] == 3
 
     assert "maximum_healthy_block_difference" in health_results
     assert "version" in health_results

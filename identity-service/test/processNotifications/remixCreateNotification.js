@@ -1,6 +1,6 @@
 const assert = require('assert')
 const models = require('../../src/models')
-const processFavoriteNotifications = require('../../src/notifications/processNotifications/remixCreateNotification')
+const processRemixCreateNotifications = require('../../src/notifications/processNotifications/remixCreateNotification')
 
 const { clearDatabase, runMigrations } = require('../lib/app')
 
@@ -64,7 +64,7 @@ describe('Test Remix Create Notification', function () {
   it('should insert rows into notifications and notifications actions tables', async function () {
     // ======================================= Process initial Notifications =======================================
     const tx1 = await models.sequelize.transaction()
-    await processFavoriteNotifications(initialNotifications, tx1)
+    await processRemixCreateNotifications(initialNotifications, tx1)
     await tx1.commit()
 
     // ======================================= Run checks against the Notifications =======================================
@@ -89,7 +89,7 @@ describe('Test Remix Create Notification', function () {
 
     // ======================================= Process additional notifications =======================================
     const tx2 = await models.sequelize.transaction()
-    await processFavoriteNotifications(additionalNotifications, tx2)
+    await processRemixCreateNotifications(additionalNotifications, tx2)
     await tx2.commit()
 
     // User 40 should have 3 notifications
