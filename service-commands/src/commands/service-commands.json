@@ -5,8 +5,8 @@
       "docker container prune -f",
       "docker volume prune -f",
       "docker network prune -f",
-      "rm -rf creator-node/compose/env/tmp",
-      "rm -rf discovery-provider/compose/env/tmp"
+      "sudo rm -rf creator-node/compose/env/tmp",
+      "sudo rm -rf discovery-provider/compose/env/tmp"
     ]
   },
   "network": {
@@ -37,7 +37,7 @@
   "eth-contracts": {
     "path": "eth-contracts",
     "up": [
-      "cd eth-contracts/; rm -rf build",
+      "cd eth-contracts/; sudo rm -rf build",
       "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100 -l 8000000",
       "echo 'Waiting for ganache to fully come online...'",
       "sleep 5",
@@ -45,7 +45,7 @@
       "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 11 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log"
     ],
     "down": [
-      "cd eth-contracts/; npm run ganache-q; rm -rf build"
+      "cd eth-contracts/; npm run ganache-q; sudo rm -rf build"
     ]
   },
  "solana-validator": {
@@ -178,7 +178,7 @@
       "cd creator-node; . compose/env/unsetShellEnv.sh"
     ],
     "down": [
-      "cd creator-node; . compose/env/tmp/shellEnv#.sh; rm -rf compose/env/tmp/file-storage-#;  docker-compose -f compose/docker-compose.yml down --remove-orphans"
+      "cd creator-node; . compose/env/tmp/shellEnv#.sh; sudo rm -rf compose/env/tmp/file-storage-#;  docker-compose -f compose/docker-compose.yml down --remove-orphans"
     ],
     "restart": [
       "cd creator-node; . compose/env/unsetShellEnv.sh",
