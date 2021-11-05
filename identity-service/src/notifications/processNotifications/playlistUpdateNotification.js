@@ -90,6 +90,7 @@ async function processPlaylistUpdateNotifications (notifications, tx) {
   })
 
   await Promise.all(newPlaylistUpdatePromises)
+  return notifications
 }
 
 module.exports = processPlaylistUpdateNotifications
