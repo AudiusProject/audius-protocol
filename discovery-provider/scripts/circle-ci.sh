@@ -16,7 +16,7 @@ function main {
   cd_eth_contracts_repo
   echo 'Migrating eth-contracts'
   node_modules/.bin/truffle migrate --network test_local
-  audius_eth_contracts_registry=$(node -p "require('./migrations/migration-output.json').registryAddress")
+  export audius_eth_contracts_registry=$(node -p "require('./migrations/migration-output.json').registryAddress")
 
   # run database migrations
   cd_discprov_repo
