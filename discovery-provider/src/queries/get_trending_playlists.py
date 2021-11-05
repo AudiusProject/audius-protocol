@@ -1,8 +1,9 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime
-from typing import cast
+from typing import cast, Optional, TypedDict
 from sqlalchemy import func, desc, Integer
 from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import GenericFunction
 from sqlalchemy.sql.type_api import TypeEngine
 from src.models import Playlist, Save, SaveType, RepostType, Follow, AggregateUser
@@ -229,98 +230,113 @@ def make_trending_cache_key(
     return f"generated-trending-playlists{version_name}:{time_range}"
 
 
-def get_trending_playlists(args, strategy):
+class GetTrendingPlaylistsArgs(TypedDict, total=False):
+    current_user_id: Optional[int]
+    with_tracks: Optional[bool]
+    time: str
+    offset: int
+    limit: int
+
+def get_trending_playlists_session(
+    session: Session,
+    args: GetTrendingPlaylistsArgs,
+    strategy,
+    use_request_context=True
+):
+    """Returns Trending Playlists. Checks Redis cache for unpopulated playlists."""
+    current_user_id = args.get("current_user_id", None)
+    with_tracks = args.get("with_tracks", False)
+    time = args.get("time")
+    limit, offset = args.get("limit"), args.get("offset")
+    key = make_trending_cache_key(time, strategy.version)
+
+    # Get unpopulated playlists,
+    # cached if it exists.
+    (playlists, playlist_ids) = use_redis_cache(
+        key, None, make_get_unpopulated_playlists(session, time, strategy)
+    )
+
+    # Apply limit + offset early to reduce the amount of
+    # population work we have to do
+    if limit is not None and offset is not None:
+        playlists = playlists[offset : limit + offset]
+        playlist_ids = playlist_ids[offset : limit + offset]
+
+    # Populate playlist metadata
+    playlists = populate_playlist_metadata(
+        session,
+        playlist_ids,
+        playlists,
+        [RepostType.playlist, RepostType.album],
+        [SaveType.playlist, SaveType.album],
+        current_user_id,
+    )
+
+    trimmed_track_ids = None
+    for playlist in playlists:
+        playlist["track_count"] = len(playlist["tracks"])
+        playlist["tracks"] = playlist["tracks"][:PLAYLIST_TRACKS_LIMIT]
+        # Trim track_ids, which ultimately become added_timestamps
+        # and need to match the tracks.
+        trimmed_track_ids = {track["track_id"] for track in playlist["tracks"]}
+        playlist_track_ids = playlist["playlist_contents"]["track_ids"]
+        playlist_track_ids = list(
+            filter(
+                lambda track_id: track_id["track"] in trimmed_track_ids, # type: ignore
+                playlist_track_ids,
+            )
+        )
+        playlist["playlist_contents"]["track_ids"] = playlist_track_ids
+
+    playlists_map = {playlist["playlist_id"]: playlist for playlist in playlists}
+
+    if with_tracks:
+        # populate track metadata
+        tracks = []
+        for playlist in playlists:
+            playlist_tracks = playlist["tracks"]
+            tracks.extend(playlist_tracks)
+        track_ids = [track["track_id"] for track in tracks]
+        populated_tracks = populate_track_metadata(
+            session, track_ids, tracks, current_user_id
+        )
+
+        # Add users if necessary
+        add_users_to_tracks(session, populated_tracks, current_user_id)
+
+        # Re-associate tracks with playlists
+        # track_id -> populated_track
+        populated_track_map = {
+            track["track_id"]: track for track in populated_tracks
+        }
+        for playlist in playlists_map.values():
+            for i in range(len(playlist["tracks"])):
+                track_id = playlist["tracks"][i]["track_id"]
+                populated = populated_track_map[track_id]
+                playlist["tracks"][i] = populated
+            playlist["tracks"] = list(map(extend_track, playlist["tracks"]))
+
+    # re-sort playlists to original order, because populate_playlist_metadata
+    # unsorts.
+    sorted_playlists = [playlists_map[playlist_id] for playlist_id in playlist_ids]
+
+    # Add users to playlists
+    user_id_list = get_users_ids(sorted_playlists)
+    users = get_users_by_id(session, user_id_list, current_user_id, use_request_context)
+    for playlist in sorted_playlists:
+        user = users[playlist["playlist_owner_id"]]
+        if user:
+            playlist["user"] = user
+
+    # Extend the playlists
+    playlists = list(map(extend_playlist, playlists))
+    return sorted_playlists
+
+def get_trending_playlists(args: GetTrendingPlaylistsArgs, strategy):
     """Returns Trending Playlists. Checks Redis cache for unpopulated playlists."""
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        current_user_id = args.get("current_user_id", None)
-        with_tracks = args.get("with_tracks", False)
-        time = args.get("time")
-        limit, offset = args.get("limit"), args.get("offset")
-        key = make_trending_cache_key(time, strategy.version)
-
-        # Get unpopulated playlists,
-        # cached if it exists.
-        (playlists, playlist_ids) = use_redis_cache(
-            key, None, make_get_unpopulated_playlists(session, time, strategy)
-        )
-
-        # Apply limit + offset early to reduce the amount of
-        # population work we have to do
-        if limit is not None and offset is not None:
-            playlists = playlists[offset : limit + offset]
-            playlist_ids = playlist_ids[offset : limit + offset]
-
-        # Populate playlist metadata
-        playlists = populate_playlist_metadata(
-            session,
-            playlist_ids,
-            playlists,
-            [RepostType.playlist, RepostType.album],
-            [SaveType.playlist, SaveType.album],
-            current_user_id,
-        )
-
-        trimmed_track_ids = None
-        for playlist in playlists:
-            playlist["track_count"] = len(playlist["tracks"])
-            playlist["tracks"] = playlist["tracks"][:PLAYLIST_TRACKS_LIMIT]
-            # Trim track_ids, which ultimately become added_timestamps
-            # and need to match the tracks.
-            trimmed_track_ids = {track["track_id"] for track in playlist["tracks"]}
-            playlist_track_ids = playlist["playlist_contents"]["track_ids"]
-            playlist_track_ids = list(
-                filter(
-                    lambda track_id: track_id["track"] in trimmed_track_ids,
-                    playlist_track_ids,
-                )
-            )
-            playlist["playlist_contents"]["track_ids"] = playlist_track_ids
-
-        playlists_map = {playlist["playlist_id"]: playlist for playlist in playlists}
-
-        if with_tracks:
-            # populate track metadata
-            tracks = []
-            for playlist in playlists:
-                playlist_tracks = playlist["tracks"]
-                tracks.extend(playlist_tracks)
-            track_ids = [track["track_id"] for track in tracks]
-            populated_tracks = populate_track_metadata(
-                session, track_ids, tracks, current_user_id
-            )
-
-            # Add users if necessary
-            add_users_to_tracks(session, populated_tracks, current_user_id)
-
-            # Re-associate tracks with playlists
-            # track_id -> populated_track
-            populated_track_map = {
-                track["track_id"]: track for track in populated_tracks
-            }
-            for playlist in playlists_map.values():
-                for i in range(len(playlist["tracks"])):
-                    track_id = playlist["tracks"][i]["track_id"]
-                    populated = populated_track_map[track_id]
-                    playlist["tracks"][i] = populated
-                playlist["tracks"] = list(map(extend_track, playlist["tracks"]))
-
-        # re-sort playlists to original order, because populate_playlist_metadata
-        # unsorts.
-        sorted_playlists = [playlists_map[playlist_id] for playlist_id in playlist_ids]
-
-        # Add users to playlists
-        user_id_list = get_users_ids(sorted_playlists)
-        users = get_users_by_id(session, user_id_list, current_user_id)
-        for playlist in sorted_playlists:
-            user = users[playlist["playlist_owner_id"]]
-            if user:
-                playlist["user"] = user
-
-        # Extend the playlists
-        playlists = list(map(extend_playlist, playlists))
-        return sorted_playlists
-
+        return get_trending_playlists_session(session, args, strategy)
 
 def get_full_trending_playlists(request, args, strategy):
     offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)

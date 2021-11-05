@@ -7,24 +7,13 @@ from sqlalchemy.orm.session import Session
 
 from src.models import Block
 from src.tasks.celery_app import celery
-from src.queries.get_trending_tracks import (
-    make_trending_cache_key,
-    generate_unpopulated_trending,
-    generate_unpopulated_trending_from_mat_views,
-)
-from src.queries.get_trending_playlists import (
-    make_trending_cache_key as make_trending_cache_key_playlists,
-    make_get_unpopulated_playlists,
-)
-from src.utils.redis_cache import pickle_and_set
+from src.queries.get_trending_tracks import get_trending_tracks_session
+from src.queries.get_trending_playlists import GetTrendingPlaylistsArgs, get_trending_playlists_session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
-from src.queries.get_underground_trending import (
-    make_underground_trending_cache_key,
-    make_get_unpopulated_tracks,
-)
+from src.queries.get_underground_trending import GetUndergroundTrendingTrackcArgs, _get_underground_trending_session
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
 from src.utils.session_manager import SessionManager
 
@@ -94,25 +83,12 @@ def enqueue_trending_challenges(
             TrendingType.TRACKS
         ).keys()
 
-        genre = None
         time_range = "week"
-
         for version in trending_track_versions:
             strategy = trending_strategy_factory.get_strategy(
                 TrendingType.TRACKS, version
             )
-            if strategy.use_mat_view:
-                res = generate_unpopulated_trending_from_mat_views(
-                    session, genre, time_range, strategy
-                )
-            else:
-                res = generate_unpopulated_trending(
-                    session, genre, time_range, strategy
-                )
-
-            key = make_trending_cache_key(time_range, genre, version)
-            pickle_and_set(redis, key, res)
-            top_tracks = res[0]
+            top_tracks = get_trending_tracks_session(session, {"time": time_range}, strategy)
             top_tracks = top_tracks[:TRENDING_LIMIT]
             dispatch_trending_challenges(
                 challenge_bus,
@@ -131,11 +107,9 @@ def enqueue_trending_challenges(
             strategy = trending_strategy_factory.get_strategy(
                 TrendingType.UNDERGROUND_TRACKS, version
             )
-            res = make_get_unpopulated_tracks(session, redis, strategy)()
-            key = make_underground_trending_cache_key(version)
-            pickle_and_set(redis, key, res)
-            top_underground_tracks = res[0]
-            top_underground_tracks = top_underground_tracks[:TRENDING_LIMIT]
+            underground_args: GetUndergroundTrendingTrackcArgs = {"offset": 0, "limit":TRENDING_LIMIT}
+            top_tracks = _get_underground_trending_session(session, underground_args, strategy, False)
+
             dispatch_trending_challenges(
                 challenge_bus,
                 ChallengeEvent.trending_underground,
@@ -152,12 +126,13 @@ def enqueue_trending_challenges(
             strategy = trending_strategy_factory.get_strategy(
                 TrendingType.PLAYLISTS, version
             )
-            key = make_trending_cache_key_playlists(time_range, strategy.version)
-            res = make_get_unpopulated_playlists(session, time_range, strategy)()
-            pickle_and_set(redis, key, res)
-            top_playlists = res[0]
-            top_playlists = top_playlists[:TRENDING_LIMIT]
-            for idx, playlist in enumerate(top_playlists):
+            playlists_args: GetTrendingPlaylistsArgs = {
+                "limit": TRENDING_LIMIT,
+                "offset": 0,
+                "time": time_range
+            }
+            trending_playlists = get_trending_playlists_session(session, playlists_args, strategy, False)
+            for idx, playlist in enumerate(trending_playlists):
                 challenge_bus.dispatch(
                     ChallengeEvent.trending_playlist,
                     latest_blocknumber,

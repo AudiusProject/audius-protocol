@@ -1,6 +1,12 @@
+from datetime import datetime, date
 import logging
 import time
-from src.models import Track
+from typing import List, Optional, Tuple
+from redis import Redis
+from sqlalchemy.orm.session import Session
+from web3 import Web3
+
+from src.models import Track, Block
 from src.tasks.celery_app import celery
 from src.queries.get_trending_tracks import (
     make_trending_cache_key,
@@ -9,6 +15,7 @@ from src.queries.get_trending_tracks import (
 )
 from src.utils.redis_cache import pickle_and_set
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
+from src.utils.session_manager import SessionManager
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.queries.get_underground_trending import (
@@ -71,10 +78,10 @@ genre_allowlist = {
 }
 
 
-def get_genres(session):
+def get_genres(session: Session) -> List[str]:
     """Returns all genres"""
-    genres = (session.query(Track.genre).distinct(Track.genre)).all()
-    genres = filter(
+    genres: List[Tuple[str]] = (session.query(Track.genre).distinct(Track.genre)).all()
+    genres = filter( # type: ignore
         lambda x: x[0] is not None and x[0] != "" and x[0] in genre_allowlist, genres
     )
     return list(map(lambda x: x[0], genres))
@@ -86,7 +93,7 @@ AGGREGATE_INTERVAL_PLAYS = "aggregate_interval_plays"
 TRENDING_PARAMS = "trending_params"
 
 
-def update_view(session, mat_view_name):
+def update_view(session: Session, mat_view_name: str):
     start_time = time.time()
     session.execute(f"REFRESH MATERIALIZED VIEW {mat_view_name}")
     update_time = time.time() - start_time
@@ -100,14 +107,14 @@ def update_view(session, mat_view_name):
     )
 
 
-def index_trending(self, db, redis):
+def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     logger.info("index_trending.py | starting indexing")
     update_start = time.time()
     with db.scoped_session() as session:
         genres = get_genres(session)
 
         # Make sure to cache empty genre
-        genres.append(None)
+        genres.append(None) # type: ignore
 
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
@@ -173,6 +180,39 @@ def index_trending(self, db, redis):
     )
     # Update cache key to track the last time trending finished indexing
     redis.set(trending_tracks_last_completion_redis_key, int(update_end))
+    set_last_trending_datetime(redis, timestamp)
+
+
+last_trending_timestamp = 'last_trending_timestamp'
+def get_last_trending_datetime(redis: Redis):
+    dt = redis.get(last_trending_timestamp)
+    if dt:
+        return datetime.fromtimestamp(int(dt.decode()))
+    return None
+
+def set_last_trending_datetime(redis: Redis, timestamp: int):
+    redis.set(last_trending_timestamp, timestamp)
+
+def get_should_update_trending(db: SessionManager, web3: Web3, redis: Redis) -> Optional[int]:
+    with db.scoped_session() as session:
+        current_db_block = session.query(Block.blockhash).filter(Block.is_current == True).first()
+        current_block = web3.eth.getBlock(current_db_block[0], True)
+        current_timestamp = current_block["timestamp"]
+        block_datetime = (
+            datetime
+                .fromtimestamp(current_timestamp)
+                .replace(minute=0, second=0, microsecond=0)
+        )
+
+        last_trending_datetime = get_last_trending_datetime(redis)
+        if not last_trending_datetime:
+            return int(block_datetime.timestamp())
+
+        duration_since_last_index = block_datetime - last_trending_datetime
+        if duration_since_last_index.total_seconds() > 60*60:
+            return int(block_datetime.timestamp())
+
+    return None
 
 
 ######## CELERY TASKS ########
@@ -181,14 +221,20 @@ def index_trending_task(self):
     """Caches all trending combination of time-range and genre (including no genre)."""
     db = index_trending_task.db
     redis = index_trending_task.redis
+    web3 = index_trending_task.web3
     have_lock = False
     update_lock = redis.lock("index_trending_lock", timeout=7200)
     try:
+        should_update_timestamp = get_should_update_trending(db, web3, redis)
         have_lock = update_lock.acquire(blocking=False)
-        if have_lock:
-            index_trending(self, db, redis)
+        if should_update_timestamp and have_lock:
+            index_trending(self, db, redis, should_update_timestamp)
         else:
-            logger.info("index_trending.py | Failed to acquire index trending lock")
+            logger.info(
+                f"index_trending.py | \
+                skip indexing: have lock {have_lock}, \
+                shoud update {should_update_timestamp}"
+            )
     except Exception as e:
         logger.error("index_trending.py | Fatal error in main loop", exc_info=True)
         raise e

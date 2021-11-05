@@ -1,7 +1,9 @@
 import logging  # pylint: disable=C0302
 from datetime import datetime, timedelta
+from typing import TypedDict, Optional, Any
 import redis
 from sqlalchemy import func
+from sqlalchemy.orm.session import Session
 
 from src.trending_strategies.trending_type_and_version import TrendingType
 
@@ -203,38 +205,50 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
 
     return wrapped
 
+class GetUndergroundTrendingTrackcArgs(TypedDict, total=False):
+    current_user_id: Optional[Any]
+    offset: int
+    limit: int
 
-def _get_underground_trending(args, strategy):
+def _get_underground_trending_session(
+    session: Session,
+    args: GetUndergroundTrendingTrackcArgs,
+    strategy,
+    use_request_context=True
+):
+    current_user_id = args.get("current_user_id", None)
+    limit, offset = args.get("limit"), args.get("offset")
+    key = make_underground_trending_cache_key(strategy.version)
+
+    (tracks, track_ids) = use_redis_cache(
+        key, None, make_get_unpopulated_tracks(session, redis_conn, strategy)
+    )
+
+    # Apply limit + offset early to reduce the amount of
+    # population work we have to do
+    if limit is not None and offset is not None:
+        track_ids = track_ids[offset : limit + offset]
+
+    tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+
+    tracks_map = {track["track_id"]: track for track in tracks}
+
+    # Re-sort the populated tracks b/c it loses sort order in sql query
+    sorted_tracks = [tracks_map[track_id] for track_id in track_ids]
+    user_id_list = get_users_ids(sorted_tracks)
+    users = get_users_by_id(session, user_id_list, current_user_id, use_request_context)
+    for track in sorted_tracks:
+        user = users[track["owner_id"]]
+        if user:
+            track["user"] = user
+    sorted_tracks = list(map(extend_track, sorted_tracks))
+    return sorted_tracks
+
+
+def _get_underground_trending(args: GetUndergroundTrendingTrackcArgs, strategy):
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        current_user_id = args.get("current_user_id", None)
-        limit, offset = args.get("limit"), args.get("offset")
-        key = make_underground_trending_cache_key(strategy.version)
-
-        (tracks, track_ids) = use_redis_cache(
-            key, None, make_get_unpopulated_tracks(session, redis_conn, strategy)
-        )
-
-        # Apply limit + offset early to reduce the amount of
-        # population work we have to do
-        if limit is not None and offset is not None:
-            track_ids = track_ids[offset : limit + offset]
-
-        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
-
-        tracks_map = {track["track_id"]: track for track in tracks}
-
-        # Re-sort the populated tracks b/c it loses sort order in sql query
-        sorted_tracks = [tracks_map[track_id] for track_id in track_ids]
-        user_id_list = get_users_ids(sorted_tracks)
-        users = get_users_by_id(session, user_id_list, current_user_id)
-        for track in sorted_tracks:
-            user = users[track["owner_id"]]
-            if user:
-                track["user"] = user
-        sorted_tracks = list(map(extend_track, sorted_tracks))
-        return sorted_tracks
-
+        return _get_underground_trending_session(session, args, strategy)
 
 def get_underground_trending(request, args, strategy):
     offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
