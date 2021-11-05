@@ -105,7 +105,9 @@ def create_instance(name, azure, image_project, image_family, size, machine_type
                 "",
                 "-f",
                 f"{os.getenv('HOME')}/.ssh/audius-azure",
-            ]
+            ],
+            input=b"n\n",
+            stdout=subprocess.DEVNULL,
         )
 
         subprocess.run(
