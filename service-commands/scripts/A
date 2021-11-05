@@ -127,6 +127,8 @@ def create_instance(name, azure, image_project, image_family, size, machine_type
                 size,
                 "--ssh-key-values",
                 f"{os.getenv('HOME')}/.ssh/audius-azure.pub",
+                "--public-ip-sku",
+                "Basic",
             ],
         )
 
