@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { NavigationContainer } from '@react-navigation/native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { View, StyleSheet } from 'react-native'
 import SignOn from './SignOn'
@@ -21,6 +21,8 @@ import {
 } from '../../store/signon/selectors'
 import { track, make } from '../../utils/analytics'
 import { EventNames } from '../../types/analytics'
+import { setVisibility } from '../../store/drawers/slice'
+import { remindUserToTurnOnNotifications } from '../../components/notification-reminder/NotificationReminder'
 
 export type RootStackParamList = {
   SignOn: undefined
@@ -60,6 +62,8 @@ const styles = StyleSheet.create({
 const Stack = createNativeStackNavigator()
 
 const SignOnNav = () => {
+  const dispatch = useDispatch()
+
   const dappLoaded = useSelector(getDappLoaded)
   const signedIn = useSelector(getIsSignedIn)
   const onSignUp = useSelector(getOnSignUp)
@@ -67,6 +71,12 @@ const SignOnNav = () => {
   const finalEmail = useSelector(getFinalEmail)
   const finalHandle = useSelector(getFinalHandle)
   const [isHidden, setIsHidden] = useState(true)
+
+  const setPushNotificationsReminderVisible = useCallback(
+    (visible: boolean) =>
+      dispatch(setVisibility({ drawer: 'EnablePushNotifications', visible })),
+    [dispatch]
+  )
 
   useEffect(() => {
     setIsHidden(
@@ -86,8 +96,15 @@ const SignOnNav = () => {
           handle: finalHandle
         })
       )
+      remindUserToTurnOnNotifications(setPushNotificationsReminderVisible)
     }
-  }, [onSignUp, isAccountAvailable, finalEmail, finalHandle])
+  }, [
+    onSignUp,
+    isAccountAvailable,
+    finalEmail,
+    finalHandle,
+    setPushNotificationsReminderVisible
+  ])
 
   const screenProps = [
     {
