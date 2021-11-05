@@ -1,7 +1,7 @@
 """Add is_deactivated to users
 
 Revision ID: edccccc274a7
-Revises: e2a8aea2e2e1
+Revises: 8bc5bac6711b
 Create Date: 2021-11-04 18:31:25.972519
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = "edccccc274a7"
-down_revision = "e2a8aea2e2e1"
+down_revision = "8bc5bac6711b"
 branch_labels = None
 depends_on = None
 
