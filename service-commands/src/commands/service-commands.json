@@ -4,7 +4,9 @@
       "SERVICES=$(docker ps -aq); if [ \"$SERVICES\" != \"\" ]; then docker stop ${SERVICES} && docker rm ${SERVICES}; fi",
       "docker container prune -f",
       "docker volume prune -f",
-      "docker network prune -f"
+      "docker network prune -f",
+      "rm -rf creator-node/compose/env/tmp",
+      "rm -rf discovery-provider/compose/env/tmp"
     ]
   },
   "network": {
