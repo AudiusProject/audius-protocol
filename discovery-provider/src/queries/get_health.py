@@ -3,9 +3,12 @@ import os
 import time
 from typing import Dict, Optional, Tuple, TypedDict, cast
 from datetime import datetime
+from redis import Redis
 
 from src.models import Block, IPLDBlacklistBlock
 from src.monitors import monitors, monitor_names
+from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_info
+from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
 from src.utils import helpers, redis_connection, web3_provider, db_session
 from src.utils.config import shared_config
 from src.utils.redis_constants import (
@@ -212,9 +215,12 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_block_num = latest_block.number
         latest_block_hash = latest_block.hash.hex()
 
-    (unhealthy_plays, sol_play_info, time_diff_general) = get_play_health_info(
-        redis, plays_count_max_drift
+    play_health_info = get_play_health_info(
+        redis,
+        plays_count_max_drift
     )
+    rewards_manager_health_info = get_rewards_manager_health_info(redis)
+    user_bank_health_info = get_user_bank_health_info(redis)
 
     # fetch latest db state if:
     # we explicitly don't want to use redis cache or
@@ -292,7 +298,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "index_eth_age_sec": index_eth_age_sec,
         "number_of_cpus": number_of_cpus,
         **sys_info,
-        "plays": {"solana": sol_play_info, "time_diff_general": time_diff_general},
+        "plays": play_health_info,
+        "rewards_manager": rewards_manager_health_info,
+        "user_bank": user_bank_health_info,
         "openresty_public_key": openresty_public_key,
     }
 
@@ -350,15 +358,21 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         and challenge_events_age_sec > challenge_events_age_max_drift
     )
 
-    is_unhealthy = unhealthy_blocks or unhealthy_challenges or unhealthy_plays
+    is_unhealthy = unhealthy_blocks or unhealthy_challenges or play_health_info["is_unhealthy"]
 
     return health_results, is_unhealthy
 
 
+class SolHealthInfo(TypedDict):
+    is_unhealthy: bool
+    tx_info: Dict
+    time_diff_general: int
+
 # Aggregate play health info across Solana and legacy storage
 def get_play_health_info(
-    redis, plays_count_max_drift: Optional[int]
-) -> Tuple[bool, Dict, int]:
+    redis: Redis,
+    plays_count_max_drift: Optional[int]
+) -> SolHealthInfo:
     if redis is None:
         raise Exception("Invalid arguments for get_play_health_info")
 
@@ -400,7 +414,49 @@ def get_play_health_info(
         and (is_unhealthy_sol_plays and (plays_count_max_drift < time_diff_general))
     )
 
-    return (is_unhealthy_plays, sol_play_info, time_diff_general)
+    return {
+        "is_unhealthy": is_unhealthy_plays,
+        "tx_info": sol_play_info,
+        "time_diff_general": time_diff_general
+    }
+
+
+def get_user_bank_health_info(redis: Redis, max_drift: Optional[int] = None) -> SolHealthInfo:
+    if redis is None:
+        raise Exception("Invalid arguments for get_user_bank_health_info")
+
+    current_time_utc = datetime.utcnow()
+
+    tx_health_info = get_sol_user_bank_health_info(redis, current_time_utc)
+    # If play count max drift provided, perform comparison
+    is_unhealthy = bool(
+        max_drift
+        and max_drift < tx_health_info["time_diff"]
+    )
+
+    return {
+        "is_unhealthy": is_unhealthy,
+        "tx_info": tx_health_info,
+        "time_diff_general": tx_health_info["time_diff"]
+    }
+
+def get_rewards_manager_health_info(redis: Redis, max_drift: Optional[int] = None) -> SolHealthInfo:
+    if redis is None:
+        raise Exception("Invalid arguments for get_rewards_manager_health_info")
+
+    current_time_utc = datetime.utcnow()
+
+    tx_health_info = get_sol_rewards_manager_health_info(redis, current_time_utc)
+    is_unhealthy = bool(
+        max_drift
+        and max_drift < tx_health_info["time_diff"]
+    )
+
+    return {
+        "is_unhealthy": is_unhealthy,
+        "tx_info": tx_health_info,
+        "time_diff_general": tx_health_info["time_diff"]
+    }
 
 
 def get_latest_chain_block_set_if_nx(redis=None, web3=None):

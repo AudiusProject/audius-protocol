@@ -48,6 +48,7 @@ async function processRemixCreateNotifications (notifications, tx) {
       transaction: tx
     })
   }
+  return notifications
 }
 
 module.exports = processRemixCreateNotifications
