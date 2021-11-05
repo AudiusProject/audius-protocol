@@ -275,7 +275,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     if (!fileFound) {
       try {
         const libs = serviceRegistry.libs
-        await findCIDInNetwork(expectedStoragePath, multihash, logger, libs)
+        await findCIDInNetwork(expectedStoragePath, multihash, logger, libs, null, gatewaysToTry)
         decisionTree.push({ stage: `Found file ${multihash} by calling "findCIDInNetwork"`, vals: multihash, time: Date.now() })
         fileFound = true
       } catch (e) {

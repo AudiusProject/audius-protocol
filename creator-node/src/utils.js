@@ -227,7 +227,7 @@ const ipfsGet = ({ ipfsLatest }, logger, path, timeout = 1000) => new Promise(as
   }
 })
 
-async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null) {
+async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null, excludeList = []) {
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
   if (attemptedStateFix) return
 
@@ -235,13 +235,16 @@ async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null) {
   const creatorNodes = await getAllRegisteredCNodes(libs)
   if (!creatorNodes.length) return
 
+  // Remove excluded nodes from list of creator nodes, no-op if empty list or nothing passed in
+  const creatorNodesFiltered = creatorNodes.filter(c => excludeList.includes(c.endpoint))
+
   // generate signature
   const delegateWallet = config.get('delegateOwnerWallet').toLowerCase()
   const { signature, timestamp } = generateTimestampAndSignature({ filePath, delegateWallet }, config.get('delegatePrivateKey'))
   let node
 
-  for (let index = 0; index < creatorNodes.length; index++) {
-    node = creatorNodes[index]
+  for (let index = 0; index < creatorNodesFiltered.length; index++) {
+    node = creatorNodesFiltered[index]
     try {
       const resp = await axios({
         method: 'get',
