@@ -357,7 +357,7 @@ impl Processor {
         let nonce_acct_lamports = nonce_account_info.lamports();
         if nonce_acct_lamports == 0 {
             // Create user nonce account if not found
-            let signature = &[
+            let signers_seeds = &[
                 &authority.key.to_bytes()[..32],
                 &nonce_acct_seed.as_slice(),
                 &[bump_seed],
@@ -367,7 +367,7 @@ impl Processor {
                 funder_account_info.clone(),
                 nonce_account_info.clone(),
                 NonceAccount::LEN,
-                &[signature],
+                &[signers_seeds],
                 rent,
             )?;
 
