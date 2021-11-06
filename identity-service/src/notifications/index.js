@@ -186,7 +186,7 @@ class NotificationProcessor {
         await this.redis.set(NOTIFICATION_SOLANA_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
 
         // Restart job with updated starting slot
-        await this.notifQueue.add({
+        await this.solanaNotifQueue.add({
           type: solanaNotificationJobType,
           minSlot: maxSlot
         }, {
@@ -197,7 +197,7 @@ class NotificationProcessor {
         logger.error(`Restarting due to error indexing notifications : ${e}`)
         this.errorHandler(e)
         // Restart job with same starting slot
-        await this.notifQueue.add({
+        await this.solanaNotifQueue.add({
           type: solanaNotificationJobType,
           minSlot: minSlot
         }, {
@@ -392,11 +392,11 @@ class NotificationProcessor {
     const tx = await models.sequelize.transaction()
     try {
       // Insert the solana notifications into the DB
-      await processNotifications(notifications, tx)
+      const processedNotifications = await processNotifications(notifications, tx)
       logger.info(`${logLabel} - processNotifications complete`)
 
       // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
-      await sendNotifications(audiusLibs, notifications, tx)
+      await sendNotifications(audiusLibs, processedNotifications, tx)
       logger.info(`${logLabel} - sendNotifications complete`)
 
       // Commit
