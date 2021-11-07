@@ -3,13 +3,14 @@
 use crate::{
     error::{to_claimable_tokens_error, ClaimableProgramError},
     instruction::ClaimableProgramInstruction,
-    utils::program::{find_address_pair, EthereumAddress},
+    state::{NonceAccount, TransferInstructionData},
+    utils::program::{
+        find_address_pair, find_nonce_address, EthereumAddress, NONCE_ACCOUNT_PREFIX,
+    },
 };
 use borsh::{BorshDeserialize, BorshSerialize};
-// use solana_sdk::{secp256k1_instruction::{SIGNATURE_OFFSETS_SERIALIZED_SIZE}};
 use solana_program::{
-    account_info::next_account_info,
-    account_info::AccountInfo,
+    account_info::{next_account_info, AccountInfo},
     entrypoint::ProgramResult,
     msg,
     program::{invoke, invoke_signed},
@@ -65,7 +66,7 @@ impl Processor {
     ) -> ProgramResult {
         // check that mint is initialized
         spl_token::state::Mint::unpack(&mint_account_info.data.borrow())?;
-        Self::create_account(
+        Self::create_token_account(
             program_id,
             funder_account_info.clone(),
             acc_to_create_info.clone(),
@@ -88,17 +89,27 @@ impl Processor {
     /// Operation gated by SECP recovery
     pub fn process_transfer_instruction<'a>(
         program_id: &Pubkey,
+        rent: &Rent,
+        funder_account_info: &AccountInfo<'a>,
         banks_token_account_info: &AccountInfo<'a>,
         destination_account_info: &AccountInfo<'a>,
+        nonce_account_info: &AccountInfo<'a>,
         authority_account_info: &AccountInfo<'a>,
         instruction_info: &AccountInfo<'a>,
         eth_address: EthereumAddress,
         amount: u64,
     ) -> ProgramResult {
         Self::check_ethereum_sign(
+            program_id,
+            funder_account_info,
             instruction_info,
+            banks_token_account_info,
+            nonce_account_info,
+            authority_account_info,
             &eth_address,
             &destination_account_info.key.to_bytes(),
+            amount,
+            rent,
         )?;
         Self::token_transfer(
             banks_token_account_info.clone(),
@@ -143,15 +154,21 @@ impl Processor {
             ClaimableProgramInstruction::Transfer(instruction) => {
                 msg!("Instruction: Transfer");
 
+                let funder_account_info = next_account_info(account_info_iter)?;
                 let banks_token_account_info = next_account_info(account_info_iter)?;
                 let destination_account_info = next_account_info(account_info_iter)?;
+                let nonce_account_info = next_account_info(account_info_iter)?;
                 let authority_account_info = next_account_info(account_info_iter)?;
+                let rent_account_info = next_account_info(account_info_iter)?;
+                let rent = &Rent::from_account_info(rent_account_info)?;
                 let instruction_info = next_account_info(account_info_iter)?;
-
                 Self::process_transfer_instruction(
                     program_id,
+                    rent,
+                    funder_account_info,
                     banks_token_account_info,
                     destination_account_info,
+                    nonce_account_info,
                     authority_account_info,
                     instruction_info,
                     instruction.eth_address,
@@ -163,7 +180,7 @@ impl Processor {
 
     // Helper functions below
     #[allow(clippy::too_many_arguments)]
-    fn create_account<'a>(
+    fn create_token_account<'a>(
         program_id: &Pubkey,
         funder: AccountInfo<'a>,
         account_to_create: AccountInfo<'a>,
@@ -199,6 +216,27 @@ impl Processor {
             &[funder.clone(), account_to_create.clone(), base.clone()],
             &[signature],
         )
+    }
+
+    /// Create account
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_account<'a>(
+        program_id: &Pubkey,
+        from: AccountInfo<'a>,
+        to: AccountInfo<'a>,
+        space: usize,
+        signers_seeds: &[&[&[u8]]],
+        rent: &Rent,
+    ) -> ProgramResult {
+        let ix = system_instruction::create_account(
+            from.key,
+            to.key,
+            rent.minimum_balance(space),
+            space as u64,
+            program_id,
+        );
+
+        invoke_signed(&ix, &[from, to], signers_seeds)
     }
 
     /// Helper to initialize user token account
@@ -259,10 +297,17 @@ impl Processor {
     }
 
     /// Checks that the user signed message with his ethereum private key
-    fn check_ethereum_sign(
-        instruction_info: &AccountInfo,
+    fn check_ethereum_sign<'a>(
+        program_id: &Pubkey,
+        funder_account_info: &AccountInfo<'a>,
+        instruction_info: &AccountInfo<'a>,
+        banks_token_account_info: &AccountInfo<'a>,
+        nonce_account_info: &AccountInfo<'a>,
+        authority: &AccountInfo<'a>,
         expected_signer: &EthereumAddress,
         expected_message: &[u8],
+        amount: u64,
+        rent: &Rent,
     ) -> ProgramResult {
         if !sysvar::instructions::check_id(&instruction_info.key) {
             return Err(ClaimableProgramError::Secp256InstructionLosing.into());
@@ -291,22 +336,80 @@ impl Processor {
             return Err(ClaimableProgramError::Secp256InstructionLosing.into());
         }
 
-        Self::validate_eth_signature(
+        let transfer_data = Self::validate_eth_signature(
             expected_signer,
             expected_message,
             instruction.data,
             secp_program_index as u8,
-        )
+        )?;
+
+        if amount != transfer_data.amount {
+            return Err(ClaimableProgramError::SignatureVerificationFailed.into());
+        }
+
+        let token_account_info =
+            spl_token::state::Account::unpack(&banks_token_account_info.data.borrow())?;
+
+        let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), expected_signer.as_ref()].concat();
+        let (base_address, derived_nonce_address, bump_seed) =
+            find_nonce_address(program_id, &token_account_info.mint, &nonce_acct_seed);
+
+        if derived_nonce_address != *nonce_account_info.key {
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+        }
+        if base_address != *authority.key {
+            return Err(ClaimableProgramError::Secp256InstructionLosing.into());
+        }
+
+        let nonce_acct_lamports = nonce_account_info.lamports();
+        // Default nonce starts at 0
+        let mut current_chain_nonce = 0;
+        let mut current_nonce_account: NonceAccount;
+
+        if nonce_acct_lamports == 0 {
+            // Create user nonce account if not found
+            let signers_seeds = &[
+                &authority.key.to_bytes()[..32],
+                &nonce_acct_seed.as_slice(),
+                &[bump_seed],
+            ];
+            Self::create_account(
+                program_id,
+                funder_account_info.clone(),
+                nonce_account_info.clone(),
+                NonceAccount::LEN,
+                &[signers_seeds],
+                rent,
+            )?;
+
+            current_nonce_account = NonceAccount::new();
+        } else {
+            // Fetch current nonce account and nonce value
+            current_nonce_account = NonceAccount::unpack(&nonce_account_info.data.borrow())?;
+            current_chain_nonce = current_nonce_account.nonce;
+        }
+
+        // Error if invalid nonce provided by user
+        if transfer_data.nonce != current_chain_nonce {
+            return Err(ClaimableProgramError::NonceVerificationError.into());
+        }
+
+        current_nonce_account.nonce += 1;
+        NonceAccount::pack(current_nonce_account, *nonce_account_info.data.borrow_mut())?;
+
+        Ok(())
     }
 
     /// Checks that message inside instruction was signed by expected signer
     /// and message matches the expected value
+    /// Returns the TransferInstructionData object that was signed by the submitter
+    /// Includes the amount, target, and nonce
     fn validate_eth_signature(
         expected_signer: &EthereumAddress,
         expected_message: &[u8],
         secp_instruction_data: Vec<u8>,
         instruction_index: u8,
-    ) -> Result<(), ProgramError> {
+    ) -> Result<TransferInstructionData, ProgramError> {
         // Only single recovery expected
         if secp_instruction_data[0] != 1 {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
@@ -349,10 +452,13 @@ impl Processor {
         }
 
         let instruction_message = secp_instruction_data[message_data_offset..].to_vec();
-        if instruction_message != *expected_message {
+        let decoded_instr_data =
+            TransferInstructionData::try_from_slice(&instruction_message).unwrap();
+
+        if decoded_instr_data.target_pubkey.to_bytes() != *expected_message {
             return Err(ClaimableProgramError::SignatureVerificationFailed.into());
         }
 
-        Ok(())
+        Ok(decoded_instr_data)
     }
 }
