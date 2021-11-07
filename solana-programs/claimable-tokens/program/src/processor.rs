@@ -355,6 +355,10 @@ impl Processor {
         }
 
         let nonce_acct_lamports = nonce_account_info.lamports();
+        // Default nonce starts at 0
+        let mut current_chain_nonce = 0;
+        let mut current_nonce_account : NonceAccount;
+
         if nonce_acct_lamports == 0 {
             // Create user nonce account if not found
             let signers_seeds = &[
@@ -371,13 +375,12 @@ impl Processor {
                 rent,
             )?;
 
-            let nonce = NonceAccount::new();
-            NonceAccount::pack(nonce, *nonce_account_info.data.borrow_mut())?;
+            current_nonce_account = NonceAccount::new();
+        } else {
+            // Fetch current nonce account and nonce value
+            current_nonce_account = NonceAccount::unpack(&nonce_account_info.data.borrow())?;
+            current_chain_nonce = current_nonce_account.nonce;
         }
-
-        // Fetch current nonce
-        let mut current_nonce_account = NonceAccount::unpack(&nonce_account_info.data.borrow())?;
-        let current_chain_nonce = current_nonce_account.nonce;
 
         // Error if invalid nonce provided by user
         if transfer_data.nonce != current_chain_nonce {
