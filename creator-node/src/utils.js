@@ -227,7 +227,19 @@ const ipfsGet = ({ ipfsLatest }, logger, path, timeout = 1000) => new Promise(as
   }
 })
 
+/**
+ *
+ * @param {String} filePath location of the file on disk
+ * @param {String} cid content hash of the file
+ * @param {Object} logger logger object
+ * @param {Object} libs libs instance
+ * @param {Integer?} trackId optional trackId that corresponds to the cid, see file_lookup route for more info
+ * @param {Array?} excludeList optional array of content nodes to exclude in network wide search
+ * @returns {Boolean} returns true if the file was found in the network
+ */
 async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null, excludeList = []) {
+  let found = false
+
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
   if (attemptedStateFix) return
 
@@ -269,7 +281,7 @@ async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null, ex
           await fs.unlink(filePath)
           logger.error(`findCIDInNetwork - File contents don't match IPFS hash cid: ${cid} result: ${ipfsHashOnly}`)
         }
-
+        found = true
         logger.info(`findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`)
         break
       }
@@ -280,6 +292,8 @@ async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null, ex
       continue
     }
   }
+
+  return found
 }
 
 /**
