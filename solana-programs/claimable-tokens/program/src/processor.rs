@@ -1,6 +1,13 @@
 //! Program state processor
 
-use crate::{error::{to_claimable_tokens_error, ClaimableProgramError}, instruction::ClaimableProgramInstruction, state::{NonceAccount, TransferInstructionData}, utils::program::{EthereumAddress, NONCE_ACCOUNT_PREFIX, find_address_pair, find_nonce_address}};
+use crate::{
+    error::{to_claimable_tokens_error, ClaimableProgramError},
+    instruction::ClaimableProgramInstruction,
+    state::{NonceAccount, TransferInstructionData},
+    utils::program::{
+        find_address_pair, find_nonce_address, EthereumAddress, NONCE_ACCOUNT_PREFIX,
+    },
+};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -357,7 +364,7 @@ impl Processor {
         let nonce_acct_lamports = nonce_account_info.lamports();
         // Default nonce starts at 0
         let mut current_chain_nonce = 0;
-        let mut current_nonce_account : NonceAccount;
+        let mut current_nonce_account: NonceAccount;
 
         if nonce_acct_lamports == 0 {
             // Create user nonce account if not found
