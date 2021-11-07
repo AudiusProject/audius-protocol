@@ -371,7 +371,7 @@ async fn transfer_all_instruction() {
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: bank_token_account.amount,
-        nonce: current_user_nonce + 1,
+        nonce: current_user_nonce,
     };
 
     let encoded = transfer_instr_data.try_to_vec().unwrap();
@@ -460,7 +460,7 @@ async fn transfer_with_amount_instruction_secp_offsets_exploit() {
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: transfer_amount,
-        nonce: current_user_nonce + 1,
+        nonce: current_user_nonce,
     };
 
     let message = transfer_instr_data.try_to_vec().unwrap();
@@ -603,7 +603,7 @@ async fn transfer_with_amount_instruction_secp_index_exploit() {
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: transfer_amount,
-        nonce: current_user_nonce + 1,
+        nonce: current_user_nonce,
     };
 
     // Use real message
@@ -730,7 +730,7 @@ async fn transfer_nonce_increment() {
         let transfer_instr_data = TransferInstructionData {
             target_pubkey: user_token_account.pubkey(),
             amount: transfer_amount,
-            nonce: current_user_nonce + 1,
+            nonce: current_user_nonce
         };
 
         let encoded = transfer_instr_data.try_to_vec().unwrap();
@@ -761,7 +761,7 @@ async fn transfer_nonce_increment() {
             .unwrap();
 
         let current_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
-        assert_eq!(transfer_instr_data.nonce, current_user_nonce);
+        assert_eq!(transfer_instr_data.nonce + 1, current_user_nonce);
 
         // Verify transfer occurred
         let bank_token_account_data = get_account(&mut program_context, &user_bank_account)
@@ -819,7 +819,7 @@ async fn transfer_replay_instruction() {
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: transfer_amount,
-        nonce: current_user_nonce + 1,
+        nonce: current_user_nonce,
     };
 
     let encoded = transfer_instr_data.try_to_vec().unwrap();
@@ -850,7 +850,7 @@ async fn transfer_replay_instruction() {
         .unwrap();
 
     let final_user_nonce = get_user_account_nonce(&mut program_context, &nonce_account).await;
-    assert_eq!(transfer_instr_data.nonce, final_user_nonce);
+    assert_eq!(transfer_instr_data.nonce + 1, final_user_nonce);
 
     let bank_token_account_data = get_account(&mut program_context, &user_bank_account)
         .await
@@ -915,7 +915,7 @@ async fn transfer_with_amount_instruction() {
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: transfer_amount,
-        nonce: current_user_nonce + 1,
+        nonce: current_user_nonce,
     };
 
     let encoded = transfer_instr_data.try_to_vec().unwrap();
@@ -995,7 +995,7 @@ async fn transfer_with_zero_amount_failure() {
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: transfer_amount,
-        nonce: current_user_nonce + 1,
+        nonce: current_user_nonce,
     };
 
     let encoded = transfer_instr_data.try_to_vec().unwrap();
@@ -1142,7 +1142,7 @@ async fn transfer_with_wrong_token_account() {
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: 0,
-        nonce: current_user_nonce + 1,
+        nonce: current_user_nonce,
     };
 
     let encoded = transfer_instr_data.try_to_vec().unwrap();
@@ -1275,7 +1275,7 @@ async fn transfer_invalid_amount() {
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_token_account.pubkey(),
         amount: transfer_amount,
-        nonce: current_user_nonce + 1,
+        nonce: current_user_nonce,
     };
 
     let encoded = transfer_instr_data.try_to_vec().unwrap();

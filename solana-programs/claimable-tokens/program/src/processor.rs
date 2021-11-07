@@ -375,16 +375,17 @@ impl Processor {
             NonceAccount::pack(nonce, *nonce_account_info.data.borrow_mut())?;
         }
 
-        // Increment on chain nonce
+        // Fetch current nonce
         let mut current_nonce_account = NonceAccount::unpack(&nonce_account_info.data.borrow())?;
-        current_nonce_account.nonce += 1;
         let current_chain_nonce = current_nonce_account.nonce;
-        NonceAccount::pack(current_nonce_account, *nonce_account_info.data.borrow_mut())?;
 
         // Error if invalid nonce provided by user
         if transfer_data.nonce != current_chain_nonce {
             return Err(ClaimableProgramError::NonceVerificationError.into());
         }
+
+        current_nonce_account.nonce += 1;
+        NonceAccount::pack(current_nonce_account, *nonce_account_info.data.borrow_mut())?;
 
         Ok(transfer_data.amount)
     }
