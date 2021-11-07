@@ -730,7 +730,7 @@ async fn transfer_nonce_increment() {
         let transfer_instr_data = TransferInstructionData {
             target_pubkey: user_token_account.pubkey(),
             amount: transfer_amount,
-            nonce: current_user_nonce
+            nonce: current_user_nonce,
         };
 
         let encoded = transfer_instr_data.try_to_vec().unwrap();
