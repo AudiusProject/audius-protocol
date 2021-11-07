@@ -1,11 +1,6 @@
 //! Program state processor
 
-use crate::{
-    error::{to_claimable_tokens_error, ClaimableProgramError},
-    instruction::ClaimableProgramInstruction,
-    state::{NonceAccount, TransferInstructionData},
-    utils::program::{find_address_pair, find_nonce_address, EthereumAddress},
-};
+use crate::{error::{to_claimable_tokens_error, ClaimableProgramError}, instruction::ClaimableProgramInstruction, state::{NonceAccount, TransferInstructionData}, utils::program::{EthereumAddress, NONCE_ACCOUNT_PREFIX, find_address_pair, find_nonce_address}};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -45,9 +40,6 @@ pub struct SecpSignatureOffsets {
     /// Index on message instruction in buffer
     pub message_instruction_index: u8,
 }
-
-/// Sender nonce account seed
-pub const NONCE_ACCOUNT_PREFIX: &str = "N_";
 
 /// Program state handler.
 pub struct Processor;
@@ -400,6 +392,8 @@ impl Processor {
 
     /// Checks that message inside instruction was signed by expected signer
     /// and message matches the expected value
+    /// Returns the TransferInstructionData object that was signed by the submitter
+    /// Includes the amount, target, and nonce
     fn validate_eth_signature(
         expected_signer: &EthereumAddress,
         expected_message: &[u8],
