@@ -1,11 +1,6 @@
 //! Program state processor
 
-use crate::{
-    error::{to_claimable_tokens_error, ClaimableProgramError},
-    instruction::ClaimableProgramInstruction,
-    state::{NonceAccount, TransferInstructionData},
-    utils::program::{find_address_pair, find_nonce_address, EthereumAddress},
-};
+use crate::{error::{to_claimable_tokens_error, ClaimableProgramError}, instruction::ClaimableProgramInstruction, state::{NonceAccount, TransferInstructionData}, utils::program::{EthereumAddress, NONCE_ACCOUNT_PREFIX, find_address_pair, find_nonce_address}};
 use borsh::{BorshDeserialize, BorshSerialize};
 use solana_program::{
     account_info::{next_account_info, AccountInfo},
@@ -45,9 +40,6 @@ pub struct SecpSignatureOffsets {
     /// Index on message instruction in buffer
     pub message_instruction_index: u8,
 }
-
-/// Sender nonce account seed
-pub const NONCE_ACCOUNT_PREFIX: &str = "N_";
 
 /// Program state handler.
 pub struct Processor;
@@ -355,6 +347,10 @@ impl Processor {
         }
 
         let nonce_acct_lamports = nonce_account_info.lamports();
+        // Default nonce starts at 0
+        let mut current_chain_nonce = 0;
+        let mut current_nonce_account : NonceAccount;
+
         if nonce_acct_lamports == 0 {
             // Create user nonce account if not found
             let signers_seeds = &[
@@ -371,13 +367,12 @@ impl Processor {
                 rent,
             )?;
 
-            let nonce = NonceAccount::new();
-            NonceAccount::pack(nonce, *nonce_account_info.data.borrow_mut())?;
+            current_nonce_account = NonceAccount::new();
+        } else {
+            // Fetch current nonce account and nonce value
+            current_nonce_account = NonceAccount::unpack(&nonce_account_info.data.borrow())?;
+            current_chain_nonce = current_nonce_account.nonce;
         }
-
-        // Fetch current nonce
-        let mut current_nonce_account = NonceAccount::unpack(&nonce_account_info.data.borrow())?;
-        let current_chain_nonce = current_nonce_account.nonce;
 
         // Error if invalid nonce provided by user
         if transfer_data.nonce != current_chain_nonce {
@@ -392,6 +387,8 @@ impl Processor {
 
     /// Checks that message inside instruction was signed by expected signer
     /// and message matches the expected value
+    /// Returns the TransferInstructionData object that was signed by the submitter
+    /// Includes the amount, target, and nonce
     fn validate_eth_signature(
         expected_signer: &EthereumAddress,
         expected_message: &[u8],
