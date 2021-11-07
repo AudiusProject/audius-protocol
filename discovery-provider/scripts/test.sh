@@ -5,13 +5,11 @@
 # NOTE - the ipfs compose files have been moved from discprov to libs.
 #   Before running this test locally, bring up ipfs pod with libs/scripts/ipfs.sh
 
-
 source ./scripts/utilities.sh
 
 function cd_contracts_repo {
   # Navigate to contracts repository
-  if [ -d "../contracts" ]
-  then
+  if [ -d "../contracts" ]; then
     echo "Audius contracts repo is present"
     cd ../contracts/
   else
@@ -22,8 +20,7 @@ function cd_contracts_repo {
 
 function cd_discprov_repo {
   # Navigate to discovery provider repository
-  if [ -d "../discovery-provider" ]
-  then
+  if [ -d "../discovery-provider" ]; then
     echo "Audius discprov repo is present"
     cd ../discovery-provider/
   else
@@ -33,8 +30,8 @@ function cd_discprov_repo {
 }
 
 if [ ! -f .gitignore ]; then
-    echo "Run test script from audius discovery provider root"
-    exit
+  echo "Run test script from audius discovery provider root"
+  exit
 fi
 
 set -e
@@ -52,9 +49,17 @@ cd_contracts_repo
 npm run ganache-q
 npm run ganache
 sleep 5
-
 node_modules/.bin/truffle migrate
 node_modules/.bin/truffle exec scripts/_contractsLocalSetup.js -run
+
+cd_eth_contracts_repo
+npm run ganache-q
+npm run ganache
+sleep 5
+node_modules/.bin/truffle migrate
+export audius_eth_contracts_registry=$(node -p "require('./migrations/migration-output.json').registryAddress")
+export audius_web3_eth_provider_url=http://localhost:8546
+
 cd_discprov_repo
 
 # Stop dependencies, if present
