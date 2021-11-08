@@ -623,6 +623,12 @@ const config = convict({
     format: Number,
     env: 'clusterForkProcessCount',
     default: 1
+  },
+  minSolanaNotificationSlot: {
+    doc: 'The slot number to start indexing if not slots defined"',
+    format: Number,
+    env: 'minSolanaNotificationSlot',
+    default: 105400000
   }
 })
 
