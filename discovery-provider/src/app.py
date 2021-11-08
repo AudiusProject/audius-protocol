@@ -256,9 +256,9 @@ def configure_flask(test_config, app, mode="app"):
     with app.app_context():
         app.iniconfig.read(config_files)
 
-    endpoint = get_node_endpoint()
-    if endpoint:
-        app.config["SERVER_NAME"] = urlparse(endpoint).hostname
+    # endpoint = get_node_endpoint()
+    # if endpoint:
+    #     app.config["SERVER_NAME"] = urlparse(endpoint).hostname
 
     # custom JSON serializer for timestamps
     class TimestampJSONEncoder(JSONEncoder):
@@ -277,8 +277,8 @@ def configure_flask(test_config, app, mode="app"):
             if "url" in test_config["db"]:
                 database_url = test_config["db"]["url"]
 
-    if shared_config["discprov"]["hostname"]:
-        app.config["SERVER_NAME"] = shared_config["discprov"]["hostname"]
+    # if shared_config["discprov"]["hostname"]:
+    #     app.config["SERVER_NAME"] = shared_config["discprov"]["hostname"]
 
     # Sometimes ECS latency causes the create_database function to fail because db connection is not ready
     # Give it some more time to get set up, up to 5 times
