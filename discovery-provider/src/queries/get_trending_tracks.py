@@ -84,6 +84,10 @@ def make_generate_unpopulated_trending(session, genre, time_range, strategy):
     expects to be passed a function with no arguments."""
 
     def wrapped():
+        if strategy.use_mat_view:
+            return generate_unpopulated_trending_from_mat_views(
+                session, genre, time_range, strategy
+            )
         return generate_unpopulated_trending(session, genre, time_range, strategy)
 
     return wrapped
