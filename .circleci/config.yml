@@ -17,9 +17,9 @@ commands:
       - unless:
           condition:
             or:
-              - equal: [ master, << pipeline.git.branch >> ]
+              - equal: [master, << pipeline.git.branch >>]
               - matches:
-                  pattern: "^release.*$"
+                  pattern: '^release.*$'
                   value: << pipeline.git.branch >>
           steps:
             - run: ./diff.sh << parameters.service >> || (echo "no diff" && circleci-agent step halt)
@@ -31,7 +31,7 @@ jobs:
     parallelism: 1
     parameters:
       mad-dog-type:
-        description: "test-ci or test-nightly"
+        description: 'test-ci or test-nightly'
         default: 'test-ci'
         type: string
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
@@ -418,9 +418,6 @@ jobs:
             export redisPort=6379
             export spOwnerWallet='yes'
             export isCIBuild=true
-            export delegateOwnerWallet=0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25
-            export delegatePrivateKey=0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d
-            export storagePath="test_file_storage"
             export ipfsPort=5001
             npm run test:unit
             npm run test:ci
@@ -428,7 +425,7 @@ jobs:
   test-discovery-provider:
     docker:
       - image: circleci/python:3.8-node-browsers
-        # Discovery provider dependencies
+      # Discovery provider dependencies
       - image: circleci/postgres:11.1
         environment:
           POSTGRES_USER: postgres
@@ -438,6 +435,8 @@ jobs:
       - image: redis:3.0-alpine
       - image: trufflesuite/ganache-cli:latest
         command: ['--port=8555', '-a', '100', '-l', '8000000']
+      - image: trufflesuite/ganache-cli:latest
+        command: ['--port=8556', '-a', '100', '-l', '8000000']
     steps:
       - checkout
       - diff-if-necessary:
@@ -478,6 +477,15 @@ jobs:
             - contracts/node_modules
           key: disc-prov-contracts-{{ checksum "contracts/package.json" }}
       - run:
+          name: eth-contract repo init
+          command: |
+            cd eth-contracts
+            npm install
+      - save_cache:
+          paths:
+            - eth-contracts/node_modules
+          key: disc-prov-contracts-{{ checksum "contracts/package.json" }}
+      - run:
           name: discovery provider tests
           command: |
             cd discovery-provider
@@ -486,6 +494,7 @@ jobs:
             export audius_delegate_owner_wallet=0x1D9c77BcfBfa66D37390BF2335f0140979a6122B
             export audius_delegate_private_key=0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19cad
             export audius_web3_port=8555
+            export audius_web3_eth_provider_url=http://localhost:8556
             ./scripts/circle-ci.sh
 
   test-identity-service:

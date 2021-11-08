@@ -17,7 +17,7 @@ async function processChallengeRewardNotifications (notifications, tx) {
     // Create/Find a Notification and NotificationAction for this event
     // NOTE: ChallengeReward Notifications do NOT stack. A new notification is created for each
     const slot = notification.slot
-    const [notificationObj] = await models.SolanaNotifications.findOrCreate({
+    const [notificationObj] = await models.SolanaNotification.findOrCreate({
       where: {
         slot,
         type: notificationTypes.ChallengeReward,
@@ -37,6 +37,7 @@ async function processChallengeRewardNotifications (notifications, tx) {
       transaction: tx
     })
   }
+  return notifications
 }
 
 module.exports = processChallengeRewardNotifications

@@ -68,7 +68,11 @@ def generate_unpopulated_trending_from_mat_views(
         top_listen_tracks_subquery = top_listen_tracks_subquery.order_by(
             desc(AggregateIntervalPlay.year_listen_counts)
         )
-    top_listen_tracks_subquery = top_listen_tracks_subquery.limit(limit)
+
+    score_params = strategy.get_score_params()
+    nm = score_params["nm"]
+
+    top_listen_tracks_subquery = top_listen_tracks_subquery.limit(limit * nm)
 
     trending_track_ids_query = session.query(
         TrackTrendingScore.track_id, TrackTrendingScore.score

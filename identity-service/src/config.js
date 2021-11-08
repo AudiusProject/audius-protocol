@@ -617,6 +617,12 @@ const config = convict({
     format: String,
     env: 'discoveryProviderWhitelist',
     default: ''
+  },
+  clusterForkProcessCount: {
+    doc: 'The number of express server processes to initialize in the this app "cluster"',
+    format: Number,
+    env: 'clusterForkProcessCount',
+    default: 1
   }
 })
 

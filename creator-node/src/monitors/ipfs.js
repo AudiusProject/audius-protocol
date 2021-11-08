@@ -23,7 +23,7 @@ const getIPFSReadWriteStatus = async () => {
       throw new Error('Read bytes differ from written bytes')
     }
 
-    const duration = `${Date.now() - start}ms`
+    const duration = Date.now() - start
 
     return JSON.stringify({ hash, duration })
   } catch (e) {

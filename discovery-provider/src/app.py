@@ -41,6 +41,9 @@ from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERV
 from src.utils.session_manager import SessionManager
 from src.solana.solana_client_manager import SolanaClientManager
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
+from src.utils.get_all_other_nodes import get_node_endpoint
+
+SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
 # these global vars will be set in create_celery function
 web3endpoint = None
@@ -252,6 +255,10 @@ def configure_flask(test_config, app, mode="app"):
     with app.app_context():
         app.iniconfig.read(config_files)
 
+    endpoint = get_node_endpoint()
+    if endpoint:
+        app.config["SERVER_NAME"] = endpoint
+
     # custom JSON serializer for timestamps
     class TimestampJSONEncoder(JSONEncoder):
         # pylint: disable=E0202
@@ -268,6 +275,9 @@ def configure_flask(test_config, app, mode="app"):
         if "db" in test_config:
             if "url" in test_config["db"]:
                 database_url = test_config["db"]["url"]
+
+    if shared_config["discprov"]["hostname"]:
+        app.config["SERVER_NAME"] = shared_config["discprov"]["hostname"]
 
     # Sometimes ECS latency causes the create_database function to fail because db connection is not ready
     # Give it some more time to get set up, up to 5 times
@@ -325,10 +335,14 @@ def configure_flask(test_config, app, mode="app"):
 
     return app
 
+
 def delete_last_scanned_eth_block_redis(redis_inst):
     logger.info("index_eth.py | deleting existing redis scanned block on start")
     redis_inst.delete(eth_indexing_last_scanned_block_key)
-    logger.info("index_eth.py | successfully deleted existing redis scanned block on start")
+    logger.info(
+        "index_eth.py | successfully deleted existing redis scanned block on start"
+    )
+
 
 def configure_celery(flask_app, celery, test_config=None):
     database_url = shared_config["db"]["url"]
@@ -371,6 +385,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_rewards_manager",
             "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
+            "src.tasks.index_listen_count_milestones",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -468,6 +483,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "index_related_artists": {
                 "task": "index_related_artists",
                 "schedule": timedelta(seconds=60),
+            },
+            "index_listen_count_milestones": {
+                "task": "index_listen_count_milestones",
+                "schedule": timedelta(seconds=5),
             },
         },
         task_serializer="json",

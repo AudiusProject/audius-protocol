@@ -10,6 +10,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy import desc, and_
 from solana.publickey import PublicKey
 from src.tasks.celery_app import celery
+from src.utils.cache_solana_program import cache_latest_sol_db_tx, fetch_and_cache_latest_program_tx_redis
 from src.utils.config import shared_config
 from src.models import User, UserBankTransaction, UserBankAccount
 from src.queries.get_balances import enqueue_immediate_balance_refresh
@@ -26,6 +27,7 @@ from src.solana.solana_parser import (
     InstructionFormat,
     SolanaInstructionType,
 )
+from src.utils.redis_constants import latest_sol_user_bank_db_tx_key, latest_sol_user_bank_program_tx_key
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +73,11 @@ def get_highest_user_bank_tx_slot(session: Session):
     if tx_query:
         slot = tx_query[0]
     return slot
+
+# Cache the latest value committed to DB in redis
+# Used for quick retrieval in health check
+def cache_latest_sol_user_bank_db_tx(redis: Redis, tx):
+    cache_latest_sol_db_tx(redis, latest_sol_user_bank_db_tx_key, tx)
 
 
 # Query a tx signature and confirm its existence
@@ -243,6 +250,7 @@ def parse_user_bank_transaction(
     session.add(
         UserBankTransaction(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp)
     )
+    return (tx_info["result"], tx_sig)
 
 
 def process_user_bank_txs():
@@ -335,6 +343,12 @@ def process_user_bank_txs():
     # Reverse batches aggregated so oldest transactions are processed first
     transaction_signatures.reverse()
 
+
+    last_tx_sig: Optional[str] = None
+    last_tx = None
+    if transaction_signatures and transaction_signatures[-1]:
+        last_tx_sig = transaction_signatures[-1][0]
+
     num_txs_processed = 0
     for tx_sig_batch in transaction_signatures:
         logger.info(f"index_user_bank.py | processing {tx_sig_batch}")
@@ -355,7 +369,10 @@ def process_user_bank_txs():
                 for future in concurrent.futures.as_completed(parse_sol_tx_futures):
                     try:
                         # No return value expected here so we just ensure all futures are resolved
-                        future.result()
+                        tx_info, tx_sig = future.result()
+                        if tx_info and last_tx_sig and last_tx_sig == tx_sig:
+                            last_tx = tx_info
+
                         num_txs_processed += 1
                     except Exception as exc:
                         logger.error(f"index_user_bank.py | error {exc}", exc_info=True)
@@ -366,6 +383,13 @@ def process_user_bank_txs():
         logger.info(
             f"index_user_bank.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
         )
+
+    if last_tx and last_tx_sig:
+        cache_latest_sol_user_bank_db_tx(redis, {
+            "signature": last_tx_sig,
+            "slot": last_tx["slot"],
+            "timestamp": last_tx["blockTime"]
+        })
 
 
 ######## CELERY TASKS ########
@@ -381,6 +405,13 @@ def index_user_bank(self):
     update_lock = redis.lock("user_bank_lock", timeout=10 * 60)
 
     try:
+        # Cache latest tx outside of lock
+        fetch_and_cache_latest_program_tx_redis(
+            index_user_bank.solana_client_manager,
+            redis,
+            USER_BANK_ADDRESS,
+            latest_sol_user_bank_program_tx_key
+        )
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:

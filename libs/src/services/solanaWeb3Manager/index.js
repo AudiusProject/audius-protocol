@@ -11,6 +11,7 @@ const { wAudioFromWeiAudio } = require('./wAudio')
 const Utils = require('../../utils')
 const { submitAttestations, evaluateAttestations } = require('./rewards')
 const SolanaUtils = require('./utils')
+const { TransactionHandler } = require('./transactionHandler')
 
 const { PublicKey } = solanaWeb3
 
@@ -48,6 +49,10 @@ class SolanaWeb3Manager {
    *  the manager account of the rewards manager program
    * @param {string} solanaWeb3Config.rewardsManagerTokenPDA
    *  the token holder account of the rewards manager program
+   * @param {boolean} solanaWeb3Config.shouldUseRelay
+   *  whether to submit transactions via a relay, or locally
+   * @param {KeyPair} solanaWeb3Config.feePayerKepair
+   *  KeyPair for feepayer
    * @param {IdentityService} identityService
    * @param {Web3Manager} web3Manager
    */
@@ -74,28 +79,41 @@ class SolanaWeb3Manager {
       claimableTokenProgramAddress,
       rewardsManagerProgramId,
       rewardsManagerProgramPDA,
-      rewardsManagerTokenPDA
+      rewardsManagerTokenPDA,
+      useRelay,
+      feePayerKeypair
     } = this.solanaWeb3Config
+
+    // Helper to safely create pubkey from nullable val
+    const newPublicKeyNullable = (val) => val ? new PublicKey(val) : null
+
     this.solanaClusterEndpoint = solanaClusterEndpoint
     this.connection = new solanaWeb3.Connection(this.solanaClusterEndpoint)
 
+    this.transactionHandler = new TransactionHandler({
+      connection: this.connection,
+      useRelay,
+      identityService: this.identityService,
+      feePayerKeypair
+    })
+
     this.mintAddress = mintAddress
-    this.mintKey = new PublicKey(mintAddress)
+    this.mintKey = newPublicKeyNullable(mintAddress)
 
     this.solanaTokenAddress = solanaTokenAddress
-    this.solanaTokenKey = new PublicKey(solanaTokenAddress)
+    this.solanaTokenKey = newPublicKeyNullable(solanaTokenAddress)
 
     this.feePayerAddress = feePayerAddress
-    this.feePayerKey = new PublicKey(feePayerAddress)
+    this.feePayerKey = newPublicKeyNullable(feePayerAddress)
 
-    this.claimableTokenProgramKey = new PublicKey(claimableTokenProgramAddress)
+    this.claimableTokenProgramKey = newPublicKeyNullable(claimableTokenProgramAddress)
     this.claimableTokenPDA = claimableTokenPDA || (
-      (await SolanaUtils.findProgramAddressFromPubkey(this.claimableTokenProgramKey, this.mintKey))[0].toString()
+      this.claimableTokenProgramKey ? ((await SolanaUtils.findProgramAddressFromPubkey(this.claimableTokenProgramKey, this.mintKey))[0].toString()) : null
     )
-    this.claimableTokenPDAKey = new PublicKey(this.claimableTokenPDA)
-    this.rewardManagerProgramId = new PublicKey(rewardsManagerProgramId)
-    this.rewardManagerProgramPDA = new PublicKey(rewardsManagerProgramPDA)
-    this.rewardManagerTokenPDA = new PublicKey(rewardsManagerTokenPDA)
+    this.claimableTokenPDAKey = newPublicKeyNullable(this.claimableTokenPDA)
+    this.rewardManagerProgramId = newPublicKeyNullable(rewardsManagerProgramId)
+    this.rewardManagerProgramPDA = newPublicKeyNullable(rewardsManagerProgramPDA)
+    this.rewardManagerTokenPDA = newPublicKeyNullable(rewardsManagerTokenPDA)
   }
 
   /**
@@ -287,8 +305,7 @@ class SolanaWeb3Manager {
       feePayer: this.feePayerKey,
       recipientEthAddress,
       tokenAmount,
-      identityService: this.identityService,
-      connection: this.connection
+      transactionHandler: this.transactionHandler
     })
   }
 
@@ -327,8 +344,7 @@ class SolanaWeb3Manager {
       oracleEthAddress,
       feePayer: this.feePayerKey,
       tokenAmount,
-      identityService: this.identityService,
-      connection: this.connection
+      transactionHandler: this.transactionHandler
     })
   }
 }
