@@ -222,7 +222,8 @@ def get_should_update_trending(db: SessionManager, web3: Web3, redis: Redis) -> 
         duration_since_last_index = block_datetime - last_trending_datetime
         logger.info(
             f"index_trending.py | \
-            in compare, blk: {current_db_block[0]} current_timestamp: {current_timestamp}, duration_since_last_index: {duration_since_last_index}, \
+            in compare, blk: {current_db_block[0]} current_timestamp: {current_timestamp}, \
+            duration_since_last_index: {duration_since_last_index}, \
             block_datetime: {block_datetime}, last_trending_datetime: {last_trending_datetime}"
         )
 
