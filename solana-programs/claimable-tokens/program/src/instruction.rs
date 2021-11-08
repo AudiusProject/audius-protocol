@@ -83,17 +83,25 @@ pub fn init(
 /// Otherwise error message `Secp256 instruction losing` will be issued
 pub fn transfer(
     program_id: &Pubkey,
+    fee_payer: &Pubkey,
     banks_token_acc: &Pubkey,
     users_token_acc: &Pubkey,
+    users_nonce_acc: &Pubkey,
     authority: &Pubkey,
     eth_address: Transfer,
 ) -> Result<Instruction, ProgramError> {
     let data = ClaimableProgramInstruction::Transfer(eth_address).try_to_vec()?;
     let accounts = vec![
+        AccountMeta::new(*fee_payer, true),
         AccountMeta::new(*banks_token_acc, false),
         AccountMeta::new(*users_token_acc, false),
+        AccountMeta::new(*users_nonce_acc, false),
         AccountMeta::new_readonly(*authority, false),
+        AccountMeta::new_readonly(sysvar::rent::id(), false),
         AccountMeta::new_readonly(sysvar::instructions::id(), false),
+        // A reference to the token and system programs is needed even if unused directly
+        // Below are required in function scope for allocation of a new account
+        AccountMeta::new_readonly(system_program::id(), false),
         AccountMeta::new_readonly(spl_token::id(), false),
     ];
     Ok(Instruction {

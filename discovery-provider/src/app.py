@@ -41,6 +41,9 @@ from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERV
 from src.utils.session_manager import SessionManager
 from src.solana.solana_client_manager import SolanaClientManager
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
+from src.utils.get_all_other_nodes import get_node_endpoint
+
+SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
 # these global vars will be set in create_celery function
 web3endpoint = None
@@ -251,6 +254,10 @@ def register_exception_handlers(flask_app):
 def configure_flask(test_config, app, mode="app"):
     with app.app_context():
         app.iniconfig.read(config_files)
+
+    endpoint = get_node_endpoint()
+    if endpoint:
+        app.config["SERVER_NAME"] = endpoint
 
     # custom JSON serializer for timestamps
     class TimestampJSONEncoder(JSONEncoder):
