@@ -13,7 +13,10 @@ from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
-from src.queries.get_underground_trending import GetUndergroundTrendingTrackcArgs, _get_underground_trending_with_session
+from src.queries.get_underground_trending import (
+    GetUndergroundTrendingTrackcArgs,
+    _get_underground_trending_with_session
+)
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
 from src.utils.session_manager import SessionManager
 
