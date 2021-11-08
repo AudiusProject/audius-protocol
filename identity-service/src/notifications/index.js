@@ -380,8 +380,8 @@ class NotificationProcessor {
 
     logger.info(`${logLabel} - minSlot: ${minSlot}, oldMaxSlot: ${oldMaxSlot}, startDate: ${startDate}, startTime: ${startTime}`)
 
-    // const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
-    const { discoveryProvider } = audiusLibs
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+    logger.info(`${logLabel} - ${Object.keys(discoveryProvider).join(',')}`)
 
     // Timeout of 2 minutes
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
