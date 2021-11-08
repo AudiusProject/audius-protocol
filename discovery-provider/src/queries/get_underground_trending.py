@@ -210,7 +210,7 @@ class GetUndergroundTrendingTrackcArgs(TypedDict, total=False):
     offset: int
     limit: int
 
-def _get_underground_trending_session(
+def _get_underground_trending_with_session(
     session: Session,
     args: GetUndergroundTrendingTrackcArgs,
     strategy,
@@ -248,7 +248,7 @@ def _get_underground_trending_session(
 def _get_underground_trending(args: GetUndergroundTrendingTrackcArgs, strategy):
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        return _get_underground_trending_session(session, args, strategy)
+        return _get_underground_trending_with_session(session, args, strategy)
 
 def get_underground_trending(request, args, strategy):
     offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)

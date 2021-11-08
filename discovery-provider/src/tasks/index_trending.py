@@ -26,6 +26,10 @@ from src.queries.get_underground_trending import (
 logger = logging.getLogger(__name__)
 time_ranges = ["week", "month", "year"]
 
+# Time in seconds between trending updates - set to 1 hr
+# NOTE: The trending timestamp is rounded to the hour mark
+UPDATE_TRENDING_DURATION_DIFF_SEC = 60 * 60
+
 genre_allowlist = {
     "Acoustic",
     "Alternative",
@@ -194,6 +198,13 @@ def set_last_trending_datetime(redis: Redis, timestamp: int):
     redis.set(last_trending_timestamp, timestamp)
 
 def get_should_update_trending(db: SessionManager, web3: Web3, redis: Redis) -> Optional[int]:
+    """
+    Checks if the trending job should re-run based off the last trending run's timestamp and
+    the most recently indexed block's timestamp.
+    If the most recently indexed block (rounded down to the hour mark) is 1 hr ahead of the last
+    trending job run, then the job should re-run
+    The function returns the an int, representing the timestamp, if the jobs should re-run, else None
+    """
     with db.scoped_session() as session:
         current_db_block = session.query(Block.blockhash).filter(Block.is_current == True).first()
         current_block = web3.eth.getBlock(current_db_block[0], True)
@@ -209,7 +220,7 @@ def get_should_update_trending(db: SessionManager, web3: Web3, redis: Redis) -> 
             return int(block_datetime.timestamp())
 
         duration_since_last_index = block_datetime - last_trending_datetime
-        if duration_since_last_index.total_seconds() > 60*60:
+        if duration_since_last_index.total_seconds() > UPDATE_TRENDING_DURATION_DIFF_SEC:
             return int(block_datetime.timestamp())
 
     return None

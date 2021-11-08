@@ -237,7 +237,7 @@ class GetTrendingPlaylistsArgs(TypedDict, total=False):
     offset: int
     limit: int
 
-def get_trending_playlists_session(
+def _get_trending_playlists_with_session(
     session: Session,
     args: GetTrendingPlaylistsArgs,
     strategy,
@@ -336,7 +336,7 @@ def get_trending_playlists(args: GetTrendingPlaylistsArgs, strategy):
     """Returns Trending Playlists. Checks Redis cache for unpopulated playlists."""
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        return get_trending_playlists_session(session, args, strategy)
+        return _get_trending_playlists_with_session(session, args, strategy)
 
 def get_full_trending_playlists(request, args, strategy):
     offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)

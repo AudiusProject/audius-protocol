@@ -98,9 +98,9 @@ def get_trending_tracks(args: GetTrendingTracksArgs, strategy: BaseTrendingStrat
     """Gets trending by getting the currently cached tracks and then populating them."""
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        return get_trending_tracks_session(session, args, strategy)
+        return _get_trending_tracks_with_session(session, args, strategy)
 
-def get_trending_tracks_session(session: Session, args: GetTrendingTracksArgs, strategy: BaseTrendingStrategy):
+def _get_trending_tracks_with_session(session: Session, args: GetTrendingTracksArgs, strategy: BaseTrendingStrategy):
     current_user_id, genre, time = (
         args.get("current_user_id"),
         args.get("genre"),

@@ -422,7 +422,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "index_trending": {
                 "task": "index_trending",
-                "schedule": timedelta(seconds=60),
+                "schedule": timedelta(seconds=10),
             },
             "update_user_balances": {
                 "task": "update_user_balances",

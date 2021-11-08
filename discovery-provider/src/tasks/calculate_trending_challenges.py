@@ -7,13 +7,13 @@ from sqlalchemy.orm.session import Session
 
 from src.models import Block
 from src.tasks.celery_app import celery
-from src.queries.get_trending_tracks import get_trending_tracks_session
-from src.queries.get_trending_playlists import GetTrendingPlaylistsArgs, get_trending_playlists_session
+from src.queries.get_trending_tracks import _get_trending_tracks_with_session
+from src.queries.get_trending_playlists import GetTrendingPlaylistsArgs, _get_trending_playlists_with_session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
-from src.queries.get_underground_trending import GetUndergroundTrendingTrackcArgs, _get_underground_trending_session
+from src.queries.get_underground_trending import GetUndergroundTrendingTrackcArgs, _get_underground_trending_with_session
 from src.utils.redis_constants import most_recent_indexed_block_redis_key
 from src.utils.session_manager import SessionManager
 
@@ -88,7 +88,7 @@ def enqueue_trending_challenges(
             strategy = trending_strategy_factory.get_strategy(
                 TrendingType.TRACKS, version
             )
-            top_tracks = get_trending_tracks_session(session, {"time": time_range}, strategy)
+            top_tracks = _get_trending_tracks_with_session(session, {"time": time_range}, strategy)
             top_tracks = top_tracks[:TRENDING_LIMIT]
             dispatch_trending_challenges(
                 challenge_bus,
@@ -108,7 +108,7 @@ def enqueue_trending_challenges(
                 TrendingType.UNDERGROUND_TRACKS, version
             )
             underground_args: GetUndergroundTrendingTrackcArgs = {"offset": 0, "limit":TRENDING_LIMIT}
-            top_tracks = _get_underground_trending_session(session, underground_args, strategy, False)
+            top_tracks = _get_underground_trending_with_session(session, underground_args, strategy, False)
 
             dispatch_trending_challenges(
                 challenge_bus,
@@ -131,7 +131,7 @@ def enqueue_trending_challenges(
                 "offset": 0,
                 "time": time_range
             }
-            trending_playlists = get_trending_playlists_session(session, playlists_args, strategy, False)
+            trending_playlists = _get_trending_playlists_with_session(session, playlists_args, strategy, False)
             for idx, playlist in enumerate(trending_playlists):
                 challenge_bus.dispatch(
                     ChallengeEvent.trending_playlist,
