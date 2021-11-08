@@ -227,7 +227,7 @@ def get_should_update_trending(db: SessionManager, web3: Web3, redis: Redis) -> 
             block_datetime: {block_datetime}, last_trending_datetime: {last_trending_datetime}"
         )
 
-        if duration_since_last_index.total_seconds() > UPDATE_TRENDING_DURATION_DIFF_SEC:
+        if duration_since_last_index.total_seconds() >= UPDATE_TRENDING_DURATION_DIFF_SEC:
             return int(block_datetime.timestamp())
 
     return None
