@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import ast
 from collections import defaultdict
+from urllib.parse import urlparse
 import datetime
 import logging
 import time
@@ -257,7 +258,7 @@ def configure_flask(test_config, app, mode="app"):
 
     endpoint = get_node_endpoint()
     if endpoint:
-        app.config["SERVER_NAME"] = endpoint
+        app.config["SERVER_NAME"] = urlparse(endpoint).hostname
 
     # custom JSON serializer for timestamps
     class TimestampJSONEncoder(JSONEncoder):
