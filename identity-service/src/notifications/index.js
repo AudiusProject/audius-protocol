@@ -163,7 +163,8 @@ class NotificationProcessor {
     // Indexes solana notifications
     this.solanaNotifQueue.process(async (job, done) => {
       let error = null
-      let minSlot = Math.max(105399000, job.data.minSlot)
+      const MIN_SOLANA_SLOT = config.get('minSolanaNotificationSlot')
+      let minSlot = Math.max(MIN_SOLANA_SLOT, job.data.minSlot)
 
       try {
         if (!minSlot && minSlot !== 0) throw new Error('no min slot')
@@ -173,7 +174,7 @@ class NotificationProcessor {
 
         // Index notifications
         if (minSlot < oldMaxSlot) {
-          logger.debug('notification queue processing error - tried to process a minSlot < oldMaxSlot', minSlot, oldMaxSlot)
+          logger.debug('solana notification queue processing error - tried to process a minSlot < oldMaxSlot', minSlot, oldMaxSlot)
           maxSlot = oldMaxSlot
         } else {
           maxSlot = await this.indexAllSolanaNotifications(audiusLibs, minSlot, oldMaxSlot)
@@ -194,7 +195,7 @@ class NotificationProcessor {
         })
       } catch (e) {
         error = e
-        logger.error(`Restarting due to error indexing notifications : ${e}`)
+        logger.error(`Restarting due to error indexing solana notifications : ${e}`)
         this.errorHandler(e)
         // Restart job with same starting slot
         await this.solanaNotifQueue.add({
@@ -294,19 +295,7 @@ class NotificationProcessor {
 
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
-    // TODO: Re-enable listen milestone notifications when preprocessing is done on the discovery node side
-    // This query is extremely non-performant and needs to be restructured
-    //
-    // Query owners for tracks relevant to track listen counts
-    // Below can be toggled once milestones are calculated in discovery
-    // let listenCounts = await calculateTrackListenMilestones()
-    // const listenCounts = []
-    // const listenCounts = await calculateTrackListenMilestonesFromDiscovery(discoveryProvider)
-    // logger.info(`notifications main indexAll job - calculateTrackListenMilestonesFromDiscovery complete in ${Date.now() - time}ms`)
-    // time = Date.now()
-
     const trackIdOwnersToRequestList = []
-    // const trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
 
     // These track_id get parameters will be used to retrieve track owner info
     // This is required since there is no guarantee that there are indeed notifications for this user
@@ -320,15 +309,8 @@ class NotificationProcessor {
     // Use a single transaction
     const tx = await models.sequelize.transaction()
     try {
-      // // Populate owners, used to index in milestone generation
+      // Populate owners, used to index in milestone generation
       const listenCountWithOwners = []
-      // const listenCountWithOwners = listenCounts.map((x) => {
-      //   return {
-      //     trackId: x.trackId,
-      //     listenCount: x.listenCount,
-      //     owner: owners.tracks[x.trackId]
-      //   }
-      // })
 
       // Insert the notifications into the DB to make it easy for users to query for their grouped notifications
       await processNotifications(notifications, tx)
@@ -381,7 +363,6 @@ class NotificationProcessor {
     logger.info(`${logLabel} - minSlot: ${minSlot}, oldMaxSlot: ${oldMaxSlot}, startDate: ${startDate}, startTime: ${startTime}`)
 
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
-    logger.info(`${logLabel} - ${Object.keys(discoveryProvider).join(',')}`)
 
     // Timeout of 2 minutes
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
@@ -410,7 +391,7 @@ class NotificationProcessor {
       const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
       logger.info(`${logLabel} finished - minSlot: ${minSlot}, startDate: ${startDate}, duration: ${duration}, notifications: ${notifications.length}`)
     } catch (e) {
-      logger.error(`Error indexing notification ${e}`)
+      logger.error(`Error indexing solana notification ${e}`)
       logger.error(e.stack)
       await tx.rollback()
     }
