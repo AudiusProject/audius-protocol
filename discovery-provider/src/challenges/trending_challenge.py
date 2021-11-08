@@ -64,13 +64,13 @@ trending_playlist_challenge_manager = ChallengeManager(
 )
 
 
-def is_dst(zonename):
+def is_dst(zonename, dt):
     """Checks if is daylight savings time
     During daylight savings, the clock moves forward one hr
     """
     tz = pytz.timezone(zonename)
-    now = pytz.utc.localize(datetime.utcnow())
-    return now.astimezone(tz).dst() != timedelta(0)
+    localized = pytz.utc.localize(dt)
+    return localized.astimezone(tz).dst() != timedelta(0)
 
 
 def get_is_valid_timestamp(dt: datetime):
@@ -78,7 +78,7 @@ def get_is_valid_timestamp(dt: datetime):
     isFriday = dt.weekday() == 4
 
     # Check timestamp to be between 12pm and 1pm PT
-    add_hr = is_dst("America/Los_Angeles")
+    add_hr = is_dst("America/Los_Angeles", dt)
     min = 19 if add_hr else 20
     max = 20 if add_hr else 21
 
