@@ -181,9 +181,9 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
         text: messages.darkModeAuto
       }
     ]
-    // if (showMatrix) {
-    options.push({ key: Theme.MATRIX, text: messages.matrixMode })
-    // }
+    if (showMatrix) {
+      options.push({ key: Theme.MATRIX, text: messages.matrixMode })
+    }
 
     return (
       <SettingsCard
