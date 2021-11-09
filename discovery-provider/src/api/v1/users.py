@@ -14,7 +14,6 @@ from src.api.v1.models.users import (
     encoded_user_id,
     user_replica_set,
     challenge_response,
-    track_history_response,
 )
 
 from src.queries.get_saves import get_saves

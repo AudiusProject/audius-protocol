@@ -83,14 +83,6 @@ user_replica_set = ns.model(
     },
 )
 
-track_history_response = ns.model(
-    "track_history_response",
-    {
-        "track_id": fields.Integer(required=True),
-        "created_at": fields.String(required=True),
-    },
-)
-
 challenge_response = ns.model(
     "challenge_response",
     {
