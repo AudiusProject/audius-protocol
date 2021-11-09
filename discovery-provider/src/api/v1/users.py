@@ -501,7 +501,7 @@ history_route_parser.add_argument("user_id", required=False, type=str)
 history_route_parser.add_argument("limit", required=False, type=int)
 history_route_parser.add_argument("offset", required=False, type=int)
 history_response = make_full_response(
-    "history_response_full", full_ns, fields.List(fields.Nested(track_history_response))
+    "history_response_full", full_ns, fields.List(fields.Nested(activity_model_full))
 )
 
 
@@ -525,12 +525,17 @@ class TrackHistoryFull(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         get_tracks_args = {
+            "filter_deleted": False,
+            "user_id": decoded_id,
             "current_user_id": current_user_id,
             "limit": limit,
             "offset": offset,
+            "with_users": True,
         }
         track_history = get_track_history(get_tracks_args)
-        return success_response(track_history)
+        logger.info(f"isaac track_history {track_history}")
+        tracks = list(map(extend_activity, track_history))
+        return success_response(tracks)
 
 
 user_search_result = make_response(

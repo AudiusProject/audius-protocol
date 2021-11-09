@@ -1,7 +1,12 @@
-from src.models import Play
+from src.models import Play, Track
+from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
+from src.queries import response_name_constants
 from src.queries.query_helpers import (
     add_query_pagination,
+    populate_track_metadata,
+    get_users_by_id,
+    get_users_ids,
 )
 
 
@@ -9,24 +14,46 @@ def get_track_history(args):
     current_user_id = args.get("current_user_id")
     limit = args.get("limit")
     offset = args.get("offset")
+    filter_deleted = args.get("filter_deleted")
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
         base_query = (
-            session.query(Play.play_item_id, Play.created_at)
-            .filter(Play.user_id == current_user_id)
-            .order_by(Play.created_at.desc())
+            session.query(Track, Play.created_at)
+            .join(Play, Play.play_item_id == Track.track_id)
+            .filter(
+                Play.user_id == current_user_id,
+                Track.is_current == True,
+            )
         )
+
+        # Allow filtering of deletes
+        if filter_deleted:
+            base_query = base_query.filter(Track.is_delete == False)
+
+        base_query = base_query.order_by(Play.created_at.desc())
 
         query_results = add_query_pagination(base_query, limit, offset).all()
 
         if not query_results:
             return []
 
-        track_history = []
-        for query_result in query_results:
-            track_history.append(
-                {"track_id": query_result[0], "created_at": query_result[1]}
-            )
+        tracks, save_dates = zip(*query_results)
+        tracks = helpers.query_result_to_list(tracks)
+        track_ids = list(map(lambda track: track["track_id"], tracks))
 
-        return track_history
+        # bundle peripheral info into track results
+        tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
+
+        if args.get("with_users", False):
+            user_id_list = get_users_ids(tracks)
+            users = get_users_by_id(session, user_id_list, current_user_id)
+            for track in tracks:
+                user = users[track["owner_id"]]
+                if user:
+                    track["user"] = user
+
+        for idx, track in enumerate(tracks):
+            track[response_name_constants.activity_timestamp] = save_dates[idx]
+
+        return tracks
