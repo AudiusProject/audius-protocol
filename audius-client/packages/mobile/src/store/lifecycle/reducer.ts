@@ -72,6 +72,7 @@ const reducer = (
         ...state,
         signedIn: false,
         onSignUp: false,
+        dappLoaded: false,
         account: action.account
       }
     case ON_SIGN_UP:
