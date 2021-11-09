@@ -26,8 +26,7 @@ REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None
 if REWARDS_MANAGER_ACCOUNT:
     REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = PublicKey(REWARDS_MANAGER_ACCOUNT)
 
-ATTESTATION_DECIMALS = 9
-
+ATTESTATION_DECIMALS = 8
 
 class Attestation:
     """Represents DN attesting to a user completing a given challenge"""
