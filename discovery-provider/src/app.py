@@ -42,6 +42,8 @@ from src.utils.session_manager import SessionManager
 from src.solana.solana_client_manager import SolanaClientManager
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 
+SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
+
 # these global vars will be set in create_celery function
 web3endpoint = None
 web3 = None
@@ -269,9 +271,6 @@ def configure_flask(test_config, app, mode="app"):
             if "url" in test_config["db"]:
                 database_url = test_config["db"]["url"]
 
-    if shared_config["discprov"]["hostname"]:
-        app.config["SERVER_NAME"] = shared_config["discprov"]["hostname"]
-
     # Sometimes ECS latency causes the create_database function to fail because db connection is not ready
     # Give it some more time to get set up, up to 5 times
     i = 0
@@ -378,6 +377,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_rewards_manager",
             "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
+            "src.tasks.index_listen_count_milestones",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -422,7 +422,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "index_trending": {
                 "task": "index_trending",
-                "schedule": crontab(minute=15, hour="*"),
+                "schedule": timedelta(seconds=10),
             },
             "update_user_balances": {
                 "task": "update_user_balances",
@@ -475,6 +475,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "index_related_artists": {
                 "task": "index_related_artists",
                 "schedule": timedelta(seconds=60),
+            },
+            "index_listen_count_milestones": {
+                "task": "index_listen_count_milestones",
+                "schedule": timedelta(seconds=5),
             },
         },
         task_serializer="json",

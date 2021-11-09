@@ -22,6 +22,9 @@ pub enum ClaimableProgramError {
     /// Instruction load error
     #[error("Instruction load error")]
     InstructionLoadError,
+    /// User nonce verification error
+    #[error("Nonce verification failed")]
+    NonceVerificationError,
 }
 impl From<ClaimableProgramError> for ProgramError {
     fn from(e: ClaimableProgramError) -> Self {
