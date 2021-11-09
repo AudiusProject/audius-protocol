@@ -1,6 +1,7 @@
 import Config from 'react-native-config'
-import { TrackMetadata } from '../models/Track'
+
 import { UserCollection } from '../models/Collection'
+import { TrackMetadata } from '../models/Track'
 import { UserHandle } from '../models/User'
 
 /**

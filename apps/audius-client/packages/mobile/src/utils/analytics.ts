@@ -1,7 +1,8 @@
-import { Platform } from 'react-native'
 import analytics from '@segment/analytics-react-native'
-import VersionNumber from 'react-native-version-number'
+import { Platform } from 'react-native'
 import Config from 'react-native-config'
+import VersionNumber from 'react-native-version-number'
+
 import { Identify, Track, Screen, AllEvents } from '../types/analytics'
 
 let analyticsSetupStatus: 'ready' | 'pending' | 'error' = 'pending'

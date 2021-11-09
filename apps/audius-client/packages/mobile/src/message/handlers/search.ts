@@ -1,4 +1,4 @@
-import * as searchActions from '../../store/search/actions'
+import * as searchActions from 'app/store/search/actions'
 
 import { MessageType, MessageHandlers } from '../types'
 

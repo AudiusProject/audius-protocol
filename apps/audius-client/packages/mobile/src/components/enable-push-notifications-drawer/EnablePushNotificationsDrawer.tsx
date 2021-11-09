@@ -1,31 +1,28 @@
 import React, { useCallback } from 'react'
 
-import { StyleSheet, View } from 'react-native'
-
-import IconNotification from '../../assets/images/iconGradientNotification.svg'
-import IconHeart from '../../assets/images/iconHeart.svg'
-import IconRepost from '../../assets/images/iconRepost.svg'
-import IconRemix from '../../assets/images/iconRemix.svg'
-import IconExploreNewReleases from '../../assets/images/iconExploreNewReleases.svg'
-import IconFollow from '../../assets/images/iconFollow.svg'
-import IconCoSign from '../../assets/images/iconCoSign.svg'
-
-import Button from '../../components/button'
-import Drawer from '../../components/drawer'
-import Text from '../../components/text'
-
+import MaskedView from '@react-native-masked-view/masked-view'
 // Importing directly from audius-client temporarily until
 // settings page is migrated because we still need push notification logic to work
 // on settings page and it doesn't necessarily make sense in common
 import { togglePushNotificationSetting } from 'audius-client/src/containers/settings-page/store/actions'
 import { PushNotificationSetting } from 'audius-client/src/containers/settings-page/store/types'
-
-import { useDrawer } from '../../hooks/useDrawer'
-import { ThemeColors, useThemedStyles } from '../../hooks/useThemedStyles'
-import { useThemeColors } from '../../utils/theme'
+import { StyleSheet, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
-import MaskedView from '@react-native-masked-view/masked-view'
-import { useDispatchWeb } from '../../hooks/useDispatchWeb'
+
+import IconCoSign from 'app/assets/images/iconCoSign.svg'
+import IconExploreNewReleases from 'app/assets/images/iconExploreNewReleases.svg'
+import IconFollow from 'app/assets/images/iconFollow.svg'
+import IconNotification from 'app/assets/images/iconGradientNotification.svg'
+import IconHeart from 'app/assets/images/iconHeart.svg'
+import IconRemix from 'app/assets/images/iconRemix.svg'
+import IconRepost from 'app/assets/images/iconRepost.svg'
+import Button from 'app/components/button'
+import Drawer from 'app/components/drawer'
+import Text from 'app/components/text'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useDrawer } from 'app/hooks/useDrawer'
+import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+import { useThemeColors } from 'app/utils/theme'
 
 const messages = {
   dontMiss: "Don't Miss a Beat!",

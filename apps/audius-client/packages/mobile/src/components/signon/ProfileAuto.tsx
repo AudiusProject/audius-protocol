@@ -1,4 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
+
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import LottieView from 'lottie-react-native'
 import {
   Animated,
   StyleSheet,
@@ -8,30 +11,29 @@ import {
   Dimensions,
   SafeAreaView
 } from 'react-native'
-import SignupHeader from './SignupHeader'
-
-import IconInstagram from '../../assets/images/iconInstagram.svg'
-import IconTwitter from '../../assets/images/iconTwitterBird.svg'
-import IconVerified from '../../assets/images/iconVerified.svg'
-import GradientSave from '../../assets/images/gradientSave.svg'
-import { MessageType } from '../../message/types'
-import { useDispatchWeb } from '../../hooks/useDispatchWeb'
 import { useDispatch, useSelector } from 'react-redux'
+
+import GradientSave from 'app/assets/images/gradientSave.svg'
+import IconInstagram from 'app/assets/images/iconInstagram.svg'
+import IconTwitter from 'app/assets/images/iconTwitterBird.svg'
+import IconVerified from 'app/assets/images/iconVerified.svg'
+import Button from 'app/components/button'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { MessageType } from 'app/message/types'
+import * as oauthActions from 'app/store/oauth/actions'
 import {
   getInstagramError,
   getInstagramInfo,
   getTwitterError,
   getTwitterInfo
-} from '../../store/oauth/selectors'
-import { getHandleError, getHandleIsValid } from '../../store/signon/selectors'
-import LottieView from 'lottie-react-native'
-import { useColor } from '../../utils/theme'
-import * as oauthActions from '../../store/oauth/actions'
-import { track, make } from '../../utils/analytics'
-import { EventNames } from '../../types/analytics'
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
+} from 'app/store/oauth/selectors'
+import { getHandleError, getHandleIsValid } from 'app/store/signon/selectors'
+import { EventNames } from 'app/types/analytics'
+import { track, make } from 'app/utils/analytics'
+import { useColor } from 'app/utils/theme'
+
 import { RootStackParamList } from './NavigationStack'
-import Button from '../../components/button'
+import SignupHeader from './SignupHeader'
 
 const styles = StyleSheet.create({
   container: {
@@ -464,7 +466,7 @@ const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {
             <FormTitle />
             <View style={styles.loadingIcon}>
               <LottieView
-                source={require('../../assets/animations/loadingSpinner.json')}
+                source={require('app/assets/animations/loadingSpinner.json')}
                 autoPlay
                 loop
                 colorFilters={[

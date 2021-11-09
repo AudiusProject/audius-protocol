@@ -1,5 +1,10 @@
 import React, { useCallback } from 'react'
+
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+
+import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
+import Track from 'app/models/Track'
+import User from 'app/models/User'
 import {
   Achievement,
   ChallengeReward,
@@ -9,15 +14,14 @@ import {
   RemixCosign,
   RemixCreate,
   TierChange,
-  Track,
-  TrendingTrack,
-  User
-} from '../../../store/notifications/types'
-import IconTwitterBird from '../../../assets/images/iconTwitterBird.svg'
+  TrendingTrack
+} from 'app/store/notifications/types'
+import { BadgeTier } from 'app/utils/badgeTier'
+import { getUserRoute } from 'app/utils/routes'
+
 import { getEntityRoute } from '../routeUtil'
-import { getUserRoute } from '../../../utils/routes'
+
 import { getRankSuffix } from './Trending'
-import { BadgeTier } from 'utils/badgeTier'
 
 export const formatAchievementText = (
   type: string,

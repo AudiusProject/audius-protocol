@@ -1,4 +1,5 @@
-import { Message } from '../../message'
+import { Message } from 'app/message'
+
 import { Provider } from './reducer'
 
 export const OPEN_POPUP = 'OAUTH/OPEN_POPUP'

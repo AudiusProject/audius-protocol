@@ -1,9 +1,9 @@
 import React, { memo } from 'react'
 
 import LottieView from 'lottie-react-native'
-
 import { StyleSheet, Text, View } from 'react-native'
-import { useColor } from '../../utils/theme'
+
+import { useColor } from 'app/utils/theme'
 
 const messages = {
   title: 'Your Account is Almost Ready to Rock ',
@@ -56,7 +56,7 @@ const SignupLoadingPage = () => {
     <View style={styles.container}>
       <View style={styles.animationContainer}>
         <LottieView
-          source={require('../../assets/animations/loadingSpinningGlyph.json')}
+          source={require('app/assets/animations/loadingSpinningGlyph.json')}
           autoPlay
           loop
           colorFilters={[

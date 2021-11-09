@@ -10,8 +10,10 @@ const ExploreButton = ({ isDarkMode, onClick, isActive }: ButtonProps) => {
       isActive={isActive}
       isDarkMode={isDarkMode}
       onClick={onClick}
-      iconLightJSON={() => require('assets/animations/iconExploreLight.json')}
-      iconDarkJSON={() => require('assets/animations/iconExploreDark.json')}
+      iconLightJSON={() =>
+        require('app/assets/animations/iconExploreLight.json')
+      }
+      iconDarkJSON={() => require('app/assets/animations/iconExploreDark.json')}
     />
   )
 }

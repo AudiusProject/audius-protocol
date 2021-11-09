@@ -1,4 +1,5 @@
 import { Dispatch } from 'redux'
+
 import { AnalyticsMessage } from '../types/analytics'
 
 export enum MessageType {

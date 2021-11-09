@@ -1,12 +1,14 @@
-import React, { useEffect, useRef, Ref } from 'react'
+import React, { useEffect, useRef, RefObject } from 'react'
+
 import {
   requireNativeComponent,
   NativeEventEmitter,
   NativeModules
 } from 'react-native'
 import WebView from 'react-native-webview'
-import { MessageType } from '../../message/types'
-import { postMessage } from '../../utils/postMessage'
+
+import { MessageType } from 'app/message'
+import { postMessage } from 'app/utils/postMessage'
 
 const AIRPLAY_PORT_TYPE = 'AirPlay'
 
@@ -15,7 +17,7 @@ const { AirplayEvent } = NativeModules
 const airplayEventListener = new NativeEventEmitter(AirplayEvent)
 
 type OwnProps = {
-  webRef: Ref<WebView>
+  webRef: RefObject<WebView>
 }
 
 /**

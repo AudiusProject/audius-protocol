@@ -10,8 +10,12 @@ const TrendingButton = ({ isDarkMode, onClick, isActive }: ButtonProps) => {
       isActive={isActive}
       isDarkMode={isDarkMode}
       onClick={onClick}
-      iconLightJSON={() => require('assets/animations/iconTrendingLight.json')}
-      iconDarkJSON={() => require('assets/animations/iconTrendingDark.json')}
+      iconLightJSON={() =>
+        require('app/assets/animations/iconTrendingLight.json')
+      }
+      iconDarkJSON={() =>
+        require('app/assets/animations/iconTrendingDark.json')
+      }
     />
   )
 }

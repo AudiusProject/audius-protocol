@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
+
 import {
   StyleSheet,
   View,
@@ -8,15 +8,18 @@ import {
   TouchableHighlight,
   Keyboard
 } from 'react-native'
-import useSearchHistory from '../../store/search/hooks'
-import { submitQuery } from '../../store/search/actions'
-import { useColor, useTheme } from '../../utils/theme'
-import { useDispatchWeb } from '../../hooks/useDispatchWeb'
-import { MessageType } from '../../message/types'
+import { useDispatch } from 'react-redux'
+
+import IconArrow from 'app/assets/images/iconArrow.svg'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { MessageType } from 'app/message'
+import { submitQuery } from 'app/store/search/actions'
+import useSearchHistory from 'app/store/search/hooks'
+import { getTagSearchRoute } from 'app/utils/routes'
+import { useColor, useTheme } from 'app/utils/theme'
+
 import EmptySearch from './content/EmptySearch'
-import IconArrow from '../../assets/images/iconArrow.svg'
 import { usePushSearchRoute } from './utils'
-import { getTagSearchRoute } from '../../utils/routes'
 
 const messages = {
   clear: 'Clear Recent Searches',

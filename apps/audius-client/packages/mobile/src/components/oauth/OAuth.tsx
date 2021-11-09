@@ -1,23 +1,24 @@
 import React, { RefObject, useCallback } from 'react'
-import Config from 'react-native-config'
-import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
-import { WebView } from 'react-native-webview'
-import { NativeSyntheticEvent, Modal, View, Button } from 'react-native'
 
+import { NativeSyntheticEvent, Modal, View, Button } from 'react-native'
+import Config from 'react-native-config'
+import { WebView } from 'react-native-webview'
+import { WebViewMessage } from 'react-native-webview/lib/WebViewTypes'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+
+import { AppState } from 'app/store'
+import { closePopup } from 'app/store/oauth/actions'
+import { Provider } from 'app/store/oauth/reducer'
 import {
   getUrl,
   getIsOpen,
   getMessageId,
   getAuthProvider,
   getMessageType
-} from '../../store/oauth/selectors'
-import { AppState } from '../../store'
-import { closePopup } from '../../store/oauth/actions'
-import { Provider } from '../../store/oauth/reducer'
-import { WebViewMessage } from 'react-native-webview/lib/WebViewTypes'
-import { MessagePostingWebView } from '../../types/MessagePostingWebView'
-import { postMessage } from '../../utils/postMessage'
+} from 'app/store/oauth/selectors'
+import { MessagePostingWebView } from 'app/types/MessagePostingWebView'
+import { postMessage } from 'app/utils/postMessage'
 
 const AUTH_RESPONSE = 'auth-response'
 

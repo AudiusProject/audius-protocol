@@ -1,24 +1,24 @@
 import React, { useCallback, useMemo } from 'react'
 
-import LogoEth from '../../assets/images/logoEth.svg'
-import LogoSol from '../../assets/images/logoSol.svg'
-import Drawer from '../drawer'
-import { useSelectorWeb } from '../../hooks/useSelectorWeb'
+import { Chain } from 'audius-client/src/common/models/Chain'
+import { getCollectible } from 'audius-client/src/common/store/ui/collectible-details/selectors'
 import {
   getModalVisibility,
   setVisibility
 } from 'audius-client/src/common/store/ui/modals/slice'
-import { getCollectible } from 'audius-client/src/common/store/ui/collectible-details/selectors'
-import { Chain } from 'audius-client/src/common/models/Chain'
-
-import { useDispatchWeb } from '../../hooks/useDispatchWeb'
 import { StyleSheet, View } from 'react-native'
-import { ThemeColors, useThemedStyles } from '../../hooks/useThemedStyles'
-import Text from '../../components/text'
 
-import { CollectibleMedia } from './CollectibleMedia'
+import LogoEth from 'app/assets/images/logoEth.svg'
+import LogoSol from 'app/assets/images/logoSol.svg'
+import Drawer from 'app/components/drawer'
+import Text from 'app/components/text'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+
 import { CollectibleDate } from './CollectibleDate'
 import { CollectibleLink } from './CollectibleLink'
+import { CollectibleMedia } from './CollectibleMedia'
 
 const MODAL_NAME = 'CollectibleDetails'
 
@@ -88,7 +88,7 @@ const getHostname = (url: string) => {
   // https://audius.co/nft -> audius.co
 
   // Second matched group which will be the hostname
-  return url.match(/(https*:\/\/)([^\/]+)/)?.[2] ?? ''
+  return url.match(/(https*:\/\/)([^/]+)/)?.[2] ?? ''
 }
 
 const CollectibleDetails = () => {

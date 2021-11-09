@@ -1,8 +1,9 @@
 import React, { memo, useState, useEffect, useRef, useCallback } from 'react'
-import { TouchableHighlight, View, ViewStyle } from 'react-native'
 
 import LottieView from 'lottie-react-native'
-import { useColor } from '../../utils/theme'
+import { TouchableHighlight, View, ViewStyle } from 'react-native'
+
+import { useColor } from 'app/utils/theme'
 
 export type BaseAnimatedButtonProps = {
   onClick: () => void
@@ -36,7 +37,7 @@ const AnimatedButton = ({
     } else {
       animationRef.current?.play(0, 0)
     }
-  }, [iconJSON, isActive])
+  }, [isActive, iconJSON])
 
   const handleClick = useCallback(() => {
     if (isDisabled) {
@@ -48,7 +49,7 @@ const AnimatedButton = ({
     }
 
     onClick()
-  }, [isActive, isDisabled, onClick])
+  }, [isDisabled, onClick, isActive])
 
   return (
     <TouchableHighlight

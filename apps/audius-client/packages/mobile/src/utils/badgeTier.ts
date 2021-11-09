@@ -1,4 +1,5 @@
 import BN from 'bn.js'
+
 import { UserBalance } from '../models/User'
 
 export const WEI = new BN('1000000000000000000')

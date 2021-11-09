@@ -1,5 +1,6 @@
+import { Status } from 'app/types/status'
+
 import { Notification } from './types'
-import { Status } from 'types/status'
 
 export const OPEN = 'NOTIFICATIONS/OPEN'
 export const CLOSE = 'NOTIFICATIONS/CLOSE'

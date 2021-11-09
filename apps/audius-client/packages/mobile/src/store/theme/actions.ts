@@ -1,4 +1,4 @@
-import { Theme } from '../../utils/theme'
+import { Theme } from 'app/utils/theme'
 
 export const SET = 'THEME/SET'
 

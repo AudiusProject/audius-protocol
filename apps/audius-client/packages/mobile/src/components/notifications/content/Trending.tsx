@@ -1,7 +1,10 @@
 import React from 'react'
+
 import { StyleSheet, Text, View } from 'react-native'
-import { TrendingTrack as TrendingNotification } from '../../../store/notifications/types'
-import { useTheme } from '../../../utils/theme'
+
+import { TrendingTrack as TrendingNotification } from 'app/store/notifications/types'
+import { useTheme } from 'app/utils/theme'
+
 import Entity from './Entity'
 import TwitterShare from './TwitterShare'
 

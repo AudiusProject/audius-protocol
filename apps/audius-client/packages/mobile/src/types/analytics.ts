@@ -1,4 +1,5 @@
 import { JsonMap } from '@segment/analytics-react-native'
+
 import { Message } from '../message/types'
 
 export type Identify = {

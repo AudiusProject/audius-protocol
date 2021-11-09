@@ -10,8 +10,12 @@ const FavoritesButton = ({ isDarkMode, onClick, isActive }: ButtonProps) => {
       isActive={isActive}
       isDarkMode={isDarkMode}
       onClick={onClick}
-      iconLightJSON={() => require('assets/animations/iconFavoriteLight.json')}
-      iconDarkJSON={() => require('assets/animations/iconFavoriteDark.json')}
+      iconLightJSON={() =>
+        require('app/assets/animations/iconFavoriteLight.json')
+      }
+      iconDarkJSON={() =>
+        require('app/assets/animations/iconFavoriteDark.json')
+      }
     />
   )
 }

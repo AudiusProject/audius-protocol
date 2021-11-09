@@ -1,5 +1,5 @@
-import { Status } from '../../types/status'
-import { Notification } from './types'
+import { Status } from 'app/types/status'
+
 import {
   NotificationsActions,
   OPEN,
@@ -9,6 +9,7 @@ import {
   MARK_AS_VIEWED,
   SET_STATUS
 } from './actions'
+import { Notification } from './types'
 
 export type NotificationsState = {
   isOpen: boolean

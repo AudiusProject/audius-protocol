@@ -1,4 +1,4 @@
-import { Message } from '../../message'
+import { Message } from 'app/message'
 
 export const ENABLE_PULL_TO_REFRESH = 'WEB/ENABLE_PULL_TO_REFRESH'
 export const DISABLE_PULL_TO_REFRESH = 'WEB/DISABLE_PULL_TO_REFRESH'

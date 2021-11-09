@@ -1,7 +1,7 @@
-import * as lifecycleActions from '../../store/lifecycle/actions'
-import * as signonActions from '../../store/signon/actions'
-import * as oauthActions from '../../store/oauth/actions'
-import { checkConnectivity, Connectivity } from '../../utils/connectivity'
+import * as lifecycleActions from 'app/store/lifecycle/actions'
+import * as oauthActions from 'app/store/oauth/actions'
+import * as signonActions from 'app/store/signon/actions'
+import { checkConnectivity, Connectivity } from 'app/utils/connectivity'
 
 import { MessageType, MessageHandlers } from '../types'
 

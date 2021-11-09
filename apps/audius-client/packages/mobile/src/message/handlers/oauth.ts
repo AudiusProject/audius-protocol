@@ -1,5 +1,5 @@
-import * as oauthActions from '../../store/oauth/actions'
-import { Provider } from '../../store/oauth/reducer'
+import * as oauthActions from 'app/store/oauth/actions'
+import { Provider } from 'app/store/oauth/reducer'
 
 import { MessageType, MessageHandlers } from '../types'
 

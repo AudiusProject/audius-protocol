@@ -1,5 +1,5 @@
-import * as webActions from '../../store/web/actions'
-import share from '../../utils/share'
+import * as webActions from 'app/store/web/actions'
+import share from 'app/utils/share'
 
 import { MessageType, MessageHandlers } from '../types'
 
