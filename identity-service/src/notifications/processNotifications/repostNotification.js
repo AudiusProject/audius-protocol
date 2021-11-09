@@ -112,6 +112,7 @@ async function processBaseRepostNotifications (notifications, tx) {
       }
     }
   }
+  return notifications
 }
 
 module.exports = processBaseRepostNotifications

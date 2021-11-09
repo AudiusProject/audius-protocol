@@ -112,6 +112,7 @@ async function processFavoriteNotifications (notifications, tx) {
       }
     }
   }
+  return notifications
 }
 
 module.exports = processFavoriteNotifications

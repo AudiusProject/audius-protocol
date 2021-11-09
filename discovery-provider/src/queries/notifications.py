@@ -1,8 +1,11 @@
 import logging  # pylint: disable=C0302
 import functools as ft
 from datetime import date, datetime, timedelta
+from typing import Tuple, List
 from flask import Blueprint, request
+from redis import Redis
 from sqlalchemy import desc
+from src.utils.redis_connection import get_redis
 
 from src import api_helpers
 from src.models import (
@@ -18,12 +21,18 @@ from src.models import (
     AggregateUser,
     ChallengeDisbursement,
 )
+from src.models.milestone import Milestone
 from src.queries import response_name_constants as const
+from src.queries.get_sol_rewards_manager import (
+    get_latest_cached_sol_rewards_manager_db,
+    get_latest_cached_sol_rewards_manager_program_tx
+)
 from src.queries.query_helpers import (
     get_repost_counts,
     get_save_counts,
     get_follower_count_dict,
 )
+from src.tasks.index_listen_count_milestones import LISTEN_COUNT_MILESTONE, PROCESSED_LISTEN_MILESTONE
 from src.utils.db_session import get_db_read_replica
 from src.utils.config import shared_config
 
@@ -889,6 +898,22 @@ def notifications():
     )
 
 
+def get_max_slot(redis: Redis):
+    max_slot = 0
+
+    listen_milestone_slot = redis.get(PROCESSED_LISTEN_MILESTONE)
+    if listen_milestone_slot:
+        max_slot = int(listen_milestone_slot)
+
+    rewards_manager_db_cache = get_latest_cached_sol_rewards_manager_db(redis)
+    tx_cache = get_latest_cached_sol_rewards_manager_program_tx(redis)
+
+    if tx_cache and rewards_manager_db_cache:
+        if tx_cache["slot"] != rewards_manager_db_cache["slot"]:
+            max_slot = min(rewards_manager_db_cache["slot"], max_slot)
+
+    return max_slot
+
 @bp.route("/solana_notifications", methods=("GET",))
 def solana_notifications():
     """
@@ -900,7 +925,7 @@ def solana_notifications():
 
     Response - Json object w/ the following fields
         notifications: Array of notifications of shape:
-            type: 'ChallengeReward'
+            type: 'ChallengeReward' | 'MilestoneListen'
             slot: (int) slot number of notification
             initiator: (int) the user id that caused this notification
             metadata?: (any) additional information about the notification
@@ -909,6 +934,7 @@ def solana_notifications():
         info: Dictionary of metadata w/ min_slot_number & max_slot_number fields
     """
     db = get_db_read_replica()
+    redis = get_redis()
     min_slot_number = request.args.get("min_slot_number", type=int)
     max_slot_number = request.args.get("max_slot_number", type=int)
 
@@ -919,19 +945,8 @@ def solana_notifications():
     if not max_slot_number or (max_slot_number - min_slot_number) > max_slot_diff:
         max_slot_number = min_slot_number + max_slot_diff
 
-    # TODO: This needs to be updated when more notification types are added to the solana notifications queue
-    # Need to write a system to keep track of the proper latest slot to index based on all of the applicable table
-    with db.scoped_session() as session:
-        current_slot_query_result = (
-            session.query(ChallengeDisbursement.slot)
-            .order_by(
-                desc(ChallengeDisbursement.slot)
-            )
-            .first()
-        )
-        current_max_slot_num = current_slot_query_result.slot if current_slot_query_result is not None else 0
-        if current_max_slot_num < max_slot_number:
-            max_slot_number = current_max_slot_num
+    max_valid_slot = get_max_slot(redis)
+    max_slot_number = min(max_slot_number, max_valid_slot)
 
     notifications_unsorted = []
     notification_metadata = {
@@ -965,7 +980,35 @@ def solana_notifications():
                 }
             )
 
+        track_listen_milestone: List[Tuple(Milestone, int)] = (
+            session.query(Milestone, Track.owner_id)
+            .filter(
+                Milestone.name == LISTEN_COUNT_MILESTONE,
+                Milestone.slot >= min_slot_number,
+                Milestone.slot <= max_slot_number,
+            )
+            .join(Track, Track.track_id == Milestone.id and Track.is_current == True)
+            .all()
+        )
+
+        track_listen_milestones = []
+        for result in track_listen_milestone:
+            track_milestone, track_owner_id = result
+            track_listen_milestones.append(
+                {
+                    const.solana_notification_type: const.solana_notification_type_listen_milestone,
+                    const.solana_notification_slot: track_milestone.slot,
+                    const.solana_notification_initiator: track_owner_id, # owner_id
+                    const.solana_notification_metadata: {
+                        const.solana_notification_threshold: track_milestone.threshold,
+                        const.notification_entity_id: track_milestone.id, # track_id
+                        const.notification_entity_type: "track"
+                    },
+                }
+            )
+
         notifications_unsorted.extend(challenge_reward_notifications)
+        notifications_unsorted.extend(track_listen_milestones)
 
     # Final sort
     sorted_notifications = sorted(
