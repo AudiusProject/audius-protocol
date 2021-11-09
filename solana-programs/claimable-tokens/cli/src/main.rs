@@ -2,6 +2,7 @@ use std::convert::TryInto;
 
 use anyhow::anyhow;
 use anyhow::{bail, Context};
+use claimable_tokens::utils::program::{NONCE_ACCOUNT_PREFIX, find_nonce_address};
 use claimable_tokens::{
     instruction::{CreateTokenAccount, Transfer},
     utils::program::{find_address_pair, EthereumAddress},
@@ -93,6 +94,9 @@ fn transfer(
     let eth_pubkey = libsecp256k1::PublicKey::from_secret_key(&secret_key);
     let eth_address = construct_eth_pubkey(&eth_pubkey);
     let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
+    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
+
+    let (_, user_nonce_acc, _) = find_nonce_address(&claimable_tokens::id(), &mint, &nonce_acct_seed);
 
     // If `recipient` token account provided - we will use it,
     // otherwise will use token account associated with `config.owner`
@@ -138,17 +142,18 @@ fn transfer(
     let mint_raw_data = config.rpc_client.get_account_data(&mint)?;
     let mint_data = Mint::unpack(mint_raw_data.as_ref())?;
 
+    let secp_instr = new_secp256k1_instruction(&secret_key, &user_acc.to_bytes());
+
     let instructions = &[
-        new_secp256k1_instruction(&secret_key, &user_acc.to_bytes()),
+        secp_instr,
         claimable_tokens::instruction::transfer(
             &claimable_tokens::id(),
+            &config.fee_payer.pubkey(),
             &pair.derive.address,
             &user_acc,
+            &user_nonce_acc,
             &pair.base.address,
-            Transfer {
-                eth_address,
-                amount: spl_token::ui_amount_to_amount(amount, mint_data.decimals),
-            },
+            eth_address.clone(),
         )?,
     ];
     let mut tx = Transaction::new_with_payer(instructions, Some(&config.fee_payer.pubkey()));
