@@ -1,5 +1,6 @@
 const { ipfs } = require('../ipfsClient')
 const { ipfsAddNonImages } = require('../ipfsAdd')
+const { logger } = require('../logging')
 
 /**
  * Performs a diagnostic test on IPFS operations to
@@ -30,9 +31,9 @@ const getIPFSReadWriteStatus = async () => {
     }
 
     const duration = Date.now() - start
-
     return JSON.stringify({ hash, duration })
   } catch (e) {
+    logger.error(`[getIPFSReadWriteStatus] Error - ${e.toString()}`)
     return null
   }
 }
