@@ -13,7 +13,7 @@ const getIPFSReadWriteStatus = async () => {
     const content = Buffer.from(timestamp)
 
     // Add new buffer created from timestamp (without pin)
-    const results = await ipfs.add(content, { in: false })
+    const results = await ipfs.add(content, { pin: false })
     const hash = results[0].hash // "Qm...WW"
 
     // Retrieve and validate hash from local node
