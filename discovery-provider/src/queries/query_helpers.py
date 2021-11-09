@@ -995,10 +995,10 @@ def get_genre_list(genre):
     return genre_list
 
 
-def get_users_by_id(session, user_ids, current_user_id=None):
+def get_users_by_id(session, user_ids, current_user_id=None, use_request_context=True):
     users = get_unpopulated_users(session, user_ids)
 
-    if not current_user_id:
+    if not current_user_id and use_request_context:
         current_user_id = get_current_user_id(required=False)
     # bundle peripheral info into user results
     populated_users = populate_user_metadata(session, user_ids, users, current_user_id)

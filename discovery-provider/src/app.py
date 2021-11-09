@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 import ast
 from collections import defaultdict
-from urllib.parse import urlparse
 import datetime
 import logging
 import time
@@ -42,7 +41,6 @@ from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERV
 from src.utils.session_manager import SessionManager
 from src.solana.solana_client_manager import SolanaClientManager
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
-from src.utils.get_all_other_nodes import get_node_endpoint
 
 SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
 
@@ -256,10 +254,6 @@ def configure_flask(test_config, app, mode="app"):
     with app.app_context():
         app.iniconfig.read(config_files)
 
-    endpoint = get_node_endpoint()
-    if endpoint:
-        app.config["SERVER_NAME"] = urlparse(endpoint).hostname
-
     # custom JSON serializer for timestamps
     class TimestampJSONEncoder(JSONEncoder):
         # pylint: disable=E0202
@@ -276,9 +270,6 @@ def configure_flask(test_config, app, mode="app"):
         if "db" in test_config:
             if "url" in test_config["db"]:
                 database_url = test_config["db"]["url"]
-
-    if shared_config["discprov"]["hostname"]:
-        app.config["SERVER_NAME"] = shared_config["discprov"]["hostname"]
 
     # Sometimes ECS latency causes the create_database function to fail because db connection is not ready
     # Give it some more time to get set up, up to 5 times
@@ -431,7 +422,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "index_trending": {
                 "task": "index_trending",
-                "schedule": crontab(minute=15, hour="*"),
+                "schedule": timedelta(seconds=10),
             },
             "update_user_balances": {
                 "task": "update_user_balances",
