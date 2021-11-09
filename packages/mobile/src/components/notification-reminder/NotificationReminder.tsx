@@ -1,8 +1,11 @@
 import React, { useCallback } from 'react'
-import { checkNotifications, RESULTS } from 'react-native-permissions'
 
-import { useDrawer } from '../../hooks/useDrawer'
-import useSessionCount from '../../hooks/useSessionCount'
+import { checkNotifications, RESULTS } from 'react-native-permissions'
+import { useDispatch } from 'react-redux'
+import { Dispatch } from 'redux'
+
+import useSessionCount from 'app/hooks/useSessionCount'
+import { setVisibility } from 'app/store/drawers/slice'
 
 const REMINDER_EVERY_N_SESSIONS = 10
 
@@ -19,9 +22,7 @@ const NotificationReminderWrapper = ({ isSignedIn }: OwnProps) => {
 
 // Sends a notification to the WebApp to turn on push notifications if we're in the DENIED
 // state. Is called from the `NotificationsReminder` component as well as `handleMessage`
-export const remindUserToTurnOnNotifications = (
-  setIsReminderOpen: (isVisible: boolean) => void
-) => {
+export const remindUserToTurnOnNotifications = (dispatch: Dispatch) => {
   checkNotifications()
     .then(({ status }) => {
       switch (status) {
@@ -45,7 +46,9 @@ export const remindUserToTurnOnNotifications = (
         case RESULTS.DENIED:
           // The permission has not been requested or has been denied but it still requestable
           // Appeal to the user to enable notifications
-          setIsReminderOpen(true)
+          dispatch(
+            setVisibility({ drawer: 'EnablePushNotifications', visible: true })
+          )
       }
     })
     .catch(error => {
@@ -55,12 +58,12 @@ export const remindUserToTurnOnNotifications = (
 }
 
 const NotificationReminder = () => {
-  const [_, setIsOpen] = useDrawer('EnablePushNotifications')
+  const dispatch = useDispatch()
 
   // Sets up reminders to turn on push notifications
   const reminder = useCallback(() => {
-    remindUserToTurnOnNotifications(setIsOpen)
-  }, [setIsOpen])
+    remindUserToTurnOnNotifications(dispatch)
+  }, [dispatch])
 
   useSessionCount(reminder, REMINDER_EVERY_N_SESSIONS)
 

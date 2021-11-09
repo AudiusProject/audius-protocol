@@ -1,7 +1,9 @@
 import React from 'react'
+
 import { StyleSheet, View, Text } from 'react-native'
-import IconBigSearch from '../../../assets/images/iconBigSearch.svg'
-import { useColor, useTheme } from '../../../utils/theme'
+
+import IconBigSearch from 'app/assets/images/iconBigSearch.svg'
+import { useColor, useTheme } from 'app/utils/theme'
 
 const messages = {
   empty: 'Search for Artists, Tracks, Playlists, & Albums',

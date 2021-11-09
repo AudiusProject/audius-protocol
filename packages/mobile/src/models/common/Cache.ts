@@ -1,5 +1,7 @@
-import { ID, UID } from 'models/common/Identifiers'
-import { Kind, Status } from 'store/types'
+import Kind from 'audius-client/src/common/models/Kind'
+import Status from 'audius-client/src/common/models/Status'
+
+import { ID, UID } from 'app/models/common/Identifiers'
 
 export type Cacheable<T> = {
   metadata: T

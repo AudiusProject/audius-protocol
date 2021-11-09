@@ -1,6 +1,6 @@
 import { NativeModules } from 'react-native'
 
-import { showCastPicker } from '../../store/googleCast/controller'
+import { showCastPicker } from 'app/store/googleCast/controller'
 
 import { MessageType, MessageHandlers } from '../types'
 

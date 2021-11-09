@@ -1,5 +1,5 @@
-import { track, make } from '../../utils/analytics'
-import { EventNames } from '../../types/analytics'
+import { EventNames } from 'app/types/analytics'
+import { track, make } from 'app/utils/analytics'
 
 const IDENTITY_SERVICE_ENDPOINT = 'https://identityservice.audius.co'
 

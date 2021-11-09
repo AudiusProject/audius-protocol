@@ -1,5 +1,7 @@
 import React, { useCallback, useState } from 'react'
-import { UserImage as UserImageType, UserMultihash } from '../../models/User'
+
+import { UserImage as UserImageType, UserMultihash } from 'app/models/User'
+
 import ImageLoader from './ImageLoader'
 import { gateways, publicGateways } from './utils'
 
@@ -84,7 +86,7 @@ const UserImage = ({
       style={imageStyle}
       source={
         didError || source === null
-          ? require('../../assets/images/imageProfilePicEmpty2X.png')
+          ? require('app/assets/images/imageProfilePicEmpty2X.png')
           : source
       }
       onError={onError}

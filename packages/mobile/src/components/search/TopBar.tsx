@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react'
+
+import LottieView from 'lottie-react-native'
 import {
   StyleSheet,
   View,
@@ -7,20 +9,20 @@ import {
   Platform
 } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import LottieView from 'lottie-react-native'
 
-import IconCaretRight from '../../assets/images/iconCaretRight.svg'
-import IconRemove from '../../assets/images/iconRemove.svg'
-import { useColor, useTheme } from '../../utils/theme'
-import { useDispatchWeb } from '../../hooks/useDispatchWeb'
-import { MessageType } from '../../message/types'
-import { getTagSearchRoute } from '../../utils/routes'
+import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
+import IconRemove from 'app/assets/images/iconRemove.svg'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { MessageType } from 'app/message'
+import { updateQuery } from 'app/store/search/actions'
+import useSearchHistory from 'app/store/search/hooks'
 import {
   getSearchQuery,
   getSearchResultQuery
-} from '../../store/search/selectors'
-import { updateQuery } from '../../store/search/actions'
-import useSearchHistory from '../../store/search/hooks'
+} from 'app/store/search/selectors'
+import { getTagSearchRoute } from 'app/utils/routes'
+import { useColor, useTheme } from 'app/utils/theme'
+
 import { usePushSearchRoute } from './utils'
 
 const IS_IOS = Platform.OS === 'ios'
@@ -189,7 +191,7 @@ const TopBar = ({ onClose, isOpen }: TopBarProps) => {
         {isLoading && (
           <View style={styles.loadingIcon}>
             <LottieView
-              source={require('../../assets/animations/loadingSpinner.json')}
+              source={require('app/assets/animations/loadingSpinner.json')}
               autoPlay
               loop
               colorFilters={[

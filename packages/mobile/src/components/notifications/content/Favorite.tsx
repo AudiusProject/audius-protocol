@@ -1,11 +1,14 @@
 import React from 'react'
+
 import { StyleSheet, Text, View } from 'react-native'
-import { Favorite as FavoriteNotification } from '../../../store/notifications/types'
-import UserImages from './UserImages'
-import { formatCount } from '../../../utils/format'
-import User from './User'
+
+import { Favorite as FavoriteNotification } from 'app/store/notifications/types'
+import { formatCount } from 'app/utils/format'
+import { useTheme } from 'app/utils/theme'
+
 import Entity from './Entity'
-import { useTheme } from '../../../utils/theme'
+import User from './User'
+import UserImages from './UserImages'
 
 const styles = StyleSheet.create({
   textWrapper: {

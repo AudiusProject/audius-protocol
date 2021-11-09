@@ -1,11 +1,10 @@
 import React from 'react'
 
+import { formatDateWithTimezoneOffset } from 'audius-client/src/common/utils/timeUtil'
 import { StyleSheet, View } from 'react-native'
 
-import { formatDateWithTimezoneOffset } from 'audius-client/src/common/utils/timeUtil'
-
-import Text from '../../components/text'
-import { ThemeColors, useThemedStyles } from '../../hooks/useThemedStyles'
+import Text from 'app/components/text'
+import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({

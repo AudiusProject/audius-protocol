@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+
 import { AppState, AppStateStatus } from 'react-native'
 
 /**

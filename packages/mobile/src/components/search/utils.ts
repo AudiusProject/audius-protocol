@@ -1,7 +1,9 @@
 import { useCallback } from 'react'
+
 import { useDispatch } from 'react-redux'
-import { usePushRouteWeb } from '../../hooks/usePushRouteWeb'
-import * as searchActions from '../../store/search/actions'
+
+import { usePushRouteWeb } from 'app/hooks/usePushRouteWeb'
+import * as searchActions from 'app/store/search/actions'
 
 export const usePushSearchRoute = () => {
   const dispatch = useDispatch()

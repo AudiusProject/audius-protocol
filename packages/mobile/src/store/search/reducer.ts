@@ -1,4 +1,5 @@
-import { Status } from '../../types/status'
+import { Status } from 'app/types/status'
+
 import {
   SearchActions,
   OPEN,

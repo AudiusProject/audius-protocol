@@ -1,4 +1,4 @@
-import * as signonActions from '../../store/signon/actions'
+import * as signonActions from 'app/store/signon/actions'
 
 import { MessageType, MessageHandlers } from '../types'
 

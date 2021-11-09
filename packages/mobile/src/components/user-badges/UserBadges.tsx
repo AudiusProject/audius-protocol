@@ -1,16 +1,15 @@
 import React, { ReactElement } from 'react'
+
 import { StyleSheet, View, Image, Text } from 'react-native'
 
-import IconBronzeBadgeSVG from '../../assets/images/IconBronzeBadge.svg'
-import IconSilverBadgeSVG from '../../assets/images/IconSilverBadge.svg'
-import IconGoldBadgeSVG from '../../assets/images/IconGoldBadge.svg'
-import IconPlatinumBadgeSVG from '../../assets/images/IconPlatinumBadge.svg'
-
-import IconVerified from '../../assets/images/iconVerified.svg'
-
-import getBadgeTier, { BadgeTier } from '../../utils/badgeTier'
-import { Nullable } from '../../utils/typeUtils'
-import { UserName, UserBalance, UserVerified } from '../../models/User'
+import IconBronzeBadgeSVG from 'app/assets/images/IconBronzeBadge.svg'
+import IconGoldBadgeSVG from 'app/assets/images/IconGoldBadge.svg'
+import IconPlatinumBadgeSVG from 'app/assets/images/IconPlatinumBadge.svg'
+import IconSilverBadgeSVG from 'app/assets/images/IconSilverBadge.svg'
+import IconVerified from 'app/assets/images/iconVerified.svg'
+import { UserName, UserBalance, UserVerified } from 'app/models/User'
+import getBadgeTier, { BadgeTier } from 'app/utils/badgeTier'
+import { Nullable } from 'app/utils/typeUtils'
 
 type UserBadgesProps = {
   user: UserName & UserBalance & UserVerified
@@ -51,25 +50,25 @@ export const audioTierMapPng: {
   bronze: (
     <Image
       style={[styles.badge, styles.image]}
-      source={require('../../assets/images/tokenBadgeBronze40.png')}
+      source={require('app/assets/images/tokenBadgeBronze40.png')}
     />
   ),
   silver: (
     <Image
       style={[styles.badge, styles.image]}
-      source={require('../../assets/images/tokenBadgeSilver40.png')}
+      source={require('app/assets/images/tokenBadgeSilver40.png')}
     />
   ),
   gold: (
     <Image
       style={[styles.badge, styles.image]}
-      source={require('../../assets/images/tokenBadgeGold40.png')}
+      source={require('app/assets/images/tokenBadgeGold40.png')}
     />
   ),
   platinum: (
     <Image
       style={[styles.badge, styles.image]}
-      source={require('../../assets/images/tokenBadgePlatinum40.png')}
+      source={require('app/assets/images/tokenBadgePlatinum40.png')}
     />
   )
 }

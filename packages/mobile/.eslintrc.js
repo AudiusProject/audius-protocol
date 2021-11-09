@@ -1,7 +1,7 @@
 module.exports = {
   root: true,
   env: {
-    es6: true,
+    es6: true
   },
   extends: [
     'standard',
@@ -10,22 +10,33 @@ module.exports = {
     'plugin:jest/recommended',
     'plugin:react/recommended',
     'prettier/react',
-    'prettier-standard/prettier-file',
+    'prettier-standard/prettier-file'
   ],
   globals: {
     Atomics: 'readonly',
-    SharedArrayBuffer: 'readonly',
+    SharedArrayBuffer: 'readonly'
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaFeatures: {
-      jsx: true,
+      jsx: true
     },
     ecmaVersion: 2018,
-    sourceType: 'module',
+    sourceType: 'module'
   },
-  plugins: ['react', 'react-hooks', '@typescript-eslint', 'jest'],
+  plugins: ['react', 'react-hooks', '@typescript-eslint', 'jest', 'import'],
+  settings: {
+    'import/external-module-folders': ['node_modules', 'audius-client'],
+    'import/resolver': {
+      // NOTE: sk - These aliases are required for the import/order rule.
+      alias: {
+        map: [['app', './src']],
+        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
+      }
+    }
+  },
   rules: {
+    '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/member-delimiter-style': 'off',
@@ -36,7 +47,7 @@ module.exports = {
     '@typescript-eslint/no-use-before-define': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-var-requires': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {args: 'none'}], // We should turn this one on soon
+    '@typescript-eslint/no-unused-vars': ['error', { args: 'none' }], // We should turn this one on soon
     '@typescript-eslint/no-this-alias': 'off',
 
     'no-use-before-define': 'off',
@@ -64,5 +75,31 @@ module.exports = {
 
     'space-before-function-paren': 'off',
     'generator-star-spacing': 'off',
-  },
-};
+
+    'import/order': [
+      'error',
+      {
+        alphabetize: {
+          order: 'asc'
+        },
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          'parent',
+          'sibling',
+          'index'
+        ],
+        'newlines-between': 'always',
+        pathGroups: [
+          {
+            pattern: 'react',
+            group: 'builtin',
+            position: 'before'
+          }
+        ],
+        pathGroupsExcludedImportTypes: ['builtin']
+      }
+    ]
+  }
+}

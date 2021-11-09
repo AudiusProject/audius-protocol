@@ -1,19 +1,18 @@
 import React from 'react'
-import {
-  Notification,
-  NotificationType
-} from '../../../store/notifications/types'
-import Favorite from './Favorite'
-import Repost from './Repost'
-import Follow from './Follow'
-import Trending from './Trending'
-import Milestone from './Milestone'
+
+import { Notification, NotificationType } from 'app/store/notifications/types'
+
 import Announcement from './Announcement'
-import Remix from './Remix'
-import Subscription from './Subscription'
-import Cosign from './Cosign'
 import ChallengeReward from './ChallengeReward'
+import Cosign from './Cosign'
+import Favorite from './Favorite'
+import Follow from './Follow'
+import Milestone from './Milestone'
+import Remix from './Remix'
+import Repost from './Repost'
+import Subscription from './Subscription'
 import TierChange from './TierChange'
+import Trending from './Trending'
 
 type NotificationContentProps = {
   notification: Notification

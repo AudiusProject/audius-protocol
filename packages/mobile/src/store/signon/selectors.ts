@@ -1,4 +1,5 @@
 import { createSelector } from 'reselect'
+
 import { AppState } from '../'
 
 export const getBaseState = (state: AppState) => state.signon

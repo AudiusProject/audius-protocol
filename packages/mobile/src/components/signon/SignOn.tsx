@@ -1,6 +1,7 @@
+import React, { useState, useRef, useEffect, useCallback } from 'react'
+
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import LottieView from 'lottie-react-native'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   Animated,
   Dimensions,
@@ -17,28 +18,29 @@ import {
   View
 } from 'react-native'
 import RadialGradient from 'react-native-radial-gradient'
-import { useDispatch, useSelector } from 'react-redux'
-import { getIsKeyboardOpen } from '../../store/keyboard/selectors'
-import backgImage from '../../assets/images/DJportrait.jpg'
-import audiusLogoHorizontal from '../../assets/images/Horizontal-Logo-Full-Color.png'
-import IconArrow from '../../assets/images/iconArrow.svg'
-import ValidationIconX from '../../assets/images/iconValidationX.svg'
-import signupCTA from '../../assets/images/signUpCTA.png'
-import Button from '../../components/button'
-import { remindUserToTurnOnNotifications } from '../../components/notification-reminder/NotificationReminder'
-import { useDispatchWeb } from '../../hooks/useDispatchWeb'
-import { MessageType } from '../../message/types'
-import { setVisibility } from '../../store/drawers/slice'
-import { getDappLoaded, getIsSignedIn } from '../../store/lifecycle/selectors'
-import * as signonActions from '../../store/signon/actions'
+import { useSelector, useDispatch } from 'react-redux'
+
+import backgImage from 'app/assets/images/DJportrait.jpg'
+import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
+import IconArrow from 'app/assets/images/iconArrow.svg'
+import ValidationIconX from 'app/assets/images/iconValidationX.svg'
+import signupCTA from 'app/assets/images/signUpCTA.png'
+import Button from 'app/components/button'
+import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { MessageType } from 'app/message/types'
+import { getIsKeyboardOpen } from 'app/store/keyboard/selectors'
+import { getIsSignedIn, getDappLoaded } from 'app/store/lifecycle/selectors'
+import * as signonActions from 'app/store/signon/actions'
 import {
   getEmailIsAvailable,
   getEmailIsValid,
   getEmailStatus,
   getIsSigninError
-} from '../../store/signon/selectors'
-import { EventNames } from '../../types/analytics'
-import { make, track } from '../../utils/analytics'
+} from 'app/store/signon/selectors'
+import { EventNames } from 'app/types/analytics'
+import { track, make } from 'app/utils/analytics'
+
 import { RootStackParamList } from './NavigationStack'
 
 const isAndroid = Platform.OS === 'android'
@@ -325,12 +327,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
   const emailStatus = useSelector(getEmailStatus)
   const isKeyboardOpen = useSelector(getIsKeyboardOpen)
 
-  const setPushNotificationsReminderVisible = useCallback(
-    (visible: boolean) =>
-      dispatch(setVisibility({ drawer: 'EnablePushNotifications', visible })),
-    [dispatch]
-  )
-
   const topDrawer = useRef(new Animated.Value(-800)).current
   const animateDrawer = useCallback(() => {
     Animated.timing(topDrawer, {
@@ -372,9 +368,9 @@ const SignOn = ({ navigation }: SignOnProps) => {
       setEmail('')
       setPassword('')
 
-      remindUserToTurnOnNotifications(setPushNotificationsReminderVisible)
+      remindUserToTurnOnNotifications(dispatch)
     }
-  }, [signedIn, setPushNotificationsReminderVisible])
+  }, [signedIn, dispatch])
 
   useEffect(() => {
     if (dappLoaded) {

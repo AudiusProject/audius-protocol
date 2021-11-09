@@ -1,7 +1,9 @@
 import React from 'react'
+
 import { View, StyleSheet, Text } from 'react-native'
-import IconAnnouncement from '../../assets/images/iconAnnouncement.svg'
-import { useTheme } from '../../utils/theme'
+
+import IconAnnouncement from 'app/assets/images/iconAnnouncement.svg'
+import { useTheme } from 'app/utils/theme'
 
 const messages = {
   empty: 'There’s Nothing Here Yet!'

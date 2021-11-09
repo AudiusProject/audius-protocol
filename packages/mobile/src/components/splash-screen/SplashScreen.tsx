@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
-import { StyleSheet, Animated } from 'react-native'
+
 import LottieView from 'lottie-react-native'
+import { StyleSheet, Animated } from 'react-native'
 
 const SCALE_TO = 1.2
 const ANIM_DURATION_MS = 2000
@@ -55,7 +56,7 @@ const SplashScreen = ({ dappLoaded }: SplashScreenProps) => {
       }}
     >
       <LottieView
-        source={require('../../assets/animations/splashscreen.json')}
+        source={require('app/assets/animations/splashscreen.json')}
         ref={animation => {
           animationRef.current = animation
         }}

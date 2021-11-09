@@ -1,4 +1,5 @@
 import { all, fork } from 'redux-saga/effects'
+
 import initKeyboardEvents from './keyboard/sagas'
 
 export default function* rootSaga() {

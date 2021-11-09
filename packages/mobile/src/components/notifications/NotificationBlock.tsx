@@ -1,4 +1,5 @@
-import React, { ReactNode, useCallback } from 'react'
+import React, { useCallback } from 'react'
+
 import {
   StyleSheet,
   View,
@@ -7,31 +8,37 @@ import {
   Animated,
   Platform
 } from 'react-native'
+import { SvgProps } from 'react-native-svg'
+
+import IconBronzeBadge from 'app/assets/images/IconBronzeBadge.svg'
+import IconGoldBadge from 'app/assets/images/IconGoldBadge.svg'
+import IconPlatinumBadge from 'app/assets/images/IconPlatinumBadge.svg'
+import IconSilverBadge from 'app/assets/images/IconSilverBadge.svg'
+import IconAudius from 'app/assets/images/iconAudius.svg'
+import IconHeart from 'app/assets/images/iconHeart.svg'
+import IconRemix from 'app/assets/images/iconRemix.svg'
+import IconRepost from 'app/assets/images/iconRepost.svg'
+import IconStars from 'app/assets/images/iconStars.svg'
+import IconTrending from 'app/assets/images/iconTrending.svg'
+import IconTrophy from 'app/assets/images/iconTrophy.svg'
+import IconUser from 'app/assets/images/iconUser.svg'
 import {
   Notification,
   NotificationType,
   TierChange
-} from '../../store/notifications/types'
+} from 'app/store/notifications/types'
+import { BadgeTier } from 'app/utils/badgeTier'
+import { useColor, useTheme } from 'app/utils/theme'
+
 import NotificationContent from './content/NotificationContent'
-import IconHeart from '../../assets/images/iconHeart.svg'
-import IconRepost from '../../assets/images/iconRepost.svg'
-import IconStars from '../../assets/images/iconStars.svg'
-import IconTrophy from '../../assets/images/iconTrophy.svg'
-import IconUser from '../../assets/images/iconUser.svg'
-import IconRemix from '../../assets/images/iconRemix.svg'
-import IconTrending from '../../assets/images/iconTrending.svg'
-import IconAudius from '../../assets/images/iconAudius.svg'
-import IconBronzeBadge from '../../assets/images/IconBronzeBadge.svg'
-import IconSilverBadge from '../../assets/images/IconSilverBadge.svg'
-import IconGoldBadge from '../../assets/images/IconGoldBadge.svg'
-import IconPlatinumBadge from '../../assets/images/IconPlatinumBadge.svg'
 import { getNotificationRoute } from './routeUtil'
-import { useColor, useTheme } from '../../utils/theme'
-import { BadgeTier } from 'utils/badgeTier'
 
 const IS_IOS = Platform.OS === 'ios'
 
-const tierInfoMap: Record<BadgeTier, { title: string; icon: ReactNode }> = {
+const tierInfoMap: Record<
+  BadgeTier,
+  { title: string; icon: React.FC<SvgProps> }
+> = {
   none: {
     title: 'NO TIER',
     icon: IconBronzeBadge
@@ -56,7 +63,7 @@ const tierInfoMap: Record<BadgeTier, { title: string; icon: ReactNode }> = {
 
 const typeIconMap: Record<
   NotificationType,
-  (notification: any) => ReactNode
+  (notification: any) => React.FC<SvgProps>
 > = {
   [NotificationType.Announcement]: () => IconAudius,
   [NotificationType.Follow]: () => IconUser,
@@ -137,7 +144,9 @@ const NotificationBlock = ({
   const notificationRoute = getNotificationRoute(notification)
 
   const onPress = useCallback(() => {
-    onGoToRoute(notificationRoute)
+    if (notificationRoute) {
+      onGoToRoute(notificationRoute)
+    }
   }, [onGoToRoute, notificationRoute])
 
   const itemStyles = useTheme(styles.item, {
@@ -212,12 +221,10 @@ const NotificationBlock = ({
             </Text>
           </View>
           <View style={styles.body}>
-            <View style={styles.content}>
-              <NotificationContent
-                notification={notification}
-                onGoToRoute={onGoToRoute}
-              />
-            </View>
+            <NotificationContent
+              notification={notification}
+              onGoToRoute={onGoToRoute}
+            />
             <Text style={timestampStyles}>{notification.timeLabel}</Text>
           </View>
         </View>

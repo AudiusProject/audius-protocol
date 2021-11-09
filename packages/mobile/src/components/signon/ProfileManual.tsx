@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react'
+
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import LottieView from 'lottie-react-native'
 import {
   Animated,
   StyleSheet,
@@ -13,10 +16,6 @@ import {
   Alert,
   ScrollView
 } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { useDispatch, useSelector } from 'react-redux'
-import { useDispatchWeb } from '../../hooks/useDispatchWeb'
-import LottieView from 'lottie-react-native'
 import {
   Asset,
   Callback,
@@ -24,23 +23,26 @@ import {
   launchCamera,
   launchImageLibrary
 } from 'react-native-image-picker'
-import { MessageType } from '../../message/types'
-import SignupHeader from './SignupHeader'
-import PhotoButton from './PhotoButton'
-import ProfileImage from './ProfileImage'
-import * as signonActions from '../../store/signon/actions'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useDispatch, useSelector } from 'react-redux'
 
-import IconArrow from '../../assets/images/iconArrow.svg'
-import ValidationIconX from '../../assets/images/iconValidationX.svg'
+import IconArrow from 'app/assets/images/iconArrow.svg'
+import ValidationIconX from 'app/assets/images/iconValidationX.svg'
+import Button from 'app/components/button'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { MessageType } from 'app/message/types'
+import * as signonActions from 'app/store/signon/actions'
 import {
   getHandleIsValid,
   getHandleError,
   getHandleStatus
-} from '../../store/signon/selectors'
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
+} from 'app/store/signon/selectors'
+import { useColor } from 'app/utils/theme'
+
 import { RootStackParamList } from './NavigationStack'
-import { useColor } from '../../utils/theme'
-import Button from '../../components/button'
+import PhotoButton from './PhotoButton'
+import ProfileImage from './ProfileImage'
+import SignupHeader from './SignupHeader'
 
 const defaultBorderColor = '#F2F2F4'
 
@@ -229,7 +231,7 @@ const ContinueButton = ({
         isWorking ? (
           <View style={styles.loadingIcon}>
             <LottieView
-              source={require('../../assets/animations/loadingSpinner.json')}
+              source={require('app/assets/animations/loadingSpinner.json')}
               autoPlay
               loop
             />
@@ -242,7 +244,7 @@ const ContinueButton = ({
   )
 }
 
-let handleTimeout = 0
+let handleTimeout: NodeJS.Timeout
 const HANDLE_VALIDATION_IN_PROGRESS_DELAY_MS = 1000
 
 export type ProfileManualProps = NativeStackScreenProps<
@@ -321,7 +323,7 @@ const ProfileManual = ({ navigation, route }: ProfileManualProps) => {
       <View style={styles.photoLoadingIconContainer}>
         <LottieView
           style={styles.photoLoadingIcon}
-          source={require('../../assets/animations/loadingSpinner.json')}
+          source={require('app/assets/animations/loadingSpinner.json')}
           autoPlay
           loop
           colorFilters={[

@@ -1,4 +1,5 @@
 import React, { useRef } from 'react'
+
 import {
   TouchableHighlight,
   ViewStyle,
@@ -7,10 +8,10 @@ import {
   View,
   Animated
 } from 'react-native'
-import { useThemeColors } from '../../utils/theme'
-import Text from '../../components/text'
 
-import { ThemeColors, useThemedStyles } from '../../hooks/useThemedStyles'
+import Text from 'app/components/text'
+import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+import { useThemeColors } from 'app/utils/theme'
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({

@@ -11,12 +11,12 @@ import {
   View
 } from 'react-native'
 
-import IconVolume from '../../assets/images/iconVolume.svg'
-import IconMute from '../../assets/images/iconVolume0.svg'
-import AutoSizeImage from '../image/AutoSizeImage'
-import AutoSizeVideo from '../video/AutoSizeVideo'
-import { ThemeColors, useThemedStyles } from '../../hooks/useThemedStyles'
-import { useColor } from '../../utils/theme'
+import IconVolume from 'app/assets/images/iconVolume.svg'
+import IconMute from 'app/assets/images/iconVolume0.svg'
+import AutoSizeImage from 'app/components/image/AutoSizeImage'
+import AutoSizeVideo from 'app/components/video/AutoSizeVideo'
+import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+import { useColor } from 'app/utils/theme'
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
@@ -44,7 +44,7 @@ const createStyles = (themeColors: ThemeColors) =>
 export const CollectibleMedia: React.FC<{
   collectible: Collectible
 }> = ({ collectible }) => {
-  const { mediaType, imageUrl, videoUrl, gifUrl, threeDUrl } = collectible
+  const { mediaType, imageUrl, videoUrl, gifUrl } = collectible
 
   const styles = useThemedStyles(createStyles)
   const neutralLight5 = useColor('neutralLight5')

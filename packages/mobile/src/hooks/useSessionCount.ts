@@ -1,5 +1,6 @@
-import AsyncStorage from '@react-native-community/async-storage'
 import { useEffect, useState } from 'react'
+
+import AsyncStorage from '@react-native-community/async-storage'
 
 const SESSION_COUNT_KEY = '@session-count'
 

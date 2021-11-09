@@ -10,8 +10,10 @@ const ProfileButton = ({ isDarkMode, onClick, isActive }: ButtonProps) => {
       isActive={isActive}
       isDarkMode={isDarkMode}
       onClick={onClick}
-      iconLightJSON={() => require('assets/animations/iconProfileLight.json')}
-      iconDarkJSON={() => require('assets/animations/iconProfileDark.json')}
+      iconLightJSON={() =>
+        require('app/assets/animations/iconProfileLight.json')
+      }
+      iconDarkJSON={() => require('app/assets/animations/iconProfileDark.json')}
     />
   )
 }

@@ -1,15 +1,16 @@
+import { RefObject } from 'react'
+
+import AsyncStorage from '@react-native-community/async-storage'
 import { Platform, PushNotificationPermissions } from 'react-native'
+import Config from 'react-native-config'
 // https://dev.to/edmondso006/react-native-local-ios-and-android-notifications-2c58
 import PushNotification from 'react-native-push-notification'
-import AsyncStorage from '@react-native-community/async-storage'
 
-import { RefObject } from 'react'
-import { MessagePostingWebView } from './types/MessagePostingWebView'
-import Config from 'react-native-config'
-import { track, make } from './utils/analytics'
-import { EventNames } from './types/analytics'
-import { dispatch } from './App'
-import { open } from './store/notifications/actions'
+import { dispatch } from 'app/App'
+import { open } from 'app/store/notifications/actions'
+import { MessagePostingWebView } from 'app/types/MessagePostingWebView'
+import { EventNames } from 'app/types/analytics'
+import { track, make } from 'app/utils/analytics'
 
 type Token = {
   token: string
