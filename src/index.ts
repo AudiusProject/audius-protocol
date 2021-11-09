@@ -25,7 +25,8 @@ const router = express.Router()
 
 router.get([
   '/embed/api/tracks/:id',
-  '/embed/api/tracks/hashid/:hashId'], (
+  '/embed/api/tracks/hashid/:hashId'
+], (
   req: express.Request,
   res: express.Response) => {
     getBedtimeResponse(BedtimeFormat.TRACK, req, res)
@@ -34,10 +35,21 @@ router.get([
 
 router.get([
   '/embed/api/collections/:id',
-  '/embed/api/collections/hashid/:hashId'], (
+  '/embed/api/collections/hashid/:hashId'
+], (
   req: express.Request,
   res: express.Response) => {
     getBedtimeResponse(BedtimeFormat.COLLECTION, req, res)
+  }
+)
+
+router.get([
+  '/embed/api/collectibles/:handle',
+  '/embed/api/collectibles/:handle/:collectibleId'
+], (
+  req: express.Request,
+  res: express.Response) => {
+    getBedtimeResponse(BedtimeFormat.COLLECTIBLES, req, res)
   }
 )
 

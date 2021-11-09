@@ -1,12 +1,31 @@
 import express from 'express'
-import { decodeHashId } from '../utils/hashids'
+import { Collectible, FetchNFTClient } from '@audius/fetch-nft'
 
-import { getCollection, getTrack, getTracks, getUser, getUsers, shouldRedirectTrack } from '../utils/helpers'
-import { getCollectionPath, getCoverArt } from './helpers'
+import { getCollectionPath, getCoverArt, getHash } from './helpers'
 import { BedtimeFormat, GetCollectionResponse, GetTracksResponse, TrackResponse } from './types'
+import { decodeHashId, encodeHashId } from '../utils/hashids'
+import {
+  getCollection,
+  getTrack,
+  getTracks,
+  getUser,
+  getUserByHandle,
+  getUsers,
+  shouldRedirectTrack
+} from '../utils/helpers'
+import libs from '../../libs'
 
 // Error Messages
 const DELETED_MESSAGE = 'DELETED'
+
+const nftClient = new FetchNFTClient({
+  openSeaConfig: {
+    apiEndpoint: process.env.OPENSEA_ENDPOINT
+  },
+  solanaConfig: {
+    rpcEndpoint: process.env.SOLANA_RPC_ENDPOINT
+  }
+})
 
 const getTrackMetadata = async (trackId: number, ownerId: number | null): Promise<GetTracksResponse> => {
   try {
@@ -118,6 +137,59 @@ const getCollectionMetadata = async (collectionId: number, ownerId: number | nul
   }
 }
 
+type CollectiblesMetadata = {
+  user: any
+} & (
+  | {
+    ethCollectibles: Collectible[]
+    solCollectibles: Collectible[]
+    type: 'gallery'
+  }
+  | {
+    collectible: Collectible | null
+    type: 'detail'
+  }
+)
+
+const getCollectiblesMetadata = async (handle: string, collectibleId?: string): Promise<CollectiblesMetadata> => {
+  const user = await getUserByHandle(handle)
+
+  // Get wallets for user
+  const dp = libs.discoveryProvider.discoveryProviderEndpoint
+  const encodedUserId = encodeHashId(user.user_id)
+  const res = await fetch(`${dp}/v1/users/associated_wallets?id=${encodedUserId}`)
+  const { data: walletData } = await res.json()
+
+  // Get collectibles for user wallets
+  const resp = await nftClient.getCollectibles({
+    ethWallets: walletData.wallets,
+    solWallets: walletData.sol_wallets
+  })
+
+  if (collectibleId) {
+    const ethValues: Collectible[][] = Object.values(resp.ethCollectibles)
+    const solValues: Collectible[][] = Object.values(resp.solCollectibles)
+    const collectibles = [
+      ...ethValues.reduce((acc, vals) => [...acc, ...vals], []),
+      ...solValues.reduce((acc, vals) => [...acc, ...vals], []),
+    ]
+
+    const foundCol = collectibles.find((col) => getHash(col.id) === collectibleId)
+    return {
+      user,
+      collectible: foundCol ?? null,
+      type: 'detail'
+    }
+  }
+
+  return {
+    user,
+    ethCollectibles: resp.ethCollectibles,
+    solCollectibles: resp.solCollectibles,
+    type: 'gallery'
+  }
+}
+
 export const getBedtimeResponse = async (
   format: BedtimeFormat,
   req: express.Request,
@@ -126,15 +198,18 @@ export const getBedtimeResponse = async (
   let parsedId: number
   let parsedOwnerId: number | null
 
-  if (req.params.hashId) {
-    const idFromHashId = decodeHashId(req.params.hashId)
+  const { id, hashId, handle, collectibleId } = req.params
+
+  if (handle) {
+    parsedId = 0
+  } else if (hashId) {
+    const idFromHashId = decodeHashId(hashId)
     if (!idFromHashId) {
       res.status(500).send(`Error: bad hash id`)
       return
     }
     parsedId = idFromHashId
   } else {
-    const { id } = req.params
     if (id === undefined) {
       res.status(500).send(`Error: empty ID`)
       return
@@ -143,11 +218,11 @@ export const getBedtimeResponse = async (
     parsedId = parseInt(id, 10)
   }
 
-  if (req.params.hashId) {
+  if (hashId || handle) {
     parsedOwnerId = null
   } else {
     const { ownerId } = req.query
-    if (ownerId === undefined && !req.params.hashId) {
+    if (ownerId === undefined && !hashId) {
       res.status(500).send(`Error: empty OwnerID`)
       return
     }
@@ -165,6 +240,10 @@ export const getBedtimeResponse = async (
       case BedtimeFormat.COLLECTION:
         console.debug(`Embed collection: [${parsedId}]`)
         resp = await getCollectionMetadata(parsedId, parsedOwnerId)
+        break
+      case BedtimeFormat.COLLECTIBLES:
+        console.debug(`Embed collectibles: [${handle}]`)
+        resp = await getCollectiblesMetadata(handle, collectibleId)
         break
       default:
         break
