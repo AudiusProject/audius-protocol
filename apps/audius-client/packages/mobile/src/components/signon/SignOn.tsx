@@ -8,6 +8,7 @@ import {
   Image,
   ImageBackground,
   Keyboard,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -17,6 +18,7 @@ import {
 } from 'react-native'
 import RadialGradient from 'react-native-radial-gradient'
 import { useDispatch, useSelector } from 'react-redux'
+import { getIsKeyboardOpen } from '../../store/keyboard/selectors'
 import backgImage from '../../assets/images/DJportrait.jpg'
 import audiusLogoHorizontal from '../../assets/images/Horizontal-Logo-Full-Color.png'
 import IconArrow from '../../assets/images/iconArrow.svg'
@@ -39,6 +41,7 @@ import { EventNames } from '../../types/analytics'
 import { make, track } from '../../utils/analytics'
 import { RootStackParamList } from './NavigationStack'
 
+const isAndroid = Platform.OS === 'android'
 const image = backgImage
 const windowWidth = Dimensions.get('window').width
 const defaultBorderColor = '#F2F2F4'
@@ -115,8 +118,7 @@ const styles = StyleSheet.create({
     color: '#7E1BCC',
     fontSize: 14,
     lineHeight: 16,
-    fontFamily: 'AvenirNextLTPro-Regular',
-    fontWeight: '600',
+    fontFamily: 'AvenirNextLTPro-DemiBold',
     textAlign: 'center',
     paddingTop: 3,
     paddingBottom: 3
@@ -198,7 +200,7 @@ const styles = StyleSheet.create({
     height: 32,
     width: '100%',
     alignItems: 'center',
-    margin: 38
+    marginTop: 38
   },
   switchFormBtnTitle: {
     color: 'white',
@@ -321,6 +323,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
   const emailIsAvailable = useSelector(getEmailIsAvailable)
   const emailIsValid = useSelector(getEmailIsValid)
   const emailStatus = useSelector(getEmailStatus)
+  const isKeyboardOpen = useSelector(getIsKeyboardOpen)
 
   const setPushNotificationsReminderVisible = useCallback(
     (visible: boolean) =>
@@ -688,7 +691,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
               autoCapitalize='none'
               enablesReturnKeyAutomatically={true}
               maxLength={100}
-              value={email}
               textContentType='emailAddress'
               onChangeText={newText => {
                 setShowDefaultError(false)
@@ -723,6 +725,10 @@ const SignOn = ({ navigation }: SignOnProps) => {
         >
           {Dimensions.get('window').height < 720 ? (
             <></>
+          ) : isAndroid && isKeyboardOpen ? (
+            // on android, if keyboard is showing and user is navigating away to the next screen
+            // the image below shows up above the keyboard and causes a weird transition */
+            <View style={styles.signupCTAContainer} />
           ) : (
             <View style={styles.signupCTAContainer}>
               <Image source={signupCTA} style={styles.signupCTA} />

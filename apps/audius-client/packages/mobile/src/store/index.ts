@@ -16,7 +16,7 @@ import drawers, { DrawersState } from './drawers/slice'
 import clientStore from './clientStore/slice'
 
 import rootSaga from './sagas'
-import { KeyboardState } from './keyboard/slice'
+import keyboard, { KeyboardState } from './keyboard/slice'
 
 export type AppState = {
   audio: AudioState
@@ -39,6 +39,7 @@ const createRootReducer = () =>
     clientStore,
     drawers,
     googleCast,
+    keyboard,
     lifecycle,
     notifications,
     oauth,
