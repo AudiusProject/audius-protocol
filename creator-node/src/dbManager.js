@@ -51,7 +51,7 @@ class DBManager {
    *
    * @param {*} CNodeUserLookupObj
    * @param {*} sequelizeTableInstance
-   * @param {*} tx
+   * @param {Transaction} externalTransaction
    */
   static async deleteAllCNodeUserDataFromDB ({ lookupCnodeUserUUID, lookupWallet }, externalTransaction) {
     const transaction = (externalTransaction) || (await models.sequelize.transaction())
@@ -145,7 +145,7 @@ class DBManager {
    * Deletes all session tokens matching an Array of SessionTokens.
    *
    * @param {Array} sessionTokens from the SessionTokens table
-   * @param {*} tx
+   * @param {Transaction} externalTransaction
    */
   static async deleteSessionTokensFromDB (sessionTokens, externalTransaction) {
     const transaction = (externalTransaction) || (await models.sequelize.transaction())
