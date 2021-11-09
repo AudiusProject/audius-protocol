@@ -16,6 +16,7 @@ class GetTrackHistoryArgs(TypedDict):
     limit: int
     offset: int
     filter_deleted: bool
+    with_users: bool
 
 def get_track_history(args: GetTrackHistoryArgs):
     db = get_db_read_replica()
