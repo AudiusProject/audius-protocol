@@ -1,3 +1,6 @@
+
+from typing import TypedDict
+from sqlalchemy.orm.session import Session
 from src.models import Play, Track
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
@@ -7,8 +10,6 @@ from src.queries.query_helpers import (
     populate_track_metadata,
     add_users_to_tracks,
 )
-from typing import TypedDict
-from sqlalchemy.orm.session import Session
 
 class GetTrackHistoryArgs(TypedDict):
     current_user_id: int
