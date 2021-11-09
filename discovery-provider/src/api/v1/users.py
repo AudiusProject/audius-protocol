@@ -14,6 +14,7 @@ from src.api.v1.models.users import (
     encoded_user_id,
     user_replica_set,
     challenge_response,
+    track_history_response,
 )
 
 from src.queries.get_saves import get_saves
@@ -21,6 +22,7 @@ from src.queries.get_users import get_users
 from src.queries.search_queries import SearchKind, search
 from src.queries.get_tracks import get_tracks
 from src.queries.get_save_tracks import get_save_tracks
+from src.queries.get_track_history import get_track_history
 from src.queries.get_followees_for_user import get_followees_for_user
 from src.queries.get_followers_for_user import get_followers_for_user
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
@@ -492,6 +494,43 @@ class FavoritedTracksFull(Resource):
         track_saves = get_save_tracks(get_tracks_args)
         tracks = list(map(extend_activity, track_saves))
         return success_response(tracks)
+
+
+history_route_parser = reqparse.RequestParser()
+history_route_parser.add_argument("user_id", required=False, type=str)
+history_route_parser.add_argument("limit", required=False, type=int)
+history_route_parser.add_argument("offset", required=False, type=int)
+history_response = make_full_response(
+    "history_response_full", full_ns, fields.List(fields.Nested(track_history_response))
+)
+
+
+@full_ns.route("/<string:user_id>/history/tracks")
+class TrackHistoryFull(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get User's Track History""",
+        params={"user_id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(history_route_parser)
+    @full_ns.marshal_with(history_response)
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        """Fetch played tracks history for a user."""
+        args = favorite_route_parser.parse_args()
+        decoded_id = decode_with_abort(user_id, ns)
+        current_user_id = get_current_user_id(args)
+
+        offset = format_offset(args)
+        limit = format_limit(args)
+        get_tracks_args = {
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
+        }
+        track_history = get_track_history(get_tracks_args)
+        return success_response(track_history)
 
 
 user_search_result = make_response(
