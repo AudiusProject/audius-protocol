@@ -7,10 +7,10 @@ test_entities = {
         # Note these plays are in chronological order in addition
         # so the track history should pull them "backwards" for reverse chronological
         # sort order.
-        {"user_id": 1, "play_item_id": 1},
-        {"user_id": 1, "play_item_id": 1},
-        {"user_id": 1, "play_item_id": 2},
-        {"user_id": 2, "play_item_id": 2},
+        {"user_id": 1, "item_id": 1},
+        {"user_id": 1, "item_id": 1},
+        {"user_id": 1, "item_id": 2},
+        {"user_id": 2, "item_id": 2},
     ],
 
     "tracks": [

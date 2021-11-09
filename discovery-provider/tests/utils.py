@@ -195,10 +195,10 @@ def populate_mock_db(db, entities, block_offset=0):
 
         for i, play_meta in enumerate(plays):
             play = models.Play(
-                id=play_meta.get("id", i+1),
+                id=play_meta.get("id", i),
                 user_id=play_meta.get("user_id", i + 1),
                 source=play_meta.get("source", None),
-                play_item_id=play_meta.get("play_item_id", i+1),
+                play_item_id=play_meta.get("item_id", i+1),
                 slot=play_meta.get("slot", None),
                 signature=play_meta.get("signature", None),
                 created_at=play_meta.get("created_at", datetime.now()),
