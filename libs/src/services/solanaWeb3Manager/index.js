@@ -204,8 +204,8 @@ class SolanaWeb3Manager {
       const tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
       if (!tokenAccount) return null
 
-      // Multiply by 10^9 to maintain same decimals as eth $AUDIO
-      return tokenAccount.amount.mul(Utils.toBN('1'.padEnd(10, '0')))
+      // Multiply by 10^10 to maintain same decimals as eth $AUDIO
+      return tokenAccount.amount.mul(Utils.toBN('10000000000'))
     } catch (e) {
       return null
     }
@@ -220,8 +220,8 @@ class SolanaWeb3Manager {
    * @param {BN} amount the amount of $AUDIO to send in wei units of $AUDIO.
    * **IMPORTANT NOTE**
    * wAudio (Solana) does not support 10^-18 (wei) units of $AUDIO. The smallest
-   * demarcation on that side is 10^-9, so the $AUDIO amount must be >= 10^9 and have no
-   * remainder after a division with 10^9 or this method will throw.
+   * demarcation on that side is 10^-8, so the $AUDIO amount must be >= 10^8 and have no
+   * remainder after a division with 10^8 or this method will throw.
    *
    * Generally speaking, callers into the solanaWeb3Manager should use BN.js representation
    * of wei $AUDIO for all method calls

@@ -81,14 +81,14 @@ class SolanaUtils {
   }
 
   /**
-   * Converts "UI" wAudio (i.e. 5) into properly denominated BN representation - (i.e. 5 * 10 ^ 9)
+   * Converts "UI" wAudio (i.e. 5) into properly denominated BN representation - (i.e. 5 * 10 ^ 8)
    *
    * @param {number} amount
    * @returns BN
    * @memberof SolanaWeb3Manager
    */
   static uiAudioToBNWaudio (amount) {
-    return new BN(amount * 10 ** 9)
+    return new BN(amount * 10 ** 8)
   }
 
   /**
