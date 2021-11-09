@@ -1,23 +1,16 @@
 import React, { useCallback, useState } from 'react'
 
-import { push } from 'connected-react-router'
-import { useSelector } from 'react-redux'
-import { StyleSheet } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-
 import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
 import { getIsOpen as getIsMobileOverflowModalOpen } from 'audius-client/src/common/store/ui/mobile-overflow-menu/selectors'
 import { getModalIsOpen } from 'audius-client/src/common/store/ui/modals/slice'
-import { getIsOpen as getIsPushNotificationsDrawerOpen } from 'audius-client/src/common/store/ui/push-notifications-drawer/selectors'
 import { getIsOpen as getIsNowPlayingOpen } from 'audius-client/src/common/store/ui/now-playing/selectors'
 // TODO: move these into /common
+import { setTab } from 'audius-client/src/containers/explore-page/store/actions'
+import { Tabs } from 'audius-client/src/containers/explore-page/store/types'
 import {
   openSignOn as _openSignOn,
   showRequiresAccountModal
 } from 'audius-client/src/containers/sign-on/store/actions'
-import { Tabs } from 'audius-client/src/containers/explore-page/store/types'
-import { setTab } from 'audius-client/src/containers/explore-page/store/actions'
-
 import {
   FEED_PAGE,
   TRENDING_PAGE,
@@ -26,18 +19,22 @@ import {
   getPathname,
   profilePage
 } from 'audius-client/src/utils/route'
+import { push } from 'connected-react-router'
+import { StyleSheet } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useSelector } from 'react-redux'
 
-import { useDispatchWeb } from '../../hooks/useDispatchWeb'
-import { useSelectorWeb } from '../../hooks/useSelectorWeb'
-import { MessageType } from '../../message/types'
-import { getLocation } from '../../store/lifecycle/selectors'
-import { Theme, useTheme, useThemeVariant } from '../../utils/theme'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { MessageType } from 'app/message/types'
+import { getLocation } from 'app/store/lifecycle/selectors'
+import { Theme, useTheme, useThemeVariant } from 'app/utils/theme'
 
-import FeedButton from './buttons/FeedButton'
-import TrendingButton from './buttons/TrendingButton'
 import ExploreButton from './buttons/ExploreButton'
 import FavoritesButton from './buttons/FavoritesButton'
+import FeedButton from './buttons/FeedButton'
 import ProfileButton from './buttons/ProfileButton'
+import TrendingButton from './buttons/TrendingButton'
 
 const styles = StyleSheet.create({
   bottomBar: {
@@ -70,9 +67,6 @@ const BottomBar = () => {
   const handle = useSelectorWeb(getUserHandle)
   const location = useSelector(getLocation)
   const isOverflowModalOpen = useSelectorWeb(getIsMobileOverflowModalOpen)
-  const isPushNotificationDrawerOpen = useSelectorWeb(
-    getIsPushNotificationsDrawerOpen
-  )
   const isModalOpen = useSelectorWeb(getModalIsOpen)
   const isNowPlayingOpen = useSelectorWeb(getIsNowPlayingOpen)
 
@@ -82,12 +76,19 @@ const BottomBar = () => {
     dispatchWeb(_openSignOn(false))
     dispatchWeb(showRequiresAccountModal())
   }, [dispatchWeb])
-  const goToRoute = (route: string) => dispatchWeb(push(route))
-  const resetExploreTab = () => dispatchWeb(setTab(Tabs.FOR_YOU))
-  const scrollToTop = () =>
-    dispatchWeb({
-      type: MessageType.SCROLL_TO_TOP
-    })
+  const goToRoute = useCallback((route: string) => dispatchWeb(push(route)), [
+    dispatchWeb
+  ])
+  const resetExploreTab = useCallback(() => dispatchWeb(setTab(Tabs.FOR_YOU)), [
+    dispatchWeb
+  ])
+  const scrollToTop = useCallback(
+    () =>
+      dispatchWeb({
+        type: MessageType.SCROLL_TO_TOP
+      }),
+    [dispatchWeb]
+  )
 
   const userProfilePage = handle ? profilePage(handle) : null
   const navRoutes = new Set([
@@ -121,14 +122,13 @@ const BottomBar = () => {
       onSignOn ||
       onErrorPage ||
       isOverflowModalOpen ||
-      isPushNotificationDrawerOpen ||
       isModalOpen ||
       isNowPlayingOpen
     )
   }, [
     onSignOn,
+    onErrorPage,
     isOverflowModalOpen,
-    isPushNotificationDrawerOpen,
     isModalOpen,
     isNowPlayingOpen
   ])
@@ -174,7 +174,7 @@ const BottomBar = () => {
         callback()
       }
     },
-    [currentRoute]
+    [currentRoute, resetExploreTab, scrollToTop]
   )
 
   return !hideBottomBar ? (

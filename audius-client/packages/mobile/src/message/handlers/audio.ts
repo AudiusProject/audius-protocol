@@ -1,4 +1,4 @@
-import * as audioActions from '../../store/audio/actions'
+import * as audioActions from 'app/store/audio/actions'
 
 import { MessageType, MessageHandlers } from '../types'
 

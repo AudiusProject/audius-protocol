@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import Config from 'react-native-config'
+
 import {
   Image,
   ImageSourcePropType,
@@ -7,11 +7,14 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
+import Config from 'react-native-config'
+
+import User from 'app/models/User'
+import { Notification } from 'app/store/notifications/types'
+import { getUserRoute } from 'app/utils/routes'
+import { useTheme } from 'app/utils/theme'
+
 import { getUserListRoute } from '../routeUtil'
-import { getUserRoute } from '../../../utils/routes'
-import { useTheme } from '../../../utils/theme'
-import { Notification } from '../../../store/notifications/types'
-import User from '../../../models/User'
 
 const USER_METADATA_NODE = Config.USER_METADATA_NODE
 
@@ -63,7 +66,7 @@ const UserImage = ({ source }: { source: ImageSourcePropType }) => {
       style={imageStyle}
       source={
         didError
-          ? require('../../../assets/images/imageProfilePicEmpty2X.png')
+          ? require('app/assets/images/imageProfilePicEmpty2X.png')
           : source
       }
       // TODO: Gracefully handle error and select secondary node
@@ -83,7 +86,7 @@ const UserImages = ({ notification, users, onGoToRoute }: UserImagesProps) => {
         if (uri) {
           source = { uri }
         } else {
-          source = require('../../../assets/images/imageProfilePicEmpty2X.png')
+          source = require('app/assets/images/imageProfilePicEmpty2X.png')
         }
         const image = <UserImage source={source} key={user.user_id} />
         return isMultiUser ? (

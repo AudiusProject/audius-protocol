@@ -1,8 +1,8 @@
-import { put, take } from 'redux-saga/effects'
 import { Keyboard } from 'react-native'
+import { eventChannel } from 'redux-saga'
+import { put, take } from 'redux-saga/effects'
 
 import { open, close } from './slice'
-import { eventChannel } from 'redux-saga'
 
 function* initKeyboardEvents() {
   const keyboardChannel = eventChannel(emitter => {
@@ -16,7 +16,7 @@ function* initKeyboardEvents() {
   })
 
   while (true) {
-    const keyboardAction = yield take(keyboardChannel)
+    const keyboardAction: 'show' | 'hide' = yield take(keyboardChannel)
     if (keyboardAction === 'show') {
       yield put(open())
     } else if (keyboardAction === 'hide') {

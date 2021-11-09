@@ -1,7 +1,8 @@
 import { StatusBar } from 'react-native'
-import { useSelector } from 'react-redux'
 import { useDarkMode } from 'react-native-dark-mode'
-import { getTheme } from '../store/theme/selectors'
+import { useSelector } from 'react-redux'
+
+import { getTheme } from 'app/store/theme/selectors'
 
 export enum Theme {
   DEFAULT = 'default',
@@ -166,7 +167,7 @@ const themeColorsByThemeVariant = {
 }
 
 export const useThemeVariant = (): keyof typeof themeColorsByThemeVariant => {
-  const theme = useSelector(state => getTheme(state))
+  const theme = useSelector(getTheme)
   const isSystemDarkMode = useDarkMode()
 
   const systemTheme = isSystemDarkMode ? Theme.DARK : Theme.DEFAULT
@@ -185,7 +186,7 @@ export const useColor = (color: string) => {
 
 // Uses normalColor when in light/dark mode, but "special color" when in other mode
 export const useSpecialColor = (normalColor: string, specialColor: string) => {
-  const theme = useSelector(state => getTheme(state))
+  const theme = useSelector(getTheme)
   const themeVariant = useThemeColors()
   if (theme === Theme.MATRIX) {
     return (themeVariant as any)[specialColor]

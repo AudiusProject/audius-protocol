@@ -1,17 +1,18 @@
 import Config from 'react-native-config'
-import Track from '../../models/Track'
+
+import Track from 'app/models/Track'
 import {
   Achievement,
   Entity,
   Notification,
   NotificationType
-} from '../../store/notifications/types'
+} from 'app/store/notifications/types'
 import {
   getTrackRoute,
   getUserRoute,
   getCollectionRoute,
   getAudioPageRoute
-} from '../../utils/routes'
+} from 'app/utils/routes'
 
 const AUDIUS_URL = Config.AUDIUS_URL
 

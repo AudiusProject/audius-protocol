@@ -1,16 +1,19 @@
 import React from 'react'
+
 import { StyleSheet, View, SectionList, Keyboard } from 'react-native'
 import { useSelector } from 'react-redux'
-import { getSearchResults } from '../../store/search/selectors'
-import SearchSectionHeader from './content/SearchSectionHeader'
-import SearchItem from './content/SearchItem'
-import MoreContainer from './content/MoreContainer'
+
+import { getSearchResults } from 'app/store/search/selectors'
 import {
   SearchUser,
   SearchTrack,
   SearchPlaylist,
   SectionHeader
-} from '../../store/search/types'
+} from 'app/store/search/types'
+
+import MoreContainer from './content/MoreContainer'
+import SearchItem from './content/SearchItem'
+import SearchSectionHeader from './content/SearchSectionHeader'
 
 const messages = {
   profile: 'PROFILES',
@@ -52,7 +55,7 @@ const SearchResults = () => {
   const sectionWithMore: {
     title: SectionHeader | 'more'
     data: (SearchUser | SearchTrack | SearchPlaylist)[]
-  }[] = [...sections, { title: 'more' as 'more', data: [] }]
+  }[] = [...sections, { title: 'more', data: [] }]
 
   return (
     <View style={styles.container} onTouchStart={Keyboard.dismiss}>

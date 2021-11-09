@@ -69,3 +69,6 @@ buck-out/
 
 # CocoaPods
 /ios/Pods/
+
+# TypeScript
+tsconfig.tsbuildinfo

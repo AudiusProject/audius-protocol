@@ -1,5 +1,5 @@
-import { track, screen, identify } from '../../utils/analytics'
-import { Identify, Track, Screen } from '../../types/analytics'
+import { Identify, Track, Screen } from 'app/types/analytics'
+import { track, screen, identify } from 'app/utils/analytics'
 
 import { MessageType, MessageHandlers } from '../types'
 

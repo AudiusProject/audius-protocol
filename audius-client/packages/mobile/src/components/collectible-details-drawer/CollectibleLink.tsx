@@ -7,10 +7,10 @@ import {
   View
 } from 'react-native'
 
-import IconLink from '../../assets/images/iconLink.svg'
-import Text from '../../components/text'
-import { useThemeColors } from '../../utils/theme'
-import { ThemeColors, useThemedStyles } from '../../hooks/useThemedStyles'
+import IconLink from 'app/assets/images/iconLink.svg'
+import Text from 'app/components/text'
+import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
+import { useThemeColors } from 'app/utils/theme'
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({

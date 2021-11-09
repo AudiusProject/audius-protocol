@@ -1,4 +1,5 @@
-import { MessageType } from 'message'
+import { MessageType } from 'app/message'
+
 import {
   OAuthActions,
   OPEN_POPUP,
@@ -16,6 +17,7 @@ type TwitterInfo = {
   profileImage: any
   profileBanner: any
   requiresUserReview: any
+  twitterId?: any
 }
 
 type InstagramInfo = {
@@ -23,6 +25,7 @@ type InstagramInfo = {
   profile: any
   profileImage: any
   requiresUserReview: any
+  instagramId?: any
 }
 
 export type OAuthState = {
@@ -66,7 +69,7 @@ const reducer = (
         ...state,
         isOpen: true,
         messageId: action.message.id,
-        messageType: action.message.type,
+        messageType: action.message.type as MessageType,
         url: action.message.authURL,
         provider: action.provider
       }

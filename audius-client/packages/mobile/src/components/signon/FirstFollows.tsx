@@ -1,4 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { sampleSize } from 'lodash'
 import {
   Animated,
   SafeAreaView,
@@ -8,33 +11,31 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
+import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
-import { sampleSize } from 'lodash'
+
+import IconArrow from 'app/assets/images/iconArrow.svg'
+import IconWand from 'app/assets/images/iconWand.svg'
+import Button from 'app/components/button'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { MessageType } from 'app/message/types'
 import {
   setFollowArtistsCategory,
   setFollowedArtists
-} from '../../store/signon/actions'
-import IconArrow from '../../assets/images/iconArrow.svg'
-import IconWand from '../../assets/images/iconWand.svg'
-import { useDispatchWeb } from '../../hooks/useDispatchWeb'
-import { MessageType } from '../../message/types'
+} from 'app/store/signon/actions'
 import {
   getAllFollowArtists,
   makeGetFollowArtists
-} from '../../store/signon/selectors'
-import {
-  artistCategories,
-  FollowArtistsCategory
-} from '../../store/signon/types'
-import SignupHeader from './SignupHeader'
+} from 'app/store/signon/selectors'
+import { artistCategories, FollowArtistsCategory } from 'app/store/signon/types'
+import { EventNames } from 'app/types/analytics'
+import { track, make } from 'app/utils/analytics'
+
 import UserImage from '../image/UserImage'
 import UserBadges from '../user-badges/UserBadges'
-import LinearGradient from 'react-native-linear-gradient'
-import { track, make } from '../../utils/analytics'
-import { EventNames } from '../../types/analytics'
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
+
 import { RootStackParamList } from './NavigationStack'
-import Button from '../../components/button'
+import SignupHeader from './SignupHeader'
 
 const styles = StyleSheet.create({
   container: {

@@ -1,11 +1,14 @@
 import React, { ReactNode } from 'react'
+
 import { StyleSheet, Text, View } from 'react-native'
+
 import {
   Achievement,
   Milestone as MilestoneNotification
-} from '../../../store/notifications/types'
-import { formatCount } from '../../../utils/format'
-import { useTheme } from '../../../utils/theme'
+} from 'app/store/notifications/types'
+import { formatCount } from 'app/utils/format'
+import { useTheme } from 'app/utils/theme'
+
 import Entity from './Entity'
 import TwitterShare from './TwitterShare'
 

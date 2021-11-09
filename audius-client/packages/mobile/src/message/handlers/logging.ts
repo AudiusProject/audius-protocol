@@ -1,4 +1,4 @@
-import { handleWebAppLog } from '../../utils/logging'
+import { handleWebAppLog } from 'app/utils/logging'
 
 import { MessageType, MessageHandlers } from '../types'
 

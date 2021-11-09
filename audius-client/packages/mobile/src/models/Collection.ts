@@ -1,11 +1,14 @@
-import { CID, ID, UID } from 'models/common/Identifiers'
-import { CoverArtSizes } from 'models/common/ImageSizes'
-import Repost from 'models/Repost'
-import User, { UserMetadata } from './User'
-import Favorite from './Favorite'
 import { ReactNode } from 'react'
-import { UserTrackMetadata } from './Track'
+
+import Repost from 'app/models/Repost'
+import { CID, ID, UID } from 'app/models/common/Identifiers'
+import { CoverArtSizes } from 'app/models/common/ImageSizes'
+
 import { Nullable } from '../utils/typeUtils'
+
+import Favorite from './Favorite'
+import { UserTrackMetadata } from './Track'
+import User, { UserMetadata } from './User'
 
 export enum Variant {
   USER_GENERATED = 'user-generated',

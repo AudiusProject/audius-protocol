@@ -1,4 +1,5 @@
-import { receive } from '../../store/clientStore/slice'
+import { receive } from 'app/store/clientStore/slice'
+
 import { MessageType, MessageHandlers } from '../types'
 
 export const messageHandlers: Partial<MessageHandlers> = {

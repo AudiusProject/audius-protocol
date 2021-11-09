@@ -1,4 +1,4 @@
-import User from 'models/User'
+import User from 'app/models/User'
 
 export const BACKEND_LOADED = 'LIFECYCLE/BACKEND_LOADED'
 export const BACKEND_TEAR_DOWN = 'LIFECYCLE/BACKEND_TEAR_DOWN'

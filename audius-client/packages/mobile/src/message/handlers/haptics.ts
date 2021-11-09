@@ -1,4 +1,4 @@
-import * as haptics from '../../haptics'
+import * as haptics from 'app/haptics'
 
 import { MessageType, MessageHandlers } from '../types'
 

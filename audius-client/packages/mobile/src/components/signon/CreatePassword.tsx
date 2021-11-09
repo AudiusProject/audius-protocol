@@ -1,4 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import commonPasswordList from 'fxa-common-password-list'
+import LottieView from 'lottie-react-native'
 import {
   Animated,
   Easing,
@@ -16,23 +20,20 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useSelector, useDispatch } from 'react-redux'
-import SignupHeader from './SignupHeader'
-import LottieView from 'lottie-react-native'
-import * as lifecycleActions from '../../store/lifecycle/actions'
-import { getOnSignUp } from '../../store/lifecycle/selectors'
-import IconArrow from '../../assets/images/iconArrow.svg'
-import IconCheck from '../../assets/images/iconValidationCheck.svg'
-import ValidationIconX from '../../assets/images/iconValidationX.svg'
-import commonPasswordList from 'fxa-common-password-list'
-import { MessageType } from '../../message/types'
-import { track, make } from '../../utils/analytics'
-import { EventNames } from '../../types/analytics'
-import { useDispatchWeb } from '../../hooks/useDispatchWeb'
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { RootStackParamList } from './NavigationStack'
-import Button from '../../components/button'
 
-declare module 'fxa-common-password-list'
+import IconArrow from 'app/assets/images/iconArrow.svg'
+import IconCheck from 'app/assets/images/iconValidationCheck.svg'
+import ValidationIconX from 'app/assets/images/iconValidationX.svg'
+import Button from 'app/components/button'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { MessageType } from 'app/message/types'
+import * as lifecycleActions from 'app/store/lifecycle/actions'
+import { getOnSignUp } from 'app/store/lifecycle/selectors'
+import { EventNames } from 'app/types/analytics'
+import { track, make } from 'app/utils/analytics'
+
+import { RootStackParamList } from './NavigationStack'
+import SignupHeader from './SignupHeader'
 
 const defaultBorderColor = '#F2F2F4'
 const purpleBorderColor = '#7E1BCC'

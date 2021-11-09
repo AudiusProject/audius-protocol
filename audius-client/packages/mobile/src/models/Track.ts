@@ -1,11 +1,13 @@
-import { CID, ID, UID } from 'models/common/Identifiers'
-import { CoverArtSizes } from 'models/common/ImageSizes'
-import Repost from 'models/Repost'
-import User, { UserMetadata } from 'models/User'
-import Favorite from 'models/Favorite'
-import Timestamped from './common/Timestamped'
-import { StemCategory } from './Stems'
+import Favorite from 'app/models/Favorite'
+import Repost from 'app/models/Repost'
+import User, { UserMetadata } from 'app/models/User'
+import { CID, ID, UID } from 'app/models/common/Identifiers'
+import { CoverArtSizes } from 'app/models/common/ImageSizes'
+
 import { Nullable } from '../utils/typeUtils'
+
+import { StemCategory } from './Stems'
+import Timestamped from './common/Timestamped'
 
 export interface TrackSegment {
   duration: string

@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native'
 
 import AnimatedButtonProvider, {
   AnimatedButtonProviderProps
-} from '../../animated-button/AnimatedButtonProvider'
+} from 'app/components/animated-button/AnimatedButtonProvider'
 
 const styles = StyleSheet.create({
   animatedButton: {

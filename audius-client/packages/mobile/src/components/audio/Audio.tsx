@@ -5,17 +5,18 @@ import React, {
   RefObject,
   useCallback
 } from 'react'
-import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
+
 import { Platform, StyleSheet, View } from 'react-native'
 import MusicControl from 'react-native-music-control'
-import Video, { OnProgressData } from 'react-native-video'
 import { Command } from 'react-native-music-control/lib/types'
+import Video, { OnProgressData } from 'react-native-video'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
 
-import { AppState } from '../../store'
-import * as audioActions from '../../store/audio/actions'
-import { getGoogleCastStatus } from '../../store/googleCast/selectors'
-import { CastStatus, setPlayPosition } from '../../store/googleCast/actions'
+import { MessageType } from 'app/message'
+import { AppState } from 'app/store'
+import * as audioActions from 'app/store/audio/actions'
+import { RepeatMode } from 'app/store/audio/reducer'
 import {
   getTrack,
   getPlaying,
@@ -25,24 +26,24 @@ import {
   getRepeatMode,
   getIsShuffleOn,
   getShuffleIndex
-} from '../../store/audio/selectors'
+} from 'app/store/audio/selectors'
+import { CastStatus, setPlayPosition } from 'app/store/googleCast/actions'
+import { getGoogleCastStatus } from 'app/store/googleCast/selectors'
+import { MessagePostingWebView } from 'app/types/MessagePostingWebView'
+import { Genre } from 'app/utils/genres'
+import { postMessage } from 'app/utils/postMessage'
 
-import { MessageType } from '../../message/types'
 import { logListen } from './listens'
-import { postMessage } from '../../utils/postMessage'
-import { Genre } from '../../utils/genres'
-import { MessagePostingWebView } from '../../types/MessagePostingWebView'
-import { RepeatMode } from '../../store/audio/reducer'
-
-const SKIP_DURATION_SEC = 15
 
 declare global {
-  interface Global {
-    progress: {
-      currentTime: number
-    }
+  // eslint-disable-next-line no-var
+  var progress: {
+    currentTime: number
+    seekableTime?: number
   }
 }
+
+const SKIP_DURATION_SEC = 15
 
 const RECORD_LISTEN_SECONDS = 1
 
@@ -106,7 +107,6 @@ const Audio = ({
   // Init progress tracking
   useEffect(() => {
     // TODO: Probably don't use global for this
-    // @ts-ignore
     global.progress = {
       currentTime: 0,
       seekableTime: 0
@@ -164,7 +164,6 @@ const Audio = ({
       if (videoRef.current) {
         elapsedTime.current = elapsedTime.current + SKIP_DURATION_SEC
         videoRef.current.seek(elapsedTime.current)
-        // @ts-ignore
         global.progress.currentTime = elapsedTime.current
         MusicControl.updatePlayback({
           elapsedTime: elapsedTime.current
@@ -175,7 +174,6 @@ const Audio = ({
       if (videoRef.current) {
         elapsedTime.current = elapsedTime.current - SKIP_DURATION_SEC
         videoRef.current.seek(elapsedTime.current)
-        // @ts-ignore
         global.progress.currentTime = elapsedTime.current
         MusicControl.updatePlayback({
           elapsedTime: elapsedTime.current
@@ -267,7 +265,7 @@ const Audio = ({
         isPreviousEnabled = index > 0
         isNextEnabled = index < queueLength - 1
       }
-      if (track.genre === Genre.PODCASTS) {
+      if (track?.genre === Genre.PODCASTS) {
         MusicControl.enableControl('previousTrack', false)
         MusicControl.enableControl('nextTrack', false)
         MusicControl.enableControl('skipBackward', true, { interval: 15 })
@@ -368,7 +366,6 @@ const Audio = ({
           setListenLoggedForTrack(false)
         )
       }
-      // @ts-ignore
       global.progress = progress
     },
     [track, listenLoggedForTrack, setListenLoggedForTrack, progressInvalidator]

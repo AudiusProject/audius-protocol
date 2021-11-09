@@ -1,7 +1,8 @@
+import { Nullable } from '../utils/typeUtils'
+
 import Color from './common/Color'
 import { CID, ID } from './common/Identifiers'
 import { CoverPhotoSizes, ProfilePictureSizes } from './common/ImageSizes'
-import { Nullable } from '../utils/typeUtils'
 import Timestamped from './common/Timestamped'
 
 export type UserImage = {

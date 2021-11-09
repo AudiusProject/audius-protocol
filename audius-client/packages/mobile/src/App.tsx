@@ -1,27 +1,28 @@
 import React, { useRef, useEffect } from 'react'
-import { Provider } from 'react-redux'
+
+import { PortalProvider } from '@gorhom/portal'
 import { Platform } from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import { PortalProvider } from '@gorhom/portal'
-
-import createStore from './store'
-import WebApp from './components/web/WebApp'
-import Audio from './components/audio/Audio'
-import GoogleCast from './components/audio/GoogleCast'
-import OAuth from './components/oauth/OAuth'
 import WebView from 'react-native-webview'
-import PushNotifications from './notifications'
-import { setup as setupAnalytics } from './utils/analytics'
-import useConnectivity from './components/web/useConnectivity'
-import { incrementSessionCount } from './hooks/useSessionCount'
-import Notifications from './components/notifications/Notifications'
-import Search from './components/search/Search'
-import SignOnNav from './components/signon/NavigationStack'
-import { WebRefContextProvider } from './components/web/WebRef'
-import BottomBar from './components/bottom-bar'
-import MobileUploadDrawer from './components/mobile-upload-drawer'
-import EnablePushNotificationsDrawer from './components/enable-push-notifications-drawer'
-import CollectibleDetailsDrawer from './components/collectible-details-drawer'
+import { Provider } from 'react-redux'
+
+import Audio from 'app/components/audio/Audio'
+import GoogleCast from 'app/components/audio/GoogleCast'
+// import BottomBar from 'app/components/bottom-bar'
+import CollectibleDetailsDrawer from 'app/components/collectible-details-drawer'
+import EnablePushNotificationsDrawer from 'app/components/enable-push-notifications-drawer'
+import MobileUploadDrawer from 'app/components/mobile-upload-drawer'
+import Notifications from 'app/components/notifications/Notifications'
+import OAuth from 'app/components/oauth/OAuth'
+import Search from 'app/components/search/Search'
+import SignOnNav from 'app/components/signon/NavigationStack'
+import WebApp from 'app/components/web/WebApp'
+import { WebRefContextProvider } from 'app/components/web/WebRef'
+import useConnectivity from 'app/components/web/useConnectivity'
+import { incrementSessionCount } from 'app/hooks/useSessionCount'
+import PushNotifications from 'app/notifications'
+import createStore from 'app/store'
+import { setup as setupAnalytics } from 'app/utils/analytics'
 
 const store = createStore()
 export const dispatch = store.dispatch
@@ -29,7 +30,7 @@ export const dispatch = store.dispatch
 const Airplay = Platform.select({
   ios: () => require('./components/audio/Airplay').default,
   android: () => () => null
-})()
+})?.()
 
 // Increment the session count when the App.tsx code is first run
 incrementSessionCount()

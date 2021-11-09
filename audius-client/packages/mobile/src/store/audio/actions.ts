@@ -1,4 +1,4 @@
-import { Message } from 'src/message'
+import { Message } from 'app/message'
 
 export const PLAY = 'AUDIO/PLAY'
 export const PAUSE = 'AUDIO/PAUSE'

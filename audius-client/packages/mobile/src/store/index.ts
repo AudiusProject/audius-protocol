@@ -1,22 +1,21 @@
 import { CommonState } from 'audius-client/src/common/store'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
-import createSagaMiddleware from 'redux-saga'
 import { composeWithDevTools } from 'redux-devtools-extension'
+import createSagaMiddleware from 'redux-saga'
 
-import googleCast, { GoogleCastState } from './googleCast/reducer'
 import audio, { AudioState } from './audio/reducer'
-import oauth, { OAuthState } from './oauth/reducer'
-import web, { WebState } from './web/reducer'
+import clientStore from './clientStore/slice'
+import drawers, { DrawersState } from './drawers/slice'
+import googleCast, { GoogleCastState } from './googleCast/reducer'
+import keyboard, { KeyboardState } from './keyboard/slice'
 import lifecycle, { LifecycleState } from './lifecycle/reducer'
 import notifications, { NotificationsState } from './notifications/reducer'
+import oauth, { OAuthState } from './oauth/reducer'
+import rootSaga from './sagas'
 import search, { SearchState } from './search/reducer'
 import signon, { SignonState } from './signon/reducer'
 import theme, { ThemeState } from './theme/reducer'
-import drawers, { DrawersState } from './drawers/slice'
-import clientStore from './clientStore/slice'
-
-import rootSaga from './sagas'
-import keyboard, { KeyboardState } from './keyboard/slice'
+import web, { WebState } from './web/reducer'
 
 export type AppState = {
   audio: AudioState

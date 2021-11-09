@@ -1,19 +1,19 @@
 import React from 'react'
 
-import { Image, StyleSheet, View } from 'react-native'
 import MaskedView from '@react-native-masked-view/masked-view'
-
-import IconUpload from '../../assets/images/iconGradientUpload.svg'
-import HeavyCheckMark from '../../assets/images/emojis/white-heavy-check-mark.png'
-import Text from '../../components/text'
 import { getIsOpen } from 'audius-client/src/common/store/ui/mobile-upload-drawer/selectors'
 import { hide } from 'audius-client/src/common/store/ui/mobile-upload-drawer/slice'
+import { Image, StyleSheet, View } from 'react-native'
+import LinearGradient from 'react-native-linear-gradient'
+
+import HeavyCheckMark from 'app/assets/images/emojis/white-heavy-check-mark.png'
+import IconUpload from 'app/assets/images/iconGradientUpload.svg'
+import Text from 'app/components/text'
+import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
+import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
+import { useThemeColors } from 'app/utils/theme'
 
 import Drawer from '../drawer'
-import { useSelectorWeb } from '../../hooks/useSelectorWeb'
-import { useDispatchWeb } from '../../hooks/useDispatchWeb'
-import { useThemeColors } from '../../utils/theme'
-import LinearGradient from 'react-native-linear-gradient'
 
 const styles = StyleSheet.create({
   drawer: {
