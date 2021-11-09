@@ -1,10 +1,12 @@
-const { ipfsLatest: ipfs } = require('../ipfsClient')
+const { ipfs } = require('../ipfsClient')
+const { ipfsAddNonImages } = require('../ipfsAdd')
 
 /**
  * Performs a diagnostic test on IPFS operations to
  * confirm functionality:
  *   - Adds a file
- *   - Gets a file
+ *   - Retrieves the same file from ipfs via its content addressed hash
+ *
  */
 const getIPFSReadWriteStatus = async () => {
   try {
@@ -13,8 +15,12 @@ const getIPFSReadWriteStatus = async () => {
     const content = Buffer.from(timestamp)
 
     // Add new buffer created from timestamp (without pin)
-    const results = await ipfs.add(content, { pin: false })
-    const hash = results[0].hash // "Qm...WW"
+    const hash = await ipfsAddNonImages(
+      content,
+      { pin: false } /* ipfsConfig */,
+      {} /* logContext */,
+      true /* enableIPFSAdd */
+    )
 
     // Retrieve and validate hash from local node
     const ipfsResp = await ipfs.get(hash)
