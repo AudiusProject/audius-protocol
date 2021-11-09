@@ -532,7 +532,6 @@ class TrackHistoryFull(Resource):
             "with_users": True,
         }
         track_history = get_track_history(get_tracks_args)
-        logger.info(f"isaac track_history {track_history}")
         tracks = list(map(extend_activity, track_history))
         return success_response(tracks)
 
