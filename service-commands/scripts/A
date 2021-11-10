@@ -6,56 +6,159 @@ import subprocess
 import argparse
 
 
-def create_instance(name, image_project, image_family, size, machine_type):
-    project = (
+def create_instance(name, azure, image_project, image_family, size, machine_type):
+    if not azure:
+        project = (
+            subprocess.run(
+                [
+                    "gcloud",
+                    "config",
+                    "get-value",
+                    "project",
+                ],
+                capture_output=True,
+            )
+            .stdout.decode()
+            .strip()
+        )
+
+        account = (
+            subprocess.run(
+                [
+                    "gcloud",
+                    "config",
+                    "list",
+                    "account",
+                    "--format",
+                    "value(core.account)",
+                ],
+                capture_output=True,
+            )
+            .stdout.decode()
+            .strip()
+        )
+
+        print("Project:", project)
+        print("Account:", account)
+
+        if input("Confirm account and project? [y/N]").lower() != "y":
+            return
+
         subprocess.run(
             [
                 "gcloud",
-                "config",
-                "get-value",
-                "project",
+                "compute",
+                "instances",
+                "create",
+                name,
+                "--image-project",
+                image_project,
+                "--image-family",
+                image_family,
+                "--boot-disk-size",
+                size,
+                "--machine-type",
+                machine_type or "n2-custom-12-24576",
+            ]
+        )
+
+        ip = (
+            subprocess.run(
+                [
+                    "gcloud",
+                    "compute",
+                    "instances",
+                    "describe",
+                    name,
+                    "--format",
+                    "get(networkInterfaces[0].accessConfigs[0].natIP)",
+                ],
+                capture_output=True,
+            )
+            .stdout.decode()
+            .strip()
+        )
+        print("IP address:", ip)
+    else:
+        subprocess.run(
+            [
+                "az",
+                "group",
+                "create",
+                "-n",
+                "audius-azure",
+                "--location",
+                "eastus",
             ],
-            capture_output=True,
         )
-        .stdout.decode()
-        .strip()
-    )
 
-    account = (
         subprocess.run(
-            ["gcloud", "config", "list", "account", "--format", "value(core.account)"],
-            capture_output=True,
+            [
+                "ssh-keygen",
+                "-m",
+                "PEM",
+                "-t",
+                "rsa",
+                "-b",
+                "4096",
+                "-P",
+                "",
+                "-f",
+                f"{os.getenv('HOME')}/.ssh/audius-azure",
+            ],
+            input=b"n\n",
+            stdout=subprocess.DEVNULL,
         )
-        .stdout.decode()
-        .strip()
-    )
 
-    print("Project:", project)
-    print("Account:", account)
-
-    if input("Confirm account and project? [y/N]").lower() != "y":
-        return
-
-    subprocess.run(
-        [
-            "gcloud",
-            "compute",
-            "instances",
-            "create",
-            name,
-            "--image-project",
-            image_project,
-            "--image-family",
-            image_family,
-            "--boot-disk-size",
-            size,
-            "--machine-type",
-            machine_type,
-        ]
-    )
-
-    ip = (
         subprocess.run(
+            [
+                "az",
+                "vm",
+                "create",
+                "-n",
+                name,
+                "-g",
+                "audius-azure",
+                "--image",
+                "UbuntuLTS",
+                "--size",
+                machine_type or "Standard_F8s_v2",
+                "--os-disk-size-gb",
+                size,
+                "--ssh-key-values",
+                f"{os.getenv('HOME')}/.ssh/audius-azure.pub",
+                "--public-ip-sku",
+                "Basic",
+            ],
+        )
+
+        ip = (
+            subprocess.run(
+                [
+                    "az",
+                    "vm",
+                    "list-ip-addresses",
+                    "--name",
+                    name,
+                    "--resource-group",
+                    "audius-azure",
+                    "--query",
+                    "[0].virtualMachine.network.publicIpAddresses[0].ipAddress",
+                ],
+                capture_output=True,
+            )
+            .stdout.decode()
+            .strip()
+            .strip('"')
+        )  # TODO: process ip
+        print("IP address:", ip)
+
+    return ip
+
+
+def setup(name, azure, service, config, user):
+    if not azure:
+        proc = subprocess.run(
             [
                 "gcloud",
                 "compute",
@@ -67,33 +170,34 @@ def create_instance(name, image_project, image_family, size, machine_type):
             ],
             capture_output=True,
         )
-        .stdout.decode()
-        .strip()
-    )
-    print("IP address:", ip)
-
-    return ip
-
-
-def setup(name, service, config, user):
-    proc = subprocess.run(
-        [
-            "gcloud",
-            "compute",
-            "instances",
-            "describe",
-            name,
-            "--format",
-            "get(networkInterfaces[0].accessConfigs[0].natIP)",
-        ],
-        capture_output=True,
-    )
+    else:
+        proc = (
+            subprocess.run(
+                [
+                    "az",
+                    "vm",
+                    "list-ip-addresses",
+                    "--name",
+                    name,
+                    "--resource-group",
+                    "TestResourceGroup",
+                ],
+                capture_output=True,
+            )
+            .stdout.decode()
+            .strip()
+        )  # TODO: process ip
 
     ip = proc.stdout.decode().strip()
     if proc.returncode != 0:
         input(f"Creating new instance '{name}'. Press Enter to continue...")
         ip = create_instance(
-            name, "ubuntu-os-cloud", "ubuntu-2004-lts", "256", "n2-custom-12-24576"
+            name,
+            azure,
+            "ubuntu-os-cloud",
+            "ubuntu-2004-lts",
+            "256",
+            "n2-custom-12-24576",
         )
 
     host = f"{user}@{ip}"
@@ -226,6 +330,12 @@ def main():
     )
 
     parser_create_instance.add_argument(
+        "--azure",
+        action="store_true",
+        help="Use Azure instead of GCP",
+    )
+
+    parser_create_instance.add_argument(
         "--image-family",
         default="ubuntu-2004-lts",
         help="Image to use for creating the instance",
@@ -245,7 +355,7 @@ def main():
 
     parser_create_instance.add_argument(
         "--machine-type",
-        default="n2-custom-12-24576",
+        default=None,
         help="Machine type to use for the instance",
     )
 
@@ -262,6 +372,12 @@ def main():
     parser_setup.add_argument(
         "--config",
         help="path to config",
+    )
+
+    parser_setup.add_argument(
+        "--azure",
+        action="store_true",
+        help="Use Azure instead of GCP",
     )
 
     parser_setup.add_argument(
@@ -287,13 +403,14 @@ def main():
         if args.operation == "create-instance":
             create_instance(
                 args.name,
+                args.azure,
                 args.image_project,
                 args.image_family,
                 args.size,
                 args.machine_type,
             )
         elif args.operation == "setup":
-            setup(args.name, args.service, args.config, args.user)
+            setup(args.name, args.azure, args.service, args.config, args.user)
     except argparse.ArgumentError:
         subprocess.run(
             [
