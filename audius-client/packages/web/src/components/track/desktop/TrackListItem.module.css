@@ -152,6 +152,8 @@
 
 .menuContainer {
   display: flex;
+  margin-left: 36px;
+  margin-right: 6px;
 }
 
 .iconKebabHorizontal {
