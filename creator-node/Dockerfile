@@ -13,6 +13,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk update && \
     apk add bash && \
     apk add nodejs && \
+    apk add npm && \
     apk add redis && \
     apk add sudo && \
     apk add docker && \

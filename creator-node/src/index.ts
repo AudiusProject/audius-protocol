@@ -12,7 +12,7 @@ const { logIpfsPeerIds } = require('./ipfsClient')
 const { serviceRegistry } = require('./serviceRegistry')
 const { pinCID } = require('./pinCID')
 
-const exitWithError = (...msg) => {
+const exitWithError = (...msg: any[]) => {
   logger.error(...msg)
   process.exit(1)
 }
@@ -73,7 +73,7 @@ const startApp = async () => {
   }
 
   const mode = getMode()
-  let appInfo
+  let appInfo: any
 
   if (mode === '--run-migrations') {
     await connectToDBAndRunMigrations()
@@ -86,7 +86,6 @@ const startApp = async () => {
     await logIpfsPeerIds()
 
     const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
-
     await serviceRegistry.initServices()
     logger.info(`Initialized services (Node running in ${nodeMode})`)
 
@@ -101,7 +100,7 @@ const startApp = async () => {
   }
 
   // when app terminates, close down any open DB connections gracefully
-  ON_DEATH((signal, error) => {
+  ON_DEATH((signal: any, error: any) => {
     // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
     // default in `npm start` command). To see messages emitted after a kill signal, do not
     // use the bunyan CLI.
@@ -111,3 +110,5 @@ const startApp = async () => {
   })
 }
 startApp()
+
+export {}
