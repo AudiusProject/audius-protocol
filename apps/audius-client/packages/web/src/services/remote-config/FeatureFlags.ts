@@ -14,7 +14,8 @@ export enum FeatureFlags {
   NFT_IMAGE_PICKER_TAB = 'nft_image_picker_tab',
   SOL_WALLET_AUDIO_ENABLED = 'sol_wallet_audio_enabled',
   SOLANA_COLLECTIBLES_ENABLED = 'solana_collectibles_enabled',
-  ARTIST_RECOMMENDATIONS_ENABLED = 'artist_recommendations_enabled'
+  ARTIST_RECOMMENDATIONS_ENABLED = 'artist_recommendations_enabled',
+  SURFACE_AUDIO_ENABLED = 'surface_audio_enabled'
 }
 
 /**
@@ -35,7 +36,8 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.NFT_IMAGE_PICKER_TAB]: false,
   [FeatureFlags.SOL_WALLET_AUDIO_ENABLED]: false,
   [FeatureFlags.SOLANA_COLLECTIBLES_ENABLED]: false,
-  [FeatureFlags.ARTIST_RECOMMENDATIONS_ENABLED]: false
+  [FeatureFlags.ARTIST_RECOMMENDATIONS_ENABLED]: false,
+  [FeatureFlags.SURFACE_AUDIO_ENABLED]: false
 }
 
 export enum FeatureFlagCohortType {
@@ -72,7 +74,8 @@ export const flagCohortType: {
   [FeatureFlags.CHALLENGE_REWARDS_UI]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.NFT_IMAGE_PICKER_TAB]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.SOL_WALLET_AUDIO_ENABLED]: FeatureFlagCohortType.USER_ID,
-  [FeatureFlags.ARTIST_RECOMMENDATIONS_ENABLED]: FeatureFlagCohortType.USER_ID
+  [FeatureFlags.ARTIST_RECOMMENDATIONS_ENABLED]: FeatureFlagCohortType.USER_ID,
+  [FeatureFlags.SURFACE_AUDIO_ENABLED]: FeatureFlagCohortType.USER_ID
 }
 
 export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId'
