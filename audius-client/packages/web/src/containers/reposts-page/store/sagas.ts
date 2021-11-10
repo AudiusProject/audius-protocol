@@ -1,8 +1,8 @@
 import { put, select } from 'redux-saga/effects'
 
-import Collection from 'common/models/Collection'
+import { Collection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
-import Track from 'common/models/Track'
+import { Track } from 'common/models/Track'
 import { getCollection } from 'common/store/cache/collections/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import UserListSagaFactory from 'containers/user-list/store/sagas'

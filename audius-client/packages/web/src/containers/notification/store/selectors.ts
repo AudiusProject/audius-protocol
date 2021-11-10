@@ -1,7 +1,7 @@
 import { createSelector } from 'reselect'
 
-import Collection from 'common/models/Collection'
-import Track from 'common/models/Track'
+import { Collection } from 'common/models/Collection'
+import { Track } from 'common/models/Track'
 import { getAccountUser } from 'common/store/account/selectors'
 import {
   getCollection,

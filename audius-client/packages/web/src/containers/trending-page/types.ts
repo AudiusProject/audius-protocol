@@ -1,6 +1,6 @@
 import { ID, UID } from 'common/models/Identifiers'
-import Track from 'common/models/Track'
-import User from 'common/models/User'
+import { Track } from 'common/models/Track'
+import { User } from 'common/models/User'
 import TimeRange from 'models/TimeRange'
 import { Lineup } from 'models/common/Lineup'
 

@@ -29,6 +29,12 @@ import {
   FlowUIOpenEvent
 } from '../types'
 
+declare global {
+  interface Window {
+    Flow: any
+  }
+}
+
 const messages = {
   claimYourReward: 'Claim Your Reward'
 }
@@ -144,8 +150,7 @@ const ClaimRewardButton = ({
   const triggerCognitoFlow = async () => {
     const { signature } = await AudiusBackend.getCognitoSignature()
 
-    // @ts-ignore
-    const flow = new Flow({
+    const flow = new window.Flow({
       publishableKey: process.env.REACT_APP_COGNITO_KEY,
       templateId: process.env.REACT_APP_COGNITO_TEMPLATE_ID,
       user: {

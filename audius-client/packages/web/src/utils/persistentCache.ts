@@ -1,11 +1,11 @@
 import { set, get, keys, del, clear } from 'idb-keyval'
 import { mergeWith } from 'lodash'
 
-import Collection from 'common/models/Collection'
+import { Collection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import { Track } from 'common/models/Track'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import { mergeCustomizer } from 'common/store/cache/reducer'
 import { makeUid } from 'common/utils/uid'
 

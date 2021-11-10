@@ -1,4 +1,4 @@
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import { FollowArtistsCategory } from 'containers/sign-on/store/types'
 
 import { NativeMobileMessage } from './helpers'

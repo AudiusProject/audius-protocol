@@ -16,7 +16,7 @@ import {
   PlaylistLibraryFolder,
   PlaylistLibraryIdentifier
 } from 'common/models/PlaylistLibrary'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import { AccountCollection } from 'common/store/account/reducer'
 import {
   getAccountNavigationPlaylists,

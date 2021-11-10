@@ -4,7 +4,7 @@ import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import { ID } from 'common/models/Identifiers'
-import Track from 'common/models/Track'
+import { Track } from 'common/models/Track'
 import { Nullable } from 'common/utils/typeUtils'
 import Menu from 'containers/menu/Menu'
 import { OwnProps as NotificationMenuProps } from 'containers/menu/NotificationMenu'

@@ -1,9 +1,9 @@
 import { call } from 'redux-saga/effects'
 
+import { Track } from 'common/models/Track'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 
 import { ID } from '../../common/models/Identifiers'
-import Track from '../../common/models/Track'
 import { processAndCacheTracks } from '../../common/store/cache/tracks/utils'
 import { Nullable } from '../../common/utils/typeUtils'
 import AudiusBackend from '../../services/AudiusBackend'

@@ -14,6 +14,7 @@ import {
 } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
+import * as errorActions from 'common/store/errors/actions'
 import {
   getModalIsOpen,
   getModalVisibility,

@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
 
 import cn from 'classnames'
+// TODO: Investigate why this import breaks no-unresolved
+// eslint-disable-next-line
 import { ClassValue } from 'classnames/types'
 
 import { isMobile } from 'utils/clientUtil'

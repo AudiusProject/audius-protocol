@@ -1,6 +1,6 @@
 import { takeEvery, call, put } from 'redux-saga/effects'
 
-import Collection from 'common/models/Collection'
+import { Collection } from 'common/models/Collection'
 import Status from 'common/models/Status'
 import { getAccountStatus } from 'common/store/account/selectors'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'

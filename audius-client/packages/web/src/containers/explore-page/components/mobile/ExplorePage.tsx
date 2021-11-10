@@ -20,7 +20,7 @@ import {
   Variant as CollectionVariant
 } from 'common/models/Collection'
 import Status from 'common/models/Status'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import Card from 'components/card/mobile/Card'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import Header from 'components/general/header/mobile/Header'

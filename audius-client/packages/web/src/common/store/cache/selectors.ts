@@ -1,14 +1,14 @@
 import Cache from 'common/models/Cache'
-import Collection from 'common/models/Collection'
+import { Collection } from 'common/models/Collection'
 import { ID, UID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
-import Track from 'common/models/Track'
-import User from 'common/models/User'
+import { Track } from 'common/models/Track'
+import { User } from 'common/models/User'
 import { CommonState } from 'common/store'
 import { Uid } from 'common/utils/uid'
 
-import TracksCacheState from './tracks/types'
-import UsersCacheState from './users/types'
+import { TracksCacheState } from './tracks/types'
+import { UsersCacheState } from './users/types'
 
 /**
  * Selects from the cache and strips away cache-only fields.

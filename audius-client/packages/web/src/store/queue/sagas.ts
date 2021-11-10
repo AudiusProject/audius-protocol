@@ -9,7 +9,7 @@ import {
 
 import { ID, UID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
-import Track from 'common/models/Track'
+import { Track } from 'common/models/Track'
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { getCollection } from 'common/store/cache/collections/selectors'

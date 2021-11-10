@@ -2,7 +2,7 @@ import { all } from 'redux-saga/effects'
 
 import { UserCollection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
-import Track, { UserTrackMetadata } from 'common/models/Track'
+import { Track, UserTrackMetadata } from 'common/models/Track'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'

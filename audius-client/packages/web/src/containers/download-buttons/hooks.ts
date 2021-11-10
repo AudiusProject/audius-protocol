@@ -6,7 +6,7 @@ import { useLocation } from 'react-router-dom'
 
 import { ID } from 'common/models/Identifiers'
 import { stemCategoryFriendlyNames, StemCategory } from 'common/models/Stems'
-import Track, { StemTrack } from 'common/models/Track'
+import { Track, StemTrack } from 'common/models/Track'
 import { getHasAccount } from 'common/store/account/selectors'
 import { getTrack, getTracks } from 'common/store/cache/tracks/selectors'
 import {

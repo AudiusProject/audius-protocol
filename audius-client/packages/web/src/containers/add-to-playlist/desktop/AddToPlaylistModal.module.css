@@ -103,4 +103,5 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 32px;
 }

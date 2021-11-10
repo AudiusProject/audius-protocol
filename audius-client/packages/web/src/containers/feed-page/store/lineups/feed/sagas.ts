@@ -1,6 +1,6 @@
 import { select, all } from 'redux-saga/effects'
 
-import Collection, { UserCollectionMetadata } from 'common/models/Collection'
+import { Collection, UserCollectionMetadata } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import { LineupTrack, TrackMetadata } from 'common/models/Track'

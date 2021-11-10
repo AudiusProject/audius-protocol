@@ -1,8 +1,8 @@
 import React, { useEffect, useContext } from 'react'
 
 import { ID } from 'common/models/Identifiers'
-import Track from 'common/models/Track'
-import User from 'common/models/User'
+import { Track } from 'common/models/Track'
+import { User } from 'common/models/User'
 import { OverflowAction } from 'common/store/ui/mobile-overflow-menu/types'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import SectionButton from 'components/general/SectionButton'

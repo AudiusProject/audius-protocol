@@ -13,7 +13,7 @@ import tracksReducer from 'containers/search-page/store/lineups/tracks/reducer'
 import { asLineup } from 'store/lineup/reducer'
 import { ActionsMap } from 'utils/reducer'
 
-import SearchPageState from './types'
+import { SearchPageState } from './types'
 
 const initialState: SearchPageState = {
   status: Status.SUCCESS,

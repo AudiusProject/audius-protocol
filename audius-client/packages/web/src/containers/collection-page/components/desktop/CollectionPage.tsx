@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 
-import Collection, { SmartCollection, Variant } from 'common/models/Collection'
+import { Collection, SmartCollection, Variant } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import CollectionHeader from 'components/collection/desktop/CollectionHeader'
 import Page from 'components/general/Page'
 import TracksTable from 'components/tracks-table/TracksTable'

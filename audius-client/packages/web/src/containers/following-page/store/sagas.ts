@@ -1,7 +1,7 @@
 import { put, select } from 'redux-saga/effects'
 
 import { ID } from 'common/models/Identifiers'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
 import UserListSagaFactory from 'containers/user-list/store/sagas'
 import { createUserListProvider } from 'containers/user-list/utils'

@@ -4,7 +4,7 @@ import { Popup, PopupPosition } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
 import { ID } from 'common/models/Identifiers'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
 import { useFlag } from 'containers/remote-config/hooks'
 import { FeatureFlags } from 'services/remote-config'

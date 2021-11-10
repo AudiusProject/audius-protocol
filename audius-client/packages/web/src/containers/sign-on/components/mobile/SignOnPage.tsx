@@ -7,7 +7,7 @@ import { Transition } from 'react-spring/renderprops'
 import { Dispatch } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import { InstagramProfile } from 'common/store/account/reducer'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import * as settingPageActions from 'containers/settings-page/store/actions'

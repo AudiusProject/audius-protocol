@@ -1,6 +1,6 @@
 import { call, select } from 'redux-saga/effects'
 
-import Track, { UserTrackMetadata } from 'common/models/Track'
+import { Track, UserTrackMetadata } from 'common/models/Track'
 import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'

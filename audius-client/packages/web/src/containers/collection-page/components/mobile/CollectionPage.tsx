@@ -1,9 +1,9 @@
 import React, { useEffect, useContext } from 'react'
 
-import Collection, { SmartCollection, Variant } from 'common/models/Collection'
+import { Collection, SmartCollection, Variant } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import { OverflowAction } from 'common/store/ui/mobile-overflow-menu/types'
 import CollectionHeader from 'components/collection/mobile/CollectionHeader'
 import MobilePageContainer from 'components/general/MobilePageContainer'

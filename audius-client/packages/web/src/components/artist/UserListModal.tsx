@@ -9,7 +9,7 @@ import SimpleBar from 'simplebar-react'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import { ID } from 'common/models/Identifiers'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import ArtistChip from 'components/artist/ArtistChip'
 import FollowButton from 'components/general/FollowButton'
 import { FollowSource } from 'services/analytics'

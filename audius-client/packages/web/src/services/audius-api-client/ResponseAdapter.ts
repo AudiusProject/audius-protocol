@@ -1,7 +1,7 @@
 import { UserCollectionMetadata, Variant } from 'common/models/Collection'
-import Favorite from 'common/models/Favorite'
+import { Favorite } from 'common/models/Favorite'
 import { ID } from 'common/models/Identifiers'
-import Repost from 'common/models/Repost'
+import { Repost } from 'common/models/Repost'
 import {
   Remix,
   StemTrackMetadata,

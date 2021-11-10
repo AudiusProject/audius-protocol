@@ -1,5 +1,5 @@
 import { ID, UID } from 'common/models/Identifiers'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import FeedFilter from 'models/FeedFilter'
 import { Lineup } from 'models/common/Lineup'
 

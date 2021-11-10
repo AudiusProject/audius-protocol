@@ -1,7 +1,7 @@
 import { call, put, select } from 'redux-saga/effects'
 
 import { ID } from 'common/models/Identifiers'
-import Track, { UserTrackMetadata } from 'common/models/Track'
+import { Track, UserTrackMetadata } from 'common/models/Track'
 import { getTracks } from 'common/store/cache/tracks/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { Nullable } from 'common/utils/typeUtils'

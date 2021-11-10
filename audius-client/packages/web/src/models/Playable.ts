@@ -1,8 +1,8 @@
-import Collection from '../common/models/Collection'
+import { Collection } from '../common/models/Collection'
 import { PlayableType } from '../common/models/Identifiers'
-import Track from '../common/models/Track'
+import { Track } from '../common/models/Track'
 
-type Playable =
+export type Playable =
   | {
       metadata: Collection | null
       type: PlayableType.PLAYLIST
@@ -15,5 +15,3 @@ type Playable =
       metadata: Track | null
       type: PlayableType.TRACK
     }
-
-export default Playable

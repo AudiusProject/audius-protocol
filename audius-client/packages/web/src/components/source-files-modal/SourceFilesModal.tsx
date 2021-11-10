@@ -10,7 +10,7 @@ import {
 import cn from 'classnames'
 
 import { StemCategory, stemCategoryFriendlyNames } from 'common/models/Stems'
-import Track, { Download } from 'common/models/Track'
+import { Track, Download } from 'common/models/Track'
 import IconButton from 'components/general/IconButton'
 import Switch from 'components/general/Switch'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

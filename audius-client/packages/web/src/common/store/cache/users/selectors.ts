@@ -1,7 +1,7 @@
 import { ID, UID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import Status from 'common/models/Status'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import { CommonState } from 'common/store'
 import {
   getEntry,
