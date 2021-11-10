@@ -1,7 +1,7 @@
 import { call, select } from 'redux-saga/effects'
 
 import { ID } from 'common/models/Identifiers'
-import User, { UserMetadata } from 'common/models/User'
+import { User, UserMetadata } from 'common/models/User'
 import { getAccountUser, getUserId } from 'common/store/account/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { AppState } from 'store/types'

@@ -6,7 +6,7 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import Collection, { SmartCollection } from 'common/models/Collection'
+import { Collection, SmartCollection } from 'common/models/Collection'
 import { FavoriteType } from 'common/models/Favorite'
 import { ID, UID, PlayableType } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'

@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import SimpleBar from 'simplebar-react'
 
 import { ReactComponent as IconMultiselectAdd } from 'assets/img/iconMultiselectAdd.svg'
-import Collection from 'common/models/Collection'
+import { Collection } from 'common/models/Collection'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getAccountWithOwnPlaylists } from 'common/store/account/selectors'
 import {

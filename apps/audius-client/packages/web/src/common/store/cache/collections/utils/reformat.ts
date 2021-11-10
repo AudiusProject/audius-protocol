@@ -1,6 +1,7 @@
 import { omit } from 'lodash'
 
-import Collection, {
+import {
+  Collection,
   CollectionMetadata,
   UserCollectionMetadata,
   Variant

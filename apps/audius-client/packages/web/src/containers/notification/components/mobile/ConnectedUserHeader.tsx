@@ -7,7 +7,7 @@ import { Dispatch } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import { getUsers } from 'common/store/cache/users/selectors'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { fetchNotificationUsers } from 'containers/notification/store/actions'

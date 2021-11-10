@@ -59,6 +59,4 @@ export type ComputedUserProperties = {
   _artist_pick?: ID
 }
 
-type User = UserMetadata & ComputedUserProperties
-
-export default User
+export type User = UserMetadata & ComputedUserProperties

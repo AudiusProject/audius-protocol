@@ -1,8 +1,8 @@
-import Favorite from 'common/models/Favorite'
+import { Favorite } from 'common/models/Favorite'
 import { CID, ID, UID } from 'common/models/Identifiers'
 import { CoverArtSizes } from 'common/models/ImageSizes'
-import Repost from 'common/models/Repost'
-import User, { UserMetadata } from 'common/models/User'
+import { Repost } from 'common/models/Repost'
+import { User, UserMetadata } from 'common/models/User'
 import { Nullable } from 'common/utils/typeUtils'
 
 import { StemCategory } from './Stems'
@@ -140,5 +140,3 @@ export type StemUserTrack = UserTrack & Required<Pick<Track, 'stem_of'>>
 // Track with known non-optional remix parent
 export type RemixTrack = Track & Required<Pick<Track, 'remix_of'>>
 export type RemixUserTrack = UserTrack & Required<Pick<Track, 'remix_of'>>
-
-export default Track

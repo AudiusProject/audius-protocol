@@ -1,3 +1,4 @@
+/* global Flow */
 import { useEffect, useState } from 'react'
 
 import { push as pushRoute } from 'connected-react-router'
@@ -10,6 +11,12 @@ import { COGNITO_SCRIPT_URL } from 'utils/constants'
 import { SIGN_IN_PAGE, TRENDING_PAGE } from 'utils/route'
 
 import './CheckPage.module.css'
+
+declare global {
+  interface Window {
+    Flow: any
+  }
+}
 
 const COGNITO_KEY = process.env.REACT_APP_COGNITO_KEY
 const COGNITO_TEMPLATE_ID = process.env.REACT_APP_COGNITO_TEMPLATE_ID
@@ -31,8 +38,7 @@ const CheckPage = () => {
       setDidOpen(true)
       const run = async () => {
         const { signature } = await AudiusBackend.getCognitoSignature()
-        // @ts-ignore
-        const flow = new Flow({
+        const flow = new window.Flow({
           publishableKey: COGNITO_KEY,
           templateId: COGNITO_TEMPLATE_ID,
           user: {

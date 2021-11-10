@@ -2,7 +2,7 @@ import { createSelector } from 'reselect'
 
 import { UserCollection } from 'common/models/Collection'
 import Status from 'common/models/Status'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import { getCollections } from 'common/store/cache/collections/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { AppState } from 'store/types'

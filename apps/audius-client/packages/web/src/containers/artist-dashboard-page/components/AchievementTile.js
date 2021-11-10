@@ -2,7 +2,7 @@ import React from 'react'
 
 import { ReactComponent as IconTrophy } from 'assets/img/iconTrophy.svg'
 
-import styles from './AvchivementTile.module.css'
+import styles from './AchievementTile.module.css'
 
 const getAchievement = () => {
   // TODO: Use some information about the artist to calculate the 'achievement'

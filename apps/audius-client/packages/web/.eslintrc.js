@@ -81,7 +81,7 @@ module.exports = {
     'no-unused-vars': 'off',
     'func-call-spacing': 'off',
     semi: ['error', 'never'],
-    'no-undef': 'off',
+    'no-undef': 'error',
     'no-empty': 'off',
     'arrow-parens': 'off',
     'padded-blocks': 'off',
@@ -99,6 +99,7 @@ module.exports = {
     'space-before-function-paren': 'off',
     'generator-star-spacing': 'off',
 
+    'import/no-unresolved': 'error',
     'import/order': [
       'error',
       {

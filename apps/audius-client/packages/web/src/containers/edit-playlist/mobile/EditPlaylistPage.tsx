@@ -6,7 +6,7 @@ import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCamera } from 'assets/img/iconCamera.svg'
 import placeholderCoverArt from 'assets/img/imageBlank2x.png'
-import Collection from 'common/models/Collection'
+import { Collection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getAccountUser } from 'common/store/account/selectors'

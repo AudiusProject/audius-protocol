@@ -2,12 +2,12 @@ import { ReactNode } from 'react'
 
 import { CID, ID, UID } from 'common/models/Identifiers'
 import { CoverArtSizes } from 'common/models/ImageSizes'
-import Repost from 'common/models/Repost'
+import { Repost } from 'common/models/Repost'
 import { Nullable } from 'common/utils/typeUtils'
 
-import Favorite from './Favorite'
+import { Favorite } from './Favorite'
 import { UserTrackMetadata } from './Track'
-import User, { UserMetadata } from './User'
+import { User, UserMetadata } from './User'
 
 export enum Variant {
   USER_GENERATED = 'user-generated',
@@ -54,8 +54,6 @@ export type ComputedCollectionProperties = {
 }
 
 export type Collection = CollectionMetadata & ComputedCollectionProperties
-
-export default Collection
 
 export type UserCollectionMetadata = CollectionMetadata & { user: UserMetadata }
 

@@ -1,9 +1,9 @@
 import { MouseEvent, ReactNode } from 'react'
 
-import Favorite from 'common/models/Favorite'
+import { Favorite } from 'common/models/Favorite'
 import { ID, UID } from 'common/models/Identifiers'
 import { CoverArtSizes } from 'common/models/ImageSizes'
-import Repost from 'common/models/Repost'
+import { Repost } from 'common/models/Repost'
 import { LineupTrack, Remix } from 'common/models/Track'
 import { PlaybackSource } from 'services/analytics'
 

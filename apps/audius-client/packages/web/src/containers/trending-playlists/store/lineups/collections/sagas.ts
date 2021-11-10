@@ -1,6 +1,6 @@
 import { call, select } from 'redux-saga/effects'
 
-import Collection, { UserCollectionMetadata } from 'common/models/Collection'
+import { Collection, UserCollectionMetadata } from 'common/models/Collection'
 import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'

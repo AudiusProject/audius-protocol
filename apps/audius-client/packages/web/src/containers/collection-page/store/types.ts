@@ -6,7 +6,7 @@ import Status from 'common/models/Status'
 import { LineupTrack } from 'common/models/Track'
 import { LineupState } from 'models/common/Lineup'
 
-type CollectionsPageState = {
+export type CollectionsPageState = {
   collectionId: ID | null
   collectionUid: UID | null
   status: Status | null
@@ -28,5 +28,3 @@ export type TrackRecord = CollectionTrack & {
   time: number
   plays: number | undefined
 }
-
-export default CollectionsPageState
