@@ -210,6 +210,13 @@
 .noResults {
   width:100%;
   text-align: center;
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+}
+
+.searchBox :global(.ant-select-dropdown-menu-item.ant-select-dropdown-menu-item-active).noResultsOption span {
+  color: var(--white);
 }
 
 /* Overrides for special items.
