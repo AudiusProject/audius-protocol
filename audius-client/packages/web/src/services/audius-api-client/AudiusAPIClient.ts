@@ -109,6 +109,7 @@ export type GetTrackArgs = {
 type GetTrackByHandleAndSlugArgs = {
   handle: string
   slug: string
+  currentUserId: Nullable<ID>
 }
 
 type PaginationArgs = {
@@ -713,27 +714,37 @@ class AudiusAPIClient {
     return adapted
   }
 
-  async getTrackByHandleAndSlug(args: GetTrackByHandleAndSlugArgs) {
+  async getTrackByHandleAndSlug({
+    handle,
+    slug,
+    currentUserId
+  }: GetTrackByHandleAndSlugArgs) {
     this._assertInitialized()
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    const params = {
+      handle,
+      slug,
+      user_id: encodedCurrentUserId || undefined
+    }
 
     const trackResponse: Nullable<APIResponse<
       APITrack
     >> = await this._getResponse(
       FULL_ENDPOINT_MAP.getTrackByHandleAndSlug,
-      args,
+      params,
       true
     )
     // Try the old route method, ensuring that the track once found has the same owner handle
     // Ensure at least 5 digits (anything lower has old route in the DB)
     if (!trackResponse) {
-      const matches = args.slug.match(/[0-9]{5,}$/)
+      const matches = slug.match(/[0-9]{5,}$/)
       if (!matches) return null
       const oldTrackResponse = await this.getTrack({
         id: parseInt(matches[0])
       })
       if (
         !oldTrackResponse ||
-        oldTrackResponse.user.handle_lc !== args.handle.toLowerCase()
+        oldTrackResponse.user.handle_lc !== handle.toLowerCase()
       ) {
         return null
       }
