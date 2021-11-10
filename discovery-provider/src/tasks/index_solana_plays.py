@@ -204,10 +204,25 @@ def get_latest_slot(db):
     logger.info(f"index_solana_plays.py | returning {latest_slot} for highest slot")
     return latest_slot
 
+
+# Query a tx signature and confirm its existence
+def get_tx_in_db(session, tx_sig):
+    exists = False
+    tx_sig_db_count = (session.query(Play).filter(Play.signature == tx_sig)).count()
+    exists = tx_sig_db_count > 0
+    logger.info(f"index_solana_plays.py | {tx_sig} exists={exists}")
+    return exists
+
 # Query db for all transactions already indexed
 # Add any unindexed transactions for processing later
 # Returns true if intersection is found
 def add_unindexed_transactions(session, tx_sigs_to_validate, transaction_signature_batch):
+
+    # first check most recent transaction for intersection
+    if not tx_sigs_to_validate or get_tx_in_db(session, tx_sigs_to_validate[0]["signature"]):
+        return True
+
+    # fallback to entire batch
     plays = (
         session.query(Play)
         .filter(Play.signature.in_(tx_sigs_to_validate))
@@ -215,6 +230,7 @@ def add_unindexed_transactions(session, tx_sigs_to_validate, transaction_signatu
     )
 
     existing_signatures = set([play.signature for play in plays])
+
     # The signatures that aren't in db will be processed and added
     for signature in tx_sigs_to_validate:
         if signature in existing_signatures:
@@ -477,8 +493,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
             )
         else:
             with db.scoped_session() as read_session:
-                tx_sigs_to_validate = []
-                for tx in transactions_array:
+                for i, tx in enumerate(transactions_array):
                     tx_sig = tx["signature"]
                     slot = tx["slot"]
                     logger.info(
@@ -486,22 +501,18 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
                     )
                     if tx["slot"] > latest_processed_slot:
                         transaction_signature_batch.append(tx_sig)
-                    elif tx["slot"] <= latest_processed_slot:
+                    elif tx["slot"] <= latest_processed_slot: # identity transaction is behind db latest slot
                         # Transactions before the latest_processed_slot will need to be validated
                         logger.info(
                             f"index_solana_plays.py | Latest slot re-traversal\
                             slot={slot}, sig={tx_sig},\
                             latest_processed_slot(db)={latest_processed_slot}"
                         )
-                        tx_sigs_to_validate.append(tx_sig)
-
-                if tx_sigs_to_validate:
-                    intersection_found = add_unindexed_transactions(
-                        read_session, tx_sigs_to_validate, transaction_signature_batch
-                    )
-                logger.info(f"isaac intersection_found {intersection_found}")
-                logger.info(f"isaac unindexed {transaction_signature_batch}")
-
+                        intersection_found = add_unindexed_transactions(
+                            read_session, transactions_array[i:], transaction_signature_batch
+                        )
+                        if intersection_found:
+                            break
                 # Restart processing at the end of this transaction signature batch
                 last_tx = transactions_array[-1]
                 last_tx_signature = last_tx["signature"]
