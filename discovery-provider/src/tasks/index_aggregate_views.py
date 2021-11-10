@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 AGGREGATE_TRACK = "aggregate_track"
 AGGREGATE_PLAYLIST = "aggregate_playlist"
 
-DEFAULT_UPDATE_TIMEOUT = 60
+DEFAULT_UPDATE_TIMEOUT = 60 * 10  # 10 minutes
 
 
 def update_view(mat_view_name, db):
