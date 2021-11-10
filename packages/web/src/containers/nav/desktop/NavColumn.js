@@ -61,6 +61,7 @@ import {
   EXPLORE_PAGE
 } from 'utils/route'
 
+import NavAudio from './NavAudio'
 import styles from './NavColumn.module.css'
 import NavHeader from './NavHeader'
 import PlaylistLibrary from './PlaylistLibrary'
@@ -223,29 +224,32 @@ const NavColumn = ({
       <div className={cn(styles.navContent, { [styles.show]: navLoaded })}>
         <SimpleBar className={styles.scrollable}>
           {account ? (
-            <div className={styles.accountWrapper}>
-              <DynamicImage
-                wrapperClassName={styles.wrapperPhoto}
-                className={styles.dynamicPhoto}
-                onClick={goToProfile}
-                image={profileImage}
-              />
-              <div className={styles.userInfoWrapper}>
-                <div className={styles.name} onClick={goToProfile}>
-                  {name}
-                  <UserBadges
-                    userId={account.user_id}
-                    badgeSize={12}
-                    className={styles.badge}
-                  />
-                </div>
-                <div className={styles.handleContainer}>
-                  <span
-                    className={styles.handle}
-                    onClick={goToProfile}
-                  >{`@${handle}`}</span>
+            <div className={styles.userHeader}>
+              <div className={styles.accountWrapper}>
+                <DynamicImage
+                  wrapperClassName={styles.wrapperPhoto}
+                  className={styles.dynamicPhoto}
+                  onClick={goToProfile}
+                  image={profileImage}
+                />
+                <div className={styles.userInfoWrapper}>
+                  <div className={styles.name} onClick={goToProfile}>
+                    {name}
+                    <UserBadges
+                      userId={account.user_id}
+                      badgeSize={12}
+                      className={styles.badge}
+                    />
+                  </div>
+                  <div className={styles.handleContainer}>
+                    <span
+                      className={styles.handle}
+                      onClick={goToProfile}
+                    >{`@${handle}`}</span>
+                  </div>
                 </div>
               </div>
+              <NavAudio />
             </div>
           ) : (
             <div className={styles.accountWrapper}>

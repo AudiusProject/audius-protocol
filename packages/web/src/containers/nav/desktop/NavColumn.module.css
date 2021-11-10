@@ -65,10 +65,14 @@ svg.logo path {
   width: var(--nav-width);
 }
 
-.navColumn .accountWrapper {
-  display: block;
+.navColumn .userHeader {
   margin-left: 24px;
   margin-bottom: 24px;
+}
+
+.navColumn .accountWrapper {
+  display: block;
+  margin-bottom: 16px;
 
   display: flex;
   flex-direction: row;
