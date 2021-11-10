@@ -5,10 +5,8 @@ export enum FavoriteType {
   PLAYLIST = 'playlist'
 }
 
-type Favorite = {
+export type Favorite = {
   save_item_id: ID
   save_type: FavoriteType
   user_id: number
 }
-
-export default Favorite

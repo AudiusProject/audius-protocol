@@ -29,7 +29,7 @@ const Environment = Object.freeze({
 
 const args = process.argv.slice(2)
 
-let appEnvironment
+let appEnvironment, localhostPort
 // NOTE: This args will only apply if running electron itself locally
 // Production builds with installers (staging and prod) cannot receive args like this.
 if (args.length > 0) {

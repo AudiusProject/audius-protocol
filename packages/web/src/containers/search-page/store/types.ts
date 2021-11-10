@@ -2,7 +2,7 @@ import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { LineupState } from 'models/common/Lineup'
 
-type SearchPageState = {
+export type SearchPageState = {
   status: Status
   searchText: string
   trackIds: ID[]
@@ -19,5 +19,3 @@ export enum SearchKind {
   ALBUMS = 'albums',
   ALL = 'all'
 }
-
-export default SearchPageState

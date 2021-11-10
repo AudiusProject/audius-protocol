@@ -8,7 +8,7 @@ import {
   Variant as CollectionVariant
 } from 'common/models/Collection'
 import Status from 'common/models/Status'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import CollectionArtCard from 'components/card/desktop/CollectionArtCard'
 import UserArtCard from 'components/card/desktop/UserArtCard'
 import Page from 'components/general/Page'

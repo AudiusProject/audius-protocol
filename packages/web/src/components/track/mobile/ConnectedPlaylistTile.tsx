@@ -6,7 +6,7 @@ import { Dispatch } from 'redux'
 
 import { FavoriteType } from 'common/models/Favorite'
 import { ID } from 'common/models/Identifiers'
-import Track from 'common/models/Track'
+import { Track } from 'common/models/Track'
 import { getUserId } from 'common/store/account/selectors'
 import {
   getCollection,

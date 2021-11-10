@@ -1,7 +1,7 @@
 import { takeEvery, put, call, select } from 'redux-saga/effects'
 
-import Track from 'common/models/Track'
-import User from 'common/models/User'
+import { Track } from 'common/models/Track'
+import { User } from 'common/models/User'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { getUser } from 'common/store/cache/users/selectors'

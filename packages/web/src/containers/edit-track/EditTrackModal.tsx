@@ -8,7 +8,7 @@ import { Dispatch } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
 import { StemCategory } from 'common/models/Stems'
-import Track from 'common/models/Track'
+import { Track } from 'common/models/Track'
 import * as cacheTrackActions from 'common/store/cache/tracks/actions'
 import { removeNullable } from 'common/utils/typeUtils'
 import { uuid } from 'common/utils/uid'

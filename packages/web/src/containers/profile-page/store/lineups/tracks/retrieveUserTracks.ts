@@ -1,5 +1,5 @@
 import { ID } from 'common/models/Identifiers'
-import Track from 'common/models/Track'
+import { Track } from 'common/models/Track'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 

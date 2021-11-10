@@ -1,8 +1,8 @@
 import { all, put, select, takeEvery, call } from 'redux-saga/effects'
 
 import { ID, UID } from 'common/models/Identifiers'
-import Track from 'common/models/Track'
-import User from 'common/models/User'
+import { Track } from 'common/models/Track'
+import { User } from 'common/models/User'
 import { getUserId } from 'common/store/account/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUser } from 'common/store/cache/users/selectors'

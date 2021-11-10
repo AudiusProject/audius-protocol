@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 import { getUserId } from 'common/store/account/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
 import { setNotificationSubscription } from 'containers/profile-page/store/actions'

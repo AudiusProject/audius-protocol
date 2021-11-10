@@ -1,4 +1,4 @@
-import Collection from 'common/models/Collection'
+import { Collection } from 'common/models/Collection'
 import Status from 'common/models/Status'
 import { getCollections as getCachedCollections } from 'common/store/cache/collections/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'

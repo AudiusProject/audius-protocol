@@ -1,5 +1,5 @@
 import { ID } from 'common/models/Identifiers'
-import User from 'common/models/User'
+import { User } from 'common/models/User'
 
 enum EditingStatus {
   EDITING = 'editing',

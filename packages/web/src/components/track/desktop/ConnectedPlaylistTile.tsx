@@ -15,7 +15,7 @@ import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import { UID, ID } from 'common/models/Identifiers'
-import Track from 'common/models/Track'
+import { Track } from 'common/models/Track'
 import { getUserHandle } from 'common/store/account/selectors'
 import {
   getCollection,

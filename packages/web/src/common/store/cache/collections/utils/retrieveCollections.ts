@@ -1,12 +1,13 @@
 import { call, select } from 'redux-saga/effects'
 
-import Collection, {
+import {
+  Collection,
   CollectionMetadata,
   UserCollectionMetadata
 } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
-import Track from 'common/models/Track'
+import { Track } from 'common/models/Track'
 import { CommonState } from 'common/store'
 import { getUserId } from 'common/store/account/selectors'
 import { getCollections } from 'common/store/cache/collections/selectors'
