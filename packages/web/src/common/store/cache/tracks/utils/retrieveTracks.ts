@@ -58,11 +58,16 @@ export function* retrieveTrackByHandleAndSlug({
         return track
       },
       retrieveFromSource: function* (permalinks: string[]) {
+        const userId = yield select(getUserId)
         const track: UserTrackMetadata = yield call(args => {
           const split = args[0].split('/')
           const handle = split[1]
           const slug = split.slice(2).join('')
-          return apiClient.getTrackByHandleAndSlug({ handle, slug })
+          return apiClient.getTrackByHandleAndSlug({
+            handle,
+            slug,
+            currentUserId: userId
+          })
         }, permalinks)
         return track
       },
