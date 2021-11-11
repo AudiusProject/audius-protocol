@@ -252,16 +252,18 @@ const NavColumn = ({
               <NavAudio />
             </div>
           ) : (
-            <div className={styles.accountWrapper}>
-              <div
-                className={styles.photo}
-                style={{ backgroundImage: `url(${imageProfilePicEmpty})` }}
-                onClick={onClickNavProfile}
-              />
-              <div className={styles.userInfoWrapper}>
-                <div className={styles.haveAccount}>Have an Account?</div>
-                <div className={styles.logIn} onClick={onClickNavProfile}>
-                  Sign In
+            <div className={styles.userHeader}>
+              <div className={styles.accountWrapper}>
+                <div
+                  className={styles.photo}
+                  style={{ backgroundImage: `url(${imageProfilePicEmpty})` }}
+                  onClick={onClickNavProfile}
+                />
+                <div className={styles.userInfoWrapper}>
+                  <div className={styles.haveAccount}>Have an Account?</div>
+                  <div className={styles.logIn} onClick={onClickNavProfile}>
+                    Sign In
+                  </div>
                 </div>
               </div>
             </div>
