@@ -255,9 +255,12 @@ def setup(name, azure, service, config, user):
             ]
         )
     elif service == "remote-dev":
+        node_version = '14.18.1'
+        python_version = '3.9'
         subprocess.run(
             [
                 "ssh",
+                "-o StrictHostKeyChecking=no", # auto-ssh in for setup
                 host,
                 (
                     "sudo apt update && "
@@ -266,17 +269,19 @@ def setup(name, azure, service, config, user):
                     "sudo sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable' && "
                     "sudo add-apt-repository ppa:deadsnakes/ppa &&" # python3.9 installation
                     "sudo apt update && "
-                    "sudo apt install -y docker-ce python3.9 && "
+                    f"sudo apt install -y docker-ce python{python_version} && "
                     "sudo usermod -aG docker $USER && "
                     'sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && '
                     "sudo chmod +x /usr/local/bin/docker-compose && "
                     "sudo chown $USER /etc/hosts && "
                     "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash && "
                     "echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.profile && "
+                    f"echo 'nvm use {node_version}' >> ~/.profile && "
+                    "echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H \"Metadata-Flavor: Google\" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> ~/.profile && "
                     "source ~/.nvm/nvm.sh && "
                     "source ~/.profile && "
                     "source ~/.bashrc && "
-                    "nvm install v14.18.1 && "
+                    f"nvm install v{node_version} && "
                     "git clone https://github.com/AudiusProject/audius-protocol.git; "
                     "git clone https://github.com/AudiusProject/audius-client.git; "
                     "cd audius-protocol/service-commands && "
