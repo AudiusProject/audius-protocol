@@ -1,12 +1,12 @@
 .audio {
-  display: flex;
-  align-items: center;
-  padding-left: 8px;
-  height: 16px;
   opacity: 0;
 }
 
 .audio.show {
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
+  height: 16px;
   transition: opacity ease-in-out 0.5s;
   opacity: 1;
 }
