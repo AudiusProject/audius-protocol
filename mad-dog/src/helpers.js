@@ -260,7 +260,8 @@ const getRandomUser = () => {
     profile_picture_sizes: null,
     cover_photo: null,
     cover_photo_sizes: null,
-    creator_node_endpoint: ''
+    creator_node_endpoint: '',
+    is_deactivated: false
   }
 }
 
