@@ -68,6 +68,7 @@ export enum MessageType {
   // Action dispatchers
   SYNC_QUEUE = 'action/sync-queue',
   SYNC_PLAYER = 'action/sync-player',
+  REQUEST_QUEUE_AUTOPLAY = 'action/request-queue-autoplay',
   PUSH_ROUTE = 'action/push-route',
   SCROLL_TO_TOP = 'action/scroll-to-top',
 

@@ -23,14 +23,16 @@ export class PersistQueueMessage extends NativeMobileMessage {
     index: number,
     shuffle: boolean,
     shuffleIndex: number,
-    shuffleOrder: number[]
+    shuffleOrder: number[],
+    queueAutoplay: boolean
   ) {
     super(MessageType.PERSIST_QUEUE, {
       tracks,
       index,
       shuffle,
       shuffleIndex,
-      shuffleOrder
+      shuffleOrder,
+      queueAutoplay
     })
   }
 }

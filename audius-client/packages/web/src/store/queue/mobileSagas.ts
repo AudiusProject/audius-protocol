@@ -13,7 +13,13 @@ import {
 } from 'services/native-mobile-interface/queue'
 import { MessageType, Message } from 'services/native-mobile-interface/types'
 import * as playerActions from 'store/player/slice'
-import { play, repeat, shuffle, updateIndex } from 'store/queue/slice'
+import {
+  persist,
+  queueAutoplay,
+  repeat,
+  shuffle,
+  updateIndex
+} from 'store/queue/slice'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { generateM3U8Variants } from 'utils/hlsUtil'
 
@@ -23,7 +29,8 @@ import {
   getId as getQueueTrackId,
   getShuffle,
   getShuffleIndex,
-  getShuffleOrder
+  getShuffleOrder,
+  getQueueAutoplay
 } from './selectors'
 
 const PUBLIC_IPFS_GATEWAY = 'http://cloudflare-ipfs.com/ipfs/'
@@ -78,6 +85,9 @@ function* persistQueue() {
   const shuffleOrder: ReturnType<typeof getShuffleOrder> = yield select(
     getShuffleOrder
   )
+  const queueAutoplay: ReturnType<typeof getQueueAutoplay> = yield select(
+    getQueueAutoplay
+  )
   const tracks = yield all(
     queueOrder.map((queueItem: any) => {
       return call(getTrackInfo, queueItem.id, queueItem.uid)
@@ -88,13 +98,14 @@ function* persistQueue() {
     queueIndex,
     shuffle,
     shuffleIndex,
-    shuffleOrder
+    shuffleOrder,
+    queueAutoplay
   )
   message.send()
 }
 
-function* watchPlay() {
-  yield takeEvery(play.type, function* () {
+function* watchPersist() {
+  yield takeEvery(persist.type, function* () {
     yield call(persistQueue)
   })
 }
@@ -148,7 +159,7 @@ function* watchSyncQueue() {
 
 function* watchSyncPlayer() {
   yield takeEvery(MessageType.SYNC_PLAYER, function* (action: Message) {
-    const { isPlaying } = action
+    const { isPlaying, incrementCounter } = action
     const id = yield select(getQueueTrackId)
     const track = yield select(getTrack, { id })
     console.info(`Syncing player: isPlaying ${isPlaying}`)
@@ -159,11 +170,37 @@ function* watchSyncPlayer() {
     } else {
       yield put(playerActions.pause({ onlySetState: true }))
     }
+    if (incrementCounter) {
+      yield put(playerActions.incrementCount())
+    }
+  })
+}
+
+export function* watchRequestQueueAutoplay() {
+  yield takeEvery(MessageType.REQUEST_QUEUE_AUTOPLAY, function* (
+    action: Message
+  ) {
+    const { genre, trackId } = action
+    const userId = yield select(getUserId)
+    yield put(
+      queueAutoplay({
+        genre,
+        exclusionList: trackId ? [trackId] : [],
+        currentUserId: userId
+      })
+    )
   })
 }
 
 const sagas = () => {
-  return [watchPlay, watchRepeat, watchSyncQueue, watchSyncPlayer, watchShuffle]
+  return [
+    watchPersist,
+    watchRepeat,
+    watchSyncQueue,
+    watchSyncPlayer,
+    watchShuffle,
+    watchRequestQueueAutoplay
+  ]
 }
 
 export default sagas

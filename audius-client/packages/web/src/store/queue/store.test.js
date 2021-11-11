@@ -8,9 +8,7 @@ import Kind from 'common/models/Kind'
 import accountSlice from 'common/store/account/reducer'
 import * as cacheActions from 'common/store/cache/actions'
 import playerReducer, * as playerActions from 'store/player/slice'
-import * as queueActions from 'store/queue/actions'
 import * as sagas from 'store/queue/sagas'
-import { getQueueAutoplay } from 'store/queue/sagas'
 import reducer, * as actions from 'store/queue/slice'
 import { RepeatMode, Source } from 'store/queue/types'
 import { getRecommendedTracks } from 'store/recommendation/sagas'
@@ -49,6 +47,7 @@ const makeInitialQueue = config => ({
   shuffle: false,
   shuffleIndex: -1,
   shuffleOrder: [2, 0, 1],
+  queueAutoplay: true,
   ...config
 })
 
@@ -86,6 +85,7 @@ describe('watchPlay', () => {
       )
       .dispatch(actions.play({ uid: 'kind:TRACKS-id:1-count:1' }))
       .put(playerActions.stop({}))
+      .put(actions.persist({}))
       .put(
         playerActions.play({
           uid: 'kind:TRACKS-id:1-count:1',
@@ -112,6 +112,7 @@ describe('watchPlay', () => {
         }
       )
       .dispatch(actions.play({}))
+      .put(actions.persist({}))
       .put(playerActions.play({}))
       .silentRun()
     expect(storeState.queue.index).toEqual(0)
@@ -168,11 +169,11 @@ describe('watchNext', () => {
       )
       .dispatch(actions.next({}))
       .put(
-        queueActions.queueAutoplay(
-          initialTracks.entries[1].genre,
-          [initialTracks.entries[1].track_id],
-          1
-        )
+        actions.queueAutoplay({
+          genre: initialTracks.entries[1].genre,
+          exclusionList: [initialTracks.entries[1].track_id],
+          currentUserId: 1
+        })
       )
       .put(
         actions.play({
@@ -410,9 +411,9 @@ describe('watchQueueAutoplay', () => {
         source: Source.RECOMMENDED_TRACKS
       }
     ]
-    await expectSaga(sagas.watchQueueAutoplay, queueActions)
+    await expectSaga(sagas.watchQueueAutoplay, actions)
       .provide([[matchers.call.fn(getRecommendedTracks), recommendedTracks]])
-      .dispatch(queueActions.queueAutoplay())
+      .dispatch(actions.queueAutoplay({}))
       .put(actions.add({ entries: expectedRecommendedTracks }))
       .silentRun()
   })
@@ -567,6 +568,7 @@ describe('watchAdd', () => {
           { uid: 'QUEUE', id: 5 }
         ])
       )
+      .put(actions.persist({}))
       .silentRun()
     expect(storeState.queue).toMatchObject({
       order: [
@@ -616,6 +618,7 @@ describe('watchAdd', () => {
           { uid: 'QUEUE', id: 5 }
         ])
       )
+      .put(actions.persist({}))
       .silentRun()
     expect(storeState.queue).toMatchObject({
       order: [

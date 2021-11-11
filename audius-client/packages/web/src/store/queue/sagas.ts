@@ -24,12 +24,12 @@ import {
   getUid as getPlayerUid
 } from 'store/player/selectors'
 import * as playerActions from 'store/player/slice'
-import * as queueActions from 'store/queue/actions'
 import {
   getId as getQueueTrackId,
   getIndex,
   getLength,
   getOvershot,
+  getQueueAutoplay,
   getRepeat,
   getShuffle,
   getSource,
@@ -42,12 +42,13 @@ import {
   next,
   pause,
   play,
+  queueAutoplay,
+  persist,
   previous,
   remove
 } from 'store/queue/slice'
-import { Queueable, RepeatMode, Source } from 'store/queue/types'
+import { RepeatMode, Source } from 'store/queue/types'
 
-import { Nullable } from '../../common/utils/typeUtils'
 import { getRecommendedTracks } from '../recommendation/sagas'
 
 import mobileSagas from './mobileSagas'
@@ -93,6 +94,49 @@ export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
 const flatten = (list: any[]): any[] =>
   list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), [])
 
+function* handleQueueAutoplay({
+  skip,
+  ignoreSkip,
+  track
+}: {
+  skip: boolean
+  ignoreSkip: boolean
+  track: any
+}) {
+  const isQueueAutoplayEnabled = yield select(getQueueAutoplay)
+  const index = yield select(getIndex)
+  if (!isQueueAutoplayEnabled || index < 0) {
+    return
+  }
+
+  // Get recommended tracks if not in shuffle mode
+  // and not in repeat mode and
+  // - close to end of queue, or
+  // - playing first song of lineup and lineup has only one song
+  const length = yield select(getLength)
+  const shuffle = yield select(getShuffle)
+  const repeatMode = yield select(getRepeat)
+  const isCloseToEndOfQueue = index + 1 >= length
+  const isOnlySongInQueue = index === 0 && length === 1
+  const isNotRepeating =
+    repeatMode === RepeatMode.OFF ||
+    (repeatMode === RepeatMode.SINGLE && (skip || ignoreSkip))
+  if (
+    !shuffle &&
+    isNotRepeating &&
+    (isCloseToEndOfQueue || isOnlySongInQueue)
+  ) {
+    const userId = yield select(getUserId)
+    yield put(
+      queueAutoplay({
+        genre: track?.genre,
+        exclusionList: track ? [track.track_id] : [],
+        currentUserId: userId
+      })
+    )
+  }
+}
+
 /**
  * Play the queue. The side effects are slightly complicated, but can be summarzed in the following
  * cases.
@@ -103,6 +147,8 @@ const flatten = (list: any[]): any[] =>
  */
 export function* watchPlay() {
   yield takeLatest(play.type, function* (action: ReturnType<typeof play>) {
+    // persist queue in mobile layer
+    yield put(persist({}))
     const { uid, trackId } = action.payload
 
     // Play a specific uid
@@ -112,7 +158,12 @@ export function* watchPlay() {
       const playActionTrack = trackId
         ? yield select(getTrack, { id: trackId })
         : yield select(getTrack, { uid })
-      const repeatMode = yield select(getRepeat)
+
+      yield call(handleQueueAutoplay, {
+        skip: false,
+        ignoreSkip: true,
+        track: playActionTrack
+      })
 
       // Skip deleted tracks
       if (playActionTrack && playActionTrack.is_delete) {
@@ -121,6 +172,7 @@ export function* watchPlay() {
       }
 
       // Make sure that we should actually play
+      const repeatMode = yield select(getRepeat)
       const noTrackPlaying = !playerTrackId
       const trackIsDifferent = playerTrackId !== playActionTrack.track_id
       const trackIsSameButDifferentUid =
@@ -206,36 +258,22 @@ export function* watchNext() {
       return
     }
 
-    // Skip deleted track
     const id = yield select(getQueueTrackId)
     const track = yield select(getTrack, { id })
+    // Skip deleted track
     if (track && track.is_delete) {
       yield put(next({ skip }))
     } else {
-      const index = yield select(getIndex)
-      if (index >= 0) {
-        const source = yield select(getSource)
-        const length = yield select(getLength)
-        const shuffle = yield select(getShuffle)
-        const repeatMode = yield select(getRepeat)
+      const uid = yield select(getUid)
+      const source = yield select(getSource)
 
-        const isCloseToEndOfQueue = index + 1 >= length
-        const isNotRepeating =
-          repeatMode === RepeatMode.OFF ||
-          (repeatMode === RepeatMode.SINGLE && skip)
+      yield call(handleQueueAutoplay, {
+        skip: !!skip,
+        ignoreSkip: false,
+        track
+      })
 
-        // Get recommended tracks if not in shuffle and repeat modes and close to end of queue
-        if (!shuffle && isNotRepeating && isCloseToEndOfQueue) {
-          const userId = yield select(getUserId)
-          yield put(
-            queueActions.queueAutoplay(
-              track?.genre,
-              track ? [track.track_id] : [],
-              userId
-            )
-          )
-        }
-        const uid = yield select(getUid)
+      if (track) {
         yield put(play({ uid, trackId: id, source }))
 
         const event = make(Name.PLAYBACK_PLAY, {
@@ -251,10 +289,10 @@ export function* watchNext() {
 }
 
 export function* watchQueueAutoplay() {
-  yield takeEvery(queueActions.QUEUE_AUTOPLAY, function* (
-    action: ReturnType<typeof queueActions.queueAutoplay>
+  yield takeEvery(queueAutoplay.type, function* (
+    action: ReturnType<typeof queueAutoplay>
   ) {
-    const { genre, exclusionList, currentUserId } = action
+    const { genre, exclusionList, currentUserId } = action.payload
     const tracks: Track[] = yield call(
       getRecommendedTracks,
       genre,
@@ -315,6 +353,8 @@ export function* watchAdd() {
       id: entry.id
     }))
     yield put(cacheActions.subscribe(Kind.TRACKS, subscribers))
+    // persist queue in mobile layer
+    yield put(persist({}))
   })
 }
 
