@@ -288,13 +288,6 @@ def setup(name, azure, service, config, user):
                     "npm install && "
                     "node scripts/hosts.js add && "
                     "node scripts/setup.js run init-repos up && "
-                    "cd ../libs && "
-                    "npm link && "
-                    "cd ../service-commands && "
-                    "npm link @audius/libs && "
-                    "cd ~/audius-client && "
-                    "npm install && "
-                    "npm link @audius/libs && "
                     "echo 'Rebooting machine...' && "
                     "reboot"
                 ),

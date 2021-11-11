@@ -62,5 +62,6 @@ cd $PROTOCOL_DIR/
 cd ..
 if [ -d "audius-client" ]; then
     cd audius-client
+    npm install
     npm link @audius/libs
 fi
