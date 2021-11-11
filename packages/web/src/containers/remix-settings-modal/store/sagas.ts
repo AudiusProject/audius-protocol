@@ -1,4 +1,4 @@
-import { takeEvery, call, put } from 'redux-saga/effects'
+import { takeLatest, call, put } from 'redux-saga/effects'
 
 import { TrackMetadata } from 'common/models/Track'
 import {
@@ -28,7 +28,7 @@ const getHandleAndSlug = (url: string) => {
 }
 
 function* watchFetchTrack() {
-  yield takeEvery(fetchTrack.type, function* (
+  yield takeLatest(fetchTrack.type, function* (
     action: ReturnType<typeof fetchTrack>
   ) {
     const { url } = action.payload
