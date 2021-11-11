@@ -44,8 +44,8 @@ router.get([
 )
 
 router.get([
-  '/embed/api/collectibles/:handle',
-  '/embed/api/collectibles/:handle/:collectibleId'
+  '/embed/api/:handle/collectibles',
+  '/embed/api/:handle/collectibles/:collectibleId'
 ], (
   req: express.Request,
   res: express.Response) => {
