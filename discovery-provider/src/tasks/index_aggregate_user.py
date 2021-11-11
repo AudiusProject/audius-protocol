@@ -10,7 +10,10 @@ logger = logging.getLogger(__name__)
 # Names of the aggregate tables to update
 AGGREGATE_USER = "aggregate_user"
 DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
-REFRESH_COUNTER = 100
+
+# every ~10000 updates, refresh the entire table
+# at 30 secs interval, this should happen ~twice a day
+REFRESH_COUNTER = 1000
 
 ### UPDATE_AGGREGATE_USER_QUERY ###
 # Get a lower bound blocknumber to check for new entity counts for a user
