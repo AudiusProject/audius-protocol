@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { ID, UID } from 'common/models/Identifiers'
+import { Nullable } from 'common/utils/typeUtils'
 import { RepeatMode, Queueable } from 'store/queue/types'
 
 type State = {
@@ -51,6 +52,14 @@ type PlayPayload = {
   source?: string
 }
 
+type QueueAutoplayPayload = {
+  genre: string
+  exclusionList: number[]
+  currentUserId: Nullable<ID>
+}
+
+type PersistPayload = {}
+
 type PausePayload = {}
 
 type NextPayload = {
@@ -99,6 +108,8 @@ const slice = createSlice({
       state.overshot = false
       state.undershot = false
     },
+    queueAutoplay: (state, action: PayloadAction<QueueAutoplayPayload>) => {},
+    persist: (state, action: PayloadAction<PersistPayload>) => {},
     // Pauses the queue
     pause: (state, action: PayloadAction<PausePayload>) => {},
     // Skips the next track in the queue
@@ -265,6 +276,8 @@ const slice = createSlice({
 
 export const {
   play,
+  queueAutoplay,
+  persist,
   pause,
   next,
   previous,

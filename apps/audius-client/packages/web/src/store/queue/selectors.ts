@@ -16,6 +16,7 @@ export const getUndershot = (state: AppState) => state.queue.undershot
 export const getPositions = (state: AppState) => state.queue.positions
 export const getIndex = (state: AppState) => state.queue.index
 export const getRepeat = (state: AppState) => state.queue.repeat
+export const getQueueAutoplay = (state: AppState) => state.queue.queueAutoplay
 export const getShuffle = (state: AppState) => state.queue.shuffle
 export const getShuffleIndex = (state: AppState) => state.queue.shuffleIndex
 export const getShuffleOrder = (state: AppState) => state.queue.shuffleOrder
