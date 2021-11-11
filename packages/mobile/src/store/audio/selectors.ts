@@ -20,3 +20,5 @@ export const getRepeatMode = (state: AppState) => getBaseState(state).repeatMode
 export const getIsShuffleOn = (state: AppState) => getBaseState(state).shuffle
 export const getShuffleIndex = (state: AppState) =>
   getBaseState(state).shuffleIndex
+export const getQueueAutoplay = (state: AppState) =>
+  getBaseState(state).queueAutoplay

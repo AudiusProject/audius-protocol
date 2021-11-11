@@ -114,6 +114,7 @@ const Cast = ({
             postMessage(webRef.current, {
               type: MessageType.SYNC_PLAYER,
               isPlaying: false,
+              incrementCounter: false,
               isAction: true
             })
           }
@@ -123,6 +124,7 @@ const Cast = ({
             postMessage(webRef.current, {
               type: MessageType.SYNC_PLAYER,
               isPlaying: true,
+              incrementCounter: false,
               isAction: true
             })
           }

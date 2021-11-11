@@ -25,7 +25,8 @@ import {
   getQueueLength,
   getRepeatMode,
   getIsShuffleOn,
-  getShuffleIndex
+  getShuffleIndex,
+  getQueueAutoplay
 } from 'app/store/audio/selectors'
 import { CastStatus, setPlayPosition } from 'app/store/googleCast/actions'
 import { getGoogleCastStatus } from 'app/store/googleCast/selectors'
@@ -39,7 +40,8 @@ declare global {
   // eslint-disable-next-line no-var
   var progress: {
     currentTime: number
-    seekableTime?: number
+    playableDuration?: number
+    seekableDuration?: number
   }
 }
 
@@ -81,6 +83,7 @@ const Audio = ({
   repeatMode,
   isShuffleOn,
   shuffleIndex,
+  queueAutoplay,
   googleCastStatus,
   setCastPlayPosition
 }: Props) => {
@@ -108,8 +111,7 @@ const Audio = ({
   useEffect(() => {
     // TODO: Probably don't use global for this
     global.progress = {
-      currentTime: 0,
-      seekableTime: 0
+      currentTime: 0
     }
   }, [])
 
@@ -185,6 +187,7 @@ const Audio = ({
         postMessage(webRef.current, {
           type: MessageType.SYNC_PLAYER,
           isPlaying: true,
+          incrementCounter: false,
           isAction: true
         })
       }
@@ -195,6 +198,7 @@ const Audio = ({
         postMessage(webRef.current, {
           type: MessageType.SYNC_PLAYER,
           isPlaying: false,
+          incrementCounter: false,
           isAction: true
         })
       }
@@ -230,6 +234,7 @@ const Audio = ({
         postMessage(webRef.current, {
           type: MessageType.SYNC_PLAYER,
           isPlaying: true,
+          incrementCounter: false,
           isAction: true
         })
       }
@@ -239,6 +244,7 @@ const Audio = ({
         postMessage(webRef.current, {
           type: MessageType.SYNC_PLAYER,
           isPlaying: false,
+          incrementCounter: false,
           isAction: true
         })
       }
@@ -265,7 +271,7 @@ const Audio = ({
         isPreviousEnabled = index > 0
         isNextEnabled = index < queueLength - 1
       }
-      if (track?.genre === Genre.PODCASTS) {
+      if (track && track.genre === Genre.PODCASTS) {
         MusicControl.enableControl('previousTrack', false)
         MusicControl.enableControl('nextTrack', false)
         MusicControl.enableControl('skipBackward', true, { interval: 15 })
@@ -343,6 +349,54 @@ const Audio = ({
     }
   }, [elapsedTime, isPlaying])
 
+  // handle triggering of autoplay when current track ends
+  // (this is the flow when the next button is NOT clicked by the user)
+  // (if the next button is clicked by the user, the dapp client will handle autoplay logic)
+  const onNext = useCallback(() => {
+    // if autoplay is enabled and current song is close to end of queue,
+    // then trigger queueing of recommended tracks for autoplay
+    const isCloseToEndOfQueue = index + 2 >= queueLength
+    const isNotRepeating = repeatMode === RepeatMode.OFF
+    if (
+      webRef.current &&
+      queueAutoplay &&
+      !isShuffleOn &&
+      isNotRepeating &&
+      isCloseToEndOfQueue
+    ) {
+      postMessage(webRef.current, {
+        type: MessageType.REQUEST_QUEUE_AUTOPLAY,
+        genre: (track && track.genre) || undefined,
+        trackId: (track && track.trackId) || undefined,
+        isAction: true
+      })
+    }
+
+    const isSingleRepeating = repeatMode === RepeatMode.SINGLE
+    if (webRef.current && isSingleRepeating) {
+      global.progress.currentTime = 0
+      // Sync w/ incrementCounter true to update mediaKey in client NowPlaying
+      // which will eventually restart the scrubber location
+      postMessage(webRef.current, {
+        type: MessageType.SYNC_PLAYER,
+        isPlaying: true,
+        incrementCounter: true,
+        isAction: true
+      })
+    }
+
+    next()
+  }, [
+    next,
+    webRef,
+    queueAutoplay,
+    index,
+    queueLength,
+    isShuffleOn,
+    repeatMode,
+    track
+  ])
+
   const onProgress = useCallback(
     (progress: OnProgressData) => {
       if (!track) return
@@ -391,7 +445,7 @@ const Audio = ({
             setDuration(0)
             setCastPlayPosition(0)
             pause()
-            next()
+            onNext()
           }}
           progressUpdateInterval={100}
           onLoad={payload => {
@@ -416,7 +470,8 @@ const mapStateToProps = (state: AppState) => ({
   repeatMode: getRepeatMode(state),
   googleCastStatus: getGoogleCastStatus(state),
   isShuffleOn: getIsShuffleOn(state),
-  shuffleIndex: getShuffleIndex(state)
+  shuffleIndex: getShuffleIndex(state),
+  queueAutoplay: getQueueAutoplay(state)
 })
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
