@@ -6,6 +6,8 @@ export enum MetaTagFormat {
   Remixes,
   Upload,
   Explore,
+  Collectibles,
+  Collectible,
   Error
 }
 

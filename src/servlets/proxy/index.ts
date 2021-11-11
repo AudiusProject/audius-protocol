@@ -62,10 +62,8 @@ router.get('/', async (
   expressRes: express.Response
 ) => {
     try {
-      const {
-        url,
-        replace
-      } = req.query
+      const url = req.query.url as string
+      const replace = req.query.replace as string
 
       if (!url) throw new Error('No url provided')
       if (!replace) throw new Error('No replace json provided')
@@ -93,7 +91,7 @@ router.get('/simple', async (
   req: express.Request,
   res: express.Response
 ) => {
-  const { url } = req.query
+  const url = req.query.url as string
   const newReq = https.request(decodeURI(url), (newRes: any) => {
     const headers = {
       'Access-Control-Allow-Method': '*',

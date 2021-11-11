@@ -1,7 +1,8 @@
-import { Collectible, FetchNFTClient } from '@audius/fetch-nft'
+import { Collectible } from '@audius/fetch-nft'
 import express from 'express'
 
 import libs from '../../libs'
+import { nftClient } from '../utils/fetchNft'
 import { decodeHashId, encodeHashId } from '../utils/hashids'
 import {
   getCollection,
@@ -17,15 +18,6 @@ import { BedtimeFormat, GetCollectionResponse, GetTracksResponse, TrackResponse 
 
 // Error Messages
 const DELETED_MESSAGE = 'DELETED'
-
-const nftClient = new FetchNFTClient({
-  openSeaConfig: {
-    apiEndpoint: process.env.OPENSEA_ENDPOINT
-  },
-  solanaConfig: {
-    rpcEndpoint: process.env.SOLANA_RPC_ENDPOINT
-  }
-})
 
 const getTrackMetadata = async (trackId: number, ownerId: number | null): Promise<GetTracksResponse> => {
   try {
@@ -227,7 +219,7 @@ export const getBedtimeResponse = async (
       return
     }
 
-    parsedOwnerId = parseInt(ownerId, 10)
+    parsedOwnerId = parseInt(ownerId as string, 10)
   }
 
   try {

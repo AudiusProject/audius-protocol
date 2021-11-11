@@ -1,10 +1,15 @@
+import { Collectible, FetchNFTClient } from '@audius/fetch-nft'
 import express from 'express'
 import fs from 'fs'
 import handlebars from 'handlebars'
 import path from 'path'
 
+import libs from '../../libs'
+import { getHash } from '../bedtime/helpers'
 import { DEFAULT_IMAGE_URL } from '../utils/constants'
+import { nftClient } from '../utils/fetchNft'
 import { formatDate, formatSeconds } from '../utils/format'
+import { encodeHashId } from '../utils/hashids'
 import {
   formatGateway,
   getCollection,
@@ -22,6 +27,14 @@ const E = process.env
 
 const getEmbedUrl = (type: Playable, id: number, ownerId: number) => {
   return `${E.PUBLIC_URL}/embed/${type}?id=${id}&ownerId=${ownerId}&flavor=card&twitter=true`
+}
+
+const getCollectiblesEmbedUrl = (handle: string) => {
+  return `${E.PUBLIC_URL}/embed/${handle}/collectibles`
+}
+
+const getCollectibleEmbedUrl = (handle: string, collectibleId: string) => {
+  return `${E.PUBLIC_URL}/embed/${handle}/collectibles/${collectibleId}`
 }
 
 /** Routes */
@@ -129,6 +142,100 @@ const getUserContext = async (handle: string): Promise<Context> => {
   }
 }
 
+const getCollectiblesContext = async (handle: string, canEmbed: boolean): Promise<Context> => {
+  if (!handle) return getDefaultContext()
+  try {
+    const user = await getUserByHandle(handle)
+    const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
+
+    const profilePicture = user.profile_picture_sizes
+      ? `${user.profile_picture_sizes}/1000x1000.jpg`
+      : user.profile_picture
+
+    const infoText = user.track_count > 0
+      ? `Listen to ${user.name} on Audius`
+      : `Follow ${user.name} on Audius`
+
+    return {
+      format: MetaTagFormat.Collectibles,
+      title: `${user.name}'s Collectibles`,
+      description: `A collection of NFT collectibles owned and created by ${user.name}`,
+      additionalSEOHint: infoText,
+      image: getImageUrl(profilePicture, gateway),
+      embed: canEmbed,
+      embedUrl: getCollectiblesEmbedUrl(user.handle)
+    }
+  } catch (e) {
+    console.error(e)
+    return getDefaultContext()
+  }
+}
+
+const getCollectibleContext = async (handle: string, collectibleId: string, canEmbed: boolean): Promise<Context> => {
+  if (!handle) return getDefaultContext()
+  try {
+    const user = await getUserByHandle(handle)
+    const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
+
+    const profilePicture = user.profile_picture_sizes
+      ? `${user.profile_picture_sizes}/1000x1000.jpg`
+      : user.profile_picture
+
+    const infoText = user.track_count > 0
+      ? `Listen to ${user.name} on Audius`
+      : `Follow ${user.name} on Audius`
+
+    const dp = libs.discoveryProvider.discoveryProviderEndpoint
+    const encodedUserId = encodeHashId(user.user_id)
+    const res = await fetch(`${dp}/v1/users/associated_wallets?id=${encodedUserId}`)
+    const { data: walletData } = await res.json()
+
+    // Get collectibles for user wallets
+    const resp = await nftClient.getCollectibles({
+      ethWallets: walletData.wallets,
+      solWallets: walletData.sol_wallets
+    })
+
+    let foundCol: Collectible
+    if (collectibleId) {
+      const ethValues: Collectible[][] = Object.values(resp.ethCollectibles)
+      const solValues: Collectible[][] = Object.values(resp.solCollectibles)
+      const collectibles = [
+        ...ethValues.reduce((acc, vals) => [...acc, ...vals], []),
+        ...solValues.reduce((acc, vals) => [...acc, ...vals], []),
+      ]
+
+      foundCol = collectibles.find((col) => getHash(col.id) === collectibleId)
+    }
+
+    if (foundCol) {
+      return {
+        format: MetaTagFormat.Collectibles,
+        title: foundCol.name,
+        description: foundCol.description,
+        additionalSEOHint: infoText,
+        image: foundCol.frameUrl,
+        embed: canEmbed,
+        embedUrl: getCollectibleEmbedUrl(user.handle, collectibleId)
+      }
+    }
+
+    return {
+      format: MetaTagFormat.Collectibles,
+      title: `${user.name}'s Collectibles`,
+      description: `A collection of NFT collectibles owned and created by ${user.name}`,
+      additionalSEOHint: infoText,
+      image: getImageUrl(profilePicture, gateway),
+      embed: canEmbed,
+      embedUrl: getCollectiblesEmbedUrl(user.handle)
+    }
+
+  } catch (e) {
+    console.error(e)
+    return getDefaultContext()
+  }
+}
+
 const getRemixesContext = async (handle: string, slug: string): Promise<Context> => {
   if (!handle || !slug) return getDefaultContext()
   try {
@@ -207,7 +314,8 @@ const getResponse = async (
   const {
     title,
     handle,
-    type
+    type,
+    collectibleId
   } = req.params
   const userAgent = req.get('User-Agent') || ''
   const canEmbed = CAN_EMBED_USER_AGENT_REGEX.test(userAgent.toLowerCase())
@@ -239,6 +347,14 @@ const getResponse = async (
     case MetaTagFormat.Explore:
       console.log('get explore', req.path, userAgent)
       context = await getExploreContext(type)
+      break
+    case MetaTagFormat.Collectibles:
+      console.log('get collectibles', req.path, userAgent)
+      context = await getCollectiblesContext(handle, canEmbed)
+      break
+    case MetaTagFormat.Collectible:
+      console.log('get collectible', req.path, userAgent)
+      context = await getCollectibleContext(handle, collectibleId, canEmbed)
       break
     case MetaTagFormat.Error:
     default:

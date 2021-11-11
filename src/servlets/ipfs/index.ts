@@ -51,7 +51,7 @@ const makeBuildPath = (name: string) =>
 router.get('/update_build', async (
   req: express.Request,
   res: express.Response) => {
-  const { site }: { site: buildType } = req.query
+  const site = req.query.site as buildType
   try {
     if (!BUILD_URLS) {
       res.status(500).send(`Build URLS not specified`)
@@ -83,7 +83,7 @@ router.get('/update_build', async (
 router.get('/pin_build', async (
   req: express.Request,
   res: express.Response) => {
-  const { site }: { site: buildType } = req.query
+  const site = req.query.site as buildType
   const buildUrl = BUILD_URLS[site]!
   const buildFileName = buildUrl.split('/').slice(-1)[0].replace('.zip', '')
   try {

@@ -104,12 +104,29 @@ router.get([
   '/:handle/tracks',
   '/:handle/playlists',
   '/:handle/albums',
-  '/:handle/reposts',
-  '/:handle/collectibles',
+  '/:handle/reposts'
 ], (
   req: express.Request,
   res: express.Response) => {
     getMetaTagsResponse(MetaTagFormat.User, req, res)
+  }
+)
+
+router.get([
+  '/:handle/collectibles/:collectibleId'
+], (
+  req: express.Request,
+  res: express.Response) => {
+    getMetaTagsResponse(MetaTagFormat.Collectible, req, res)
+  }
+)
+
+router.get([
+  '/:handle/collectibles'
+], (
+  req: express.Request,
+  res: express.Response) => {
+    getMetaTagsResponse(MetaTagFormat.Collectibles, req, res)
   }
 )
 
