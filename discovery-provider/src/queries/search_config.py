@@ -21,6 +21,9 @@ search_title_exact_match_boost = 20
 search_handle_exact_match_boost = 15
 search_user_name_exact_match_boost = 5
 
+# Weight for entities that have been saved by a user
+current_user_saved_match_boost = 30
+
 # Users
 
 # Weight for similarity between query and user name
