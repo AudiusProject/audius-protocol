@@ -1,8 +1,7 @@
-import express from 'express'
 import { Collectible, FetchNFTClient } from '@audius/fetch-nft'
+import express from 'express'
 
-import { getCollectionPath, getCoverArt, getHash } from './helpers'
-import { BedtimeFormat, GetCollectionResponse, GetTracksResponse, TrackResponse } from './types'
+import libs from '../../libs'
 import { decodeHashId, encodeHashId } from '../utils/hashids'
 import {
   getCollection,
@@ -13,7 +12,8 @@ import {
   getUsers,
   shouldRedirectTrack
 } from '../utils/helpers'
-import libs from '../../libs'
+import { getCollectionPath, getCoverArt, getHash } from './helpers'
+import { BedtimeFormat, GetCollectionResponse, GetTracksResponse, TrackResponse } from './types'
 
 // Error Messages
 const DELETED_MESSAGE = 'DELETED'

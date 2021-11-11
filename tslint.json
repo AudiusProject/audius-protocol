@@ -11,7 +11,8 @@
         "trailing-comma": [false],
         "interface-name" : [false, "never"],
         "object-literal-sort-keys": false,
-        "curly": false
+        "curly": false,
+        "no-bitwise": false
     },
     "rulesDirectory": []
 }
