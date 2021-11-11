@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 AGGREGATE_USER = "aggregate_user"
 DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
 
-# every ~10000 updates, refresh the entire table
+# every ~1000 updates, refresh the entire table
 # at 30 secs interval, this should happen ~twice a day
 REFRESH_COUNTER = 1000
 
