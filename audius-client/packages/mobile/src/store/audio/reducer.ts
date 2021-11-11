@@ -47,6 +47,7 @@ export type AudioState = {
   shuffle: boolean
   shuffleIndex: number
   shuffleOrder: number[]
+  queueAutoplay: boolean
 }
 
 const initialState: AudioState = {
@@ -57,7 +58,8 @@ const initialState: AudioState = {
   repeatMode: RepeatMode.OFF,
   shuffle: false,
   shuffleIndex: -1,
-  shuffleOrder: []
+  shuffleOrder: [],
+  queueAutoplay: true
 }
 
 const reducer = (
@@ -167,7 +169,8 @@ const reducer = (
         index: action.message.index,
         shuffle: action.message.shuffle,
         shuffleIndex: action.message.shuffleIndex,
-        shuffleOrder: action.message.shuffleOrder
+        shuffleOrder: action.message.shuffleOrder,
+        queueAutoplay: action.message.queueAutoplay
       }
     case SHUFFLE:
       return {
@@ -185,7 +188,8 @@ const reducer = (
         repeatMode: RepeatMode.OFF,
         shuffle: false,
         shuffleIndex: -1,
-        shuffleOrder: []
+        shuffleOrder: [],
+        queueAutoplay: true
       }
     default:
       return state
