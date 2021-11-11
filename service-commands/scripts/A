@@ -264,8 +264,9 @@ def setup(name, azure, service, config, user):
                     "sudo apt install -y apt-transport-https ca-certificates curl software-properties-common build-essential python-is-python2 python3-pip git-secrets && "
                     "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - && "
                     "sudo sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable' && "
+                    "sudo add-apt-repository ppa:deadsnakes/ppa &&" # python3.9 installation
                     "sudo apt update && "
-                    "sudo apt install -y docker-ce && "
+                    "sudo apt install -y docker-ce python3.9 && "
                     "sudo usermod -aG docker $USER && "
                     'sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && '
                     "sudo chmod +x /usr/local/bin/docker-compose && "
@@ -275,7 +276,7 @@ def setup(name, azure, service, config, user):
                     "source ~/.nvm/nvm.sh && "
                     "source ~/.profile && "
                     "source ~/.bashrc && "
-                    "nvm install 10.23.0 && "
+                    "nvm install v14.18.1 && "
                     "git clone https://github.com/AudiusProject/audius-protocol.git; "
                     "git clone https://github.com/AudiusProject/audius-client.git; "
                     "cd audius-protocol/service-commands && "
