@@ -1,6 +1,7 @@
 export enum BedtimeFormat {
   TRACK = 'TRACK',
-  COLLECTION = 'COLLECTION'
+  COLLECTION = 'COLLECTION',
+  COLLECTIBLES = 'COLLECTIBLES',
 }
 
 export interface TrackResponse {
