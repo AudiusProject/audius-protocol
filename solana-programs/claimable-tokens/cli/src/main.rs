@@ -1,4 +1,5 @@
 use std::convert::TryInto;
+use std::ops::Mul;
 
 use anyhow::anyhow;
 use anyhow::{bail, Context};
@@ -89,7 +90,7 @@ fn transfer(
     secret_key: libsecp256k1::SecretKey,
     mint: Pubkey,
     recipient: Option<Pubkey>,
-    amount: u64,
+    amount: f64,
 ) -> anyhow::Result<()> {
     let mut instructions = vec![];
 
@@ -98,10 +99,6 @@ fn transfer(
     let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
 
-    println!(
-        "Finding user nonce account addr - Seed={:?}",
-        nonce_acct_seed
-    );
     let (_, user_nonce_acc, _) =
         find_nonce_address(&claimable_tokens::id(), &mint, &nonce_acct_seed);
     println!("Found user nonce account addr ={:?}", user_nonce_acc);
@@ -133,7 +130,8 @@ fn transfer(
                     .rpc_client
                     .get_account_with_commitment(&mint, config.rpc_client.commitment())?;
                 // Unpack for checking that is mint account
-                Mint::unpack(mint_acc_response.value.unwrap().data())?;
+                let mint_data = Mint::unpack(mint_acc_response.value.unwrap().data())?;
+                println!("SPL mint info {:?}", &mint_data);
             } else {
                 instructions.push(create_associated_token_account(
                     &config.fee_payer.pubkey(),
@@ -147,6 +145,13 @@ fn transfer(
         Ok,
     )?;
 
+    let mint_acc_response = config
+        .rpc_client
+        .get_account_with_commitment(&mint, config.rpc_client.commitment())?;
+    // Unpack for checking that is mint account
+    let mint_data = Mint::unpack(mint_acc_response.value.unwrap().data())?;
+    println!("SPL mint info {:?}", &mint_data);
+
     let nonce_raw_data_fetch = config.rpc_client.get_account_data(&user_nonce_acc);
     let mut current_user_nonce: u64 = 0;
     if !nonce_raw_data_fetch.is_err() {
@@ -155,9 +160,14 @@ fn transfer(
         current_user_nonce = nonce_data.nonce;
     }
 
+    // Multiply the provided amount value by the number of decimals for this SPL token
+    let dec = 10.0f64.powf(mint_data.decimals as f64);
+    let converted_amount = amount.mul(dec);
+
+    // Generate transfer instruction data
     let transfer_instr_data = TransferInstructionData {
         target_pubkey: user_acc,
-        amount: amount,
+        amount: converted_amount as u64,
         nonce: current_user_nonce,
     };
 
@@ -419,7 +429,7 @@ fn main() -> anyhow::Result<()> {
                 let privkey = eth_seckey_of(args, "private_key")?;
                 let mint = pubkey_of(args, "mint").unwrap();
                 let recipient = pubkey_of(args, "recipient");
-                let amount = value_t!(args.value_of("amount"), u64)?;
+                let amount = value_t!(args.value_of("amount"), f64)?;
                 println!("Mint = {:?}", mint);
                 println!("Recipient = {:?}", recipient);
                 println!("Amount (wei/lamports base amount) = {:?}", amount);
