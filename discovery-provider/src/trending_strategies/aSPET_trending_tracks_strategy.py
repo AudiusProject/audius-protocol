@@ -48,8 +48,8 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
                         CASE 
                         WHEN tp.owner_follower_count < :y
                             THEN 0
-                        WHEN (now()::date - aip.created_at::date) > :week 
-                            THEN greatest(1.0/:q, pow(:q, 1.0 - 1.0*(now()::date - aip.created_at::date)/:week)) * (:N * aip.week_listen_counts + :F * tp.repost_week_count + :O * tp.save_week_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
+                        WHEN EXTRACT(DAYS from now() - aip.created_at) > :week
+                            THEN greatest(1.0/:q, pow(:q, greatest(-10, 1.0 - 1.0*EXTRACT(DAYS from now() - aip.created_at)/:week))) * (:N * aip.week_listen_counts + :F * tp.repost_week_count + :O * tp.save_week_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         ELSE (:N * aip.week_listen_counts + :F * tp.repost_week_count + :O * tp.save_week_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         END as week_score,
                         now()
@@ -67,8 +67,8 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
                         CASE 
                         WHEN tp.owner_follower_count < :y
                             THEN 0
-                        WHEN (now()::date - aip.created_at::date) > :month 
-                            THEN greatest(1.0/:q, pow(:q, 1.0 - 1.0*(now()::date - aip.created_at::date)/:month)) * (:N * aip.month_listen_counts + :F * tp.repost_month_count + :O * tp.save_month_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
+                        WHEN EXTRACT(DAYS from now() - aip.created_at) > :month
+                            THEN greatest(1.0/:q, pow(:q, greatest(-10, 1.0 - 1.0*EXTRACT(DAYS from now() - aip.created_at)/:month))) * (:N * aip.month_listen_counts + :F * tp.repost_month_count + :O * tp.save_month_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         ELSE (:N * aip.month_listen_counts + :F * tp.repost_month_count + :O * tp.save_month_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         END as month_score,
                         now()
@@ -86,8 +86,8 @@ class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
                         CASE 
                         WHEN tp.owner_follower_count < :y
                             THEN 0
-                        WHEN (now()::date - aip.created_at::date) > :year 
-                            THEN greatest(1.0/:q, pow(:q, 1.0 - 1.0*(now()::date - aip.created_at::date)/:year)) * (:N * aip.year_listen_counts + :F * tp.repost_year_count + :O * tp.save_year_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
+                        WHEN EXTRACT(DAYS from now() - aip.created_at) > :year
+                            THEN greatest(1.0/:q, pow(:q, greatest(-10, 1.0 - 1.0*EXTRACT(DAYS from now() - aip.created_at)/:year))) * (:N * aip.year_listen_counts + :F * tp.repost_year_count + :O * tp.save_year_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         ELSE (:N * aip.year_listen_counts + :F * tp.repost_year_count + :O * tp.save_year_count + :R * tp.repost_count + :i * tp.save_count) * tp.karma
                         END as year_score,
                         now()

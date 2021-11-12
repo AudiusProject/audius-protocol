@@ -26,7 +26,7 @@ describe('Test createNewDataRecord()', async function () {
 
   /** Init server to run DB migrations */
   before(async function () {
-    const appInfo = await getApp(getIPFSMock(), getLibsMock(), BlacklistManager)
+    const appInfo = await getApp(getIPFSMock(), getLibsMock(), BlacklistManager, getIPFSMock(true))
     server = appInfo.server
   })
 

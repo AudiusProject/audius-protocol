@@ -61,6 +61,7 @@ var MadeWithLove = function MadeWithLove() {
 };
 
 var AllRightsReserved = function AllRightsReserved() {
+  var currentYear = new Date().getFullYear().toString();
   return _react["default"].createElement("div", {
     className: 'gilroy',
     style: {
@@ -68,7 +69,7 @@ var AllRightsReserved = function AllRightsReserved() {
       color: '#858199',
       fontSize: '14px'
     }
-  }, "\xA9 2019 Audius, Inc. All Rights Reserved.");
+  }, `\xA9 ${currentYear} Audius, Inc. All Rights Reserved.`);
 };
 
 var Unsubscribe = function Unsubscribe() {

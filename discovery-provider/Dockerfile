@@ -42,7 +42,12 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/reposit
     MAJOR_VER=`echo $VERSION_ID | sed 's/\.[0-9]\+$//'` && \
     echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" | tee -a /etc/apk/repositories && \
     apk update && \
-    apk add openresty
+    apk add openresty && \
+    apk add openresty-opm && \
+    opm get spacewander/lua-resty-rsa && \
+    opm get ledgetech/lua-resty-http && \
+    mkdir /usr/local/openresty/conf && \
+    mkdir /usr/local/openresty/logs
 
 # versions
 # alpine-sdk 1.0-r0
@@ -66,6 +71,8 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/reposit
 # openresty 1.19.9.1-r0
 
 COPY . .
+
+RUN cp ./nginx_conf/* /usr/local/openresty/conf/
 
 # Add the wait script to the image
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait

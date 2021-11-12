@@ -52,7 +52,7 @@ module.exports.getTracks = (limit = 100, offset = 0, idsArray = null, targetUser
 
 module.exports.getTracksByHandleAndSlug = (handle, slug) => {
   return {
-    endpoint: 'tracks',
+    endpoint: 'v1/tracks',
     method: 'get',
     queryParams: { handle, slug }
   }

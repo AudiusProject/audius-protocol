@@ -87,6 +87,13 @@ class ServiceRegistry {
   }
 
   /**
+   * @returns the ipfsLatest instance
+   */
+  getIPFSLatest () {
+    return this.ipfsLatest
+  }
+
+  /**
    * Some services require the node server to be running in order to initialize. Run those here.
    * Specifically:
    *  - recover node L1 identity (requires node health check from server to return success)

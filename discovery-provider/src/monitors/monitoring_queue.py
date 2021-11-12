@@ -27,7 +27,7 @@ def refresh(redis, db, monitor):
     # This allows any monitor to access the db and/or redis connection.
     value = monitor[monitor_names.func](db=db, redis=redis)
     logger.info(
-        f"monitoring_queue.py | Computed value for {monitor[monitor_names.name]} {value}"
+        f"monitoring_queue.py | Computed value for {monitor[monitor_names.name]}"
     )
 
     redis.set(key, value)

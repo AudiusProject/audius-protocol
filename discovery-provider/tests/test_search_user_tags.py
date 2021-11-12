@@ -36,7 +36,6 @@ def test_search_user_tags(app):
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW tag_track_user")
         session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
         args = {
             "search_str": "pop",
             "current_user_id": None,

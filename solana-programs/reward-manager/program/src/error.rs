@@ -64,6 +64,10 @@ pub enum AudiusProgramError {
     /// Math overflow
     #[error("Math overflow")]
     MathOverflow,
+
+    /// Invalid recipient
+    #[error("Invalid Recipient")]
+    InvalidRecipient,
 }
 impl From<AudiusProgramError> for ProgramError {
     fn from(e: AudiusProgramError) -> Self {

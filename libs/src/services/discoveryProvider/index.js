@@ -157,7 +157,11 @@ class DiscoveryProvider {
    * @returns {Object} the requested track's metadata
    */
   async getTracksByHandleAndSlug (handle, slug) {
-    return this._makeRequest(Requests.getTracksByHandleAndSlug(handle, slug))
+    // Note: retries are disabled here because the v1 API response returns a 404 instead
+    // of an empty array, which can cause a retry storm.
+    // TODO: Rewrite this API with something more effective, change makeRequest to
+    // support 404s and not retry & use AudiusAPIClient.
+    return this._makeRequest(Requests.getTracksByHandleAndSlug(handle, slug), /* retry */ false)
   }
 
   /**

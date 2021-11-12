@@ -1,4 +1,5 @@
 const { ipfs } = require('../src/ipfsClient')
+const ipfsAdd = require('../src/ipfsAdd')
 const resizeImageJob = require('../src/resizeImage')
 const config = require('../src/config')
 const DiskManager = require('../src/diskManager')
@@ -12,12 +13,7 @@ const assert = require('assert')
 const imageTestDir = 'resizeImageAssets'
 const imageBuffer = fs.readFileSync(path.join(__dirname, imageTestDir, 'audiusDj.png'))
 
-// Will need a '.' in front of storagePath to look at current dir
-// a '/' will search the root dir
 let storagePath = config.get('storagePath')
-if (storagePath.startsWith('/')) {
-  storagePath = '.' + storagePath
-}
 
 // CIDs for audiusDj.png
 const DIR_CID_SQUARE = 'QmNfiyESzN4rNQikeHUiF4HBfAEKF38DTo1JtiDMukqwE9'
@@ -69,8 +65,8 @@ describe('test resizeImage', () => {
    * When: adding to ipfs fails
    * Then: an error is thrown
    */
-  it('should throw error if ipfs is down', async () => {
-    sinon.stub(ipfs, 'add').throws(new Error('ipfs is down!'))
+  it('should not throw error if ipfs is down', async () => {
+    sinon.stub(ipfsAdd, 'ipfsAddImages').throws(new Error('ipfs add wrapper failed!'))
     const job = {
       data: {
         file: imageBuffer,
@@ -88,10 +84,8 @@ describe('test resizeImage', () => {
 
     try {
       await resizeImageJob(job)
-      assert.fail('Should not have passed if ipfs is down')
     } catch (e) {
-      console.error(e)
-      assert.deepStrictEqual(e.message, 'ipfs is down!')
+      assert.ok(e.message.includes('ipfs add wrapper failed!'))
     }
   })
 
@@ -207,7 +201,6 @@ describe('test resizeImage', () => {
       }
     }
 
-    // let resizeImageResp
     try {
       await resizeImageJob(job)
     } catch (e) {

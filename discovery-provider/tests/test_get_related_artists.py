@@ -45,8 +45,6 @@ def test_calculate_related_artists_scores(app):
 
     with db.scoped_session() as session:
 
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
-
         # Check sampled (with large enough sample to get all rows for deterministic result)
         rows = _calculate_related_artists_scores(
             session,
@@ -129,7 +127,6 @@ def test_update_related_artist_scores_if_needed(app):
         result, _ = update_related_artist_scores_if_needed(session, 0)
         assert not result, "Don't calculate for low number of followers"
         populate_mock_db(db, entities)
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
         result, _ = update_related_artist_scores_if_needed(session, 0)
         assert result, "Calculate when followers >= MIN_FOLLOWER_REQUIREMENT (200)"
         result, _ = update_related_artist_scores_if_needed(session, 0)
@@ -149,7 +146,5 @@ def test_get_related_artists_too_few_followers(app):
     with app.app_context():
         db = get_db()
         populate_mock_db(db, entities)
-        with db.scoped_session() as session:
-            session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
         artists = get_related_artists(1, None)
         assert len(artists) == 0

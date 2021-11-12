@@ -5,6 +5,7 @@
   "scripts": {
     "start": "nodemon src/index.js | ./node_modules/.bin/bunyan || exit 0",
     "test": "./scripts/run-tests.sh standalone_creator",
+    "test:debug": "./scripts/run-tests.sh -d standalone_creator",
     "test:ci": "./scripts/run-tests.sh",
     "test:local:teardown": "./scripts/run-tests.sh standalone_creator teardown",
     "test:teardown": "./scripts/run-tests.sh teardown",

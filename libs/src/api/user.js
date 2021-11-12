@@ -9,6 +9,7 @@ const { getSpIDForEndpoint, setSpIDForEndpoint } = require('../services/creatorN
 const USER_PROPS = [
   'is_creator',
   'is_verified',
+  'is_deactivated',
   'name',
   'handle',
   'profile_picture',
@@ -325,7 +326,15 @@ class Users extends Base {
     newMetadata.wallet = this.web3Manager.getWalletAddress()
     newMetadata.user_id = userId
 
-    this.userStateManager.setCurrentUser({ ...newMetadata })
+    this.userStateManager.setCurrentUser({
+      ...newMetadata,
+      // Initialize counts to be 0. We don't want to write this data to backends ever really
+      // (hence the _cleanUserMetadata above), but we do want to make sure clients
+      // can properly "do math" on these numbers.
+      followee_count: 0,
+      follower_count: 0,
+      repost_count: 0
+    })
     return { blockHash, blockNumber, userId }
   }
 

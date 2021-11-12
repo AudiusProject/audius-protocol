@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def test_populate_user_metadata(app):
-    """Tests that populate_user_metadata works after aggregate_user refresh"""
+    """Tests that populate_user_metadata works after aggregate_user update"""
     with app.app_context():
         db = get_db()
 
@@ -21,7 +21,6 @@ def test_populate_user_metadata(app):
             {"track_id": 5, "owner_id": 2},
             {"track_id": 6, "owner_id": 2},
             {"track_id": 7, "owner_id": 3},
-            {"track_id": 8, "owner_id": 3},
             {"track_id": 8, "owner_id": 3},
             {"track_id": 9, "is_unlisted": True, "owner_id": 3},
         ],
@@ -68,7 +67,6 @@ def test_populate_user_metadata(app):
     populate_mock_db(db, test_entities)
 
     with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
         user_ids = [1, 2, 3, 4, 5]
         users = [
             {"user_id": 1, "is_verified": False},
@@ -98,7 +96,7 @@ def test_populate_user_metadata(app):
         assert users[1][response_name_constants.repost_count] == 2
 
         assert users[2]["user_id"] == 3
-        assert users[2][response_name_constants.track_count] == 3
+        assert users[2][response_name_constants.track_count] == 2
         assert users[2][response_name_constants.playlist_count] == 0
         assert users[2][response_name_constants.album_count] == 1
         assert users[2][response_name_constants.follower_count] == 2

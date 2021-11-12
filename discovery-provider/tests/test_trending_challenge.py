@@ -105,9 +105,9 @@ def test_trending_challenge_job(app):
                 "description": "description",
                 "playlist_contents": {
                     "track_ids": [
-                        {"track": 1},
-                        {"track": 2},
-                        {"track": 3},
+                        {"track": 1, "time": 1},
+                        {"track": 2, "time": 2},
+                        {"track": 3, "time": 3},
                     ]
                 },
             },
@@ -118,9 +118,9 @@ def test_trending_challenge_job(app):
                 "description": "description",
                 "playlist_contents": {
                     "track_ids": [
-                        {"track": 1},
-                        {"track": 2},
-                        {"track": 3},
+                        {"track": 1, "time": 1},
+                        {"track": 2, "time": 2},
+                        {"track": 3, "time": 3},
                     ]
                 },
             },
@@ -132,9 +132,9 @@ def test_trending_challenge_job(app):
                 "description": "description",
                 "playlist_contents": {
                     "track_ids": [
-                        {"track": 1},
-                        {"track": 2},
-                        {"track": 3},
+                        {"track": 1, "time": 1},
+                        {"track": 2, "time": 2},
+                        {"track": 3, "time": 3},
                     ]
                 },
             },
@@ -145,9 +145,9 @@ def test_trending_challenge_job(app):
                 "description": "description",
                 "playlist_contents": {
                     "track_ids": [
-                        {"track": 1},
-                        {"track": 2},
-                        {"track": 3},
+                        {"track": 1, "time": 1},
+                        {"track": 2, "time": 2},
+                        {"track": 3, "time": 3},
                     ]
                 },
             },
@@ -158,9 +158,9 @@ def test_trending_challenge_job(app):
                 "description": "description",
                 "playlist_contents": {
                     "track_ids": [
-                        {"track": 1},
-                        {"track": 2},
-                        {"track": 3},
+                        {"track": 1, "time": 1},
+                        {"track": 2, "time": 2},
+                        {"track": 3, "time": 3},
                     ]
                 },
             },
@@ -267,7 +267,6 @@ def test_trending_challenge_job(app):
 
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
         session.commit()
 
     enqueue_trending_challenges(db, redis_conn, bus, trending_date)
