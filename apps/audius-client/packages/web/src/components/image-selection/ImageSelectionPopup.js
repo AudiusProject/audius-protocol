@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useCallback, useRef, useContext } from 'react'
 
 import { Button, ButtonType, Popup } from '@audius/stems'
 import cn from 'classnames'
@@ -10,6 +10,7 @@ import { getAccountUser } from 'common/store/account/selectors'
 import TabSlider from 'components/data-entry/TabSlider'
 import Dropzone from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
+import { MainContentContext } from 'containers/MainContentContext'
 import { MIN_COLLECTIBLES_TIER } from 'containers/profile-page/ProfilePageProvider'
 import { useFlag } from 'containers/remote-config/hooks'
 import { useSelectTierInfo } from 'containers/user-badges/hooks'
@@ -223,6 +224,7 @@ const ImageSelectionPopup = ({
   onSelect,
   source
 }) => {
+  const { mainContentRef } = useContext(MainContentContext)
   const [page, setPage] = useState(messages.uploadYourOwn)
   const {
     collectibles,
@@ -292,6 +294,7 @@ const ImageSelectionPopup = ({
       showHeader={true}
       title={messages.popupTitle}
       zIndex={zIndex.IMAGE_SELECTION_POPUP}
+      containerRef={mainContentRef}
     >
       <TabSlider
         className={styles.slider}

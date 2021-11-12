@@ -210,9 +210,9 @@ class App extends Component {
   headerGutterRef = React.createRef()
 
   scrollToTop = () => {
-    this.state.mainContent &&
-      this.state.mainContent.scrollTo &&
-      this.state.mainContent.scrollTo({ top: 0 })
+    this.props.mainContentRef.current &&
+      this.props.mainContentRef.current.scrollTo &&
+      this.props.mainContentRef.current.scrollTo({ top: 0 })
   }
 
   componentDidMount() {
@@ -391,10 +391,6 @@ class App extends Component {
     }
   }
 
-  setContainerRef = r => {
-    this.setState({ mainContent: r })
-  }
-
   dismissCTABanner = () => {
     this.setState({ showCTABanner: false })
     window.localStorage.setItem(MOBILE_BANNER_LOCAL_STORAGE_KEY, 'true')
@@ -519,7 +515,7 @@ class App extends Component {
         />
         <div className={styles.draggableArea} />
         <div
-          ref={this.setContainerRef}
+          ref={this.props.mainContentRef}
           id={MAIN_CONTENT_ID}
           className={cn(styles.mainContentWrapper, {
             [styles.bannerMargin]: showBanner,
@@ -549,7 +545,7 @@ class App extends Component {
                 path={FEED_PAGE}
                 isMobile={isMobileClient}
                 render={() => (
-                  <FeedPage containerRef={this.state.mainContent} />
+                  <FeedPage containerRef={this.props.mainContentRef.current} />
                 )}
               />
               <Route
@@ -580,7 +576,9 @@ class App extends Component {
                 exact
                 path={TRENDING_PAGE}
                 render={() => (
-                  <TrendingPage containerRef={this.state.mainContent} />
+                  <TrendingPage
+                    containerRef={this.props.mainContentRef.current}
+                  />
                 )}
               />
               <Redirect
@@ -592,7 +590,7 @@ class App extends Component {
                 path={TRENDING_PLAYLISTS_PAGE}
                 render={() => (
                   <TrendingPlaylistsPage
-                    containerRef={this.state.mainContent}
+                    containerRef={this.props.mainContentRef.current}
                   />
                 )}
               />
@@ -601,7 +599,7 @@ class App extends Component {
                 path={TRENDING_UNDERGROUND_PAGE}
                 render={() => (
                   <TrendingUndergroundPage
-                    containerRef={this.state.mainContent}
+                    containerRef={this.props.mainContentRef.current}
                   />
                 )}
               />
@@ -694,7 +692,7 @@ class App extends Component {
                   <SearchPage
                     {...props}
                     scrollToTop={this.scrollToTop}
-                    containerRef={this.state.mainContent}
+                    containerRef={this.props.mainContentRef.current}
                   />
                 )}
               />
@@ -704,7 +702,7 @@ class App extends Component {
                   <SearchPage
                     {...props}
                     scrollToTop={this.scrollToTop}
-                    containerRef={this.state.mainContent}
+                    containerRef={this.props.mainContentRef.current}
                   />
                 )}
               />
@@ -800,7 +798,7 @@ class App extends Component {
                 render={props => (
                   <ProfilePage
                     {...props}
-                    containerRef={this.state.mainContent}
+                    containerRef={this.props.mainContentRef.current}
                   />
                 )}
               />
@@ -824,7 +822,7 @@ class App extends Component {
                 render={props => (
                   <ProfilePage
                     {...props}
-                    containerRef={this.state.mainContent}
+                    containerRef={this.props.mainContentRef.current}
                   />
                 )}
               />
@@ -837,7 +835,7 @@ class App extends Component {
                 render={props => (
                   <RemixesPage
                     {...props}
-                    containerRef={this.state.mainContent}
+                    containerRef={this.props.mainContentRef.current}
                   />
                 )}
               />
@@ -878,7 +876,7 @@ class App extends Component {
                 render={props => (
                   <ProfilePage
                     {...props}
-                    containerRef={this.state.mainContent}
+                    containerRef={this.props.mainContentRef.current}
                   />
                 )}
               />
