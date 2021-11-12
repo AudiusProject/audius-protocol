@@ -105,9 +105,9 @@ def test_trending_challenge_job(app):
                 "description": "description",
                 "playlist_contents": {
                     "track_ids": [
-                        {"track": 1},
-                        {"track": 2},
-                        {"track": 3},
+                        {"track": 1, "time": 1},
+                        {"track": 2, "time": 2},
+                        {"track": 3, "time": 3},
                     ]
                 },
             },
@@ -118,9 +118,9 @@ def test_trending_challenge_job(app):
                 "description": "description",
                 "playlist_contents": {
                     "track_ids": [
-                        {"track": 1},
-                        {"track": 2},
-                        {"track": 3},
+                        {"track": 1, "time": 1},
+                        {"track": 2, "time": 2},
+                        {"track": 3, "time": 3},
                     ]
                 },
             },
@@ -132,9 +132,9 @@ def test_trending_challenge_job(app):
                 "description": "description",
                 "playlist_contents": {
                     "track_ids": [
-                        {"track": 1},
-                        {"track": 2},
-                        {"track": 3},
+                        {"track": 1, "time": 1},
+                        {"track": 2, "time": 2},
+                        {"track": 3, "time": 3},
                     ]
                 },
             },
@@ -145,9 +145,9 @@ def test_trending_challenge_job(app):
                 "description": "description",
                 "playlist_contents": {
                     "track_ids": [
-                        {"track": 1},
-                        {"track": 2},
-                        {"track": 3},
+                        {"track": 1, "time": 1},
+                        {"track": 2, "time": 2},
+                        {"track": 3, "time": 3},
                     ]
                 },
             },
@@ -158,9 +158,9 @@ def test_trending_challenge_job(app):
                 "description": "description",
                 "playlist_contents": {
                     "track_ids": [
-                        {"track": 1},
-                        {"track": 2},
-                        {"track": 3},
+                        {"track": 1, "time": 1},
+                        {"track": 2, "time": 2},
+                        {"track": 3, "time": 3},
                     ]
                 },
             },

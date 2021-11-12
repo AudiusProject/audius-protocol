@@ -32,11 +32,17 @@ const getPublishNotifBaseType = (notification) => {
       return notificationTypes.Create.base
     case notificationTypes.ChallengeReward:
       return notificationTypes.ChallengeReward
+    case notificationTypes.MilestoneListen:
+    case notificationTypes.MilestoneFavorite:
+    case notificationTypes.MilestoneFollow:
+    case notificationTypes.MilestoneRepost:
+      return notificationTypes.Milestone
   }
 }
 
 const solanaNotificationBaseTypes = [
-  notificationTypes.ChallengeReward
+  notificationTypes.ChallengeReward,
+  notificationTypes.MilestoneListen
 ]
 
 // Gets the userId that a notification should be sent to based off the notification's base type
@@ -48,6 +54,7 @@ const getPublishUserId = (notif, baseType) => {
   else if (baseType === notificationTypes.RemixCosign) return notif.metadata.entity_owner_id
   else if (baseType === notificationTypes.Create.base) return notif.subscriberId
   else if (baseType === notificationTypes.ChallengeReward) return notif.initiator
+  else if (baseType === notificationTypes.Milestone) return notif.initiator
 }
 
 // Notification types that always get send a notification, regardless of settings
@@ -63,7 +70,8 @@ const mapNotificationBaseTypeToSettings = {
   [notificationTypes.Follow]: 'followers',
   [notificationTypes.Repost.base]: 'reposts',
   [notificationTypes.Favorite.base]: 'favorites',
-  [notificationTypes.RemixCreate]: 'remixes'
+  [notificationTypes.RemixCreate]: 'remixes',
+  [notificationTypes.Milestone]: 'milestonesAndAchievements'
 }
 
 /**
@@ -80,8 +88,8 @@ const getPublishTypes = (userId, baseNotificationType, userNotificationSettings)
   const userSettings = userNotificationSettings[userId]
   const types = []
   const settingKey = mapNotificationBaseTypeToSettings[baseNotificationType]
-  if (userSettings.mobile && userSettings.mobile[settingKey]) types.push(deviceType.Mobile)
-  if (userSettings.browser && userSettings.browser[settingKey]) types.push(deviceType.Browser)
+  if (userSettings && userSettings.mobile && userSettings.mobile[settingKey]) types.push(deviceType.Mobile)
+  if (userSettings && userSettings.browser && userSettings.browser[settingKey]) types.push(deviceType.Browser)
   return types
 }
 
@@ -106,7 +114,7 @@ const publishNotifications = async (notifications, metadata, userNotificationSet
     const userId = getPublishUserId(notification, publishNotifType)
     const types = getPublishTypes(userId, publishNotifType, userNotificationSettings)
 
-    if (solanaNotificationBaseTypes.includes(publishNotifType)) {
+    if (solanaNotificationBaseTypes.includes(notification.type)) {
       await publishSolanaNotification(msg, userId, tx, true, title, types)
     } else {
       await publish(msg, userId, tx, true, title, types)

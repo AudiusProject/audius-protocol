@@ -146,7 +146,7 @@ async function formatNotifications (notifications, notificationSettings, tx) {
       }
     }
 
-    // Handle the 'favorite' notification type, track/album/playlist
+    // Handle the remix cosign notification type
     if (notif.type === notificationTypes.RemixCosign) {
       const formattedRemixCosign = {
         ...notif,
@@ -180,6 +180,25 @@ async function formatNotifications (notifications, notificationSettings, tx) {
       }
       formattedNotifications.push(formattedRewardNotification)
       userIds.add(formattedRewardNotification.initiator)
+    }
+
+    // Handle 'listen milestone' notification type
+    if (notif.type === notificationTypes.MilestoneListen) {
+      let notificationTarget = notif.initiator
+      const shouldNotify = shouldNotifyUser(notificationTarget, 'milestonesAndAchievements', notificationSettings)
+      if (shouldNotify.mobile || shouldNotify.browser) {
+        const formattedListenMilstoneNotification = {
+          ...notif,
+          entityId: notif.metadata.entity_id,
+          type: notificationTypes.MilestoneListen,
+          actions: [{
+            actionEntityType: actionEntityTypes.Track,
+            actionEntityId: notif.metadata.threshold
+          }]
+        }
+        formattedNotifications.push(formattedListenMilstoneNotification)
+        userIds.add(formattedListenMilstoneNotification.initiator)
+      }
     }
 
     // Handle the 'create' notification type, track/album/playlist
