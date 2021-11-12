@@ -4,9 +4,9 @@ from web3 import Web3
 from eth_utils.conversions import to_bytes
 from eth_keys import keys
 from hexbytes import HexBytes
-from solana.publickey import PublicKey
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import and_
+from solana.publickey import PublicKey
 from src.models.models import (
     Challenge,
     ChallengeDisbursement,
