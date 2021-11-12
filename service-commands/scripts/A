@@ -255,41 +255,18 @@ def setup(name, azure, service, config, user):
             ]
         )
     elif service == "remote-dev":
-        node_version = '14.18.1'
-        python_version = '3.9'
         subprocess.run(
             [
                 "ssh",
-                "-o StrictHostKeyChecking=no", # auto-ssh in for setup
+                "-o",
+                "UserKnownHostsFile=/dev/null",
+                "-o",
+                "StrictHostKeyChecking=no", # auto-ssh in for setup - why isn't this working?
                 host,
                 (
-                    "sudo apt update && "
-                    "sudo apt install -y apt-transport-https ca-certificates curl software-properties-common build-essential python-is-python2 python3-pip git-secrets && "
-                    "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - && "
-                    "sudo sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable' && "
-                    "sudo add-apt-repository ppa:deadsnakes/ppa &&" # python3.9 installation
-                    "sudo apt update && "
-                    f"sudo apt install -y docker-ce python{python_version} && "
-                    "sudo usermod -aG docker $USER && "
-                    'sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && '
-                    "sudo chmod +x /usr/local/bin/docker-compose && "
-                    "sudo chown $USER /etc/hosts && "
-                    "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash && "
-                    "echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.profile && "
-                    f"echo 'nvm use {node_version}' >> ~/.profile && "
-                    "echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H \"Metadata-Flavor: Google\" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> ~/.profile && "
-                    "source ~/.nvm/nvm.sh && "
-                    "source ~/.profile && "
-                    "source ~/.bashrc && "
-                    f"nvm install v{node_version} && "
-                    "git clone https://github.com/AudiusProject/audius-protocol.git; "
-                    "git clone https://github.com/AudiusProject/audius-client.git; "
-                    "cd audius-protocol/service-commands && "
-                    "npm install && "
-                    "node scripts/hosts.js add && "
-                    "node scripts/setup.js run init-repos up && "
-                    "echo 'Rebooting machine...' && "
-                    "reboot"
+                    "git clone --branch cj-set-py-node-version-dev https://github.com/AudiusProject/audius-protocol.git &&"
+                    "cd audius-protocol &&"
+                    "yes | bash service-commands/scripts/provision-dev-env.sh"
                 ),
             ]
         )
