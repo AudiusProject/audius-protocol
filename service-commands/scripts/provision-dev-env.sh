@@ -58,7 +58,7 @@ source ~/.profile
 source ~/.bashrc
 
 # audius repos setup
-git clone https://github.com/AudiusProject/audius-client.git;
+git clone https://github.com/AudiusProject/audius-client.git
 cd $PROTOCOL_DIR/service-commands
 npm install
 node scripts/hosts.js add

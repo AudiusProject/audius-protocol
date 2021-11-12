@@ -1,5 +1,4 @@
-set -e
-set -x
+set -ex
 
 # setup root
 cd $PROTOCOL_DIR/
@@ -44,7 +43,7 @@ npm install
 # setup identity service
 cd $PROTOCOL_DIR/
 cd identity-service/
-npm install --dev
+npm install --also=dev
 
 wait
 
