@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use anyhow::{bail, Context};
 use borsh::BorshSerialize;
 use claimable_tokens::state::{NonceAccount, TransferInstructionData};
-use claimable_tokens::utils::program::{NONCE_ACCOUNT_PREFIX, find_nonce_address};
+use claimable_tokens::utils::program::{find_nonce_address, NONCE_ACCOUNT_PREFIX};
 use claimable_tokens::{
     instruction::CreateTokenAccount,
     utils::program::{find_address_pair, EthereumAddress},
@@ -98,8 +98,12 @@ fn transfer(
     let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
     let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
 
-    println!("Finding user nonce account addr - Seed={:?}", nonce_acct_seed);
-    let (_, user_nonce_acc, _) = find_nonce_address(&claimable_tokens::id(), &mint, &nonce_acct_seed);
+    println!(
+        "Finding user nonce account addr - Seed={:?}",
+        nonce_acct_seed
+    );
+    let (_, user_nonce_acc, _) =
+        find_nonce_address(&claimable_tokens::id(), &mint, &nonce_acct_seed);
     println!("Found user nonce account addr ={:?}", user_nonce_acc);
 
     // If `recipient` token account provided - we will use it,
