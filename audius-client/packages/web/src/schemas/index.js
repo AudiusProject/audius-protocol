@@ -111,7 +111,8 @@ const userMetadataSchema = {
   associated_sol_wallets: null,
   collectibles: null,
   playlist_library: null,
-  events: null
+  events: null,
+  is_deactivated: false
 }
 
 export const newUserMetadata = (fields, validate = false) => {
