@@ -5,16 +5,16 @@ const {
 } = require('../../utils')
 
 const {
-  SEED_USER_CACHE_PATH
+  SEED_CACHE_PATH
 } = Constants
 
 class UserCache {
     constructor() {
-      this.USER_CACHE_PATH = SEED_USER_CACHE_PATH
+      this.CACHE_PATH = SEED_CACHE_PATH
     }
 
     update = (cacheObject) => {
-      fs.writeFileSync(this.USER_CACHE_PATH, JSON.stringify(cacheObject))
+      fs.writeFileSync(this.CACHE_PATH, JSON.stringify(cacheObject))
       return
     }
 
@@ -51,8 +51,8 @@ class UserCache {
 
     get = () => {
       let cache
-      if (fs.existsSync(this.USER_CACHE_PATH)) {
-        cache = JSON.parse(fs.readFileSync(this.USER_CACHE_PATH))
+      if (fs.existsSync(this.CACHE_PATH)) {
+        cache = JSON.parse(fs.readFileSync(this.CACHE_PATH))
       } else {
         cache = {}
       }

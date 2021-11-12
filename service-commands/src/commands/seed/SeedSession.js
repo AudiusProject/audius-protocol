@@ -4,8 +4,13 @@ const LocalStorageWrapper = require('./LocalStorageWrapper')
 
 const {
   RandomUtils,
-  SeedUtils
+  SeedUtils,
+  Constants
 } = require('../../utils')
+
+const {
+  SEED_CACHE_PATH
+} = Constants
 
 const {
   getLibsConfig
@@ -43,7 +48,6 @@ class SeedSession {
       } else {
         this.localstorage.setUserEntropy(hedgehogEntropyKey)
         this.cache.setActiveUser(userAlias)
-        console.log(`Successfully set user with alias ${alias} / id ${userId} as active.`)
       }
       const libsConfigOverride = {
         identityServiceConfig: {
@@ -51,6 +55,9 @@ class SeedSession {
         }
       }
       await this.init(libsConfigOverride)
+      if (!this.libs.userStateManager.getCurrentUserId() === userDetails.userId) {
+        throw new Error(`Error calling SeedSession.setUser with alias ${alias} / userId ${userId} -- please check your seed cache at ${SEED_CACHE_PATH} to ensure that user exists.`)
+      }
   }
 
   createUser = async (alias, options) => {
@@ -68,8 +75,13 @@ class SeedSession {
       metadata = Object.assign(randomMetadata, metadata)
     }
     let signUpResponse
+    const profilePictureFile = null
+    const coverPhotoFile = null
+    const hasWallet = false
+    const host = (typeof window !== 'undefined' && window.location.origin) || null
+    const createWAudioUserBank = false
     try {
-      signUpResponse = await this.libs.Account.signUp(email, password, metadata)
+      signUpResponse = await this.libs.Account.signUp(email, password, metadata, profilePictureFile, coverPhotoFile, hasWallet, host, createWAudioUserBank)
     } catch (error) {
       console.log(error, signUpResponse)
     }

@@ -6,7 +6,6 @@ const { _ } = require('lodash')
 const fs = require('fs-extra')
 const moment = require('moment')
 const streamPipeline = util.promisify(require('stream').pipeline)
-// TODO package json movement
 const { logger } = require('./logger.js')
 
 const TRACK_URLS = [
@@ -40,6 +39,7 @@ const TRACK_URLS = [
      location: `loc_${r6()}`,
      is_creator: false,
      is_verified: false,
+     is_deactivated: false,
      profile_picture: null,
      profile_picture_sizes: null,
      cover_photo: null,
@@ -196,6 +196,7 @@ const getRandomPassword = () => {
    location: `seed_loc_${sauronSuffix}`,
    is_creator: false,
    is_verified: false,
+   is_deactivated: false,
    profile_picture: null,
    profile_picture_sizes: null,
    cover_photo: null,

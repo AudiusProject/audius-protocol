@@ -17,7 +17,8 @@ const {
 const {
   getRandomTrackMetadata,
   getRandomTrackFilePath,
-  getRandomImageFilePath
+  getRandomImageFilePath,
+  r6
 } = require('./random')
 
 const getLibsConfig = overrideConfig => {
@@ -46,8 +47,7 @@ const getLibsConfig = overrideConfig => {
     enableUserReplicaSetManagerContract: true,
     useTrackContentPolling: true
   }
-
-  return Object.assign(audiusLibsConfig, overrideConfig)
+  return _.merge(audiusLibsConfig, overrideConfig)
 }
 
 const camelToKebabCase = str =>
@@ -59,8 +59,8 @@ const camelToKebabCase = str =>
 
 const kebabToCamelCase = str => str.replace(/-./g, x => x[1].toUpperCase())
 
-const parseMetadataIntoObject = (commaSeparatedKeyValuePairs, rootObject = {}) => {
-  let metadata = rootObject
+const parseMetadataIntoObject = (commaSeparatedKeyValuePairs) => {
+  const metadata = {}
   commaSeparatedKeyValuePairs.split(',').forEach(kvPair => {
     let [key, value] = kvPair.split('=')
     if (value === 'true') {
@@ -88,7 +88,7 @@ const getUserProvidedOrRandomImageFile = async userInputPath => {
   } else {
     path = await getRandomImageFilePath(TEMP_IMAGE_STORAGE_PATH)
   }
-  return fs.createReadStream(path)
+  return null// fs.createReadStream(path) TODO figure this out - has to do with issue referenced here https://github.com/AudiusProject/audius-protocol/blob/926129262e/service-commands/src/commands/users.js#L15-L19
 }
 
 const getProgressCallback = () => {
@@ -122,9 +122,42 @@ const parseSeedActionRepeatCount = userInput => {
 
 const passThroughUserInput = userInput => userInput
 
-const getRandomUserIdFromCurrentSeedSessionCache = () => {}
+const getRandomUserIdFromCurrentSeedSessionCache = (userInput, seedSession) => {
+  let userId
+  if (userInput) {
+    userId = userInput
+  } else {
+    const activeUser = seedSession.cache.getActiveUser()
+    const cachedUsers = seedSession.cache.getUsers()
+    const randomUsersPool = cachedUsers.filter(u => u.userId !== activeUser.userId)
+    const randomUser = _.sample(randomUsersPool)
+    userId = randomUser.userId
+  }
+  return userId
+}
+
+const getRandomTrackIdFromCurrentSeedSessionCache = (userInput, seedSession) => {
+  let trackId
+  if (userInput) {
+    trackId = userInput
+  } else {
+    const cachedTracks = seedSession.cache.getTracks()
+    trackId = _.sample(cachedTracks)
+  }
+  return trackId
+}
 
 const getRandomTrackIdFromCurrentSeedSessionCache = () => {}
+
+const getActiveUserFromSeedSessionCache = (userInput, seedSession) => {
+  const activeUser = seedSession.cache.getActiveUser()
+  return activeUser.userId
+}
+
+const getRandomString = () => {
+  return r6()
+}
+
 
 module.exports = {
   getLibsConfig,
@@ -138,5 +171,8 @@ module.exports = {
   parseSeedActionRepeatCount,
   passThroughUserInput,
   getRandomUserIdFromCurrentSeedSessionCache,
-  getRandomTrackIdFromCurrentSeedSessionCache
+  getRandomTrackIdFromCurrentSeedSessionCache,
+  addTrackToSeedSessionCache,
+  getActiveUserFromSeedSessionCache,
+  getRandomString
 }
