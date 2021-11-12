@@ -13,10 +13,10 @@ const SolanaUtils = require('./utils')
 const { RewardsManagerError } = require('./errors')
 
 // Various prefixes used for rewards
-const SENDER_SEED_PREFIX = "S_"
-const VERIFY_TRANSFER_SEED_PREFIX = "V_"
-const TRANSFER_PREFIX = "T_"
-const ADD_SENDER_MESSAGE_PREFIX = "add"
+const SENDER_SEED_PREFIX = 'S_'
+const VERIFY_TRANSFER_SEED_PREFIX = 'V_'
+const TRANSFER_PREFIX = 'T_'
+const ADD_SENDER_MESSAGE_PREFIX = 'add'
 
 // Enum cases for instructions
 const CREATE_SENDER_PUBLIC_ENUM_VALUE = 4
@@ -94,7 +94,7 @@ class CreateSenderPublicInstructionData {
    *    operator
    * }
    */
-  constructor({
+  constructor ({
     ethAddress,
     operator
   }) {
@@ -112,7 +112,7 @@ const createSenderPublicInstructionSchema = new Map(
         fields: [
           ['eth_address', [20]],
           ['operator', [20]]
-        ] 
+        ]
       }
     ]
   ]
@@ -250,7 +250,7 @@ async function submitAttestations ({
  *   connection
  * }
  */
- async function createSender({
+async function createSender ({
   rewardManagerProgramId,
   rewardManagerAccount,
   senderEthAddress,
@@ -641,12 +641,12 @@ const generateCreateSenderSecpInstruction = ({
   //   is passed as a separate argument.
   //   https://medium.com/mycrypto/the-magic-of-digital-signatures-on-ethereum-98fe184dc9c7
   //
-  let strippedSignature = attestationMeta.signature.replace("0x", "")
+  let strippedSignature = attestationMeta.signature.replace('0x', '')
   const recoveryIdStr = strippedSignature.slice(strippedSignature.length - 2)
-  const recoveryId = new BN(recoveryIdStr, "hex").toNumber()
+  const recoveryId = new BN(recoveryIdStr, 'hex').toNumber()
   strippedSignature = strippedSignature.slice(0, strippedSignature.length - 2)
   const encodedSignature = Uint8Array.of(
-    ...new BN(strippedSignature, "hex").toArray("be")
+    ...new BN(strippedSignature, 'hex').toArray('be')
   )
 
   // TODO pull this out of this fn because it's static to each loop
@@ -718,38 +718,38 @@ const generateCreateSenderInstruction = async ({
     {
       pubkey: rewardManagerAccount,
       isSigner: false,
-      isWritable: false,
+      isWritable: false
     },
     {
       pubkey: rewardManagerAuthority,
       isSigner: false,
-      isWritable: false,
+      isWritable: false
     },
     {
       pubkey: feePayer,
       isSigner: true,
-      isWritable: true,
+      isWritable: true
     },
     {
       // NOT FOUND - makes sense
       pubkey: derivedSenderSolanaAddress,
       isSigner: false,
-      isWritable: true,
+      isWritable: true
     },
     {
       pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
       isSigner: false,
-      isWritable: false,
+      isWritable: false
     },
     {
       pubkey: SYSVAR_RENT_PUBKEY,
       isSigner: false,
-      isWritable: false,
+      isWritable: false
     },
     {
       pubkey: SystemProgram.programId,
       isSigner: false,
-      isWritable: false,
+      isWritable: false
     },
     ...signerSolanaPubKeys.map(pubkey =>
       ({
@@ -769,17 +769,16 @@ const generateCreateSenderInstruction = async ({
     createSenderPublicInstructionData
   )
   const serializedInstructionEnum = Buffer.from(Uint8Array.of(
-      CREATE_SENDER_PUBLIC_ENUM_VALUE,
-      ...serializedInstructionData
+    CREATE_SENDER_PUBLIC_ENUM_VALUE,
+    ...serializedInstructionData
   ))
 
   return new TransactionInstruction({
-      keys: createSenderInstructionAccounts,
-      programId: rewardManagerProgramId,
-      data: serializedInstructionEnum
+    keys: createSenderInstructionAccounts,
+    programId: rewardManagerProgramId,
+    data: serializedInstructionEnum
   })
 }
-
 
 // Misc
 
@@ -796,9 +795,6 @@ const deriveSolanaSenderFromEthAddress = async (
   rewardManagerProgramId,
   rewardManagerAccount
 ) => {
-  window.rewardManagerProgramId = rewardManagerProgramId
-  window.rewardManagerAccount = rewardManagerAccount
-
   const ethAddressArr = SolanaUtils.ethAddressToArray(ethAddress)
   const encodedPrefix = encoder.encode(SENDER_SEED_PREFIX)
 
@@ -809,11 +805,10 @@ const deriveSolanaSenderFromEthAddress = async (
   )
   return derivedSender
 }
-window.deriveSolanaSenderFromEthAddress = deriveSolanaSenderFromEthAddress
 
 /**
  * Constructs a create signer message for an existing "signer" eth address
- * @param {string} ethAddress 
+ * @param {string} ethAddress
  * @returns {Uint8Array}
  */
 const constructCreateSignerMessage = (

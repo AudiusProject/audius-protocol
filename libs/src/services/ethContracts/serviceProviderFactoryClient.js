@@ -26,9 +26,9 @@ class ServiceProviderFactoryClient extends GovernedContractClient {
   async registerWithDelegate (serviceType, endpoint, amount, delegateOwnerWallet) {
     const sanitizedEndpoint = endpoint.replace(/\/$/, '')
 
-    // if (!this.isDebug && !Utils.isFQDN(sanitizedEndpoint)) {
-    //   throw new Error('Not a fully qualified domain name!')
-    // }
+    if (!this.isDebug && !Utils.isFQDN(sanitizedEndpoint)) {
+      throw new Error('Not a fully qualified domain name!')
+    }
     if (!Number.isInteger(amount) && !Utils.isBN(amount)) {
       throw new Error('Invalid amount')
     }

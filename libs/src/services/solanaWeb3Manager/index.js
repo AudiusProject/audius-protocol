@@ -1,4 +1,3 @@
-const BN = require('bn.js')
 const solanaWeb3 = require('@solana/web3.js')
 const splToken = require('@solana/spl-token')
 const { transferWAudioBalance } = require('./transfer')
@@ -361,7 +360,7 @@ class SolanaWeb3Manager {
    * }} {
    * @memberof SolanaWeb3Manager
    */
-  async createSender({
+  async createSender ({
     senderEthAddress,
     operatorEthAddress,
     attestations

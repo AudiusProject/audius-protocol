@@ -2,6 +2,7 @@ const axios = require('axios')
 const { Base, Services } = require('./base')
 const BN = require('bn.js')
 const { RewardsManagerError } = require('../services/solanaWeb3Manager/errors')
+const { shuffle } = require('lodash')
 
 const GetAttestationError = Object.freeze({
   CHALLENGE_INCOMPLETE: 'CHALLENGE_INCOMPLETE',
@@ -350,6 +351,76 @@ class Challenge extends Base {
         error: GetAttestationError.UNKNOWN_ERROR
       }
     }
+  }
+
+  /**
+   *
+   * Creates a new discovery node sender for rewards. A sender may
+   * attest in user challenge completion to issue rewards.
+   *
+   * This method queries other discovery nodes asking for attestation of
+   * a given new senderEthAddress (delegate wallet) and operatorEthAddress (owner wallet).
+   * Those attestations are bundled
+   *
+   * @param {{
+   *   senderEthAddress: string
+   *   operatorEthAddress: string
+   *   senderEndpoint: string
+   *   endpoints?: string[]
+   *   numAttestations?: number
+   * }} {
+   *   senderEthAddress: the new sender eth address to add. The delegate wallet.
+   *   operatorEthAddress: the unique address of the operator that runs this service
+   *   senderEndpoint: the new sender's service endpoint,
+   *   endpoints: optional endpoints from other nodes. If not provided, nodes are selected from chain.
+   *   numAttestations: optional number of attestations to get from other nodes, default 3
+   * }
+   * @memberof Challenge
+   */
+  async createSenderPublic ({
+    senderEthAddress,
+    operatorEthAddress,
+    senderEndpoint,
+    endpoints,
+    numAttestations = 3
+  }) {
+    if (!endpoints) {
+      endpoints = await this.discoveryProvider.serviceSelector.findAll()
+    }
+    const attestEndpoints = shuffle(
+      endpoints
+    ).filter(s => s !== senderEndpoint).slice(0, numAttestations)
+    if (attestEndpoints.length < numAttestations) {
+      throw new Error(`Not enough other nodes found, need ${numAttestations}, found ${attestEndpoints.length}`)
+    }
+
+    let error = null
+    const attestations = await Promise.all(attestEndpoints.map(async attestEndpoint => {
+      try {
+        const res = await this.discoveryProvider.getCreateSenderAttestation(
+          senderEthAddress,
+          attestEndpoint
+        )
+        return {
+          ethAddress: res.owner_wallet,
+          signature: res.attestation
+        }
+      } catch (e) {
+        console.error(e)
+        error = true
+      }
+    }))
+    if (error) {
+      throw new Error(`Failed to get attestations from other nodes ${attestEndpoints}`)
+    }
+
+    // Register the server as a sender on the rewards manager
+    const receipt = await this.solanaWeb3Manager.createSender({
+      senderEthAddress,
+      operatorEthAddress,
+      attestations
+    })
+    return receipt
   }
 }
 
