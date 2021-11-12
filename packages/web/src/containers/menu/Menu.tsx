@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react'
+import React, { forwardRef, useContext } from 'react'
 
 import {
   PopupMenu,
@@ -6,6 +6,8 @@ import {
   PopupMenuProps,
   PopupPosition
 } from '@audius/stems'
+
+import { MainContentContext } from 'containers/MainContentContext'
 
 import CollectionMenu, {
   OwnProps as CollectionMenuProps
@@ -34,6 +36,8 @@ export type MenuProps = {
 const Menu = forwardRef<HTMLDivElement, MenuProps>((props, ref) => {
   const { menu, onClose, zIndex } = props
 
+  const { mainContentRef } = useContext(MainContentContext)
+
   const renderMenu = (items: PopupMenuItem[]) => (
     <PopupMenu
       items={items}
@@ -42,6 +46,7 @@ const Menu = forwardRef<HTMLDivElement, MenuProps>((props, ref) => {
       ref={ref}
       renderTrigger={props.children}
       zIndex={zIndex}
+      containerRef={mainContentRef}
     />
   )
 

@@ -172,7 +172,7 @@
 .optionsButtonFormatting {
   position: absolute;
   left: -6px;
-  top: 9px;
+  top: 12px;
 }
 
 :global(.colOptionsButton) {
