@@ -256,6 +256,7 @@ class SolanaWeb3Manager {
     await transferWAudioBalance({
       amount: wAudioAmount,
       senderEthAddress: ethAddress,
+      feePayerKey: this.feePayerKey,
       senderEthPrivateKey: this.web3Manager.getOwnerWalletPrivateKey(),
       senderSolanaAddress,
       recipientSolanaAddress,
@@ -263,7 +264,8 @@ class SolanaWeb3Manager {
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
       connection: this.connection,
-      identityService: this.identityService
+      mintKey: this.mintKey,
+      transactionHandler: this.transactionHandler
     })
   }
 

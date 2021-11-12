@@ -6,7 +6,6 @@ const {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction
 } = require('@solana/web3.js')
-const BN = require('bn.js')
 const borsh = require('borsh')
 const SolanaUtils = require('./utils')
 const secp256k1 = require('secp256k1')
@@ -89,7 +88,7 @@ async function getAccountNonce ({
   })
   let accInfo = await connection.getAccountInfoAndContext(transferNonceAccount)
   if (accInfo.value) {
-    const nonceAccount = borsh.deserialize(NonceAccountSchema, NonceAccount, accInfo.value.data);
+    const nonceAccount = borsh.deserialize(NonceAccountSchema, NonceAccount, accInfo.value.data)
     nonce = nonceAccount.nonce
   }
   return {
@@ -97,7 +96,6 @@ async function getAccountNonce ({
     nonce
   }
 }
-
 
 /**
  * Transfer wAUDIO between wallets on solana
@@ -120,7 +118,7 @@ const transferInstructionDataSchema = new Map([
     {
       kind: 'struct',
       fields: [
-        ['target_pubkey', [32]],
+        ['target_pubkey', [32]], // type pubkey of length 32 bytes
         ['amount', 'u64'],
         ['nonce', 'u64']
       ]
@@ -157,7 +155,6 @@ async function transferWAudioBalance ({
   mintKey,
   transactionHandler
 }) {
-
   const senderSolanaPubkey = new PublicKey(senderSolanaAddress)
   const recipientPubkey = new PublicKey(recipientSolanaAddress)
 
@@ -214,7 +211,7 @@ async function transferWAudioBalance ({
       isSigner: false,
       isWritable: false
     },
-    // 7. `[r]` Sysvar program id
+    // 7. `[r]` System program id
     {
       pubkey: SystemProgram.programId,
       isSigner: false,
