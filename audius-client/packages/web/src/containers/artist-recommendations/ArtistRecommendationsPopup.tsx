@@ -1,4 +1,10 @@
-import React, { MutableRefObject, useCallback, useEffect, useMemo } from 'react'
+import React, {
+  MutableRefObject,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo
+} from 'react'
 
 import { Popup, PopupPosition } from '@audius/stems'
 import { useSelector } from 'react-redux'
@@ -6,6 +12,7 @@ import { useSelector } from 'react-redux'
 import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
+import { MainContentContext } from 'containers/MainContentContext'
 import { useFlag } from 'containers/remote-config/hooks'
 import { FeatureFlags } from 'services/remote-config'
 import { AppState } from 'store/types'
@@ -30,6 +37,7 @@ export const ArtistRecommendationsPopup = ({
   isVisible,
   onClose
 }: ArtistRecommendationsPopupProps) => {
+  const { mainContentRef } = useContext(MainContentContext)
   const { isEnabled, isLoaded } = useFlag(
     FeatureFlags.ARTIST_RECOMMENDATIONS_ENABLED
   )
@@ -51,6 +59,7 @@ export const ArtistRecommendationsPopup = ({
       zIndex={zIndex.FOLLOW_RECOMMENDATIONS_POPUP}
       onClose={onClose}
       className={styles.popup}
+      containerRef={mainContentRef}
     >
       <ArtistRecommendations
         itemClassName={styles.popupItem}

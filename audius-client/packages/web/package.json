@@ -7,7 +7,7 @@
   "private": true,
   "dependencies": {
     "@audius/libs": "1.2.27",
-    "@audius/stems": "0.3.16",
+    "@audius/stems": "0.3.18",
     "@hcaptcha/react-hcaptcha": "0.3.6",
     "@optimizely/optimizely-sdk": "4.0.0",
     "@project-serum/sol-wallet-adapter": "0.2.5",
