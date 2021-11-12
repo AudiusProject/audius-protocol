@@ -4,6 +4,8 @@ from src.tasks.celery_app import celery
 
 logger = logging.getLogger(__name__)
 
+DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
+
 # Vacuum can't happen inside a db txn, so we have to acquire
 # a new connection and set it's isolation level to AUTOCOMMIT
 # as per: https://stackoverflow.com/questions/1017463/postgresql-how-to-run-vacuum-from-code-outside-transaction-block
@@ -53,7 +55,7 @@ def update_materialized_views(self):
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
-    update_lock = redis.lock("materialized_view_lock", timeout=60 * 10)
+    update_lock = redis.lock("materialized_view_lock", timeout=DEFAULT_UPDATE_TIMEOUT)
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
