@@ -8,17 +8,18 @@
   },
   "dependencies": {
     "@audius/libs": "1.2.19",
+    "@solana/web3.js": "1.20.0",
     "axios": "^0.19.2",
+    "borsh": "^0.4.0",
     "colors": "^1.4.0",
     "commander": "^6.0.0",
     "convict": "^5.2.0",
     "dotenv": "^8.2.0",
     "ffmpeg-static": "^4.2.7",
+    "lodash": "^4.17.21",
     "node-fetch": "^2.6.0",
     "untildify": "^4.0.0",
-    "web3": "^1.2.7",
-    "@solana/web3.js": "1.20.0",
-    "borsh": "^0.4.0"
+    "web3": "^1.2.7"
   },
   "devDependencies": {
     "eslint": "^7.2.0",
