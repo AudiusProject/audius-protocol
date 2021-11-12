@@ -1,4 +1,5 @@
 import datetime
+from src.models.models import User
 from sqlalchemy import func, desc, or_, and_
 
 from src import api_helpers
@@ -38,10 +39,13 @@ def get_feed(args):
         if not followee_user_ids:
             followee_user_ids = (
                 session.query(Follow.followee_user_id)
+                .join(User, User.user_id == Follow.followee_user_id)
                 .filter(
                     Follow.follower_user_id == current_user_id,
                     Follow.is_current == True,
                     Follow.is_delete == False,
+                    User.is_deactivated == False,
+                    User.is_current == True,
                 )
                 .all()
             )
