@@ -3,7 +3,6 @@ import fs from 'fs'
 import fetch from 'node-fetch'
 import path from 'path'
 import unzipper from 'unzipper'
-// @ts-ignore
 import ipfs, { globSource } from '../../ipfs'
 import libs from '../../libs'
 

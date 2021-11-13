@@ -36,7 +36,7 @@
     "handlebars": "^4.1.2",
     "hashids": "^2.2.8",
     "https-proxy-agent": "^5.0.0",
-    "ipfs-http-client": "^42.0.0",
+    "ipfs-http-client": "43.0.0",
     "moment": "^2.27.0",
     "node-fetch": "^2.6.1",
     "unzipper": "^0.10.11"

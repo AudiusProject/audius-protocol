@@ -2,6 +2,7 @@ version: "3"
 
 services:
   nginx:
+    container_name: nginx
     image: nginx:alpine
     ports:
       - "9000:80"
@@ -34,7 +35,7 @@ services:
 
   ipfs:
     container_name: ipfs
-    image: ipfs/go-ipfs:release
+    image: ipfs/go-ipfs:v0.9.1
     ports:
       - "4001:4001" # ipfs swarm
       - "5001:5001" # ipfs api

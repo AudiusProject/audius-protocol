@@ -65,7 +65,7 @@ http {
     }
 
     # IPFS routes.
-    location /ipfs {
+    location /ipfs/ {
       add_header 'Access-Control-Allow-Origin' '*' always;
       add_header 'Access-Control-Allow-Methods' 'GET';
       proxy_pass http://node:8000;
