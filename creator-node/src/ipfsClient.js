@@ -22,7 +22,7 @@ async function logIpfsPeerIds () {
     const identityLatest = await ipfsLatest.id()
     genericLogger.info(`Current IPFS Peer ID (using latest version of ipfs client): ${JSON.stringify(identityLatest, null, 2)}`)
   } catch (e) {
-    genericLogger.error(e)
+    genericLogger.error(`CN ipfsClient logIpfsPeerIds method error: ${e}`)
   }
 }
 
