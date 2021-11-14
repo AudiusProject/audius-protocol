@@ -601,7 +601,8 @@ def update_aggregate_table(
                     most_recent_indexed_aggregate_block
                 )
                 logger.info(
-                    f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block}"
+                    f"""index_aggregate_user.py | most_recent_indexed_aggregate_block:
+                    {most_recent_indexed_aggregate_block}"""
                 )
 
             latest_indexed_block_num = 0
@@ -629,16 +630,20 @@ def update_aggregate_table(
                         most_recent_indexed_aggregate_block, latest_indexed_block_num)
 
                     session.execute("DROP TABLE IF EXISTS {}".format(AGGREGATE_USER_TABLE_NAME))
-                    session.execute("ALTER TABLE {} RENAME TO {}".format(AGGREGATE_USER_TEMP_TABLE_NAME, AGGREGATE_USER_TABLE_NAME))
+                    session.execute("ALTER TABLE {} RENAME TO {}"
+                        .format(AGGREGATE_USER_TEMP_TABLE_NAME, AGGREGATE_USER_TABLE_NAME))
+
                     session.execute(RECREATE_DEPENDENCIES_QUERY)
 
             else:
-                # upsert to existing table
                 with db.scoped_session() as session:
-                    update(redis, session, AGGREGATE_USER_TABLE_NAME, most_recent_indexed_aggregate_block, latest_indexed_block_num)
+                    # upsert to existing table
+                    update(redis, session, AGGREGATE_USER_TABLE_NAME,
+                        most_recent_indexed_aggregate_block, latest_indexed_block_num)
 
             logger.info(
-                f"""index_aggregate_user.py | Finished updating {AGGREGATE_USER_TABLE_NAME} in: {time.time()-start_time} sec"""
+                f"""index_aggregate_user.py | Finished updating
+                {AGGREGATE_USER_TABLE_NAME} in: {time.time()-start_time} sec"""
             )
 
         else:
