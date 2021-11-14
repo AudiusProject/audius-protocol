@@ -46,22 +46,27 @@ sudo chown $USER /etc/hosts
 # install nvm and node
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
 nvm install $NODE_VERSION
 
 # profile setup
-echo "nvm use $NODE_VERSION" >> ~/.profile
-echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.profile
-echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H \"Metadata-Flavor: Google\" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> ~/.profile
+echo "nvm use $NODE_VERSION" >>~/.profile
+echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >>~/.profile
+echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H \"Metadata-Flavor: Google\" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >>~/.profile
 source ~/.profile
 source ~/.bashrc
 
 # audius repos setup
-git clone https://github.com/AudiusProject/audius-client.git
 cd $PROTOCOL_DIR/service-commands
 npm install
 node scripts/hosts.js add
 node scripts/setup.js run init-repos up
+
+cd ~
+git clone https://github.com/AudiusProject/audius-client.git
+cd audius-client
+npm link @audius/libs
+
 echo 'Rebooting machine...'
 reboot

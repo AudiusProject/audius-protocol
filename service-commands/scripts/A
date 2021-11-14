@@ -608,7 +608,7 @@ def setup_remote_dev(provider, user, fast, up, protocol_git_ref, client_git_ref,
 
 
 def main():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(exit_on_error=False)
 
     subparser = parser.add_subparsers(
         title="operations",
@@ -711,25 +711,36 @@ def main():
 
     args = parser.parse_args()
 
-    if args.operation == "create-instance":
-        create_instance(
-            args.provider, args.image, args.disk_size, args.machine_type, args.name
-        )
-    elif args.operation == "setup":
-        if args.service == "creator-node":
-            setup_creator_node(args.provider, args.user, args.config, args.name)
-        elif args.service == "discovery-provider":
-            setup_discovery_provider(args.provider, args.user, args.config, args.name)
-        elif args.service == "remote-dev":
-            setup_remote_dev(
-                args.provider,
-                args.user,
-                args.fast,
-                args.up,
-                args.protocol_git_ref,
-                args.client_git_ref,
-                args.name,
+    try:
+        if args.operation == "create-instance":
+            create_instance(
+                args.provider, args.image, args.disk_size, args.machine_type, args.name
             )
+        elif args.operation == "setup":
+            if args.service == "creator-node":
+                setup_creator_node(args.provider, args.user, args.config, args.name)
+            elif args.service == "discovery-provider":
+                setup_discovery_provider(
+                    args.provider, args.user, args.config, args.name
+                )
+            elif args.service == "remote-dev":
+                setup_remote_dev(
+                    args.provider,
+                    args.user,
+                    args.fast,
+                    args.up,
+                    args.protocol_git_ref,
+                    args.client_git_ref,
+                    args.name,
+                )
+    except argparse.ArgumentError:
+        subprocess.run(
+            [
+                "node",
+                f"{os.getenv('PROTOCOL_DIR', './')}/service-commands/scripts/setup.js",
+                *sys.argv[1:],
+            ]
+        )
 
 
 if __name__ == "__main__":
