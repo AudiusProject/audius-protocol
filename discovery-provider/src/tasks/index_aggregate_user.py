@@ -22,7 +22,7 @@ REFRESH_COUNTER = 1000
 # Find a subset of users that have changed since that blocknumber
 # For that subset of users reclaculate the entire counts for each entity
 # Insert that count for new users or update it to an existing row
-UPDATE_AGGREGATE_USER_QUERY = """
+UPDATE_AGGREGATE_USER_QUERY = f"""
         WITH aggregate_user_latest_blocknumber AS (
             SELECT
                 :most_recent_indexed_aggregate_block AS blocknumber
