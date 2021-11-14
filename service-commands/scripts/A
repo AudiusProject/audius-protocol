@@ -710,9 +710,9 @@ def main():
         help="name of machine on which to setup the service",
     )
 
-    args = parser.parse_args()
-
     try:
+        args = parser.parse_args()
+
         if args.operation == "create-instance":
             create_instance(
                 args.provider, args.image, args.disk_size, args.machine_type, args.name
