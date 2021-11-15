@@ -20,6 +20,9 @@ export const formatSecondsAsText = (duration: number) => {
   return `${d.minutes()}m ${d.seconds()}s`
 }
 
-export const formatDate = (date: string) => {
+export const formatDate = (date: string, parseFormat?: string) => {
+  if (parseFormat) {
+    return moment(date, parseFormat).format('MM/DD/YY')
+  }
   return moment(date).format('MM/DD/YY')
 }

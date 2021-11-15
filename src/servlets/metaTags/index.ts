@@ -22,6 +22,7 @@ import {
 import { Context, MetaTagFormat, Playable } from './types'
 
 const CAN_EMBED_USER_AGENT_REGEX = /(twitter|discord)/
+const RELEASE_DATE_FORMAT = 'ddd MMM DD YYYY HH:mm:ss GMTZZ'
 
 const E = process.env
 
@@ -53,35 +54,24 @@ const getTrackContext = async (handle: string, slug: string, canEmbed: boolean):
   if (!handle || !slug) return getDefaultContext()
   try {
     const track = await getTrackByHandleAndSlug(handle, slug)
-    const user = track.user ? track.user : await getUser(track.owner_id)
-    const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
-
-    const coverArt = track.cover_art_sizes
-      ? `${track.cover_art_sizes}/1000x1000.jpg`
-      : track.cover_art
 
     const tags = track.tags ? track.tags.split(',') : []
     tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
 
-    const date = track.release_date ? new Date(track.release_date) : track.created_at
-    const duration = track.duration ? track.duration : track.track_segments.reduce(
-      (acc: number, v: any) => acc = acc + v.duration,
-      0
-    )
     const labels = [
-      { name: 'Released', value: formatDate(date) },
-      { name: 'Duration', value: formatSeconds(duration) },
+      { name: 'Released', value: formatDate(track.release_date, RELEASE_DATE_FORMAT) },
+      { name: 'Duration', value: formatSeconds(track.duration) },
       { name: 'Genre', value: track.genre },
       { name: 'Mood', value: track.mood },
     ]
 
     return {
       format: MetaTagFormat.Track,
-      title: `${track.title} • ${user.name}`,
+      title: `${track.title} • ${track.user.name}`,
       description: track.description || '',
       tags,
       labels,
-      image: coverArt ? getImageUrl(coverArt, gateway) : track.artwork['1000x1000'],
+      image: track.artwork['1000x1000'],
       embed: canEmbed,
       embedUrl: getTrackEmbedUrl(Playable.TRACK, track.id)
     }
@@ -244,35 +234,24 @@ const getRemixesContext = async (handle: string, slug: string): Promise<Context>
   if (!handle || !slug) return getDefaultContext()
   try {
     const track = await getTrackByHandleAndSlug(handle, slug)
-    const user = await getUser(track.owner_id)
-    const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
-
-    const coverArt = track.cover_art_sizes
-      ? `${track.cover_art_sizes}/1000x1000.jpg`
-      : track.cover_art
 
     const tags = track.tags ? track.tags.split(',') : []
     tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
 
-    const date = track.release_date ? new Date(track.release_date) : track.created_at
-    const duration = track.track_segments.reduce(
-      (acc: number, v: any) => acc = acc + v.duration,
-      0
-    )
     const labels = [
-      { name: 'Released', value: formatDate(date) },
-      { name: 'Duration', value: formatSeconds(duration) },
+      { name: 'Released', value: formatDate(track.release_date, RELEASE_DATE_FORMAT) },
+      { name: 'Duration', value: formatSeconds(track.duration) },
       { name: 'Genre', value: track.genre },
       { name: 'Mood', value: track.mood },
     ]
 
     return {
       format: MetaTagFormat.Remixes,
-      title: `Remixes of ${track.title} • ${user.name}`,
+      title: `Remixes of ${track.title} • ${track.user.name}`,
       description: track.description || '',
       tags,
       labels,
-      image: getImageUrl(coverArt, gateway)
+      image: track.artwork['1000x1000'],
     }
   } catch (e) {
     console.error(e)

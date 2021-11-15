@@ -5,6 +5,7 @@ import {
   exploreMap,
   USER_NODE_IPFS_GATEWAY
 } from './constants'
+import { encodeHashId } from './hashids'
 
 export const getTrack = async (id: number): Promise<any> => {
   const t = await libs.Track.getTracks(
@@ -27,6 +28,32 @@ export const getTracks = async (ids: number[]): Promise<any> => {
   throw new Error(`Failed to get tracks ${ids}`)
 }
 
+const extendTrack = async (track: any): Promise<any> => {
+  const user = await getUser(track.owner_id)
+  const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
+
+  const coverArt = track.cover_art_sizes
+    ? `${track.cover_art_sizes}/1000x1000.jpg`
+    : track.cover_art
+  const artwork = {
+    ['1000x1000']: getImageUrl(coverArt, gateway)
+  }
+
+  const releaseDate = track.release_date ? track.release_date : track.created_at
+  const duration = track.track_segments.reduce(
+    (acc: number, v: any) => acc = acc + v.duration,
+    0
+  )
+  return {
+    ...track,
+    id: encodeHashId(track.track_id),
+    user,
+    artwork,
+    release_date: releaseDate,
+    duration
+  }
+}
+
 export const getTrackByHandleAndSlug = async (handle: string, slug: string): Promise<any> => {
   const track = await libs.Track.getTracksByHandleAndSlug(handle, slug)
   if (track) return Array.isArray(track) ? track[0] : track
@@ -40,7 +67,7 @@ export const getTrackByHandleAndSlug = async (handle: string, slug: string): Pro
       const splitted = tracks[0].permalink.split('/')
       const foundHandle = splitted.length > 0 ? splitted[1] : ''
       if (foundHandle.toLowerCase() === handle.toLowerCase()) {
-        return tracks[0]
+        return extendTrack(tracks[0])
       }
     }
   }
