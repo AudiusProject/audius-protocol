@@ -113,7 +113,7 @@ router.get([
 )
 
 router.get([
-  '/:handle/collectibles/:collectibleId'
+  '/:handle/test/collectibles/:collectibleId'
 ], (
   req: express.Request,
   res: express.Response) => {
@@ -122,7 +122,7 @@ router.get([
 )
 
 router.get([
-  '/:handle/collectibles'
+  '/:handle/test/collectibles'
 ], (
   req: express.Request,
   res: express.Response) => {
