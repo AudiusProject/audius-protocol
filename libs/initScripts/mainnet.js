@@ -32,10 +32,11 @@ const run = async () => {
       case 'setversion':
         const serviceType = args[4]
         const versionStr = args[5]
+        const dryRun = args[6] || true
         if (!serviceType || !versionStr) {
           throw new Error('missing arguments - format: node mainnet.js setversion <serviceType> <versionStr>')
         }
-        await setServiceVersion(audiusLibs, serviceType, versionStr, privateKey)
+        await setServiceVersion(audiusLibs, serviceType, versionStr, privateKey, dryRun)
         break
       case 'addservicetype':
         const newServiceType = args[4]
