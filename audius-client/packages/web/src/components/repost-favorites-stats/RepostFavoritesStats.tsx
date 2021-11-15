@@ -4,7 +4,7 @@ import cn from 'classnames'
 
 import { ReactComponent as IconFavorite } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
-import { pluralize, formatCount } from 'utils/formatUtil'
+import { pluralize, formatCount } from 'common/utils/formatUtil'
 
 import styles from './RepostFavoritesStats.module.css'
 

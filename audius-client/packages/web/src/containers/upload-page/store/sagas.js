@@ -13,6 +13,7 @@ import {
   race
 } from 'redux-saga/effects'
 
+import { Name } from 'common/models/Analytics'
 import Kind from 'common/models/Kind'
 import Status from 'common/models/Status'
 import * as accountActions from 'common/store/account/reducer'
@@ -26,6 +27,7 @@ import { reformat } from 'common/store/cache/collections/utils'
 import * as tracksActions from 'common/store/cache/tracks/actions'
 import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
 import { getUser } from 'common/store/cache/users/selectors'
+import { formatUrlName } from 'common/utils/formatUtil'
 import { makeUid } from 'common/utils/uid'
 import {
   getSelectedServices,
@@ -36,13 +38,11 @@ import UploadType from 'containers/upload-page/components/uploadType'
 import { getStems } from 'containers/upload-page/store/selectors'
 import { updateAndFlattenStems } from 'containers/upload-page/store/utils/stems'
 import AudiusBackend from 'services/AudiusBackend'
-import { Name } from 'services/analytics'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as confirmerActions from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
-import { formatUrlName } from 'utils/formatUtil'
 import { ERROR_PAGE } from 'utils/route'
 import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'
 

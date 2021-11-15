@@ -6,13 +6,16 @@ import { Dispatch } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
 import { deletePlaylist } from 'common/store/cache/collections/actions'
+import * as actions from 'common/store/ui/delete-playlist-confirmation-modal/actions'
+import {
+  getIsOpen,
+  getPlaylistId
+} from 'common/store/ui/delete-playlist-confirmation-modal/selectors'
 import { RouterContext } from 'containers/animated-switch/RouterContextProvider'
 import { AppState } from 'store/types'
 import { TRENDING_PAGE } from 'utils/route'
 
 import DeletePlaylistConfirmationModal from './components/DeletePlaylistConfirmationModal'
-import * as actions from './store/actions'
-import { getIsOpen, getPlaylistId } from './store/selectors'
 
 type DeletePlaylistConfirmationModalProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>

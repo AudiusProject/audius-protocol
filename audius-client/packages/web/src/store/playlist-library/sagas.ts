@@ -8,6 +8,7 @@ import {
   takeLatest
 } from 'redux-saga/effects'
 
+import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import {
@@ -27,7 +28,6 @@ import * as cacheActions from 'common/store/cache/actions'
 import { makeKindId } from 'common/utils/uid'
 import * as profileActions from 'containers/profile-page/store/actions'
 import { updateProfileAsync } from 'containers/profile-page/store/sagas'
-import { Name } from 'services/analytics'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { getResult } from 'store/confirmer/selectors'

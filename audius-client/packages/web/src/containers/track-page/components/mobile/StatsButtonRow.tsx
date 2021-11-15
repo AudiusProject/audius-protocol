@@ -4,7 +4,7 @@ import cn from 'classnames'
 
 import { ReactComponent as IconFavorite } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
-import { formatCount } from 'utils/formatUtil'
+import { formatCount } from 'common/utils/formatUtil'
 
 import styles from './StatsButtonRow.module.css'
 

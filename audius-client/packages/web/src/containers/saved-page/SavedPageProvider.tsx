@@ -5,26 +5,26 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
-import { ID, UID } from 'common/models/Identifiers'
-import * as accountActions from 'common/store/account/reducer'
-import { getAccountWithSavedPlaylistsAndAlbums } from 'common/store/account/selectors'
-import { updatePlaylistLastViewedAt } from 'containers/notification/store/actions'
-import { getPlaylistUpdates } from 'containers/notification/store/selectors'
-import { getSavedTracksLineup } from 'containers/saved-page/store/selectors'
 import {
   RepostSource,
   FavoriteSource,
   PlaybackSource,
   Name
-} from 'services/analytics'
+} from 'common/models/Analytics'
+import { ID, UID } from 'common/models/Identifiers'
+import * as accountActions from 'common/store/account/reducer'
+import { getAccountWithSavedPlaylistsAndAlbums } from 'common/store/account/selectors'
+import * as socialActions from 'common/store/social/tracks/actions'
+import { formatCount } from 'common/utils/formatUtil'
+import { updatePlaylistLastViewedAt } from 'containers/notification/store/actions'
+import { getPlaylistUpdates } from 'containers/notification/store/selectors'
+import { getSavedTracksLineup } from 'containers/saved-page/store/selectors'
 import { TrackEvent, make } from 'store/analytics/actions'
 import { makeGetTableMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
-import * as socialActions from 'store/social/tracks/actions'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
-import { formatCount } from 'utils/formatUtil'
 import { profilePage } from 'utils/route'
 
 import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/SavedPage'

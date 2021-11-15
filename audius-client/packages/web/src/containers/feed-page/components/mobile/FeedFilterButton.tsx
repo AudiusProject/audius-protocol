@@ -1,7 +1,7 @@
 import React from 'react'
 
+import FeedFilter from 'common/models/FeedFilter'
 import HeaderButton from 'components/general/HeaderButton'
-import FeedFilter from 'models/FeedFilter'
 
 const messages = {
   filterAll: 'All Posts',

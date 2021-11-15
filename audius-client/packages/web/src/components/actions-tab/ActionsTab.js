@@ -7,21 +7,21 @@ import { connect } from 'react-redux'
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
 import { ReactComponent as IconShare } from 'assets/img/iconShare.svg'
+import { ShareSource, RepostSource } from 'common/models/Analytics'
 import { getUserHandle } from 'common/store/account/selectors'
-import Toast from 'components/toast/Toast'
-import Tooltip from 'components/tooltip/Tooltip'
-import Menu from 'containers/menu/Menu'
-import { ShareSource, RepostSource } from 'services/analytics'
 import {
   repostCollection,
   undoRepostCollection,
   shareCollection
-} from 'store/social/collections/actions'
+} from 'common/store/social/collections/actions'
 import {
   repostTrack,
   undoRepostTrack,
   shareTrack
-} from 'store/social/tracks/actions'
+} from 'common/store/social/tracks/actions'
+import Toast from 'components/toast/Toast'
+import Tooltip from 'components/tooltip/Tooltip'
+import Menu from 'containers/menu/Menu'
 import { isShareToastDisabled } from 'utils/clipboardUtil'
 import {
   REPOST_TOAST_TIMEOUT_MILLIS,

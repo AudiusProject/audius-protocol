@@ -5,7 +5,7 @@ import { Location as HistoryLocation } from 'history'
 import { matchPath } from 'react-router'
 
 import { ID } from 'common/models/Identifiers'
-import { encodeUrlName } from 'utils/formatUtil'
+import { encodeUrlName } from 'common/utils/formatUtil'
 
 const USE_HASH_ROUTING = process.env.REACT_APP_USE_HASH_ROUTING
 

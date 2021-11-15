@@ -1,21 +1,20 @@
+import { CommonState } from 'common/store'
 import { getCollection } from 'common/store/cache/collections/selectors'
 import { getTracks as getCachedTracks } from 'common/store/cache/tracks/selectors'
 import { getUsers } from 'common/store/cache/users/selectors'
-import { AppState } from 'store/types'
 
-export const getBaseState = (state: AppState) =>
-  state.application.ui.createPlaylistModal
+export const getBaseState = (state: CommonState) => state.ui.createPlaylistModal
 
-export const getIsOpen = (state: AppState) => getBaseState(state).isOpen
-export const getId = (state: AppState) => getBaseState(state).collectionId
+export const getIsOpen = (state: CommonState) => getBaseState(state).isOpen
+export const getId = (state: CommonState) => getBaseState(state).collectionId
 
-export const getMetadata = (state: AppState) => {
+export const getMetadata = (state: CommonState) => {
   const id = getId(state)
   if (!id) return null
   return getCollection(state, { id })
 }
 
-export const getTracks = (state: AppState) => {
+export const getTracks = (state: CommonState) => {
   const metadata = getMetadata(state)
   if (!metadata) return null
 

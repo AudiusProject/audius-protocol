@@ -5,9 +5,9 @@ import numeral from 'numeral'
 import PropTypes from 'prop-types'
 import { Line } from 'react-chartjs-2'
 
+import { formatCount } from 'common/utils/formatUtil'
 import DropdownInput from 'components/data-entry/DropdownInput'
 import Dropdown from 'components/navigation/Dropdown'
-import { formatCount } from 'utils/formatUtil'
 
 import { messages } from '../ArtistDashboardPage'
 

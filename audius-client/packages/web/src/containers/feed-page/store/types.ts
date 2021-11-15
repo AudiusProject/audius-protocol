@@ -1,6 +1,6 @@
+import FeedFilter from 'common/models/FeedFilter'
 import { ID } from 'common/models/Identifiers'
-import FeedFilter from 'models/FeedFilter'
-import TimeRange from 'models/TimeRange'
+import TimeRange from 'common/models/TimeRange'
 import { LineupState } from 'models/common/Lineup'
 
 export default interface DiscoveryPageState {

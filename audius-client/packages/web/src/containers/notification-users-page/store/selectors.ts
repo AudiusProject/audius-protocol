@@ -1,7 +1,7 @@
+import { formatCount } from 'common/utils/formatUtil'
 import { getNotificationById } from 'containers/notification/store/selectors'
 import { NotificationType } from 'containers/notification/store/types'
 import { AppState } from 'store/types'
-import { formatCount } from 'utils/formatUtil'
 
 export const getId = (state: AppState) =>
   state.application.pages.notificationUsers.notificationUsersPage.id

@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useEffect } from 'react'
 
 import { useDispatch, useSelector } from 'react-redux'
 
+import { Name } from 'common/models/Analytics'
 import { ChangePassword } from 'containers/change-password/ChangePassword'
 import { getCurrentPage } from 'containers/change-password/store/selectors'
 import { changePage, Page } from 'containers/change-password/store/slice'
@@ -9,7 +10,6 @@ import NavContext, {
   CenterPreset,
   LeftPreset
 } from 'containers/nav/store/context'
-import { Name } from 'services/analytics'
 import { make, TrackEvent } from 'store/analytics/actions'
 
 import styles from './ChangePasswordPage.module.css'

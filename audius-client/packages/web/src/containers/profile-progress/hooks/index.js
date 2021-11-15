@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { useTransition } from 'react-spring'
 
-import { Name } from 'services/analytics'
+import { Name } from 'common/models/Analytics'
 import { make } from 'store/analytics/actions'
 
 const COMPLETION_DISMISSAL_DELAY_MSEC = 3 * 1000

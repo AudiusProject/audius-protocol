@@ -1,8 +1,8 @@
 import { ID } from 'common/models/Identifiers'
+import TimeRange from 'common/models/TimeRange'
 import { StemTrackMetadata } from 'common/models/Track'
 import { Nullable, removeNullable } from 'common/utils/typeUtils'
 import { SearchKind } from 'containers/search-page/store/types'
-import TimeRange from 'models/TimeRange'
 import AudiusBackend from 'services/AudiusBackend'
 import {
   getEagerDiscprov,

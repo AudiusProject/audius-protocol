@@ -8,12 +8,12 @@ import { useDispatch } from 'react-redux'
 import SimpleBar from 'simplebar-react'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
+import { FollowSource } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
+import * as socialActions from 'common/store/social/users/actions'
 import ArtistChip from 'components/artist/ArtistChip'
 import FollowButton from 'components/general/FollowButton'
-import { FollowSource } from 'services/analytics'
-import * as socialActions from 'store/social/users/actions'
 
 import styles from './UserListModal.module.css'
 

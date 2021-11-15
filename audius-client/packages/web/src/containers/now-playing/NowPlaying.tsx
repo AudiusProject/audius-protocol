@@ -6,9 +6,23 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
+import {
+  FavoriteSource,
+  RepostSource,
+  PlaybackSource,
+  Name,
+  ShareSource
+} from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { getUserId } from 'common/store/account/selectors'
+import {
+  saveTrack,
+  unsaveTrack,
+  repostTrack,
+  undoRepostTrack,
+  shareTrack
+} from 'common/store/social/tracks/actions'
 import { open } from 'common/store/ui/mobile-overflow-menu/actions'
 import {
   OverflowAction,
@@ -27,13 +41,6 @@ import { useFlag } from 'containers/remote-config/hooks'
 import { getCastMethod } from 'containers/settings-page/store/selectors'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useImageSize'
-import {
-  FavoriteSource,
-  RepostSource,
-  PlaybackSource,
-  Name,
-  ShareSource
-} from 'services/analytics'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
 import { FeatureFlags } from 'services/remote-config'
 import { useRecord, make } from 'store/analytics/actions'
@@ -49,13 +56,6 @@ import { AudioState } from 'store/player/types'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { next, pause, play, previous, repeat, shuffle } from 'store/queue/slice'
 import { RepeatMode } from 'store/queue/types'
-import {
-  saveTrack,
-  unsaveTrack,
-  repostTrack,
-  undoRepostTrack,
-  shareTrack
-} from 'store/social/tracks/actions'
 import { AppState } from 'store/types'
 import { Genre } from 'utils/genres'
 import { pushUniqueRoute as pushRoute, profilePage } from 'utils/route'

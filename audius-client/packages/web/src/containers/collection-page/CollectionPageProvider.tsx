@@ -6,6 +6,14 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import {
+  RepostSource,
+  FavoriteSource,
+  Name,
+  PlaybackSource,
+  ShareSource,
+  FollowSource
+} from 'common/models/Analytics'
 import { Collection, SmartCollection } from 'common/models/Collection'
 import { FavoriteType } from 'common/models/Favorite'
 import { ID, UID, PlayableType } from 'common/models/Identifiers'
@@ -22,11 +30,15 @@ import {
   publishPlaylist,
   deletePlaylist
 } from 'common/store/cache/collections/actions'
+import * as socialCollectionsActions from 'common/store/social/collections/actions'
+import * as socialTracksActions from 'common/store/social/tracks/actions'
+import * as socialUsersActions from 'common/store/social/users/actions'
 import { open } from 'common/store/ui/mobile-overflow-menu/actions'
 import {
   OverflowAction,
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
+import { formatUrlName } from 'common/utils/formatUtil'
 import { Uid } from 'common/utils/uid'
 import DeletedPage from 'containers/deleted-page/DeletedPage'
 import { setFavorite } from 'containers/favorites-page/store/actions'
@@ -34,14 +46,6 @@ import { updatePlaylistLastViewedAt } from 'containers/notification/store/action
 import { getPlaylistUpdates } from 'containers/notification/store/selectors'
 import { setRepost } from 'containers/reposts-page/store/actions'
 import { RepostType } from 'containers/reposts-page/store/types'
-import {
-  RepostSource,
-  FavoriteSource,
-  Name,
-  PlaybackSource,
-  ShareSource,
-  FollowSource
-} from 'services/analytics'
 import { TrackEvent, make } from 'store/analytics/actions'
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 import {
@@ -59,11 +63,7 @@ import {
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { getLocationPathname } from 'store/routing/selectors'
-import * as socialCollectionsActions from 'store/social/collections/actions'
-import * as socialTracksActions from 'store/social/tracks/actions'
-import * as socialUsersActions from 'store/social/users/actions'
 import { AppState } from 'store/types'
-import { formatUrlName } from 'utils/formatUtil'
 import {
   profilePage,
   NOT_FOUND_PAGE,

@@ -1,8 +1,14 @@
-.modalBodyStyle {
-  width: 100%;
+.container {
+  overflow: hidden;
+  border-radius: 40px;
 }
 
-.container > div {
+.content {
+  padding-top: 16px;
+  padding-bottom: 64px;
+}
+
+.content > div {
   height: 56px;
   display: flex;
   align-items: center;

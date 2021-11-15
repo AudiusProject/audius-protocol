@@ -7,8 +7,8 @@ import ReactMarkdown from 'react-markdown'
 
 import { ReactComponent as IconAnnouncement } from 'assets/img/iconAnnouncement.svg'
 import { ReactComponent as IconAnnouncementUnread } from 'assets/img/iconAnnouncementUnread.svg'
+import { Name } from 'common/models/Analytics'
 import IconButton from 'components/general/IconButton'
-import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
 
 import styles from './Announcement.module.css'

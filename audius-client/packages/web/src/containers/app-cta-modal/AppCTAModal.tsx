@@ -4,7 +4,7 @@ import { Modal, Button, IconDownload, ButtonType } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import QRCode from 'assets/img/imageQR.png'
-import { Name } from 'services/analytics'
+import { Name } from 'common/models/Analytics'
 import DownloadApp from 'services/download-app/DownloadApp'
 import { make } from 'store/analytics/actions'
 import { setVisibility } from 'store/application/ui/app-cta-modal/slice'

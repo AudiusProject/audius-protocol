@@ -1,6 +1,8 @@
 import React, { useState, useRef, useCallback } from 'react'
 
+import { Name } from 'common/models/Analytics'
 import Status from 'common/models/Status'
+import TimeRange from 'common/models/TimeRange'
 import Page from 'components/general/Page'
 import Header from 'components/general/header/desktop/Header'
 import EndOfLineup from 'containers/lineup/EndOfLineup'
@@ -13,8 +15,6 @@ import {
 } from 'containers/trending-page/store/lineups/trending/actions'
 import { TrendingPageContentProps } from 'containers/trending-page/types'
 import useTabs from 'hooks/useTabs/useTabs'
-import TimeRange from 'models/TimeRange'
-import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
 import { GENRES, ELECTRONIC_PREFIX } from 'utils/genres'
 

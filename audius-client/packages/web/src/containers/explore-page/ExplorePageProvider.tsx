@@ -6,8 +6,8 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { getAccountUser } from 'common/store/account/selectors'
+import { formatCount } from 'common/utils/formatUtil'
 import { AppState } from 'store/types'
-import { formatCount } from 'utils/formatUtil'
 
 import { ExplorePageProps as DesktopExplorePageProps } from './components/desktop/ExplorePage'
 import { ExplorePageProps as MobileExplorePageProps } from './components/mobile/ExplorePage'

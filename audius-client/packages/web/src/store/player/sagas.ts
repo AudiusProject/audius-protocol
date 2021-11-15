@@ -5,6 +5,7 @@ import Kind from 'common/models/Kind'
 import * as cacheActions from 'common/store/cache/actions'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
+import { recordListen } from 'common/store/social/tracks/actions'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getRemoteVar, StringKeys } from 'services/remote-config'
 import {
@@ -27,7 +28,6 @@ import {
   error as errorAction
 } from 'store/player/slice'
 import * as queueActions from 'store/queue/slice'
-import { recordListen } from 'store/social/tracks/actions'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { encodeHashId } from 'utils/route/hashIds'
 import { actionChannelDispatcher, waitForValue } from 'utils/sagaHelpers'

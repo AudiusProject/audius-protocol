@@ -1,4 +1,4 @@
-import TimeRange from 'models/TimeRange'
+import TimeRange from 'common/models/TimeRange'
 import { LineupStateTrack } from 'models/common/Lineup'
 import { AppState } from 'store/types'
 

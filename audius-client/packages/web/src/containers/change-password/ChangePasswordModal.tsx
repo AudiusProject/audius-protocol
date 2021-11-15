@@ -3,7 +3,7 @@ import React, { useEffect } from 'react'
 import { Modal } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Name } from 'services/analytics'
+import { Name } from 'common/models/Analytics'
 import { make, TrackEvent } from 'store/analytics/actions'
 
 import { ChangePassword } from './ChangePassword'

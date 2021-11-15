@@ -57,7 +57,7 @@ const Modals = () => {
 
       {isMobileClient && (
         <>
-          <ConnectedMobileOverflowModal />
+          {!NATIVE_MOBILE && <ConnectedMobileOverflowModal />}
           <UnfollowConfirmationModal />
           <DeletePlaylistConfirmationModal />
         </>

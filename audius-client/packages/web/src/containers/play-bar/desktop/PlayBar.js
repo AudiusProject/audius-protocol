@@ -5,7 +5,19 @@ import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 
+import {
+  RepostSource,
+  FavoriteSource,
+  Name,
+  PlaybackSource
+} from 'common/models/Analytics'
 import { getUserId } from 'common/store/account/selectors'
+import {
+  repostTrack,
+  undoRepostTrack,
+  saveTrack,
+  unsaveTrack
+} from 'common/store/social/tracks/actions'
 import FavoriteButton from 'components/general/FavoriteButton'
 import RepostButton from 'components/general/RepostButton'
 import PlayButton from 'components/play-bar/PlayButton'
@@ -15,12 +27,6 @@ import PreviousButtonProvider from 'components/play-bar/previous-button/Previous
 import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import Tooltip from 'components/tooltip/Tooltip'
-import {
-  RepostSource,
-  FavoriteSource,
-  Name,
-  PlaybackSource
-} from 'services/analytics'
 import { make } from 'store/analytics/actions'
 import { getTheme } from 'store/application/ui/theme/selectors'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
@@ -36,12 +42,6 @@ import { seek, reset } from 'store/player/slice'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { play, pause, next, previous, repeat, shuffle } from 'store/queue/slice'
 import { RepeatMode } from 'store/queue/types'
-import {
-  repostTrack,
-  undoRepostTrack,
-  saveTrack,
-  unsaveTrack
-} from 'store/social/tracks/actions'
 import { Genre } from 'utils/genres'
 import { setupHotkeys } from 'utils/hotkeyUtil'
 import { profilePage } from 'utils/route'

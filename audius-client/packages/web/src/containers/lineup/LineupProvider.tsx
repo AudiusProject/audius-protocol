@@ -8,6 +8,7 @@ import { connect } from 'react-redux'
 import { Transition } from 'react-spring/renderprops'
 import { Dispatch } from 'redux'
 
+import { Name, PlaybackSource } from 'common/models/Analytics'
 import { ID, UID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import Status from 'common/models/Status'
@@ -18,7 +19,6 @@ import {
   TileProps
 } from 'components/track/types'
 import { Lineup } from 'models/common/Lineup'
-import { Name, PlaybackSource } from 'services/analytics'
 import { TrackEvent, make } from 'store/analytics/actions'
 import { LineupActions } from 'store/lineup/actions'
 import { AppState } from 'store/types'

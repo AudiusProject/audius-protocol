@@ -1,5 +1,5 @@
 import { ID } from 'common/models/Identifiers'
-import TimeRange from 'models/TimeRange'
+import TimeRange from 'common/models/TimeRange'
 import { LineupState } from 'models/common/Lineup'
 
 export default interface TrendingPageState {

@@ -5,13 +5,13 @@ import { connect } from 'react-redux'
 import { Redirect } from 'react-router'
 import { withRouter } from 'react-router-dom'
 
+import { Name } from 'common/models/Analytics'
 import { getUserId } from 'common/store/account/selectors'
 import {
   makeGetSearchArtists,
   makeGetSearchPlaylists,
   makeGetSearchAlbums
 } from 'containers/search-page/store/selectors'
-import { Name } from 'services/analytics'
 import { make } from 'store/analytics/actions'
 import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'

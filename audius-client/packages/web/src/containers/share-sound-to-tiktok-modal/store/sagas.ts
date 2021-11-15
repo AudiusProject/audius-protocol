@@ -1,15 +1,12 @@
 import { takeEvery, put, call, select } from 'redux-saga/effects'
 
+import { Name } from 'common/models/Analytics'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { setVisibility } from 'common/store/ui/modals/slice'
-import { show as showConfetti } from 'containers/music-confetti/store/slice'
-import { Name } from 'services/analytics'
-import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { make } from 'store/analytics/actions'
-import { AppState } from 'store/types'
-import { encodeHashId } from 'utils/route/hashIds'
-
-import { getIsAuthenticated, getTrack as getTrackToShare } from './selectors'
+import {
+  getIsAuthenticated,
+  getTrack as getTrackToShare
+} from 'common/store/ui/share-sound-to-tiktok-modal/selectors'
 import {
   authenticated,
   open,
@@ -18,8 +15,13 @@ import {
   setStatus,
   share,
   upload
-} from './slice'
-import { Status } from './types'
+} from 'common/store/ui/share-sound-to-tiktok-modal/slice'
+import { Status } from 'common/store/ui/share-sound-to-tiktok-modal/types'
+import { show as showConfetti } from 'containers/music-confetti/store/slice'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
+import { make } from 'store/analytics/actions'
+import { AppState } from 'store/types'
+import { encodeHashId } from 'utils/route/hashIds'
 
 const TIKTOK_SHARE_SOUND_ENDPOINT =
   'https://open-api.tiktok.com/share/sound/upload/'

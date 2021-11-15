@@ -1,11 +1,11 @@
 import { put, call, fork, select } from 'redux-saga/effects'
 
+import { Name } from 'common/models/Analytics'
 import { User } from 'common/models/User'
 import * as errorActions from 'common/store/errors/actions'
 import { getModalVisibility, setVisibility } from 'common/store/ui/modals/slice'
 import { Nullable } from 'common/utils/typeUtils'
 import AudiusBackend from 'services/AudiusBackend'
-import { Name } from 'services/analytics'
 import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
 import { setState as setAudioManagerReduxState } from 'store/audio-manager/slice'

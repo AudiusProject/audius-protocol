@@ -4,6 +4,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import TimeRange from 'common/models/TimeRange'
 import * as discoverPageActions from 'containers/trending-page/store/actions'
 import {
   trendingMonthActions,
@@ -14,7 +15,6 @@ import {
   getTrendingGenre,
   getTrendingTimeRange
 } from 'containers/trending-page/store/selectors'
-import TimeRange from 'models/TimeRange'
 import { AppState } from 'store/types'
 import { GENRES, ELECTRONIC_PREFIX } from 'utils/genres'
 import { TRENDING_PAGE } from 'utils/route'

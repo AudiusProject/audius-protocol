@@ -4,16 +4,43 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import {
+  FollowSource,
+  ShareSource,
+  RepostSource,
+  FavoriteSource
+} from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { publishPlaylist } from 'common/store/cache/collections/actions'
 import { getCollection } from 'common/store/cache/collections/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
+import {
+  repostCollection,
+  undoRepostCollection,
+  saveCollection,
+  unsaveCollection,
+  shareCollection
+} from 'common/store/social/collections/actions'
+import {
+  repostTrack,
+  undoRepostTrack,
+  saveTrack,
+  unsaveTrack,
+  shareTrack
+} from 'common/store/social/tracks/actions'
+import {
+  followUser,
+  unfollowUser,
+  shareUser
+} from 'common/store/social/users/actions'
+import { requestOpen as openAddToPlaylist } from 'common/store/ui/add-to-playlist/actions'
+import { open as openEditPlaylist } from 'common/store/ui/createPlaylistModal/actions'
+import { setOpen as openDeletePlaylist } from 'common/store/ui/delete-playlist-confirmation-modal/actions'
 import { close } from 'common/store/ui/mobile-overflow-menu/actions'
 import { getMobileOverflowModal } from 'common/store/ui/mobile-overflow-menu/selectors'
 import { OverflowSource } from 'common/store/ui/mobile-overflow-menu/types'
-import { requestOpen as openAddToPlaylist } from 'containers/add-to-playlist/store/actions'
-import { setOpen as openDeletePlaylist } from 'containers/delete-playlist-confirmation-modal/store/actions'
+import { requestOpen as openTikTokModal } from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import {
   unsubscribeUser,
   hideNotification
@@ -23,29 +50,6 @@ import {
   Notification,
   NotificationType
 } from 'containers/notification/store/types'
-import { requestOpen as openTikTokModal } from 'containers/share-sound-to-tiktok-modal/store/slice'
-import {
-  FollowSource,
-  ShareSource,
-  RepostSource,
-  FavoriteSource
-} from 'services/analytics'
-import { open as openEditPlaylist } from 'store/application/ui/createPlaylistModal/actions'
-import {
-  repostCollection,
-  undoRepostCollection,
-  saveCollection,
-  unsaveCollection,
-  shareCollection
-} from 'store/social/collections/actions'
-import {
-  repostTrack,
-  undoRepostTrack,
-  saveTrack,
-  unsaveTrack,
-  shareTrack
-} from 'store/social/tracks/actions'
-import { followUser, unfollowUser, shareUser } from 'store/social/users/actions'
 import { AppState } from 'store/types'
 import { profilePage, playlistPage, albumPage } from 'utils/route'
 

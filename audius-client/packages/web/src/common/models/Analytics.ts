@@ -1,11 +1,10 @@
+import FeedFilter from 'common/models/FeedFilter'
 import { ID, PlayableType } from 'common/models/Identifiers'
+import { MonitorPayload, ServiceMonitorType } from 'common/models/Services'
+import TimeRange from 'common/models/TimeRange'
 import { WalletAddress } from 'common/models/Wallet'
-import FeedFilter from 'models/FeedFilter'
-import TimeRange from 'models/TimeRange'
 
-import { MonitorPayload, ServiceMonitorType } from './serviceMonitoring'
-
-export const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
+const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
 export enum Name {
   // Account creation

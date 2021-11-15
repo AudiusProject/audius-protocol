@@ -9,12 +9,12 @@ import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
 import { User } from 'common/models/User'
 import { getUsers } from 'common/store/cache/users/selectors'
+import { formatCount } from 'common/utils/formatUtil'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { fetchNotificationUsers } from 'containers/notification/store/actions'
 import { getNotificationUserList } from 'containers/notification/store/selectors'
 import { useUserProfilePicture } from 'hooks/useImageSize'
 import { AppState } from 'store/types'
-import { formatCount } from 'utils/formatUtil'
 
 import styles from './UserHeader.module.css'
 

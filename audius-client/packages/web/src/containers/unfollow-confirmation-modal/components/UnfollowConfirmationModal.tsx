@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { ID } from 'common/models/Identifiers'
-import ActionSheetModal from 'components/action-sheet-modal/ActionSheetModal'
+import ActionSheetModal from 'components/action-drawer/ActionDrawer'
 
 type UnfollowConfirmationModalProps = {
   isOpen: boolean

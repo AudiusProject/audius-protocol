@@ -9,6 +9,7 @@ import {
   SquareSizes,
   CoverArtSizes
 } from 'common/models/ImageSizes'
+import { pluralize } from 'common/utils/formatUtil'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UpdateDot from 'components/general/UpdateDot'
 import RepostFavoritesStats, {
@@ -19,7 +20,6 @@ import {
   useCollectionCoverArt,
   useUserProfilePicture
 } from 'hooks/useImageSize'
-import { pluralize } from 'utils/formatUtil'
 
 import styles from './Card.module.css'
 

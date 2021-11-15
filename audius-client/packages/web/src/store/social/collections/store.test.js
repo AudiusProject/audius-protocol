@@ -4,8 +4,8 @@ import * as matchers from 'redux-saga-test-plan/matchers'
 
 import Kind from 'common/models/Kind'
 import * as cacheActions from 'common/store/cache/actions'
+import * as actions from 'common/store/social/collections/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import * as actions from 'store/social/collections/actions'
 import * as sagas from 'store/social/collections/sagas'
 import { noopReducer } from 'store/testHelper'
 

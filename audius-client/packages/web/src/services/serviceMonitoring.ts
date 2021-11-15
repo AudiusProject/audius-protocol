@@ -1,16 +1,8 @@
+import { Name } from 'common/models/Analytics'
+import { MonitorPayload, ServiceMonitorType } from 'common/models/Services'
 import { track } from 'store/analytics/providers/segment'
 
-import { Name } from './analytics'
 import { getRemoteVar, IntKeys } from './remote-config'
-
-export type ServiceMonitorType = 'discovery-node' | 'content-node'
-
-export type MonitorPayload = {
-  // String key naming the metric being tracked and a number of string value
-  // A number value should be used for numeric metrics as they allow
-  // analytics tools (e.g. amplitude) to query against more effectively (percentiles, etc.)
-  [key in string]: number | string
-}
 
 /**
  * Given an integer-percent value (e.g. 45), whether or not based on random chance,
