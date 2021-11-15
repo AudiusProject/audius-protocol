@@ -44,6 +44,7 @@ const userReqLimiter = rateLimit({
   }),
   max: config.get('rateLimitingUserReqLimit'), // max requests per hour
   keyGenerator: ipKeyGenerator,
+  // skip rate limit on `/users/clock_status` and `/users/batch_clock_status` routes if valid signature provided
   skip: async (req) => {
     const { libs } = req.app.get('serviceRegistry')
     let { timestamp, signature, spID } = req.query
@@ -130,7 +131,35 @@ const batchCidsExistReqLimiter = rateLimit({
     expiry: 5 // 5 seconds
   }),
   max: config.get('rateLimitingBatchCidsExistLimit'), // max requests every five seconds
-  keyGenerator: ipKeyGenerator
+  keyGenerator: ipKeyGenerator,
+  // skip rate limit on `batch_cids_exist` and `batch_image_cids_exist` routes if valid signature provided
+  skip: async (req) => {
+    const { libs } = req.app.get('serviceRegistry')
+    let { timestamp, signature, spID } = req.query
+    const path = req.originalUrl
+
+    // If any of the necessary variables are not present, continue with rate limit
+    if (!timestamp || !signature || !spID || !libs) { return false }
+
+    if (path.includes('/batch_cids_exist') || path.includes('/batch_image_cids_exist')) {
+      try {
+        await verifyRequesterIsValidSP({
+          audiusLibs: libs,
+          spID,
+          reqTimestamp: timestamp,
+          reqSignature: signature
+        })
+
+        return true
+      } catch (e) {
+        // A non-SP requester query will hit this catch block. This is okay; just continue
+        // with the rate limit and other middlewares as expected.
+        req.logger.debug(`Requester is not a valid SP. Continuing with rate limit: ${e.toString()}`)
+      }
+    }
+
+    return false
+  }
 })
 
 const onLimitReached = (req, res, options) => {

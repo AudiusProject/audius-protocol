@@ -1,10 +1,13 @@
 const { ipfs } = require('../ipfsClient')
+const { ipfsAddNonImages } = require('../ipfsAdd')
+const { logger } = require('../logging')
 
 /**
  * Performs a diagnostic test on IPFS operations to
  * confirm functionality:
  *   - Adds a file
- *   - Gets a file
+ *   - Retrieves the same file from ipfs via its content addressed hash
+ *
  */
 const getIPFSReadWriteStatus = async () => {
   try {
@@ -13,8 +16,12 @@ const getIPFSReadWriteStatus = async () => {
     const content = Buffer.from(timestamp)
 
     // Add new buffer created from timestamp (without pin)
-    const results = await ipfs.add(content, { pin: false })
-    const hash = results[0].hash // "Qm...WW"
+    const hash = await ipfsAddNonImages(
+      content,
+      { pin: false } /* ipfsConfig */,
+      {} /* logContext */,
+      true /* enableIPFSAdd */
+    )
 
     // Retrieve and validate hash from local node
     const ipfsResp = await ipfs.get(hash)
@@ -23,10 +30,10 @@ const getIPFSReadWriteStatus = async () => {
       throw new Error('Read bytes differ from written bytes')
     }
 
-    const duration = `${Date.now() - start}ms`
-
+    const duration = Date.now() - start
     return JSON.stringify({ hash, duration })
   } catch (e) {
+    logger.error(`[getIPFSReadWriteStatus] Error - ${e.toString()}`)
     return null
   }
 }

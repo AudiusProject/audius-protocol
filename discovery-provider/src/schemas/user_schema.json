@@ -52,6 +52,10 @@
                 },
                 "events": {
                     "$ref": "#/definitions/Events"
+                },
+                "is_deactivated": {
+                    "type": "boolean",
+                    "default": false
                 }
             },
             "required": [

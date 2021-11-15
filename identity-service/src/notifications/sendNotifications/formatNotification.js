@@ -4,9 +4,7 @@ const {
   notificationTypes,
   actionEntityTypes
 } = require('../constants')
-
-// Debouncing time for track notification being removed by playlist/album notif
-const PENDING_CREATE_DEDUPE_SEC = 60 * 1000
+const notificationUtils = require('./utils')
 
 const shouldNotifyUser = (userId, prop, settings) => {
   const userNotification = { notifyMobile: false, notifyBrowserPush: false }
@@ -146,7 +144,7 @@ async function formatNotifications (notifications, notificationSettings, tx) {
       }
     }
 
-    // Handle the 'favorite' notification type, track/album/playlist
+    // Handle the remix cosign notification type
     if (notif.type === notificationTypes.RemixCosign) {
       const formattedRemixCosign = {
         ...notif,
@@ -182,6 +180,25 @@ async function formatNotifications (notifications, notificationSettings, tx) {
       userIds.add(formattedRewardNotification.initiator)
     }
 
+    // Handle 'listen milestone' notification type
+    if (notif.type === notificationTypes.MilestoneListen) {
+      let notificationTarget = notif.initiator
+      const shouldNotify = shouldNotifyUser(notificationTarget, 'milestonesAndAchievements', notificationSettings)
+      if (shouldNotify.mobile || shouldNotify.browser) {
+        const formattedListenMilstoneNotification = {
+          ...notif,
+          entityId: notif.metadata.entity_id,
+          type: notificationTypes.MilestoneListen,
+          actions: [{
+            actionEntityType: actionEntityTypes.Track,
+            actionEntityId: notif.metadata.threshold
+          }]
+        }
+        formattedNotifications.push(formattedListenMilstoneNotification)
+        userIds.add(formattedListenMilstoneNotification.initiator)
+      }
+    }
+
     // Handle the 'create' notification type, track/album/playlist
     if (notif.type === notificationTypes.Create.base) {
       await _processCreateNotifications(notif, tx)
@@ -200,7 +217,7 @@ async function _processSubscriberPushNotifications () {
   for (var i = 0; i < subscriberPushNotifications.length; i++) {
     let entry = subscriberPushNotifications[i]
     let timeSince = currentTime - entry.time
-    if (timeSince > PENDING_CREATE_DEDUPE_SEC) {
+    if (timeSince > notificationUtils.getPendingCreateDedupeMs()) {
       filteredFormattedCreateNotifications.push(entry)
       users.push(entry.initiator)
       entry.pending = false

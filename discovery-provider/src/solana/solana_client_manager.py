@@ -8,11 +8,10 @@ from typing import Optional, Union
 from solana.account import Account
 from solana.publickey import PublicKey
 from solana.rpc.api import Client
+from src.solana.solana_transaction_types import ConfirmedSignatureForAddressResponse
 from src.utils.config import shared_config
 
 logger = logging.getLogger(__name__)
-
-SOLANA_ENDPOINTS = shared_config["solana"]["endpoint"]
 
 # maximum number of times to retry get_confirmed_transaction call
 DEFAULT_MAX_RETRIES = 5
@@ -21,8 +20,8 @@ DELAY_SECONDS = 0.2
 
 
 class SolanaClientManager:
-    def __init__(self) -> None:
-        self.endpoints = SOLANA_ENDPOINTS.split(",")
+    def __init__(self, solana_endpoints) -> None:
+        self.endpoints = solana_endpoints.split(",")
         self.clients = [Client(endpoint) for endpoint in self.endpoints]
 
     def get_client(self, randomize=False) -> Client:
@@ -84,22 +83,22 @@ class SolanaClientManager:
             while num_retries > 0:
                 try:
                     logger.info(f"solana_client_manager.py | handle_get_confirmed_signature_for_address2 | Fetching {before} {endpoint}")
-                    transactions = client.get_confirmed_signature_for_address2(account, before, limit)
+                    transactions: ConfirmedSignatureForAddressResponse = client.get_confirmed_signature_for_address2(account, before, limit)
                     logger.info(f"solana_client_manager.py | handle_get_confirmed_signature_for_address2 | Finished fetching {before} {endpoint}")
                     return transactions
                 except Exception as e:
                     logger.error(
                         f"solana_client_manager.py | get_confirmed_signature_for_address2 | \
-                            Error fetching tx {tx_sig} from endpoint {endpoint}, {e}",
+                            Error fetching account {account} from endpoint {endpoint}, {e}",
                         exc_info=True,
                     )
                 num_retries -= 1
                 time.sleep(DELAY_SECONDS)
                 logger.error(
-                    f"solana_client_manager.py | get_confirmed_signature_for_address2 | Retrying tx fetch: {tx_sig} with endpoint {endpoint}"
+                    f"solana_client_manager.py | get_confirmed_signature_for_address2 | Retrying account fetch: {account} with endpoint {endpoint}"
                 )
             raise Exception(
-                f"solana_client_manager.py | get_confirmed_signature_for_address2 | Failed to fetch {tx_sig} with endpoint {endpoint}"
+                f"solana_client_manager.py | get_confirmed_signature_for_address2 | Failed to fetch account {account} with endpoint {endpoint}"
             )
 
         return _try_all_with_timeout(

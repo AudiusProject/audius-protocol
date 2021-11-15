@@ -24,6 +24,26 @@ pub struct AddressPair {
     pub derive: Derived,
 }
 
+/// Sender nonce account seed
+pub const NONCE_ACCOUNT_PREFIX: &str = "N_";
+
+/// Finds a program address, using nonce account as seed
+/// 'base'
+pub fn find_nonce_address(
+    program_id: &Pubkey,
+    mint: &Pubkey,
+    nonce_acct_seed: &[u8],
+) -> (Pubkey, Pubkey, u8) {
+    // Check that the incremented nonce provided matches expected value
+    // Generating base address for nonce acct from mint
+    let (base_pubkey, _) = find_program_address(mint, program_id);
+
+    let (derived_address, bump_seed) =
+        find_program_address_with_seed(program_id, &base_pubkey, &nonce_acct_seed);
+
+    return (base_pubkey, derived_address, bump_seed);
+}
+
 /// Return `Base` account with seed and corresponding derived address
 /// with seed
 pub fn find_address_pair(
@@ -31,7 +51,7 @@ pub fn find_address_pair(
     mint: &Pubkey,
     eth_public_key: EthereumAddress,
 ) -> Result<AddressPair, PubkeyError> {
-    let (base_pubkey, base_seed) = find_base_address(mint, program_id);
+    let (base_pubkey, base_seed) = find_program_address(mint, program_id);
     let (derived_pubkey, derive_seed) = find_derived_address(&base_pubkey.clone(), eth_public_key)?;
     Ok(AddressPair {
         base: Base {
@@ -45,10 +65,21 @@ pub fn find_address_pair(
     })
 }
 
+/// Finds a program address, using first 32 bytes of `base` + `seed` as seed, and
+/// `seed` as seed
+pub fn find_program_address_with_seed(
+    program_id: &Pubkey,
+    base: &Pubkey,
+    seed: &[u8],
+) -> (Pubkey, u8) {
+    Pubkey::find_program_address(&[&base.to_bytes()[..32], seed], program_id)
+}
+
 /// Return PDA(that named `Base`) corresponding to specific mint
 /// and it bump seed
-pub fn find_base_address(mint: &Pubkey, program_id: &Pubkey) -> (Pubkey, u8) {
-    Pubkey::find_program_address(&[&mint.to_bytes()[..32]], program_id)
+/// Optionally, accepts seed parameter
+pub fn find_program_address(base: &Pubkey, program_id: &Pubkey) -> (Pubkey, u8) {
+    return Pubkey::find_program_address(&[&base.to_bytes()[..32]], program_id);
 }
 
 /// Return derived token account address corresponding to specific
