@@ -22,6 +22,7 @@ import {
 import { Context, MetaTagFormat, Playable } from './types'
 
 const CAN_EMBED_USER_AGENT_REGEX = /(twitter|discord)/
+const RELEASE_DATE_FORMAT = 'ddd MMM DD YYYY HH:mm:ss GMTZZ'
 
 const E = process.env
 
@@ -57,14 +58,9 @@ const getTrackContext = async (handle: string, slug: string, canEmbed: boolean):
     const tags = track.tags ? track.tags.split(',') : []
     tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
 
-    const date = track.release_date ? new Date(track.release_date) : track.created_at
-    const duration = track.duration ? track.duration : track.track_segments.reduce(
-      (acc: number, v: any) => acc = acc + v.duration,
-      0
-    )
     const labels = [
-      { name: 'Released', value: formatDate(date) },
-      { name: 'Duration', value: formatSeconds(duration) },
+      { name: 'Released', value: formatDate(track.release_date, RELEASE_DATE_FORMAT) },
+      { name: 'Duration', value: formatSeconds(track.duration) },
       { name: 'Genre', value: track.genre },
       { name: 'Mood', value: track.mood },
     ]
@@ -241,15 +237,10 @@ const getRemixesContext = async (handle: string, slug: string): Promise<Context>
 
     const tags = track.tags ? track.tags.split(',') : []
     tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
-
-    const date = track.release_date ? new Date(track.release_date) : track.created_at
-    const duration = track.track_segments.reduce(
-      (acc: number, v: any) => acc = acc + v.duration,
-      0
-    )
+    
     const labels = [
-      { name: 'Released', value: formatDate(date) },
-      { name: 'Duration', value: formatSeconds(duration) },
+      { name: 'Released', value: formatDate(track.release_date, RELEASE_DATE_FORMAT) },
+      { name: 'Duration', value: formatSeconds(track.duration) },
       { name: 'Genre', value: track.genre },
       { name: 'Mood', value: track.mood },
     ]
