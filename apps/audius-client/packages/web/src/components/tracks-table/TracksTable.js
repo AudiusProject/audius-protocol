@@ -11,6 +11,7 @@ import {
 } from 'react-beautiful-dnd'
 
 import { ReactComponent as IconCarrotDown } from 'assets/img/iconCaretDown.svg'
+import { formatCount } from 'common/utils/formatUtil'
 import { formatSeconds } from 'common/utils/timeUtil'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -21,7 +22,6 @@ import TablePlayButton from 'components/tracks-table/TablePlayButton'
 import TableRepostButton from 'components/tracks-table/TableRepostButton'
 import Draggable from 'containers/dragndrop/Draggable'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { formatCount } from 'utils/formatUtil'
 import { fullTrackPage } from 'utils/route'
 
 import styles from './TracksTable.module.css'

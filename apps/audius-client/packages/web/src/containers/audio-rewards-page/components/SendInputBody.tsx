@@ -16,9 +16,9 @@ import {
   StringWei,
   WalletAddress
 } from 'common/models/Wallet'
+import { convertFloatToWei } from 'common/utils/formatUtil'
 import { Nullable } from 'common/utils/typeUtils'
 import { MIN_TRANSFERRABLE_WEI } from 'services/wallet-client/WalletClient'
-import { convertFloatToWei } from 'utils/formatUtil'
 import {
   audioToWei,
   stringAudioToBN,

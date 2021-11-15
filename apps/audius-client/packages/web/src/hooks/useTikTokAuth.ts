@@ -6,8 +6,8 @@ import moment from 'moment'
 import 'whatwg-fetch'
 import 'url-search-params-polyfill'
 
+import { Name } from 'common/models/Analytics'
 import { IDENTITY_SERVICE } from 'services/AudiusBackend'
-import { Name } from 'services/analytics'
 import { RequestTikTokAuthMessage } from 'services/native-mobile-interface/oauth'
 import { useRecord, make } from 'store/analytics/actions'
 

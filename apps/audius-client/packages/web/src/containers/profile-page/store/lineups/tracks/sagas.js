@@ -6,6 +6,7 @@ import { DELETE_TRACK } from 'common/store/cache/tracks/actions'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { getUser } from 'common/store/cache/users/selectors'
+import { SET_ARTIST_PICK } from 'common/store/social/tracks/actions'
 import {
   PREFIX,
   tracksActions,
@@ -17,7 +18,6 @@ import {
   getProfileUserHandle
 } from 'containers/profile-page/store/selectors'
 import { LineupSagas } from 'store/lineup/sagas'
-import { SET_ARTIST_PICK } from 'store/social/tracks/actions'
 import { waitForValue } from 'utils/sagaHelpers'
 
 import { TracksSortMode } from '../../types'

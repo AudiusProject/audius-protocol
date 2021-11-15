@@ -6,10 +6,13 @@ import { Dispatch } from 'redux'
 
 import { ID } from 'common/models/Identifiers'
 import { getAccountUser } from 'common/store/account/selectors'
+import {
+  setArtistPick,
+  unsetArtistPick
+} from 'common/store/social/tracks/actions'
 import { cancelSetAsArtistPick } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import { getSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/selectors'
 import { PinTrackAction } from 'store/application/ui/setAsArtistPickConfirmation/types'
-import { setArtistPick, unsetArtistPick } from 'store/social/tracks/actions'
 import { AppState } from 'store/types'
 
 import styles from './PinTrackConfirmation.module.css'

@@ -13,17 +13,25 @@ import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import {
+  getStatus,
+  getTrack
+} from 'common/store/ui/share-sound-to-tiktok-modal/selectors'
+import {
+  authenticated,
+  setStatus,
+  share
+} from 'common/store/ui/share-sound-to-tiktok-modal/slice'
+import { Status } from 'common/store/ui/share-sound-to-tiktok-modal/types'
 import { Nullable } from 'common/utils/typeUtils'
-import { MODAL_OFFSET_PIXELS } from 'components/action-sheet-modal/ActionSheetModal'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useTikTokAuth } from 'hooks/useTikTokAuth'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'
 
 import styles from './ShareSoundToTikTokModal.module.css'
-import { getStatus, getTrack } from './store/selectors'
-import { authenticated, setStatus, share } from './store/slice'
-import { Status } from './store/types'
+
+const MODAL_OFFSET_PIXELS = 41
 
 enum FileRequirementError {
   MIN_LENGTH,

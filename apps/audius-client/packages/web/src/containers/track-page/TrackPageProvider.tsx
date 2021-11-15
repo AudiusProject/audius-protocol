@@ -4,17 +4,28 @@ import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import {
+  FollowSource,
+  FavoriteSource,
+  RepostSource,
+  ShareSource,
+  Name,
+  PlaybackSource
+} from 'common/models/Analytics'
 import { FavoriteType } from 'common/models/Favorite'
 import { ID, CID, PlayableType } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { Track } from 'common/models/Track'
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheTrackActions from 'common/store/cache/tracks/actions'
+import * as socialTracksActions from 'common/store/social/tracks/actions'
+import * as socialUsersActions from 'common/store/social/users/actions'
 import { open } from 'common/store/ui/mobile-overflow-menu/actions'
 import {
   OverflowAction,
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
+import { formatUrlName } from 'common/utils/formatUtil'
 import { formatSeconds, formatDate } from 'common/utils/timeUtil'
 import { Uid } from 'common/utils/uid'
 import DeletedPage from 'containers/deleted-page/DeletedPage'
@@ -31,14 +42,6 @@ import {
   getSourceSelector
 } from 'containers/track-page/store/selectors'
 import * as unfollowConfirmationActions from 'containers/unfollow-confirmation-modal/store/actions'
-import {
-  FollowSource,
-  FavoriteSource,
-  RepostSource,
-  ShareSource,
-  Name,
-  PlaybackSource
-} from 'services/analytics'
 import { TrackEvent, make } from 'store/analytics/actions'
 import {
   setUsers,
@@ -52,11 +55,8 @@ import { makeGetLineupMetadatas } from 'store/lineup/selectors'
 import { getPlaying, getBuffering } from 'store/player/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { getLocationPathname } from 'store/routing/selectors'
-import * as socialTracksActions from 'store/social/tracks/actions'
-import * as socialUsersActions from 'store/social/users/actions'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
-import { formatUrlName } from 'utils/formatUtil'
 import { getCannonicalName } from 'utils/genres'
 import {
   profilePage,

@@ -4,6 +4,7 @@ import { push as pushRoute, goBack } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { Name } from 'common/models/Analytics'
 import * as accountActions from 'common/store/account/reducer'
 import {
   getAccountVerified,
@@ -17,7 +18,6 @@ import { setVisibility } from 'common/store/ui/modals/slice'
 import { show } from 'containers/music-confetti/store/slice'
 import { makeGetTierAndVerifiedForUser } from 'containers/user-badges/utils'
 import Theme from 'models/Theme'
-import { Name } from 'services/analytics'
 import { make, TrackEvent } from 'store/analytics/actions'
 import { setTheme } from 'store/application/ui/theme/actions'
 import { getTheme } from 'store/application/ui/theme/selectors'

@@ -1,5 +1,7 @@
 import React from 'react'
 
+import { Name } from 'common/models/Analytics'
+import FeedFilter from 'common/models/FeedFilter'
 import Page from 'components/general/Page'
 import Header from 'components/general/header/desktop/Header'
 import EmptyFeed from 'containers/feed-page/components/EmptyFeed'
@@ -12,8 +14,6 @@ import {
   INITIAL_LOAD_TRACKS_MULTIPLIER
 } from 'containers/lineup/LineupProvider'
 import { LineupVariant } from 'containers/lineup/types'
-import FeedFilter from 'models/FeedFilter'
-import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
 
 import FeedFilters from './FeedFilters'

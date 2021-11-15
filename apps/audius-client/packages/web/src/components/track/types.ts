@@ -1,11 +1,11 @@
 import { MouseEvent, ReactNode } from 'react'
 
+import { PlaybackSource } from 'common/models/Analytics'
 import { Favorite } from 'common/models/Favorite'
 import { ID, UID } from 'common/models/Identifiers'
 import { CoverArtSizes } from 'common/models/ImageSizes'
 import { Repost } from 'common/models/Repost'
 import { LineupTrack, Remix } from 'common/models/Track'
-import { PlaybackSource } from 'services/analytics'
 
 export enum TrackTileSize {
   LARGE = 'LARGE',

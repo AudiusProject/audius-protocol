@@ -1,7 +1,7 @@
 import { Collection } from 'common/models/Collection'
+import FeedFilter from 'common/models/FeedFilter'
 import { ID } from 'common/models/Identifiers'
 import { Track, TrackMetadata } from 'common/models/Track'
-import FeedFilter from 'models/FeedFilter'
 import AudiusBackend, {
   IDENTITY_SERVICE,
   AuthHeaders

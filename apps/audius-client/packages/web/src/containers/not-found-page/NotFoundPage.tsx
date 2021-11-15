@@ -10,12 +10,12 @@ import { Dispatch } from 'redux'
 
 import notFoundAnimation from 'assets/animations/404.json'
 import tiledBackground from 'assets/img/notFoundTiledBackround.png'
+import { Name } from 'common/models/Analytics'
 import Page from 'components/general/Page'
 import NavContext, {
   CenterPreset,
   RightPreset
 } from 'containers/nav/store/context'
-import { Name } from 'services/analytics'
 import { useRecord, make } from 'store/analytics/actions'
 import { getTheme } from 'store/application/ui/theme/selectors'
 import { AppState } from 'store/types'

@@ -5,34 +5,34 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import {
+  FavoriteSource,
+  RepostSource,
+  ShareSource,
+  CreatePlaylistSource
+} from 'common/models/Analytics'
 import { ID, PlayableType } from 'common/models/Identifiers'
 import { getAccountOwnedPlaylists } from 'common/store/account/selectors'
 import {
   createPlaylist,
   addTrackToPlaylist
 } from 'common/store/cache/collections/actions'
-import { ToastContext } from 'components/toast/ToastContext'
-import { requestOpen as openAddToPlaylist } from 'containers/add-to-playlist/store/actions'
-import { getCollectionId } from 'containers/collection-page/store/selectors'
-import * as embedModalActions from 'containers/embed-modal/store/actions'
-import { requestOpen as openTikTokModal } from 'containers/share-sound-to-tiktok-modal/store/slice'
-import { newCollectionMetadata } from 'schemas'
-import {
-  FavoriteSource,
-  RepostSource,
-  ShareSource,
-  CreatePlaylistSource
-} from 'services/analytics'
-import { FeatureFlags, getFeatureEnabled } from 'services/remote-config'
-import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
-import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import {
   saveTrack,
   unsaveTrack,
   repostTrack,
   undoRepostTrack,
   shareTrack
-} from 'store/social/tracks/actions'
+} from 'common/store/social/tracks/actions'
+import { requestOpen as openAddToPlaylist } from 'common/store/ui/add-to-playlist/actions'
+import { requestOpen as openTikTokModal } from 'common/store/ui/share-sound-to-tiktok-modal/slice'
+import { ToastContext } from 'components/toast/ToastContext'
+import { getCollectionId } from 'containers/collection-page/store/selectors'
+import * as embedModalActions from 'containers/embed-modal/store/actions'
+import { newCollectionMetadata } from 'schemas'
+import { FeatureFlags, getFeatureEnabled } from 'services/remote-config'
+import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
+import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
 

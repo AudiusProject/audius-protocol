@@ -1,6 +1,7 @@
 import { call, put, select } from 'redux-saga/effects'
 
 import { ID } from 'common/models/Identifiers'
+import TimeRange from 'common/models/TimeRange'
 import { Track, UserTrackMetadata } from 'common/models/Track'
 import { getTracks } from 'common/store/cache/tracks/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -11,7 +12,6 @@ import {
   getLastFetchedTrendingGenre,
   getTrendingGenre
 } from 'containers/trending-page/store/selectors'
-import TimeRange from 'models/TimeRange'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { getRemoteVar, StringKeys } from 'services/remote-config'
 import { waitForRemoteConfig } from 'services/remote-config/Provider'

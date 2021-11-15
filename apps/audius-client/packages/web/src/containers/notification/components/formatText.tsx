@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 
 import cn from 'classnames'
 
+import { formatCount } from 'common/utils/formatUtil'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import { challengeRewardsConfig } from 'containers/audio-rewards-page/config'
 import {
@@ -11,7 +12,6 @@ import {
 } from 'containers/notification/store/types'
 import UserBadges, { audioTierMapPng } from 'containers/user-badges/UserBadges'
 import { badgeTiers } from 'containers/user-badges/utils'
-import { formatCount } from 'utils/formatUtil'
 import {
   fullAlbumPage,
   fullPlaylistPage,

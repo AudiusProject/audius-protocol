@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
+import { Name } from 'common/models/Analytics'
 import Status from 'common/models/Status'
 import {
   getAccountUser,
@@ -17,7 +18,6 @@ import {
 import { getNotificationUnreadCount } from 'containers/notification/store/selectors'
 import { getSearchStatus } from 'containers/search-page/store/selectors'
 import { openSignOn } from 'containers/sign-on/store/actions'
-import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
 import { AppState } from 'store/types'
 import { getIsIOS } from 'utils/browser'

@@ -4,15 +4,20 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { FavoriteSource, Name, PlaybackSource } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
+import {
+  recordListen,
+  saveTrack,
+  unsaveTrack
+} from 'common/store/social/tracks/actions'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import FavoriteButton from 'components/general/alt-button/FavoriteButton'
 import PlayButton from 'components/play-bar/PlayButton'
 import TrackingBar from 'components/play-bar/TrackingBar'
 import { PlayButtonStatus } from 'components/play-bar/types'
 import { useTrackCoverArt } from 'hooks/useImageSize'
-import { FavoriteSource, Name, PlaybackSource } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
 import {
   getAudio,
@@ -23,11 +28,6 @@ import {
 import { AudioState } from 'store/player/types'
 import { makeGetCurrent } from 'store/queue/selectors'
 import { pause, play } from 'store/queue/slice'
-import {
-  recordListen,
-  saveTrack,
-  unsaveTrack
-} from 'store/social/tracks/actions'
 import { AppState } from 'store/types'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 

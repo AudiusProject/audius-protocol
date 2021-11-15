@@ -15,9 +15,16 @@ import { TracksCacheState } from 'common/store/cache/tracks/types'
 import usersReducer from 'common/store/cache/users/reducer'
 import usersSagas from 'common/store/cache/users/sagas'
 import { UsersCacheState } from 'common/store/cache/users/types'
+import addToPlaylistReducer, {
+  AddToPlaylistState
+} from 'common/store/ui/add-to-playlist/reducer'
 import collectibleDetailsReducer, {
   CollectibleDetailsState
 } from 'common/store/ui/collectible-details/slice'
+import createPlaylistModalReducer from 'common/store/ui/createPlaylistModal/reducer'
+import { CreatePlaylistModalState } from 'common/store/ui/createPlaylistModal/types'
+import deletePlaylistConfirmationReducer from 'common/store/ui/delete-playlist-confirmation-modal/reducers'
+import { DeletePlaylistConfirmationModalState } from 'common/store/ui/delete-playlist-confirmation-modal/types'
 import mobileOverflowModalReducer from 'common/store/ui/mobile-overflow-menu/reducer'
 import { MobileOverflowModalState } from 'common/store/ui/mobile-overflow-menu/types'
 import mobileUploadDrawerReducer, {
@@ -27,6 +34,8 @@ import modalsReducer, { ModalsState } from 'common/store/ui/modals/slice'
 import nowPlayingReducer, {
   NowPlayingState
 } from 'common/store/ui/now-playing/slice'
+import shareSoundToTikTokModalReducer from 'common/store/ui/share-sound-to-tiktok-modal/slice'
+import { ShareSoundToTikTokModalState } from 'common/store/ui/share-sound-to-tiktok-modal/types'
 
 // In the future, these state slices will live in @audius/client-common.
 // For now they live in the web client. As features get migrated to RN
@@ -43,11 +52,15 @@ export const reducers = {
 
   // UI
   ui: combineReducers({
+    addToPlaylist: addToPlaylistReducer,
+    createPlaylistModal: createPlaylistModalReducer,
     collectibleDetails: collectibleDetailsReducer,
+    deletePlaylistConfirmationModal: deletePlaylistConfirmationReducer,
     mobileOverflowModal: mobileOverflowModalReducer,
     mobileUploadDrawer: mobileUploadDrawerReducer,
     modals: modalsReducer,
-    nowPlaying: nowPlayingReducer
+    nowPlaying: nowPlayingReducer,
+    shareSoundToTikTokModal: shareSoundToTikTokModalReducer
   })
 }
 
@@ -57,6 +70,14 @@ export const sagas = {
   collections: collectionsSagas,
   tracks: tracksSagas,
   users: usersSagas
+
+  // TODO: pull in the following from audius-client
+  // once AudiusBackend and dependencies are migrated
+  // containers/add-to-playlist/store/sagas.ts
+  // containers/share-sound-to-tiktok-modal/store/sagas.ts
+  // store/social/tracks/sagas.ts
+  // store/social/users/sagas.ts
+  // store/social/collections/sagas.ts
 }
 
 export type CommonState = {
@@ -68,10 +89,14 @@ export type CommonState = {
   users: UsersCacheState
 
   ui: {
+    addToPlaylist: AddToPlaylistState
+    createPlaylistModal: CreatePlaylistModalState
     collectibleDetails: CollectibleDetailsState
+    deletePlaylistConfirmationModal: DeletePlaylistConfirmationModalState
     mobileOverflowModal: MobileOverflowModalState
     mobileUploadDrawer: MobileUploadDrawerState
     modals: ModalsState
     nowPlaying: NowPlayingState
+    shareSoundToTikTokModal: ShareSoundToTikTokModalState
   }
 }

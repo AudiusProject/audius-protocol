@@ -4,10 +4,10 @@ import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import { SquareSizes } from 'common/models/ImageSizes'
+import { formatCount } from 'common/utils/formatUtil'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useImageSize'
-import { formatCount } from 'utils/formatUtil'
 
 import styles from './UserCard.module.css'
 

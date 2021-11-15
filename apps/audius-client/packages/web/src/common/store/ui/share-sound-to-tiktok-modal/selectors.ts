@@ -1,9 +1,9 @@
 import { createSelector } from '@reduxjs/toolkit'
 
-import { AppState } from 'store/types'
+import { CommonState } from 'common/store'
 
-const shareSoundToTikTokModalState = (state: AppState) =>
-  state.application.ui.shareSoundToTikTokModal
+const shareSoundToTikTokModalState = (state: CommonState) =>
+  state.ui.shareSoundToTikTokModal
 
 export const getTrack = createSelector(
   shareSoundToTikTokModalState,

@@ -5,6 +5,7 @@ import { ReactComponent as IconCollectibles } from 'assets/img/iconCollectibles.
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
 import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
 import { ReactComponent as IconReposts } from 'assets/img/iconRepost.svg'
+import { Name } from 'common/models/Analytics'
 import { Collection } from 'common/models/Collection'
 import { ID, UID } from 'common/models/Identifiers'
 import { CoverPhotoSizes, ProfilePictureSizes } from 'common/models/ImageSizes'
@@ -30,7 +31,6 @@ import { useSelectTierInfo } from 'containers/user-badges/hooks'
 import { badgeTiers } from 'containers/user-badges/utils'
 import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { LineupState } from 'models/common/Lineup'
-import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
 import {
   albumPage,

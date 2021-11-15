@@ -1,6 +1,7 @@
 import { select, all } from 'redux-saga/effects'
 
 import { Collection, UserCollectionMetadata } from 'common/models/Collection'
+import FeedFilter from 'common/models/FeedFilter'
 import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import { LineupTrack, TrackMetadata } from 'common/models/Track'
@@ -17,7 +18,6 @@ import {
   getFollowIds,
   getStartedSignOnProcess
 } from 'containers/sign-on/store/selectors'
-import FeedFilter from 'models/FeedFilter'
 import apiClient, {
   GetSocialFeedArgs
 } from 'services/audius-api-client/AudiusAPIClient'

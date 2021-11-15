@@ -1,14 +1,11 @@
 import { RouterState } from 'connected-react-router'
 
 import { CommonState } from 'common/store'
-import modals from 'common/store/ui/modals/slice'
-import { AddToPlaylistState } from 'containers/add-to-playlist/store/reducers'
 import ArtistDashboardState from 'containers/artist-dashboard-page/store/types'
 import ArtistRecommendationsReducer from 'containers/artist-recommendations/store/slice'
 import rewardsPage from 'containers/audio-rewards-page/store/slice'
 import { ChangePasswordState } from 'containers/change-password/store/slice'
 import { CollectionsPageState } from 'containers/collection-page/store/types'
-import { DeletePlaylistConfirmationModalState } from 'containers/delete-playlist-confirmation-modal/store/types'
 import DeletedPageReducer from 'containers/deleted-page/store/slice'
 import { EmbedModalState } from 'containers/embed-modal/store/types'
 import { CollectionsState as ExploreCollectionsState } from 'containers/explore-page/store/collections/slice'
@@ -34,7 +31,6 @@ import SearchBarState from 'containers/search-bar/store/types'
 import { SearchPageState } from 'containers/search-page/store/types'
 import ServiceSelectionReducer from 'containers/service-selection/store/slice'
 import SettingsPageState from 'containers/settings-page/store/types'
-import { ShareSoundToTikTokModalState } from 'containers/share-sound-to-tiktok-modal/store/types'
 import SignOnPageState from 'containers/sign-on/store/types'
 import { SmartCollectionState } from 'containers/smart-collection/store/slice'
 import TrackPageState from 'containers/track-page/store/types'
@@ -54,8 +50,9 @@ import QueueReducer from 'store/queue/slice'
 import tokenDashboard from 'store/token-dashboard/slice'
 import wallet from 'store/wallet/slice'
 
+import { CreatePlaylistModalState } from '../common/store/ui/createPlaylistModal/types'
+
 import { CookieBannerState } from './application/ui/cookieBanner/types'
-import { CreatePlaylistModalState } from './application/ui/createPlaylistModal/types'
 import { EditPlaylistModalState } from './application/ui/editPlaylistModal/slice'
 import EditTrackModalState from './application/ui/editTrackModal/types'
 import { MobileKeyboardState } from './application/ui/mobileKeyboard/types'
@@ -104,7 +101,6 @@ export type AppState = CommonState & {
       remixSettingsModal: ReturnType<typeof RemixSettingsModalReducer>
       scrollLock: ScrollLockState
       setAsArtistPickConfirmation: SetAsArtistPickConfirmationState
-      shareSoundToTikTokModal: ShareSoundToTikTokModalState
       stemsUpload: ReturnType<typeof StemsUploadReducer>
       theme: ThemeState
       userListModal: UserListModalState
@@ -119,8 +115,6 @@ export type AppState = CommonState & {
       following: FollowingPageState
       notificationUsers: NotificationUsersPageState
       unfollowConfirmation: UnfollowConfirmationModalState
-      deletePlaylistConfirmation: DeletePlaylistConfirmationModalState
-      addToPlaylist: AddToPlaylistState
       nowPlaying: NowPlayingState
       smartCollection: SmartCollectionState
       exploreCollections: ExploreCollectionsState

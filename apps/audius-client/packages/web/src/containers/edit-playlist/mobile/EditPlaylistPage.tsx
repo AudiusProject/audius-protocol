@@ -6,6 +6,7 @@ import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCamera } from 'assets/img/iconCamera.svg'
 import placeholderCoverArt from 'assets/img/imageBlank2x.png'
+import { CreatePlaylistSource } from 'common/models/Analytics'
 import { Collection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
@@ -16,6 +17,11 @@ import {
   orderPlaylist,
   removeTrackFromPlaylist
 } from 'common/store/cache/collections/actions'
+import * as createPlaylistActions from 'common/store/ui/createPlaylistModal/actions'
+import {
+  getMetadata,
+  getTracks
+} from 'common/store/ui/createPlaylistModal/selectors'
 import { Nullable } from 'common/utils/typeUtils'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import EditableRow, { Format } from 'components/groupable-list/EditableRow'
@@ -31,12 +37,6 @@ import useHasChangedRoute from 'hooks/useHasChangedRoute'
 import { useCollectionCoverArt } from 'hooks/useImageSize'
 import * as schemas from 'schemas'
 import RandomImage from 'services/RandomImage'
-import { CreatePlaylistSource } from 'services/analytics'
-import * as createPlaylistActions from 'store/application/ui/createPlaylistModal/actions'
-import {
-  getMetadata,
-  getTracks
-} from 'store/application/ui/createPlaylistModal/selectors'
 import { AppState } from 'store/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
 import { playlistPage } from 'utils/route'
