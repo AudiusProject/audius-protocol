@@ -30,25 +30,22 @@ const ethOwnerWallet = process.env.REACT_APP_ETH_OWNER_WALLET
 const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID
 
 const DISCOVERY_NODE_ALLOW_LIST = new Set([
-  'https://discoveryprovider.audius7.prod-us-west-2.staked.cloud',
-  'https://discoveryprovider.audius1.prod-us-west-2.staked.cloud',
-  'https://discoveryprovider.audius4.prod-us-west-2.staked.cloud',
-  'https://discoveryprovider.audius2.prod-us-west-2.staked.cloud',
-  'https://discovery-au-01.audius.openplayer.org',
-  'https://dn-usa.audius.metadata.fyi',
-  'https://discoveryprovider.audius6.prod-us-west-2.staked.cloud',
-  'https://dn-jpn.audius.metadata.fyi',
-  'https://dn1.monophonic.digital',
-  'https://discoveryprovider.audius3.prod-us-west-2.staked.cloud',
-  'https://audius-discovery-1.altego.net',
   'https://discoveryprovider.audius.prod-us-west-2.staked.cloud',
-  'https://discoveryprovider.audius.co',
+  'https://discoveryprovider.audius3.prod-us-west-2.staked.cloud',
+  'https://discoveryprovider.audius2.prod-us-west-2.staked.cloud',
+  'https://discoveryprovider.audius4.prod-us-west-2.staked.cloud',
+  'https://discoveryprovider.audius1.prod-us-west-2.staked.cloud',
+  'https://discoveryprovider.audius7.prod-us-west-2.staked.cloud',
   'https://discoveryprovider.audius5.prod-us-west-2.staked.cloud',
-  'https://audius-discovery-2.altego.net',
-  'https://discoveryprovider2.audius.co',
+  'https://audius-metadata-1.figment.io',
+  'https://audius-metadata-3.figment.io',
+  'https://audius-metadata-4.figment.io',
+  'https://dn-usa.audius.metadata.fyi',
+  'https://dn-jpn.audius.metadata.fyi',
+  'https://audius-discovery.nz.modulational.com',
+  'https://dn2.monophonic.digital',
   'https://audius-dp.johannesburg.creatorseed.com',
-  'https://discoveryprovider3.audius.co',
-  'https://dn2.monophonic.digital'
+  'https://dn1.monophonic.digital'
 ])
 
 // Used to prevent two callbacks from firing triggering reload
