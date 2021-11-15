@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-evenly',
     width: '100%',
-    padding: 16
+    padding: 40
   },
 
   cta: {

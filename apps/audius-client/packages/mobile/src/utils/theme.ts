@@ -76,7 +76,8 @@ export const defaultTheme = {
   shadow: '#E3E3E3',
   staticWhite: '#FFFFFF',
   pageHeaderGradientColor1: '#5B23E1',
-  pageHeaderGradientColor2: '#A22FEB'
+  pageHeaderGradientColor2: '#A22FEB',
+  actionSheetText: '#7E1BCC'
 }
 
 export const darkTheme = {
@@ -119,7 +120,8 @@ export const darkTheme = {
   shadow: '#35364F',
   staticWhite: '#FFFFFF',
   pageHeaderGradientColor1: '#7652CC',
-  pageHeaderGradientColor2: '#B05CE6'
+  pageHeaderGradientColor2: '#B05CE6',
+  actionSheetText: '#9147CC'
 }
 
 const matrixTheme = {
@@ -152,7 +154,9 @@ const matrixTheme = {
   white: '#1F211F',
   staticWhite: '#FFFFFF',
   pageHeaderGradientColor1: '#1D211B',
-  pageHeaderGradientColor2: '#1D211B'
+  pageHeaderGradientColor2: '#1D211B',
+  actionSheetText: '#21B404',
+  accentRed: '#D0021B'
 }
 
 export type ThemeColors =
