@@ -370,11 +370,13 @@ def update_aggregate_table(
                 if (
                     not most_recent_indexed_aggregate_block
                 ):
-                    # re-create entire table
+                    # repopulate entire table
+                    logger.info(f"index_aggregate_user.py | Repopulating {table_name}")
                     most_recent_indexed_aggregate_block = 0
                     session.execute("TRUNCATE TABLE {}".format(table_name))
                 elif (latest_indexed_block_num % REFRESH_COUNTER == 0):
-                    # refresh the past two weeks
+                    # refresh the past two weeks for data accuracy
+                    logger.info(f"index_aggregate_user.py | Refreshing {table_name} for the past two weeks")
                     most_recent_indexed_aggregate_block -= TWO_WEEKS_IN_BLOCKS
                     if (most_recent_indexed_aggregate_block < 0):
                         most_recent_indexed_aggregate_block = 0
