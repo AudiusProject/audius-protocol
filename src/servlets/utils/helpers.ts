@@ -39,7 +39,7 @@ const extendTrack = async (track: any): Promise<any> => {
     ['1000x1000']: getImageUrl(coverArt, gateway)
   }
 
-  const release_date = track.release_date ? track.release_date : track.created_at
+  const releaseDate = track.release_date ? track.release_date : track.created_at
   const duration = track.track_segments.reduce(
     (acc: number, v: any) => acc = acc + v.duration,
     0
@@ -49,7 +49,7 @@ const extendTrack = async (track: any): Promise<any> => {
     id: encodeHashId(track.track_id),
     user,
     artwork,
-    release_date,
+    release_date: releaseDate,
     duration
   }
 }
