@@ -1,10 +1,10 @@
+import FeedFilter from 'common/models/FeedFilter'
 import {
   SET_SUGGESTED_FOLLOWS,
   SET_FEED_FILTER
 } from 'containers/feed-page/store/actions'
 import { PREFIX as FeedPrefix } from 'containers/feed-page/store/lineups/feed/actions'
 import feedReducer from 'containers/feed-page/store/lineups/feed/reducer'
-import FeedFilter from 'models/FeedFilter'
 import { asLineup } from 'store/lineup/reducer'
 
 const initialState = {

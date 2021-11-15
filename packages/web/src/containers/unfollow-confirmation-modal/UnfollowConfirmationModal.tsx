@@ -3,10 +3,10 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { FollowSource } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
+import * as socialActions from 'common/store/social/users/actions'
 import { setNotificationSubscription } from 'containers/profile-page/store/actions'
-import { FollowSource } from 'services/analytics'
-import * as socialActions from 'store/social/users/actions'
 import { AppState } from 'store/types'
 
 import UnfollowConfirmationModal from './components/UnfollowConfirmationModal'

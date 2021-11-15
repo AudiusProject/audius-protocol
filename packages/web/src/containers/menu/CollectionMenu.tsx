@@ -3,12 +3,16 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import {
+  ShareSource,
+  FavoriteSource,
+  RepostSource
+} from 'common/models/Analytics'
 import { PlayableType, ID } from 'common/models/Identifiers'
 import { getUser } from 'common/store/cache/users/selectors'
+import * as socialActions from 'common/store/social/collections/actions'
 import * as embedModalActions from 'containers/embed-modal/store/actions'
-import { ShareSource, FavoriteSource, RepostSource } from 'services/analytics'
 import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
-import * as socialActions from 'store/social/collections/actions'
 import { AppState } from 'store/types'
 import { albumPage, playlistPage, profilePage } from 'utils/route'
 

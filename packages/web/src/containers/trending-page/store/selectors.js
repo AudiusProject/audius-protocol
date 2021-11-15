@@ -1,5 +1,5 @@
+import TimeRange from 'common/models/TimeRange'
 import { getUsers } from 'common/store/cache/users/selectors'
-import TimeRange from 'models/TimeRange'
 import { createShallowSelector } from 'utils/selectorHelpers'
 
 export const getSuggestedFollows = state => state.trending.suggestedFollows

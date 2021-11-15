@@ -1,10 +1,10 @@
 import { select } from 'redux-saga-test-plan/matchers'
 import { all, call, put, take, takeEvery } from 'redux-saga/effects'
 
+import { Name } from 'common/models/Analytics'
 import { BNWei } from 'common/models/Wallet'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getAccountUser } from 'common/store/account/selectors'
-import { Name } from 'services/analytics'
 import walletClient from 'services/wallet-client/WalletClient'
 import { make } from 'store/analytics/actions'
 import { SETUP_BACKEND_SUCCEEDED } from 'store/backend/actions'

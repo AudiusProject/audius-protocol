@@ -2,6 +2,8 @@ import React, { useState, useContext, useEffect, useCallback } from 'react'
 
 import cn from 'classnames'
 
+import { Name } from 'common/models/Analytics'
+import FeedFilter from 'common/models/FeedFilter'
 import Status from 'common/models/Status'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import Header from 'components/general/header/mobile/Header'
@@ -12,8 +14,6 @@ import { FeedPageContentProps } from 'containers/feed-page/types'
 import Lineup from 'containers/lineup/Lineup'
 import { useMainPageHeader } from 'containers/nav/store/context'
 import useAsyncPoll from 'hooks/useAsyncPoll'
-import FeedFilter from 'models/FeedFilter'
-import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
 import { BASE_URL, FEED_PAGE } from 'utils/route'
 

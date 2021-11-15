@@ -4,7 +4,7 @@ import {
   OverflowAction,
   OverflowActionCallbacks
 } from 'common/store/ui/mobile-overflow-menu/types'
-import ActionSheetModal from 'components/action-sheet-modal/ActionSheetModal'
+import ActionSheetModal from 'components/action-drawer/ActionDrawer'
 
 type MobileOverflowModalProps = {
   // Actions to show in the modal

@@ -6,8 +6,8 @@ import { Dispatch } from 'redux'
 import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
 import { getUser } from 'common/store/cache/users/selectors'
+import { formatCount, pluralize } from 'common/utils/formatUtil'
 import { AppState } from 'store/types'
-import { formatCount, pluralize } from 'utils/formatUtil'
 
 import styles from './StatsText.module.css'
 

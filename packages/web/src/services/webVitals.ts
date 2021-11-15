@@ -1,6 +1,6 @@
 import { getCLS, getFID, getLCP, getFCP, getTTFB } from 'web-vitals'
 
-import { Name } from 'services/analytics'
+import { Name } from 'common/models/Analytics'
 import { track } from 'store/analytics/providers/segment'
 import { findRoute, getPathname } from 'utils/route'
 

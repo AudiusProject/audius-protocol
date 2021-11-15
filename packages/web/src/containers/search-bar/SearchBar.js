@@ -8,11 +8,11 @@ import { withRouter } from 'react-router-dom'
 
 import placeholderArt from 'assets/img/imageBlank2x.png'
 import profilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
+import { Name } from 'common/models/Analytics'
 import { SquareSizes } from 'common/models/ImageSizes'
 import Bar from 'components/search/SearchBar'
 import { getSearch } from 'containers/search-bar/store/selectors'
 import { getTierForUser } from 'containers/user-badges/utils'
-import { Name } from 'services/analytics'
 import { make } from 'store/analytics/actions'
 import { albumPage, playlistPage, profilePage, getPathname } from 'utils/route'
 

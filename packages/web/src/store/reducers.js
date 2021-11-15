@@ -2,13 +2,11 @@ import { connectRouter } from 'connected-react-router'
 import { combineReducers } from 'redux'
 
 import { reducers as clientStoreReducers } from 'common/store'
-import addToPlaylist from 'containers/add-to-playlist/store/reducers'
 import dashboard from 'containers/artist-dashboard-page/store/reducer'
 import artistRecommendations from 'containers/artist-recommendations/store/slice'
 import rewardsPage from 'containers/audio-rewards-page/store/slice'
 import changePassword from 'containers/change-password/store/slice'
 import collection from 'containers/collection-page/store/reducer'
-import deletePlaylistConfirmation from 'containers/delete-playlist-confirmation-modal/store/reducers'
 import deleted from 'containers/deleted-page/store/slice'
 import embedModal from 'containers/embed-modal/store/reducers'
 import exploreCollections from 'containers/explore-page/store/collections/slice'
@@ -34,7 +32,6 @@ import searchBar from 'containers/search-bar/store/reducer'
 import search from 'containers/search-page/store/reducer'
 import serviceSelection from 'containers/service-selection/store/slice'
 import settings from 'containers/settings-page/store/reducer'
-import shareSoundToTikTokModal from 'containers/share-sound-to-tiktok-modal/store/slice'
 import signOn from 'containers/sign-on/store/reducer'
 import smartCollection from 'containers/smart-collection/store/slice'
 import track from 'containers/track-page/store/reducer'
@@ -47,7 +44,6 @@ import visualizer from 'containers/visualizer/store/slice'
 import appCTAModal from 'store/application/ui/app-cta-modal/slice'
 import averageColor from 'store/application/ui/average-color/slice'
 import cookieBanner from 'store/application/ui/cookieBanner/reducer'
-import createPlaylistModal from 'store/application/ui/createPlaylistModal/reducer'
 import editPlaylistModal from 'store/application/ui/editPlaylistModal/slice'
 import editTrackModal from 'store/application/ui/editTrackModal/reducer'
 import mobileKeyboard from 'store/application/ui/mobileKeyboard/reducer'
@@ -121,7 +117,6 @@ const createRootReducer = routeHistory =>
         averageColor,
         changePassword,
         cookieBanner,
-        createPlaylistModal,
         editPlaylistModal,
         editTrackModal,
         embedModal,
@@ -131,16 +126,13 @@ const createRootReducer = routeHistory =>
         remixSettingsModal,
         scrollLock,
         setAsArtistPickConfirmation,
-        shareSoundToTikTokModal,
         stemsUpload,
         theme,
         userListModal,
         visualizer
       }),
       pages: combineReducers({
-        addToPlaylist,
         deleted,
-        deletePlaylistConfirmation,
         explore,
         exploreCollections,
         favorites,

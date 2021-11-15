@@ -7,7 +7,7 @@ import {
   formatNumberCommas,
   formatWeiToAudioString,
   parseWeiNumber
-} from 'utils/formatUtil'
+} from 'common/utils/formatUtil'
 
 export const weiToAudioString = (bnWei: BNWei): StringAudio => {
   const stringAudio = formatWeiToAudioString(bnWei) as StringAudio

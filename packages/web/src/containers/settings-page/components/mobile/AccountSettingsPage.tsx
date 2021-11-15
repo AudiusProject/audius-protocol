@@ -5,6 +5,7 @@ import cn from 'classnames'
 import { debounce } from 'lodash'
 
 import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
+import { Name } from 'common/models/Analytics'
 import { SquareSizes } from 'common/models/ImageSizes'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import MobilePageContainer from 'components/general/MobilePageContainer'
@@ -15,7 +16,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import SignOutPage from 'containers/nav/mobile/SignOut'
 import { useUserProfilePicture } from 'hooks/useImageSize'
 import AudiusBackend from 'services/AudiusBackend'
-import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
 import {
   ACCOUNT_VERIFICATION_SETTINGS_PAGE,

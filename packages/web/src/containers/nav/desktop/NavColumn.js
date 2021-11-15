@@ -8,6 +8,7 @@ import SimpleBar from 'simplebar-react'
 import 'simplebar/dist/simplebar.min.css'
 
 import imageProfilePicEmpty from 'assets/img/imageProfilePicEmpty2X.png'
+import { Name, CreatePlaylistSource } from 'common/models/Analytics'
 import { SquareSizes } from 'common/models/ImageSizes'
 import Status from 'common/models/Status'
 import {
@@ -18,6 +19,10 @@ import {
   createPlaylist,
   addTrackToPlaylist
 } from 'common/store/cache/collections/actions'
+import { saveCollection } from 'common/store/social/collections/actions'
+import { saveTrack } from 'common/store/social/tracks/actions'
+import * as createPlaylistModalActions from 'common/store/ui/createPlaylistModal/actions'
+import { getIsOpen } from 'common/store/ui/createPlaylistModal/selectors'
 import CreatePlaylistModal from 'components/create-playlist/CreatePlaylistModal'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Pill from 'components/general/Pill'
@@ -39,15 +44,10 @@ import * as signOnActions from 'containers/sign-on/store/actions'
 import { resetState as resetUploadState } from 'containers/upload-page/store/actions'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useImageSize'
-import { Name, CreatePlaylistSource } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
 import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
-import * as createPlaylistModalActions from 'store/application/ui/createPlaylistModal/actions'
-import { getIsOpen } from 'store/application/ui/createPlaylistModal/selectors'
 import { getIsDragging } from 'store/dragndrop/selectors'
 import { makeGetCurrent } from 'store/queue/selectors'
-import { saveCollection } from 'store/social/collections/actions'
-import { saveTrack } from 'store/social/tracks/actions'
 import {
   FEED_PAGE,
   TRENDING_PAGE,

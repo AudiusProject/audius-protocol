@@ -16,6 +16,7 @@ import Linkify from 'linkifyjs/react'
 
 import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
+import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import {
   CoverPhotoSizes,
@@ -23,6 +24,7 @@ import {
   WidthSizes,
   SquareSizes
 } from 'common/models/ImageSizes'
+import { formatCount, squashNewLines } from 'common/utils/formatUtil'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowButton from 'components/general/FollowButton'
 import SubscribeButton from 'components/general/SubscribeButton'
@@ -30,9 +32,7 @@ import { ArtistRecommendationsDropdown } from 'containers/artist-recommendations
 import ProfilePageBadge from 'containers/user-badges/ProfilePageBadge'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { useUserCoverPhoto, useUserProfilePicture } from 'hooks/useImageSize'
-import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
-import { formatCount, squashNewLines } from 'utils/formatUtil'
 import { FOLLOWING_USERS_ROUTE, FOLLOWERS_USERS_ROUTE } from 'utils/route'
 
 import GrowingCoverPhoto from './GrowingCoverPhoto'

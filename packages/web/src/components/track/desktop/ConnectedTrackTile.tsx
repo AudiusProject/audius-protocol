@@ -6,17 +6,28 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import {
+  ShareSource,
+  RepostSource,
+  FavoriteSource
+} from 'common/models/Analytics'
 import { UID, ID } from 'common/models/Identifiers'
 import { getUserHandle } from 'common/store/account/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUserFromTrack } from 'common/store/cache/users/selectors'
+import {
+  saveTrack,
+  unsaveTrack,
+  repostTrack,
+  undoRepostTrack,
+  shareTrack
+} from 'common/store/social/tracks/actions'
 import ArtistPopover from 'components/artist/ArtistPopover'
 import { TrackArtwork } from 'components/track/desktop/Artwork'
 import Draggable from 'containers/dragndrop/Draggable'
 import Menu from 'containers/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'containers/menu/TrackMenu'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { ShareSource, RepostSource, FavoriteSource } from 'services/analytics'
 import {
   setUsers,
   setVisibility
@@ -26,13 +37,6 @@ import {
   UserListEntityType
 } from 'store/application/ui/userListModal/types'
 import { getUid, getPlaying, getBuffering } from 'store/player/selectors'
-import {
-  saveTrack,
-  unsaveTrack,
-  repostTrack,
-  undoRepostTrack,
-  shareTrack
-} from 'store/social/tracks/actions'
 import { AppState } from 'store/types'
 import { fullTrackPage, profilePage } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'

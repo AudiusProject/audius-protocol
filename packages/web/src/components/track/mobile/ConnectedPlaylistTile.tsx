@@ -4,6 +4,13 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import {
+  FavoriteSource,
+  RepostSource,
+  Name,
+  PlaybackSource,
+  ShareSource
+} from 'common/models/Analytics'
 import { FavoriteType } from 'common/models/Favorite'
 import { ID } from 'common/models/Identifiers'
 import { Track } from 'common/models/Track'
@@ -13,6 +20,13 @@ import {
   getTracksFromCollection
 } from 'common/store/cache/collections/selectors'
 import { getUserFromCollection } from 'common/store/cache/users/selectors'
+import {
+  saveCollection,
+  unsaveCollection,
+  repostCollection,
+  undoRepostCollection,
+  shareCollection
+} from 'common/store/social/collections/actions'
 import { open } from 'common/store/ui/mobile-overflow-menu/actions'
 import {
   OverflowAction,
@@ -22,23 +36,9 @@ import { PlaylistTileProps } from 'components/track/types'
 import { setFavorite } from 'containers/favorites-page/store/actions'
 import { setRepost } from 'containers/reposts-page/store/actions'
 import { RepostType } from 'containers/reposts-page/store/types'
-import {
-  FavoriteSource,
-  RepostSource,
-  Name,
-  PlaybackSource,
-  ShareSource
-} from 'services/analytics'
 import { useRecord, make } from 'store/analytics/actions'
 import { getTheme } from 'store/application/ui/theme/selectors'
 import { getUid, getBuffering, getPlaying } from 'store/player/selectors'
-import {
-  saveCollection,
-  unsaveCollection,
-  repostCollection,
-  undoRepostCollection,
-  shareCollection
-} from 'store/social/collections/actions'
 import { AppState } from 'store/types'
 import {
   albumPage,

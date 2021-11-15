@@ -3,8 +3,8 @@ import React, { useCallback } from 'react'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
+import { Name } from 'common/models/Analytics'
 import { disablePushNotifications } from 'containers/settings-page/store/mobileSagas'
-import { Name } from 'services/analytics'
 import { make, useRecord } from 'store/analytics/actions'
 import { signOut } from 'utils/signOut'
 

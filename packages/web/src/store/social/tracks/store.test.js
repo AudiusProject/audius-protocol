@@ -4,9 +4,9 @@ import * as matchers from 'redux-saga-test-plan/matchers'
 
 import Kind from 'common/models/Kind'
 import * as cacheActions from 'common/store/cache/actions'
+import * as actions from 'common/store/social/tracks/actions'
 import AudiusBackend from 'services/AudiusBackend'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import * as actions from 'store/social/tracks/actions'
 import * as sagas from 'store/social/tracks/sagas'
 import { noopReducer } from 'store/testHelper'
 

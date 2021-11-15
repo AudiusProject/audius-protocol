@@ -1,4 +1,4 @@
-import { Name } from 'services/analytics'
+import { Name } from 'common/models/Analytics'
 import { track } from 'store/analytics/providers/segment'
 
 const DEFAULT_BATCH_SIZE = 10

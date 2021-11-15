@@ -4,23 +4,23 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { FavoriteSource, RepostSource } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { getUserId } from 'common/store/account/selectors'
 import { getUserFromTrack } from 'common/store/cache/users/selectors'
+import {
+  saveTrack,
+  unsaveTrack,
+  repostTrack,
+  undoRepostTrack
+} from 'common/store/social/tracks/actions'
 import { open } from 'common/store/ui/mobile-overflow-menu/actions'
 import {
   OverflowAction,
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
 import { useFlag } from 'containers/remote-config/hooks'
-import { FavoriteSource, RepostSource } from 'services/analytics'
 import { FeatureFlags } from 'services/remote-config'
-import {
-  saveTrack,
-  unsaveTrack,
-  repostTrack,
-  undoRepostTrack
-} from 'store/social/tracks/actions'
 import { AppState } from 'store/types'
 
 import TrackListItem, { TrackListItemProps } from './TrackListItem'

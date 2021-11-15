@@ -14,6 +14,7 @@ import { useTransition, animated } from 'react-spring'
 
 import { ReactComponent as AudiusLogo } from 'assets/img/audiusLogoHorizontal.svg'
 import Status from 'common/models/Status'
+import { formatCount } from 'common/utils/formatUtil'
 import IconButton from 'components/general/IconButton'
 import SearchBar from 'components/search-bar/SearchBar'
 import {
@@ -27,7 +28,6 @@ import NavContext, {
 } from 'containers/nav/store/context'
 import { OpenNotificationsMessage } from 'services/native-mobile-interface/notifications'
 import { getIsIOS } from 'utils/browser'
-import { formatCount } from 'utils/formatUtil'
 import { onNativeBack } from 'utils/nativeRoute'
 import { isMatrix } from 'utils/theme/theme'
 

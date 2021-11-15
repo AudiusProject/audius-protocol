@@ -4,7 +4,7 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { RouteComponentProps, withRouter } from 'react-router-dom'
 
-import { getIsOpen } from 'containers/add-to-playlist/store/selectors'
+import { getIsOpen } from 'common/store/ui/add-to-playlist/selectors'
 import NowPlayingDrawer from 'containers/now-playing/NowPlayingDrawer'
 import { getKeyboardVisibility } from 'store/application/ui/mobileKeyboard/selectors'
 import { getUid as getPlayingUid } from 'store/player/selectors'

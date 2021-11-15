@@ -6,7 +6,7 @@ import PropTypes from 'prop-types'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 import { ReactComponent as IconSave } from 'assets/img/iconSave.svg'
-import { trimToAlphaNumeric } from 'utils/formatUtil'
+import { trimToAlphaNumeric } from 'common/utils/formatUtil'
 
 import styles from './TagInput.module.css'
 

@@ -1,5 +1,6 @@
 import { takeEvery, put, call, select } from 'redux-saga/effects'
 
+import { Name } from 'common/models/Analytics'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
 import { getTrack } from 'common/store/cache/tracks/selectors'
@@ -7,7 +8,6 @@ import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { getUser } from 'common/store/cache/users/selectors'
 import { handleUploads } from 'containers/upload-page/store/sagas'
 import { createStemMetadata } from 'containers/upload-page/store/utils/stems'
-import { Name } from 'services/analytics'
 import { make } from 'store/analytics/actions'
 
 import { startStemUploads, stemUploadsSucceeded } from './slice'

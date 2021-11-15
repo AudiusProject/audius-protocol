@@ -5,13 +5,13 @@ import { processAndCacheCollections } from 'common/store/cache/collections/utils
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
+import { trimToAlphaNumeric } from 'common/utils/formatUtil'
 import * as searchPageActions from 'containers/search-page/store/actions'
 import { tracksActions as tracksLineupActions } from 'containers/search-page/store/lineups/tracks/actions'
 import tracksSagas from 'containers/search-page/store/lineups/tracks/sagas'
 import AudiusBackend from 'services/AudiusBackend'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { trimToAlphaNumeric } from 'utils/formatUtil'
 
 export function* getTagSearchResults(tag, kind, limit, offset) {
   const results = yield call(AudiusBackend.searchTags, {

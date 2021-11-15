@@ -4,6 +4,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { CreatePlaylistSource } from 'common/models/Analytics'
 import { Collection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import { getAccountWithOwnPlaylists } from 'common/store/account/selectors'
@@ -20,13 +21,15 @@ import { useTemporaryNavContext } from 'containers/nav/store/context'
 import NewPlaylistButton from 'containers/saved-page/components/mobile/NewPlaylistButton'
 import useHasChangedRoute from 'hooks/useHasChangedRoute'
 import { newCollectionMetadata } from 'schemas'
-import { CreatePlaylistSource } from 'services/analytics'
 import { AppState } from 'store/types'
 import { playlistPage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
-import { close } from '../store/actions'
-import { getTrackId, getTrackTitle } from '../store/selectors'
+import { close } from '../../../common/store/ui/add-to-playlist/actions'
+import {
+  getTrackId,
+  getTrackTitle
+} from '../../../common/store/ui/add-to-playlist/selectors'
 
 import styles from './AddToPlaylist.module.css'
 

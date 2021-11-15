@@ -1,7 +1,7 @@
 import { call, put, takeEvery } from 'redux-saga/effects'
 
+import { Name } from 'common/models/Analytics'
 import AudiusBackend from 'services/AudiusBackend'
-import { Name } from 'services/analytics'
 import { make, TrackEvent } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 

@@ -8,13 +8,13 @@ import moment from 'moment-timezone'
 import placeholderCoverArt from 'assets/img/imageBlank2x.png'
 import imageCoverPhotoBlank from 'assets/img/imageCoverPhotoBlank.jpg'
 import placeholderProfilePicture from 'assets/img/imageProfilePicEmpty2X.png'
+import { Name } from 'common/models/Analytics'
+import FeedFilter from 'common/models/FeedFilter'
 import { DefaultSizes } from 'common/models/ImageSizes'
 import CIDCache from 'common/store/cache/CIDCache'
 import { Nullable } from 'common/utils/typeUtils'
 import { uuid } from 'common/utils/uid'
-import FeedFilter from 'models/FeedFilter'
 import * as schemas from 'schemas'
-import { Name } from 'services/analytics'
 import {
   IntKeys,
   getRemoteVar,

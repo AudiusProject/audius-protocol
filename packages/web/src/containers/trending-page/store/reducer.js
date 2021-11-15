@@ -1,3 +1,4 @@
+import TimeRange from 'common/models/TimeRange'
 import {
   SET_TRENDING_GENRE,
   SET_TRENDING_TIME_RANGE,
@@ -13,7 +14,6 @@ import {
   trendingMonth,
   trendingYear
 } from 'containers/trending-page/store/lineups/trending/reducer'
-import TimeRange from 'models/TimeRange'
 import { asLineup } from 'store/lineup/reducer'
 import { GENRES } from 'utils/genres'
 

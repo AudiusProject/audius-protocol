@@ -3,8 +3,8 @@ import React, { memo, useState } from 'react'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
+import { formatCount } from 'common/utils/formatUtil'
 import UserListModal from 'components/artist/UserListModal'
-import { formatCount } from 'utils/formatUtil'
 
 import styles from './Stats.module.css'
 
