@@ -25,8 +25,12 @@ const CAN_EMBED_USER_AGENT_REGEX = /(twitter|discord)/
 
 const E = process.env
 
-const getEmbedUrl = (type: Playable, id: number, ownerId: number) => {
+const getCollectionEmbedUrl = (type: Playable, id: number, ownerId: number) => {
   return `${E.PUBLIC_URL}/embed/${type}?id=${id}&ownerId=${ownerId}&flavor=card&twitter=true`
+}
+
+const getTrackEmbedUrl = (type: Playable, hashId: string) => {
+  return `${E.PUBLIC_URL}/embed/${type}/${hashId}?flavor=card&twitter=true`
 }
 
 const getCollectiblesEmbedUrl = (handle: string) => {
@@ -79,7 +83,7 @@ const getTrackContext = async (handle: string, slug: string, canEmbed: boolean):
       labels,
       image: coverArt ? getImageUrl(coverArt, gateway) : track.artwork['1000x1000'],
       embed: canEmbed,
-      embedUrl: getEmbedUrl(Playable.TRACK, track.track_id, track.owner_id)
+      embedUrl: getTrackEmbedUrl(Playable.TRACK, track.id)
     }
   } catch (e) {
     console.error(e)
@@ -103,7 +107,7 @@ const getCollectionContext = async (id: number, canEmbed: boolean): Promise<Cont
       description: collection.description || '',
       image: getImageUrl(coverArt, gateway),
       embed: canEmbed,
-      embedUrl: getEmbedUrl(
+      embedUrl: getCollectionEmbedUrl(
         collection.is_album ? Playable.ALBUM : Playable.PLAYLIST,
         collection.playlist_id,
         collection.playlist_owner_id
