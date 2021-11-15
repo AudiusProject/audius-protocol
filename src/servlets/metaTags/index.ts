@@ -237,7 +237,7 @@ const getRemixesContext = async (handle: string, slug: string): Promise<Context>
 
     const tags = track.tags ? track.tags.split(',') : []
     tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
-    
+
     const labels = [
       { name: 'Released', value: formatDate(track.release_date, RELEASE_DATE_FORMAT) },
       { name: 'Duration', value: formatSeconds(track.duration) },
