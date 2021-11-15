@@ -9,6 +9,7 @@ const { getSpIDForEndpoint, setSpIDForEndpoint } = require('../services/creatorN
 const USER_PROPS = [
   'is_creator',
   'is_verified',
+  'is_deactivated',
   'name',
   'handle',
   'profile_picture',

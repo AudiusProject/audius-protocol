@@ -1,13 +1,11 @@
 import json
 import time
 import logging
-import concurrent.futures
 from datetime import datetime, timedelta
 import requests
-from src.app import eth_abi_values
 from src.models import RouteMetrics, AppNameMetrics
 from src.tasks.celery_app import celery
-from src.utils.helpers import redis_set_and_dump, redis_get_or_restore, is_fqdn
+from src.utils.helpers import redis_set_and_dump, redis_get_or_restore
 from src.utils.redis_metrics import (
     metrics_prefix,
     metrics_applications,
@@ -30,10 +28,10 @@ from src.queries.update_historical_metrics import (
     update_historical_daily_app_metrics,
     update_historical_monthly_app_metrics,
 )
+from src.utils.get_all_other_nodes import get_all_other_nodes
 
 logger = logging.getLogger(__name__)
 
-sp_factory_registry_key = bytes("ServiceProviderFactory", "utf-8")
 discovery_node_service_type = bytes("discovery-node", "utf-8")
 
 
@@ -161,67 +159,6 @@ def refresh_metrics_matviews(db):
         logger.info(
             f"index_metrics.py | refreshed metrics matviews in: {time.time()-start_time} sec"
         )
-
-
-# Perform eth web3 call to fetch endpoint info
-def fetch_discovery_node_info(sp_id, sp_factory_instance):
-    return sp_factory_instance.functions.getServiceEndpointInfo(
-        discovery_node_service_type, sp_id
-    ).call()
-
-
-def get_all_other_nodes():
-    """
-    Get number of discovery nodes
-    At each node, get the service info which includes the endpoint
-    Return all node endpoints except that of this node
-    """
-    shared_config = aggregate_metrics.shared_config
-    eth_web3 = aggregate_metrics.eth_web3
-    eth_registry_address = aggregate_metrics.eth_web3.toChecksumAddress(
-        shared_config["eth_contracts"]["registry"]
-    )
-    eth_registry_instance = eth_web3.eth.contract(
-        address=eth_registry_address, abi=eth_abi_values["Registry"]["abi"]
-    )
-    sp_factory_address = eth_registry_instance.functions.getContract(
-        sp_factory_registry_key
-    ).call()
-    sp_factory_inst = eth_web3.eth.contract(
-        address=sp_factory_address, abi=eth_abi_values["ServiceProviderFactory"]["abi"]
-    )
-    num_discovery_nodes = sp_factory_inst.functions.getTotalServiceTypeProviders(
-        discovery_node_service_type
-    ).call()
-    logger.info(f"number of discovery nodes: {num_discovery_nodes}")
-
-    ids_list = list(range(1, num_discovery_nodes + 1))
-    all_other_nodes = []
-
-    # fetch all discovery nodes info in parallel
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        discovery_node_futures = {
-            executor.submit(fetch_discovery_node_info, i, sp_factory_inst): i
-            for i in ids_list
-        }
-        for future in concurrent.futures.as_completed(discovery_node_futures):
-            node_op = discovery_node_futures[future]
-            try:
-                node_info = future.result()
-                if node_info[3] != shared_config["delegate"]["owner_wallet"]:
-                    endpoint = node_info[1]
-                    if is_fqdn(endpoint):
-                        all_other_nodes.append(endpoint)
-            except Exception as e:
-                logger.error(
-                    f"index_metrics.py | ERROR in discovery_node_futures {node_op} generated {e}"
-                )
-
-    logger.info(
-        f"this node's delegate owner wallet: {shared_config['delegate']['owner_wallet']}"
-    )
-    logger.info(f"all the other nodes: {all_other_nodes}")
-    return all_other_nodes
 
 
 def get_metrics(endpoint, start_time):

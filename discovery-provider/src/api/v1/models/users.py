@@ -38,6 +38,7 @@ user_model = ns.model(
         "profile_picture": fields.Nested(profile_picture, allow_null=True),
         "repost_count": fields.Integer(required=True),
         "track_count": fields.Integer(required=True),
+        "is_deactivated": fields.Boolean(required=True),
     },
 )
 

@@ -1,3 +1,4 @@
+from unittest.mock import patch
 import pytest
 import redis
 from web3 import Web3
@@ -9,6 +10,7 @@ from src.queries.get_attestation import (
     Attestation,
     AttestationError,
     get_attestation,
+    get_create_sender_attestation,
 )
 from src.utils.db_session import get_db
 from src.utils.config import shared_config
@@ -116,3 +118,28 @@ def test_get_attestation(app):
                     oracle_address="wrong_oracle_address",
                     specifier="1",
                 )
+
+
+@pytest.fixture
+def patch_get_all_other_nodes():
+    with patch(
+        "src.queries.get_attestation.get_all_other_nodes",
+        return_value=(
+            ["some_discovery.com"],
+            ["0x94e140D27F3d5EE9EcA0109A71CcBa0109964DCa"],
+        ),
+    ):
+        yield
+
+
+def test_get_create_sender_attestation(app, patch_get_all_other_nodes):
+    new_sender_address = "0x94e140D27F3d5EE9EcA0109A71CcBa0109964DCa"
+    owner_wallet, sender_attestation = get_create_sender_attestation(new_sender_address)
+
+    assert owner_wallet == "0x1D9c77BcfBfa66D37390BF2335f0140979a6122B"
+    assert (
+        sender_attestation
+        == "0xdea0857f45136b5b986b45303d00051bb4c96313"
+        + "3c0e75945534a3bca1e6702d10106357a1d72e68c90f"
+        + "7d46f69f4023518ccc211a7994b41d359c9ea5d65f9700"
+    )
