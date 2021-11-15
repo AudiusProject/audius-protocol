@@ -53,12 +53,6 @@ const getTrackContext = async (handle: string, slug: string, canEmbed: boolean):
   if (!handle || !slug) return getDefaultContext()
   try {
     const track = await getTrackByHandleAndSlug(handle, slug)
-    const user = track.user ? await getUserByHandle(track.user.handle) : await getUser(track.owner_id)
-    const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
-
-    const coverArt = track.cover_art_sizes
-      ? `${track.cover_art_sizes}/1000x1000.jpg`
-      : track.cover_art
 
     const tags = track.tags ? track.tags.split(',') : []
     tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
@@ -77,11 +71,11 @@ const getTrackContext = async (handle: string, slug: string, canEmbed: boolean):
 
     return {
       format: MetaTagFormat.Track,
-      title: `${track.title} • ${user.name}`,
+      title: `${track.title} • ${track.user.name}`,
       description: track.description || '',
       tags,
       labels,
-      image: coverArt ? getImageUrl(coverArt, gateway) : track.artwork['1000x1000'],
+      image: track.artwork['1000x1000'],
       embed: canEmbed,
       embedUrl: getTrackEmbedUrl(Playable.TRACK, track.id)
     }
@@ -244,12 +238,6 @@ const getRemixesContext = async (handle: string, slug: string): Promise<Context>
   if (!handle || !slug) return getDefaultContext()
   try {
     const track = await getTrackByHandleAndSlug(handle, slug)
-    const user = await getUserByHandle(track.user.handle)
-    const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
-
-    const coverArt = track.cover_art_sizes
-      ? `${track.cover_art_sizes}/1000x1000.jpg`
-      : track.cover_art
 
     const tags = track.tags ? track.tags.split(',') : []
     tags.push('audius', 'sound', 'kit', 'sample', 'pack', 'stems', 'mix')
@@ -268,11 +256,11 @@ const getRemixesContext = async (handle: string, slug: string): Promise<Context>
 
     return {
       format: MetaTagFormat.Remixes,
-      title: `Remixes of ${track.title} • ${user.name}`,
+      title: `Remixes of ${track.title} • ${track.user.name}`,
       description: track.description || '',
       tags,
       labels,
-      image: getImageUrl(coverArt, gateway)
+      image: track.artwork['1000x1000'],
     }
   } catch (e) {
     console.error(e)
