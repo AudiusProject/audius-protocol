@@ -16,7 +16,6 @@ import {
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import useAppState from 'app/hooks/useAppState'
 import useLocation from 'app/hooks/useLocation'
 import { MessageType } from 'app/message'
 import { AppState } from 'app/store'
@@ -141,17 +140,6 @@ const Notifications = ({
     close()
     markAsViewed()
   }, [initialPosition, close, markAsViewed, backgroundAnim, translationAnim])
-
-  useAppState(
-    () => {},
-    () => {
-      if (isOpen) {
-        slideIn()
-      } else {
-        slideOut()
-      }
-    }
-  )
 
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,

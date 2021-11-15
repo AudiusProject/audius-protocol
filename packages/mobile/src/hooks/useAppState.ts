@@ -19,7 +19,7 @@ const NotActive = new RegExp(`inactive|background`, 'g')
 
 export const useAppState = (
   onEnterForeground: OnEnterForeground,
-  OnEnterBackground: OnEnterBackground
+  onEnterBackground: OnEnterBackground
 ) => {
   const [appState, setAppState] = useState<AppStateStatus>(
     AppState.currentState
@@ -37,14 +37,14 @@ export const useAppState = (
       if (
         appState === 'active' &&
         nextAppState.match(NotActive) &&
-        OnEnterBackground
+        onEnterBackground
       ) {
         console.info('Enter background')
-        OnEnterBackground()
+        onEnterBackground()
       }
       setAppState(nextAppState)
     },
-    [appState, onEnterForeground, OnEnterBackground]
+    [appState, onEnterForeground, onEnterBackground]
   )
 
   useEffect(() => {

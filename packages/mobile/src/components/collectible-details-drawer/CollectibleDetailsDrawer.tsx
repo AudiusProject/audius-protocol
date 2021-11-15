@@ -30,6 +30,11 @@ export const messages = {
 
 const createStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
+    container: {
+      padding: 24,
+      paddingTop: 8
+    },
+
     details: {
       marginTop: 24
     },
@@ -113,7 +118,7 @@ const CollectibleDetails = () => {
   return (
     <Drawer isOpen={isOpen} onClose={handleClose} isFullscreen>
       {collectible && isOpen && (
-        <View>
+        <View style={styles.container}>
           <CollectibleMedia collectible={collectible} />
 
           <View style={styles.details}>
