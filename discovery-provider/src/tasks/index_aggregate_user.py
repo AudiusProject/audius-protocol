@@ -11,9 +11,12 @@ logger = logging.getLogger(__name__)
 AGGREGATE_USER = "aggregate_user"
 DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
 
-# every ~1000 updates, refresh the entire table
-# at 30 secs interval, this should happen ~twice a day
-REFRESH_COUNTER = 1000
+# (1,209,600 two weeks in seconds / 5 sec block_processing_interval_sec)
+TWO_WEEKS_IN_BLOCKS = 241920
+
+# every ~2880 updates, refresh the entire table
+# at 30 secs interval, this should happen ~once a day
+REFRESH_COUNTER = 2880
 
 ### UPDATE_AGGREGATE_USER_QUERY ###
 # Get a lower bound blocknumber to check for new entity counts for a user
@@ -349,6 +352,7 @@ def update_aggregate_table(
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
+            start_time = time.time()
             most_recent_indexed_aggregate_block = redis.get(
                 most_recent_indexed_aggregate_block_key
             )
@@ -362,14 +366,21 @@ def update_aggregate_table(
 
             with db.scoped_session() as session:
                 latest_indexed_block_num = get_latest_blocknumber(session, redis)
-                start_time = time.time()
+
                 if (
                     not most_recent_indexed_aggregate_block
-                    or latest_indexed_block_num % REFRESH_COUNTER == 0
                 ):
                     # re-create entire table
                     most_recent_indexed_aggregate_block = 0
                     session.execute("TRUNCATE TABLE {}".format(table_name))
+                elif (latest_indexed_block_num % REFRESH_COUNTER == 0):
+                    # refresh the past two weeks
+                    most_recent_indexed_aggregate_block -= TWO_WEEKS_IN_BLOCKS
+                    if (most_recent_indexed_aggregate_block < 0):
+                        most_recent_indexed_aggregate_block = 0
+
+                    session.execute("TRUNCATE TABLE {}".format(table_name))
+
                 logger.info(f"index_aggregate_user.py | Updating {table_name}")
                 upsert = sa.text(query)
                 session.execute(
@@ -379,13 +390,13 @@ def update_aggregate_table(
                     },
                 )
 
-                # set new block to be the lower bound for the next indexing
-                redis.set(
-                    most_recent_indexed_aggregate_block_key, latest_indexed_block_num
-                )
-                logger.info(
-                    f"""index_aggregate_user.py | Finished updating {table_name} in: {time.time()-start_time} sec"""
-                )
+            # set new block to be the lower bound for the next indexing
+            redis.set(
+                most_recent_indexed_aggregate_block_key, latest_indexed_block_num
+            )
+            logger.info(
+                f"""index_aggregate_user.py | Finished updating {table_name} in: {time.time()-start_time} sec"""
+            )
         else:
             logger.info(
                 f"index_aggregate_user.py | Failed to acquire lock update_aggregate_table:{table_name}"
