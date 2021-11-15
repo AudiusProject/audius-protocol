@@ -70,8 +70,9 @@ const createStyles = (themeColors: ThemeColors) =>
       flexDirection: 'column',
       justifyContent: 'space-evenly',
       alignItems: 'center',
-      paddingTop: 32,
-      paddingBottom: 64
+      padding: 16,
+      paddingTop: 64,
+      paddingBottom: 32
     },
 
     cta: {
