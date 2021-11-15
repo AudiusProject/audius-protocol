@@ -29,7 +29,7 @@ def vacuum_matviews(db):
     )
 
 
-def update_views(self, db):
+def update_views(db):
     with db.scoped_session() as session:
         start_time = time.time()
         logger.info("index_materialized_views.py | Updating materialized views")
@@ -60,11 +60,13 @@ def update_materialized_views(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            update_views(self, db, redis)
+            update_views(db)
 
-            elapsed_time_since_last_completion = get_elapsed_time_redis(redis, index_materialized_views_last_completion_redis_key)
+            elapsed_time_since_last_completion = get_elapsed_time_redis(
+                redis, index_materialized_views_last_completion_redis_key)
+
             if not elapsed_time_since_last_completion:
-                vacuum_matviews(self, db)
+                vacuum_matviews(db)
 
             end_time = time.time()
             redis.set(index_materialized_views_last_completion_redis_key, int(end_time))
