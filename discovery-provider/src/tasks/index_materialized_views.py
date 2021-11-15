@@ -1,6 +1,8 @@
 import logging
 import time
 from src.tasks.celery_app import celery
+from src.queries.get_health import get_elapsed_time_redis
+from src.utils.redis_constants import index_materialized_views_last_completion_redis_key
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +39,6 @@ def update_views(self, db):
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY album_lexeme_dict")
         session.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY tag_track_user")
 
-    vacuum_matviews(db)
-
     logger.info(
         f"index_materialized_views.py | Finished updating materialized views in: {time.time() - start_time} sec."
     )
@@ -60,7 +60,14 @@ def update_materialized_views(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            update_views(self, db)
+            update_views(self, db, redis)
+
+            elapsed_time_since_last_completion = get_elapsed_time_redis(redis, index_materialized_views_last_completion_redis_key)
+            if not elapsed_time_since_last_completion:
+                vacuum_matviews(self, db)
+
+            end_time = time.time()
+            redis.set(index_materialized_views_last_completion_redis_key, int(end_time))
         else:
             logger.info(
                 "index_materialized_views.py | Failed to acquire update_materialized_views"

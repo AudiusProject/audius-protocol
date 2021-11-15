@@ -13,6 +13,7 @@ challenges_last_processed_event_redis_key = "challenges:last-processed-event"
 user_balances_refresh_last_completion_redis_key = "user_balances:last-completion"
 latest_legacy_play_db_key = "latest_legacy_play_db_key"
 index_eth_last_completion_redis_key = "index_eth:last-completion"
+index_materialized_views_last_completion_redis_key = "index_materialized_views:last-completion"
 
 # Solana latest program keys
 latest_sol_play_program_tx_key = "latest_sol_program_tx:play:chain"
