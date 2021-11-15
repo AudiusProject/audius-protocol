@@ -30,7 +30,7 @@ node scripts/setup.js run init-repos up
 
 **Bringing up all services:**
 - In `<service-commands>/scripts/`, run `node setup.js up` to bring all services up.
-- `-nc, --num-cnodes <number>`, by default set to 4. Adjusts the number of creator nodes initialized within the system. 
+- `-nc, --num-cnodes <number>`, by default set to 4. Adjusts the number of creator nodes initialized within the system.
 
 ```
 node setup.js up
@@ -50,7 +50,25 @@ For a breakdown of how the `up` operation brings up the entire system, reference
 
 All commands to the system are structured as a combination of `service` and `command` - the mapping is stored in [service-commands.json](src/commands/service-commands.json). Any of these service + command combinations are accessible to you through the `node setup.js run` entrypoint detailed below.
 
+### Provisioning a brand-new dev box!
+You can provision a brand-new dev instance with:
+* dependencies and tooling installed
+* Docker images cached
+* at commit hashes/branches of your choosing for protocol + client!
 
+```bash
+  $ A setup remote-dev --fast <instance-name> [--protocol-git-ref <branch-name-or-commit-hash>] [--client-git-ref <branch-name-or-commit-hash>] [--up]
+```
+
+Note that you will need to manually confirm the instance creation as well as ssh connection upon startup. Once you've confirmed the ssh connection, that's it -- you can walk away and make a pie and wait for your dev environment to finish provisioning!
+
+Here's an example of how to provision a gcloud instance called `pietocol-team` at protocol branch `cj-quickfix` and client git hash `7cf17667972d4c5d6bc25d08ce1f626c37f9abb7` and make sure to run `A up` right after setting up the box:
+
+```bash
+  $ A setup remote-dev --fast pietocol-team --protocol-git-ref cj-quickfix --client-git-ref 7cf17667972d4c5d6bc25d08ce1f626c37f9abb7 --up
+```
+
+Don't forget to delete your instance once you're finished using it with `gcloud compute instances delete <instance-name>`.
 
 ### Bringing up services locally
 Individual service commands can be executed with: `node setup.js run <service> [command]`
