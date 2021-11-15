@@ -53,7 +53,7 @@ const getTrackContext = async (handle: string, slug: string, canEmbed: boolean):
   if (!handle || !slug) return getDefaultContext()
   try {
     const track = await getTrackByHandleAndSlug(handle, slug)
-    const user = track.user ? track.user : await getUser(track.owner_id)
+    const user = track.user ? await getUserByHandle(track.user.handle) : await getUser(track.owner_id)
     const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
 
     const coverArt = track.cover_art_sizes
@@ -244,7 +244,7 @@ const getRemixesContext = async (handle: string, slug: string): Promise<Context>
   if (!handle || !slug) return getDefaultContext()
   try {
     const track = await getTrackByHandleAndSlug(handle, slug)
-    const user = await getUser(track.owner_id)
+    const user = await getUserByHandle(track.user.handle)
     const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
 
     const coverArt = track.cover_art_sizes
