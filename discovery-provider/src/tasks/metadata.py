@@ -43,4 +43,5 @@ user_metadata_format = {
     "collectibles": None,
     "playlist_library": None,
     "events": None,
+    "is_deactivated": None,
 }
