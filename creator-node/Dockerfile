@@ -48,6 +48,8 @@ COPY . .
 COPY scripts/wait /usr/bin/wait
 RUN chmod +x /usr/bin/wait
 
+RUN ./node_modules/.bin/tsc --project ./
+
 RUN bash scripts/init-db.sh
 
 VOLUME "/file_storage"

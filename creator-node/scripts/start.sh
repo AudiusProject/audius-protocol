@@ -77,7 +77,6 @@ if [[ "$devMode" == "true" ]]; then
         ./node_modules/.bin/nodemon --watch src/ src/index.ts | tee >(logger) | ./node_modules/.bin/bunyan
     fi
 else
-    tsc --project ./
     node build/src/index.js | tee >(logger)
     docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 10
 fi
