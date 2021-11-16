@@ -2,6 +2,7 @@ import cors from 'cors'
 import express from 'express'
 import path from 'path'
 
+import './fetch-polyfill'
 import { startup } from './onStartup'
 import { BedtimeFormat } from './servlets/bedtime/types'
 import { MetaTagFormat } from './servlets/metaTags/types'

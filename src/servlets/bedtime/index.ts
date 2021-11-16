@@ -242,6 +242,7 @@ export const getBedtimeResponse = async (
     }
     return res.send(resp)
   } catch (e) {
+    console.error(e)
     if (e.message === DELETED_MESSAGE) {
       res.status(404).send(e)
     } else {
