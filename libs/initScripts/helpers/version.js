@@ -8,7 +8,7 @@ const web3 = require('web3')
  * @param {String?} privateKey optional private key string
  * @param {Boolean?} dryRun Optional parameter to return the generated parameters without sending tx
  */
-async function setServiceVersion (audiusLibs, serviceType, serviceVersionStr, privateKey = null, dryRun = true) {
+async function setServiceVersion (audiusLibs, serviceType, serviceVersionStr, privateKey = null, dryRun = false) {
   if (!audiusLibs) throw new Error('audiusLibs is not defined')
 
   const validServiceTypes = ['discovery-node', 'content-node']
