@@ -31,7 +31,7 @@ const TRACK_URLS = [
   'https://royalty-free-content.s3-us-west-2.amazonaws.com/audio/Happy.mp3'
 ]
 
-const USER_PIC_PATH = path.resolve('assets/images/profile-pic.jpg')
+const USER_PIC_PATH = path.resolve('assets/images/1x1.jpg')
 const MAX_SYNC_TIMEOUT = 300000
 
 /**
@@ -326,32 +326,33 @@ const getRandomTrackFilePath = async localDirPath => {
 }
 
 const getRandomImageFilePath = async (localDirPath) => {
-  if (!fs.existsSync(localDirPath)) {
-    fs.mkdirSync(localDirPath)
-  }
+  // if (!fs.existsSync(localDirPath)) {
+  //   fs.mkdirSync(localDirPath)
+  // }
 
-  const imageURL = (await RandomPicture()).url // always jpg
-  const targetFilePath = path.resolve(localDirPath, `${genRandomString(6)}.jpg`)
+  // const imageURL = (await RandomPicture()).url // always jpg
+  // const targetFilePath = path.resolve(localDirPath, `${genRandomString(6)}.jpg`)
 
-  const response = await fetch(imageURL)
-  if (!response.ok) {
-    throw new Error(`unexpected response ${response.statusText}`)
-  }
+  // const response = await fetch(imageURL)
+  // if (!response.ok) {
+  //   throw new Error(`unexpected response ${response.statusText}`)
+  // }
 
-  try {
-    await fs.ensureDir(localDirPath)
-    await streamPipeline(response.body, fs.createWriteStream(targetFilePath))
+  // try {
+  //   await fs.ensureDir(localDirPath)
+  //   await streamPipeline(response.body, fs.createWriteStream(targetFilePath))
 
-    logger.info(`Wrote image to temp local storage at ${targetFilePath}`)
-  } catch (e) {
-    const errorMsg = `Error with writing image to path ${localDirPath}`
-    logger.error(errorMsg)
-    console.error(e)
-    throw new Error(`${errorMsg}: ${e.message}`)
-  }
+  //   logger.info(`Wrote image to temp local storage at ${targetFilePath}`)
+  // } catch (e) {
+  //   const errorMsg = `Error with writing image to path ${localDirPath}`
+  //   logger.error(errorMsg)
+  //   console.error(e)
+  //   throw new Error(`${errorMsg}: ${e.message}`)
+  // }
 
   // Return full file path
-  return targetFilePath
+  console.log('UPLOADING TINY IMAGE!!!!!!!!!!1 ')
+  return 'assets/images/1x1.jpg'
 }
 
 /**

@@ -398,6 +398,7 @@ async function _addToIpfsWithRetries ({ content, enableIPFSAdd, dirCID, retriesL
 
   // Ensure actual and expected dirCIDs match
   const ipfsAddRetryDirCID = ipfsAddRespArr[ipfsAddRespArr.length - 1].cid.toString()
+  console.log('TEST UNIQUE STRING - IPFS ADD RESP ARR', ipfsAddRespArr, JSON.stringify(ipfsAddRespArr))
   if (ipfsAddRetryDirCID !== dirCID) {
     if (--retriesLeft > 0) {
       logger.warn(`Image file validation failed - dirCIDs do not match for dirCID=${dirCID} ipfsAddRetryDirCID=${ipfsAddRetryDirCID}. ${retriesLeft} retries remaining out of ${maxRetries}. Retrying...`)
@@ -477,6 +478,7 @@ module.exports = function (app) {
     }
 
     const dirCID = resizeResp.dir.dirCID
+    console.log('TEST UNIQUE STRING - DIRCID VERIFICATION', req, resizeResp, dirCID)
 
     // Ensure image files written to disk match dirCID returned from resizeImage
     await _dirCIDIPFSVerificationWithRetries(req, resizeResp, dirCID)

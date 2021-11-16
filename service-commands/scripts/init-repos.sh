@@ -8,11 +8,13 @@ npm install &
 # setup service commands
 cd $PROTOCOL_DIR/
 cd service-commands/
+npm link
 npm install &
 
 # setup mad dog
 cd $PROTOCOL_DIR/
 cd mad-dog/
+npm link @audius/service-commands
 npm install &
 
 # setup contracts

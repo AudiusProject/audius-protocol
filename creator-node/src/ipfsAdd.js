@@ -165,10 +165,13 @@ ipfsAdd.ipfsAddNonImages = async (content, ipfsConfig = {}, logContext = {}, ena
  * @returns {Object[]} only hash responses or ipfs daemon responses with the structure [{path: <string>, cid: <string>, size: <number>}]
 */
 ipfsAdd.ipfsAddImages = async (content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) => {
+  console.log('TEST UNIQUE STRING IPFS ADD IMAGES', JSON.stringify(ipfsConfig), enableIPFSAdd)
+  console.log('TEST UNIQUE STRING CONTENT', ...content)
   const logger = genericLogger.child(logContext)
 
   const startOnlyHash = hrtime.bigint()
   const ipfsAddWithoutDaemonResp = await ipfsAdd.ipfsOnlyHashImages(content)
+  console.log('TEST UNIQUE STRING IPFS ADD WITHOUT DAEMON RESPONSE', JSON.stringify(ipfsAddWithoutDaemonResp, null, 2))
   const durationOnlyHashMs = (hrtime.bigint() - startOnlyHash) / BigInt(1000000) // convert ns -> ms
 
   const ipfsAddWithoutDaemonRespStr = JSON.stringify(ipfsAddWithoutDaemonResp)
@@ -188,12 +191,17 @@ ipfsAdd.ipfsAddImages = async (content, ipfsConfig = {}, logContext = {}, enable
     for await (const resp of ipfsLatest.add(content, ipfsConfig)) {
       resp.cid = `${resp.cid}`
       ipfsAddWithDaemonResp.push(resp)
+      console.log('TEST UNIQUE STRING IPFS ADD WITH DAEMON RESP RECEIVED', JSON.stringify(ipfsAddWithDaemonResp, null, 2))
     }
     const durationIpfsLatestAddMs = (hrtime.bigint() - startIpfsLatestAdd) / BigInt(1000000) // convert ns -> ms
 
     const ipfsAddWithDaemonRespStr = JSON.stringify(ipfsAddWithDaemonResp)
-
-    const isSameResp = _.isEqual(ipfsAddWithoutDaemonResp, ipfsAddWithDaemonResp)
+    let isSameResp
+    try {
+      isSameResp = _.isEqual(ipfsAddWithoutDaemonResp, ipfsAddWithDaemonResp)
+    } catch (e) {
+      console.log('TEST UNIQUE STRING IS SAME RESP FAILURE', e)
+    }
     logger.info(`[ipfsClient - ipfsAddImages()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms ipfsAddWithDaemonResp=${ipfsAddWithDaemonRespStr} ipfsAddWithDaemonRespDuration=${durationIpfsLatestAddMs}ms isSameHash=${isSameResp}`)
 
     if (!isSameResp) {
