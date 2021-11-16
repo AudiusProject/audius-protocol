@@ -32,7 +32,11 @@ const run = async () => {
       case 'setversion':
         const serviceType = args[4]
         const versionStr = args[5]
-        const dryRun = args[6] || true
+        let dryRun = true
+        // if args[6] is defined and the value is either bool or string false, set dryRun to false
+        if (args[6] && (['false', false].includes(args[6]))) {
+          dryRun = false
+        }
         if (!serviceType || !versionStr) {
           throw new Error('missing arguments - format: node mainnet.js setversion <serviceType> <versionStr>')
         }
