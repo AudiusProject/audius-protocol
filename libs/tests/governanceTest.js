@@ -19,7 +19,7 @@ let sp2
 const DEFAULT_STAKE = 210000
 const PROPOSAL_DESCRIPTION = 'TestDescription'
 const PROPOSAL_NAME = 'TestName'
-const testServiceType = 'discovery-node'
+const testServiceType = 'discovery-provider'
 
 const setupAccounts = async () => {
   // create additional libs instances
