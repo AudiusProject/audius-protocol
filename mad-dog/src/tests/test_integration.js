@@ -50,8 +50,8 @@ const DEFAULT_TEST_DURATION_SECONDS = 100
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 const TEMP_IMG_STORAGE_PATH = path.resolve('./local-storage/tmp-imgs/')
 
-const SECOND_USER_PIC_PATH = path.resolve('assets/images/1x1.jpg')
-const THIRD_USER_PIC_PATH = path.resolve('assets/images/1x1.jpg')
+const SECOND_USER_PIC_PATH = path.resolve('assets/images/duck.jpg')
+const THIRD_USER_PIC_PATH = path.resolve('assets/images/sid.png')
 const repostedTracks = []
 const uploadedTracks = []
 const userRepostedMap = {}
