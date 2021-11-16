@@ -11,9 +11,13 @@ const web3 = require('web3')
 async function setServiceVersion (audiusLibs, serviceType, serviceVersionStr, privateKey = null, dryRun = true) {
   if (!audiusLibs) throw new Error('audiusLibs is not defined')
 
+  const validServiceTypes = ['discovery-node', 'content-node']
+  if (!validServiceTypes.includes(serviceType)) {
+    throw new Error(`Invalid serviceType: ${serviceType}, must be in ${validServiceTypes}`)
+  }
+
   console.log('----version init---')
   let resp
-
   try {
     resp = await audiusLibs.ethContracts.ServiceTypeManagerClient.setServiceVersion(
       serviceType,

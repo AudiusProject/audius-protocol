@@ -11,11 +11,6 @@ class ServiceTypeManagerClient extends GovernedContractClient {
    * @returns
    */
   async setServiceVersion (serviceType, serviceVersion, privateKey = null, dryRun = false) {
-    const validServiceTypes = ['discovery-node', 'content-node']
-    if (!validServiceTypes.includes(serviceType)) {
-      throw new Error(`Invalid serviceType: ${serviceType}, must be in ${validServiceTypes}`)
-    }
-
     const method = await this.getGovernedMethod(
       'setServiceVersion',
       Utils.utf8ToHex(serviceType),
