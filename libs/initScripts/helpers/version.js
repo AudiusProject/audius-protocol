@@ -6,7 +6,7 @@ const web3 = require('web3')
  * @param {String} serviceType service type trying to register
  * @param {String} serviceVersionStr version string to register
  * @param {String?} privateKey optional private key string
- * @param {String?} dryRun Optional parameter to return the generated parameters without sending tx
+ * @param {Boolean?} dryRun Optional parameter to return the generated parameters without sending tx
  */
 async function setServiceVersion (audiusLibs, serviceType, serviceVersionStr, privateKey = null, dryRun = true) {
   if (!audiusLibs) throw new Error('audiusLibs is not defined')

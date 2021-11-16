@@ -7,7 +7,7 @@ class ServiceTypeManagerClient extends GovernedContractClient {
    * @param {String} serviceType Type of service to set the version, either `discovery-node` or `content-node`
    * @param {String} serviceVersion Version string to set on chain
    * @param {String?} privateKey Optional privateKey to pass along to web3Manager sendTransaction
-   * @param {String?} dryRun Optional parameter to return the generated parameters without sending tx
+   * @param {Boolean?} dryRun Optional parameter to return the generated parameters without sending tx
    * @returns comma-separated String of serviceType and serviceVersion if dryRun; else response from web3Manager.sendTransaction
    */
   async setServiceVersion (serviceType, serviceVersion, privateKey = null, dryRun = false) {
