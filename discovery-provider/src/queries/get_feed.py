@@ -2,8 +2,7 @@ import datetime
 
 from sqlalchemy import and_, desc, func, or_
 from src import api_helpers
-from src.models import Follow, Playlist, Repost, RepostType, SaveType, Track
-from src.models.models import User
+from src.models import Follow, Playlist, Repost, RepostType, SaveType, Track, User
 from src.queries import response_name_constants
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
