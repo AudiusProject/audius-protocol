@@ -309,7 +309,6 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
       decisionTree.push({ stage: `Error during content verification for multihash`, vals: multihash, time: Date.now() })
       throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
     }
-    _printDecisionTreeObj(decisionTree, logger)
     // If error, return boolean failure indicator + print logs
   } catch (e) {
     decisionTree.push({ stage: `saveFileForMultihashToFS error`, vals: e.message, time: Date.now() })
