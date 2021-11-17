@@ -23,15 +23,15 @@ const TEN_MINUTES_IN_SECONDS = 60 * 10
 let ipfsIDObj
 
 class Utils {
-  static verifySignature(data, sig) {
+  static verifySignature (data, sig) {
     return recoverPersonalSignature({ data, sig })
   }
 
-  static async timeout(ms, log = true) {
+  static async timeout (ms, log = true) {
     if (log) {
       console.log(`starting timeout of ${ms}`)
     }
-    return new Promise((resolve) => setTimeout(resolve, ms))
+    return new Promise(resolve => setTimeout(resolve, ms))
   }
 }
 
@@ -40,22 +40,16 @@ class Utils {
  * Return fileUUID for dir DB record
  * This function does not do further validation since image_upload provides remaining guarantees
  */
-async function validateStateForImageDirCIDAndReturnFileUUID(req, imageDirCID) {
+async function validateStateForImageDirCIDAndReturnFileUUID (req, imageDirCID) {
   // This handles case where a user/track metadata obj contains no image CID
   if (!imageDirCID) {
     return null
   }
-  req.logger.info(
-    `Beginning validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`
-  )
+  req.logger.info(`Beginning validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`)
 
   // Ensure file exists for dirCID
   const dirFile = await models.File.findOne({
-    where: {
-      multihash: imageDirCID,
-      cnodeUserUUID: req.session.cnodeUserUUID,
-      type: 'dir'
-    }
+    where: { multihash: imageDirCID, cnodeUserUUID: req.session.cnodeUserUUID, type: 'dir' }
   })
   if (!dirFile) {
     throw new Error(`No file stored in DB for imageDirCID ${imageDirCID}`)
@@ -63,42 +57,28 @@ async function validateStateForImageDirCIDAndReturnFileUUID(req, imageDirCID) {
 
   // Ensure dir exists on disk
   if (!(await fs.pathExists(dirFile.storagePath))) {
-    throw new Error(
-      `No dir found on disk for imageDirCID ${imageDirCID} at expected path ${dirFile.storagePath}`
-    )
+    throw new Error(`No dir found on disk for imageDirCID ${imageDirCID} at expected path ${dirFile.storagePath}`)
   }
 
   const imageFiles = await models.File.findAll({
-    where: {
-      dirMultihash: imageDirCID,
-      cnodeUserUUID: req.session.cnodeUserUUID,
-      type: 'image'
-    }
+    where: { dirMultihash: imageDirCID, cnodeUserUUID: req.session.cnodeUserUUID, type: 'image' }
   })
   if (!imageFiles) {
-    throw new Error(
-      `No image file records found in DB for imageDirCID ${imageDirCID}`
-    )
+    throw new Error(`No image file records found in DB for imageDirCID ${imageDirCID}`)
   }
 
   // Ensure every file exists on disk
-  await Promise.all(
-    imageFiles.map(async function (imageFile) {
-      if (!(await fs.pathExists(imageFile.storagePath))) {
-        throw new Error(
-          `No file found on disk for imageDirCID ${imageDirCID} image file at path ${imageFile.path}`
-        )
-      }
-    })
-  )
+  await Promise.all(imageFiles.map(async function (imageFile) {
+    if (!(await fs.pathExists(imageFile.storagePath))) {
+      throw new Error(`No file found on disk for imageDirCID ${imageDirCID} image file at path ${imageFile.path}`)
+    }
+  }))
 
-  req.logger.info(
-    `Completed validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`
-  )
+  req.logger.info(`Completed validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`)
   return dirFile.fileUUID
 }
 
-async function getIPFSPeerId(ipfs) {
+async function getIPFSPeerId (ipfs) {
   // Assumes the ipfs id returns the correct address from IPFS. May need to set the correct values in
   // the IPFS pod. Command is:
   // ipfs config --json Addresses.Announce '["/ip4/<public ip>/tcp/<public port>"]'
@@ -116,7 +96,7 @@ async function getIPFSPeerId(ipfs) {
 /**
  * Cat single byte of file at given filepath. If ipfs.cat() call takes longer than the timeout time or
  * something goes wrong, an error will be thrown.
- */
+*/
 const ipfsSingleByteCat = (path, logContext, timeout = 1000) => {
   const logger = genericLogger.child(logContext)
 
@@ -130,9 +110,7 @@ const ipfsSingleByteCat = (path, logContext, timeout = 1000) => {
       for await (const chunk of ipfsLatest.cat(path, { length: 1, timeout })) {
         continue
       }
-      logger.info(
-        `ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`
-      )
+      logger.info(`ipfsSingleByteCat - Retrieved ${path} in ${Date.now() - start}ms`)
       resolve()
     } catch (e) {
       // Expected message for e is `TimeoutError: Request timed out`
@@ -148,7 +126,7 @@ const ipfsSingleByteCat = (path, logContext, timeout = 1000) => {
 /**
  * Stat of a file at given filepath. If ipfs.files.stat() call takes longer than the timeout time or
  * something goes wrong, an error will be thrown.
- */
+*/
 const ipfsStat = (CID, logContext, timeout = 1000) => {
   const logger = genericLogger.child(logContext)
 
@@ -180,34 +158,33 @@ const ipfsStat = (CID, logContext, timeout = 1000) => {
  * @param {*} length length of data to retrieve from file
  * @returns {Buffer}
  */
-const ipfsCat = ({ ipfsLatest }, logger, path, timeout = 1000, length = null) =>
-  new Promise(async (resolve, reject) => {
-    const start = Date.now()
+const ipfsCat = ({ ipfsLatest }, logger, path, timeout = 1000, length = null) => new Promise(async (resolve, reject) => {
+  const start = Date.now()
 
-    try {
-      let chunks = []
-      let options = {}
-      if (length) options.length = length
-      if (timeout) options.timeout = timeout
+  try {
+    let chunks = []
+    let options = {}
+    if (length) options.length = length
+    if (timeout) options.timeout = timeout
 
-      // using a js timeout because IPFS cat sometimes does not resolve the timeout and gets
-      // stuck in this function indefinitely
-      // make this timeout 2x the regular timeout to account for possible latency of transferring a large file
-      setTimeout(() => {
-        return reject(new Error('ipfsCat timed out'))
-      }, 2 * timeout)
+    // using a js timeout because IPFS cat sometimes does not resolve the timeout and gets
+    // stuck in this function indefinitely
+    // make this timeout 2x the regular timeout to account for possible latency of transferring a large file
+    setTimeout(() => {
+      return reject(new Error('ipfsCat timed out'))
+    }, 2 * timeout)
 
-      // ipfsLatest.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
-      /* eslint-disable-next-line no-unused-vars */
-      for await (const chunk of ipfsLatest.cat(path, options)) {
-        chunks.push(chunk)
-      }
-      logger.debug(`ipfsCat - Retrieved ${path} in ${Date.now() - start}ms`)
-      resolve(Buffer.concat(chunks))
-    } catch (e) {
-      reject(e)
+    // ipfsLatest.cat() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
+    /* eslint-disable-next-line no-unused-vars */
+    for await (const chunk of ipfsLatest.cat(path, options)) {
+      chunks.push(chunk)
     }
-  })
+    logger.debug(`ipfsCat - Retrieved ${path} in ${Date.now() - start}ms`)
+    resolve(Buffer.concat(chunks))
+  } catch (e) {
+    reject(e)
+  }
+})
 
 /**
  * Call ipfs.get on a path with an optional timeout
@@ -217,41 +194,40 @@ const ipfsCat = ({ ipfsLatest }, logger, path, timeout = 1000, length = null) =>
  * @param {Number} timeout timeout in ms
  * @returns {BufferListStream}
  */
-const ipfsGet = ({ ipfsLatest }, logger, path, timeout = 1000) =>
-  new Promise(async (resolve, reject) => {
-    const start = Date.now()
+const ipfsGet = ({ ipfsLatest }, logger, path, timeout = 1000) => new Promise(async (resolve, reject) => {
+  const start = Date.now()
 
-    try {
-      let chunks = []
-      let options = {}
-      if (timeout) options.timeout = timeout
+  try {
+    let chunks = []
+    let options = {}
+    if (timeout) options.timeout = timeout
 
-      // using a js timeout because IPFS get sometimes does not resolve the timeout and gets
-      // stuck in this function indefinitely
-      // make this timeout 2x the regular timeout to account for possible latency of transferring a large file
-      setTimeout(() => {
-        return reject(new Error('ipfsGet timed out'))
-      }, 2 * timeout)
+    // using a js timeout because IPFS get sometimes does not resolve the timeout and gets
+    // stuck in this function indefinitely
+    // make this timeout 2x the regular timeout to account for possible latency of transferring a large file
+    setTimeout(() => {
+      return reject(new Error('ipfsGet timed out'))
+    }, 2 * timeout)
 
-      // ipfsLatest.get() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
-      /* eslint-disable-next-line no-unused-vars */
-      for await (const file of ipfsLatest.get(path, options)) {
-        if (!file.content) continue
+    // ipfsLatest.get() returns an AsyncIterator<Buffer> and its results are iterated over in a for-loop
+    /* eslint-disable-next-line no-unused-vars */
+    for await (const file of ipfsLatest.get(path, options)) {
+      if (!file.content) continue
 
-        const content = new BufferListStream()
-        for await (const chunk of file.content) {
-          content.append(chunk)
-        }
-        resolve(content)
+      const content = new BufferListStream()
+      for await (const chunk of file.content) {
+        content.append(chunk)
       }
-      logger.info(`ipfsGet - Retrieved ${path} in ${Date.now() - start}ms`)
-      resolve(Buffer.concat(chunks))
-    } catch (e) {
-      reject(e)
+      resolve(content)
     }
-  })
+    logger.info(`ipfsGet - Retrieved ${path} in ${Date.now() - start}ms`)
+    resolve(Buffer.concat(chunks))
+  } catch (e) {
+    reject(e)
+  }
+})
 
-async function findCIDInNetwork(filePath, cid, logger, libs, trackId = null) {
+async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null) {
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
   if (attemptedStateFix) return
 
@@ -261,10 +237,7 @@ async function findCIDInNetwork(filePath, cid, logger, libs, trackId = null) {
 
   // generate signature
   const delegateWallet = config.get('delegateOwnerWallet').toLowerCase()
-  const { signature, timestamp } = generateTimestampAndSignature(
-    { filePath, delegateWallet },
-    config.get('delegatePrivateKey')
-  )
+  const { signature, timestamp } = generateTimestampAndSignature({ filePath, delegateWallet }, config.get('delegatePrivateKey'))
   let node
 
   for (let index = 0; index < creatorNodes.length; index++) {
@@ -287,21 +260,14 @@ async function findCIDInNetwork(filePath, cid, logger, libs, trackId = null) {
         await writeStreamToFileSystem(resp.data, filePath, /* createDir */ true)
 
         // verify that the file written matches the hash expected if added to ipfs
-        const ipfsHashOnly = await ipfsAddNonImages(filePath, {
-          onlyHash: true,
-          timeout: 2000
-        })
+        const ipfsHashOnly = await ipfsAddNonImages(filePath, { onlyHash: true, timeout: 2000 })
 
         if (cid !== ipfsHashOnly) {
           await fs.unlink(filePath)
-          logger.error(
-            `findCIDInNetwork - File contents don't match IPFS hash cid: ${cid} result: ${ipfsHashOnly}`
-          )
+          logger.error(`findCIDInNetwork - File contents don't match IPFS hash cid: ${cid} result: ${ipfsHashOnly}`)
         }
 
-        logger.info(
-          `findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`
-        )
+        logger.info(`findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`)
         break
       }
     } catch (e) {
@@ -318,7 +284,7 @@ async function findCIDInNetwork(filePath, cid, logger, libs, trackId = null) {
  * Fetches from Redis if available, else fetches from chain and updates Redis value
  * @returns {Object[]} array of SP objects with schema { owner, endpoint, spID, type, blockNumber, delegateOwnerWallet }
  */
-async function getAllRegisteredCNodes(libs, logger) {
+async function getAllRegisteredCNodes (libs, logger) {
   const cacheKey = 'all_registered_cnodes'
 
   let CNodes
@@ -330,34 +296,20 @@ async function getAllRegisteredCNodes(libs, logger) {
     }
 
     // Else, fetch from chain
-    let creatorNodes =
-      await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
-        'content-node'
-      )
+    let creatorNodes = await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderList('content-node')
 
     // Filter out self endpoint
-    creatorNodes = creatorNodes.filter(
-      (node) => node.endpoint !== config.get('creatorNodeEndpoint')
-    )
+    creatorNodes = creatorNodes.filter(node => node.endpoint !== config.get('creatorNodeEndpoint'))
 
     // Write fetched value to Redis with 30min expiry
-    await redis.set(
-      cacheKey,
-      JSON.stringify(creatorNodes),
-      'EX',
-      THIRTY_MINUTES_IN_SECONDS
-    )
+    await redis.set(cacheKey, JSON.stringify(creatorNodes), 'EX', THIRTY_MINUTES_IN_SECONDS)
 
     CNodes = creatorNodes
   } catch (e) {
     if (logger) {
-      logger.error(
-        `Error getting values in getAllRegisteredCNodes: ${e.message}`
-      )
+      logger.error(`Error getting values in getAllRegisteredCNodes: ${e.message}`)
     } else {
-      console.error(
-        `Error getting values in getAllRegisteredCNodes: ${e.message}`
-      )
+      console.error(`Error getting values in getAllRegisteredCNodes: ${e.message}`)
     }
 
     CNodes = []
@@ -370,7 +322,7 @@ async function getAllRegisteredCNodes(libs, logger) {
  * Return if a fix has already been attempted in today for this filePath
  * @param {String} filePath path of CID on the file system
  */
-async function getIfAttemptedStateFix(filePath) {
+async function getIfAttemptedStateFix (filePath) {
   // key is `attempted_fs_fixes:<today's date>`
   // the date function just generates the ISOString and removes the timestamp component
   const key = `attempted_fs_fixes:${new Date().toISOString().split('T')[0]}`
@@ -381,18 +333,11 @@ async function getIfAttemptedStateFix(filePath) {
   return !firstTime
 }
 
-async function rehydrateIpfsFromFsIfNecessary(
-  multihash,
-  storagePath,
-  logContext,
-  filename = null
-) {
+async function rehydrateIpfsFromFsIfNecessary (multihash, storagePath, logContext, filename = null) {
   const logger = genericLogger.child(logContext)
 
   if (await BlacklistManager.CIDIsInBlacklist(multihash)) {
-    logger.info(
-      `rehydrateIpfsFromFsIfNecessary - CID ${multihash} is in blacklist; Skipping rehydrate.`
-    )
+    logger.info(`rehydrateIpfsFromFsIfNecessary - CID ${multihash} is in blacklist; Skipping rehydrate.`)
     return
   }
 
@@ -411,38 +356,24 @@ async function rehydrateIpfsFromFsIfNecessary(
       throw new Error(e.message)
     }
     rehydrateNecessary = true
-    logger.info(
-      `rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`
-    )
+    logger.info(`rehydrateIpfsFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
   }
   if (!rehydrateNecessary) return
   // Timed out, must re-add from FS
   if (!filename) {
-    logger.info(
-      `rehydrateIpfsFromFsIfNecessary - Re-adding file - ${multihash}, stg path: ${storagePath}`
-    )
+    logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding file - ${multihash}, stg path: ${storagePath}`)
     try {
       if (fs.existsSync(storagePath)) {
         let addResp = await ipfs.addFromFs(storagePath, { pin: false })
-        logger.info(
-          `rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(
-            addResp
-          )}`
-        )
+        logger.info(`rehydrateIpfsFromFsIfNecessary - Re-added file - ${multihash}, stg path: ${storagePath},  ${JSON.stringify(addResp)}`)
       } else {
-        logger.info(
-          `rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`
-        )
+        logger.info(`rehydrateIpfsFromFsIfNecessary - Failed to find on disk, file - ${multihash}, stg path: ${storagePath}`)
       }
     } catch (e) {
-      logger.error(
-        `rehydrateIpfsFromFsIfNecessary - failed to addFromFs ${e}, Re-adding file - ${multihash}, stg path: ${storagePath}`
-      )
+      logger.error(`rehydrateIpfsFromFsIfNecessary - failed to addFromFs ${e}, Re-adding file - ${multihash}, stg path: ${storagePath}`)
     }
   } else {
-    logger.info(
-      `rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`
-    )
+    logger.info(`rehydrateIpfsFromFsIfNecessary - Re-adding dir ${multihash}, stg path: ${storagePath}, filename: ${filename}, ipfsPath: ${ipfsPath}`)
     let findOriginalFileQuery = await models.File.findAll({
       where: {
         dirMultihash: multihash,
@@ -462,32 +393,24 @@ async function rehydrateIpfsFromFsIfNecessary(
           content: bufferedFile
         })
       } catch (e) {
-        logger.info(
-          `rehydrateIpfsFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`
-        )
+        logger.info(`rehydrateIpfsFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`)
       }
     }
 
     try {
       let addResp = await ipfs.add(ipfsAddArray, { pin: false })
-      logger.info(
-        `rehydrateIpfsFromFsIfNecessary - addResp ${JSON.stringify(addResp)}`
-      )
+      logger.info(`rehydrateIpfsFromFsIfNecessary - addResp ${JSON.stringify(addResp)}`)
     } catch (e) {
-      logger.error(
-        `rehydrateIpfsFromFsIfNecessary - addResp ${e}, ${ipfsAddArray}`
-      )
+      logger.error(`rehydrateIpfsFromFsIfNecessary - addResp ${e}, ${ipfsAddArray}`)
     }
   }
 }
 
-async function rehydrateIpfsDirFromFsIfNecessary(dirHash, logContext) {
+async function rehydrateIpfsDirFromFsIfNecessary (dirHash, logContext) {
   const logger = genericLogger.child(logContext)
 
   if (await BlacklistManager.CIDIsInBlacklist(dirHash)) {
-    logger.info(
-      `rehydrateIpfsFromFsIfNecessary - CID ${dirHash} is in blacklist; Skipping rehydrate.`
-    )
+    logger.info(`rehydrateIpfsFromFsIfNecessary - CID ${dirHash} is in blacklist; Skipping rehydrate.`)
     return
   }
 
@@ -507,16 +430,12 @@ async function rehydrateIpfsDirFromFsIfNecessary(dirHash, logContext) {
       await ipfsSingleByteCat(ipfsPath, logContext)
     } catch (e) {
       rehydrateNecessary = true
-      logger.info(
-        `rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`
-      )
+      logger.info(`rehydrateIpfsDirFromFsIfNecessary - error condition met ${ipfsPath}, ${e}`)
       break
     }
   }
 
-  logger.info(
-    `rehydrateIpfsDirFromFsIfNecessary, dir=${dirHash} - required = ${rehydrateNecessary}`
-  )
+  logger.info(`rehydrateIpfsDirFromFsIfNecessary, dir=${dirHash} - required = ${rehydrateNecessary}`)
   if (!rehydrateNecessary) return
 
   // Add entire directory to recreate original operation
@@ -532,33 +451,23 @@ async function rehydrateIpfsDirFromFsIfNecessary(dirHash, logContext) {
         content: bufferedFile
       })
     } catch (e) {
-      logger.info(
-        `rehydrateIpfsDirFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`
-      )
+      logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR BUILDING IPFS ADD ARRAY ${e}, ${entry}`)
     }
   }
   try {
     let addResp = await ipfs.add(ipfsAddArray, { pin: false })
-    logger.info(
-      `rehydrateIpfsDirFromFsIfNecessary - ${JSON.stringify(addResp)}`
-    )
+    logger.info(`rehydrateIpfsDirFromFsIfNecessary - ${JSON.stringify(addResp)}`)
   } catch (e) {
-    logger.info(
-      `rehydrateIpfsDirFromFsIfNecessary - ERROR ADDING DIR TO IPFS ${e}`
-    )
+    logger.info(`rehydrateIpfsDirFromFsIfNecessary - ERROR ADDING DIR TO IPFS ${e}`)
   }
 }
 
-async function createDirForFile(fileStoragePath) {
+async function createDirForFile (fileStoragePath) {
   const dir = path.dirname(fileStoragePath)
   await fs.ensureDir(dir)
 }
 
-async function writeStreamToFileSystem(
-  stream,
-  expectedStoragePath,
-  createDir = false
-) {
+async function writeStreamToFileSystem (stream, expectedStoragePath, createDir = false) {
   if (createDir) {
     await createDirForFile(expectedStoragePath)
   }
@@ -569,13 +478,8 @@ async function writeStreamToFileSystem(
     destinationStream.on('finish', () => {
       resolve()
     })
-    destinationStream.on('error', (err) => {
-      reject(err)
-    })
-    stream.on('error', (err) => {
-      destinationStream.end()
-      reject(err)
-    })
+    destinationStream.on('error', err => { reject(err) })
+    stream.on('error', err => { destinationStream.end(); reject(err) })
   })
 }
 
@@ -585,7 +489,7 @@ async function writeStreamToFileSystem(
  * @param {Array} args array of string quoted arguments to pass eg ['-alh']
  * @param {Object} logger logger object with context
  */
-async function runShellCommand(command, args, logger) {
+async function runShellCommand (command, args, logger) {
   return new Promise((resolve, reject) => {
     const proc = spawn(command, args)
     let stdout = ''
@@ -595,14 +499,10 @@ async function runShellCommand(command, args, logger) {
 
     proc.on('close', (code) => {
       if (code === 0) {
-        logger.info(
-          `Successfully executed command ${command} ${args} with output: \n${stdout}`
-        )
+        logger.info(`Successfully executed command ${command} ${args} with output: \n${stdout}`)
         resolve()
       } else {
-        logger.error(
-          `Error while executing command ${command} ${args} with stdout: \n${stdout}, \nstderr: \n${stderr}`
-        )
+        logger.error(`Error while executing command ${command} ${args} with stdout: \n${stdout}, \nstderr: \n${stderr}`)
         reject(new Error(`Error while executing command ${command} ${args}`))
       }
     })
@@ -610,12 +510,10 @@ async function runShellCommand(command, args, logger) {
 }
 
 module.exports = Utils
-module.exports.validateStateForImageDirCIDAndReturnFileUUID =
-  validateStateForImageDirCIDAndReturnFileUUID
+module.exports.validateStateForImageDirCIDAndReturnFileUUID = validateStateForImageDirCIDAndReturnFileUUID
 module.exports.getIPFSPeerId = getIPFSPeerId
 module.exports.rehydrateIpfsFromFsIfNecessary = rehydrateIpfsFromFsIfNecessary
-module.exports.rehydrateIpfsDirFromFsIfNecessary =
-  rehydrateIpfsDirFromFsIfNecessary
+module.exports.rehydrateIpfsDirFromFsIfNecessary = rehydrateIpfsDirFromFsIfNecessary
 module.exports.ipfsSingleByteCat = ipfsSingleByteCat
 module.exports.ipfsCat = ipfsCat
 module.exports.ipfsGet = ipfsGet

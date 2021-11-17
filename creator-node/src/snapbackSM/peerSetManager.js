@@ -4,29 +4,19 @@ const config = require('../config')
 const { logger } = require('../logging')
 
 // Used in determining peer health
-const PEER_HEALTH_CHECK_REQUEST_TIMEOUT = config.get(
-  'peerHealthCheckRequestTimeout'
-)
+const PEER_HEALTH_CHECK_REQUEST_TIMEOUT = config.get('peerHealthCheckRequestTimeout')
 const MINIMUM_STORAGE_PATH_SIZE = config.get('minimumStoragePathSize')
 const MINIMUM_MEMORY_AVAILABLE = config.get('minimumMemoryAvailable')
-const MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE =
-  config.get('maxFileDescriptorsAllocatedPercentage') / 100
+const MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE = config.get('maxFileDescriptorsAllocatedPercentage') / 100
 const MINIMUM_DAILY_SYNC_COUNT = config.get('minimumDailySyncCount')
 const MINIMUM_ROLLING_SYNC_COUNT = config.get('minimumRollingSyncCount')
-const MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE =
-  config.get('minimumSuccessfulSyncCountPercentage') / 100
+const MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE = config.get('minimumSuccessfulSyncCountPercentage') / 100
 
 // Used in determining primary health
-const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get(
-  'maxNumberSecondsPrimaryRemainsUnhealthy'
-)
+const MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY = config.get('maxNumberSecondsPrimaryRemainsUnhealthy')
 
 class PeerSetManager {
-  constructor({
-    discoveryProviderEndpoint,
-    creatorNodeEndpoint,
-    maxNumberSecondsPrimaryRemainsUnhealthy
-  }) {
+  constructor ({ discoveryProviderEndpoint, creatorNodeEndpoint, maxNumberSecondsPrimaryRemainsUnhealthy }) {
     this.discoveryProviderEndpoint = discoveryProviderEndpoint
     this.creatorNodeEndpoint = creatorNodeEndpoint
 
@@ -45,18 +35,15 @@ class PeerSetManager {
     this.endpointToSPIdMap = {}
 
     // Max number of hours a primary may be unhealthy for since the first time it was seen as unhealthy
-    this.maxNumberSecondsPrimaryRemainsUnhealthy = isNaN(
-      parseInt(maxNumberSecondsPrimaryRemainsUnhealthy)
-    )
-      ? MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY
-      : maxNumberSecondsPrimaryRemainsUnhealthy
+    this.maxNumberSecondsPrimaryRemainsUnhealthy = isNaN(parseInt(maxNumberSecondsPrimaryRemainsUnhealthy))
+      ? MAX_NUMBER_SECONDS_PRIMARY_REMAINS_UNHEALTHY : maxNumberSecondsPrimaryRemainsUnhealthy
   }
 
-  log(msg) {
+  log (msg) {
     logger.info(`SnapbackSM:::PeerSetManager: ${msg}`)
   }
 
-  logError(msg) {
+  logError (msg) {
     logger.error(`SnapbackSM:::PeerSetManager ERROR: ${msg}`)
   }
 
@@ -70,7 +57,7 @@ class PeerSetManager {
    * @note consider returning healthy set?
    * TODO - add retry logic to node requests
    */
-  async getUnhealthyPeers(nodeUsers, performSimpleCheck = false) {
+  async getUnhealthyPeers (nodeUsers, performSimpleCheck = false) {
     // Compute content node peerset from nodeUsers (all nodes that are in a shared replica set with this node)
     let peerSet = this.computeContentNodePeerSet(nodeUsers)
 
@@ -90,16 +77,12 @@ class PeerSetManager {
     return unhealthyPeers
   }
 
-  async isNodeHealthy(peer, performSimpleCheck = false) {
+  async isNodeHealthy (peer, performSimpleCheck = false) {
     try {
       const verboseHealthCheckResp = await this.queryVerboseHealthCheck(peer)
-      if (!performSimpleCheck) {
-        this.determinePeerHealth(verboseHealthCheckResp)
-      }
+      if (!performSimpleCheck) { this.determinePeerHealth(verboseHealthCheckResp) }
     } catch (e) {
-      this.logError(
-        `isNodeHealthy() peer=${peer} is unhealthy: ${e.toString()}`
-      )
+      this.logError(`isNodeHealthy() peer=${peer} is unhealthy: ${e.toString()}`)
       return false
     }
 
@@ -113,7 +96,7 @@ class PeerSetManager {
    * Also handles backwards compatibility of getAllNodeUsers() and getNodePrimaryUsers()
    * This only works if both functions have a consistent return format
    */
-  async getNodeUsers() {
+  async getNodeUsers () {
     let fetchUsersSuccess = false
     let nodeUsers
 
@@ -131,29 +114,17 @@ class PeerSetManager {
         // Retrieves users from route `users/creator_node`
         nodeUsers = await this.getNodePrimaryUsers()
       } catch (secondFetchError) {
-        throw new Error(
-          `getAllNodeUsers() Error: ${firstFetchError.toString()}\n\ngetNodePrimaryUsers() Error: ${secondFetchError.toString()}`
-        )
+        throw new Error(`getAllNodeUsers() Error: ${firstFetchError.toString()}\n\ngetNodePrimaryUsers() Error: ${secondFetchError.toString()}`)
       }
     }
 
     // Ensure every object in response array contains all required fields
-    nodeUsers.forEach((nodeUser) => {
-      const requiredFields = [
-        'user_id',
-        'wallet',
-        'primary',
-        'secondary1',
-        'secondary2'
-      ]
+    nodeUsers.forEach(nodeUser => {
+      const requiredFields = ['user_id', 'wallet', 'primary', 'secondary1', 'secondary2']
       const responseFields = Object.keys(nodeUser)
-      const allRequiredFieldsPresent = requiredFields.every((requiredField) =>
-        responseFields.includes(requiredField)
-      )
+      const allRequiredFieldsPresent = requiredFields.every(requiredField => responseFields.includes(requiredField))
       if (!allRequiredFieldsPresent) {
-        throw new Error(
-          'getNodeUsers() Error: Unexpected response format during getAllNodeUsers() or getNodePrimaryUsers() call'
-        )
+        throw new Error('getNodeUsers() Error: Unexpected response format during getAllNodeUsers() or getNodePrimaryUsers() call')
       }
     })
 
@@ -170,7 +141,7 @@ class PeerSetManager {
    *  - Each object should have the schema { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID },
    * and at the very least have the schema { primary, secondary1, secondary2, user_id, wallet }
    */
-  async getAllNodeUsers() {
+  async getAllNodeUsers () {
     // Fetch discovery node currently connected to libs as this can change
     if (!this.discoveryProviderEndpoint) {
       throw new Error('No discovery provider currently selected, exiting')
@@ -205,7 +176,7 @@ class PeerSetManager {
    *  - Each object should have the schema { primary, secondary1, secondary2, user_id, wallet, primarySpID, secondary1SpID, secondary2SpID }
    * and at the very least have the schema { primary, secondary1, secondary2, user_id, wallet }
    */
-  async getNodePrimaryUsers() {
+  async getNodePrimaryUsers () {
     // Fetch discovery node currently connected to libs as this can change
     if (!this.discoveryProviderEndpoint) {
       throw new Error('No discovery provider currently selected, exiting')
@@ -236,16 +207,16 @@ class PeerSetManager {
    * @param {Object[]} nodeUserInfoList array of objects of schema { primary, secondary1, secondary2, user_id, wallet }
    * @returns {Set} Set of content node endpoint strings
    */
-  computeContentNodePeerSet(nodeUserInfoList) {
+  computeContentNodePeerSet (nodeUserInfoList) {
     // Aggregate all nodes from user replica sets
-    let peerList = nodeUserInfoList
-      .map((userInfo) => userInfo.primary)
-      .concat(nodeUserInfoList.map((userInfo) => userInfo.secondary1))
-      .concat(nodeUserInfoList.map((userInfo) => userInfo.secondary2))
+    let peerList = (
+      nodeUserInfoList.map(userInfo => userInfo.primary)
+        .concat(nodeUserInfoList.map(userInfo => userInfo.secondary1))
+        .concat(nodeUserInfoList.map(userInfo => userInfo.secondary2))
+    )
 
-    peerList = peerList
-      .filter(Boolean) // filter out false-y values to account for incomplete replica sets
-      .filter((peer) => peer !== this.creatorNodeEndpoint) // remove self from peerList
+    peerList = peerList.filter(Boolean) // filter out false-y values to account for incomplete replica sets
+      .filter(peer => peer !== this.creatorNodeEndpoint) // remove self from peerList
 
     const peerSet = new Set(peerList) // convert to Set to get uniques
 
@@ -259,7 +230,7 @@ class PeerSetManager {
    * @param {string} endpoint
    * @returns {Object} the /health_check/verbose response
    */
-  async queryVerboseHealthCheck(endpoint) {
+  async queryVerboseHealthCheck (endpoint) {
     // Axios request will throw on timeout or non-200 response
     const resp = await axios({
       baseURL: endpoint,
@@ -277,86 +248,41 @@ class PeerSetManager {
    *
    * TODO: consolidate CreatorNodeSelection + peer set health check calculation logic
    */
-  determinePeerHealth(verboseHealthCheckResp) {
+  determinePeerHealth (verboseHealthCheckResp) {
     // Check for sufficient minimum storage size
     const { storagePathSize, storagePathUsed } = verboseHealthCheckResp
-    if (
-      storagePathSize &&
-      storagePathUsed &&
-      storagePathSize - storagePathUsed <= MINIMUM_STORAGE_PATH_SIZE
-    ) {
-      throw new Error(
-        `Almost out of storage=${
-          storagePathSize - storagePathUsed
-        }bytes remaining. Minimum storage required=${MINIMUM_STORAGE_PATH_SIZE}bytes`
-      )
+    if (storagePathSize && storagePathUsed && storagePathSize - storagePathUsed <= MINIMUM_STORAGE_PATH_SIZE) {
+      throw new Error(`Almost out of storage=${storagePathSize - storagePathUsed}bytes remaining. Minimum storage required=${MINIMUM_STORAGE_PATH_SIZE}bytes`)
     }
 
     // Check for sufficient memory space
     const { usedMemory, totalMemory } = verboseHealthCheckResp
-    if (
-      usedMemory &&
-      totalMemory &&
-      totalMemory - usedMemory <= MINIMUM_MEMORY_AVAILABLE
-    ) {
-      throw new Error(
-        `Running low on memory=${
-          totalMemory - usedMemory
-        }bytes remaining. Minimum memory required=${MINIMUM_MEMORY_AVAILABLE}bytes`
-      )
+    if (usedMemory && totalMemory && totalMemory - usedMemory <= MINIMUM_MEMORY_AVAILABLE) {
+      throw new Error(`Running low on memory=${totalMemory - usedMemory}bytes remaining. Minimum memory required=${MINIMUM_MEMORY_AVAILABLE}bytes`)
     }
 
     // Check for sufficient file descriptors space
-    const { allocatedFileDescriptors, maxFileDescriptors } =
-      verboseHealthCheckResp
-    if (
-      allocatedFileDescriptors &&
-      maxFileDescriptors &&
-      allocatedFileDescriptors / maxFileDescriptors >=
-        MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE
-    ) {
-      throw new Error(
-        `Running low on file descriptors availability=${
-          (allocatedFileDescriptors / maxFileDescriptors) * 100
-        }% used. Max file descriptors allocated percentage allowed=${
-          MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE * 100
-        }%`
-      )
+    const { allocatedFileDescriptors, maxFileDescriptors } = verboseHealthCheckResp
+    if (allocatedFileDescriptors && maxFileDescriptors && allocatedFileDescriptors / maxFileDescriptors >= MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE) {
+      throw new Error(`Running low on file descriptors availability=${allocatedFileDescriptors / maxFileDescriptors * 100}% used. Max file descriptors allocated percentage allowed=${MAX_FILE_DESCRIPTORS_ALLOCATED_PERCENTAGE * 100}%`)
     }
 
     // Check historical sync data for current day
     const { dailySyncSuccessCount, dailySyncFailCount } = verboseHealthCheckResp
-    if (
-      dailySyncSuccessCount &&
+    if (dailySyncSuccessCount &&
       dailySyncFailCount &&
       dailySyncSuccessCount + dailySyncFailCount > MINIMUM_DAILY_SYNC_COUNT &&
-      dailySyncSuccessCount / (dailySyncFailCount + dailySyncSuccessCount) <
-        MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE
-    ) {
-      throw new Error(
-        `Latest daily sync data shows that this node fails at a high rate of syncs. Successful syncs=${dailySyncSuccessCount} || Failed syncs=${dailySyncFailCount}. Minimum successful sync percentage=${
-          MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE * 100
-        }%`
-      )
+      dailySyncSuccessCount / (dailySyncFailCount + dailySyncSuccessCount) < MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE) {
+      throw new Error(`Latest daily sync data shows that this node fails at a high rate of syncs. Successful syncs=${dailySyncSuccessCount} || Failed syncs=${dailySyncFailCount}. Minimum successful sync percentage=${MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE * 100}%`)
     }
 
     // Check historical sync data for rolling window 30 days
-    const { thirtyDayRollingSyncSuccessCount, thirtyDayRollingSyncFailCount } =
-      verboseHealthCheckResp
-    if (
-      thirtyDayRollingSyncSuccessCount &&
+    const { thirtyDayRollingSyncSuccessCount, thirtyDayRollingSyncFailCount } = verboseHealthCheckResp
+    if (thirtyDayRollingSyncSuccessCount &&
       thirtyDayRollingSyncFailCount &&
-      thirtyDayRollingSyncSuccessCount + thirtyDayRollingSyncFailCount >
-        MINIMUM_ROLLING_SYNC_COUNT &&
-      thirtyDayRollingSyncSuccessCount /
-        (thirtyDayRollingSyncFailCount + thirtyDayRollingSyncSuccessCount) <
-        MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE
-    ) {
-      throw new Error(
-        `Rolling sync data shows that this node fails at a high rate of syncs. Successful syncs=${thirtyDayRollingSyncSuccessCount} || Failed syncs=${thirtyDayRollingSyncFailCount}. Minimum successful sync percentage=${
-          MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE * 100
-        }%`
-      )
+      thirtyDayRollingSyncSuccessCount + thirtyDayRollingSyncFailCount > MINIMUM_ROLLING_SYNC_COUNT &&
+      thirtyDayRollingSyncSuccessCount / (thirtyDayRollingSyncFailCount + thirtyDayRollingSyncSuccessCount) < MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE) {
+      throw new Error(`Rolling sync data shows that this node fails at a high rate of syncs. Successful syncs=${thirtyDayRollingSyncSuccessCount} || Failed syncs=${thirtyDayRollingSyncFailCount}. Minimum successful sync percentage=${MINIMUM_SUCCESSFUL_SYNC_COUNT_PERCENTAGE * 100}%`)
     }
   }
 
@@ -365,24 +291,18 @@ class PeerSetManager {
    * `this.endpointToSPIdMap` value. If the existing map is empty, throw error as we need this map to issue reconfigs.
    * @param {Object} ethContracts audiusLibs.ethContracts instance; has helper fn to get service provider info
    */
-  async updateEndpointToSpIdMap(ethContracts) {
+  async updateEndpointToSpIdMap (ethContracts) {
     let endpointToSPIdMap = {}
     try {
-      const contentNodes = await ethContracts.getServiceProviderList(
-        'content-node'
-      )
-      contentNodes.forEach((cn) => {
-        endpointToSPIdMap[cn.endpoint] = cn.spID
-      })
+      const contentNodes = await ethContracts.getServiceProviderList('content-node')
+      contentNodes.forEach(cn => { endpointToSPIdMap[cn.endpoint] = cn.spID })
     } catch (e) {
       this.logError(`[updateEndpointToSpIdMap]: ${e.message}`)
     }
 
-    if (Object.keys(endpointToSPIdMap).length > 0)
-      this.endpointToSPIdMap = endpointToSPIdMap
+    if (Object.keys(endpointToSPIdMap).length > 0) this.endpointToSPIdMap = endpointToSPIdMap
     if (Object.keys(this.endpointToSPIdMap).length === 0) {
-      const errorMsg =
-        '[updateEndpointToSpIdMap]: Unable to initialize this.endpointToSPIdMap'
+      const errorMsg = '[updateEndpointToSpIdMap]: Unable to initialize this.endpointToSPIdMap'
       this.logError(errorMsg)
       throw new Error(errorMsg)
     }
@@ -394,14 +314,14 @@ class PeerSetManager {
    * @param {Array} nodeUsers array of objects with schema { user_id, wallet, primary, secondary1, secondary2 }
    * @returns {Object} map of replica set endpoint strings to array of wallet strings of users with that node as part of replica set
    */
-  buildReplicaSetNodesToUserWalletsMap(nodeUsers) {
+  buildReplicaSetNodesToUserWalletsMap (nodeUsers) {
     const replicaSetNodesToUserWalletsMap = {}
 
-    nodeUsers.forEach((userInfo) => {
+    nodeUsers.forEach(userInfo => {
       const { wallet, primary, secondary1, secondary2 } = userInfo
       const replicaSet = [primary, secondary1, secondary2]
 
-      replicaSet.forEach((node) => {
+      replicaSet.forEach(node => {
         if (!replicaSetNodesToUserWalletsMap[node]) {
           replicaSetNodesToUserWalletsMap[node] = []
         }
@@ -425,26 +345,22 @@ class PeerSetManager {
    * @param {string} primary primary endpoint
    * @returns boolean of whether primary is healthy or not
    */
-  async isPrimaryHealthy(primary) {
+  async isPrimaryHealthy (primary) {
     const isHealthy = await this.isNodeHealthy(primary, true)
 
     if (!isHealthy) {
-      const failedTimestamp =
-        this.getEarliestFailedHealthCheckTimestamp(primary)
+      const failedTimestamp = this.getEarliestFailedHealthCheckTimestamp(primary)
 
       if (failedTimestamp) {
         // Generate the date of the failed timestamp + max hours threshold
         let failedTimestampPlusThreshold = new Date(failedTimestamp)
         failedTimestampPlusThreshold.setSeconds(
-          failedTimestamp.getSeconds() +
-            this.maxNumberSecondsPrimaryRemainsUnhealthy
+          failedTimestamp.getSeconds() + this.maxNumberSecondsPrimaryRemainsUnhealthy
         )
 
         // Determine if the failed timestamp + max hours threshold surpasses our allowed time threshold
         const now = new Date()
-        if (now >= failedTimestampPlusThreshold) {
-          return false
-        }
+        if (now >= failedTimestampPlusThreshold) { return false }
       } else {
         this.addHealthCheckTimestamp(primary)
       }
@@ -456,17 +372,16 @@ class PeerSetManager {
     return true
   }
 
-  getEarliestFailedHealthCheckTimestamp(primary) {
+  getEarliestFailedHealthCheckTimestamp (primary) {
     return this.primaryToEarliestFailedHealthCheckTimestamp[primary]
-      ? this.primaryToEarliestFailedHealthCheckTimestamp[primary]
-      : null
+      ? this.primaryToEarliestFailedHealthCheckTimestamp[primary] : null
   }
 
-  addHealthCheckTimestamp(primary) {
+  addHealthCheckTimestamp (primary) {
     this.primaryToEarliestFailedHealthCheckTimestamp[primary] = new Date()
   }
 
-  removePrimaryFromUnhealthyPrimaryMap(primary) {
+  removePrimaryFromUnhealthyPrimaryMap (primary) {
     delete this.primaryToEarliestFailedHealthCheckTimestamp[primary]
   }
 }

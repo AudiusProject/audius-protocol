@@ -1,7 +1,4 @@
-const {
-  readOnlyMiddleware,
-  readOnlyMiddlewareHelper
-} = require('./readOnlyMiddleware')
+const { readOnlyMiddleware, readOnlyMiddlewareHelper } = require('./readOnlyMiddleware')
 const assert = require('assert')
 const config = require('../../config')
 const { resFactory, loggerFactory } = require('../../../test/lib/reqMock')
@@ -21,10 +18,7 @@ describe('Test read-only middleware', function () {
       nextCalled = true
     })
 
-    assert.deepStrictEqual(
-      readOnlyMiddlewareHelper(isReadOnlyMode, method),
-      true
-    )
+    assert.deepStrictEqual(readOnlyMiddlewareHelper(isReadOnlyMode, method), true)
     assert.deepStrictEqual(nextCalled, true)
   })
 
@@ -46,10 +40,7 @@ describe('Test read-only middleware', function () {
     })
 
     assert.deepStrictEqual(res.statusCode, 500)
-    assert.deepStrictEqual(
-      readOnlyMiddlewareHelper(isReadOnlyMode, method),
-      false
-    )
+    assert.deepStrictEqual(readOnlyMiddlewareHelper(isReadOnlyMode, method), false)
     assert.deepStrictEqual(nextCalled, false)
   })
 
@@ -63,10 +54,7 @@ describe('Test read-only middleware', function () {
       nextCalled = true
     })
 
-    assert.deepStrictEqual(
-      readOnlyMiddlewareHelper(isReadOnlyMode, method),
-      true
-    )
+    assert.deepStrictEqual(readOnlyMiddlewareHelper(isReadOnlyMode, method), true)
     assert.deepStrictEqual(nextCalled, true)
   })
 })

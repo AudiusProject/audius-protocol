@@ -35,9 +35,7 @@ const contentBlacklistAddController = async (req) => {
   try {
     parsedQueryParams = parseQueryParams(req.query)
   } catch (e) {
-    return errorResponseBadRequest(
-      `Improper blacklist input data: ${JSON.stringify(req.query)}`
-    )
+    return errorResponseBadRequest(`Improper blacklist input data: ${JSON.stringify(req.query)}`)
   }
 
   logger.debug(`ContentBlackListController - [add] verifying signature`)
@@ -49,9 +47,7 @@ const contentBlacklistAddController = async (req) => {
   }
 
   if (type !== types.cid) {
-    logger.debug(
-      `ContentBlackListController - [add] checking ids existance in disc prov`
-    )
+    logger.debug(`ContentBlackListController - [add] checking ids existance in disc prov`)
     const libs = req.app.get('audiusLibs')
     try {
       values = await filterNonexistantIds(libs, type, values)
@@ -62,18 +58,13 @@ const contentBlacklistAddController = async (req) => {
 
   logger.debug(`ContentBlackListController - [add] updating blacklist`)
   try {
-    values = values.map((id) => id.toString())
+    values = values.map(id => id.toString())
     await addToContentBlacklist({ type, values })
   } catch (e) {
     return errorResponseServerError(e.message)
   }
 
-  logger.debug(
-    `ContentBlacklistController - [add] success for ${JSON.stringify({
-      type,
-      values
-    })}`
-  )
+  logger.debug(`ContentBlacklistController - [add] success for ${JSON.stringify({ type, values })}`)
   return successResponse({ type, values })
 }
 
@@ -84,9 +75,7 @@ const contentBlacklistRemoveController = async (req) => {
   try {
     parsedQueryParams = parseQueryParams(req.query)
   } catch (e) {
-    return errorResponseBadRequest(
-      `Improper blacklist input data: ${JSON.stringify(req.query)}`
-    )
+    return errorResponseBadRequest(`Improper blacklist input data: ${JSON.stringify(req.query)}`)
   }
 
   logger.debug(`ContentBlackListController - [remove] verifying signature`)
@@ -98,9 +87,7 @@ const contentBlacklistRemoveController = async (req) => {
   }
 
   if (type !== types.cid) {
-    logger.debug(
-      `ContentBlackListController - [remove] filtering out non-existant ids`
-    )
+    logger.debug(`ContentBlackListController - [remove] filtering out non-existant ids`)
     const libs = req.app.get('audiusLibs')
     try {
       values = await filterNonexistantIds(libs, type, values)
@@ -111,18 +98,13 @@ const contentBlacklistRemoveController = async (req) => {
 
   logger.debug(`ContentBlackListController - [remove] updating blacklist`)
   try {
-    values = values.map((id) => id.toString())
+    values = values.map(id => id.toString())
     await removeFromContentBlacklist({ type, values })
   } catch (e) {
     return errorResponseServerError(e.message)
   }
 
-  logger.debug(
-    `ContentBlacklistController - [remove] success for ${JSON.stringify({
-      type,
-      values
-    })}`
-  )
+  logger.debug(`ContentBlacklistController - [remove] success for ${JSON.stringify({ type, values })}`)
   return successResponse({ type, values })
 }
 
@@ -135,17 +117,10 @@ const contentBlacklistRemoveController = async (req) => {
  * @param {number[]} queryParams.values[] the ids (for tracks, users) or cids (segments)
  * @param {string} queryParams.timestamp the timestamp of when the data was signed
  */
-function parseQueryParams(queryParams) {
+function parseQueryParams (queryParams) {
   let { values, type, timestamp, signature } = queryParams
 
-  if (
-    !values ||
-    !Array.isArray(values) ||
-    values.length === 0 ||
-    !type ||
-    !timestamp ||
-    !signature
-  ) {
+  if (!values || !Array.isArray(values) || values.length === 0 || !type || !timestamp || !signature) {
     throw new Error(
       `Missing query params: [values: ${values}, type: ${type}, timestamp: ${timestamp}, signature ${signature}]`
     )
@@ -160,26 +135,18 @@ function parseQueryParams(queryParams) {
     // Parse cids to be of Qm... syntax
     const orignalNumCIDs = values.length
     const cidRegex = new RegExp('^Qm[a-zA-Z0-9]{44}$')
-    values = values.filter((cid) => cidRegex.test(cid))
+    values = values.filter(cid => cidRegex.test(cid))
     if (values.length === 0) throw new Error('List of values is not proper.')
     if (orignalNumCIDs !== values.length) {
-      logger.warn(
-        `Filtered out improper values from input. Please only pass valid CIDs!`
-      )
+      logger.warn(`Filtered out improper values from input. Please only pass valid CIDs!`)
     }
   } else {
     // Parse ids into ints greater than 0
     const originalNumIds = values.length
-    values = values
-      .filter((id) => !isNaN(id))
-      .map((id) => parseInt(id))
-      .filter((id) => id >= 0)
-    if (values.length === 0)
-      throw new Error(`List of ids is not proper: ids [${values.toString()}]`)
+    values = values.filter(id => !isNaN(id)).map(id => parseInt(id)).filter(id => id >= 0)
+    if (values.length === 0) throw new Error(`List of ids is not proper: ids [${values.toString()}]`)
     if (originalNumIds !== values.length) {
-      logger.warn(
-        `Filterd out non-numeric ids from input. Please only pass integers!`
-      )
+      logger.warn(`Filterd out non-numeric ids from input. Please only pass integers!`)
     }
   }
 
@@ -194,15 +161,10 @@ function parseQueryParams(queryParams) {
  * @param {string} data.timestamp the timestamp of when the data was signed
  * @param {string} signature the signature generated from signing the data
  */
-function verifyRequest(data, signature) {
+function verifyRequest (data, signature) {
   const recoveredPublicWallet = recoverWallet(data, signature)
-  if (
-    recoveredPublicWallet.toLowerCase() !==
-    config.get('delegateOwnerWallet').toLowerCase()
-  ) {
-    throw new Error(
-      "Requester's public key does does not match Creator Node's delegate owner wallet."
-    )
+  if (recoveredPublicWallet.toLowerCase() !== config.get('delegateOwnerWallet').toLowerCase()) {
+    throw new Error("Requester's public key does does not match Creator Node's delegate owner wallet.")
   }
 }
 
@@ -222,20 +184,18 @@ const filterNonexistantIds = async (libs, type, ids) => {
         // If response is empty, then no users or tracks were found. Return error response
         if (!resp || resp.length === 0) throw new Error('Users not found.')
         // Else, if only some input ids were found, only blacklist the ids that were found
-        if (resp.length < ids.length) ids = resp.map((user) => user.user_id)
+        if (resp.length < ids.length) ids = resp.map(user => user.user_id)
         break
       case 'TRACK':
         resp = await libs.Track.getTracks(ids.length, 0, ids)
         if (!resp || resp.length === 0) throw new Error('Tracks not found.')
-        if (resp.length < ids.length) ids = resp.map((track) => track.track_id)
+        if (resp.length < ids.length) ids = resp.map(track => track.track_id)
         break
       default:
         throw new Error('Could not recognize type.')
     }
   } catch (e) {
-    throw new Error(
-      `Could not find ${type} with ids ${ids.toString()}: ${e.message}`
-    )
+    throw new Error(`Could not find ${type} with ids ${ids.toString()}: ${e.message}`)
   }
 
   return ids
@@ -245,9 +205,6 @@ const filterNonexistantIds = async (libs, type, ids) => {
 
 router.get('/blacklist', handleResponse(contentBlacklistGetAllController))
 router.post('/blacklist/add', handleResponse(contentBlacklistAddController))
-router.post(
-  '/blacklist/remove',
-  handleResponse(contentBlacklistRemoveController)
-)
+router.post('/blacklist/remove', handleResponse(contentBlacklistRemoveController))
 
 module.exports = router

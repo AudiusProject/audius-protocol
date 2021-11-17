@@ -7,74 +7,61 @@ const SECONDARY = 'http:test-cn.audius.co'
 describe('Test sync health check', function () {
   it('Should return active and waiting jobs', async function () {
     const mockSnapback = {
-      getSyncQueueJobs: async () =>
-        Promise.resolve({
-          recurringWaiting: [
-            {
-              id: 2,
+      getSyncQueueJobs: async () => Promise.resolve({
+        recurringWaiting: [{
+          id: 2,
+          data: {
+            syncRequestParameters: {
+              baseURL: SECONDARY,
               data: {
-                syncRequestParameters: {
-                  baseURL: SECONDARY,
-                  data: {
-                    wallet: [WALLET]
-                  }
-                }
+                wallet: [WALLET]
               }
             }
-          ],
-          recurringActive: [
-            {
-              id: 1,
+          }
+        }],
+        recurringActive: [{
+          id: 1,
+          data: {
+            syncRequestParameters: {
+              baseURL: SECONDARY,
               data: {
-                syncRequestParameters: {
-                  baseURL: SECONDARY,
-                  data: {
-                    wallet: [WALLET]
-                  }
-                }
+                wallet: [WALLET]
               }
             }
-          ],
-          manualWaiting: [
-            {
-              id: 3,
+          }
+        }],
+        manualWaiting: [{
+          id: 3,
+          data: {
+            syncRequestParameters: {
+              baseURL: SECONDARY,
               data: {
-                syncRequestParameters: {
-                  baseURL: SECONDARY,
-                  data: {
-                    wallet: [WALLET]
-                  }
-                }
+                wallet: [WALLET]
               }
             }
-          ],
-          manualActive: []
-        })
+          }
+        }],
+        manualActive: []
+      })
     }
 
     const expectedResp = {
-      manualWaiting: [
-        {
-          id: 3,
-          secondary: SECONDARY,
-          wallet: WALLET
-        }
-      ],
+      manualWaiting: [{
+        id: 3,
+        secondary: SECONDARY,
+        wallet: WALLET
+      }],
       manualActive: [],
-      recurringWaiting: [
-        {
-          id: 2,
-          secondary: SECONDARY,
-          wallet: WALLET
-        }
-      ],
-      recurringActive: [
-        {
-          id: 1,
-          secondary: SECONDARY,
-          wallet: WALLET
-        }
-      ],
+      recurringWaiting: [{
+        id: 2,
+        secondary: SECONDARY,
+        wallet: WALLET
+      }],
+      recurringActive: [{
+        id: 1,
+        secondary: SECONDARY,
+        wallet: WALLET
+      }],
       manualWaitingCount: 1,
       recurringWaitingCount: 1
     }

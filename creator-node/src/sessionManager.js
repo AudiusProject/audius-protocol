@@ -12,11 +12,11 @@ const sessionTokenLength = 40
 
 /** Manage sessions with redis and DB. */
 class SessionManager {
-  static get sessionTokenHeader() {
+  static get sessionTokenHeader () {
     return sessionTokenHeaderKey
   }
 
-  static async createSession(cnodeUserUUID) {
+  static async createSession (cnodeUserUUID) {
     const tokenBuffer = await randomBytes(sessionTokenLength)
     const token = base64url.encode(tokenBuffer)
 
@@ -27,56 +27,47 @@ class SessionManager {
   }
 
   /** Return cnodeUserUUID associated with token if exists, else null. */
-  static async verifySession(sessionToken) {
+  static async verifySession (sessionToken) {
     let session = await _getSessionFromRedis(sessionToken)
     if (session) {
       return session
     }
 
     session = await _getSessionFromDB(sessionToken, false)
-    return session ? session.cnodeUserUUID : null
+    return (session) ? session.cnodeUserUUID : null
   }
 
-  static async deleteSession(sessionToken) {
+  static async deleteSession (sessionToken) {
     const session = await _getSessionFromDB(sessionToken, true)
     await session.destroy()
     await redisClient.del(`SESSION.${sessionToken}`)
   }
 
-  static async deleteSessions(sessionTokens) {
-    const txCommands = sessionTokens.map(({ token }) => [
-      'del',
-      `SESSION.${token}`
-    ])
+  static async deleteSessions (sessionTokens) {
+    const txCommands = sessionTokens.map(({ token }) => ['del', `SESSION.${token}`])
     try {
       await DBManager.deleteSessionTokensFromDB(sessionTokens)
     } catch (e1) {
       try {
         await DBManager.deleteSessionTokensFromDB(sessionTokens)
       } catch (e2) {
-        throw new Error(
-          `[sessionManager]: Failure (and retry failure) when deleting expired sessions from DB: ${e1.message}\n$`
-        )
+        throw new Error(`[sessionManager]: Failure (and retry failure) when deleting expired sessions from DB: ${e1.message}\n$`)
       }
     }
     try {
       await redisClient.multi(txCommands).exec()
     } catch (e) {
-      throw new Error(
-        `[sessionManager]: Error when deleting expired sessions from Redis: ${e.message}`
-      )
+      throw new Error(`[sessionManager]: Error when deleting expired sessions from Redis: ${e.message}`)
     }
   }
 }
 
-async function _getSessionFromRedis(token) {
+async function _getSessionFromRedis (token) {
   return redisClient.get(`SESSION.${token}`)
 }
 
-async function _getSessionFromDB(sessionToken, throwOnError) {
-  const session = await models.SessionToken.findOne({
-    where: { token: sessionToken }
-  })
+async function _getSessionFromDB (sessionToken, throwOnError) {
+  const session = await models.SessionToken.findOne({ where: { token: sessionToken } })
 
   if (throwOnError && !session) {
     throw new Error('Invalid session')

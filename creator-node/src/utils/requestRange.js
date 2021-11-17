@@ -27,7 +27,9 @@ const getRequestRange = (req) => {
 
   try {
     const start = parseInt(matches[2], 10)
-    const end = matches[3] ? parseInt(matches[3], 10) : undefined
+    const end = matches[3]
+      ? parseInt(matches[3], 10)
+      : undefined
 
     return { start, end }
   } catch (e) {
@@ -40,7 +42,7 @@ const getRequestRange = (req) => {
  * @returns {string} Content-Range header value
  */
 const formatContentRange = (start, end, size) => {
-  return `bytes ${start}-${end || size - 1}/${size}`
+  return `bytes ${start}-${end || (size - 1)}/${size}`
 }
 
 module.exports = {

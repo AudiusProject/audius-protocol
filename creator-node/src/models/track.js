@@ -1,45 +1,41 @@
 'use strict'
 
 module.exports = (sequelize, DataTypes) => {
-  const Track = sequelize.define(
-    'Track',
-    {
-      cnodeUserUUID: {
-        type: DataTypes.UUID,
-        primaryKey: true, // composite primary key (cnodeUserUUID, clock)
-        allowNull: false
-      },
-      clock: {
-        type: DataTypes.INTEGER,
-        primaryKey: true, // composite primary key (cnodeUserUUID, clock)
-        allowNull: false
-      },
-      blockchainId: {
-        type: DataTypes.BIGINT,
-        allowNull: false
-      },
-      metadataFileUUID: {
-        type: DataTypes.UUID,
-        allowNull: false
-      },
-      metadataJSON: {
-        type: DataTypes.JSONB,
-        allowNull: false
-      },
-      coverArtFileUUID: {
-        type: DataTypes.UUID,
-        allowNull: true
-      }
+  const Track = sequelize.define('Track', {
+    cnodeUserUUID: {
+      type: DataTypes.UUID,
+      primaryKey: true, // composite primary key (cnodeUserUUID, clock)
+      allowNull: false
     },
-    {
-      indexes: [
-        {
-          unique: true,
-          fields: ['blockchainId', 'clock']
-        }
-      ]
+    clock: {
+      type: DataTypes.INTEGER,
+      primaryKey: true, // composite primary key (cnodeUserUUID, clock)
+      allowNull: false
+    },
+    blockchainId: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
+    metadataFileUUID: {
+      type: DataTypes.UUID,
+      allowNull: false
+    },
+    metadataJSON: {
+      type: DataTypes.JSONB,
+      allowNull: false
+    },
+    coverArtFileUUID: {
+      type: DataTypes.UUID,
+      allowNull: true
     }
-  )
+  }, {
+    indexes: [
+      {
+        unique: true,
+        fields: ['blockchainId', 'clock']
+      }
+    ]
+  })
 
   Track.associate = function (models) {
     Track.belongsTo(models.CNodeUser, {
