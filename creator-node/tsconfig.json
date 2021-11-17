@@ -24,7 +24,8 @@
     ]
   },
   "include": [
-    "src"
+    "src",
+    "sequelize"
   ],
   "exclude": [
     "node_modules"
