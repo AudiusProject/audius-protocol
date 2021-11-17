@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 link_libs=true
 
@@ -77,9 +78,6 @@ if [[ "$devMode" == "true" ]]; then
         ./node_modules/.bin/nodemon --watch src/ src/index.ts | tee >(logger) | ./node_modules/.bin/bunyan
     fi
 else
-    ls
-    ls build/
-    ls build/src
     node build/src/index.js | tee >(logger)
     docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 10
 fi
