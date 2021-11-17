@@ -19,8 +19,12 @@ const ipfsAdd = {}
 // Base functionality for only hash logic taken from https://github.com/alanshaw/ipfs-only-hash/blob/master/index.js
 
 const block = {
-  get: async cid => { throw new Error(`unexpected block API get for ${cid}`) },
-  put: async () => { throw new Error('unexpected block API put') }
+  get: async (cid) => {
+    throw new Error(`unexpected block API get for ${cid}`)
+  },
+  put: async () => {
+    throw new Error('unexpected block API put')
+  }
 }
 
 /**
@@ -31,7 +35,7 @@ const block = {
  * @returns the cid from content addressing logic only
  */
 ipfsAdd.ipfsOnlyHashNonImages = async (content, options = {}) => {
-  ({ options, content } = _initializeIPFSOnlyHash(content, options))
+  ;({ options, content } = _initializeIPFSOnlyHash(content, options))
 
   let lastCid
   for await (const { cid } of importer([{ content }], block, options)) {
@@ -77,7 +81,7 @@ ipfsAdd.ipfsOnlyHashNonImages = async (content, options = {}) => {
   ]
 */
 ipfsAdd.ipfsOnlyHashImages = async (content, options = {}) => {
-  ({ options, content } = _initializeIPFSOnlyHash(content, options))
+  ;({ options, content } = _initializeIPFSOnlyHash(content, options))
 
   const resps = []
   for await (const file of importer(content, block, options)) {
@@ -104,7 +108,12 @@ ipfsAdd.ipfsOnlyHashImages = async (content, options = {}) => {
  * @param {boolean?} enableIPFSAdd flag to add content to ipfs daemon
  * @returns {string} only hash response cid or ipfs daemon response cid
  */
-ipfsAdd.ipfsAddNonImages = async (content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) => {
+ipfsAdd.ipfsAddNonImages = async (
+  content,
+  ipfsConfig = {},
+  logContext = {},
+  enableIPFSAdd = false
+) => {
   const logger = genericLogger.child(logContext)
 
   let buffer = await _convertToBuffer(content, logger)
@@ -114,7 +123,9 @@ ipfsAdd.ipfsAddNonImages = async (content, ipfsConfig = {}, logContext = {}, ena
   const durationOnlyHashMs = (hrtime.bigint() - startOnlyHash) / BigInt(1000000) // convert ns -> ms
 
   if (!enableIPFSAdd) {
-    logger.info(`[ipfsClient - ipfsAddNonImages()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms`)
+    logger.info(
+      `[ipfsClient - ipfsAddNonImages()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms`
+    )
     return onlyHash
   }
 
@@ -134,16 +145,24 @@ ipfsAdd.ipfsAddNonImages = async (content, ipfsConfig = {}, logContext = {}, ena
     }
 
     const startIpfsLatestAdd = hrtime.bigint()
-    for await (const ipfsLatestAddWithDaemonResp of ipfsLatest.add(buffer, ipfsConfig)) {
+    for await (const ipfsLatestAddWithDaemonResp of ipfsLatest.add(
+      buffer,
+      ipfsConfig
+    )) {
       ipfsDaemonHash = `${ipfsLatestAddWithDaemonResp.cid}`
     }
-    const durationIpfsLatestAddMs = (hrtime.bigint() - startIpfsLatestAdd) / BigInt(1000000) // convert ns -> ms
+    const durationIpfsLatestAddMs =
+      (hrtime.bigint() - startIpfsLatestAdd) / BigInt(1000000) // convert ns -> ms
 
     const isSameHash = onlyHash === ipfsDaemonHash
-    logger.info(`[ipfsClient - ipfsAddNonImages()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms ipfsDaemonHash=${ipfsDaemonHash} ipfsDaemonHashDuration=${durationIpfsLatestAddMs}ms isSameHash=${isSameHash}`)
+    logger.info(
+      `[ipfsClient - ipfsAddNonImages()] onlyHash=${onlyHash} onlyHashDuration=${durationOnlyHashMs}ms ipfsDaemonHash=${ipfsDaemonHash} ipfsDaemonHashDuration=${durationIpfsLatestAddMs}ms isSameHash=${isSameHash}`
+    )
 
     if (!isSameHash) {
-      throw new Error(`onlyHash=${onlyHash} and ipfsDaemonHash=${ipfsDaemonHash} are not consistent`)
+      throw new Error(
+        `onlyHash=${onlyHash} and ipfsDaemonHash=${ipfsDaemonHash} are not consistent`
+      )
     }
   } catch (e) {
     const errorMsg = `[ipfsClient - ipfsAddNonImages()] Could not add content to ipfs: ${e.toString()}`
@@ -163,8 +182,13 @@ ipfsAdd.ipfsAddNonImages = async (content, ipfsConfig = {}, logContext = {}, ena
  * @param {Object?} logContext
  * @param {boolean?} enableIPFSAdd flag to add content to ipfs daemon
  * @returns {Object[]} only hash responses or ipfs daemon responses with the structure [{path: <string>, cid: <string>, size: <number>}]
-*/
-ipfsAdd.ipfsAddImages = async (content, ipfsConfig = {}, logContext = {}, enableIPFSAdd = false) => {
+ */
+ipfsAdd.ipfsAddImages = async (
+  content,
+  ipfsConfig = {},
+  logContext = {},
+  enableIPFSAdd = false
+) => {
   const logger = genericLogger.child(logContext)
 
   const startOnlyHash = hrtime.bigint()
@@ -174,7 +198,9 @@ ipfsAdd.ipfsAddImages = async (content, ipfsConfig = {}, logContext = {}, enable
   const ipfsAddWithoutDaemonRespStr = JSON.stringify(ipfsAddWithoutDaemonResp)
 
   if (!enableIPFSAdd) {
-    logger.info(`[ipfsClient - ipfsAddImages()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms`)
+    logger.info(
+      `[ipfsClient - ipfsAddImages()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms`
+    )
     return ipfsAddWithoutDaemonResp
   }
 
@@ -189,15 +215,23 @@ ipfsAdd.ipfsAddImages = async (content, ipfsConfig = {}, logContext = {}, enable
       resp.cid = `${resp.cid}`
       ipfsAddWithDaemonResp.push(resp)
     }
-    const durationIpfsLatestAddMs = (hrtime.bigint() - startIpfsLatestAdd) / BigInt(1000000) // convert ns -> ms
+    const durationIpfsLatestAddMs =
+      (hrtime.bigint() - startIpfsLatestAdd) / BigInt(1000000) // convert ns -> ms
 
     const ipfsAddWithDaemonRespStr = JSON.stringify(ipfsAddWithDaemonResp)
 
-    const isSameResp = _.isEqual(ipfsAddWithoutDaemonResp, ipfsAddWithDaemonResp)
-    logger.info(`[ipfsClient - ipfsAddImages()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms ipfsAddWithDaemonResp=${ipfsAddWithDaemonRespStr} ipfsAddWithDaemonRespDuration=${durationIpfsLatestAddMs}ms isSameHash=${isSameResp}`)
+    const isSameResp = _.isEqual(
+      ipfsAddWithoutDaemonResp,
+      ipfsAddWithDaemonResp
+    )
+    logger.info(
+      `[ipfsClient - ipfsAddImages()] onlyHash=${ipfsAddWithoutDaemonRespStr} onlyHashDuration=${durationOnlyHashMs}ms ipfsAddWithDaemonResp=${ipfsAddWithDaemonRespStr} ipfsAddWithDaemonRespDuration=${durationIpfsLatestAddMs}ms isSameHash=${isSameResp}`
+    )
 
     if (!isSameResp) {
-      throw new Error(`onlyHash=${ipfsAddWithoutDaemonRespStr} and ipfsAddWithDaemonResp=${ipfsAddWithDaemonRespStr} are not consistent`)
+      throw new Error(
+        `onlyHash=${ipfsAddWithoutDaemonRespStr} and ipfsAddWithDaemonResp=${ipfsAddWithDaemonRespStr} are not consistent`
+      )
     }
   } catch (e) {
     const errorMsg = `[ipfsClient - ipfsAddImages()] Could not add content to ipfs: ${e.toString()}`
@@ -211,7 +245,7 @@ ipfsAdd.ipfsAddImages = async (content, ipfsConfig = {}, logContext = {}, enable
 /**
  * Used to iniitalize the only hash fns. See Alan Shaw's reference code for more context.
  */
-function _initializeIPFSOnlyHash (content, options) {
+function _initializeIPFSOnlyHash(content, options) {
   options = options || {}
   options.onlyHash = true
   options.cidVersion = 0
@@ -229,16 +263,16 @@ function _initializeIPFSOnlyHash (content, options) {
  * @param {Object} logger
  * @returns buffer version of content
  */
-async function _convertToBuffer (content, logger) {
+async function _convertToBuffer(content, logger) {
   if (Buffer.isBuffer(content)) return content
 
   let buffer = []
   try {
     if (content instanceof Stream.Readable) {
       await new Promise((resolve, reject) => {
-        content.on('data', chunk => buffer.push(chunk))
+        content.on('data', (chunk) => buffer.push(chunk))
         content.on('end', () => resolve(Buffer.concat(buffer)))
-        content.on('error', err => reject(err))
+        content.on('error', (err) => reject(err))
       })
     } else {
       buffer = await fsReadFile(content)

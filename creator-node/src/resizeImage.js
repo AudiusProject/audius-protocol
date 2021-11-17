@@ -11,7 +11,7 @@ const DiskManager = require('./diskManager')
 const ENABLE_IPFS_ADD_IMAGES = config.get('enableIPFSAddImages')
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.
-const COLOR_WHITE = 0xFFFFFFFF
+const COLOR_WHITE = 0xffffffff
 const IMAGE_QUALITY = 90
 const MIME_TYPE_JPEG = 'image/jpeg'
 
@@ -23,7 +23,7 @@ const MIME_TYPE_JPEG = 'image/jpeg'
  * @return {Buffer} the converted image
  * @dev TODO - replace with child node process bc need for speed
  */
-async function resizeImage (image, maxWidth, square, logger) {
+async function resizeImage(image, maxWidth, square, logger) {
   let img = image.clone()
   // eslint-disable-next-line
   let exif
@@ -48,7 +48,9 @@ async function resizeImage (image, maxWidth, square, logger) {
   if (square) {
     // If both sides are larger than maxWidth, resizing must occur
     if (width > maxWidth && height > maxWidth) {
-      width > height ? img.resize(Jimp.AUTO, maxWidth) : img.resize(maxWidth, Jimp.AUTO)
+      width > height
+        ? img.resize(Jimp.AUTO, maxWidth)
+        : img.resize(maxWidth, Jimp.AUTO)
     }
     // Crop the image to be square
     let min = Math.min(img.bitmap.width, img.bitmap.height)
@@ -69,7 +71,7 @@ async function resizeImage (image, maxWidth, square, logger) {
 
 // Copied directly from Jimp.
 // https://github.com/oliver-moran/jimp/blob/12248941fd481121dc5372f6a8154f01930c8d0f/packages/core/src/utils/image-bitmap.js#L31
-function _exifRotate (img, exif) {
+function _exifRotate(img, exif) {
   if (exif && exif.tags && exif.tags.Orientation) {
     switch (exif.tags.Orientation) {
       case 1: // Horizontal (normal)
@@ -105,13 +107,7 @@ function _exifRotate (img, exif) {
 }
 
 module.exports = async (job) => {
-  const {
-    file,
-    fileName,
-    sizes,
-    square,
-    logContext
-  } = job.data
+  const { file, fileName, sizes, square, logContext } = job.data
   const logger = genericLogger.child(logContext)
 
   // Read the image once, clone it later on
@@ -124,7 +120,7 @@ module.exports = async (job) => {
 
   // Resize all the images
   const resizes = await Promise.all(
-    Object.keys(sizes).map(size => {
+    Object.keys(sizes).map((size) => {
       return resizeImage(img, sizes[size], square, logger)
     })
   )
@@ -169,18 +165,20 @@ module.exports = async (job) => {
     // Slice ipfsAddResp to remove dir entry at last index
     const ipfsFileResps = ipfsAddResp.slice(0, ipfsAddResp.length - 1)
 
-    await Promise.all(ipfsFileResps.map(async (fileResp, i) => {
-      // Save file to disk
-      const destPath = DiskManager.computeFilePathInDir(dirCID, fileResp.cid)
-      await fs.writeFile(destPath, resizes[i])
+    await Promise.all(
+      ipfsFileResps.map(async (fileResp, i) => {
+        // Save file to disk
+        const destPath = DiskManager.computeFilePathInDir(dirCID, fileResp.cid)
+        await fs.writeFile(destPath, resizes[i])
 
-      // Append saved file info to response object
-      resp.files.push({
-        multihash: fileResp.cid,
-        sourceFile: fileResp.path,
-        storagePath: destPath
+        // Append saved file info to response object
+        resp.files.push({
+          multihash: fileResp.cid,
+          sourceFile: fileResp.path,
+          storagePath: destPath
+        })
       })
-    }))
+    )
   } catch (e) {
     throw new Error(`Failed to write files to disk after resizing ${e}`)
   }

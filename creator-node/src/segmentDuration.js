@@ -7,7 +7,7 @@ const readFile = promisify(fs.readFile)
 const SEGMENT_REGEXP = /(segment[0-9]*.ts)/
 
 // Parse m3u8 file from HLS output and return map(segment filePath (segmentName) => segment duration)
-async function getSegmentsDuration (filename, filedir) {
+async function getSegmentsDuration(filename, filedir) {
   try {
     let splitResults = filename.split('.')
     let fileRandomName = splitResults[0]

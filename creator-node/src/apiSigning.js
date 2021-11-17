@@ -55,10 +55,10 @@ const generateListenTimestampAndSignature = (privateKey) => {
 }
 
 /**
-   * Recover the public wallet address
-   * @param {*} data obj with structure {...data, timestamp}
-   * @param {*} signature signature generated with signed data
-   */
+ * Recover the public wallet address
+ * @param {*} data obj with structure {...data, timestamp}
+ * @param {*} signature signature generated with signed data
+ */
 // eslint-disable-next-line no-unused-vars
 const recoverWallet = (data, signature) => {
   let structuredData = JSON.stringify(sortKeys(data))
@@ -77,13 +77,19 @@ const signatureHasExpired = (signatureTimestamp) => {
   const currentTimestampDate = new Date()
   const signatureAge = currentTimestampDate - signatureTimestampDate
 
-  return (signatureAge >= MAX_SIGNATURE_AGE_MS)
+  return signatureAge >= MAX_SIGNATURE_AGE_MS
 }
 
-const sortKeys = x => {
-  if (typeof x !== 'object' || !x) { return x }
-  if (Array.isArray(x)) { return x.map(sortKeys) }
-  return Object.keys(x).sort().reduce((o, k) => ({ ...o, [k]: sortKeys(x[k]) }), {})
+const sortKeys = (x) => {
+  if (typeof x !== 'object' || !x) {
+    return x
+  }
+  if (Array.isArray(x)) {
+    return x.map(sortKeys)
+  }
+  return Object.keys(x)
+    .sort()
+    .reduce((o, k) => ({ ...o, [k]: sortKeys(x[k]) }), {})
 }
 
 /**
@@ -102,25 +108,31 @@ const verifyRequesterIsValidSP = async ({
   reqSignature
 }) => {
   if (!reqTimestamp || !reqSignature) {
-    throw new Error('Must provide all required query parameters: timestamp, signature')
+    throw new Error(
+      'Must provide all required query parameters: timestamp, signature'
+    )
   }
 
   spID = validateSPId(spID)
 
-  const spRecordFromSPFactory = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
-    'content-node',
-    spID
-  )
+  const spRecordFromSPFactory =
+    await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
+      'content-node',
+      spID
+    )
 
   let {
     owner: ownerWalletFromSPFactory,
     delegateOwnerWallet: delegateOwnerWalletFromSPFactory,
     endpoint: nodeEndpointFromSPFactory
   } = spRecordFromSPFactory
-  delegateOwnerWalletFromSPFactory = delegateOwnerWalletFromSPFactory.toLowerCase()
+  delegateOwnerWalletFromSPFactory =
+    delegateOwnerWalletFromSPFactory.toLowerCase()
 
   if (!ownerWalletFromSPFactory || !delegateOwnerWalletFromSPFactory) {
-    throw new Error(`Missing fields: ownerWallet=${ownerWalletFromSPFactory}, delegateOwnerWallet=${delegateOwnerWalletFromSPFactory}`)
+    throw new Error(
+      `Missing fields: ownerWallet=${ownerWalletFromSPFactory}, delegateOwnerWallet=${delegateOwnerWalletFromSPFactory}`
+    )
   }
 
   /**
@@ -131,14 +143,19 @@ const verifyRequesterIsValidSP = async ({
     LibsUtils.isZeroAddress(delegateOwnerWalletFromSPFactory) ||
     !nodeEndpointFromSPFactory
   ) {
-    throw new Error(`SpID ${spID} is not registered as valid SP on L1 ServiceProviderFactory or missing field endpoint=${nodeEndpointFromSPFactory}`)
+    throw new Error(
+      `SpID ${spID} is not registered as valid SP on L1 ServiceProviderFactory or missing field endpoint=${nodeEndpointFromSPFactory}`
+    )
   }
 
   /**
    * Confirm request was signed by delegate owner wallet registered on L1 for spID, given request signature artifacts
    */
   let requesterWalletRecoveryObj = { spID, timestamp: reqTimestamp }
-  let recoveredDelegateOwnerWallet = (recoverWallet(requesterWalletRecoveryObj, reqSignature)).toLowerCase()
+  let recoveredDelegateOwnerWallet = recoverWallet(
+    requesterWalletRecoveryObj,
+    reqSignature
+  ).toLowerCase()
   if (delegateOwnerWalletFromSPFactory !== recoveredDelegateOwnerWallet) {
     throw new Error(
       'Request for signature must be signed by delegate owner wallet registered on L1 for spID'
@@ -158,7 +175,7 @@ const verifyRequesterIsValidSP = async ({
  * @param {string} spID
  * @returns a parsed spID
  */
-function validateSPId (spID) {
+function validateSPId(spID) {
   if (!spID) {
     throw new Error('Must provide all required query parameters: spID')
   }
