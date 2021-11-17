@@ -1,6 +1,8 @@
 const axios = require('axios')
 const convict = require('convict')
 const fs = require('fs')
+const process = require('process')
+const path = require('path')
 
 // can't import logger here due to possible circular dependency, use console
 
@@ -665,8 +667,8 @@ const config = convict({
 const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
 
-if (fs.existsSync('eth-contract-config.json')) {
-  let ethContractConfig = require('../eth-contract-config.json')
+if (fs.existsSync(path.join(process.cwd(), 'eth-contract-config.json'))) {
+  let ethContractConfig = require(path.join(process.cwd(), 'eth-contract-config.json'))
   config.load({
     'ethTokenAddress': ethContractConfig.audiusTokenAddress,
     'ethRegistryAddress': ethContractConfig.registryAddress,
@@ -675,8 +677,8 @@ if (fs.existsSync('eth-contract-config.json')) {
   })
 }
 
-if (fs.existsSync('contract-config.json')) {
-  const dataContractConfig = require('../contract-config.json')
+if (fs.existsSync(path.join(process.cwd(), 'contract-config.json'))) {
+  let dataContractConfig = require(path.join(process.cwd(), 'contract-config.json'))
   config.load({
     'dataRegistryAddress': dataContractConfig.registryAddress
   })
