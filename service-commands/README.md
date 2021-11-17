@@ -56,16 +56,18 @@ You can provision a brand-new dev instance with:
 * Docker images cached
 * at commit hashes/branches of your choosing for protocol + client!
 
+You can ssh right in after and run `A up` - no other setup involved.
+
 ```bash
-  $ A setup remote-dev --fast <instance-name> [--protocol-git-ref <branch-name-or-commit-hash>] [--client-git-ref <branch-name-or-commit-hash>] [--up]
+  $ A setup remote-dev --fast <instance-name> [--protocol-git-ref <branch-name-or-commit-hash>] [--client-git-ref <branch-name-or-commit-hash>]
 ```
 
 Note that you will need to manually confirm the instance creation as well as ssh connection upon startup. Once you've confirmed the ssh connection, that's it -- you can walk away and make a pie and wait for your dev environment to finish provisioning!
 
-Here's an example of how to provision a gcloud instance called `pietocol-team` at protocol branch `cj-quickfix` and client git hash `7cf17667972d4c5d6bc25d08ce1f626c37f9abb7` and make sure to run `A up` right after setting up the box:
+Here's an example of how to provision a gcloud instance called `pietocol-team` at protocol branch `cj-quickfix` and client git hash `7cf17667972d4c5d6bc25d08ce1f626c37f9abb7`:
 
 ```bash
-  $ A setup remote-dev --fast pietocol-team --protocol-git-ref cj-quickfix --client-git-ref 7cf17667972d4c5d6bc25d08ce1f626c37f9abb7 --up
+  $ A setup remote-dev --fast pietocol-team --protocol-git-ref cj-quickfix --client-git-ref 7cf17667972d4c5d6bc25d08ce1f626c37f9abb7
 ```
 
 Don't forget to delete your instance once you're finished using it with `gcloud compute instances delete <instance-name>`.
