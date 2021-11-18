@@ -50,40 +50,43 @@ async function run () {
     return
   }
 
-  console.log('Updating Content Blacklist...\n')
+  console.log(`Updating Content Blacklist for ${CREATOR_NODE_ENDPOINT}...\n`)
   const { action, type, values, verbose } = args
-  try {
-    switch (action) {
-      case 'ADD': {
-        await addToContentBlacklist(type, values)
-        break
+  for (let i = 0; i < values.length; i += 10) {
+    const valuesSliced = values.slice(i, i + 10)
+    try {
+      switch (action) {
+        case 'ADD': {
+          await addToContentBlacklist(type, valuesSliced)
+          break
+        }
+        case 'REMOVE': {
+          await removeFromContentBlacklist(type, valuesSliced)
+          break
+        }
+        default: {
+          console.error('Should not have reached here :(')
+          return
+        }
       }
-      case 'REMOVE': {
-        await removeFromContentBlacklist(type, values)
-        break
-      }
-      default: {
-        console.error('Should not have reached here :(')
-        return
-      }
+    } catch (e) {
+      console.error(`Failed to perform [${action}] for [${type}]: ${e}`)
+      return
     }
-  } catch (e) {
-    console.error(`Failed to perform [${action}] for [${type}]: ${e}`)
-    return
-  }
 
-  console.log('Verifying content against blacklist...\n')
-  try {
-    const segments = await verifyWithBlacklist({ type, values, action })
+    console.log('Verifying content against blacklist...\n')
+    try {
+      const segments = await verifyWithBlacklist({ type, values: valuesSliced, action })
 
-    let successMsg = `Successfully performed [${action}] for type [${type}]!\nValues: [${values}]`
-    if (verbose) {
-      successMsg += `\nNumber of Segments: ${segments.length}`
-      successMsg += `\nSegments: ${segments}`
+      let successMsg = `Successfully performed [${action}] for type [${type}]!\values: [${valuesSliced}]`
+      if (verbose) {
+        successMsg += `\nNumber of Segments: ${segments.length}`
+        successMsg += `\nSegments: ${segments}`
+      }
+      console.log(successMsg)
+    } catch (e) {
+      console.error(`Verification check failed: ${e}`)
     }
-    console.log(successMsg)
-  } catch (e) {
-    console.error(`Verification check failed: ${e}`)
   }
 }
 
@@ -144,12 +147,14 @@ async function addToContentBlacklist (type, values) {
 
   let resp
   try {
-    resp = await axios({
+    const reqObj = {
       url: `${CREATOR_NODE_ENDPOINT}/blacklist/add`,
       method: 'post',
       params: { type, values, timestamp, signature },
       responseType: 'json'
-    })
+    }
+    console.log(`About to send axios request to ${reqObj.url} for values`, values)
+    resp = await axios(reqObj)
   } catch (e) {
     throw new Error(`Error with adding type [${type}] and values [${values}] to ContentBlacklist: ${e}`)
   }
