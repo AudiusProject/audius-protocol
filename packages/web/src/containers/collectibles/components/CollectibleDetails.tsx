@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import cn from 'classnames'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { useRouteMatch } from 'react-router'
 
 import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
 import { useModalState } from 'common/hooks/useModalState'
@@ -10,23 +11,27 @@ import { setCollectible } from 'common/store/ui/collectible-details/slice'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PerspectiveCard from 'components/perspective-card/PerspectiveCard'
 import PreloadImage from 'components/preload-image/PreloadImage'
+import { getProfileUserHandle } from 'containers/profile-page/store/selectors'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { preload } from 'utils/image'
 
 import { getFrameFromGif } from '../ethCollectibleHelpers'
+import { getHash } from '../helpers'
 
 import { collectibleMessages } from './CollectiblesPage'
 import styles from './CollectiblesPage.module.css'
 
 const CollectibleDetails: React.FC<{
   collectible: Collectible
-}> = ({ collectible }) => {
+  onClick: () => void
+}> = ({ collectible, onClick }) => {
   const dispatch = useDispatch()
   const { mediaType, frameUrl, videoUrl, gifUrl, name } = collectible
 
-  const [isModalOpen, setIsModalOpen] = useModalState('CollectibleDetails')
   const [isLoading, setIsLoading] = useState(true)
   const [frame, setFrame] = useState(frameUrl)
   const [showSpinner, setShowSpinner] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useModalState('CollectibleDetails')
 
   // Debounce showing the spinner for a second
   useEffect(() => {
@@ -59,10 +64,17 @@ const CollectibleDetails: React.FC<{
     load()
   }, [mediaType, frameUrl, gifUrl, name, setFrame, setIsLoading])
 
+  const handle = useSelector(getProfileUserHandle)
   const handleItemClick = useCallback(() => {
+    // Ignore needed bc typescript doesn't think that match.params has handle property
+    // @ts-ignore
+    const url = `/${handle}/collectibles/${getHash(collectible.id)}`
+    // Push window state as to not trigger router change & component remount
+    window.history.pushState('', '', url)
     dispatch(setCollectible({ collectible }))
     setIsModalOpen(true)
-  }, [collectible, dispatch, setIsModalOpen])
+    onClick()
+  }, [collectible, handle, dispatch, setIsModalOpen, onClick])
 
   return (
     <div className={styles.detailsContainer}>

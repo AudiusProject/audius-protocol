@@ -138,6 +138,7 @@ import {
   PLAYLIST_ID_PAGE,
   TRENDING_PLAYLISTS_PAGE,
   PROFILE_PAGE_COLLECTIBLES,
+  PROFILE_PAGE_COLLECTIBLE_DETAILS,
   PROFILE_PAGE_TRACKS,
   PROFILE_PAGE_ALBUMS,
   PROFILE_PAGE_PLAYLISTS,
@@ -817,6 +818,7 @@ class App extends Component {
                   PROFILE_PAGE_ALBUMS,
                   PROFILE_PAGE_PLAYLISTS,
                   PROFILE_PAGE_REPOSTS,
+                  PROFILE_PAGE_COLLECTIBLE_DETAILS,
                   PROFILE_PAGE_COLLECTIBLES
                 ]}
                 render={props => (

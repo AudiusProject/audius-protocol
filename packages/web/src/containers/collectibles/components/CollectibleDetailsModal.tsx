@@ -6,13 +6,16 @@ import {
   ButtonType,
   IconImage,
   IconLink,
+  IconShare,
   LogoEth,
   LogoSol,
   Modal
 } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
+import { useRouteMatch } from 'react-router'
 
+import { ReactComponent as IconEmbed } from 'assets/img/iconEmbed.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
 import { ReactComponent as IconMute } from 'assets/img/iconVolume0.svg'
 import { useModalState } from 'common/hooks/useModalState'
@@ -23,15 +26,19 @@ import { getCollectible } from 'common/store/ui/collectible-details/selectors'
 import { setCollectible } from 'common/store/ui/collectible-details/slice'
 import { formatDateWithTimezoneOffset } from 'common/utils/timeUtil'
 import Drawer from 'components/drawer/Drawer'
+import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
-import { MountPlacement } from 'components/types'
+import { ComponentPlacement, MountPlacement } from 'components/types'
 import { MIN_COLLECTIBLES_TIER } from 'containers/profile-page/ProfilePageProvider'
 import { useFlag } from 'containers/remote-config/hooks'
 import { useSelectTierInfo } from 'containers/user-badges/hooks'
 import { badgeTiers } from 'containers/user-badges/utils'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useScript } from 'hooks/useScript'
 import { FeatureFlags } from 'services/remote-config'
+import { copyToClipboard } from 'utils/clipboardUtil'
 import { getScrollParent } from 'utils/scrollParent'
+import zIndex from 'utils/zIndex'
 
 import { collectibleMessages } from './CollectiblesPage'
 import styles from './CollectiblesPage.module.css'
@@ -144,7 +151,10 @@ const CollectibleDetailsModal = ({
   isMobile,
   onSave,
   updateProfilePicture,
-  isUserOnTheirProfile
+  isUserOnTheirProfile,
+  shareUrl,
+  setIsEmbedModalOpen,
+  onClose
 }: {
   isMobile: boolean
   onSave?: () => void
@@ -153,7 +163,11 @@ const CollectibleDetailsModal = ({
     source: 'original' | 'unsplash' | 'url'
   ) => void
   isUserOnTheirProfile: boolean
+  shareUrl: string
+  setIsEmbedModalOpen: (val: boolean) => void
+  onClose: () => void
 }) => {
+  const match = useRouteMatch()
   const dispatch = useDispatch()
   const [isModalOpen, setIsModalOpen] = useModalState('CollectibleDetails')
   const [isMuted, setIsMuted] = useState<boolean>(true)
@@ -177,7 +191,13 @@ const CollectibleDetailsModal = ({
   const handleClose = useCallback(() => {
     dispatch(setCollectible({ collectible: null }))
     setIsModalOpen(false)
-  }, [dispatch, setIsModalOpen])
+    // Ignore needed bc typescript doesn't think that match.params has handle property
+    // @ts-ignore
+    const url = `/${match.params.handle}/collectibles`
+    // Push window state as to not trigger router change & component remount
+    window.history.pushState('', '', url)
+    onClose()
+  }, [match.params, dispatch, setIsModalOpen, onClose])
 
   const toggleMute = useCallback(() => {
     setIsMuted(!isMuted)
@@ -207,6 +227,7 @@ const CollectibleDetailsModal = ({
         headerContainerClassName={styles.modalHeader}
         titleClassName={styles.modalTitle}
         allowScroll
+        zIndex={zIndex.COLLECTIBLE_DETAILS_MODAL}
       >
         <div className={styles.nftModal}>
           <CollectibleMedia
@@ -288,23 +309,56 @@ const CollectibleDetailsModal = ({
               </a>
             )}
 
-            {isCollectibleOptionEnabled &&
-              isUserOnTheirProfile &&
-              collectible.mediaType === CollectibleMediaType.IMAGE && (
+            <div className={styles.detailsButtonContainer}>
+              <Toast
+                text={collectibleMessages.copied}
+                fillParent={false}
+                mount={MountPlacement.PARENT}
+                placement={ComponentPlacement.TOP}
+                requireAccount={false}
+                tooltipClassName={styles.shareTooltip}
+              >
                 <Button
-                  className={styles.profPicUploadButton}
-                  textClassName={styles.profPicUploadButtonText}
-                  iconClassName={styles.profPicUploadButtonIcon}
-                  onClick={() => {
-                    setIsModalOpen(false)
-                    setIsPicConfirmaModalOpen(true)
-                  }}
-                  text='Set As Profile Pic'
+                  className={styles.detailsButton}
+                  textClassName={styles.detailsButtonText}
+                  iconClassName={styles.detailsButtonIcon}
+                  onClick={() => copyToClipboard(shareUrl)}
+                  text='Share'
                   type={ButtonType.COMMON_ALT}
                   size={ButtonSize.SMALL}
-                  leftIcon={<IconImage />}
+                  leftIcon={<IconShare />}
                 />
-              )}
+              </Toast>
+
+              <Button
+                className={styles.detailsButton}
+                textClassName={styles.detailsButtonText}
+                iconClassName={styles.detailsButtonIcon}
+                onClick={() => setIsEmbedModalOpen(true)}
+                text='Embed'
+                type={ButtonType.COMMON_ALT}
+                size={ButtonSize.SMALL}
+                leftIcon={<IconEmbed />}
+              />
+
+              {isCollectibleOptionEnabled &&
+                isUserOnTheirProfile &&
+                collectible.mediaType === CollectibleMediaType.IMAGE && (
+                  <Button
+                    className={styles.detailsButton}
+                    textClassName={styles.detailsButtonText}
+                    iconClassName={styles.detailsButtonIcon}
+                    onClick={() => {
+                      setIsModalOpen(false)
+                      setIsPicConfirmaModalOpen(true)
+                    }}
+                    text='Set As Profile Pic'
+                    type={ButtonType.COMMON_ALT}
+                    size={ButtonSize.SMALL}
+                    leftIcon={<IconImage />}
+                  />
+                )}
+            </div>
           </div>
         </div>
       </Modal>
