@@ -5,6 +5,40 @@ import sys
 import subprocess
 import argparse
 
+def get_gcloud_config_value(key):
+    value = (
+        subprocess.run(
+            [
+                "gcloud",
+                "config",
+                "get-value",
+                key,
+            ],
+            capture_output=True,
+        )
+        .stdout.decode()
+        .strip()
+    )
+    return value
+
+def set_gcloud_config_value(key, value):
+    subprocess.run(
+        [
+            "gcloud",
+            "config",
+            "set",
+            key,
+            value
+        ]
+    )
+    print(f'gcloud config {key} set to {value}')
+
+def set_gcloud_config_defaults():
+    default_gcloud_region = 'us-central1'
+    default_gcloud_zone = 'us-central1-a'
+    set_gcloud_config_value('compute/region', default_gcloud_region)
+    set_gcloud_config_value('compute/zone', default_gcloud_zone)
+
 def get_gcloud_project_and_account():
     project = (
         subprocess.run(
@@ -426,6 +460,9 @@ def main():
 
     try:
         args = parser.parse_args()
+        if not args.azure and (not get_gcloud_config_value('compute/zone') or not get_gcloud_config_value('compute/region')):
+            print('one or more gcloud config default values unset - setting...')
+            set_gcloud_config_defaults()
 
         if args.operation == "create-instance":
             create_instance(
