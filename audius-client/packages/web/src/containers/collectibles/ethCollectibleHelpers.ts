@@ -168,13 +168,14 @@ export const assetToCollectible = async (
         ) ?? null
 
       /**
-       * make sure frame url is not a video
-       * if it is a video, unset frame url so that component will use a video url instead
+       * make sure frame url is not a video or a gif
+       * if it is, unset frame url so that component will use a video url frame instead
        */
       if (frameUrl) {
         const res = await fetch(frameUrl, { method: 'HEAD' })
         const isVideo = res.headers.get('Content-Type')?.includes('video')
-        if (isVideo) {
+        const isGif = res.headers.get('Content-Type')?.includes('gif')
+        if (isVideo || isGif) {
           frameUrl = null
         }
       }
