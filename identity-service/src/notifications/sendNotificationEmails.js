@@ -291,7 +291,8 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       }
     }
     const timeAfterUserEmailLoop = Date.now()
-    logger.info(`processEmailNotifications | time after looping over users to send notification email | ${timeAfterUserEmailLoop} | time elapsed is ${timeAfterUserEmailLoop - timeBeforeUserEmailLoop} | ${userInfo.length} users`)
+    const totalDuration = (timeAfterUserEmailLoop - timeBeforeUserEmailLoop) / 1000
+    logger.info({ job: processEmailNotifications, duration: totalDuration }, `processEmailNotifications | time after looping over users to send notification email | ${timeAfterUserEmailLoop} | time elapsed is ${totalDuration} | ${userInfo.length} users`)
   } catch (e) {
     logger.error('processEmailNotifications | Error processing email notifications')
     logger.error(e)
