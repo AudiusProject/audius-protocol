@@ -22,6 +22,7 @@ const TYPES_SET = new Set(TYPES_ARR)
 
 const REQUEST_CONCURRENCY_LIMIT = 20
 const MAX_LIMIT = 500
+const VALUES_BATCH_SIZE = 10
 
 // Script usage:
 // node updateContentBlacklist.js -a add -l 1,3,7 -t user
@@ -52,8 +53,8 @@ async function run () {
 
   console.log(`Updating Content Blacklist for ${CREATOR_NODE_ENDPOINT}...\n`)
   const { action, type, values, verbose } = args
-  for (let i = 0; i < values.length; i += 10) {
-    const valuesSliced = values.slice(i, i + 10)
+  for (let i = 0; i < values.length; i += VALUES_BATCH_SIZE) {
+    const valuesSliced = values.slice(i, i + VALUES_BATCH_SIZE)
     try {
       switch (action) {
         case 'ADD': {
