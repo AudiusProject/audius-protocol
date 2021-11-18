@@ -89,17 +89,19 @@ def get_users_account(args):
             user_map[playlist_owner["user_id"]] = playlist_owner
         for playlist in playlists:
             playlist_owner = user_map[playlist["playlist_owner_id"]]
-            stripped_playlists.append(
-                {
-                    "id": playlist["playlist_id"],
-                    "name": playlist["playlist_name"],
-                    "is_album": playlist["is_album"],
-                    "user": {
-                        "id": playlist_owner["user_id"],
-                        "handle": playlist_owner["handle"],
-                    },
-                }
-            )
+            # Remove playlists with deactivated owners
+            if not playlist_owner["is_deactivated"]:
+                stripped_playlists.append(
+                    {
+                        "id": playlist["playlist_id"],
+                        "name": playlist["playlist_name"],
+                        "is_album": playlist["is_album"],
+                        "user": {
+                            "id": playlist_owner["user_id"],
+                            "handle": playlist_owner["handle"],
+                        },
+                    }
+                )
         user["playlists"] = stripped_playlists
 
     return user
