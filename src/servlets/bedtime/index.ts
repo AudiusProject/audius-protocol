@@ -154,7 +154,7 @@ const getCollectiblesMetadata = async (handle: string, collectibleId?: string): 
 
   // Get collectibles for user wallets
   const resp = await nftClient.getCollectibles({
-    ethWallets: walletData.wallets,
+    ethWallets: [user.wallet, ...walletData.wallets],
     solWallets: walletData.sol_wallets
   })
 
