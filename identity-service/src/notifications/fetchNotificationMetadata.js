@@ -99,8 +99,15 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
     })
 
     const finalUserNotifications = userNotifications.slice(0, limit)
-    // Explicitly fetch image thumbnails
+
+    if (userNotifications.length === 0) {
+      return [{}, 0]
+    }
+
+    const fethNotificationsTime = Date.now()
     const metadata = await fetchNotificationMetadata(audius, [userId], finalUserNotifications, true)
+    const fetchDataDuration = (Date.now() - fethNotificationsTime) / 1000
+    logger.info({ job: 'fetchNotificationMetdata', durationn: fetchDataDuration }, `fetchNotificationMetdata | get metadata ${fetchDataDuration} sec`)
     const notificationsEmailProps = formatNotificationProps(finalUserNotifications, metadata)
     return [notificationsEmailProps, notificationCount + unreadAnnouncementCount]
   } catch (err) {
@@ -115,7 +122,6 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
   let fetchTrackRemixParents = []
 
   for (let notification of notifications) {
-    logger.debug('fetchNotificationMetadata.js#notification', notification)
     switch (notification.type) {
       case NotificationType.Follow: {
         userIdsToFetch.push(
@@ -130,9 +136,7 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
           ...notification.actions
             .map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT)
         )
-        logger.debug('fetchNotificationMetadata.js#about to push notification.entityId onto tracks', notification.entityId)
         trackIdsToFetch.push(notification.entityId)
-        logger.debug('fetchNotificationMetadata.js#pushed notification.entityId onto tracks', notification.entityId, trackIdsToFetch)
         break
       }
       case NotificationType.FavoritePlaylist:
@@ -193,12 +197,15 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
   }
 
   const uniqueTrackIds = [...new Set(trackIdsToFetch)]
-  logger.debug('fetchNotificationMetadata.js#uniqueTrackIds', uniqueTrackIds)
+
   let tracks = await audius.Track.getTracks(
     /** limit */ uniqueTrackIds.length,
     /** offset */ 0,
     /** idsArray */ uniqueTrackIds
   )
+  if (!Array.isArray(tracks)) {
+    logger.error(`fetchNotificationnMetadata | Unable to fetch track ids ${uniqueTrackIds.join('')}`)
+  }
 
   const trackMap = tracks.reduce((tm, track) => {
     tm[track.track_id] = track
@@ -221,31 +228,41 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
       /** offset */ 0,
       /** idsArray */ uniqueParentTrackIds
     )
+    if (!Array.isArray(parentTracks)) {
+      logger.error(`fetchNotificationnMetadata | Unable to fetch parent track ids ${uniqueParentTrackIds.join('')}`)
+    }
+
     parentTracks.forEach(track => {
       trackMap[track.track_id] = track
     })
   }
 
   const uniqueCollectionIds = [...new Set(collectionIdsToFetch)]
-  logger.debug('fetchNotificationMetadata.js#uniqueCollectionIds', uniqueCollectionIds)
   const collections = await audius.Playlist.getPlaylists(
     /** limit */ uniqueCollectionIds.length,
     /** offset */ 0,
     /** idsArray */ uniqueCollectionIds
   )
 
+  if (!Array.isArray(collections)) {
+    logger.error(`fetchNotificationnMetadata | Unable to fetch collection ids ${uniqueCollectionIds.join('')}`)
+  }
+
   userIdsToFetch.push(
     ...tracks.map(({ owner_id: id }) => id),
     ...collections.map(({ playlist_owner_id: id }) => id)
   )
   const uniqueUserIds = [...new Set(userIdsToFetch)]
-  logger.debug('fetchNotificationMetadata.js#uniqueUserIds', uniqueUserIds)
 
   let users = await audius.User.getUsers(
     /** limit */ uniqueUserIds.length,
     /** offset */ 0,
     /** idsArray */ uniqueUserIds
   )
+
+  if (!Array.isArray(users)) {
+    logger.error(`fetchNotificationnMetadata | Unable to fetch user ids ${uniqueUserIds.join('')}`)
+  }
 
   // Fetch all the social handles and attach to the users - For twitter sharing
   const socialHandles = await models.SocialHandles.findAll({

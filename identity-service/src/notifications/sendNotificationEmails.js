@@ -18,9 +18,13 @@ const {
 // Mailgun object
 let mg
 
+const loggingContext = {
+  job: "processEmailNotifications"
+}
+
 async function processEmailNotifications (expressApp, audiusLibs) {
   try {
-    logger.info(`${new Date()} - processEmailNotifications`)
+    logger.info(loggingContext, `${new Date()} - processEmailNotifications`)
 
     mg = expressApp.get('mailgun')
     if (mg === null) {
@@ -43,9 +47,9 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       where: { emailFrequency: 'weekly' }
     }).map(x => x.userId)
 
-    logger.info(`processEmailNotifications - ${liveEmailUsers.length} live users`)
-    logger.info(`processEmailNotifications - ${dailyEmailUsers.length} daily users`)
-    logger.info(`processEmailNotifications - ${weeklyEmailUsers.length} weekly users`)
+    logger.info({ ...loggingContext, liveEmailUsers: liveEmailUsers.length }, `processEmailNotifications - ${liveEmailUsers.length} live users`)
+    logger.info({ ...loggingContext, dailyEmailUsers: dailyEmailUsers.length }, `processEmailNotifications - ${dailyEmailUsers.length} daily users`)
+    logger.info({ ...loggingContext, weeklyEmailUsers: weeklyEmailUsers.length }, `processEmailNotifications - ${weeklyEmailUsers.length} weekly users`)
     let currentTime = moment.utc()
     let now = moment()
     let dayAgo = now.clone().subtract(1, 'days')
@@ -65,7 +69,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
     let weeklyUsersWithPendingAnnouncements = []
 
     const timeBeforeAnnouncementsLoop = Date.now()
-    logger.info(`processEmailNotifications | time before looping over announcements | ${timeBeforeAnnouncementsLoop} | ${appAnnouncements.length} announcements`)
+    logger.info(loggingContext, `processEmailNotifications | time before looping over announcements | ${timeBeforeAnnouncementsLoop} | ${appAnnouncements.length} announcements`)
     for (var announcement of appAnnouncements) {
       let announcementDate = moment(announcement['datePublished'])
       let timeSinceAnnouncement = moment.duration(currentTime.diff(announcementDate)).asHours()
@@ -91,7 +95,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       const relevantUserIdsForAnnouncement = usersCreatedBeforeAnnouncement.filter(userId => !userIdSetToExcludeForAnnouncement.has(userId))
 
       const timeBeforeUserAnnouncementsLoop = Date.now()
-      logger.info(`processEmailNotifications | time before looping over users for announcement id ${id}, entity id ${announcementEntityId} | ${timeBeforeUserAnnouncementsLoop} | ${usersCreatedBeforeAnnouncement.length} users`)
+      logger.info({job: 'processEmailNotifications' , timing: 12 }`processEmailNotifications | time before looping over users for announcement id ${id}, entity id ${announcementEntityId} | ${timeBeforeUserAnnouncementsLoop} | ${usersCreatedBeforeAnnouncement.length} users`)
       for (var user of relevantUserIdsForAnnouncement) {
         if (liveEmailUsers.includes(user)) {
           // As an added safety check, only process if the announcement was made in the last hour
@@ -115,7 +119,8 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       logger.info(`processEmailNotifications | time after looping over users for announcement id ${id}, entity id ${announcementEntityId} | ${timeAfterUserAnnouncementsLoop} | time elapsed is ${timeAfterUserAnnouncementsLoop - timeBeforeUserAnnouncementsLoop} | ${usersCreatedBeforeAnnouncement.length} users`)
     }
     const timeAfterAnnouncementsLoop = Date.now()
-    logger.info(`processEmailNotifications | time after looping over announcements | ${timeAfterAnnouncementsLoop} | time elapsed is ${timeAfterAnnouncementsLoop - timeBeforeAnnouncementsLoop} | ${appAnnouncements.length} announcements`)
+    const announcementDurationSec = (timeAfterAnnouncementsLoop - timeBeforeAnnouncementsLoop) / 1000
+    logger.info({ ...loggingContext, announcementDuration: announcementDurationSec}, `processEmailNotifications | time after looping over announcements | ${timeAfterAnnouncementsLoop} | time elapsed is ${announcementDurationSec} | ${appAnnouncements.length} announcements`)
 
     let pendingNotificationUsers = new Set()
     // Add users with pending announcement notifications
@@ -171,7 +176,6 @@ async function processEmailNotifications (expressApp, audiusLibs) {
 
     // All users with notifications, including announcements
     let allUsersWithUnseenNotifications = [...pendingNotificationUsers]
-    logger.info(`All Pending Email Users: ${allUsersWithUnseenNotifications}`)
 
     let userInfo = await models.User.findAll({
       where: {
@@ -307,7 +311,6 @@ async function renderAndSendNotificationEmail (
     logger.info(`renderAndSendNotificationEmail | ${userId}, ${userEmail}, ${frequency}, from ${startTime}`)
 
     const timeBeforeEmailNotifications = Date.now()
-    logger.info(`renderAndSendNotificationEmail | time before getEmailNotifications | ${timeBeforeEmailNotifications}`)
     const [notificationProps, notificationCount] = await getEmailNotifications(
       audiusLibs,
       userId,
