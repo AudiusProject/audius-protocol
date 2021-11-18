@@ -14,6 +14,9 @@ export enum zIndex {
   NAVIGATOR_POPUP_OVERFLOW_POPUP = 16,
   FOLLOW_RECOMMENDATIONS_POPUP = 17,
 
+  COLLECTIBLE_DETAILS_MODAL = 20,
+  COLLECTIBLE_EMBED_VIEW_MODAL = 25,
+
   // Set to 1000 to account for nested modals inside, which take a higher z-index
   EDIT_TRACK_MODAL = 1000,
   CREATE_PLAYLIST_MODAL = 1000,

@@ -297,19 +297,25 @@
   color: var(--neutral-light-2);
 }
 
-.profPicUploadButton {
+.detailsButtonContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.detailsButton {
   padding: 0 var(--unit-4);
 }
-.profPicUploadButton .profPicUploadButtonText {
+.detailsButton .detailsButtonText {
   color: var(--neutral-light-4);
   font-size: var(--font-m);
   letter-spacing: 0;
   text-transform: uppercase;
 }
-.profPicUploadButton .profPicUploadButtonIcon {
+.detailsButton .detailsButtonIcon {
   margin-right: var(--unit-1) !important;
 }
-.profPicUploadButton .profPicUploadButtonIcon path {
+.detailsButton .detailsButtonIcon path {
   fill: var(--neutral-light-4);
 }
 
@@ -574,6 +580,98 @@
   color: var(--neutral);
   font-size: var(--font-2xl);
   line-height: 28px;
+}
+
+.embedModalTitle {
+  font-weight: var(--font-heavy);
+  font-size: var(--font-l);
+  line-height: 22px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--neutral-light-4);
+}
+
+.embedModalHeader {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
+.embedContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 43rem;
+  padding: 1.5rem;
+}
+
+.embedFrame {
+  width: 100%;
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 0.75rem;
+}
+
+.embedDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-bottom: 1rem;
+}
+
+.embedDetailsTitle {
+  margin-bottom: 0.5rem;
+  font-size: var(--font-l);
+  line-height: 22px;
+  font-weight: var(--font-demi-bold);
+  color: var(--neutral);
+}
+
+.embedTextPanel {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.embedTooltip {
+  flex: 1 1 0;
+}
+
+.embedCopyWrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+.embedCopyContainer {
+  min-height: 120px;
+  min-width: 400px;
+  border: 1px solid var(--neutral-light-6);
+  background-color: var(--white);
+  padding: 1.25rem 1rem;
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  line-height: 20px;
+  border-radius: 0.25rem;
+}
+
+.embedButton {
+  padding: 0.75rem 1.5rem !important;
+}
+
+.embedButtonText {
+  font-size: var(--font-l) !important;
+}
+
+.embedClickText {
+  position: absolute;
+  top: 100%;
+  width: 100%;
+  padding: 0.5rem;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 15px;
+  color: var(--neutral-light-4);
 }
 
 .spinnerContainer {
