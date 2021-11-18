@@ -19,7 +19,7 @@ const {
 let mg
 
 const loggingContext = {
-  job: "processEmailNotifications"
+  job: 'processEmailNotifications'
 }
 
 async function processEmailNotifications (expressApp, audiusLibs) {
@@ -95,7 +95,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
       const relevantUserIdsForAnnouncement = usersCreatedBeforeAnnouncement.filter(userId => !userIdSetToExcludeForAnnouncement.has(userId))
 
       const timeBeforeUserAnnouncementsLoop = Date.now()
-      logger.info({job: 'processEmailNotifications' , timing: 12 }`processEmailNotifications | time before looping over users for announcement id ${id}, entity id ${announcementEntityId} | ${timeBeforeUserAnnouncementsLoop} | ${usersCreatedBeforeAnnouncement.length} users`)
+      logger.info({ job: 'processEmailNotifications', timing: 12 }`processEmailNotifications | time before looping over users for announcement id ${id}, entity id ${announcementEntityId} | ${timeBeforeUserAnnouncementsLoop} | ${usersCreatedBeforeAnnouncement.length} users`)
       for (var user of relevantUserIdsForAnnouncement) {
         if (liveEmailUsers.includes(user)) {
           // As an added safety check, only process if the announcement was made in the last hour
@@ -120,7 +120,7 @@ async function processEmailNotifications (expressApp, audiusLibs) {
     }
     const timeAfterAnnouncementsLoop = Date.now()
     const announcementDurationSec = (timeAfterAnnouncementsLoop - timeBeforeAnnouncementsLoop) / 1000
-    logger.info({ ...loggingContext, announcementDuration: announcementDurationSec}, `processEmailNotifications | time after looping over announcements | ${timeAfterAnnouncementsLoop} | time elapsed is ${announcementDurationSec} | ${appAnnouncements.length} announcements`)
+    logger.info({ ...loggingContext, announcementDuration: announcementDurationSec }, `processEmailNotifications | time after looping over announcements | ${timeAfterAnnouncementsLoop} | time elapsed is ${announcementDurationSec} | ${appAnnouncements.length} announcements`)
 
     let pendingNotificationUsers = new Set()
     // Add users with pending announcement notifications
@@ -371,6 +371,8 @@ async function renderAndSendNotificationEmail (
     // Cache on file system
     await cacheEmail({ renderProps, emailParams })
 
+    const totalDuration = (timeBeforeEmailNotifications - Date.now())/1000
+    logger.info({ job: 'renderAndSendNotificationEmail', duration: totalDuration }, `renderAndSendNotificationEmail | ${userId}, ${userEmail}, in ${totalDuration} sec`)
     return true
   } catch (e) {
     logger.error(`Error in renderAndSendNotificationEmail ${e}`)
