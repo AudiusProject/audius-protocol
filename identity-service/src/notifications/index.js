@@ -216,8 +216,10 @@ class NotificationProcessor {
       logger.info('processEmailNotifications')
       let error = null
       try {
-        await processEmailNotifications(expressApp, audiusLibs)
-        await processDownloadAppEmail(expressApp, audiusLibs)
+        await Promise.all([
+          processEmailNotifications(expressApp, audiusLibs),
+          processDownloadAppEmail(expressApp, audiusLibs)
+        ])
         await this.redis.set(NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
       } catch (e) {
         error = e
