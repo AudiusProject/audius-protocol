@@ -28,14 +28,17 @@ const excludedRoutes = [
   '/disk_check',
   '/sync_status'
 ]
-function requestNotExcludedFromLogging (url) {
-  return (excludedRoutes.filter(excludedRoute => url.includes(excludedRoute))).length === 0
+function requestNotExcludedFromLogging(url) {
+  return (
+    excludedRoutes.filter((excludedRoute) => url.includes(excludedRoute))
+      .length === 0
+  )
 }
 
 /**
  * @notice request headers are case-insensitive
  */
-function getRequestLoggingContext (req, requestID) {
+function getRequestLoggingContext(req, requestID) {
   req.startTime = process.hrtime()
   const urlParts = req.url.split('?')
   return {
@@ -49,7 +52,7 @@ function getRequestLoggingContext (req, requestID) {
   }
 }
 
-function loggingMiddleware (req, res, next) {
+function loggingMiddleware(req, res, next) {
   const providedRequestID = req.header('X-Request-ID')
   const requestID = providedRequestID || shortid.generate()
   res.set('CN-Request-ID', requestID)
@@ -63,4 +66,9 @@ function loggingMiddleware (req, res, next) {
   next()
 }
 
-module.exports = { logger, loggingMiddleware, requestNotExcludedFromLogging, getRequestLoggingContext }
+module.exports = {
+  logger,
+  loggingMiddleware,
+  requestNotExcludedFromLogging,
+  getRequestLoggingContext
+}

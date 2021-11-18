@@ -16,25 +16,27 @@ try {
 const ipKeyGenerator = (req) => req.ip
 
 // Creates custom rate limiter key generator function based off url query, request body and IP
-const getReqKeyGenerator = (options = {}) => (req) => {
-  const { query = [], body = [], withIp = true } = options
-  let key = withIp ? req.ip : ''
-  if (req.query && query.length > 0) {
-    query.forEach(queryKey => {
-      if (queryKey in req.query) {
-        key = key.concat(req.query[queryKey])
-      }
-    })
+const getReqKeyGenerator =
+  (options = {}) =>
+  (req) => {
+    const { query = [], body = [], withIp = true } = options
+    let key = withIp ? req.ip : ''
+    if (req.query && query.length > 0) {
+      query.forEach((queryKey) => {
+        if (queryKey in req.query) {
+          key = key.concat(req.query[queryKey])
+        }
+      })
+    }
+    if (req.body && body.length > 0) {
+      body.forEach((paramKey) => {
+        if (paramKey in req.body) {
+          key = key.concat(req.body[paramKey])
+        }
+      })
+    }
+    return key
   }
-  if (req.body && body.length > 0) {
-    body.forEach(paramKey => {
-      if (paramKey in req.body) {
-        key = key.concat(req.body[paramKey])
-      }
-    })
-  }
-  return key
-}
 
 const userReqLimiter = rateLimit({
   store: new RedisStore({
@@ -51,9 +53,14 @@ const userReqLimiter = rateLimit({
     const path = req.originalUrl
 
     // If any of the necessary variables are not present, continue with rate limit
-    if (!timestamp || !signature || !spID || !libs) { return false }
+    if (!timestamp || !signature || !spID || !libs) {
+      return false
+    }
 
-    if (path.includes('/users/clock_status') || path.includes('/users/batch_clock_status')) {
+    if (
+      path.includes('/users/clock_status') ||
+      path.includes('/users/batch_clock_status')
+    ) {
       try {
         await verifyRequesterIsValidSP({
           audiusLibs: libs,
@@ -66,7 +73,9 @@ const userReqLimiter = rateLimit({
       } catch (e) {
         // A non-SP requester query will hit this catch block. This is okay; just continue
         // with the rate limit and other middlewares as expected.
-        req.logger.debug(`Requester is not a valid SP. Continuing with rate limit: ${e.toString()}`)
+        req.logger.debug(
+          `Requester is not a valid SP. Continuing with rate limit: ${e.toString()}`
+        )
       }
     }
 
@@ -139,9 +148,14 @@ const batchCidsExistReqLimiter = rateLimit({
     const path = req.originalUrl
 
     // If any of the necessary variables are not present, continue with rate limit
-    if (!timestamp || !signature || !spID || !libs) { return false }
+    if (!timestamp || !signature || !spID || !libs) {
+      return false
+    }
 
-    if (path.includes('/batch_cids_exist') || path.includes('/batch_image_cids_exist')) {
+    if (
+      path.includes('/batch_cids_exist') ||
+      path.includes('/batch_image_cids_exist')
+    ) {
       try {
         await verifyRequesterIsValidSP({
           audiusLibs: libs,
@@ -154,7 +168,9 @@ const batchCidsExistReqLimiter = rateLimit({
       } catch (e) {
         // A non-SP requester query will hit this catch block. This is okay; just continue
         // with the rate limit and other middlewares as expected.
-        req.logger.debug(`Requester is not a valid SP. Continuing with rate limit: ${e.toString()}`)
+        req.logger.debug(
+          `Requester is not a valid SP. Continuing with rate limit: ${e.toString()}`
+        )
       }
     }
 
@@ -180,9 +196,11 @@ const getRateLimiter = ({
   prefix,
   max,
   expiry,
-  keyGenerator = req => req.ip,
+  keyGenerator = (req) => req.ip,
   // Default to forcing rate limit by returning false
-  skip = () => { return false }
+  skip = () => {
+    return false
+  }
 }) => {
   return rateLimit({
     store: new RedisStore({
@@ -206,16 +224,18 @@ const getRateLimiterMiddleware = () => {
   for (const route in endpointRateLimits) {
     for (const method in endpointRateLimits[route]) {
       if (validRouteMethods.includes(method)) {
-        const routeMiddleware = endpointRateLimits[route][method].map(limit => {
-          const { expiry, max, options = {} } = limit
-          const keyGenerator = getReqKeyGenerator(options)
-          return getRateLimiter({
-            prefix: `${route}:${method}:${expiry}:${max}`,
-            expiry,
-            max,
-            keyGenerator
-          })
-        })
+        const routeMiddleware = endpointRateLimits[route][method].map(
+          (limit) => {
+            const { expiry, max, options = {} } = limit
+            const keyGenerator = getReqKeyGenerator(options)
+            return getRateLimiter({
+              prefix: `${route}:${method}:${expiry}:${max}`,
+              expiry,
+              max,
+              keyGenerator
+            })
+          }
+        )
         router[method](route, routeMiddleware)
       }
     }
