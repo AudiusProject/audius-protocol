@@ -75,7 +75,7 @@ async function run () {
       return
     }
 
-    console.log('Verifying content against blacklist...\n')
+    console.log(`Verifying content against blacklist for ${CREATOR_NODE_ENDPOINT}...\n`)
     try {
       const segments = await verifyWithBlacklist({ type, values: valuesSliced, action })
 
