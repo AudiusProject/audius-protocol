@@ -369,7 +369,7 @@ def update_aggregate_table(
             elapsed_time = get_elapsed_time_redis(redis,
                 index_aggregate_user_last_refresh_completion_redis_key)
 
-
+            is_refreshed = False
             with db.scoped_session() as session:
                 latest_indexed_block_num = get_latest_blocknumber(session, redis)
 
@@ -385,6 +385,7 @@ def update_aggregate_table(
                     # refresh the past two weeks for data accuracy
                     logger.info(f"index_aggregate_user.py | Refreshing {table_name} for the past two weeks")
                     most_recent_indexed_aggregate_block -= max(TWO_WEEKS_IN_BLOCKS, 0)
+                    is_refreshed = True
 
                 logger.info(f"index_aggregate_user.py | Updating {table_name}")
                 upsert = sa.text(query)
@@ -395,9 +396,10 @@ def update_aggregate_table(
                     },
                 )
 
-            redis.set(
-                index_aggregate_user_last_refresh_completion_redis_key, int(time.time())
-            )
+            if is_refreshed:
+                redis.set(
+                    index_aggregate_user_last_refresh_completion_redis_key, int(time.time())
+                )
 
             # set new block to be the lower bound for the next indexing
             redis.set(
