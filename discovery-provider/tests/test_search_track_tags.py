@@ -1,5 +1,6 @@
 from src.queries.search_track_tags import search_track_tags
 from src.utils.db_session import get_db
+from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from tests.utils import populate_mock_db
 
 
@@ -33,7 +34,7 @@ def test_search_track_tags(app):
 
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW tag_track_user")
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+        _update_aggregate_plays(session)
         args = {"search_str": "pop", "current_user_id": None, "limit": 10, "offset": 0}
         tracks = search_track_tags(session, args)
 

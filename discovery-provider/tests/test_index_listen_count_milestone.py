@@ -12,7 +12,7 @@ from src.models import (
 )
 from src.utils.config import shared_config
 from src.utils.redis_cache import set_json_cached_key
-
+from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from tests.utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
@@ -71,7 +71,7 @@ def test_listen_count_milestone_processing(app):
         populate_mock_db(db, test_entities)
 
         with db.scoped_session() as session:
-            session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+            _update_aggregate_plays(session)
 
         redis_conn.sadd(TRACK_LISTEN_IDS, *track_ids)
 
@@ -107,16 +107,16 @@ def test_listen_count_milestone_processing(app):
             assert len(milestones) == 9
 
         test_entities = {
-            "plays": [{"item_id": 1, "id": 1000+i} for i in range(3)] # 3 + 8 = 11 new
-            + [{"item_id": 2, "id": 1200+i} for i in range(100)] # 10 + 100 = 110 new
-            + [{"item_id": 3, "id": 1400+i} for i in range(10)] # 10 + 11 = 21 not new
-            + [{"item_id": 4, "id": 1600+i} for i in range(1000)] # 1000 + 12 = 1012 new
-            + [{"item_id": 8, "id": 3000+i} for i in range(19)] # 19 + 80 = 99 not new
-            + [{"item_id": 9, "id": 9000+i} for i in range(5000)] # 5000 + 111 = 5111 new
+            "plays": [{"item_id": 1, "id": 1000+i, "slot": 1000+i} for i in range(3)] # 3 + 8 = 11 new
+            + [{"item_id": 2, "id": 1200+i, "slot": 1200+i} for i in range(100)] # 10 + 100 = 110 new
+            + [{"item_id": 3, "id": 1400+i, "slot": 1400+i} for i in range(10)] # 10 + 11 = 21 not new
+            + [{"item_id": 4, "id": 1600+i, "slot": 1600+i} for i in range(1000)] # 1000 + 12 = 1012 new
+            + [{"item_id": 8, "id": 3000+i, "slot": 3000+i} for i in range(19)] # 19 + 80 = 99 not new
+            + [{"item_id": 9, "id": 9000+i, "slot": 9000+i} for i in range(5000)] # 5000 + 111 = 5111 new
         }
         populate_mock_db(db, test_entities)
         with db.scoped_session() as session:
-            session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+            _update_aggregate_plays(session)
 
         # Add the same track and process to check that no new milesetones are created
         redis_conn.sadd(TRACK_LISTEN_IDS, *track_ids)
