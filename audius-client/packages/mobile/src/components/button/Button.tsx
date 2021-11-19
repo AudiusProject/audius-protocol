@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
 
+import { merge } from 'lodash'
 import {
   TouchableHighlight,
   ViewStyle,
@@ -13,38 +14,79 @@ import Text from 'app/components/text'
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useThemeColors } from 'app/utils/theme'
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
+export enum ButtonType {
+  PRIMARY = 'primary',
+  COMMON = 'common'
+}
+
+interface ButtonStyle {
+  buttonContainer: ViewStyle
+  button: ViewStyle
+  buttonContent: ViewStyle
+  buttonText: TextStyle
+  icon: ViewStyle
+  disabled: ViewStyle
+}
+
+const buttonTypeStyles = {
+  [ButtonType.PRIMARY]: (themeColors: ThemeColors) => ({
     buttonContainer: {
-      backgroundColor: themeColors.primary,
-      borderRadius: 4
-    },
-    button: {
-      padding: 16,
-      borderRadius: 4
-    },
-    buttonContent: {
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center'
+      backgroundColor: themeColors.primary
     },
     buttonText: {
-      color: themeColors.staticWhite,
-      fontSize: 18,
-      fontFamily: 'AvenirNextLTPro-Bold'
+      color: themeColors.staticWhite
+    }
+  }),
+  [ButtonType.COMMON]: (themeColors: ThemeColors) => ({
+    buttonContainer: {
+      backgroundColor: themeColors.white,
+      borderWidth: 1,
+      borderColor: themeColors.neutralLight6
     },
-    icon: {
-      marginLeft: 12
-    },
-    disabled: {
-      backgroundColor: '#E7E6EB'
+    buttonText: {
+      color: themeColors.neutralLight4
     }
   })
+}
+
+const createStyles = (type: ButtonType = ButtonType.PRIMARY) => (
+  themeColors: ThemeColors
+) =>
+  StyleSheet.create(
+    merge(
+      {
+        buttonContainer: {
+          borderRadius: 4
+        },
+        button: {
+          padding: 16,
+          borderRadius: 4
+        },
+        buttonContent: {
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center'
+        },
+        buttonText: {
+          fontSize: 18,
+          fontFamily: 'AvenirNextLTPro-Bold'
+        },
+        icon: {
+          marginLeft: 12
+        },
+        disabled: {
+          backgroundColor: '#E7E6EB'
+        }
+      },
+      buttonTypeStyles[type](themeColors)
+    ) as ButtonStyle
+  )
 
 type ButtonProps = {
   title: string
   onPress: () => void
+  type?: ButtonType
   icon?: React.ReactElement
   iconPosition?: 'left' | 'right'
   containerStyle?: ViewStyle
@@ -58,6 +100,7 @@ type ButtonProps = {
 const Button = ({
   title,
   onPress,
+  type = ButtonType.PRIMARY,
   icon,
   iconPosition = 'right',
   containerStyle,
@@ -67,7 +110,7 @@ const Button = ({
   ignoreDisabledStyle = false,
   underlayColor
 }: ButtonProps) => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useThemedStyles(createStyles(type))
   const { primaryDark1 } = useThemeColors()
   const scale = useRef(new Animated.Value(1)).current
 
@@ -89,6 +132,9 @@ const Button = ({
     }).start()
   }
 
+  const underlay =
+    type === ButtonType.PRIMARY ? underlayColor || primaryDark1 : null
+
   return (
     <Animated.View
       style={[
@@ -103,7 +149,7 @@ const Button = ({
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={disabled}
-        underlayColor={underlayColor || primaryDark1}
+        underlayColor={underlay}
         style={[styles.button, style]}
       >
         <View style={styles.buttonContent}>

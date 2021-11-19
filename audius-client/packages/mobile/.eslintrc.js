@@ -51,6 +51,7 @@ module.exports = {
     '@typescript-eslint/no-this-alias': 'off',
 
     'no-use-before-define': 'off',
+    'no-bitwise': 'off',
     camelcase: 'off',
     'no-unused-vars': 'off',
     'func-call-spacing': 'off',

@@ -74,6 +74,8 @@ export const CollectibleMedia: React.FC<{
       <TouchableWithoutFeedback onPress={toggleMute}>
         <View>
           <AutoSizeVideo
+            repeat={true}
+            ignoreSilentSwitch={'ignore'}
             fullscreen={false}
             muted={isMuted}
             source={{ uri: videoUrl }}
