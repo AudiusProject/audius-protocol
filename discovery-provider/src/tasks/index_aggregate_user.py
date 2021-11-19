@@ -20,10 +20,6 @@ TWO_WEEKS_IN_BLOCKS = 241920
 
 TWO_WEEKS_IN_SECONDS= 1209600
 
-# every ~2880 updates, refresh the entire table
-# at 30 secs interval, this should happen ~once a day
-REFRESH_COUNTER = 2880
-
 ### UPDATE_AGGREGATE_USER_QUERY ###
 # Get a lower bound blocknumber to check for new entity counts for a user
 # Find a subset of users that have changed since that blocknumber
