@@ -302,8 +302,10 @@ class App {
       expiry: ONE_HOUR_IN_SECONDS,
       max: config.get('rateLimitingPOARelaysPerWalletPerHour'),
       statusCode: 211, // don't return a 429, so libs won't retry
-      skip: function (req) {
-        if (!req.body || !req.body.senderAddress || !req.body.encodedABI || !req.body.contractRegistryKey) throw new Error('Missing relay parameters')
+      skip: function (req, res) {
+        if (!req.body || !req.body.senderAddress || !req.body.encodedABI || !req.body.contractRegistryKey) {
+          sendResponse(req, res, errorResponseServerError('Missing relay parameters'))
+        }
 
         const { contractRegistryKey, encodedABI } = req.body
 
