@@ -2,8 +2,12 @@ import logging
 import time
 import sqlalchemy as sa
 from src.tasks.celery_app import celery
-from src.utils.redis_constants import most_recent_indexed_aggregate_user_block_redis_key
+from src.utils.redis_constants import (
+    most_recent_indexed_aggregate_user_block_redis_key,
+    index_aggregate_user_last_refresh_completion_redis_key
+)
 from src.tasks.calculate_trending_challenges import get_latest_blocknumber
+from src.queries.get_health import get_elapsed_time_redis
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +17,12 @@ DEFAULT_UPDATE_TIMEOUT = 60 * 30  # 30 minutes
 
 # (1,209,600 two weeks in seconds / 5 sec block_processing_interval_sec)
 TWO_WEEKS_IN_BLOCKS = 241920
+
+TWO_WEEKS_IN_SECONDS= 1209600
+
+# every ~2880 updates, refresh the entire table
+# at 30 secs interval, this should happen ~once a day
+REFRESH_COUNTER = 2880
 
 ### UPDATE_AGGREGATE_USER_QUERY ###
 # Get a lower bound blocknumber to check for new entity counts for a user
@@ -360,6 +370,10 @@ def update_aggregate_table(
                 f"index_aggregate_user.py | most_recent_indexed_aggregate_block: {most_recent_indexed_aggregate_block}"
             )
 
+            elapsed_time = get_elapsed_time_redis(redis,
+                index_aggregate_user_last_refresh_completion_redis_key)
+
+
             with db.scoped_session() as session:
                 latest_indexed_block_num = get_latest_blocknumber(session, redis)
 
@@ -371,7 +385,7 @@ def update_aggregate_table(
                     most_recent_indexed_aggregate_block = 0
                     session.execute("TRUNCATE TABLE {}".format(table_name))
 
-                elif (latest_indexed_block_num - most_recent_indexed_aggregate_block) > TWO_WEEKS_IN_BLOCKS:
+                elif elapsed_time > TWO_WEEKS_IN_SECONDS:
                     # refresh the past two weeks for data accuracy
                     logger.info(f"index_aggregate_user.py | Refreshing {table_name} for the past two weeks")
                     most_recent_indexed_aggregate_block -= max(TWO_WEEKS_IN_BLOCKS, 0)
@@ -384,6 +398,10 @@ def update_aggregate_table(
                         "most_recent_indexed_aggregate_block": most_recent_indexed_aggregate_block
                     },
                 )
+
+            redis.set(
+                index_aggregate_user_last_refresh_completion_redis_key, int(time.time())
+            )
 
             # set new block to be the lower bound for the next indexing
             redis.set(
