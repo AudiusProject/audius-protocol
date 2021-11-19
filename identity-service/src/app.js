@@ -304,7 +304,7 @@ class App {
       statusCode: 211, // don't return a 429, so libs won't retry
       skip: function (req, res) {
         if (!req.body || !req.body.senderAddress || !req.body.encodedABI || !req.body.contractRegistryKey) {
-          sendResponse(req, res, errorResponseServerError('Missing relay parameters'))
+          sendResponse(req, res, errorResponseBadRequest('Missing relay parameters'))
         }
 
         const { contractRegistryKey, encodedABI } = req.body
