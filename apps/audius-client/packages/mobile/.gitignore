@@ -8,6 +8,8 @@
 .env.stage
 .env.dev
 .eslintcache
+.yalc
+yalc.lock
 
 # Xcode
 #

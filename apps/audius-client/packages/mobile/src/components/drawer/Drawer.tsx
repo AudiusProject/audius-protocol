@@ -88,6 +88,7 @@ export type DrawerProps = {
   children: ReactNode
   onClose: () => void
   isFullscreen?: boolean
+  isGestureSupported?: boolean
 }
 
 const springToValue = (
@@ -117,7 +118,13 @@ const attachToDy = (animation: Animated.Value, newValue: number) => (
   )(e, { dy: newValue })
 }
 
-const Drawer = ({ isOpen, children, onClose, isFullscreen }: DrawerProps) => {
+const Drawer = ({
+  isOpen,
+  children,
+  onClose,
+  isFullscreen,
+  isGestureSupported = true
+}: DrawerProps) => {
   const styles = useThemedStyles(createStyles)
 
   const { height } = Dimensions.get('window')
@@ -258,7 +265,7 @@ const Drawer = ({ isOpen, children, onClose, isFullscreen }: DrawerProps) => {
       <>
         {renderBackground()}
         <Animated.View
-          {...panResponder.panHandlers}
+          {...(isGestureSupported ? panResponder.panHandlers : {})}
           style={[
             styles.drawer,
             ...(isFullscreen ? [styles.fullDrawer] : []),
