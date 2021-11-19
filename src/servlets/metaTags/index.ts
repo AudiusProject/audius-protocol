@@ -34,12 +34,18 @@ const getTrackEmbedUrl = (type: Playable, hashId: string) => {
   return `${E.PUBLIC_URL}/embed/${type}/${hashId}?flavor=card&twitter=true`
 }
 
-const getCollectiblesEmbedUrl = (handle: string) => {
-  return `${E.PUBLIC_URL}/embed/${handle}/collectibles`
+// Note: Discord only respects audius.co embed players at a prefix of
+// audius.co/track, audius.co/album, audius.co/playlist
+// We add support for Discord by offering a an alternative route "hack"
+// These URLs are *never* to be shared more broadly than in the
+// general-admission response to a Discordbot.
+
+const getCollectiblesEmbedUrl = (handle: string, isDiscord: boolean = false) => {
+  return `${E.PUBLIC_URL}/embed/${isDiscord ? 'track/' : ''}${handle}/collectibles`
 }
 
-const getCollectibleEmbedUrl = (handle: string, collectibleId: string) => {
-  return `${E.PUBLIC_URL}/embed/${handle}/collectibles/${collectibleId}`
+const getCollectibleEmbedUrl = (handle: string, collectibleId: string, isDiscord: boolean = false) => {
+  return `${E.PUBLIC_URL}/embed/${isDiscord ? 'track/' : ''}${handle}/collectibles/${collectibleId}`
 }
 
 /** Routes */
@@ -136,7 +142,11 @@ const getUserContext = async (handle: string): Promise<Context> => {
   }
 }
 
-const getCollectiblesContext = async (handle: string, canEmbed: boolean): Promise<Context> => {
+const getCollectiblesContext = async (
+  handle: string,
+  canEmbed: boolean,
+  isDiscord: boolean = false
+): Promise<Context> => {
   if (!handle) return getDefaultContext()
   try {
     const user = await getUserByHandle(handle)
@@ -157,7 +167,7 @@ const getCollectiblesContext = async (handle: string, canEmbed: boolean): Promis
       additionalSEOHint: infoText,
       image: getImageUrl(profilePicture, gateway),
       embed: canEmbed,
-      embedUrl: getCollectiblesEmbedUrl(user.handle)
+      embedUrl: getCollectiblesEmbedUrl(user.handle, isDiscord)
     }
   } catch (e) {
     console.error(e)
@@ -165,7 +175,12 @@ const getCollectiblesContext = async (handle: string, canEmbed: boolean): Promis
   }
 }
 
-const getCollectibleContext = async (handle: string, collectibleId: string, canEmbed: boolean): Promise<Context> => {
+const getCollectibleContext = async (
+  handle: string,
+  collectibleId: string,
+  canEmbed: boolean,
+  isDiscord: boolean = false
+): Promise<Context> => {
   if (!handle) return getDefaultContext()
   try {
     const user = await getUserByHandle(handle)
@@ -210,7 +225,7 @@ const getCollectibleContext = async (handle: string, collectibleId: string, canE
         additionalSEOHint: infoText,
         image: foundCol.frameUrl,
         embed: canEmbed,
-        embedUrl: getCollectibleEmbedUrl(user.handle, collectibleId)
+        embedUrl: getCollectibleEmbedUrl(user.handle, collectibleId, isDiscord)
       }
     }
 
@@ -302,6 +317,7 @@ const getResponse = async (
   } = req.params
   const userAgent = req.get('User-Agent') || ''
   const canEmbed = CAN_EMBED_USER_AGENT_REGEX.test(userAgent.toLowerCase())
+  const isDiscord = userAgent.toLowerCase().includes('discord')
 
   let context: Context
 
@@ -333,11 +349,11 @@ const getResponse = async (
       break
     case MetaTagFormat.Collectibles:
       console.log('get collectibles', req.path, userAgent)
-      context = await getCollectiblesContext(handle, canEmbed)
+      context = await getCollectiblesContext(handle, canEmbed, isDiscord)
       break
     case MetaTagFormat.Collectible:
       console.log('get collectible', req.path, userAgent)
-      context = await getCollectibleContext(handle, collectibleId, canEmbed)
+      context = await getCollectibleContext(handle, collectibleId, canEmbed, isDiscord)
       break
     case MetaTagFormat.Error:
     default:
