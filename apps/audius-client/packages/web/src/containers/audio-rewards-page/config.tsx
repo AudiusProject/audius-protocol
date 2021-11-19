@@ -80,7 +80,7 @@ export const challengeRewardsConfig: Record<
     fullDescription:
       'Invite your Friends! You’ll earn 1 $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)',
     progressLabel: '%0/%1 Invites',
-    amount: 10,
+    amount: 1,
     stepCount: 10,
     panelButtonText: 'Invite your Friends',
     modalButtonInfo: {
@@ -97,7 +97,7 @@ export const challengeRewardsConfig: Record<
     fullDescription:
       'Invite your Friends! You’ll earn 1 $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)',
     progressLabel: '%0/%1 Invites',
-    amount: 10,
+    amount: 1,
     stepCount: 10,
     panelButtonText: 'Invite Your Friends',
     modalButtonInfo: {
@@ -165,7 +165,7 @@ export const challengeRewardsConfig: Record<
     fullDescription:
       'Fill out the missing details on your Audius profile and start interacting with tracks and artists!',
     progressLabel: '%0/%1 Complete',
-    amount: 10,
+    amount: 5,
     stepCount: 7,
     panelButtonText: 'More Info',
     modalButtonInfo: {
