@@ -30,7 +30,6 @@ const audiusLibsWrapper = require('../audiusLibsInstance')
 
 const NOTIFICATION_INTERVAL_SEC = 3 * 1000
 const NOTIFICATION_SOLANA_INTERVAL_SEC = 3 * 1000
-const NOTIFICATION_EMAILS_INTERVAL_SEC = 10 * 60 * 1000
 const NOTIFICATION_ANNOUNCEMENTS_INTERVAL_SEC = 30 * 1000
 
 const NOTIFICATION_JOB_LAST_SUCCESS_KEY = 'notifications:last-success'
