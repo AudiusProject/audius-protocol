@@ -17,6 +17,11 @@ class AudiusLibsWrapper {
       ? new Set(config.get('discoveryProviderWhitelist').split(','))
       : null
 
+    let feePayerSecretKey = config.get('solanaFeePayerWallet')
+    if (feePayerSecretKey) {
+      feePayerSecretKey = Uint8Array.from(feePayerSecretKey)
+    }
+
     let audiusInstance = new AudiusLibs({
       discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
       ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -36,7 +41,13 @@ class AudiusLibsWrapper {
         }
       },
       isServer: true,
-      captchaConfig: { serviceKey: config.get('recaptchaServiceKey') }
+      captchaConfig: { serviceKey: config.get('recaptchaServiceKey') },
+      solanaWeb3Config: AudiusLibs.configSolanaWeb3({
+        solanaClusterEndpoint: config.get('solanaEndpoint'),
+        // Never use the relay path in identity
+        shouldUseRelay: false,
+        feePayerSecretKey
+      })
     })
 
     await audiusInstance.init()
