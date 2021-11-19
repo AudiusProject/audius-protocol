@@ -7,28 +7,6 @@
 
 source ./scripts/utilities.sh
 
-function cd_contracts_repo {
-  # Navigate to contracts repository
-  if [ -d "../contracts" ]; then
-    echo "Audius contracts repo is present"
-    cd ../contracts/
-  else
-    echo "INCORRECT REPOSITORY STRUCTURE. PLEASE FOLLOW README"
-    exit 1
-  fi
-}
-
-function cd_discprov_repo {
-  # Navigate to discovery provider repository
-  if [ -d "../discovery-provider" ]; then
-    echo "Audius discprov repo is present"
-    cd ../discovery-provider/
-  else
-    echo "INCORRECT REPOSITORY STRUCTURE. PLEASE FOLLOW README"
-    exit 1
-  fi
-}
-
 if [ ! -f .gitignore ]; then
   echo "Run test script from audius discovery provider root"
   exit

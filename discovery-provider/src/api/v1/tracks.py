@@ -181,9 +181,7 @@ class TrackByRoute(Resource):
         if slug and handle:
             routes_parsed.append({"handle": handle, "slug": slug})
 
-        tracks = get_tracks(
-            {"routes": routes_parsed, "with_users": True, "filter_deleted": True}
-        )
+        tracks = get_tracks({"routes": routes_parsed, "with_users": True})
         if not tracks:
             if handle and slug:
                 abort_not_found(f"{handle}/{slug}", ns)
@@ -255,7 +253,6 @@ class FullTrackByRoute(Resource):
             {
                 "routes": routes_parsed,
                 "with_users": True,
-                "filter_deleted": True,
                 "current_user_id": current_user_id,
             }
         )
