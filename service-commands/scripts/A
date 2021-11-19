@@ -5,6 +5,40 @@ import sys
 import subprocess
 import argparse
 
+def get_gcloud_config_value(key):
+    value = (
+        subprocess.run(
+            [
+                "gcloud",
+                "config",
+                "get-value",
+                key,
+            ],
+            capture_output=True,
+        )
+        .stdout.decode()
+        .strip()
+    )
+    return value
+
+def set_gcloud_config_value(key, value):
+    subprocess.run(
+        [
+            "gcloud",
+            "config",
+            "set",
+            key,
+            value
+        ]
+    )
+    print(f'gcloud config {key} set to {value}')
+
+def set_gcloud_config_defaults():
+    default_gcloud_region = 'us-central1'
+    default_gcloud_zone = 'us-central1-a'
+    set_gcloud_config_value('compute/region', default_gcloud_region)
+    set_gcloud_config_value('compute/zone', default_gcloud_zone)
+
 def get_gcloud_project_and_account():
     project = (
         subprocess.run(
@@ -171,7 +205,7 @@ def create_instance(name, azure, image_project, image_family, size, machine_type
     return ip
 
 
-def setup(name, azure, service, config, user, fast, up_stack_upon_provision, protocol_git_ref, client_git_ref):
+def setup(name, azure, service, config, user, fast, protocol_git_ref, client_git_ref):
     if not azure:
         proc = subprocess.run(
             [
@@ -205,7 +239,8 @@ def setup(name, azure, service, config, user, fast, up_stack_upon_provision, pro
 
     ip = proc.stdout.decode().strip()
     if proc.returncode != 0:
-        input(f"Creating new instance '{name}' from prebaked image: {fast}. Press Enter to continue...")
+        fast_config = ' from prebaked image.' if fast else '.'
+        input(f"Creating new instance '{name}'{fast_config} Press Enter to continue...")
         use_image = False
         image_name = ""
         image_project = "ubuntu-os-cloud"
@@ -291,12 +326,6 @@ def setup(name, azure, service, config, user, fast, up_stack_upon_provision, pro
                     )
                 ],
             )
-            if up_stack_upon_provision:
-                up_command = "exec $SHELL -l; A up"
-                subprocess.run(
-                    f'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -t {host} {up_command}',
-                    shell=True
-                )
         else:
             subprocess.run(
                 [
@@ -401,12 +430,6 @@ def main():
     )
 
     parser_setup.add_argument(
-        "--up",
-        action="store_true",
-        help="Provision a local dev stack right after creating instance",
-    )
-
-    parser_setup.add_argument(
         "--protocol-git-ref",
         default="master",
         help="audius-protocol branch name or commit hash to check out when provisioning",
@@ -437,6 +460,9 @@ def main():
 
     try:
         args = parser.parse_args()
+        if not args.azure and (not get_gcloud_config_value('compute/zone') or not get_gcloud_config_value('compute/region')):
+            print('one or more gcloud config default values unset - setting...')
+            set_gcloud_config_defaults()
 
         if args.operation == "create-instance":
             create_instance(
@@ -455,7 +481,6 @@ def main():
                 args.config,
                 args.user,
                 args.fast,
-                args.up,
                 args.protocol_git_ref,
                 args.client_git_ref
             )
