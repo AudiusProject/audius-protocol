@@ -22,6 +22,13 @@ const {
   getRandomUserMetadata,
 } = RandomUtils
 
+/*
+  This class provides a JS interface to a stateful local session for seeding data
+  programmatically against a running stack of Audius services for test setup etc.
+
+  Each instance leverages the seed cache json object stored at ~/.audius/SEED_CACHE_PATH
+  as well as node-localstorage to maintain the state of users performing actions to seed.
+*/
 class SeedSession {
   constructor() {
     this.cache = new UserCache()
@@ -57,6 +64,8 @@ class SeedSession {
       await this.init(libsConfigOverride)
       if (!this.libs.userStateManager.getCurrentUserId() === userDetails.userId) {
         throw new Error(`Error calling SeedSession.setUser with alias ${alias} / userId ${userId} -- please check your seed cache at ${SEED_CACHE_PATH} to ensure that user exists.`)
+      } else {
+        console.log(`Set user alias ${alias} or userId ${userId} successfully.`)
       }
   }
 
@@ -79,7 +88,7 @@ class SeedSession {
     const coverPhotoFile = null
     const hasWallet = false
     const host = (typeof window !== 'undefined' && window.location.origin) || null
-    const createWAudioUserBank = false
+    const createWAudioUserBank = true
     try {
       signUpResponse = await this.libs.Account.signUp(email, password, metadata, profilePictureFile, coverPhotoFile, hasWallet, host, createWAudioUserBank)
     } catch (error) {
@@ -100,7 +109,6 @@ class SeedSession {
       return
     }
   }
-  // TODO API methods that call through to CLI things (wrapper layer)?
 }
 
 module.exports = SeedSession

@@ -5,6 +5,8 @@ import sys
 import subprocess
 import argparse
 
+protocol_dir = os.getenv('PROTOCOL_DIR', './')
+
 def get_gcloud_config_value(key):
     value = (
         subprocess.run(
@@ -345,7 +347,7 @@ def setup(name, azure, service, config, user, fast, protocol_git_ref, client_git
                     "-E",
                     f"AUDIUS_REMOTE_DEV_HOST={ip}",
                     "node",
-                    f"{os.getenv('PROTOCOL_DIR', './')}/service-commands/scripts/hosts.js",
+                    f"{protocol_dir}/service-commands/scripts/hosts.js",
                     "add-remote-host",
                 ]
             )
@@ -358,7 +360,7 @@ def run_and_pass_args_to_node(script_name, args):
     subprocess.run(
         [
             "node",
-            f"{os.getenv('PROTOCOL_DIR', './')}/service-commands/scripts/{script_name}",
+            f"{protocol_dir}/service-commands/scripts/{script_name}",
             *args,
         ]
     )
@@ -494,6 +496,9 @@ def main():
             )
     except argparse.ArgumentError:
         if sys.argv[1] == 'seed':
+            if 'service-commands' not in os.getcwd():
+                print('Changing to service-commands dir to run seed...')
+                os.chdir(f'{protocol_dir}/service-commands')
             script_name = 'seed.js'
             args = sys.argv[2:]
         else:

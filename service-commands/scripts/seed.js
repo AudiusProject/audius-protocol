@@ -5,8 +5,7 @@ const colors = require('colors')
 
 const {
     SeedSession,
-    SeedUtils,
-    Constants
+    SeedUtils
 } = ServiceCommands
 
 const {
@@ -15,10 +14,6 @@ const {
   parseSeedActionRepeatCount,
   passThroughUserInput
 } = SeedUtils
-
-const {
-  SERVICE_COMMANDS_PATH
-} = Constants
 
 // See below file for entrypoint to adding new libs API calls to CLI
 const CLI_TO_COMMAND_MAP = require('../src/commands/seed/cliToCommandMap')
@@ -31,14 +26,11 @@ colors.setTheme({
   error: 'red'
 })
 
-const checkExecutedFromCorrectDirectory = () => {
-  if (process.cwd() !== SERVICE_COMMANDS_PATH) {
-    throw new Error(
-      '`A seed` must be run from the service-commands directory. This is because of the way relative paths for node-localstorage work.'.error
-    )
-  }
-}
+/*
+  User creation and user management are the primary parts of this that require explicit declaration via `program.command` and a bit more wrapper logic to account for how we manage local state via the seed cache JSON and hedgehog entropy key in localstorage.
 
+  Most other seed actions are populated dynamically from CLI_TO_COMMAND_MAP below in addCommandsToCli
+*/
 program
   .command('create-user')
   .description(
@@ -59,11 +51,11 @@ program
   )
   .action(async opts => {
     const { userAlias: alias, count, ...options } = opts.opts()
-    const createSingleUser = async (alias, options) => {
-      console.log(`Creating user with alias ${alias} and options: ${JSON.stringify(options)}`.info)
+    const createSingleUser = async (singleUserAlias, options) => {
+      console.log(`Creating user with alias ${singleUserAlias} and options: ${JSON.stringify(options)}`.info)
       const seed = new SeedSession()
       await seed.init()
-      await seed.createUser(alias, options)
+      await seed.createUser(singleUserAlias, options)
       console.log('Created user!'.success)
     }
     console.log(`Creating ${count} user(s)...`.info)
@@ -115,75 +107,87 @@ program
     }
   })
 
-Object.entries(CLI_TO_COMMAND_MAP).forEach(
-  ([cliCommand, { api, description, method, params }]) => {
-    let configuredProgram = program
-      .command(cliCommand)
-      .description(description)
-    const userIdInLibsApiMethodParams = params.some(p => p.name === 'userId')
-    if (!userIdInLibsApiMethodParams) {
-      configuredProgram = configuredProgram
-      .option(
-        '-u, --user-id <number>',
-        'ID of user to set as active when performing action',
-        null
-      )
-    }
-
-    params.forEach(param => {
-      let { name, description, userInputHandler } = param
-      if (!userInputHandler) {
-        userInputHandler = passThroughUserInput
-      }
-      const cliOption = camelToKebabCase(name)
-      const shortOption = cliOption.charAt(0)
-      configuredProgram = configuredProgram.option(
-        `-${shortOption} --${cliOption} <value>`,
-        description,
-        userInputHandler,
-        ''
-      )
-    })
-
-    configuredProgram.action(async opts => {
-      const { userId, ...options } = opts.opts()
-      const seed = new SeedSession()
-      console.log(`Running seed ${cliCommand} with options: ${JSON.stringify(options)}`)
-      let userIdToSet = userId
-      if (!userIdToSet) {
-        // try to set from cache
-        console.log(
-          'No user ID for action specified; trying to get active user from seed local cache...'.info
+const addCommandsToCli = (CLI_TO_COMMAND_MAP, program) => {
+  Object.entries(CLI_TO_COMMAND_MAP).forEach(
+    ([cliCommand, { api, description, method, params, onSuccess }]) => {
+      let configuredProgram = program
+        .command(cliCommand)
+        .description(description)
+      const userIdInLibsApiMethodParams = params.some(p => p.name === 'userId')
+      /*
+        Avoid declaring --user-id twice. We add it as a parameter by default
+        for all seed actions in order to set the owner of the libs instance used
+        to call APIs, but some libs API methods (such as Playlist.createPlaylist
+        require userId to be passed in explicitly.
+      */
+      if (!userIdInLibsApiMethodParams) {
+        configuredProgram = configuredProgram
+        .option(
+          '-u, --user-id <number>',
+          'ID of user to set as active when performing action',
+          null
         )
-        const activeUser = seed.cache.getActiveUser()
-        if (!activeUser.hedgehogEntropyKey) {
-          throw new Error(
-            `There is no active user in seed local cache. Please rerun the 'seed ${cliCommand}' command with --user-id or -id flag or run 'seed set-user' with alias or id flag first to set active user.`.error
+      }
+      const addParamAsOption = ({ name, description, userInputHandler = passThroughUserInput }) => {
+        const cliOption = camelToKebabCase(name)
+        const shortOption = cliOption.charAt(0)
+        configuredProgram = configuredProgram.option(
+          `-${shortOption} --${cliOption} <value>`,
+          description,
+          userInputHandler,
+          ''
+        )
+      }
+
+      params.forEach(addParamAsOption)
+
+      configuredProgram.action(async opts => {
+        const { userId, ...options } = opts.opts()
+        const seed = new SeedSession()
+        console.log(`Running seed ${cliCommand} with options: ${JSON.stringify(options)}`)
+        let userIdToSet = userId
+        if (!userIdToSet) {
+          // try to set from cache
+          console.log(
+            'No user ID for action specified; trying to get active user from seed local cache...'.info
           )
+          const activeUser = seed.cache.getActiveUser()
+          if (!activeUser.hedgehogEntropyKey) {
+            throw new Error(
+              `There is no active user in seed local cache. Please rerun the 'seed ${cliCommand}' command with --user-id or -id flag or run 'seed set-user' with alias or id flag first to set active user.`.error
+            )
+          }
+          userIdToSet = activeUser.userId
         }
-        userIdToSet = activeUser.userId
-      }
-      await seed.setUser({ userId: userIdToSet })
-      console.log(`Calling libs.${api}.${method} to seed...`.info)
-      // TODO pass through current seed session so that helper methods to handle options can pull from cache
-      for (const option of Object.entries(options)) {
-        let [optionName, userProvidedValue] = option
-        const defaultHandler = params.find(param => param.name === optionName).defaultHandler || passThroughUserInput
-        options[optionName] = await defaultHandler(userProvidedValue)
-      }
-      const args = userIdInLibsApiMethodParams
-        ? [userId, ...Object.values(options)]
-        : [...Object.values(options)]
-      const response = await seed.libs[api][method](...args)
-      if (typeof onSuccess === 'function') {
-        onSuccess(response, seed)
-      }
-      console.log(`Successfully executed action ${cliCommand}`.happy)
-      console.log(`Options: ${JSON.stringify(options, null, 4)}: \n\nResponse: ${JSON.stringify(response, null, 4)}`)
-      process.exit(0)
-    })
-  }
-)
+        await seed.setUser({ userId: userIdToSet })
+        console.log(`Calling libs.${api}.${method} to seed...`.info)
+
+        const convertUserInputToApiMethodArguments = async (options, params) => {
+          for (const option of Object.entries(options)) {
+            let [optionName, userProvidedValue] = option
+            const match = param => param.name === optionName
+            const defaultHandler = params.find(match).defaultHandler || passThroughUserInput
+            options[optionName] = await defaultHandler(userProvidedValue, seed)
+          }
+          const args = userIdInLibsApiMethodParams
+            ? [userId, ...Object.values(options)]
+            : [...Object.values(options)]
+
+          return args
+        }
+        const args = await convertUserInputToApiMethodArguments(options, params)
+        const response = await seed.libs[api][method](...args)
+        if (typeof onSuccess === 'function') {
+          onSuccess(response, seed)
+        }
+        console.log(`Successfully executed action ${cliCommand}`.happy)
+        console.log(`Options: ${JSON.stringify(options, null, 4)}: \n\nResponse: ${JSON.stringify(response, null, 4)}`)
+        process.exit(0)
+      })
+    }
+  )
+}
+
 // entrypoint
-checkExecutedFromCorrectDirectory()
+addCommandsToCli(CLI_TO_COMMAND_MAP, program)
 program.parse(process.argv)

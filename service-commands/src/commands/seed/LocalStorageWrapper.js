@@ -12,8 +12,6 @@ class LocalStorageWrapper {
   // local storage wrapper functions - because different instances of
   // localstorage in node don't sync, we must reinstantiate from the path
   // with each read/write to ensure we're getting the correct reference.
-  constructor () {}
-
   get = () => {
     return new LocalStorage(`${SERVICE_COMMANDS_PATH}/local-storage`)
   }

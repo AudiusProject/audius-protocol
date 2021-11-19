@@ -67,20 +67,17 @@ class HedgehogWrapper {
       if (entropy === null) {
         throw new Error('generateRecoveryLink - missing entropy')
       }
-      let convertBinaryToBase64Ascii
+      let btoa // binary to base64 ASCII conversion
       let currentHost
-      if (typeof window !== 'undefined') {
-        convertBinaryToBase64Ascii = window.btoa
+      if (typeof window !== 'undefined' && window && window.btoa) {
+        btoa = window.btoa
         currentHost = window.location.origin
       } else {
-        convertBinaryToBase64Ascii = str => Buffer.from(str, 'binary').toString('base64')
+        btoa = str => Buffer.from(str, 'binary').toString('base64')
         currentHost = 'localhost'
       }
-      if (!convertBinaryToBase64Ascii) {
-        throw new Error('generateRecoveryLink - missing required convertBinaryToBase64Ascii function')
-      }
       const recoveryInfo = {}
-      recoveryInfo.login = convertBinaryToBase64Ascii(entropy)
+      recoveryInfo.login = btoa(entropy)
       recoveryInfo.host = currentHost
       return recoveryInfo
     }

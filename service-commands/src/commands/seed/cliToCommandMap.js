@@ -106,6 +106,7 @@ const CLI_TO_COMMAND_MAP = {
         {
           name: 'followeeUserId',
           description: 'user ID of user receiving the follow',
+          userInputHandler: Number,
           defaultHandler: getRandomUserIdFromCurrentSeedSessionCache
         }
       ]
@@ -118,6 +119,7 @@ const CLI_TO_COMMAND_MAP = {
         {
           name: 'followeeUserId',
           description: 'user ID of user to stop following',
+          userInputHandler: Number,
           defaultHandler: getRandomUserIdFromCurrentSeedSessionCache
         }
       ]

@@ -34,7 +34,8 @@ class UserCache {
       let cache = this.get()
       cache[alias] = {
         userId,
-        hedgehogEntropyKey
+        hedgehogEntropyKey,
+        tracks: []
       }
       this.update(cache)
     }
@@ -66,6 +67,22 @@ class UserCache {
       }
       const [userAlias, userDetails] = Object.entries(cache).find(match) || {}
       return Object.assign(userDetails, { userAlias })
+    }
+
+    addTrackToCachedUserDetails = ({ userId, trackId }) => {
+      const cache = this.get()
+      let { userAlias, ...userDetails } = this.findUser({ userId })
+      userDetails.tracks = userDetails.tracks.concat([trackId])
+      cache[userAlias] = userDetails
+      this.update(cache)
+    }
+
+    getUsers = () => {
+      return Object.values(this.get())
+    }
+
+    getTracks = () => {
+      return Object.values(this.get()).map(u => u.tracks).flat()
     }
 
     clear = () => {

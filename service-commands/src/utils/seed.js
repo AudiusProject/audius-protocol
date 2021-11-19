@@ -1,4 +1,5 @@
 const fs = require('fs')
+const _ = require('lodash')
 const AudiusLibs = require('@audius/libs')
 const {
   TEMP_IMAGE_STORAGE_PATH,
@@ -22,6 +23,8 @@ const {
 } = require('./random')
 
 const getLibsConfig = overrideConfig => {
+  const useHedgehogLocalStorage = false
+  const lazyConnect = true
   const audiusLibsConfig = {
     ethWeb3Config: AudiusLibs.configEthWeb3(
       ETH_TOKEN_ADDRESS,
@@ -35,13 +38,13 @@ const getLibsConfig = overrideConfig => {
     ),
     creatorNodeConfig: AudiusLibs.configCreatorNode(
       USER_METADATA_ENDPOINT,
-      true,
+      lazyConnect,
       CONTENT_NODE_ALLOWLIST
     ),
     discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(),
     identityServiceConfig: AudiusLibs.configIdentityService(
       IDENTITY_SERVICE_ENDPOINT,
-      false // use Hedgehog local storage
+      useHedgehogLocalStorage
     ),
     isServer: true,
     enableUserReplicaSetManagerContract: true,
@@ -73,7 +76,7 @@ const parseMetadataIntoObject = (commaSeparatedKeyValuePairs) => {
 
 const getUserProvidedOrRandomTrackFile = async userInputPath => {
   let path
-  if (userInputPath !== 'random') {
+  if (userInputPath) {
     path = userInputPath
   } else {
     path = await getRandomTrackFilePath(TEMP_TRACK_STORAGE_PATH)
@@ -83,7 +86,7 @@ const getUserProvidedOrRandomTrackFile = async userInputPath => {
 
 const getUserProvidedOrRandomImageFile = async userInputPath => {
   let path
-  if (userInputPath !== 'random') {
+  if (userInputPath) {
     path = userInputPath
   } else {
     path = await getRandomImageFilePath(TEMP_IMAGE_STORAGE_PATH)
@@ -98,12 +101,12 @@ const getProgressCallback = () => {
   return progressCallback
 }
 
-const getUserProvidedOrRandomTrackMetadata = userProvidedMetadataInput => {
-  // TODO userId passthrough
-  let metadataObj = getRandomTrackMetadata()
+const getUserProvidedOrRandomTrackMetadata = (userProvidedMetadataInput, seedSession) => {
+  const { userId } = seedSession.cache.getActiveUser()
+  let metadataObj = getRandomTrackMetadata(userId)
   if (userProvidedMetadataInput !== 'random') {
     const userProvidedMetadata = parseMetadataIntoObject(userProvidedMetadataInput)
-    metadataObj = Object.assign(metadataObj, userProvidedMetadata)
+    metadataObj = Object.assign(metadataObj, userProvidedMetadata, { })
   }
   return metadataObj
 }
@@ -147,7 +150,11 @@ const getRandomTrackIdFromCurrentSeedSessionCache = (userInput, seedSession) => 
   return trackId
 }
 
-const getRandomTrackIdFromCurrentSeedSessionCache = () => {}
+const addTrackToSeedSessionCache = (response, seedSession) => {
+  const { trackId } = response
+  const { userId } = seedSession.cache.getActiveUser()
+  seedSession.cache.addTrackToCachedUserDetails({ trackId, userId })
+}
 
 const getActiveUserFromSeedSessionCache = (userInput, seedSession) => {
   const activeUser = seedSession.cache.getActiveUser()

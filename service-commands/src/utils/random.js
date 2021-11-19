@@ -201,7 +201,7 @@ const getRandomPassword = () => {
    profile_picture_sizes: null,
    cover_photo: null,
    cover_photo_sizes: null,
-   creator_node_endpoint: process.env.USER_METADATA_ENDPOINT
+   creator_node_endpoint: ''
  }
 }
 
