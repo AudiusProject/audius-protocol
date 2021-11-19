@@ -54,7 +54,7 @@ export const CollectibleLink = ({
           height={16}
           width={16}
         />
-        <Text style={styles.linkText} weight='heavy'>
+        <Text style={styles.linkText} weight='demiBold'>
           {text}
         </Text>
       </View>
