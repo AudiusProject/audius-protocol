@@ -16,7 +16,7 @@ const NotificationProcessor = require('./notifications/index.js')
 const { generateWalletLockKey } = require('./relay/txRelay.js')
 const { generateETHWalletLockKey } = require('./relay/ethTxRelay.js')
 
-const { sendResponse, errorResponseServerError } = require('./apiHelpers')
+const { sendResponse, errorResponseServerError, errorResponseBadRequest } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
 const { logger, loggingMiddleware } = require('./logging')
 const {
