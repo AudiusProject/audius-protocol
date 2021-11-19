@@ -55,7 +55,7 @@ jobs:
   init:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     steps:
       - checkout
 
@@ -100,7 +100,7 @@ jobs:
   build-demo:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     resource_class: large
     steps:
       - checkout
@@ -117,7 +117,7 @@ jobs:
   build-staging:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     resource_class: large
     steps:
       - checkout
@@ -134,7 +134,7 @@ jobs:
   build-mobile-staging:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     resource_class: large
     steps:
       - checkout
@@ -151,7 +151,7 @@ jobs:
   build-ipfs-staging:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     resource_class: large
     steps:
       - checkout
@@ -207,7 +207,7 @@ jobs:
   build-production:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     resource_class: large
     steps:
       - checkout
@@ -224,7 +224,7 @@ jobs:
   build-mobile-production:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     resource_class: large
     steps:
       - checkout
@@ -241,7 +241,7 @@ jobs:
   build-ipfs-production:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     resource_class: large
     steps:
       - checkout
@@ -295,7 +295,7 @@ jobs:
   deploy-staging-cloudflare:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     steps:
       - checkout
       - attach_workspace:
@@ -348,7 +348,7 @@ jobs:
   update-staging-ga-ipfs-build:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     steps:
       - checkout
       - attach_workspace:
@@ -378,7 +378,7 @@ jobs:
   update-ipfs-staging-records:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     steps:
       - attach_workspace:
           at: ./
@@ -396,7 +396,7 @@ jobs:
   deploy-release-candidate:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     steps:
       - checkout
       - attach_workspace:
@@ -446,7 +446,7 @@ jobs:
   deploy-production-cloudflare:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     steps:
       - checkout
       - attach_workspace:
@@ -472,7 +472,7 @@ jobs:
   deploy-sentry-sourcemaps:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     steps:
       - checkout
       - attach_workspace:
@@ -524,7 +524,7 @@ jobs:
   update-production-ga-ipfs-build:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     steps:
       - checkout
       - attach_workspace:
@@ -554,7 +554,7 @@ jobs:
   update-ipfs-production-records:
     working_directory: ~/audius-client
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     steps:
       - attach_workspace:
           at: ./
