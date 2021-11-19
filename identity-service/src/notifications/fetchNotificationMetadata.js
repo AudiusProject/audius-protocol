@@ -98,11 +98,11 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       }
     })
 
-    const finalUserNotifications = userNotifications.slice(0, limit)
-
     if (userNotifications.length === 0) {
       return [{}, 0]
     }
+
+    const finalUserNotifications = userNotifications.slice(0, limit)
 
     const fethNotificationsTime = Date.now()
     const metadata = await fetchNotificationMetadata(audius, [userId], finalUserNotifications, true)
@@ -204,7 +204,7 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
     /** idsArray */ uniqueTrackIds
   )
   if (!Array.isArray(tracks)) {
-    logger.error(`fetchNotificationnMetadata | Unable to fetch track ids ${uniqueTrackIds.join('')}`)
+    logger.error(`fetchNotificationMetadata | Unable to fetch track ids ${uniqueTrackIds.join('')}`)
   }
 
   const trackMap = tracks.reduce((tm, track) => {
@@ -229,7 +229,7 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
       /** idsArray */ uniqueParentTrackIds
     )
     if (!Array.isArray(parentTracks)) {
-      logger.error(`fetchNotificationnMetadata | Unable to fetch parent track ids ${uniqueParentTrackIds.join('')}`)
+      logger.error(`fetchNotificationMetadata | Unable to fetch parent track ids ${uniqueParentTrackIds.join('')}`)
     }
 
     parentTracks.forEach(track => {
@@ -245,7 +245,7 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
   )
 
   if (!Array.isArray(collections)) {
-    logger.error(`fetchNotificationnMetadata | Unable to fetch collection ids ${uniqueCollectionIds.join('')}`)
+    logger.error(`fetchNotificationMetadata | Unable to fetch collection ids ${uniqueCollectionIds.join('')}`)
   }
 
   userIdsToFetch.push(
@@ -261,7 +261,7 @@ async function fetchNotificationMetadata (audius, userIds = [], notifications, f
   )
 
   if (!Array.isArray(users)) {
-    logger.error(`fetchNotificationnMetadata | Unable to fetch user ids ${uniqueUserIds.join('')}`)
+    logger.error(`fetchNotificationMetadata | Unable to fetch user ids ${uniqueUserIds.join('')}`)
   }
 
   // Fetch all the social handles and attach to the users - For twitter sharing

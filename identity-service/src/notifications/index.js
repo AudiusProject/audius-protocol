@@ -240,8 +240,6 @@ class NotificationProcessor {
         logger.error(`processEmailNotifications - Problem with processing emails: ${e}`)
         this.errorHandler(e)
       }
-      // Wait 10 minutes before re-running the job
-      await new Promise(resolve => setTimeout(resolve, NOTIFICATION_EMAILS_INTERVAL_SEC))
       await this.emailQueue.add({ type: unreadEmailJobType }, { jobId: `${unreadEmailJobType}:${Date.now()}` })
       done(error)
     })
@@ -258,8 +256,6 @@ class NotificationProcessor {
         logger.error(`processDownloadEmails - Problem with processing emails: ${e}`)
         this.errorHandler(e)
       }
-      // Wait 10 minutes before re-running the job
-      await new Promise(resolve => setTimeout(resolve, NOTIFICATION_EMAILS_INTERVAL_SEC))
       await this.downloadEmailQueue.add({ type: downloadEmailJobType }, { jobId: `${downloadEmailJobType}:${Date.now()}` })
       done(error)
     })

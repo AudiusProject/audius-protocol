@@ -319,7 +319,8 @@ async function renderAndSendNotificationEmail (
       startTime,
       5)
     const timeAfterEmailNotifications = Date.now()
-    logger.info(`renderAndSendNotificationEmail | time after getEmailNotifications | ${timeAfterEmailNotifications} | time elapsed is ${timeAfterEmailNotifications - timeBeforeEmailNotifications} | ${notificationCount} unread notifications`)
+    const getEmailDuration = (timeAfterEmailNotifications - timeBeforeEmailNotifications)/1000
+    logger.info(`renderAndSendNotificationEmail | time after getEmailNotifications | ${timeAfterEmailNotifications} | time elapsed is ${getEmailDuration} | ${notificationCount} unread notifications`)
 
     const emailSubject = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''} on Audius`
     if (notificationCount === 0) {
@@ -372,8 +373,8 @@ async function renderAndSendNotificationEmail (
     // Cache on file system
     await cacheEmail({ renderProps, emailParams })
 
-    const totalDuration = (timeBeforeEmailNotifications - Date.now())/1000
-    logger.info({ job: 'renderAndSendNotificationEmail', duration: totalDuration }, `renderAndSendNotificationEmail | ${userId}, ${userEmail}, in ${totalDuration} sec`)
+    const totalDuration = (Date.now() - timeBeforeEmailNotifications)/1000
+    logger.info({ job: 'renderAndSendNotificationEmail', totalDuration, getEmailDuration }, `renderAndSendNotificationEmail | ${userId}, ${userEmail}, in ${totalDuration} sec`)
     return true
   } catch (e) {
     logger.error(`Error in renderAndSendNotificationEmail ${e}`)
