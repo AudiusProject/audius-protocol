@@ -223,29 +223,29 @@ const createSenderLocal = async ethAddress => {
   }
 }
 
-const findEthAddressForDiscProvAndRegister = async serviceNumber => {
+const findEthAddressForDiscoveryNodeAndRegister = async serviceNumber => {
   const ethWeb3 = new Web3(
     new Web3.providers.HttpProvider('http://localhost:8546')
   )
   const ethAccounts = await ethWeb3.eth.getAccounts()
-  console.log(`Finding address for disc prov #${serviceNumber}`)
+  console.log(`Finding address for discovery node #${serviceNumber}`)
   const accountIndex = 8 + parseInt(serviceNumber)
   console.log(`Account index = ${accountIndex}`)
-  const discProvAccount = ethAccounts[accountIndex]
-  console.log(`Eth address for disc prov #${serviceNumber}=${discProvAccount}`)
-  await createSenderLocal(discProvAccount)
+  const discoveryNodeAccount = ethAccounts[accountIndex]
+  console.log(`Eth address for discovery node #${serviceNumber}=${discoveryNodeAccount}`)
+  await createSenderLocal(discoveryNodeAccount)
 }
 
 const args = process.argv
 const run = async () => {
   try {
     switch (args[2]) {
-      case 'register-discprov':
+      case 'register-discovery-node':
         const serviceCount = args[3]
-        console.log(`RewardManager | Registering disc prov ${serviceCount}`)
-        await findEthAddressForDiscProvAndRegister(serviceCount)
+        console.log(`RewardManager | Registering discovery node ${serviceCount}`)
+        await findEthAddressForDiscoveryNodeAndRegister(serviceCount)
         console.log(
-          `RewardManager | Finished registering disc prov ${serviceCount}`
+          `RewardManager | Finished registering discovery node ${serviceCount}`
         )
         break
       case 'register-eth-address':
