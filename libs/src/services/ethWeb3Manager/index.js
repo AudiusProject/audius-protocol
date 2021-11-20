@@ -98,7 +98,7 @@ class EthWeb3Manager {
         retries: txRetries,
         onRetry: (err, i) => {
           if (err) {
-            console.log(`Retry error : ${err}`)
+            console.log(`libs ethWeb3Manager transaction send retry error : ${err}`)
           }
         }
       })
@@ -151,7 +151,7 @@ class EthWeb3Manager {
       retries: txRetries,
       onRetry: (err, i) => {
         if (err) {
-          console.log(`Retry error : ${err}`)
+          console.log(`libs ethWeb3Manager transaction relay retry error : ${err}`)
         }
       }
     })

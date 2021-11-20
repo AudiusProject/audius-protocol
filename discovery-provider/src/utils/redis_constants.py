@@ -7,6 +7,8 @@ most_recent_indexed_ipld_block_hash_redis_key = (
     "most_recent_indexed_ipld_block_hash_redis_key"
 )
 most_recent_indexed_aggregate_user_block_redis_key = "most_recent_indexed_aggregate_user_block"
+index_aggregate_user_last_refresh_completion_redis_key = "index_aggregate_user:last-refresh-completion"
+
 trending_tracks_last_completion_redis_key = "trending:tracks:last-completion"
 trending_playlists_last_completion_redis_key = "trending-playlists:last-completion"
 challenges_last_processed_event_redis_key = "challenges:last-processed-event"
