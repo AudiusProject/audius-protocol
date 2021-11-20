@@ -120,7 +120,10 @@ class SolanaWeb3Manager {
    * Creates a solana bank account from the web3 provider's eth address
    */
   async createUserBank () {
-    if (!this.web3Manager) throw new Error('No web3Manager supplied to solanaWeb3Manager')
+    if (!this.web3Manager) {
+      throw new Error('A web3Manager is required for this solanaWeb3Manager method')
+    }
+
     const ethAddress = this.web3Manager.getWalletAddress()
     await createUserBankFrom({
       ethAddress,
@@ -168,7 +171,9 @@ class SolanaWeb3Manager {
    * @returns {PublicKey} UserBank
    */
   async getUserBank () {
-    if (!this.web3Manager) throw new Error('No web3Manager supplied to solanaWeb3Manager')
+    if (!this.web3Manager) {
+      throw new Error('A web3Manager is required for this solanaWeb3Manager method')
+    }
     const ethAddress = this.web3Manager.getWalletAddress()
     const bank = await getBankAccountAddress(
       ethAddress,
@@ -229,7 +234,10 @@ class SolanaWeb3Manager {
    * of wei $AUDIO for all method calls
    */
   async transferWAudio (recipientSolanaAddress, amount) {
-    if (!this.web3Manager) throw new Error('No web3Manager supplied to solanaWeb3Manager')
+    if (!this.web3Manager) {
+      throw new Error('A web3Manager is required for this solanaWeb3Manager method')
+    }
+
     // Check if the solana address is a token account
     let tokenAccountInfo = await this.getAssociatedTokenAccountInfo(recipientSolanaAddress)
     if (!tokenAccountInfo) {
