@@ -428,10 +428,7 @@ class Rewards extends Base {
       operatorEthAddress,
       attestations
     })
-    return {
-      success: receipt,
-      error: null
-    }
+    return receipt
   }
 }
 
