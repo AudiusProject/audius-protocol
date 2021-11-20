@@ -127,9 +127,9 @@ const run = async () => {
         break
       }
 
-      case 'register-discprov':
+      case 'register-discovery-node':
         const serviceCount = args[3]
-        if (serviceCount === undefined) throw new Error('register-discprov requires a service # as the second arg')
+        if (serviceCount === undefined) throw new Error('register-discovery-node requires a service # as the second arg')
         await _registerDiscProv(ethAccounts, parseInt(serviceCount))
         break
 
