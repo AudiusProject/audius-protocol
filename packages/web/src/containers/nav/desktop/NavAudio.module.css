@@ -1,5 +1,18 @@
 .audio {
   opacity: 0;
+  position: relative;
+  min-height: 16px;
+}
+
+.audio:hover:before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  background-color:var(--neutral-light-4);
+  left: -40px;
+  border-radius: 4px;
 }
 
 .audio.show {
@@ -12,11 +25,15 @@
 }
 
 .audio.show .earnAudio:hover {
-  cursor: pointer;
+  transform: scale(1.03);
 }
 
 .audio.show .earnAudio:active {
   transform: scale(.97);
+}
+
+.audio.hasBalance {
+  cursor: pointer;
 }
 
 .audioAmount {
@@ -24,6 +41,12 @@
   font-size: var(--font-s);
   font-weight: var(--font-heavy);
   color: var(--neutral-light-4);
+  transition: color 0.07s ease-in-out;
+  cursor: pointer;
+}
+
+.hasBalance .audioAmount:hover {
+  color: var(--neutral-light-3);
 }
 
 .earnAudio {
@@ -31,12 +54,13 @@
   align-items: center;
   margin-left: 12px;
   padding: 4px 8px;
-  color: var(--white);
+  color: var(--static-white);
   background: var(--secondary);
   border-radius: 16px;
   font-size: var(--font-2xs);
   font-weight: var(--font-bold);
   letter-spacing: 0.1em;
+  transition: all 0.07s ease-in-out;
 }
 
 .earnAudioCaret {
@@ -46,5 +70,5 @@
 }
 
 .earnAudioCaret path {
-  fill: var(--white);
+  fill: var(--static-white);
 }
