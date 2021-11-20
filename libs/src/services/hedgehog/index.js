@@ -63,16 +63,20 @@ class HedgehogWrapper {
      * @param {String} username username
      */
     hedgehog.generateRecoveryInfo = async () => {
-      let entropy = await WalletManager.getEntropyFromLocalStorage()
+      const entropy = await WalletManager.getEntropyFromLocalStorage()
       if (entropy === null) {
         throw new Error('generateRecoveryLink - missing entropy')
       }
-      let btoa = window.btoa
-      if (!btoa) {
-        throw new Error('generateRecoveryLink - missing required btoa function')
+      let btoa // binary to base64 ASCII conversion
+      let currentHost
+      if (typeof window !== 'undefined' && window && window.btoa) {
+        btoa = window.btoa
+        currentHost = window.location.origin
+      } else {
+        btoa = str => Buffer.from(str, 'binary').toString('base64')
+        currentHost = 'localhost'
       }
-      let currentHost = window.location.origin
-      let recoveryInfo = {}
+      const recoveryInfo = {}
       recoveryInfo.login = btoa(entropy)
       recoveryInfo.host = currentHost
       return recoveryInfo
