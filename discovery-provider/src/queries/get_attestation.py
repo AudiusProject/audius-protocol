@@ -204,6 +204,8 @@ def get_create_sender_attestation(new_sender_address: str) -> Tuple[str, str]:
 
     items = [
         to_bytes(text=ADD_SENDER_MESSAGE_PREFIX),
+        # Solana PubicKey should be coerced to bytes using the pythonic bytes method
+        # See https://michaelhly.github.io/solana-py/solana.html#solana.publickey.PublicKey
         bytes(REWARDS_MANAGER_PROGRAM_ACCOUNT),
         to_bytes(hexstr=new_sender_address),
     ]
