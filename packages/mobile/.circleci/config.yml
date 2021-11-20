@@ -7,7 +7,7 @@ jobs:
   init:
     working_directory: ~/react-native-wrapper
     docker:
-      - image: circleci/node:10.13
+      - image: circleci/node:14.18
     steps:
       - checkout
       - run:
