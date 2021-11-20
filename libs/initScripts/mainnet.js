@@ -32,10 +32,15 @@ const run = async () => {
       case 'setversion':
         const serviceType = args[4]
         const versionStr = args[5]
+        let dryRun = true
+        // if args[6] is defined and the value is either bool or string false, set dryRun to false
+        if (args[6] && (['false', false].includes(args[6]))) {
+          dryRun = false
+        }
         if (!serviceType || !versionStr) {
           throw new Error('missing arguments - format: node mainnet.js setversion <serviceType> <versionStr>')
         }
-        await setServiceVersion(audiusLibs, serviceType, versionStr, privateKey)
+        await setServiceVersion(audiusLibs, serviceType, versionStr, privateKey, dryRun)
         break
       case 'addservicetype':
         const newServiceType = args[4]
