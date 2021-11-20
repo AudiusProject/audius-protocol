@@ -177,6 +177,13 @@ async function submitAttestations ({
     rewardManagerAccount
   )
 
+  const encodedSenderMessage = SolanaUtils.constructAttestation(
+    recipientEthAddress,
+    tokenAmount,
+    transferId,
+    oracleAttestation.ethAddress
+  )
+
   // Add instructions from DN attestations - each attestation
   // needs a pairing of SECP recovery instruction and submit
   // attestation instruction.
@@ -186,10 +193,10 @@ async function submitAttestations ({
         generateAttestationSecpInstruction({
           attestationMeta: meta,
           recipientEthAddress,
-          oracleAddress: oracleAttestation.ethAddress,
           tokenAmount,
           transferId,
-          instructionIndex: 2 * i
+          instructionIndex: 2 * i,
+          encodedSenderMessage
         })
       )
       const verifyInstruction = generateSubmitAttestationInstruction({
@@ -210,8 +217,9 @@ async function submitAttestations ({
     attestationMeta: oracleAttestation,
     recipientEthAddress,
     instructionIndex: instructions.length,
+    tokenAmount,
     transferId,
-    tokenAmount
+    encodedSenderMessage
   })
   const oracleTransfer = await generateSubmitAttestationInstruction({
     attestationMeta: oracleAttestation,
@@ -266,13 +274,17 @@ async function createSender ({
     rewardManagerAccount
   )
 
+  const encodedSenderMessage = constructCreateSenderMessage(
+    senderEthAddress,
+    rewardManagerAccount
+  )
   const signerEthAddresses = attestations.map(meta => meta.ethAddress)
   const signerInstructions = attestations.map((meta, i) => {
     return generateCreateSenderSecpInstruction({
       ethAddress: senderEthAddress,
       attestationMeta: meta,
-      rewardManagerAccount,
-      instructionIndex: i
+      instructionIndex: i,
+      encodedSenderMessage
     })
   })
 
@@ -570,21 +582,44 @@ const generateSubmitAttestationInstruction = async ({
 }
 
 /**
+ * Encodes a given signature for SECP recovery
+ * @param {string} signature
+ * @returns {{encodedSignature: string, recoveryId: number}} encodedSignature
+ */
+const encodeSignature = (signature) => {
+  // Perform signature manipulations:
+  // - remove the 0x prefix for BN
+  // - lose the final byte / recovery ID: the secp instruction constructor
+  //   requires only 'r', 's' from the signature, while 'v', the recovery ID,
+  //   is passed as a separate argument.
+  //   https://medium.com/mycrypto/the-magic-of-digital-signatures-on-ethereum-98fe184dc9c7
+  //
+  let strippedSignature = signature.replace('0x', '')
+  const recoveryIdStr = strippedSignature.slice(strippedSignature.length - 2)
+  const recoveryId = new BN(recoveryIdStr, 'hex').toNumber()
+  strippedSignature = strippedSignature.slice(0, strippedSignature.length - 2)
+  const encodedSignature = Uint8Array.of(
+    ...new BN(strippedSignature, 'hex').toArray('be')
+  )
+  return { encodedSignature, recoveryId }
+}
+
+/**
  *
  * @param {{
  *   attestationMeta: AttestationMeta
  *   recipientEthAddress: string
  *   tokenAmount: BN
  *   transferId: string
- *   oracleAddress: string
  *   instructionIndex: number
+ *   encodedSenderMessage: string
  * }} {
  *   attestationMeta,
  *   recipientEthAddress,
  *   tokenAmount,
  *   transferId,
- *   oracleAddress,
- *   instructionIndex
+ *   instructionIndex,
+ *   encodedSenderMessage
  * }
  * @returns {TransactionInstruction}
  */
@@ -593,31 +628,10 @@ const generateAttestationSecpInstruction = ({
   recipientEthAddress,
   tokenAmount,
   transferId,
-  oracleAddress,
-  instructionIndex
+  instructionIndex,
+  encodedSenderMessage
 }) => {
-  // Perform signature manipulations:
-  // - remove the 0x prefix for BN
-  // - lose the final byte / recovery ID: the secp instruction constructor
-  //   requires only 'r', 's' from the signature, while 'v', the recovery ID,
-  //   is passed as a separate argument.
-  //   https://medium.com/mycrypto/the-magic-of-digital-signatures-on-ethereum-98fe184dc9c7
-  //
-  let strippedSignature = attestationMeta.signature.replace('0x', '')
-  const recoveryIdStr = strippedSignature.slice(strippedSignature.length - 2)
-  const recoveryId = new BN(recoveryIdStr, 'hex').toNumber()
-  strippedSignature = strippedSignature.slice(0, strippedSignature.length - 2)
-  const encodedSignature = Uint8Array.of(
-    ...new BN(strippedSignature, 'hex').toArray('be')
-  )
-
-  // TODO pull this out of this fn because it's static to each loop
-  const encodedSenderMessage = SolanaUtils.constructAttestation(
-    recipientEthAddress,
-    tokenAmount,
-    transferId,
-    oracleAddress
-  )
+  const { encodedSignature, recoveryId } = encodeSignature(attestationMeta.signature)
 
   return Secp256k1Program.createInstructionWithEthAddress({
     ethAddress: attestationMeta.ethAddress,
@@ -628,32 +642,28 @@ const generateAttestationSecpInstruction = ({
   })
 }
 
+/**
+ *
+ * @param {{
+ *   ethAddress: string
+ *   attestationMeta: AttestationMeta
+ *   instructionIndex: number
+ *   encodedSenderMessage: string
+ * }} {
+ *   ethAddress,
+ *   attestationMeta,
+ *   instructionIndex,
+ *   encodedSenderMessage
+ * }
+ * @returns {TransactionInstruction}
+ */
 const generateCreateSenderSecpInstruction = ({
   ethAddress,
   attestationMeta,
-  rewardManagerAccount,
-  instructionIndex
+  instructionIndex,
+  encodedSenderMessage
 }) => {
-  // Perform signature manipulations:
-  // - remove the 0x prefix for BN
-  // - lose the final byte / recovery ID: the secp instruction constructor
-  //   requires only 'r', 's' from the signature, while 'v', the recovery ID,
-  //   is passed as a separate argument.
-  //   https://medium.com/mycrypto/the-magic-of-digital-signatures-on-ethereum-98fe184dc9c7
-  //
-  let strippedSignature = attestationMeta.signature.replace('0x', '')
-  const recoveryIdStr = strippedSignature.slice(strippedSignature.length - 2)
-  const recoveryId = new BN(recoveryIdStr, 'hex').toNumber()
-  strippedSignature = strippedSignature.slice(0, strippedSignature.length - 2)
-  const encodedSignature = Uint8Array.of(
-    ...new BN(strippedSignature, 'hex').toArray('be')
-  )
-
-  // TODO pull this out of this fn because it's static to each loop
-  const encodedSenderMessage = constructCreateSignerMessage(
-    ethAddress,
-    rewardManagerAccount
-  )
+  const { encodedSignature, recoveryId } = encodeSignature(attestationMeta.signature)
   return Secp256k1Program.createInstructionWithEthAddress({
     ethAddress: attestationMeta.ethAddress,
     message: encodedSenderMessage,
@@ -731,7 +741,6 @@ const generateCreateSenderInstruction = async ({
       isWritable: true
     },
     {
-      // NOT FOUND - makes sense
       pubkey: derivedSenderSolanaAddress,
       isSigner: false,
       isWritable: true
@@ -811,7 +820,7 @@ const deriveSolanaSenderFromEthAddress = async (
  * @param {string} ethAddress
  * @returns {Uint8Array}
  */
-const constructCreateSignerMessage = (
+const constructCreateSenderMessage = (
   ethAddress,
   rewardManagerAccount
 ) => {

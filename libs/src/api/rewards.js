@@ -23,6 +23,10 @@ const AggregateAttestationError = Object.freeze(
   }
 )
 
+const GetSenderAttestationError = Object.freeze({
+  REQUEST_FOR_ATTESTATION_FAILED: 'REQUEST_FOR_ATTESTATION_FAILED'
+})
+
 /**
  * Combined error type for `SubmitAndEvaluate`
  */
@@ -46,7 +50,7 @@ const WRAPPED_AUDIO_PRECISION = 10 ** 9
  * @typedef {import("../services/solanaWeb3Manager/rewards.js").AttestationMeta} AttestationMeta
  */
 
-class Challenge extends Base {
+class Rewards extends Base {
   /**
    *
    * Top level method to aggregate attestations, submit them to RewardsManager, and evalute the result.
@@ -168,7 +172,7 @@ class Challenge extends Base {
    *   endpoints = null
    * }
    * @returns {Promise<AttestationsReturn>}
-   * @memberof Challenge
+   * @memberof Rewards
    */
   async aggregateAttestations ({ challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints = null }) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
@@ -371,11 +375,11 @@ class Challenge extends Base {
    * }} {
    *   senderEthAddress: the new sender eth address to add. The delegate wallet.
    *   operatorEthAddress: the unique address of the operator that runs this service
-   *   senderEndpoint: the new sender's service endpoint,
+   *   senderEndpoint: the new sender's service endpoint
    *   endpoints: optional endpoints from other nodes. If not provided, nodes are selected from chain.
    *   numAttestations: optional number of attestations to get from other nodes, default 3
    * }
-   * @memberof Challenge
+   * @memberof Rewards
    */
   async createSenderPublic ({
     senderEthAddress,
@@ -411,7 +415,11 @@ class Challenge extends Base {
       }
     }))
     if (error) {
-      throw new Error(`Failed to get attestations from other nodes ${attestEndpoints}`)
+      console.error(`Failed to get attestations from other nodes ${attestEndpoints}`)
+      return {
+        success: null,
+        error: GetSenderAttestationError.REQUEST_FOR_ATTESTATION_FAILED
+      }
     }
 
     // Register the server as a sender on the rewards manager
@@ -420,9 +428,12 @@ class Challenge extends Base {
       operatorEthAddress,
       attestations
     })
-    return receipt
+    return {
+      success: receipt,
+      error: null
+    }
   }
 }
 
-module.exports = Challenge
+module.exports = Rewards
 module.exports.SubmitAndEvaluateError = SubmitAndEvaluateError
