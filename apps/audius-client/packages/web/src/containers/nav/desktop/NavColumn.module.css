@@ -303,7 +303,6 @@ svg.logo path {
 }
 
 .navColumn .links a.link.droppableLink {
-  /* font-weight: var(--font-demi-bold); */
   color: var(--secondary);
 }
 
