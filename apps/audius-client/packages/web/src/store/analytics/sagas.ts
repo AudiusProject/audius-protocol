@@ -5,17 +5,17 @@ import { Name } from 'common/models/Analytics'
 import { ScreenAnalyticsEvent } from 'services/native-mobile-interface/analytics'
 import * as analyticsActions from 'store/analytics/actions'
 
-import { identify, track } from './providers/segment'
+import * as analyticsProvider from './providers'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 
 function* trackEventAsync(action: any) {
-  const { eventName, callback, options, ...eventProps } = action
-  yield call(track, eventName, eventProps, options, callback)
+  const { eventName, callback, ...eventProps } = action
+  yield call(analyticsProvider.track, eventName, eventProps, callback)
 }
 
 function* identifyEventAsync(action: any) {
-  yield call(identify, action.handle, action.traits)
+  yield call(analyticsProvider.identify, action.handle, action.traits)
 }
 
 function* watchTrackEvent() {
@@ -24,6 +24,12 @@ function* watchTrackEvent() {
 
 function* watchIdentifyEvent() {
   yield takeEvery(analyticsActions.IDENTIFY, identifyEventAsync)
+}
+
+function* initProviders() {
+  if (!NATIVE_MOBILE) {
+    yield call(analyticsProvider.init)
+  }
 }
 
 function* trackLocation() {
@@ -40,20 +46,16 @@ function* trackLocation() {
           page_path: pathname
         })
       }
-
-      // Dispatch a track event and then resolve page/screen events with segment
-      track(Name.PAGE_VIEW, { route: pathname })
+      if ((window as any).adroll) {
+        ;(window as any).adroll.track('pageView')
+      }
 
       if (NATIVE_MOBILE) {
         const message = new ScreenAnalyticsEvent(pathname)
         message.send()
-      } else if ((window as any).analytics) {
-        ;(window as any).analytics.page(null, {
-          referrer,
-          // Because title is set through the react component hierarchy, this
-          // value would be incorrect, so override it to empty.
-          title: ''
-        })
+      } else {
+        // Dispatch a track event and then resolve page/screen events with segment
+        analyticsProvider.track(Name.PAGE_VIEW, { route: pathname })
       }
     }
     referrer = href
@@ -61,5 +63,5 @@ function* trackLocation() {
 }
 
 export default function sagas() {
-  return [watchTrackEvent, watchIdentifyEvent, trackLocation]
+  return [initProviders, watchTrackEvent, watchIdentifyEvent, trackLocation]
 }
