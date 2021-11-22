@@ -12,6 +12,8 @@ import {
   ButtonSize,
   ButtonType,
   IconKebabHorizontal,
+  IconPencil,
+  IconShare,
   Modal,
   PopupMenu,
   PopupMenuItem,
@@ -394,6 +396,11 @@ const CollectiblesPage: React.FC<{
     setEmbedCollectibleHash(null)
   }
 
+  const handleShareClick = useCallback(() => {
+    copyToClipboard(shareUrl)
+    toast(collectibleMessages.copied)
+  }, [shareUrl, toast])
+
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result
 
@@ -492,10 +499,7 @@ const CollectiblesPage: React.FC<{
   const overflowMenuItems: PopupMenuItem[] = [
     {
       text: 'Share',
-      onClick: () => {
-        copyToClipboard(embedUrl)
-        toast(collectibleMessages.copied)
-      }
+      onClick: handleShareClick
     },
     {
       text: 'Embed',
@@ -529,7 +533,32 @@ const CollectiblesPage: React.FC<{
             </div>
           </div>
 
-          {!isMobile && (
+          {isMobile ? (
+            <div className={styles.mobileButtonContainer}>
+              {isUserOnTheirProfile && (
+                <Button
+                  className={styles.detailsButton}
+                  textClassName={styles.detailsButtonText}
+                  iconClassName={styles.detailsButtonIcon}
+                  onClick={handleEditClick}
+                  text='Edit'
+                  type={ButtonType.COMMON_ALT}
+                  size={ButtonSize.SMALL}
+                  leftIcon={<IconPencil />}
+                />
+              )}
+              <Button
+                className={styles.detailsButton}
+                textClassName={styles.detailsButtonText}
+                iconClassName={styles.detailsButtonIcon}
+                onClick={handleShareClick}
+                text='Share'
+                type={ButtonType.COMMON_ALT}
+                size={ButtonSize.SMALL}
+                leftIcon={<IconShare />}
+              />
+            </div>
+          ) : (
             <PopupMenu
               items={overflowMenuItems}
               position={PopupPosition.BOTTOM_CENTER}

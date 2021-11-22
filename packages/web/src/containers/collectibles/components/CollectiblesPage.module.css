@@ -319,6 +319,11 @@
   fill: var(--neutral-light-4);
 }
 
+.detailsButton.mobileDetailsButton {
+  width: 100%;
+  height: var(--unit-9);
+}
+
 
 .confirmModalContainer {
   padding: 0 var(--unit-6);
@@ -766,6 +771,16 @@
 
 .mobileContent {
   padding: 0 12px;
+}
+
+.mobileButtonContainer {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.mobileButtonContainer .detailsButton {
+  flex: 1 1 0;
 }
 
 @keyframes fadeInVisible {
