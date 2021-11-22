@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 
 import {
   Button,
@@ -27,13 +33,13 @@ import { setCollectible } from 'common/store/ui/collectible-details/slice'
 import { formatDateWithTimezoneOffset } from 'common/utils/timeUtil'
 import Drawer from 'components/drawer/Drawer'
 import Toast from 'components/toast/Toast'
+import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { MIN_COLLECTIBLES_TIER } from 'containers/profile-page/ProfilePageProvider'
 import { useFlag } from 'containers/remote-config/hooks'
 import { useSelectTierInfo } from 'containers/user-badges/hooks'
 import { badgeTiers } from 'containers/user-badges/utils'
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useScript } from 'hooks/useScript'
 import { FeatureFlags } from 'services/remote-config'
 import { copyToClipboard } from 'utils/clipboardUtil'
@@ -169,6 +175,7 @@ const CollectibleDetailsModal = ({
 }) => {
   const match = useRouteMatch()
   const dispatch = useDispatch()
+  const { toast } = useContext(ToastContext)
   const [isModalOpen, setIsModalOpen] = useModalState('CollectibleDetails')
   const [isMuted, setIsMuted] = useState<boolean>(true)
   const collectible = useSelector(getCollectible)
@@ -202,6 +209,11 @@ const CollectibleDetailsModal = ({
   const toggleMute = useCallback(() => {
     setIsMuted(!isMuted)
   }, [isMuted, setIsMuted])
+
+  const handleMobileShareClick = useCallback(() => {
+    copyToClipboard(shareUrl)
+    toast(collectibleMessages.copied)
+  }, [shareUrl, toast])
 
   if (!collectible) return <></>
 
@@ -478,6 +490,17 @@ const CollectibleDetailsModal = ({
                 {collectibleMessages.linkToCollectible}
               </a>
             )}
+
+            <Button
+              className={cn(styles.detailsButton, styles.mobileDetailsButton)}
+              textClassName={styles.detailsButtonText}
+              iconClassName={styles.detailsButtonIcon}
+              onClick={handleMobileShareClick}
+              text='Share'
+              type={ButtonType.COMMON_ALT}
+              size={ButtonSize.SMALL}
+              leftIcon={<IconShare />}
+            />
           </div>
         </div>
       </Drawer>
