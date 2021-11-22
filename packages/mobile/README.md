@@ -140,6 +140,7 @@ On Android, you can use the adb Android Studio tool or
 # Show device logs
 adb logcat '*:V'
 ```
+- Sometimes the app will crash due a configuration error or something outside of the realm of JS and you won't get any helpful information from React Native. In those cases, it's time to break open XCode and run from there to pinpoint the issue.
 
 ## Helpful
 
@@ -150,3 +151,5 @@ adb logcat '*:V'
 npm install -g serve --user
 serve -s web-app/Web.bundle/build -p 9000
 ```
+
+- If your app is crashing after running for a second, or crashing on startup with no error message, it's probably an environment variable problem, and you should check to make sure you have them all. Debug using XCode.
