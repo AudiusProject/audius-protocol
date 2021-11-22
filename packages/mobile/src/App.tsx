@@ -18,6 +18,7 @@ import OAuth from 'app/components/oauth/OAuth'
 import OverflowMenuDrawer from 'app/components/overflow-menu-drawer'
 import Search from 'app/components/search/Search'
 import SignOnNav from 'app/components/signon/NavigationStack'
+import TransferAudioMobileDrawer from 'app/components/transfer-audio-mobile-drawer'
 import WebApp from 'app/components/web/WebApp'
 import { WebRefContextProvider } from 'app/components/web/WebRef'
 import useConnectivity from 'app/components/web/useConnectivity'
@@ -44,6 +45,7 @@ const Drawers = () => {
       <EnablePushNotificationsDrawer />
       <CollectibleDetailsDrawer />
       <OverflowMenuDrawer />
+      <TransferAudioMobileDrawer />
     </>
   )
 }
