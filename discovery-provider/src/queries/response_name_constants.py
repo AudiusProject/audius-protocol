@@ -76,6 +76,7 @@ notification_type_create = "Create"
 notification_type_remix_create = "RemixCreate"
 notification_type_remix_cosign = "RemixCosign"
 notification_type_playlist_update = "PlaylistUpdate"
+notification_type_tier_change = "TierChange"
 
 notification_blocknumber = "blocknumber"
 notification_initiator = "initiator"
@@ -97,6 +98,8 @@ notification_favorite_counts = "favorite_counts"
 
 notification_playlist_update_timestamp = "playlist_update_timestamp"
 notification_playlist_update_users = "playlist_update_users"
+
+notification_tier = "tier"
 
 # solana notification metadata
 solana_notification_type = "type"
