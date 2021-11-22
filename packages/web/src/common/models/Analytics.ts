@@ -7,6 +7,7 @@ import { WalletAddress } from 'common/models/Wallet'
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
 export enum Name {
+  SESSION_START = 'Session Start',
   // Account creation
   // When the user opens the create account page
   CREATE_ACCOUNT_OPEN = 'Create Account: Open',
