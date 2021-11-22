@@ -27,7 +27,7 @@ const RewardsModals = () => {
           <HCaptchaModal />
         </Suspense>
       )}
-      {isMobile() && <TransferAudioMobileDrawer />}
+      {!IS_NATIVE_MOBILE && isMobile() && <TransferAudioMobileDrawer />}
     </>
   )
 }
