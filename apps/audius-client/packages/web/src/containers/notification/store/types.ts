@@ -1,9 +1,9 @@
+import { ChallengeRewardID } from 'common/models/AudioRewards'
 import { Collection } from 'common/models/Collection'
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
-import { ChallengeRewardID } from 'containers/audio-rewards-page/types'
 import { BadgeTier } from 'containers/user-badges/utils'
 
 import {

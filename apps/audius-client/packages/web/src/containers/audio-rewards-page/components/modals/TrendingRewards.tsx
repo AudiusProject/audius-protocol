@@ -6,12 +6,12 @@ import { useDispatch } from 'react-redux'
 import { TwitterTweetEmbed } from 'react-twitter-embed'
 
 import { useModalState } from 'common/hooks/useModalState'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { getTrendingRewardsModalType } from 'common/store/pages/audio-rewards/selectors'
 import {
-  getTrendingRewardsModalType,
   TrendingRewardsModalType,
   setTrendingRewardsModalType
-} from 'containers/audio-rewards-page/store/slice'
+} from 'common/store/pages/audio-rewards/slice'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useRemoteVar } from 'containers/remote-config/hooks'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
