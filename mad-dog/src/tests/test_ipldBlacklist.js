@@ -12,16 +12,19 @@ const {
   updatePlaylistCoverPhoto,
   getPlaylists,
   getUser,
-  Utils
+  Utils,
+  RandomUtils
 } = ServiceCommands
 const path = require('path')
 const fs = require('fs-extra')
 const {
-  addAndUpgradeUsers,
+  addAndUpgradeUsers
+} = require('../helpers.js')
+const {
   getRandomTrackMetadata,
   getRandomTrackFilePath,
   genRandomString
-} = require('../helpers.js')
+} = RandomUtils
 const ipfs = require('../ipfsClient')
 const { logger } = require('../logger.js')
 

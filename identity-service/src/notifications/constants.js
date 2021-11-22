@@ -45,6 +45,7 @@ const notificationJobType = 'notificationProcessJob'
 const solanaNotificationJobType = 'solanaNotificationProcessJob'
 const announcementJobType = 'pushAnnouncementsJob'
 const unreadEmailJobType = 'unreadEmailJob'
+const downloadEmailJobType = 'downloadEmailJobType'
 
 const deviceType = Object.freeze({
   Mobile: 'mobile',
@@ -60,5 +61,6 @@ module.exports = {
   solanaNotificationJobType,
   announcementJobType,
   unreadEmailJobType,
+  downloadEmailJobType,
   deviceType
 }
