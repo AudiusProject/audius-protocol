@@ -10,7 +10,10 @@ import {
   UPLOAD_PAGE
 } from 'utils/route'
 
-import { ChallengeRewardID, TrendingRewardID } from './types'
+import {
+  ChallengeRewardID,
+  TrendingRewardID
+} from '../../common/models/AudioRewards'
 
 type LinkButtonType =
   | 'trackUpload'

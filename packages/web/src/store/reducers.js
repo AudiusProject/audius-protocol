@@ -4,7 +4,6 @@ import { combineReducers } from 'redux'
 import { reducers as clientStoreReducers } from 'common/store'
 import dashboard from 'containers/artist-dashboard-page/store/reducer'
 import artistRecommendations from 'containers/artist-recommendations/store/slice'
-import rewardsPage from 'containers/audio-rewards-page/store/slice'
 import changePassword from 'containers/change-password/store/slice'
 import collection from 'containers/collection-page/store/reducer'
 import deleted from 'containers/deleted-page/store/slice'
@@ -142,7 +141,6 @@ const createRootReducer = routeHistory =>
         nowPlaying,
         remixes,
         reposts,
-        rewardsPage,
         settings,
         smartCollection,
         tokenDashboard,

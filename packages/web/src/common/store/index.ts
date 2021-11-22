@@ -15,6 +15,7 @@ import { TracksCacheState } from 'common/store/cache/tracks/types'
 import usersReducer from 'common/store/cache/users/reducer'
 import usersSagas from 'common/store/cache/users/sagas'
 import { UsersCacheState } from 'common/store/cache/users/types'
+import audioRewardsSlice from 'common/store/pages/audio-rewards/slice'
 import addToPlaylistReducer, {
   AddToPlaylistState
 } from 'common/store/ui/add-to-playlist/reducer'
@@ -61,6 +62,11 @@ export const reducers = {
     modals: modalsReducer,
     nowPlaying: nowPlayingReducer,
     shareSoundToTikTokModal: shareSoundToTikTokModalReducer
+  }),
+
+  // Pages
+  pages: combineReducers({
+    audioRewards: audioRewardsSlice.reducer
   })
 }
 
@@ -78,6 +84,7 @@ export const sagas = {
   // store/social/tracks/sagas.ts
   // store/social/users/sagas.ts
   // store/social/collections/sagas.ts
+  // containers/audio-rewards-page/store/sagas.ts
 }
 
 export type CommonState = {
@@ -98,5 +105,9 @@ export type CommonState = {
     modals: ModalsState
     nowPlaying: NowPlayingState
     shareSoundToTikTokModal: ShareSoundToTikTokModalState
+  }
+
+  pages: {
+    audioRewards: ReturnType<typeof audioRewardsSlice.reducer>
   }
 }
