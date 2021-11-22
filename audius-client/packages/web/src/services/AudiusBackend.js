@@ -23,7 +23,7 @@ import {
   FeatureFlags
 } from 'services/remote-config'
 import { IS_MOBILE_USER_KEY } from 'store/account/mobileSagas'
-import { track } from 'store/analytics/providers/segment'
+import { track } from 'store/analytics/providers/amplitude'
 import { isElectron } from 'utils/clientUtil'
 import { getCreatorNodeIPFSGateways } from 'utils/gatewayUtil'
 import { Timer } from 'utils/performance'

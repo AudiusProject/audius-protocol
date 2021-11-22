@@ -1,6 +1,6 @@
 import { Name } from 'common/models/Analytics'
 import { MonitorPayload, ServiceMonitorType } from 'common/models/Services'
-import { track } from 'store/analytics/providers/segment'
+import { track } from 'store/analytics/providers'
 
 import { getRemoteVar, IntKeys } from './remote-config'
 

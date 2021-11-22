@@ -93,7 +93,12 @@ export enum BooleanKeys {
   /**
    * Boolean to skip the rollover nodes sanity check.
    */
-  SKIP_ROLLOVER_NODES_SANITY_CHECK = 'SKIP_ROLLOVER_NODES_SANITY_CHECK'
+  SKIP_ROLLOVER_NODES_SANITY_CHECK = 'SKIP_ROLLOVER_NODES_SANITY_CHECK',
+
+  /**
+   * Boolean to use amplitude as the metrics tracking.
+   */
+  USE_AMPLITUDE = 'USE_AMPLITUDE'
 }
 
 export enum DoubleKeys {
