@@ -7,7 +7,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import {
   HCaptchaStatus,
   setHCaptchaStatus
-} from 'containers/audio-rewards-page/store/slice'
+} from 'common/store/pages/audio-rewards/slice'
 import AudiusBackend from 'services/AudiusBackend'
 
 import styles from './HCaptchaModal.module.css'

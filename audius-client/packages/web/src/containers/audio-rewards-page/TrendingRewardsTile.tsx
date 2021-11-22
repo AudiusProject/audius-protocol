@@ -7,12 +7,13 @@ import { useRemoteVar } from 'containers/remote-config/hooks'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { StringKeys } from 'services/remote-config'
 
+import { TrendingRewardID } from '../../common/models/AudioRewards'
+import { setTrendingRewardsModalType } from '../../common/store/pages/audio-rewards/slice'
+
 import styles from './RewardsTile.module.css'
 import ButtonWithArrow from './components/ButtonWithArrow'
 import { Tile } from './components/ExplainerTile'
 import { trendingRewardsConfig } from './config'
-import { setTrendingRewardsModalType } from './store/slice'
-import { TrendingRewardID } from './types'
 
 type RewardPanelProps = {
   title: string

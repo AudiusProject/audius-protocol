@@ -5,24 +5,27 @@ import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
+import {
+  getUserChallenges,
+  getUserChallengesLoading
+} from 'common/store/pages/audio-rewards/selectors'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useRemoteVar } from 'containers/remote-config/hooks'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { StringKeys } from 'services/remote-config'
 import fillString from 'utils/fillString'
 
+import { ChallengeRewardID } from '../../common/models/AudioRewards'
+import {
+  fetchUserChallenges,
+  ChallengeRewardsModalType,
+  setChallengeRewardsModalType
+} from '../../common/store/pages/audio-rewards/slice'
+
 import styles from './RewardsTile.module.css'
 import ButtonWithArrow from './components/ButtonWithArrow'
 import { Tile } from './components/ExplainerTile'
 import { challengeRewardsConfig } from './config'
-import {
-  fetchUserChallenges,
-  ChallengeRewardsModalType,
-  setChallengeRewardsModalType,
-  getUserChallenges,
-  getUserChallengesLoading
-} from './store/slice'
-import { ChallengeRewardID } from './types'
 
 const messages = {
   title: '$AUDIO REWARDS',

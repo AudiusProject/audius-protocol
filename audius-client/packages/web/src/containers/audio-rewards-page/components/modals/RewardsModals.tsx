@@ -9,6 +9,8 @@ import TransferAudioMobileDrawer from './TransferAudioMobileDrawer'
 import TrendingRewardsModal from './TrendingRewards'
 import VerifiedUpload from './VerifiedUpload'
 
+const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+
 const HCaptchaModal = lazyWithPreload(() => import('./HCaptchaModal'))
 
 const RewardsModals = () => {
@@ -20,9 +22,11 @@ const RewardsModals = () => {
       <ChallengeRewardsModal />
       <VerifiedUpload />
       <TopAPIModal />
-      <Suspense fallback={null}>
-        <HCaptchaModal />
-      </Suspense>
+      {!IS_NATIVE_MOBILE && (
+        <Suspense fallback={null}>
+          <HCaptchaModal />
+        </Suspense>
+      )}
       {isMobile() && <TransferAudioMobileDrawer />}
     </>
   )

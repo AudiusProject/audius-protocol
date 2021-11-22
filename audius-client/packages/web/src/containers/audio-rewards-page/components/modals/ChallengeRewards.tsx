@@ -10,24 +10,26 @@ import { ReactComponent as IconValidationCheck } from 'assets/img/iconValidation
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
 import { getAccountUser, getUserHandle } from 'common/store/account/selectors'
+import {
+  getChallengeRewardsModalType,
+  getClaimStatus,
+  getCognitoFlowStatus,
+  getUserChallenges
+} from 'common/store/pages/audio-rewards/selectors'
+import {
+  ChallengeRewardsModalType,
+  setChallengeRewardsModalType,
+  ClaimStatus,
+  resetClaimStatus,
+  resetHCaptchaStatus,
+  CognitoFlowStatus
+} from 'common/store/pages/audio-rewards/slice'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
 import { challengeRewardsConfig } from 'containers/audio-rewards-page/config'
-import {
-  ChallengeRewardsModalType,
-  getChallengeRewardsModalType,
-  getUserChallenges,
-  setChallengeRewardsModalType,
-  ClaimStatus,
-  getClaimStatus,
-  resetClaimStatus,
-  resetHCaptchaStatus,
-  CognitoFlowStatus,
-  getCognitoFlowStatus
-} from 'containers/audio-rewards-page/store/slice'
 import { getHasFavoritedItem } from 'containers/profile-progress/store/selectors'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'

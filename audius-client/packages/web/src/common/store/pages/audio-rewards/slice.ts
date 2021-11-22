@@ -1,8 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { AppState } from 'store/types'
-
-import { UserChallenge, ChallengeRewardID } from '../types'
+import { UserChallenge, ChallengeRewardID } from '../../../models/AudioRewards'
 
 export type TrendingRewardsModalType = 'tracks' | 'playlists' | 'underground'
 export type ChallengeRewardsModalType = ChallengeRewardID
@@ -107,6 +105,10 @@ const slice = createSlice({
     resetHCaptchaStatus: state => {
       state.hCaptchaStatus = HCaptchaStatus.NONE
     },
+    updateHCaptchaScore: (
+      state,
+      action: PayloadAction<{ token: string }>
+    ) => {},
     setCognitoFlowStatus: (
       state,
       action: PayloadAction<{ status: CognitoFlowStatus }>
@@ -127,33 +129,8 @@ export const {
   resetClaimStatus,
   setHCaptchaStatus,
   resetHCaptchaStatus,
+  updateHCaptchaScore,
   setCognitoFlowStatus
 } = slice.actions
 
-export const getTrendingRewardsModalType = (state: AppState) =>
-  state.application.pages.rewardsPage.trendingRewardsModalType
-
-export const getChallengeRewardsModalType = (state: AppState) =>
-  state.application.pages.rewardsPage.challengeRewardsModalType
-
-export const getUserChallenges = (state: AppState) =>
-  state.application.pages.rewardsPage.userChallenges
-
-export const getUserChallenge = (
-  state: AppState,
-  challengeId: ChallengeRewardID
-) => state.application.pages.rewardsPage.userChallenges[challengeId]
-
-export const getUserChallengesLoading = (state: AppState) =>
-  state.application.pages.rewardsPage.loading
-
-export const getClaimStatus = (state: AppState) =>
-  state.application.pages.rewardsPage.claimStatus
-
-export const getHCaptchaStatus = (state: AppState) =>
-  state.application.pages.rewardsPage.hCaptchaStatus
-
-export const getCognitoFlowStatus = (state: AppState) =>
-  state.application.pages.rewardsPage.cognitoFlowStatus
-
-export default slice.reducer
+export default slice
