@@ -11,8 +11,7 @@
 }
 
 .title {
-  color: #7E1BCC;
-  font-family: "Avenir Next LT Pro";
+  color: var(--secondary);
   font-size: 28px;
   font-weight: bold;
   text-align: center;
@@ -22,8 +21,7 @@
 }
 
 .subtitle {
-  color: #9849D6;
-  font-family: "Avenir Next LT Pro";
+  color: var(--secondary-light-2);
   font-size: 16px;
   font-weight: bold;
   line-height: 25px;
@@ -38,5 +36,5 @@
 }
 
 .animationContainer svg path {
-  fill: #7E1BCC;
+  fill: var(--secondary);
 }
