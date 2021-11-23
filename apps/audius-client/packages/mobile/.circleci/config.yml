@@ -46,7 +46,7 @@ jobs:
             - node_modules
             - .env.stage
             - .env.prod
-      
+
   pull-web-app:
     working_directory: ~/react-native-wrapper
     docker:
@@ -90,7 +90,7 @@ jobs:
   upload-staging-ios:
     working_directory: ~/react-native-wrapper
     macos: # Run on osx so app can be created and signed.
-      xcode: "12.2.0"
+      xcode: '12.2.0'
     environment:
       FL_OUTPUT_DIR: output
       FASTLANE_LANE: bounce
@@ -100,7 +100,7 @@ jobs:
       - attach_workspace:
           at: ./
       - run:
-          name: Move Staging build 
+          name: Move Staging build
           command: mv web-app-staging web-app
       - run:
           name: Set Ruby Version
@@ -137,7 +137,7 @@ jobs:
   upload-ios:
     working_directory: ~/react-native-wrapper
     macos: # Run on osx so app can be created and signed.
-      xcode: "12.2.0"
+      xcode: '12.2.0'
     environment:
       FL_OUTPUT_DIR: output
       FASTLANE_LANE: beta
@@ -187,7 +187,7 @@ jobs:
       - attach_workspace:
           at: ./
       - run:
-          name: Move Staging build 
+          name: Move Staging build
           command: mv web-app-staging web-app
       - run:
           name: migrate support libraried for androidX packages
@@ -196,7 +196,7 @@ jobs:
       - run:
           name: generating the staging release apk & bundle
           command: |
-            echo "yes" | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-28" && cd android && ./gradlew bundleBounceRelease
+            echo "yes" | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-30" && cd android && ./gradlew bundleBounceRelease
       - run:
           name: install-awscli
           command: sudo pip install awscli
@@ -220,8 +220,8 @@ jobs:
           name: Upload to Play Store
           command: cd android && bundle exec fastlane bounce
 
-
   upload-android:
+    resource_class: large
     working_directory: ~/react-native-wrapper
     docker:
       - image: circleci/android:api-27-node8-alpha
@@ -236,7 +236,7 @@ jobs:
       - run:
           name: generating the release apk & bundle
           command: |
-            echo "yes" | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-28" && cd android && ./gradlew bundleRelease
+            echo "yes" | $ANDROID_HOME/tools/bin/sdkmanager "platforms;android-30" && cd android && ./gradlew bundleRelease
       - run:
           name: install-awscli
           command: sudo pip install awscli
