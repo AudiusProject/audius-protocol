@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   },
 
   subtitle: {
-    fontFamily: 'AvenirNextLTPro-Light',
+    fontFamily: 'AvenirNextLTPro-Regular',
     textAlign: 'center',
     fontSize: 24,
     maxWidth: 300,
