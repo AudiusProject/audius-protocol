@@ -248,8 +248,11 @@ class IdentityService {
   }
 
   async relay (contractRegistryKey, contractAddress, senderAddress, encodedABI, gasLimit) {
+    // Only probabilistically capture 1 out 2 relay captchas
+    const shouldCaptcha = Boolean(Math.round(Math.random()))
+
     let token
-    if (this.captcha) {
+    if (this.captcha && shouldCaptcha) {
       try {
         token = await this.captcha.generate('identity/relay')
       } catch (e) {
