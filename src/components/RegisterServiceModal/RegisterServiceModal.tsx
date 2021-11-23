@@ -64,7 +64,7 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
   //   where
   //    ACTIVE_STAKE = amount that we have staked in audius
   //    USED_STAKE = # of services we have * minstake for each service
-  let availableStake = new BN('0')
+  let availableStake: BN | undefined = undefined
   if (
     user &&
     'serviceProvider' in user &&
@@ -99,7 +99,7 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
   // the "unused/available" stake we have in the system already.
   const calculatedMinStake = useMemo(() => {
     return selectedServiceInfo
-      ? BN.max(selectedServiceInfo.minStake.sub(availableStake), new BN('0'))
+      ? BN.max(selectedServiceInfo.minStake.sub(availableStake ?? new BN('0')), new BN('0'))
       : new BN('0')
   }, [selectedServiceInfo, availableStake])
 
