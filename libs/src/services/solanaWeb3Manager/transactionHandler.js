@@ -123,7 +123,7 @@ class TransactionHandler {
   _parseSolanaErrorCode (errorMessage) {
     const matcher = /(?:custom program error: 0x)(.*)$/
     const res = errorMessage.match(matcher)
-    if (!res || !res.length == 2) return null
+    if (!res || !res.length === 2) return null
     return parseInt(res[1], 16) || null
   }
 }
