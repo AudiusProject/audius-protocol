@@ -5,8 +5,6 @@ const axios = require('axios')
 const retry = require('async-retry')
 const assert = require('assert')
 const ServiceCommands = require('@audius/service-commands')
-const { getContentNodeEndpoints, getRepostersForTrack, createPlaylist, getPlaylists } = require('@audius/service-commands')
-
 const {
   OPERATION_TYPE,
   TrackUploadRequest,
@@ -22,16 +20,17 @@ const { logger } = require('../logger.js')
 const MadDog = require('../madDog.js')
 const { EmitterBasedTest, Event } = require('../emitter.js')
 const {
-  getRandomTrackMetadata,
-  getRandomTrackFilePath,
   addUsers,
-  r6,
   ensureReplicaSetSyncIsConsistent,
   upgradeUsersToCreators,
-  delay,
-  genRandomString
+  delay
 } = require('../helpers.js')
 const {
+  getContentNodeEndpoints,
+  getRepostersForTrack,
+  createPlaylist,
+  getPlaylists,
+  RandomUtils,
   uploadTrack,
   repostTrack,
   getTrackMetadata,
@@ -44,6 +43,12 @@ const {
   getURSMContentNodes,
   addPlaylistTrack
 } = ServiceCommands
+const {
+  getRandomTrackMetadata,
+  getRandomTrackFilePath,
+  r6,
+  genRandomString
+} = RandomUtils
 
 const DEFAULT_TICK_INTERVAL_SECONDS = 5
 const DEFAULT_TEST_DURATION_SECONDS = 100

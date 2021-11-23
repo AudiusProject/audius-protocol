@@ -40,7 +40,13 @@ class App {
 
     // Async job configuration
     this.notificationProcessor = new NotificationProcessor({
-      errorHandler: Sentry.captureException
+      errorHandler: (error) => {
+        try {
+          return Sentry.captureException(error)
+        } catch (sentryError) {
+          logger.error(`Received error from Sentry ${sentryError}`)
+        }
+      }
     })
 
     // Note: The order of the following functions is IMPORTANT, as it sets the functions

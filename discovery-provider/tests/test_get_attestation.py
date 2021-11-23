@@ -5,8 +5,11 @@ from web3 import Web3
 from eth_keys import keys
 from eth_utils.conversions import to_bytes
 from hexbytes import HexBytes
+from solana.publickey import PublicKey
 
 from src.queries.get_attestation import (
+    ADD_SENDER_MESSAGE_PREFIX,
+    REWARDS_MANAGER_ACCOUNT,
     Attestation,
     AttestationError,
     get_attestation,
@@ -136,10 +139,40 @@ def test_get_create_sender_attestation(app, patch_get_all_other_nodes):
     new_sender_address = "0x94e140D27F3d5EE9EcA0109A71CcBa0109964DCa"
     owner_wallet, sender_attestation = get_create_sender_attestation(new_sender_address)
 
-    assert owner_wallet == "0x1D9c77BcfBfa66D37390BF2335f0140979a6122B"
-    assert (
-        sender_attestation
-        == "0xdea0857f45136b5b986b45303d00051bb4c96313"
-        + "3c0e75945534a3bca1e6702d10106357a1d72e68c90f"
-        + "7d46f69f4023518ccc211a7994b41d359c9ea5d65f9700"
+    # confirm the attestation is what we think it should be
+    config_owner_wallet = shared_config["delegate"]["owner_wallet"]
+    config_private_key = shared_config["delegate"]["private_key"]
+
+    # Ensure we returned the correct owner wallet
+    assert owner_wallet == config_owner_wallet
+
+    # Ensure we can derive the owner wallet from the signed stringified attestation
+    items = [
+        to_bytes(text=ADD_SENDER_MESSAGE_PREFIX),
+        bytes(PublicKey(REWARDS_MANAGER_ACCOUNT)),
+        to_bytes(hexstr=new_sender_address),
+    ]
+    attestation_bytes = to_bytes(text="").join(items)
+    to_sign_hash = Web3.keccak(attestation_bytes)
+    private_key = keys.PrivateKey(HexBytes(config_private_key))
+    public_key = keys.PublicKey.from_private(private_key)
+    signture_bytes = to_bytes(hexstr=sender_attestation)
+    msg_signature = keys.Signature(signature_bytes=signture_bytes, vrs=None)
+
+    recovered_pubkey = public_key.recover_from_msg_hash(
+        message_hash=to_sign_hash, signature=msg_signature
     )
+
+    assert (
+        Web3.toChecksumAddress(recovered_pubkey.to_address())
+        == config_owner_wallet
+    )
+
+
+def test_get_create_sender_attestation_not_registered(app, patch_get_all_other_nodes):
+    new_sender_address = "0x04e140D27F3d5EE9EcA0109A71CcBa0109964DCa"
+    with pytest.raises(
+        Exception,
+        match=r"Expected 0x04e140D27F3d5EE9EcA0109A71CcBa0109964DCa to be registered on chain"
+    ):
+        get_create_sender_attestation(new_sender_address)

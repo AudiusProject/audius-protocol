@@ -53,7 +53,7 @@ nvm install $NODE_VERSION
 # profile setup
 echo "nvm use $NODE_VERSION" >> ~/.profile
 echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.profile
-echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H \"Metadata-Flavor: Google\" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> ~/.profile
+echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> ~/.profile
 source ~/.profile
 source ~/.bashrc
 
