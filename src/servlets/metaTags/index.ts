@@ -199,14 +199,14 @@ const getCollectibleContext = async (
     const res = await fetch(`${dp}/v1/users/associated_wallets?id=${encodedUserId}`)
     const { data: walletData } = await res.json()
 
-    // Get collectibles for user wallets
-    const resp = await nftClient.getCollectibles({
-      ethWallets: walletData.wallets,
-      solWallets: walletData.sol_wallets
-    })
-
     let foundCol: Collectible
     if (collectibleId) {
+      // Get collectibles for user wallets
+      const resp = await nftClient.getCollectibles({
+        ethWallets: walletData.wallets,
+        solWallets: walletData.sol_wallets
+      })
+
       const ethValues: Collectible[][] = Object.values(resp.ethCollectibles)
       const solValues: Collectible[][] = Object.values(resp.solCollectibles)
       const collectibles = [
