@@ -556,7 +556,8 @@ class AudiusBackend {
         claimableTokenProgramAddress: CLAIMABLE_TOKEN_PROGRAM_ADDRESS,
         rewardsManagerProgramId: REWARDS_MANAGER_PROGRAM_ID,
         rewardsManagerProgramPDA: REWARDS_MANAGER_PROGRAM_PDA,
-        rewardsManagerTokenPDA: REWARDS_MANAGER_TOKEN_PDA
+        rewardsManagerTokenPDA: REWARDS_MANAGER_TOKEN_PDA,
+        useRelay: true
       })
     }
   }
