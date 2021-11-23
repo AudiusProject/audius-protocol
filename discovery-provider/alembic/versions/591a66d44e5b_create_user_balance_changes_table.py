@@ -1,7 +1,7 @@
 """create_user_balance_changes_table
 
 Revision ID: 591a66d44e5b
-Revises: e2a8aea2e2e1
+Revises: edccccc274a7
 Create Date: 2021-10-01 16:24:24.444296
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '591a66d44e5b'
-down_revision = 'e2a8aea2e2e1'
+down_revision = 'edccccc274a7'
 branch_labels = None
 depends_on = None
 
