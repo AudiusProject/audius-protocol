@@ -422,6 +422,14 @@ impl Processor {
 
         let verified_messages = VerifiedMessages::unpack(&verified_messages_info.data.borrow())?;
 
+        // Assert the rewards_token_recipient_info is indeed the UserBank
+        // derived from the transfer_data.eth_recipient
+        validate_token_account_derivation(
+            &reward_token_source_info,
+            &reward_token_recipient_info,
+            transfer_data.eth_recipient,
+        )?;
+
         // Ensure the transfer account doesn't yet exist
         if transfer_account_info.lamports() != 0 {
             return Err(AudiusProgramError::AlreadySent.into());

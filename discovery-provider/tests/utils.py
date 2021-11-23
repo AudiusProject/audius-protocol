@@ -2,6 +2,7 @@ from datetime import datetime
 from src import models
 from src.utils import helpers
 from src.utils.db_session import get_db
+from src.tasks.index_aggregate_user import UPDATE_AGGREGATE_USER_QUERY
 
 
 def query_creator_by_name(app, creator_name=None):
@@ -74,6 +75,7 @@ def populate_mock_db(db, entities, block_offset=0):
         stems = entities.get("stems", [])
         challenges = entities.get("challenges", [])
         user_challenges = entities.get("user_challenges", [])
+        plays = entities.get("plays", [])
 
         num_blocks = max(len(tracks), len(users), len(follows), len(saves))
         for i in range(block_offset, block_offset + num_blocks):
@@ -95,6 +97,7 @@ def populate_mock_db(db, entities, block_offset=0):
                 blockhash=hex(i),
                 blocknumber=i,
                 track_id=track_meta.get("track_id", i),
+                title=track_meta.get("title", f"track_{i}"),
                 is_current=track_meta.get("is_current", True),
                 is_delete=track_meta.get("is_delete", False),
                 owner_id=track_meta.get("owner_id", 1),
@@ -154,14 +157,6 @@ def populate_mock_db(db, entities, block_offset=0):
             )
             session.add(user)
 
-        for i, play_meta in enumerate(entities.get("plays", [])):
-            play = models.Play(
-                id=play_meta.get("id", i),
-                play_item_id=play_meta.get("item_id"),
-                created_at=play_meta.get("created_at", datetime.now()),
-            )
-            session.add(play)
-
         for i, follow_meta in enumerate(follows):
             follow = models.Follow(
                 blockhash=hex(i),
@@ -197,6 +192,20 @@ def populate_mock_db(db, entities, block_offset=0):
                 created_at=save_meta.get("created_at", datetime.now()),
             )
             session.add(save)
+
+        for i, play_meta in enumerate(plays):
+            play = models.Play(
+                id=play_meta.get("id", i),
+                user_id=play_meta.get("user_id", i + 1),
+                source=play_meta.get("source", None),
+                play_item_id=play_meta.get("item_id", i+1),
+                slot=play_meta.get("slot", None),
+                signature=play_meta.get("signature", None),
+                created_at=play_meta.get("created_at", datetime.now()),
+                updated_at=play_meta.get("updated_at", datetime.now()),
+            )
+            session.add(play)
+
         for i, route_meta in enumerate(track_routes):
             route = models.TrackRoute(
                 slug=route_meta.get("slug", ""),
@@ -246,4 +255,9 @@ def populate_mock_db(db, entities, block_offset=0):
                 current_step_count=user_challenge_meta.get("current_step_count", None),
             )
             session.add(user_challenge)
+
         session.flush()
+
+        session.execute(
+            UPDATE_AGGREGATE_USER_QUERY, {"most_recent_indexed_aggregate_block": 0}
+        )

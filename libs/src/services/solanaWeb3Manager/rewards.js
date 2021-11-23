@@ -10,6 +10,7 @@ const borsh = require('borsh')
 const { getBankAccountAddress } = require('./userBank')
 const BN = require('bn.js')
 const SolanaUtils = require('./utils')
+const { RewardsManagerError } = require('./errors')
 
 // Various prefixes used for rewards
 const SENDER_SEED_PREFIX = 'S_'
@@ -99,9 +100,8 @@ const validateAttestationsInstructionSchema = new Map([
  *   feePayer: PublicKey,
  *   attestationSignature: string,
  *   recipientEthAddress: string,
- *   tokenAmount: BN
- *   identityService: any
- *   connection: Connection
+ *   tokenAmount: BN,
+ *   transactionHandler: TransactionHandler,
  * }} {
  *   rewardManagerProgramId,
  *   rewardManagerAccount,
@@ -112,8 +112,7 @@ const validateAttestationsInstructionSchema = new Map([
  *   feePayer,
  *   recipientEthAddress,
  *   tokenAmount,
- *   identityService,
- *   connection
+ *   transactionHandler
  * }
  */
 async function submitAttestations ({
@@ -126,8 +125,7 @@ async function submitAttestations ({
   feePayer,
   recipientEthAddress,
   tokenAmount,
-  identityService,
-  connection
+  transactionHandler
 }) {
   // Construct combined transfer ID
   const transferId = SolanaUtils.constructTransferId(challengeId, specifier)
@@ -189,20 +187,7 @@ async function submitAttestations ({
   })
   instructions = [...instructions, oracleSecp, oracleTransfer]
 
-  // Prep transaction to be relayed and send it
-  const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
-  const { blockhash: recentBlockhash } = await connection.getRecentBlockhash()
-  const transactionData = {
-    recentBlockhash,
-    instructions: relayable
-  }
-
-  try {
-    const response = await identityService.solanaRelay(transactionData)
-    return response
-  } catch (e) {
-    console.error(e.message)
-  }
+  return transactionHandler.handleTransaction(instructions, RewardsManagerError)
 }
 
 /**
@@ -219,8 +204,8 @@ async function submitAttestations ({
  *   oracleEthAddress: string
  *   feePayer: PublicKey
  *   tokenAmount: BN
- *   identityService: any
- *   connection: Connection
+ *   tokenAmount: BN,
+ *   transactionHandler: TransactionHandler,
  * }} {
  *   rewardManagerProgramId,
  *   rewardManagerAccount,
@@ -232,8 +217,7 @@ async function submitAttestations ({
  *   oracleEthAddress,
  *   feePayer,
  *   tokenAmount,
- *   identityService,
- *   connection
+ *   transactionHandler
  * }
  */
 const evaluateAttestations = async ({
@@ -247,8 +231,7 @@ const evaluateAttestations = async ({
   oracleEthAddress,
   feePayer,
   tokenAmount,
-  identityService,
-  connection
+  transactionHandler
 }) => {
   // Get transfer ID
   const transferId = SolanaUtils.constructTransferId(challengeId, specifier)
@@ -276,6 +259,7 @@ const evaluateAttestations = async ({
     userBankProgramAccount,
     TOKEN_PROGRAM_ID
   )
+
   // Derive the AAO's Solana pubkey from it's eth address
   const derivedAAOAddress = await deriveSolanaSenderFromEthAddress(
     oracleEthAddress,
@@ -373,20 +357,7 @@ const evaluateAttestations = async ({
     data: serializedInstructionEnum
   })
 
-  // Prepare and send transaction
-  const relayable = SolanaUtils.prepareInstructionForRelay(transferInstruction)
-  const { blockhash: recentBlockhash } = await connection.getRecentBlockhash()
-  const transactionData = {
-    recentBlockhash,
-    instructions: relayable
-  }
-
-  try {
-    const response = await identityService.solanaRelay(transactionData)
-    return response
-  } catch (e) {
-    console.error(e.message)
-  }
+  return transactionHandler.handleTransaction([transferInstruction], RewardsManagerError)
 }
 
 // Helpers

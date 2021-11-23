@@ -28,6 +28,16 @@ def get_ip(request_obj):
     return ip.split(",")[0].strip()
 
 
+def get_openresty_public_key():
+    """Get public key for openresty if it is running"""
+    try:
+        resp = requests.get("http://localhost:5000/openresty_pubkey", timeout=1)
+        resp.raise_for_status()
+        return resp.text
+    except requests.exceptions.RequestException:
+        return None
+
+
 def redis_restore(redis, key):
     logger = logging.getLogger(__name__)
     filename = f"{key}_dump"
@@ -52,6 +62,25 @@ def redis_get_or_restore(redis, key):
     return value if value else redis_restore(redis, key)
 
 
+def redis_get_json_cached_key_or_restore(redis, key):
+    logger = logging.getLogger(__name__)
+    cached_value = redis.get(key)
+    if not cached_value:
+        logger.info(f"Redis Cache - miss {key}, restoring")
+        cached_value = redis_restore(redis, key)
+
+    if cached_value:
+        logger.info(f"Redis Cache - hit {key}")
+        try:
+            deserialized = json.loads(cached_value)
+            return deserialized
+        except Exception as e:
+            logger.warning(f"Unable to deserialize json cached response: {e}")
+            return None
+    logger.info(f"Redis Cache - miss {key}")
+    return None
+
+
 def redis_dump(redis, key):
     logger = logging.getLogger(__name__)
     try:
@@ -63,6 +92,11 @@ def redis_dump(redis, key):
     except Exception as e:
         logger.error(f"could not perform redis dump for key: {key}")
         logger.error(e)
+
+
+def redis_set_json_and_dump(redis, key, value):
+    serialized = json.dumps(value)
+    redis_set_and_dump(redis, key, serialized)
 
 
 def redis_set_and_dump(redis, key, value):
@@ -92,6 +126,7 @@ def bytes32_to_str(bytes32input):
 fqdn_regex = re.compile(
     r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
 )
+
 
 # Helper function to check if a given string is a valid FQDN
 def is_fqdn(endpoint_str):

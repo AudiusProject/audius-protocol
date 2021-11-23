@@ -1,22 +1,5 @@
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
-const rateLimit = require('express-rate-limit')
-const RedisStore = require('rate-limit-redis')
-const Redis = require('ioredis')
-const config = require('../config.js')
-
-const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
-const authKeyGenerator = (req) => `${req.query.username}`
-
-const authRateLimiter = rateLimit({
-  store: new RedisStore({
-    client: redisClient,
-    prefix: 'authRateLimiter:',
-    expiry: 60 * 60 * 24 // one day in seconds
-  }),
-  max: 40, // max requests per day
-  keyGenerator: authKeyGenerator
-})
 
 module.exports = function (app) {
   /**
@@ -30,7 +13,31 @@ module.exports = function (app) {
 
     if (body && body.iv && body.cipherText && body.lookupKey) {
       try {
-        await models.Authentication.create({ iv: body.iv, cipherText: body.cipherText, lookupKey: body.lookupKey })
+        const transaction = await models.sequelize.transaction()
+
+        // Check if an existing record exists but is soft deleted (since the Authentication model is 'paranoid'
+        // Setting the option paranoid to true searches both soft-deleted and non-deleted objects
+        // https://sequelize.org/master/manual/paranoid.html
+        // https://sequelize.org/master/class/lib/model.js~Model.html#static-method-findAll
+        const existingRecord = await models.Authentication.findOne({
+          where: { lookupKey: body.lookupKey },
+          paranoid: false
+        })
+        if (!existingRecord) {
+          await models.Authentication.create({
+            iv: body.iv,
+            cipherText: body.cipherText,
+            lookupKey: body.lookupKey
+          }, { transaction })
+        } else if (existingRecord.isSoftDeleted()) {
+          await existingRecord.restore({ transaction })
+        }
+
+        const oldLookupKey = body.oldLookupKey
+        if (oldLookupKey && oldLookupKey !== body.lookupKey) {
+          await models.Authentication.destroy({ where: { lookupKey: oldLookupKey } }, { transaction })
+        }
+        await transaction.commit()
         return successResponse()
       } catch (err) {
         req.logger.error('Error signing up a user', err)
@@ -39,21 +46,12 @@ module.exports = function (app) {
     } else return errorResponseBadRequest('Missing one of the required fields: iv, cipherText, lookupKey')
   }))
 
-  app.get('/authentication', authRateLimiter, handleResponse(async (req, res, next) => {
+  app.get('/authentication', handleResponse(async (req, res, next) => {
     let queryParams = req.query
 
     if (queryParams && queryParams.lookupKey) {
       const lookupKey = queryParams.lookupKey
       const existingUser = await models.Authentication.findOne({ where: { lookupKey } })
-
-      // If username (email) provided, log if not found for future reference.
-      if (queryParams.username) {
-        const email = queryParams.username.toLowerCase()
-        const userObj = await models.User.findOne({ where: { email } })
-        if (existingUser && !userObj) {
-          req.logger.warn(`No user found with email ${email} for auth record with lookupKey ${lookupKey}`)
-        }
-      }
 
       if (existingUser) {
         return successResponse(existingUser)

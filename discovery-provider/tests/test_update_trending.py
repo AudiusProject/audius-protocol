@@ -289,7 +289,6 @@ def test_update_trending_params(app):
     setup_trending(db)
 
     with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
         session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
         session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
@@ -338,7 +337,6 @@ def test_update_track_score_query(app):
     udpated_strategy = TrendingTracksStrategyaSPET()
 
     with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_user")
         session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
         session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")

@@ -1,4 +1,5 @@
 const assert = require('assert')
+const sinon = require('sinon')
 
 const models = require('../../src/models')
 const processNotifications = require('../../src/notifications/processNotifications/index.js')
@@ -6,6 +7,7 @@ const sendNotifications = require('../../src/notifications/sendNotifications/ind
 const { processTrendingTracks } = require('../../src/notifications/trendingTrackProcessing')
 const { pushNotificationQueue } = require('../../src/notifications/notificationQueue')
 const { clearDatabase, runMigrations } = require('../lib/app')
+const notificationUtils = require('../../src/notifications/sendNotifications/utils')
 
 // Mock Notifications
 const remixCreate = require('./mockNotifications/remixCreate.json')
@@ -19,6 +21,11 @@ const trendingTrack = require('./mockNotifications/trendingTrack.json')
 const mockAudiusLibs = require('./mockLibs')
 
 describe('Test Send Notifications', function () {
+  before(() => {
+    sinon.stub(notificationUtils, 'getPendingCreateDedupeMs')
+      .returns(5 * 1000) // 5 second dedupe
+  })
+
   beforeEach(async () => {
     await clearDatabase()
     await runMigrations()
@@ -202,8 +209,6 @@ describe('Test Send Notifications', function () {
   })
 
   it('should have the correct create notifications', async function () {
-    this.timeout(65000) // Must wait for tracks debouncing.
-
     // User 1 creates tracks 1, 2, 3, 4
     // User 2 creates track 5
     // User 1 creates playlist 1 w/ tracks 1
@@ -226,7 +231,7 @@ describe('Test Send Notifications', function () {
     assert.deepStrictEqual(pushNotifications.length, 0)
 
     // Wait 60 seconds to debounce tracks / album notifications
-    await new Promise(resolve => setTimeout(resolve, 60 * 1000))
+    await new Promise(resolve => setTimeout(resolve, 5 * 1000))
     const tx2 = await models.sequelize.transaction()
     await sendNotifications(mockAudiusLibs, [], tx2)
     await tx2.commit()

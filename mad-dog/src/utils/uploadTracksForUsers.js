@@ -2,12 +2,13 @@ const path = require('path')
 const ServiceCommands = require('@audius/service-commands')
 const { logger } = require('../logger.js')
 const {
+  uploadTrack,
+  RandomUtils
+} = ServiceCommands
+const {
   getRandomTrackMetadata,
   getRandomTrackFilePath
-} = require('../helpers.js')
-const {
-  uploadTrack
-} = ServiceCommands
+} = RandomUtils
 
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 

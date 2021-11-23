@@ -102,7 +102,7 @@ mod test {
         let signer_group = SignerGroup {
             version: 0,
             owner: Pubkey::new_from_array([1; 32]),
-            owner_enabled: true
+            owner_enabled: true,
         };
 
         let packed = signer_group.try_to_vec().unwrap();

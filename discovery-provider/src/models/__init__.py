@@ -44,6 +44,7 @@ from .models import (
     URSMContentNode,
     User,
     UserBalance,
+    UserBalanceChange,
     UserChallenge,
 )
 from .related_artist import RelatedArtist
@@ -56,6 +57,7 @@ from .reward_manager import RewardManagerTransaction
 from .aggregate_interval_play import AggregateIntervalPlay
 from .trending_param import TrendingParam
 from .track_trending_score import TrackTrendingScore
+from .milestone import Milestone
 
 __all__ = [
     "AggregateDailyAppNameMetrics",
@@ -83,6 +85,7 @@ __all__ = [
     "ChallengeType",
     "Follow",
     "IPLDBlacklistBlock",
+    "Milestone",
     "Play",
     "Playlist",
     "ProfileCompletionChallenge",
@@ -109,6 +112,7 @@ __all__ = [
     "URSMContentNode",
     "User",
     "UserBalance",
+    "UserBalanceChange",
     "UserChallenge",
     "UserBankTransaction",
     "UserBankAccount",

@@ -63,10 +63,11 @@ module.exports = function (app) {
       email: email
     }
     const recoveryLink = host + toQueryStr(recoveryParams)
-
+    const copyrightYear = new Date().getFullYear().toString()
     const context = {
       recovery_link: recoveryLink,
-      handle: handle
+      handle: handle,
+      copyright_year: copyrightYear
     }
     const recoveryHtml = recoveryTemplate(context)
 

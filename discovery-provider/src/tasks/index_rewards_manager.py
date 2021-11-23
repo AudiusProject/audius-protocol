@@ -14,8 +14,10 @@ from src.models import (
     ChallengeDisbursement
 )
 from src.tasks.celery_app import celery
+from src.utils.cache_solana_program import cache_latest_sol_db_tx, fetch_and_cache_latest_program_tx_redis
 from src.utils.config import shared_config
 from src.utils.session_manager import SessionManager
+from src.utils.redis_constants import latest_sol_rewards_manager_db_tx_key, latest_sol_rewards_manager_program_tx_key
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_transaction_types import (
     ResultMeta,
@@ -70,6 +72,22 @@ class RewardsManagerTransfer(TypedDict):
     id: str
     eth_recipient: str
 
+class RewardTransferInstruction(TypedDict):
+    amount: int
+    challenge_id: str
+    specifier: str
+    eth_recipient: str
+
+class RewardManagerTransactionInfo(TypedDict):
+    tx_sig: str
+    slot: int
+    timestamp: int
+    transfer_instruction: Optional[RewardTransferInstruction]
+
+# Cache the latest value committed to DB in redis
+# Used for quick retrieval in health check
+def cache_latest_sol_rewards_manager_db_tx(redis: Redis, latest_tx):
+    cache_latest_sol_db_tx(redis, latest_sol_rewards_manager_db_tx_key, latest_tx)
 
 def parse_transfer_instruction_data(data: str) -> RewardsManagerTransfer:
     """Parse Transfer instruction data submitted to Audius Rewards Manager program
@@ -140,19 +158,6 @@ def get_valid_instruction(
             exc_info=True,
         )
         return None
-
-
-class RewardTransferInstruction(TypedDict):
-    amount: int
-    challenge_id: str
-    specifier: str
-    eth_recipient: str
-
-class RewardManagerTransactionInfo(TypedDict):
-    tx_sig: str
-    slot: int
-    timestamp: int
-    transfer_instruction: Optional[RewardTransferInstruction]
 
 def fetch_and_parse_sol_rewards_transfer_instruction(
     solana_client_manager: SolanaClientManager,
@@ -333,7 +338,7 @@ def get_transaction_signatures(
     get_latest_slot: Callable[[Session], int],
     check_tx_exists: Callable[[Session, str], bool],
     min_slot=None,
-):
+) -> List[List[str]]:
     """Fetches next batch of transaction signature offset from the previous latest processed slot
 
     Fetches the latest processed slot for the rewards manager program
@@ -417,9 +422,14 @@ def process_transaction_signatures(
     solana_client_manager: SolanaClientManager,
     db: SessionManager,
     redis: Redis,
-    transaction_signatures: List[str],
+    transaction_signatures: List[List[str]],
 ):
     """Concurrently processes the transactions to update the DB state for reward transfer instructions"""
+    last_tx_sig: Optional[str] = None
+    last_tx: Optional[RewardManagerTransactionInfo] = None
+    if transaction_signatures and transaction_signatures[-1]:
+        last_tx_sig = transaction_signatures[-1][0]
+
     for tx_sig_batch in transaction_signatures:
         logger.info(f"index_rewards_manager.py | processing {tx_sig_batch}")
         batch_start_time = time.time()
@@ -441,6 +451,8 @@ def process_transaction_signatures(
                     parsed_solana_transfer_instruction = future.result()
                     if parsed_solana_transfer_instruction is not None:
                         transfer_instructions.append(parsed_solana_transfer_instruction)
+                        if last_tx_sig and last_tx_sig == parsed_solana_transfer_instruction["tx_sig"]:
+                            last_tx = parsed_solana_transfer_instruction
                 except Exception as exc:
                     logger.error(f"index_rewards_manager.py | {exc}")
                     raise exc
@@ -454,6 +466,12 @@ def process_transaction_signatures(
             f"index_rewards_manager.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
         )
 
+    if last_tx:
+        cache_latest_sol_rewards_manager_db_tx(redis, {
+            "signature": last_tx["tx_sig"],
+            "slot": last_tx["slot"],
+            "timestamp": last_tx["timestamp"]
+        })
 
 def process_solana_rewards_manager(
     solana_client_manager: SolanaClientManager, db: SessionManager, redis: Redis
@@ -494,6 +512,14 @@ def index_rewards_manager(self):
     update_lock = redis.lock("solana_rewards_manager_lock", timeout=14400)
 
     try:
+        # Cache latest tx outside of lock
+        fetch_and_cache_latest_program_tx_redis(
+            solana_client_manager,
+            redis,
+            REWARDS_MANAGER_PROGRAM,
+            latest_sol_rewards_manager_program_tx_key
+        )
+
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:

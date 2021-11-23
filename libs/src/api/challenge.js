@@ -1,7 +1,7 @@
 const axios = require('axios')
 const { Base, Services } = require('./base')
-const { sampleSize } = require('lodash')
 const BN = require('bn.js')
+const { RewardsManagerError } = require('../services/solanaWeb3Manager/errors')
 
 const GetAttestationError = Object.freeze({
   CHALLENGE_INCOMPLETE: 'CHALLENGE_INCOMPLETE',
@@ -13,6 +13,22 @@ const GetAttestationError = Object.freeze({
   COGNITO_FLOW: 'COGNITO_FLOW',
   BLOCKED: 'BLOCKED',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR'
+})
+
+const AggregateAttestationError = Object.freeze(
+  {
+    INSUFFICIENT_DISCOVERY_NODE_COUNT: 'INSUFFICIENT_DISCOVERY_NODE_COUNT',
+    UNKNOWN_ERROR: 'UNKNOWN_ERROR'
+  }
+)
+
+/**
+ * Combined error type for `SubmitAndEvaluate`
+ */
+const SubmitAndEvaluateError = Object.freeze({
+  ...GetAttestationError,
+  ...AggregateAttestationError,
+  ...RewardsManagerError
 })
 
 const AttestationPhases = Object.freeze({
@@ -75,18 +91,18 @@ class Challenge extends Base {
       }
 
       phase = AttestationPhases.AGGREGATE_ATTESTATIONS
-      const { discoveryNodeAttestations, aaoAttestation, error } = await this.aggregateAttestations({
+      const { discoveryNodeAttestations, aaoAttestation, error: aggregateError } = await this.aggregateAttestations({
         challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint
       })
 
-      if (error) {
-        throw new Error(error)
+      if (aggregateError) {
+        throw new Error(aggregateError)
       }
 
       const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
 
       phase = AttestationPhases.SUBMIT_ATTESTATIONS
-      await this.solanaWeb3Manager.submitChallengeAttestations({
+      const { errorCode: submitErrorCode } = await this.solanaWeb3Manager.submitChallengeAttestations({
         attestations: discoveryNodeAttestations,
         oracleAttestation: aaoAttestation,
         challengeId,
@@ -95,14 +111,22 @@ class Challenge extends Base {
         tokenAmount: fullTokenAmount
       })
 
+      if (submitErrorCode) {
+        throw new Error(submitErrorCode)
+      }
+
       phase = AttestationPhases.EVALUATE_ATTESTATIONS
-      await this.solanaWeb3Manager.evaluateChallengeAttestations({
+      const { errorCode: evaluateErrorCode } = await this.solanaWeb3Manager.evaluateChallengeAttestations({
         challengeId,
         specifier,
         recipientEthAddress,
         oracleEthAddress,
         tokenAmount: fullTokenAmount
       })
+
+      if (evaluateErrorCode) {
+        throw new Error(evaluateErrorCode)
+      }
 
       return { success: true, error: null }
     } catch (e) {
@@ -152,7 +176,15 @@ class Challenge extends Base {
     if (!endpoints) {
       endpoints = await this.discoveryProvider.serviceSelector.findAll()
     }
-    endpoints = sampleSize(endpoints, quorumSize)
+    if (endpoints.length < quorumSize) {
+      console.error(`Tried to fetch [${quorumSize}] attestations, but only found [${endpoints.length}] registered nodes.`)
+
+      return {
+        discoveryNodeAttestations: null,
+        aaoAttestation: null,
+        error: AggregateAttestationError.INSUFFICIENT_DISCOVERY_NODE_COUNT
+      }
+    }
 
     try {
       const discprovAttestations = endpoints.map(e => this.getChallengeAttestation({ challengeId, encodedUserId, specifier, oracleEthAddress, discoveryProviderEndpoint: e }))
@@ -322,3 +354,4 @@ class Challenge extends Base {
 }
 
 module.exports = Challenge
+module.exports.SubmitAndEvaluateError = SubmitAndEvaluateError

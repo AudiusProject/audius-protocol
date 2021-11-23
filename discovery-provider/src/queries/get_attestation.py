@@ -6,6 +6,7 @@ from eth_keys import keys
 from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import and_
+from solana.publickey import PublicKey
 from src.models.models import (
     Challenge,
     ChallengeDisbursement,
@@ -14,10 +15,16 @@ from src.models.models import (
 )
 from src.utils.redis_connection import get_redis
 from src.utils.config import shared_config
+from src.utils.get_all_other_nodes import get_all_other_nodes
 from src.tasks.index_oracles import (
     oracle_addresses_key,
     get_oracle_addresses_from_chain,
 )
+
+REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
+REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None
+if REWARDS_MANAGER_ACCOUNT:
+    REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = PublicKey(REWARDS_MANAGER_ACCOUNT)
 
 ATTESTATION_DECIMALS = 9
 
@@ -109,7 +116,8 @@ def get_attestation(
     """
     Returns a owner_wallet, signed_attestation tuple,
     or throws an error explaining why the attestation was
-    not able to be created."""
+    not able to be created.
+    """
     if not user_id or not challenge_id or not oracle_address:
         raise AttestationError(INVALID_INPUT)
 
@@ -176,3 +184,39 @@ def get_attestation(
         attestation_bytes, shared_config["delegate"]["private_key"]
     )
     return (shared_config["delegate"]["owner_wallet"], signed_attestation)
+
+
+ADD_SENDER_MESSAGE_PREFIX = "add"
+
+
+def verify_discovery_node_exists_on_chain(new_sender_address: str) -> bool:
+    other_nodes_addresses = set(get_all_other_nodes()[1])
+    return new_sender_address in other_nodes_addresses
+
+
+def get_create_sender_attestation(new_sender_address: str) -> Tuple[str, str]:
+    """
+    Returns a owner_wallet, signed_attestation tuple,
+    or throws an error explaining why the sender attestation was
+    not able to be created.
+    """
+    if not REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY:
+        raise Exception("No Rewards Manager Account initialized")
+
+    is_valid = verify_discovery_node_exists_on_chain(new_sender_address)
+    if not is_valid:
+        raise Exception(f"Expected {new_sender_address} to be registered on chain")
+
+    items = [
+        to_bytes(text=ADD_SENDER_MESSAGE_PREFIX),
+        # Solana PubicKey should be coerced to bytes using the pythonic bytes method
+        # See https://michaelhly.github.io/solana-py/solana.html#solana.publickey.PublicKey
+        bytes(REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY),
+        to_bytes(hexstr=new_sender_address),
+    ]
+    attestation_bytes = to_bytes(text="").join(items)
+    signed_attestation: str = sign_attestation(
+        attestation_bytes, shared_config["delegate"]["private_key"]
+    )
+    owner_wallet = shared_config["delegate"]["owner_wallet"]
+    return owner_wallet, signed_attestation

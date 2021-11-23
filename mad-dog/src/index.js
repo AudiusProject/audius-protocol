@@ -55,13 +55,13 @@ const services = [
 
 async function setupAllServices () {
   logger.info('Setting up all services!')
-  await allUp({ numCreatorNodes: DEFAULT_NUM_CREATOR_NODES })
+  await allUp({ numCreatorNodes: DEFAULT_NUM_CREATOR_NODES, verbose: true })
   logger.info('All services set up!')
 }
 
 async function tearDownAllServices () {
   logger.info('Downing services.')
-  await runSetupCommand(Service.ALL, SetupCommand.DOWN)
+  await runSetupCommand(Service.ALL, SetupCommand.DOWN, { verbose: true })
   logger.info('All services downed.')
 }
 
@@ -170,7 +170,7 @@ async function main () {
   logger.info('Ensuring all nodes are healthy..')
   try {
     await Promise.all(
-      services.map(s => runSetupCommand(...s))
+      services.map(s => runSetupCommand(...s, { verbose: true }))
     )
   } catch (e) {
     logger.error('Some or all health checks failed. Please check the necessary protocol logs.\n', e)

@@ -13,15 +13,16 @@ const { getMonitorRedisKey, MONITORS } = require('../src/monitors/monitors')
 
 describe('test ensureStorageMiddleware', () => {
   const storagePathUsedRedisKey = getMonitorRedisKey(MONITORS.STORAGE_PATH_USED)
-  let app, server, session, ipfsMock, libsMock, monitoringQueueMock, userId
+  let app, server, session, libsMock, monitoringQueueMock, userId
 
   beforeEach(async () => {
-    ipfsMock = getIPFSMock()
+    const ipfsMock = getIPFSMock()
+    const ipfsLatestMock = getIPFSMock(true)
     libsMock = getLibsMock()
 
     userId = 1
 
-    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, null, null, userId)
+    const appInfo = await getApp(ipfsMock, libsMock, BlacklistManager, ipfsLatestMock, null, userId)
     await BlacklistManager.init()
 
     app = appInfo.app

@@ -155,13 +155,16 @@ def get_tracks(args: GetTrackArgs):
                 user_id_map = {handle: user_id for (user_id, handle) in user_id_tuples}
                 args["routes"] = []
                 for route in routes:
-                    if route["handle"] in user_id_map:
+                    if route["handle"].lower() in user_id_map:
                         args["routes"].append(
                             {
                                 "slug": route["slug"],
                                 "owner_id": user_id_map[route["handle"].lower()],
                             }
                         )
+                # If none of the handles were found, return empty lists
+                if not args["routes"]:
+                    return ([], [])
 
             can_use_shared_cache = (
                 "id" in args

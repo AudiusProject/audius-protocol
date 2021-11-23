@@ -42,6 +42,8 @@ from src.utils.session_manager import SessionManager
 from src.solana.solana_client_manager import SolanaClientManager
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
 
+SOLANA_ENDPOINT = shared_config["solana"]["endpoint"]
+
 # these global vars will be set in create_celery function
 web3endpoint = None
 web3 = None
@@ -165,7 +167,7 @@ def create_celery(test_config=None):
     eth_web3 = Web3(MultiProvider(shared_config["web3"]["eth_provider_url"]))
 
     # Initialize Solana web3 provider
-    solana_client_manager = SolanaClientManager()
+    solana_client_manager = SolanaClientManager(shared_config["solana"]["endpoint"])
 
     global registry
     global user_factory
@@ -325,10 +327,14 @@ def configure_flask(test_config, app, mode="app"):
 
     return app
 
+
 def delete_last_scanned_eth_block_redis(redis_inst):
     logger.info("index_eth.py | deleting existing redis scanned block on start")
     redis_inst.delete(eth_indexing_last_scanned_block_key)
-    logger.info("index_eth.py | successfully deleted existing redis scanned block on start")
+    logger.info(
+        "index_eth.py | successfully deleted existing redis scanned block on start"
+    )
+
 
 def configure_celery(flask_app, celery, test_config=None):
     database_url = shared_config["db"]["url"]
@@ -363,6 +369,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.cache_trending_playlists",
             "src.tasks.index_solana_plays",
             "src.tasks.index_aggregate_views",
+            "src.tasks.index_aggregate_user",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
             "src.tasks.index_eth",
@@ -370,6 +377,7 @@ def configure_celery(flask_app, celery, test_config=None):
             "src.tasks.index_rewards_manager",
             "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
+            "src.tasks.index_listen_count_milestones",
         ],
         beat_schedule={
             "update_discovery_provider": {
@@ -414,7 +422,7 @@ def configure_celery(flask_app, celery, test_config=None):
             },
             "index_trending": {
                 "task": "index_trending",
-                "schedule": crontab(minute=15, hour="*"),
+                "schedule": timedelta(seconds=10),
             },
             "update_user_balances": {
                 "task": "update_user_balances",
@@ -467,6 +475,10 @@ def configure_celery(flask_app, celery, test_config=None):
             "index_related_artists": {
                 "task": "index_related_artists",
                 "schedule": timedelta(seconds=60),
+            },
+            "index_listen_count_milestones": {
+                "task": "index_listen_count_milestones",
+                "schedule": timedelta(seconds=5),
             },
         },
         task_serializer="json",

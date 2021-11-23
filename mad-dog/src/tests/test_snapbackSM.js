@@ -3,13 +3,16 @@ const ServiceCommands = require('@audius/service-commands')
 const { logger } = require('../logger.js')
 const {
   addAndUpgradeUsers,
-  getRandomTrackMetadata,
-  getRandomTrackFilePath,
   ensureReplicaSetSyncIsConsistent
 } = require('../helpers.js')
 const {
-  uploadTrack
+  uploadTrack,
+  RandomUtils
 } = ServiceCommands
+const {
+  getRandomTrackMetadata,
+  getRandomTrackFilePath
+} = RandomUtils
 
 const TEMP_STORAGE_PATH = path.resolve('./local-storage/tmp/')
 let walletIndexToUserIdMap

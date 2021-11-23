@@ -14,7 +14,13 @@ const {
 const { processEmailNotifications } = require('./sendNotificationEmails')
 const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
 const { pushAnnouncementNotifications } = require('./pushAnnouncementNotifications')
-const { notificationJobType, solanaNotificationJobType, announcementJobType, unreadEmailJobType } = require('./constants')
+const {
+  notificationJobType,
+  solanaNotificationJobType,
+  announcementJobType,
+  unreadEmailJobType,
+  downloadEmailJobType
+} = require('./constants')
 const { drainPublishedMessages, drainPublishedSolanaMessages } = require('./notificationQueue')
 const emailCachePath = './emailCache'
 const processNotifications = require('./processNotifications/index.js')
@@ -24,13 +30,13 @@ const audiusLibsWrapper = require('../audiusLibsInstance')
 
 const NOTIFICATION_INTERVAL_SEC = 3 * 1000
 const NOTIFICATION_SOLANA_INTERVAL_SEC = 3 * 1000
-const NOTIFICATION_EMAILS_INTERVAL_SEC = 10 * 60 * 1000
 const NOTIFICATION_ANNOUNCEMENTS_INTERVAL_SEC = 30 * 1000
 
 const NOTIFICATION_JOB_LAST_SUCCESS_KEY = 'notifications:last-success'
 const NOTIFICATION_SOLANA_JOB_LAST_SUCCESS_KEY = 'notifications:solana:last-success'
 const NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY = 'notifications:emails:last-success'
 const NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY = 'notifications:announcements:last-success'
+const NOTIFICATION_DOWNLOAD_EMAIL_JOB_LAST_SUCCESS_KEY = 'notifications:download-emails:last-success'
 
 // Reference Bull Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queue
 const defaultJobOptions = {
@@ -78,6 +84,15 @@ class NotificationProcessor {
         },
         defaultJobOptions
       })
+    this.downloadEmailQueue = new Bull(
+      `download-email-queue-${Date.now()}`,
+      {
+        redis: {
+          port: config.get('redisPort'),
+          host: config.get('redisHost')
+        },
+        defaultJobOptions
+      })
     if (errorHandler) {
       this.errorHandler = errorHandler
     } else {
@@ -99,6 +114,7 @@ class NotificationProcessor {
     // Clear any pending notif jobs
     await this.notifQueue.empty()
     await this.emailQueue.empty()
+    await this.downloadEmailQueue.empty()
     this.redis = redis
     this.mg = expressApp.get('mailgun')
 
@@ -163,7 +179,8 @@ class NotificationProcessor {
     // Indexes solana notifications
     this.solanaNotifQueue.process(async (job, done) => {
       let error = null
-      let minSlot = job.data.minSlot
+      const MIN_SOLANA_SLOT = config.get('minSolanaNotificationSlot')
+      let minSlot = Math.max(MIN_SOLANA_SLOT, job.data.minSlot)
 
       try {
         if (!minSlot && minSlot !== 0) throw new Error('no min slot')
@@ -173,7 +190,7 @@ class NotificationProcessor {
 
         // Index notifications
         if (minSlot < oldMaxSlot) {
-          logger.debug('notification queue processing error - tried to process a minSlot < oldMaxSlot', minSlot, oldMaxSlot)
+          logger.debug('solana notification queue processing error - tried to process a minSlot < oldMaxSlot', minSlot, oldMaxSlot)
           maxSlot = oldMaxSlot
         } else {
           maxSlot = await this.indexAllSolanaNotifications(audiusLibs, minSlot, oldMaxSlot)
@@ -186,7 +203,7 @@ class NotificationProcessor {
         await this.redis.set(NOTIFICATION_SOLANA_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
 
         // Restart job with updated starting slot
-        await this.notifQueue.add({
+        await this.solanaNotifQueue.add({
           type: solanaNotificationJobType,
           minSlot: maxSlot
         }, {
@@ -194,10 +211,10 @@ class NotificationProcessor {
         })
       } catch (e) {
         error = e
-        logger.error(`Restarting due to error indexing notifications : ${e}`)
+        logger.error(`Restarting due to error indexing solana notifications : ${e}`)
         this.errorHandler(e)
         // Restart job with same starting slot
-        await this.notifQueue.add({
+        await this.solanaNotifQueue.add({
           type: solanaNotificationJobType,
           minSlot: minSlot
         }, {
@@ -216,16 +233,29 @@ class NotificationProcessor {
       let error = null
       try {
         await processEmailNotifications(expressApp, audiusLibs)
-        await processDownloadAppEmail(expressApp, audiusLibs)
         await this.redis.set(NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
       } catch (e) {
         error = e
         logger.error(`processEmailNotifications - Problem with processing emails: ${e}`)
         this.errorHandler(e)
       }
-      // Wait 10 minutes before re-running the job
-      await new Promise(resolve => setTimeout(resolve, NOTIFICATION_EMAILS_INTERVAL_SEC))
       await this.emailQueue.add({ type: unreadEmailJobType }, { jobId: `${unreadEmailJobType}:${Date.now()}` })
+      done(error)
+    })
+
+    // Download Email notification queue
+    this.downloadEmailQueue.process(async (job, done) => {
+      logger.info('processDownloadEmails')
+      let error = null
+      try {
+        await processDownloadAppEmail(expressApp, audiusLibs)
+        await this.redis.set(NOTIFICATION_DOWNLOAD_EMAIL_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
+      } catch (e) {
+        error = e
+        logger.error(`processDownloadEmails - Problem with processing emails: ${e}`)
+        this.errorHandler(e)
+      }
+      await this.downloadEmailQueue.add({ type: downloadEmailJobType }, { jobId: `${downloadEmailJobType}:${Date.now()}` })
       done(error)
     })
 
@@ -272,6 +302,7 @@ class NotificationProcessor {
 
     await this.emailQueue.add({ type: unreadEmailJobType }, { jobId: `${unreadEmailJobType}:${Date.now()}` })
     await this.announcementQueue.add({ type: announcementJobType }, { jobId: `${announcementJobType}:${Date.now()}` })
+    await this.downloadEmailQueue.add({ type: downloadEmailJobType }, { jobId: `${downloadEmailJobType}:${Date.now()}` })
   }
 
   /**
@@ -294,19 +325,7 @@ class NotificationProcessor {
 
     const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
-    // TODO: Re-enable listen milestone notifications when preprocessing is done on the discovery node side
-    // This query is extremely non-performant and needs to be restructured
-    //
-    // Query owners for tracks relevant to track listen counts
-    // Below can be toggled once milestones are calculated in discovery
-    // let listenCounts = await calculateTrackListenMilestones()
-    // const listenCounts = []
-    // const listenCounts = await calculateTrackListenMilestonesFromDiscovery(discoveryProvider)
-    // logger.info(`notifications main indexAll job - calculateTrackListenMilestonesFromDiscovery complete in ${Date.now() - time}ms`)
-    // time = Date.now()
-
     const trackIdOwnersToRequestList = []
-    // const trackIdOwnersToRequestList = listenCounts.map(x => x.trackId)
 
     // These track_id get parameters will be used to retrieve track owner info
     // This is required since there is no guarantee that there are indeed notifications for this user
@@ -320,15 +339,8 @@ class NotificationProcessor {
     // Use a single transaction
     const tx = await models.sequelize.transaction()
     try {
-      // // Populate owners, used to index in milestone generation
+      // Populate owners, used to index in milestone generation
       const listenCountWithOwners = []
-      // const listenCountWithOwners = listenCounts.map((x) => {
-      //   return {
-      //     trackId: x.trackId,
-      //     listenCount: x.listenCount,
-      //     owner: owners.tracks[x.trackId]
-      //   }
-      // })
 
       // Insert the notifications into the DB to make it easy for users to query for their grouped notifications
       await processNotifications(notifications, tx)
@@ -380,8 +392,7 @@ class NotificationProcessor {
 
     logger.info(`${logLabel} - minSlot: ${minSlot}, oldMaxSlot: ${oldMaxSlot}, startDate: ${startDate}, startTime: ${startTime}`)
 
-    // const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
-    const { discoveryProvider } = audiusLibs
+    const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
 
     // Timeout of 2 minutes
     const timeout = 2 /* min */ * 60 /* sec */ * 1000 /* ms */
@@ -392,11 +403,11 @@ class NotificationProcessor {
     const tx = await models.sequelize.transaction()
     try {
       // Insert the solana notifications into the DB
-      await processNotifications(notifications, tx)
+      const processedNotifications = await processNotifications(notifications, tx)
       logger.info(`${logLabel} - processNotifications complete`)
 
       // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
-      await sendNotifications(audiusLibs, notifications, tx)
+      await sendNotifications(audiusLibs, processedNotifications, tx)
       logger.info(`${logLabel} - sendNotifications complete`)
 
       // Commit
@@ -410,7 +421,7 @@ class NotificationProcessor {
       const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
       logger.info(`${logLabel} finished - minSlot: ${minSlot}, startDate: ${startDate}, duration: ${duration}, notifications: ${notifications.length}`)
     } catch (e) {
-      logger.error(`Error indexing notification ${e}`)
+      logger.error(`Error indexing solana notification ${e}`)
       logger.error(e.stack)
       await tx.rollback()
     }
@@ -423,3 +434,4 @@ module.exports = NotificationProcessor
 module.exports.NOTIFICATION_JOB_LAST_SUCCESS_KEY = NOTIFICATION_JOB_LAST_SUCCESS_KEY
 module.exports.NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY = NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY
 module.exports.NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY = NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY
+module.exports.NOTIFICATION_DOWNLOAD_EMAIL_JOB_LAST_SUCCESS_KEY = NOTIFICATION_DOWNLOAD_EMAIL_JOB_LAST_SUCCESS_KEY

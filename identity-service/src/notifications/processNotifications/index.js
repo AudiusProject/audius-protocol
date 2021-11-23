@@ -9,6 +9,8 @@ const processRemixCosignNotifications = require('./remixCosignNotification')
 const processCreateNotifications = require('./createNotification')
 const processPlaylistUpdateNotifications = require('./playlistUpdateNotification')
 const processChallengeRewardNotifications = require('./challengeRewardNotification')
+const processMilestoneListenNotifications = require('./milestoneListenNotification')
+const processTierChangeNotifications = require('./tierChangeNotification')
 
 // Mapping of Notification type to processing function.
 const notificationMapping = {
@@ -19,7 +21,9 @@ const notificationMapping = {
   [notificationTypes.RemixCosign]: processRemixCosignNotifications,
   [notificationTypes.Create.base]: processCreateNotifications,
   [notificationTypes.PlaylistUpdate]: processPlaylistUpdateNotifications,
-  [notificationTypes.ChallengeReward]: processChallengeRewardNotifications
+  [notificationTypes.ChallengeReward]: processChallengeRewardNotifications,
+  [notificationTypes.MilestoneListen]: processMilestoneListenNotifications,
+  [notificationTypes.TierChange]: processTierChangeNotifications
 }
 
 /**
@@ -38,15 +42,18 @@ async function processNotifications (notifications, tx) {
     return categories
   }, {})
 
-  // Loop through each notification type and batch process
-  for (const notifType in notificationCategories) {
-    if (notifType in notificationMapping) {
-      const notifications = notificationCategories[notifType]
-      const processType = notificationMapping[notifType]
+  // Process notification types in parallel
+  const processedNotifications = await Promise.all(Object.entries(notificationCategories).map(([notifType, notifications]) => {
+    const processType = notificationMapping[notifType]
+    if (processType) {
       logger.debug(`Processing: ${notifications.length} notifications of type ${notifType}`)
-      await processType(notifications, tx)
+      return processType(notifications, tx)
+    } else {
+      logger.error('processNotifications - no handler defined for notification type', notifType)
+      return []
     }
-  }
+  }))
+  return processedNotifications.flat()
 }
 
 module.exports = processNotifications

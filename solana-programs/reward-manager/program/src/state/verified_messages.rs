@@ -16,7 +16,7 @@ pub type VoteMessage = [u8; 128];
 pub const ADD_SENDER_MESSAGE_PREFIX: &str = "add";
 
 /// Delete sender message prefix
-pub const DELETE_SENDER_MESSAGE_PREFIX: &str = "delete";
+pub const DELETE_SENDER_MESSAGE_PREFIX: &str = "del";
 
 /// Generates fixed vote message from slice
 #[macro_export]
