@@ -23,7 +23,6 @@
 .header {
   text-transform: uppercase;
   color: var(--neutral-light-2);
-  font-family: "Avenir Next LT Pro";
   font-size: 15px;
   font-weight: bold;
   letter-spacing: 0.5px;

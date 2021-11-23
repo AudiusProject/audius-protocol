@@ -76,7 +76,6 @@ const getLineGraphOptions = transformXValue => ({
         ticks: {
           padding: 13,
           fontColor: 'rgba(133,129,153, 0.5)',
-          fontFamily: 'Avenir Next LT Pro',
           fontSize: 10,
           fontStyle: 'bold'
         }
@@ -91,7 +90,6 @@ const getLineGraphOptions = transformXValue => ({
           beginAtZero: true,
           width: 1000,
           fontColor: 'rgba(133,129,153, 0.5)',
-          fontFamily: 'Avenir Next LT Pro',
           fontSize: 10,
           fontStyle: 'bold',
           callback: (value, index, values) => {
@@ -112,13 +110,11 @@ const getLineGraphOptions = transformXValue => ({
   },
   tooltips: {
     enabled: false,
-    titleFontFamily: 'Avenir Next LT Pro',
     titleFontSize: 10,
     titleFontStyle: 500,
     titleFontColor: '#FFFFFF',
     titleSpacing: 0,
     titleMarginBottom: 7,
-    bodyFontFamily: 'Avenir Next LT Pro',
     bodyFontSize: 16,
     bodyFontStyle: 'bold',
     bodyFontColor: '#FFFFFF',

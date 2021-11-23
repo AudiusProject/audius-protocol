@@ -13,7 +13,6 @@
 
 .title {
   color: #7E1BCC;
-  font-family: "Avenir Next LT Pro";
   font-size: 18px;
   font-weight: bold;
   line-height: 26px;
@@ -23,7 +22,6 @@
 
 .bodyText {
   color: #858199;
-  font-family: "Avenir Next LT Pro";
   font-size: 14px;
   line-height: 21px;
   text-align: center;
@@ -40,7 +38,6 @@
 .skipText {
   margin-top: 20px;
   color: #7E1BCC;
-  font-family: "Avenir Next LT Pro";
   font-size: 14px;
   font-weight: 500;
   line-height: 22px;

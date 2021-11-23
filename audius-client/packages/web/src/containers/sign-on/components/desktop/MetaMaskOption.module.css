@@ -1,7 +1,6 @@
 /* Metamask Button */
 .metaMaskSignupButton {
   color: var(--neutral);
-  font-family: 'Avenir Next LT Pro';
   font-size: var(--font-s);
   font-weight: var(--font-bold);
   text-align: center;
