@@ -9,19 +9,21 @@ from src.trending_strategies.trending_type_and_version import (
     TrendingVersion,
 )
 
-from src.trending_strategies.ePWJD_trending_tracks_strategy import (
-    N,
-    F,
-    O,
-    R,
-    i,
-    q,
-    T,
-    y,
-)
 
 logger = logging.getLogger(__name__)
 
+
+# Trending Parameters
+N = 1
+a = max
+M = pow
+F = 50
+O = 1
+R = 0.25
+i = 0.01
+q = 100000.0
+T = {"day": 1, "week": 7, "month": 30, "year": 365, "allTime": 100000}
+y = 3
 
 class TrendingTracksStrategyaSPET(BaseTrendingStrategy):
     def __init__(self):
