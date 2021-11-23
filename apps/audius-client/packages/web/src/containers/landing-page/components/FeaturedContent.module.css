@@ -109,7 +109,6 @@
 .track .trackTitle {
   opacity: 0;
   color: #FFFFFF;
-  font-family: "Avenir Next LT Pro";
   font-size: 18px;
   font-weight: 700;
   line-height: 23px;
@@ -121,7 +120,6 @@
 .track .trackArtist {
   opacity: 0;
   color: rgba(255,255,255, 1);
-  font-family: "Avenir Next LT Pro";
   font-size: 18px;
   font-weight: 500;
   line-height: 23px;
@@ -222,7 +220,6 @@
 .mobileContainer .trackTitle {
   position: relative;
   color: #858199;
-  font-family: "Avenir Next LT Pro";
   font-size: 14px;
   font-weight: 500;
   line-height: 18px;
@@ -243,7 +240,6 @@
 
 .mobileContainer .trackArtist {
   color: #858199;
-  font-family: "Avenir Next LT Pro";
   font-size: 14px;
   font-weight: 500;
   line-height: 18px;

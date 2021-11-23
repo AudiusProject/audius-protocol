@@ -82,7 +82,6 @@
   margin-top: 31px;
   margin-bottom: 17px;
   color: var(--neutral);
-  font-family: 'Avenir Next LT Pro';
   font-size: var(--font-s);
   font-weight: var(--font-medium);
   user-select: none;
@@ -175,7 +174,6 @@
   margin-top: 32px;
   margin-bottom: 17px;
   color: var(--secondary);
-  font-family: 'Avenir Next LT Pro';
   font-size: var(--font-s);
   font-weight: var(--font-medium);
   user-select: none;
