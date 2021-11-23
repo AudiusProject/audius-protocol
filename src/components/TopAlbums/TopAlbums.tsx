@@ -10,8 +10,6 @@ const messages = {
   title: 'Top Albums This Week'
 }
 
-type OwnProps = {}
-
 type TopAlbumsProps = {}
 
 const TopAlbums: React.FC<TopAlbumsProps> = () => {
