@@ -99,7 +99,10 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
   // the "unused/available" stake we have in the system already.
   const calculatedMinStake = useMemo(() => {
     return selectedServiceInfo
-      ? BN.max(selectedServiceInfo.minStake.sub(availableStake ?? new BN('0')), new BN('0'))
+      ? BN.max(
+          selectedServiceInfo.minStake.sub(availableStake ?? new BN('0')),
+          new BN('0')
+        )
       : new BN('0')
   }, [selectedServiceInfo, availableStake])
 
