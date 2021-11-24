@@ -227,7 +227,19 @@ const ipfsGet = ({ ipfsLatest }, logger, path, timeout = 1000) => new Promise(as
   }
 })
 
-async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null) {
+/**
+ *
+ * @param {String} filePath location of the file on disk
+ * @param {String} cid content hash of the file
+ * @param {Object} logger logger object
+ * @param {Object} libs libs instance
+ * @param {Integer?} trackId optional trackId that corresponds to the cid, see file_lookup route for more info
+ * @param {Array?} excludeList optional array of content nodes to exclude in network wide search
+ * @returns {Boolean} returns true if the file was found in the network
+ */
+async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null, excludeList = []) {
+  let found = false
+
   const attemptedStateFix = await getIfAttemptedStateFix(filePath)
   if (attemptedStateFix) return
 
@@ -235,13 +247,16 @@ async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null) {
   const creatorNodes = await getAllRegisteredCNodes(libs)
   if (!creatorNodes.length) return
 
+  // Remove excluded nodes from list of creator nodes, no-op if empty list or nothing passed in
+  const creatorNodesFiltered = creatorNodes.filter(c => !excludeList.includes(c.endpoint))
+
   // generate signature
   const delegateWallet = config.get('delegateOwnerWallet').toLowerCase()
   const { signature, timestamp } = generateTimestampAndSignature({ filePath, delegateWallet }, config.get('delegatePrivateKey'))
   let node
 
-  for (let index = 0; index < creatorNodes.length; index++) {
-    node = creatorNodes[index]
+  for (let index = 0; index < creatorNodesFiltered.length; index++) {
+    node = creatorNodesFiltered[index]
     try {
       const resp = await axios({
         method: 'get',
@@ -266,7 +281,7 @@ async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null) {
           await fs.unlink(filePath)
           logger.error(`findCIDInNetwork - File contents don't match IPFS hash cid: ${cid} result: ${ipfsHashOnly}`)
         }
-
+        found = true
         logger.info(`findCIDInNetwork - successfully fetched file ${filePath} from node ${node.endpoint}`)
         break
       }
@@ -277,6 +292,8 @@ async function findCIDInNetwork (filePath, cid, logger, libs, trackId = null) {
       continue
     }
   }
+
+  return found
 }
 
 /**
