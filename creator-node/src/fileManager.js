@@ -93,7 +93,7 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ena
  * @param {number?} trackId if the multihash is of a segment type, the trackId to which it belongs to
  * @return {Boolean} true if success, false if error
  */
-async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null, trackId = null) {
+async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null, trackId = null, numRetries = 5) {
   // stores all the stages of this function along with associated information relevant to that step
   // in the try catch below, if any of the nested try/catches throw, it will be caught by the top level try/catch
   // so we only need to print it once in the global catch or after everthing finishes except for any return statements
@@ -295,8 +295,23 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     }
 
     // verify that the contents of the file match the file's cid
+    let fileData = null
+    let fileSize = null
     try {
-      decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
+      fileData = (await fs.readFile(expectedStoragePath)).toString().slice(0, 99)
+      fileSize = (await fs.stat(expectedStoragePath)).size
+    } catch (e) {
+      logger.warn('Could not get fs statistics for path', expectedStoragePath)
+    }
+    try {
+      decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now(), fileData, fileSize })
+
+      // if the file is empty, there's likely something wrong so throw an error
+      // there is one case where an empty file could be valid, check for that CID explicitly
+      if (fileSize !== null && fileSize === 0 && multihash !== 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH') {
+        throw new Error(`File has no content, content length is 0: ${multihash}`)
+      }
+
       const ipfsHashOnly = await ipfsAdd.ipfsAddNonImages(expectedStoragePath, { onlyHash: true, timeout: 10000 })
       if (multihash !== ipfsHashOnly) {
         decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: ipfsHashOnly, time: Date.now() })
@@ -306,6 +321,10 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
       }
       decisionTree.push({ stage: 'Successfully verified the file contents for the CID', vals: multihash, time: Date.now() })
     } catch (e) {
+      await removeFile(expectedStoragePath)
+      if (numRetries > 0) {
+        return saveFileForMultihashToFS(serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage, trackId, numRetries - 1)
+      }
       decisionTree.push({ stage: `Error during content verification for multihash`, vals: multihash, time: Date.now() })
       throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
     }
@@ -536,6 +555,23 @@ function hasEnoughStorageSpace ({ storagePathSize, storagePathUsed, maxStorageUs
   ) { return false }
 
   return (100 * storagePathUsed / storagePathSize) < maxStorageUsedPercent
+}
+
+/**
+ * Remove file from location on disk
+ * @param {String} storagePath path on disk for file
+ * @returns null if successfully removed file or throws error if didn't successfully remove file
+ */
+async function removeFile (storagePath) {
+  try {
+    await fs.unlink(storagePath)
+  } catch (err) {
+    // if file doesn't exist, ignore and return
+    if (err && err.code === 'ENOENT') {
+      return
+    }
+    throw err
+  }
 }
 
 module.exports = {
