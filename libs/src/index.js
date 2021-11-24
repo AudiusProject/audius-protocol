@@ -13,8 +13,12 @@ const DiscoveryProvider = require('./services/discoveryProvider/index')
 const AudiusABIDecoder = require('./services/ABIDecoder/index')
 const SchemaValidator = require('./services/schemaValidator')
 const UserStateManager = require('./userStateManager')
-const Utils = require('./utils')
 const SanityChecks = require('./sanityChecks')
+
+// Import all utils in `./utils/` dir and attach as properties to `Utils` class
+const UtilsDir = require('./utils/')
+const Utils = require('./utils.js')
+Object.entries(UtilsDir).forEach(([utilName, utilProps]) => { Utils[utilName] = utilProps })
 
 const Account = require('./api/account')
 const User = require('./api/user')
