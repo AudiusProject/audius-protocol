@@ -2,7 +2,7 @@ const bs58 = require('bs58')
 const Web3 = require('./web3')
 const axios = require('axios')
 
-const UtilsDir = require('./utils/')
+const UtilsDir = require('./utils/index.js')
 const MultiProvider = UtilsDir.MultiProvider
 const uuid = UtilsDir.uuid
 
