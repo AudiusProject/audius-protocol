@@ -21,9 +21,11 @@ from src.tasks.index_oracles import (
     get_oracle_addresses_from_chain,
 )
 
-REWARDS_MANAGER_PROGRAM_ACCOUNT = PublicKey(
-    shared_config["solana"]["rewards_manager_account"]
-)
+REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
+REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None
+if REWARDS_MANAGER_ACCOUNT:
+    REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = PublicKey(REWARDS_MANAGER_ACCOUNT)
+
 ATTESTATION_DECIMALS = 9
 
 
@@ -198,6 +200,9 @@ def get_create_sender_attestation(new_sender_address: str) -> Tuple[str, str]:
     or throws an error explaining why the sender attestation was
     not able to be created.
     """
+    if not REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY:
+        raise Exception("No Rewards Manager Account initialized")
+
     is_valid = verify_discovery_node_exists_on_chain(new_sender_address)
     if not is_valid:
         raise Exception(f"Expected {new_sender_address} to be registered on chain")
@@ -206,7 +211,7 @@ def get_create_sender_attestation(new_sender_address: str) -> Tuple[str, str]:
         to_bytes(text=ADD_SENDER_MESSAGE_PREFIX),
         # Solana PubicKey should be coerced to bytes using the pythonic bytes method
         # See https://michaelhly.github.io/solana-py/solana.html#solana.publickey.PublicKey
-        bytes(REWARDS_MANAGER_PROGRAM_ACCOUNT),
+        bytes(REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY),
         to_bytes(hexstr=new_sender_address),
     ]
     attestation_bytes = to_bytes(text="").join(items)

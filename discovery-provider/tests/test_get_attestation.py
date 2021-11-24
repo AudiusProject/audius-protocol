@@ -5,10 +5,11 @@ from web3 import Web3
 from eth_keys import keys
 from eth_utils.conversions import to_bytes
 from hexbytes import HexBytes
+from solana.publickey import PublicKey
 
 from src.queries.get_attestation import (
     ADD_SENDER_MESSAGE_PREFIX,
-    REWARDS_MANAGER_PROGRAM_ACCOUNT,
+    REWARDS_MANAGER_ACCOUNT,
     Attestation,
     AttestationError,
     get_attestation,
@@ -148,7 +149,7 @@ def test_get_create_sender_attestation(app, patch_get_all_other_nodes):
     # Ensure we can derive the owner wallet from the signed stringified attestation
     items = [
         to_bytes(text=ADD_SENDER_MESSAGE_PREFIX),
-        bytes(REWARDS_MANAGER_PROGRAM_ACCOUNT),
+        bytes(PublicKey(REWARDS_MANAGER_ACCOUNT)),
         to_bytes(hexstr=new_sender_address),
     ]
     attestation_bytes = to_bytes(text="").join(items)
