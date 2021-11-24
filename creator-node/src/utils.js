@@ -472,9 +472,13 @@ async function writeStreamToFileSystem (stream, expectedStoragePath, createDir =
     await createDirForFile(expectedStoragePath)
   }
 
-  const destinationStream = fs.createWriteStream(expectedStoragePath)
-  stream.pipe(destinationStream)
+  await streamFileToDiskHelper(stream, expectedStoragePath)
+}
+
+async function streamFileToDiskHelper (stream, expectedStoragePath) {
   return new Promise((resolve, reject) => {
+    const destinationStream = fs.createWriteStream(expectedStoragePath)
+    stream.pipe(destinationStream)
     destinationStream.on('finish', () => {
       resolve()
     })

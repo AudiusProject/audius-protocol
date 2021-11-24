@@ -174,6 +174,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
 
     // First try to fetch from other cnode gateways if user has non-empty replica set.
     if (gatewayUrlsMapped.length > 0) {
+      let url
       try {
         let response
         // ..replace(/\/$/, "") removes trailing slashes
@@ -182,7 +183,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
         decisionTree.push({ stage: 'About to race requests via gateways', vals: gatewayUrlsMapped, time: Date.now() })
         // Note - Requests are intentionally not parallel to minimize additional load on gateways
         for (let index = 0; index < gatewayUrlsMapped.length; index++) {
-          const url = gatewayUrlsMapped[index]
+          url = gatewayUrlsMapped[index]
           decisionTree.push({ stage: 'Fetching from gateway', vals: url, time: Date.now() })
           try {
             const resp = await axios({
@@ -213,7 +214,7 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
         fileFound = true
 
         decisionTree.push({ stage: 'Wrote file to file system after fetching from gateway', vals: expectedStoragePath, time: Date.now() })
-        logger.info(`wrote file to ${expectedStoragePath}`)
+        logger.info(`wrote file to ${expectedStoragePath}, obtained via other content node gateway: ${url}`)
       } catch (e) {
         const errorMsg = `Failed to retrieve file for multihash ${multihash} from other creator node gateways`
         decisionTree.push({ stage: errorMsg, vals: e.message, time: Date.now() })
@@ -278,6 +279,8 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     }
 
     // verify that the contents of the file match the file's cid
+    const fileData = (await fs.readFile(expectedStoragePath)).toString().slice(0, 99)
+    const fileSize = (await fs.stat(expectedStoragePath)).size
     try {
       decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
       const ipfsHashOnly = await ipfsAdd.ipfsAddNonImages(expectedStoragePath, { onlyHash: true, timeout: 10000 })
@@ -287,12 +290,11 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
         await fs.unlink(expectedStoragePath)
         throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${ipfsHashOnly}`)
       }
-      decisionTree.push({ stage: 'Successfully verified the file contents for the CID', vals: multihash, time: Date.now() })
+      decisionTree.push({ stage: 'Successfully verified the file contents for the CID', vals: multihash, time: Date.now(), fileData, fileSize })
     } catch (e) {
-      decisionTree.push({ stage: `Error during content verification for multihash`, vals: multihash, time: Date.now() })
+      decisionTree.push({ stage: `Error during content verification for multihash`, vals: multihash, time: Date.now(), fileData, fileSize })
       throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
     }
-
     // If error, return boolean failure indicator + print logs
   } catch (e) {
     decisionTree.push({ stage: `saveFileForMultihashToFS error`, vals: e.message, time: Date.now() })
