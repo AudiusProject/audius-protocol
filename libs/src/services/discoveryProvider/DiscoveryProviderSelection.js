@@ -125,7 +125,10 @@ class DiscoveryProviderSelection extends ServiceSelection {
       version,
       plays
     } = data.data
-    const { tx_info: { slot_diff: slotDiffPlays } } = plays
+    let slotDiffPlays = null
+    if (plays && plays.tx_info) {
+      slotDiffPlays = plays.tx_info.slot_diff
+    }
 
     if (this.monitoringCallbacks.healthCheck) {
       const url = new URL(response.config.url)
