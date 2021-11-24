@@ -108,7 +108,7 @@ if [ -z "${isCIBuild}" ]; then
   docker exec -i $DB_CONTAINER /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_creator_node_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_creator_node_test\""
 fi
 
-rm -r $storagePath
+rm -rf $storagePath
 mkdir -p $storagePath
 
 # linter
