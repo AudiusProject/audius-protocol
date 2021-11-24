@@ -46,7 +46,7 @@ def fetch_and_cache_latest_program_tx_redis(
     cache_key: str
 ):
     transactions_history = (
-        solana_client_manager.get_confirmed_signature_for_address2(
+        solana_client_manager.get_signatures_for_address(
             program, before=None, limit=1
         )
     )

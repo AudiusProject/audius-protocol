@@ -248,7 +248,7 @@ latest_processed_slot = 200 <- latest slot stored in database
 last_tx_signature = None <- None by design, as we must start querying the most recent chain
 transactions
 
-transactions_history = get_confirmed_signature_for_address_2(before=None) =
+transactions_history = get_signatures_for_address(before=None) =
 [
     sig300, slot=230,
     sig299, slot=230
@@ -262,7 +262,7 @@ tx_signature batches that now has the following state:
 tx_batches = [batch_300_to_250]
 
 Now, last_tx_signature = sig250
-transactions_history = get_confirmed_signature_for_address_2(before=None) =
+transactions_history = get_signatures_for_address(before=None) =
 [
     sig250, slot=210
     sig249, slot=209

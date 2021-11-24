@@ -77,34 +77,34 @@ class SolanaClientManager:
     ):
         """Fetches confirmed signatures for transactions given an address."""
 
-        def handle_get_confirmed_signature_for_address(client, index):
+        def handle_get_signatures_for_address(client, index):
             endpoint = self.endpoints[index]
             num_retries = retries
             while num_retries > 0:
                 try:
-                    logger.info(f"solana_client_manager.py | handle_get_confirmed_signature_for_address | Fetching {before} {endpoint}")
-                    transactions: ConfirmedSignatureForAddressResponse = client.get_confirmed_signature_for_address(account, before, limit)
-                    logger.info(f"solana_client_manager.py | handle_get_confirmed_signature_for_address | Finished fetching {before} {endpoint}")
+                    logger.info(f"solana_client_manager.py | handle_get_signatures_for_address | Fetching {before} {endpoint}")
+                    transactions: ConfirmedSignatureForAddressResponse = client.get_signatures_for_address(account, before, limit)
+                    logger.info(f"solana_client_manager.py | handle_get_signatures_for_address | Finished fetching {before} {endpoint}")
                     return transactions
                 except Exception as e:
                     logger.error(
-                        f"solana_client_manager.py | get_confirmed_signature_for_address | \
+                        f"solana_client_manager.py | handle_get_signatures_for_address | \
                             Error fetching account {account} from endpoint {endpoint}, {e}",
                         exc_info=True,
                     )
                 num_retries -= 1
                 time.sleep(DELAY_SECONDS)
                 logger.error(
-                    f"solana_client_manager.py | get_confirmed_signature_for_address | Retrying account fetch: {account} with endpoint {endpoint}"
+                    f"solana_client_manager.py | handle_get_signatures_for_address | Retrying account fetch: {account} with endpoint {endpoint}"
                 )
             raise Exception(
-                f"solana_client_manager.py | get_confirmed_signature_for_address | Failed to fetch account {account} with endpoint {endpoint}"
+                f"solana_client_manager.py | handle_get_signatures_for_address | Failed to fetch account {account} with endpoint {endpoint}"
             )
 
         return _try_all_with_timeout(
             self.clients,
-            handle_get_confirmed_signature_for_address,
-            "solana_client_manager.py | get_confirmed_signature_for_address | All requests failed"
+            handle_get_signatures_for_address,
+            "solana_client_manager.py | get_signatures_for_address | All requests failed"
         )
 
 @contextmanager
