@@ -27,9 +27,9 @@ const MAX_MAKE_REQUEST_RETRY_COUNT = 5
  *  @param {function} monitoringCallbacks.request
  *  @param {function} monitoringCallbacks.healthCheck
  * @param {number?} selectionRequestTimeout the amount of time (ms) an individual request should take before reselecting
-* @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
+ * @param {number?} selectionRequestRetries the number of retries to a given discovery node we make before reselecting
+ * @param {number?} unhealthySlotDiffPlays the number of slots we would consider a discovery node unhealthy
  */
-
 class DiscoveryProvider {
   constructor (
     whitelist,
@@ -41,7 +41,8 @@ class DiscoveryProvider {
     selectionCallback,
     monitoringCallbacks = {},
     selectionRequestTimeout,
-    selectionRequestRetries
+    selectionRequestRetries,
+    unhealthySlotDiffPlays
   ) {
     this.whitelist = whitelist
     this.blacklist = blacklist
@@ -55,10 +56,12 @@ class DiscoveryProvider {
       reselectTimeout,
       selectionCallback,
       monitoringCallbacks,
-      requestTimeout: selectionRequestTimeout
+      requestTimeout: selectionRequestTimeout,
+      unhealthySlotDiffPlays: unhealthySlotDiffPlays
     }, this.ethContracts)
     this.selectionRequestTimeout = selectionRequestTimeout || REQUEST_TIMEOUT_MS
     this.selectionRequestRetries = selectionRequestRetries || MAX_MAKE_REQUEST_RETRY_COUNT
+    this.unhealthySlotDiffPlays = unhealthySlotDiffPlays
 
     this.monitoringCallbacks = monitoringCallbacks
   }
@@ -563,7 +566,8 @@ class DiscoveryProvider {
    * @param {{
      endpoint: string,
      urlParams: string,
-     queryParams: object
+     queryParams: object,
+     method: string
    }} requestObj
    * @param {string} discoveryProviderEndpoint
    * @returns
@@ -625,10 +629,22 @@ class DiscoveryProvider {
     return parsedResponse
   }
 
-  // requestObj consists of multiple properties
-  // endpoint - base route
-  // urlParams - string of url params to be appended after base route
-  // queryParams - object of query params to be appended to url
+  /**
+   * Makes a request to a discovery node, reselecting if necessary
+   * @param {{
+   *  endpoint: string
+   *  urlParams: object
+   *  queryParams: object
+   *  method: string
+   * }} {
+   *  endpoint: the base route
+   *  urlParams: string of URL params to be concatenated after base route
+   *  queryParams: URL query (search) params
+   *  method: string HTTP method
+   * }
+   * @param {boolean?} retry whether to retry on failure
+   * @param {number?} attemptedRetries number of attempted retries (stops retrying at max)
+   */
   async _makeRequest (requestObj, retry = true, attemptedRetries = 0) {
     try {
       const newDiscProvEndpoint = await this.getHealthyDiscoveryProviderEndpoint(attemptedRetries)
@@ -657,9 +673,11 @@ class DiscoveryProvider {
       return null
     }
 
+    const couldNotFindHealthy = this.ethContracts && this.ethContracts.isInRegressedMode()
+
+    // Check to see if discovery node is behind by blocks (indexing data contracts)
     if (
-      this.ethContracts &&
-      !this.ethContracts.isInRegressedMode() &&
+      couldNotFindHealthy &&
       'latest_indexed_block' in parsedResponse &&
       'latest_chain_block' in parsedResponse
     ) {
@@ -674,10 +692,44 @@ class DiscoveryProvider {
         (chainBlock - indexedBlock) > UNHEALTHY_BLOCK_DIFF
       ) {
         if (retry) {
-          // If disc prov is an unhealthy num blocks behind, retry with same disc prov with
-          // hopes it will catch up
-          const blockDiff = chainBlock && indexedBlock ? ` [block diff: ${chainBlock - indexedBlock}]` : ''
-          console.info(`${this.discoveryProviderEndpoint} is too far behind${blockDiff}. Retrying request at attempt #${attemptedRetries}...`)
+          // If discovery node is an unhealthy num blocks behind, retry
+          const blockDiff = chainBlock && indexedBlock
+            ? ` [block diff: ${chainBlock - indexedBlock}]`
+            : ''
+          console.info(
+            `${this.discoveryProviderEndpoint} is too far behind${blockDiff}. Retrying request at attempt #${attemptedRetries}...`
+          )
+          return this._makeRequest(requestObj, retry, attemptedRetries + 1)
+        }
+        return null
+      }
+    }
+
+    // Check to see if discovery node is behind by slots on plays (indexing sol plays)
+    if (
+      this.unhealthySlotDiffPlays !== null &&
+      couldNotFindHealthy &&
+      'latest_indexed_slot_plays' in parsedResponse &&
+      'latest_chain_slot_plays' in parsedResponse
+    ) {
+      const {
+        latest_indexed_slot_plays: indexedSlotPlays,
+        latest_chain_slot_plays: chainSlotPlays
+      } = parsedResponse
+
+      if (
+        !chainSlotPlays ||
+        !indexedSlotPlays ||
+        (chainSlotPlays - indexedSlotPlays) > this.unhealthySlotDiffPlays
+      ) {
+        if (retry) {
+          // If discovery node is an unhealthy num slots behind, retry
+          const slotDiff = chainSlotPlays && indexedSlotPlays
+            ? ` [slot diff: ${chainSlotPlays - indexedSlotPlays}]`
+            : ''
+          console.info(
+            `${this.discoveryProviderEndpoint} is too far behind${slotDiff}. Retrying request at attempt #${attemptedRetries}...
+          `)
           return this._makeRequest(requestObj, retry, attemptedRetries + 1)
         }
         return null

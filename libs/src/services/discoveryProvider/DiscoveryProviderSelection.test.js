@@ -258,6 +258,66 @@ describe('DiscoveryProviderSelection', () => {
     assert.strictEqual(s.isInRegressedMode(), true)
   })
 
+  it('can select the discprov that is the least number of slots behind for the plays program', async () => {
+    const behind20 = 'https://behind20.audius.co'
+    nock(behind20)
+      .get('/health_check')
+      .reply(200, { data: {
+        service: 'discovery-node',
+        version: '1.2.2',
+        block_difference: 0,
+        plays: {
+          tx_info: {
+            slot_diff: 20
+          }
+        }
+      } })
+    const behind40 = 'https://behind40.audius.co'
+    nock(behind40)
+      .get('/health_check')
+      .reply(200, { data: {
+        service: 'discovery-node',
+        version: '1.2.3',
+        block_difference: 0,
+        plays: {
+          tx_info: {
+            slot_diff: 40
+          }
+        }
+      } })
+
+    const s = new DiscoveryProviderSelection(
+      { requestTimeout: 100 },
+      mockEthContracts([behind20, behind40], '1.2.3')
+    )
+    const service = await s.select()
+    assert.strictEqual(service, behind20)
+    assert.deepStrictEqual(s.backups, {
+      [behind20]: {
+        service: 'discovery-node',
+        version: '1.2.2',
+        block_difference: 0,
+        plays: {
+          tx_info: {
+            slot_diff: 20
+          }
+        }
+      },
+      [behind40]: {
+        service: 'discovery-node',
+        version: '1.2.3',
+        block_difference: 0,
+        plays: {
+          tx_info: {
+            slot_diff: 40
+          }
+        }
+      }
+    })
+    assert.strictEqual(s.getTotalAttempts(), 2)
+    assert.strictEqual(s.isInRegressedMode(), true)
+  })
+
   it('will not pick a minor version behind provider', async () => {
     const minorBehind = 'https://minorBehind.audius.co'
     nock(minorBehind)

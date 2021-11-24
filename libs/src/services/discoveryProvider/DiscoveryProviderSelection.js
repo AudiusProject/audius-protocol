@@ -37,6 +37,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
     this.reselectTimeout = config.reselectTimeout
     this.selectionCallback = config.selectionCallback
     this.monitoringCallbacks = config.monitoringCallbacks || {}
+    this.unhealthySlotDiffPlays = config.unhealthySlotDiffPlays
 
     // Whether or not we are running in `regressed` mode, meaning we were
     // unable to select a discovery provider that was up-to-date. Clients may
@@ -118,7 +119,13 @@ class DiscoveryProviderSelection extends ServiceSelection {
    */
   isHealthy (response, urlMap) {
     const { status, data } = response
-    const { block_difference: blockDiff, service, version } = data.data
+    const {
+      block_difference: blockDiff,
+      service,
+      version,
+      plays
+    } = data.data
+    const { tx_info: { slot_diff: slotDiffPlays } } = plays
 
     if (this.monitoringCallbacks.healthCheck) {
       const url = new URL(response.config.url)
@@ -130,6 +137,7 @@ class DiscoveryProviderSelection extends ServiceSelection {
           version,
           git: data.data.git,
           blockDifference: blockDiff,
+          slotDifferencePlays: slotDiffPlays,
           databaseBlockNumber: data.data.db.number,
           webBlockNumber: data.data.web.blocknumber,
           databaseSize: data.data.database_size,
@@ -165,6 +173,13 @@ class DiscoveryProviderSelection extends ServiceSelection {
 
     // If this service is an unhealthy block diff behind, add it as a backup and reject
     if (blockDiff > UNHEALTHY_BLOCK_DIFF) {
+      this.addBackup(urlMap[response.config.url], data.data)
+      return false
+    }
+
+    // If this service is an unhealthy slot diff behind on the plays table, add it
+    // as a backup and reject
+    if (slotDiffPlays > this.unhealthySlotDiffPlays) {
       this.addBackup(urlMap[response.config.url], data.data)
       return false
     }
