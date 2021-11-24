@@ -1,8 +1,10 @@
 const bs58 = require('bs58')
 const Web3 = require('./web3')
 const axios = require('axios')
-const MultiProvider = require('./utils/multiProvider')
-const uuid = require('./utils/uuid')
+
+const UtilsDir = require('./utils/')
+const MultiProvider = UtilsDir.MultiProvider
+const uuid = UtilsDir.uuid
 
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
@@ -142,5 +144,10 @@ class Utils {
     return uuid()
   }
 }
+
+// Export all modules inside ./utils/ dir
+Object.entries(UtilsDir).forEach(
+  ([utilName, utilProps]) => { Utils[utilName] = utilProps }
+)
 
 module.exports = Utils
