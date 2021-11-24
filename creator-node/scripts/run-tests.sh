@@ -79,7 +79,7 @@ if [ "${ARG1}" == "standalone_creator" ]; then
   fi
   if [ ! "${REDIS_EXISTS}" ]; then
     echo "Redis Container doesn't exist"
-    docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$redisPort:6379 redis:5.0.4
+    docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$redisPort:6379 redis:latest
     sleep 1
   fi
 elif [ "${ARG1}" == "teardown" ]; then
@@ -108,6 +108,7 @@ if [ -z "${isCIBuild}" ]; then
   docker exec -i $DB_CONTAINER /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_creator_node_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_creator_node_test\""
 fi
 
+rm -r $storagePath
 mkdir -p $storagePath
 
 # linter
