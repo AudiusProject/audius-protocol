@@ -82,6 +82,6 @@ def cache_latest_sol_play_program_tx(
         )
         raise e
 
-def get_cache_latest_sol_program_tx(redis: Redis, cahce_key: str):
-    latest_sol_db: Optional[CachedProgramTxInfo] = redis_get_json_cached_key_or_restore(redis, cahce_key)
+def get_cache_latest_sol_program_tx(redis: Redis, cache_key: str):
+    latest_sol_db: Optional[CachedProgramTxInfo] = redis_get_json_cached_key_or_restore(redis, cache_key)
     return latest_sol_db
