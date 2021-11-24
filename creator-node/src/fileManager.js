@@ -10,6 +10,7 @@ const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
 const ipfsAdd = require('./ipfsAdd')
+const { findCIDInNetwork } = require('./utils')
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
@@ -270,6 +271,22 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
       }
     }
 
+    // if not found in gateways or IPFS, check nodes on the rest of the network
+    if (!fileFound) {
+      try {
+        const libs = serviceRegistry.libs
+        const found = await findCIDInNetwork(expectedStoragePath, multihash, logger, libs, null, gatewaysToTry)
+        if (found) {
+          decisionTree.push({ stage: `Found file ${multihash} by calling "findCIDInNetwork"`, vals: multihash, time: Date.now() })
+          fileFound = true
+        } else {
+          decisionTree.push({ stage: `Failed to retrieve file for multihash ${multihash} by calling findCIDInNetwork`, vals: multihash, time: Date.now() })
+        }
+      } catch (e) {
+        decisionTree.push({ stage: `Failed to retrieve file for multihash ${multihash} by calling findCIDInNetwork`, vals: multihash, time: Date.now() })
+      }
+    }
+
     // error if file was not found on any gateway or ipfs
     if (!fileFound) {
       const retrievalSourcesString = (SaveFileForMultihashToFSIPFSFallback) ? 'ipfs & other creator node gateways' : 'creator node gateways'
@@ -292,7 +309,6 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
       decisionTree.push({ stage: `Error during content verification for multihash`, vals: multihash, time: Date.now() })
       throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
     }
-
     // If error, return boolean failure indicator + print logs
   } catch (e) {
     decisionTree.push({ stage: `saveFileForMultihashToFS error`, vals: e.message, time: Date.now() })
