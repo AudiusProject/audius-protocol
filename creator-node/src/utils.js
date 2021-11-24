@@ -4,7 +4,9 @@ const path = require('path')
 const { BufferListStream } = require('bl')
 const axios = require('axios')
 const spawn = require('child_process').spawn
+const stream = require('stream')
 const { promisify } = require('util')
+const pipeline = promisify(stream.pipeline)
 
 const { logger: genericLogger } = require('./logging')
 const models = require('./models')
@@ -467,24 +469,20 @@ async function createDirForFile (fileStoragePath) {
   await fs.ensureDir(dir)
 }
 
-async function writeStreamToFileSystem (stream, expectedStoragePath, createDir = false) {
+async function writeStreamToFileSystem (inputStream, expectedStoragePath, createDir = false) {
   if (createDir) {
     await createDirForFile(expectedStoragePath)
   }
 
-  await streamFileToDiskHelper(stream, expectedStoragePath)
+  await streamFileToDiskHelper(inputStream, expectedStoragePath)
 }
 
-async function streamFileToDiskHelper (stream, expectedStoragePath) {
-  return new Promise((resolve, reject) => {
-    const destinationStream = fs.createWriteStream(expectedStoragePath)
-    stream.pipe(destinationStream)
-    destinationStream.on('finish', () => {
-      resolve()
-    })
-    destinationStream.on('error', err => { reject(err) })
-    stream.on('error', err => { destinationStream.end(); reject(err) })
-  })
+async function streamFileToDiskHelper (inputStream, expectedStoragePath) {
+  // https://nodejs.org/en/docs/guides/backpressuring-in-streams/
+  await pipeline(
+    inputStream, // input stream
+    fs.createWriteStream(expectedStoragePath) // output stream
+  )
 }
 
 /**
