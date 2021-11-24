@@ -31,7 +31,8 @@ const NotificationType = Object.freeze({
   RemixCreate: 'RemixCreate',
   RemixCosign: 'RemixCosign',
   TrendingTrack: 'TrendingTrack',
-  ChallengeReward: 'ChallengeReward'
+  ChallengeReward: 'ChallengeReward',
+  TierChange: 'TierChange'
 })
 
 const ClientNotificationTypes = new Set([
@@ -41,7 +42,9 @@ const ClientNotificationTypes = new Set([
   NotificationType.Announcement,
   NotificationType.UserSubscription,
   NotificationType.Milestone,
-  NotificationType.TrendingTrack
+  NotificationType.TrendingTrack,
+  NotificationType.ChallengeReward,
+  NotificationType.TierChange
 ])
 
 const Entity = Object.freeze({
@@ -196,7 +199,7 @@ const getCommonNotificationsFields = (notification) => ({
   isHidden: notification.isHidden,
   isRead: notification.isRead,
   isViewed: notification.isViewed,
-  timestamp: notification.timestamp
+  timestamp: notification.timestamp || notification.createdAt
 })
 
 const notificationResponseMap = {

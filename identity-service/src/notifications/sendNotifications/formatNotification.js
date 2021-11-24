@@ -4,9 +4,7 @@ const {
   notificationTypes,
   actionEntityTypes
 } = require('../constants')
-
-// Debouncing time for track notification being removed by playlist/album notif
-const PENDING_CREATE_DEDUPE_SEC = 60 * 1000
+const notificationUtils = require('./utils')
 
 const shouldNotifyUser = (userId, prop, settings) => {
   const userNotification = { notifyMobile: false, notifyBrowserPush: false }
@@ -201,6 +199,22 @@ async function formatNotifications (notifications, notificationSettings, tx) {
       }
     }
 
+    // Handle 'tier change' notification type
+    if (notif.type === notificationTypes.TierChange) {
+      const formattedTierChangeNotification = {
+        ...notif,
+        tier: notif.metadata.tier,
+        actions: [{
+          actionEntityType: actionEntityTypes.User,
+          actionEntityId: notif.initiator,
+          blocknumber
+        }],
+        type: notificationTypes.TierChange
+      }
+      formattedNotifications.push(formattedTierChangeNotification)
+      userIds.add(formattedTierChangeNotification.initiator)
+    }
+
     // Handle the 'create' notification type, track/album/playlist
     if (notif.type === notificationTypes.Create.base) {
       await _processCreateNotifications(notif, tx)
@@ -219,7 +233,7 @@ async function _processSubscriberPushNotifications () {
   for (var i = 0; i < subscriberPushNotifications.length; i++) {
     let entry = subscriberPushNotifications[i]
     let timeSince = currentTime - entry.time
-    if (timeSince > PENDING_CREATE_DEDUPE_SEC) {
+    if (timeSince > notificationUtils.getPendingCreateDedupeMs()) {
       filteredFormattedCreateNotifications.push(entry)
       users.push(entry.initiator)
       entry.pending = false

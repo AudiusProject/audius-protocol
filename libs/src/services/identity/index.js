@@ -3,6 +3,9 @@ const uuid = require('../../utils/uuid')
 
 const Requests = require('./requests')
 
+// Only probabilistically capture 50% of relay captchas
+const RELAY_CAPTCHA_SAMPLE_RATE = 0.5
+
 class IdentityService {
   constructor (identityServiceEndpoint, captcha) {
     this.identityServiceEndpoint = identityServiceEndpoint
@@ -248,8 +251,9 @@ class IdentityService {
   }
 
   async relay (contractRegistryKey, contractAddress, senderAddress, encodedABI, gasLimit) {
+    const shouldCaptcha = Math.random() < RELAY_CAPTCHA_SAMPLE_RATE
     let token
-    if (this.captcha) {
+    if (this.captcha && shouldCaptcha) {
       try {
         token = await this.captcha.generate('identity/relay')
       } catch (e) {

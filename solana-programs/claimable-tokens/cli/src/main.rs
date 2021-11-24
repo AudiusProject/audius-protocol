@@ -1,9 +1,13 @@
 use std::convert::TryInto;
+use std::ops::Mul;
 
 use anyhow::anyhow;
 use anyhow::{bail, Context};
+use borsh::BorshSerialize;
+use claimable_tokens::state::{NonceAccount, TransferInstructionData};
+use claimable_tokens::utils::program::{find_nonce_address, NONCE_ACCOUNT_PREFIX};
 use claimable_tokens::{
-    instruction::{CreateTokenAccount, Transfer},
+    instruction::CreateTokenAccount,
     utils::program::{find_address_pair, EthereumAddress},
 };
 use clap::{
@@ -93,6 +97,11 @@ fn transfer(
     let eth_pubkey = libsecp256k1::PublicKey::from_secret_key(&secret_key);
     let eth_address = construct_eth_pubkey(&eth_pubkey);
     let pair = find_address_pair(&claimable_tokens::id(), &mint, eth_address)?;
+    let nonce_acct_seed = [NONCE_ACCOUNT_PREFIX.as_ref(), eth_address.as_ref()].concat();
+
+    let (_, user_nonce_acc, _) =
+        find_nonce_address(&claimable_tokens::id(), &mint, &nonce_acct_seed);
+    println!("Found user nonce account addr ={:?}", user_nonce_acc);
 
     // If `recipient` token account provided - we will use it,
     // otherwise will use token account associated with `config.owner`
@@ -121,7 +130,8 @@ fn transfer(
                     .rpc_client
                     .get_account_with_commitment(&mint, config.rpc_client.commitment())?;
                 // Unpack for checking that is mint account
-                Mint::unpack(mint_acc_response.value.unwrap().data())?;
+                let mint_data = Mint::unpack(mint_acc_response.value.unwrap().data())?;
+                println!("SPL mint info {:?}", &mint_data);
             } else {
                 instructions.push(create_associated_token_account(
                     &config.fee_payer.pubkey(),
@@ -135,20 +145,45 @@ fn transfer(
         Ok,
     )?;
 
-    let mint_raw_data = config.rpc_client.get_account_data(&mint)?;
-    let mint_data = Mint::unpack(mint_raw_data.as_ref())?;
+    let mint_acc_response = config
+        .rpc_client
+        .get_account_with_commitment(&mint, config.rpc_client.commitment())?;
+    // Unpack for checking that is mint account
+    let mint_data = Mint::unpack(mint_acc_response.value.unwrap().data())?;
+    println!("SPL mint info {:?}", &mint_data);
 
+    let nonce_raw_data_fetch = config.rpc_client.get_account_data(&user_nonce_acc);
+    let mut current_user_nonce: u64 = 0;
+    if !nonce_raw_data_fetch.is_err() {
+        let nonce_raw_data = nonce_raw_data_fetch.unwrap();
+        let nonce_data = NonceAccount::unpack(nonce_raw_data.as_ref())?;
+        current_user_nonce = nonce_data.nonce;
+    }
+
+    // Multiply the provided amount value by the number of decimals for this SPL token
+    let dec = 10.0f64.powf(mint_data.decimals as f64);
+    let converted_amount = amount.mul(dec);
+
+    // Generate transfer instruction data
+    let transfer_instr_data = TransferInstructionData {
+        target_pubkey: user_acc,
+        amount: converted_amount as u64,
+        nonce: current_user_nonce,
+    };
+
+    println!("Transfer details = {:?}", transfer_instr_data);
+    let encoded = transfer_instr_data.try_to_vec().unwrap();
+    let secp_instr = new_secp256k1_instruction(&secret_key, &encoded);
     let instructions = &[
-        new_secp256k1_instruction(&secret_key, &user_acc.to_bytes()),
+        secp_instr,
         claimable_tokens::instruction::transfer(
             &claimable_tokens::id(),
+            &config.fee_payer.pubkey(),
             &pair.derive.address,
             &user_acc,
+            &user_nonce_acc,
             &pair.base.address,
-            Transfer {
-                eth_address,
-                amount: spl_token::ui_amount_to_amount(amount, mint_data.decimals),
-            },
+            eth_address.clone(),
         )?,
     ];
     let mut tx = Transaction::new_with_payer(instructions, Some(&config.fee_payer.pubkey()));
@@ -157,7 +192,7 @@ fn transfer(
     let tx_hash = config
         .rpc_client
         .send_and_confirm_transaction_with_spinner(&tx)?;
-    println!("Claim completed, transaction hash: {:?}", tx_hash);
+    println!("Transfer completed, transaction hash: {:?}", tx_hash);
     Ok(())
 }
 
@@ -317,8 +352,9 @@ fn main() -> anyhow::Result<()> {
                 Arg::with_name("recipient")
                     .long("recipient")
                     .validator(is_pubkey)
-                    .value_name("SOLANA_ADDRESS")
+                    .value_name("RECIPIENT_ADDRESS")
                     .takes_value(true)
+                    .required(true)
                     .help("Recipient of transfer."),
                 ])
                 .help("Transfers some amount of tokens from your account associated with Ethereum address to another account."),
@@ -394,7 +430,9 @@ fn main() -> anyhow::Result<()> {
                 let mint = pubkey_of(args, "mint").unwrap();
                 let recipient = pubkey_of(args, "recipient");
                 let amount = value_t!(args.value_of("amount"), f64)?;
-
+                println!("Mint = {:?}", mint);
+                println!("Recipient = {:?}", recipient);
+                println!("Amount (wei/lamports base amount) = {:?}", amount);
                 Ok((privkey, mint, recipient, amount))
             })()
             .context("Preparing parameters for execution command `transfer`")?;

@@ -121,10 +121,10 @@ class TransactionHandler {
    * Returns null for unparsable strings.
    */
   _parseSolanaErrorCode (errorMessage) {
-    const matcher = /(?<=custom program error: 0x)(.*)$/
+    const matcher = /(?:custom program error: 0x)(.*)$/
     const res = errorMessage.match(matcher)
-    if (!res || !res.length) return null
-    return parseInt(res[0], 16) || null
+    if (!res || !res.length === 2) return null
+    return parseInt(res[1], 16) || null
   }
 }
 

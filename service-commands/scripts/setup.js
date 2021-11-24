@@ -7,7 +7,7 @@ const {
   identityServiceUp,
   Service,
   SetupCommand,
-  runSetupCommand
+  runSetupCommand,
 } = ServiceCommands
 
 const NUM_CREATOR_NODES = 4
