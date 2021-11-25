@@ -147,12 +147,14 @@ import {
   EXPLORE_REMIXABLES_PAGE,
   CHECK_PAGE,
   getPathname,
-  TRENDING_PLAYLISTS_PAGE_LEGACY
+  TRENDING_PLAYLISTS_PAGE_LEGACY,
+  DEACTIVATE_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
 import styles from './App.module.css'
 import AnimatedSwitch from './animated-switch/AnimatedSwitch'
+import { DeactivateAccountPage } from './deactivate-account-page/DeactivateAccountPage'
 import DiscoveryNodeSelection from './discovery-node-selection/DiscoveryNodeSelection'
 import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
 import { ExploreCollectionsVariant } from './explore-page/store/types'
@@ -737,6 +739,12 @@ class App extends Component {
                 path={AUDIO_PAGE}
                 isMobile={isMobileClient}
                 component={AudioRewardsPage}
+              />
+              <Route
+                exact
+                path={DEACTIVATE_PAGE}
+                isMobile={isMobileClient}
+                component={DeactivateAccountPage}
               />
               <Route
                 exact

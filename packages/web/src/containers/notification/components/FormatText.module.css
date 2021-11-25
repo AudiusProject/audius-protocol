@@ -27,7 +27,7 @@
 .isMobile .headerLink:active,
 .isMobile .headerLink a,
 .isMobile .headerLink :global(.artistPopover) a {
- font-size: var(--font-xs);
+  font-size: var(--font-xs);
 }
 
 .headerLink:hover,
@@ -42,6 +42,12 @@
 .userName {
   display: flex;
   align-items: center;
+}
+.userNameDeactivated {
+  color: var(--neutral-light-1);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  line-height: 21px;
 }
 
 .badges {

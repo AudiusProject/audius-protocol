@@ -11,11 +11,13 @@ import { Name, PlaybackSource } from 'common/models/Analytics'
 import { ID, UID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import { Track } from 'common/models/Track'
+import { User } from 'common/models/User'
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { getCollection } from 'common/store/cache/collections/selectors'
 import { getId } from 'common/store/cache/selectors'
 import { getTrack } from 'common/store/cache/tracks/selectors'
+import { getUser } from 'common/store/cache/users/selectors'
 import { makeUid, Uid } from 'common/utils/uid'
 import { make } from 'store/analytics/actions'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
@@ -153,9 +155,9 @@ export function* watchPlay() {
 
     // Play a specific uid
     const playerUid = yield select(getPlayerUid)
-    const playerTrackId = yield select(getPlayerTrackId)
+    const playerTrackId: ID = yield select(getPlayerTrackId)
     if (uid || trackId) {
-      const playActionTrack = trackId
+      const playActionTrack: Track = trackId
         ? yield select(getTrack, { id: trackId })
         : yield select(getTrack, { uid })
 
@@ -165,8 +167,15 @@ export function* watchPlay() {
         track: playActionTrack
       })
 
+      const user: User = playActionTrack
+        ? yield select(getUser, { id: playActionTrack.owner_id })
+        : null
+
       // Skip deleted tracks
-      if (playActionTrack && playActionTrack.is_delete) {
+      if (
+        (playActionTrack && playActionTrack.is_delete) ||
+        user?.is_deactivated
+      ) {
         yield put(next({}))
         return
       }
@@ -258,10 +267,11 @@ export function* watchNext() {
       return
     }
 
-    const id = yield select(getQueueTrackId)
-    const track = yield select(getTrack, { id })
-    // Skip deleted track
-    if (track && track.is_delete) {
+    const id: ID = yield select(getQueueTrackId)
+    const track: Track = yield select(getTrack, { id })
+    const user: User = yield select(getUser, { id: track?.owner_id })
+    // Skip deleted or owner deactivated track
+    if (track && (track.is_delete || user?.is_deactivated)) {
       yield put(next({ skip }))
     } else {
       const uid = yield select(getUid)
@@ -320,13 +330,14 @@ export function* watchPrevious() {
     }
 
     const uid = yield select(getUid)
-    const id = yield select(getQueueTrackId)
-    const track = yield select(getTrack, { id })
+    const id: ID = yield select(getQueueTrackId)
+    const track: Track = yield select(getTrack, { id })
     const source = yield select(getSource)
+    const user: User = yield select(getUser, { id: track?.owner_id })
 
     // If we move to a previous song that's been
     // deleted, skip over it.
-    if (track && track.is_delete) {
+    if (track && (track.is_delete || user?.is_deactivated)) {
       yield put(previous({}))
     } else {
       const index = yield select(getIndex)

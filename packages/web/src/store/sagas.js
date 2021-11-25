@@ -11,6 +11,7 @@ import artistRecommendationsSagas from 'containers/artist-recommendations/store/
 import rewardsPageSagas from 'containers/audio-rewards-page/store/sagas'
 import changePasswordSagas from 'containers/change-password/store/sagas'
 import collectionSagas from 'containers/collection-page/store/sagas'
+import deactivateAccountSagas from 'containers/deactivate-account-page/store/sagas'
 import deletedSagas from 'containers/deleted-page/store/sagas'
 import exploreCollectionsPageSagas from 'containers/explore-page/store/collections/sagas'
 import explorePageSagas from 'containers/explore-page/store/sagas'
@@ -119,6 +120,7 @@ export default function* rootSaga() {
     addToPlaylistSagas(),
     artistRecommendationsSagas(),
     changePasswordSagas(),
+    deactivateAccountSagas(),
     deletedSagas(),
     favoritePageSagas(),
     firstUploadModalSagas(),

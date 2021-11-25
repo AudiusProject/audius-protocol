@@ -183,7 +183,7 @@ const ConnectedTrackTile = memo(
       clickOverflow(trackId, overflowActions)
     }
 
-    if (is_delete) return null
+    if (is_delete || user?.is_deactivated) return null
 
     return (
       <TrackTile

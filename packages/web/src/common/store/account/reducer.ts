@@ -30,6 +30,10 @@ type FetchAccountSucceededPayload = {
   hasFavoritedItem: boolean
 }
 
+type FetchAccountFailedPayload = {
+  reason: 'ACCOUNT_DEACTIVATED' | 'ACCOUNT_NOT_FOUND' | 'LIBS_ERROR'
+}
+
 type RenameAccountPlaylistPayload = {
   collectionId: ID
   name: string
@@ -83,7 +87,10 @@ const slice = createSlice({
       state.status = Status.SUCCESS
       state.hasFavoritedItem = hasFavoritedItem
     },
-    fetchAccountFailed: state => {
+    fetchAccountFailed: (
+      state,
+      _action: PayloadAction<FetchAccountFailedPayload>
+    ) => {
       state.status = Status.ERROR
     },
     fetchAccountNoInternet: state => {

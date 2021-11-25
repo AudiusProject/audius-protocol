@@ -1,0 +1,17 @@
+/** Custom Drawer Title **/
+.drawerTitle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 24px 24px;
+}
+.drawerTitleHeader {
+  margin-bottom: 16px;
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+}
+.drawerTitleWarning {
+  color: var(--accent-red);
+  font-weight: var(--font-demi-bold);
+}

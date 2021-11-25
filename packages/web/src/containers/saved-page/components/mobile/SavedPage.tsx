@@ -119,7 +119,7 @@ const TracksLineup = ({
     trackTitle: entry.title,
     trackId: entry.track_id,
     uid: entry.uid,
-    isDeleted: entry.is_delete
+    isDeleted: entry.is_delete || !!entry.user.is_deactivated
   }))
   const contentRefCallback = useOffsetScroll()
   return (
