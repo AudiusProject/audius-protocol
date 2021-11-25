@@ -35,5 +35,5 @@ export const getCollections = (
     user: users[c.playlist_owner_id]
   }))
 
-  return userCollections
+  return userCollections.filter(playlist => !playlist.user.is_deactivated)
 }

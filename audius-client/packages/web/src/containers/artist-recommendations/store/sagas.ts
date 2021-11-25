@@ -22,7 +22,7 @@ export function* fetchRelatedArtists(action: Action) {
     })
 
     let filteredArtists = relatedArtists
-      .filter(user => !user.does_current_user_follow)
+      .filter(user => !user.does_current_user_follow && !user.is_deactivated)
       .slice(0, 5)
     if (filteredArtists.length === 0) {
       const showTopArtistRecommendationsPercent =
@@ -52,7 +52,7 @@ function* fetchTopArtists() {
     limit: 50
   })
   const filteredArtists = topArtists.filter(
-    user => !user.does_current_user_follow
+    user => !user.does_current_user_follow && !user.is_deactivated
   )
   if (filteredArtists.length > 0) {
     // Pick 5 at random

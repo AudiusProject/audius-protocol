@@ -228,7 +228,7 @@ const ProfileWrapping = props => {
         </div>
       </div>
     )
-  } else if (!props.loading) {
+  } else if (!props.loading && !props.isDeactivated) {
     leftNav = (
       <div className={styles.about}>
         <ProfilePageBadge userId={props.userId} className={styles.badge} />
@@ -324,7 +324,9 @@ const ProfileWrapping = props => {
               ? props.updatedProfilePicture.error
               : false
           }
-          profilePictureSizes={props.profilePictureSizes}
+          profilePictureSizes={
+            props.isDeactivated ? null : props.profilePictureSizes
+          }
           loading={props.loading}
           editMode={props.editMode}
           hasProfilePicture={props.hasProfilePicture}
@@ -333,18 +335,23 @@ const ProfileWrapping = props => {
         <div className={styles.nameWrapper}>
           <BadgeArtist
             className={cn(styles.badgeArtist, {
-              [styles.hide]: !props.isArtist || props.loading
+              [styles.hide]:
+                !props.isArtist || props.loading || props.isDeactivated
             })}
           />
-          <EditableName
-            className={props.editMode ? styles.editableName : null}
-            name={props.name}
-            editable={props.editMode}
-            verified={props.verified}
-            onChange={props.onUpdateName}
-            userId={props.userId}
-          />
-          <h2 className={styles.handle}>{props.handle}</h2>
+          {!props.isDeactivated && (
+            <>
+              <EditableName
+                className={props.editMode ? styles.editableName : null}
+                name={props.name}
+                editable={props.editMode}
+                verified={props.verified}
+                onChange={props.onUpdateName}
+                userId={props.userId}
+              />
+              <h2 className={styles.handle}>{props.handle}</h2>
+            </>
+          )}
         </div>
       </div>
       <div className={styles.info}>{leftNav}</div>

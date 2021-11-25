@@ -242,7 +242,11 @@ const NotificationBlock = (props: NotificationBlockProps) => {
         {shouldShowUserImage && (
           <UserImage
             className={styles.singleUserImage}
-            user={users ? users![0] : user!}
+            user={
+              users
+                ? !users![0].is_deactivated && users![0]
+                : !user!.is_deactivated && user!
+            }
             onProfileClick={onProfileClick}
           />
         )}

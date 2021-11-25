@@ -18,7 +18,7 @@ const getUnsortedSearchArtists = createShallowSelector(
 export const makeGetSearchArtists = () => {
   return createSelector(
     [getSearchArtistsIds, getUnsortedSearchArtists],
-    (ids, artists) => ids.map(id => artists[id])
+    (ids, artists) => ids.map(id => artists[id]).filter(a => !a.is_deactivated)
   )
 }
 
@@ -33,7 +33,7 @@ export const makeGetSearchAlbums = () => {
           user: users[album.playlist_owner_id]
         }
       })
-      .filter(album => !!album.user)
+      .filter(album => !!album.user && !album.user.is_deactivated)
   )
 }
 
@@ -51,6 +51,6 @@ export const makeGetSearchPlaylists = () => {
             trackCount: (playlist.playlist_contents.track_ids || []).length
           }
         })
-        .filter(playlist => !!playlist.user)
+        .filter(playlist => !!playlist.user && !playlist.user.is_deactivated)
   )
 }

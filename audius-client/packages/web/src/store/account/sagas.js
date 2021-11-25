@@ -152,23 +152,31 @@ export function* fetchAccountAsync(action) {
   if (!fromSource) {
     const cachedAccount = getAudiusAccount()
     const cachedAccountUser = getAudiusAccountUser()
-    if (cachedAccount && cachedAccountUser) {
+    if (
+      cachedAccount &&
+      cachedAccountUser &&
+      !cachedAccountUser.is_deactivated
+    ) {
       yield call(
         cacheAccount,
         cachedAccountUser,
         cachedAccountUser.orderedPlaylists
       )
       yield put(accountActions.fetchAccountSucceeded(cachedAccount))
-    } else {
-      if (!getCurrentUserExists()) {
-        yield put(accountActions.fetchAccountFailed())
-      }
+    } else if (!getCurrentUserExists()) {
+      yield put(
+        accountActions.fetchAccountFailed({ reason: 'ACCOUNT_NOT_FOUND' })
+      )
     }
   }
 
   const account = yield call(AudiusBackend.getAccount, fromSource)
-  if (!account) {
-    yield put(accountActions.fetchAccountFailed())
+  if (!account || account.is_deactivated) {
+    yield put(
+      accountActions.fetchAccountFailed({
+        reason: account ? 'ACCOUNT_DEACTIVATED' : 'ACCOUNT_NOT_FOUND'
+      })
+    )
     // Clear local storage users if present
     clearAudiusAccount()
     clearAudiusAccountUser()

@@ -22,10 +22,18 @@ export function* getSearchResults(searchText) {
   })
 
   const { tracks, albums, playlists, users } = results
+  const checkedUsers = users.filter(t => !t.is_deactivated)
   const checkedTracks = (yield call(setTracksIsBlocked, tracks)).filter(
-    t => !t.is_delete && !t._blocked
+    t => !t.is_delete && !t._blocked && !t.user.is_deactivated
   )
-  return { users, tracks: checkedTracks, albums, playlists }
+  const checkedPlaylists = playlists.filter(t => !t.user?.is_deactivated)
+  const checkedAlbums = albums.filter(t => !t.user?.is_deactivated)
+  return {
+    users: checkedUsers,
+    tracks: checkedTracks,
+    albums: checkedAlbums,
+    playlists: checkedPlaylists
+  }
 }
 
 function* fetchSearchAsync(action) {

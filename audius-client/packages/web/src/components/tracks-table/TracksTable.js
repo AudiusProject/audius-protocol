@@ -40,7 +40,7 @@ export const alphaSortFn = function (a, b, aKey, bKey) {
 }
 
 const favoriteButtonCell = (val, record, props) => {
-  const { is_delete: deleted } = record
+  const deleted = record.is_delete || !!record.user?.is_deactivated
   const isOwner = record.owner_id === props.userId
   if (deleted || isOwner) return null
   return (
@@ -62,7 +62,7 @@ const favoriteButtonCell = (val, record, props) => {
 }
 
 const trackNameCell = (val, record, props) => {
-  const { is_delete: deleted } = record
+  const deleted = record.is_delete || record.user?.is_deactivated
   return (
     <div
       className={styles.textContainer}
@@ -73,13 +73,16 @@ const trackNameCell = (val, record, props) => {
     >
       <div className={cn(styles.textCell, { [styles.trackName]: !deleted })}>
         {val}
-        {record.is_delete ? ` [Deleted By Artist]` : ''}
+        {deleted ? ` [Deleted By Artist]` : ''}
       </div>
     </div>
   )
 }
 
 const artistNameCell = (val, record, props) => {
+  if (record.user?.is_deactivated) {
+    return `${record.user?.name} [Deactivated]`
+  }
   return (
     <ArtistPopover handle={record.handle}>
       <div
@@ -101,7 +104,7 @@ const artistNameCell = (val, record, props) => {
 }
 
 const repostButtonCell = (val, record, props) => {
-  const { is_delete: deleted } = record
+  const deleted = record.is_delete || record.user?.is_deactivated
   if (deleted) return null
   const isOwner = record.owner_id === props.userId
   return isOwner ? null : (
@@ -120,7 +123,7 @@ const repostButtonCell = (val, record, props) => {
 }
 
 const optionsButtonCell = (val, record, index, props) => {
-  const { is_delete: deleted } = record
+  const deleted = record.is_delete || !!record.user.is_deactivated
   return (
     <TableOptionsButton
       className={styles.optionsButtonFormatting}
@@ -136,6 +139,7 @@ const optionsButtonCell = (val, record, index, props) => {
       date={val.date}
       isFavorited={val.has_current_user_saved}
       isOwner={record.owner_id === props.userId}
+      isOwnerDeactivated={!!record.user.is_deactivated}
       isArtistPick={val.user._artist_pick === val.track_id}
       index={index}
       trackTitle={val.name}
@@ -401,7 +405,7 @@ class TracksTable extends Component {
           key: 'playButton',
           className: 'colPlayButton',
           render: (val, record, index) =>
-            loading || record.is_delete ? (
+            loading || record.is_delete || record.user?.is_deactivated ? (
               <div />
             ) : (
               <TablePlayButton
@@ -416,7 +420,7 @@ class TracksTable extends Component {
           key: 'favoriteButton',
           className: 'colFavoriteButton',
           render: (val, record) =>
-            loading || record.is_delete ? (
+            loading || record.is_delete || record.user?.is_deactivated ? (
               <div />
             ) : (
               favoriteButtonCell(val, record, this.props)
@@ -513,7 +517,7 @@ class TracksTable extends Component {
 
   getRowClassName = (record, index) => {
     const { playingIndex } = this.props
-    const { is_delete: deleted } = record
+    const deleted = record.is_delete || record.user?.is_deactivated
 
     if (deleted) return styles.deleted
     return index === playingIndex ? styles.activeRow : styles.inactiveRow
@@ -592,7 +596,7 @@ class TracksTable extends Component {
             onRow={(record, rowIndex) => ({
               index: rowIndex,
               onClick: () => {
-                const { is_delete: deleted } = record
+                const deleted = record.is_delete || record.user?.is_deactivated
                 if (deleted) return
                 onClickRow(record, rowIndex)
               }

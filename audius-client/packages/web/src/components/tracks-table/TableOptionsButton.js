@@ -18,8 +18,11 @@ class TableOptionsButton extends Component {
       index,
       uid,
       date,
+      isFavorited,
       isOwner,
+      isOwnerDeactivated,
       isArtistPick,
+      isReposted,
       onRemove,
       removeText,
       hiddenUntilHover,
@@ -39,10 +42,14 @@ class TableOptionsButton extends Component {
         includeShare: true,
         includeShareToTikTok: !isUnlisted,
         isOwner,
+        isOwnerDeactivated,
         isArtistPick,
         ...this.props,
         extraMenuItems: onRemove ? [removeMenuItem] : []
       }
+    }
+    if (isOwnerDeactivated && !onRemove && !isFavorited) {
+      return null
     }
 
     return (
@@ -81,7 +88,8 @@ TableOptionsButton.propTypes = {
   handle: PropTypes.string,
   trackId: PropTypes.number,
   index: PropTypes.number,
-  isSaved: PropTypes.bool,
+  isFavorited: PropTypes.bool,
+  isReposted: PropTypes.bool,
   isDeleted: PropTypes.bool,
   trackTitle: PropTypes.string,
   albumId: PropTypes.number,
@@ -92,6 +100,7 @@ TableOptionsButton.propTypes = {
   removeText: PropTypes.string,
   isArtistPick: PropTypes.bool,
   isOwner: PropTypes.bool,
+  isOwnerDeactivated: PropTypes.bool,
   hiddenUntilHover: PropTypes.bool,
   trackPermalink: PropTypes.string
 }

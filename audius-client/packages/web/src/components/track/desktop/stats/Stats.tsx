@@ -1,18 +1,31 @@
-import React, { memo } from 'react'
+import React, { memo, useMemo } from 'react'
 
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconFavorite } from 'assets/img/iconHeart.svg'
 import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
 import { Favorite } from 'common/models/Favorite'
+import { ID } from 'common/models/Identifiers'
 import { Repost } from 'common/models/Repost'
+import { CommonState } from 'common/store'
+import { getUsers } from 'common/store/cache/users/selectors'
 import { formatCount } from 'common/utils/formatUtil'
+import { createShallowSelector } from 'utils/selectorHelpers'
 
 import ProfileImage from './ProfileImage'
 import styles from './Stats.module.css'
 import StatsText, { Flavor } from './StatsText'
 
 const MAX_REPOST_IMAGES = 3
+const makeFolloweeActionsUsers = () =>
+  createShallowSelector(
+    [getUsers, (_state: CommonState, userIds: ID[]) => userIds],
+    (users, userIds) =>
+      userIds
+        ? userIds.map(id => users[id]).filter(u => !!u && !u.is_deactivated)
+        : []
+  )
 
 type StatsProps = {
   count: number
@@ -47,7 +60,17 @@ const Stats = memo(
       [styles.large]: size === 'large'
     })
 
-    const slice = followeeActions.slice(0, MAX_REPOST_IMAGES)
+    const getFolloweeActionsUsers = useMemo(makeFolloweeActionsUsers, [])
+    const followeeActionUsers = useSelector((state: CommonState) =>
+      getFolloweeActionsUsers(
+        state,
+        (followeeActions as Array<Repost | Favorite>).map(
+          (a: Repost | Favorite) => a.user_id
+        )
+      )
+    )
+
+    const slice = followeeActionUsers.slice(0, MAX_REPOST_IMAGES)
 
     // @ts-ignore
     const items = slice.map(item => (
@@ -78,11 +101,7 @@ const Stats = memo(
                 flavor={flavor}
                 count={count}
                 contentTitle={contentTitle}
-                // Map out all of the users so that the selector is cheaper inside the
-                // rendered component
-                userId1={slice[0] ? slice[0].user_id : undefined}
-                userId2={slice[1] ? slice[1].user_id : undefined}
-                userId3={slice[3] ? slice[2].user_id : undefined}
+                users={followeeActionUsers}
               />
             ) : (
               <span>{formatCount(count)}</span>

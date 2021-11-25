@@ -91,7 +91,8 @@ const UserName = ({
   handle,
   onProfileClick,
   withOnClick,
-  isMobile = false
+  isMobile = false,
+  isDeactivated = false
 }: {
   userId: number
   name: string
@@ -99,6 +100,7 @@ const UserName = ({
   onProfileClick: (handle: string) => void
   withOnClick: boolean
   isMobile: boolean
+  isDeactivated?: boolean
 }) => {
   const onClick = useCallback(
     e => {
@@ -109,7 +111,11 @@ const UserName = ({
     [onProfileClick, handle]
   )
   if (withOnClick) {
-    return (
+    return isDeactivated ? (
+      <div className={cn(styles.userName, styles.userNameDeactivated)}>
+        {name} [Deactivated]
+      </div>
+    ) : (
       <span className={styles.headerLink}>
         {isMobile ? (
           <div className={styles.userName}>
@@ -181,6 +187,7 @@ export const formatBody = (
           className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
         >
           <UserName
+            isDeactivated={firstUser.is_deactivated}
             userId={firstUser.user_id}
             name={firstUser.name}
             handle={firstUser.handle}
@@ -201,6 +208,7 @@ export const formatBody = (
             className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
           >
             <UserName
+              isDeactivated={user.is_deactivated}
               userId={user.user_id}
               name={user.name}
               handle={user.handle}
@@ -220,6 +228,7 @@ export const formatBody = (
           className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
         >
           <UserName
+            isDeactivated={user.is_deactivated}
             userId={user.user_id}
             name={user.name}
             handle={user.handle}
@@ -250,6 +259,7 @@ export const formatBody = (
           className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
         >
           <UserName
+            isDeactivated={firstUser.is_deactivated}
             userId={firstUser.user_id}
             name={firstUser.name}
             handle={firstUser.handle}
@@ -281,6 +291,7 @@ export const formatBody = (
           className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
         >
           <UserName
+            isDeactivated={firstUser.is_deactivated}
             userId={firstUser.user_id}
             name={firstUser.name}
             handle={firstUser.handle}
@@ -381,6 +392,7 @@ export const formatBody = (
           className={cn(styles.headerText, { [styles.isMobile]: isMobile })}
         >
           <UserName
+            isDeactivated={user.is_deactivated}
             userId={user.user_id}
             name={user.name}
             handle={user.handle}

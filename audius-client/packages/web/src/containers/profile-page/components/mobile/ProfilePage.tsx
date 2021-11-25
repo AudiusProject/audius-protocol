@@ -41,6 +41,8 @@ import { LineupState } from 'models/common/Lineup'
 import { albumPage, playlistPage, fullProfilePage } from 'utils/route'
 import { withNullGuard } from 'utils/withNullGuard'
 
+import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
+
 import EditProfile from './EditProfile'
 import ProfileHeader from './ProfileHeader'
 import styles from './ProfilePage.module.css'
@@ -418,7 +420,6 @@ const ProfilePage = g(
           }
         />
       ))
-
       if (isArtist) {
         const albumCards = (albums || []).map(album => (
           <Card
@@ -614,7 +615,13 @@ const ProfilePage = g(
       initialTab: activeTab || undefined
     })
 
-    if (!isLoading && !isEditing) {
+    if (profile && profile.is_deactivated) {
+      content = (
+        <div className={styles.contentContainer}>
+          <DeactivatedProfileTombstone goToRoute={goToRoute} isMobile={true} />
+        </div>
+      )
+    } else if (!isLoading && !isEditing) {
       content = (
         <div className={styles.contentContainer}>
           <div className={styles.tabs}>{tabs}</div>
@@ -648,6 +655,7 @@ const ProfilePage = g(
               isDisabled={isEditing || isUserConfirming}
             >
               <ProfileHeader
+                isDeactivated={profile?.is_deactivated}
                 name={name}
                 handle={handle}
                 isArtist={isArtist}

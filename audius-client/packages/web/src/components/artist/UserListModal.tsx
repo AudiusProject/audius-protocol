@@ -92,31 +92,33 @@ export const UserListModal = forwardRef<HTMLDivElement, UserListModalProps>(
             threshold={SCROLL_THRESHOLD}
             getScrollParent={getScrollParent}
           >
-            {users.map(user => (
-              <div key={user.user_id} className={styles.user}>
-                <ArtistChip
-                  name={user.name}
-                  handle={user.handle}
-                  profilePictureSizes={user._profile_picture_sizes}
-                  userId={user.user_id}
-                  followers={user.follower_count}
-                  onClickArtistName={() => {
-                    onClose()
-                    onClickArtistName(user.handle)
-                  }}
-                />
-                {user.user_id !== userId ? (
-                  <FollowButton
-                    size='small'
-                    showIcon={false}
-                    className={styles.followButton}
-                    following={user.does_current_user_follow}
-                    onFollow={() => onFollow(user.user_id)}
-                    onUnfollow={() => onUnfollow(user.user_id)}
+            {users
+              .filter(user => !user.is_deactivated)
+              .map(user => (
+                <div key={user.user_id} className={styles.user}>
+                  <ArtistChip
+                    name={user.name}
+                    handle={user.handle}
+                    profilePictureSizes={user._profile_picture_sizes}
+                    userId={user.user_id}
+                    followers={user.follower_count}
+                    onClickArtistName={() => {
+                      onClose()
+                      onClickArtistName(user.handle)
+                    }}
                   />
-                ) : null}
-              </div>
-            ))}
+                  {user.user_id !== userId ? (
+                    <FollowButton
+                      size='small'
+                      showIcon={false}
+                      className={styles.followButton}
+                      following={user.does_current_user_follow}
+                      onFollow={() => onFollow(user.user_id)}
+                      onUnfollow={() => onUnfollow(user.user_id)}
+                    />
+                  ) : null}
+                </div>
+              ))}
             <div
               className={cn(styles.loadingAnimation, {
                 [styles.show]: loading

@@ -70,7 +70,7 @@ const HistoryPage = ({
       trackId: track.track_id,
       uid: track.uid,
       coverArtSizes: track._cover_art_sizes,
-      isDeleted: track.is_delete
+      isDeleted: track.is_delete || !!track.user.is_deactivated
     }
   })
 

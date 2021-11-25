@@ -5,6 +5,7 @@ import ArtistDashboardState from 'containers/artist-dashboard-page/store/types'
 import ArtistRecommendationsReducer from 'containers/artist-recommendations/store/slice'
 import { ChangePasswordState } from 'containers/change-password/store/slice'
 import { CollectionsPageState } from 'containers/collection-page/store/types'
+import { DeactivateAccountState } from 'containers/deactivate-account-page/store/slice'
 import DeletedPageReducer from 'containers/deleted-page/store/slice'
 import { EmbedModalState } from 'containers/embed-modal/store/types'
 import { CollectionsState as ExploreCollectionsState } from 'containers/explore-page/store/collections/slice'
@@ -94,6 +95,7 @@ export type AppState = CommonState & {
       editPlaylistModal: EditPlaylistModalState
       editTrackModal: EditTrackModalState
       embedModal: EmbedModalState
+      deactivateAccount: DeactivateAccountState
       firstUploadModal: FirstUploadModalState
       mobileKeyboard: MobileKeyboardState
       musicConfetti: ReturnType<typeof MusicConfetti>

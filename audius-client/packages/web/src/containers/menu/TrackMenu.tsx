@@ -72,6 +72,7 @@ export type OwnProps = {
   isDeleted: boolean
   isFavorited: boolean
   isOwner: boolean
+  isOwnerDeactivated?: boolean
   isReposted: boolean
   trackId: ID
   trackTitle: string
@@ -104,6 +105,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       isDeleted,
       isFavorited,
       isOwner,
+      isOwnerDeactivated,
       isReposted,
       openAddToPlaylistModal,
       openEditTrackModal,
@@ -218,7 +220,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     // if (albumId && albumName) {
     //   menu.items.push(albumPageMenuItem)
     // }
-    if (handle) {
+    if (handle && !isOwnerDeactivated) {
       menu.items.push(artistPageMenuItem)
     }
     if (includeEdit && isOwner && !isDeleted) {
@@ -227,7 +229,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (extraMenuItems && extraMenuItems.length > 0) {
       menu.items = menu.items.concat(extraMenuItems)
     }
-    if (includeEmbed) {
+    if (includeEmbed && !isDeleted) {
       menu.items.push(embedMenuItem)
     }
     if (

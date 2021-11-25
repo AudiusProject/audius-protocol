@@ -4,7 +4,11 @@ import { Collection, UserCollectionMetadata } from 'common/models/Collection'
 import FeedFilter from 'common/models/FeedFilter'
 import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
-import { LineupTrack, TrackMetadata } from 'common/models/Track'
+import {
+  LineupTrack,
+  TrackMetadata,
+  UserTrackMetadata
+} from 'common/models/Track'
 import { getAccountUser } from 'common/store/account/selectors'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -65,11 +69,12 @@ function* getTracks({
   }
 
   const feed: (
-    | TrackMetadata
+    | UserTrackMetadata
     | UserCollectionMetadata
   )[] = yield apiClient.getSocialFeed(params)
   if (!feed.length) return []
-  const [tracks, collections] = getTracksAndCollections(feed)
+  const filteredFeed = feed.filter(record => !record.user.is_deactivated)
+  const [tracks, collections] = getTracksAndCollections(filteredFeed)
   const trackIds = tracks.map(t => t.track_id)
 
   // Process (e.g. cache and remove entries)
@@ -87,7 +92,7 @@ function* getTracks({
   const processedCollectionsMap = processedCollections.reduce<
     Record<ID, Collection>
   >((acc, cur) => ({ ...acc, [cur.playlist_id]: cur }), {})
-  const processedFeed: FeedItem[] = feed.map(m =>
+  const processedFeed: FeedItem[] = filteredFeed.map(m =>
     (m as LineupTrack).track_id
       ? processedTracksMap[(m as LineupTrack).track_id]
       : processedCollectionsMap[(m as UserCollectionMetadata).playlist_id]

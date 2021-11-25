@@ -63,7 +63,7 @@ const TrackListItem = ({
 
   if (!track) return null
 
-  const { is_delete: deleted } = track
+  const deleted = track.is_delete || !!track.user?.is_deactivated
   const strings = makeStrings({ deleted })
 
   const onClickArtistName = (e: MouseEvent) => {
@@ -106,6 +106,7 @@ const TrackListItem = ({
     isDeleted: deleted,
     isFavorited: track.has_current_user_saved,
     isOwner: false,
+    isOwnerDeactivated: !!track.user?.is_deactivated,
     isReposted: track.has_current_user_reposted,
     trackId: track.track_id,
     trackTitle: track.title,
@@ -149,9 +150,13 @@ const TrackListItem = ({
           </div>
           <div className={styles.artistName} onClick={onClickArtistName}>
             <div className={styles.by}>{strings.by}</div>
-            <ArtistPopover handle={track.user.handle}>
-              {track.user.name}
-            </ArtistPopover>
+            {track.user.is_deactivated ? (
+              `${track.user.name} [Deactivated]`
+            ) : (
+              <ArtistPopover handle={track.user.handle}>
+                {track.user.name}
+              </ArtistPopover>
+            )}
           </div>
         </div>
         <div className={styles.duration}>

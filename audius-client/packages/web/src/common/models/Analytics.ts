@@ -190,7 +190,13 @@ export enum Name {
   // When an update is available in the playlist library
   PLAYLIST_LIBRARY_HAS_UPDATE = 'Playlist Library: Has Update',
   // When a user clicks on a playlist in the library
-  PLAYLIST_LIBRARY_CLICKED = 'Playlist Library: Clicked'
+  PLAYLIST_LIBRARY_CLICKED = 'Playlist Library: Clicked',
+
+  // Deactivate Account
+  DEACTIVATE_ACCOUNT_PAGE_VIEW = 'Deactivate Account: Page View',
+  DEACTIVATE_ACCOUNT_REQUEST = 'Deactivate Account: Request',
+  DEACTIVATE_ACCOUNT_SUCCESS = 'Deactivate Account: Success',
+  DEACTIVATE_ACCOUNT_FAILURE = 'Deactivate Account: Failure'
 }
 
 type PageView = {
@@ -894,6 +900,19 @@ type PlaylistLibraryClicked = {
   hasUpdate: boolean
 }
 
+type DeactivateAccountPageView = {
+  eventName: Name.DEACTIVATE_ACCOUNT_PAGE_VIEW
+}
+type DeactivateAccountRequest = {
+  eventName: Name.DEACTIVATE_ACCOUNT_REQUEST
+}
+type DeactivateAccountSuccess = {
+  eventName: Name.DEACTIVATE_ACCOUNT_SUCCESS
+}
+type DeactivateAccountFailure = {
+  eventName: Name.DEACTIVATE_ACCOUNT_FAILURE
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -1016,3 +1035,7 @@ export type AllTrackingEvents =
   | TransferAudioToWAudioRequest
   | TransferAudioToWAudioSuccess
   | TransferAudioToWAudioFailure
+  | DeactivateAccountPageView
+  | DeactivateAccountRequest
+  | DeactivateAccountSuccess
+  | DeactivateAccountFailure

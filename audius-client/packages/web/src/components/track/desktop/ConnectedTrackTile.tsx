@@ -115,7 +115,12 @@ const ConnectedTrackTile = memo(
       duration
     } = getTrackWithFallback(track)
 
-    const { _artist_pick, name, handle } = getUserWithFallback(user)
+    const {
+      _artist_pick,
+      name,
+      handle,
+      is_deactivated: isOwnerDeactivated
+    } = getUserWithFallback(user)
 
     const isActive = uid === playingUid
     const isTrackBuffering = isActive && isBuffering
@@ -170,7 +175,7 @@ const ConnectedTrackTile = memo(
         includeShareToTikTok: !is_unlisted,
         includeTrackPage: true,
         isArtistPick: isArtistPick,
-        isDeleted: is_delete,
+        isDeleted: is_delete || isOwnerDeactivated,
         isFavorited,
         isOwner,
         isReposted,
@@ -290,7 +295,7 @@ const ConnectedTrackTile = memo(
       togglePlay(uid, trackId)
     }, [togglePlay, uid, trackId])
 
-    if (is_delete) return null
+    if (is_delete || user?.is_deactivated) return null
 
     const order = ordered && index !== undefined ? index + 1 : undefined
     const artwork = renderImage()

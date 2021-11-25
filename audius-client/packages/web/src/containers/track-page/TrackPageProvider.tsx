@@ -124,9 +124,12 @@ class TrackPageProvider extends Component<
   }
 
   componentDidUpdate(prevProps: TrackPageProviderProps) {
-    const { pathname, track, status, refetchTracksLinup } = this.props
+    const { pathname, track, status, refetchTracksLinup, user } = this.props
     if (status === Status.ERROR) {
       this.props.goToRoute(NOT_FOUND_PAGE)
+    }
+    if (user && user.is_deactivated) {
+      this.goToProfilePage(user.handle)
     }
     if (!isMobile()) {
       // On componentDidUpdate we try to reparse the URL because if you’re on a track page
@@ -409,10 +412,12 @@ class TrackPageProvider extends Component<
     })
     const canonicalUrl = user && track ? fullTrackPage(track.permalink) : ''
 
-    // If the track has a remix parent and it's not deleted.
+    // If the track has a remix parent and it's not deleted and the original's owner is not deactivated.
     const hasValidRemixParent =
       !!getRemixParentTrackId(track) &&
-      (!remixParentTrack || remixParentTrack.is_delete === false)
+      !!remixParentTrack &&
+      remixParentTrack.is_delete === false &&
+      !remixParentTrack.user?.is_deactivated
 
     if ((track?.is_delete || track?._marked_deleted) && user) {
       return (

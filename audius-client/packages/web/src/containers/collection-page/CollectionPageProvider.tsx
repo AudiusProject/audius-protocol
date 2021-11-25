@@ -226,6 +226,12 @@ class CollectionPage extends Component<
       return
     }
 
+    // Redirect to user tombstone if creator deactivated their account
+    if (user && user.is_deactivated) {
+      this.props.goToRoute(profilePage(user.handle))
+      return
+    }
+
     // Check if the collection has moved in the cache and redirect as needed.
     if (metadata && metadata._moved && !updatingRoute) {
       this.setState({ updatingRoute: true })

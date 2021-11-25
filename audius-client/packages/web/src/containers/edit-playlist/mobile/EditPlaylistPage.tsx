@@ -353,7 +353,7 @@ const EditPlaylistPage = g(
           trackTitle: t.title,
           trackId: t.track_id,
           time: playlistTrack?.time,
-          isDeleted: t.is_delete,
+          isDeleted: t.is_delete || !!t.user.is_deactivated,
           isRemoveActive
         }
       })

@@ -15,6 +15,7 @@ import Kind from 'common/models/Kind'
 import * as cacheActions from 'common/store/cache/actions'
 import { getCollection } from 'common/store/cache/collections/selectors'
 import { getTrack, getTracks } from 'common/store/cache/tracks/selectors'
+import { getUsers } from 'common/store/cache/users/selectors'
 import { makeUid, makeUids, Uid } from 'common/utils/uid'
 import * as baseLineupActions from 'store/lineup/actions'
 import { getUid as getCurrentPlayerTrackUid } from 'store/player/selectors'
@@ -31,11 +32,19 @@ const flatten = list =>
   list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), [])
 function* filterDeletes(tracksMetadata, removeDeleted) {
   const tracks = yield select(getTracks)
-
+  const users = yield select(getUsers)
   return tracksMetadata
     .map(metadata => {
       // If we said to remove deleted tracks and it is deleted, remove it
       if (removeDeleted && metadata.is_delete) return null
+      // If we said to remove deleted and the track/playlist owner is deactivated, remove it
+      else if (removeDeleted && users[metadata.owner_id]?.is_deactivated)
+        return null
+      else if (
+        removeDeleted &&
+        users[metadata.playlist_owner_id]?.is_deactivated
+      )
+        return null
       // If the track was not cached, keep it
       else if (!tracks[metadata.track_id]) return metadata
       // If we said to remove deleted and it's marked deleted remove it

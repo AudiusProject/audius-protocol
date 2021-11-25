@@ -18,6 +18,7 @@ type ActionSheetModalProps = {
   isOpen: boolean
   onClose: () => void
   title?: string
+  renderTitle?: () => React.ReactNode
 }
 
 // `ActionDrawer` is a drawer that presents a list of clickable rows with text
@@ -26,7 +27,8 @@ const ActionDrawer = ({
   actions,
   isOpen,
   onClose,
-  title
+  title,
+  renderTitle
 }: ActionSheetModalProps) => {
   const isDark = isDarkMode()
 
@@ -34,7 +36,9 @@ const ActionDrawer = ({
     <Drawer onClose={onClose} isOpen={isOpen} shouldClose={!isOpen}>
       <div className={styles.container}>
         <div className={styles.content}>
-          {title && <div className={styles.title}>{title}</div>}
+          {renderTitle
+            ? renderTitle()
+            : title && <div className={styles.title}>{title}</div>}
           {actions.map(({ text, isDestructive = false }, index) => (
             <div
               key={`${text}-${index}`}

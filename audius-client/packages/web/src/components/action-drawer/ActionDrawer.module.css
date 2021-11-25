@@ -8,12 +8,13 @@
   padding-bottom: 64px;
 }
 
-.content > div {
+.row,
+.title {
   height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid var(--neutral-light-8);
+  border-top: 1px solid var(--neutral-light-8);
 }
 
 .title {
@@ -32,12 +33,19 @@
   color: var(--action-sheet-text);
 }
 
+.row:last-child {
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
 .row:active {
   background-color: var(--neutral-light-9);
 }
 
 .destructiveAction {
-  color: var(--accent-red-dark-1);
+  color: var(--accent-red);
+}
+.darkAction.destructiveAction {
+  color: var(--accent-red);
 }
 
 .darkAction {

@@ -209,7 +209,7 @@
   max-width: 250px
 }
 
-:global(.ant-table-column-has-actions)>div:hover{
+tr:not(.deleted) :global(.ant-table-column-has-actions)>div:hover{
   transition: color 0.1s ease-in-out;
   color: var(--neutral);
 }

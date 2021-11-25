@@ -26,6 +26,7 @@ export type APIUser = {
   handle: string
   id: OpaqueID
   is_verified: boolean
+  is_deactivated: boolean
   location: Nullable<string>
   name: string
   playlist_count: number
