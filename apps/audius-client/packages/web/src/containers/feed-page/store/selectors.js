@@ -13,7 +13,9 @@ export const makeGetSuggestedFollows = () => {
   return createShallowSelector(
     [getSuggestedFollowUsers, getSuggestedFollows],
     (users, followIds) => {
-      return followIds.map(id => users[id]).filter(Boolean)
+      return followIds
+        .map(id => users[id])
+        .filter(user => !!user && !user.is_deactivated)
     }
   )
 }

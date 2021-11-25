@@ -143,7 +143,12 @@ const ConnectedPlaylistTile = memo(
       track_count: trackCount
     } = getCollectionWithFallback(collection)
 
-    const { name, handle, is_creator: isCreator } = getUserWithFallback(user)
+    const {
+      name,
+      handle,
+      is_creator: isCreator,
+      is_deactivated: isOwnerDeactivated
+    } = getUserWithFallback(user)
     const isOwner = handle === userHandle
 
     const isActive = useMemo(() => {
@@ -461,6 +466,10 @@ const ConnectedPlaylistTile = memo(
           : 'PLAYLIST'
         : undefined
 
+    // Failsafe check - should never get this far, lineups should filter deactivated playlists
+    if (isOwnerDeactivated) {
+      return null
+    }
     return (
       <PlaylistTile
         // Track Tile Props

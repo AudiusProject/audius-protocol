@@ -136,6 +136,7 @@ const UserHeader = ({
   return (
     <div className={cn(styles.userHeader, { [styles.notRead]: !isRead })}>
       {users!
+        .filter(u => !u.is_deactivated)
         .slice(0, showUserListModal ? USER_LENGTH_LIMIT - 1 : USER_LENGTH_LIMIT)
         .map(user => (
           <UserImage

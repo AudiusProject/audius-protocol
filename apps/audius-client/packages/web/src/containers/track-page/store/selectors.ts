@@ -22,10 +22,17 @@ export const getTrack = (state: AppState) => {
 }
 
 export const getRemixParentTrack = (state: AppState) => {
-  const id = getTrackId(state)
-  const cachedTrack = getCachedTrack(state, { id })
+  const cachedTrack = getTrack(state)
   const parentTrackId = cachedTrack?.remix_of?.tracks?.[0].parent_track_id
-  return parentTrackId ? getCachedTrack(state, { id: parentTrackId }) : null
+  if (parentTrackId) {
+    const parentTrack = getCachedTrack(state, { id: parentTrackId })
+    // Get user for deactivated status
+    const parentTrackUser = getCachedUser(state, { id: parentTrack?.owner_id })
+    if (parentTrack && parentTrackUser) {
+      return { ...parentTrack, user: parentTrackUser }
+    }
+  }
+  return null
 }
 
 export const getUser = (state: AppState) => {

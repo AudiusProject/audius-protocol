@@ -67,7 +67,7 @@ function* getTrackInfo(id: ID, uid: UID) {
     uid,
     currentUserId,
     currentListenCount: track.play_count,
-    isDelete: track.is_delete,
+    isDelete: track.is_delete || owner.is_deactivated,
     ownerId: track.owner_id,
     trackId: id,
     genre: track.genre,
@@ -160,10 +160,11 @@ function* watchSyncQueue() {
 function* watchSyncPlayer() {
   yield takeEvery(MessageType.SYNC_PLAYER, function* (action: Message) {
     const { isPlaying, incrementCounter } = action
-    const id = yield select(getQueueTrackId)
-    const track = yield select(getTrack, { id })
+    const id: ID = yield select(getQueueTrackId)
+    const track: Track = yield select(getTrack, { id })
+    const owner: User = yield select(getUser, { id: track?.owner_id })
     console.info(`Syncing player: isPlaying ${isPlaying}`)
-    if (track?.is_delete) {
+    if (track?.is_delete || owner?.is_deactivated) {
       yield put(playerActions.stop({}))
     } else if (isPlaying) {
       yield put(playerActions.playSucceeded({}))

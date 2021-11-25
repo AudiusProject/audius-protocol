@@ -1,5 +1,8 @@
 import React, { useCallback, memo } from 'react'
 
+import { Button, ButtonSize, ButtonType, IconArrowWhite } from '@audius/stems'
+import { useHistory } from 'react-router'
+
 import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
 import { ReactComponent as IconCollectibles } from 'assets/img/iconCollectibles.svg'
 import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
@@ -41,6 +44,8 @@ import {
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE
 } from 'utils/route'
+
+import { DeactivatedProfileTombstone } from '../DeactivatedProfileTombstone'
 
 import styles from './ProfilePage.module.css'
 import ProfileWrapping from './ProfileWrapping'
@@ -642,6 +647,7 @@ const ProfilePage = ({
       <div className={styles.headerWrapper}>
         <ProfileWrapping
           userId={userId}
+          isDeactivated={profile?.is_deactivated}
           loading={status === Status.LOADING}
           verified={verified}
           profilePictureSizes={profilePictureSizes}
@@ -680,7 +686,9 @@ const ProfilePage = ({
         />
         <CoverPhoto
           userId={userId}
-          coverPhotoSizes={coverPhotoSizes}
+          coverPhotoSizes={
+            profile && profile.is_deactivated ? null : coverPhotoSizes
+          }
           updatedCoverPhoto={updatedCoverPhoto ? updatedCoverPhoto.url : ''}
           error={updatedCoverPhoto ? updatedCoverPhoto.error : false}
           loading={profileLoadingStatus === Status.LOADING}
@@ -690,7 +698,7 @@ const ProfilePage = ({
         />
         <Mask show={editMode} zIndex={2}>
           <StatBanner
-            empty={!profile}
+            empty={!profile || profile.is_deactivated}
             mode={mode}
             stats={stats}
             userId={accountUserId}
@@ -719,7 +727,7 @@ const ProfilePage = ({
           />
           <div className={styles.inset}>
             <NavBanner
-              empty={!profile}
+              empty={!profile || profile.is_deactivated}
               tabs={tabs}
               dropdownDisabled={dropdownDisabled}
               onChange={changeTab}
@@ -729,7 +737,13 @@ const ProfilePage = ({
               onSortByPopular={onSortByPopular}
               shouldMaskContent={shouldMaskContent}
             />
-            <div className={styles.content}>{body}</div>
+            <div className={styles.content}>
+              {profile && profile.is_deactivated ? (
+                <DeactivatedProfileTombstone goToRoute={goToRoute} />
+              ) : (
+                body
+              )}
+            </div>
           </div>
         </Mask>
       </div>

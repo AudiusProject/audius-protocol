@@ -83,6 +83,7 @@ const LoadingProfileHeader = () => {
 }
 
 type ProfileHeaderProps = {
+  isDeactivated: boolean
   name: string
   handle: string
   isArtist: boolean
@@ -132,6 +133,7 @@ function isEllipsisActive(e: HTMLElement) {
 }
 
 const ProfileHeader = ({
+  isDeactivated,
   name,
   handle,
   isArtist,
@@ -201,7 +203,7 @@ const ProfileHeader = ({
 
   const coverPhoto = useUserCoverPhoto(
     userId,
-    coverPhotoSizes,
+    isDeactivated ? null : coverPhotoSizes,
     WidthSizes.SIZE_2000
   )
   let coverPhotoStyle = {}
@@ -213,7 +215,7 @@ const ProfileHeader = ({
   }
   const profilePicture = useUserProfilePicture(
     userId,
-    profilePictureSizes,
+    isDeactivated ? null : profilePictureSizes,
     SquareSizes.SIZE_150_BY_150
   )
   const record = useRecord()
@@ -322,7 +324,7 @@ const ProfileHeader = ({
           [styles.isEditing]: isEditing
         })}
       >
-        {isArtist && !isEditing ? (
+        {isArtist && !isEditing && !isDeactivated ? (
           <BadgeArtist className={styles.badgeArtist} />
         ) : null}
         {isEditing && <UploadStub onChange={onUpdateCoverPhoto} />}
@@ -336,7 +338,7 @@ const ProfileHeader = ({
       >
         {isEditing && <UploadStub onChange={onUpdateProfilePicture} />}
       </DynamicImage>
-      {!isEditing && (
+      {!isEditing && !isDeactivated && (
         <div className={styles.artistInfo}>
           <div className={styles.titleContainer}>
             <div className={styles.left}>

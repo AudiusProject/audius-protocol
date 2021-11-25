@@ -377,7 +377,24 @@ function* signIn(action) {
 
       // NOTE: Wait on the account success before recording the signin event so that the user account is
       // populated in the store
-      yield take(accountActions.fetchAccountSucceeded.type)
+      const { failure } = yield race({
+        success: take(accountActions.fetchAccountSucceeded.type),
+        failure: take(accountActions.fetchAccountFailed)
+      })
+      if (failure) {
+        yield put(
+          signOnActions.signInFailed(
+            "Couldn't get account",
+            failure.payload.reason,
+            failure.payload.reason === 'ACCOUNT_DEACTIVATED'
+          )
+        )
+        const trackEvent = make(Name.SIGN_IN_FINISH, {
+          status: 'fetch account failed'
+        })
+        yield put(trackEvent)
+        return
+      }
 
       yield put(pushRoute(route || FEED_PAGE))
 

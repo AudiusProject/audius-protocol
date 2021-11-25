@@ -58,6 +58,7 @@ export const ERROR_PAGE = '/error'
 export const NOTIFICATION_PAGE = '/notifications'
 export const APP_REDIRECT = '/app-redirect'
 export const CHECK_PAGE = '/check'
+export const DEACTIVATE_PAGE = '/deactivate'
 
 // Param routes.
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
@@ -125,7 +126,8 @@ export const authenticatedRoutes = [
   SAVED_PAGE,
   HISTORY_PAGE,
   UPLOAD_PAGE,
-  SETTINGS_PAGE
+  SETTINGS_PAGE,
+  DEACTIVATE_PAGE
 ]
 
 // ordered list of routes the App attempts to match in increasing order of route selectivity
