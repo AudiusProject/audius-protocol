@@ -35,11 +35,13 @@ export type ModalState = Nullable<
   | { stage: 'DISCORD_CODE' }
 >
 
-export type AssociatedWallets = {
+export type AssociatedWallet = {
   address: string
   balance: BNWei
   collectibleCount: number
-}[]
+}
+
+export type AssociatedWallets = AssociatedWallet[]
 
 export type ConfirmRemoveWalletAction = PayloadAction<{
   wallet: WalletAddress

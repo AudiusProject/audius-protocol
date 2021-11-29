@@ -2,16 +2,13 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { Chain } from 'common/models/Chain'
 import { BNWei, StringWei, WalletAddress } from 'common/models/Wallet'
-import { Nullable } from 'common/utils/typeUtils'
-import { AppState } from 'store/types'
-import { stringWeiToBN } from 'utils/wallet'
-
 import {
   AssociatedWallets,
   ConfirmRemoveWalletAction,
   ModalState,
   TokenDashboardState
-} from './types'
+} from 'common/store/pages/token-dashboard/types'
+import { Nullable } from 'common/utils/typeUtils'
 
 const initialState: TokenDashboardState = {
   modalState: null,
@@ -252,43 +249,6 @@ const slice = createSlice({
   }
 })
 
-// Selectors
-
-export const getSendData = (
-  state: AppState
-): Nullable<{ recipientWallet: string; amount: BNWei }> => {
-  const modalState = state.application.pages.tokenDashboard.modalState
-  if (
-    !(
-      modalState?.stage === 'SEND' &&
-      (modalState.flowState.stage === 'CONFIRMED_SEND' ||
-        modalState.flowState.stage === 'SENDING' ||
-        modalState.flowState.stage === 'AWAITING_CONFIRMATION')
-    )
-  )
-    return null
-  const { recipientWallet, amount } = modalState.flowState
-  return { recipientWallet, amount: stringWeiToBN(amount) }
-}
-
-export const getModalState = (state: AppState) =>
-  state.application.pages.tokenDashboard.modalState
-export const getModalVisible = (state: AppState) =>
-  state.application.pages.tokenDashboard.modalVisible
-export const getDiscordCode = (state: AppState) =>
-  state.application.pages.tokenDashboard.discordCode ?? ''
-export const getAssociatedWallets = (state: AppState) =>
-  state.application.pages.tokenDashboard.associatedWallets
-export const getHasAssociatedWallets = (state: AppState) => {
-  const {
-    connectedEthWallets: ethWallets,
-    connectedSolWallets: solWallets
-  } = state.application.pages.tokenDashboard.associatedWallets
-  return (ethWallets?.length ?? 0) + (solWallets?.length ?? 0) > 0
-}
-export const getRemoveWallet = (state: AppState) =>
-  state.application.pages.tokenDashboard.associatedWallets.removeWallet
-
 export const {
   setModalState,
   setModalVisibility,
@@ -312,4 +272,4 @@ export const {
   resetStatus
 } = slice.actions
 
-export default slice.reducer
+export default slice

@@ -4,12 +4,12 @@ import { all, call, put, take, takeEvery } from 'redux-saga/effects'
 
 import { getAccountUser } from 'common/store/account/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
+import { getBalance } from 'common/store/wallet/slice'
 import { formatUrlName } from 'common/utils/formatUtil'
 import { retrieveUserTracks } from 'containers/profile-page/store/lineups/tracks/retrieveUserTracks'
 import AudiusBackend from 'services/AudiusBackend'
 import { getRemoteVar, IntKeys } from 'services/remote-config'
 import { waitForBackendSetup } from 'store/backend/sagas'
-import { getBalance } from 'store/wallet/slice'
 import { DASHBOARD_PAGE } from 'utils/route'
 import { doEvery, requiresAccount, waitForValue } from 'utils/sagaHelpers'
 

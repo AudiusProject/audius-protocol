@@ -3,7 +3,7 @@ import BN from 'bn.js'
 
 import { Nullable } from 'common/utils/typeUtils'
 
-import { StringWei } from '../../common/models/Wallet'
+import { StringWei } from '../../models/Wallet'
 
 type WalletState = {
   balance: Nullable<StringWei>
