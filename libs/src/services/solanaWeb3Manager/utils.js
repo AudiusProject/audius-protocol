@@ -113,6 +113,34 @@ class SolanaUtils {
   }
 
   /**
+   * Finds a program address, using both seeds, pubkey, and the derived authority.
+   * Return [authority, derivedAddress, and bumpSeeds]
+   *
+   * @param {PublicKey} programId
+   * @param {PublicKey} address
+   * @param {Uint8Array} seed
+   * @returns {Promise<[PublicKey, PublicKey, number]>}
+   */
+  static async findProgramAddressWithAuthority (
+    programId,
+    address,
+    seed
+  ) {
+    // Finds the authority account by generating a PDA with the address as a seed
+    const [authority] = await SolanaUtils.findProgramAddressFromPubkey(
+      programId,
+      address
+    )
+
+    const [derivedAddress, bumpSeed] = await SolanaUtils.findProgramAddressFromPubkey(
+      programId,
+      authority,
+      seed
+    )
+    return [authority, derivedAddress, bumpSeed]
+  }
+
+  /**
    * Converts an eth address hex represenatation to an array of Uint8s in big endian notation
    * @param {string} ethAddress
    * @returns {Uint8Array}

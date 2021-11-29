@@ -545,7 +545,7 @@ const deriveSolanaSenderFromEthAddress = async (
   const ethAddressArr = SolanaUtils.ethAddressToArray(ethAddress)
   const encodedPrefix = encoder.encode(SENDER_SEED_PREFIX)
 
-  const [, derivedSender] = await findProgramAddressWithAuthority(
+  const [, derivedSender] = await SolanaUtils.findProgramAddressWithAuthority(
     rewardManagerProgramId,
     rewardManagerAccount,
     new Uint8Array([...encodedPrefix, ...ethAddressArr])
@@ -571,7 +571,7 @@ const deriveTransferAccount = async (
     ...encoder.encode(TRANSFER_PREFIX),
     ...encoder.encode(transferId)
   ])
-  const [, derivedAddress] = await findProgramAddressWithAuthority(
+  const [, derivedAddress] = await SolanaUtils.findProgramAddressWithAuthority(
     rewardProgramId,
     rewardManager,
     seed
@@ -595,35 +595,7 @@ const deriveMessageAccount = async (
   const encodedPrefix = encoder.encode(VERIFY_TRANSFER_SEED_PREFIX)
   const encodedTransferId = encoder.encode(transferId)
   const seeds = Uint8Array.from([...encodedPrefix, ...encodedTransferId])
-  return findProgramAddressWithAuthority(rewardsProgramId, rewardManager, seeds)
-}
-
-/**
- * Finds a program address, using both seeds, pubkey, and the derived rewards manager authority.
- * Return [rewardManagerAutuhority, derivedAddress, and bumpSeeds]
- *
- * @param {PublicKey} programId
- * @param {PublicKey} rewardManager
- * @param {Uint8Array} seed
- * @returns {Promise<[PublicKey, PublicKey, number]>}
- */
-const findProgramAddressWithAuthority = async (
-  programId,
-  rewardManager,
-  seed
-) => {
-  // Finds the rewardManagerAuthority account by generating
-  // a PDA with the rewardsMnager as a seed
-  const [rewardManagerAuthority] = await SolanaUtils.findProgramAddressFromPubkey(
-    programId,
-    rewardManager
-  )
-  const [derivedAddress, bumpSeed] = await SolanaUtils.findProgramAddressFromPubkey(
-    programId,
-    rewardManagerAuthority,
-    seed
-  )
-  return [rewardManagerAuthority, derivedAddress, bumpSeed]
+  return SolanaUtils.findProgramAddressWithAuthority(rewardsProgramId, rewardManager, seeds)
 }
 
 module.exports = {
