@@ -13,8 +13,9 @@ const DiscoveryProvider = require('./services/discoveryProvider/index')
 const AudiusABIDecoder = require('./services/ABIDecoder/index')
 const SchemaValidator = require('./services/schemaValidator')
 const UserStateManager = require('./userStateManager')
-const Utils = require('./utils')
 const SanityChecks = require('./sanityChecks')
+const Utils = require('./utils.js')
+const Captcha = Utils.Captcha
 
 const Account = require('./api/account')
 const User = require('./api/user')
@@ -24,7 +25,6 @@ const File = require('./api/file')
 const Rewards = require('./api/rewards')
 const ServiceProvider = require('./api/serviceProvider')
 const Web3 = require('./web3')
-const Captcha = require('./utils/captcha')
 const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 
 const { Keypair } = require('@solana/web3.js')

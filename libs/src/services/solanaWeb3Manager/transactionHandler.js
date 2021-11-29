@@ -61,12 +61,15 @@ class TransactionHandler {
 
   async _relayTransaction (instructions) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
+    const { blockhash: recentBlockhash } = await this.connection.getRecentBlockhash()
 
     const transactionData = {
+      recentBlockhash,
       instructions: relayable
     }
 
     try {
+      console.log({ transactionData })
       const response = await this.identityService.solanaRelay(transactionData)
       return { res: response, error: null, errorCode: null }
     } catch (e) {

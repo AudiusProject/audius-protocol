@@ -3,6 +3,7 @@ const { Base, Services } = require('./base')
 const BN = require('bn.js')
 const { RewardsManagerError } = require('../services/solanaWeb3Manager/errors')
 const { shuffle } = require('lodash')
+const { WAUDIO_DECMIALS } = require('../constants')
 
 const GetAttestationError = Object.freeze({
   CHALLENGE_INCOMPLETE: 'CHALLENGE_INCOMPLETE',
@@ -44,7 +45,7 @@ const AttestationPhases = Object.freeze({
 })
 
 const AAO_REQUEST_TIMEOUT_MS = 15 * 1000
-const WRAPPED_AUDIO_PRECISION = 10 ** 9
+const WRAPPED_AUDIO_PRECISION = 10 ** WAUDIO_DECMIALS
 
 /**
  * @typedef {import("../services/solanaWeb3Manager/rewards.js").AttestationMeta} AttestationMeta

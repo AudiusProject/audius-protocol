@@ -224,7 +224,7 @@ be deployed exactly once to Solana in conjunction with the AudiusEthRegistry
 Each transaction here is signed by a trusted ethereum address authorized within the audius
 protocol.
 
-Monitoring the address is performed by leveraging the `get_confirmed_signature_for_address2`
+Monitoring the address is performed by leveraging the `get_signatures_for_address`
 function, which accepts 'limit' and 'before' parameters which are key to the logic below.
 This function returns tx signatures processed by the programId in confirmation order,
 with the most recently confirmed returned first.
@@ -248,7 +248,7 @@ latest_processed_slot = 200 <- latest slot stored in database
 last_tx_signature = None <- None by design, as we must start querying the most recent chain
 transactions
 
-transactions_history = get_confirmed_signature_for_address_2(before=None) =
+transactions_history = get_signatures_for_address(before=None) =
 [
     sig300, slot=230,
     sig299, slot=230
@@ -262,7 +262,7 @@ tx_signature batches that now has the following state:
 tx_batches = [batch_300_to_250]
 
 Now, last_tx_signature = sig250
-transactions_history = get_confirmed_signature_for_address_2(before=None) =
+transactions_history = get_signatures_for_address(before=None) =
 [
     sig250, slot=210
     sig249, slot=209
@@ -448,7 +448,7 @@ def process_solana_plays(solana_client_manager: SolanaClientManager, redis):
             f"index_solana_plays.py | About to make request to get transactions before {last_tx_signature}"
         )
         transactions_history = (
-            solana_client_manager.get_confirmed_signature_for_address2(
+            solana_client_manager.get_signatures_for_address(
                 TRACK_LISTEN_PROGRAM, before=last_tx_signature, limit=TX_SIGNATURES_BATCH_SIZE
             )
         )
