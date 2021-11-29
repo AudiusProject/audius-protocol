@@ -20,6 +20,8 @@ const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
 const SaveFileForMultihashToFSIPFSFallback = config.get('saveFileForMultihashToFSIPFSFallback')
 
+const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deterministic CID for a 0 byte, completely empty file
+
 /**
  * Adds file to IPFS then saves file to disk under /multihash name
  *
@@ -308,7 +310,8 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
 
       // if the file is empty, there's likely something wrong so throw an error
       // there is one case where an empty file could be valid, check for that CID explicitly
-      if (fileSize !== null && fileSize === 0 && multihash !== 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH') {
+      const fileIsEmpty = fileSize !== null && fileSize === 0
+      if (fileIsEmpty && multihash !== EMPTY_FILE_CID) {
         throw new Error(`File has no content, content length is 0: ${multihash}`)
       }
 
@@ -565,8 +568,9 @@ async function removeFile (storagePath) {
   try {
     await fs.unlink(storagePath)
   } catch (err) {
-    // if file doesn't exist, ignore and return
-    if (err && err.code === 'ENOENT') {
+    // if file doesn't exist, ignore error and return
+    const fileDoesntExistError = err && err.code === 'ENOENT'
+    if (fileDoesntExistError) {
       return
     }
     throw err
