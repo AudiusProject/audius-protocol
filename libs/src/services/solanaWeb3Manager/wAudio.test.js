@@ -20,7 +20,7 @@ describe('wAudioFromWeiAudio', () => {
   it('converts if the amount is valid', () => {
     const weiAudio = new BN('10240000000000') // 1024 * 10^-10 $AUDIO
     const wAudio = wAudioFromWeiAudio(weiAudio)
-    assert.ok(wAudio.eq(new BN('10240')))
+    assert.ok(wAudio.eq(new BN('1024')))
   })
   it('converts if the amount is large and valid', () => {
     const weiAudio = new BN('49000000000000000000') // 49 $AUDIO
