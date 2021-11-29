@@ -68,6 +68,34 @@ const RewardsManagerError = {
   }
 }
 
+const ClaimableProgramError = {
+  // Signature verification failed
+  SIGNATURE_VERIFICATION_FAILED: 'SIGNATURE_VERIFICATION_FAILED',
+
+  /// Secp256 instruction losing
+  SECP256_INSTRUCTION_LOSING: 'SECP256_INSTRUCTION_LOSING',
+
+  /// Instruction load error
+  INSTRUCTION_LOAD_ERROR: 'INSTRUCTION_LOAD_ERROR',
+
+  /// User nonce verification error
+  NONCE_VERIFICATION_ERROR: 'NONCE_VERIFICATION_ERROR',
+
+  // Unmapped error
+  UNKNOWN: 'UNKNOWN',
+
+  fromErrorCode: (code) => {
+    const errors = [
+      ClaimableProgramError.SIGNATURE_VERIFICATION_FAILED,
+      ClaimableProgramError.SECP256_INSTRUCTION_LOSING,
+      ClaimableProgramError.INSTRUCTION_LOAD_ERROR,
+      ClaimableProgramError.NONCE_VERIFICATION_ERROR
+    ]
+    return errors[code] || ClaimableProgramError.UNKNOWN
+  }
+}
+
 module.exports = {
-  RewardsManagerError
+  RewardsManagerError,
+  ClaimableProgramError
 }
