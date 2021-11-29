@@ -297,21 +297,19 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     }
 
     // verify that the contents of the file match the file's cid
-    let fileData = null
     let fileSize = null
     try {
-      fileData = (await fs.readFile(expectedStoragePath)).toString().slice(0, 99)
       fileSize = (await fs.stat(expectedStoragePath)).size
     } catch (e) {
       logger.warn('Could not get fs statistics for path', expectedStoragePath)
     }
     try {
-      decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now(), fileData, fileSize })
+      decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now(), fileSize })
 
-      // if the file is empty, there's likely something wrong so throw an error
+      const fileSizeExists = fileSize !== null // null if fs.stat errors and doesn't return a value
+      const fileIsEmpty = fileSize === 0
       // there is one case where an empty file could be valid, check for that CID explicitly
-      const fileIsEmpty = fileSize !== null && fileSize === 0
-      if (fileIsEmpty && multihash !== EMPTY_FILE_CID) {
+      if (fileSizeExists && fileIsEmpty && multihash !== EMPTY_FILE_CID) {
         throw new Error(`File has no content, content length is 0: ${multihash}`)
       }
 
