@@ -1,29 +1,20 @@
 """Replace aggregate_plays mat view with table
 
 Revision ID: 6b5186e7d28f
-Revises: edccccc274a7
+Revises: 36eac5ed00bf
 Create Date: 2021-11-19 20:54:17.596441
 
 """
 from alembic import op
-import sqlalchemy as sa
-
 
 # revision identifiers, used by Alembic.
 revision = '6b5186e7d28f'
-down_revision = 'edccccc274a7'
+down_revision = '36eac5ed00bf'
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.create_table(
-        "latest_slots",
-        sa.Column("tablename", sa.String(), nullable=False),
-        sa.Column("slot", sa.Integer(), nullable=False),
-        sa.PrimaryKeyConstraint("tablename"),
-    )
-
     conn = op.get_bind()
     query = """
         DO
@@ -240,7 +231,6 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table("latest_slots")
     conn = op.get_bind()
     query = """
         begin;
@@ -250,116 +240,19 @@ def downgrade():
         DROP MATERIALIZED VIEW IF EXISTS trending_params;
         DROP TABLE IF EXISTS aggregate_plays;
 
-        --- ======================= AGGREGATE USER ======================= from version 5bcbe23f6c70
+        --- ======================= AGGREGATE PLAYS ======================= from version 776ca72b16db
         DROP MATERIALIZED VIEW IF EXISTS aggregate_plays;
         DROP INDEX IF EXISTS play_item_id_idx;
 
         CREATE MATERIALIZED VIEW aggregate_plays as
         SELECT
-            distinct(u.user_id),
-            COALESCE (user_track.track_count, 0) as track_count,
-            COALESCE (user_playlist.playlist_count, 0) as playlist_count,
-            COALESCE (user_album.album_count, 0) as album_count,
-            COALESCE (user_follower.follower_count, 0) as follower_count,
-            COALESCE (user_followee.followee_count, 0) as following_count,
-            COALESCE (user_repost.repost_count, 0) as repost_count,
-            COALESCE (user_track_save.save_count, 0) as track_save_count
+            plays.play_item_id as play_item_id,
+            count(*) as count
         FROM
-            users u
-        -- join on subquery for tracks created
-        LEFT OUTER JOIN (
-            SELECT
-                t.owner_id as owner_id,
-                count(t.owner_id) as track_count
-            FROM
-                tracks t
-            WHERE
-                t.is_current is True AND
-                t.is_delete is False AND
-                t.is_unlisted is False AND
-                t.stem_of is Null
-            GROUP BY t.owner_id
-        ) as user_track ON user_track.owner_id = u.user_id
-        -- join on subquery for playlists created
-        LEFT OUTER JOIN (
-            SELECT
-                p.playlist_owner_id as owner_id,
-                count(p.playlist_owner_id) as playlist_count
-            FROM
-                playlists p
-            WHERE
-                p.is_album is False AND
-                p.is_current is True AND
-                p.is_delete is False AND
-                p.is_private is False
-            GROUP BY p.playlist_owner_id
-        ) as user_playlist ON user_playlist.owner_id = u.user_id
-        -- join on subquery for albums created
-        LEFT OUTER JOIN (
-            SELECT
-                p.playlist_owner_id as owner_id,
-                count(p.playlist_owner_id) as album_count
-            FROM
-                playlists p
-            WHERE
-                p.is_album is True AND
-                p.is_current is True AND
-                p.is_delete is False AND
-                p.is_private is False
-            GROUP BY p.playlist_owner_id
-        ) user_album ON user_album.owner_id = u.user_id
-        -- join on subquery for followers
-        LEFT OUTER JOIN (
-            SELECT
-                f.followee_user_id as followee_user_id,
-                count(f.followee_user_id) as follower_count
-            FROM
-                follows f
-            WHERE
-                f.is_current is True AND
-                f.is_delete is False
-            GROUP BY f.followee_user_id
-        ) user_follower ON user_follower.followee_user_id = u.user_id
-        -- join on subquery for followee
-        LEFT OUTER JOIN (
-            SELECT
-                f.follower_user_id as follower_user_id,
-                count(f.follower_user_id) as followee_count
-            FROM
-                follows f
-            WHERE
-                f.is_current is True AND
-                f.is_delete is False
-            GROUP BY f.follower_user_id
-        ) user_followee ON user_followee.follower_user_id = u.user_id
-        -- join on subquery for reposts
-        LEFT OUTER JOIN (
-            SELECT
-                r.user_id as user_id,
-                count(r.user_id) as repost_count
-            FROM
-                reposts r
-            WHERE
-                r.is_current is True AND
-                r.is_delete is False
-            GROUP BY r.user_id
-        ) user_repost ON user_repost.user_id = u.user_id
-        -- join on subquery for track saves
-        LEFT OUTER JOIN (
-            SELECT
-                s.user_id as user_id,
-                count(s.user_id) as save_count
-            FROM
-                saves s
-            WHERE
-                s.is_current is True AND
-                s.save_type = 'track' AND
-                s.is_delete is False
-            GROUP BY s.user_id
-        ) user_track_save ON user_track_save.user_id = u.user_id
-        WHERE
-            u.is_current is True;
+            plays
+        GROUP BY plays.play_item_id;
 
+        -- add index on above materialized view
         CREATE INDEX play_item_id_idx ON aggregate_plays (play_item_id);
 
         -- trending_params from 92571f94989a

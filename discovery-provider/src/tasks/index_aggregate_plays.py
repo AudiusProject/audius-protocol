@@ -2,22 +2,22 @@ import logging
 import time
 import sqlalchemy as sa
 from src.tasks.celery_app import celery
-from src.models import LatestSlots, Play
+from src.models import IndexingCheckpoints, Play
 
 logger = logging.getLogger(__name__)
 
 AGGREGATE_PLAYS_TABLE_NAME = "aggregate_plays"
 
 ### UPDATE_AGGREGATE_PLAYS_QUERY ###
-# Get new plays that came after the previous most recent indexed slot for aggregate_play
+# Get new plays that came after the last indexing checkpoint for aggregate_play
 # Group those new plays by play item id to get the aggregate play counts
 # For new play item ids, insert those aggregate counts
 # For existing play item ids, add the new aggregate count to the existing aggregate count
 UPDATE_AGGREGATE_PLAYS_QUERY = """
-    WITH aggregate_plays_latest_slot AS (
+    WITH aggregate_plays_last_index AS (
         SELECT
-            :prev_latest_slot AS prev_latest_slot,
-            :new_latest_slot AS new_latest_slot
+            :prev_id_checkpoint AS prev_id_checkpoint,
+            :new_id_checkpoint AS new_id_checkpoint
     ),
     new_plays AS (
         SELECT
@@ -26,17 +26,17 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
         FROM
             plays p
         WHERE
-            p.slot > (
+            p.id > (
                 SELECT
-                    prev_latest_slot
+                    prev_id_checkpoint
                 FROM
-                    aggregate_plays_latest_slot
+                    aggregate_plays_last_index
             )
-            AND p.slot <= (
+            AND p.id <= (
                 SELECT
-                    new_latest_slot
+                    new_id_checkpoint
                 FROM
-                    aggregate_plays_latest_slot
+                    aggregate_plays_last_index
             )
         GROUP BY
             play_item_id
@@ -53,50 +53,48 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
         count = aggregate_plays.count + EXCLUDED.count
     """
 
-UPSERT_LATEST_SLOTS = """
-    INSERT INTO latest_slots (tablename, slot)
-    VALUES(:tablename, :slot)
+UPDATE_INDEXING_CHECKPOINTS = """
+    INSERT INTO indexing_checkpoints (tablename, last_index)
+    VALUES(:tablename, :last_index)
     ON CONFLICT (tablename)
-    DO UPDATE SET slot = EXCLUDED.slot;
+    DO UPDATE SET last_index = EXCLUDED.last_index;
     """
 
 def _update_aggregate_plays(session):
-    # get the last updated slot that counted towards the current aggregate plays
-    prev_latest_slot = (session.query(LatestSlots.slot)
-        .filter(LatestSlots.tablename == AGGREGATE_PLAYS_TABLE_NAME)
+    # get the last updated id that counted towards the current aggregate plays
+    prev_id_checkpoint = (session.query(IndexingCheckpoints.last_index)
+        .filter(IndexingCheckpoints.tablename == AGGREGATE_PLAYS_TABLE_NAME)
     ).scalar()
 
-    if not prev_latest_slot:
-        prev_latest_slot = 0
+    if not prev_id_checkpoint:
+        prev_id_checkpoint = 0
 
     # get the new latest
-    new_latest_slot = (
-        session.query(Play.slot)
-        .filter(Play.slot != None)
-        .order_by(Play.slot.desc()).limit(1)
+    new_id_checkpoint = (
+        session.query(Play.id)
+        .order_by(Play.id.desc()).limit(1)
     ).scalar()
 
-    if not new_latest_slot:
-        new_latest_slot = 0
+    if not new_id_checkpoint:
+        new_id_checkpoint = 0
 
-    # update aggregate plays with new plays that came after the prev_latest_slot
+    # update aggregate plays with new plays that came after the prev_id_checkpoint
     logger.info(f"index_aggregate_plays.py | Updating {AGGREGATE_PLAYS_TABLE_NAME}")
 
     session.execute(
         sa.text(UPDATE_AGGREGATE_PLAYS_QUERY),
         {
-            "prev_latest_slot": int(prev_latest_slot),
-            "new_latest_slot": int(new_latest_slot),
+            "prev_id_checkpoint": int(prev_id_checkpoint),
+            "new_id_checkpoint": int(new_id_checkpoint),
         },
     )
 
-    # update latest_slots table with the new latest slot
-    upsert_on_latest_slots = sa.text(UPSERT_LATEST_SLOTS)
+    # update indexing_checkpoints with the new id
     session.execute(
-        upsert_on_latest_slots,
+        sa.text(UPDATE_INDEXING_CHECKPOINTS),
         {
             "tablename": AGGREGATE_PLAYS_TABLE_NAME,
-            "slot": new_latest_slot,
+            "last_index": new_id_checkpoint,
         }
     )
 

@@ -41,7 +41,6 @@ def test_index_aggregate_plays_populate(app):
             {"item_id": 2, "created_at": date - timedelta(weeks=2)},
             {"item_id": 2, "created_at": date - timedelta(weeks=2)},
             {"item_id": 3, "created_at": date - timedelta(weeks=2)},
-            # We don't want to count these guys (tracks deleted/unlisted)
             {"item_id": 3},
             {"item_id": 3},
             {"item_id": 4},
@@ -93,20 +92,20 @@ def test_index_aggregate_plays_update(app):
             {"play_item_id": 1, "count": 3},
             {"play_item_id": 2, "count": 3},
         ],
-        "latest_slots" : [
-            {"tablename": "aggregate_plays", "slot": 9}
+        "indexing_checkpoints" : [
+            {"tablename": "aggregate_plays", "last_index": 9}
         ],
         "plays" : [
             # Current Plays
-            {"item_id": 0, "slot": 1},
-            {"item_id": 0, "slot": 2},
-            {"item_id": 0, "slot": 3},
-            {"item_id": 1, "slot": 4},
-            {"item_id": 1, "slot": 5},
-            {"item_id": 1, "slot": 6},
-            {"item_id": 2, "slot": 7},
-            {"item_id": 2, "slot": 8},
-            {"item_id": 2, "slot": 9},
+            {"item_id": 0},
+            {"item_id": 0},
+            {"item_id": 0},
+            {"item_id": 1},
+            {"item_id": 1},
+            {"item_id": 1},
+            {"item_id": 2},
+            {"item_id": 2},
+            {"item_id": 2},
 
             # New plays
             {"item_id": 0},
@@ -139,8 +138,8 @@ def test_index_aggregate_plays_update(app):
         assert results[3].play_item_id == 3
         assert results[3].count == 2
 
-def test_index_aggregate_plays_same_slot(app):
-    """Test that we should not update when latest slot is the same"""
+def test_index_aggregate_plays_same_checkpoint(app):
+    """Test that we should not update when last index is the same"""
     # setup
     with app.app_context():
         db = get_db()
@@ -159,20 +158,20 @@ def test_index_aggregate_plays_same_slot(app):
             {"play_item_id": 1, "count": 3},
             {"play_item_id": 2, "count": 3},
         ],
-        "latest_slots" : [
-            {"tablename": "aggregate_plays", "slot": 9}
+        "indexing_checkpoints" : [
+            {"tablename": "aggregate_plays", "last_index": 9}
         ],
         "plays" : [
             # Current Plays
-            {"item_id": 0, "slot": 1},
-            {"item_id": 0, "slot": 2},
-            {"item_id": 0, "slot": 3},
-            {"item_id": 1, "slot": 4},
-            {"item_id": 1, "slot": 5},
-            {"item_id": 1, "slot": 6},
-            {"item_id": 2, "slot": 7},
-            {"item_id": 2, "slot": 8},
-            {"item_id": 2, "slot": 9},
+            {"item_id": 0},
+            {"item_id": 0},
+            {"item_id": 0},
+            {"item_id": 1},
+            {"item_id": 1},
+            {"item_id": 1},
+            {"item_id": 2},
+            {"item_id": 2},
+            {"item_id": 2},
         ]
 
     }

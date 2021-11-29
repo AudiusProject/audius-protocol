@@ -77,7 +77,7 @@ def populate_mock_db(db, entities, block_offset=0):
         user_challenges = entities.get("user_challenges", [])
         plays = entities.get("plays", [])
         aggregate_plays = entities.get("aggregate_plays", [])
-        latest_slots = entities.get("latest_slots", [])
+        indexing_checkpoints = entities.get("indexing_checkpoints", [])
 
         num_blocks = max(len(tracks), len(users), len(follows), len(saves))
         for i in range(block_offset, block_offset + num_blocks):
@@ -197,7 +197,7 @@ def populate_mock_db(db, entities, block_offset=0):
 
         for i, play_meta in enumerate(plays):
             play = models.Play(
-                id=play_meta.get("id", i),
+                id=play_meta.get("id", i+1),
                 user_id=play_meta.get("user_id", i + 1),
                 source=play_meta.get("source", None),
                 play_item_id=play_meta.get("item_id", i+1),
@@ -215,12 +215,12 @@ def populate_mock_db(db, entities, block_offset=0):
             )
             session.add(aggregate_play)
 
-        for i, latest_slot_meta in enumerate(latest_slots):
-            latest_slot = models.LatestSlots(
-                tablename=latest_slot_meta.get("tablename", None),
-                slot=latest_slot_meta.get("slot", 0),
+        for i, indexing_checkpoint_meta in enumerate(indexing_checkpoints):
+            indexing_checkpoint = models.IndexingCheckpoints(
+                tablename=indexing_checkpoint_meta.get("tablename", None),
+                last_index=indexing_checkpoint_meta.get("last_index", 0),
             )
-            session.add(latest_slot)
+            session.add(indexing_checkpoint)
 
 
         for i, route_meta in enumerate(track_routes):

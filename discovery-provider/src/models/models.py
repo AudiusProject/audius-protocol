@@ -581,16 +581,16 @@ class AggregatePlays(Base):
 play_item_id={self.play_item_id},\
 count={self.count}>"
 
-class LatestSlots(Base):
-    __tablename__ = "latest_slots"
+class IndexingCheckpoints(Base):
+    __tablename__ = "indexing_checkpoints"
 
     tablename = Column(String, primary_key=True, nullable=False, index=False)
-    slot = Column(Integer, nullable=False, index=False)
+    last_index = Column(Integer, nullable=False, index=False)
 
     def __repr__(self):
-        return f"<LatestSlots(\
+        return f"<IndexingCheckpoints(\
 tablename={self.tablename},\
-slot={self.slot}>"
+last_index={self.last_index}>"
 
 
 class RouteMetrics(Base):
