@@ -6,8 +6,8 @@ import { User } from 'common/models/User'
 import { BNAudio, StringAudio, StringWei } from 'common/models/Wallet'
 import { getAccountUser } from 'common/store/account/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
+import { stringAudioToBN, stringWeiToAudioBN } from 'common/utils/wallet'
 import { AppState } from 'store/types'
-import { stringAudioToBN, stringWeiToAudioBN } from 'utils/wallet'
 
 export type BadgeTier = 'none' | 'bronze' | 'silver' | 'gold' | 'platinum'
 

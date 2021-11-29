@@ -5,10 +5,10 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import {
-  connectNewWallet,
   getAssociatedWallets,
   getRemoveWallet
-} from 'store/token-dashboard/slice'
+} from 'common/store/pages/token-dashboard/selectors'
+import { connectNewWallet } from 'common/store/pages/token-dashboard/slice'
 import { useSelector } from 'utils/reducer'
 
 import styles from './ConnectWalletsBody.module.css'

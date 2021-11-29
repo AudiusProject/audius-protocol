@@ -5,14 +5,11 @@ import { Name } from 'common/models/Analytics'
 import { BNWei } from 'common/models/Wallet'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getAccountUser } from 'common/store/account/selectors'
-import walletClient from 'services/wallet-client/WalletClient'
-import { make } from 'store/analytics/actions'
-import { SETUP_BACKEND_SUCCEEDED } from 'store/backend/actions'
-import { fetchAssociatedWallets } from 'store/token-dashboard/slice'
+import { fetchAssociatedWallets } from 'common/store/pages/token-dashboard/slice'
 import {
   getAccountBalance,
   getLocalBalanceDidChange
-} from 'store/wallet/selectors'
+} from 'common/store/wallet/selectors'
 import {
   getBalance,
   setBalance,
@@ -20,8 +17,11 @@ import {
   sendSucceeded,
   sendFailed,
   decreaseBalance
-} from 'store/wallet/slice'
-import { stringWeiToBN, weiToString } from 'utils/wallet'
+} from 'common/store/wallet/slice'
+import { stringWeiToBN, weiToString } from 'common/utils/wallet'
+import walletClient from 'services/wallet-client/WalletClient'
+import { make } from 'store/analytics/actions'
+import { SETUP_BACKEND_SUCCEEDED } from 'store/backend/actions'
 
 // TODO: handle errors
 const errors = {

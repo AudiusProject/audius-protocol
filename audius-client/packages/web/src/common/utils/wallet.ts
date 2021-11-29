@@ -74,3 +74,11 @@ export const formatWei = (
   }
   return formatNumberCommas(trimmed) as StringAudio
 }
+
+export const shortenSPLAddress = (addr: string) => {
+  return `${addr.substring(0, 4)}...${addr.substr(addr.length - 5)}`
+}
+
+export const shortenEthAddress = (addr: string) => {
+  return `0x${addr.substring(2, 4)}...${addr.substr(addr.length - 5)}`
+}

@@ -3,7 +3,7 @@ import React from 'react'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 
 import { BNWei, StringAudio, WalletAddress } from 'common/models/Wallet'
-import { stringAudioToBN, weiToAudio } from 'utils/wallet'
+import { stringAudioToBN, weiToAudio } from 'common/utils/wallet'
 
 import { ModalBodyTitle, ModalBodyWrapper } from '../WalletModal'
 

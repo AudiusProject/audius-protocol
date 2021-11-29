@@ -4,11 +4,11 @@ import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
+import { getRemoveWallet } from 'common/store/pages/token-dashboard/selectors'
 import {
   confirmRemoveWallet,
-  getRemoveWallet,
   pressConnectWallets
-} from 'store/token-dashboard/slice'
+} from 'common/store/pages/token-dashboard/slice'
 import { useSelector } from 'utils/reducer'
 
 import styles from './RemoveWalletBody.module.css'

@@ -9,22 +9,22 @@ import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
 import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { BNWei } from 'common/models/Wallet'
-import { Nullable } from 'common/utils/typeUtils'
-import MobileConnectWalletsDrawer from 'containers/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
-import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { getHasAssociatedWallets } from 'common/store/pages/token-dashboard/selectors'
 import {
-  getHasAssociatedWallets,
   pressConnectWallets,
   pressReceive,
   pressSend
-} from 'store/token-dashboard/slice'
+} from 'common/store/pages/token-dashboard/slice'
 import {
   getAccountBalance,
   getAccountTotalBalance
-} from 'store/wallet/selectors'
+} from 'common/store/wallet/selectors'
+import { Nullable } from 'common/utils/typeUtils'
+import { formatWei } from 'common/utils/wallet'
+import MobileConnectWalletsDrawer from 'containers/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
+import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
-import { formatWei } from 'utils/wallet'
 
 import styles from './Tiles.module.css'
 import TokenHoverTooltip from './components/TokenHoverTooltip'
