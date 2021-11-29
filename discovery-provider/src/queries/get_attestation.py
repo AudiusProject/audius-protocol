@@ -13,6 +13,7 @@ from src.models.models import (
     User,
     UserChallenge,
 )
+from src.solana.constants import WAUDIO_DECIMALS
 from src.utils.redis_connection import get_redis
 from src.utils.config import shared_config
 from src.utils.get_all_other_nodes import get_all_other_nodes
@@ -25,9 +26,6 @@ REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None
 if REWARDS_MANAGER_ACCOUNT:
     REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = PublicKey(REWARDS_MANAGER_ACCOUNT)
-
-ATTESTATION_DECIMALS = 8
-
 class Attestation:
     """Represents DN attesting to a user completing a given challenge"""
 
@@ -62,7 +60,7 @@ class Attestation:
         return f"{self.challenge_id}:{self.challenge_specifier}"
 
     def _get_encoded_amount(self):
-        amt = int(self.amount) * 10 ** ATTESTATION_DECIMALS
+        amt = int(self.amount) * 10 ** WAUDIO_DECIMALS
         return amt.to_bytes(8, byteorder="little")
 
     def get_attestation_bytes(self):
