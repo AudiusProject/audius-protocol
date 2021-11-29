@@ -59,7 +59,15 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
   return successResponse({ transactionSignature })
 }))
 
-
+/**
+ * The raw relay uses the `sendAndConfirmRawTransaction` as opposed to the `sendAndConfirmTransaction` method
+ * This is required becuase of a bug in the solana web3 transction that overwrites the singers to prevent the 
+ * transaction from being formatted correcly. 
+ * Additionally, signatures are transfered over the wire and added to the transaction manually to prevent the 
+ * library from incorrecly dropping/re-ordering the signatures. 
+ * Finally, the transaction must be partially signed so as to not overwrite the other signatures - need as a 
+ * work-around becuase of another bug in the solana web3 api
+ */
 solanaRouter.post('/relay/raw', handleResponse(async (req, res, next) => {
   const redis = req.app.get('redis')
   const { recentBlockhash, secpInstruction, instructions = [], signatures = [] } = req.body
@@ -93,7 +101,7 @@ solanaRouter.post('/relay/raw', handleResponse(async (req, res, next) => {
       tx.add(txInstruction)
     })
 
-    // Manually attach each signature ot the transaction
+    // Manually attach each signature to the transaction
     signatures.forEach(sig => {
       tx.signatures.push({
         publicKey: new PublicKey(sig.publicKey),
