@@ -35,10 +35,10 @@
     "express": "^4.17.1",
     "handlebars": "^4.1.2",
     "hashids": "^2.2.8",
-    "https-proxy-agent": "^5.0.0",
     "ipfs-http-client": "43.0.0",
     "moment": "^2.27.0",
     "node-fetch": "^2.6.1",
+    "request-promise": "^4.2.6",
     "unzipper": "^0.10.11"
   },
   "devDependencies": {
@@ -48,6 +48,7 @@
     "@types/node": "^12.7.1",
     "@types/node-fetch": "^2.5.8",
     "@types/request": "^2.48.2",
+    "@types/request-promise": "^4.1.48",
     "@types/unzipper": "^0.10.3",
     "copyfiles": "^2.4.1",
     "env-cmd": "^9.0.3",

@@ -1,8 +1,5 @@
 import express from 'express'
-import { IncomingMessage } from 'http'
-import https from 'https'
-import HttpsProxyAgent from 'https-proxy-agent'
-import urlLib from 'url'
+import request from 'request-promise'
 
 import promiseAny from '../utils/promise.any'
 
@@ -11,43 +8,36 @@ const PROXY_URLS = (process.env.PROXY_URLS || '').split(',')
 export const router = express.Router()
 
 const proxyRequest = async (proxyUrl: string, formattedUrl: string) => {
-  // @ts-ignore
-  const proxyOpts = urlLib.parse(proxyUrl)
-  // @ts-ignore
-  proxyOpts.rejectUnauthorized = false
-  // @ts-ignore
-  const agent = new HttpsProxyAgent(proxyOpts)
-
-  const options = urlLib.parse(formattedUrl)
-  // @ts-ignore
-  options.agent = agent
-  // @ts-ignore
-  options.rejectUnauthorized = false
-
   console.log(`Proxying to ${formattedUrl} via ${proxyUrl}`)
   const start = Date.now()
+
+  /**
+   * Note:
+   * As of writing implementation request-promise (and request) are deprecated
+   * modules.
+   * Axios is a better (more cannonical solution to Audius), but given
+   * experimentation & outlined issues
+   * https://github.com/axios/axios/issues/925
+   * Proxying to https via an http proxy is not working well with axios.
+   * Several workarounds do not appear to be working on the latest versions
+   * of axios & https proxy agent.
+   * request-promise works well, but its usage should be limited to the scope
+   * of this method.
+   */
   const result = await new Promise((resolve, reject) => {
-    https.get(options, (res: IncomingMessage) => {
-      let json = ''
-      res.on('data', (chunk) => {
-          json += chunk
-      })
-      res.on('end', () => {
-        if (res.statusCode === 200) {
-          try {
-            const data = JSON.parse(json)
-            resolve(data)
-          } catch (e) {
-            reject(new Error('Error parsing JSON!'))
-          }
-        } else {
-          reject(new Error(`Request failed with ${res.statusCode}`))
-        }
-      })
-    }).on('error', (e: Error) => {
-      console.error(`Error at https.get for ${proxyUrl}`)
-      reject(e)
-    })
+    request({
+      url: formattedUrl,
+      proxy: proxyUrl,
+      json: true
+    }).then(
+      (res) => {
+        resolve(res)
+      },
+      (error) => {
+        console.error(error)
+        reject(error)
+      }
+    )
   })
   const duration = Date.now() - start
   console.log(`[${duration}] Proxy succeeded to ${formattedUrl} via ${proxyUrl}`)
@@ -89,21 +79,21 @@ router.get('/', async (
  */
 router.get('/simple', async (
   req: express.Request,
-  res: express.Response
+  expressRes: express.Response
 ) => {
   const url = req.query.url as string
-  const newReq = https.request(decodeURI(url), (newRes: any) => {
-    const headers = {
-      'Access-Control-Allow-Method': '*',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': '*'
-    }
-
-    res.writeHead(newRes.statusCode, headers)
-    newRes.pipe(res)
-  }).on('error', (err) => {
-    res.statusCode = 500
-    res.end()
+  const result = await new Promise((resolve, reject) => {
+    request({
+      url,
+      headers: {
+        'Access-Control-Allow-Method': '*',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*'
+      }
+    }).then(
+      (res) => resolve(res),
+      (error) => reject(error)
+    )
   })
-  req.pipe(newReq)
+  expressRes.send(result)
 })
