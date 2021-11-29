@@ -23,7 +23,6 @@ const StakingABI = Utils.importEthContractABI('Staking.json').abi
 const DelegateManagerABI = Utils.importEthContractABI('DelegateManager.json').abi
 const ClaimsManagerABI = Utils.importEthContractABI('ClaimsManager.json').abi
 const ClaimDistributionABI = Utils.importEthContractABI('AudiusClaimDistributor.json').abi
-const WormholeABI = Utils.importEthContractABI('Wormhole.json').abi
 const WormholeClientABI = Utils.importEthContractABI('WormholeClient.json').abi
 const EthRewardsManagerABI = Utils.importEthContractABI('EthRewardsManager.json').abi
 

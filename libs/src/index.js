@@ -198,21 +198,21 @@ class AudiusLibs {
    * @param {string} config.ethBridgeAddress
    * @param {string} config.ethTokenBridgeAddress
    */
-     static configWormhole ({
+  static configWormhole ({
+    rpcHost,
+    solBridgeAddress,
+    solTokenBridgeAddress,
+    ethBridgeAddress,
+    ethTokenBridgeAddress
+  }) {
+    return {
       rpcHost,
       solBridgeAddress,
       solTokenBridgeAddress,
       ethBridgeAddress,
       ethTokenBridgeAddress
-     }) {
-      return {
-        rpcHost,
-        solBridgeAddress,
-        solTokenBridgeAddress,
-        ethBridgeAddress,
-        ethTokenBridgeAddress
-      }
     }
+  }
 
   /**
    * Configures a solana web3

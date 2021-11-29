@@ -1,5 +1,3 @@
-const BN = require('bn.js')
-
 const { Base, Services } = require('./base')
 const CreatorNodeService = require('../services/creatorNode/index')
 const Utils = require('../utils')

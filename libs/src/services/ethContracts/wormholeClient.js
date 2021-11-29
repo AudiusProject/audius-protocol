@@ -26,7 +26,6 @@ class WormholeClient {
     wormholeAddress,
     relayer
   ) {
-
     console.log({
       tokenAddr: this.audiusTokenClient.contractAddress,
       wormholeAddress

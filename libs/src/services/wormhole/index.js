@@ -1,9 +1,8 @@
-const BN = require('bn.js')
 const bs58 = require('bs58')
 const { toBuffer } = require('ethereumjs-util')
 const { zeroPad } = require('ethers/lib/utils')
 const { providers } = require('ethers/lib/index')
-const requireESM = require("esm")(module)
+const requireESM = require('esm')(module)
 
 const SolanaUtils = require('../solanaWeb3Manager/utils')
 const Utils = require('../../utils')
@@ -38,7 +37,7 @@ class Wormhole {
    * @param {string} ethBridgeAddress
    * @param {string} ethTokenBridgeAddress
   */
-   constructor (
+  constructor (
     hedgehog,
     ethWeb3Manager,
     ethContracts,
@@ -50,7 +49,6 @@ class Wormhole {
     ethBridgeAddress,
     ethTokenBridgeAddress
   ) {
-
     // Wormhole service dependecies
     this.hedgehog = hedgehog
     this.ethWeb3Manager = ethWeb3Manager
@@ -64,7 +62,6 @@ class Wormhole {
     this.solTokenBridgeAddress = solTokenBridgeAddress
     this.ethBridgeAddress = ethBridgeAddress
     this.ethTokenBridgeAddress = ethTokenBridgeAddress
-
   }
 
   /**
@@ -82,8 +79,8 @@ class Wormhole {
     let logs = [`Attest and complete transfer for eth to sol for reciept ${ethTxReceipt}`]
     try {
       const receipt = await this.ethWeb3Manager.web3.eth.getTransactionReceipt(ethTxReceipt)
-      const sequence = parseSequenceFromLogEth(receipt, this.ethBridgeAddress);
-      const emitterAddress = getEmitterAddressEth(this.ethTokenBridgeAddress);
+      const sequence = parseSequenceFromLogEth(receipt, this.ethBridgeAddress)
+      const emitterAddress = getEmitterAddressEth(this.ethTokenBridgeAddress)
       phase = phases.GET_SIGNED_VAA
       let { vaaBytes } = await getSignedVAA(
         this.rpcHost,
@@ -103,13 +100,13 @@ class Wormhole {
             signature: sig.signature
           }))
         }
-    
+
         const { transactionSignature } = await this.identityService.solanaRelayRaw(transactionData)
         logs.push(`Relay sol tx for postVAA with signature ${transactionSignature}`)
         return {
           'serialize': () => {}
         }
-      } 
+      }
       const connection = this.solanaWeb3Manager.connection
       connection.sendRawTransaction = async () => ''
       connection.confirmTransaction = async () => ''
@@ -121,7 +118,7 @@ class Wormhole {
         this.solanaWeb3Manager.feePayerAddress, // payerAddress
         vaaBytes
       )
-  
+
       // Finally, redeem on Solana
       phase = phases.REDEEM_ON_SOLANA
       const transaction = await redeemOnSolana(
@@ -131,10 +128,10 @@ class Wormhole {
         this.solanaWeb3Manager.feePayerAddress, // payerAddress,
         vaaBytes
       )
-  
+
       // Must call serialize message to set the correct signatures on the transaction
       transaction.serializeMessage()
-  
+
       const { blockhash } = await connection.getRecentBlockhash()
       const transactionData = {
         recentBlockhash: blockhash,
@@ -144,7 +141,7 @@ class Wormhole {
           signature: sig.signature
         }))
       }
-  
+
       const { transactionSignature } = await this.identityService.solanaRelayRaw(transactionData)
       logs.push(`Complete redeem on sol with signature ${transactionSignature}`)
       return {
@@ -218,7 +215,7 @@ class Wormhole {
         tokenAccountInfo.address.toString(), // fromAddress
         this.solanaWeb3Manager.mintAddress, // mintAddress
         wAudioAmount, // BigInt
-        zeroPad(toBuffer(ethTargetAddress), 32), // Uint8Array of length 32 targetAddress 
+        zeroPad(toBuffer(ethTargetAddress), 32), // Uint8Array of length 32 targetAddress
         CHAIN_ID_ETH, // ChainId targetChain
         zeroPad(toBuffer(this.ethContracts.AudiusTokenClient.contractAddress), 32), // Uint8Array of length 32 originAddress
         CHAIN_ID_ETH, //  ChainId originChain
@@ -243,9 +240,9 @@ class Wormhole {
       phase = phases.GET_EMITTER_ADDR
 
       // Get the sequence number and emitter address required to fetch the signedVAA of our message
-      const info = await connection.getTransaction(transactionSignature);
-      const sequence = parseSequenceFromLogSolana(info);
-      const emitterAddress = await getEmitterAddressSolana(this.solTokenBridgeAddress);
+      const info = await connection.getTransaction(transactionSignature)
+      const sequence = parseSequenceFromLogSolana(info)
+      const emitterAddress = await getEmitterAddressSolana(this.solTokenBridgeAddress)
 
       // Fetch the signedVAA from the Wormhole Network (this may require retries while you wait for confirmation)
       phase = phases.GET_SIGNED_VAA
@@ -254,7 +251,7 @@ class Wormhole {
         CHAIN_ID_SOLANA,
         emitterAddress,
         sequence
-      );
+      )
 
       // Redeem on Ethereum
       // NOTE: The signer should be the user's personal wallet
