@@ -3,14 +3,10 @@ const crypto = require('crypto')
 
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { getFeePayer } = require('../solana-client')
-const config = require('../config')
-
-const solanaEndpoint = config.get('solanaEndpoint')
 
 const {
   PublicKey,
   Secp256k1Program,
-  sendAndConfirmTransaction,
   sendAndConfirmRawTransaction,
   Transaction,
   TransactionInstruction
@@ -62,15 +58,17 @@ solanaRouter.post('/relay', handleResponse(async (req, res, next) => {
 
 /**
  * The raw relay uses the `sendAndConfirmRawTransaction` as opposed to the `sendAndConfirmTransaction` method
- * This is required becuase of a bug in the solana web3 transction that overwrites the singers to prevent the 
- * transaction from being formatted correcly. 
- * Additionally, signatures are transfered over the wire and added to the transaction manually to prevent the 
- * library from incorrecly dropping/re-ordering the signatures. 
- * Finally, the transaction must be partially signed so as to not overwrite the other signatures - need as a 
+ * This is required becuase of a bug in the solana web3 transction that overwrites the singers to prevent the
+ * transaction from being formatted correcly.
+ * Additionally, signatures are transfered over the wire and added to the transaction manually to prevent the
+ * library from incorrecly dropping/re-ordering the signatures.
+ * Finally, the transaction must be partially signed so as to not overwrite the other signatures - need as a
  * work-around becuase of another bug in the solana web3 api
  */
 solanaRouter.post('/relay/raw', handleResponse(async (req, res, next) => {
   const redis = req.app.get('redis')
+  const libs = req.app.get('audiusLibs')
+
   const { recentBlockhash, secpInstruction, instructions = [], signatures = [] } = req.body
 
   const reqBodySHA = crypto.createHash('sha256').update(JSON.stringify({ secpInstruction, instructions, signatures })).digest('hex')
@@ -106,28 +104,29 @@ solanaRouter.post('/relay/raw', handleResponse(async (req, res, next) => {
     signatures.forEach(sig => {
       tx.signatures.push({
         publicKey: new PublicKey(sig.publicKey),
-        signature: sig.signature ? Buffer.from(sig.signature): sig.signature
+        signature: sig.signature ? Buffer.from(sig.signature) : sig.signature
       })
     })
 
     const feePayerAccount = getFeePayer()
     tx.partialSign(feePayerAccount)
 
+    const connection = libs.solanaWeb3Manager.connection
     const transactionSignature = await sendAndConfirmRawTransaction(
       connection,
       tx.serialize(), {
-      skipPreflight: true,
-      commitment: 'processed',
-      preflightCommitment: 'processed'
-    })
+        skipPreflight: true,
+        commitment: 'processed',
+        preflightCommitment: 'processed'
+      })
 
     return successResponse({ transactionSignature })
-  } catch (e) {
+  } catch (error) {
     // if the tx fails, store it in redis with a 24 hour expiration
     await redis.setex(`solanaFailedTx:${reqBodySHA}`, 60 /* seconds */ * 60 /* minutes */ * 24 /* hours */, JSON.stringify(req.body))
     req.logger.error('Error in solana transaction:', error, reqBodySHA)
     const errorString = `Something caused the solana transaction to fail for payload ${reqBodySHA}`
-    return errorResponseServerError(errorString, { errorCode, error })
+    return errorResponseServerError(errorString, { error })
   }
 }))
 
