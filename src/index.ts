@@ -93,7 +93,8 @@ router.get('/error', (
 // Override default metatags
 router.get([
   '/check',
-  '/undefined'
+  '/undefined',
+  '/press'
 ], (
   req: express.Request,
   res: express.Response) => {
