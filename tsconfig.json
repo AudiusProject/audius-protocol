@@ -4,13 +4,19 @@
     "module": "commonjs",
     "outDir": "./build",
     "strict": true,
-    
     "typeRoots": [
       "./types",
       "./node_modules/@types"
     ],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "eth": ["node_modules/@audius/fetch-nft/dist/eth"],
+      "sol": ["node_modules/@audius/fetch-nft/dist/sol"],
+      "utils/types": ["node_modules/@audius/fetch-nft/dist/utils/types"],
+      "utils/typeUtils": ["node_modules/@audius/fetch-nft/dist/utils/typeUtils"]
+    }
   },
   "ts-node": {
     "files": true
