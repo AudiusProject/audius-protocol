@@ -1089,7 +1089,7 @@ class Challenge(Base):
     # Identifies this challenge
     id = Column(String, primary_key=True, nullable=False, index=True)
     type = Column(Enum(ChallengeType), nullable=False)
-    # The amount of wAudio to disburse (9 decimals)
+    # The amount of wAudio to disburse (8 decimals)
     amount = Column(String, nullable=False)
     # Whether the challenge is currently active
     active = Column(Boolean, nullable=False)
