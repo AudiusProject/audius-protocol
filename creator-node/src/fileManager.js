@@ -316,7 +316,6 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
       if (multihash !== ipfsHashOnly) {
         decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: ipfsHashOnly, time: Date.now() })
         // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
-        await fs.unlink(expectedStoragePath)
         throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${ipfsHashOnly}`)
       }
       decisionTree.push({ stage: 'Successfully verified the file contents for the CID', vals: multihash, time: Date.now() })
