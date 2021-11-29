@@ -59,21 +59,15 @@ const OverflowMenuDrawer = () => {
       [OverflowSource.PROFILE]: ProfileOverflowMenuDrawer
     }[source] ?? TrackOverflowMenuDrawer
 
-  const rows = (overflowActions ?? []).map(action => ({
-    text: rowMessageMap[action],
-    action
-  }))
-
   return (
     <OverflowDrawerComponent
-      render={callbacks => (
-        <ActionDrawer
-          rows={rows}
-          callbacks={callbacks}
-          isOpen={isOpen}
-          onClose={onClose}
-        />
-      )}
+      render={callbacks => {
+        const rows = (overflowActions ?? []).map(action => ({
+          text: rowMessageMap[action],
+          callback: callbacks[action]
+        }))
+        return <ActionDrawer rows={rows} isOpen={isOpen} onClose={onClose} />
+      }}
     />
   )
 }

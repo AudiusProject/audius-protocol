@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export type Drawer = 'EnablePushNotifications'
+export type Drawer = 'EnablePushNotifications' | 'DeactivateAccountConfirmation'
 
 export type DrawersState = { [drawer in Drawer]: boolean }
 
 const initialState: DrawersState = {
-  EnablePushNotifications: false
+  EnablePushNotifications: false,
+  DeactivateAccountConfirmation: false
 }
 
 const slice = createSlice({
