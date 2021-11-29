@@ -27,6 +27,8 @@ import PushNotifications from 'app/notifications'
 import createStore from 'app/store'
 import { setup as setupAnalytics } from 'app/utils/analytics'
 
+import { DeactivateAccountConfirmationDrawer } from './components/deactivate-account-confirmation-drawer/DeactivateAccountConfirmationDrawer'
+
 const store = createStore()
 export const dispatch = store.dispatch
 
@@ -45,6 +47,7 @@ const Drawers = () => {
       <EnablePushNotificationsDrawer />
       <CollectibleDetailsDrawer />
       <OverflowMenuDrawer />
+      <DeactivateAccountConfirmationDrawer />
       <TransferAudioMobileDrawer />
     </>
   )

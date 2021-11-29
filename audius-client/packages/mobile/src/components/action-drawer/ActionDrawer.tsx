@@ -1,9 +1,5 @@
 import React from 'react'
 
-import {
-  OverflowAction,
-  OverflowActionCallbacks
-} from 'audius-client/src/common/store/ui/mobile-overflow-menu/types'
 import { StyleSheet, TouchableHighlight, View } from 'react-native'
 
 import Drawer from 'app/components/drawer'
@@ -18,16 +14,16 @@ import {
 
 export type ActionDrawerRow = {
   text: string
-  action: OverflowAction
+  callback?: () => void
   isDestructive?: boolean
 }
 
 type ActionSheetModalProps = {
   rows: ActionDrawerRow[]
-  callbacks: OverflowActionCallbacks
   isOpen: boolean
   onClose: () => void
   title?: string
+  renderTitle?: () => React.ReactNode
 }
 
 const createStyles = (themeColors: ThemeColors) =>
@@ -64,15 +60,17 @@ const createStyles = (themeColors: ThemeColors) =>
 // `ActionDrawer` is a drawer that presents a list of clickable rows with text
 const ActionDrawer = ({
   rows,
-  callbacks,
   isOpen,
   onClose,
-  title
+  title,
+  renderTitle
 }: ActionSheetModalProps) => {
   const didSelectRow = (index: number) => {
-    const { action } = rows[index]
+    const { callback } = rows[index]
     onClose()
-    callbacks?.[action]?.()
+    if (callback) {
+      callback()
+    }
   }
   const styles = useThemedStyles(createStyles)
 
@@ -83,7 +81,9 @@ const ActionDrawer = ({
   return (
     <Drawer onClose={onClose} isOpen={isOpen}>
       <View style={styles.container}>
-        {title && <Text style={[styles.row, styles.title]}>{title}</Text>}
+        {renderTitle
+          ? renderTitle()
+          : title && <Text style={[styles.row, styles.title]}>{title}</Text>}
         {rows.map(({ text, isDestructive = false }, index) => (
           <TouchableHighlight
             key={`${text}-${index}`}
