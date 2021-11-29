@@ -12,6 +12,7 @@ const Utils = require('../../utils')
 const { submitAttestations, evaluateAttestations } = require('./rewards')
 const SolanaUtils = require('./utils')
 const { TransactionHandler } = require('./transactionHandler')
+const { WAUDIO_DECMIALS } = require('../../constants')
 
 const { PublicKey } = solanaWeb3
 
@@ -205,7 +206,7 @@ class SolanaWeb3Manager {
       if (!tokenAccount) return null
 
       // Multiply by 10^10 to maintain same decimals as eth $AUDIO
-      return tokenAccount.amount.mul(Utils.toBN('10000000000'))
+      return tokenAccount.amount.mul(Utils.toBN('1'.padEnd(WAUDIO_DECMIALS + 1, '0')))
     } catch (e) {
       return null
     }
