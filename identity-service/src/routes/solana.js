@@ -3,6 +3,7 @@ const crypto = require('crypto')
 
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const { getFeePayer } = require('../solana-client')
+const config = require('../config')
 
 const solanaEndpoint = config.get('solanaEndpoint')
 
