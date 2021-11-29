@@ -8,12 +8,11 @@ import LinearGradient from 'react-native-linear-gradient'
 
 import HeavyCheckMark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconUpload from 'app/assets/images/iconGradientUpload.svg'
+import Drawer from 'app/components/drawer'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemeColors } from 'app/utils/theme'
-
-import Drawer from '../drawer'
 
 const styles = StyleSheet.create({
   drawer: {
