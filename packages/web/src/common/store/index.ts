@@ -16,6 +16,7 @@ import usersReducer from 'common/store/cache/users/reducer'
 import usersSagas from 'common/store/cache/users/sagas'
 import { UsersCacheState } from 'common/store/cache/users/types'
 import audioRewardsSlice from 'common/store/pages/audio-rewards/slice'
+import tokenDashboardSlice from 'common/store/pages/token-dashboard/slice'
 import addToPlaylistReducer, {
   AddToPlaylistState
 } from 'common/store/ui/add-to-playlist/reducer'
@@ -37,6 +38,7 @@ import nowPlayingReducer, {
 } from 'common/store/ui/now-playing/slice'
 import shareSoundToTikTokModalReducer from 'common/store/ui/share-sound-to-tiktok-modal/slice'
 import { ShareSoundToTikTokModalState } from 'common/store/ui/share-sound-to-tiktok-modal/types'
+import wallet from 'common/store/wallet/slice'
 
 // In the future, these state slices will live in @audius/client-common.
 // For now they live in the web client. As features get migrated to RN
@@ -50,6 +52,9 @@ export const reducers = {
   collections: asCache(collectionsReducer, Kind.COLLECTIONS),
   tracks: asCache(tracksReducer, Kind.TRACKS),
   users: asCache(usersReducer, Kind.USERS),
+
+  // Wallet
+  wallet,
 
   // UI
   ui: combineReducers({
@@ -66,7 +71,8 @@ export const reducers = {
 
   // Pages
   pages: combineReducers({
-    audioRewards: audioRewardsSlice.reducer
+    audioRewards: audioRewardsSlice.reducer,
+    tokenDashboard: tokenDashboardSlice.reducer
   })
 }
 
@@ -85,6 +91,7 @@ export const sagas = {
   // store/social/users/sagas.ts
   // store/social/collections/sagas.ts
   // containers/audio-rewards-page/store/sagas.ts
+  // store/wallet/sagas.ts
 }
 
 export type CommonState = {
@@ -94,6 +101,9 @@ export type CommonState = {
   collections: Cache<Collection>
   tracks: TracksCacheState
   users: UsersCacheState
+
+  // Wallet
+  wallet: ReturnType<typeof wallet>
 
   ui: {
     addToPlaylist: AddToPlaylistState
@@ -109,5 +119,6 @@ export type CommonState = {
 
   pages: {
     audioRewards: ReturnType<typeof audioRewardsSlice.reducer>
+    tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
   }
 }

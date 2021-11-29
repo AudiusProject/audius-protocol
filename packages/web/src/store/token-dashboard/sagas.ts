@@ -10,7 +10,40 @@ import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getUserId, getAccountUser } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import { upgradeToCreator } from 'common/store/cache/users/sagas'
+import {
+  getSendData,
+  getAssociatedWallets
+} from 'common/store/pages/token-dashboard/selectors'
+import {
+  fetchAssociatedWallets,
+  connectNewWallet,
+  removeWallet as removeWalletAction,
+  pressSend,
+  setModalState,
+  setModalVisibility,
+  inputSendData,
+  confirmSend,
+  setDiscordCode,
+  setIsConnectingWallet,
+  setWalletAddedConfirmed,
+  setAssociatedWallets,
+  confirmRemoveWallet,
+  updateWalletError,
+  preloadWalletProviders
+} from 'common/store/pages/token-dashboard/slice'
+import {
+  ConfirmRemoveWalletAction,
+  ModalState
+} from 'common/store/pages/token-dashboard/types'
+import {
+  send as walletSend,
+  claimFailed,
+  sendSucceeded,
+  getBalance,
+  sendFailed
+} from 'common/store/wallet/slice'
 import { Nullable } from 'common/utils/typeUtils'
+import { weiToString } from 'common/utils/wallet'
 import { CollectibleState } from 'containers/collectibles/types'
 import {
   fetchOpenSeaAssetsForWallets,
@@ -31,36 +64,6 @@ import connectWeb3Wallet, {
 } from 'services/web3-modal/index'
 import { requestConfirmation } from 'store/confirmer/actions'
 import { confirmTransaction } from 'store/confirmer/sagas'
-import {
-  send as walletSend,
-  claimFailed,
-  sendSucceeded,
-  getBalance,
-  sendFailed
-} from 'store/wallet/slice'
-import { weiToString } from 'utils/wallet'
-
-import {
-  fetchAssociatedWallets,
-  connectNewWallet,
-  removeWallet as removeWalletAction,
-  pressSend,
-  setModalState,
-  setModalVisibility,
-  inputSendData,
-  confirmSend,
-  getSendData,
-  setDiscordCode,
-  setIsConnectingWallet,
-  setWalletAddedConfirmed,
-  setAssociatedWallets,
-  confirmRemoveWallet,
-  getAssociatedWallets,
-  updateWalletError,
-  preloadWalletProviders,
-  resetStatus
-} from './slice'
-import { ConfirmRemoveWalletAction, ModalState } from './types'
 
 const CONNECT_WALLET_CONFIRMATION_UID = 'CONNECT_WALLET'
 
