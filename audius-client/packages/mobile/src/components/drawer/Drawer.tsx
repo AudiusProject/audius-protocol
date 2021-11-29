@@ -1,8 +1,8 @@
 import React, {
-  useEffect,
-  useCallback,
-  useRef,
   ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
   useState
 } from 'react'
 
@@ -14,6 +14,7 @@ import {
   LayoutChangeEvent,
   PanResponder,
   StyleSheet,
+  Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View
@@ -54,10 +55,25 @@ const createStyles = (themeColors: ThemeColors) =>
       height: '100%'
     },
 
+    titleContainer: {
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24
+    },
+
     dismissContainer: {
-      marginLeft: 24,
-      marginTop: 24,
-      width: 30
+      position: 'absolute',
+      top: 24,
+      left: 24
+    },
+
+    titleLabel: {
+      fontFamily: 'AvenirNextLTPro-Bold',
+      fontSize: 18,
+      paddingTop: 20,
+      color: themeColors.neutral
     },
 
     isOpen: {
@@ -87,6 +103,7 @@ export type DrawerProps = {
   isOpen: boolean
   children: ReactNode
   onClose: () => void
+  title?: string
   isFullscreen?: boolean
   isGestureSupported?: boolean
 }
@@ -118,10 +135,41 @@ const attachToDy = (animation: Animated.Value, newValue: number) => (
   )(e, { dy: newValue })
 }
 
+const DrawerHeader = ({
+  onClose,
+  title,
+  isFullscreen
+}: {
+  onClose: () => void
+  title?: string
+  isFullscreen?: boolean
+}) => {
+  const styles = useThemedStyles(createStyles)
+  const closeColor = useColor('neutralLight4')
+
+  return title || isFullscreen ? (
+    <View style={styles.titleContainer}>
+      {isFullscreen && (
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onClose}
+          style={styles.dismissContainer}
+        >
+          <IconRemove width={30} height={30} fill={closeColor} />
+        </TouchableOpacity>
+      )}
+      {title && <Text style={styles.titleLabel}>{title}</Text>}
+    </View>
+  ) : (
+    <View />
+  )
+}
+
 const Drawer = ({
   isOpen,
   children,
   onClose,
+  title,
   isFullscreen,
   isGestureSupported = true
 }: DrawerProps) => {
@@ -138,8 +186,6 @@ const Drawer = ({
   const shadowAnim = useRef(new Animated.Value(0)).current
   const borderRadiusAnim = useRef(new Animated.Value(BORDER_RADIUS)).current
   const backgroundOpacityAnim = useRef(new Animated.Value(0)).current
-
-  const closeColor = useColor('neutralLight4')
 
   const slideIn = useCallback(() => {
     springToValue(translationAnim, openPosition)
@@ -290,15 +336,11 @@ const Drawer = ({
               }
             }}
           >
-            {isFullscreen && (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={onClose}
-                style={styles.dismissContainer}
-              >
-                <IconRemove width={30} height={30} fill={closeColor} />
-              </TouchableOpacity>
-            )}
+            <DrawerHeader
+              onClose={onClose}
+              title={title}
+              isFullscreen={isFullscreen}
+            />
             {children}
           </SafeAreaView>
           <View style={styles.skirt} />

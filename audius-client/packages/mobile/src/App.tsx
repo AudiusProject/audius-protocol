@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context'
 import WebView from 'react-native-webview'
 import { Provider } from 'react-redux'
 
+// import AudioBreakdownDrawer from 'app/components/audio-breakdown-drawer'
 import Audio from 'app/components/audio/Audio'
 import GoogleCast from 'app/components/audio/GoogleCast'
 // import BottomBar from 'app/components/bottom-bar'
@@ -49,6 +50,9 @@ const Drawers = () => {
       <OverflowMenuDrawer />
       <DeactivateAccountConfirmationDrawer />
       <TransferAudioMobileDrawer />
+      {/* Disable the audio breakdown drawer until we get
+      the feature flags to work for native mobile */}
+      {/* <AudioBreakdownDrawer /> */}
     </>
   )
 }

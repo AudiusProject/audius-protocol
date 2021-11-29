@@ -9,12 +9,11 @@ import { StyleSheet, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import IconGold from 'app/assets/images/IconGoldBadge.svg'
+import Drawer from 'app/components/drawer'
 import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { useThemeColors } from 'app/utils/theme'
-
-import Drawer from '../drawer'
 
 const TRANSFER_AUDIO_MODAL_NAME = 'TransferAudioMobileWarning'
 
@@ -71,11 +70,7 @@ const TransferAudioMobileDrawer = () => {
       <View style={styles.drawer}>
         <IconGold style={styles.badge} height={134} width={134} />
         <MaskedView
-          maskElement={
-            <Text style={styles.title} weight='heavy'>
-              {messages.title}
-            </Text>
-          }
+          maskElement={<Text style={styles.title}>{messages.title}</Text>}
         >
           <LinearGradient
             colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
