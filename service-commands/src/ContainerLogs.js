@@ -2,7 +2,7 @@ const moment = require('moment')
 const { exec } = require('child_process')
 const { Service, getContentNodeContainerName } = require('./setup')
 const serviceCommands = require('./commands/service-commands.json')
-const NUMBER_OF_CONTENT_NODES = 3
+const NUMBER_OF_CONTENT_NODES = 10
 
 class ContainerLogs {
   /**
