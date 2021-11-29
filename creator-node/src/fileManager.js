@@ -93,6 +93,7 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ena
  * @param {String?} fileNameForImage file name if the multihash is image in dir.
  *                  eg original.jpg or 150x150.jpg
  * @param {number?} trackId if the multihash is of a segment type, the trackId to which it belongs to
+ * @param {number?} numRetries optional number of times to retry this function if there was an error during content verification
  * @return {Boolean} true if success, false if error
  */
 async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null, trackId = null, numRetries = 5) {
@@ -297,19 +298,12 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
     }
 
     // verify that the contents of the file match the file's cid
-    let fileSize = null
     try {
-      fileSize = (await fs.stat(expectedStoragePath)).size
-    } catch (e) {
-      logger.warn('Could not get fs statistics for path', expectedStoragePath)
-    }
-    try {
+      let fileSize = (await fs.stat(expectedStoragePath)).size
       decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now(), fileSize })
-
-      const fileSizeExists = fileSize !== null // null if fs.stat errors and doesn't return a value
       const fileIsEmpty = fileSize === 0
       // there is one case where an empty file could be valid, check for that CID explicitly
-      if (fileSizeExists && fileIsEmpty && multihash !== EMPTY_FILE_CID) {
+      if (fileIsEmpty && multihash !== EMPTY_FILE_CID) {
         throw new Error(`File has no content, content length is 0: ${multihash}`)
       }
 
@@ -566,12 +560,8 @@ async function removeFile (storagePath) {
   try {
     await fs.unlink(storagePath)
   } catch (err) {
-    // if file doesn't exist, ignore error and return
     const fileDoesntExistError = err && err.code === 'ENOENT'
-    if (fileDoesntExistError) {
-      return
-    }
-    throw err
+    if (!fileDoesntExistError) throw err
   }
 }
 

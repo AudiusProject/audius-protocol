@@ -504,11 +504,11 @@ async function writeStreamToFileSystem (inputStream, expectedStoragePath, create
 /**
  * Cleaner way to handle piping data between streams since this handles all
  * events such as finish, error, end etc in addition to being async/awaited
- * https://nodejs.org/en/docs/guides/backpressuring-in-streams/
  * @param {stream} inputStream Stream to persist to disk
  * @param {String} expectedStoragePath path in local file system to store
  */
 async function _streamFileToDiskHelper (inputStream, expectedStoragePath) {
+  // https://nodejs.org/en/docs/guides/backpressuring-in-streams/
   await pipeline(
     inputStream, // input stream
     fs.createWriteStream(expectedStoragePath) // output stream
