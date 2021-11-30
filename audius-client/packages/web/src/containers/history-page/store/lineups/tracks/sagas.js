@@ -1,37 +1,40 @@
 import { keyBy } from 'lodash'
-import { call } from 'redux-saga/effects'
+import { call, select } from 'redux-saga/effects'
 
 import Kind from 'common/models/Kind'
+import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import {
   PREFIX,
   tracksActions
 } from 'containers/history-page/store/lineups/tracks/actions'
 import AudiusBackend from 'services/AudiusBackend'
+import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import { LineupSagas } from 'store/lineup/sagas'
 
 function* getHistoryTracks() {
   try {
-    const listenHistory = yield call(AudiusBackend.getListenHistoryTracks)
-    const uniqueTrackIds = [
-      ...new Set(listenHistory.tracks.map(t => t.trackId))
-    ]
-    const tracks = yield call(AudiusBackend.getAllTracks, {
-      offset: 0,
-      limit: uniqueTrackIds.length,
-      idsArray: uniqueTrackIds
+    const currentUserId = yield select(getUserId)
+    const activity = yield apiClient.getUserTrackHistory({
+      currentUserId,
+      userId: currentUserId,
+      limit: 100
     })
-    const processedTracks = yield call(processAndCacheTracks, tracks)
+
+    const processedTracks = yield call(
+      processAndCacheTracks,
+      activity.map(a => a.track)
+    )
     const processedTracksMap = keyBy(processedTracks, 'track_id')
 
     const lineupTracks = []
-    listenHistory.tracks.forEach((track, i) => {
-      const trackMetadata = processedTracksMap[track.trackId]
+    activity.forEach((activity, i) => {
+      const trackMetadata = processedTracksMap[activity.track.track_id]
       // Prevent history for invalid tracks from getting into the lineup.
       if (trackMetadata) {
         lineupTracks.push({
           ...trackMetadata,
-          dateListened: track.listenDate
+          dateListened: activity.timestamp
         })
       }
     })
