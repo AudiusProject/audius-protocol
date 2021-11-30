@@ -189,7 +189,7 @@ def _get_azure_account():
         print("Failed to retrive azure account", file=sys.stderr)
         sys.exit(1)
 
-    return proc.stdout.deocde().strip()
+    return proc.stdout.decode().strip()
 
 
 def _get_azure_subscription():
