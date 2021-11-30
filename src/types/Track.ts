@@ -100,6 +100,13 @@ export type FullTrack = Track & {
   remix_of: FullRemixParent
 }
 
+export type RemixParentModel = {
+  has_remix_author_reposted: boolean
+  has_remix_author_saved: boolean
+  parent_track_id: number
+  user: UserModel
+}
+
 export type TrackModel = {
   blockhash: string
   blocknumber: number
@@ -117,7 +124,7 @@ export type TrackModel = {
   genre: string
   mood: string
   credits_splits: string
-  remix_of: any
+  remix_of?: { tracks: RemixParentModel[] }
   create_date: string
   release_date: string
   file_type: string
@@ -125,14 +132,14 @@ export type TrackModel = {
   license: string
   isrc: string
   iswc: string
-  track_segments: any
+  track_segments: TrackSegment[]
   metadata_multihash: string
-  download: any
+  download: TrackDownload
   updated_at: string
   created_at: string
   is_unlisted: boolean
   field_visibility: TrackFieldVisibility
-  stem_of: any
+  stem_of: null
   permalink: string
   user: FullUser
 }
