@@ -5,7 +5,6 @@
       "docker container prune -f",
       "docker volume prune -f",
       "docker network prune -f",
-      "docker network prune -f",
       "sudo rm -rf creator-node/compose/env/tmp",
       "sudo rm -rf discovery-provider/compose/env/tmp"
     ]
