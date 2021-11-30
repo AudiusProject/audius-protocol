@@ -1,6 +1,6 @@
 from src.queries.get_track_history import _get_track_history
 from src.utils.db_session import get_db
-from tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db
 
 test_entities = {
     "plays": [

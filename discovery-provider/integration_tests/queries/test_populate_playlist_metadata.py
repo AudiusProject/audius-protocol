@@ -3,7 +3,7 @@ from src.queries import response_name_constants
 from src.models import RepostType, SaveType
 from src.queries.query_helpers import populate_playlist_metadata
 from src.utils.db_session import get_db
-from tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db
 
 logger = logging.getLogger(__name__)
 

@@ -7,7 +7,7 @@ from src.trending_strategies.aSPET_trending_tracks_strategy import (
     TrendingTracksStrategyaSPET,
 )
 from src.tasks.index_aggregate_plays import _update_aggregate_plays
-from tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db
 
 logger = logging.getLogger(__name__)
 

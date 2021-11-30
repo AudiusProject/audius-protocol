@@ -1,7 +1,7 @@
 from src.queries.search_track_tags import search_track_tags
 from src.utils.db_session import get_db
 from src.tasks.index_aggregate_plays import _update_aggregate_plays
-from tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db
 
 
 def test_search_track_tags(app):

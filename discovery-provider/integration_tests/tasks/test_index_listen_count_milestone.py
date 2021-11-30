@@ -13,7 +13,7 @@ from src.models import (
 from src.utils.config import shared_config
 from src.utils.redis_cache import set_json_cached_key
 from src.tasks.index_aggregate_plays import _update_aggregate_plays
-from tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
 DEFAULT_EVENT = ""

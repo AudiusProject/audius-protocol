@@ -18,7 +18,7 @@ from src.utils.config import shared_config
 from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
 from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
-from tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
 logger = logging.getLogger(__name__)

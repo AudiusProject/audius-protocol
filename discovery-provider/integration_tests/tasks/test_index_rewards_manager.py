@@ -11,7 +11,7 @@ from src.utils.config import shared_config
 from src.utils.redis_connection import get_redis
 from src.solana.solana_client_manager import SolanaClientManager
 
-from tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db
 
 REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
 REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]

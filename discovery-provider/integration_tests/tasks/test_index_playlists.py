@@ -6,7 +6,7 @@ from src.utils.db_session import get_db
 from src.utils.playlist_event_constants import playlist_event_types_lookup
 from src.utils import helpers
 from src.challenges.challenge_event_bus import setup_challenge_bus
-from tests.index_helpers import AttrDict, IPFSClient, UpdateTask
+from integration_tests.challenges.index_helpers import AttrDict, IPFSClient, UpdateTask
 
 block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
 
