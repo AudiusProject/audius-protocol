@@ -12,8 +12,8 @@
   "scripts": {
     "test": "./scripts/test.sh",
     "test-circle-ci": "./scripts/circleci-test.sh",
-    "setup": "./scripts/migrate_contracts.sh",
     "test:units": "mocha './src/**/*.test.js' --exit",
+    "setup": "./scripts/migrate_contracts.sh",
     "lint": "./node_modules/.bin/standard",
     "lint:fix": "./node_modules/.bin/standard --fix"
   },
