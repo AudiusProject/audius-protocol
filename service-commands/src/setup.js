@@ -171,7 +171,7 @@ const getServiceCommands = (service, serviceNumber) => {
     // If it's an array of commands, try interpolating
     let val = commands[cur]
     if (Array.isArray(val)) {
-      val = val.map(command => command.replace('#', serviceNumber))
+      val = val.map(command => command.replace(/#/g, serviceNumber))
     }
     return {
       ...acc,
@@ -272,7 +272,7 @@ const performHealthCheckWithRetry = async (
   let attempts = retries
   while (attempts > 0) {
     try {
-      await wait(4000)
+      await wait(10000)
       await performHealthCheck(service, serviceNumber)
       console.log(
         `Successful health check for ${service}${serviceNumber || ''}`.happy
