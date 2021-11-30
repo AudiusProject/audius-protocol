@@ -73,10 +73,7 @@ def _update_aggregate_plays(session):
     new_id_checkpoint = (
         session.query(Play.id)
         .order_by(Play.id.desc()).limit(1)
-    ).scalar()
-
-    if not new_id_checkpoint:
-        new_id_checkpoint = 0
+    ).one().id
 
     # update aggregate plays with new plays that came after the prev_id_checkpoint
     logger.info(f"index_aggregate_plays.py | Updating {AGGREGATE_PLAYS_TABLE_NAME}")
@@ -84,8 +81,8 @@ def _update_aggregate_plays(session):
     session.execute(
         sa.text(UPDATE_AGGREGATE_PLAYS_QUERY),
         {
-            "prev_id_checkpoint": int(prev_id_checkpoint),
-            "new_id_checkpoint": int(new_id_checkpoint),
+            "prev_id_checkpoint": prev_id_checkpoint,
+            "new_id_checkpoint": new_id_checkpoint,
         },
     )
 

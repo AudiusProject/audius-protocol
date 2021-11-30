@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timedelta
 from typing import List
+from sqlalchemy.orm.exc import NoResultFound
 from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from src.models import AggregatePlays
 from src.utils.config import shared_config
@@ -188,3 +189,24 @@ def test_index_aggregate_plays_same_checkpoint(app):
         )
 
         assert len(results) == 3
+
+def test_index_aggregate_plays_no_plays(app):
+    """Raise exception when there are no plays"""
+    # setup
+    with app.app_context():
+        db = get_db()
+
+    # run
+    entities = {
+        "plays" : [
+        ]
+    }
+
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        try:
+            _update_aggregate_plays(session)
+            assert False, "test_index_aggregate_plays [test_index_aggregate_plays_no_plays] failed"
+        except NoResultFound:
+            assert True
