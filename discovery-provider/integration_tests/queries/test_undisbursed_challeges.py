@@ -1,7 +1,7 @@
 from src.models import Challenge, UserChallenge, ChallengeType
 from src.utils.db_session import get_db
 from src.queries.get_undisbursed_challenges import get_undisbursed_challenges
-from tests.utils import populate_mock_db_blocks
+from integration_tests.utils import populate_mock_db_blocks
 
 
 def setup_challenges(app):

@@ -1,6 +1,6 @@
 from src.queries.get_user_signals import _get_user_signals
 from src.utils.db_session import get_db
-from tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db
 
 
 def make_user(

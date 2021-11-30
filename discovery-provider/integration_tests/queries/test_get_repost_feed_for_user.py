@@ -1,6 +1,6 @@
 from src.queries.get_repost_feed_for_user import _get_repost_feed_for_user
 from src.utils.db_session import get_db
-from tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db
 
 
 def test_get_repost_feed_for_user(app):

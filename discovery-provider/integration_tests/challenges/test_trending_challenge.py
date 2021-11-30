@@ -16,7 +16,7 @@ from src.challenges.trending_challenge import (
 from src.challenges.challenge_event_bus import ChallengeEventBus, ChallengeEvent
 from src.utils.config import shared_config
 from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
-from tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
 logger = logging.getLogger(__name__)

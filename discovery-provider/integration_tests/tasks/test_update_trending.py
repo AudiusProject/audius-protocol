@@ -10,7 +10,7 @@ from src.trending_strategies.aSPET_trending_tracks_strategy import (
 from src.trending_strategies.ePWJD_trending_tracks_strategy import (
     TrendingTracksStrategyePWJD,
 )
-from tests.utils import populate_mock_db
+from integration_tests.utils import populate_mock_db
 
 logger = logging.getLogger(__name__)
 

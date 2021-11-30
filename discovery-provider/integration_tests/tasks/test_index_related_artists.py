@@ -13,7 +13,7 @@ from src.tasks.index_related_artists import (
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 
-from .utils import populate_mock_db
+from integration_tests.utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
 

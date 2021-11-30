@@ -6,7 +6,7 @@ from chance import chance
 
 import src.utils.multihash
 from src.utils.helpers import remove_test_file
-from tests.utils import query_creator_by_name, to_bytes
+from integration_tests.utils import query_creator_by_name, to_bytes
 
 
 @pytest.mark.skip(

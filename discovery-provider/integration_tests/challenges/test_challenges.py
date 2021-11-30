@@ -4,8 +4,8 @@ from typing import Dict, List, Optional
 from sqlalchemy.orm.session import Session
 import redis
 
-from tests.test_get_challenges import DefaultUpdater
-from tests.utils import populate_mock_db_blocks
+from integration_tests.queries.test_get_challenges import DefaultUpdater
+from integration_tests.utils import populate_mock_db_blocks
 
 from src.models.models import Block
 from src.models import Challenge, UserChallenge, ChallengeType

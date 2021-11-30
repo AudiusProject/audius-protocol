@@ -9,7 +9,7 @@ from src.queries.get_related_artists import (
 )
 from src.utils.db_session import get_db
 
-from .utils import populate_mock_db
+from integration_tests.utils import populate_mock_db
 
 
 entities = {
