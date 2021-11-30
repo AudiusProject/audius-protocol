@@ -44,6 +44,7 @@ from .models import (
     URSMContentNode,
     User,
     UserBalance,
+    UserBalanceChange,
     UserChallenge,
 )
 from .related_artist import RelatedArtist
@@ -111,6 +112,7 @@ __all__ = [
     "URSMContentNode",
     "User",
     "UserBalance",
+    "UserBalanceChange",
     "UserChallenge",
     "UserBankTransaction",
     "UserBankAccount",

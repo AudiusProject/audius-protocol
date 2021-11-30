@@ -5,44 +5,110 @@ import sys
 import subprocess
 import argparse
 
+protocol_dir = os.getenv('PROTOCOL_DIR', './')
 
-def create_instance(name, azure, image_project, image_family, size, machine_type):
+def get_gcloud_config_value(key):
+    value = (
+        subprocess.run(
+            [
+                "gcloud",
+                "config",
+                "get-value",
+                key,
+            ],
+            capture_output=True,
+        )
+        .stdout.decode()
+        .strip()
+    )
+    return value
+
+def set_gcloud_config_value(key, value):
+    subprocess.run(
+        [
+            "gcloud",
+            "config",
+            "set",
+            key,
+            value
+        ]
+    )
+    print(f'gcloud config {key} set to {value}')
+
+def set_gcloud_config_defaults():
+    default_gcloud_region = 'us-central1'
+    default_gcloud_zone = 'us-central1-a'
+    set_gcloud_config_value('compute/region', default_gcloud_region)
+    set_gcloud_config_value('compute/zone', default_gcloud_zone)
+
+def get_gcloud_project_and_account():
+    project = (
+        subprocess.run(
+            [
+                "gcloud",
+                "config",
+                "get-value",
+                "project",
+            ],
+            capture_output=True,
+        )
+        .stdout.decode()
+        .strip()
+    )
+
+    account = (
+        subprocess.run(
+            [
+                "gcloud",
+                "config",
+                "list",
+                "account",
+                "--format",
+                "value(core.account)",
+            ],
+            capture_output=True,
+        )
+        .stdout.decode()
+        .strip()
+    )
+
+    return {
+        'project': project,
+        'account': account
+    }
+
+def get_gcloud_instance_ip(instance_name):
+    ip = (
+        subprocess.run(
+            [
+                "gcloud",
+                "compute",
+                "instances",
+                "describe",
+                instance_name,
+                "--format",
+                "get(networkInterfaces[0].accessConfigs[0].natIP)",
+            ],
+            capture_output=True,
+        )
+        .stdout.decode()
+        .strip()
+    )
+    return ip
+
+def create_instance(name, azure, image_project, image_family, size, machine_type, use_image, image_name):
     if not azure:
-        project = (
-            subprocess.run(
-                [
-                    "gcloud",
-                    "config",
-                    "get-value",
-                    "project",
-                ],
-                capture_output=True,
-            )
-            .stdout.decode()
-            .strip()
-        )
-
-        account = (
-            subprocess.run(
-                [
-                    "gcloud",
-                    "config",
-                    "list",
-                    "account",
-                    "--format",
-                    "value(core.account)",
-                ],
-                capture_output=True,
-            )
-            .stdout.decode()
-            .strip()
-        )
-
-        print("Project:", project)
-        print("Account:", account)
-
+        gcloud_account_details = get_gcloud_project_and_account()
+        print("Project:", gcloud_account_details['project'])
+        print("Account:", gcloud_account_details['account'])
         if input("Confirm account and project? [y/N]").lower() != "y":
             return
+        if use_image:
+            image_family_or_image_flag = "--image"
+            image_family_or_image_value = image_name
+        else:
+            image_family_or_image_flag = "--image-family"
+            image_family_or_image_value = image_family
 
         subprocess.run(
             [
@@ -53,8 +119,8 @@ def create_instance(name, azure, image_project, image_family, size, machine_type
                 name,
                 "--image-project",
                 image_project,
-                "--image-family",
-                image_family,
+                image_family_or_image_flag,
+                image_family_or_image_value,
                 "--boot-disk-size",
                 size,
                 "--machine-type",
@@ -62,22 +128,7 @@ def create_instance(name, azure, image_project, image_family, size, machine_type
             ]
         )
 
-        ip = (
-            subprocess.run(
-                [
-                    "gcloud",
-                    "compute",
-                    "instances",
-                    "describe",
-                    name,
-                    "--format",
-                    "get(networkInterfaces[0].accessConfigs[0].natIP)",
-                ],
-                capture_output=True,
-            )
-            .stdout.decode()
-            .strip()
-        )
+        ip = get_gcloud_instance_ip(name)
         print("IP address:", ip)
     else:
         subprocess.run(
@@ -156,7 +207,7 @@ def create_instance(name, azure, image_project, image_family, size, machine_type
     return ip
 
 
-def setup(name, azure, service, config, user):
+def setup(name, azure, service, config, user, fast, protocol_git_ref, client_git_ref):
     if not azure:
         proc = subprocess.run(
             [
@@ -190,14 +241,25 @@ def setup(name, azure, service, config, user):
 
     ip = proc.stdout.decode().strip()
     if proc.returncode != 0:
-        input(f"Creating new instance '{name}'. Press Enter to continue...")
+        fast_config = ' from prebaked image.' if fast else '.'
+        input(f"Creating new instance '{name}'{fast_config} Press Enter to continue...")
+        use_image = False
+        image_name = ""
+        image_project = "ubuntu-os-cloud"
+        if fast:
+            use_image = True
+            image_name = "audius-dev-8feda2f-82c1dea-11-22-21"
+            image_project = "audius-infrastructure"
+
         ip = create_instance(
             name,
             azure,
-            "ubuntu-os-cloud",
+            image_project,
             "ubuntu-2004-lts",
             "256",
             "n2-custom-12-24576",
+            use_image,
+            image_name
         )
 
     host = f"{user}@{ip}"
@@ -255,45 +317,28 @@ def setup(name, azure, service, config, user):
             ]
         )
     elif service == "remote-dev":
-        subprocess.run(
-            [
-                "ssh",
-                host,
-                (
-                    "sudo apt update && "
-                    "sudo apt install apt-transport-https ca-certificates curl software-properties-common build-essential python-is-python2 python3-pip git-secrets && "
-                    "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - && "
-                    "sudo sudo add-apt-repository 'deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable' && "
-                    "sudo apt update && "
-                    "sudo apt install docker-ce && "
-                    "sudo usermod -aG docker $USER && "
-                    'sudo curl -L "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && '
-                    "sudo chmod +x /usr/local/bin/docker-compose && "
-                    "sudo chown $USER /etc/hosts && "
-                    "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash && "
-                    "echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.profile && "
-                    "source ~/.nvm/nvm.sh && "
-                    "source ~/.profile && "
-                    "source ~/.bashrc && "
-                    "nvm install 10.23.0 && "
-                    "git clone https://github.com/AudiusProject/audius-protocol.git; "
-                    "git clone https://github.com/AudiusProject/audius-client.git; "
-                    "cd audius-protocol/service-commands && "
-                    "npm install && "
-                    "node scripts/hosts.js add && "
-                    "node scripts/setup.js run init-repos up && "
-                    "cd ../libs && "
-                    "npm link && "
-                    "cd ../service-commands && "
-                    "npm link @audius/libs && "
-                    "cd ~/audius-client && "
-                    "npm install && "
-                    "npm link @audius/libs && "
-                    "echo 'Rebooting machine...' && "
-                    "reboot"
-                ),
-            ]
-        )
+        if fast:
+            subprocess.run(
+                [
+                    "ssh",
+                    host,
+                    (
+                        f"cd ~/audius-protocol && git fetch origin && git checkout {protocol_git_ref} &&"
+                        f"cd ~/audius-client && git fetch origin && git checkout {client_git_ref}"
+                    )
+                ],
+            )
+        else:
+            subprocess.run(
+                [
+                    "ssh",
+                    host,
+                    (
+                        "git clone https://github.com/AudiusProject/audius-protocol.git &&"
+                        "yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh"
+                    ),
+                ]
+            )
 
         if input("Configure local /etc/hosts? [y/N]").lower() == "y":
             subprocess.run(
@@ -302,7 +347,7 @@ def setup(name, azure, service, config, user):
                     "-E",
                     f"AUDIUS_REMOTE_DEV_HOST={ip}",
                     "node",
-                    f"{os.getenv('PROTOCOL_DIR', './')}/service-commands/scripts/hosts.js",
+                    f"{protocol_dir}/service-commands/scripts/hosts.js",
                     "add-remote-host",
                 ]
             )
@@ -311,6 +356,14 @@ def setup(name, azure, service, config, user):
             "Follow https://www.notion.so/audiusproject/Remote-Dev-Setup-Services-Client-Linux-2597a6467d1f4dae824c0593582ad671#88c7365275c645f0be45acc2a9b87319 to setup github ssh key"
         )
 
+def run_and_pass_args_to_node(script_name, args):
+    subprocess.run(
+        [
+            "node",
+            f"{protocol_dir}/service-commands/scripts/{script_name}",
+            *args,
+        ]
+    )
 
 def main():
     parser = argparse.ArgumentParser(
@@ -381,6 +434,24 @@ def main():
     )
 
     parser_setup.add_argument(
+        "--fast",
+        action="store_true",
+        help="Use prebaked dev image when provisioning",
+    )
+
+    parser_setup.add_argument(
+        "--protocol-git-ref",
+        default="master",
+        help="audius-protocol branch name or commit hash to check out when provisioning",
+    )
+
+    parser_setup.add_argument(
+        "--client-git-ref",
+        default="master",
+        help="audius-client branch name or commit hash to check out when provisioning",
+    )
+
+    parser_setup.add_argument(
         "--user",
         default="ubuntu",
         help="user to login as",
@@ -399,6 +470,9 @@ def main():
 
     try:
         args = parser.parse_args()
+        if not args.azure and (not get_gcloud_config_value('compute/zone') or not get_gcloud_config_value('compute/region')):
+            print('one or more gcloud config default values unset - setting...')
+            set_gcloud_config_defaults()
 
         if args.operation == "create-instance":
             create_instance(
@@ -407,18 +481,30 @@ def main():
                 args.image_project,
                 args.image_family,
                 args.size,
-                args.machine_type,
+                args.machine_type
             )
         elif args.operation == "setup":
-            setup(args.name, args.azure, args.service, args.config, args.user)
+            setup(
+                args.name,
+                args.azure,
+                args.service,
+                args.config,
+                args.user,
+                args.fast,
+                args.protocol_git_ref,
+                args.client_git_ref
+            )
     except argparse.ArgumentError:
-        subprocess.run(
-            [
-                "node",
-                f"{os.getenv('PROTOCOL_DIR', './')}/service-commands/scripts/setup.js",
-                *sys.argv[1:],
-            ]
-        )
+        if sys.argv[1] == 'seed':
+            if 'service-commands' not in os.getcwd():
+                print('Changing to service-commands dir to run seed...')
+                os.chdir(f'{protocol_dir}/service-commands')
+            script_name = 'seed.js'
+            args = sys.argv[2:]
+        else:
+            script_name = 'setup.js'
+            args = sys.argv[1:]
+        run_and_pass_args_to_node(script_name, args)
 
 
 if __name__ == "__main__":

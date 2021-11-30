@@ -3,8 +3,10 @@ const axios = require('axios')
 const ServiceCommands = require('@audius/service-commands')
 const { logger } = require('../logger.js')
 const {
-  addAndUpgradeUsers,
   genRandomUsers
+} = ServiceCommands.RandomUtils
+const {
+  addAndUpgradeUsers
 } = require('../helpers.js')
 
 const DEFAULT_INDEX = 0
@@ -103,7 +105,7 @@ const userReplicaSetBlockSaturationTest = async ({
   // Initialize content node info mapping
   contentNodeEndpointToInfoMapping = {}
    let contentNodeList = await executeOne(DEFAULT_INDEX, async (libsWrapper) => {
-    let endpointsList = await libsWrapper.getServices('content-node') 
+    let endpointsList = await libsWrapper.getServices('content-node')
     return endpointsList
   })
   contentNodeList.forEach((info)=>{

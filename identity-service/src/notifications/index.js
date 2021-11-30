@@ -14,7 +14,13 @@ const {
 const { processEmailNotifications } = require('./sendNotificationEmails')
 const { processDownloadAppEmail } = require('./sendDownloadAppEmails')
 const { pushAnnouncementNotifications } = require('./pushAnnouncementNotifications')
-const { notificationJobType, solanaNotificationJobType, announcementJobType, unreadEmailJobType } = require('./constants')
+const {
+  notificationJobType,
+  solanaNotificationJobType,
+  announcementJobType,
+  unreadEmailJobType,
+  downloadEmailJobType
+} = require('./constants')
 const { drainPublishedMessages, drainPublishedSolanaMessages } = require('./notificationQueue')
 const emailCachePath = './emailCache'
 const processNotifications = require('./processNotifications/index.js')
@@ -24,13 +30,13 @@ const audiusLibsWrapper = require('../audiusLibsInstance')
 
 const NOTIFICATION_INTERVAL_SEC = 3 * 1000
 const NOTIFICATION_SOLANA_INTERVAL_SEC = 3 * 1000
-const NOTIFICATION_EMAILS_INTERVAL_SEC = 10 * 60 * 1000
 const NOTIFICATION_ANNOUNCEMENTS_INTERVAL_SEC = 30 * 1000
 
 const NOTIFICATION_JOB_LAST_SUCCESS_KEY = 'notifications:last-success'
 const NOTIFICATION_SOLANA_JOB_LAST_SUCCESS_KEY = 'notifications:solana:last-success'
 const NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY = 'notifications:emails:last-success'
 const NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY = 'notifications:announcements:last-success'
+const NOTIFICATION_DOWNLOAD_EMAIL_JOB_LAST_SUCCESS_KEY = 'notifications:download-emails:last-success'
 
 // Reference Bull Docs: https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#queue
 const defaultJobOptions = {
@@ -78,6 +84,15 @@ class NotificationProcessor {
         },
         defaultJobOptions
       })
+    this.downloadEmailQueue = new Bull(
+      `download-email-queue-${Date.now()}`,
+      {
+        redis: {
+          port: config.get('redisPort'),
+          host: config.get('redisHost')
+        },
+        defaultJobOptions
+      })
     if (errorHandler) {
       this.errorHandler = errorHandler
     } else {
@@ -99,6 +114,7 @@ class NotificationProcessor {
     // Clear any pending notif jobs
     await this.notifQueue.empty()
     await this.emailQueue.empty()
+    await this.downloadEmailQueue.empty()
     this.redis = redis
     this.mg = expressApp.get('mailgun')
 
@@ -217,16 +233,29 @@ class NotificationProcessor {
       let error = null
       try {
         await processEmailNotifications(expressApp, audiusLibs)
-        await processDownloadAppEmail(expressApp, audiusLibs)
         await this.redis.set(NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
       } catch (e) {
         error = e
         logger.error(`processEmailNotifications - Problem with processing emails: ${e}`)
         this.errorHandler(e)
       }
-      // Wait 10 minutes before re-running the job
-      await new Promise(resolve => setTimeout(resolve, NOTIFICATION_EMAILS_INTERVAL_SEC))
       await this.emailQueue.add({ type: unreadEmailJobType }, { jobId: `${unreadEmailJobType}:${Date.now()}` })
+      done(error)
+    })
+
+    // Download Email notification queue
+    this.downloadEmailQueue.process(async (job, done) => {
+      logger.info('processDownloadEmails')
+      let error = null
+      try {
+        await processDownloadAppEmail(expressApp, audiusLibs)
+        await this.redis.set(NOTIFICATION_DOWNLOAD_EMAIL_JOB_LAST_SUCCESS_KEY, new Date().toISOString())
+      } catch (e) {
+        error = e
+        logger.error(`processDownloadEmails - Problem with processing emails: ${e}`)
+        this.errorHandler(e)
+      }
+      await this.downloadEmailQueue.add({ type: downloadEmailJobType }, { jobId: `${downloadEmailJobType}:${Date.now()}` })
       done(error)
     })
 
@@ -273,6 +302,7 @@ class NotificationProcessor {
 
     await this.emailQueue.add({ type: unreadEmailJobType }, { jobId: `${unreadEmailJobType}:${Date.now()}` })
     await this.announcementQueue.add({ type: announcementJobType }, { jobId: `${announcementJobType}:${Date.now()}` })
+    await this.downloadEmailQueue.add({ type: downloadEmailJobType }, { jobId: `${downloadEmailJobType}:${Date.now()}` })
   }
 
   /**
@@ -404,3 +434,4 @@ module.exports = NotificationProcessor
 module.exports.NOTIFICATION_JOB_LAST_SUCCESS_KEY = NOTIFICATION_JOB_LAST_SUCCESS_KEY
 module.exports.NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY = NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY
 module.exports.NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY = NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY
+module.exports.NOTIFICATION_DOWNLOAD_EMAIL_JOB_LAST_SUCCESS_KEY = NOTIFICATION_DOWNLOAD_EMAIL_JOB_LAST_SUCCESS_KEY

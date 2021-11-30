@@ -2,6 +2,7 @@ const { PublicKey } = require('@solana/web3.js')
 const BN = require('bn.js')
 const keccak256 = require('keccak256')
 const secp256k1 = require('secp256k1')
+const { WAUDIO_DECMIALS } = require('../../constants')
 
 class SolanaUtils {
   /**
@@ -81,14 +82,14 @@ class SolanaUtils {
   }
 
   /**
-   * Converts "UI" wAudio (i.e. 5) into properly denominated BN representation - (i.e. 5 * 10 ^ 9)
+   * Converts "UI" wAudio (i.e. 5) into properly denominated BN representation - (i.e. 5 * 10 ^ 8)
    *
    * @param {number} amount
    * @returns BN
    * @memberof SolanaWeb3Manager
    */
   static uiAudioToBNWaudio (amount) {
-    return new BN(amount * 10 ** 9)
+    return new BN(amount * 10 ** WAUDIO_DECMIALS)
   }
 
   /**
@@ -110,6 +111,34 @@ class SolanaUtils {
       seedsArr,
       programId
     )
+  }
+
+  /**
+   * Finds a program address, using both seeds, pubkey, and the derived authority.
+   * Return [authority, derivedAddress, and bumpSeeds]
+   *
+   * @param {PublicKey} programId
+   * @param {PublicKey} address
+   * @param {Uint8Array} seed
+   * @returns {Promise<[PublicKey, PublicKey, number]>}
+   */
+  static async findProgramAddressWithAuthority (
+    programId,
+    address,
+    seed
+  ) {
+    // Finds the authority account by generating a PDA with the address as a seed
+    const [authority] = await SolanaUtils.findProgramAddressFromPubkey(
+      programId,
+      address
+    )
+
+    const [derivedAddress, bumpSeed] = await SolanaUtils.findProgramAddressFromPubkey(
+      programId,
+      authority,
+      seed
+    )
+    return [authority, derivedAddress, bumpSeed]
   }
 
   /**
