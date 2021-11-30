@@ -26,10 +26,6 @@ class WormholeClient {
     wormholeAddress,
     relayer
   ) {
-    console.log({
-      tokenAddr: this.audiusTokenClient.contractAddress,
-      wormholeAddress
-    })
     const method = this.WormholeContract.methods.initialize(
       this.audiusTokenClient.contractAddress,
       wormholeAddress
