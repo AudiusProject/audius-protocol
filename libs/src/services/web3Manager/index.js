@@ -193,7 +193,7 @@ class Web3Manager {
         retries: txRetries,
         onRetry: (err, i) => {
           if (err) {
-            console.log(`Retry error : ${err}`)
+            console.log(`libs web3Manager transaction send retry error : ${err}`)
           }
         }
       })

@@ -30,9 +30,7 @@
     "lodash": "^4.17.15",
     "logform": "^2.1.2",
     "moment": "^2.29.1",
-    "node-fetch": "^2.6.0",
     "nodemon": "^2.0.4",
-    "random-picture": "^4.0.4",
     "winston": "^3.2.1"
   },
   "devDependencies": {

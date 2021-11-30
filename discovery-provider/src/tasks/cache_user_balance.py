@@ -5,13 +5,14 @@ from redis import Redis
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
 from spl.token.client import Token
+from web3 import Web3
 from solana.rpc.api import Client
 from solana.publickey import PublicKey
 
 from src.utils.session_manager import SessionManager
 from src.app import eth_abi_values
 from src.tasks.celery_app import celery
-from src.models import UserBalance, User, AssociatedWallet, UserBankAccount
+from src.models import UserBalance, UserBalanceChange, User, AssociatedWallet, UserBankAccount
 from src.queries.get_balances import (
     does_user_balance_need_refresh,
     IMMEDIATE_REFRESH_REDIS_PREFIX,
@@ -73,7 +74,6 @@ def get_lazy_refresh_user_ids(redis: Redis, session: Session) -> List[int]:
 def get_immediate_refresh_user_ids(redis: Redis) -> List[int]:
     redis_user_ids = redis.smembers(IMMEDIATE_REFRESH_REDIS_PREFIX)
     return [int(user_id.decode()) for user_id in redis_user_ids]
-
 
 # *Explanation of user balance caching*
 # In an effort to minimize eth calls, we look up users embedded in track metadata once per user,
@@ -272,9 +272,42 @@ def refresh_user_ids(
                         )
                         waudio_balance = bal_info["result"]["value"]["amount"]
 
+
                 # update the balance on the user model
                 user_balance = user_balances[user_id]
-                user_balance.balance = owner_wallet_balance
+
+                # Sol balances have 8 decimals, so they need to be increased to 18 to match eth balances
+                waudio_in_wei = int(waudio_balance) * (10 ** 10)
+                assoc_sol_balance_in_wei = associated_sol_balance * (10 ** 10)
+
+                user_waudio_in_wei = int(user_balance.waudio) * (10 ** 10)
+                user_assoc_sol_balance_in_wei = int(user_balance.associated_sol_wallets_balance) * (10 ** 10)
+
+                # Get values for user balance change
+                current_total_balance = (
+                    owner_wallet_balance
+                    + associated_balance
+                    + waudio_in_wei
+                    + assoc_sol_balance_in_wei
+                )
+                prev_total_balance = (
+                    int(user_balance.balance)
+                    + int(user_balance.associated_wallets_balance)
+                    + user_waudio_in_wei
+                    + user_assoc_sol_balance_in_wei
+                )
+
+                # Write to user_balance_changes table
+                session.add(
+                    UserBalanceChange(
+                        user_id=user_id,
+                        blocknumber=Web3.eth.blockNumber,
+                        current_balance=str(current_total_balance),
+                        previous_balance=str(prev_total_balance),
+                    )
+                )
+
+                user_balance.balance = str(owner_wallet_balance)
                 user_balance.associated_wallets_balance = str(associated_balance)
                 user_balance.waudio = waudio_balance
                 user_balance.associated_sol_wallets_balance = str(

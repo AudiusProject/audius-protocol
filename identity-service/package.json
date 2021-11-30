@@ -17,7 +17,7 @@
     "lint:fix": "./node_modules/.bin/standard --fix"
   },
   "dependencies": {
-    "@audius/libs": "^1.2.30",
+    "@audius/libs": "1.2.31",
     "@optimizely/optimizely-sdk": "^4.6.0",
     "@sentry/node": "^6.2.5",
     "@sentry/tracing": "^6.2.5",

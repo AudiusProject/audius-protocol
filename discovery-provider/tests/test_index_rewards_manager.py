@@ -14,6 +14,7 @@ from src.solana.solana_client_manager import SolanaClientManager
 from tests.utils import populate_mock_db
 
 REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
+REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 
 
 def test_decode_reward_manager_transfer_instruction():
@@ -176,7 +177,7 @@ mock_tx_info = {
         "transaction": {
             "message": {
                 "accountKeys": [
-                    "2HYDf9XvHRKhquxK1z4ETJ8ywueZcqEazyFZdRfLqGcT",
+                    REWARDS_MANAGER_ACCOUNT,
                     "54u7LVJhhbWaENGLzzgvTX72k9XSHSF3EhCcuvD9xMfk",
                     "3zKGHtF9aNjevZ2DETXzTDWiN65Fkwv9oeiScAfSVh3H",
                     "9ShGNjEm5repSKTkZMUXMj8cx31HAo363ovdm1AoLA8d",
