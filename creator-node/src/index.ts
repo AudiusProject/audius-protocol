@@ -110,5 +110,3 @@ const startApp = async () => {
   })
 }
 startApp()
-
-export {}
