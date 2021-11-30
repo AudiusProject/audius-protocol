@@ -99,8 +99,12 @@ const RemixSettingsModal = ({
 
   const onChange = useCallback(
     (url: string) => {
-      setUrl(url)
-      debounce(() => onEditUrl(url), INPUT_DEBOUNCE_MS, {
+      // Need to decode the URL
+      // here to properly show pasted
+      // URLS with non-ascii chars
+      const decoded = decodeURI(url)
+      setUrl(decoded)
+      debounce(() => onEditUrl(decoded), INPUT_DEBOUNCE_MS, {
         leading: true,
         trailing: false
       })()
