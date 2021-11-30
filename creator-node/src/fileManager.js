@@ -20,6 +20,8 @@ const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 
 const SaveFileForMultihashToFSIPFSFallback = config.get('saveFileForMultihashToFSIPFSFallback')
 
+const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deterministic CID for a 0 byte, completely empty file
+
 /**
  * Adds file to IPFS then saves file to disk under /multihash name
  *
@@ -91,9 +93,10 @@ async function saveFileToIPFSFromFS ({ logContext }, cnodeUserUUID, srcPath, ena
  * @param {String?} fileNameForImage file name if the multihash is image in dir.
  *                  eg original.jpg or 150x150.jpg
  * @param {number?} trackId if the multihash is of a segment type, the trackId to which it belongs to
+ * @param {number?} numRetries optional number of times to retry this function if there was an error during content verification
  * @return {Boolean} true if success, false if error
  */
-async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null, trackId = null) {
+async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage = null, trackId = null, numRetries = 5) {
   // stores all the stages of this function along with associated information relevant to that step
   // in the try catch below, if any of the nested try/catches throw, it will be caught by the top level try/catch
   // so we only need to print it once in the global catch or after everthing finishes except for any return statements
@@ -296,16 +299,26 @@ async function saveFileForMultihashToFS (serviceRegistry, logger, multihash, exp
 
     // verify that the contents of the file match the file's cid
     try {
-      decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now() })
+      let fileSize = (await fs.stat(expectedStoragePath)).size
+      decisionTree.push({ stage: 'About to verify the file contents for the CID', vals: multihash, time: Date.now(), fileSize })
+      const fileIsEmpty = fileSize === 0
+      // there is one case where an empty file could be valid, check for that CID explicitly
+      if (fileIsEmpty && multihash !== EMPTY_FILE_CID) {
+        throw new Error(`File has no content, content length is 0: ${multihash}`)
+      }
+
       const ipfsHashOnly = await ipfsAdd.ipfsAddNonImages(expectedStoragePath, { onlyHash: true, timeout: 10000 })
       if (multihash !== ipfsHashOnly) {
         decisionTree.push({ stage: `File contents don't match IPFS hash multihash`, vals: ipfsHashOnly, time: Date.now() })
         // delete this file because the next time we run sync and we see it on disk, we'll assume we have it and it's correct
-        await fs.unlink(expectedStoragePath)
         throw new Error(`File contents don't match IPFS hash multihash: ${multihash} result: ${ipfsHashOnly}`)
       }
       decisionTree.push({ stage: 'Successfully verified the file contents for the CID', vals: multihash, time: Date.now() })
     } catch (e) {
+      await removeFile(expectedStoragePath)
+      if (numRetries > 0) {
+        return saveFileForMultihashToFS(serviceRegistry, logger, multihash, expectedStoragePath, gatewaysToTry, fileNameForImage, trackId, numRetries - 1)
+      }
       decisionTree.push({ stage: `Error during content verification for multihash`, vals: multihash, time: Date.now() })
       throw new Error(`Error during content verification for multihash ${multihash} ${e.message}`)
     }
@@ -536,6 +549,20 @@ function hasEnoughStorageSpace ({ storagePathSize, storagePathUsed, maxStorageUs
   ) { return false }
 
   return (100 * storagePathUsed / storagePathSize) < maxStorageUsedPercent
+}
+
+/**
+ * Remove file from location on disk
+ * @param {String} storagePath path on disk for file
+ * @returns null if successfully removed file or throws error if didn't successfully remove file
+ */
+async function removeFile (storagePath) {
+  try {
+    await fs.unlink(storagePath)
+  } catch (err) {
+    const fileDoesntExistError = err && err.code === 'ENOENT'
+    if (!fileDoesntExistError) throw err
+  }
 }
 
 module.exports = {
