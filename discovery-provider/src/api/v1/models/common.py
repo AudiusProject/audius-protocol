@@ -32,6 +32,8 @@ full_response = ns.model(
     {
         "latest_chain_block": fields.Integer(required=True),
         "latest_indexed_block": fields.Integer(required=True),
+        "latest_chain_slot_plays": fields.Integer(required=True),
+        "latest_indexed_slot_plays": fields.Integer(required=True),
         "signature": fields.String(required=True),
         "timestamp": fields.String(required=True),
         "version": fields.Nested(version_metadata, required=True),

@@ -14,7 +14,7 @@
     "colors": "^1.4.0",
     "commander": "^6.0.0",
     "convict": "^5.2.0",
-    "ffmpeg-static": "^4.2.7",
+    "ffmpeg-static": "^4.4.0",
     "lodash": "^4.17.15",
     "node-fetch": "^2.6.0",
     "untildify": "^4.0.0",

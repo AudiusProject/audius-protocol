@@ -8,6 +8,7 @@ from web3.auto import w3
 # pylint: disable=no-name-in-module
 from eth_account.messages import encode_defunct
 from flask import jsonify
+from src.queries.get_sol_plays import get_sol_play_health_info
 
 # pylint: disable=R0401
 from src.utils import helpers, web3_provider
@@ -52,17 +53,25 @@ def success_response(
 def response_dict_with_metadata(response_dictionary, sign_response):
     response_dictionary["success"] = True
 
+    # Include block difference information
     latest_indexed_block = redis_conn.get(most_recent_indexed_block_redis_key)
     latest_chain_block, _ = get_latest_chain_block_set_if_nx(
         redis_conn, web3_connection
     )
-
     response_dictionary["latest_indexed_block"] = (
         int(latest_indexed_block) if latest_indexed_block else None
     )
     response_dictionary["latest_chain_block"] = (
         int(latest_chain_block) if latest_chain_block else None
     )
+
+    # Include plays slot difference information
+    play_info = get_sol_play_health_info(redis_conn, datetime.datetime.utcnow())
+    play_db_tx = play_info["tx_info"]["db_tx"]
+    play_chain_tx = play_info["tx_info"]["chain_tx"]
+    response_dictionary["latest_indexed_slot_plays"] = play_db_tx["slot"] if play_db_tx else None
+    response_dictionary["latest_chain_slot_plays"] = play_chain_tx["slot"] if play_chain_tx else None
+
     response_dictionary["version"] = disc_prov_version
     response_dictionary["signer"] = shared_config["delegate"]["owner_wallet"]
 
