@@ -2,6 +2,7 @@ import { Collectible } from '@audius/fetch-nft'
 import express from 'express'
 
 import libs from '../../libs'
+import { TrackModel } from '../../types/Track'
 import { nftClient } from '../utils/fetchNft'
 import { decodeHashId, encodeHashId } from '../utils/hashids'
 import {
@@ -50,20 +51,20 @@ const getTrackMetadata = async (trackId: number, ownerId: number | null): Promis
 const getTracksFromCollection = async (collection: any, ownerUser: any): Promise<TrackResponse[]> => {
 
   const trackIds: number[] = collection.playlist_contents.track_ids.map((t: {time: number, track: number }) => t.track)
-  let tracks = []
+  let tracks: TrackModel[] = []
 
   // Fetch tracks if there are IDs
   if (trackIds.length) {
     const unordredTracks = await getTracks(trackIds)
 
     // reorder tracks - discprov returns tracks out of order
-    const unorderedTracksMap = unordredTracks.reduce((acc: any, t: any) => ({ ...acc, [t.track_id]: t }), {})
+    const unorderedTracksMap = unordredTracks.reduce((acc: any, t) => ({ ...acc, [t.track_id]: t }), {})
     tracks = trackIds.map((id: number) => unorderedTracksMap[id])
   }
 
   // fetch users from tracks
   // only fetch unique IDs that aren't the owner user
-  const trackOwnerIds = tracks.map((t: any) => t.owner_id)
+  const trackOwnerIds = tracks.map(t => t.owner_id)
   const idsToFetch = new Set(trackOwnerIds.filter((userId: number) => userId !== ownerUser.user_id))
   const users = await getUsers(Array.from(idsToFetch))
 
@@ -72,8 +73,8 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
 
   // Create tracks and filter out deletes
   const parsedTracks: TrackResponse[] =
-    tracks.filter((t: any) => !t.is_delete && !userMap[t.owner_id].is_deactivated)
-      .map((t: any) => ({
+    tracks.filter(t => !t.is_delete && !userMap[t.owner_id].is_deactivated)
+      .map(t => ({
         title: t.title,
         handle: userMap[t.owner_id].handle,
         userName: userMap[t.owner_id].name,

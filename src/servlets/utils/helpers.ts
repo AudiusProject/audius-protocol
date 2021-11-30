@@ -1,4 +1,5 @@
 import libs from '../../libs'
+import { FullTrack, Track, TrackModel } from '../../types/Track'
 import {
   DEFAULT_IMAGE_URL,
   ExploreInfoType,
@@ -7,7 +8,7 @@ import {
 } from './constants'
 import { encodeHashId } from './hashids'
 
-export const getTrack = async (id: number): Promise<any> => {
+export const getTrack = async (id: number): Promise<TrackModel> => {
   const t = await libs.Track.getTracks(
     /* limit */ 1,
     /* offset */ 0,
@@ -22,13 +23,13 @@ export const getTrack = async (id: number): Promise<any> => {
   throw new Error(`Failed to get track ${id}`)
 }
 
-export const getTracks = async (ids: number[]): Promise<any> => {
+export const getTracks = async (ids: number[]): Promise<TrackModel[]> => {
   const ts =  await libs.Track.getTracks(ids.length, 0, ids)
   if (ts) return ts
   throw new Error(`Failed to get tracks ${ids}`)
 }
 
-const extendTrack = async (track: any): Promise<any> => {
+const extendTrack = async (track: TrackModel): Promise<Track & TrackModel> => {
   const user = await getUser(track.owner_id)
   const gateway = formatGateway(user.creator_node_endpoint, user.user_id)
 
@@ -46,7 +47,7 @@ const extendTrack = async (track: any): Promise<any> => {
   )
   return {
     ...track,
-    id: encodeHashId(track.track_id),
+    id: encodeHashId(track.track_id)!,
     user,
     artwork,
     release_date: releaseDate,
@@ -54,7 +55,7 @@ const extendTrack = async (track: any): Promise<any> => {
   }
 }
 
-export const getTrackByHandleAndSlug = async (handle: string, slug: string): Promise<any> => {
+export const getTrackByHandleAndSlug = async (handle: string, slug: string): Promise<Track> => {
   const track = await libs.Track.getTracksByHandleAndSlug(handle, slug)
   if (track) return Array.isArray(track) ? track[0] : track
 
