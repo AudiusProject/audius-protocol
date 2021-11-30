@@ -186,7 +186,7 @@ def _get_azure_account():
     )
 
     if proc.returncode != 0:
-        print("Failed to retrive azure account", file=sys.stderr)
+        print("Failed to retrieve azure account", file=sys.stderr)
         sys.exit(1)
 
     return proc.stdout.decode().strip()
