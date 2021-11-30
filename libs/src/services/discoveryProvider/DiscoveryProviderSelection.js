@@ -182,7 +182,10 @@ class DiscoveryProviderSelection extends ServiceSelection {
 
     // If this service is an unhealthy slot diff behind on the plays table, add it
     // as a backup and reject
-    if (slotDiffPlays > this.unhealthySlotDiffPlays) {
+    if (
+      slotDiffPlays !== null &&
+      slotDiffPlays > this.unhealthySlotDiffPlays
+    ) {
       this.addBackup(urlMap[response.config.url], data.data)
       return false
     }
