@@ -1,15 +1,14 @@
-import { FullUser, User } from "./User"
+import { FullUser, User } from './User'
 
 export type TrackArtwork = {
-  ["150x150"]?: string
-  ["480x480"]?: string
-  ["1000x1000"]?: string
+  ['150x150']?: string
+  ['480x480']?: string
+  ['1000x1000']?: string
 }
 
 export type RemixParent = {
   tracks: Array<{ parent_track_id: number }>
 }
-
 
 export type Track = {
   artwork: TrackArtwork,
@@ -29,7 +28,6 @@ export type Track = {
   play_count?: number
   permalink?: string
 }
-
 
 export type TrackDownload = {
   cid: string

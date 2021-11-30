@@ -64,7 +64,7 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
 
   // fetch users from tracks
   // only fetch unique IDs that aren't the owner user
-  const trackOwnerIds = tracks.map(t => t.owner_id)
+  const trackOwnerIds = tracks.map((t) => t.owner_id)
   const idsToFetch = new Set(trackOwnerIds.filter((userId: number) => userId !== ownerUser.user_id))
   const users = await getUsers(Array.from(idsToFetch))
 
@@ -73,8 +73,8 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
 
   // Create tracks and filter out deletes
   const parsedTracks: TrackResponse[] =
-    tracks.filter(t => !t.is_delete && !userMap[t.owner_id].is_deactivated)
-      .map(t => ({
+    tracks.filter((t) => !t.is_delete && !userMap[t.owner_id].is_deactivated)
+      .map((t) => ({
         title: t.title,
         handle: userMap[t.owner_id].handle,
         userName: userMap[t.owner_id].name,

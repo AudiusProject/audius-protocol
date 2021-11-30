@@ -1,13 +1,12 @@
 export type ProfilePicture = {
-  ["150x150"]: string
-  ["480x480"]: string
-  ["1000x1000"]: string
+  ['150x150']: string
+  ['480x480']: string
+  ['1000x1000']: string
 }
 
-
 export type CoverPhoto = {
-  ["640x"]: string
-  ["2000x"]: string
+  ['640x']: string
+  ['2000x']: string
 }
 
 export type User = {
