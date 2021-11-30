@@ -880,20 +880,6 @@ class AudiusBackend {
     }
   }
 
-  static async getListenHistoryTracks(limit = 100, offset = 0) {
-    await waitForLibsInit()
-    try {
-      const trackListens = await audiusLibs.Track.getListenHistoryTracks(
-        limit,
-        offset
-      )
-
-      return trackListens
-    } catch (err) {
-      console.error(err.message)
-    }
-  }
-
   static async repostTrack(trackId) {
     try {
       return audiusLibs.Track.addTrackRepost(trackId)
