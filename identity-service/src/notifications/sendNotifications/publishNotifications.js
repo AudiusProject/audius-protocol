@@ -37,6 +37,8 @@ const getPublishNotifBaseType = (notification) => {
     case notificationTypes.MilestoneFollow:
     case notificationTypes.MilestoneRepost:
       return notificationTypes.Milestone
+    case notificationTypes.TierChange:
+      return notificationTypes.TierChange
   }
 }
 
@@ -55,6 +57,7 @@ const getPublishUserId = (notif, baseType) => {
   else if (baseType === notificationTypes.Create.base) return notif.subscriberId
   else if (baseType === notificationTypes.ChallengeReward) return notif.initiator
   else if (baseType === notificationTypes.Milestone) return notif.initiator
+  else if (baseType === notificationTypes.TierChange) return notif.initiator
 }
 
 // Notification types that always get send a notification, regardless of settings
