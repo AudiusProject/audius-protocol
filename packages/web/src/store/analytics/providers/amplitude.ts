@@ -28,7 +28,7 @@ export const init = async () => {
         .init(AMP_API_KEY, undefined, { apiEndpoint: AMPLITUDE_PROXY })
       amp = amplitude
       const source = getSource()
-      amp.track(Name.SESSION_START, { source })
+      amp.getInstance().logEvent(Name.SESSION_START, { source })
     }
   } catch (err) {
     console.error(err)
