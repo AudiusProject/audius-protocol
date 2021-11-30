@@ -1,6 +1,5 @@
 from src.queries.search_user_tags import search_user_tags
 from src.utils.db_session import get_db
-from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from tests.utils import populate_mock_db
 
 
