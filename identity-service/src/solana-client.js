@@ -91,8 +91,9 @@ const instructionSchema = new Map([
   ]
 ])
 
-let solanaConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'), {
-  confirmTransactionInitialTimeout: 180 * 1000
+const SOLANA_CONFIRMATION_TIMEOUT_MS = 180 * 1000
+const solanaConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'), {
+  confirmTransactionInitialTimeout: SOLANA_CONFIRMATION_TIMEOUT_MS
 })
 let feePayer
 
@@ -181,7 +182,7 @@ async function createAndVerifyMessage (
     transaction,
     [feePayerAccount],
     {
-      skipPreflight: false,
+      skipPreflight: true,
       commitment: config.get('solanaTxCommitmentLevel'),
       preflightCommitment: config.get('solanaTxCommitmentLevel')
     }
