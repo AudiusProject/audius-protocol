@@ -16,6 +16,7 @@ const {
 
 const axios = require('axios')
 const moment = require('moment')
+const { REDIS_ATTEST_HEALTH_KEY } = require('../app.js')
 
 // Defaults used in relay health check endpoint
 const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
@@ -400,5 +401,16 @@ module.exports = function (app) {
     if (verbose) { resp.connectionInfo = connectionInfo }
 
     return (numConnections >= maxConnections) ? errorResponseServerError(resp) : successResponse(resp)
+  }))
+
+  app.get('/rewards_check', handleResponse(async (req) => {
+    const { maxDrift } = req.query
+    const redis = req.app.get('redis')
+    const lastSuccessfulDisbursement = await redis.get(REDIS_ATTEST_HEALTH_KEY)
+    const isHealthy = lastSuccessfulDisbursement && ((Date.now() - lastSuccessfulDisbursement)/1000 < maxDrift)
+    const resp = {
+      lastSuccessfulDisbursement
+    }
+    return (isHealthy ? successResponse : errorResponseServerError)(resp)
   }))
 }
