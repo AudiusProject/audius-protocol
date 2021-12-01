@@ -91,7 +91,9 @@ const instructionSchema = new Map([
   ]
 ])
 
-let solanaConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'))
+let solanaConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'), {
+  confirmTransactionInitialTimeout: 180 * 1000
+})
 let feePayer
 
 function getFeePayer () {
@@ -179,7 +181,7 @@ async function createAndVerifyMessage (
     transaction,
     [feePayerAccount],
     {
-      skipPreflight: true,
+      skipPreflight: false,
       commitment: config.get('solanaTxCommitmentLevel'),
       preflightCommitment: config.get('solanaTxCommitmentLevel')
     }
