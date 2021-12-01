@@ -13,11 +13,13 @@ import {
   GestureResponderEvent,
   LayoutChangeEvent,
   PanResponder,
+  PanResponderGestureState,
   StyleSheet,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  View
+  View,
+  ViewStyle
 } from 'react-native'
 import { Edge, SafeAreaView } from 'react-native-safe-area-context'
 
@@ -34,7 +36,7 @@ const BACKGROUND_OPACITY = 0.5
 // Controls the amount of friction in swiping when overflowing up or down
 const OVERFLOW_FRICTION = 4
 
-const createStyles = (themeColors: ThemeColors) =>
+const createStyles = (zIndex = 5) => (themeColors: ThemeColors) =>
   StyleSheet.create({
     drawer: {
       backgroundColor: themeColors.neutralLight10,
@@ -42,7 +44,8 @@ const createStyles = (themeColors: ThemeColors) =>
       top: 0,
       left: 0,
       width: '100%',
-      elevation: 5,
+      elevation: zIndex,
+      zIndex: zIndex,
       shadowOpacity: 0,
       shadowRadius: 40,
       borderTopRightRadius: BORDER_RADIUS,
@@ -99,24 +102,109 @@ const createStyles = (themeColors: ThemeColors) =>
     }
   })
 
+export enum DrawerAnimationStyle {
+  STIFF = 'STIFF',
+  SPRINGY = 'SPRINGY'
+}
+
 export type DrawerProps = {
+  /**
+   * Whether or not the drawer is open
+   */
   isOpen: boolean
+  /**
+   * Contents to render inside the drawer
+   */
   children: ReactNode
+  /**
+   * Callback fired when the drawer is closed or swiped away
+   */
   onClose: () => void
+  /**
+   * Callback fired when the drawer is opened or summoned
+   */
+  onOpen?: () => void
+  /**
+   * Header title if this drawer has a header
+   */
   title?: string
+  /**
+   * Whether or not this is a fullscreen drawer with a dismiss button
+   */
   isFullscreen?: boolean
+  /**
+   * Whether or not gestures are supported by the drawer
+   */
   isGestureSupported?: boolean
+  /**
+   * Whether or not the background behind the drawer should dim
+   */
+  shouldBackgroundDim?: boolean
+  /**
+   * The style that controls slideIn and slideOut animations
+   */
+  animationStyle?: DrawerAnimationStyle
+  /**
+   * Position from bottom (initial offset) of the Drawer
+   * so that it may be dragged open in addition to closed.
+   * The NowPlayingDrawer exhibits this behavior.
+   */
+  initialOffsetPosition?: number
+  /**
+   * Whether or not the drawer is open partially (to the initial offset)
+   */
+  isOpenToInitialOffset?: boolean
+  /**
+   * Whether or not we should be showing rounded or straight borders at
+   * the initial offset if one is enabled.
+   */
+  shouldHaveRoundedBordersAtInitialOffset?: boolean
+  /**
+   * Drawer zIndex. Default to 5.
+   */
+  zIndex?: number
+  /**
+   * Optional callback fired during drag of the drawer with the percentage
+   * of how open the drawer is (0% being closed, 100% being open)
+   */
+  onPercentOpen?: (percentOpen: number) => void
+  /**
+   * Optional callback attached to the drawer's onPanResponderMove.
+   * Other UI that wishes to attach to the animation of the drawer
+   * may use this prop to respond to the drag gesture.
+   */
+  onPanResponderMove?: (
+    e: GestureResponderEvent,
+    gestureState: PanResponderGestureState
+  ) => void
+  /**
+   * Optional styles to apply to the Drawer container
+   */
+  drawerStyle?: ViewStyle
 }
 
 const springToValue = (
   animation: Animated.Value,
   value: number,
+  animationStyle: DrawerAnimationStyle,
   finished?: () => void
 ) => {
+  let tension: number
+  let friction: number
+  switch (animationStyle) {
+    case DrawerAnimationStyle.STIFF:
+      tension = 150
+      friction = 25
+      break
+    case DrawerAnimationStyle.SPRINGY:
+      tension = 160
+      friction = 15
+      break
+  }
   Animated.spring(animation, {
     toValue: value,
-    tension: 150,
-    friction: 25,
+    tension,
+    friction,
     useNativeDriver: true
   }).start(finished)
 }
@@ -138,13 +226,15 @@ const attachToDy = (animation: Animated.Value, newValue: number) => (
 const DrawerHeader = ({
   onClose,
   title,
-  isFullscreen
+  isFullscreen,
+  zIndex
 }: {
   onClose: () => void
   title?: string
   isFullscreen?: boolean
+  zIndex?: number
 }) => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useThemedStyles(createStyles(zIndex))
   const closeColor = useColor('neutralLight4')
 
   return title || isFullscreen ? (
@@ -169,17 +259,32 @@ const Drawer = ({
   isOpen,
   children,
   onClose,
+  onOpen,
   title,
   isFullscreen,
-  isGestureSupported = true
+  shouldBackgroundDim = true,
+  isGestureSupported = true,
+  animationStyle = DrawerAnimationStyle.STIFF,
+  initialOffsetPosition,
+  isOpenToInitialOffset,
+  shouldHaveRoundedBordersAtInitialOffset = false,
+  zIndex,
+  drawerStyle,
+  onPercentOpen,
+  onPanResponderMove
 }: DrawerProps) => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useThemedStyles(createStyles(zIndex))
 
   const { height } = Dimensions.get('window')
   const [drawerHeight, setDrawerHeight] = useState(height)
   // isBackgroundVisible will be true until the close animation finishes
   const [isBackgroundVisible, setIsBackgroundVisible] = useState(false)
+
+  // Initial position of the drawer when closed
   const initialPosition = height
+  // Position of the drawer when it is in an offset but closed state
+  const initialOffsetOpenPosition = height - initialOffsetPosition
+  // Position of the fully opened drawer
   const openPosition = height - drawerHeight
 
   const translationAnim = useRef(new Animated.Value(initialPosition)).current
@@ -187,89 +292,190 @@ const Drawer = ({
   const borderRadiusAnim = useRef(new Animated.Value(BORDER_RADIUS)).current
   const backgroundOpacityAnim = useRef(new Animated.Value(0)).current
 
-  const slideIn = useCallback(() => {
-    springToValue(translationAnim, openPosition)
-    springToValue(shadowAnim, MAX_SHADOW_OPACITY)
-    springToValue(backgroundOpacityAnim, BACKGROUND_OPACITY)
-    if (isFullscreen) {
-      springToValue(borderRadiusAnim, 0)
-    }
-  }, [
-    openPosition,
-    translationAnim,
-    shadowAnim,
-    backgroundOpacityAnim,
-    borderRadiusAnim,
-    isFullscreen
-  ])
+  const slideIn = useCallback(
+    (position: number) => {
+      springToValue(translationAnim, position, animationStyle)
+      if (isFullscreen) {
+        springToValue(borderRadiusAnim, 0, animationStyle)
+      }
+      if (shouldBackgroundDim) {
+        springToValue(shadowAnim, MAX_SHADOW_OPACITY, animationStyle)
+        springToValue(backgroundOpacityAnim, BACKGROUND_OPACITY, animationStyle)
+      }
+    },
+    [
+      translationAnim,
+      shadowAnim,
+      backgroundOpacityAnim,
+      borderRadiusAnim,
+      shouldBackgroundDim,
+      isFullscreen,
+      animationStyle
+    ]
+  )
 
-  const slideOut = useCallback(() => {
-    springToValue(translationAnim, initialPosition, () =>
-      setIsBackgroundVisible(false)
-    )
-    springToValue(shadowAnim, 0)
-    springToValue(backgroundOpacityAnim, 0)
-    if (isFullscreen) {
-      springToValue(borderRadiusAnim, BORDER_RADIUS)
-    }
-  }, [
-    initialPosition,
-    translationAnim,
-    shadowAnim,
-    backgroundOpacityAnim,
-    borderRadiusAnim,
-    isFullscreen
-  ])
+  const slideOut = useCallback(
+    (position: number) => {
+      springToValue(translationAnim, position, animationStyle, () =>
+        setIsBackgroundVisible(false)
+      )
+      if (isFullscreen) {
+        springToValue(borderRadiusAnim, BORDER_RADIUS, animationStyle)
+      }
+      if (shouldBackgroundDim) {
+        springToValue(shadowAnim, 0, animationStyle)
+        springToValue(backgroundOpacityAnim, 0, animationStyle)
+      }
+    },
+    [
+      translationAnim,
+      shadowAnim,
+      backgroundOpacityAnim,
+      borderRadiusAnim,
+      isFullscreen,
+      shouldBackgroundDim,
+      animationStyle
+    ]
+  )
 
   useEffect(() => {
     if (isOpen) {
-      slideIn()
+      slideIn(openPosition)
       setIsBackgroundVisible(true)
     } else {
-      slideOut()
+      if (isOpenToInitialOffset) {
+        borderRadiusAnim.setValue(0)
+        slideOut(initialOffsetOpenPosition)
+      } else {
+        slideOut(initialPosition)
+      }
     }
-  }, [slideIn, slideOut, isOpen])
+  }, [
+    slideIn,
+    slideOut,
+    isOpen,
+    openPosition,
+    initialPosition,
+    isOpenToInitialOffset,
+    initialOffsetOpenPosition,
+    borderRadiusAnim
+  ])
 
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (e, gestureState) => {
       return Math.abs(gestureState.dy) > ON_MOVE_RESPONDER_DY
     },
+    /**
+     * Callback when the user is dragging on the drawer.
+     * There are two primary modes of operation:
+     *  - Normal drawers that open by some UI action and can be swiped away by a user
+     *  - Drawers that are partially showing on the screen (e.g. Now Playing)
+     *    that start at an initial offset and can be dragged open
+     */
     onPanResponderMove: (e, gestureState) => {
-      if (isOpen) {
+      if (isOpen || isOpenToInitialOffset) {
         if (gestureState.dy > 0) {
           // Dragging downwards
-          const newTranslation = openPosition + gestureState.dy
-          attachToDy(translationAnim, newTranslation)(e)
-
           const percentOpen = (drawerHeight - gestureState.dy) / drawerHeight
 
-          const newOpacity = BACKGROUND_OPACITY * percentOpen
-          attachToDy(backgroundOpacityAnim, newOpacity)(e)
+          if (isOpen) {
+            const newTranslation = openPosition + gestureState.dy
+            attachToDy(translationAnim, newTranslation)(e)
 
-          if (isFullscreen) {
-            const newBorderRadius = BORDER_RADIUS * (1 - percentOpen)
+            if (shouldBackgroundDim) {
+              const newOpacity = BACKGROUND_OPACITY * percentOpen
+              attachToDy(backgroundOpacityAnim, newOpacity)(e)
+            }
 
-            attachToDy(borderRadiusAnim, newBorderRadius)(e)
+            if (isFullscreen) {
+              const newBorderRadius = BORDER_RADIUS * (1 - percentOpen)
+              attachToDy(borderRadiusAnim, newBorderRadius)(e)
+            }
+
+            // If we are "closing" the drawer to an offset position
+            if (initialOffsetPosition) {
+              // Set up border animations so that
+              // - In the offset position, they are either 0 or BORDER_RADIUS
+              // - While dragging open, they have BORDER_RADIUS
+              // - While fully open, they are 0
+              const borderRadiusInitialOffset = shouldHaveRoundedBordersAtInitialOffset
+                ? BORDER_RADIUS
+                : BORDER_RADIUS * percentOpen * 5
+              const newBorderRadius = Math.min(
+                borderRadiusInitialOffset,
+                BORDER_RADIUS,
+                BORDER_RADIUS * 2 * (1 - percentOpen)
+              )
+              attachToDy(borderRadiusAnim, newBorderRadius)(e)
+            }
           }
+
+          // Dragging downwards with an initial offset
+          if (isOpenToInitialOffset) {
+            const newTranslation =
+              initialOffsetOpenPosition + gestureState.dy / OVERFLOW_FRICTION
+            attachToDy(translationAnim, newTranslation)(e)
+          }
+
+          if (onPercentOpen) onPercentOpen(percentOpen)
         } else if (gestureState.dy < 0) {
           // Dragging upwards
-          const newTranslation =
-            openPosition + gestureState.dy / OVERFLOW_FRICTION
-          attachToDy(translationAnim, newTranslation)(e)
+          const percentOpen = (-1 * gestureState.dy) / drawerHeight
+
+          if (isOpen) {
+            const newTranslation =
+              openPosition + gestureState.dy / OVERFLOW_FRICTION
+            attachToDy(translationAnim, newTranslation)(e)
+          }
+
+          // Dragging upwards with an initial offset
+          if (isOpenToInitialOffset) {
+            const newTranslation = initialOffsetOpenPosition + gestureState.dy
+            attachToDy(translationAnim, newTranslation)(e)
+
+            // Set up border animations so that
+            // - In the offset position, they are either 0 or BORDER_RADIUS
+            // - While dragging open, they have BORDER_RADIUS
+            // - While fully open, they are 0
+            const borderRadiusInitialOffset = shouldHaveRoundedBordersAtInitialOffset
+              ? BORDER_RADIUS
+              : BORDER_RADIUS * percentOpen * 5
+            const newBorderRadius = Math.min(
+              borderRadiusInitialOffset,
+              BORDER_RADIUS,
+              BORDER_RADIUS * 2 * (1 - percentOpen)
+            )
+            attachToDy(borderRadiusAnim, newBorderRadius)(e)
+          }
+
+          if (onPercentOpen) onPercentOpen(percentOpen)
         }
       }
+      if (onPanResponderMove) onPanResponderMove(e, gestureState)
     },
+    /**
+     * When the user releases their hold of the drawer
+     */
     onPanResponderRelease: (e, gestureState) => {
-      if (isOpen) {
+      if (isOpen || isOpenToInitialOffset) {
         // Close if open & drag is past cutoff
         if (
           gestureState.vy > 0 &&
           gestureState.moveY > height - MOVE_CUTOFF_CLOSE * drawerHeight
         ) {
-          slideOut()
+          if (isOpenToInitialOffset) {
+            slideOut(initialOffsetOpenPosition)
+            borderRadiusAnim.setValue(0)
+          } else {
+            slideOut(initialPosition)
+          }
           onClose()
         } else {
-          slideIn()
+          slideIn(openPosition)
+          if (initialOffsetOpenPosition) {
+            borderRadiusAnim.setValue(0)
+          }
+          if (onOpen) onOpen()
         }
       }
     }
@@ -309,11 +515,12 @@ const Drawer = ({
   return (
     <Portal>
       <>
-        {renderBackground()}
+        {shouldBackgroundDim ? renderBackground() : null}
         <Animated.View
           {...(isGestureSupported ? panResponder.panHandlers : {})}
           style={[
             styles.drawer,
+            drawerStyle,
             ...(isFullscreen ? [styles.fullDrawer] : []),
             {
               shadowOpacity: shadowAnim,
