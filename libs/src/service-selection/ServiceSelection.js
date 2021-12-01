@@ -179,7 +179,7 @@ class ServiceSelection {
       const results = await allRequests({
         urlMap: map,
         timeout: this.requestTimeout,
-        validationCheck: (resp) => this.isHealthy(resp, map)
+        validationCheck: (resp) => resp.status === 200
       })
       return results
     } catch (e) {
@@ -243,16 +243,6 @@ class ServiceSelection {
     return `${service}/health_check`
   }
 
-  /**
-   * What the criteria is for a healthy service
-   * @param {Object} response axios response
-   * @param {{ [key: string]: string}} urlMap health check urls mapped to their cannonical url
-   * e.g. https://discoveryprovider.audius.co/health_check => https://discoveryprovider.audius.co
-   */
-  isHealthy (response, urlMap) {
-    return response.status === 200
-  }
-
   /** Races requests against each other with provided timeouts and health checks */
   async race (services) {
     // Key the services by their health check endpoint
@@ -269,7 +259,7 @@ class ServiceSelection {
         {},
         /* timeout */ this.requestTimeout,
         /* timeBetweenRequests */ 0,
-        /* validationCheck */ (resp) => this.isHealthy(resp, map)
+        /* validationCheck */ (resp) => resp.status === 200
       )
       this.decisionTree.push({ stage: 'Raced And Found Best', val: best })
       return { best, errored: errored.map(e => map[e.config.url]) }

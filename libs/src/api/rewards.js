@@ -4,6 +4,7 @@ const BN = require('bn.js')
 const { RewardsManagerError } = require('../services/solanaWeb3Manager/errors')
 const { shuffle } = require('lodash')
 const { WAUDIO_DECMIALS } = require('../constants')
+const { sampleSize } = require('lodash')
 
 const GetAttestationError = Object.freeze({
   CHALLENGE_INCOMPLETE: 'CHALLENGE_INCOMPLETE',
@@ -69,7 +70,8 @@ class Rewards extends Base {
    *   oracleEthAddress: string,
    *   amount: number,
    *   quorumSize: number,
-   *   AAOEndpoint: string
+   *   AAOEndpoint: string,
+   *   endpoints: Array<string>
    * }} {
    *   challengeId,
    *   encodedUserId,
@@ -79,13 +81,14 @@ class Rewards extends Base {
    *   oracleEthAddress,
    *   amount,
    *   quorumSize,
-   *   AAOEndpoint
+   *   AAOEndpoint,
+   *   endpoints
    *   }
    * @returns {Promise<GetSubmitAndEvaluateAttestationsReturn>}
    * @memberof Challenge
    */
   async submitAndEvaluate ({
-    challengeId, encodedUserId, handle, recipientEthAddress, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint
+    challengeId, encodedUserId, handle, recipientEthAddress, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints = null
   }) {
     let phase
     try {
@@ -98,7 +101,7 @@ class Rewards extends Base {
 
       phase = AttestationPhases.AGGREGATE_ATTESTATIONS
       const { discoveryNodeAttestations, aaoAttestation, error: aggregateError } = await this.aggregateAttestations({
-        challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint
+        challengeId, encodedUserId, handle, specifier, oracleEthAddress, amount, quorumSize, AAOEndpoint, endpoints
       })
 
       if (aggregateError) {
@@ -108,7 +111,7 @@ class Rewards extends Base {
       const fullTokenAmount = new BN(amount * WRAPPED_AUDIO_PRECISION)
 
       phase = AttestationPhases.SUBMIT_ATTESTATIONS
-      const { errorCode: submitErrorCode } = await this.solanaWeb3Manager.submitChallengeAttestations({
+      const { errorCode: submitErrorCode, error: submitError } = await this.solanaWeb3Manager.submitChallengeAttestations({
         attestations: discoveryNodeAttestations,
         oracleAttestation: aaoAttestation,
         challengeId,
@@ -117,12 +120,12 @@ class Rewards extends Base {
         tokenAmount: fullTokenAmount
       })
 
-      if (submitErrorCode) {
-        throw new Error(submitErrorCode)
+      if (submitErrorCode || submitError) {
+        throw new Error(submitErrorCode || submitError)
       }
 
       phase = AttestationPhases.EVALUATE_ATTESTATIONS
-      const { errorCode: evaluateErrorCode } = await this.solanaWeb3Manager.evaluateChallengeAttestations({
+      const { errorCode: evaluateErrorCode, error: evaluateError } = await this.solanaWeb3Manager.evaluateChallengeAttestations({
         challengeId,
         specifier,
         recipientEthAddress,
@@ -130,15 +133,15 @@ class Rewards extends Base {
         tokenAmount: fullTokenAmount
       })
 
-      if (evaluateErrorCode) {
-        throw new Error(evaluateErrorCode)
+      if (evaluateErrorCode || evaluateError) {
+        throw new Error(evaluateErrorCode || evaluateError)
       }
 
-      return { success: true, error: null }
+      return { success: true, error: null, phase: null }
     } catch (e) {
       const err = e.message
       console.log(`Failed to submit and evaluate attestations at phase ${phase}: ${err}`)
-      return { success: false, error: err }
+      return { success: false, error: err, phase }
     }
   }
 
@@ -191,6 +194,8 @@ class Rewards extends Base {
         error: AggregateAttestationError.INSUFFICIENT_DISCOVERY_NODE_COUNT
       }
     }
+
+    endpoints = sampleSize(endpoints, quorumSize)
 
     try {
       const discprovAttestations = endpoints.map(e => this.getChallengeAttestation({ challengeId, encodedUserId, specifier, oracleEthAddress, discoveryProviderEndpoint: e }))
@@ -282,6 +287,26 @@ class Rewards extends Base {
       return {
         success: null,
         error: mappedErr
+      }
+    }
+  }
+
+  async getUndisbursedChallenges ({ limit, offset, completedBlockNumber, encodedUserId } = {}) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    try {
+      const res = await this.discoveryProvider.getUndisbursedChallenges(
+        limit,
+        offset,
+        completedBlockNumber,
+        encodedUserId
+      )
+      return { success: res, error: null }
+    } catch (e) {
+      const error = e.message
+      console.log(`Failed to get undisbursed challenges with error: ${error}`)
+      return {
+        success: null,
+        error
       }
     }
   }
@@ -435,3 +460,4 @@ class Rewards extends Base {
 
 module.exports = Rewards
 module.exports.SubmitAndEvaluateError = SubmitAndEvaluateError
+module.exports.AttestationPhases = AttestationPhases
