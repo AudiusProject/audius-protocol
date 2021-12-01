@@ -9,7 +9,7 @@ describe('wAudioFromWeiAudio', () => {
     assert.throws(() => wAudioFromWeiAudio(weiAudio))
   })
   it('throws if the amount too precise', () => {
-    const weiAudio = new BN('1000000001')
+    const weiAudio = new BN('100000001')
     assert.throws(() => wAudioFromWeiAudio(weiAudio))
   })
   it('converts if the amount equals the minimum', () => {
