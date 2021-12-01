@@ -9,14 +9,7 @@
       "./node_modules/@types"
     ],
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "baseUrl": ".",
-    "paths": {
-      "eth": ["node_modules/@audius/fetch-nft/dist/eth"],
-      "sol": ["node_modules/@audius/fetch-nft/dist/sol"],
-      "utils/types": ["node_modules/@audius/fetch-nft/dist/utils/types"],
-      "utils/typeUtils": ["node_modules/@audius/fetch-nft/dist/utils/typeUtils"]
-    }
+    "esModuleInterop": true
   },
   "ts-node": {
     "files": true

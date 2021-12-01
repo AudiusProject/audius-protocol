@@ -29,6 +29,7 @@ jobs:
             - ./node_modules
 
       - run: npm run lint
+      - run: npm run tsc
       - persist_to_workspace:
           root: ./
           paths:
