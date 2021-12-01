@@ -142,8 +142,8 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         multiDexEnabled true
 
-        versionCode 147
-        versionName "1.0.109"
+        versionCode 153
+        versionName "1.0.113"
         resValue "string", "build_config_package", "co.audius.app"
     }
     productFlavors {
@@ -228,6 +228,11 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     implementation 'com.google.firebase:firebase-perf:19.0.5'
 
+    // Setting version of okhttp to temporarily fix android 11 crash
+    // This can be removed when react-native is upgraded to 0.66
+    // See https://stackoverflow.com/questions/67982247/react-native-app-crashes-on-android-11-on-launch-without-giving-error
+    implementation("com.squareup.okhttp3:okhttp:4.9.1")
+    implementation("com.squareup.okhttp3:okhttp-urlconnection:4.9.1")
 
     if (enableHermes) {
         def hermesPath = "../../node_modules/hermes-engine/android/";
