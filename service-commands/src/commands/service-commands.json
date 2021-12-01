@@ -240,6 +240,7 @@
       "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
       "echo 'Starting AAO...'",
       "cd $AAO_DIR; ./scripts/configureLocal.sh; docker-compose -f docker-compose-dev.yml up -d",
+      "cp ~/.audius/aao-config.json $PROTOCOL_DIR/identity-service",
       "sleep 5",
       "echo 'AAO Started'"
     ],
