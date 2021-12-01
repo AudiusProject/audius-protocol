@@ -1,4 +1,4 @@
-import { Collectible, FetchNFTClient } from '@audius/fetch-nft'
+import { Collectible } from '@audius/fetch-nft'
 import express from 'express'
 import fs from 'fs'
 import handlebars from 'handlebars'
@@ -199,7 +199,6 @@ const getCollectibleContext = async (
     const res = await fetch(`${dp}/v1/users/associated_wallets?id=${encodedUserId}`)
     const { data: walletData } = await res.json()
 
-    let foundCol: Collectible
     if (collectibleId) {
       // Get collectibles for user wallets
       const resp = await nftClient.getCollectibles({
@@ -214,18 +213,18 @@ const getCollectibleContext = async (
         ...solValues.reduce((acc, vals) => [...acc, ...vals], []),
       ]
 
-      foundCol = collectibles.find((col) => getHash(col.id) === collectibleId)
-    }
+      const foundCol = collectibles.find((col) => getHash(col.id) === collectibleId)
 
-    if (foundCol) {
-      return {
-        format: MetaTagFormat.Collectibles,
-        title: foundCol.name,
-        description: foundCol.description,
-        additionalSEOHint: infoText,
-        image: foundCol.frameUrl,
-        embed: canEmbed,
-        embedUrl: getCollectibleEmbedUrl(user.handle, collectibleId, isDiscord)
+      if (foundCol) {
+        return {
+          format: MetaTagFormat.Collectibles,
+          title: foundCol.name ?? '',
+          description: foundCol.description ?? '',
+          additionalSEOHint: infoText,
+          image: foundCol.frameUrl ?? '',
+          embed: canEmbed,
+          embedUrl: getCollectibleEmbedUrl(user.handle, collectibleId, isDiscord)
+        }
       }
     }
 

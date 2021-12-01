@@ -4,13 +4,12 @@
     "module": "commonjs",
     "outDir": "./build",
     "strict": true,
-    
     "typeRoots": [
       "./types",
       "./node_modules/@types"
     ],
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
+    "esModuleInterop": true
   },
   "ts-node": {
     "files": true
