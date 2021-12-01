@@ -1,7 +1,7 @@
 """create indexing checkpoints table
 
 Revision ID: 36eac5ed00bf
-Revises: edccccc274a7
+Revises: 591a66d44e5b
 Create Date: 2021-11-29 22:12:54.657724
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '36eac5ed00bf'
-down_revision = 'edccccc274a7'
+down_revision = '591a66d44e5b'
 branch_labels = None
 depends_on = None
 
