@@ -45,6 +45,57 @@ platform :ios do
       puts "ENVFILE: #{ENV['ENVFILE']}"
     end
 
+    # Increment version
+
+    # Version number (e.g. 1.0.100) will be incremented by a patch version
+    # from the currently live version in the app store. If a higher version number
+    # is specified in Info.plist, that one will be used
+
+    previousVersionNumberString = get_app_store_version_number(
+      bundle_id: 'co.audius.audiusmusic'
+    )
+
+    previousVersionNumber = Gem::Version.new previousVersionNumberString
+    versionNumber = Gem::Version.new get_version_number_from_plist(
+      scheme: 'AudiusReactNative'
+    )
+
+    # If the version specified in project is greater than
+    # the previous version number, there is no need to modify version number in the project
+    if versionNumber <= previousVersionNumber
+      # Increment the patch version
+      # This is necessary because the same version number cannot be used twice on the app store
+      patchRegex = /\d+.\d+.(\d+)/
+      previousPatch = previousVersionNumberString[patchRegex, 1]
+      previousVersionNumberString[patchRegex, 1] = (previousPatch.to_i + 1).to_s
+      versionNumber = previousVersionNumberString
+
+      increment_version_number_in_plist(
+        version_number: versionNumber,
+        scheme: 'AudiusReactNative'
+      )
+
+      increment_version_number_in_xcodeproj(
+        version_number: versionNumber,
+        scheme: 'AudiusReactNative'
+      )
+    end
+
+    # Increment build
+
+    # Build number (e.g. 12) needs to be unique for the given version number
+    # Increment using the updated version number so that for each version number
+    # build numbers start at 1
+
+    app_store_connect_api_key
+    increment_build_number(
+      build_number: app_store_build_number(
+        app_identifier: "co.audius.audiusmusic",
+        initial_build_number: 1,
+        version: versionNumber,
+        live: false
+      ) + 1,
+    )
 
     # Build ios
     gym(
@@ -89,6 +140,57 @@ platform :ios do
       puts "ENVFILE: #{ENV['ENVFILE']}"
     end
 
+    # Increment version
+
+    # Version number (e.g. 1.0.100) will be incremented by a patch version
+    # from the currently live version in the app store. If a higher version number
+    # is specified in Info.plist, that one will be used
+
+    previousVersionNumberString = get_app_store_version_number(
+      bundle_id: 'co.audius.audiusmusic'
+    )
+
+    previousVersionNumber = Gem::Version.new previousVersionNumberString
+    versionNumber = Gem::Version.new get_version_number_from_plist(
+      scheme: 'Bounce'
+    )
+
+    # If the version specified in project is greater than
+    # the previous version number, there is no need to modify version number in the project
+    if versionNumber <= previousVersionNumber
+      # Increment the patch version
+      # This is necessary because the same version number cannot be used twice on the app store
+      patchRegex = /\d+.\d+.(\d+)/
+      previousPatch = previousVersionNumberString[patchRegex, 1]
+      previousVersionNumberString[patchRegex, 1] = (previousPatch.to_i + 1).to_s
+      versionNumber = previousVersionNumberString
+
+      increment_version_number_in_plist(
+        version_number: versionNumber,
+        scheme: 'Bounce'
+      )
+
+      increment_version_number_in_xcodeproj(
+        version_number: versionNumber,
+        scheme: 'Bounce'
+      )
+    end
+
+    # Increment build
+
+    # Build number (e.g. 12) needs to be unique for the given version number
+    # Increment using the updated version number so that for each version number
+    # build numbers start at 1
+
+    app_store_connect_api_key
+    increment_build_number(
+      build_number: app_store_build_number(
+        app_identifier: "co.audius.audiusmusic.bounce",
+        initial_build_number: 1,
+        version: versionNumber,
+        live: false
+      ) + 1,
+    )
 
     # Build ios
     gym(
