@@ -663,12 +663,14 @@ const config = convict({
  * So if registryAddress or ownerWallet env variables are defined, they take precendence.
  */
 
+const pathTo = fileName => path.join(process.cwd(), fileName)
+
 // TODO(DM) - remove these defaults
 const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
 
-if (fs.existsSync(path.join(process.cwd(), 'eth-contract-config.json'))) {
-  let ethContractConfig = require(path.join(process.cwd(), 'eth-contract-config.json'))
+if (fs.existsSync(pathTo('eth-contract-config.json'))) {
+  let ethContractConfig = require(pathTo('eth-contract-config.json'))
   config.load({
     'ethTokenAddress': ethContractConfig.audiusTokenAddress,
     'ethRegistryAddress': ethContractConfig.registryAddress,
@@ -677,8 +679,8 @@ if (fs.existsSync(path.join(process.cwd(), 'eth-contract-config.json'))) {
   })
 }
 
-if (fs.existsSync(path.join(process.cwd(), 'contract-config.json'))) {
-  let dataContractConfig = require(path.join(process.cwd(), 'contract-config.json'))
+if (fs.existsSync(pathTo('contract-config.json'))) {
+  const dataContractConfig = require(pathTo('contract-config.json'))
   config.load({
     'dataRegistryAddress': dataContractConfig.registryAddress
   })

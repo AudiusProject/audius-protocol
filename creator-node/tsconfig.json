@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "baseUrl": "./src",
-    "target": "es5",
+    "target": "es2020",
     "module": "commonjs",
     "lib": [
-      "esnext"
+      "es2020"
     ],
     "outDir": "./build",
     "allowJs": true,
@@ -12,7 +12,7 @@
     "strict": true,
     "noFallthroughCasesInSwitch": true,
     "moduleResolution": "node",
-    "resolveJsonModule": false,
+    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

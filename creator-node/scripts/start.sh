@@ -73,9 +73,9 @@ if [[ "$devMode" == "true" ]]; then
         npm link
         cd ../app
         npm link @audius/libs
-        ./node_modules/.bin/nodemon --watch src/ --watch ../audius-libs/ src/index.ts | tee >(logger) | ./node_modules/.bin/bunyan
+        npx nodemon --watch src/ --watch ../audius-libs/ src/index.ts | tee >(logger) | npx bunyan
     else
-        ./node_modules/.bin/nodemon --watch src/ src/index.ts | tee >(logger) | ./node_modules/.bin/bunyan
+        npx nodemon --watch src/ src/index.ts | tee >(logger) | npx bunyan
     fi
 else
     node build/src/index.js | tee >(logger)
