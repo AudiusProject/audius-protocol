@@ -94,7 +94,7 @@ def test_index_aggregate_plays_update(app):
             {"play_item_id": 2, "count": 3},
         ],
         "indexing_checkpoints" : [
-            {"tablename": "aggregate_plays", "last_index": 9}
+            {"tablename": "aggregate_plays", "last_checkpoint": 9}
         ],
         "plays" : [
             # Current Plays
@@ -160,7 +160,7 @@ def test_index_aggregate_plays_same_checkpoint(app):
             {"play_item_id": 2, "count": 3},
         ],
         "indexing_checkpoints" : [
-            {"tablename": "aggregate_plays", "last_index": 9}
+            {"tablename": "aggregate_plays", "last_checkpoint": 9}
         ],
         "plays" : [
             # Current Plays

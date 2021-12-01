@@ -20,7 +20,7 @@ def upgrade():
     op.create_table(
         "indexing_checkpoints",
         sa.Column("tablename", sa.String(), nullable=False),
-        sa.Column("last_index", sa.Integer(), nullable=False),
+        sa.Column("last_checkpoint", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("tablename"),
     )
 

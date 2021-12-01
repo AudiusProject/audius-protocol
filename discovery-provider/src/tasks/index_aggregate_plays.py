@@ -14,7 +14,7 @@ AGGREGATE_PLAYS_TABLE_NAME = "aggregate_plays"
 # For new play item ids, insert those aggregate counts
 # For existing play item ids, add the new aggregate count to the existing aggregate count
 UPDATE_AGGREGATE_PLAYS_QUERY = """
-    WITH aggregate_plays_last_index AS (
+    WITH aggregate_plays_last_checkpoint AS (
         SELECT
             :prev_id_checkpoint AS prev_id_checkpoint,
             :new_id_checkpoint AS new_id_checkpoint
@@ -30,13 +30,13 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
                 SELECT
                     prev_id_checkpoint
                 FROM
-                    aggregate_plays_last_index
+                    aggregate_plays_last_checkpoint
             )
             AND p.id <= (
                 SELECT
                     new_id_checkpoint
                 FROM
-                    aggregate_plays_last_index
+                    aggregate_plays_last_checkpoint
             )
         GROUP BY
             play_item_id
@@ -54,15 +54,15 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
     """
 
 UPDATE_INDEXING_CHECKPOINTS = """
-    INSERT INTO indexing_checkpoints (tablename, last_index)
-    VALUES(:tablename, :last_index)
+    INSERT INTO indexing_checkpoints (tablename, last_checkpoint)
+    VALUES(:tablename, :last_checkpoint)
     ON CONFLICT (tablename)
-    DO UPDATE SET last_index = EXCLUDED.last_index;
+    DO UPDATE SET last_checkpoint = EXCLUDED.last_checkpoint;
     """
 
 def _update_aggregate_plays(session):
     # get the last updated id that counted towards the current aggregate plays
-    prev_id_checkpoint = (session.query(IndexingCheckpoints.last_index)
+    prev_id_checkpoint = (session.query(IndexingCheckpoints.last_checkpoint)
         .filter(IndexingCheckpoints.tablename == AGGREGATE_PLAYS_TABLE_NAME)
     ).scalar()
 
@@ -91,7 +91,7 @@ def _update_aggregate_plays(session):
         sa.text(UPDATE_INDEXING_CHECKPOINTS),
         {
             "tablename": AGGREGATE_PLAYS_TABLE_NAME,
-            "last_index": new_id_checkpoint,
+            "last_checkpoint": new_id_checkpoint,
         }
     )
 

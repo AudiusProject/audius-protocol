@@ -107,12 +107,12 @@ def test_listen_count_milestone_processing(app):
             assert len(milestones) == 9
 
         test_entities = {
-            "plays": [{"item_id": 1, "id": 1000+i, "slot": 1000+i} for i in range(3)] # 3 + 8 = 11 new
-            + [{"item_id": 2, "id": 1200+i, "slot": 1200+i} for i in range(100)] # 10 + 100 = 110 new
-            + [{"item_id": 3, "id": 1400+i, "slot": 1400+i} for i in range(10)] # 10 + 11 = 21 not new
-            + [{"item_id": 4, "id": 1600+i, "slot": 1600+i} for i in range(1000)] # 1000 + 12 = 1012 new
-            + [{"item_id": 8, "id": 3000+i, "slot": 3000+i} for i in range(19)] # 19 + 80 = 99 not new
-            + [{"item_id": 9, "id": 9000+i, "slot": 9000+i} for i in range(5000)] # 5000 + 111 = 5111 new
+            "plays": [{"item_id": 1, "id": 1000+i} for i in range(3)] # 3 + 8 = 11 new
+            + [{"item_id": 2, "id": 1200+i} for i in range(100)] # 10 + 100 = 110 new
+            + [{"item_id": 3, "id": 1400+i} for i in range(10)] # 10 + 11 = 21 not new
+            + [{"item_id": 4, "id": 1600+i} for i in range(1000)] # 1000 + 12 = 1012 new
+            + [{"item_id": 8, "id": 3000+i} for i in range(19)] # 19 + 80 = 99 not new
+            + [{"item_id": 9, "id": 9000+i} for i in range(5000)] # 5000 + 111 = 5111 new
         }
         populate_mock_db(db, test_entities)
         with db.scoped_session() as session:
