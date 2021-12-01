@@ -1,47 +1,53 @@
-import { FullUser, User } from './User'
+import { FullUser, User, UserModel } from './User'
+
+/** The general case models come from the "/v1" routes **/
 
 export type TrackArtwork = {
-  ['150x150']?: string
-  ['480x480']?: string
-  ['1000x1000']?: string
+  ['150x150']: string | null
+  ['480x480']: string | null
+  ['1000x1000']: string
+}
+
+export type RemixOf<T> = {
+  tracks: T[]
 }
 
 export type RemixParent = {
-  tracks: Array<{ parent_track_id: number }>
+  parent_track_id: string
 }
 
 export type Track = {
   artwork: TrackArtwork,
   description: string
-  genre?: string
+  downloadable: boolean
+  duration: number
+  favorite_count: number
+  genre: string
   id: string
-  mood?: string
+  mood: string
+  permalink: string
+  play_count: number
   release_date: string
-  remix_of: RemixParent
-  repost_count?: number
-  favorite_count?: number
-  tags?: string
+  remix_of: RemixOf<RemixParent> | null
+  repost_count: number
+  tags: string | null
   title: string
   user: User
-  duration: number
-  downloadable?: boolean
-  play_count?: number
-  permalink?: string
 }
 
 export type TrackDownload = {
-  cid: string
-  is_downloadable: string
-  requires_follow: string
+  cid: string | null
+  is_downloadable: boolean
+  requires_follow: boolean
 }
 
 export type TrackFieldVisibility = {
-  mood: boolean
-  tags: boolean
   genre: boolean
-  share: boolean
+  mood: boolean
   play_count: boolean
   remixes: boolean
+  share: boolean
+  tags: boolean
 }
 
 export type Repost = {
@@ -57,8 +63,8 @@ export type Favorite = {
 }
 
 export type StemParent = {
-  category: string
-  parent_track_id: number
+  category: string | null
+  parent_track_id: number | null
 }
 
 export type TrackSegment = {
@@ -66,39 +72,43 @@ export type TrackSegment = {
   multihash: string
 }
 
+/** Prefixed with "full", these models come from the "v1/full" route **/
+
 export type FullRemixParent = {
-  parent_track_id: string
-  user: FullUser
   has_remix_author_reposted: boolean
   has_remix_author_saved: boolean
+  parent_track_id: string
+  user: FullUser
 }
 
 export type FullTrack = Track & {
   blocknumber: number
-  create_date: string
   cover_art_sizes: string
+  cover_art: string
+  create_date: string
   created_at: string
   credits_splits: string
   download: TrackDownload
-  isrc: string
-  license: string
-  iswc: string
   field_visibility: TrackFieldVisibility
+  followee_favorites: Favorite[]
   followee_reposts: Repost[]
   has_current_user_reposted: boolean
-  is_unlisted: boolean
   has_current_user_saved: boolean
-  followee_favorites: Favorite[]
+  is_delete: boolean
+  is_unlisted: boolean
+  isrc: string
+  iswc: string
+  license: string
+  remix_of: RemixOf<FullRemixParent> | null
   route_id: string
-  stem_of: StemParent[]
+  stem_of: StemParent
   track_segments: TrackSegment[]
   updated_at: string
   user_id: string
   user: FullUser
-  is_delete: boolean
-  cover_art: string
-  remix_of: FullRemixParent
 }
+
+/** Suffixed with "model", these types come from the non-v1 API routes **/
 
 export type RemixParentModel = {
   has_remix_author_reposted: boolean
@@ -110,36 +120,43 @@ export type RemixParentModel = {
 export type TrackModel = {
   blockhash: string
   blocknumber: number
-  txhash: string
-  track_id: number
+  cover_art_sizes: string
+  cover_art: string
+  create_date: string
+  created_at: string
+  credits_splits: string
+  description: string
+  download: TrackDownload
+  field_visibility: TrackFieldVisibility
+  file_type: string
+  followee_reposts: Repost[]
+  followee_saves: Favorite[]
+  has_current_user_reposted: boolean
+  has_current_user_saved: boolean
+  genre: string
   is_current: boolean
   is_delete: boolean
-  owner_id: number
-  route_id: string
-  title: string
-  length: number
-  cover_art: string
-  cover_art_sizes: string
-  tags: string
-  genre: string
-  mood: string
-  credits_splits: string
-  remix_of?: { tracks: RemixParentModel[] }
-  create_date: string
-  release_date: string
-  file_type: string
-  description: string
-  license: string
+  is_unlisted: boolean
   isrc: string
   iswc: string
-  track_segments: TrackSegment[]
+  length: number
+  license: string
   metadata_multihash: string
-  download: TrackDownload
-  updated_at: string
-  created_at: string
-  is_unlisted: boolean
-  field_visibility: TrackFieldVisibility
-  stem_of: null
+  mood: string
+  owner_id: number
   permalink: string
-  user: FullUser
+  play_count: number
+  release_date: string
+  remix_of: RemixOf<RemixParentModel> | null
+  repost_count: number
+  route_id: string
+  save_count: number
+  stem_of: null
+  tags: string | null
+  title: string
+  track_id: number
+  track_segments: TrackSegment[]
+  txhash: string
+  updated_at: string
+  user: UserModel
 }
