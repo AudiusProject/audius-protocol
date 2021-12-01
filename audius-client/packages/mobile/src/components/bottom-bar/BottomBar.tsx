@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
 import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
 import { getIsOpen as getIsMobileOverflowModalOpen } from 'audius-client/src/common/store/ui/mobile-overflow-menu/selectors'
@@ -20,7 +20,7 @@ import {
   profilePage
 } from 'audius-client/src/utils/route'
 import { push } from 'connected-react-router'
-import { StyleSheet } from 'react-native'
+import { Animated, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
@@ -37,13 +37,17 @@ import ProfileButton from './buttons/ProfileButton'
 import TrendingButton from './buttons/TrendingButton'
 
 const styles = StyleSheet.create({
-  bottomBar: {
+  container: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     width: '100%',
 
+    zIndex: 4,
+    elevation: 4
+  },
+  bottomBar: {
     borderTopWidth: 1,
 
     display: 'flex',
@@ -54,7 +58,33 @@ const styles = StyleSheet.create({
   }
 })
 
-const BottomBar = () => {
+const springToValue = (
+  animation: Animated.Value,
+  value: number,
+  finished?: () => void
+) => {
+  Animated.spring(animation, {
+    toValue: value,
+    tension: 150,
+    friction: 25,
+    useNativeDriver: true
+  }).start(finished)
+}
+
+type BottomBarProps = {
+  /**
+   * Display properties on the bottom bar to control whether
+   * the bottom bar is showing
+   */
+  display: { isShowing: boolean }
+  /**
+   * Translation animation to move the bottom bar as drawers
+   * are opened behind it
+   */
+  translationAnim: Animated.Value
+}
+
+const BottomBar = ({ display, translationAnim }: BottomBarProps) => {
   const bottomBarStyle = useTheme(styles.bottomBar, {
     borderTopColor: 'neutralLight8',
     backgroundColor: 'neutralLight10'
@@ -89,6 +119,23 @@ const BottomBar = () => {
       }),
     [dispatchWeb]
   )
+
+  // Animations
+  const slideIn = useCallback(() => {
+    springToValue(translationAnim, 0)
+  }, [translationAnim])
+
+  const slideOut = useCallback(() => {
+    springToValue(translationAnim, 100)
+  }, [translationAnim])
+
+  useEffect(() => {
+    if (display.isShowing) {
+      slideIn()
+    } else {
+      slideOut()
+    }
+  }, [display, slideIn, slideOut])
 
   const userProfilePage = handle ? profilePage(handle) : null
   const navRoutes = new Set([
@@ -178,33 +225,46 @@ const BottomBar = () => {
   )
 
   return !hideBottomBar ? (
-    <SafeAreaView style={bottomBarStyle} edges={['bottom']}>
-      <FeedButton
-        isActive={currentRoute === FEED_PAGE}
-        isDarkMode={isDarkMode}
-        onClick={onClick(goToFeed, FEED_PAGE)}
-      />
-      <TrendingButton
-        isActive={currentRoute === TRENDING_PAGE}
-        isDarkMode={isDarkMode}
-        onClick={onClick(goToTrending, TRENDING_PAGE)}
-      />
-      <ExploreButton
-        isActive={currentRoute === EXPLORE_PAGE}
-        isDarkMode={isDarkMode}
-        onClick={onClick(goToExplore, EXPLORE_PAGE)}
-      />
-      <FavoritesButton
-        isActive={currentRoute === FAVORITES_PAGE}
-        isDarkMode={isDarkMode}
-        onClick={onClick(goToFavorites, FAVORITES_PAGE)}
-      />
-      <ProfileButton
-        isActive={currentRoute === userProfilePage}
-        isDarkMode={isDarkMode}
-        onClick={onClick(goToProfile, userProfilePage)}
-      />
-    </SafeAreaView>
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          transform: [
+            {
+              translateY: translationAnim
+            }
+          ]
+        }
+      ]}
+    >
+      <SafeAreaView style={bottomBarStyle} edges={['bottom']}>
+        <FeedButton
+          isActive={currentRoute === FEED_PAGE}
+          isDarkMode={isDarkMode}
+          onClick={onClick(goToFeed, FEED_PAGE)}
+        />
+        <TrendingButton
+          isActive={currentRoute === TRENDING_PAGE}
+          isDarkMode={isDarkMode}
+          onClick={onClick(goToTrending, TRENDING_PAGE)}
+        />
+        <ExploreButton
+          isActive={currentRoute === EXPLORE_PAGE}
+          isDarkMode={isDarkMode}
+          onClick={onClick(goToExplore, EXPLORE_PAGE)}
+        />
+        <FavoritesButton
+          isActive={currentRoute === FAVORITES_PAGE}
+          isDarkMode={isDarkMode}
+          onClick={onClick(goToFavorites, FAVORITES_PAGE)}
+        />
+        <ProfileButton
+          isActive={currentRoute === userProfilePage}
+          isDarkMode={isDarkMode}
+          onClick={onClick(goToProfile, userProfilePage)}
+        />
+      </SafeAreaView>
+    </Animated.View>
   ) : null
 }
 

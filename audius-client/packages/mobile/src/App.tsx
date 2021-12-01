@@ -1,7 +1,15 @@
-import React, { useRef, useEffect } from 'react'
+import React, {
+  useRef,
+  useEffect
+  // useCallback,
+  // useState
+} from 'react'
 
 import { PortalProvider } from '@gorhom/portal'
-import { Platform } from 'react-native'
+import {
+  // Animated,
+  Platform
+} from 'react-native'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import WebView from 'react-native-webview'
 import { Provider } from 'react-redux'
@@ -15,6 +23,7 @@ import EnablePushNotificationsDrawer from 'app/components/enable-push-notificati
 import HCaptcha from 'app/components/hcaptcha'
 import MobileUploadDrawer from 'app/components/mobile-upload-drawer'
 import Notifications from 'app/components/notifications/Notifications'
+// import NowPlayingDrawer from 'app/components/now-playing-drawer/NowPlayingDrawer'
 import OAuth from 'app/components/oauth/OAuth'
 import OverflowMenuDrawer from 'app/components/overflow-menu-drawer'
 import Search from 'app/components/search/Search'
@@ -83,6 +92,24 @@ const App = () => {
     setupAnalytics()
   }, [])
 
+  /**
+  // Set handlers for the NowPlayingDrawer and BottomBar
+  // When the drawer is open, the bottom bar should hide (animated away).
+  // When the drawer is closed, the bottom bar should reappear (animated in).
+  const bottomBarTranslationAnim = useRef(new Animated.Value(0)).current
+  // Track bottom bar display properties as an object, so every update
+  // can be listened to, even if we go from hidden => hidden
+  const [bottomBarDisplay, setBottomBarDisplay] = useState({
+    isShowing: true
+  })
+  const onNowPlayingDrawerOpen = useCallback(() => {
+    setBottomBarDisplay({ isShowing: false })
+  }, [setBottomBarDisplay])
+  const onNowPlayingDrawerClose = useCallback(() => {
+    setBottomBarDisplay({ isShowing: true })
+  }, [setBottomBarDisplay])
+   */
+
   return (
     <SafeAreaProvider>
       <Provider store={store}>
@@ -90,19 +117,29 @@ const App = () => {
           <WebRefContextProvider>
             <GoogleCast webRef={webRef} />
             <WebApp webRef={webRef} />
+            {/*
+              Note: it is very important that components are rendered after WebApp.
+              On Android, regardless of position: absolute, WebApp will steal all of
+              touch targets and onPress will not work.
+            */}
             <SignOnNav />
             <Search />
-            {/*
-        Note: it is very important that Notifications is rendered after WebApp.
-        On Android, regardless of position: absolute, WebApp will steal all of Notifications
-        touch targets and onPress will not work.
-      */}
             <Notifications webRef={webRef} />
 
             {/*
-            Commenting out BottomBar until the drawers and overlays are migrated to RN
-          */}
-            {/* <BottomBar /> */}
+            Commenting out NowPlayingDrawer and
+            BottomBar until all drawers and overlays are migrated to RN
+            */}
+            {/* <NowPlayingDrawer
+              onOpen={onNowPlayingDrawerOpen}
+              onClose={onNowPlayingDrawerClose}
+              bottomBarTranslationAnim={bottomBarTranslationAnim}
+            />
+            <BottomBar
+              display={bottomBarDisplay}
+              translationAnim={bottomBarTranslationAnim}
+            /> */}
+
             <Drawers />
             <Modals />
             <Audio webRef={webRef} />
