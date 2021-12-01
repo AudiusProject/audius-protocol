@@ -58,7 +58,9 @@ const getTracksFromCollection = async (collection: any, ownerUser: any): Promise
     const unorderedTracks = await getTracks(trackIds)
 
     // reorder tracks - discprov returns tracks out of order
-    const unorderedTracksMap = unorderedTracks.reduce((acc: Record<number, TrackModel>, t) => ({ ...acc, [t.track_id]: t }), {})
+    const unorderedTracksMap = unorderedTracks.reduce(
+      (acc: Record<number, TrackModel>, t) => ({ ...acc, [t.track_id]: t }),
+      {})
     tracks = trackIds.map((id: number) => unorderedTracksMap[id])
   }
 

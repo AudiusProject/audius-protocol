@@ -1,3 +1,5 @@
+
+// The general case models come from the "/v1" routes
 export type ProfilePicture = {
   ['150x150']: string
   ['480x480']: string
@@ -27,6 +29,7 @@ export type User = {
   track_count: number
 }
 
+// Prefixed with "full", these models come from the "v1/full" route
 export type FullUser = User & {
   associated_sol_wallets_balance: string
   associated_wallets_balance: string
@@ -50,6 +53,7 @@ export type FullUser = User & {
   wallet: string
 }
 
+// Suffixed with "model", these types come from the non-v1 API routes
 export type UserModel = {
   bio: string
   blockhash: string
@@ -81,7 +85,7 @@ export type UserModel = {
 } & ComputedUserProps
 
 type ComputedUserProps = {
-  /** Aggregate User **/
+  // Aggregate User
   album_count: number
   followee_count: number
   follower_count: number
@@ -92,11 +96,11 @@ type ComputedUserProps = {
   track_save_count: number
   user_balance: string,
 
-  /** Current User **/
+  // Current User
   current_user_followee_follow_count: number
   does_current_user_follow: boolean
 
-  /** Wallets **/
+  // Wallets
   associated_sol_wallets_balance: string
   associated_wallets_balance: string
   balance: string

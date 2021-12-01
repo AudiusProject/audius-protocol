@@ -1,7 +1,6 @@
 import { FullUser, User, UserModel } from './User'
 
-/** The general case models come from the "/v1" routes **/
-
+// The general case models come from the "/v1" routes
 export type TrackArtwork = {
   ['150x150']: string | null
   ['480x480']: string | null
@@ -72,8 +71,7 @@ export type TrackSegment = {
   multihash: string
 }
 
-/** Prefixed with "full", these models come from the "v1/full" route **/
-
+// Prefixed with "full", these models come from the "v1/full" route
 export type FullRemixParent = {
   has_remix_author_reposted: boolean
   has_remix_author_saved: boolean
@@ -108,8 +106,7 @@ export type FullTrack = Track & {
   user: FullUser
 }
 
-/** Suffixed with "model", these types come from the non-v1 API routes **/
-
+// Suffixed with "model", these types come from the non-v1 API routes
 export type RemixParentModel = {
   has_remix_author_reposted: boolean
   has_remix_author_saved: boolean
