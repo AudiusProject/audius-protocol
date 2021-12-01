@@ -25,48 +25,65 @@ class IPFSClient:
     def get_peer_info(self):
         return self._ipfsid
 
-    def get_metadata_from_json(self, metadata_format, resp_json):
+    def get_metadata_from_json(self, default_metadata_fields, resp_json):
         metadata = {}
-        for parameter, value in metadata_format.items():
+        for parameter, value in default_metadata_fields.items():
             metadata[parameter] = (
                 resp_json.get(parameter) if resp_json.get(parameter) != None else value
             )
         return metadata
 
+    def force_clear_queue_and_stop_task_execution(self, executor):
+        logger.info('IPFSCLIENT | force_clear_queue_and_stop_task_execution - Clearing queue for executor...')
+        executor._threads.clear()
+        concurrent.futures.thread._threads_queues.clear()
+
     # pylint: disable=broad-except
-    def get_metadata(self, multihash, metadata_format, user_replica_set=None):
-        """Retrieve file from IPFS, validating metadata requirements prior to
+    def get_metadata(self, multihash, default_metadata_fields, user_replica_set=None):
+        """Retrieve file from IPFS or gateway, validating metadata requirements prior to
         returning an object with no missing entries
         """
         logger.warning(f"IPFSCLIENT | get_metadata - {multihash}")
-        api_metadata = metadata_format
-        retrieved_from_local_node = False
+        api_metadata = default_metadata_fields
         retrieved_from_gateway = False
+        retrieved_from_local_node = False
+        first_attempt_error = False
         start_time = time.time()
 
-        # First try to retrieve from local ipfs node.
-        try:
-            api_metadata = self.get_metadata_from_ipfs_node(multihash, metadata_format)
-            retrieved_from_local_node = api_metadata != metadata_format
-        except Exception:
-            logger.error(
-                f"Failed to retrieve CID from local node, {multihash}", exc_info=True
-            )
-
-        # Else, try to retrieve from gateways.
-        if not retrieved_from_local_node:
-            try:
-                api_metadata = self.get_metadata_from_gateway(
-                    multihash, metadata_format, user_replica_set
-                )
-                retrieved_from_gateway = api_metadata != metadata_format
-            except Exception:
-                logger.error(
-                    f"Failed to retrieve CID from gateway, {multihash}", exc_info=True
-                )
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            metadata_futures = {}
+            metadata_futures[executor.submit(
+                self.get_metadata_from_ipfs_node, multihash, default_metadata_fields
+            )] = 'metadata_from_ipfs_node'
+            metadata_futures[executor.submit(
+                self.get_metadata_from_gateway, multihash, default_metadata_fields, user_replica_set
+            )] = 'metadata_from_gateway'
+            for get_metadata_future in concurrent.futures.as_completed(metadata_futures):
+                original_task = metadata_futures[get_metadata_future]
+                try:
+                    api_metadata = get_metadata_future.result(timeout=5)
+                    retrieved = api_metadata != default_metadata_fields
+                    if retrieved:
+                        logger.info(f'IPFSCLIENT | retrieved metadata successfully, {api_metadata}, task: {original_task}')
+                        if original_task == 'metadata_from_gateway':
+                            retrieved_from_gateway = True
+                        else:
+                            retrieved_from_local_node = True
+                        self.force_clear_queue_and_stop_task_execution(executor)
+                        break # use first returned result
+                    else:
+                        logger.info(f'IPFSCLIENT | did not retrieve metadata successfully')
+                except Exception as e:
+                    logger.error(
+                        f"IPFSCLIENT | ipfs_lib.py | ERROR in metadata_futures parallel processing generated {e}, multihash: {multihash}, task: {original_task}, first_attempt_error: {first_attempt_error}",
+                        exc_info=True
+                    )
+                    if first_attempt_error:
+                        raise e
+                    else:
+                        first_attempt_error = True
 
         retrieved_metadata = retrieved_from_gateway or retrieved_from_local_node
-
         # Raise error if metadata is not retrieved.
         # Ensure default values are not written into database.
         if not retrieved_metadata:
@@ -76,7 +93,7 @@ class IPFSClient:
                 f"retrieved from local node : {retrieved_from_local_node}"
             )
             logger.error(api_metadata)
-            logger.error(metadata_format)
+            logger.error(default_metadata_fields)
             raise Exception(
                 f"IPFSCLIENT | Failed to retrieve metadata. Using default values for {multihash}"
             )
@@ -100,7 +117,7 @@ class IPFSClient:
         r = requests.get(url, timeout=max_timeout)
         return r
 
-    def query_ipfs_metadata_json(self, gateway_ipfs_urls, metadata_format):
+    def query_ipfs_metadata_json(self, gateway_ipfs_urls, default_metadata_fields):
         formatted_json = None
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             # Start the load operations and mark each future with its URL
@@ -117,24 +134,25 @@ class IPFSClient:
                         raise Exception("Invalid status_code")
                     # Override with retrieved JSON value
                     formatted_json = self.get_metadata_from_json(
-                        metadata_format, r.json()
+                        default_metadata_fields, r.json()
                     )
                     # Exit loop if dict is successfully retrieved
                     logger.warning(f"IPFSCLIENT | Retrieved from {url}")
+                    self.force_clear_queue_and_stop_task_execution(executor)
                     break
                 except Exception as exc:
                     logger.error(f"IPFSClient | {url} generated an exception: {exc}")
         return formatted_json
 
     def get_metadata_from_gateway(
-        self, multihash, metadata_format, user_replica_set=None
+        self, multihash, default_metadata_fields, user_replica_set=None
     ):
         """Args:
         args.user_replica_set - comma-separated string of user's replica urls
         """
 
         # Default return initial metadata format
-        gateway_metadata_json = metadata_format
+        gateway_metadata_json = default_metadata_fields
         logger.warning(
             f"IPFSCLIENT | get_metadata_from_gateway, {multihash} replica set: {user_replica_set}"
         )
@@ -147,7 +165,7 @@ class IPFSClient:
                 query_urls = [
                     "%s/ipfs/%s" % (addr, multihash) for addr in user_replicas
                 ]
-                data = self.query_ipfs_metadata_json(query_urls, metadata_format)
+                data = self.query_ipfs_metadata_json(query_urls, default_metadata_fields)
                 if data is None:
                     raise Exception()
                 return data
@@ -171,7 +189,7 @@ class IPFSClient:
         )
 
         query_urls = ["%s/ipfs/%s" % (addr, multihash) for addr in gateway_endpoints]
-        data = self.query_ipfs_metadata_json(query_urls, metadata_format)
+        data = self.query_ipfs_metadata_json(query_urls, default_metadata_fields)
         if data is None:
             raise Exception(
                 f"IPFSCLIENT | Failed to retrieve CID {multihash} from gateway"
@@ -179,7 +197,10 @@ class IPFSClient:
         gateway_metadata_json = data
         return gateway_metadata_json
 
-    def get_metadata_from_ipfs_node(self, multihash, metadata_format):
+    def get_metadata_from_ipfs_node(self, multihash, default_metadata_fields):
+        logger.warning(
+            f"IPFSCLIENT | get_metadata_from_ipfs_node, {multihash}"
+        )
         try:
             res = self.cat(multihash)
             resp_val = json.loads(res)
@@ -203,7 +224,7 @@ class IPFSClient:
             raise e
 
         logger.info(f"IPFSCLIENT | Retrieved {multihash} from ipfs node")
-        return self.get_metadata_from_json(metadata_format, resp_val)
+        return self.get_metadata_from_json(default_metadata_fields, resp_val)
 
     def cat(self, multihash):
         try:

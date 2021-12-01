@@ -6,8 +6,6 @@ from src.utils.ipfs_lib import IPFSClient
 from src.utils.helpers import remove_test_file
 from src.tasks.metadata import track_metadata_format
 
-# Disabled temporarily, comment below line to enable test
-# @pytest.mark.skip(reason="enabled pending ipfs daemon functionality")
 def test_ipfs(app):
     json_file = "tests/res/test_ipfs.json"
     ipfs_peer_host = app.config["ipfs"]["host"]
