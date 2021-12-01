@@ -560,6 +560,12 @@ class DiscoveryProvider {
     return data
   }
 
+  async getUndisbursedChallenges (limit = null, offset = null, completedBlockNumber = null, encodedUserId = null) {
+    const req = Requests.getUndisbursedChallenges(limit, offset, completedBlockNumber, encodedUserId)
+    const res = await this._makeRequest(req)
+    return res.map(r => ({ ...r, amount: parseInt(r.amount) }))
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   /**
@@ -576,7 +582,7 @@ class DiscoveryProvider {
    * @memberof DiscoveryProvider
    */
   async _performRequestWithMonitoring (requestObj, discoveryProviderEndpoint) {
-    let axiosRequest = this._createDiscProvRequest(requestObj, discoveryProviderEndpoint)
+    const axiosRequest = this._createDiscProvRequest(requestObj, discoveryProviderEndpoint)
     let response
     let parsedResponse
 
@@ -726,6 +732,15 @@ class DiscoveryProvider {
    */
   _createDiscProvRequest (requestObj, discoveryProviderEndpoint) {
     let requestUrl
+
+    // Sanitize URL params if needed
+    if (requestObj.queryParams) {
+      Object.entries(requestObj.queryParams).forEach(([k, v]) => {
+        if (v === undefined || v === null) {
+          delete requestObj.queryParams[k]
+        }
+      })
+    }
 
     if (urlJoin && urlJoin.default) {
       requestUrl = urlJoin.default(discoveryProviderEndpoint, requestObj.endpoint, requestObj.urlParams, { query: requestObj.queryParams })
