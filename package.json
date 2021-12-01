@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/AudiusProject/general-admission#readme",
   "dependencies": {
-    "@audius/fetch-nft": "0.1.4",
+    "@audius/fetch-nft": "^0.1.5",
     "@audius/libs": "1.2.30",
     "@solana/spl-token": "^0.1.8",
     "@solana/web3.js": "^1.30.2",

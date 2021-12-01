@@ -1,4 +1,4 @@
-import { Collectible } from '@audius/fetch-nft'
+import { Collectible, CollectibleState } from '@audius/fetch-nft'
 import express from 'express'
 
 import libs from '../../libs'
@@ -133,8 +133,8 @@ type CollectiblesMetadata = {
   user: any
 } & (
   | {
-    ethCollectibles: Collectible[]
-    solCollectibles: Collectible[]
+    ethCollectibles: CollectibleState
+    solCollectibles: CollectibleState
     type: 'gallery'
   }
   | {
