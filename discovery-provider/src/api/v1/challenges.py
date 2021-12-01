@@ -5,6 +5,7 @@ from src.api.v1.helpers import (
     get_current_user_id,
     make_response,
     success_response,
+    extend_undisbursed_challenge
 )
 from src.api.v1.models.challenges import (
     undisbursed_challenge,
@@ -112,6 +113,7 @@ class GetUndisbursedChallenges(Resource):
                     "completed_blocknumber": args["completed_blocknumber"],
                 },
             )
+            undisbursed_challenges = list(map(extend_undisbursed_challenge, undisbursed_challenges))
             return success_response(undisbursed_challenges)
 
 
