@@ -220,7 +220,7 @@ module.exports = function (app) {
     // Dedicated listen flow
     if (solanaListen) {
       logger.info(`Sending Track listen transaction trackId=${trackId} userId=${userId}`)
-      let response = await retry(async () => {
+      const response = await retry(async () => {
         let solTxSignature = await solClient.createAndVerifyMessage(
           null,
           config.get('solanaSignerPrivateKey'),
