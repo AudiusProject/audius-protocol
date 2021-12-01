@@ -408,3 +408,12 @@ module.exports.getChallengeAttestation = (challengeId, encodedUserId, specifier,
     }
   }
 }
+
+module.exports.getCreateSenderAttestation = (senderEthAddress) => {
+  return {
+    endpoint: `/v1/challenges/attest_sender`,
+    queryParams: {
+      sender_eth_address: senderEthAddress
+    }
+  }
+}

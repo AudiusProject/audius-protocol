@@ -9,9 +9,10 @@ const {
 } = require('./tokenAccount')
 const { wAudioFromWeiAudio } = require('./wAudio')
 const Utils = require('../../utils')
-const { submitAttestations, evaluateAttestations } = require('./rewards')
 const SolanaUtils = require('./utils')
 const { TransactionHandler } = require('./transactionHandler')
+const { submitAttestations, evaluateAttestations, createSender } = require('./rewards')
+const { WAUDIO_DECMIALS } = require('../../constants')
 
 const { PublicKey } = solanaWeb3
 
@@ -120,6 +121,10 @@ class SolanaWeb3Manager {
    * Creates a solana bank account from the web3 provider's eth address
    */
   async createUserBank () {
+    if (!this.web3Manager) {
+      throw new Error('A web3Manager is required for this solanaWeb3Manager method')
+    }
+
     const ethAddress = this.web3Manager.getWalletAddress()
     await createUserBankFrom({
       ethAddress,
@@ -167,6 +172,9 @@ class SolanaWeb3Manager {
    * @returns {PublicKey} UserBank
    */
   async getUserBank () {
+    if (!this.web3Manager) {
+      throw new Error('A web3Manager is required for this solanaWeb3Manager method')
+    }
     const ethAddress = this.web3Manager.getWalletAddress()
     const bank = await getBankAccountAddress(
       ethAddress,
@@ -204,8 +212,8 @@ class SolanaWeb3Manager {
       const tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
       if (!tokenAccount) return null
 
-      // Multiply by 10^9 to maintain same decimals as eth $AUDIO
-      return tokenAccount.amount.mul(Utils.toBN('1'.padEnd(10, '0')))
+      // Multiply by 10^10 to maintain same decimals as eth $AUDIO
+      return tokenAccount.amount.mul(Utils.toBN('1'.padEnd(WAUDIO_DECMIALS + 1, '0')))
     } catch (e) {
       return null
     }
@@ -220,13 +228,17 @@ class SolanaWeb3Manager {
    * @param {BN} amount the amount of $AUDIO to send in wei units of $AUDIO.
    * **IMPORTANT NOTE**
    * wAudio (Solana) does not support 10^-18 (wei) units of $AUDIO. The smallest
-   * demarcation on that side is 10^-9, so the $AUDIO amount must be >= 10^9 and have no
-   * remainder after a division with 10^9 or this method will throw.
+   * demarcation on that side is 10^-8, so the $AUDIO amount must be >= 10^8 and have no
+   * remainder after a division with 10^8 or this method will throw.
    *
    * Generally speaking, callers into the solanaWeb3Manager should use BN.js representation
    * of wei $AUDIO for all method calls
    */
   async transferWAudio (recipientSolanaAddress, amount) {
+    if (!this.web3Manager) {
+      throw new Error('A web3Manager is required for this solanaWeb3Manager method')
+    }
+
     // Check if the solana address is a token account
     let tokenAccountInfo = await this.getAssociatedTokenAccountInfo(recipientSolanaAddress)
     if (!tokenAccountInfo) {
@@ -256,6 +268,7 @@ class SolanaWeb3Manager {
     await transferWAudioBalance({
       amount: wAudioAmount,
       senderEthAddress: ethAddress,
+      feePayerKey: this.feePayerKey,
       senderEthPrivateKey: this.web3Manager.getOwnerWalletPrivateKey(),
       senderSolanaAddress,
       recipientSolanaAddress,
@@ -263,7 +276,8 @@ class SolanaWeb3Manager {
       solanaTokenProgramKey: this.solanaTokenKey,
       claimableTokenProgramKey: this.claimableTokenProgramKey,
       connection: this.connection,
-      identityService: this.identityService
+      mintKey: this.mintKey,
+      transactionHandler: this.transactionHandler
     })
   }
 
@@ -344,6 +358,33 @@ class SolanaWeb3Manager {
       oracleEthAddress,
       feePayer: this.feePayerKey,
       tokenAmount,
+      transactionHandler: this.transactionHandler
+    })
+  }
+
+  /**
+   * Creates a new rewards signer (one that can attest)
+   * @param {{
+   *   senderEthAddress: string,
+   *   operatorEthAddress: string,
+   *   attestations: AttestationMeta[],
+   * }} {
+   * @memberof SolanaWeb3Manager
+   */
+  async createSender ({
+    senderEthAddress,
+    operatorEthAddress,
+    attestations
+  }) {
+    return createSender({
+      rewardManagerProgramId: this.rewardManagerProgramId,
+      rewardManagerAccount: this.rewardManagerProgramPDA,
+      senderEthAddress,
+      feePayer: this.feePayerKey,
+      operatorEthAddress,
+      attestations,
+      identityService: this.identityService,
+      connection: this.connection,
       transactionHandler: this.transactionHandler
     })
   }

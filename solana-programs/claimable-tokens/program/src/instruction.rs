@@ -16,16 +16,6 @@ pub struct CreateTokenAccount {
     pub eth_address: EthereumAddress,
 }
 
-/// Eth address
-#[derive(Clone, BorshDeserialize, BorshSerialize, PartialEq, Debug)]
-pub struct Transfer {
-    /// Ethereum address
-    pub eth_address: EthereumAddress,
-    /// The amount of claiming tokens. If set 0 claim all tokens
-    /// otherwise claim specified value
-    pub amount: u64,
-}
-
 /// Instruction definition
 #[derive(BorshSerialize, BorshDeserialize, PartialEq, Debug, Clone)]
 pub enum ClaimableProgramInstruction {
