@@ -47,7 +47,7 @@
     "@reduxjs/toolkit": "1.6.1",
     "@segment/analytics-react-native": "1.5.0",
     "@svgr/core": "5.5.0",
-    "audius-client": "github:AudiusProject/audius-client.git#5b8f67fea01fdad0a2d7a10fb7249abd6325e6a4",
+    "audius-client": "github:AudiusProject/audius-client.git#846cf401da547171f0ceb5c3e063ee01f4f37f42",
     "bn.js": "5.2.0",
     "expo-crypto": "9.2.0",
     "fxa-common-password-list": "0.0.4",
