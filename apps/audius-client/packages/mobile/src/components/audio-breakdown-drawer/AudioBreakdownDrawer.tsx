@@ -33,8 +33,8 @@ import Text from 'app/components/text'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
-import { useThemeColors } from 'app/utils/theme'
 import share from 'app/utils/share'
+import { useThemeColors } from 'app/utils/theme'
 
 const AUDIO_BREAKDOWN_MODAL_NAME = 'AudioBreakdown'
 

@@ -1,6 +1,6 @@
-import { JsonMap } from '@segment/analytics-react-native'
-
 import { Message } from '../message/types'
+
+type JsonMap = Record<string, unknown>
 
 export type Identify = {
   handle: string
@@ -50,7 +50,10 @@ export enum EventNames {
   LISTEN = 'Listen',
 
   // Notifications
-  NOTIFICATIONS_OPEN_PUSH_NOTIFICATION = 'Notifications: Open Push Notification'
+  NOTIFICATIONS_OPEN_PUSH_NOTIFICATION = 'Notifications: Open Push Notification',
+
+  // Page View
+  PAGE_VIEW = 'PAGE VIEW'
 }
 
 // Create Account
