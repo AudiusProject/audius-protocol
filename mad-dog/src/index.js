@@ -198,15 +198,6 @@ async function main () {
         await testRunner([test])
         break
       }
-      case 'test-nightly': {
-        const test = makeTest('consistency', coreIntegration, {
-          numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
-          numUsers: DEFAULT_NUM_USERS,
-          testDurationSeconds: MAD_DOG_NIGHTLY_DURATION_SECONDS
-        })
-        await testRunner([test])
-        break
-      }
       case 'test-snapback': {
         const snapbackNumUsers = 40
         const test = makeTest(
@@ -287,8 +278,8 @@ async function main () {
         await testRunner([deregisterCNTest, forceCNUnavailabilityTest])
         break
       }
-      case 'test-ci': {
-        const coreIntegrationTests = makeTest('consistency:ci', coreIntegration, {
+      case 'test-nightly': {
+        const coreIntegrationTests = makeTest('consistency', coreIntegration, {
           numCreatorNodes: DEFAULT_NUM_CREATOR_NODES,
           numUsers: DEFAULT_NUM_USERS,
           testDurationSeconds: MAD_DOG_NIGHTLY_DURATION_SECONDS

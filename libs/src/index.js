@@ -10,6 +10,7 @@ const Comstock = require('./services/comstock/index')
 const Hedgehog = require('./services/hedgehog/index')
 const CreatorNode = require('./services/creatorNode/index')
 const DiscoveryProvider = require('./services/discoveryProvider/index')
+const Wormhole = require('./services/wormhole')
 const AudiusABIDecoder = require('./services/ABIDecoder/index')
 const SchemaValidator = require('./services/schemaValidator')
 const UserStateManager = require('./userStateManager')
@@ -192,6 +193,31 @@ class AudiusLibs {
   }
 
   /**
+   * Configures wormhole
+   * @param {Object} config
+   * @param {string} config.rpcHost
+   * @param {string} config.solBridgeAddress
+   * @param {string} config.solTokenBridgeAddress
+   * @param {string} config.ethBridgeAddress
+   * @param {string} config.ethTokenBridgeAddress
+   */
+  static configWormhole ({
+    rpcHost,
+    solBridgeAddress,
+    solTokenBridgeAddress,
+    ethBridgeAddress,
+    ethTokenBridgeAddress
+  }) {
+    return {
+      rpcHost,
+      solBridgeAddress,
+      solTokenBridgeAddress,
+      ethBridgeAddress,
+      ethTokenBridgeAddress
+    }
+  }
+
+  /**
    * Configures a solana web3
    * @param {Object} config
    * @param {string} config.solanaClusterEndpoint the RPC endpoint to make requests against
@@ -253,6 +279,7 @@ class AudiusLibs {
     discoveryProviderConfig,
     creatorNodeConfig,
     comstockConfig,
+    wormholeConfig,
     captchaConfig,
     isServer,
     isDebug = false,
@@ -269,6 +296,7 @@ class AudiusLibs {
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
     this.comstockConfig = comstockConfig
+    this.wormholeConfig = wormholeConfig
     this.captchaConfig = captchaConfig
     this.isServer = isServer
     this.isDebug = isDebug
@@ -372,6 +400,20 @@ class AudiusLibs {
       contractsToInit.push(this.contracts.init())
     }
     await Promise.all(contractsToInit)
+    if (this.wormholeConfig && this.hedgehog && this.ethWeb3Manager && this.ethContracts && this.identityService && this.solanaWeb3Manager) {
+      this.wormholeClient = new Wormhole(
+        this.hedgehog,
+        this.ethWeb3Manager,
+        this.ethContracts,
+        this.identityService,
+        this.solanaWeb3Manager,
+        this.wormholeConfig.rpcHost,
+        this.wormholeConfig.solBridgeAddress,
+        this.wormholeConfig.solTokenBridgeAddress,
+        this.wormholeConfig.ethBridgeAddress,
+        this.wormholeConfig.ethTokenBridgeAddress
+      )
+    }
 
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {
@@ -430,6 +472,7 @@ class AudiusLibs {
       this.ethWeb3Manager,
       this.ethContracts,
       this.solanaWeb3Manager,
+      this.wormholeClient,
       this.creatorNode,
       this.comstock,
       this.captcha,

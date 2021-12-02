@@ -19,7 +19,7 @@
     {
       "constant": true,
       "inputs": [],
-      "name": "LOCK_ASSETS_TYPEHASH",
+      "name": "TRANSFER_TOKENS_TYPEHASH",
       "outputs": [
         {
           "internalType": "bytes32",
@@ -110,19 +110,19 @@
           "type": "uint256"
         },
         {
+          "internalType": "uint16",
+          "name": "recipientChain",
+          "type": "uint16"
+        },
+        {
           "internalType": "bytes32",
           "name": "recipient",
           "type": "bytes32"
         },
         {
-          "internalType": "uint8",
-          "name": "targetChain",
-          "type": "uint8"
-        },
-        {
-          "internalType": "bool",
-          "name": "refundDust",
-          "type": "bool"
+          "internalType": "uint256",
+          "name": "arbiterFee",
+          "type": "uint256"
         },
         {
           "internalType": "uint256",
@@ -145,7 +145,7 @@
           "type": "bytes32"
         }
       ],
-      "name": "lockAssets",
+      "name": "transferTokens",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
