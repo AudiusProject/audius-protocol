@@ -1,5 +1,8 @@
 PODS:
-  - Analytics (4.1.5)
+  - Amplitude (8.5.0)
+  - amplitude-react-native (2.6.0):
+    - Amplitude (= 8.5.0)
+    - React-Core
   - boost-for-react-native (1.63.0)
   - BVLinearGradient (2.5.6):
     - React
@@ -377,9 +380,6 @@ PODS:
     - React-jsi (= 0.63.4)
   - ReactNativeDarkMode (0.2.2):
     - React
-  - RNAnalytics (1.5.0):
-    - Analytics
-    - React-Core
   - RNCAsyncStorage (1.12.1):
     - React-Core
   - RNCMaskedView (0.2.6):
@@ -402,6 +402,7 @@ PODS:
   - Yoga (1.14.0)
 
 DEPENDENCIES:
+  - "amplitude-react-native (from `../node_modules/@amplitude/react-native`)"
   - BVLinearGradient (from `../node_modules/react-native-linear-gradient`)
   - Crashlytics (= 3.14.0)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
@@ -447,7 +448,6 @@ DEPENDENCIES:
   - React-RCTVibration (from `../node_modules/react-native/Libraries/Vibration`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - ReactNativeDarkMode (from `../node_modules/react-native-dark-mode`)
-  - "RNAnalytics (from `../node_modules/@segment/analytics-react-native`)"
   - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - "RNCPushNotificationIOS (from `../node_modules/@react-native-community/push-notification-ios`)"
@@ -461,7 +461,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
-    - Analytics
+    - Amplitude
     - boost-for-react-native
     - Crashlytics
     - Fabric
@@ -480,6 +480,8 @@ SPEC REPOS:
     - Protobuf
 
 EXTERNAL SOURCES:
+  amplitude-react-native:
+    :path: "../node_modules/@amplitude/react-native"
   BVLinearGradient:
     :path: "../node_modules/react-native-linear-gradient"
   DoubleConversion:
@@ -560,8 +562,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   ReactNativeDarkMode:
     :path: "../node_modules/react-native-dark-mode"
-  RNAnalytics:
-    :path: "../node_modules/@segment/analytics-react-native"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-community/async-storage"
   RNCMaskedView:
@@ -584,7 +584,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  Analytics: 084a3edda6517e308007c1a7810b8f1e8f2925aa
+  Amplitude: ef9ed339ddd33c9183edf63fa4bbaa86cf873321
+  amplitude-react-native: c7d779d1e2ec4062c833207df7588cc2a9146325
   boost-for-react-native: 39c7adb57c4e60d6c5479dd8623128eb5b3f0f2c
   BVLinearGradient: e3aad03778a456d77928f594a649e96995f1c872
   Crashlytics: 9220f5bc89e7a618df411b4f639389dbfb0e03d2
@@ -641,7 +642,6 @@ SPEC CHECKSUMS:
   React-RCTVibration: ae4f914cfe8de7d4de95ae1ea6cc8f6315d73d9d
   ReactCommon: 73d79c7039f473b76db6ff7c6b159c478acbbb3b
   ReactNativeDarkMode: 0178ffca3b10f6a7c9f49d6f9810232b328fa949
-  RNAnalytics: a6dc48511d5d99b1ecaaf7157d8b5c618d15337e
   RNCAsyncStorage: cb9a623793918c6699586281f0b51cbc38f046f9
   RNCMaskedView: d367b2a8df3992114e31b32b091a0c00dc800827
   RNCPushNotificationIOS: 089da3b657e1e3d464f38195fd2e3069608ef5af
@@ -655,4 +655,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 795c5ebf358fc982ab170ebd99fd145a29c95222
 
-COCOAPODS: 1.10.2
+COCOAPODS: 1.11.2

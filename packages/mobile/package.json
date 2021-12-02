@@ -36,6 +36,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@amplitude/react-native": "2.6.0",
     "@gorhom/portal": "1.0.9",
     "@hcaptcha/react-native-hcaptcha": "1.3.4",
     "@react-native-community/async-storage": "1.12.1",
@@ -45,7 +46,6 @@
     "@react-navigation/native": "6.0.2",
     "@react-navigation/native-stack": "6.1.0",
     "@reduxjs/toolkit": "1.6.1",
-    "@segment/analytics-react-native": "1.5.0",
     "@svgr/core": "5.5.0",
     "audius-client": "github:AudiusProject/audius-client.git#846cf401da547171f0ceb5c3e063ee01f4f37f42",
     "bn.js": "5.2.0",

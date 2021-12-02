@@ -1,31 +1,31 @@
-import analytics from '@segment/analytics-react-native'
-import { Platform } from 'react-native'
+import { Amplitude } from '@amplitude/react-native'
 import Config from 'react-native-config'
 import VersionNumber from 'react-native-version-number'
 
-import { Identify, Track, Screen, AllEvents } from '../types/analytics'
+import {
+  Identify,
+  Track,
+  Screen,
+  AllEvents,
+  EventNames
+} from '../types/analytics'
 
 let analyticsSetupStatus: 'ready' | 'pending' | 'error' = 'pending'
 
-const SegmentWriteKey =
-  Platform.OS === 'android'
-    ? Config.SEGMENT_ANDROID_WRITE_KEY
-    : Config.SEGMENT_IOS_WRITE_KEY
+const AmplitudeWriteKey = Config.AMPLITUDE_WRITE_KEY
+const ampInstance = Amplitude.getInstance()
 
 export const setup = async () => {
   try {
     console.info('Analytics setup')
-    await analytics.setup(SegmentWriteKey, {
-      // Record screen views automatically!
-      recordScreenViews: false,
-      // Record certain application events automatically!
-      trackAppLifecycleEvents: true,
-      // Always flush events (worse for battery, but the web-view is likely even worse)
-      // https://segment.com/docs/connections/sources/catalog/libraries/mobile/react-native/#flush
-      flushAt: 1
-    })
-    analyticsSetupStatus = 'ready'
-    console.info('Analytics ready')
+    if (AmplitudeWriteKey) {
+      await ampInstance.init(AmplitudeWriteKey)
+      analyticsSetupStatus = 'ready'
+      console.info('Analytics ready')
+    } else {
+      analyticsSetupStatus = 'error'
+      console.info('Analytics unable to setup: missing amplitude write key')
+    }
   } catch (err) {
     analyticsSetupStatus = 'error'
     console.info('Analytics error')
@@ -60,11 +60,12 @@ export const make = (event: AllEvents) => {
 
 // Identify User
 // Docs: https://segment.com/docs/connections/spec/identify
-export const identify = async ({ handle, traits }: Identify) => {
+export const identify = async ({ handle, traits = {} }: Identify) => {
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
   console.info('Analytics identify', handle, traits)
-  analytics.identify(handle, traits)
+  ampInstance.setUserId(handle)
+  ampInstance.setUserProperties(traits)
 }
 
 // Track Event
@@ -78,14 +79,14 @@ export const track = async ({ eventName, properties }: Track) => {
     mobileClientVersion: version
   }
   console.info('Analytics track', eventName, propertiesWithContext)
-  analytics.track(eventName, propertiesWithContext)
+  ampInstance.logEvent(eventName, propertiesWithContext)
 }
 
 // Screen Event
 // Docs: https://segment.com/docs/connections/sources/catalog/libraries/mobile/react-native/#screen
-export const screen = async ({ route, properties }: Screen) => {
+export const screen = async ({ route, properties = {} }: Screen) => {
   const isSetup = await isAudiusSetup()
   if (!isSetup) return
   console.info('Analytics screen', route, properties)
-  analytics.screen(route, properties)
+  ampInstance.logEvent(EventNames.PAGE_VIEW, { route, ...properties })
 }
