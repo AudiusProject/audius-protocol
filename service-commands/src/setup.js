@@ -592,7 +592,7 @@ const allUp = async ({
   numDiscoveryNodes = 1,
   withAAO = false,
   verbose = false,
-  parallel = true
+  parallel = false
 }) => {
   if (verbose) {
     console.log('Running in verbose mode.')
