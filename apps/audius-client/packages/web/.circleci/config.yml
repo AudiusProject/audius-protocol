@@ -173,7 +173,8 @@ jobs:
   test-staging:
     working_directory: ~/
     docker:
-      - image: circleci/node:latest-browsers
+      - image: circleci/node:14.18-browsers
+    resource_class: large
     steps:
       - run:
           name: download probers
