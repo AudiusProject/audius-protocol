@@ -76,6 +76,8 @@ def populate_mock_db(db, entities, block_offset=0):
         challenges = entities.get("challenges", [])
         user_challenges = entities.get("user_challenges", [])
         plays = entities.get("plays", [])
+        aggregate_plays = entities.get("aggregate_plays", [])
+        indexing_checkpoints = entities.get("indexing_checkpoints", [])
 
         num_blocks = max(len(tracks), len(users), len(follows), len(saves))
         for i in range(block_offset, block_offset + num_blocks):
@@ -195,16 +197,31 @@ def populate_mock_db(db, entities, block_offset=0):
 
         for i, play_meta in enumerate(plays):
             play = models.Play(
-                id=play_meta.get("id", i),
+                id=play_meta.get("id", i+1),
                 user_id=play_meta.get("user_id", i + 1),
                 source=play_meta.get("source", None),
                 play_item_id=play_meta.get("item_id", i+1),
-                slot=play_meta.get("slot", None),
+                slot=play_meta.get("slot", i+1),
                 signature=play_meta.get("signature", None),
                 created_at=play_meta.get("created_at", datetime.now()),
                 updated_at=play_meta.get("updated_at", datetime.now()),
             )
             session.add(play)
+
+        for i, aggregate_play_meta in enumerate(aggregate_plays):
+            aggregate_play = models.AggregatePlays(
+                play_item_id=aggregate_play_meta.get("play_item_id", i),
+                count=aggregate_play_meta.get("count", 0),
+            )
+            session.add(aggregate_play)
+
+        for i, indexing_checkpoint_meta in enumerate(indexing_checkpoints):
+            indexing_checkpoint = models.IndexingCheckpoints(
+                tablename=indexing_checkpoint_meta.get("tablename", None),
+                last_checkpoint=indexing_checkpoint_meta.get("last_checkpoint", 0),
+            )
+            session.add(indexing_checkpoint)
+
 
         for i, route_meta in enumerate(track_routes):
             route = models.TrackRoute(

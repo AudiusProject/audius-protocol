@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize')
 const moment = require('moment-timezone')
+const retry = require('async-retry')
 
 const models = require('../models')
 const { handleResponse, successResponse, errorResponseBadRequest } = require('../apiHelpers')
@@ -219,17 +220,32 @@ module.exports = function (app) {
     // Dedicated listen flow
     if (solanaListen) {
       logger.info(`Sending Track listen transaction trackId=${trackId} userId=${userId}`)
-      let solTxSignature = await solClient.createAndVerifyMessage(
-        null,
-        config.get('solanaSignerPrivateKey'),
-        userId.toString(),
-        trackId.toString(),
-        'relay' // Static source value to indicate relayed listens
-      )
-      logger.info(`Track listen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
-      return successResponse({
-        solTxSignature
+      const response = await retry(async () => {
+        let solTxSignature = await solClient.createAndVerifyMessage(
+          null,
+          config.get('solanaSignerPrivateKey'),
+          userId.toString(),
+          trackId.toString(),
+          'relay' // Static source value to indicate relayed listens
+        )
+        logger.info(`Track listen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}`)
+        return successResponse({
+          solTxSignature
+        })
+      }, {
+        // Retry function 5x by default
+        // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+        minTimeout: 500,
+        maxTimeout: 4000,
+        factor: 3,
+        retries: 3,
+        onRetry: (err, i) => {
+          if (err) {
+            console.error(`TrackListens: retry error : ${err}`)
+          }
+        }
       })
+      return response
     }
 
     let currentHour = await getListenHour()

@@ -1,11 +1,9 @@
-const bs58 = require('bs58')
-const { toBuffer } = require('ethereumjs-util')
 const { Base, Services } = require('./base')
 const CreatorNodeService = require('../services/creatorNode/index')
 const Utils = require('../utils')
 const { AuthHeaders } = require('../constants')
 const {
-  getPermitDigest, sign, getTransferTokensDigest
+  getPermitDigest, sign
 } = require('../utils/signatures')
 
 class Account extends Base {
@@ -32,7 +30,8 @@ class Account extends Base {
     this.searchFull = this.searchFull.bind(this)
     this.searchAutocomplete = this.searchAutocomplete.bind(this)
     this.searchTags = this.searchTags.bind(this)
-    this.permitAndSendTokensViaWormhole = this.permitAndSendTokensViaWormhole.bind(this)
+    this.sendTokensFromEthToSol = this.sendTokensFromEthToSol.bind(this)
+    this.sendTokensFromSolToEth = this.sendTokensFromSolToEth.bind(this)
   }
 
   /**
@@ -387,69 +386,66 @@ class Account extends Base {
   }
 
   /**
-   * Sends `amount` tokens to `solanaAccount` by way of the wormhole
+   * Sends Eth `amount` tokens to `solanaAccount` by way of the wormhole
+   * 1.) Permits the eth relay to proxy send tokens on behalf of the user
+   * 2.) Transfers the tokens on the eth side to the wormhole contract
+   * 3.) Gathers attestations from wormhole oracles and relizes the tokens on sol
    */
-  async permitAndSendTokensViaWormhole (amount, solanaAccount) {
+  async sendTokensFromEthToSol (amount, solanaAccount) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
-    const myWalletAddress = this.web3Manager.getWalletAddress()
-    const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
-    const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
-    await this.permitProxySendTokens(myWalletAddress, wormholeAddress, amount)
+    const phases = {
+      PERMIT_PROXY_SEND: 'PERMIT_PROXY_SEND',
+      TRANSFER_TOKENS: 'TRANSFER_TOKENS',
+      ATTEST_AND_COMPLETE_TRANSFER: 'ATTEST_AND_COMPLETE_TRANSFER'
+    }
+    let phase = phases.PERMIT_PROXY_SEND
+    let logs = [`Send tokens from eth to sol to ${solanaAccount} for ${amount.toString()}`]
+    try {
+      const myWalletAddress = this.web3Manager.getWalletAddress()
+      const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
+      const { selectedEthWallet } = await this.identityService.getEthRelayer(myWalletAddress)
+      await this.permitProxySendTokens(myWalletAddress, wormholeAddress, amount)
 
-    const transferTokensTx = await this.tranfersTokensViaWormhole(
-      myWalletAddress, amount, solanaAccount, selectedEthWallet
-    )
-    return transferTokensTx
+      logs.push('Completed permit proxy send tokens')
+      phase = phases.TRANSFER_TOKENS
+      const transferTokensTx = await this.wormholeClient.transferTokensToEthWormhole(
+        myWalletAddress, amount, solanaAccount, selectedEthWallet
+      )
+
+      const transferTransactionHash = transferTokensTx.txHash
+      logs.push(`Completed transfer tokens with tx ${transferTransactionHash}`)
+      phase = phases.ATTEST_AND_COMPLETE_TRANSFER
+
+      const response = await this.wormholeClient.attestAndCompleteTransferEthToSol(transferTransactionHash)
+      if (response.transactionSignature) {
+        logs.push(`Receive sol wrapped tokens in tx ${response.transactionSignature}`)
+      }
+      return {
+        txSignature: response.transactionSignature,
+        phase: response.phase,
+        error: response.error || null,
+        logs: logs.concat(response.logs)
+      }
+    } catch (error) {
+      return {
+        error: error.message,
+        phase,
+        logs
+      }
+    }
   }
 
   /**
-   * Locks assets owned by `fromAccount` into the Solana wormhole with a target
-   * solanaAccount destination via the provided relayer wallet.
+   * Sends `amount` tokens to `ethAccount` by way of the wormhole
+   * 1.) Creates a solana root wallet
+   * 2.) Sends the tokens from the user bank account to the solana wallet
+   * 3.) Permits the solana wallet to approve transfer to wormhole
+   * 4.) Transfers to the wrapped audio to the sol wormhole contract
+   * 5.) Gathers attestations from wormhole oracles and realizes the tokens on eth
    */
-  async tranfersTokensViaWormhole (fromAccount, amount, solanaAccount, relayer) {
-    this.REQUIRES(Services.IDENTITY_SERVICE)
-    const web3 = this.ethWeb3Manager.getWeb3()
-    const wormholeClientAddress = this.ethContracts.WormholeClient.contractAddress
-
-    const chainId = await this.ethWeb3Manager.web3.eth.getChainId()
-
-    const currentBlockNumber = await web3.eth.getBlockNumber()
-    const currentBlock = await web3.eth.getBlock(currentBlockNumber)
-    // 1 hour, sufficiently far in future
-    const deadline = currentBlock.timestamp + (60 * 60 * 1)
-    const solanaB58 = bs58.decode(solanaAccount).toString('hex')
-    const recipient = toBuffer(`0x${solanaB58}`)
-    const nonce = await this.ethContracts.WormholeClient.nonces(fromAccount)
-    const arbiterFee = 0
-
-    const digest = getTransferTokensDigest(
-      web3,
-      'AudiusWormholeClient',
-      wormholeClientAddress,
-      chainId,
-      {
-        from: fromAccount,
-        amount,
-        recipientChain: chainId,
-        recipient,
-        arbiterFee
-      },
-      nonce,
-      deadline
-    )
-    const myPrivateKey = this.web3Manager.getOwnerWalletPrivateKey()
-    const signedDigest = sign(digest, myPrivateKey)
-
-    const tx = await this.ethContracts.WormholeClient.transferTokens(
-      fromAccount,
-      amount,
-      chainId,
-      recipient,
-      arbiterFee,
-      signedDigest,
-      relayer
-    )
-    return tx
+  async sendTokensFromSolToEth (amount, ethAccount) {
+    const { error, logs, phase } = await this.wormholeClient.sendTokensFromSolToEthViaWormhole(amount, ethAccount)
+    return { error, logs, phase }
   }
 
   /**
