@@ -9,9 +9,9 @@ import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg
 import isItLove from 'assets/img/publicSite/isItLove@2x.jpg'
 import { ReactComponent as IconListenOnAudius } from 'assets/img/publicSite/listen-on-audius.svg'
 import staffordBrosPlaylist from 'assets/img/publicSite/staffordBrosPlaylist@2x.jpg'
+import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
-import { pushWindowRoute } from 'utils/route'
 
 import styles from './FeaturedContent.module.css'
 
@@ -28,37 +28,35 @@ type TrackProp = {
   onClick: () => void
 }
 
-const tracks: Array<TrackProp> = [
+const tracks = [
   {
     title: '#SomethingBIG Podcast',
     artist: 'Stafford Brothers',
     imageUrl: staffordBrosPlaylist,
     color: 'rgba(0,0,0,0.4)',
-    onClick: () =>
-      pushWindowRoute(
-        '/staffordbros/playlist/somethingbig-stafford-brothers-–-artist-spotlight-182'
-      )
+    link:
+      '/staffordbros/playlist/somethingbig-stafford-brothers-–-artist-spotlight-182'
   },
   {
     title: 'Miss Me More',
     artist: '3LAU',
     imageUrl: lau,
     color: 'rgb(216, 121, 123, 0.4)',
-    onClick: () => pushWindowRoute('/3lau/miss-me-more-1150')
+    link: '/3lau/miss-me-more-1150'
   },
   {
     title: 'B&L Live Sets',
     artist: 'Brownies & Lemonade',
     imageUrl: bnLLiveSets,
     color: 'rgba(0,0,0,0.4)',
-    onClick: () => pushWindowRoute('/teambandl/playlist/bl-live-sets-183')
+    link: '/teambandl/playlist/bl-live-sets-183'
   },
   {
     title: 'Is It Love',
     artist: '3LAU',
     imageUrl: isItLove,
     color: 'rgba(152, 218, 176, 0.4)',
-    onClick: () => pushWindowRoute('/3lau/is-it-love-feat.-yeah-boy-1151')
+    link: '/3lau/is-it-love-feat.-yeah-boy-1151'
   }
 ]
 
@@ -106,6 +104,7 @@ const Track = (props: TrackProp) => {
 
 type FeaturedContentProps = {
   isMobile: boolean
+  setRenderPublicSite: (shouldRender: boolean) => void
 }
 
 const FeaturedContent = (props: FeaturedContentProps) => {
@@ -129,7 +128,7 @@ const FeaturedContent = (props: FeaturedContentProps) => {
             <div
               key={track.title}
               className={styles.trackContainer}
-              onClick={track.onClick}
+              onClick={handleClickRoute(track.link, props.setRenderPublicSite)}
             >
               <div
                 className={styles.trackImage}
@@ -170,7 +169,11 @@ const FeaturedContent = (props: FeaturedContentProps) => {
         </div>
         <div className={styles.tracksContainer}>
           {tracks.map(track => (
-            <Track key={track.title} {...track} />
+            <Track
+              key={track.title}
+              {...track}
+              onClick={handleClickRoute(track.link, props.setRenderPublicSite)}
+            />
           ))}
         </div>
       </div>

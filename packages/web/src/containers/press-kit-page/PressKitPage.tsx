@@ -121,7 +121,10 @@ const PressKitPage = (props: PressKitPageProps) => {
           </div>
         </div>
       )}
-      <Footer isMobile={props.isMobile} />
+      <Footer
+        isMobile={props.isMobile}
+        setRenderPublicSite={props.setRenderPublicSite}
+      />
     </div>
   )
 }

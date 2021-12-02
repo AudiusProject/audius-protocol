@@ -5,11 +5,13 @@ import NavBanner from 'components/public-site/NavBanner'
 
 import styles from './PrivacyPolicyPage.module.css'
 
+const BASENAME = process.env.PUBLIC_URL
+
 const messages = {
   download: 'Download Privacy Policy'
 }
 
-const privacyPolicyDocumentRoute = '/documents/PrivacyPolicy.pdf'
+const privacyPolicyDocumentRoute = `${BASENAME}/documents/PrivacyPolicy.pdf`
 
 type PrivacyPolicyPageProps = {
   isMobile: boolean
@@ -46,7 +48,10 @@ const PrivacyPolicyPage = (props: PrivacyPolicyPageProps) => {
           ></iframe>
         )}
       </div>
-      <Footer isMobile={props.isMobile} />
+      <Footer
+        isMobile={props.isMobile}
+        setRenderPublicSite={props.setRenderPublicSite}
+      />
     </div>
   )
 }

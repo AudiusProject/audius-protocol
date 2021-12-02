@@ -123,16 +123,35 @@ const LandingPage = (props: LandingPageProps) => {
           openNavScreen={props.openNavScreen}
           setRenderPublicSite={props.setRenderPublicSite}
         />
-        <Hero isMobile={props.isMobile} onImageLoad={onImageLoad} />
+        <Hero
+          isMobile={props.isMobile}
+          onImageLoad={onImageLoad}
+          setRenderPublicSite={props.setRenderPublicSite}
+        />
         <Description isMobile={props.isMobile} />
         <ArtistTestimonials isMobile={props.isMobile} />
         <PlatformFeatures isMobile={props.isMobile} />
-        <FeaturedContent isMobile={props.isMobile} />
-        <CTAListening isMobile={props.isMobile} />
+        <FeaturedContent
+          isMobile={props.isMobile}
+          setRenderPublicSite={props.setRenderPublicSite}
+        />
+        <CTAListening
+          isMobile={props.isMobile}
+          setRenderPublicSite={props.setRenderPublicSite}
+        />
         <PlatformTagline isMobile={props.isMobile} />
-        <JoinTheCommunity isMobile={props.isMobile} />
-        <CTASignUp isMobile={props.isMobile} />
-        <Footer isMobile={props.isMobile} />
+        <JoinTheCommunity
+          isMobile={props.isMobile}
+          setRenderPublicSite={props.setRenderPublicSite}
+        />
+        <CTASignUp
+          isMobile={props.isMobile}
+          setRenderPublicSite={props.setRenderPublicSite}
+        />
+        <Footer
+          isMobile={props.isMobile}
+          setRenderPublicSite={props.setRenderPublicSite}
+        />
       </div>
     </ParallaxProvider>
   )
