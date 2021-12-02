@@ -1,7 +1,7 @@
 const axios = require('axios')
 const semver = require('semver')
 
-const Utils = require('../utils')
+const Utils = require('./utils')
 const promiseFight = require('./promiseFight')
 
 /**
