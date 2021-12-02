@@ -48,8 +48,10 @@ COPY . .
 COPY scripts/wait /usr/bin/wait
 RUN chmod +x /usr/bin/wait
 
+# Compile js code to typescript based on tsconfig.json
 RUN ./node_modules/.bin/tsc --project ./
 
+# Create a db user if postgres in case it will be run inside this container
 RUN bash scripts/init-db.sh
 
 VOLUME "/file_storage"

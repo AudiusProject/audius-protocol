@@ -12,11 +12,8 @@
     "test:unit": "./scripts/run-tests.sh unit_test",
     "coverage": "nyc npm run test",
     "report": "nyc report --reporter=html",
-    "lint": "npm run prettier:check",
-    "lint:fix": "npm run prettier:write",
-    "prettier:base": "./node_modules/.bin/prettier --parser typescript --single-quote --no-semi --trailing-comma none",
-    "prettier:check": "npm run prettier:base -- --list-different \"src/**/*.{js,ts}\"",
-    "prettier:write": "npm run prettier:base -- --write \"src/**/*.{js,ts}\""
+    "lint": "./node_modules/.bin/standard src/",
+    "lint-fix": "./node_modules/.bin/standard sr/ --fix"
   },
   "keywords": [],
   "author": "",
@@ -74,8 +71,6 @@
     "nock": "^13.1.0",
     "nodemon": "^1.19.4",
     "nyc": "^15.0.0",
-    "prettier": "^2.4.1",
-    "prettier-config-standard": "^4.0.0",
     "proxyquire": "^2.1.3",
     "sequelize-cli": "^5.3.0",
     "sinon": "^7.0.0",
