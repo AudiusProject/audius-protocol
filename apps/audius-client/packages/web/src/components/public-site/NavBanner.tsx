@@ -10,9 +10,6 @@ import cn from 'classnames'
 
 import HorizontalLogo from 'assets/img/publicSite/Horizontal-Logo-Full-Color@2x.png'
 import {
-  pushWindowRoute,
-  handleClickRoute,
-  AUDIUS_HOME_LINK,
   AUDIUS_LISTENING_LINK,
   AUDIUS_HOT_AND_NEW,
   AUDIUS_EXPLORE_LINK,
@@ -20,6 +17,7 @@ import {
 } from 'utils/route'
 
 import styles from './NavBanner.module.css'
+import { handleClickRoute } from './handleClickRoute'
 
 const messages = {
   explore: 'Explore',
@@ -28,12 +26,6 @@ const messages = {
   token: 'Token',
   startListening: 'Start Listening'
 }
-
-const onClickHome = handleClickRoute(AUDIUS_HOME_LINK)
-const onClickExplore = handleClickRoute(AUDIUS_EXPLORE_LINK)
-const onClickTrending = handleClickRoute(AUDIUS_LISTENING_LINK)
-const onClickHotAndNew = handleClickRoute(AUDIUS_HOT_AND_NEW)
-const onClickToken = handleClickRoute(AUDIUS_ORG)
 
 type NavBannerProps = {
   isMobile: boolean
@@ -51,10 +43,23 @@ const NavBanner = (props: NavBannerProps) => {
     setIsScrolling(isScrolling)
   }, [])
 
-  const onStartListening = () => {
-    props.setRenderPublicSite(false)
-    pushWindowRoute(AUDIUS_LISTENING_LINK)
-  }
+  const onClickHome = handleClickRoute(
+    AUDIUS_LISTENING_LINK,
+    props.setRenderPublicSite
+  )
+  const onClickExplore = handleClickRoute(
+    AUDIUS_EXPLORE_LINK,
+    props.setRenderPublicSite
+  )
+  const onClickTrending = handleClickRoute(
+    AUDIUS_LISTENING_LINK,
+    props.setRenderPublicSite
+  )
+  const onClickHotAndNew = handleClickRoute(
+    AUDIUS_HOT_AND_NEW,
+    props.setRenderPublicSite
+  )
+  const onClickToken = handleClickRoute(AUDIUS_ORG, props.setRenderPublicSite)
 
   useEffect(() => {
     setScrolling()
@@ -131,7 +136,7 @@ const NavBanner = (props: NavBannerProps) => {
           <div onClick={onClickToken} className={styles.token}>
             {messages.token}
           </div>
-          <div onClick={onStartListening} className={styles.startListening}>
+          <div onClick={onClickTrending} className={styles.startListening}>
             {messages.startListening}
           </div>
         </div>

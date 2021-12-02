@@ -5,13 +5,10 @@ import { useSpring, animated } from 'react-spring'
 
 import cypherImage2x from 'assets/img/publicSite/cypher@2x.jpg'
 import podcastImage2x from 'assets/img/publicSite/podcast@2x.jpg'
+import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
-import {
-  AUDIUS_PODCAST_LINK,
-  AUDIUS_CYPHER_LINK,
-  pushWindowRoute
-} from 'utils/route'
+import { AUDIUS_PODCAST_LINK, AUDIUS_CYPHER_LINK } from 'utils/route'
 
 import styles from './JoinTheCommunity.module.css'
 
@@ -31,7 +28,7 @@ const cards = [
       'radial-gradient(circle at top left, rgba(27,71,204,0) 0%, rgba(27,158,204,0.75) 100%)',
     containerClass: styles.podcastContainer,
     cta: 'LISTEN NOW',
-    onClick: () => pushWindowRoute(AUDIUS_PODCAST_LINK)
+    link: AUDIUS_PODCAST_LINK
   },
   {
     title: 'Cypher Contests',
@@ -42,7 +39,7 @@ const cards = [
       'radial-gradient(circle at top left, rgba(227,0,239,0) 0%, rgba(234,0,187,0.5) 100%)',
     containerClass: styles.cypherContainer,
     cta: 'JOIN THE DISCORD',
-    onClick: () => pushWindowRoute(AUDIUS_CYPHER_LINK)
+    link: AUDIUS_CYPHER_LINK
   }
 ]
 
@@ -96,6 +93,7 @@ const Card = (props: CardProps) => {
 
 type JoinTheCommmunityProps = {
   isMobile: boolean
+  setRenderPublicSite: (shouldRender: boolean) => void
 }
 
 const JoinTheCommmunity = (props: JoinTheCommmunityProps) => {
@@ -117,7 +115,7 @@ const JoinTheCommmunity = (props: JoinTheCommmunityProps) => {
           <div
             key={i}
             className={cn(styles.mobileCard, card.containerClass)}
-            onClick={card.onClick}
+            onClick={handleClickRoute(card.link, props.setRenderPublicSite)}
             style={{
               backgroundBlendMode: 'multiply',
               background: `url(${card.image}) center/cover, ${card.backgroundGradient}`
@@ -154,7 +152,11 @@ const JoinTheCommmunity = (props: JoinTheCommmunityProps) => {
         </div>
         <div className={styles.cardsContainer}>
           {cards.map(card => (
-            <Card key={card.title} {...card} />
+            <Card
+              key={card.title}
+              {...card}
+              onClick={handleClickRoute(card.link, props.setRenderPublicSite)}
+            />
           ))}
         </div>
       </div>

@@ -108,7 +108,9 @@ jobs:
           at: ./
       - run:
           name: build-demo
-          command: export PUBLIC_URL=/${CIRCLE_BRANCH} && npm run build:demo
+          # Set the branch name as the PUBLIC_URL so that relative paths work, e.g.
+          # demo.audius.co/some-branch/handle/track resolves as /handle/track would at audius.co
+          command: export PUBLIC_URL=/${CIRCLE_BRANCH} && npm run build:stage && mv build-staging build-demo
       - persist_to_workspace:
           root: ./
           paths:
@@ -273,7 +275,7 @@ jobs:
           name: Deploy to S3
           command: aws s3 sync build-demo s3://frontend-demo.audius.co/${CIRCLE_BRANCH} --delete --cache-control max-age=0
       - pr-comment:
-          comment: Preview this change https://frontend-demo.audius.co/${CIRCLE_BRANCH}
+          comment: Preview this change https://demo.audius.co/${CIRCLE_BRANCH}
 
   deploy-staging-s3:
     working_directory: ~/audius-client

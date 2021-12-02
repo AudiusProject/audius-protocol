@@ -1,5 +1,3 @@
-import { MouseEvent } from 'react'
-
 import { push as pushRoute } from 'connected-react-router'
 import { Location as HistoryLocation } from 'history'
 import { matchPath } from 'react-router'
@@ -22,6 +20,7 @@ export const BASENAME = process.env.PUBLIC_URL
 export const PRIVACY_POLICY = '/legal/privacy-policy'
 export const COOKIE_POLICY = `${BASE_URL}${PRIVACY_POLICY}`
 export const TERMS_OF_SERVICE = '/legal/terms-of-use'
+export const AUDIUS_PRESS_LINK = '/press'
 
 // Static routes.
 export const FEED_PAGE = '/feed'
@@ -109,7 +108,6 @@ export const AUDIUS_DEV_STAKER_LINK = 'https://audius.org/protocol'
 export const AUDIUS_HOME_LINK = '/'
 export const AUDIUS_LISTENING_LINK = '/trending'
 export const AUDIUS_SIGN_UP_LINK = '/signup'
-export const AUDIUS_PRESS_LINK = '/press'
 export const AUDIUS_HOT_AND_NEW =
   '/audius/playlist/hot-new-on-audius-%F0%9F%94%A5-4281'
 export const AUDIUS_EXPLORE_LINK = '/explore'
@@ -306,11 +304,6 @@ export const doesRenderPage = (pageRoute: string) => {
   })
 }
 
-export const handleClickRoute = (route: string) => (e: MouseEvent) => {
-  e.preventDefault()
-  pushWindowRoute(route)
-}
-
 export const recordGoToSignup = (callback: () => void) => {
   if ((window as any).analytics) {
     ;(window as any).analytics.track(
@@ -337,10 +330,10 @@ export const pushWindowRoute = (route: string) => {
 
   if (route === AUDIUS_SIGN_UP_LINK) {
     recordGoToSignup(() => {
-      window.location.href = routeToPush
+      window.location.href = `${BASENAME}${routeToPush}`
     })
   } else {
-    window.location.href = routeToPush
+    window.location.href = `${BASENAME}${routeToPush}`
   }
 }
 
