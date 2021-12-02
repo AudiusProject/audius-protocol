@@ -1,4 +1,4 @@
-const Utils = require('./utils')
+const Utils = require('./utils.js')
 const { ecsign, toBuffer } = require('ethereumjs-util')
 const { pack } = require('@ethersproject/solidity')
 
