@@ -61,9 +61,9 @@ program
     false
   )
   .option(
-    '--no-parallel',
-    'Sequential provisioning - whether to provision CNs and DNs in sequence (for instance, if your machine cannot handle resource reqs for parallel prov).',
-    true
+    'parallel',
+    'Parallel provisioning - whether to provision CNs and DNs in parallel.',
+    false
   )
   .option(
     '-nc, --num-cnodes <number>',
