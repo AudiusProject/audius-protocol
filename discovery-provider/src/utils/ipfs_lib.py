@@ -9,7 +9,7 @@ import requests
 from src.utils.helpers import get_valid_multiaddr_from_id_json
 
 logger = logging.getLogger(__name__)
-new_block_timeout_seconds = 5
+NEW_BLOCK_TIMEOUT_SECONDS = 5
 
 class IPFSClient:
     """Helper class for Audius Discovery Provider + IPFS interaction"""
@@ -47,7 +47,6 @@ class IPFSClient:
         api_metadata = default_metadata_fields
         retrieved_from_gateway = False
         retrieved_from_local_node = False
-        first_attempt_error = False
         start_time = time.time()
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -61,27 +60,25 @@ class IPFSClient:
             for get_metadata_future in concurrent.futures.as_completed(metadata_futures):
                 original_task = metadata_futures[get_metadata_future]
                 try:
-                    api_metadata = get_metadata_future.result(timeout=new_block_timeout_seconds)
+                    api_metadata = get_metadata_future.result(timeout=NEW_BLOCK_TIMEOUT_SECONDS)
                     retrieved = api_metadata != default_metadata_fields
                     if retrieved:
-                        logger.info(f'IPFSCLIENT | retrieved metadata successfully, {api_metadata}, task: {original_task}')
+                        logger.info(
+                            f'IPFSCLIENT | retrieved metadata successfully, {api_metadata}, task: {original_task}'
+                        )
                         if original_task == 'metadata_from_gateway':
                             retrieved_from_gateway = True
                         else:
                             retrieved_from_local_node = True
                         self.force_clear_queue_and_stop_task_execution(executor)
                         break # use first returned result
-                    else:
-                        logger.info(f'IPFSCLIENT | did not retrieve metadata successfully')
                 except Exception as e:
                     logger.error(
-                        f"IPFSCLIENT | ipfs_lib.py | ERROR in metadata_futures parallel processing generated {e}, multihash: {multihash}, task: {original_task}, first_attempt_error: {first_attempt_error}",
+                        f"IPFSCLIENT | ipfs_lib.py | \
+                        ERROR in metadata_futures parallel processing \
+                        generated {e}, multihash: {multihash}, task: {original_task}",
                         exc_info=True
                     )
-                    if first_attempt_error:
-                        raise e
-                    else:
-                        first_attempt_error = True
 
         retrieved_metadata = retrieved_from_gateway or retrieved_from_local_node
         # Raise error if metadata is not retrieved.
@@ -122,7 +119,7 @@ class IPFSClient:
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             # Start the load operations and mark each future with its URL
             future_to_url = {
-                executor.submit(self.load_metadata_url, url, new_block_timeout_seconds): url
+                executor.submit(self.load_metadata_url, url, NEW_BLOCK_TIMEOUT_SECONDS): url
                 for url in gateway_ipfs_urls
             }
             for future in concurrent.futures.as_completed(future_to_url):
