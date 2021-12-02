@@ -9,7 +9,7 @@ import requests
 from src.utils.helpers import get_valid_multiaddr_from_id_json
 
 logger = logging.getLogger(__name__)
-
+new_block_timeout_seconds = 5
 
 class IPFSClient:
     """Helper class for Audius Discovery Provider + IPFS interaction"""
@@ -61,7 +61,7 @@ class IPFSClient:
             for get_metadata_future in concurrent.futures.as_completed(metadata_futures):
                 original_task = metadata_futures[get_metadata_future]
                 try:
-                    api_metadata = get_metadata_future.result(timeout=5)
+                    api_metadata = get_metadata_future.result(timeout=new_block_timeout_seconds)
                     retrieved = api_metadata != default_metadata_fields
                     if retrieved:
                         logger.info(f'IPFSCLIENT | retrieved metadata successfully, {api_metadata}, task: {original_task}')
@@ -122,7 +122,7 @@ class IPFSClient:
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             # Start the load operations and mark each future with its URL
             future_to_url = {
-                executor.submit(self.load_metadata_url, url, 5): url
+                executor.submit(self.load_metadata_url, url, new_block_timeout_seconds): url
                 for url in gateway_ipfs_urls
             }
             for future in concurrent.futures.as_completed(future_to_url):
