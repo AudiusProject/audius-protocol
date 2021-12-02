@@ -49,13 +49,46 @@ class Wormhole {
     this.solTokenBridgeAddress = solTokenBridgeAddress
     this.ethBridgeAddress = ethBridgeAddress
     this.ethTokenBridgeAddress = ethTokenBridgeAddress
-    console.log()
+
     if (IS_BROWSER) {
       this.wormholeSDK = require('@certusone/wormhole-sdk')
     } else {
       const requireESM = require('esm')(module)
       this.wormholeSDK = requireESM('@certusone/wormhole-sdk')
     }
+  }
+
+  async getSignedVAAWithRetry (
+    hosts,
+    emitterChain,
+    emitterAddress,
+    sequence,
+    extraGrpcOpts = {},
+    retryTimeout = 1000,
+    retryAttempts = 5
+  ) {
+    let currentWormholeRpcHost = -1
+    const getNextRpcHost = () => ++currentWormholeRpcHost % hosts.length
+    let result
+    let attempts = 0
+    while (!result) {
+      attempts++
+      await new Promise((resolve) => setTimeout(resolve, retryTimeout))
+      try {
+        result = await this.wormholeSDK.getSignedVAA(
+          hosts[getNextRpcHost()],
+          emitterChain,
+          emitterAddress,
+          sequence,
+          extraGrpcOpts
+        )
+      } catch (e) {
+        if (retryAttempts !== undefined && attempts > retryAttempts) {
+          throw e
+        }
+      }
+    }
+    return result
   }
 
   /**
@@ -76,8 +109,8 @@ class Wormhole {
       const sequence = this.wormholeSDK.parseSequenceFromLogEth(receipt, this.ethBridgeAddress)
       const emitterAddress = this.wormholeSDK.getEmitterAddressEth(this.ethTokenBridgeAddress)
       phase = phases.GET_SIGNED_VAA
-      let { vaaBytes } = await this.wormholeSDK.getSignedVAA(
-        this.rpcHost,
+      const { vaaBytes } = await this.getSignedVAAWithRetry(
+        [this.rpcHost],
         this.wormholeSDK.CHAIN_ID_ETH,
         emitterAddress,
         sequence
@@ -240,8 +273,8 @@ class Wormhole {
 
       // Fetch the signedVAA from the Wormhole Network (this may require retries while you wait for confirmation)
       phase = phases.GET_SIGNED_VAA
-      const { vaaBytes } = await this.wormholeSDK.getSignedVAA(
-        this.rpcHost,
+      const { vaaBytes } = await this.getSignedVAAWithRetry(
+        [this.rpcHost],
         this.wormholeSDK.CHAIN_ID_SOLANA,
         emitterAddress,
         sequence
