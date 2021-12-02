@@ -20,7 +20,6 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   View,
-  Clipboard,
   Animated
 } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
@@ -35,6 +34,7 @@ import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { ThemeColors, useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useThemeColors } from 'app/utils/theme'
+import share from 'app/utils/share'
 
 const AUDIO_BREAKDOWN_MODAL_NAME = 'AudioBreakdown'
 
@@ -373,9 +373,9 @@ const Wallet = ({ chain, address, balance }: WalletProps) => {
   const displayAddress =
     chain === Chain.Eth ? shortenEthAddress : shortenSPLAddress
 
-  const copyToClipboard = () => {
-    Clipboard.setString(address)
-  }
+  const handleCopy = useCallback(() => {
+    share({ url: address })
+  }, [address])
 
   const handlePressIn = () => {
     Animated.timing(scale, {
@@ -399,7 +399,7 @@ const Wallet = ({ chain, address, balance }: WalletProps) => {
     <View style={styles.walletRow}>
       <Animated.View style={[{ transform: [{ scale }] }]}>
         <TouchableWithoutFeedback
-          onPress={copyToClipboard}
+          onPress={handleCopy}
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
         >
