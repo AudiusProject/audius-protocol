@@ -10,7 +10,8 @@ import HeroForeground from 'assets/img/publicSite/Hero-Foreground.png'
 import GlyphPattern1x from 'assets/img/publicSite/glyph-pattern@1x.png'
 import GlyphPattern2x from 'assets/img/publicSite/glyph-pattern@2x.png'
 import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
-import { AUDIUS_ORG, AUDIUS_SIGN_UP_LINK, pushWindowRoute } from 'utils/route'
+import { handleClickRoute } from 'components/public-site/handleClickRoute'
+import { AUDIUS_ORG, AUDIUS_SIGN_UP_LINK } from 'utils/route'
 
 import styles from './Hero.module.css'
 
@@ -23,17 +24,10 @@ const messages = {
   learn: 'Learn About The Token'
 }
 
-const onSignUp = () => {
-  pushWindowRoute(AUDIUS_SIGN_UP_LINK)
-}
-
-const onLearnAboutToken = () => {
-  pushWindowRoute(AUDIUS_ORG)
-}
-
 type HeroProps = {
   isMobile: boolean
   onImageLoad: () => void
+  setRenderPublicSite: (shouldRender: boolean) => void
 } & { parallaxController: any }
 
 export const Hero = (props: HeroProps) => {
@@ -63,11 +57,20 @@ export const Hero = (props: HeroProps) => {
             <div>{messages.subtitle1}</div>
             <div>{messages.subtitle2}</div>
           </div>
-          <div onClick={onSignUp} className={styles.ctaButton}>
+          <div
+            onClick={handleClickRoute(
+              AUDIUS_SIGN_UP_LINK,
+              props.setRenderPublicSite
+            )}
+            className={styles.ctaButton}
+          >
             <span className={styles.ctaMessage}>{messages.cta}</span>
             <IconArrow className={styles.ctaArrow} />
           </div>
-          <div onClick={onLearnAboutToken} className={styles.tokenButton}>
+          <div
+            onClick={handleClickRoute(AUDIUS_ORG, props.setRenderPublicSite)}
+            className={styles.tokenButton}
+          >
             <span className={styles.ctaMessage}>{messages.learn}</span>
           </div>
         </div>
@@ -118,11 +121,20 @@ export const Hero = (props: HeroProps) => {
         </Parallax>
         <Parallax className={styles.buttonContentParallax} y={['0px', '80px']}>
           <div className={styles.buttonContent}>
-            <div onClick={onSignUp} className={styles.ctaButton}>
+            <div
+              onClick={handleClickRoute(
+                AUDIUS_SIGN_UP_LINK,
+                props.setRenderPublicSite
+              )}
+              className={styles.ctaButton}
+            >
               <span className={styles.ctaMessage}>{messages.cta}</span>
               <IconArrow className={styles.ctaArrow} />
             </div>
-            <div onClick={onLearnAboutToken} className={styles.tokenButton}>
+            <div
+              onClick={handleClickRoute(AUDIUS_ORG, props.setRenderPublicSite)}
+              className={styles.tokenButton}
+            >
               <span className={styles.ctaMessage}>{messages.learn}</span>
             </div>
           </div>

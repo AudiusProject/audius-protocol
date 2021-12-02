@@ -11,6 +11,9 @@ import {
   UPLOAD_PAGE,
   EXPLORE_PAGE
 } from 'utils/route'
+
+const BASENAME = process.env.PUBLIC_URL
+
 const PressKitPage = React.lazy(() =>
   import('containers/press-kit-page/PressKitPage')
 )
@@ -100,7 +103,7 @@ const PublicSiteApp = ({
       <React.Suspense
         fallback={<div style={{ width: '100vw', height: '100vh' }} />}
       >
-        <Router>
+        <Router basename={BASENAME}>
           <Route
             exact
             path={'/legal/terms-of-use'}

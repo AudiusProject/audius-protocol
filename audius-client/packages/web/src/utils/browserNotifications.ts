@@ -8,6 +8,7 @@ import { isElectron } from 'utils/clientUtil'
  */
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+const basename = process.env.PUBLIC_URL
 
 const fcmWebPushPublicKey = process.env.REACT_APP_FCM_PUSH_PUBLIC_KEY as string
 const safariWebPushID = process.env.REACT_APP_SAFARI_WEB_PUSH_ID
@@ -149,7 +150,9 @@ export const isServiceWorkerRegistered = () => {
 export const registerServiceWorker = async () => {
   if (isPushManagerAvailable) {
     try {
-      const swReg = await navigator.serviceWorker.register('/scripts/sw.js')
+      const swReg = await navigator.serviceWorker.register(
+        `${basename}/scripts/sw.js`
+      )
       swRegistration = swReg
       return true
     } catch (error) {

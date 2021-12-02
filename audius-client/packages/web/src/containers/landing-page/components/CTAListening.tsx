@@ -6,7 +6,8 @@ import { useChain, useTrail, animated } from 'react-spring'
 
 import hqAudio from 'assets/img/publicSite/HQ-Audio@1x.jpg'
 import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
-import { AUDIUS_LISTENING_LINK, pushWindowRoute } from 'utils/route'
+import { handleClickRoute } from 'components/public-site/handleClickRoute'
+import { AUDIUS_LISTENING_LINK } from 'utils/route'
 
 import styles from './CTAListening.module.css'
 
@@ -20,10 +21,9 @@ const title = `${messages.title1} ${messages.title2}`
 const title1Items = messages.title1.split(' ')
 const title2Items = messages.title2.split(' ')
 
-const onStartListening = () => pushWindowRoute(AUDIUS_LISTENING_LINK)
-
 type CTAListening = {
   isMobile: boolean
+  setRenderPublicSite: (shouldRender: boolean) => void
 }
 
 const CTAListening = (props: CTAListening) => {
@@ -88,7 +88,13 @@ const CTAListening = (props: CTAListening) => {
         </div>
         <div className={styles.content}>
           <div className={styles.title}>{title}</div>
-          <button onClick={onStartListening} className={styles.ctaButton}>
+          <button
+            onClick={handleClickRoute(
+              AUDIUS_LISTENING_LINK,
+              props.setRenderPublicSite
+            )}
+            className={styles.ctaButton}
+          >
             {messages.cta}
             <IconArrow className={styles.arrowRight} />
           </button>
@@ -144,7 +150,13 @@ const CTAListening = (props: CTAListening) => {
             )}
           </h3>
         </div>
-        <button onClick={onStartListening} className={styles.ctaButton}>
+        <button
+          onClick={handleClickRoute(
+            AUDIUS_LISTENING_LINK,
+            props.setRenderPublicSite
+          )}
+          className={styles.ctaButton}
+        >
           {messages.cta}
           <IconArrow className={styles.arrowRight} />
         </button>

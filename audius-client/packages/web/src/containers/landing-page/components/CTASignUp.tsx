@@ -7,7 +7,8 @@ import footerBackground from 'assets/img/publicSite/Footer-Background@2x.jpg'
 import footerForeground from 'assets/img/publicSite/Footer-Foreground@2x.png'
 import dots2x from 'assets/img/publicSite/dots@2x.jpg'
 import { ReactComponent as IconArrow } from 'assets/img/publicSite/iconArrow.svg'
-import { AUDIUS_SIGN_UP_LINK, pushWindowRoute } from 'utils/route'
+import { handleClickRoute } from 'components/public-site/handleClickRoute'
+import { AUDIUS_SIGN_UP_LINK } from 'utils/route'
 
 import styles from './CTASignUp.module.css'
 
@@ -18,10 +19,7 @@ const messages = {
 
 type CTASignUpProps = {
   isMobile: boolean
-}
-
-const onSignUp = () => {
-  pushWindowRoute(AUDIUS_SIGN_UP_LINK)
+  setRenderPublicSite: (shouldRender: boolean) => void
 }
 
 const CTASignUp = (props: CTASignUpProps) => {
@@ -50,7 +48,13 @@ const CTASignUp = (props: CTASignUpProps) => {
           </Parallax>
         </div>
         <div className={styles.title}>{messages.title}</div>
-        <div onClick={onSignUp} className={styles.ctaButton}>
+        <div
+          onClick={handleClickRoute(
+            AUDIUS_SIGN_UP_LINK,
+            props.setRenderPublicSite
+          )}
+          className={styles.ctaButton}
+        >
           {messages.cta}
           <IconArrow className={styles.arrowRight} />
         </div>
@@ -62,7 +66,13 @@ const CTASignUp = (props: CTASignUpProps) => {
     <div className={styles.container}>
       <div className={styles.content}>
         <div className={styles.title}>{messages.title}</div>
-        <button onClick={onSignUp} className={styles.ctaButton}>
+        <button
+          onClick={handleClickRoute(
+            AUDIUS_SIGN_UP_LINK,
+            props.setRenderPublicSite
+          )}
+          className={styles.ctaButton}
+        >
           {messages.cta}
           <IconArrow className={styles.arrowRight} />
         </button>

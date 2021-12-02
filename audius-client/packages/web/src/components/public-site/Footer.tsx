@@ -1,4 +1,4 @@
-import React, { MouseEvent } from 'react'
+import React from 'react'
 
 import { IconInstagram, IconTwitterBird, IconDiscord } from '@audius/stems'
 import cn from 'classnames'
@@ -16,30 +16,20 @@ import {
   TERMS_OF_SERVICE,
   AUDIUS_LISTENING_LINK,
   AUDIUS_HOT_AND_NEW,
-  AUDIUS_EXPLORE_LINK,
-  pushWindowRoute
+  AUDIUS_EXPLORE_LINK
 } from 'utils/route'
 
 import styles from './Footer.module.css'
-
-const handleClickRoute = (route: string) => (e: MouseEvent) => {
-  e.preventDefault()
-  pushWindowRoute(route)
-}
-
-const onClickHome = () => pushWindowRoute(AUDIUS_HOME_LINK)
-const onStartListening = () => pushWindowRoute(AUDIUS_LISTENING_LINK)
+import { handleClickRoute } from './handleClickRoute'
 
 const bottomLinks = [
   {
     text: 'Privacy Policy',
-    link: PRIVACY_POLICY,
-    onClick: handleClickRoute(PRIVACY_POLICY)
+    link: PRIVACY_POLICY
   },
   {
     text: 'Terms of Use',
-    link: TERMS_OF_SERVICE,
-    onClick: handleClickRoute(TERMS_OF_SERVICE)
+    link: TERMS_OF_SERVICE
   }
 ]
 
@@ -47,35 +37,29 @@ const siteLinkRows = [
   [
     {
       text: 'Trending',
-      link: AUDIUS_LISTENING_LINK,
-      onClick: handleClickRoute(AUDIUS_LISTENING_LINK)
+      link: AUDIUS_LISTENING_LINK
     },
     {
       text: 'Explore',
-      link: AUDIUS_HOT_AND_NEW,
-      onClick: handleClickRoute(AUDIUS_EXPLORE_LINK)
+      link: AUDIUS_EXPLORE_LINK
     },
     {
       text: 'Hot & New',
-      link: AUDIUS_HOT_AND_NEW,
-      onClick: handleClickRoute(AUDIUS_HOT_AND_NEW)
+      link: AUDIUS_HOT_AND_NEW
     }
   ],
   [
     {
       text: 'Team',
-      link: AUDIUS_TEAM_LINK,
-      onClick: handleClickRoute(AUDIUS_TEAM_LINK)
+      link: AUDIUS_TEAM_LINK
     },
     {
       text: 'Devs & Stakers',
-      link: AUDIUS_DEV_STAKER_LINK,
-      onClick: handleClickRoute(AUDIUS_DEV_STAKER_LINK)
+      link: AUDIUS_DEV_STAKER_LINK
     },
     {
       text: 'Press',
-      link: AUDIUS_PRESS_LINK,
-      onClick: handleClickRoute(AUDIUS_PRESS_LINK)
+      link: AUDIUS_PRESS_LINK
     }
   ]
 ]
@@ -83,18 +67,15 @@ const siteLinkRows = [
 const socialLinks = [
   {
     Icon: IconInstagram,
-    link: AUDIUS_INSTAMGRAM_LINK,
-    onClick: handleClickRoute(AUDIUS_INSTAMGRAM_LINK)
+    link: AUDIUS_INSTAMGRAM_LINK
   },
   {
     Icon: IconTwitterBird,
-    link: AUDIUS_TWITTER_LINK,
-    onClick: handleClickRoute(AUDIUS_TWITTER_LINK)
+    link: AUDIUS_TWITTER_LINK
   },
   {
     Icon: IconDiscord,
-    link: AUDIUS_DISCORD_LINK,
-    onClick: handleClickRoute(AUDIUS_DISCORD_LINK)
+    link: AUDIUS_DISCORD_LINK
   }
 ]
 
@@ -108,6 +89,7 @@ const messages = {
 
 type FooterProps = {
   isMobile: boolean
+  setRenderPublicSite: (shouldRender: boolean) => void
 }
 
 const Footer = (props: FooterProps) => {
@@ -123,10 +105,16 @@ const Footer = (props: FooterProps) => {
             src={horizontalLogo}
             className={styles.logo}
             alt='Audius Logo'
-            onClick={onClickHome}
+            onClick={handleClickRoute(
+              AUDIUS_HOME_LINK,
+              props.setRenderPublicSite
+            )}
           />
           <button
-            onClick={onStartListening}
+            onClick={handleClickRoute(
+              AUDIUS_LISTENING_LINK,
+              props.setRenderPublicSite
+            )}
             className={styles.startListeningButton}
           >
             {messages.startListening}
@@ -141,7 +129,10 @@ const Footer = (props: FooterProps) => {
                   <a
                     key={siteLink.text}
                     href={siteLink.link}
-                    onClick={siteLink.onClick}
+                    onClick={handleClickRoute(
+                      siteLink.link,
+                      props.setRenderPublicSite
+                    )}
                     className={cn(styles.siteLink, styles.link)}
                   >
                     {siteLink.text}
@@ -159,10 +150,10 @@ const Footer = (props: FooterProps) => {
             </div>
           </div>
           <div className={styles.socialLinks}>
-            {socialLinks.map(({ Icon, onClick, link }, idx) => (
+            {socialLinks.map(({ Icon, link }, idx) => (
               <a
                 key={idx}
-                onClick={onClick}
+                onClick={handleClickRoute(link, props.setRenderPublicSite)}
                 href={link}
                 className={styles.socialIconLinkContainer}
               >
@@ -172,12 +163,12 @@ const Footer = (props: FooterProps) => {
           </div>
         </div>
         <div className={styles.bottomLinks}>
-          {bottomLinks.map(({ text, link, onClick }) => (
+          {bottomLinks.map(({ text, link }) => (
             <a
               key={text}
               href={link}
               className={cn(styles.bottomLink, styles.link)}
-              onClick={onClick}
+              onClick={handleClickRoute(link, props.setRenderPublicSite)}
             >
               {text}
             </a>
