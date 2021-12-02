@@ -144,9 +144,4 @@ class Utils {
   }
 }
 
-// Export all modules inside ./utils/ dir
-// Object.entries(UtilsDir).forEach(
-//   ([utilName, utilProps]) => { Utils[utilName] = utilProps }
-// )
-
 module.exports = Utils
