@@ -5,6 +5,7 @@ const {
   discoveryNodeUp,
   discoveryNodeWebServerUp,
   identityServiceUp,
+  creatorNodeUp,
   Service,
   SetupCommand,
   runSetupCommand,
@@ -230,5 +231,16 @@ program
     false
   )
   .action(async opts => await identityServiceUp(opts))
+
+// Example: `A content-node-stack up -i 5`
+// Bring up one content node with the service number of 5
+program
+  .command('content-node-stack up')
+  .description('Brings up relevant services for a content node')
+  .requiredOption(
+    '-i, --instance-number <instanceNumber>',
+    'the instance number'
+  )
+  .action(async opts => await creatorNodeUp(opts.instanceNumber))
 
 program.parse(process.argv)
