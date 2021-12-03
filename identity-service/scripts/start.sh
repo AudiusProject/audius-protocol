@@ -2,11 +2,12 @@
 
 /usr/bin/wait
 
-if [[ -n "$logglyToken" ]]; then
-    logglyTags=$(echo $logglyTags | python3 -c "print(' '.join(f'tag=\\\\\"{i}\\\\\"' for i in input().split(',')))")
-    mkdir -p /var/spool/rsyslog
-    mkdir -p /etc/rsyslog.d
-    cat >/etc/rsyslog.d/22-loggly.conf <<EOF
+if [[ -z "$logglyDisable" ]]; then
+    if [[ -n "$logglyToken" ]]; then
+        logglyTags=$(echo $logglyTags | python3 -c "print(' '.join(f'tag=\\\\\"{i}\\\\\"' for i in input().split(',')))")
+        mkdir -p /var/spool/rsyslog
+        mkdir -p /etc/rsyslog.d
+        cat >/etc/rsyslog.d/22-loggly.conf <<EOF
 \$WorkDirectory /var/spool/rsyslog # where to place spool files
 \$ActionQueueFileName fwdRule1   # unique name prefix for spool files
 \$ActionQueueMaxDiskSpace 1g    # 1gb space limit (use as much as possible)
@@ -18,7 +19,8 @@ template(name="LogglyFormat" type="string"
 # Send messages to Loggly over TCP using the template.
 action(type="omfwd" protocol="tcp" target="logs-01.loggly.com" port="514" template="LogglyFormat")
 EOF
-    rsyslogd
+        rsyslogd
+    fi
 fi
 
 node src/index.js | tee >(logger)
