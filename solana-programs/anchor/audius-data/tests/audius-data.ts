@@ -44,12 +44,13 @@ describe('audius-data', () => {
     let testEthAddr = '0x6A60013EB5ed20B2F0673D46ADE0b2Dcd00d2CDE'
     let testEthAddrBytes = ethAddressToArray(testEthAddr)
     // NOTE - Handle is currently limited to be 16 characters EXACTLY
-    let handle = "goncaz1234567890"
+    // let handle = "goncaz1234567890"
+    let handle = "testUserHandle"
     let handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle))
     let handleBytesArray = Array.from({...handleBytes, length: 16})
 
     const [user_account_pda, user_account_bump] = await PublicKey.findProgramAddress(
-      [handleBytes],
+      [Buffer.from(handleBytesArray)],
       program.programId
     );
     let tx = await program.rpc.initUser(
