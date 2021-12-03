@@ -42,6 +42,8 @@ const WORMHOLE_RPC_HOSTS = [
   'https://wormhole-v2-mainnet-api.chainlayer.network'
 ]
 
+const connection = new solanaWeb3.Connection(SOLANA_CLUSTER_ENDPOINT)
+
 // num attempts and delay between attempts to find transaction receipt
 const NUM_RETRIES_RECEIPT = 5
 const RETRY_DELAY_MS_RECEIPT = 1000
@@ -61,6 +63,7 @@ const feePayerPublicKey = feePayerKeypair.publicKey
 const feePayerAddress = feePayerPublicKey.toString()
 
 const web3 = new Web3(ETH_PROVIDER)
+// ethereum address that executes the transfer to solana transaction
 const ethAccount = web3.eth.accounts.wallet.add(TEST_PRIVATE_KEY)
 
 const arbiterFee = 0
@@ -131,13 +134,15 @@ const getReceipt = async (txHash, numRetries) => {
 
 async function run () {
   try {
+    const gasPrice = await getGasPrice()
+    console.log({ gasPrice })
+
     const ethRewardsManagerContract = new web3.eth.Contract(
       EthRewardManagerABI,
       ETH_REWARD_MANAGER_ADDRESS
     )
-    const gasPrice = await getGasPrice()
-    console.log({ gasPrice })
-
+    // transfer eth rewards manager funds to solana via wormhole
+    // recipient is defined in the eth rewards manager contract
     const txResp = await ethRewardsManagerContract.methods.transferToSolana(
       arbiterFee,
       nonce
@@ -157,12 +162,13 @@ async function run () {
       return
     }
 
-    const connection = new solanaWeb3.Connection(SOLANA_CLUSTER_ENDPOINT)
-
     const sequence = parseSequenceFromLogEth(txReceipt, ETH_BRIDGE_ADDRESS)
     const emitterAddress = getEmitterAddressEth(ETH_TOKEN_BRIDGE_ADDRESS)
     console.log({ sequence, emitterAddress })
 
+    // Attest and transfer, aka
+    // Fetch and post the signed VAA bytes for our transaction
+    // Then redeem on solana
     const { vaaBytes } = await getSignedVAAWithRetry(
       WORMHOLE_RPC_HOSTS,
       CHAIN_ID_ETH,
@@ -175,7 +181,6 @@ async function run () {
       transaction.partialSign(feePayerKeypair)
       return transaction
     }
-
     await postVaaSolana(
       connection,
       signTransaction,
@@ -183,7 +188,6 @@ async function run () {
       feePayerAddress,
       vaaBytes
     )
-
     const transaction = await redeemOnSolana(
       connection,
       SOL_BRIDGE_ADDRESS,
@@ -194,10 +198,13 @@ async function run () {
       /* mintAddress */ WAUDIO_MINT_ADDRESS
     )
     console.log({ transaction })
+
     const signed = await signTransaction(transaction)
     console.log({ signed })
+
     const txid = await connection.sendRawTransaction(signed.serialize())
     console.log({ txid })
+
     await connection.confirmTransaction(txid)
     console.log('Success!')
   } catch (e) {
