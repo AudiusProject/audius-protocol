@@ -532,6 +532,12 @@ const WebApp = ({
             const { title, url: eventUrl } = nativeEvent
             if (eventUrl === '' || title === '') reloadViewOnServerError()
           }}
+          onContentProcessDidTerminate={() => {
+            // On iOS, when the webview is in the background for a long time
+            // it becomes blank. Reload when this happens
+            // See: https://github.com/react-native-webview/react-native-webview/issues/2199
+            webRef.current.reload()
+          }}
         />
       </PullToRefresh>
       <SplashScreen dappLoaded={dappLoaded} key={`splash-${splashKey}`} />
