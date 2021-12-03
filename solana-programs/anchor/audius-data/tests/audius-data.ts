@@ -46,6 +46,8 @@ describe('audius-data', () => {
     let handle = "testUserHandle"
     let handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle))
     let handleBytesArray = Array.from({...handleBytes, length: 16})
+    let metadata = "QmTXWUkHWBUJ878gi2B25q6N4BWnjojLbSExyaqJxSDPrH"
+    let metadataBytes = anchor.utils.bytes.utf8.encode(metadata)
 
     const [user_account_pda, user_account_bump] = await PublicKey.findProgramAddress(
       [Buffer.from(handleBytesArray)],
@@ -55,6 +57,7 @@ describe('audius-data', () => {
       Array.from(testEthAddrBytes),
       handleBytesArray,
       user_account_bump,
+      metadata,
       {
         accounts: {
           admin: adminStgKeypair.publicKey,

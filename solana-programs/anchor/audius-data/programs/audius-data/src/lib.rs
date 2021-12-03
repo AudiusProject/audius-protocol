@@ -12,7 +12,13 @@ pub mod audius_data {
         Ok(())
     }
 
-    pub fn init_user(ctx: Context<InitializeUser>, eth_address: [u8;20], _handle_seed: [u8;16], _user_bump: u8) -> ProgramResult {
+    pub fn init_user(
+        ctx: Context<InitializeUser>,
+        eth_address: [u8; 20],
+        _handle_seed: [u8; 16],
+        _user_bump: u8,
+        metadata: String
+    ) -> ProgramResult {
         let audius_user_acct = &mut ctx.accounts.user;
         audius_user_acct.eth_address = eth_address;
 
@@ -20,6 +26,12 @@ pub mod audius_data {
             return Err(ErrorCode::Unauthorized.into());
         }
 
+        msg!("User metadata = {:?}", metadata);
+
+        Ok(())
+    }
+
+    pub fn test(ctx: Context<Test>) -> ProgramResult {
         Ok(())
     }
 }
@@ -53,17 +65,22 @@ pub struct InitializeUser<'info> {
     pub system_program: Program<'info, System>,
 }
 
+#[derive(Accounts)]
+pub struct Test<'info> {
+    pub secp_program: AccountInfo<'info>
+}
+
 // Storage
 #[account]
 pub struct AudiusAdmin {
-    pub authority: Pubkey
+    pub authority: Pubkey,
 }
 
 #[account]
 // TODO: Consider whether this has to be linked to root
 pub struct User {
-    pub eth_address: [u8;20],
-    pub solana_pub_key: Pubkey
+    pub eth_address: [u8; 20],
+    pub solana_pub_key: Pubkey,
 }
 
 // Errors
