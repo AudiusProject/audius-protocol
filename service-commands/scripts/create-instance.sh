@@ -1,89 +1,104 @@
 #!/bin/bash
-# Usage: create-instance.sh {azure,gcp} <image> <disk-size> <machine-type> <name>
-# image must be specified in the format [project=<project>],[family=<family>],[image=<image>] on gcp
 
-# Set options to exit on error
+# Usage: create-instance.sh [options] <name> 
+#
+# Options:
+#   -p <provider>
+#   -i <image>
+#   -d <disk-size>
+#   -m <machine-type>
+
 set -e
-set -o pipefail
 
-echoerr() {
-	echo "$@" 1>&2
-}
+PROTOCOL_DIR=${PROTOCOL_DIR:-$(dirname $(realpath $0))/../../}
 
-get_azure_account() {
-	az account list --query '[?isDefault] | [0].user.name' -o tsv
-}
+source $PROTOCOL_DIR/service-commands/scripts/utils.sh
 
-get_azure_subscription() {
-	az account list --query '[?isDefault] | [0].name' -o tsv
-}
+# parse arguments
+while getopts "p:i:d:m:" flag; do
+	case "$flag" in
+		p) provider=$OPTARG;;
+		i) image=$OPTARG;;
+		d) disk_size=$OPTARG;;
+		m) machine_type=$OPTARG;;
+	esac
+done
 
-get_azure_resource_group() {
-	az config get defaults.group
-}
+name=${@:$OPTIND:1}
 
-gcp_image_to_flags() {
-	echo $1 | sed 's/\(^\|,\)project=/ --image-project=/; s/\(^\|,\)family=/ --image-family=/; s/\(^\|,\)image=/ --image=/'
-}
+# Set defaults and validate arguments
+provider=${provider:-$DEFAULT_PROVIDER}
+disk_size=${disk_size:-$DEFAULT_DISK_SIZE}
 
-confirm() {
-	read -p "Confirm Options? [y/N] " -n 1 -r && echo
-	if [[ $REPLY =~ ^[Yy]$ ]]; then
-		return 0
-	fi
-	return 1
-}
+case "$provider" in
+	azure)
+		image=${image:-$DEFAULT_AZURE_IMAGE}
+		machine_type=${machine_type:-$DEFAULT_AZURE_MACHINE_TYPE}
+		;;
+	gcp)
+		image=${image:-$DEFAULT_GCP_IMAGE}
+		machine_type=${machine_type:-$DEFAULT_GCP_MACHINE_TYPE}
+		;;
+	*)
+		echo "Unknown Provider:" $provider
+		exit 1
+		;;
+esac
 
-if [[ $# != 5 ]]; then
-	echoerr "Expected 5 arguments got $# argument(s)"
+if [[ -z "$name" ]]; then
+	echo "Name for instance was not provided"
 	exit 1
 fi
 
-provider=${1,,}
-image=$2
-disk_size=$3
-machine_type=$4
-name=$5
-
-case $provider in
+# Check dependencies
+case "$provider" in
 	azure)
-		echo "$(tput bold)Provider:       $(tput sgr0)" $provider
-		echo "$(tput bold)Account:        $(tput sgr0)" $(get_azure_account)
-		echo "$(tput bold)Subscription:   $(tput sgr0)" $(get_azure_subscription)
-		echo "$(tput bold)Resource Group: $(tput sgr0)" $(get_azure_resource_group)
-		echo "$(tput bold)OS Image:       $(tput sgr0)" $image
-		echo "$(tput bold)Disk Size:      $(tput sgr0)" $disk_size
-		echo "$(tput bold)Machine Type:   $(tput sgr0)" $machine_type
-		echo "$(tput bold)Name:           $(tput sgr0)" $name
-
-		if ! confirm; then
-			exit
+		if [[ ! $(type az 2> /dev/null) ]]; then
+			echo "az: not found"
+			echo "aborting"
+			exit 1
 		fi
-
-		if [ ! -f ~/.ssh/audius-azure ]; then
-			ssh-keygen -m PEM -t rsa -b 4096 -P "" -f ~/.ssh/audius-azure
+		;;
+	gcp)
+		if [[ ! $(type gcloud 2> /dev/null) ]]; then
+			echo "gcloud: not found"
+			echo "aborting"
+			exit 1
 		fi
+		gcp_set_defaults
+		;;
+esac
+
+# Confirm choices
+echo "$(tput bold)Provider:$(tput sgr0)" $provider
+echo "$(tput bold)OS Image:$(tput sgr0)" $image
+echo "$(tput bold)Disk Size:$(tput sgr0)" $disk_size
+echo "$(tput bold)Machine Type:$(tput sgr0)" $machine_type
+echo "$(tput bold)Name:$(tput sgr0)" $name
+
+case "$provider" in
+	azure)
+		echo "$(tput bold)Account:$(tput sgr0)" $(get_azure_account)
+		echo "$(tput bold)Subscription:$(tput sgr0)" $(get_azure_subscription)
+		echo "$(tput bold)Resource Group:$(tput sgr0)" $(get_azure_resource_group)
+		;;
+	gcp)
+		echo "$(tput bold)Account:$(tput sgr0)" $(get_gcp_account)
+		echo "$(tput bold)Project:$(tput sgr0)" $(get_gcp_project)
+		;;
+esac
+
+read -p "Confirm Options? [y/N] " -n 1 -r && echo
+if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+	exit 1
+fi
+
+# Create the instance
+case "$provider" in
+	azure)
 		az vm create --name $name --image $image --os-disk-size-gb $disk_size --size $machine_type --public-ip-sku Basic --ssh-key-values ~/.ssh/audius-azure
 		;;
 	gcp)
-		image_flags=$(gcp_image_to_flags $image)
-
-		echo "$(tput bold)Provider:       $(tput sgr0)" $provider
-		echo "$(tput bold)Account:        $(tput sgr0)" $(get_gcp_account)
-		echo "$(tput bold)Project:        $(tput sgr0)" $(get_gcp_project)
-		echo "$(tput bold)OS Image Flags: $(tput sgr0)" $image_flags
-		echo "$(tput bold)Disk Size:      $(tput sgr0)" $disk_size
-		echo "$(tput bold)Machine Type:   $(tput sgr0)" $machine_type
-		echo "$(tput bold)Name:           $(tput sgr0)" $name
-
-		if ! confirm; then
-			exit
-		fi
-
-		gcloud compute instances create $name $image_flags --boot-disk-size $disk_size --machine-type $machine_type
-		;;
-	*)
-		echoerr "Unknown Provider: $provider"
-		exit 1
+		gcloud compute instances create $name $(gcp_image_to_flags $image) --boot-disk-size $disk_size --machine-type $machine_type
 		;;
 esac
