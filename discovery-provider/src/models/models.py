@@ -581,6 +581,17 @@ class AggregatePlays(Base):
 play_item_id={self.play_item_id},\
 count={self.count})>"
 
+class IndexingCheckpoints(Base):
+    __tablename__ = "indexing_checkpoints"
+
+    tablename = Column(String, primary_key=True, nullable=False, index=False)
+    last_checkpoint = Column(Integer, nullable=False, index=False)
+
+    def __repr__(self):
+        return f"<IndexingCheckpoints(\
+tablename={self.tablename},\
+last_checkpoint={self.last_checkpoint}>"
+
 
 class RouteMetrics(Base):
     __tablename__ = "route_metrics"
@@ -1089,7 +1100,7 @@ class Challenge(Base):
     # Identifies this challenge
     id = Column(String, primary_key=True, nullable=False, index=True)
     type = Column(Enum(ChallengeType), nullable=False)
-    # The amount of wAudio to disburse (9 decimals)
+    # The amount of wAudio to disburse (8 decimals)
     amount = Column(String, nullable=False)
     # Whether the challenge is currently active
     active = Column(Boolean, nullable=False)

@@ -24,7 +24,7 @@ const estimateGas = async ({
     console.info(`Estimated gas limit ${safeEstimatedGas} for method ${method._method.name}`)
     return safeEstimatedGas
   } catch (e) {
-    console.error(`Unable to estimate gas for transaction ${method._method.name}`)
+    console.error(`Unable to estimate gas for transaction ${method._method.name}, using ${gasLimitMaximum}`)
     return gasLimitMaximum
   }
 }

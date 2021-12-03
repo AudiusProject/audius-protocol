@@ -10,6 +10,7 @@ from src.trending_strategies.aSPET_trending_tracks_strategy import (
 from src.trending_strategies.ePWJD_trending_tracks_strategy import (
     TrendingTracksStrategyePWJD,
 )
+from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from tests.utils import populate_mock_db
 
 logger = logging.getLogger(__name__)
@@ -290,7 +291,7 @@ def test_update_trending_params(app):
 
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+        _update_aggregate_plays(session)
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         session.execute("REFRESH MATERIALIZED VIEW trending_params")
         trending_params = session.query(TrendingParam).all()
@@ -338,7 +339,7 @@ def test_update_track_score_query(app):
 
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+        _update_aggregate_plays(session)
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         session.execute("REFRESH MATERIALIZED VIEW trending_params")
         udpated_strategy.update_track_score_query(session)
