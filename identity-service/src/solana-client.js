@@ -91,7 +91,10 @@ const instructionSchema = new Map([
   ]
 ])
 
-let solanaConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'))
+const SOLANA_CONFIRMATION_TIMEOUT_MS = 180 * 1000
+const solanaConnection = new solanaWeb3.Connection(config.get('solanaEndpoint'), {
+  confirmTransactionInitialTimeout: SOLANA_CONFIRMATION_TIMEOUT_MS
+})
 let feePayer
 
 function getFeePayer () {

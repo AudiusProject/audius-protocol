@@ -49,7 +49,7 @@ def _get_track_history(session: Session, args: GetTrackHistoryArgs):
     if not query_results:
         return []
 
-    tracks, save_dates = zip(*query_results)
+    tracks, listen_dates = zip(*query_results)
     tracks = helpers.query_result_to_list(tracks)
     track_ids = list(map(lambda track: track["track_id"], tracks))
 
@@ -60,6 +60,6 @@ def _get_track_history(session: Session, args: GetTrackHistoryArgs):
         add_users_to_tracks(session, tracks, current_user_id)
 
     for idx, track in enumerate(tracks):
-        track[response_name_constants.activity_timestamp] = save_dates[idx]
+        track[response_name_constants.activity_timestamp] = listen_dates[idx]
 
     return tracks

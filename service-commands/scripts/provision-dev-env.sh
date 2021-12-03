@@ -7,6 +7,7 @@ export NVM_VERSION="v0.35.3"
 export DOCKER_COMPOSE_VERSION="1.27.4"
 
 sudo apt update
+sudo apt-get -y upgrade
 sudo apt install -y \
     apt-transport-https \
     ca-certificates \
@@ -16,11 +17,22 @@ sudo apt install -y \
     python-is-python2 \
     python3-pip \
     git-secrets \
-    jq
+    jq \
+    wget \
+    libpq-dev
+
+# install postgres
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+RELEASE=$(lsb_release -cs)
+echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/postgresql-pgdg.list > /dev/null
+sudo apt-get update
+sudo apt -y install postgresql-11
+dpkg -l | grep postgresql
 
 # python setup
 sudo add-apt-repository ppa:deadsnakes/ppa # python3.9 installation
 sudo apt install -y "python$PYTHON_VERSION"
+pip install wheel
 
 # docker setup
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
