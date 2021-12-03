@@ -43,25 +43,18 @@ describe('audius-data', () => {
   it('Initializing user!', async () => {
     let testEthAddr = '0x6A60013EB5ed20B2F0673D46ADE0b2Dcd00d2CDE'
     let testEthAddrBytes = ethAddressToArray(testEthAddr)
-    let handle = "msquaretk"
-    let handleBytes = Buffer.from(handle).toString('hex');
+    // NOTE - Handle is currently limited to be 16 characters EXACTLY
+    let handle = "goncaz1234567890"
+    let handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle))
+    let handleBytesArray = Array.from({...handleBytes, length: 16})
 
-    const [_user_account_pda, _user_account_bump] = await PublicKey.findProgramAddress(
-      [Buffer.from(anchor.utils.bytes.utf8.encode("user"))],
+    const [user_account_pda, user_account_bump] = await PublicKey.findProgramAddress(
+      [handleBytes],
       program.programId
     );
-    let user_account_pda = _user_account_pda;
-    console.log(`Found user pda = ${user_account_pda}`)
-    let user_account_bump = _user_account_bump;
-
-    let user = anchor.web3.Keypair.generate()
-
-    console.log(adminStgKeypair.publicKey.toString())
-    console.log(provider.wallet.publicKey.toString())
-    console.log(user_account_pda.toString())
-    console.log(adminKeypair.publicKey)
     let tx = await program.rpc.initUser(
       Array.from(testEthAddrBytes),
+      handleBytesArray,
       user_account_bump,
       {
         accounts: {

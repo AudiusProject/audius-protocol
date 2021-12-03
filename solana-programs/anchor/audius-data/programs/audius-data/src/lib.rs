@@ -4,8 +4,6 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
 #[program]
 pub mod audius_data {
-    const USER_PDA_SEED: &[u8] = b"user";
-
     use super::*;
     // Initialize an admin address
     pub fn initialize_admin(ctx: Context<Initialize>, authority: Pubkey) -> ProgramResult {
@@ -14,13 +12,9 @@ pub mod audius_data {
         Ok(())
     }
 
-    pub fn init_user(ctx: Context<InitializeUser>, eth_address: [u8;20], _user_bump: u8) -> ProgramResult {
+    pub fn init_user(ctx: Context<InitializeUser>, eth_address: [u8;20], _handle_seed: [u8;16], _user_bump: u8) -> ProgramResult {
         let audius_user_acct = &mut ctx.accounts.user;
         audius_user_acct.eth_address = eth_address;
-
-        let (user_authority, _user_bump) =
-            Pubkey::find_program_address(&[USER_PDA_SEED], ctx.program_id);
-        msg!("{:?}, {:?}", user_authority, _user_bump);
 
         if ctx.accounts.authority.key() != ctx.accounts.admin.authority {
             return Err(ErrorCode::Unauthorized.into());
@@ -41,14 +35,13 @@ pub struct Initialize<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(eth_address: [u8;20], user_bump: u8)]
+#[instruction(eth_address: [u8;20], handle_seed: [u8;16], user_bump: u8)]
 pub struct InitializeUser<'info> {
-    // TODO: Enforce owner constraints
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
         init,
         payer = payer,
-        seeds = [b"user".as_ref()],
+        seeds = [handle_seed.as_ref()],
         bump = user_bump,
         space = 8 + 32 + 20
     )]
