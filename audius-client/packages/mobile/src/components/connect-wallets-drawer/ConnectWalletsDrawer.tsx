@@ -34,7 +34,6 @@ const createStyles = (themeColors: ThemeColors) =>
 
     title: {
       textAlign: 'center',
-      fontWeight: '800',
       fontSize: 28,
       marginTop: 24,
       marginBottom: 24
@@ -42,7 +41,6 @@ const createStyles = (themeColors: ThemeColors) =>
 
     text: {
       textAlign: 'center',
-      fontWeight: '500',
       fontSize: 24,
       lineHeight: 30
     }
@@ -65,17 +63,25 @@ const ConnectWalletsDrawer = () => {
     <Drawer onClose={handleClose} isOpen={isOpen}>
       <View style={styles.container}>
         <MaskedView
-          maskElement={<Text style={styles.title}>{messages.title}</Text>}
+          maskElement={
+            <Text style={styles.title} weight='heavy'>
+              {messages.title}
+            </Text>
+          }
         >
           <LinearGradient
             colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
             start={{ x: 1, y: 1 }}
             end={{ x: 0, y: 0 }}
           >
-            <Text style={[styles.title, { opacity: 0 }]}>{messages.title}</Text>
+            <Text style={[styles.title, { opacity: 0 }]} weight='heavy'>
+              {messages.title}
+            </Text>
           </LinearGradient>
         </MaskedView>
-        <Text style={styles.text}>{messages.text}</Text>
+        <Text style={styles.text} weight='demiBold'>
+          {messages.text}
+        </Text>
       </View>
     </Drawer>
   )
