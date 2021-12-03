@@ -517,7 +517,7 @@ class TrackHistoryFull(Resource):
     @cache(ttl_sec=5)
     def get(self, user_id):
         """Fetch played tracks history for a user."""
-        args = favorite_route_parser.parse_args()
+        args = history_route_parser.parse_args()
         decoded_id = decode_with_abort(user_id, ns)
         current_user_id = get_current_user_id(args)
 
