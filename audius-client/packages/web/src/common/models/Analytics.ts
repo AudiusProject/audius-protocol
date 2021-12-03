@@ -866,6 +866,8 @@ type TransferAudioToWAudioRequest = {
 type TransferAudioToWAudioSuccess = {
   eventName: Name.TRANSFER_AUDIO_TO_WAUDIO_SUCCESS
   from: WalletAddress
+  txSignature: string
+  logs: string
 }
 
 type TransferAudioToWAudioFailure = {

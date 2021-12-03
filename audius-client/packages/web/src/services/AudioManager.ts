@@ -79,13 +79,17 @@ class AudioManager {
     )
     try {
       yield fork(this.closeTimeoutConfirmAudioToWAudioModal)
-      yield call(this.transferAudioToWAudio)
+      const { txSignature, logs } = yield call(this.transferAudioToWAudio)
       yield call(
         this.updateStatePhase,
         AudioManagerState.HasNoEthAudioInHedgehog
       )
       yield put(
-        make(Name.TRANSFER_AUDIO_TO_WAUDIO_SUCCESS, { from: account?.wallet })
+        make(Name.TRANSFER_AUDIO_TO_WAUDIO_SUCCESS, {
+          from: account?.wallet,
+          txSignature,
+          logs: logs.join()
+        })
       )
     } catch (error) {
       yield call(
@@ -115,7 +119,24 @@ class AudioManager {
 
   async transferAudioToWAudio() {
     const balance = await walletClient.getCurrentBalance(true /** bustCache */)
-    await AudiusBackend.transferAudioToWAudio(balance)
+    const {
+      txSignature,
+      phase,
+      error,
+      logs
+    } = await AudiusBackend.transferAudioToWAudio(balance)
+
+    if (error) {
+      throw new Error(
+        `Error in transferAudioToWAudio at phase: ${phase} with logs: ${logs.join(
+          ','
+        )}`
+      )
+    }
+    return {
+      txSignature,
+      logs
+    }
   }
 
   *closeTimeoutConfirmAudioToWAudioModal() {
