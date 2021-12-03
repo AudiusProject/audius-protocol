@@ -6,7 +6,7 @@ const axios = require('axios')
 const Web3 = require('web3')
 const solanaWeb3 = require('@solana/web3.js')
 const { Keypair } = solanaWeb3
-const requireESM = require("esm")(module)
+const requireESM = require('esm')(module)
 const {
   getSignedVAA,
   getEmitterAddressEth,
@@ -17,12 +17,12 @@ const {
 } = requireESM('@certusone/wormhole-sdk')
 const EthRewardManagerABI = require('../../eth-contracts/ABIs/EthRewardsManager.json').abi
 
-const { grpc } = require("@improbable-eng/grpc-web")
-const { NodeHttpTransport } = require("@improbable-eng/grpc-web-node-http-transport")
+const { grpc } = require('@improbable-eng/grpc-web')
+const { NodeHttpTransport } = require('@improbable-eng/grpc-web-node-http-transport')
 
 // Without this, we get the error:
 // "This environment's XHR implementation cannot support binary transfer."
-grpc.setDefaultTransport(NodeHttpTransport());
+grpc.setDefaultTransport(NodeHttpTransport())
 
 const ETH_PROVIDER = 'https://mainnet.infura.io/v3/a3ed533ddfca4c76ab4df7556e2745e1'
 const SOLANA_CLUSTER_ENDPOINT = 'https://api.mainnet-beta.solana.com'
@@ -34,12 +34,12 @@ const WAUDIO_MINT_ADDRESS = 'BCD75RNBHrJJpW4dXVagL5mPjzRLnVZq4YirJdjEYMV7'
 
 // https://github.com/certusone/wormhole/blob/7f5740754b8d722c42310be086dc21efa7ed8c83/bridge_ui/src/utils/consts.ts#L150
 const WORMHOLE_RPC_HOSTS = [
-  "https://wormhole-v2-mainnet-api.certus.one",
-  "https://wormhole.inotel.ro",
-  "https://wormhole-v2-mainnet-api.mcf.rocks",
-  "https://wormhole-v2-mainnet-api.chainlayer.network",
-  "https://wormhole-v2-mainnet-api.staking.fund",
-  "https://wormhole-v2-mainnet-api.chainlayer.network",
+  'https://wormhole-v2-mainnet-api.certus.one',
+  'https://wormhole.inotel.ro',
+  'https://wormhole-v2-mainnet-api.mcf.rocks',
+  'https://wormhole-v2-mainnet-api.chainlayer.network',
+  'https://wormhole-v2-mainnet-api.staking.fund',
+  'https://wormhole-v2-mainnet-api.chainlayer.network'
 ]
 
 // num attempts and delay between attempts to find transaction receipt
@@ -66,7 +66,7 @@ const ethAccount = web3.eth.accounts.wallet.add(TEST_PRIVATE_KEY)
 const arbiterFee = 0
 const nonce = 2 // this is just some random number atm
 
-async function getGasPrice() {
+async function getGasPrice () {
   try {
     const gasPrices = await axios.get(
       'https://ethgasstation.info/json/ethgasAPI.json'
@@ -91,14 +91,14 @@ const getSignedVAAWithRetry = async function (
   retryTimeout = RETRY_DELAY_MS_VAA,
   retryAttempts = NUM_RETRIES_VAA
 ) {
-  let currentWormholeRpcHost = -1;
-  const getNextRpcHost = () => ++currentWormholeRpcHost % hosts.length;
-  let result;
-  let attempts = 0;
+  let currentWormholeRpcHost = -1
+  const getNextRpcHost = () => ++currentWormholeRpcHost % hosts.length
+  let result
+  let attempts = 0
   while (!result) {
-    attempts++;
+    attempts++
     console.log(`transferCommunityRewardsToSolana.js | getSignedVAAWithRetry | attempt # ${attempts}`)
-    await new Promise((resolve) => setTimeout(resolve, retryTimeout));
+    await new Promise((resolve) => setTimeout(resolve, retryTimeout))
     try {
       result = await getSignedVAA(
         hosts[getNextRpcHost()],
@@ -106,14 +106,14 @@ const getSignedVAAWithRetry = async function (
         emitterAddress,
         sequence,
         extraGrpcOpts
-      );
+      )
     } catch (e) {
       if (retryAttempts !== undefined && attempts >= retryAttempts) {
-        throw e;
+        throw e
       }
     }
   }
-  return result;
+  return result
 }
 
 const getReceipt = async (txHash, numRetries) => {
@@ -129,7 +129,7 @@ const getReceipt = async (txHash, numRetries) => {
   return txReceipt
 }
 
-async function run() {
+async function run () {
   try {
     const ethRewardsManagerContract = new web3.eth.Contract(
       EthRewardManagerABI,
@@ -172,8 +172,8 @@ async function run() {
     console.log({ vaaBytes })
 
     const signTransaction = async (transaction) => {
-      transaction.partialSign(feePayerKeypair);
-      return transaction;
+      transaction.partialSign(feePayerKeypair)
+      return transaction
     }
 
     await postVaaSolana(
@@ -182,7 +182,7 @@ async function run() {
       SOL_BRIDGE_ADDRESS,
       feePayerAddress,
       vaaBytes
-    );
+    )
 
     const transaction = await redeemOnSolana(
       connection,
@@ -192,13 +192,13 @@ async function run() {
       vaaBytes,
       /* isSolanaNative */ false, // todo: is this correct?
       /* mintAddress */ WAUDIO_MINT_ADDRESS
-    );
+    )
     console.log({ transaction })
-    const signed = await signTransaction(transaction);
+    const signed = await signTransaction(transaction)
     console.log({ signed })
-    const txid = await connection.sendRawTransaction(signed.serialize());
+    const txid = await connection.sendRawTransaction(signed.serialize())
     console.log({ txid })
-    await connection.confirmTransaction(txid);
+    await connection.confirmTransaction(txid)
     console.log('Success!')
   } catch (e) {
     console.error(e)
