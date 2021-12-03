@@ -281,7 +281,9 @@ class AudiusLibs {
     isServer,
     isDebug = false,
     useTrackContentPolling = false,
-    useResumableTrackUpload = false
+    useResumableTrackUpload = false,
+    preferHigherPatchForPrimary = true,
+    preferHigherPatchForSecondaries = true
   }) {
     // set version
     this.version = packageJSON.version
@@ -322,6 +324,8 @@ class AudiusLibs {
 
     this.useTrackContentPolling = useTrackContentPolling
     this.useResumableTrackUpload = useResumableTrackUpload
+    this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
+    this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
 
     // Schemas
     const schemaValidator = new SchemaValidator()
@@ -475,7 +479,12 @@ class AudiusLibs {
       this.isServer
     ]
     this.ServiceProvider = new ServiceProvider(...services)
-    this.User = new User(this.ServiceProvider, ...services)
+    this.User = new User(
+      this.ServiceProvider,
+      this.preferHigherPatchForPrimary,
+      this.preferHigherPatchForSecondaries,
+      ...services
+    )
     this.Account = new Account(this.User, ...services)
     this.Track = new Track(...services)
     this.Playlist = new Playlist(...services)

@@ -30,39 +30,47 @@ async function timeRequest (request, timeout = null) {
 }
 
 /**
- * Fetches multiple urls and times each request and returns the results sorted by
- * lowest-latency.
+ * Fetches multiple urls and times each request and returns the results
+ * filtered for healthy and sorted by lowest-latency if requested
  * @param {Array<Object>} requests [{id, url}, {id, url}]
+ * @param {string} currentVersion
  * @param {number?} timeout ms applied to each individual request
  * @returns { Array<{url, response, millis}> }
  */
-async function timeRequests (requests, timeout = null) {
+async function timeRequests (requests, currentVersion, timeout = null, equivalencyDelta = null) {
   let timings = await Promise.all(requests.map(async request =>
     timeRequest(request, timeout)
   ))
+
+  timings = timings.filter(timing => timing.response !== null)
+
+  timings = timings.sort((a, b) => {
+    // Sort by version only if behind current on-chain version
+    const aVersion = a.response.data.data.version
+    const bVersion = b.response.data.data.version
+    if (semver.gt(currentVersion, aVersion) && semver.gt(currentVersion, bVersion)) {
+      if (semver.gt(aVersion, bVersion)) return -1
+      if (semver.lt(aVersion, bVersion)) return 1
+    } else if (semver.gt(currentVersion, aVersion)) {
+      return 1
+    } else if (semver.gt(currentVersion, bVersion)) {
+      return -1
+    }
+
+    // Else, sort by duration with optional `equivalencyDelta`
+    const delta = a.millis - b.millis
+    if (equivalencyDelta !== null && delta < equivalencyDelta) {
+      return 1 - 2 * Math.random() // [-1, 1]
+    }
+    return delta
+  })
 
   return timings
-    .filter(timing => timing.response !== null)
-    .sort((a, b) => a.millis - b.millis)
 }
 
-/**
- * Fetches multiple urls and times each request and returns the results sorted
- * first by version and then by lowest-latency.
- * @param {Array<Object>} requests [{id, url}, {id, url}]
- * @param {number? | null} timeout ms applied to each individual request
- * @param {number? | null} equivalencyDelta
- *  the number of milliseconds at which we consider services to be equally as fast
- *  and pick randomly between them. Default of null implies that the faster service
- *  (even if by 1ms) will be picked always.
- * @returns { Array<{url, response, millis}> }
- */
-async function timeRequestsAndSortByVersion (requests, timeout = null, equivalencyDelta = null) {
-  let timings = await Promise.all(requests.map(async request =>
-    timeRequest(request, timeout)
-  ))
-
-  return timings.sort((a, b) => {
+// `services` must be array of Objects{ request, response, millis }
+function sortServiceTimingsByVersion (serviceTimings, equivalencyDelta = null) {
+  return serviceTimings.sort((a, b) => {
     // If health check failed, send to back of timings
     if (!a.response) return 1
     if (!b.response) return -1
@@ -81,7 +89,25 @@ async function timeRequestsAndSortByVersion (requests, timeout = null, equivalen
   })
 }
 
-// Races requests for file content
+/**
+ * Fetches multiple urls and times each request and returns the results sorted
+ * first by version and then by lowest-latency.
+ * @param {Array<Object>} requests [{id, url}, {id, url}]
+ * @param {number? | null} timeout ms applied to each individual request
+ * @param {number? | null} equivalencyDelta
+ *  the number of milliseconds at which we consider services to be equally as fast
+ *  and pick randomly between them. Default of null implies that the faster service
+ *  (even if by 1ms) will be picked always.
+ * @returns { Array<{url, response, millis}> }
+ */
+async function timeRequestsAndSortByVersion (requests, timeout = null, equivalencyDelta = null) {
+  let timings = await Promise.all(requests.map(async request =>
+    timeRequest(request, timeout)
+  ))
+
+  return sortServiceTimingsByVersion(timings, equivalencyDelta)
+}
+
 /**
  * Races multiple requests
  * @param {*} urls
@@ -210,5 +236,6 @@ module.exports = {
   timeRequests,
   raceRequests,
   allRequests,
-  timeRequestsAndSortByVersion
+  timeRequestsAndSortByVersion,
+  sortServiceTimingsByVersion
 }

@@ -84,6 +84,8 @@ class ServiceProvider extends Base {
     performSyncCheck = true,
     timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT,
     equivalencyDelta = CONTENT_NODE_SELECTION_EQUIVALENCY_DELTA,
+    preferHigherPatchForPrimary = true,
+    preferHigherPatchForSecondaries = true,
     log = true
   }) {
     const creatorNodeSelection = new CreatorNodeSelection({
@@ -93,7 +95,9 @@ class ServiceProvider extends Base {
       whitelist,
       blacklist,
       timeout,
-      equivalencyDelta
+      equivalencyDelta,
+      preferHigherPatchForPrimary,
+      preferHigherPatchForSecondaries
     })
 
     const { primary, secondaries, services } = await creatorNodeSelection.select(performSyncCheck, log)
