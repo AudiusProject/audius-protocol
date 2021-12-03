@@ -46,7 +46,7 @@ def fetch_and_cache_latest_program_tx_redis(
     cache_key: str
 ):
     transactions_history = (
-        solana_client_manager.get_confirmed_signature_for_address2(
+        solana_client_manager.get_signatures_for_address(
             program, before=None, limit=1
         )
     )
@@ -82,6 +82,6 @@ def cache_latest_sol_play_program_tx(
         )
         raise e
 
-def get_cache_latest_sol_program_tx(redis: Redis, cahce_key: str):
-    latest_sol_db: Optional[CachedProgramTxInfo] = redis_get_json_cached_key_or_restore(redis, cahce_key)
+def get_cache_latest_sol_program_tx(redis: Redis, cache_key: str):
+    latest_sol_db: Optional[CachedProgramTxInfo] = redis_get_json_cached_key_or_restore(redis, cache_key)
     return latest_sol_db

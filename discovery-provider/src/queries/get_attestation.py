@@ -6,12 +6,14 @@ from eth_keys import keys
 from hexbytes import HexBytes
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import and_
+from solana.publickey import PublicKey
 from src.models.models import (
     Challenge,
     ChallengeDisbursement,
     User,
     UserChallenge,
 )
+from src.solana.constants import WAUDIO_DECIMALS
 from src.utils.redis_connection import get_redis
 from src.utils.config import shared_config
 from src.utils.get_all_other_nodes import get_all_other_nodes
@@ -20,10 +22,10 @@ from src.tasks.index_oracles import (
     get_oracle_addresses_from_chain,
 )
 
-REWARDS_MANAGER_PROGRAM = shared_config["solana"]["rewards_manager_program_address"]
-ATTESTATION_DECIMALS = 9
-
-
+REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
+REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None
+if REWARDS_MANAGER_ACCOUNT:
+    REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = PublicKey(REWARDS_MANAGER_ACCOUNT)
 class Attestation:
     """Represents DN attesting to a user completing a given challenge"""
 
@@ -58,7 +60,7 @@ class Attestation:
         return f"{self.challenge_id}:{self.challenge_specifier}"
 
     def _get_encoded_amount(self):
-        amt = int(self.amount) * 10 ** ATTESTATION_DECIMALS
+        amt = int(self.amount) * 10 ** WAUDIO_DECIMALS
         return amt.to_bytes(8, byteorder="little")
 
     def get_attestation_bytes(self):
@@ -111,7 +113,8 @@ def get_attestation(
     """
     Returns a owner_wallet, signed_attestation tuple,
     or throws an error explaining why the attestation was
-    not able to be created."""
+    not able to be created.
+    """
     if not user_id or not challenge_id or not oracle_address:
         raise AttestationError(INVALID_INPUT)
 
@@ -189,13 +192,23 @@ def verify_discovery_node_exists_on_chain(new_sender_address: str) -> bool:
 
 
 def get_create_sender_attestation(new_sender_address: str) -> Tuple[str, str]:
+    """
+    Returns a owner_wallet, signed_attestation tuple,
+    or throws an error explaining why the sender attestation was
+    not able to be created.
+    """
+    if not REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY:
+        raise Exception("No Rewards Manager Account initialized")
+
     is_valid = verify_discovery_node_exists_on_chain(new_sender_address)
     if not is_valid:
         raise Exception(f"Expected {new_sender_address} to be registered on chain")
 
     items = [
         to_bytes(text=ADD_SENDER_MESSAGE_PREFIX),
-        to_bytes(hexstr=REWARDS_MANAGER_PROGRAM),
+        # Solana PubicKey should be coerced to bytes using the pythonic bytes method
+        # See https://michaelhly.github.io/solana-py/solana.html#solana.publickey.PublicKey
+        bytes(REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY),
         to_bytes(hexstr=new_sender_address),
     ]
     attestation_bytes = to_bytes(text="").join(items)

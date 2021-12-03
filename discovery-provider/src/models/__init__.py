@@ -22,6 +22,7 @@ from .models import (
     ChallengeDisbursement,
     ChallengeType,
     Follow,
+    IndexingCheckpoints,
     IPLDBlacklistBlock,
     Play,
     Playlist,
@@ -44,6 +45,7 @@ from .models import (
     URSMContentNode,
     User,
     UserBalance,
+    UserBalanceChange,
     UserChallenge,
 )
 from .related_artist import RelatedArtist
@@ -84,6 +86,7 @@ __all__ = [
     "ChallengeType",
     "Follow",
     "IPLDBlacklistBlock",
+    "IndexingCheckpoints",
     "Milestone",
     "Play",
     "Playlist",
@@ -111,6 +114,7 @@ __all__ = [
     "URSMContentNode",
     "User",
     "UserBalance",
+    "UserBalanceChange",
     "UserChallenge",
     "UserBankTransaction",
     "UserBankAccount",

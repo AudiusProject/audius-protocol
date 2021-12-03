@@ -1,8 +1,9 @@
 require "resty.core"
 
+local limit_count = require "resty.limit.count"
+local resty_http = require "resty.http"
 local resty_random = require "resty.random"
 local resty_rsa = require "resty.rsa"
-local resty_http = require "resty.http"
 
 local config = require "config"
 local utils = require "utils"
@@ -27,11 +28,11 @@ function get_cached_public_key (discovery_provider)
     return public_key, nil
 end
 
-function _M.get_redirect_target ()
+function get_redirect_target ()
     return config.redirect_targets[math.random(1, #config.redirect_targets)]
 end
 
-function _M.verify_signature (discovery_provider, nonce, signature)
+function verify_signature (discovery_provider, nonce, signature)
     -- reject if one of the parameter is not provided
     if discovery_provider == nil or nonce == nil or signature == nil then
         return false
@@ -74,7 +75,7 @@ function _M.verify_signature (discovery_provider, nonce, signature)
     return ok
 end
 
-function _M.get_redirect_args ()
+function get_redirect_args ()
     local nonce = utils.generate_nonce()
     local sig, err = config.private_key:sign(nonce)
     if not sig then
@@ -82,6 +83,51 @@ function _M.get_redirect_args ()
         return
     end
     return config.public_url, nonce, ngx.encode_base64(sig)
+end
+
+function _M.limit_to_rps ()
+    if not config.rate_limiting_enabled then
+        return
+    end
+
+    if verify_signature(ngx.var.openresty_redirect_from, ngx.var.openresty_redirect_nonce, ngx.var.openresty_redirect_sig) then
+        -- if signature is correct remove signature args and skip rate limit logic
+        local args, err = ngx.req.get_uri_args()
+        if err then
+            ngx.log(ngx.ERR, "failed to get uri args: ", err)
+            return ngx.exit(500)
+        end
+        args.openresty_redirect_from = nil
+        args.openresty_redirect_nonce = nil
+        args.openresty_redirect_sig = nil
+        ngx.req.set_uri_args(args)
+        return
+    end
+
+    -- limit_count.new(store, count, time_window in seconds)
+    local lim, err = limit_count.new("limit_count_store", config.limit_to_rps, 1)
+    if not lim then
+        ngx.log(ngx.ERR, "failed to instantiate a resty.limit.req object: ", err)
+        return ngx.exit(500)
+    end
+
+    -- set a dummy key since we are not rate limiting separately for each user
+    -- lim:incoming(key, no_dry_run)
+    local delay, err = lim:incoming("k", true)
+    if not delay then
+        local rate_limit_hit = err == "rejected"
+        if rate_limit_hit then
+            -- Redirect request after setting redirect args
+            local args, err = ngx.req.get_uri_args()
+            args.openresty_redirect_from, args.openresty_redirect_nonce, args.openresty_redirect_sig = get_redirect_args()
+            ngx.req.set_uri_args(args)
+            local url = get_redirect_target() .. ngx.var.request_uri
+            return ngx.redirect(url)
+        end
+
+        ngx.log(ngx.ERR, "failed to limit req: ", err)
+        return ngx.exit(500)
+    end
 end
 
 return _M

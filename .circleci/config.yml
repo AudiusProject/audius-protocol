@@ -31,8 +31,8 @@ jobs:
     parallelism: 1
     parameters:
       mad-dog-type:
-        description: 'test-ci or test-nightly'
-        default: 'test-ci'
+        description: 'test, test-nightly'
+        default: 'test'
         type: string
     # https://circleci.com/docs/2.0/configuration-reference/#resourceclass
     # uses medium (2vcpu/4gb) by default
@@ -214,7 +214,7 @@ jobs:
             cd /home/circleci/project/service-commands/scripts/
             sudo "$(which node)" hosts.js add
             sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            "$(which node)" setup.js up -nc 4 --no-parallel --verbose
+            "$(which node)" setup.js up -nc 4 --verbose
             cd /home/circleci/project/mad-dog/
             docker ps
             export ipfsHost="localhost"
@@ -718,7 +718,15 @@ workflows:
       - test-solana-programs:
           name: test-solana-programs
 
-      - test-mad-dog-e2e
+      - test-mad-dog-e2e:
+          mad-dog-type: test
+      - hold-test-mad-dog-e2e-full:
+          type: approval
+      - test-mad-dog-e2e:
+          name: test-mad-dog-e2e-full
+          mad-dog-type: test-nightly
+          requires:
+            - hold-test-mad-dog-e2e-full
 
   # test master at midnight daily
   test-nightly:

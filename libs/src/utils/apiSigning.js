@@ -9,7 +9,7 @@ function recoverWallet (web3, response) {
 
   const dataForRecovery = JSON.parse(JSON.stringify(response))
   delete dataForRecovery['signature']
-  const dataForRecoveryStr = JSON.stringify(_sortKeys(dataForRecovery))
+  const dataForRecoveryStr = JSON.stringify(sortObjectKeys(dataForRecovery))
 
   try {
     const hashedData = web3.utils.keccak256(dataForRecoveryStr)
@@ -24,13 +24,13 @@ function recoverWallet (web3, response) {
 }
 
 /**
- * Sort the object keys alphabetically
- * @param {object} x
+ * Recursively sorts object keys alphabetically
  */
-function _sortKeys (x) {
+function sortObjectKeys (x) {
   if (typeof x !== 'object' || !x) { return x }
-  if (Array.isArray(x)) { return x.map(_sortKeys) }
-  return Object.keys(x).sort().reduce((o, k) => ({ ...o, [k]: _sortKeys(x[k]) }), {})
+  if (Array.isArray(x)) { return x.map(sortObjectKeys) }
+  return Object.keys(x).sort().reduce((o, k) => ({ ...o, [k]: sortObjectKeys(x[k]) }), {})
 }
 
 module.exports.recoverWallet = recoverWallet
+module.exports.sortObjectKeys = sortObjectKeys

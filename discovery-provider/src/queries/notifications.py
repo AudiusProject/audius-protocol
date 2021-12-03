@@ -20,6 +20,7 @@ from src.models import (
     Remix,
     AggregateUser,
     ChallengeDisbursement,
+    UserBalanceChange,
 )
 from src.models.milestone import Milestone
 from src.queries import response_name_constants as const
@@ -441,6 +442,48 @@ def notifications():
         milestone_info[const.notification_favorite_counts][
             const.playlists
         ] = playlist_favorite_dict
+
+        #
+        # Query relevant tier change information
+        #
+        balance_change_query = session.query(UserBalanceChange)
+
+        # Impose min block number restriction
+        balance_change_query = balance_change_query.filter(
+            UserBalanceChange.blocknumber > min_block_number,
+            UserBalanceChange.blocknumber <= max_block_number,
+        )
+
+        balance_change_results = balance_change_query.all()
+        tier_change_notifications = []
+
+        for entry in balance_change_results:
+            prev = int(entry.previous_balance)
+            current = int(entry.current_balance)
+            # Check for a tier change and add to tier_change_notification
+            tier = None
+            if prev < 100000 <= current:
+                tier = 'platinum'
+            elif prev < 10000 <= current:
+                tier = 'gold'
+            elif prev < 100 <= current:
+                tier = 'silver'
+            elif prev < 10 <= current:
+                tier = 'bronze'
+
+            if tier is not None:
+                tier_change_notif = {
+                    const.notification_type: const.notification_type_tier_change,
+                    const.notification_blocknumber: entry.blocknumber,
+                    const.notification_timestamp: datetime.now(),
+                    const.notification_initiator: entry.user_id,
+                    const.notification_metadata: {
+                        const.notification_tier: tier,
+                    },
+                }
+                tier_change_notifications.append(tier_change_notif)
+
+        notifications_unsorted.extend(tier_change_notifications)
 
         #
         # Query relevant repost information

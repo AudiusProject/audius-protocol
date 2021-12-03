@@ -18,6 +18,7 @@ class Base {
     ethWeb3Manager,
     ethContracts,
     solanaWeb3Manager,
+    wormholeClient,
     creatorNode,
     comstock,
     captcha,
@@ -32,6 +33,7 @@ class Base {
     this.ethWeb3Manager = ethWeb3Manager
     this.ethContracts = ethContracts
     this.solanaWeb3Manager = solanaWeb3Manager
+    this.wormholeClient = wormholeClient
     this.creatorNode = creatorNode
     this.comstock = comstock
     this.captcha = captcha

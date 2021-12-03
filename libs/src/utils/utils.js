@@ -1,15 +1,16 @@
 const bs58 = require('bs58')
-const Web3 = require('./web3')
+const Web3 = require('../web3')
 const axios = require('axios')
-const MultiProvider = require('./utils/multiProvider')
-const uuid = require('./utils/uuid')
+
+const MultiProvider = require('./multiProvider.js')
+const uuid = require('./uuid.js')
 
 const ZeroAddress = '0x0000000000000000000000000000000000000000'
 
 class Utils {
   static importDataContractABI (pathStr) {
     // need to specify part of path here because of https://github.com/webpack/webpack/issues/4921#issuecomment-357147299
-    const importFile = require(`../data-contracts/ABIs/${pathStr}`)
+    const importFile = require(`../../data-contracts/ABIs/${pathStr}`)
 
     if (importFile) return importFile
     else throw new Error(`Data contract ABI not found ${pathStr}`)
@@ -17,7 +18,7 @@ class Utils {
 
   static importEthContractABI (pathStr) {
     // need to specify part of path here because of https://github.com/webpack/webpack/issues/4921#issuecomment-357147299
-    const importFile = require(`../eth-contracts/ABIs/${pathStr}`)
+    const importFile = require(`../../eth-contracts/ABIs/${pathStr}`)
 
     if (importFile) return importFile
     else throw new Error(`Eth contract ABI not found ${pathStr}`)
