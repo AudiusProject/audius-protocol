@@ -41,7 +41,7 @@ import {
 import { EventNames } from 'app/types/analytics'
 import { track, make } from 'app/utils/analytics'
 
-import { RootStackParamList } from './NavigationStack'
+import { SignOnStackParamList } from './types'
 
 const isAndroid = Platform.OS === 'android'
 const image = backgImage
@@ -300,7 +300,7 @@ const isValidEmailString = (email: string) => {
   return emailRe.test(String(email).toLowerCase())
 }
 
-type SignOnProps = NativeStackScreenProps<RootStackParamList, 'SignOn'>
+type SignOnProps = NativeStackScreenProps<SignOnStackParamList, 'SignOn'>
 const SignOn = ({ navigation }: SignOnProps) => {
   const dispatchWeb = useDispatchWeb()
   const dispatch = useDispatch()

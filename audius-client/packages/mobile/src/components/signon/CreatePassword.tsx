@@ -32,8 +32,8 @@ import { getOnSignUp } from 'app/store/lifecycle/selectors'
 import { EventNames } from 'app/types/analytics'
 import { track, make } from 'app/utils/analytics'
 
-import { RootStackParamList } from './NavigationStack'
 import SignupHeader from './SignupHeader'
+import { SignOnStackParamList } from './types'
 
 const defaultBorderColor = '#F2F2F4'
 const purpleBorderColor = '#7E1BCC'
@@ -265,7 +265,7 @@ const Checkbox = ({
 }
 
 type CreatePasswordProps = NativeStackScreenProps<
-  RootStackParamList,
+  SignOnStackParamList,
   'CreatePassword'
 >
 const CreatePassword = ({ navigation, route }: CreatePasswordProps) => {
