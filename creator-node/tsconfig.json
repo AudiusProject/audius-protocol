@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./src",
+    "pretty": true,
+    "target": "es2020",
+    "module": "es2020",
+    "lib": [
+      "es2020"
+    ],
+    "outDir": "./build",
+    "allowJs": true,
+    "downlevelIteration": true,
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ]
+  },
+  "include": [
+    "src",
+    "sequelize"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
