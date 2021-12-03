@@ -14,7 +14,7 @@ if [[ -z "$audius_loggly_disable" ]]; then
 \$ActionResumeRetryCount -1    # infinite retries if host is down
 
 template(name="LogglyFormat" type="string"
- string="<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [$audius_loggly_token@41058 $audius_loggly_tags] %msg%\n")
+ string="<%pri%>%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msgid% [$audius_loggly_token@41058 $audius_loggly_tags \\"$audius_discprov_hostname\\"] %msg%\n")
 
 # Send messages to Loggly over TCP using the template.
 action(type="omfwd" protocol="tcp" target="logs-01.loggly.com" port="514" template="LogglyFormat")
