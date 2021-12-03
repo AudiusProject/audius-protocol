@@ -1,4 +1,7 @@
 #!/bin/bash
+set -x
+
+link_libs=false
 
 if [[ "$WAIT_HOSTS" != "" ]]; then
     /usr/bin/wait
@@ -64,9 +67,18 @@ if [ -z "$dbUrl" ]; then
 fi
 
 if [[ "$devMode" == "true" ]]; then
-    ./node_modules/.bin/nodemon --inspect=0.0.0.0:${debuggerPort} src/index.js | tee >(logger) | ./node_modules/.bin/bunyan
+    if [ "$link_libs" = true ]
+    then
+        cd ../audius-libs
+        npm link
+        cd ../app
+        npm link @audius/libs
+        npx nodemon --watch src/ --watch ../audius-libs/ src/index.ts | tee >(logger) | npx bunyan
+    else
+        npx nodemon --watch src/ src/index.ts | tee >(logger) | npx bunyan
+    fi
 else
-    node src/index.js | tee >(logger)
+    node build/src/index.js | tee >(logger)
     docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 10
 fi
 
