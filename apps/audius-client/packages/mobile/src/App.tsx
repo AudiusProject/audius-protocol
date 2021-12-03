@@ -10,6 +10,7 @@ import AppNavigator from 'app/components/app-navigator/AppNavigator'
 import Audio from 'app/components/audio/Audio'
 import GoogleCast from 'app/components/audio/GoogleCast'
 import CollectibleDetailsDrawer from 'app/components/collectible-details-drawer'
+import ConnectWalletsDrawer from 'app/components/connect-wallets-drawer'
 import EnablePushNotificationsDrawer from 'app/components/enable-push-notifications-drawer'
 import HCaptcha from 'app/components/hcaptcha'
 import MobileUploadDrawer from 'app/components/mobile-upload-drawer'
@@ -46,6 +47,7 @@ const Drawers = () => {
       <MobileUploadDrawer />
       <EnablePushNotificationsDrawer />
       <CollectibleDetailsDrawer />
+      <ConnectWalletsDrawer />
       <OverflowMenuDrawer />
       <DeactivateAccountConfirmationDrawer />
       <TransferAudioMobileDrawer />
