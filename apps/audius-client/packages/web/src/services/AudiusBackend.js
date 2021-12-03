@@ -75,6 +75,13 @@ const REWARDS_MANAGER_PROGRAM_PDA =
 const REWARDS_MANAGER_TOKEN_PDA =
   process.env.REACT_APP_REWARDS_MANAGER_TOKEN_PDA
 
+// Wormhole Config
+const WORMHOLE_RPC_HOST = process.env.REACT_APP_WORMHOLE_RPC_HOST
+const ETH_BRIDGE_ADDRESS = process.env.REACT_APP_ETH_BRIDGE_ADDRESS
+const SOL_BRIDGE_ADDRESS = process.env.REACT_APP_SOL_BRIDGE_ADDRESS
+const ETH_TOKEN_BRIDGE_ADDRESS = process.env.REACT_APP_ETH_TOKEN_BRIDGE_ADDRESS
+const SOL_TOKEN_BRIDGE_ADDRESS = process.env.REACT_APP_SOL_TOKEN_BRIDGE_ADDRESS
+
 const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY
 
 const SEARCH_MAX_SAVED_RESULTS = 10
@@ -403,6 +410,7 @@ class AudiusBackend {
     const { web3Error, web3Config } = await AudiusBackend.getWeb3Config()
     const { ethWeb3Config } = AudiusBackend.getEthWeb3Config()
     const { solanaWeb3Config } = AudiusBackend.getSolanaWeb3Config()
+    const { wormholeConfig } = AudiusBackend.getWormholeConfig()
 
     let contentNodeBlockList = getRemoteVar(StringKeys.CONTENT_NODE_BLOCK_LIST)
     if (contentNodeBlockList) {
@@ -430,6 +438,7 @@ class AudiusBackend {
         web3Config,
         ethWeb3Config,
         solanaWeb3Config,
+        wormholeConfig,
         discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(
           null,
           discoveryNodeBlockList,
@@ -558,6 +567,32 @@ class AudiusBackend {
         rewardsManagerProgramPDA: REWARDS_MANAGER_PROGRAM_PDA,
         rewardsManagerTokenPDA: REWARDS_MANAGER_TOKEN_PDA,
         useRelay: true
+      })
+    }
+  }
+
+  static getWormholeConfig() {
+    if (
+      !WORMHOLE_RPC_HOST ||
+      !ETH_BRIDGE_ADDRESS ||
+      !SOL_BRIDGE_ADDRESS ||
+      !ETH_TOKEN_BRIDGE_ADDRESS ||
+      !SOL_TOKEN_BRIDGE_ADDRESS
+    ) {
+      console.error('Missing wormhole configs')
+      return {
+        error: true
+      }
+    }
+
+    return {
+      error: false,
+      wormholeConfig: AudiusLibs.configWormhole({
+        rpcHost: WORMHOLE_RPC_HOST,
+        solBridgeAddress: SOL_BRIDGE_ADDRESS,
+        solTokenBridgeAddress: SOL_TOKEN_BRIDGE_ADDRESS,
+        ethBridgeAddress: ETH_BRIDGE_ADDRESS,
+        ethTokenBridgeAddress: ETH_TOKEN_BRIDGE_ADDRESS
       })
     }
   }
@@ -2540,11 +2575,17 @@ class AudiusBackend {
   /**
    * Transfers the user's ERC20 AUDIO into SPL WAUDIO to their solana user bank account
    * @param {BN} balance The amount of AUDIO to be transferred
+   * @returns {
+   *   txSignature: string
+   *   phase: string
+   *   error: error | null
+   *   logs: Array<string>
+   * }
    */
   static async transferAudioToWAudio(balance) {
     await waitForLibsInit()
     const userBank = await audiusLibs.solanaWeb3Manager.getUserBank()
-    await audiusLibs.Account.permitAndSendTokensViaWormhole(
+    return audiusLibs.Account.sendTokensFromEthToSol(
       balance,
       userBank.toString()
     )
