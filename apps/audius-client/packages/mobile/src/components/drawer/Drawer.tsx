@@ -6,7 +6,6 @@ import React, {
   useState
 } from 'react'
 
-import { Portal } from '@gorhom/portal'
 import {
   Animated,
   Dimensions,
@@ -513,47 +512,45 @@ const Drawer = ({
   }
 
   return (
-    <Portal>
-      <>
-        {shouldBackgroundDim ? renderBackground() : null}
-        <Animated.View
-          {...(isGestureSupported ? panResponder.panHandlers : {})}
-          style={[
-            styles.drawer,
-            drawerStyle,
-            ...(isFullscreen ? [styles.fullDrawer] : []),
-            {
-              shadowOpacity: shadowAnim,
-              transform: [
-                {
-                  translateY: translationAnim
-                }
-              ],
-              borderTopRightRadius: interpolatedBorderRadius,
-              borderTopLeftRadius: interpolatedBorderRadius
-            }
-          ]}
-        >
-          <SafeAreaView
-            edges={['bottom', ...((isFullscreen ? ['top'] : []) as Edge[])]}
-            onLayout={(event: LayoutChangeEvent) => {
-              if (!isFullscreen) {
-                const { height } = event.nativeEvent.layout
-                setDrawerHeight(height)
+    <>
+      {shouldBackgroundDim ? renderBackground() : null}
+      <Animated.View
+        {...(isGestureSupported ? panResponder.panHandlers : {})}
+        style={[
+          styles.drawer,
+          drawerStyle,
+          ...(isFullscreen ? [styles.fullDrawer] : []),
+          {
+            shadowOpacity: shadowAnim,
+            transform: [
+              {
+                translateY: translationAnim
               }
-            }}
-          >
-            <DrawerHeader
-              onClose={onClose}
-              title={title}
-              isFullscreen={isFullscreen}
-            />
-            {children}
-          </SafeAreaView>
-          <View style={styles.skirt} />
-        </Animated.View>
-      </>
-    </Portal>
+            ],
+            borderTopRightRadius: interpolatedBorderRadius,
+            borderTopLeftRadius: interpolatedBorderRadius
+          }
+        ]}
+      >
+        <SafeAreaView
+          edges={['bottom', ...((isFullscreen ? ['top'] : []) as Edge[])]}
+          onLayout={(event: LayoutChangeEvent) => {
+            if (!isFullscreen) {
+              const { height } = event.nativeEvent.layout
+              setDrawerHeight(height)
+            }
+          }}
+        >
+          <DrawerHeader
+            onClose={onClose}
+            title={title}
+            isFullscreen={isFullscreen}
+          />
+          {children}
+        </SafeAreaView>
+        <View style={styles.skirt} />
+      </Animated.View>
+    </>
   )
 }
 

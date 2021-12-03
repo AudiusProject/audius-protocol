@@ -32,8 +32,8 @@ import { EventNames } from 'app/types/analytics'
 import { track, make } from 'app/utils/analytics'
 import { useColor } from 'app/utils/theme'
 
-import { RootStackParamList } from './NavigationStack'
 import SignupHeader from './SignupHeader'
+import { SignOnStackParamList } from './types'
 
 const styles = StyleSheet.create({
   container: {
@@ -227,7 +227,7 @@ const BulletPoint = ({ i }: { i: number }) => {
 }
 
 type ProfileAutoProps = NativeStackScreenProps<
-  RootStackParamList,
+  SignOnStackParamList,
   'ProfileAuto'
 >
 const ProfileAuto = ({ navigation, route }: ProfileAutoProps) => {

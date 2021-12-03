@@ -39,10 +39,10 @@ import {
 } from 'app/store/signon/selectors'
 import { useColor } from 'app/utils/theme'
 
-import { RootStackParamList } from './NavigationStack'
 import PhotoButton from './PhotoButton'
 import ProfileImage from './ProfileImage'
 import SignupHeader from './SignupHeader'
+import { SignOnStackParamList } from './types'
 
 const defaultBorderColor = '#F2F2F4'
 
@@ -244,11 +244,11 @@ const ContinueButton = ({
   )
 }
 
-let handleTimeout: NodeJS.Timeout
+let handleTimeout: number
 const HANDLE_VALIDATION_IN_PROGRESS_DELAY_MS = 1000
 
 export type ProfileManualProps = NativeStackScreenProps<
-  RootStackParamList,
+  SignOnStackParamList,
   'ProfileManual'
 >
 const ProfileManual = ({ navigation, route }: ProfileManualProps) => {

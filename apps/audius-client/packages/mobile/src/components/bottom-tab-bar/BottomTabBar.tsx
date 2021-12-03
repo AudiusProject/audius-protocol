@@ -1,9 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 
+import { BottomTabBarProps as RNBottomTabBarProps } from '@react-navigation/bottom-tabs'
 import { getUserHandle } from 'audius-client/src/common/store/account/selectors'
-import { getIsOpen as getIsMobileOverflowModalOpen } from 'audius-client/src/common/store/ui/mobile-overflow-menu/selectors'
-import { getModalIsOpen } from 'audius-client/src/common/store/ui/modals/slice'
-import { getIsOpen as getIsNowPlayingOpen } from 'audius-client/src/common/store/ui/now-playing/selectors'
 // TODO: move these into /common
 import { setTab } from 'audius-client/src/containers/explore-page/store/actions'
 import { Tabs } from 'audius-client/src/containers/explore-page/store/types'
@@ -20,21 +18,29 @@ import {
   profilePage
 } from 'audius-client/src/utils/route'
 import { push } from 'connected-react-router'
-import { Animated, StyleSheet } from 'react-native'
+import { Animated, LayoutChangeEvent, StyleSheet } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 
+import IconExploreDark from 'app/assets/animations/iconExploreDark.json'
+import IconExploreLight from 'app/assets/animations/iconExploreLight.json'
+import IconFavoriteDark from 'app/assets/animations/iconFavoriteDark.json'
+import IconFavoriteLight from 'app/assets/animations/iconFavoriteLight.json'
+import IconFeedDark from 'app/assets/animations/iconFeedDark.json'
+import IconFeedLight from 'app/assets/animations/iconFeedLight.json'
+import IconProfileDark from 'app/assets/animations/iconProfileDark.json'
+import IconProfileLight from 'app/assets/animations/iconProfileLight.json'
+import IconTrendingDark from 'app/assets/animations/iconTrendingDark.json'
+import IconTrendingLight from 'app/assets/animations/iconTrendingLight.json'
 import { useDispatchWeb } from 'app/hooks/useDispatchWeb'
 import { useSelectorWeb } from 'app/hooks/useSelectorWeb'
 import { MessageType } from 'app/message/types'
 import { getLocation } from 'app/store/lifecycle/selectors'
 import { Theme, useTheme, useThemeVariant } from 'app/utils/theme'
 
-import ExploreButton from './buttons/ExploreButton'
-import FavoritesButton from './buttons/FavoritesButton'
-import FeedButton from './buttons/FeedButton'
-import ProfileButton from './buttons/ProfileButton'
-import TrendingButton from './buttons/TrendingButton'
+import AnimatedBottomButton from './buttons/AnimatedBottomButton'
+
+type NavigationRoute = RNBottomTabBarProps['state']['routes'][0]
 
 const styles = StyleSheet.create({
   container: {
@@ -58,6 +64,23 @@ const styles = StyleSheet.create({
   }
 })
 
+const icons = {
+  light: {
+    feed: IconFeedLight,
+    trending: IconTrendingLight,
+    explore: IconExploreLight,
+    favorites: IconFavoriteLight,
+    profile: IconProfileLight
+  },
+  dark: {
+    feed: IconFeedDark,
+    trending: IconTrendingDark,
+    explore: IconExploreDark,
+    favorites: IconFavoriteDark,
+    profile: IconProfileDark
+  }
+}
+
 const springToValue = (
   animation: Animated.Value,
   value: number,
@@ -71,12 +94,16 @@ const springToValue = (
   }).start(finished)
 }
 
-type BottomBarProps = {
+export type BottomTabBarProps = {
   /**
    * Display properties on the bottom bar to control whether
    * the bottom bar is showing
    */
   display: { isShowing: boolean }
+  /**
+   * A function called when the compononent layout is complete
+   */
+  onLayout: (e: LayoutChangeEvent) => void
   /**
    * Translation animation to move the bottom bar as drawers
    * are opened behind it
@@ -84,7 +111,13 @@ type BottomBarProps = {
   translationAnim: Animated.Value
 }
 
-const BottomBar = ({ display, translationAnim }: BottomBarProps) => {
+const BottomTabBar = ({
+  display,
+  state,
+  navigation,
+  translationAnim,
+  onLayout
+}: BottomTabBarProps & RNBottomTabBarProps) => {
   const bottomBarStyle = useTheme(styles.bottomBar, {
     borderTopColor: 'neutralLight8',
     backgroundColor: 'neutralLight10'
@@ -96,9 +129,6 @@ const BottomBar = ({ display, translationAnim }: BottomBarProps) => {
   // Selectors
   const handle = useSelectorWeb(getUserHandle)
   const location = useSelector(getLocation)
-  const isOverflowModalOpen = useSelectorWeb(getIsMobileOverflowModalOpen)
-  const isModalOpen = useSelectorWeb(getModalIsOpen)
-  const isNowPlayingOpen = useSelectorWeb(getIsNowPlayingOpen)
 
   // Actions
   const dispatchWeb = useDispatchWeb()
@@ -149,10 +179,6 @@ const BottomBar = ({ display, translationAnim }: BottomBarProps) => {
   const [lastNavRoute, setNavRoute] = useState(FEED_PAGE)
   const currentRoute = location && getPathname(location)
 
-  // TODO: this will have to change with the RN SignOn changes
-  const onSignOn = currentRoute === '/signup' || currentRoute === '/signin'
-  const onErrorPage = currentRoute === '/error'
-
   if (lastNavRoute !== currentRoute) {
     // If the current route isn't what we memoized, check if it's a nav route
     // and update the current route if so
@@ -161,70 +187,62 @@ const BottomBar = ({ display, translationAnim }: BottomBarProps) => {
     }
   }
 
-  // Hide the BottomBar when an overlay is open
-  // NOTE: This can be removed when the overlays (overflow modal, drawer)
-  // are migrated to RN
-  const hideBottomBar = React.useMemo(() => {
-    return (
-      onSignOn ||
-      onErrorPage ||
-      isOverflowModalOpen ||
-      isModalOpen ||
-      isNowPlayingOpen
-    )
-  }, [
-    onSignOn,
-    onErrorPage,
-    isOverflowModalOpen,
-    isModalOpen,
-    isNowPlayingOpen
-  ])
-
-  const goToFeed = useCallback(() => {
-    if (!handle) {
-      openSignOn()
-    } else {
-      goToRoute(FEED_PAGE)
-    }
-  }, [goToRoute, handle, openSignOn])
-
-  const goToTrending = useCallback(() => {
-    goToRoute(TRENDING_PAGE)
-  }, [goToRoute])
-
-  const goToExplore = useCallback(() => {
-    goToRoute(EXPLORE_PAGE)
-  }, [goToRoute])
-
-  const goToFavorites = useCallback(() => {
-    if (!handle) {
-      openSignOn()
-    } else {
-      goToRoute(FAVORITES_PAGE)
-    }
-  }, [goToRoute, handle, openSignOn])
-
-  const goToProfile = useCallback(() => {
-    if (!handle) {
-      openSignOn()
-    } else {
-      goToRoute(profilePage(handle))
-    }
-  }, [goToRoute, handle, openSignOn])
-
-  const onClick = useCallback(
-    (callback: () => void, page: string | null) => () => {
-      resetExploreTab()
-      if (page === currentRoute) {
+  const onPress = useCallback(
+    (route: NavigationRoute, isFocused) => {
+      // Web navigation
+      if (isFocused) {
         scrollToTop()
-      } else {
-        callback()
+      }
+
+      resetExploreTab()
+
+      const webNavigationHandlers = {
+        feed: () => {
+          if (!handle) {
+            openSignOn()
+          } else {
+            goToRoute(FEED_PAGE)
+          }
+        },
+        trending: () => {
+          goToRoute(TRENDING_PAGE)
+        },
+        explore: () => {
+          goToRoute(EXPLORE_PAGE)
+        },
+        favorites: () => {
+          if (!handle) {
+            openSignOn()
+          } else {
+            goToRoute(FAVORITES_PAGE)
+          }
+        },
+        profile: () => {
+          if (!handle) {
+            openSignOn()
+          } else {
+            goToRoute(profilePage(handle))
+          }
+        }
+      }
+
+      webNavigationHandlers[route.name]?.()
+
+      // Native navigation
+      const event = navigation.emit({
+        type: 'tabPress',
+        target: route.key,
+        canPreventDefault: true
+      })
+
+      if (!isFocused && !event.defaultPrevented) {
+        navigation.navigate(route.name)
       }
     },
-    [currentRoute, resetExploreTab, scrollToTop]
+    [navigation, goToRoute, handle, openSignOn, resetExploreTab, scrollToTop]
   )
 
-  return !hideBottomBar ? (
+  return (
     <Animated.View
       style={[
         styles.container,
@@ -237,35 +255,30 @@ const BottomBar = ({ display, translationAnim }: BottomBarProps) => {
         }
       ]}
     >
-      <SafeAreaView style={bottomBarStyle} edges={['bottom']}>
-        <FeedButton
-          isActive={currentRoute === FEED_PAGE}
-          isDarkMode={isDarkMode}
-          onClick={onClick(goToFeed, FEED_PAGE)}
-        />
-        <TrendingButton
-          isActive={currentRoute === TRENDING_PAGE}
-          isDarkMode={isDarkMode}
-          onClick={onClick(goToTrending, TRENDING_PAGE)}
-        />
-        <ExploreButton
-          isActive={currentRoute === EXPLORE_PAGE}
-          isDarkMode={isDarkMode}
-          onClick={onClick(goToExplore, EXPLORE_PAGE)}
-        />
-        <FavoritesButton
-          isActive={currentRoute === FAVORITES_PAGE}
-          isDarkMode={isDarkMode}
-          onClick={onClick(goToFavorites, FAVORITES_PAGE)}
-        />
-        <ProfileButton
-          isActive={currentRoute === userProfilePage}
-          isDarkMode={isDarkMode}
-          onClick={onClick(goToProfile, userProfilePage)}
-        />
+      <SafeAreaView
+        style={bottomBarStyle}
+        edges={['bottom']}
+        pointerEvents='auto'
+        onLayout={onLayout}
+      >
+        {state.routes.map((route, index) => {
+          const isFocused = state.index === index
+          const key = `${route.name}-button`
+          return (
+            <AnimatedBottomButton
+              key={key}
+              uniqueKey={key}
+              isActive={isFocused}
+              isDarkMode={isDarkMode}
+              onPress={() => onPress(route, isFocused)}
+              iconLightJSON={icons.light[route.name]}
+              iconDarkJSON={icons.dark[route.name]}
+            />
+          )
+        })}
       </SafeAreaView>
     </Animated.View>
-  ) : null
+  )
 }
 
-export default BottomBar
+export default BottomTabBar

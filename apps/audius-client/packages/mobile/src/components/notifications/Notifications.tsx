@@ -2,6 +2,7 @@ import React, {
   RefObject,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState
 } from 'react'
@@ -16,6 +17,7 @@ import {
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import useIsStackOpen from 'app/hooks/useIsStackOpen'
 import useLocation from 'app/hooks/useLocation'
 import { MessageType } from 'app/message'
 import { AppState } from 'app/store'
@@ -87,6 +89,8 @@ const Notifications = ({
   close,
   markAsViewed
 }: NotificationsProps) => {
+  const isStackOpen = useIsStackOpen()
+
   const onLoadMore = useCallback(() => {
     if (webRef.current) {
       postMessage(webRef.current, {
@@ -106,10 +110,20 @@ const Notifications = ({
   }, [webRef])
 
   const { width } = Dimensions.get('window')
-  const initialPosition = -1 * width + INITIAL_OFFSET
+
+  // When a navigation stack is open, don't allow the notifications to be opened
+  // by adjusting the offset
+  const initialPosition = useMemo(
+    () => -1 * width + (isStackOpen ? 0 : INITIAL_OFFSET),
+    [width, isStackOpen]
+  )
 
   const translationAnim = useRef(new Animated.Value(initialPosition)).current
   const backgroundAnim = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    translationAnim.setValue(initialPosition)
+  }, [translationAnim, initialPosition])
 
   const slideIn = useCallback(() => {
     Animated.spring(translationAnim, {

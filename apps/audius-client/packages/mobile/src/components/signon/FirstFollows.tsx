@@ -34,8 +34,8 @@ import { track, make } from 'app/utils/analytics'
 import UserImage from '../image/UserImage'
 import UserBadges from '../user-badges/UserBadges'
 
-import { RootStackParamList } from './NavigationStack'
 import SignupHeader from './SignupHeader'
+import { SignOnStackParamList } from './types'
 
 const styles = StyleSheet.create({
   container: {
@@ -362,7 +362,7 @@ const FollowArtistCard = ({
 }
 
 export type FirstFollowsProps = NativeStackScreenProps<
-  RootStackParamList,
+  SignOnStackParamList,
   'FirstFollows'
 >
 const FirstFollows = ({ navigation, route }: FirstFollowsProps) => {

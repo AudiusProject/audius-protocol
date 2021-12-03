@@ -1,4 +1,11 @@
-import React, { memo, useState, useEffect, useRef, useCallback } from 'react'
+import React, {
+  memo,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo
+} from 'react'
 
 import LottieView from 'lottie-react-native'
 import { TouchableHighlight, View, ViewStyle } from 'react-native'
@@ -6,7 +13,7 @@ import { TouchableHighlight, View, ViewStyle } from 'react-native'
 import { useColor } from 'app/utils/theme'
 
 export type BaseAnimatedButtonProps = {
-  onClick: () => void
+  onPress: () => void
   uniqueKey: string
   isActive: boolean
   isDisabled?: boolean
@@ -22,22 +29,19 @@ type AnimatedButtonProps = {
 
 const AnimatedButton = ({
   iconJSON,
-  onClick,
+  onPress,
   isActive,
   isDisabled = false,
   style,
   wrapperStyle
 }: AnimatedButtonProps) => {
+  const [isPlaying, setIsPlaying] = useState(false)
   const underlayColor = useColor('neutralLight8')
   const animationRef = useRef<LottieView | null>()
-  useEffect(() => {
-    if (isActive) {
-      const lastFrame = iconJSON.op
-      animationRef.current?.play(lastFrame, lastFrame)
-    } else {
-      animationRef.current?.play(0, 0)
-    }
-  }, [isActive, iconJSON])
+
+  const handleAnimationFinish = useCallback(() => setIsPlaying(false), [
+    setIsPlaying
+  ])
 
   const handleClick = useCallback(() => {
     if (isDisabled) {
@@ -45,21 +49,33 @@ const AnimatedButton = ({
     }
 
     if (!isActive) {
+      setIsPlaying(true)
       animationRef.current?.play()
     }
 
-    onClick()
-  }, [isDisabled, onClick, isActive])
+    onPress()
+  }, [isDisabled, onPress, isActive, setIsPlaying])
+
+  const progress = useMemo(() => {
+    if (isPlaying) {
+      return undefined
+    }
+
+    return isActive ? 1 : 0
+  }, [isPlaying, isActive])
 
   return (
     <TouchableHighlight
       onPress={handleClick}
+      onLongPress={handleClick}
       style={style}
       underlayColor={underlayColor}
     >
       <View style={wrapperStyle}>
         <LottieView
           ref={animation => (animationRef.current = animation)}
+          onAnimationFinish={handleAnimationFinish}
+          progress={progress}
           loop={false}
           source={iconJSON}
         />
@@ -70,8 +86,8 @@ const AnimatedButton = ({
 
 export type AnimatedButtonProviderProps = {
   isDarkMode: boolean
-  iconDarkJSON: () => any
-  iconLightJSON: () => any
+  iconDarkJSON: any
+  iconLightJSON: any
 } & BaseAnimatedButtonProps
 
 const AnimatedButtonProvider = ({
@@ -87,12 +103,12 @@ const AnimatedButtonProvider = ({
   useEffect(() => {
     if (isDarkMode) {
       if (!darkAnimations.current) {
-        darkAnimations.current = iconDarkJSON()
+        darkAnimations.current = iconDarkJSON
       }
       setIconJSON({ ...darkAnimations.current })
     } else {
       if (!defaultAnimations.current) {
-        defaultAnimations.current = iconLightJSON()
+        defaultAnimations.current = iconLightJSON
       }
       setIconJSON({ ...defaultAnimations.current })
     }

@@ -1,16 +1,11 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 
-import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { View, StyleSheet } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
-import {
-  getDappLoaded,
-  getIsSignedIn,
-  getOnSignUp
-} from 'app/store/lifecycle/selectors'
+import { getOnSignUp } from 'app/store/lifecycle/selectors'
 import {
   getAccountAvailable,
   getFinalEmail,
@@ -25,27 +20,6 @@ import ProfileAuto from './ProfileAuto'
 import ProfileManual from './ProfileManual'
 import SignOn from './SignOn'
 import SignupLoadingPage from './SignupLoadingPage'
-
-export type RootStackParamList = {
-  SignOn: undefined
-  CreatePassword: { email: string }
-  ProfileAuto: { email: string; password: string }
-  ProfileManual: {
-    email: string
-    password: string
-    name?: string
-    handle?: string
-    twitterId?: string
-    twitterScreenName?: string
-    instagramId?: string
-    instagramScreenName?: string
-    verified?: boolean
-    profilePictureUrl?: string
-    coverPhotoUrl?: string
-  }
-  FirstFollows: { email: string; handle: string }
-  SignupLoadingPage: undefined
-}
 
 const styles = StyleSheet.create({
   container: {
@@ -63,25 +37,13 @@ const styles = StyleSheet.create({
 
 const Stack = createNativeStackNavigator()
 
-const SignOnNav = () => {
+const SignOnNavigator = () => {
   const dispatch = useDispatch()
 
-  const dappLoaded = useSelector(getDappLoaded)
-  const signedIn = useSelector(getIsSignedIn)
   const onSignUp = useSelector(getOnSignUp)
   const isAccountAvailable = useSelector(getAccountAvailable)
   const finalEmail = useSelector(getFinalEmail)
   const finalHandle = useSelector(getFinalHandle)
-  const [isHidden, setIsHidden] = useState(true)
-
-  useEffect(() => {
-    setIsHidden(
-      !dappLoaded ||
-        signedIn === null ||
-        (signedIn && !onSignUp) ||
-        isAccountAvailable
-    )
-  }, [dappLoaded, isAccountAvailable, signedIn, onSignUp])
 
   useEffect(() => {
     if (onSignUp && isAccountAvailable) {
@@ -123,30 +85,28 @@ const SignOnNav = () => {
     }
   ]
 
-  return isHidden ? null : (
+  return (
     <View style={styles.container}>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName='SignOn'
-          screenOptions={{
-            animationTypeForReplace: 'push'
-          }}
-        >
-          {screenProps.map(props => (
-            <Stack.Screen
-              key={props.name}
-              options={{
-                headerShown: false,
-                gestureEnabled: false,
-                animation: 'slide_from_right'
-              }}
-              {...props}
-            />
-          ))}
-        </Stack.Navigator>
-      </NavigationContainer>
+      <Stack.Navigator
+        initialRouteName='SignOn'
+        screenOptions={{
+          animationTypeForReplace: 'push'
+        }}
+      >
+        {screenProps.map(props => (
+          <Stack.Screen
+            key={props.name}
+            options={{
+              headerShown: false,
+              gestureEnabled: false,
+              animation: 'slide_from_right'
+            }}
+            {...props}
+          />
+        ))}
+      </Stack.Navigator>
     </View>
   )
 }
 
-export default SignOnNav
+export default SignOnNavigator
