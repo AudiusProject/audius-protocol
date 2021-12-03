@@ -7,6 +7,7 @@ export NVM_VERSION="v0.35.3"
 export DOCKER_COMPOSE_VERSION="1.27.4"
 
 sudo apt update
+sudo apt-get -y upgrade
 sudo apt install -y \
     apt-transport-https \
     ca-certificates \
@@ -16,11 +17,22 @@ sudo apt install -y \
     python-is-python2 \
     python3-pip \
     git-secrets \
-    jq
+    jq \
+    wget \
+    libpq-dev
+
+# install postgres
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+RELEASE=$(lsb_release -cs)
+echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/postgresql-pgdg.list > /dev/null
+sudo apt-get update
+sudo apt -y install postgresql-11
+dpkg -l | grep postgresql
 
 # python setup
 sudo add-apt-repository ppa:deadsnakes/ppa # python3.9 installation
 sudo apt install -y "python$PYTHON_VERSION"
+pip install wheel
 
 # docker setup
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
@@ -46,27 +58,22 @@ sudo chown $USER /etc/hosts
 # install nvm and node
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"                   # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # This loads nvm bash_completion
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 nvm install $NODE_VERSION
 
 # profile setup
-echo "nvm use $NODE_VERSION" >>~/.profile
-echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >>~/.profile
-echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H \"Metadata-Flavor: Google\" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >>~/.profile
+echo "nvm use $NODE_VERSION" >> ~/.profile
+echo 'export PROTOCOL_DIR=$HOME/audius-protocol' >> ~/.profile
+echo 'export AUDIUS_REMOTE_DEV_HOST=$(curl -sfL -H "Metadata-Flavor: Google" http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)' >> ~/.profile
 source ~/.profile
 source ~/.bashrc
 
 # audius repos setup
+git clone https://github.com/AudiusProject/audius-client.git
 cd $PROTOCOL_DIR/service-commands
 npm install
 node scripts/hosts.js add
 node scripts/setup.js run init-repos up
-
-cd ~
-git clone https://github.com/AudiusProject/audius-client.git
-cd audius-client
-npm link @audius/libs
-
 echo 'Rebooting machine...'
 reboot
