@@ -40,7 +40,7 @@ from src.queries.get_previously_private_playlists import (
 from src.queries.query_helpers import get_current_user_id, get_pagination_vars
 from src.queries.get_users_cnode import get_users_cnode
 from src.queries.get_ursm_cnodes import get_ursm_cnodes
-from src.queries.get_sol_plays import get_sol_play, get_track_listen_milestones
+from src.queries.get_sol_plays import get_sol_play, get_track_listen_milestones, get_total_aggregate_plays
 from src.queries.get_ipfs_peer_info import get_ipfs_peer_info
 from src.queries.get_cid_source import get_cid_source
 from src.queries.get_user_history import get_user_history
@@ -622,6 +622,14 @@ def get_sol_play_tx():
     except exceptions.ArgumentError as e:
         return api_helpers.error_response(str(e), 400)
 
+# Get total aggregate play count
+@bp.route("/get_total_aggregate_plays", methods=("GET",))
+def get_total_plays():
+    try:
+        data = get_total_aggregate_plays()
+        return api_helpers.success_response(data)
+    except exceptions.ArgumentError as e:
+        return api_helpers.error_response(str(e), 400)
 
 # Get details for latest track listen milestones
 # Used to parse and issue notifications
