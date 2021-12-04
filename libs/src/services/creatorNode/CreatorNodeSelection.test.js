@@ -56,7 +56,7 @@ let defaultHealthCheckData = {
   'maxStorageUsedPercent': 95
 }
 
-describe.only('test CreatorNodeSelection', () => {
+describe('test CreatorNodeSelection', () => {
   it('selects the fastest healthy service as primary and rest as secondaries', async () => {
     const healthy = 'https://healthy.audius.co'
     nock(healthy)

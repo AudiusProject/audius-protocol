@@ -1,7 +1,7 @@
 const _ = require('lodash')
 
 const ServiceSelection = require('../../service-selection/ServiceSelection')
-const { timeRequests, sortServiceTimingsByVersion } = require('../../utils/network')
+const { timeRequests, sortServiceTimings } = require('../../utils/network')
 const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
 
 /**
@@ -101,7 +101,12 @@ class CreatorNodeSelection extends ServiceSelection {
 
     let primary
     if (this.preferHigherPatchForPrimary) {
-      const serviceTimingsSortedByVersion = sortServiceTimingsByVersion(healthyServiceTimings, this.equivalencyDelta)
+      const serviceTimingsSortedByVersion = sortServiceTimings({
+        serviceTimings: healthyServiceTimings,
+        currentVersion: this.currentVersion,
+        sortByVersion: true,
+        equivalencyDelta: this.equivalencyDelta
+      })
       const servicesSortedByVersion = serviceTimingsSortedByVersion.map(service => service.request.id)
       primary = this.getPrimary(servicesSortedByVersion)
     } else {
@@ -185,7 +190,12 @@ class CreatorNodeSelection extends ServiceSelection {
 
     let secondaries
     if (this.preferHigherPatchForSecondaries) {
-      const backupTimingsSortedByVersion = sortServiceTimingsByVersion(backupTimings, this.equivalencyDelta)
+      const backupTimingsSortedByVersion = sortServiceTimings({
+        serviceTimings: backupTimings,
+        currentVersion: this.currentVersion,
+        sortByVersion: true,
+        equivalencyDelta: this.equivalencyDelta
+      })
       const secondaryTimings = backupTimingsSortedByVersion.slice(0, numberOfSecondaries)
       secondaries = secondaryTimings.map(timing => timing.request.id)
     } else {
@@ -237,15 +247,16 @@ class CreatorNodeSelection extends ServiceSelection {
    */
   async _performHealthChecks (services) {
     // Perform a health check on services that passed the sync checks
-    const healthCheckedServices = await timeRequests(
-      services.map(node => ({
+    const healthCheckedServices = await timeRequests({
+      requests: services.map(node => ({
         id: node,
         url: `${node}/${this.healthCheckPath}`
       })),
-      this.currentVersion,
-      this.timeout,
-      this.equivalencyDelta
-    )
+      sortByVersion: false,
+      currentVersion: this.currentVersion,
+      timeout: this.timeout,
+      equivalencyDelta: this.equivalencyDelta
+    })
 
     const healthyServices = healthCheckedServices.filter(resp => {
       const endpoint = resp.request.id
