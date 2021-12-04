@@ -32,7 +32,7 @@ async function timeRequest (request, timeout = null) {
 /**
  * Custom sort for `serviceTimings`, the response from `timeRequest()` function above
  * @param {Array<Object>} serviceTimings array of objects { request, response, millis }
- * @param {Boolean} sortByVersion
+ * @param {Boolean} sortByVersion whether or not to sort by version
  * @param {string | null} currentVersion current on-chain service version - only required if `sortByVersion` = false
  * @param {number? | null} equivalencyDelta
  *  the number of milliseconds at which we consider services to be equally as fast
@@ -84,8 +84,8 @@ function sortServiceTimings ({
  * Fetches multiple urls and times each request and returns the results sorted
  * first by version and then by lowest-latency.
  * @param {Array<Object>} requests [{id, url}, {id, url}]
- * @param {Boolean} sortByVersion
- * @param {Boolean} filterNonResponsive
+ * @param {Boolean} sortByVersion whether or not to sort by version
+ * @param {Boolean} filterNonResponsive whether or not to filter out nonresponsive services
  * @param {string | null} currentVersion current on-chain service version - only required if `sortByVersion` = false
  * @param {number? | null} timeout ms applied to each individual request
  * @param {number? | null} equivalencyDelta

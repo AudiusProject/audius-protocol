@@ -17,8 +17,8 @@ const setupRequest = (url, delay, version, status = 200) => {
 describe('timeRequests()', () => {
   it('sortByVersion = true', async () => {
     const requests = [
-      setupRequest('https://fast1.audius.co', 50, '1.2.3'),
-      setupRequest('https://fast2.audius.co', 100, '1.2.3'),
+      setupRequest('https://fastest.audius.co', 50, '1.2.3'),
+      setupRequest('https://fastAndAhead.audius.co', 100, '1.2.4'),
       setupRequest('https://behind.audius.co', 100, '1.2.2'),
       setupRequest('https://slow.audius.co', 500, '1.2.3'),
       setupRequest('https://error.audius.co', 500, '1.2.3', 404)
@@ -29,8 +29,8 @@ describe('timeRequests()', () => {
       sortByVersion: true
     })
 
-    assert.strictEqual(res[0].request.url, 'https://fast1.audius.co')
-    assert.strictEqual(res[1].request.url, 'https://fast2.audius.co')
+    assert.strictEqual(res[0].request.url, 'https://fastAndAhead.audius.co')
+    assert.strictEqual(res[1].request.url, 'https://fastest.audius.co')
     assert.strictEqual(res[2].request.url, 'https://slow.audius.co')
     assert.strictEqual(res[3].request.url, 'https://behind.audius.co')
     assert.strictEqual(res[4].request.url, 'https://error.audius.co')
@@ -39,7 +39,7 @@ describe('timeRequests()', () => {
   it('sortByVersion = false', async () => {
     const requests = [
       setupRequest('https://fastest.audius.co', 50, '1.2.3'),
-      setupRequest('https://fast.audius.co', 100, '1.2.3'),
+      setupRequest('https://fastAndAhead.audius.co', 100, '1.2.4'),
       setupRequest('https://fastAndBehind.audius.co', 100, '1.2.2'),
       setupRequest('https://slow.audius.co', 500, '1.2.3'),
       setupRequest('https://slowAndError.audius.co', 500, '1.2.3', 404)
@@ -53,7 +53,7 @@ describe('timeRequests()', () => {
 
     // All healthy nodes with valid version should be sorted by request duration, remaining by version then duration
     assert.strictEqual(res[0].request.url, 'https://fastest.audius.co')
-    assert.strictEqual(res[1].request.url, 'https://fast.audius.co')
+    assert.strictEqual(res[1].request.url, 'https://fastAndAhead.audius.co')
     assert.strictEqual(res[2].request.url, 'https://slow.audius.co')
     assert.strictEqual(res[3].request.url, 'https://fastAndBehind.audius.co')
     assert.strictEqual(res[4].request.url, 'https://slowAndError.audius.co')
