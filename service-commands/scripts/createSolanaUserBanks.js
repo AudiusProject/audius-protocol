@@ -42,7 +42,6 @@ const { program } = require('commander')
  * @param {number} batchSize the number of users to fetch
  */
 async function getUserBatch(discoveryProviderUrl, batchNumber, batchSize) {
-  console.log(discoveryProviderUrl)
   const response = await axios({
     method: 'get',
     baseURL: discoveryProviderUrl,
@@ -161,7 +160,7 @@ async function main(options) {
     batchNumber,
     options.batchSize
   )
-  while (users.length > 0 && batchNumber < 1) {
+  while (users.length > 0) {
     const batchPromises = users.map(async user => {
       console.debug(
         `[START]: Creating user bank for user_id=${user.user_id} wallet=${user.wallet}`
@@ -197,5 +196,5 @@ program
     'which env to use (eg. "dev", "stage", "prod")',
     'dev'
   )
-  .option('-b, --batch-size <size>', 'how many users to process per batch', 1)
+  .option('-b, --batch-size <size>', 'how many users to process per batch', 50)
 main(program.opts())
