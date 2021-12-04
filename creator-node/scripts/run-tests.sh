@@ -108,10 +108,12 @@ if [ -z "${isCIBuild}" ]; then
   docker exec -i $DB_CONTAINER /bin/sh -c "psql -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'audius_creator_node_test'\" | grep -q 1 || psql -U postgres -c \"CREATE DATABASE audius_creator_node_test\""
 fi
 
+# delete and recreate the storage path for the test so it doesn't reuse assets from previous runs
+rm -rf $storagePath
 mkdir -p $storagePath
 
 # linter
-./node_modules/.bin/standard
+npm run lint
 
 # setting delegate keys for app to start
 export delegateOwnerWallet="0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"

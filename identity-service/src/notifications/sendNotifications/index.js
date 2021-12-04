@@ -18,6 +18,7 @@ function getUserIdsToNotify (notifications) {
         return userIds.concat(notification.metadata.remix_parent_track_user_id)
       case notificationTypes.ChallengeReward:
       case notificationTypes.MilestoneListen:
+      case notificationTypes.TierChange:
         return userIds.concat(notification.initiator)
       default:
         return userIds

@@ -12,7 +12,7 @@ from src.models import (
 )
 from src.utils.config import shared_config
 from src.utils.redis_cache import set_json_cached_key
-
+from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from tests.utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
@@ -71,7 +71,7 @@ def test_listen_count_milestone_processing(app):
         populate_mock_db(db, test_entities)
 
         with db.scoped_session() as session:
-            session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+            _update_aggregate_plays(session)
 
         redis_conn.sadd(TRACK_LISTEN_IDS, *track_ids)
 
@@ -116,7 +116,7 @@ def test_listen_count_milestone_processing(app):
         }
         populate_mock_db(db, test_entities)
         with db.scoped_session() as session:
-            session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+            _update_aggregate_plays(session)
 
         # Add the same track and process to check that no new milesetones are created
         redis_conn.sadd(TRACK_LISTEN_IDS, *track_ids)

@@ -16,6 +16,7 @@ from src.challenges.trending_challenge import (
 from src.challenges.challenge_event_bus import ChallengeEventBus, ChallengeEvent
 from src.utils.config import shared_config
 from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
+from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from tests.utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
@@ -266,7 +267,7 @@ def test_trending_challenge_job(app):
     trending_date = date.fromisoformat("2021-08-20")
 
     with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+        _update_aggregate_plays(session)
         session.commit()
 
     enqueue_trending_challenges(db, redis_conn, bus, trending_date)

@@ -408,7 +408,7 @@ upc={self.upc}\
 is_current={self.is_current},\
 is_delete={self.is_delete},\
 updated_at={self.updated_at},\
-created_at={self.created_at}>"
+created_at={self.created_at})>"
 
 
 class RepostType(str, enum.Enum):
@@ -470,7 +470,7 @@ follower_user_id={self.follower_user_id},\
 followee_user_id={self.followee_user_id},\
 is_current={self.is_current},\
 is_delete={self.is_delete},\
-created_at={self.created_at}>"
+created_at={self.created_at})>"
 
 
 class SaveType(str, enum.Enum):
@@ -505,7 +505,7 @@ save_item_id={self.save_item_id},\
 created_at={self.created_at},\
 save_type={self.save_type},\
 is_current={self.is_current},\
-is_delete={self.is_delete}>"
+is_delete={self.is_delete})>"
 
 
 class Stem(Base):
@@ -529,7 +529,7 @@ class Remix(Base):
 
     def __repr__(self):
         return f"<Remix(parent_track_id={self.parent_track_id},\
-child_track_id={self.child_track_id}>"
+child_track_id={self.child_track_id})>"
 
 
 class Play(Base):
@@ -565,7 +565,7 @@ play_item_id={self.play_item_id}\
 slot={self.slot}\
 signature={self.signature}\
 updated_at={self.updated_at}\
-created_at={self.created_at}>"
+created_at={self.created_at})>"
 
 
 class AggregatePlays(Base):
@@ -579,7 +579,18 @@ class AggregatePlays(Base):
     def __repr__(self):
         return f"<AggregatePlays(\
 play_item_id={self.play_item_id},\
-count={self.count}>"
+count={self.count})>"
+
+class IndexingCheckpoints(Base):
+    __tablename__ = "indexing_checkpoints"
+
+    tablename = Column(String, primary_key=True, nullable=False, index=False)
+    last_checkpoint = Column(Integer, nullable=False, index=False)
+
+    def __repr__(self):
+        return f"<IndexingCheckpoints(\
+tablename={self.tablename},\
+last_checkpoint={self.last_checkpoint}>"
 
 
 class RouteMetrics(Base):
@@ -763,7 +774,7 @@ class RouteMetricsDayMatview(Base):
         return f"<RouteMetricsDayMatview(\
 unique_count={self.unique_count},\
 count={self.count},\
-time={self.time}>"
+time={self.time})>"
 
 
 class RouteMetricsMonthMatview(Base):
@@ -777,7 +788,7 @@ class RouteMetricsMonthMatview(Base):
         return f"<RouteMetricsMonthMatview(\
 unique_count={self.unique_count},\
 count={self.count},\
-time={self.time}>"
+time={self.time})>"
 
 
 class RouteMetricsTrailingWeek(Base):
@@ -790,7 +801,7 @@ class RouteMetricsTrailingWeek(Base):
     def __repr__(self):
         return f"<RouteMetricsTrailingWeek(\
 unique_count={self.unique_count},\
-count={self.count}>"
+count={self.count})>"
 
 
 class RouteMetricsTrailingMonth(Base):
@@ -803,7 +814,7 @@ class RouteMetricsTrailingMonth(Base):
     def __repr__(self):
         return f"<RouteMetricsTrailingMonth(\
 unique_count={self.unique_count},\
-count={self.count}>"
+count={self.count})>"
 
 
 class RouteMetricsAllTime(Base):
@@ -816,7 +827,7 @@ class RouteMetricsAllTime(Base):
     def __repr__(self):
         return f"<RouteMetricsTrailingAllTime(\
 unique_count={self.unique_count},\
-count={self.count}>"
+count={self.count})>"
 
 
 class AppMetricsTrailingWeek(Base):
@@ -828,7 +839,7 @@ class AppMetricsTrailingWeek(Base):
     def __repr__(self):
         return f"<AppMetricsTrailingWeek(\
 name={self.name},\
-count={self.count}>"
+count={self.count})>"
 
 
 class AppMetricsTrailingMonth(Base):
@@ -840,7 +851,7 @@ class AppMetricsTrailingMonth(Base):
     def __repr__(self):
         return f"<AppMetricsTrailingMonth(\
 name={self.name},\
-count={self.count}>"
+count={self.count})>"
 
 
 class AppMetricsAllTime(Base):
@@ -852,7 +863,7 @@ class AppMetricsAllTime(Base):
     def __repr__(self):
         return f"<AppMetricsAllTime(\
 name={self.name},\
-count={self.count}>"
+count={self.count})>"
 
 
 class TagTrackUserMatview(Base):
@@ -868,7 +879,7 @@ class TagTrackUserMatview(Base):
         return f"<TagTrackUserMatview(\
 tag={self.tag},\
 track_id={self.track_id},\
-owner_id={self.owner_id}>"
+owner_id={self.owner_id})>"
 
 
 class URSMContentNode(Base):
@@ -927,7 +938,27 @@ user_id={self.user_id},\
 balance={self.balance},\
 associated_wallets_balance={self.associated_wallets_balance}\
 associated_sol_wallets_balance={self.associated_sol_wallets_balance}\
-waudio={self.waudio}>"
+waudio={self.waudio})>"
+
+
+class UserBalanceChange(Base):
+    __tablename__ = "user_balance_changes"
+
+    user_id = Column(Integer, nullable=False, primary_key=True)
+    blocknumber = Column(Integer, ForeignKey("blocks.number"), nullable=False)
+    current_balance = Column(String, nullable=False)
+    previous_balance = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False, default=func.now())
+    updated_at = Column(
+        DateTime, nullable=False, default=func.now(), onupdate=func.now()
+    )
+
+    def __repr__(self):
+        return f"<UserBalanceChange(\
+user_id={self.user_id},\
+blocknumber={self.blocknumber},\
+current_balance={self.current_balance},\
+previous_balance={self.previous_balance})>"
 
 
 class WalletChain(str, enum.Enum):
@@ -980,7 +1011,7 @@ album_count={self.album_count},\
 follower_count={self.follower_count},\
 following_count={self.following_count},\
 repost_count={self.repost_count},\
-track_save_count={self.track_save_count}>"
+track_save_count={self.track_save_count})>"
 
 
 class AggregateTrack(Base):
@@ -996,7 +1027,7 @@ class AggregateTrack(Base):
         return f"<AggregateTrack(\
 track_id={self.track_id},\
 repost_count={self.repost_count},\
-save_count={self.save_count}>"
+save_count={self.save_count})>"
 
 
 class AggregatePlaylist(Base):
@@ -1014,7 +1045,7 @@ class AggregatePlaylist(Base):
 playlist_id={self.playlist_id},\
 is_album={self.is_album},\
 repost_count={self.repost_count},\
-save_count={self.save_count}>"
+save_count={self.save_count})>"
 
 
 class SkippedTransaction(Base):
@@ -1069,7 +1100,7 @@ class Challenge(Base):
     # Identifies this challenge
     id = Column(String, primary_key=True, nullable=False, index=True)
     type = Column(Enum(ChallengeType), nullable=False)
-    # The amount of wAudio to disburse (9 decimals)
+    # The amount of wAudio to disburse (8 decimals)
     amount = Column(String, nullable=False)
     # Whether the challenge is currently active
     active = Column(Boolean, nullable=False)

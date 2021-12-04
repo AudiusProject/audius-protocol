@@ -1,11 +1,11 @@
 const BN = require('bn.js')
 
-const MIN_WAUDIO_AMOUNT = new BN('1000000000') // 10^9
+const MIN_WAUDIO_AMOUNT = new BN('10000000000') // 10^10
 
 /**
  * Converts Wei Audio (BN) to wAudio (BN).
- * wAudio has only 9 digits of precision vs. 18 in Wei Audio.
- * The amount must be >= 10^9 and have no remainder when divided by 10^9.
+ * wAudio has only 8 digits of precision vs. 18 in Wei Audio.
+ * The amount must be >= 10^10 and have no remainder when divided by 10^10.
  * @param {BN} amount Wei Audio amount
  */
 const wAudioFromWeiAudio = (amount) => {

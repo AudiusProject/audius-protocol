@@ -8,7 +8,7 @@ from src.models import Play
 from src.utils import helpers
 from src.utils.cache_solana_program import CachedProgramTxInfo, get_cache_latest_sol_program_tx, get_latest_sol_db_tx
 from src.utils.db_session import get_db_read_replica
-from src.queries.query_helpers import get_track_play_counts
+from src.queries.query_helpers import get_track_play_counts, get_sum_aggregate_plays
 from src.utils.redis_constants import latest_sol_play_program_tx_key, latest_sol_play_db_tx_key
 from src.tasks.index_solana_plays import cache_latest_sol_play_db_tx
 
@@ -80,6 +80,14 @@ def get_track_listen_milestones(limit=100):
         track_id_play_counts = get_track_play_counts(session, track_ids)
 
     return track_id_play_counts
+
+# Get total play count from aggregate plays
+def get_total_aggregate_plays():
+    db = get_db_read_replica()
+
+    with db.scoped_session() as session:
+        total_aggregate_plays = get_sum_aggregate_plays(session)
+    return total_aggregate_plays
 
 # Retrieve the latest stored value in database for sol plays
 # Cached during processing of plays

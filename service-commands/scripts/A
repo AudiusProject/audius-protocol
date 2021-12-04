@@ -248,7 +248,7 @@ def setup(name, azure, service, config, user, fast, protocol_git_ref, client_git
         image_project = "ubuntu-os-cloud"
         if fast:
             use_image = True
-            image_name = "audius-dev-poc"
+            image_name = "audius-dev-8feda2f-82c1dea-11-22-21"
             image_project = "audius-infrastructure"
 
         ip = create_instance(

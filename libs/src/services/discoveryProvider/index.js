@@ -554,6 +554,12 @@ class DiscoveryProvider {
     return data
   }
 
+  async getCreateSenderAttestation (senderEthAddress, discoveryProviderEndpoint) {
+    const req = Requests.getCreateSenderAttestation(senderEthAddress)
+    const { data } = await this._performRequestWithMonitoring(req, discoveryProviderEndpoint)
+    return data
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   /**

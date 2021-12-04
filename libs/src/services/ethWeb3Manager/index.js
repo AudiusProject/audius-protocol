@@ -57,7 +57,8 @@ class EthWeb3Manager {
   ) {
     const gasLimit = txGasLimit || await estimateGas({
       method: contractMethod,
-      from: this.ownerWallet
+      from: this.ownerWallet,
+      gasLimitMaximum: HIGH_GAS_PRICE
     })
     if (contractAddress && privateKey) {
       let gasPrice = parseInt(await this.web3.eth.getGasPrice())
@@ -109,6 +110,29 @@ class EthWeb3Manager {
     return contractMethod.send({ from: this.ownerWallet, gas: gasLimit, gasPrice: gasPrice })
   }
 
+  /**
+   * Relays an eth transaction via the identity service with retries
+   * The relay pays for the transaction fee on behalf of the user
+   * The gas Limit is estimated if not provided
+   *
+   * @param {*} contractMethod
+   * @param {string} contractAddress
+   * @param {string} ownerWallet
+   * @param {string} relayerWallet
+   * @param {number?} txRetries
+   * @param {number?} txGasLimit
+   * @returns {
+   *   txHash: string,
+   *   txParams: {
+   *      data: string
+   *      gasLimit: string
+   *      gasPrice: number
+   *      nonce: string
+   *      to: string
+   *      value: string
+   *   }
+   * }
+   */
   async relayTransaction (
     contractMethod,
     contractAddress,
@@ -118,7 +142,11 @@ class EthWeb3Manager {
     txGasLimit = null
   ) {
     const encodedABI = contractMethod.encodeABI()
-    const gasLimit = txGasLimit || await estimateGas({ from: relayerWallet, method: contractMethod })
+    const gasLimit = txGasLimit || await estimateGas({
+      from: relayerWallet,
+      method: contractMethod,
+      gasLimitMaximum: HIGH_GAS_PRICE
+    })
     const response = await retry(async bail => {
       try {
         const attempt = await this.identityService.ethRelay(
@@ -150,8 +178,7 @@ class EthWeb3Manager {
         }
       }
     })
-
-    return response['receipt']
+    return response['resp']
   }
 }
 
