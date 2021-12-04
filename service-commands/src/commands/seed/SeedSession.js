@@ -88,7 +88,7 @@ class SeedSession {
     const coverPhotoFile = null
     const hasWallet = false
     const host = (typeof window !== 'undefined' && window.location.origin) || null
-    const createWAudioUserBank = true
+    const createWAudioUserBank = false
     try {
       signUpResponse = await this.libs.Account.signUp(email, password, metadata, profilePictureFile, coverPhotoFile, hasWallet, host, createWAudioUserBank)
     } catch (error) {
