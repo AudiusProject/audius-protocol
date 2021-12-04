@@ -272,7 +272,7 @@ class RewardsAttester {
     }
 
     // Handle error path
-    this.logger.error(`Failed to attest for challenge [${challengeId}] for user [${userId}], amount [${amount}] at phase: [${phase}] with error [${error}]`)
+    this.logger.error(`Failed to attest for challenge [${challengeId}] for user [${userId}], amount [${amount}], oracle: [${this.aaoAddress}] at phase: [${phase}] with error [${error}]`)
     await this.reporter.reportFailure({
       phase,
       error,

@@ -212,6 +212,12 @@ async function submitAttestations ({
     }, [])
   )
 
+  const encodedOracleMessage = SolanaUtils.constructAttestation(
+    recipientEthAddress,
+    tokenAmount,
+    transferId,
+  )
+
   // Add instructions from oracle attestation
   const oracleSecp = await generateAttestationSecpInstruction({
     attestationMeta: oracleAttestation,
@@ -219,8 +225,9 @@ async function submitAttestations ({
     instructionIndex: instructions.length,
     tokenAmount,
     transferId,
-    encodedSenderMessage
+    encodedSenderMessage: encodedOracleMessage
   })
+
   const oracleTransfer = await generateSubmitAttestationInstruction({
     attestationMeta: oracleAttestation,
     derivedMessageAccount,
@@ -514,14 +521,16 @@ const generateSubmitAttestationInstruction = async ({
     rewardManagerAccount
   )
 
-  ///   Verify transfer signature
-  ///   0. `[writable]` New or existing account storing verified messages
+  ///   Submit attestations
+  ///
+  ///   0. `[writable]` Verified messages - New or existing account PDA storing verified messages
   ///   1. `[]` Reward manager
   ///   2. `[]` Reward manager authority
-  ///   3. `[]` fee payer
+  ///   3. `[signer]` Funder
   ///   4. `[]` Sender
-  ///   5. `[]` sysvar rent
-  ///   6. `[]` Sysvar instruction id
+  ///   5. `[]` Sysvar rent
+  ///   6. `[]` Instruction info
+  ///   7. `[]` System program id
   const verifyInstructionAccounts = [
     {
       pubkey: derivedMessageAccount,

@@ -216,7 +216,7 @@ class App {
     }
 
     // Fetch the challengeDenyList, used to filter out
-    // challenges by ID 
+    // arbitrary challenges by their challengeId
     const challengeIdsDenyList = (
       (getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.CHALLENGE_IDS_DENY_LIST) || '')
       .split(',')
@@ -224,12 +224,12 @@ class App {
 
     // Fetch the last saved offset and startingBLock from the DB,
     // or create them if necessary.
-    let values = await models.RewardAttesterValues.findOne()
-    if (!values) {
-      values = models.RewardAttesterValues.build()
-      values.startingBlock = 0
-      values.offset = 0
-      await values.save()
+    let initialVals = await models.RewardAttesterValues.findOne()
+    if (!initialVals) {
+      initialVals = models.RewardAttesterValues.build()
+      initialVals.startingBlock = 0
+      initialVals.offset = 0
+      await initialVals.save()
     }
 
     // Init the RewardsAttester
@@ -240,23 +240,22 @@ class App {
       quorumSize: config.get('rewardsQuorumSize'),
       aaoEndpoint: config.get('aaoEndpoint'),
       aaoAddress: config.get('aaoAddress'),
-      startingBlock: values.startingBlock, 
-      offset: values.offset,
+      startingBlock: initialVals.startingBlock, 
+      offset: initialVals.offset,
       challengeIdsDenyList,
       updateValues: async ({ startingBlock, offset, successCount }) => {
-        let values = await models.RewardAttesterValues.findOne()
-        // Safe to assume it exists b/c it's created
-        // at initialization time above.
-        values.startingBlock = startingBlock
-        values.offset = offset
+        childLogger.info(`Persisting offset: ${offset}, startingBlock: ${startingBlock}`)
+
+        await models.RewardAttesterValues.update({
+          startingBlock, 
+          offset
+        }, { where: {}})
 
         // If we succeeded in attesting for at least a single reward,
         // store in Redis so we can healthcheck it.
         if (successCount > 0) {
           await this.redisClient.set(REDIS_ATTEST_HEALTH_KEY, Date.now())
         }
-        childLogger.info(`Persisting offset: ${offset}, startingBlock: ${startingBlock}`)
-        return values.save()
       }
     })
     attester.start()
