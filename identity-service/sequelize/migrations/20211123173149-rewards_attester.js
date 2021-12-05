@@ -1,4 +1,4 @@
-'use strict';
+'use strict'
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
@@ -12,7 +12,7 @@ module.exports = {
       offset: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        defaultValue: 0,
+        defaultValue: 0
       },
       createdAt: {
         allowNull: false,
@@ -28,4 +28,4 @@ module.exports = {
   down: (queryInterface) => {
     return queryInterface.dropTable('RewardAttesterValues')
   }
-};
+}

@@ -201,11 +201,11 @@ class App {
     return audiusInstance
   }
 
-  async configureRewardsAttester(libs) {
+  async configureRewardsAttester (libs) {
     // Make a more greppable child logger
-    const childLogger = logger.child({'service': 'RewardsAttester'})
+    const childLogger = logger.child({ 'service': 'RewardsAttester' })
 
-    // Await for optimizely config so we know 
+    // Await for optimizely config so we know
     // whether rewards attestation is enabled,
     // returning early if false
     await this.optimizelyPromise
@@ -219,7 +219,7 @@ class App {
     // arbitrary challenges by their challengeId
     const challengeIdsDenyList = (
       (getRemoteVar(this.optimizelyClientInstance, REMOTE_VARS.CHALLENGE_IDS_DENY_LIST) || '')
-      .split(',')
+        .split(',')
     )
 
     // Fetch the last saved offset and startingBLock from the DB,
@@ -233,23 +233,23 @@ class App {
     }
 
     // Init the RewardsAttester
-    const attester = new RewardsAttester({ 
+    const attester = new RewardsAttester({
       libs,
       logger: childLogger,
       parallelization: config.get('rewardsParallelization'),
       quorumSize: config.get('rewardsQuorumSize'),
       aaoEndpoint: config.get('aaoEndpoint'),
       aaoAddress: config.get('aaoAddress'),
-      startingBlock: initialVals.startingBlock, 
+      startingBlock: initialVals.startingBlock,
       offset: initialVals.offset,
       challengeIdsDenyList,
       updateValues: async ({ startingBlock, offset, successCount }) => {
         childLogger.info(`Persisting offset: ${offset}, startingBlock: ${startingBlock}`)
 
         await models.RewardAttesterValues.update({
-          startingBlock, 
+          startingBlock,
           offset
-        }, { where: {}})
+        }, { where: {} })
 
         // If we succeeded in attesting for at least a single reward,
         // store in Redis so we can healthcheck it.

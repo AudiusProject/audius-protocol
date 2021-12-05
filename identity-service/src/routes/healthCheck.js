@@ -407,7 +407,7 @@ module.exports = function (app) {
     const { maxDrift } = req.query
     const redis = req.app.get('redis')
     const lastSuccessfulDisbursement = await redis.get(REDIS_ATTEST_HEALTH_KEY)
-    const isHealthy = lastSuccessfulDisbursement && ((Date.now() - lastSuccessfulDisbursement)/1000 < maxDrift)
+    const isHealthy = lastSuccessfulDisbursement && ((Date.now() - lastSuccessfulDisbursement) / 1000 < maxDrift)
     const resp = {
       lastSuccessfulDisbursement
     }

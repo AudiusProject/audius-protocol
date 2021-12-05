@@ -35,7 +35,7 @@ class AudiusLibsWrapper {
       rewardsManagerTokenPDA: config.get('solanaRewardsManagerTokenPDA'),
       // Never use the relay path in identity
       useRelay: false,
-      feePayerSecretKey,
+      feePayerSecretKey
     })
 
     let audiusInstance = new AudiusLibs({
@@ -58,7 +58,7 @@ class AudiusLibsWrapper {
       },
       isServer: true,
       captchaConfig: { serviceKey: config.get('recaptchaServiceKey') },
-      solanaWeb3Config: solanaWeb3Config,
+      solanaWeb3Config: solanaWeb3Config
     })
 
     await audiusInstance.init()

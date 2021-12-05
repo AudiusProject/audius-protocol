@@ -718,13 +718,13 @@ if (fs.existsSync('solana-program-config.json')) {
     solanaClaimableTokenProgramAddress: solanaContractConfig.claimableTokenAddress,
     solanaRewardsManagerProgramId: solanaContractConfig.rewardsManagerAddress,
     solanaRewardsManagerProgramPDA: solanaContractConfig.rewardsManagerAccount,
-    solanaRewardsManagerTokenPDA: solanaContractConfig.rewardsManagerTokenAccount,
+    solanaRewardsManagerTokenPDA: solanaContractConfig.rewardsManagerTokenAccount
   })
 }
 
 if (fs.existsSync('aao-config.json')) {
   let aaoConfig = require('../aao-config.json')
-  console.log("rewards: " + JSON.stringify(aaoConfig))
+  console.log('rewards: ' + JSON.stringify(aaoConfig))
   config.load({
     aaoAddress: aaoConfig[0]
   })
