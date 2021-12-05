@@ -597,31 +597,31 @@ const config = convict({
   solanaMintAddress: {
     doc: 'The address of our SPL token',
     format: String,
-    default: null,
+    default: '',
     env: 'solanaMintAddress'
   },
   solanaClaimableTokenProgramAddress: {
     doc: 'The address of our Claimable Token program',
     format: String,
-    default: null,
+    default: '',
     env: 'solanaClaimableTokenProgramAddress'
   },
   solanaRewardsManagerProgramId: {
     doc: 'The address of our Rewards Manager program',
     format: String,
-    default: null,
+    default: '',
     env: 'solanaRewardsManagerProgramId'
   },
   solanaRewardsManagerProgramPDA: {
     doc: 'The PDA of this Rewards Manager deployment',
     format: String,
-    default: null,
+    default: '',
     env: 'solanaRewardsManagerProgramPDA'
   },
   solanaRewardsManagerTokenPDA: {
     doc: 'The PDA for the Rewards Manager token account',
     format: String,
-    default: null,
+    default: '',
     env: 'solanaRewardsManagerTokenPDA'
   },
   rewardsParallelization: {
