@@ -1,59 +1,55 @@
+const { promisify } = require('util')
 const fs = require('fs-extra')
 const fsStat = promisify(fs.stat)
 
-const {getRequestRange, formatContentRange} = require('../../../utils/requestRange')
+const { getRequestRange, formatContentRange } = require('../../../utils/requestRange')
 
 const FILE_CACHE_EXPIRY_SECONDS = 5 * 60
 
-async function findDbFileWithCID ({cid, redisClient, models}) {
-    const cacheKey = getStoragePathQueryCacheKey(cid)
-  
-    let storagePath = await redisClient.get(cacheKey)
-    if (!storagePath) {
-      // Don't serve if not found in DB.
-      const queryResults = await models.File.findOne({
-        where: {
-          multihash: cid
-        },
-        order: [['clock', 'DESC']]
-      })
-      if (!queryResults) {
-          // errorResponseNotFound
-        throw new Error(`No valid file found for provided CID: ${cid}`)
-      }
- 
-      //errorResponseBadRequest
-      if (queryResults.type === 'dir') {
-        throw new Error('this dag node is a directory')
-      }
+async function getFileStoragePathFromDb ({ cid, redisClient, models }) {
+  const cacheKey = getStoragePathQueryCacheKey(cid)
 
-      storagePath = query.storagePath
+  let storagePath = await redisClient.get(cacheKey)
+  if (!storagePath) {
+    // Don't serve if not found in DB.
+    const queryResults = await models.File.findOne({
+      where: {
+        multihash: cid
+      },
+      order: [['clock', 'DESC']]
+    })
+    if (!queryResults) {
+      // errorResponseNotFound
+      throw new Error(`No valid file found for provided CID: ${cid}`)
     }
 
-    return storagePath
+    // errorResponseBadRequest
+    if (queryResults.type === 'dir') {
+      throw new Error('this dag node is a directory')
+    }
+
+    storagePath = queryResults.storagePath
+  }
+
+  return storagePath
 }
 
-async function updateRedisCache (redisClient, cid) {
-    const cacheKey = getStoragePathQueryCacheKey(CID)
-  
-    let storagePath = await redisClient.get(cacheKey)
+async function updateRedisCache ({ redisClient, cid, storagePath }) {
+  const cacheKey = getStoragePathQueryCacheKey(cid)
 
-    if (!storagePath) {
-        redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
-    }
+  redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
+  redisClient.incr('ipfsStandaloneReqs')
+  const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
 
-    redisClient.incr('ipfsStandaloneReqs')
-    const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
-
-    return totalStandaloneIpfsReqs
+  return totalStandaloneIpfsReqs
 }
 
 // Gets a CID, streaming from the filesystem if available and falling back to IPFS if not
-async function serveCID ({cid, libs, RehydrateIpfsQueue, ipfsStat, storagePath, req, res, ipfsAPI}) {
-  // Add a rehydration task to the queue to be processed in the background. 
+async function serveCID ({ cid, libs, RehydrateIpfsQueue, ipfsStat, storagePath, req, res, ipfsAPI, trackId, findCIDInNetwork }) {
+  // Add a rehydration task to the queue to be processed in the background.
   // If this call errors, ignore the exception thrown.
   RehydrateIpfsQueue.addRehydrateIpfsFromFsIfNecessaryTask(cid, storagePath, { logContext: req.logContext })
-  
+
   // Attempt to stream file to client from filesystem
   try {
     req.logger.info(`Retrieving ${storagePath} directly from filesystem`)
@@ -73,7 +69,7 @@ async function serveCID ({cid, libs, RehydrateIpfsQueue, ipfsStat, storagePath, 
   try {
     // Add content length headers
     // If the IPFS stat call fails or timesout, an error is thrown
-    await streamFromIpfs({ipfs, ipfsStat, cid, req, res})
+    await streamFromIpfs({ ipfsAPI, ipfsStat, cid, req, res })
   } catch (e) {
     // Unset the cache-control header so that a bad response is not cached
     res.removeHeader('cache-control')
@@ -86,7 +82,7 @@ async function serveCID ({cid, libs, RehydrateIpfsQueue, ipfsStat, storagePath, 
  * Helper method to stream file from file system on creator node
  * Serves partial content using range requests
  */
- async function streamFromFileSystem (req, res, path) {
+async function streamFromFileSystem (req, res, path) {
   try {
     // If file cannot be found on disk, throw error
     if (!fs.existsSync(path)) {
@@ -144,7 +140,7 @@ async function serveCID ({cid, libs, RehydrateIpfsQueue, ipfsStat, storagePath, 
   }
 }
 
-async function streamFromIpfs({ipfsAPI, ipfsStat, cid, res, req}) {
+async function streamFromIpfs ({ ipfsAPI, ipfsStat, cid, res, req }) {
   const stat = await ipfsStat(cid, req.logContext, 500)
   res.set('Accept-Ranges', 'bytes')
 
@@ -189,13 +185,12 @@ async function streamFromIpfs({ipfsAPI, ipfsStat, cid, res, req}) {
   })
 }
 
-async function getStoragePathQueryCacheKey = (path) {
+async function getStoragePathQueryCacheKey (path) {
   return `storagePathQuery:${path}`
 }
 
-
 module.exports = {
-  findDbFileWithCID,
+  getFileStoragePathFromDb,
   updateRedisCache,
-  serveCID,
+  serveCID
 }

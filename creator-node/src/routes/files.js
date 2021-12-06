@@ -547,7 +547,7 @@ module.exports = function (app) {
    * @dev This route does not handle responses by design, so we can pipe the response to client.
    * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
    */
-  app.get('/ipfs/:CID', getCID)
+  // app.get('/ipfs/:CID', getCID)
 
   /**
    * Serve images hosted by creator node on IPFS.

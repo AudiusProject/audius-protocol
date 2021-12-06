@@ -1,34 +1,46 @@
-const Redis = require('ioredis')
-const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 
+const express = require('express')
+const Redis = require('ioredis')
+const contentDisposition = require('content-disposition')
+
+const config = require('../config.js')
 const models = require('../models')
 const { serviceRegistry } = require('./serviceRegistry')
-const { logger: genericLogger } = require('../../logging')
 const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
-const { getIPFSPeerId, ipfsSingleByteCat, ipfsStat, getAllRegisteredCNodes, findCIDInNetwork, timeout } = require('../utils')
+const { ipfsStat } = require('../utils')
 
+const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
+const {
+  sendResponse,
+  errorResponseBadRequest,
+  errorResponseServerError,
+  errorResponseForbidden,
+  errorResponseRangeNotSatisfiable
+} = require('../apiHelpers')
 // rename this... lol
 const getCID = require('./components/getCID')
 
+const router = express.Router()
+
 // Gets a CID, streaming from the filesystem if available and falling back to IPFS if not
-const getCIDController = async (req) => {
+const getCIDController = async (req, res) => {
   if (!req.params || !req.params.CID) {
     return sendResponse(req, res, errorResponseBadRequest(`Invalid request, no CID provided`))
   }
-  
+
   const BlacklistManager = serviceRegistry.blacklistManager
   const cid = req.params.CID
   const trackId = parseInt(req.query.trackId)
 
-  const isServable = await BlacklistManager.isServable(CID, trackId)
+  const isServable = await BlacklistManager.isServable(cid, trackId)
   if (!isServable) {
-    return sendResponse(req, res, errorResponseForbidden(`CID=${CID} has been blacklisted by this node`))
+    return sendResponse(req, res, errorResponseForbidden(`CID=${cid} has been blacklisted by this node`))
   }
 
-  const storagePath = await getCID.findDbFileWithCID({cid, redisClient, models})
-  const totalStandaloneIpfsReqs = await getCID.updateRedisCache(cid)
+  const storagePath = await getCID.getFileStoragePathFromDb({ cid, redisClient, models })
+  const totalStandaloneIpfsReqs = await getCID.updateRedisCache({ cid, redisClient, storagePath })
 
-  req.logger.info(`IPFS Standalone Request - ${CID}`)
+  req.logger.info(`IPFS Standalone Request - ${cid}`)
   req.logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 
   // If client has provided filename, set filename in header to be auto-populated in download prompt.
@@ -41,7 +53,7 @@ const getCIDController = async (req) => {
 
   const libs = serviceRegistry.libs || req.app.get('libs')
   try {
-    const cid = await getCID.serveCID({
+    return await getCID.serveCID({
       cid,
       RehydrateIpfsQueue,
       libs,
@@ -52,10 +64,23 @@ const getCIDController = async (req) => {
     })
   } catch (e) {
     if (res.statusCode === 416) {
-        return sendResponse(req, res, errorResponseRangeNotSatisfiable(e.message))
+      return sendResponse(req, res, errorResponseRangeNotSatisfiable(e.message))
     }
 
     // If the file cannot be retrieved through fs nor IPFS, return 500 without attempting to stream file.
     return sendResponse(req, res, errorResponseServerError(e.message))
   }
 }
+
+/**
+ * Serve IPFS data hosted by creator node and create download route using query string pattern
+ * `...?filename=<file_name.mp3>`.
+ * @param req
+ * @param req.query
+ * @param {string} req.query.filename filename to set as the content-disposition header
+ * @param {boolean} req.query.fromFS whether or not to retrieve directly from the filesystem and
+ * rehydrate IPFS asynchronously
+ * @dev This route does not handle responses by design, so we can pipe the response to client.
+ * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
+ */
+router.get('/ipfs/:CID', getCIDController)
