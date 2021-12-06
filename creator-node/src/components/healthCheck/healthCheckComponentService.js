@@ -1,4 +1,5 @@
-const versionInfo = require('../../../.version.json')
+const path = require('path')
+const versionInfo = require(path.join(process.cwd(), '.version.json'))
 const config = require('../../config')
 const utils = require('../../utils.js')
 const { MONITORS } = require('../../monitors/monitors')
