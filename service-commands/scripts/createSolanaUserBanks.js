@@ -9,6 +9,9 @@ const { PublicKey, Keypair } = solanaWeb3
 const config = require('../config/config')
 const untildify = require('untildify')
 const { program } = require('commander')
+const fs = require('fs')
+const LineByLineReader = require('line-by-line')
+const qs = require('qs')
 
 /**
  * @typedef {Object} SolanaConfig
@@ -40,6 +43,7 @@ const { program } = require('commander')
  * @param {string} discoveryProviderUrl the url to the selected discovery provider
  * @param {number} batchNumber the current batch number (0 for first)
  * @param {number} batchSize the number of users to fetch
+ * @return {Object[]} the users
  */
 async function getUserBatch(discoveryProviderUrl, batchNumber, batchSize) {
   const response = await axios({
@@ -50,6 +54,29 @@ async function getUserBatch(discoveryProviderUrl, batchNumber, batchSize) {
     params: {
       offset: batchNumber * batchSize,
       limit: batchSize
+    }
+  })
+  return response.data.data
+}
+
+/**
+ * Gets a batch of users from the /users endpoint to get their wallets
+ * Preferred over depending on libs since we want to specify a DN manually
+ * @param {string} discoveryProviderUrl the url to the selected discovery provider
+ * @param {string[]} ids the ids of the users to fetch
+ * @return {Object[]} the users
+ */
+async function getUserBatchFromIds(discoveryProviderUrl, ids) {
+  const response = await axios({
+    method: 'get',
+    baseURL: discoveryProviderUrl,
+    url: '/users',
+
+    params: {
+      id: ids
+    },
+    paramsSerializer: params => {
+      return qs.stringify(params, { arrayFormat: 'repeat' })
     }
   })
   return response.data.data
@@ -149,21 +176,98 @@ function getConfigForEnv(env) {
  * @param {Object} options
  */
 async function main(options) {
+  // Setup config and init variables
   const config = getConfigForEnv(options.env)
   const { discoveryProviderUrl, ...createUserBankParams } = await setupConfig(
     config
   )
-
   let batchNumber = 0
-  let users = await getUserBatch(
-    discoveryProviderUrl,
-    batchNumber,
-    options.batchSize
-  )
-  while (users.length > 0) {
+  if (options.input === options.output) {
+    throw new Error('Input and output files should not be the same')
+  }
+  if (options.output && fs.existsSync(options.output)) {
+    console.log(`Output file ${options.output} already exists, overwriting...`)
+    fs.writeFileSync(options.output, '')
+  }
+  if (options.input && !fs.existsSync(options.input)) {
+    throw new Error('Input file does not exist')
+  }
+
+  /**
+   * Hits Discovery to scan through all users and process batch by batch
+   */
+  const processAll = async () => {
+    let users = await getUserBatch(
+      discoveryProviderUrl,
+      batchNumber,
+      options.batchSize
+    )
+    while (users.length > 0) {
+      await processUserBatch(users, createUserBankParams, options.output)
+      console.log(`[BATCH] Done with batch ${batchNumber++}`)
+      users = await getUserBatch(
+        discoveryProviderUrl,
+        batchNumber,
+        options.batchSize
+      )
+    }
+    console.log('[FINISH] Finished processing all users')
+  }
+
+  /**
+   * Only process the IDs from an input file, still batch by batch
+   */
+  const processInputFile = () => {
+    const lineReader = new LineByLineReader(options.input)
+    let idBatch = []
+    lineReader.on('line', async line => {
+      idBatch.push(line)
+      if (idBatch.length >= options.batchSize) {
+        lineReader.pause()
+        getUserBatchFromIds(discoveryProviderUrl, idBatch)
+          .then(users => {
+            const userIds = users.map(u => u.user_id.toString())
+            idBatch
+              .filter(id => !userIds.includes(id))
+              .forEach(id => {
+                console.error(`[ERROR] User user_id=${id} not found`)
+                if (options.output) {
+                  fs.appendFileSync(options.output, id + '\n')
+                }
+              })
+            return processUserBatch(users, createUserBankParams, options.output)
+          })
+          .then(() => {
+            idBatch = []
+            batchNumber++
+            console.log(`[BATCH] Done with batch ${batchNumber++}`)
+            lineReader.resume()
+          })
+      }
+    })
+    lineReader.on('error', console.error)
+    lineReader.on('end', () => {
+      // Process last batch
+      getUserBatchFromIds(discoveryProviderUrl, idBatch)
+        .then(users =>
+          processUserBatch(users, createUserBankParams, options.output)
+        )
+        .then(() => {
+          batchNumber++
+          console.log(`[BATCH] Done with batch ${batchNumber++}`)
+          console.log(`[FINISH] Finished processing ${options.input}`)
+        })
+    })
+  }
+
+  /**
+   * Processes a batch of users, creating user banks for them all
+   * @param {Object[]} users the list of users to process
+   */
+  const processUserBatch = users => {
     const batchPromises = users.map(async user => {
       console.debug(
-        `[START]: Creating user bank for user_id=${user.user_id} wallet=${user.wallet}`
+        `[REQUEST]: Creating user bank for user_id=${user.user_id} wallet=${user.wallet}`
       )
       return createUserBankFrom({
         ...createUserBankParams,
@@ -175,21 +279,25 @@ async function main(options) {
           )
         })
         .catch(e => {
-          console.error(e)
           console.error(
             `[FAILED]: Failed to create user bank for user_id=${user.user_id} wallet=${user.wallet} error=${e}`
           )
+          if (options.output) {
+            fs.appendFileSync(options.output, user.user_id + '\n')
+          }
         })
     })
-    await Promise.all(batchPromises)
-    console.log(`Done with batch ${batchNumber++}`)
-    users = await getUserBatch(
-      discoveryProviderUrl,
-      batchNumber,
-      options.batchSize
-    )
+    return Promise.all(batchPromises)
+  }
+  if (options.input) {
+    console.log(`[START] Processing file '${options.input}'`)
+    processInputFile()
+  } else {
+    console.log(`[START] Processing all users from ${discoveryProviderUrl}`)
+    await processAll()
   }
 }
+
 program
   .option(
     '-e, --env <environment>',
@@ -197,4 +305,15 @@ program
     'dev'
   )
   .option('-b, --batch-size <size>', 'how many users to process per batch', 50)
+  .option(
+    '-o, --output <filename>',
+    'the filename which the userIds of failed requests will be written, separated by new lines',
+    'failedIds.txt'
+  )
+  .option(
+    '-i, --input <filename>',
+    'the filename from which to load the list of userIds to generate user banks, separated by new lines'
+  )
+
+program.parse(process.argv)
 main(program.opts())
