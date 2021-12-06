@@ -127,11 +127,11 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
     // Switching from profile page => profile page
     this.unlisten = this.props.history.listen((location, action) => {
-      // If changing profiles or "POP" on router (with goBack, the pathnames are equal)
-      const profileHandle1 = getPathname(this.props.location).split('/')[1]
-      const profileHandle2 = getPathname(location).split('/')[1]
-
-      if (profileHandle1 !== profileHandle2 || action === 'POP') {
+      // If changing pages or "POP" on router (with goBack, the pathnames are equal)
+      if (
+        getPathname(this.props.location) !== getPathname(location) ||
+        action === 'POP'
+      ) {
         this.props.resetProfile()
         this.props.resetArtistTracks()
         this.props.resetUserFeedTracks()
