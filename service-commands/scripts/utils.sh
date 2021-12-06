@@ -32,7 +32,7 @@ get_azure_subscription() {
 }
 
 get_azure_resource_group() {
-	az config get defaults.group -o tsv
+	az config get default.group --query 'value' -o tsv
 }
 
 get_gcp_account() {
@@ -44,7 +44,7 @@ get_gcp_project() {
 }
 
 gcp_image_to_flags() {
-	echo $1 | sed 's/\(^\|,\)project=/ --image-project=/; s/\(^\|,\)family=/ --image-family=/; s/\(^\|,\)image=/ --image=/'
+	echo $1 | sed -E 's/(^|,)project=/ --image-project=/; s/(^|,)family=/ --image-family=/; s/(^|,)image=/ --image=/'
 }
 
 gcp_set_defaults() {
@@ -60,7 +60,10 @@ gcp_set_defaults() {
 }
 
 azure_set_defaults() {
-	az config set defaults.group=audius
+	if [[ "$(get_azure_resource_group)" == "" ]]; then
+		echo 'setting default azure resource group'
+		az config set defaults.group=audius-azure
+	fi
 }
 
 instance_exists() {
