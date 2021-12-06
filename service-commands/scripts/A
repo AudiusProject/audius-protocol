@@ -8,13 +8,6 @@ import sys
 
 PROTOCOL_DIR = os.getenv('PROTOCOL_DIR', os.path.join(os.path.dirname(__file__), "../../"))
 
-DEFAULT_AZURE_IMAGE = "UbuntuLTS"
-DEFAULT_GCP_IMAGE = "project=ubuntu-os-cloud,family=ubuntu-2004-lts"
-DEFAULT_DISK_SIZE = 256
-DEFAULT_AZURE_MACHINE_TYPE = "Standard_F8s_v2"
-DEFAULT_GCP_MACHINE_TYPE = "n2-custom-12-24576"
-GCP_DEV_IMAGE = "project=audius-infrastructure,image=audius-dev-poc"
-
 
 def create_instance(provider, image, disk_size, machine_type, name):
     """Create instance with provided options"""
@@ -78,24 +71,24 @@ def main():
     parser_create_instance.add_argument(
         "--provider",
         choices=["azure", "gcp"],
-        help="the provider to create the instance on (default: %(default)s)",
+        help="the provider to create the instance on (default: gcp)",
     )
 
     parser_create_instance.add_argument(
         "--image",
         type=str,
-        help=f"image to use for creating the instance; use the format project=<project>,(family=<family>|image=<image>) for specifying images on gcp (defaults: {DEFAULT_AZURE_IMAGE} (azure), {DEFAULT_GCP_IMAGE} (gcp))",
+        help="image to use for creating the instance; use the format project=<project>,(family=<family>|image=<image>) for specifying images on gcp (defaults: UbuntuLTS (azure), project=ubuntu-os-cloud,family=ubuntu-2004-lts (gcp))",
     )
 
     parser_create_instance.add_argument(
         "--disk-size",
-        help="size of disk in gb to use for the instance (default: %(default)s)",
+        help="size of disk in gb to use for the instance (default: 256GB)",
     )
 
     parser_create_instance.add_argument(
         "--machine-type",
         type=str,
-        help="machine type to use for the instance (defaults: {DEFAULT_AZURE_MACHINE_TYPE} (azure), {DEFAULT_GCP_MACHINE_TYPE} (gcp))",
+        help="machine type to use for the instance (defaults: Standard_F8s_v2 (azure), n2-custom-12-24576 (gcp))",
     )
 
     parser_create_instance.add_argument(
@@ -111,12 +104,12 @@ def main():
     parser_setup.add_argument(
         "--provider",
         choices=["azure", "gcp"],
-        help="provider on which the remote machine exists; specify raw for using a ip directly (default: %(default)s)",
+        help="provider on which the remote machine exists; specify raw for using a ip directly (default: gcp)",
     )
 
     parser_setup.add_argument(
         "--user",
-        help="user to login in as (default: %(default)s)",
+        help="user to login in as (default: ubuntu)",
     )
 
     parser_setup.add_argument(

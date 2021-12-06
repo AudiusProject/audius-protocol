@@ -32,7 +32,7 @@ get_azure_subscription() {
 }
 
 get_azure_resource_group() {
-	az config get defaults.group
+	az config get defaults.group -o tsv
 }
 
 get_gcp_account() {
@@ -57,6 +57,10 @@ gcp_set_defaults() {
 		echo 'setting compute/zone in gcloud'
 		gcloud config set-value 'compute/zone' $DEFAULT_GCP_COMPUTE_ZONE
 	fi
+}
+
+azure_set_defaults() {
+	az config set defaults.group=audius
 }
 
 instance_exists() {
