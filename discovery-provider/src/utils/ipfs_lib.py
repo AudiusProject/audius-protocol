@@ -57,10 +57,13 @@ class IPFSClient:
             metadata_futures[executor.submit(
                 self.get_metadata_from_gateway, multihash, default_metadata_fields, user_replica_set
             )] = 'metadata_from_gateway'
-            for get_metadata_future in concurrent.futures.as_completed(metadata_futures):
+            for get_metadata_future in concurrent.futures.as_completed(
+                metadata_futures,
+                timeout=NEW_BLOCK_TIMEOUT_SECONDS
+            ):
                 original_task = metadata_futures[get_metadata_future]
                 try:
-                    api_metadata = get_metadata_future.result(timeout=NEW_BLOCK_TIMEOUT_SECONDS)
+                    api_metadata = get_metadata_future.result()
                     retrieved = api_metadata != default_metadata_fields
                     if retrieved:
                         logger.info(
@@ -72,6 +75,8 @@ class IPFSClient:
                             retrieved_from_local_node = True
                         self.force_clear_queue_and_stop_task_execution(executor)
                         break # use first returned result
+                except TimeoutError as e:
+                    raise Exception from e
                 except Exception as e:
                     logger.error(
                         f"IPFSCLIENT | ipfs_lib.py | \

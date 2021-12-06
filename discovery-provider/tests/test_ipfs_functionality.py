@@ -5,7 +5,7 @@ import pytest # pylint: disable=unused-import
 from pytest_mock import mocker # pylint: disable=unused-import
 from chance import chance
 from src.utils.ipfs_lib import IPFSClient
-from src.utils.helpers import remove_test_file as test_cleanup
+from src.utils.helpers import remove_test_file as cleanup_test
 from src.tasks.metadata import track_metadata_format
 
 IPFS_FETCH = 'get_metadata_from_ipfs_node'
@@ -51,62 +51,70 @@ def assert_metadata_retrieval_failure(app, track_metadata_format, json_file):
     with pytest.raises(Exception):
         metadata_hash = add_metadata_object_to_ipfs_node(json_file, api)
         ipfsclient.get_metadata(metadata_hash, track_metadata_format)
+    cleanup_test(json_file)
 
-def assert_metadata_retrieval_success(app, track_metadata_format, json_file):
+def assert_metadata_retrieval_success(app, track_metadata_format, test_metadata_object, json_file):
     ipfsclient = get_ipfs_client(app)
     api = get_ipfs_api(app)
-    test_metadata_object = create_generic_metadata_object(track_metadata_format, json_file)
     metadata_hash = add_metadata_object_to_ipfs_node(json_file, api)
     ipfs_metadata = ipfsclient.get_metadata(metadata_hash, track_metadata_format)
     confirm_retrieved_metadata_object_state(test_metadata_object, ipfs_metadata)
+    cleanup_test(json_file)
 
-def timeout_fetch():
-    time.sleep(10)
+def timeout_fetch(test_metadata_object):
+    def fn(*args):
+        time.sleep(20)
+    return fn
 
-def slow_return_metadata():
-    time.sleep(3)
-    test_metadata_object = create_generic_metadata_object(track_metadata_format, JSON_FILE)
-    return test_metadata_object
+def slow_return_metadata(test_metadata_object):
+    def fn(*args):
+        time.sleep(3)
+        return test_metadata_object
+    return fn
 
-def return_metadata_immediately():
-    test_metadata_object = create_generic_metadata_object(track_metadata_format, JSON_FILE)
-    return test_metadata_object
+def return_metadata_immediately(test_metadata_object):
+    def fn(*args):
+        time.sleep(0)
+        return test_metadata_object
+    return fn
 
 def patch_ipfsclient_method(mocker, method_name, replacement_function):
-    mocker.patch.object(IPFSClient, method_name)
-    IPFSClient.get_metadata_from_gateway.side_effect = replacement_function
+    mocker.patch(f'src.utils.ipfs_lib.IPFSClient.{method_name}',
+        side_effect=replacement_function,
+        autospec=True
+    )
 
 # Tests
 def test_base_case(app):
-    assert_metadata_retrieval_success(app, track_metadata_format, JSON_FILE)
-    test_cleanup(JSON_FILE)
+    test_metadata_object = create_generic_metadata_object(track_metadata_format, JSON_FILE)
+    assert_metadata_retrieval_success(app, track_metadata_format, test_metadata_object, JSON_FILE)
 
 def test_ipfs_metadata_fetch_with_gateway_slow(app, mocker):
-    patch_ipfsclient_method(mocker, GATEWAY_FETCH, slow_return_metadata)
-    patch_ipfsclient_method(mocker, IPFS_FETCH, return_metadata_immediately)
-    assert_metadata_retrieval_success(app, track_metadata_format, JSON_FILE)
-    test_cleanup(JSON_FILE)
+    test_metadata_object = create_generic_metadata_object(track_metadata_format, JSON_FILE)
+    patch_ipfsclient_method(mocker, GATEWAY_FETCH, slow_return_metadata(test_metadata_object))
+    patch_ipfsclient_method(mocker, IPFS_FETCH, return_metadata_immediately(test_metadata_object))
+    assert_metadata_retrieval_success(app, track_metadata_format, test_metadata_object, JSON_FILE)
 
 def test_ipfs_metadata_fetch_with_ipfs_slow(app, mocker):
-    patch_ipfsclient_method(mocker, IPFS_FETCH, slow_return_metadata)
-    patch_ipfsclient_method(mocker, GATEWAY_FETCH, return_metadata_immediately)
-    assert_metadata_retrieval_success(app, track_metadata_format, JSON_FILE)
-    test_cleanup(JSON_FILE)
+    test_metadata_object = create_generic_metadata_object(track_metadata_format, JSON_FILE)
+    patch_ipfsclient_method(mocker, IPFS_FETCH, slow_return_metadata(test_metadata_object))
+    patch_ipfsclient_method(mocker, GATEWAY_FETCH, return_metadata_immediately(test_metadata_object))
+    assert_metadata_retrieval_success(app, track_metadata_format, test_metadata_object, JSON_FILE)
 
 def test_ipfs_metadata_fetch_with_ipfs_timeout(app, mocker):
-    patch_ipfsclient_method(mocker, IPFS_FETCH, timeout_fetch)
-    patch_ipfsclient_method(mocker, GATEWAY_FETCH, return_metadata_immediately)
-    assert_metadata_retrieval_success(app, track_metadata_format, JSON_FILE)
-    test_cleanup(JSON_FILE)
+    test_metadata_object = create_generic_metadata_object(track_metadata_format, JSON_FILE)
+    patch_ipfsclient_method(mocker, IPFS_FETCH, timeout_fetch(test_metadata_object))
+    patch_ipfsclient_method(mocker, GATEWAY_FETCH, return_metadata_immediately(test_metadata_object))
+    assert_metadata_retrieval_success(app, track_metadata_format, test_metadata_object, JSON_FILE)
 
 def test_ipfs_metadata_fetch_with_gateway_timeout(app, mocker):
-    patch_ipfsclient_method(mocker, GATEWAY_FETCH, timeout_fetch)
-    patch_ipfsclient_method(mocker, IPFS_FETCH, return_metadata_immediately)
-    assert_metadata_retrieval_success(app, track_metadata_format, JSON_FILE)
-    test_cleanup(JSON_FILE)
+    test_metadata_object = create_generic_metadata_object(track_metadata_format, JSON_FILE)
+    patch_ipfsclient_method(mocker, GATEWAY_FETCH, timeout_fetch(test_metadata_object))
+    patch_ipfsclient_method(mocker, IPFS_FETCH, return_metadata_immediately(test_metadata_object))
+    assert_metadata_retrieval_success(app, track_metadata_format, test_metadata_object, JSON_FILE)
 
 def test_ipfs_metadata_fetch_with_both_timeout(app, mocker):
-    patch_ipfsclient_method(mocker, IPFS_FETCH, timeout_fetch)
-    patch_ipfsclient_method(mocker, GATEWAY_FETCH, timeout_fetch)
+    test_metadata_object = create_generic_metadata_object(track_metadata_format, JSON_FILE)
+    patch_ipfsclient_method(mocker, IPFS_FETCH, timeout_fetch(test_metadata_object))
+    patch_ipfsclient_method(mocker, GATEWAY_FETCH, timeout_fetch(test_metadata_object))
     assert_metadata_retrieval_failure(app, track_metadata_format, JSON_FILE)
-    test_cleanup(JSON_FILE)
