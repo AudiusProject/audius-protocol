@@ -46,6 +46,8 @@ type TileProps = {
   className?: string
 }
 
+const IS_NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
+
 export const Tile: React.FC<TileProps> = ({ className, children }) => {
   return (
     <div className={cn([styles.tileContainer, className])}> {children}</div>
@@ -169,7 +171,7 @@ export const WalletTile = ({ className }: { className?: string }) => {
             onClick={onClickConnectWallets}
             type={ButtonType.GLASS}
           />
-          {mobile && (
+          {mobile && !IS_NATIVE_MOBILE && (
             <MobileConnectWalletsDrawer onClose={onCloseConnectWalletsDrawer} />
           )}
         </div>
