@@ -24,7 +24,9 @@ const { NodeHttpTransport } = require('@improbable-eng/grpc-web-node-http-transp
 // "This environment's XHR implementation cannot support binary transfer."
 grpc.setDefaultTransport(NodeHttpTransport())
 
-const ETH_PROVIDER = 'https://mainnet.infura.io/v3/a3ed533ddfca4c76ab4df7556e2745e1'
+// Please provide an eth RPC provider endpoint here
+// For example https://mainnet.infura.io/v3/<your-key-here>
+const ETH_PROVIDER = process.env.ethProvider
 const SOLANA_CLUSTER_ENDPOINT = 'https://api.mainnet-beta.solana.com'
 const ETH_BRIDGE_ADDRESS = '0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B'
 const SOL_BRIDGE_ADDRESS = 'worm2ZoG2kUd4vFXhvjh93UUH596ayRfgQ2MgjNMTth'
