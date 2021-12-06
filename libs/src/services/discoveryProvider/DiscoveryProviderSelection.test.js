@@ -164,7 +164,9 @@ describe('DiscoveryProviderSelection', () => {
       } })
 
     const s = new DiscoveryProviderSelection(
-      {},
+      {
+        unhealthySlotDiffPlays: 10
+      },
       mockEthContracts([healthy, behind], '1.2.3')
     )
     const service = await s.select()
