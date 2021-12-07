@@ -1,5 +1,5 @@
 module.exports.getUsers = (limit = 100, offset = 0, idsArray = null, walletAddress = null, handle = null, isCreator = null, minBlockNumber = null) => {
-  let req = {
+  const req = {
     endpoint: 'users',
     queryParams: { limit: limit, offset: offset }
   }
@@ -25,7 +25,7 @@ module.exports.getUsers = (limit = 100, offset = 0, idsArray = null, walletAddre
 }
 
 module.exports.getTracks = (limit = 100, offset = 0, idsArray = null, targetUserId = null, sort = null, minBlockNumber = null, filterDeleted = null, withUsers = false) => {
-  let req = { endpoint: 'tracks', queryParams: { limit: limit, offset: offset } }
+  const req = { endpoint: 'tracks', queryParams: { limit: limit, offset: offset } }
   if (idsArray) {
     if (!Array.isArray(idsArray)) {
       throw new Error('Expected array of track ids')
@@ -59,7 +59,7 @@ module.exports.getTracksByHandleAndSlug = (handle, slug) => {
 }
 
 module.exports.getTracksIncludingUnlisted = (identifiers, withUsers = false) => {
-  let req = {
+  const req = {
     endpoint: 'tracks_including_unlisted',
     method: 'post',
     data: {
@@ -74,7 +74,7 @@ module.exports.getTracksIncludingUnlisted = (identifiers, withUsers = false) => 
 }
 
 module.exports.getRandomTracks = (genre, limit, exclusionList, time) => {
-  let req = {
+  const req = {
     endpoint: 'tracks/random',
     queryParams: {
       genre,
@@ -414,6 +414,18 @@ module.exports.getCreateSenderAttestation = (senderEthAddress) => {
     endpoint: `/v1/challenges/attest_sender`,
     queryParams: {
       sender_eth_address: senderEthAddress
+    }
+  }
+}
+
+module.exports.getUndisbursedChallenges = (limit, offset, completedBlockNumber, encodedUserId) => {
+  return {
+    endpoint: '/v1/challenges/undisbursed',
+    queryParams: {
+      limit,
+      offset,
+      completed_blocknumber: completedBlockNumber,
+      user_id: encodedUserId
     }
   }
 }

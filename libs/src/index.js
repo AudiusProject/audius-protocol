@@ -29,6 +29,7 @@ const Web3 = require('./web3')
 const SolanaUtils = require('./services/solanaWeb3Manager/utils')
 
 const { Keypair } = require('@solana/web3.js')
+const RewardsAttester = require('./services/solanaWeb3Manager/rewardsAttester')
 
 class AudiusLibs {
   /**
@@ -499,3 +500,4 @@ module.exports.AudiusABIDecoder = AudiusABIDecoder
 module.exports.Utils = Utils
 module.exports.SolanaUtils = SolanaUtils
 module.exports.SanityChecks = SanityChecks
+module.exports.RewardsAttester = RewardsAttester
