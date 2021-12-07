@@ -37,17 +37,19 @@ async function getFileStoragePathFromDb ({ cid, redisClient, models }) {
     storagePath = queryResults.storagePath
   }
 
-  return {storagePath}
+  return { storagePath }
 }
 
-async function updateRedisCache ({ redisClient, cid, storagePath }) {
+async function updateRedisCache ({ req, redisClient, cid, storagePath }) {
   const cacheKey = getStoragePathQueryCacheKey(cid)
 
   redisClient.set(cacheKey, storagePath, 'EX', FILE_CACHE_EXPIRY_SECONDS)
   redisClient.incr('ipfsStandaloneReqs')
+
   const totalStandaloneIpfsReqs = parseInt(await redisClient.get('ipfsStandaloneReqs'))
 
-  return totalStandaloneIpfsReqs
+  req.logger.info(`IPFS Standalone Request - ${cid}`)
+  req.logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
 }
 
 // Gets a CID, streaming from the filesystem if available and falling back to IPFS if not

@@ -49,10 +49,7 @@ const getCIDController = async (req, res) => {
     return sendResponse(req, res, errorResponseBadRequest(errorMsg)) 
   }
 
-  const totalStandaloneIpfsReqs = await getCID.updateRedisCache({ cid, redisClient, storagePath })
-
-  req.logger.info(`IPFS Standalone Request - ${cid}`)
-  req.logger.info(`IPFS Stats - Standalone Requests: ${totalStandaloneIpfsReqs}`)
+  await getCID.updateRedisCache({ req, cid, redisClient, storagePath })
 
   // If client has provided filename, set filename in header to be auto-populated in download prompt.
   if (req.query && req.query.filename) {
