@@ -105,7 +105,7 @@ class SolanaWeb3Manager {
     this.solanaTokenKey = newPublicKeyNullable(solanaTokenAddress)
 
     this.feePayerAddress = feePayerAddress
-    this.feePayerKey = newPublicKeyNullable(feePayerAddress)
+    this.feePayerKey = newPublicKeyNullable(feePayerAddress || feePayerKeypair.publicKey)
 
     this.claimableTokenProgramKey = newPublicKeyNullable(claimableTokenProgramAddress)
     this.claimableTokenPDA = claimableTokenPDA || (

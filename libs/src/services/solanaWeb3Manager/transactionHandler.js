@@ -53,7 +53,7 @@ class TransactionHandler {
     } else {
       result = await this._locallyConfirmTransaction(instructions)
     }
-    if (result.errorCode !== null && errorMapping) {
+    if (result.error && result.errorCode !== null && errorMapping) {
       result.errorCode = errorMapping.fromErrorCode(result.errorCode)
     }
     return result
@@ -73,7 +73,8 @@ class TransactionHandler {
       const response = await this.identityService.solanaRelay(transactionData)
       return { res: response, error: null, errorCode: null }
     } catch (e) {
-      const { errorCode, error } = e.response.data
+      const { error } = e.response.data
+      const errorCode = this._parseSolanaErrorCode(error)
       return { res: null, error, errorCode }
     }
   }
