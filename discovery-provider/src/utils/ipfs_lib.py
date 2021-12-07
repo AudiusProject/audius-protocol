@@ -46,7 +46,7 @@ class IPFSClient:
         logger.warning(f"IPFSCLIENT | get_metadata - {multihash}")
         api_metadata = default_metadata_fields
         retrieved_from_gateway = False
-        retrieved_from_local_node = False
+        retrieved_from_ipfs_node = False
         start_time = time.time()
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
@@ -61,38 +61,38 @@ class IPFSClient:
                 metadata_futures,
                 timeout=NEW_BLOCK_TIMEOUT_SECONDS
             ):
-                original_task = metadata_futures[get_metadata_future]
+                metadata_fetch_source = metadata_futures[get_metadata_future]
                 try:
                     api_metadata = get_metadata_future.result()
                     retrieved = api_metadata != default_metadata_fields
                     if retrieved:
                         logger.info(
-                            f'IPFSCLIENT | retrieved metadata successfully, {api_metadata}, task: {original_task}'
+                            f'IPFSCLIENT | retrieved metadata successfully, \
+                            {api_metadata}, \
+                            source: {metadata_fetch_source}'
                         )
-                        if original_task == 'metadata_from_gateway':
+                        if metadata_fetch_source == 'metadata_from_gateway':
                             retrieved_from_gateway = True
                         else:
-                            retrieved_from_local_node = True
+                            retrieved_from_ipfs_node = True
                         self.force_clear_queue_and_stop_task_execution(executor)
                         break # use first returned result
-                except TimeoutError as e:
-                    raise Exception from e
                 except Exception as e:
                     logger.error(
                         f"IPFSCLIENT | ipfs_lib.py | \
                         ERROR in metadata_futures parallel processing \
-                        generated {e}, multihash: {multihash}, task: {original_task}",
+                        generated {e}, multihash: {multihash}, source: {metadata_fetch_source}",
                         exc_info=True
                     )
 
-        retrieved_metadata = retrieved_from_gateway or retrieved_from_local_node
+        retrieved_metadata = retrieved_from_gateway or retrieved_from_ipfs_node
         # Raise error if metadata is not retrieved.
         # Ensure default values are not written into database.
         if not retrieved_metadata:
             logger.error(
                 f"IPFSCLIENT | Retrieved metadata: {retrieved_metadata}. "
                 f"retrieved from gateway : {retrieved_from_gateway}, "
-                f"retrieved from local node : {retrieved_from_local_node}"
+                f"retrieved from local node : {retrieved_from_ipfs_node}"
             )
             logger.error(api_metadata)
             logger.error(default_metadata_fields)
@@ -103,7 +103,7 @@ class IPFSClient:
         duration = time.time() - start_time
         logger.info(
             f"IPFSCLIENT | get_metadata ${multihash} {duration} seconds \
-                | from ipfs:{retrieved_from_local_node} |from gateway:{retrieved_from_gateway}"
+                | from ipfs:{retrieved_from_ipfs_node} |from gateway:{retrieved_from_gateway}"
         )
 
         return api_metadata
