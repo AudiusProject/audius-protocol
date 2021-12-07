@@ -111,7 +111,7 @@
     "start:ipfs-prod": "env-cmd ./.env/.env.ipfs.prod npm run start:prod",
     "start:ipfs-stage": "env-cmd ./.env/.env.ipfs.stage npm run start:stage",
     "prebuild": "npm run publish-scripts",
-    "build": "craco --max_old_space_size=8192 build",
+    "build": "craco build",
     "build:dev": "npm run write-sha && env-cmd ./.env/.env.dev npm run build && rm -rf build-development && mv build build-development",
     "build:stage": "npm run write-sha && env-cmd ./.env/.env.stage npm run build && rm -rf build-staging && mv build build-staging",
     "build:prod": "npm run write-sha && env-cmd ./.env/.env.prod npm run build && rm -rf build-production && mv build build-production",
