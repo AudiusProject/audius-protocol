@@ -1,23 +1,26 @@
-
 const express = require('express')
 const Redis = require('ioredis')
 const contentDisposition = require('content-disposition')
 
-const config = require('../config.js')
-const models = require('../models')
-const { serviceRegistry } = require('./serviceRegistry')
-const RehydrateIpfsQueue = require('../RehydrateIpfsQueue')
-const { ipfsStat } = require('../utils')
+const config = require('../../config')
+const models = require('../../models')
+const { serviceRegistry } = require('../../serviceRegistry')
+const RehydrateIpfsQueue = require('../../RehydrateIpfsQueue')
+const { ipfsStat, findCIDInNetwork } = require('../../utils')
 
 const redisClient = new Redis(config.get('redisPort'), config.get('redisHost'))
 const {
+  handleResponse,
   sendResponse,
   errorResponseBadRequest,
   errorResponseServerError,
   errorResponseForbidden,
-  errorResponseRangeNotSatisfiable
-} = require('../apiHelpers')
-// rename this... lol
+  errorResponseRangeNotSatisfiable,
+  successResponse,
+  errorResponseNotFound
+} = require('../../apiHelpers')
+
+// Components
 const getCID = require('./components/getCID')
 
 const router = express.Router()
@@ -37,7 +40,15 @@ const getCIDController = async (req, res) => {
     return sendResponse(req, res, errorResponseForbidden(`CID=${cid} has been blacklisted by this node`))
   }
 
-  const storagePath = await getCID.getFileStoragePathFromDb({ cid, redisClient, models })
+  const {storagePath, statusCode, errorMsg} = await getCID.getFileStoragePathFromDb({ cid, redisClient, models })
+  
+  if (statusCode === 404) {
+    return sendResponse(req, res, errorResponseNotFound(errorMsg))
+  }
+  if (statusCode === 400) {
+    return sendResponse(req, res, errorResponseBadRequest(errorMsg)) 
+  }
+
   const totalStandaloneIpfsReqs = await getCID.updateRedisCache({ cid, redisClient, storagePath })
 
   req.logger.info(`IPFS Standalone Request - ${cid}`)
@@ -55,12 +66,15 @@ const getCIDController = async (req, res) => {
   try {
     return await getCID.serveCID({
       cid,
-      RehydrateIpfsQueue,
       libs,
+      RehydrateIpfsQueue,
       ipfsStat,
+      storagePath,
       req,
       res,
-      ipfsAPI: req.app.get('ipfsClient')
+      ipfsAPI: req.app.get('ipfsClient'),
+      trackId,
+      findCIDInNetwork
     })
   } catch (e) {
     if (res.statusCode === 416) {
@@ -71,6 +85,8 @@ const getCIDController = async (req, res) => {
     return sendResponse(req, res, errorResponseServerError(e.message))
   }
 }
+
+// Routes
 
 /**
  * Serve IPFS data hosted by creator node and create download route using query string pattern
@@ -84,3 +100,5 @@ const getCIDController = async (req, res) => {
  * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
  */
 router.get('/ipfs/:CID', getCIDController)
+
+module.exports = router

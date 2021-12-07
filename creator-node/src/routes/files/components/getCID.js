@@ -19,19 +19,25 @@ async function getFileStoragePathFromDb ({ cid, redisClient, models }) {
       order: [['clock', 'DESC']]
     })
     if (!queryResults) {
-      // errorResponseNotFound
-      throw new Error(`No valid file found for provided CID: ${cid}`)
+      return {
+        statusCode: 404,
+        errorMsg: `No valid file found for provided CID: ${cid}`,
+        storagePath: null
+      }
     }
 
-    // errorResponseBadRequest
     if (queryResults.type === 'dir') {
-      throw new Error('this dag node is a directory')
+      return {
+        statusCode: 400,
+        errorMsg: `No valid file found for provided CID: ${cid}`,
+        storagePath: null
+      }
     }
 
     storagePath = queryResults.storagePath
   }
 
-  return storagePath
+  return {storagePath}
 }
 
 async function updateRedisCache ({ redisClient, cid, storagePath }) {
