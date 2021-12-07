@@ -120,8 +120,7 @@ class Rewards extends Base {
         tokenAmount: fullTokenAmount
       })
 
-
-      // In the case of an unparseable error, 
+      // In the case of an unparseable error,
       // we'll only have the error, not the code.
       if (submitErrorCode || submitError) {
         throw new Error(submitErrorCode || submitError)

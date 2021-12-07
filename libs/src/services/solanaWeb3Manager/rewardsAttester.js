@@ -47,7 +47,7 @@ class RewardsAttester {
    *    maxRetries: number
    *    reporter: BaseRewardsReporter
    *    challengeIdsDenyList: Array<string>
-   * }} { 
+   * }} {
    *    libs,
    *    startingBlock,
    *    offset,
@@ -59,7 +59,7 @@ class RewardsAttester {
    *    updateValues = ({ startingBlock, offset, successCount }) => {},
    *    maxRetries = 3,
    *    reporter,
-   *    challengeIdsDenyList 
+   *    challengeIdsDenyList
    *  }
    * @memberof RewardsAttester
    */

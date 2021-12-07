@@ -215,7 +215,7 @@ async function submitAttestations ({
   const encodedOracleMessage = SolanaUtils.constructAttestation(
     recipientEthAddress,
     tokenAmount,
-    transferId,
+    transferId
   )
 
   // Add instructions from oracle attestation
@@ -522,7 +522,6 @@ const generateSubmitAttestationInstruction = async ({
   )
 
   ///   Submit attestations
-  ///
   ///   0. `[writable]` Verified messages - New or existing account PDA storing verified messages
   ///   1. `[]` Reward manager
   ///   2. `[]` Reward manager authority

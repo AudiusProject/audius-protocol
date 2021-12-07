@@ -243,6 +243,12 @@ class ServiceSelection {
     return `${service}/health_check`
   }
 
+  /**
+   * What the criteria is for a healthy service
+   * @param {Object} response axios response
+   * @param {{ [key: string]: string}} urlMap health check urls mapped to their cannonical url
+   * e.g. https://discoveryprovider.audius.co/health_check => https://discoveryprovider.audius.co
+   */
   isHealthy (response, urlMap) {
     return response.status === 200
   }
