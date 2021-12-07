@@ -22,6 +22,7 @@
     "@audius/hedgehog": "1.0.12",
     "@certusone/wormhole-sdk": "0.1.1",
     "@ethersproject/solidity": "5.0.5",
+    "@improbable-eng/grpc-web-node-http-transport": "0.15.0",
     "@solana/spl-token": "0.1.6",
     "@solana/web3.js": "1.24.1",
     "abi-decoder": "1.2.0",
