@@ -82,4 +82,8 @@ else
     docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 10
 fi
 
+if [[ "$openrestyEnabled" == "true" ]]; then
+    openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
+fi
+
 wait

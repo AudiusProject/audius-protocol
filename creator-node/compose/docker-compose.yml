@@ -29,8 +29,11 @@ services:
       - manualSyncsDisabled=${manualSyncsDisabled}
       - devMode=${DEV_MODE}
       - spOwnerWallet=${spOwnerWallet}
+      - openrestyEnabled=${openrestyEnabled}
     env_file:
       - ./env/base.env
+    entrypoint:
+      - ./env/determinePort.sh
     ports:
       - '${CREATOR_NODE_HOST_PORT}:${CREATOR_NODE_HOST_PORT}'
       - '${CREATOR_NODE_DEBUGGER_PORT}:${CREATOR_NODE_DEBUGGER_PORT}'

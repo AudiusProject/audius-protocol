@@ -632,6 +632,18 @@ const config = convict({
     format: 'nat',
     env: 'healthCheckIpfsTimeoutMs',
     default: 30000 // 30s
+  },
+  openrestyEnabled: {
+    doc: 'Flag to enable or disable OpenResty',
+    format: 'BooleanCustom',
+    env: 'openrestyEnabled',
+    default: true
+  },
+  portWithOpenRestyEnabled: {
+    doc: 'The port the Content Node app should run on if OpenResty is enabled',
+    format: 'nat',
+    env: 'portWithOpenRestyEnabled',
+    default: 3000
   }
 
   /**
