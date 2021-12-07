@@ -46,7 +46,7 @@ const config = {
     SOLANA_REWARDS_MANAGER_PROGRAM_ID: solanaConfig.rewardsManagerAddress,
     SOLANA_REWARDS_MANAGER_PROGRAM_PDA: solanaConfig.rewardsManagerAccount,
     SOLANA_REWARDS_MANAGER_TOKEN_PDA: solanaConfig.rewardsManagerTokenAccount,
-    SOLANA_FEE_PAYER_SECRET_KEY: Uint8Array.from(solanaConfig.feePayerWallet)
+    SOLANA_FEE_PAYER_SECRET_KEY: solanaConfig.feePayerWallet ? Uint8Array.from(solanaConfig.feePayerWallet) : undefined 
 }
 
 module.exports = config
