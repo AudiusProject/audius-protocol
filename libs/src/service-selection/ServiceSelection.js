@@ -179,7 +179,7 @@ class ServiceSelection {
       const results = await allRequests({
         urlMap: map,
         timeout: this.requestTimeout,
-        validationCheck: (resp) => this.isHealthy(resp)
+        validationCheck: (resp) => this.isHealthy(resp, map)
       })
       return results
     } catch (e) {
@@ -263,7 +263,7 @@ class ServiceSelection {
         {},
         /* timeout */ this.requestTimeout,
         /* timeBetweenRequests */ 0,
-        /* validationCheck */ (resp) => this.isHealthy(resp)
+        /* validationCheck */ (resp) => this.isHealthy(resp, map)
       )
       this.decisionTree.push({ stage: 'Raced And Found Best', val: best })
       return { best, errored: errored.map(e => map[e.config.url]) }
