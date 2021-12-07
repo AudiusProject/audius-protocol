@@ -7,11 +7,11 @@ ${Object.entries(obj).map(([key, value]) => `${key}: ${value}`).join('\n')}
 
 class RewardsReporter {
   constructor ({
-      slackUrl,
-      childLogger
+    slackUrl,
+    childLogger
   }) {
     this.slackUrl = slackUrl
-    this.childLogger = childLogger      
+    this.childLogger = childLogger
   }
 
   async reportSuccess ({ userId, challengeId, amount }) {
@@ -19,10 +19,10 @@ class RewardsReporter {
       status: 'success',
       userId,
       challengeId,
-      amount: amount.toString(),
+      amount: amount.toString()
     })
     await this.postToSlack({ slackUrl: this.slackUrl, message: slackMessage })
-    childLogger.info({ status: 'success', userId, challengeId, amount: amount.toString() }, `Rewards Reporter`)
+    this.childLogger.info({ status: 'success', userId, challengeId, amount: amount.toString() }, `Rewards Reporter`)
   }
 
   async reportFailure ({ userId, challengeId, amount, error, phase }) {
@@ -31,11 +31,11 @@ class RewardsReporter {
       userId,
       challengeId,
       amount: amount.toString(),
-      error: error?.toString(),
+      error: error.toString(),
       phase
     })
     await this.postToSlack({ slackUrl: this.slackUrl, message: slackMessage })
-    childLogger.info({ status: 'failure', userId, challengeId, amount: amount.toString(), error, phase }, `Rewards Reporter`)
+    this.childLogger.info({ status: 'failure', userId, challengeId, amount: amount.toString(), error, phase }, `Rewards Reporter`)
   }
 
   async reportAAORejection ({ userId, challengeId, amount, error }) {
@@ -47,15 +47,15 @@ class RewardsReporter {
       error: error.toString()
     })
     await this.postToSlack({ slackUrl: this.slackUrl, message: slackMessage })
-    childLogger.info({ status: 'rejection', userId, challengeId, amount: amount.toString(), error }, `Rewards Reporter`)
+    this.childLogger.info({ status: 'rejection', userId, challengeId, amount: amount.toString(), error }, `Rewards Reporter`)
   }
 
   async postToSlack ({
     slackUrl,
     message
-  }){
+  }) {
     if (!slackUrl) return
-    const resp = await axios.post(slackUrl, {text: message})
+    await axios.post(slackUrl, { text: message })
   }
 }
 
