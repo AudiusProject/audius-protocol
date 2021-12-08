@@ -71,11 +71,11 @@ case "$provider" in
 esac
 
 # Confirm choices
-echo "$(tput bold)Provider:$(tput sgr0)" $provider
-echo "$(tput bold)OS Image:$(tput sgr0)" $image
-echo "$(tput bold)Disk Size:$(tput sgr0)" $disk_size
-echo "$(tput bold)Machine Type:$(tput sgr0)" $machine_type
-echo "$(tput bold)Name:$(tput sgr0)" $name
+echo $(format_bold "Provider:") $provider
+echo $(format_bold "OS Image:") $image
+echo $(format_bold "Disk Size:") $disk_size
+echo $(format_bold "Machine Type:") $machine_type
+echo $(format_bold "Name:") $name
 
 case "$provider" in
 	azure)

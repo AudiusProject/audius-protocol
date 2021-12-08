@@ -105,3 +105,7 @@ get_ip_addr() {
 			;;
 	esac
 }
+
+format_bold() {
+	printf "$(tput bold)$@$(tput sgr0)"
+}
