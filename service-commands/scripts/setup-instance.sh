@@ -8,7 +8,7 @@
 #   -c <audius-k8s-manifests-config>
 #   -r <audius-protocol-git-ref>
 #   -l <audius-client-git-ref>
-#   -f
+#   -f (fast setup with prebaked dev image)
 
 set -e
 
