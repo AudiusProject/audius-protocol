@@ -1,32 +1,7 @@
-const axios = require('axios')
-const { Command } = require('commander')
-const program = new Command()
-program
-  .usage('-a [action] -t [type] -l [ids or cids] -v [verbose (optional)]')
-  .requiredOption('-t, --type <type>', 'user, track, or cid')
-  .requiredOption('-l, --list <list>', 'comma separated list of ids or cids', ids => ids.split(','))
-  .requiredOption('-a, --act <action>', 'add, remove, or verify')
-  .option('-v, --verbose', 'boolean to print out blacklisted/unblacklisted segments')
-
-const { generateTimestampAndSignature } = require('../src/apiSigning')
-
-const PRIVATE_KEY = process.env.delegatePrivateKey
-const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
-const DISCOVERY_PROVIDER_ENDPOINT = process.env.discoveryProviderEndpoint
-
-// Available action types
-const ACTION_ARR = ['ADD', 'REMOVE']
-const ACTION_SET = new Set(ACTION_ARR)
-const TYPES_ARR = ['USER', 'TRACK', 'CID']
-const TYPES_SET = new Set(TYPES_ARR)
-
-const REQUEST_CONCURRENCY_LIMIT = 20
-const MAX_LIMIT = 500
-const VALUES_BATCH_SIZE = 10
-
 // Script usage:
 // node updateContentBlacklist.js -a add -l 1,3,7 -t user
 // node updateContentBlacklist.js -a add -l 1,3,7 -t track
+// node updateContentBlacklist.js -a add -l 1,3,7 -t track-hash-id
 // node updateContentBlacklist.js -a add -l Qm..., Qm..., -t cid
 
 // node updateContentBlacklist.js -a remove -l 1,3,7 -t user
@@ -38,21 +13,156 @@ const VALUES_BATCH_SIZE = 10
 // For help:
 // node updateContentBlacklist.js --help
 
+const axios = require('axios')
+const { Command } = require('commander')
+const Hashids = require('hashids/cjs')
+
+const { generateTimestampAndSignature } = require('../src/apiSigning')
+
+const PRIVATE_KEY = process.env.delegatePrivateKey
+const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
+const DISCOVERY_PROVIDER_ENDPOINT = process.env.discoveryProviderEndpoint
+
+// Available action types
+const ACTION_ARR = ['ADD', 'REMOVE']
+const ACTION_SET = new Set(ACTION_ARR)
+const TYPES_ARR = ['USER', 'TRACK', 'CID', 'TRACK_HASH_ID']
+const TYPES_SET = new Set(TYPES_ARR)
+
+const REQUEST_CONCURRENCY_LIMIT = 20
+const MAX_LIMIT = 500
+const VALUES_BATCH_SIZE = 10
+
+let VERBOSE = false
+
+class Commander {
+  constructor () {
+    this.program = new Command()
+    this.program
+      .usage('-a [action] -t [type] -l [ids or cids] -v [verbose (optional)]')
+      .requiredOption('-t, --type <type>', 'user, track, or cid')
+      .requiredOption('-l, --list <list>', 'comma separated list of ids or cids', ids => ids.split(','))
+      .requiredOption('-a, --act <action>', 'add, remove, or verify')
+      .option('-v, --verbose', 'boolean to print out blacklisted/unblacklisted segments', VERBOSE)
+      .exitOverride(err => {
+        if (err.code === 'commander.missingMandatoryOptionValue') this.program.help()
+      })
+  }
+
+  /**
+ * Parses the environment variables and command line args
+ */
+  parseEnvVarsAndArgs () {
+    this.program.parse(process.argv)
+    const hashIds = new HashIds()
+
+    // Parse env vars
+    if (!CREATOR_NODE_ENDPOINT || !PRIVATE_KEY || !DISCOVERY_PROVIDER_ENDPOINT) {
+      let errorMsg = `Creator node endpoint [${CREATOR_NODE_ENDPOINT}], private key [${PRIVATE_KEY}]`
+      errorMsg += ` or discovery provider endpoint [${DISCOVERY_PROVIDER_ENDPOINT}] have not been exported.`
+      throw new Error(errorMsg)
+    }
+
+    // Parse CLI args
+    const action = this.program.act.toUpperCase()
+    // this is a let because TRACK_HASH_ID switches to type TRACK once the ids have been decoded
+    let type = this.program.type.toUpperCase().replace(/-/g, '_')
+
+    if (!ACTION_SET.has(action) || !TYPES_SET.has(type)) {
+      throw new Error(`Improper action (${action}) for type (${type}).`)
+    }
+
+    // Check if ids or CIDs are passed in
+    let values = this.program.list
+    if (!values || values.length === 0) throw new Error('Please pass in a comma separated list of ids and/or cids.')
+
+    // Parse ids into ints greater than 0
+    if (type === 'USER' || type === 'TRACK') {
+      const originalNumIds = values.length
+      values = values.filter(id => !isNaN(id)).map(id => parseInt(id)).filter(id => id >= 0)
+      if (values.length === 0) throw new Error('List of ids is not proper.')
+      if (originalNumIds !== values.length) {
+        console.warn(`Filtered out non-numeric ids from input. Please only pass integers!`)
+      }
+    } else if (type === 'TRACK_HASH_ID') {
+      const originalNumIds = values.length
+      values = values.map(value => {
+        const decodedId = hashIds.decode(value)
+        if (decodedId) return decodedId
+      }).filter(Boolean)
+      type = 'TRACK'
+      if (values.length === 0) throw new Error('List of track hash ids is not proper.')
+      if (originalNumIds !== values.length) {
+        console.warn(`Filtered out invalid ids from input. Please only valid track hash ids!`)
+      }
+    } else { // else will be CID
+      // Parse cids and ensure they follow the pattern Qm...
+      const orignalNumCIDs = values.length
+      const cidRegex = new RegExp('^Qm[a-zA-Z0-9]{44}$')
+      values = values.filter(cid => cidRegex.test(cid))
+      if (values.length === 0) throw new Error('List of cids is not proper.')
+      if (orignalNumCIDs !== values.length) {
+        console.warn(`Filtered out improper cids from input. Please only pass valid CIDs!`)
+      }
+    }
+
+    if (this.program.verbose) VERBOSE = this.program.verbose
+    return { action, values, type, verbose: this.program.verbose }
+  }
+}
+
+class Logger {
+  static debug (...msgs) {
+    if (VERBOSE) console.log(...msgs)
+  }
+
+  static info (...msgs) {
+    console.log(...msgs)
+  }
+
+  static error (...msgs) {
+    console.error(...msgs)
+  }
+}
+class HashIds {
+  constructor () {
+    this.HASH_SALT = 'azowernasdfoia'
+    this.MIN_LENGTH = 5
+    this.hashids = new Hashids(this.HASH_SALT, this.MIN_LENGTH)
+  }
+  encode (id) {
+    return this.hashids.encode([id])
+  }
+
+  decode (id) {
+    const ids = this.hashids.decode(id)
+    if (!ids.length) return null
+    return ids[0]
+  }
+}
+
 /**
  * Process command line args and either add or remove an entry in/to ContentBlacklist table
  */
 async function run () {
   let args
   try {
-    args = parseEnvVarsAndArgs()
-  } catch (e) {
-    console.error(`\nIncorrect script usage: ${e.message}\n`)
-    console.error(`action: [${ACTION_ARR.toString()}]\ntype: [${TYPES_ARR.toString()}]\nids: [list of ints 0 or greater]\ncids: [list of cids]`)
+    const commander = new Commander()
+    args = commander.parseEnvVarsAndArgs()
+    console.log(args)
     return
+  } catch (e) {
+    Logger.error(`
+      Incorrect script usage: ${e.message}
+      - action: [${ACTION_ARR.toString()}]
+      - type: [${TYPES_ARR.toString()}]
+      - ids: [list of ids (or cids for CID type)]
+    `)
   }
 
-  console.log(`Updating Content Blacklist for ${CREATOR_NODE_ENDPOINT}...\n`)
   const { action, type, values, verbose } = args
+  Logger.info(`Updating Content Blacklist for ${CREATOR_NODE_ENDPOINT} for values: [${values}]`)
+
   for (let i = 0; i < values.length; i += VALUES_BATCH_SIZE) {
     const valuesSliced = values.slice(i, i + VALUES_BATCH_SIZE)
     try {
@@ -66,75 +176,36 @@ async function run () {
           break
         }
         default: {
-          console.error('Should not have reached here :(')
+          Logger.error('Invalid action, please choose either `add` and `remove`')
           return
         }
       }
     } catch (e) {
-      console.error(`Failed to perform [${action}] for [${type}]: ${e}`)
+      Logger.error(`Failed to perform [${action}] for [${type}]: ${e}`)
       return
     }
 
-    console.log(`Verifying content against blacklist for ${CREATOR_NODE_ENDPOINT}...\n`)
+    Logger.info(`Verifying content against blacklist for ${CREATOR_NODE_ENDPOINT}...\n`)
     try {
       const segments = await verifyWithBlacklist({ type, values: valuesSliced, action })
 
-      let successMsg = `Successfully performed [${action}] for type [${type}]!\values: [${valuesSliced}]`
+      let successMsg =
+      `
+        Successfully performed [${action}] for type [${type}]!
+        Values: [${valuesSliced}]
+      `
       if (verbose) {
-        successMsg += `\nNumber of Segments: ${segments.length}`
-        successMsg += `\nSegments: ${segments}`
+        successMsg +=
+        `
+        Number of Segments: ${segments.length}
+        Segments: ${segments}
+        `
       }
-      console.log(successMsg)
+      Logger.info(successMsg)
     } catch (e) {
-      console.error(`Verification check failed: ${e}`)
+      Logger.error(`Verification check failed: ${e}`)
     }
   }
-}
-
-/**
- * Parses the environment variables and command line args
- */
-function parseEnvVarsAndArgs () {
-  program.parse(process.argv)
-
-  // Parse env vars
-  if (!CREATOR_NODE_ENDPOINT || !PRIVATE_KEY || !DISCOVERY_PROVIDER_ENDPOINT) {
-    let errorMsg = `Creator node endpoint [${CREATOR_NODE_ENDPOINT}], private key [${PRIVATE_KEY}]`
-    errorMsg += ` or discovery provider endpoint [${DISCOVERY_PROVIDER_ENDPOINT}] have not been exported.`
-    throw new Error(errorMsg)
-  }
-
-  // Parse CLI args
-  const action = program.act.toUpperCase()
-  const type = program.type.toUpperCase()
-  if (!ACTION_SET.has(action) || !TYPES_SET.has(type)) {
-    throw new Error(`Improper action (${action}) or type (${type}).`)
-  }
-
-  // Check if ids or CIDs are passed in
-  let values = program.list
-  if (!values || values.length === 0) throw new Error('Please pass in a comma separated list of ids and/or cids.')
-
-  // Parse ids into ints greater than 0
-  if (type === 'USER' || type === 'TRACK') {
-    const originalNumIds = values.length
-    values = values.filter(id => !isNaN(id)).map(id => parseInt(id)).filter(id => id >= 0)
-    if (values.length === 0) throw new Error('List of ids is not proper.')
-    if (originalNumIds !== values.length) {
-      console.warn(`Filtered out non-numeric ids from input. Please only pass integers!`)
-    }
-  } else { // else will be CID
-    // Parse cids and ensure they follow the pattern Qm...
-    const orignalNumCIDs = values.length
-    const cidRegex = new RegExp('^Qm[a-zA-Z0-9]{44}$')
-    values = values.filter(cid => cidRegex.test(cid))
-    if (values.length === 0) throw new Error('List of cids is not proper.')
-    if (orignalNumCIDs !== values.length) {
-      console.warn(`Filtered out improper cids from input. Please only pass valid CIDs!`)
-    }
-  }
-
-  return { action, values, type, verbose: program.verbose }
 }
 
 /**
@@ -154,7 +225,7 @@ async function addToContentBlacklist (type, values) {
       params: { type, values, timestamp, signature },
       responseType: 'json'
     }
-    console.log(`About to send axios request to ${reqObj.url} for values`, values)
+    Logger.debug(`About to send axios request to ${reqObj.url} for values`, values)
     resp = await axios(reqObj)
   } catch (e) {
     throw new Error(`Error with adding type [${type}] and values [${values}] to ContentBlacklist: ${e}`)
@@ -208,6 +279,10 @@ async function verifyWithBlacklist ({ type, values, action }) {
       checkFn = checkIsNotBlacklisted
       filterFn = status => status
       break
+  }
+
+  if (type === 'TRACK') {
+
   }
 
   // Batch requests
@@ -339,7 +414,11 @@ async function checkIsBlacklisted (segment) {
     if (e.response && e.response.status && e.response.status === 403) {
       return { segment, blacklisted: true }
     }
-    console.error(`Failed to check for segment [${segment}]: ${e}`)
+
+    // CID was not found on node, would not have been served either way, return success
+    if (e.response.status === 404) return { segment, blacklisted: true }
+
+    Logger.error(`Failed to check for segment [${segment}]: ${e}`)
   }
   return { segment, blacklisted: false }
 }
@@ -352,7 +431,7 @@ async function checkIsNotBlacklisted (segment) {
   try {
     await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`)
   } catch (e) {
-    console.error(`Failed to check for segment [${segment}]: ${e}`)
+    Logger.error(`Failed to check for segment [${segment}]: ${e}`)
     return { segment, blacklisted: true }
   }
   return { segment, blacklisted: false }
