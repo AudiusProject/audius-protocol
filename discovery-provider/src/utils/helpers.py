@@ -19,6 +19,12 @@ from src import exceptions
 
 from . import multihash
 
+UPDATE_INDEXING_CHECKPOINTS_QUERY = """
+    INSERT INTO indexing_checkpoints (tablename, last_checkpoint)
+    VALUES(:tablename, :last_checkpoint)
+    ON CONFLICT (tablename)
+    DO UPDATE SET last_checkpoint = EXCLUDED.last_checkpoint;
+    """
 
 def get_ip(request_obj):
     """Gets the IP address from a request using the X-Forwarded-For header if present"""

@@ -3,6 +3,7 @@ import time
 import sqlalchemy as sa
 from src.tasks.celery_app import celery
 from src.models import IndexingCheckpoints, Play
+from src.utils.helpers import UPDATE_INDEXING_CHECKPOINTS_QUERY
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +54,6 @@ UPDATE_AGGREGATE_PLAYS_QUERY = """
         count = aggregate_plays.count + EXCLUDED.count
     """
 
-UPDATE_INDEXING_CHECKPOINTS = """
-    INSERT INTO indexing_checkpoints (tablename, last_checkpoint)
-    VALUES(:tablename, :last_checkpoint)
-    ON CONFLICT (tablename)
-    DO UPDATE SET last_checkpoint = EXCLUDED.last_checkpoint;
-    """
-
 def _update_aggregate_plays(session):
     # get the last updated id that counted towards the current aggregate plays
     prev_id_checkpoint = (session.query(IndexingCheckpoints.last_checkpoint)
@@ -88,7 +82,7 @@ def _update_aggregate_plays(session):
 
     # update indexing_checkpoints with the new id
     session.execute(
-        sa.text(UPDATE_INDEXING_CHECKPOINTS),
+        sa.text(UPDATE_INDEXING_CHECKPOINTS_QUERY),
         {
             "tablename": AGGREGATE_PLAYS_TABLE_NAME,
             "last_checkpoint": new_id_checkpoint,

@@ -1205,3 +1205,16 @@ class ListenStreakChallenge(Base):
 user_id={self.user_id},\
 last_listen_date={self.last_listen_date},\
 listen_streak={self.listen_streak})>"
+
+class UserListeningHistory(Base):
+    __tablename__ = "user_listening_history"
+
+    user_id = Column(Integer, primary_key=True, nullable=False, index=True)
+    listening_history = Column(JSONB, nullable=False, index=False)
+
+    Index("user_id", "listening_history", unique=True)
+
+    def __repr__(self):
+        return f"<UserListeningHistory(\
+user_id={self.user_id},\
+listening_history={self.listening_history})>"
