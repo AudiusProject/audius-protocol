@@ -64,6 +64,10 @@ azure_set_defaults() {
 		echo 'setting default azure resource group'
 		az config set defaults.group=audius-azure
 	fi
+
+	if [[ ! -f "$HOME/.ssh/audius-azure" ]]; then
+		yes n | ssh-keygen -m PEM -t rsa -b 4096 -P "" -f "$HOME/.ssh/audius-azure" > /dev/null
+	fi
 }
 
 instance_exists() {

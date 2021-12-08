@@ -105,7 +105,7 @@ def main():
     parser_setup.add_argument(
         "--provider",
         choices=["azure", "gcp"],
-        help="provider on which the remote machine exists; specify raw for using a ip directly (default: gcp)",
+        help="provider on which the remote machine exists (default: gcp)",
     )
 
     parser_setup.add_argument(
