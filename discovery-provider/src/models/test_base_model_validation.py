@@ -2,7 +2,7 @@ from sqlalchemy import Column, String, Text, Integer
 from src.models.models import Base
 
 
-class TestModel(Base):
+class ModelTest(Base):
     __tablename__ = "fake"
     id = Column(Integer, primary_key=True)
     text_column = Column(Text)
@@ -10,7 +10,7 @@ class TestModel(Base):
 
 
 def test_validated_base():
-    my_model = TestModel(
+    my_model = ModelTest(
         string_column="κόσμε\uD800\x00",
         text_column="κόσμε\x00\uDF80\uDB7F\uDFFF",
     )

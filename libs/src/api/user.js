@@ -43,10 +43,12 @@ const USER_PROP_NAME_CONSTANTS = Object.freeze({
 })
 
 class Users extends Base {
-  constructor (serviceProvider, ...args) {
+  constructor (serviceProvider, preferHigherPatchForPrimary, preferHigherPatchForSecondaries, ...args) {
     super(...args)
 
     this.ServiceProvider = serviceProvider
+    this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
+    this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
 
     this.getUsers = this.getUsers.bind(this)
     this.getMutualFollowers = this.getMutualFollowers.bind(this)
@@ -240,7 +242,9 @@ class Users extends Base {
       // Autoselect a new replica set and update the metadata object with new content node endpoints
       phase = phases.AUTOSELECT_CONTENT_NODES
       const response = await this.ServiceProvider.autoSelectCreatorNodes({
-        performSyncCheck: false
+        performSyncCheck: false,
+        preferHigherPatchForPrimary: this.preferHigherPatchForPrimary,
+        preferHigherPatchForSecondaries: this.preferHigherPatchForSecondaries
       })
       // Ideally, 1 primary and n-1 secondaries are chosen. The best-worst case scenario is that at least 1 primary
       // is chosen. If a primary was not selected (which also implies that secondaries were not chosen), throw

@@ -1,5 +1,7 @@
+const _ = require('lodash')
+
 const ServiceSelection = require('../../service-selection/ServiceSelection')
-const { timeRequestsAndSortByVersion } = require('../../utils/network')
+const { timeRequests, sortServiceTimings } = require('../../utils/network')
 const { CREATOR_NODE_SERVICE_NAME, DECISION_TREE_STATE } = require('./constants')
 
 /**
@@ -24,7 +26,9 @@ class CreatorNodeSelection extends ServiceSelection {
     blacklist,
     maxStorageUsedPercent = 95,
     timeout = null,
-    equivalencyDelta = null
+    equivalencyDelta = null,
+    preferHigherPatchForPrimary = true,
+    preferHigherPatchForSecondaries = true
   }) {
     super({
       getServices: async () => {
@@ -39,11 +43,15 @@ class CreatorNodeSelection extends ServiceSelection {
       whitelist: whitelist || (creatorNode && creatorNode.passList),
       blacklist: blacklist || (creatorNode && creatorNode.blockList)
     })
+
     this.creatorNode = creatorNode
     this.numberOfNodes = numberOfNodes
     this.ethContracts = ethContracts
     this.timeout = timeout
     this.equivalencyDelta = equivalencyDelta
+    this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
+    this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
+
     this.healthCheckPath = 'health_check/verbose'
     // String array of healthy Content Node endpoints
     this.backupsList = []
@@ -79,15 +87,39 @@ class CreatorNodeSelection extends ServiceSelection {
 
     // TODO: add a sample size selection round to not send requests to all available nodes
 
-    if (performSyncCheck) { services = await this._performSyncChecks(services, this.timeout) }
-    const { healthyServicesList, healthyServicesMap: servicesMap } = await this._performHealthChecks(services)
+    if (performSyncCheck) {
+      services = await this._performSyncChecks(services, this.timeout)
+      this.decisionTree.push({
+        stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS,
+        val: services
+      })
+    }
+    const {
+      healthyServicesList, healthyServicesMap: servicesMap, healthyServiceTimings
+    } = await this._performHealthChecks(services)
     services = healthyServicesList
 
-    // Set index 0 from services as the primary
-    const primary = this.getPrimary(services)
-    // Set index 1 - services.length as the backups. Used in selecting secondaries
-    this.setBackupsList(services.slice(1))
+    let primary
+    if (this.preferHigherPatchForPrimary) {
+      const serviceTimingsSortedByVersion = sortServiceTimings({
+        serviceTimings: healthyServiceTimings,
+        currentVersion: this.currentVersion,
+        sortByVersion: true,
+        equivalencyDelta: this.equivalencyDelta
+      })
+      const servicesSortedByVersion = serviceTimingsSortedByVersion.map(service => service.request.id)
+      primary = this.getPrimary(servicesSortedByVersion)
+    } else {
+      primary = this.getPrimary(services)
+    }
+
+    // `this.backupsList` & this.backupTimings are used in selecting secondaries
+    const backupsList = _.without(services, primary)
+    const backupTimings = healthyServiceTimings.filter(timing => timing.request.id !== primary)
+    this.setBackupsList(backupsList, backupTimings)
+
     const secondaries = this.getSecondaries()
+
     this.decisionTree.push({
       stage: DECISION_TREE_STATE.SELECT_PRIMARY_AND_SECONDARIES,
       val: { primary, secondaries: secondaries.toString(), services: Object.keys(servicesMap).toString() }
@@ -117,10 +149,11 @@ class CreatorNodeSelection extends ServiceSelection {
    * Sets backupsList to input
    * @param {string[]} services string array of Content Node endpoints
    */
-  setBackupsList (services) {
+  setBackupsList (backupsList, backupTimings) {
     // Rest of services that are not selected as the primary are valid backups. Add as backup
     // This backups list will also be in order of descending highest version/fastest
-    this.backupsList = services
+    this.backupsList = backupsList
+    this.backupTimings = backupTimings
   }
 
   /**
@@ -128,6 +161,13 @@ class CreatorNodeSelection extends ServiceSelection {
    */
   getBackupsList () {
     return this.backupsList
+  }
+
+  /**
+   * Get backup timings in the form of an array
+   */
+  getBackupTimings () {
+    return this.backupTimings
   }
 
   /**
@@ -141,12 +181,26 @@ class CreatorNodeSelection extends ServiceSelection {
 
   /**
    * Selects secondary Content Nodes
+   * Returns first nodes from `services`, optionally sorted by version
    */
   getSecondaries () {
-    // Index 1 to n of services will be sorted in highest version -> lowest version
-    // Select up to numberOfNodes-1 of secondaries
-    const backups = this.getBackupsList()
-    const secondaries = backups.slice(0, this.numberOfNodes - 1)
+    const numberOfSecondaries = this.numberOfNodes - 1
+    const backupsList = this.getBackupsList()
+    const backupTimings = this.getBackupTimings()
+
+    let secondaries
+    if (this.preferHigherPatchForSecondaries) {
+      const backupTimingsSortedByVersion = sortServiceTimings({
+        serviceTimings: backupTimings,
+        currentVersion: this.currentVersion,
+        sortByVersion: true,
+        equivalencyDelta: this.equivalencyDelta
+      })
+      const secondaryTimings = backupTimingsSortedByVersion.slice(0, numberOfSecondaries)
+      secondaries = secondaryTimings.map(timing => timing.request.id)
+    } else {
+      secondaries = backupsList.slice(0, numberOfSecondaries)
+    }
 
     return secondaries
   }
@@ -183,11 +237,6 @@ class CreatorNodeSelection extends ServiceSelection {
       }
     }
 
-    this.decisionTree.push({
-      stage: DECISION_TREE_STATE.FILTER_OUT_SYNC_IN_PROGRESS,
-      val: successfulSyncCheckServices
-    })
-
     return successfulSyncCheckServices
   }
 
@@ -198,14 +247,16 @@ class CreatorNodeSelection extends ServiceSelection {
    */
   async _performHealthChecks (services) {
     // Perform a health check on services that passed the sync checks
-    const healthCheckedServices = await timeRequestsAndSortByVersion(
-      services.map(node => ({
+    const healthCheckedServices = await timeRequests({
+      requests: services.map(node => ({
         id: node,
         url: `${node}/${this.healthCheckPath}`
       })),
-      this.timeout,
-      this.equivalencyDelta
-    )
+      sortByVersion: false,
+      currentVersion: this.currentVersion,
+      timeout: this.timeout,
+      equivalencyDelta: this.equivalencyDelta
+    })
 
     const healthyServices = healthCheckedServices.filter(resp => {
       const endpoint = resp.request.id
@@ -285,7 +336,7 @@ class CreatorNodeSelection extends ServiceSelection {
       })
     }
 
-    return { healthyServicesList, healthyServicesMap: servicesMap }
+    return { healthyServicesList, healthyServicesMap: servicesMap, healthyServiceTimings: healthyServices }
   }
 
   _hasEnoughStorageSpace ({ storagePathSize, storagePathUsed }) {
