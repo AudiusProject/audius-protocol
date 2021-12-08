@@ -6,7 +6,8 @@ import os
 import subprocess
 import sys
 
-PROTOCOL_DIR = os.getenv('PROTOCOL_DIR', os.path.join(os.path.dirname(__file__), "../../"))
+DEFAULT_PROTOCOL_DIR = os.path.join(os.path.dirname(__file__), "../../")
+PROTOCOL_DIR = os.getenv('PROTOCOL_DIR', DEFAULT_PROTOCOL_DIR)
 
 
 def create_instance(provider, image, disk_size, machine_type, name):
