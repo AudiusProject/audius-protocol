@@ -126,7 +126,7 @@ def main():
 
     parser_setup.add_argument(
         "--protocol-git-ref",
-        help="git ref to use for audius-protcol (only used for remote-dev) (default: master)",
+        help="git ref to use for audius-protocol (only used for remote-dev) (default: master)",
     )
 
     parser_setup.add_argument(
