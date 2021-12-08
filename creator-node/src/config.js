@@ -641,7 +641,7 @@ const config = convict({
   },
   portWithOpenRestyEnabled: {
     doc: 'The port the Content Node app should run on if OpenResty is enabled',
-    format: 'nat',
+    format: 'port',
     env: 'portWithOpenRestyEnabled',
     default: null 
   }
