@@ -1,18 +1,3 @@
-// Script usage:
-// node updateContentBlacklist.js -a add -l 1,3,7 -t user
-// node updateContentBlacklist.js -a add -l 1,3,7 -t track
-// node updateContentBlacklist.js -a add -l 1,3,7 -t track-hash-id
-// node updateContentBlacklist.js -a add -l Qm..., Qm..., -t cid
-
-// node updateContentBlacklist.js -a remove -l 1,3,7 -t user
-// node updateContentBlacklist.js -a remove -l 1,3,7 -t track
-// node updateContentBlacklist.js -a remove -l Qm..., Qm..., -t cid
-
-// add -v flag to each script run to see the segments and number of segments touched
-
-// For help:
-// node updateContentBlacklist.js --help
-
 const axios = require('axios')
 const { Command } = require('commander')
 const Hashids = require('hashids/cjs')
@@ -34,13 +19,27 @@ const MAX_LIMIT = 500
 const VALUES_BATCH_SIZE = 10
 
 let VERBOSE = false
+const COMMANDER_HELP_STRING =
+`-a [action] -t [type] -l [ids or cids] -v [verbose (optional)]
+
+// Example usage:
+// node updateContentBlacklist.js -a add -l 1,3,7 -t user
+// node updateContentBlacklist.js -a add -l 1,3,7 -t track
+// node updateContentBlacklist.js -a add -l 7eP5n,ML51L -t track-hash-id
+// node updateContentBlacklist.js -a add -l Qm..., Qm..., -t cid
+
+// node updateContentBlacklist.js -a remove -l 1,3,7 -t user
+// node updateContentBlacklist.js -a remove -l 1,3,7 -t track
+// node updateContentBlacklist.js -a remove -l 7eP5n,ML51L -t track-hash-id
+// node updateContentBlacklist.js -a remove -l Qm..., Qm..., -t cid
+`
 
 class Commander {
   constructor () {
     this.program = new Command()
     this.program
-      .usage('-a [action] -t [type] -l [ids or cids] -v [verbose (optional)]')
-      .requiredOption('-t, --type <type>', 'user, track, or cid')
+      .usage(COMMANDER_HELP_STRING)
+      .requiredOption('-t, --type <type>', `Type of id - either 'track', 'track-hash-id', 'user' or 'cid'.\n'track-hash-id' is an encoded version of a track id commonly found in URLs with this pattern 'https://contentnode.domain.com/tracks/stream/7eP5n'. In this case the 'track-hash-id' is '7eP5n'.`)
       .requiredOption('-l, --list <list>', 'comma separated list of ids or cids', ids => ids.split(','))
       .requiredOption('-a, --act <action>', 'add, remove, or verify')
       .option('-v, --verbose', 'boolean to print out blacklisted/unblacklisted segments', VERBOSE)
