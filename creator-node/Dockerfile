@@ -75,8 +75,6 @@ RUN bash scripts/init-db.sh
 VOLUME "/file_storage"
 ENV storagePath=/file_storage
 
-EXPOSE 8000
-
 ARG git_sha
 ENV GIT_SHA=$git_sha
 

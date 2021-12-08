@@ -66,6 +66,10 @@ if [ -z "$dbUrl" ]; then
     /usr/bin/wait
 fi
 
+if [[ "$openrestyEnabled" == "true" ]]; then
+    openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
+fi
+
 if [[ "$devMode" == "true" ]]; then
     if [ "$link_libs" = true ]
     then
@@ -80,10 +84,6 @@ if [[ "$devMode" == "true" ]]; then
 else
     node build/src/index.js | tee >(logger)
     docker run -d --name watchtower -v /var/run/docker.sock:/var/run/docker.sock containrrr/watchtower --interval 10
-fi
-
-if [[ "$openrestyEnabled" == "true" ]]; then
-    openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
 fi
 
 wait
