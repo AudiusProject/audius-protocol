@@ -19,6 +19,7 @@ const { generateETHWalletLockKey } = require('./relay/ethTxRelay.js')
 const { RewardsAttester } = require('@audius/libs')
 const models = require('./models')
 
+const { RewardsReporter } = require('./utils/rewardsReporter')
 const { sendResponse, errorResponseServerError } = require('./apiHelpers')
 const { fetchAnnouncements } = require('./announcements')
 const { logger, loggingMiddleware } = require('./logging')
@@ -232,6 +233,11 @@ class App {
       await initialVals.save()
     }
 
+    const rewardsReporter = new RewardsReporter({
+      slackUrl: config.get('rewardsReporterSlackUrl'),
+      childLogger
+    })
+
     // Init the RewardsAttester
     const attester = new RewardsAttester({
       libs,
@@ -243,6 +249,7 @@ class App {
       startingBlock: initialVals.startingBlock,
       offset: initialVals.offset,
       challengeIdsDenyList,
+      reporter: rewardsReporter,
       updateValues: async ({ startingBlock, offset, successCount }) => {
         childLogger.info(`Persisting offset: ${offset}, startingBlock: ${startingBlock}`)
 
