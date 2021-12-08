@@ -109,7 +109,7 @@ def main():
 
     parser_setup.add_argument(
         "--user",
-        help="user to login in as (default: ubuntu)",
+        help="user to login as (default: ubuntu)",
     )
 
     parser_setup.add_argument(
