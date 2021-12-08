@@ -49,6 +49,7 @@ def dispatch_trending_challenges(
     tracks,
     version: str,
     date: datetime,
+    type: TrendingType
 ):
     for idx, track in enumerate(tracks):
         challenge_bus.dispatch(
@@ -59,7 +60,7 @@ def dispatch_trending_challenges(
                 "id": track["track_id"],
                 "user_id": track["owner_id"],
                 "rank": idx + 1,
-                "type": str(TrendingType.TRACKS),
+                "type": str(type),
                 "version": str(version),
                 "week": str(date),
             },
@@ -100,6 +101,7 @@ def enqueue_trending_challenges(
                 top_tracks,
                 version,
                 date,
+                TrendingType.TRACKS,
             )
 
         # Cache underground trending
@@ -120,6 +122,7 @@ def enqueue_trending_challenges(
                 top_tracks,
                 version,
                 date,
+                TrendingType.UNDERGROUND_TRACKS
             )
 
         trending_playlist_versions = trending_strategy_factory.get_versions_for_type(

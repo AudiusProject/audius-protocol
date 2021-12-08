@@ -679,10 +679,16 @@ const config = convict({
     default: 1
   },
   minSolanaNotificationSlot: {
-    doc: 'The slot number to start indexing if not slots defined"',
+    doc: 'The slot number to start indexing if no slots defined',
     format: Number,
     env: 'minSolanaNotificationSlot',
     default: 105400000
+  },
+  rewardsReporterSlackUrl: {
+    doc: 'The slack url to post messages for the rewards reporter',
+    format: String,
+    env: 'rewardsReporterSlackUrl',
+    default: ''
   }
 })
 
