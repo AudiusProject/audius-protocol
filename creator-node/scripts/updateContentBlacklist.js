@@ -334,7 +334,7 @@ async function fetchUserToNumTracksMap (userIds) {
  */
 async function checkIsBlacklisted (segment) {
   try {
-    await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`)
+    await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${segment}?bypasscache=true`)
   } catch (e) {
     if (e.response && e.response.status && e.response.status === 403) {
       return { segment, blacklisted: true }
@@ -350,7 +350,7 @@ async function checkIsBlacklisted (segment) {
  */
 async function checkIsNotBlacklisted (segment) {
   try {
-    await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`)
+    await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${segment}?bypasscache=true`)
   } catch (e) {
     console.error(`Failed to check for segment [${segment}]: ${e}`)
     return { segment, blacklisted: true }
