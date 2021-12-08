@@ -1,4 +1,5 @@
-from src.models import Challenge, UserChallenge, ChallengeType
+from datetime import datetime
+from src.models import Challenge, UserChallenge, ChallengeType, User
 from src.utils.db_session import get_db
 from src.queries.get_undisbursed_challenges import get_undisbursed_challenges
 from tests.utils import populate_mock_db_blocks
@@ -32,6 +33,24 @@ def setup_challenges(app):
                 starting_block=100,
             ),
         ]
+        users = [
+            User(
+                blockhash=hex(99),
+                blocknumber=99,
+                txhash=f"xyz{i}",
+                user_id=i,
+                is_current=True,
+                handle=f"TestHandle{i}",
+                handle_lc=f"testhandle{i}",
+                wallet=f"0x{i}",
+                is_creator=False,
+                is_verified=False,
+                name=f"test_name{i}",
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+            ) for i in range(7)
+        ]
+
         user_challenges = [
             UserChallenge(
                 challenge_id="test_challenge_1",
@@ -87,6 +106,7 @@ def setup_challenges(app):
         with db.scoped_session() as session:
             session.add_all(challenges)
             session.flush()
+            session.add_all(users)
             session.add_all(user_challenges)
 
 
@@ -111,6 +131,8 @@ def test_undisbursed_challenges(app):
                 "specifier": "6",
                 "amount": "5",
                 "completed_blocknumber": 100,
+                "handle": "TestHandle6",
+                "wallet": '0x6'
             },
             {
                 "challenge_id": "test_challenge_3",
@@ -118,6 +140,8 @@ def test_undisbursed_challenges(app):
                 "specifier": "7",
                 "amount": "5",
                 "completed_blocknumber": 100,
+                "handle": "TestHandle6",
+                "wallet": '0x6'
             },
             {
                 "challenge_id": "test_challenge_2",
@@ -125,6 +149,8 @@ def test_undisbursed_challenges(app):
                 "specifier": "4",
                 "amount": "5",
                 "completed_blocknumber": 102,
+                "handle": "TestHandle4",
+                "wallet": '0x4'
             },
             {
                 "challenge_id": "test_challenge_2",
@@ -132,6 +158,8 @@ def test_undisbursed_challenges(app):
                 "specifier": "5",
                 "amount": "5",
                 "completed_blocknumber": 102,
+                "handle": "TestHandle5",
+                "wallet": '0x5'
             },
         ]
         assert expected == undisbursed
@@ -149,6 +177,8 @@ def test_undisbursed_challenges(app):
                 "specifier": "6",
                 "amount": "5",
                 "completed_blocknumber": 100,
+                "handle": "TestHandle6",
+                "wallet": "0x6",
             },
             {
                 "challenge_id": "test_challenge_3",
@@ -156,6 +186,8 @@ def test_undisbursed_challenges(app):
                 "specifier": "7",
                 "amount": "5",
                 "completed_blocknumber": 100,
+                "handle": "TestHandle6",
+                "wallet": "0x6",
             },
         ]
         assert expected == undisbursed

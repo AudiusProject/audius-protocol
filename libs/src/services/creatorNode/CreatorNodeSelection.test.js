@@ -59,7 +59,6 @@ let defaultHealthCheckData = {
 describe('test CreatorNodeSelection', () => {
   it('selects the fastest healthy service as primary and rest as secondaries', async () => {
     const healthy = 'https://healthy.audius.co'
-
     nock(healthy)
       .get('/health_check/verbose')
       .reply(200, { data: defaultHealthCheckData })
@@ -557,4 +556,182 @@ describe('test CreatorNodeSelection', () => {
     // Make sure there is some variance
     assert(!primaries.every(val => val === primaries[0]))
   }).timeout(10000)
+
+  describe('Test preferHigherPatchForPrimary and preferHigherPatchForSecondaries', () => {
+    it('Selects highest version nodes when preferHigherPatchForPrimary and preferHigherPatchForSecondaries are enabled', async () => {
+      const aheadPatch = 'https://aheadPatch.audius.co'
+      nock(aheadPatch)
+        .get('/health_check/verbose')
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.6' } })
+
+      const aheadPatchButSlow = 'https://aheadPatchButSlow.audius.co'
+      nock(aheadPatchButSlow)
+        .get('/health_check/verbose')
+        .delay(100)
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.6' } })
+
+      const healthy = 'https://healthy.audius.co'
+      nock(healthy)
+        .get('/health_check/verbose')
+        .reply(200, { data: defaultHealthCheckData })
+
+      const cns = new CreatorNodeSelection({
+        creatorNode: mockCreatorNode,
+        numberOfNodes: 3,
+        ethContracts: mockEthContracts([healthy, aheadPatchButSlow, aheadPatch], '1.2.3'),
+        whitelist: null,
+        blacklist: null
+        // preferHigherPatchForPrimary and preferHigherPatchForSecondaries true by default
+      })
+
+      const { primary, secondaries, services } = await cns.select()
+
+      assert(primary === aheadPatch)
+      assert(secondaries.length === 2)
+      assert(secondaries[0] === aheadPatchButSlow)
+      assert(secondaries[1] === healthy)
+
+      const returnedHealthyServices = new Set(Object.keys(services))
+      assert(returnedHealthyServices.size === 3)
+      const healthyServices = [aheadPatch, aheadPatchButSlow, healthy]
+      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    })
+
+    it('Selects highest version node for primary with preferHigherPatchForPrimary enabled and fastest node for secondaries with preferHigherPatchForSecondaries disabled', async () => {
+      const aheadPatch = 'https://aheadPatch.audius.co'
+      nock(aheadPatch)
+        .get('/health_check/verbose')
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.6' } })
+
+      const aheadPatchButSlow = 'https://aheadPatchButSlow.audius.co'
+      nock(aheadPatchButSlow)
+        .get('/health_check/verbose')
+        .delay(100)
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.6' } })
+
+      const healthyButBehindPatch = 'https://healthyButBehindPatch.audius.co'
+      nock(healthyButBehindPatch)
+        .get('/health_check/verbose')
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.0' } })
+
+      const healthy = 'https://healthy.audius.co'
+      nock(healthy)
+        .get('/health_check/verbose')
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.3' } })
+
+      const cns = new CreatorNodeSelection({
+        creatorNode: mockCreatorNode,
+        numberOfNodes: 3,
+        ethContracts: mockEthContracts([healthy, healthyButBehindPatch, aheadPatchButSlow, aheadPatch], '1.2.3'),
+        whitelist: null,
+        blacklist: null,
+        // preferHigherPatchForPrimary defaults to true
+        preferHigherPatchForSecondaries: false
+      })
+
+      const { primary, secondaries, services } = await cns.select()
+
+      assert(primary === aheadPatch)
+      assert(secondaries.length === 2)
+      assert(secondaries[0] === healthy)
+      assert(secondaries[1] === aheadPatchButSlow)
+
+      const returnedHealthyServices = new Set(Object.keys(services))
+      assert(returnedHealthyServices.size === 4)
+      const healthyServices = [aheadPatch, aheadPatchButSlow, healthy, healthyButBehindPatch]
+      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    })
+
+    it('Selects fastest node for primary with preferHigherPatchForPrimary disabled and highest version nodes for secondaries with preferHigherPatchForSecondaries enabled', async () => {
+      const higherPatchAndSlow = 'https://higherPatchAndSlow.audius.co'
+      nock(higherPatchAndSlow)
+        .get('/health_check/verbose')
+        .delay(50)
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.4' } })
+
+      const highestPatchAndSlowest = 'https://highestPatchAndSlowest.audius.co'
+      nock(highestPatchAndSlowest)
+        .get('/health_check/verbose')
+        .delay(100)
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.5' } })
+
+      const healthyAndBehindPatch = 'https://healthyAndBehindPatch.audius.co'
+      nock(healthyAndBehindPatch)
+        .get('/health_check/verbose')
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.2' } })
+
+      const healthy = 'https://healthy.audius.co'
+      nock(healthy)
+        .get('/health_check/verbose')
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.3' } })
+
+      const cns = new CreatorNodeSelection({
+        creatorNode: mockCreatorNode,
+        numberOfNodes: 3,
+        ethContracts: mockEthContracts([healthy, healthyAndBehindPatch, higherPatchAndSlow, highestPatchAndSlowest], '1.2.3'),
+        whitelist: null,
+        blacklist: null,
+        preferHigherPatchForPrimary: false
+        // preferHigherPatchForSecondaries defaults to true
+      })
+
+      const { primary, secondaries, services } = await cns.select()
+
+      assert(primary === healthy)
+      assert(secondaries.length === 2)
+      assert(secondaries[0] === highestPatchAndSlowest)
+      assert(secondaries[1] === higherPatchAndSlow)
+
+      const returnedHealthyServices = new Set(Object.keys(services))
+      assert(returnedHealthyServices.size === 4)
+      const healthyServices = [highestPatchAndSlowest, higherPatchAndSlow, healthy, healthyAndBehindPatch]
+      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    })
+
+    it('Selects fastest nodes when preferHigherPatchForPrimary and preferHigherPatchForSecondaries are disabled', async () => {
+      const higherPatchAndSlow = 'https://higherPatchAndSlow.audius.co'
+      nock(higherPatchAndSlow)
+        .get('/health_check/verbose')
+        .delay(50)
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.4' } })
+
+      const highestPatchAndSlowest = 'https://highestPatchAndSlowest.audius.co'
+      nock(highestPatchAndSlowest)
+        .get('/health_check/verbose')
+        .delay(100)
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.5' } })
+
+      const healthyAndBehindPatch = 'https://healthyAndBehindPatch.audius.co'
+      nock(healthyAndBehindPatch)
+        .get('/health_check/verbose')
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.2' } })
+
+      const healthy = 'https://healthy.audius.co'
+      nock(healthy)
+        .get('/health_check/verbose')
+        .reply(200, { data: { ...defaultHealthCheckData, version: '1.2.3' } })
+
+      const cns = new CreatorNodeSelection({
+        creatorNode: mockCreatorNode,
+        numberOfNodes: 3,
+        ethContracts: mockEthContracts([healthy, healthyAndBehindPatch, higherPatchAndSlow, highestPatchAndSlowest], '1.2.3'),
+        whitelist: null,
+        blacklist: null,
+        preferHigherPatchForPrimary: false,
+        preferHigherPatchForSecondaries: false
+      })
+
+      const { primary, secondaries, services } = await cns.select()
+
+      assert(primary === healthy)
+      assert(secondaries.length === 2)
+      assert(secondaries[0] === higherPatchAndSlow)
+      assert(secondaries[1] === highestPatchAndSlowest)
+
+      const returnedHealthyServices = new Set(Object.keys(services))
+      assert(returnedHealthyServices.size === 4)
+      const healthyServices = [highestPatchAndSlowest, higherPatchAndSlow, healthy, healthyAndBehindPatch]
+      healthyServices.map(service => assert(returnedHealthyServices.has(service)))
+    })
+  })
 })

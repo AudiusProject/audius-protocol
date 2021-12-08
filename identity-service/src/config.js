@@ -594,6 +594,60 @@ const config = convict({
     default: 'processed',
     env: 'solanaTxCommitmentLevel'
   },
+  solanaMintAddress: {
+    doc: 'The address of our SPL token',
+    format: String,
+    default: '',
+    env: 'solanaMintAddress'
+  },
+  solanaClaimableTokenProgramAddress: {
+    doc: 'The address of our Claimable Token program',
+    format: String,
+    default: '',
+    env: 'solanaClaimableTokenProgramAddress'
+  },
+  solanaRewardsManagerProgramId: {
+    doc: 'The address of our Rewards Manager program',
+    format: String,
+    default: '',
+    env: 'solanaRewardsManagerProgramId'
+  },
+  solanaRewardsManagerProgramPDA: {
+    doc: 'The PDA of this Rewards Manager deployment',
+    format: String,
+    default: '',
+    env: 'solanaRewardsManagerProgramPDA'
+  },
+  solanaRewardsManagerTokenPDA: {
+    doc: 'The PDA for the Rewards Manager token account',
+    format: String,
+    default: '',
+    env: 'solanaRewardsManagerTokenPDA'
+  },
+  rewardsParallelization: {
+    doc: 'How many requests to perform in parallel when disbursing rewards',
+    format: Number,
+    default: '2',
+    env: 'rewardsParallelization'
+  },
+  rewardsQuorumSize: {
+    doc: 'How many Discovery Nodes constitute a quorum for disbursing a reward',
+    format: Number,
+    default: '2',
+    env: 'rewardsQuorumSize'
+  },
+  aaoEndpoint: {
+    doc: 'AAO Endpoint for fetching attestations',
+    format: String,
+    default: 'http://anti-abuse-oracle_anti_abuse_oracle_1:8000',
+    env: 'aaoEndpoint'
+  },
+  aaoAddress: {
+    doc: 'AAO eth address',
+    format: String,
+    default: '',
+    env: 'aaoAddress'
+  },
   sentryDSN: {
     doc: 'Sentry DSN key',
     format: String,
@@ -610,7 +664,7 @@ const config = convict({
     doc: 'Optimizely SDK key to use to fetch remote configuration',
     format: String,
     env: 'optimizelySdkKey',
-    default: null
+    default: 'MX4fYBgANQetvmBXGpuxzF'
   },
   discoveryProviderWhitelist: {
     doc: 'Whitelisted discovery providers to select from (comma-separated)',
@@ -658,7 +712,21 @@ if (fs.existsSync('solana-program-config.json')) {
     solanaValidSigner: solanaContractConfig.validSigner,
     solanaFeePayerWallet: solanaContractConfig.feePayerWallet,
     solanaEndpoint: solanaContractConfig.endpoint,
-    solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey
+    solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey,
+
+    solanaMintAddress: solanaContractConfig.splToken,
+    solanaClaimableTokenProgramAddress: solanaContractConfig.claimableTokenAddress,
+    solanaRewardsManagerProgramId: solanaContractConfig.rewardsManagerAddress,
+    solanaRewardsManagerProgramPDA: solanaContractConfig.rewardsManagerAccount,
+    solanaRewardsManagerTokenPDA: solanaContractConfig.rewardsManagerTokenAccount
+  })
+}
+
+if (fs.existsSync('aao-config.json')) {
+  let aaoConfig = require('../aao-config.json')
+  console.log('rewards: ' + JSON.stringify(aaoConfig))
+  config.load({
+    aaoAddress: aaoConfig[0]
   })
 }
 
