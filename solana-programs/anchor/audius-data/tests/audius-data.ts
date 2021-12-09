@@ -96,6 +96,48 @@ describe('audius-data', () => {
     }
   }
 
+  const testInitUser = async (
+    baseAuthorityAccount: anchor.web3.PublicKey,
+    testEthAddr,
+    testEthAddrBytes,
+    handleBytesArray,
+    bumpSeed: number,
+    metadata: string,
+    userStgAccount: anchor.web3.PublicKey
+  ) => {
+    let tx = await program.rpc.initUser(
+      baseAuthorityAccount,
+      Array.from(testEthAddrBytes),
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      {
+        accounts: {
+          admin: adminStgKeypair.publicKey,
+          payer: provider.wallet.publicKey,
+          user: userStgAccount,
+          authority: adminKeypair.publicKey,
+          systemProgram: SystemProgram.programId
+        },
+        signers: [adminKeypair]
+      }
+    )
+
+    let userDataFromChain = await program.account.user.fetch(userStgAccount)
+    let returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
+    let returnedSolFromChain = userDataFromChain.solanaPubKey
+
+    if (testEthAddr.toLowerCase() != returnedHex) {
+      throw new Error(`Invalid eth address returned from chain`)
+    }
+
+    if (!DefaultPubkey.equals(returnedSolFromChain)) {
+      throw new Error(`Unexpected public key found`)
+    }
+
+    await confirmLogInTransaction(tx, metadata)
+  }
+
   // Finds a 'derived' address by finding a programAddress with
   // seeds array  as first 32 bytes of base + seeds
   const findDerivedAddress = async (programId: anchor.web3.PublicKey, base: anchor.web3.PublicKey, seed: any) => {
@@ -193,13 +235,8 @@ describe('audius-data', () => {
 
   it('Initializing user!', async () => {
     let {
-      privKey,
-      pkString,
-      pubKey,
       testEthAddr,
       testEthAddrBytes,
-      handle,
-      handleBytes,
       handleBytesArray,
       metadata
     }  = initTestConstants()
@@ -211,46 +248,23 @@ describe('audius-data', () => {
     )
     let newUserAcctPDA = derivedAddress
 
-    let tx = await program.rpc.initUser(
+    await testInitUser(
       baseAuthorityAccount,
-      Array.from(testEthAddrBytes),
+      testEthAddr,
+      testEthAddrBytes,
       handleBytesArray,
       bumpSeed,
       metadata,
-      {
-        accounts: {
-          admin: adminStgKeypair.publicKey,
-          payer: provider.wallet.publicKey,
-          user: newUserAcctPDA,
-          authority: adminKeypair.publicKey,
-          systemProgram: SystemProgram.programId
-        },
-        signers: [adminKeypair]
-      }
+      newUserAcctPDA
     )
-    await confirmLogInTransaction(tx, metadata)
-
-    let userDataFromChain = await program.account.user.fetch(newUserAcctPDA)
-    let returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
-    console.log(`Eth address from chain ${returnedHex} | Original eth ${testEthAddr}`)
-
-    let returnedSolFromChain = userDataFromChain.solanaPubKey
-    console.log(`returnedSolFromChain  = ${returnedSolFromChain}`)
-
-    if (testEthAddr.toLowerCase() == returnedHex) {
-      console.log(`Retrieved address!`)
-    }
   });
 
   it('Initializing + claiming user!', async () => {
     let {
       privKey,
       pkString,
-      pubKey,
       testEthAddr,
       testEthAddrBytes,
-      handle,
-      handleBytes,
       handleBytesArray,
       metadata
     }  = initTestConstants()
@@ -262,35 +276,15 @@ describe('audius-data', () => {
     )
     let newUserAcctPDA = derivedAddress
 
-     await program.rpc.initUser(
+    await testInitUser(
       baseAuthorityAccount,
-      Array.from(testEthAddrBytes),
+      testEthAddr,
+      testEthAddrBytes,
       handleBytesArray,
       bumpSeed,
       metadata,
-      {
-        accounts: {
-          admin: adminStgKeypair.publicKey,
-          payer: provider.wallet.publicKey,
-          user: newUserAcctPDA,
-          authority: adminKeypair.publicKey,
-          systemProgram: SystemProgram.programId
-        },
-        signers: [adminKeypair]
-      }
+      newUserAcctPDA
     )
-
-    let userDataFromChain = await program.account.user.fetch(newUserAcctPDA)
-    let returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
-    let returnedSolFromChain = userDataFromChain.solanaPubKey
-
-    if (testEthAddr.toLowerCase() != returnedHex) {
-      throw new Error(`Invalid eth address returned from chain`)
-    }
-
-    if (!DefaultPubkey.equals(returnedSolFromChain)) {
-      throw new Error(`Unexpected public key found`)
-    }
 
     // New sol key that will be used to permission user updates
     let newUserKey = anchor.web3.Keypair.generate()
@@ -336,8 +330,8 @@ describe('audius-data', () => {
         // Signers
       ]
     );
-    userDataFromChain = await program.account.user.fetch(newUserAcctPDA)
-    returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
+    let userDataFromChain = await program.account.user.fetch(newUserAcctPDA)
+    let returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
     console.log(`Eth address from chain ${returnedHex} | Sol address from chain ${userDataFromChain.solanaPubKey}`)
     if (!newUserKey.publicKey.equals(userDataFromChain.solanaPubKey)) {
       throw new Error('Unexpected public key found')
