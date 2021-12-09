@@ -470,6 +470,12 @@ class AudiusBackend {
         ),
         useResumableTrackUpload: getFeatureEnabled(
           FeatureFlags.USE_RESUMABLE_TRACK_UPLOAD
+        ),
+        preferHigherPatchForPrimary: getFeatureEnabled(
+          FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY
+        ),
+        preferHigherPatchForSecondaries: getFeatureEnabled(
+          FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES
         )
       })
       await audiusLibs.init()
