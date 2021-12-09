@@ -52,15 +52,15 @@ const getMode = () => {
 }
 
 /**
- * Setting a different port is necessary for OpenResty to work. This
- * function retrieves the proper port
+ * Setting a different port is necessary for OpenResty to work. If OpenResty
+ * is enabled, have the app run on port 3000. Else, run on its configured port.
  * @returns the port number to configure the Content Node app
  */
 const getPort = () => {
   const openrestyEnabled = config.get('openrestyEnabled')
 
   if (openrestyEnabled) {
-    return config.get('portWithOpenRestyEnabled')
+    return 3000 
   } 
 
   return config.get('port')

@@ -637,13 +637,7 @@ const config = convict({
     doc: 'Flag to enable or disable OpenResty',
     format: 'BooleanCustom',
     env: 'openrestyEnabled',
-    default: false 
-  },
-  portWithOpenRestyEnabled: {
-    doc: 'The port the Content Node app should run on if OpenResty is enabled',
-    format: 'port',
-    env: 'portWithOpenRestyEnabled',
-    default: null 
+    default: false
   }
 
   /**
