@@ -4,6 +4,9 @@ const config = require('./config')
 const registryAddress = config.get('registryAddress')
 const web3ProviderUrl = config.get('web3Provider')
 
+// Fixed address of the SPL token program
+const SOLANA_TOKEN_ADDRESS = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
+
 class AudiusLibsWrapper {
   constructor () {
     this.audiusLibsInstance = null
@@ -21,6 +24,19 @@ class AudiusLibsWrapper {
     if (feePayerSecretKey) {
       feePayerSecretKey = Uint8Array.from(feePayerSecretKey)
     }
+
+    const solanaWeb3Config = AudiusLibs.configSolanaWeb3({
+      solanaClusterEndpoint: config.get('solanaEndpoint'),
+      mintAddress: config.get('solanaMintAddress'),
+      solanaTokenAddress: SOLANA_TOKEN_ADDRESS,
+      claimableTokenProgramAddress: config.get('solanaClaimableTokenProgramAddress'),
+      rewardsManagerProgramId: config.get('solanaRewardsManagerProgramId'),
+      rewardsManagerProgramPDA: config.get('solanaRewardsManagerProgramPDA'),
+      rewardsManagerTokenPDA: config.get('solanaRewardsManagerTokenPDA'),
+      // Never use the relay path in identity
+      useRelay: false,
+      feePayerSecretKey
+    })
 
     let audiusInstance = new AudiusLibs({
       discoveryProviderConfig: AudiusLibs.configDiscoveryProvider(discoveryProviderWhitelist),
@@ -42,12 +58,7 @@ class AudiusLibsWrapper {
       },
       isServer: true,
       captchaConfig: { serviceKey: config.get('recaptchaServiceKey') },
-      solanaWeb3Config: AudiusLibs.configSolanaWeb3({
-        solanaClusterEndpoint: config.get('solanaEndpoint'),
-        // Never use the relay path in identity
-        shouldUseRelay: false,
-        feePayerSecretKey
-      })
+      solanaWeb3Config: solanaWeb3Config
     })
 
     await audiusInstance.init()

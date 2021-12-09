@@ -47,8 +47,7 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/reposit
     opm get spacewander/lua-resty-rsa && \
     opm get ledgetech/lua-resty-http && \
     mkdir /usr/local/openresty/conf && \
-    mkdir /usr/local/openresty/logs && \
-    mkdir /usr/local/openresty/cache
+    mkdir /usr/local/openresty/logs
 
 # versions
 # alpine-sdk 1.0-r0
@@ -89,6 +88,13 @@ COPY --from=contracts /usr/src/app/build/contracts/ ./build/contracts/
 RUN bash scripts/init-db.sh
 
 ARG git_sha
+ARG audius_loggly_disable
+ARG audius_loggly_token
+ARG audius_loggly_tags
+
 ENV GIT_SHA=$git_sha
+ENV audius_loggly_disable=$audius_loggly_disable
+ENV audius_loggly_token=$audius_loggly_token
+ENV audius_loggly_tags=$audius_loggly_tags
 
 CMD ["bash", "scripts/start.sh"]

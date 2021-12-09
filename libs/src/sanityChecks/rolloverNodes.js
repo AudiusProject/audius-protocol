@@ -51,7 +51,9 @@ const rolloverNodes = async (libs, creatorNodeWhitelist) => {
       numberOfNodes: 2 - newSecondaries.length,
       whitelist: creatorNodeWhitelist,
       // Exclude ones we currently have
-      blacklist: new Set([newPrimary, ...newSecondaries])
+      blacklist: new Set([newPrimary, ...newSecondaries]),
+      preferHigherPatchForPrimary: libs.User.preferHigherPatchForPrimary,
+      preferHigherPatchForSecondaries: libs.User.preferHigherPatchForSecondaries
     })
     newSecondaries = newSecondaries.concat([autoselect.primary, ...autoselect.secondaries])
 

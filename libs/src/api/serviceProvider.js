@@ -1,5 +1,5 @@
 const { Base } = require('./base')
-const { timeRequestsAndSortByVersion } = require('../utils/network')
+const { timeRequests } = require('../utils/network')
 const { CreatorNodeSelection } = require('../services/creatorNode/CreatorNodeSelection')
 
 const CONTENT_NODE_SERVICE_NAME = 'content-node'
@@ -48,13 +48,14 @@ class ServiceProvider extends Base {
     }
 
     // Time requests and get version info
-    const timings = await timeRequestsAndSortByVersion(
-      creatorNodes.map(node => ({
+    const timings = await timeRequests({
+      requests: creatorNodes.map(node => ({
         id: node.endpoint,
         url: `${node.endpoint}/health_check/verbose`
       })),
+      sortByVersion: true,
       timeout
-    )
+    })
 
     let services = {}
     timings.forEach(timing => {
@@ -84,6 +85,8 @@ class ServiceProvider extends Base {
     performSyncCheck = true,
     timeout = CONTENT_NODE_DEFAULT_SELECTION_TIMEOUT,
     equivalencyDelta = CONTENT_NODE_SELECTION_EQUIVALENCY_DELTA,
+    preferHigherPatchForPrimary = true,
+    preferHigherPatchForSecondaries = true,
     log = true
   }) {
     const creatorNodeSelection = new CreatorNodeSelection({
@@ -93,7 +96,9 @@ class ServiceProvider extends Base {
       whitelist,
       blacklist,
       timeout,
-      equivalencyDelta
+      equivalencyDelta,
+      preferHigherPatchForPrimary,
+      preferHigherPatchForSecondaries
     })
 
     const { primary, secondaries, services } = await creatorNodeSelection.select(performSyncCheck, log)
