@@ -39,6 +39,46 @@ describe('audius-data', () => {
     return privKey
   }
 
+  const findProgramAddress = (programId, pubkey) => {
+    return PublicKey.findProgramAddress(
+      [pubkey.toBytes().slice(0, 32)],
+      programId
+    )
+  }
+
+  // Finds a 'derived' address by finding a programAddress with
+  // seeds array  as first 32 bytes of base + seeds
+  const findDerivedAddress = async (programId: anchor.web3.PublicKey, base: anchor.web3.PublicKey, seed: any) => {
+    let finalSeed = [base.toBytes().slice(0, 32), seed]
+    let result = await PublicKey.findProgramAddress(
+      finalSeed,
+      programId
+    )
+    return {
+      seed: finalSeed,
+      result
+    }
+  }
+
+  const findDerivedPair = async (programId, adminAccount, seed) => {
+    // Finds the rewardManagerAuthority account by generating
+    // a PDA with the rewardsMnager as a seed
+    const [baseAuthorityAccount] = await findProgramAddress(
+      programId,
+      adminAccount
+    )
+    const derivedAddresInfo = await findDerivedAddress(
+      programId,
+      baseAuthorityAccount,
+      seed
+    )
+
+    const derivedAddress = derivedAddresInfo.result[0]
+    const bumpSeed = derivedAddresInfo.result[1]
+
+    return  {baseAuthorityAccount, derivedAddress, bumpSeed }
+  }
+
   it('Initializing admin account!', async () => {
     // Add your test here.
     const tx = await program.rpc.initializeAdmin(
@@ -70,20 +110,24 @@ describe('audius-data', () => {
     let handleBytesArray = Array.from({...handleBytes, length: 16})
     let metadata = "QmTXWUkHWBUJ878gi2B25q6N4BWnjojLbSExyaqJxSDPrH"
 
-    const [user_account_pda, user_account_bump] = await PublicKey.findProgramAddress(
-      [Buffer.from(handleBytesArray)],
-      program.programId
-    );
+    let  { baseAuthorityAccount, bumpSeed, derivedAddress }  = await findDerivedPair(
+      program.programId,
+      adminStgKeypair.publicKey,
+      Buffer.from(handleBytesArray)
+    )
+    let newUserAcctPDA = derivedAddress
+
      await program.rpc.initUser(
+      baseAuthorityAccount,
       Array.from(testEthAddrBytes),
       handleBytesArray,
-      user_account_bump,
+      bumpSeed,
       metadata,
       {
         accounts: {
           admin: adminStgKeypair.publicKey,
           payer: provider.wallet.publicKey,
-          user: user_account_pda,
+          user: newUserAcctPDA,
           authority: adminKeypair.publicKey,
           systemProgram: SystemProgram.programId
         },
@@ -91,7 +135,7 @@ describe('audius-data', () => {
       }
     )
 
-    let userDataFromChain = await program.account.user.fetch(user_account_pda)
+    let userDataFromChain = await program.account.user.fetch(newUserAcctPDA)
     let returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
     console.log(`Eth address from chain ${returnedHex} | Original eth ${testEthAddr}`)
 
@@ -114,20 +158,24 @@ describe('audius-data', () => {
     let handleBytesArray = Array.from({...handleBytes, length: 16})
     let metadata = "QmTXWUkHWBUJ878gi2B25q6N4BWnjojLbSExyaqJxSDPrH"
 
-    const [user_account_pda, user_account_bump] = await PublicKey.findProgramAddress(
-      [Buffer.from(handleBytesArray)],
-      program.programId
-    );
+    let { baseAuthorityAccount, bumpSeed, derivedAddress }  = await findDerivedPair(
+      program.programId,
+      adminStgKeypair.publicKey,
+      Buffer.from(handleBytesArray)
+    )
+    let newUserAcctPDA = derivedAddress
+
      await program.rpc.initUser(
+      baseAuthorityAccount,
       Array.from(testEthAddrBytes),
       handleBytesArray,
-      user_account_bump,
+      bumpSeed,
       metadata,
       {
         accounts: {
           admin: adminStgKeypair.publicKey,
           payer: provider.wallet.publicKey,
-          user: user_account_pda,
+          user: newUserAcctPDA,
           authority: adminKeypair.publicKey,
           systemProgram: SystemProgram.programId
         },
@@ -135,7 +183,7 @@ describe('audius-data', () => {
       }
     )
 
-    let userDataFromChain = await program.account.user.fetch(user_account_pda)
+    let userDataFromChain = await program.account.user.fetch(newUserAcctPDA)
     let returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
     console.log(`Eth address from chain ${returnedHex} | Original eth ${testEthAddr}`)
 
@@ -177,7 +225,7 @@ describe('audius-data', () => {
             {
               accounts:
               {
-                user: user_account_pda,
+                user: newUserAcctPDA,
                 payer: provider.wallet.publicKey,
                 sysvarProgram: SystemSysVarProgramKey
               }
@@ -190,11 +238,10 @@ describe('audius-data', () => {
         // Signers
       ]
     );
-    userDataFromChain = await program.account.user.fetch(user_account_pda)
+    userDataFromChain = await program.account.user.fetch(newUserAcctPDA)
     returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
     console.log(`Eth address from chain ${returnedHex} | Sol address from chain ${userDataFromChain.solanaPubKey}`)
   });
-
 });
 
 let signBytes = (bytes: any, ethPrivateKey: WithImplicitCoercion<string> | { [Symbol.toPrimitive](hint: "string"): string; }) => {

@@ -15,33 +15,43 @@ pub mod audius_data {
         Ok(())
     }
 
+    // Initialize user from admin account
     pub fn init_user(
         ctx: Context<InitializeUser>,
+        base: Pubkey,
         eth_address: [u8; 20],
         _handle_seed: [u8; 16],
         _user_bump: u8,
         metadata: String,
     ) -> ProgramResult {
-        let audius_user_acct = &mut ctx.accounts.user;
-        audius_user_acct.eth_address = eth_address;
+        // Confirm that the base used for user account seed is derived from this Audius admin storage account
+        let (derived_base, _) = find_program_address_pubkey(ctx.accounts.admin.key(), ctx.program_id);
 
+        if derived_base != base {
+            return Err(ErrorCode::Unauthorized.into());
+        }
         if ctx.accounts.authority.key() != ctx.accounts.admin.authority {
             return Err(ErrorCode::Unauthorized.into());
         }
+
+        let audius_user_acct = &mut ctx.accounts.user;
+        audius_user_acct.eth_address = eth_address;
 
         msg!("User metadata = {:?}", metadata);
 
         Ok(())
     }
 
+    // Allow user to claim account
     pub fn init_user_sol(ctx: Context<InitializeUserSolIdentity>, sol_pub_key: Pubkey) -> ProgramResult {
         let audius_user_acct = &mut ctx.accounts.user;
         let index_current_instruction = sysvar::instructions::load_current_index_checked(
             &ctx.accounts.sysvar_program
         )?;
-        // instruction must contain at least one prior
+
+        // Instruction must contain at least one prior
         if index_current_instruction < 1 {
-            return Err(ErrorCode::Unauthorized.into());
+            return Err(ErrorCode::SignatureVerification.into());
         }
 
         // Eth_address offset (12) + address (20) + signature (65) = 97
@@ -63,6 +73,9 @@ pub mod audius_data {
         }
         Ok(())
     }
+
+    // Pending functions:
+    // - Update user with sol pub key after initialization
 }
 
 // Instructions
@@ -76,13 +89,13 @@ pub struct Initialize<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(eth_address: [u8;20], handle_seed: [u8;16], user_bump: u8)]
+#[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16], user_bump: u8)]
 pub struct InitializeUser<'info> {
     pub admin: Account<'info, AudiusAdmin>,
     #[account(
         init,
         payer = payer,
-        seeds = [handle_seed.as_ref()],
+        seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
         bump = user_bump,
         space = 8 + 32 + 20
     )]
@@ -112,7 +125,7 @@ pub struct AudiusAdmin {
 }
 
 #[account]
-// TODO: Consider whether this has to be linked to root
+// User storage account
 pub struct User {
     pub eth_address: [u8; 20],
     pub solana_pub_key: Pubkey,
@@ -123,4 +136,11 @@ pub struct User {
 pub enum ErrorCode {
     #[msg("You are not authorized to perform this action.")]
     Unauthorized,
+    #[msg("Signature verification failed.")]
+    SignatureVerification,
+}
+
+// Util functions
+pub fn find_program_address_pubkey(base_pubkey : Pubkey, program_id: &Pubkey) -> (Pubkey, u8) {
+    Pubkey::find_program_address(&[&base_pubkey.to_bytes()[..32]], program_id)
 }
