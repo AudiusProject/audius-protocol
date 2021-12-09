@@ -44,8 +44,15 @@ async function getTotalPlays () {
   })).data.data[0] || {}).count || 0
 }
 
+async function getTotalAggregatePlays () {
+  return (await axios({
+    method: 'get',
+    url: `http://localhost:5000/get_total_aggregate_plays`
+  })).data.data
+}
+
 async function submitTrackListen (executeOne, trackId, userId, solanaListen) {
-  const initialPlays = getTotalPlays()
+  const initialPlays = await getTotalPlays()
 
   let signature
   try {
@@ -163,6 +170,19 @@ async function trackListenCountsTest ({ executeOne }) {
     `base anon: ${numSuccessfulAnonBaseTrackListens}` +
     `) in ${Date.now() - start}ms`
   )
+
+  let totalAggregatePlays = await getTotalAggregatePlays()
+  let totalPlays = await getTotalPlays()
+  const pollStart = Date.now()
+  while (totalPlays !== totalAggregatePlays) {
+    await delay(500)
+    totalAggregatePlays = await getTotalAggregatePlays()
+    totalPlays = await getTotalPlays()
+    if (Date.now() - pollStart > MaxPollDurationMs) {
+      throw new Error(`Aggregate play count does not equal metric play count (totalAggregatePlays=${totalAggregatePlays} totalPlays=${totalPlays})`)
+    }
+  }
+
 }
 
 module.exports = {

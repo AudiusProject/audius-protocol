@@ -1,6 +1,8 @@
 const axios = require('axios')
 const convict = require('convict')
 const fs = require('fs')
+const process = require('process')
+const path = require('path')
 
 // can't import logger here due to possible circular dependency, use console
 
@@ -661,12 +663,14 @@ const config = convict({
  * So if registryAddress or ownerWallet env variables are defined, they take precendence.
  */
 
+const pathTo = fileName => path.join(process.cwd(), fileName)
+
 // TODO(DM) - remove these defaults
 const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
 
-if (fs.existsSync('eth-contract-config.json')) {
-  let ethContractConfig = require('../eth-contract-config.json')
+if (fs.existsSync(pathTo('eth-contract-config.json'))) {
+  let ethContractConfig = require(pathTo('eth-contract-config.json'))
   config.load({
     'ethTokenAddress': ethContractConfig.audiusTokenAddress,
     'ethRegistryAddress': ethContractConfig.registryAddress,
@@ -675,8 +679,8 @@ if (fs.existsSync('eth-contract-config.json')) {
   })
 }
 
-if (fs.existsSync('contract-config.json')) {
-  const dataContractConfig = require('../contract-config.json')
+if (fs.existsSync(pathTo('contract-config.json'))) {
+  const dataContractConfig = require(pathTo('contract-config.json'))
   config.load({
     'dataRegistryAddress': dataContractConfig.registryAddress
   })

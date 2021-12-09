@@ -49,7 +49,7 @@ class SessionExpirationQueue {
           let progress = 0
           const SESSION_EXPIRED_CONDITION = {
             where: {
-              created_at: {
+              createdAt: {
                 [Sequelize.Op.gt]: new Date(Date.now() - this.sessionExpirationAge)
               }
             }

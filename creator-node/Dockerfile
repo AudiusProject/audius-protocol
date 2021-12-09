@@ -13,6 +13,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
     apk update && \
     apk add bash && \
     apk add nodejs && \
+    apk add npm && \
     apk add redis && \
     apk add sudo && \
     apk add docker && \
@@ -47,6 +48,10 @@ COPY . .
 COPY scripts/wait /usr/bin/wait
 RUN chmod +x /usr/bin/wait
 
+# Compile js code to typescript based on tsconfig.json
+RUN ./node_modules/.bin/tsc --project ./
+
+# Create a db user if postgres in case it will be run inside this container
 RUN bash scripts/init-db.sh
 
 VOLUME "/file_storage"
@@ -55,7 +60,14 @@ ENV storagePath=/file_storage
 EXPOSE 8000
 
 ARG git_sha
+ARG audius_loggly_disable
+ARG audius_loggly_token
+ARG audius_loggly_tags
+
 ENV GIT_SHA=$git_sha
+ENV logglyDisable=$audius_loggly_disable
+ENV logglyToken=$audius_loggly_token
+ENV logglyTags=$audius_loggly_tags
 
 # CMD ["sh", "-c", "/usr/bin/wait && exec node src/index.js"]
 CMD ["bash", "scripts/start.sh"]
