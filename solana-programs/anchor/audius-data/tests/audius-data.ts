@@ -52,10 +52,6 @@ describe('audius-data', () => {
   let adminStgKeypair = anchor.web3.Keypair.generate()
   let userKeypair = anchor.web3.Keypair.generate()
 
-  console.log(`adminKeypair = ${adminKeypair.publicKey.toString()}`)
-  console.log(`adminStgKeypair ${adminStgKeypair.publicKey.toString()}`)
-  console.log(`userKeypair ${userKeypair.publicKey.toString()}`)
-
   let getRandomPrivateKey = () => {
     const msg = randomBytes(32)
     let privKey: Uint8Array
@@ -86,7 +82,6 @@ describe('audius-data', () => {
     let stringFound = false
     logs.forEach((v) => {
       if (v.indexOf(log) > 0) {
-        console.log(`${v}, Found ${log}`)
         stringFound = true
       }
     })
@@ -138,6 +133,54 @@ describe('audius-data', () => {
     await confirmLogInTransaction(tx, metadata)
   }
 
+  const testInitUserSolPubkey = async ({
+    message,
+    pkString,
+    privKey,
+    newUserKey,
+    newUserAcctPDA
+  }) => {
+    let signedBytes = signBytes(Buffer.from(message), pkString)
+    const { signature, recoveryId } = signedBytes
+
+    // Get the public key in a compressed format
+    const ethPubkey = secp256k1.publicKeyCreate(privKey, false).slice(1)
+    const secpTransactionInstruction = Secp256k1Program.createInstructionWithPublicKey({
+      publicKey: Buffer.from(ethPubkey),
+      message: Buffer.from(message),
+      signature,
+      recoveryId
+    })
+
+    await provider.send(
+      (() => {
+        const tx = new Transaction();
+        tx.add(secpTransactionInstruction),
+        tx.add(
+          program.instruction.initUserSol(
+            newUserKey.publicKey,
+            {
+              accounts:
+              {
+                user: newUserAcctPDA,
+                payer: provider.wallet.publicKey,
+                sysvarProgram: SystemSysVarProgramKey
+              }
+            }
+          )
+        )
+        return tx;
+      })(),
+      [
+        // Signers
+      ]
+    );
+    let userDataFromChain = await program.account.user.fetch(newUserAcctPDA)
+    if (!newUserKey.publicKey.equals(userDataFromChain.solanaPubKey)) {
+      throw new Error('Unexpected public key found')
+    }
+  }
+
   // Finds a 'derived' address by finding a programAddress with
   // seeds array  as first 32 bytes of base + seeds
   const findDerivedAddress = async (programId: anchor.web3.PublicKey, base: anchor.web3.PublicKey, seed: any) => {
@@ -171,7 +214,7 @@ describe('audius-data', () => {
     return  {baseAuthorityAccount, derivedAddress, bumpSeed }
   }
 
-  function randomString(size) {
+  const randomString = (size) => {
     if (size === 0) {
      throw new Error('Zero-length randomString is useless.');
     }
@@ -185,8 +228,13 @@ describe('audius-data', () => {
     }
 
     return objectId;
-   }
+  }
 
+  const randomCID = () => {
+    let randomSuffix = randomString(44)
+    let cid = `Qm${randomSuffix}`
+    return cid
+  }
 
   const initTestConstants = () => {
     let privKey = getRandomPrivateKey()
@@ -197,8 +245,7 @@ describe('audius-data', () => {
     let handle = randomBytes(20).toString('hex');
     let handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle))
     let handleBytesArray = Array.from({...handleBytes, length: 16})
-    let randomMetadataSuffix = randomString(44)
-    let metadata = `Qm${randomMetadataSuffix}`
+    let metadata = randomCID()
     let values = {
       privKey,
       pkString,
@@ -227,10 +274,13 @@ describe('audius-data', () => {
       }
     )
 
-    console.log("Your transaction signature", tx);
     let adminAccount = await program.account.audiusAdmin.fetch(adminStgKeypair.publicKey)
-    console.log("On chain retrieved admin info: ", adminAccount.authority.toString());
-    console.log("Provided admin info: ", adminKeypair.publicKey.toString());
+    if (!adminAccount.authority.equals(adminKeypair.publicKey)) {
+      console.log("Your transaction signature", tx);
+      console.log("On chain retrieved admin info: ", adminAccount.authority.toString());
+      console.log("Provided admin info: ", adminKeypair.publicKey.toString());
+      throw new Error("Invalid returned values")
+    }
   });
 
   it('Initializing user!', async () => {
@@ -288,53 +338,73 @@ describe('audius-data', () => {
 
     // New sol key that will be used to permission user updates
     let newUserKey = anchor.web3.Keypair.generate()
-    console.log(`newUserKey = ${newUserKey.publicKey}`)
-    console.log(`ethAddressBytes = ${testEthAddrBytes}`)
 
     // Generate signed SECP instruction
     // Message as the incoming public key
     let message = newUserKey.publicKey.toString()
 
-    let signedBytes = signBytes(Buffer.from(message), pkString)
-    const { signature, recoveryId } = signedBytes
+    await testInitUserSolPubkey({
+      message,
+      pkString,
+      privKey,
+      newUserKey,
+      newUserAcctPDA
+    })
+  });
 
-    // Get the public key in a compressed format
-    const ethPubkey = secp256k1.publicKeyCreate(privKey, false).slice(1)
-    const secpTransactionInstruction = Secp256k1Program.createInstructionWithPublicKey({
-      publicKey: Buffer.from(ethPubkey),
-      message: Buffer.from(message),
-      signature,
-      recoveryId
+  it('Initializing + claiming + updating user!', async () => {
+    let {
+      privKey,
+      pkString,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      metadata
+    }  = initTestConstants()
+
+    let { baseAuthorityAccount, bumpSeed, derivedAddress }  = await findDerivedPair(
+      program.programId,
+      adminStgKeypair.publicKey,
+      Buffer.from(handleBytesArray)
+    )
+    let newUserAcctPDA = derivedAddress
+
+    await testInitUser(
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserAcctPDA
+    )
+
+    // New sol key that will be used to permission user updates
+    let newUserKey = anchor.web3.Keypair.generate()
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    let message = newUserKey.publicKey.toString()
+
+    await testInitUserSolPubkey({
+      message,
+      pkString,
+      privKey,
+      newUserKey,
+      newUserAcctPDA
     })
 
-    await provider.send(
-      (() => {
-        const tx = new Transaction();
-        tx.add(secpTransactionInstruction),
-        tx.add(
-          program.instruction.initUserSol(
-            newUserKey.publicKey,
-            {
-              accounts:
-              {
-                user: newUserAcctPDA,
-                payer: provider.wallet.publicKey,
-                sysvarProgram: SystemSysVarProgramKey
-              }
-            }
-          )
-        )
-        return tx;
-      })(),
-      [
-        // Signers
-      ]
-    );
-    let userDataFromChain = await program.account.user.fetch(newUserAcctPDA)
-    let returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
-    console.log(`Eth address from chain ${returnedHex} | Sol address from chain ${userDataFromChain.solanaPubKey}`)
-    if (!newUserKey.publicKey.equals(userDataFromChain.solanaPubKey)) {
-      throw new Error('Unexpected public key found')
-    }
+    let updatedCID = randomCID()
+    let tx = await program.rpc.updateUser(
+      updatedCID,
+      {
+        accounts: {
+          user: newUserAcctPDA,
+          userAuthority: newUserKey.publicKey
+        },
+        signers: [newUserKey]
+      }
+    )
+    await confirmLogInTransaction(tx, updatedCID)
   });
 });
