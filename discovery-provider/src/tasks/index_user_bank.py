@@ -33,10 +33,10 @@ logger = logging.getLogger(__name__)
 
 # Populate values used in UserBank indexing from config
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
-WAUDIO_PROGRAM_ADDRESS = shared_config["solana"]["waudio_program_address"]
+WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
 USER_BANK_KEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
-WAUDIO_PROGRAM_PUBKEY = (
-    PublicKey(WAUDIO_PROGRAM_ADDRESS) if WAUDIO_PROGRAM_ADDRESS else None
+WAUDIO_MINT_PUBKEY = (
+    PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 )
 
 # Used to limit tx history if needed
@@ -199,7 +199,7 @@ def process_user_bank_tx_details(
         decoded = base58.b58decode(tx_data)[1:]
         public_key_bytes = decoded[:20]
         _, derived_address = get_address_pair(
-            WAUDIO_PROGRAM_PUBKEY,
+            WAUDIO_MINT_PUBKEY,
             public_key_bytes,
             USER_BANK_KEY,
             SPL_TOKEN_ID_PK
@@ -260,10 +260,10 @@ def process_user_bank_txs():
     logger.info("index_user_bank.py | Acquired lock")
 
     # Exit if required configs are not found
-    if not WAUDIO_PROGRAM_PUBKEY or not USER_BANK_KEY:
+    if not WAUDIO_MINT_PUBKEY or not USER_BANK_KEY:
         logger.error(
             f"index_user_bank.py | Missing required configuration"
-            f"WAUDIO_PROGRAM_PUBKEY: {WAUDIO_PROGRAM_PUBKEY} USER_BANK_KEY: {USER_BANK_KEY}- exiting."
+            f"WAUDIO_PROGRAM_PUBKEY: {WAUDIO_MINT_PUBKEY} USER_BANK_KEY: {USER_BANK_KEY}- exiting."
         )
         return
 
