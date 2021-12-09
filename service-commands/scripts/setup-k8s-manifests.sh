@@ -39,22 +39,19 @@ if [[ -z $name ]]; then
 fi
 
 # setup audius-k8s-manifests
-ssh_args=$(get_ssh_args $provider $user $name)
-
 echo "Waiting for instance to start"
 wait_for_instance $provider $user $name
 
 echo "Setting up audius-k8s-manifests"
-eval $ssh_args <<EOF
-git clone https://github.com/AudiusProject/audius-k8s-manifests.git
-yes | sh audius-k8s-manifests/setup.sh
-EOF
+execute_with_ssh $provider $user $name \
+  "git clone https://github.com/AudiusProject/audius-k8s-manifests.git" \
+  "&& yes | sh audius-k8s-manifests/setup.sh"
 
 echo "Waiting for instance to restart"
 wait_for_instance $provider $user $name
 
 if [[ ! -z "$audius_k8_manifests_config" ]]; then
-	cat $audius_k8_manifests_config | eval $ssh_args 'cat > $MANIFESTS_PATH/config.yaml'
+	copy_file_to_remote $provider $user $name $audius_k8_manifests_config '$MANIFESTS_PATH/config.yaml'
 else
 	echo "Warning: config not specified or does not exist"
 fi

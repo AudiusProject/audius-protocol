@@ -82,27 +82,28 @@ if ! instance_exists $provider $name; then
 fi
 
 # Setup service
-ssh_args=$(get_ssh_args $provider $user $name)
 case "$service" in
 	creator-node)
 		trap 'echo "Failed to setup audius-k8s-manifests. Aborting" && exit 1' ERR
 		bash $PROTOCOL_DIR/service-commands/scripts/setup-k8s-manifests.sh -p $provider -u $user -c "$audius_k8_manifests_config" $name
-		eval $ssh_args "audius-cli launch creator-node --configure-ipfs"
+		execute_with_ssh $provider $user $name "audius-cli launch creator-node --configure-ipfs"
 		;;
 	discovery-provider)
 		trap 'echo "Failed to setup audius-k8s-manifests. Aborting" && exit 1' ERR
 		bash $PROTOCOL_DIR/service-commands/scripts/setup-k8s-manifests.sh -p $provider -u $user -c "$audius_k8_manifests_config" $name
-		eval $ssh_args "audius-cli launch discovery-provider --seed-job --configure-ipfs"
+		execute_with_ssh $provider $user $name "audius-cli launch discovery-provider --seed-job --configure-ipfs"
 		;;
 	remote-dev)
-		eval $ssh_args \
-			"[[ ! -d ~/audius-protocol ]]" \
+		wait_for_instance $provider $user $name
+
+		execute_with_ssh $provider $user $name \
+			"[[ ! -d ~/audius-protocol]]" \
 			"&& git clone https://github.com/AudiusProject/audius-protocol.git" \
 			"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh"
 
 		wait_for_instance $provider $user $name
 
-		eval $ssh_args "bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
+		execute_with_ssh $provider $user $name "bash ~/audius-protocol/service-commands/scripts/set-git-refs $audius_protocol_git_ref $audius_client_git_ref"
 
 		read -p "Configure local /etc/hosts? [y/N] " -n 1 -r && echo
 		if [[ "$REPLY" =~ ^[Yy]$ ]]; then

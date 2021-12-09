@@ -23,6 +23,22 @@ get_ssh_args() {
 	esac
 }
 
+execute_with_ssh() {
+	provider=$1
+	user=$2
+	name=$3
+	eval "$(get_ssh_args $provider $user $name)" <<< "${@:4}"
+}
+
+copy_file_to_remote() {
+	provider=$1
+	user=$2
+	name=$3
+	local_file=$4
+	remote_file=$5
+	cat $local_file | eval "$(get_ssh_args $provider $user $name)" "cat > $remote_file"
+}
+
 get_azure_account() {
 	az account list --query '[?isDefault] | [0].user.name' -o tsv
 }
