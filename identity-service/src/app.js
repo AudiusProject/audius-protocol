@@ -87,23 +87,20 @@ class App {
       // 1. start notifications processing
       // 2. fork web server worker processes
       if (!config.get('isTestRun')) {
-        const audiusInstance = await this.configureAudiusInstance()
-        await this.notificationProcessor.init(
-          audiusInstance,
-          this.express,
-          this.redisClient
-        )
+        await this.configureAudiusInstance()
+
+        cluster.fork({ 'WORKER_TYPE': 'notifications' })
 
         // Fork extra web server workers
         // note - we can't have more than 1 worker at the moment because POA and ETH relays
         // use in memory wallet locks
         for (let i = 0; i < config.get('clusterForkProcessCount'); i++) {
-          cluster.fork()
+          cluster.fork({ 'WORKER_TYPE': 'web_server' })
         }
 
         cluster.on('exit', (worker, code, signal) => {
           logger.info(`Cluster: Worker ${worker.process.pid} died, forking another worker`)
-          cluster.fork()
+          cluster.fork(worker.process.env)
         })
       } else {
         // if it's a test run only start the server
@@ -134,20 +131,29 @@ class App {
 
       return { app: this.express, server }
     } else {
+      const audiusInstance = await this.configureAudiusInstance()
+
       // if it's not the master worker in the cluster
-      await this.configureAudiusInstance()
-      await new Promise(resolve => {
-        server = this.express.listen(this.port, resolve)
-      })
-      server.setTimeout(config.get('setTimeout'))
-      server.timeout = config.get('timeout')
-      server.keepAliveTimeout = config.get('keepAliveTimeout')
-      server.headersTimeout = config.get('headersTimeout')
+      if (process.env['WORKER_TYPE'] === 'notifications') {
+        await this.notificationProcessor.init(
+          audiusInstance,
+          this.express,
+          this.redisClient
+        )
+      } else {
+        await new Promise(resolve => {
+          server = this.express.listen(this.port, resolve)
+        })
+        server.setTimeout(config.get('setTimeout'))
+        server.timeout = config.get('timeout')
+        server.keepAliveTimeout = config.get('keepAliveTimeout')
+        server.headersTimeout = config.get('headersTimeout')
 
-      this.express.set('redis', this.redisClient)
+        this.express.set('redis', this.redisClient)
 
-      logger.info(`Listening on port ${this.port}...`)
-      return { app: this.express, server }
+        logger.info(`Listening on port ${this.port}...`)
+        return { app: this.express, server }
+      }
     }
   }
 
