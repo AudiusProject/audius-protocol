@@ -39,7 +39,7 @@ pub mod audius_data {
         let audius_user_acct = &mut ctx.accounts.user;
         audius_user_acct.eth_address = eth_address;
 
-        msg!("User metadata = {:?}", metadata);
+        msg!("AudiusUserMetadata = {:?}", metadata);
 
         Ok(())
     }
@@ -77,8 +77,14 @@ pub mod audius_data {
         Ok(())
     }
 
-    // Pending functions:
-    // - Update user with sol pub key after initialization
+    pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> ProgramResult {
+        msg!("Audius::UpdateUser");
+        if ctx.accounts.user.solana_pub_key != ctx.accounts.user_authority.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        msg!("AudiusUserMetadata = {:?}", metadata);
+        Ok(())
+    }
 }
 
 // Instructions
@@ -117,6 +123,15 @@ pub struct InitializeUserSolIdentity<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub sysvar_program: AccountInfo<'info>
+}
+
+
+#[derive(Accounts)]
+pub struct UpdateUser<'info> {
+    #[account(mut)]
+    pub user: Account<'info, User>,
+    #[account(mut)]
+    pub user_authority: Signer<'info>,
 }
 
 // END Instructions

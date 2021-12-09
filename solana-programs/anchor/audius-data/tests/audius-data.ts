@@ -11,6 +11,25 @@ const { randomBytes } = require('crypto')
 import keccak256 from 'keccak256';
 const { SystemProgram, PublicKey, Transaction, Secp256k1Program } = anchor.web3;
 
+const signBytes = (bytes: any, ethPrivateKey: WithImplicitCoercion<string> | { [Symbol.toPrimitive](hint: "string"): string; }) => {
+  const ethPrivateKeyArr = Buffer.from(ethPrivateKey, 'hex')
+  const msgHash = keccak256(bytes)
+  const signatureObj = secp256k1.ecdsaSign(
+    Uint8Array.from(msgHash),
+    ethPrivateKeyArr
+  )
+  const signature = Buffer.from(signatureObj.signature)
+  return {
+    signature,
+    recoveryId: signatureObj.recid
+  }
+}
+
+const ethAddressToArray = (ethAddress: any) => {
+  const strippedEthAddress = ethAddress.replace('0x', '')
+  return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be'))
+}
+
 describe('audius-data', () => {
   const provider = anchor.Provider.local(
     "http://localhost:8899",
@@ -27,6 +46,7 @@ describe('audius-data', () => {
 
   const SystemSysVarProgramKey = new PublicKey("Sysvar1nstructions1111111111111111111111111")
   const ethWeb3Utils = new ethWeb3()
+  const DefaultPubkey = new PublicKey("11111111111111111111111111111111")
 
   let adminKeypair = anchor.web3.Keypair.generate()
   let adminStgKeypair = anchor.web3.Keypair.generate()
@@ -109,6 +129,23 @@ describe('audius-data', () => {
     return  {baseAuthorityAccount, derivedAddress, bumpSeed }
   }
 
+  function randomString(size) {
+    if (size === 0) {
+     throw new Error('Zero-length randomString is useless.');
+    }
+
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz' + '0123456789';
+    let objectId = '';
+    const bytes = randomBytes(size)
+
+    for (let i = 0; i < bytes.length; ++i) {
+     objectId += chars[bytes.readUInt8(i) % chars.length];
+    }
+
+    return objectId;
+   }
+
+
   const initTestConstants = () => {
     let privKey = getRandomPrivateKey()
     let pkString = Buffer.from(privKey).toString('hex')
@@ -118,7 +155,8 @@ describe('audius-data', () => {
     let handle = randomBytes(20).toString('hex');
     let handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle))
     let handleBytesArray = Array.from({...handleBytes, length: 16})
-    let metadata = "QmTXWUkHWBUJ878gi2B25q6N4BWnjojLbSExyaqJxSDPrH"
+    let randomMetadataSuffix = randomString(44)
+    let metadata = `Qm${randomMetadataSuffix}`
     let values = {
       privKey,
       pkString,
@@ -130,7 +168,6 @@ describe('audius-data', () => {
       handleBytesArray,
       metadata
     }
-    console.log(`Test info - ${JSON.stringify(values)}`)
     return values
   }
 
@@ -245,13 +282,14 @@ describe('audius-data', () => {
 
     let userDataFromChain = await program.account.user.fetch(newUserAcctPDA)
     let returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
-    console.log(`Eth address from chain ${returnedHex} | Original eth ${testEthAddr}`)
-
     let returnedSolFromChain = userDataFromChain.solanaPubKey
-    console.log(`returnedSolFromChain  = ${returnedSolFromChain}`)
 
-    if (testEthAddr.toLowerCase() == returnedHex) {
-      console.log(`Retrieved address!`)
+    if (testEthAddr.toLowerCase() != returnedHex) {
+      throw new Error(`Invalid eth address returned from chain`)
+    }
+
+    if (!DefaultPubkey.equals(returnedSolFromChain)) {
+      throw new Error(`Unexpected public key found`)
     }
 
     // New sol key that will be used to permission user updates
@@ -275,7 +313,7 @@ describe('audius-data', () => {
       recoveryId
     })
 
-    let tx = await provider.send(
+    await provider.send(
       (() => {
         const tx = new Transaction();
         tx.add(secpTransactionInstruction),
@@ -301,24 +339,8 @@ describe('audius-data', () => {
     userDataFromChain = await program.account.user.fetch(newUserAcctPDA)
     returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
     console.log(`Eth address from chain ${returnedHex} | Sol address from chain ${userDataFromChain.solanaPubKey}`)
+    if (!newUserKey.publicKey.equals(userDataFromChain.solanaPubKey)) {
+      throw new Error('Unexpected public key found')
+    }
   });
 });
-
-let signBytes = (bytes: any, ethPrivateKey: WithImplicitCoercion<string> | { [Symbol.toPrimitive](hint: "string"): string; }) => {
-  const ethPrivateKeyArr = Buffer.from(ethPrivateKey, 'hex')
-  const msgHash = keccak256(bytes)
-  const signatureObj = secp256k1.ecdsaSign(
-    Uint8Array.from(msgHash),
-    ethPrivateKeyArr
-  )
-  const signature = Buffer.from(signatureObj.signature)
-  return {
-    signature,
-    recoveryId: signatureObj.recid
-  }
-}
-
-function ethAddressToArray(ethAddress: any) {
-  const strippedEthAddress = ethAddress.replace('0x', '')
-  return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be'))
-}
