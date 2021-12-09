@@ -97,7 +97,7 @@ case "$service" in
 		wait_for_instance $provider $user $name
 
 		execute_with_ssh $provider $user $name \
-			"[[ ! -d ~/audius-protocol]]" \
+			"[[ ! -d ~/audius-protocol ]]" \
 			"&& git clone https://github.com/AudiusProject/audius-protocol.git" \
 			"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh"
 
