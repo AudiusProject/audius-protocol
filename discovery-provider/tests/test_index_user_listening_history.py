@@ -273,6 +273,11 @@ def test_index_user_listening_history_no_update(app):
             {"item_id": 3, "user_id":3, "created_at": TIMESTAMP_2},
 
             {"item_id": 1, "user_id":3, "created_at": TIMESTAMP_3},
+
+            # New anon plays
+            {"item_id": 1, "user_id":None, "created_at": TIMESTAMP_3},
+            {"item_id": 1, "user_id":None, "created_at": TIMESTAMP_4},
+
         ],
         "indexing_checkpoints": [
             {"tablename": USER_LISTENING_HISTORY_TABLE_NAME, "last_checkpoint": 6}

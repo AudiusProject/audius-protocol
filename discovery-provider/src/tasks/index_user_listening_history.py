@@ -10,7 +10,7 @@ from src.utils.helpers import UPDATE_INDEXING_CHECKPOINTS_QUERY
 logger = logging.getLogger(__name__)
 
 USER_LISTENING_HISTORY_TABLE_NAME = "user_listening_history"
-BATCH_SIZE = 100000 # index 10k plays at most at a time
+BATCH_SIZE = 100000 # index 100k plays at most at a time
 
 def sort_listening_history(deduped_history_dict, limit = 100):
     # sorts listening history and places a limit
