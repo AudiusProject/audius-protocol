@@ -15,7 +15,9 @@ export enum FeatureFlags {
   SOL_WALLET_AUDIO_ENABLED = 'sol_wallet_audio_enabled',
   SOLANA_COLLECTIBLES_ENABLED = 'solana_collectibles_enabled',
   ARTIST_RECOMMENDATIONS_ENABLED = 'artist_recommendations_enabled',
-  SURFACE_AUDIO_ENABLED = 'surface_audio_enabled'
+  SURFACE_AUDIO_ENABLED = 'surface_audio_enabled',
+  PREFER_HIGHER_PATCH_FOR_PRIMARY = 'prefer_higher_patch_for_primary',
+  PREFER_HIGHER_PATCH_FOR_SECONDARIES = 'prefer_higher_patch_for_secondaries'
 }
 
 /**
@@ -37,7 +39,9 @@ export const flagDefaults: { [key in FeatureFlags]: boolean } = {
   [FeatureFlags.SOL_WALLET_AUDIO_ENABLED]: false,
   [FeatureFlags.SOLANA_COLLECTIBLES_ENABLED]: false,
   [FeatureFlags.ARTIST_RECOMMENDATIONS_ENABLED]: false,
-  [FeatureFlags.SURFACE_AUDIO_ENABLED]: false
+  [FeatureFlags.SURFACE_AUDIO_ENABLED]: false,
+  [FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY]: true,
+  [FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES]: true
 }
 
 export enum FeatureFlagCohortType {
@@ -75,7 +79,11 @@ export const flagCohortType: {
   [FeatureFlags.NFT_IMAGE_PICKER_TAB]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.SOL_WALLET_AUDIO_ENABLED]: FeatureFlagCohortType.USER_ID,
   [FeatureFlags.ARTIST_RECOMMENDATIONS_ENABLED]: FeatureFlagCohortType.USER_ID,
-  [FeatureFlags.SURFACE_AUDIO_ENABLED]: FeatureFlagCohortType.USER_ID
+  [FeatureFlags.SURFACE_AUDIO_ENABLED]: FeatureFlagCohortType.USER_ID,
+  [FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY]:
+    FeatureFlagCohortType.SESSION_ID,
+  [FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES]:
+    FeatureFlagCohortType.SESSION_ID
 }
 
 export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId'
