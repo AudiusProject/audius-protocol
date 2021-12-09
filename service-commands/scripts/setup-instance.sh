@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Usage: setup.sh [options] <service> <name>
+# Usage: setup-instance.sh [options] <service> <name>
 #
 # Options:
 #   -p <provider>
@@ -85,17 +85,13 @@ fi
 ssh_args=$(get_ssh_args $provider $user $name)
 case "$service" in
 	creator-node)
-		if ! bash $PROTOCOL_DIR/service-commands/scripts/setup-k8s-manifests.sh -p $provider -u $user -c "$audius_k8_manifests_config" $name; then
-			echo "Failed to setup audius-k8s-manifests. Aborting"
-			exit 1
-		fi
+		trap 'echo "Failed to setup audius-k8s-manifests. Aborting" && exit 1' ERR
+		bash $PROTOCOL_DIR/service-commands/scripts/setup-k8s-manifests.sh -p $provider -u $user -c "$audius_k8_manifests_config" $name
 		eval $ssh_args "audius-cli launch creator-node --configure-ipfs"
 		;;
 	discovery-provider)
-		if ! bash $PROTOCOL_DIR/service-commands/scripts/setup-k8s-manifests.sh -p $provider -u $user -c "$audius_k8_manifests_config" $name; then
-			echo "Failed to setup audius-k8s-manifests. Aborting"
-			exit 1
-		fi
+		trap 'echo "Failed to setup audius-k8s-manifests. Aborting" && exit 1' ERR
+		bash $PROTOCOL_DIR/service-commands/scripts/setup-k8s-manifests.sh -p $provider -u $user -c "$audius_k8_manifests_config" $name
 		eval $ssh_args "audius-cli launch discovery-provider --seed-job --configure-ipfs"
 		;;
 	remote-dev)
