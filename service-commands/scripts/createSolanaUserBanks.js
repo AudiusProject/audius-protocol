@@ -71,7 +71,6 @@ async function getUserBatchFromIds(discoveryProviderUrl, ids) {
     method: 'get',
     baseURL: discoveryProviderUrl,
     url: '/users',
-
     params: {
       id: ids
     },
@@ -85,7 +84,7 @@ async function getUserBatchFromIds(discoveryProviderUrl, ids) {
 /**
  * Sets up the solana public keys and necessary services using the specified config
  * @param {Config} config the configuration to use for setup
- * @returns {Object} the instantiated keys and services
+ * @returns {Promise<Object>} the instantiated keys and services
  */
 async function setupConfig(config) {
   const {
@@ -224,25 +223,22 @@ async function main(options) {
       idBatch.push(line)
       if (idBatch.length >= options.batchSize) {
         lineReader.pause()
-        getUserBatchFromIds(discoveryProviderUrl, idBatch)
-          .then(users => {
-            const userIds = users.map(u => u.user_id.toString())
-            idBatch
-              .filter(id => !userIds.includes(id))
-              .forEach(id => {
-                console.error(`[ERROR] User user_id=${id} not found`)
-                if (options.output) {
-                  fs.appendFileSync(options.output, id + '\n')
-                }
-              })
-            return processUserBatch(users, createUserBankParams, options.output)
+        const users = await getUserBatchFromIds(discoveryProviderUrl, idBatch)
+        // Check for missing IDs
+        const userIds = users.map(u => u.user_id.toString())
+        idBatch
+          .filter(id => !userIds.includes(id))
+          .forEach(id => {
+            console.error(`[ERROR] User user_id=${id} not found`)
+            if (options.output) {
+              fs.appendFileSync(options.output, id + '\n')
+            }
           })
-          .then(() => {
-            idBatch = []
-            batchNumber++
-            console.log(`[BATCH] Done with batch ${batchNumber++}`)
-            lineReader.resume()
-          })
+        await processUserBatch(users, createUserBankParams, options.output)
+        idBatch = []
+        batchNumber++
+        console.log(`[BATCH] Done with batch ${batchNumber++}`)
+        lineReader.resume()
       }
     })
     lineReader.on('error', console.error)
