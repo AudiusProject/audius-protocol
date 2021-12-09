@@ -79,6 +79,31 @@ describe('audius-data', () => {
     return  {baseAuthorityAccount, derivedAddress, bumpSeed }
   }
 
+  const initTestConstants = () => {
+    let privKey = getRandomPrivateKey()
+    let pkString = Buffer.from(privKey).toString('hex')
+    let pubKey = ethWeb3Utils.eth.accounts.privateKeyToAccount(pkString)
+    let testEthAddr = pubKey.address
+    let testEthAddrBytes = ethAddressToArray(testEthAddr)
+    let handle = randomBytes(20).toString('hex');
+    let handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle))
+    let handleBytesArray = Array.from({...handleBytes, length: 16})
+    let metadata = "QmTXWUkHWBUJ878gi2B25q6N4BWnjojLbSExyaqJxSDPrH"
+    let values = {
+      privKey,
+      pkString,
+      pubKey,
+      testEthAddr,
+      testEthAddrBytes,
+      handle,
+      handleBytes,
+      handleBytesArray,
+      metadata
+    }
+    console.log(`Test info - ${JSON.stringify(values)}`)
+    return values
+  }
+
   it('Initializing admin account!', async () => {
     // Add your test here.
     const tx = await program.rpc.initializeAdmin(
@@ -100,15 +125,17 @@ describe('audius-data', () => {
   });
 
   it('Initializing user!', async () => {
-    let privKey = getRandomPrivateKey()
-    let pkString = Buffer.from(privKey).toString('hex')
-    let pubKey = ethWeb3Utils.eth.accounts.privateKeyToAccount(pkString)
-    let testEthAddr = pubKey.address
-    let testEthAddrBytes = ethAddressToArray(testEthAddr)
-    let handle = "testUserHandle"
-    let handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle))
-    let handleBytesArray = Array.from({...handleBytes, length: 16})
-    let metadata = "QmTXWUkHWBUJ878gi2B25q6N4BWnjojLbSExyaqJxSDPrH"
+    let {
+      privKey,
+      pkString,
+      pubKey,
+      testEthAddr,
+      testEthAddrBytes,
+      handle,
+      handleBytes,
+      handleBytesArray,
+      metadata
+    }  = initTestConstants()
 
     let  { baseAuthorityAccount, bumpSeed, derivedAddress }  = await findDerivedPair(
       program.programId,
@@ -148,15 +175,17 @@ describe('audius-data', () => {
   });
 
   it('Initializing + claiming user!', async () => {
-    let privKey = getRandomPrivateKey()
-    let pkString = Buffer.from(privKey).toString('hex')
-    let pubKey = ethWeb3Utils.eth.accounts.privateKeyToAccount(pkString)
-    let testEthAddr = pubKey.address
-    let testEthAddrBytes = ethAddressToArray(testEthAddr)
-    let handle = "testUserHandle2"
-    let handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle))
-    let handleBytesArray = Array.from({...handleBytes, length: 16})
-    let metadata = "QmTXWUkHWBUJ878gi2B25q6N4BWnjojLbSExyaqJxSDPrH"
+    let {
+      privKey,
+      pkString,
+      pubKey,
+      testEthAddr,
+      testEthAddrBytes,
+      handle,
+      handleBytes,
+      handleBytesArray,
+      metadata
+    }  = initTestConstants()
 
     let { baseAuthorityAccount, bumpSeed, derivedAddress }  = await findDerivedPair(
       program.programId,
