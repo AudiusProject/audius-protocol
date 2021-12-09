@@ -32,12 +32,12 @@ audius_delegate_manager_registry_key = bytes("DelegateManager", "utf-8")
 
 REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
 
-WAUDIO_PROGRAM_ADDRESS = shared_config["solana"]["waudio_program_address"]
-WAUDIO_MINT_ADDRESS = shared_config["solana"]["waudio_mint_address"]
-WAUDIO_PROGRAM_PUBKEY = (
-    PublicKey(WAUDIO_PROGRAM_ADDRESS) if WAUDIO_PROGRAM_ADDRESS else None
+WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
+WAUDIO_MINT_AUTHORITY = shared_config["solana"]["waudio_mint_authority"]
+WAUDIO_MINT_PUBKEY = (
+    PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 )
-WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT_ADDRESS) if WAUDIO_MINT_ADDRESS else None
+WAUDIO_MINT_AUTHORITY_PUBKEY = PublicKey(WAUDIO_MINT_AUTHORITY) if WAUDIO_MINT_AUTHORITY else None
 
 MAX_LAZY_REFRESH_USER_IDS = 100
 
@@ -239,7 +239,7 @@ def refresh_user_ids(
                                     [
                                         bytes(root_sol_account),
                                         bytes(SPL_TOKEN_ID_PK),
-                                        bytes(WAUDIO_PROGRAM_PUBKEY),  # type: ignore
+                                        bytes(WAUDIO_MINT_PUBKEY),  # type: ignore
                                     ],
                                     ASSOCIATED_TOKEN_PROGRAM_ID_PK,
                                 )
@@ -398,14 +398,16 @@ def get_staking_contract(eth_web3):
     return staking_instance
 
 
+SPL_TOKEN_PROGRAM_ID_PUBKEY = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
+
 def get_audio_token(solana_client: Client):
-    if WAUDIO_MINT_PUBKEY is None or WAUDIO_PROGRAM_PUBKEY is None:
+    if WAUDIO_MINT_AUTHORITY_PUBKEY is None or WAUDIO_MINT_PUBKEY is None:
         logger.error("cache_user_balance.py | Missing Required SPL Confirguration")
         return None
     waudio_token = Token(
         conn=solana_client,
         pubkey=WAUDIO_MINT_PUBKEY,
-        program_id=WAUDIO_PROGRAM_PUBKEY,
+        program_id=SPL_TOKEN_PROGRAM_ID_PUBKEY,
         payer=[],  # not making any txs so payer is not required
     )
     return waudio_token
