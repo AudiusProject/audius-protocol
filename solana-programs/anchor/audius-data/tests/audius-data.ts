@@ -93,9 +93,9 @@ describe('audius-data', () => {
 
   const testInitUser = async (
     baseAuthorityAccount: anchor.web3.PublicKey,
-    testEthAddr,
-    testEthAddrBytes,
-    handleBytesArray,
+    testEthAddr: string,
+    testEthAddrBytes: Uint8Array,
+    handleBytesArray: number[],
     bumpSeed: number,
     metadata: string,
     userStgAccount: anchor.web3.PublicKey
@@ -120,7 +120,7 @@ describe('audius-data', () => {
 
     let userDataFromChain = await program.account.user.fetch(userStgAccount)
     let returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
-    let returnedSolFromChain = userDataFromChain.solanaPubKey
+    let returnedSolFromChain = userDataFromChain.authority
 
     if (testEthAddr.toLowerCase() != returnedHex) {
       throw new Error(`Invalid eth address returned from chain`)
@@ -163,7 +163,6 @@ describe('audius-data', () => {
               accounts:
               {
                 user: newUserAcctPDA,
-                payer: provider.wallet.publicKey,
                 sysvarProgram: SystemSysVarProgramKey
               }
             }
@@ -176,7 +175,7 @@ describe('audius-data', () => {
       ]
     );
     let userDataFromChain = await program.account.user.fetch(newUserAcctPDA)
-    if (!newUserKey.publicKey.equals(userDataFromChain.solanaPubKey)) {
+    if (!newUserKey.publicKey.equals(userDataFromChain.authority)) {
       throw new Error('Unexpected public key found')
     }
   }

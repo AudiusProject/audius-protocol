@@ -1,3 +1,5 @@
+//! The Audius Data Program is intended to bring all user data functionality to Solana through the
+//! Anchor framework
 use anchor_lang::prelude::*;
 
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
@@ -8,7 +10,8 @@ pub mod audius_data {
     use anchor_lang::solana_program::secp256k1_program;
 
     use super::*;
-    // Initialize an admin address
+    /// Initialize an instance of Audius with admin keypair.
+    /// The notion of admin here may be expanded to other functionality as well
     pub fn initialize_admin(ctx: Context<Initialize>, authority: Pubkey) -> ProgramResult {
         msg!("Audius::InitializeAdmin");
         let audius_admin = &mut ctx.accounts.admin;
@@ -16,7 +19,11 @@ pub mod audius_data {
         Ok(())
     }
 
-    // Initialize user from admin account
+    /// Initialize a user account from the admin account.
+    /// The user's account is derived from the admin base PDA + handle bytes.
+    /// Populates the user account with their Ethereum address as bytes and an empty Pubkey for their Solana identity.
+    /// Allows the user to later "claim" their account by submitting a signed object and setting their own identity.
+    /// Important to note that the metadata object is simply logged out to be picked up by the Audius indexing layer.
     pub fn init_user(
         ctx: Context<InitializeUser>,
         base: Pubkey,
@@ -44,8 +51,9 @@ pub mod audius_data {
         Ok(())
     }
 
-    // Allow user to claim account
-    pub fn init_user_sol(ctx: Context<InitializeUserSolIdentity>, sol_pub_key: Pubkey) -> ProgramResult {
+    /// Functionality to confirm signed object and add a Solana Pubkey to a user's account.
+    /// Performs instruction introspection and expects a minimum of 2 instructions [secp, currenttinstruction].
+    pub fn init_user_sol(ctx: Context<InitializeUserSolIdentity>, user_authority: Pubkey) -> ProgramResult {
         msg!("Audius::InitUserSol");
         let audius_user_acct = &mut ctx.accounts.user;
         let index_current_instruction = sysvar::instructions::load_current_index_checked(
@@ -72,23 +80,29 @@ pub mod audius_data {
 
         // Update if valid
         if instruction_signer == audius_user_acct.eth_address {
-            audius_user_acct.solana_pub_key = sol_pub_key;
+            audius_user_acct.authority = user_authority;
         }
         Ok(())
     }
 
+    /// Permissioned function to log an update to User metadata
     pub fn update_user(ctx: Context<UpdateUser>, metadata: String) -> ProgramResult {
         msg!("Audius::UpdateUser");
-        if ctx.accounts.user.solana_pub_key != ctx.accounts.user_authority.key() {
+        if ctx.accounts.user.authority != ctx.accounts.user_authority.key() {
             return Err(ErrorCode::Unauthorized.into());
         }
         msg!("AudiusUserMetadata = {:?}", metadata);
         Ok(())
     }
+
+    // User TODOS:
+    // - Disable audius admin signing
+    // - Enable happy path flow with both eth address and sol key
 }
 
 // Instructions
 #[derive(Accounts)]
+/// Instruction container to initialize an instance of Audius, with the incoming admin keypair
 pub struct Initialize<'info> {
     #[account(init, payer = payer, space = 8 + 32)]
     pub admin: Account<'info, AudiusAdmin>,
@@ -97,6 +111,13 @@ pub struct Initialize<'info> {
     pub system_program: Program<'info, System>,
 }
 
+/// Instruction container to initialize a user account, must be invoked from an existing Audius
+/// `admin` account.
+/// `user` is a PDA derived from the Audius account and handle.
+/// `authority` is a signer key matching the admin value stored in AudiusAdmin root. Only the
+///  admin of this Audius root program may initialize users through this function
+/// `payer` is the account responsible for the lamports required to allocate this account.
+/// `system_program` is required for PDA derivation.
 #[derive(Accounts)]
 #[instruction(base: Pubkey, eth_address: [u8;20], handle_seed: [u8;16], user_bump: u8)]
 pub struct InitializeUser<'info> {
@@ -116,16 +137,19 @@ pub struct InitializeUser<'info> {
     pub system_program: Program<'info, System>,
 }
 
+/// Instruction container to allow a user to add their Solana public key as part of their identity.
+/// `user` is the target user PDA.
+/// The global sys var program is required to enable instruction introspection.
 #[derive(Accounts)]
 pub struct InitializeUserSolIdentity<'info> {
     #[account(mut)]
     pub user: Account<'info, User>,
-    #[account(mut)]
-    pub payer: Signer<'info>,
     pub sysvar_program: AccountInfo<'info>
 }
 
-
+/// Instruction container to allow updates to a given User account.
+/// `user` is the target user PDA.
+/// `user_authority` is a signer field which must match the `authority` field in the User account.
 #[derive(Accounts)]
 pub struct UpdateUser<'info> {
     #[account(mut)]
@@ -136,17 +160,17 @@ pub struct UpdateUser<'info> {
 
 // END Instructions
 
-// Storage
+/// Audius root account
 #[account]
 pub struct AudiusAdmin {
     pub authority: Pubkey,
 }
 
 #[account]
-// User storage account
+/// User storage account
 pub struct User {
     pub eth_address: [u8; 20],
-    pub solana_pub_key: Pubkey,
+    pub authority: Pubkey,
 }
 
 // Errors
