@@ -96,13 +96,13 @@ case "$service" in
 		;;
 	remote-dev)
 		eval $ssh_args \
-			"[[ ! -d ~/audius-protocol]]" \
+			"[[ ! -d ~/audius-protocol ]]" \
 			"&& git clone https://github.com/AudiusProject/audius-protocol.git" \
 			"&& yes | bash audius-protocol/service-commands/scripts/provision-dev-env.sh"
 
 		wait_for_instance $provider $user $name
 
-		eval $ssh_args "bash ~/audius-protocol/service-commands/scripts/set-git-refs $audius_protocol_git_ref $audius_client_git_ref"
+		eval $ssh_args "bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
 
 		read -p "Configure local /etc/hosts? [y/N] " -n 1 -r && echo
 		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
