@@ -10,6 +10,7 @@ pub mod audius_data {
     use super::*;
     // Initialize an admin address
     pub fn initialize_admin(ctx: Context<Initialize>, authority: Pubkey) -> ProgramResult {
+        msg!("Audius::InitializeAdmin");
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
         Ok(())
@@ -24,6 +25,7 @@ pub mod audius_data {
         _user_bump: u8,
         metadata: String,
     ) -> ProgramResult {
+        msg!("Audius::InitUser");
         // Confirm that the base used for user account seed is derived from this Audius admin storage account
         let (derived_base, _) = find_program_address_pubkey(ctx.accounts.admin.key(), ctx.program_id);
 
@@ -44,6 +46,7 @@ pub mod audius_data {
 
     // Allow user to claim account
     pub fn init_user_sol(ctx: Context<InitializeUserSolIdentity>, sol_pub_key: Pubkey) -> ProgramResult {
+        msg!("Audius::InitUserSol");
         let audius_user_acct = &mut ctx.accounts.user;
         let index_current_instruction = sysvar::instructions::load_current_index_checked(
             &ctx.accounts.sysvar_program

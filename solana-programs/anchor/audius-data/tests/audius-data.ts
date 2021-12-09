@@ -12,7 +12,13 @@ import keccak256 from 'keccak256';
 const { SystemProgram, PublicKey, Transaction, Secp256k1Program } = anchor.web3;
 
 describe('audius-data', () => {
-  const provider = anchor.Provider.local()
+  const provider = anchor.Provider.local(
+    "http://localhost:8899",
+    {
+      preflightCommitment: "confirmed",
+      commitment: "confirmed"
+    }
+  )
 
   // Configure the client to use the local cluster.
   anchor.setProvider(anchor.Provider.env());
@@ -44,6 +50,30 @@ describe('audius-data', () => {
       [pubkey.toBytes().slice(0, 32)],
       programId
     )
+  }
+
+  const getTransaction = async (tx: string) => {
+    let info = await provider.connection.getTransaction(tx)
+    while (info == null) {
+      info = await provider.connection.getTransaction(tx)
+    }
+    return info
+  }
+
+  const confirmLogInTransaction = async (tx: string, log: string) => {
+    let info = await getTransaction(tx)
+    let logs = info.meta.logMessages
+    let stringFound = false
+    logs.forEach((v) => {
+      if (v.indexOf(log) > 0) {
+        console.log(`${v}, Found ${log}`)
+        stringFound = true
+      }
+    })
+    if (!stringFound) {
+      console.log(logs)
+      throw new Error(`Failed to find ${log} in tx=${tx}`)
+    }
   }
 
   // Finds a 'derived' address by finding a programAddress with
@@ -144,7 +174,7 @@ describe('audius-data', () => {
     )
     let newUserAcctPDA = derivedAddress
 
-     await program.rpc.initUser(
+    let tx = await program.rpc.initUser(
       baseAuthorityAccount,
       Array.from(testEthAddrBytes),
       handleBytesArray,
@@ -161,6 +191,7 @@ describe('audius-data', () => {
         signers: [adminKeypair]
       }
     )
+    await confirmLogInTransaction(tx, metadata)
 
     let userDataFromChain = await program.account.user.fetch(newUserAcctPDA)
     let returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
