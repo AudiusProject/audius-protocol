@@ -26,6 +26,8 @@ REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None
 if REWARDS_MANAGER_ACCOUNT:
     REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = PublicKey(REWARDS_MANAGER_ACCOUNT)
+
+
 class Attestation:
     """Represents DN attesting to a user completing a given challenge"""
 
@@ -161,6 +163,7 @@ def get_attestation(
         .filter(
             User.is_current == True,
             User.user_id == user_id,
+            User.is_deactivated == False,
         )
         .one_or_none()
     )
