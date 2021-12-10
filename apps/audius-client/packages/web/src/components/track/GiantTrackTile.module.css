@@ -223,8 +223,11 @@
   margin-bottom: 8px;
 }
 
-.downloadButtons {
-  margin-top: 6px !important;
+.downloadButtonsContainer {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 6px;
 }
 
 .verified {

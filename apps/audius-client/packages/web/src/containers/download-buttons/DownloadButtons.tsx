@@ -139,7 +139,7 @@ const DownloadButtons = ({
 
   return (
     <div
-      className={cn(styles.downloadButtonsContainer, {
+      className={cn({
         [className!]: !!className,
         [styles.isHidden]: isHidden
       })}

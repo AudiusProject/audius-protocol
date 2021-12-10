@@ -346,7 +346,7 @@ class GiantTrackTile extends PureComponent {
   renderDownloadButtons = () => {
     return (
       <DownloadButtons
-        className={styles.downloadButtons}
+        className={styles.downloadButtonsContainer}
         trackId={this.props.trackId}
         isOwner={this.props.isOwner}
         following={this.props.following}
