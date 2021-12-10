@@ -63,4 +63,35 @@ function loggingMiddleware (req, res, next) {
   next()
 }
 
-module.exports = { logger, loggingMiddleware, requestNotExcludedFromLogging, getRequestLoggingContext }
+function setFieldsInChildLogger (req, options = {}) {
+  const fields = Object.keys(options)
+
+  const childOptions = {}
+  fields.forEach(field => {
+    childOptions[field] = options[field]
+  })
+
+  return req.logger.child(childOptions)
+}
+
+const getDuration = (req) => {
+  const endTime = process.hrtime(req.startTime)
+  const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
+
+  return duration
+}
+
+function setDurationInLogger (req) {
+  const duration = getDuration(req)
+  return setFieldsInChildLogger(req, { duration })
+}
+
+module.exports = {
+  logger,
+  loggingMiddleware,
+  requestNotExcludedFromLogging,
+  getRequestLoggingContext,
+  getDuration,
+  setFieldsInChildLogger,
+  setDurationInLogger
+}
