@@ -1,6 +1,6 @@
 import React, { useEffect, useContext } from 'react'
 
-import { ID } from 'common/models/Identifiers'
+import { CID, ID } from 'common/models/Identifiers'
 import { Track } from 'common/models/Track'
 import { User } from 'common/models/User'
 import { OverflowAction } from 'common/store/ui/mobile-overflow-menu/types'
@@ -53,6 +53,13 @@ export type OwnProps = {
   ) => void
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
+  onDownloadTrack: (
+    trackId: ID,
+    cid: CID,
+    creatorNodeEndpoints: string,
+    category?: string,
+    parentTrackId?: ID
+  ) => void
   // Tracks Lineup Props
   tracks: LineupState<{ id: ID }>
   currentQueueItem: QueueItem
@@ -81,6 +88,7 @@ const TrackPage = ({
   goToAllRemixesPage,
   goToParentRemixesPage,
   onSaveTrack,
+  onDownloadTrack,
   onHeroRepost,
   onClickMobileOverflow,
 
@@ -134,6 +142,24 @@ const TrackPage = ({
     <div className={styles.lineupHeader}>{messages.originalTrack}</div>
   )
 
+  const onDownload = (
+    trackId: ID,
+    cid: CID,
+    category?: string,
+    parentTrackId?: ID
+  ) => {
+    if (!user) return
+    const { creator_node_endpoint } = user
+    if (!creator_node_endpoint) return
+    onDownloadTrack(
+      trackId,
+      cid,
+      creator_node_endpoint,
+      category,
+      parentTrackId
+    )
+  }
+
   const renderMoreByTitle = () =>
     (defaults.remixParentTrackId && entries.length > 2) ||
     (!defaults.remixParentTrackId && entries.length > 1) ? (
@@ -182,6 +208,7 @@ const TrackPage = ({
             onSave={onSave}
             onShare={onShare}
             onRepost={onRepost}
+            onDownload={onDownload}
             isUnlisted={defaults.isUnlisted}
             isRemix={!!defaults.remixParentTrackId}
             fieldVisibility={defaults.fieldVisibility}

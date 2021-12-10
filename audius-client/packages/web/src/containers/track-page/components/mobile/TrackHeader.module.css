@@ -222,6 +222,15 @@
   margin: -4px 0px 0px 4px;
 }
 
+/* Download Buttons Container */
+.downloadButtonsContainer {
+  border-top: 1px solid var(--neutral-light-7);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 16px 0px;
+}
+
 /* Tags */
 .tags {
   border-top: 1px solid var(--neutral-light-7);
@@ -229,7 +238,7 @@
   display: inline-flex;
   justify-content: center;
   flex-wrap: wrap;
-  padding: 24px 0px 24px;
+  padding: 16px 0px;
 }
 
 .tag {

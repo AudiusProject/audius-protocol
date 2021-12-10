@@ -60,14 +60,6 @@
   cursor: auto;
 }
 
-
-.downloadButtonsContainer {
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 14px;
-}
-
 .downloadButtonsContainer.isHidden {
   display: none;
 }
