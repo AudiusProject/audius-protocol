@@ -106,7 +106,6 @@ def refresh_user_ids(
     delegate_manager_contract,
     staking_contract,
     eth_web3,
-    web3,
     waudio_token,
 ):
     with db.scoped_session() as session:
@@ -203,6 +202,9 @@ def refresh_user_ids(
             f"cache_user_balance.py | fetching for {len(user_associated_wallet_query)} users: {user_ids}"
         )
 
+        # mapping of user_id => balance change
+        needs_balance_change_update: Dict[int, Dict] = {}
+
         # Fetch balances
         # pylint: disable=too-many-nested-blocks
         for user_id, wallets in user_id_metadata.items():
@@ -298,14 +300,12 @@ def refresh_user_ids(
                 )
 
                 # Write to user_balance_changes table
-                session.add(
-                    UserBalanceChange(
-                        user_id=user_id,
-                        blocknumber=web3.eth.blockNumber,
-                        current_balance=str(current_total_balance),
-                        previous_balance=str(prev_total_balance),
-                    )
-                )
+                needs_balance_change_update[user_id] = {
+                    "user_id": user_id,
+                    "blocknumber": eth_web3.eth.blockNumber,
+                    "current_balance": str(current_total_balance),
+                    "previous_balance": str(prev_total_balance),
+                }
 
                 user_balance.balance = str(owner_wallet_balance)
                 user_balance.associated_wallets_balance = str(associated_balance)
@@ -318,6 +318,34 @@ def refresh_user_ids(
                 logger.error(
                     f"cache_user_balance.py | Error fetching balance for user {user_id}: {(e)}"
                 )
+
+        # Outside the loop, batch update the UserBalanceChanges:
+
+        # Get existing user balances
+        user_balance_ids = list(needs_balance_change_update.keys())
+        existing_user_balances = session.query(UserBalanceChange).filter(
+            UserBalanceChange.user_id.in_(user_balance_ids)
+        ).all()
+        # Find all the IDs that don't already exist in the DB
+        to_create_ids = set(user_balance_ids) - { e.user_id for e in existing_user_balances }
+        logger.info(f"cache_user_balance.py | UserBalanceChanges needing update: {user_balance_ids}, existing: {existing_user_balances}, to create: {to_create_ids}")
+
+        # Create new entries for those IDs
+        balance_changes_to_add = [
+            UserBalanceChange(
+                user_id=user_id,
+                block_number=needs_balance_change_update[user_id]["blocknumber"],
+                current_balance=needs_balance_change_update[user_id]["current_balance"],
+                previous_balance=needs_balance_change_update[user_id]["previous_balance"]
+            ) for user_id in to_create_ids
+        ]
+        session.add_all(balance_changes_to_add)
+        # Lastly, update all the existing entries
+        for change in existing_user_balances:
+            new_values = needs_balance_change_update[change.user_id]
+            change.blocknumber = new_values["blocknumber"]
+            change.current_balance = new_values["current_balance"]
+            change.previous_balance = new_values["previous_balance"]
 
         # Commit the new balances
         session.commit()
@@ -420,7 +448,6 @@ def update_user_balances_task(self):
     db = update_user_balances_task.db
     redis = update_user_balances_task.redis
     eth_web3 = update_user_balances_task.eth_web3
-    web3 = update_user_balances_task.web3
     solana_client_manager = update_user_balances_task.solana_client_manager
 
     have_lock = False
@@ -445,7 +472,6 @@ def update_user_balances_task(self):
                 delegate_manager_inst,
                 staking_inst,
                 eth_web3,
-                web3,
                 waudio_token,
             )
 
