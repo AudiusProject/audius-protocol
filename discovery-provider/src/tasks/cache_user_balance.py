@@ -33,14 +33,14 @@ audius_delegate_manager_registry_key = bytes("DelegateManager", "utf-8")
 REDIS_ETH_BALANCE_COUNTER_KEY = "USER_BALANCE_REFRESH_COUNT"
 
 WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
-WAUDIO_MINT_AUTHORITY = shared_config["solana"]["waudio_mint_authority"]
 WAUDIO_MINT_PUBKEY = (
     PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 )
-WAUDIO_MINT_AUTHORITY_PUBKEY = PublicKey(WAUDIO_MINT_AUTHORITY) if WAUDIO_MINT_AUTHORITY else None
 
 MAX_LAZY_REFRESH_USER_IDS = 100
 
+# Sol balances have 8 decimals, so they need to be increased to 18 to match eth balances
+SPL_TO_WEI = 10 ** 10
 
 class AssociatedWallets(TypedDict):
     eth: List[str]
@@ -107,6 +107,7 @@ def refresh_user_ids(
     delegate_manager_contract,
     staking_contract,
     eth_web3,
+    web3,
     waudio_token,
 ):
     with db.scoped_session() as session:
@@ -276,12 +277,12 @@ def refresh_user_ids(
                 # update the balance on the user model
                 user_balance = user_balances[user_id]
 
-                # Sol balances have 8 decimals, so they need to be increased to 18 to match eth balances
-                waudio_in_wei = int(waudio_balance) * (10 ** 10)
-                assoc_sol_balance_in_wei = associated_sol_balance * (10 ** 10)
-
-                user_waudio_in_wei = int(user_balance.waudio) * (10 ** 10)
-                user_assoc_sol_balance_in_wei = int(user_balance.associated_sol_wallets_balance) * (10 ** 10)
+                # Convert Sol balances to wei
+                to_wei = lambda balance: int(balance) * SPL_TO_WEI if balance else 0
+                waudio_in_wei = to_wei(waudio_balance)
+                assoc_sol_balance_in_wei = to_wei(associated_sol_balance)
+                user_waudio_in_wei = to_wei(user_balance.waudio)
+                user_assoc_sol_balance_in_wei = to_wei(user_balance.associated_sol_wallets_balance)
 
                 # Get values for user balance change
                 current_total_balance = (
@@ -301,7 +302,7 @@ def refresh_user_ids(
                 session.add(
                     UserBalanceChange(
                         user_id=user_id,
-                        blocknumber=Web3.eth.blockNumber,
+                        blocknumber=web3.eth.blockNumber,
                         current_balance=str(current_total_balance),
                         previous_balance=str(prev_total_balance),
                     )
@@ -401,7 +402,7 @@ def get_staking_contract(eth_web3):
 SPL_TOKEN_PROGRAM_ID_PUBKEY = PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 
 def get_audio_token(solana_client: Client):
-    if WAUDIO_MINT_AUTHORITY_PUBKEY is None or WAUDIO_MINT_PUBKEY is None:
+    if WAUDIO_MINT_PUBKEY is None:
         logger.error("cache_user_balance.py | Missing Required SPL Confirguration")
         return None
     waudio_token = Token(
@@ -420,6 +421,7 @@ def update_user_balances_task(self):
     db = update_user_balances_task.db
     redis = update_user_balances_task.redis
     eth_web3 = update_user_balances_task.eth_web3
+    web3 = update_user_balances_task.web3
     solana_client_manager = update_user_balances_task.solana_client_manager
 
     have_lock = False
@@ -444,6 +446,7 @@ def update_user_balances_task(self):
                 delegate_manager_inst,
                 staking_inst,
                 eth_web3,
+                web3,
                 waudio_token,
             )
 
