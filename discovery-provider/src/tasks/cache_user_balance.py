@@ -5,7 +5,6 @@ from redis import Redis
 from sqlalchemy import and_
 from sqlalchemy.orm.session import Session
 from spl.token.client import Token
-from web3 import Web3
 from solana.rpc.api import Client
 from solana.publickey import PublicKey
 
