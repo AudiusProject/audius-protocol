@@ -279,7 +279,19 @@ async function main(options) {
               fs.appendFileSync(options.output, id + '\n')
             }
           })
-        await processUserBatch(users, createUserBankParams, options.output)
+        const successfulUsers = await processUserBatch(
+          users,
+          createUserBankParams,
+          options.output
+        )
+        const confirmed = await confirmBatch(
+          discoveryProviderUrl,
+          successfulUsers.filter(Boolean).map(u => u.user_id),
+          options
+        )
+        if (!confirmed) {
+          console.error(`[ERROR]: Could not confirm batch ${batchNumber}`)
+        }
         idBatch = []
         batchNumber++
         console.log(`[BATCH] Done with batch ${batchNumber++}`)
@@ -361,7 +373,7 @@ program
     'which env to use (eg. "dev", "stage", "prod")',
     'dev'
   )
-  .option('-b, --batch-size <size>', 'how many users to process per batch', 50)
+  .option('-b, --batch-size <size>', 'how many users to process per batch', 100)
   .option(
     '-o, --output <filename>',
     'the filename which the userIds of failed requests will be written, separated by new lines',
@@ -379,7 +391,7 @@ program
   .option(
     '-r --retries <num>',
     'how many times the confirmer should attempt to confirm before giving up',
-    10
+    20
   )
 
 program.parse(process.argv)
