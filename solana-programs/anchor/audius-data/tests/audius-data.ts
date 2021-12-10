@@ -43,16 +43,14 @@ describe('audius-data', () => {
   anchor.setProvider(anchor.Provider.env());
 
   const program = anchor.workspace.AudiusData as Program<AudiusData>;
-
   const SystemSysVarProgramKey = new PublicKey("Sysvar1nstructions1111111111111111111111111")
-  const ethWeb3Utils = new ethWeb3()
+  const EthWeb3 = new ethWeb3()
   const DefaultPubkey = new PublicKey("11111111111111111111111111111111")
 
   let adminKeypair = anchor.web3.Keypair.generate()
   let adminStgKeypair = anchor.web3.Keypair.generate()
-  let userKeypair = anchor.web3.Keypair.generate()
 
-  let getRandomPrivateKey = () => {
+  const getRandomPrivateKey = () => {
     const msg = randomBytes(32)
     let privKey: Uint8Array
     do {
@@ -119,7 +117,7 @@ describe('audius-data', () => {
     )
 
     let userDataFromChain = await program.account.user.fetch(userStgAccount)
-    let returnedHex = ethWeb3Utils.utils.bytesToHex(userDataFromChain.ethAddress)
+    let returnedHex = EthWeb3.utils.bytesToHex(userDataFromChain.ethAddress)
     let returnedSolFromChain = userDataFromChain.authority
 
     if (testEthAddr.toLowerCase() != returnedHex) {
@@ -238,7 +236,7 @@ describe('audius-data', () => {
   const initTestConstants = () => {
     let privKey = getRandomPrivateKey()
     let pkString = Buffer.from(privKey).toString('hex')
-    let pubKey = ethWeb3Utils.eth.accounts.privateKeyToAccount(pkString)
+    let pubKey = EthWeb3.eth.accounts.privateKeyToAccount(pkString)
     let testEthAddr = pubKey.address
     let testEthAddrBytes = ethAddressToArray(testEthAddr)
     let handle = randomBytes(20).toString('hex');
@@ -406,4 +404,125 @@ describe('audius-data', () => {
     )
     await confirmLogInTransaction(tx, updatedCID)
   });
+
+  it('Initializing + claiming user + creating track', async () => {
+    let {
+      privKey,
+      pkString,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      metadata
+    }  = initTestConstants()
+
+    let { baseAuthorityAccount, bumpSeed, derivedAddress }  = await findDerivedPair(
+      program.programId,
+      adminStgKeypair.publicKey,
+      Buffer.from(handleBytesArray)
+    )
+    let newUserAcctPDA = derivedAddress
+
+    await testInitUser(
+      baseAuthorityAccount,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      newUserAcctPDA
+    )
+
+    // New sol key that will be used to permission user updates
+    let newUserKey = anchor.web3.Keypair.generate()
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    let message = newUserKey.publicKey.toString()
+
+    await testInitUserSolPubkey({
+      message,
+      pkString,
+      privKey,
+      newUserKey,
+      newUserAcctPDA
+    })
+
+    // TODO: Abstract track creation function
+    let newTrackKeypair = anchor.web3.Keypair.generate()
+    let trackMetadata = randomCID()
+    let tx = await program.rpc.createTrack(
+      trackMetadata,
+      {
+        accounts: {
+          track: newTrackKeypair.publicKey,
+          user: newUserAcctPDA,
+          authority: newUserKey.publicKey,
+          payer: provider.wallet.publicKey,
+          systemProgram: SystemProgram.programId
+        },
+        signers: [newUserKey, newTrackKeypair]
+      }
+    )
+
+    await confirmLogInTransaction(tx, trackMetadata)
+    let newTrackKeypair2 = anchor.web3.Keypair.generate()
+    let wrongUserKey = anchor.web3.Keypair.generate()
+    console.log(`Expecting error...`)
+    // Expected signature validation failure
+    try {
+      await program.rpc.createTrack(
+        trackMetadata,
+        {
+          accounts: {
+            track: newTrackKeypair2.publicKey,
+            user: newUserAcctPDA,
+            authority: newUserKey.publicKey,
+            payer: provider.wallet.publicKey,
+            systemProgram: SystemProgram.programId
+          },
+          signers: [wrongUserKey, newTrackKeypair]
+        }
+      )
+    } catch(e) {
+      console.log(`ERROR FOUND AS EXPECTED ${e}`)
+    }
+
+    let updatedTrackMetadata = randomCID()
+    console.log(`Updating track`)
+    let tx3 = await program.rpc.updateTrack(
+      updatedTrackMetadata,
+      {
+        accounts: {
+          track: newTrackKeypair.publicKey,
+          user: newUserAcctPDA,
+          authority: newUserKey.publicKey,
+          payer: provider.wallet.publicKey
+        },
+        signers: [newUserKey]
+      }
+    )
+    await confirmLogInTransaction(tx3, updatedTrackMetadata)
+  })
 });
+
+/*
+
+    let tx = await program.rpc.initUser(
+      baseAuthorityAccount,
+      Array.from(testEthAddrBytes),
+      handleBytesArray,
+      bumpSeed,
+      metadata,
+      {
+        accounts: {
+          admin: adminStgKeypair.publicKey,
+          payer: provider.wallet.publicKey,
+          user: userStgAccount,
+          authority: adminKeypair.publicKey,
+          systemProgram: SystemProgram.programId
+        },
+        signers: [adminKeypair]
+      }
+    )
+
+    */

@@ -9,6 +9,10 @@ pub mod audius_data {
     use anchor_lang::solana_program::sysvar;
     use anchor_lang::solana_program::secp256k1_program;
 
+    /*
+        User & Admin Functions
+    */
+
     use super::*;
     /// Initialize an instance of Audius with admin keypair.
     /// The notion of admin here may be expanded to other functionality as well
@@ -98,6 +102,35 @@ pub mod audius_data {
     // User TODOS:
     // - Disable audius admin signing
     // - Enable happy path flow with both eth address and sol key
+
+    /*
+        Track related functions
+    */
+    pub fn create_track(ctx: Context<CreateTrack>, metadata: String) -> ProgramResult {
+        msg!("Audius::CreateTrack");
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // Set owner to user storage account
+        ctx.accounts.track.owner = ctx.accounts.user.key();
+        msg!("AudiusTrackMetadata = {:?}", metadata);
+        Ok(())
+    }
+
+    // pub fn update_track
+    pub fn update_track(ctx: Context<UpdateTrack>, metadata: String) -> ProgramResult {
+        msg!("Audius::UpdateTrack");
+        if ctx.accounts.user.key() != ctx.accounts.track.owner.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        msg!("AudiusTrackMetadata = {:?}", metadata);
+        Ok(())
+    }
+
+    // pub fn delete_track
 }
 
 // Instructions
@@ -158,6 +191,37 @@ pub struct UpdateUser<'info> {
     pub user_authority: Signer<'info>,
 }
 
+
+/// Instruction container for track creation
+/// Confirms that user.authority matches signer authority field
+/// Payer is provided to facilitate an independent feepayer
+#[derive(Accounts)]
+pub struct CreateTrack<'info> {
+    #[account(init, payer = payer, space = 8 + 32)]
+    pub track: Account<'info, Track>,
+    #[account(mut)]
+    pub user: Account<'info, User>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>
+}
+
+/// Instruction container for track updates
+/// Confirm that the user authority matches signer authority field
+#[derive(Accounts)]
+pub struct UpdateTrack<'info> {
+    #[account()]
+    pub track: Account<'info, Track>,
+    #[account(mut)]
+    pub user: Account<'info, User>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+}
+
 // END Instructions
 
 /// Audius root account
@@ -166,11 +230,17 @@ pub struct AudiusAdmin {
     pub authority: Pubkey,
 }
 
-#[account]
 /// User storage account
+#[account]
 pub struct User {
     pub eth_address: [u8; 20],
     pub authority: Pubkey,
+}
+
+/// Track storage account
+#[account]
+pub struct Track {
+    pub owner: Pubkey,
 }
 
 // Errors
