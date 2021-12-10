@@ -368,6 +368,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_metrics",
             "src.tasks.index_materialized_views",
             "src.tasks.index_aggregate_plays",
+            "src.tasks.index_hourly_play_counts",
             "src.tasks.vacuum_db",
             "src.tasks.index_network_peers",
             "src.tasks.index_trending",
@@ -419,6 +420,10 @@ def configure_celery(celery, test_config=None):
             "update_aggregate_plays": {
                 "task": "update_aggregate_plays",
                 "schedule": timedelta(seconds=15),
+            },
+            "index_hourly_play_counts": {
+                "task": "index_hourly_play_counts",
+                "schedule": timedelta(seconds=5),
             },
             "vacuum_db": {
                 "task": "vacuum_db",
@@ -521,6 +526,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("materialized_view_lock")
     redis_inst.delete("update_metrics_lock")
     redis_inst.delete("update_play_count_lock")
+    redis_inst.delete("index_hourly_play_counts_lock")
     redis_inst.delete("ipld_blacklist_lock")
     redis_inst.delete("update_discovery_lock")
     redis_inst.delete("aggregate_metrics_lock")

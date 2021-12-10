@@ -79,6 +79,7 @@ def populate_mock_db(db, entities, block_offset=0):
         aggregate_plays = entities.get("aggregate_plays", [])
         indexing_checkpoints = entities.get("indexing_checkpoints", [])
         user_listening_history = entities.get("user_listening_history", [])
+        hourly_play_counts = entities.get("hourly_play_counts", [])
 
         num_blocks = max(len(tracks), len(users), len(follows), len(saves))
         for i in range(block_offset, block_offset + num_blocks):
@@ -211,7 +212,7 @@ def populate_mock_db(db, entities, block_offset=0):
 
         for i, aggregate_play_meta in enumerate(aggregate_plays):
             aggregate_play = models.AggregatePlays(
-                play_item_id=aggregate_play_meta.get("play_item_id", i),
+                play_item_id=aggregate_play_meta.get("play_item_id", i+1),
                 count=aggregate_play_meta.get("count", 0),
             )
             session.add(aggregate_play)
@@ -226,6 +227,13 @@ def populate_mock_db(db, entities, block_offset=0):
             )
             session.add(user_listening_history)
 
+        for i, hourly_play_count_meta in enumerate(hourly_play_counts):
+            hourly_play_count = models.HourlyPlayCounts(
+                hourly_timestamp=hourly_play_count_meta.get("hourly_timestamp", datetime.now()),
+                play_count=hourly_play_count_meta.get("play_count", 0),
+            )
+            session.add(hourly_play_count)
+
         if indexing_checkpoints:
             session.execute("TRUNCATE TABLE indexing_checkpoints") # clear primary keys before adding
             for i, indexing_checkpoint_meta in enumerate(indexing_checkpoints):
@@ -234,7 +242,6 @@ def populate_mock_db(db, entities, block_offset=0):
                     last_checkpoint=indexing_checkpoint_meta.get("last_checkpoint", 0),
                 )
                 session.add(indexing_checkpoint)
-
 
         for i, route_meta in enumerate(track_routes):
             route = models.TrackRoute(
