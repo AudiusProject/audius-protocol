@@ -53,7 +53,8 @@ async function getUserBatch(discoveryProviderUrl, batchNumber, batchSize) {
 
     params: {
       offset: batchNumber * batchSize,
-      limit: batchSize
+      limit: batchSize,
+      with_banks: true
     }
   })
   return response.data.data
@@ -72,13 +73,44 @@ async function getUserBatchFromIds(discoveryProviderUrl, ids) {
     baseURL: discoveryProviderUrl,
     url: '/users',
     params: {
-      id: ids
+      id: ids,
+      with_banks: true
     },
     paramsSerializer: params => {
       return qs.stringify(params, { arrayFormat: 'repeat' })
     }
   })
   return response.data.data
+}
+
+/**
+ * Check discovery to see if it indexed the changes.
+ * Done by checking has_solana_bank is true for all users in the batch
+ * @param {string} discoveryProviderUrl the discovery provider to query against
+ * @param {number[] | string[]} ids the list of user ids to check
+ * @param {Options} options options object that includes what the throttle is and max retries
+ * @param {number} attempt used in recursion to keep track of what attempt this is
+ * @returns {boolean} whether the batch was confirmed or not
+ */
+async function confirmBatch(discoveryProviderUrl, ids, options, attempt = 0) {
+  const users = await getUserBatchFromIds(discoveryProviderUrl, ids)
+  if (users.every(u => u.has_solana_bank)) {
+    console.debug('[CONFIRMER]: Successfully confirmed batch')
+    return true
+  } else {
+    if (attempt < options.retries) {
+      console.debug(
+        `[CONFIRMER]: Failed to confirm on attempt=${attempt}. Retrying...`
+      )
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve(confirmBatch(discoveryProviderUrl, ids, options, attempt + 1))
+        }, options.throttle)
+      })
+    } else {
+      return false
+    }
+  }
 }
 
 /**
@@ -172,7 +204,7 @@ function getConfigForEnv(env) {
 
 /**
  * Main method
- * @param {Object} options
+ * @param {Options} options
  */
 async function main(options) {
   // Setup config and init variables
@@ -202,8 +234,21 @@ async function main(options) {
       options.batchSize
     )
     while (users.length > 0) {
-      await processUserBatch(users, createUserBankParams, options.output)
-      console.log(`[BATCH] Done with batch ${batchNumber++}`)
+      const successfulUsers = await processUserBatch(
+        users,
+        createUserBankParams,
+        options.output
+      )
+      const confirmed = await confirmBatch(
+        discoveryProviderUrl,
+        successfulUsers.filter(Boolean).map(u => u.user_id),
+        options
+      )
+      if (!confirmed) {
+        console.error(`[ERROR]: Could not confirm batch ${batchNumber}`)
+      }
+      console.log(`[BATCH] Done with batch ${batchNumber}`)
+      batchNumber++
       users = await getUserBatch(
         discoveryProviderUrl,
         batchNumber,
@@ -262,6 +307,12 @@ async function main(options) {
    */
   const processUserBatch = users => {
     const batchPromises = users.map(async user => {
+      if (user.has_solana_bank) {
+        console.debug(
+          `[SKIP]: Bank already exists for user_id=${user.user_id} wallet=${user.wallet}`
+        )
+        return user
+      }
       console.debug(
         `[REQUEST]: Creating user bank for user_id=${user.user_id} wallet=${user.wallet}`
       )
@@ -273,6 +324,7 @@ async function main(options) {
           console.debug(
             `[SUCCESS]: Successfully created user bank for user_id=${user.user_id} wallet=${user.wallet}`
           )
+          return user
         })
         .catch(e => {
           console.error(
@@ -293,6 +345,15 @@ async function main(options) {
     await processAll()
   }
 }
+/**
+ * @typedef {Object} Options
+ * @property {"stage"|"dev"|"prod"} env which env to use (eg. "dev", "stage", "prod")
+ * @property {number} batchSize how many users to process per batch
+ * @property {string} output the filename which the userIds of failed requests will be written, separated by new lines
+ * @property {string} input the filename from which to load the list of userIds to generate user banks, separated by new lines
+ * @property {number} throttle the time to wait between confirmation attempts (in ms)
+ * @property {number} retries how many times the confirmer should attempt to confirm before giving up
+ */
 
 program
   .option(
@@ -309,6 +370,16 @@ program
   .option(
     '-i, --input <filename>',
     'the filename from which to load the list of userIds to generate user banks, separated by new lines'
+  )
+  .option(
+    '-t, --throttle <throttle_ms>',
+    'the time to wait between confirmation attempts (in ms)',
+    5000
+  )
+  .option(
+    '-r --retries <num>',
+    'how many times the confirmer should attempt to confirm before giving up',
+    10
   )
 
 program.parse(process.argv)
