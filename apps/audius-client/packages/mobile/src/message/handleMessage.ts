@@ -8,6 +8,7 @@ import { messageHandlers as android } from './handlers/android'
 import { messageHandlers as audio } from './handlers/audio'
 import { messageHandlers as cast } from './handlers/cast'
 import { messageHandlers as clientStore } from './handlers/clientStore'
+import { messageHandlers as download } from './handlers/download'
 import { messageHandlers as haptics } from './handlers/haptics'
 import { messageHandlers as lifecycle } from './handlers/lifecycle'
 import { messageHandlers as linking } from './handlers/linking'
@@ -28,6 +29,7 @@ const messageHandlers: Partial<MessageHandlers> = {
   ...audio,
   ...cast,
   ...clientStore,
+  ...download,
   ...haptics,
   ...lifecycle,
   ...linking,
