@@ -113,6 +113,9 @@ export enum MessageType {
 
   SHARE = 'share',
 
+  // Download
+  DOWNLOAD_TRACK = 'download-track',
+
   // Analytics
   ANALYTICS_IDENTIFY = 'analytics-identify',
   ANALYTICS_TRACK = 'analytics-track',

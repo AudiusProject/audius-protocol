@@ -5,6 +5,7 @@ import createSagaMiddleware from 'redux-saga'
 
 import audio, { AudioState } from './audio/reducer'
 import clientStore from './clientStore/slice'
+import downloads, { DownloadState } from './download/slice'
 import drawers, { DrawersState } from './drawers/slice'
 import googleCast, { GoogleCastState } from './googleCast/reducer'
 import keyboard, { KeyboardState } from './keyboard/slice'
@@ -21,6 +22,7 @@ export type AppState = {
   audio: AudioState
   clientStore: CommonState
   drawers: DrawersState
+  downloads: DownloadState
   googleCast: GoogleCastState
   keyboard: KeyboardState
   lifecycle: LifecycleState
@@ -37,6 +39,7 @@ const createRootReducer = () =>
     audio,
     clientStore,
     drawers,
+    downloads,
     googleCast,
     keyboard,
     lifecycle,
