@@ -98,7 +98,7 @@ async function confirmBatch(discoveryProviderUrl, ids, options, attempt = 0) {
     console.debug('[CONFIRMER]: Successfully confirmed batch')
     return true
   } else {
-    if (attempt < options.retries) {
+    if (attempt < options.retries || options.retries < 0) {
       console.debug(
         `[CONFIRMER]: Failed to confirm on attempt=${attempt}. Retrying...`
       )
@@ -364,7 +364,7 @@ async function main(options) {
  * @property {string} output the filename which the userIds of failed requests will be written, separated by new lines
  * @property {string} input the filename from which to load the list of userIds to generate user banks, separated by new lines
  * @property {number} throttle the time to wait between confirmation attempts (in ms)
- * @property {number} retries how many times the confirmer should attempt to confirm before giving up
+ * @property {number} retries how many times the confirmer should attempt to confirm before giving up (negative for infinite, zero for no retries)
  */
 
 program
@@ -390,7 +390,7 @@ program
   )
   .option(
     '-r --retries <num>',
-    'how many times the confirmer should attempt to confirm before giving up',
+    'how many times the confirmer should attempt to confirm before giving up (negative for infinite, zero for no retries)',
     20
   )
 
