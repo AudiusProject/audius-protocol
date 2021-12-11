@@ -11,8 +11,8 @@ const { logger: genericLogger } = require('./logging')
 function segmentFile (fileDir, fileName, { logContext }) {
   const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
-    logger.info(`Segmenting file ${fileName}...`)
     const absolutePath = path.resolve(fileDir, fileName)
+    logger.info(`Segmenting file ${absolutePath}...`)
 
     // https://ffmpeg.org/ffmpeg-formats.html#hls-2
     const args = [
@@ -26,9 +26,10 @@ function segmentFile (fileDir, fileName, { logContext }) {
       '-hls_segment_filename', path.resolve(fileDir, 'segments', 'segment%05d.ts'),
       // "-vn" flag required to allow track uploading with album art
       // https://stackoverflow.com/questions/20193065/how-to-remove-id3-audio-tag-image-or-metadata-from-mp3-with-ffmpeg
-      '-vn',
+      '-vn', // skip inclusion of video
       path.resolve(fileDir, fileName.split('.')[0] + '.m3u8')
     ]
+    logger.info(`Spawning: ffmpeg ${args}`)
     const proc = spawn(ffmpeg, args)
 
     // capture output
@@ -40,6 +41,7 @@ function segmentFile (fileDir, fileName, { logContext }) {
     proc.on('close', (code) => {
       if (code === 0) {
         const segmentFilePaths = fs.readdirSync(fileDir + '/segments')
+        logger.info(`Segmented file ${absolutePath}`)
         resolve(segmentFilePaths)
       } else {
         logger.error('Error when processing file with ffmpeg')
@@ -54,9 +56,9 @@ function segmentFile (fileDir, fileName, { logContext }) {
 function transcodeFileTo320 (fileDir, fileName, { logContext }) {
   const logger = genericLogger.child(logContext)
   return new Promise((resolve, reject) => {
-    logger.info(`Transcoding file ${fileName}...`)
     const sourcePath = path.resolve(fileDir, fileName)
     const targetPath = path.resolve(fileDir, fileName.split('.')[0] + '-dl.mp3')
+    logger.info(`Transcoding file ${sourcePath}...`)
 
     // Exit if dl-copy file already exists at target path.
     if (fs.existsSync(targetPath)) {
@@ -71,9 +73,10 @@ function transcodeFileTo320 (fileDir, fileName, { logContext }) {
       '-b:a', '320k',
       // "-vn" flag required to allow track uploading with album art
       // https://stackoverflow.com/questions/20193065/how-to-remove-id3-audio-tag-image-or-metadata-from-mp3-with-ffmpeg
-      '-vn',
+      '-vn', // skip inclusion of video
       targetPath
     ]
+    logger.info(`Spawning: ffmpeg ${args}`)
     const proc = spawn(ffmpeg, args)
 
     // capture output
@@ -85,8 +88,11 @@ function transcodeFileTo320 (fileDir, fileName, { logContext }) {
     proc.on('close', (code) => {
       if (code === 0) {
         if (fs.existsSync(targetPath)) {
+          logger.info(`Transcoded file ${targetPath}`)
           resolve(targetPath)
         } else {
+          logger.error('Error when processing file with ffmpeg')
+          logger.error('Command stdout:', stdout, '\nCommand stderr:', stderr)
           reject(new Error('FFMPEG Error'))
         }
       } else {

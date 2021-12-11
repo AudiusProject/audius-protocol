@@ -13,6 +13,7 @@ const ipfs = ipfsClient(ipfsAddr, config.get('ipfsPort'))
 const ipfsLatest = ipfsClientLatest({ host: ipfsAddr, port: config.get('ipfsPort'), protocol: 'http' })
 
 async function logIpfsPeerIds () {
+  genericLogger.info(`Starting IPFS, ipfsAddr=${ipfsAddr}`)
   const identity = await ipfs.id()
   // Pretty print the JSON obj with no filter fn (e.g. filter by string or number) and spacing of size 2
   genericLogger.info(`Current IPFS Peer ID: ${JSON.stringify(identity, null, 2)}`)
