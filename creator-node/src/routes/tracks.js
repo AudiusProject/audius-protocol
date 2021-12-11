@@ -104,10 +104,9 @@ async function handleResumableUpload (req, res, next) {
           }
         }
       )
-      req.logger.info(`Added transcode task, uuid=${req.logContext.requestID}`)
     }
   } catch (e) {
-    req.logger.error(`Failed to add transcode task, uuid=${req.logContext.requestID}`)
+    req.logger.error(`Failed to add transcode task, uuid=${req.logContext.requestID}, error=${e.toString()}`)
     return sendResponse(req, res, errorResponseServerError(e.toString()))
   }
 }

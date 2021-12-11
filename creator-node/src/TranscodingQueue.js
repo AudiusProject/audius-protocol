@@ -119,8 +119,10 @@ class TranscodingQueue {
       PROCESS_NAMES.segment,
       { fileDir, fileName, logContext }
     )
-    const result = await job.finished()
     this.logStatus(logContext, `Job added to segment queue, fileDir=${fileDir}, fileName=${fileName}`)
+
+    const result = await job.finished()
+    this.logStatus(logContext, `Segment job successful, fileDir=${fileDir}, fileName=${fileName}`)
     return result
   }
 
@@ -136,8 +138,9 @@ class TranscodingQueue {
       PROCESS_NAMES.transcode320,
       { fileDir, fileName, logContext }
     )
-    const result = await job.finished()
     this.logStatus(logContext, `Job added to transcode320 queue, fileDir=${fileDir}, fileName=${fileName}`)
+    const result = await job.finished()
+    this.logStatus(logContext, `Transcode320 job successful, fileDir=${fileDir}, fileName=${fileName}`)
     return result
   }
 

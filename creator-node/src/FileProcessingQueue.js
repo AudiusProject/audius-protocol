@@ -44,7 +44,7 @@ class FileProcessingQueue {
         const response = await this.monitorProgress(PROCESS_NAMES.transcode, transcodeFn, transcodeParams)
         done(null, { response })
       } catch (e) {
-        this.logError(transcodeParams.logContext, `Could not process taskType=${PROCESS_NAMES.transcode}, uuid=${transcodeParams.logContext.requestID}, resp=${e.toString()}`)
+        this.logError(transcodeParams.logContext, `Could not process taskType=${PROCESS_NAMES.transcode}, uuid=${transcodeParams.logContext.requestID}, error=${e.toString()}`)
         done(e.toString())
       }
     })
@@ -73,6 +73,7 @@ class FileProcessingQueue {
       PROCESS_NAMES.transcode,
       { transcodeParams }
     )
+    this.logStatus(logContext, `Added ${PROCESS_NAMES.transcode} task, uuid=${logContext.requestID}`)
 
     return job
   }
