@@ -328,13 +328,13 @@ def refresh_user_ids(
         ).all()
         # Find all the IDs that don't already exist in the DB
         to_create_ids = set(user_balance_ids) - { e.user_id for e in existing_user_balances }
-        logger.info(f"cache_user_balance.py | UserBalanceChanges needing update: {user_balance_ids}, existing: {existing_user_balances}, to create: {to_create_ids}")
+        logger.info(f"cache_user_balance.py | UserBalanceChanges needing update: {user_balance_ids}, existing: {[e.user_id for e in existing_user_balances]}, to create: {to_create_ids}")
 
         # Create new entries for those IDs
         balance_changes_to_add = [
             UserBalanceChange(
                 user_id=user_id,
-                block_number=needs_balance_change_update[user_id]["blocknumber"],
+                blocknumber=needs_balance_change_update[user_id]["blocknumber"],
                 current_balance=needs_balance_change_update[user_id]["current_balance"],
                 previous_balance=needs_balance_change_update[user_id]["previous_balance"]
             ) for user_id in to_create_ids
