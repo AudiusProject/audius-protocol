@@ -70,10 +70,15 @@ source ~/.profile
 source ~/.bashrc
 
 # audius repos setup
-git clone https://github.com/AudiusProject/audius-client.git
 cd $PROTOCOL_DIR/service-commands
 npm install
 node scripts/hosts.js add
 node scripts/setup.js run init-repos up
+
+cd ~
+git clone https://github.com/AudiusProject/audius-client.git
+cd audius-client
+npm link @audius/libs
+
 echo 'Rebooting machine...'
 reboot
