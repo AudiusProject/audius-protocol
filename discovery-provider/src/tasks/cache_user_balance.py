@@ -323,12 +323,13 @@ def refresh_user_ids(
 
         # Get existing user balances
         user_balance_ids = list(needs_balance_change_update.keys())
-        existing_user_balances = session.query(UserBalanceChange).filter(
+        existing_user_balance_changes: List[UserBalanceChange] = session.query(UserBalanceChange).filter(
             UserBalanceChange.user_id.in_(user_balance_ids)
         ).all()
         # Find all the IDs that don't already exist in the DB
-        to_create_ids = set(user_balance_ids) - { e.user_id for e in existing_user_balances }
-        logger.info(f"cache_user_balance.py | UserBalanceChanges needing update: {user_balance_ids}, existing: {[e.user_id for e in existing_user_balances]}, to create: {to_create_ids}")
+        to_create_ids = set(user_balance_ids) - { e.user_id for e in existing_user_balance_changes }
+        logger.info(f"cache_user_balance.py | UserBalanceChanges needing update: {user_balance_ids},\
+                    existing: {[e.user_id for e in existing_user_balance_changes]}, to create: {to_create_ids}")
 
         # Create new entries for those IDs
         balance_changes_to_add = [
@@ -341,7 +342,7 @@ def refresh_user_ids(
         ]
         session.add_all(balance_changes_to_add)
         # Lastly, update all the existing entries
-        for change in existing_user_balances:
+        for change in existing_user_balance_changes:
             new_values = needs_balance_change_update[change.user_id]
             change.blocknumber = new_values["blocknumber"]
             change.current_balance = new_values["current_balance"]
