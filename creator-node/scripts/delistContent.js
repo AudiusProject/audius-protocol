@@ -34,6 +34,26 @@ const COMMANDER_HELP_STRING =
 // node delistContent.js -a remove -l Qm..., Qm..., -t cid
 `
 
+class HashIds {
+  constructor () {
+    this.HASH_SALT = 'azowernasdfoia'
+    this.MIN_LENGTH = 5
+    this.hashids = new Hashids(this.HASH_SALT, this.MIN_LENGTH)
+  }
+  encode (id) {
+    return this.hashids.encode([id])
+  }
+
+  decode (id) {
+    const ids = this.hashids.decode(id)
+    if (!ids.length) return null
+    return ids[0]
+  }
+}
+
+// create a global instance of HashIds
+const hashIds = new HashIds()
+
 class Commander {
   constructor () {
     this.program = new Command()
@@ -53,7 +73,6 @@ class Commander {
  */
   parseEnvVarsAndArgs () {
     this.program.parse(process.argv)
-    const hashIds = new HashIds()
 
     // Parse env vars
     if (!CREATOR_NODE_ENDPOINT || !PRIVATE_KEY || !DISCOVERY_PROVIDER_ENDPOINT) {
@@ -123,22 +142,6 @@ class Logger {
     console.error(...msgs)
   }
 }
-class HashIds {
-  constructor () {
-    this.HASH_SALT = 'azowernasdfoia'
-    this.MIN_LENGTH = 5
-    this.hashids = new Hashids(this.HASH_SALT, this.MIN_LENGTH)
-  }
-  encode (id) {
-    return this.hashids.encode([id])
-  }
-
-  decode (id) {
-    const ids = this.hashids.decode(id)
-    if (!ids.length) return null
-    return ids[0]
-  }
-}
 
 /**
  * Process command line args and either add or remove an entry in/to ContentBlacklist table
@@ -148,10 +151,8 @@ async function run () {
   try {
     const commander = new Commander()
     args = commander.parseEnvVarsAndArgs()
-    console.log(args)
-    return
   } catch (e) {
-    Logger.error(`
+    throw new Error(`
       Incorrect script usage: ${e.message}
       - action: [${ACTION_ARR.toString()}]
       - type: [${TYPES_ARR.toString()}]
@@ -280,28 +281,48 @@ async function verifyWithBlacklist ({ type, values, action }) {
       break
   }
 
-  if (type === 'TRACK') {
-
-  }
-
   // Batch requests
-  let creatorNodeResponses = []
-  const checkSegmentBlacklistStatusRequests = allSegments.map(segment => checkFn(segment))
+  let creatorNodeCODResponses = []
+  const checkCIDDelistStatusRequests = allSegments.map(segment => checkFn(segment))
   for (let i = 0; i < allSegments.length; i += REQUEST_CONCURRENCY_LIMIT) {
-    const creatorNodeResponsesSlice = await Promise.all(checkSegmentBlacklistStatusRequests.slice(i, i + REQUEST_CONCURRENCY_LIMIT))
-    creatorNodeResponses = creatorNodeResponses.concat(creatorNodeResponsesSlice)
+    const creatorNodeCODResponsesSlice = await Promise.all(checkCIDDelistStatusRequests.slice(i, i + REQUEST_CONCURRENCY_LIMIT))
+    creatorNodeCODResponses = creatorNodeCODResponses.concat(creatorNodeCODResponsesSlice)
   }
 
   // Segments that were not accounted for during blacklisting/unblacklisting
-  const unaccountedSegments = creatorNodeResponses
+  const unaccountedSegments = creatorNodeCODResponses
     .filter(resp => filterFn(resp.blacklisted))
-    .map(resp => resp.segment)
+    .map(resp => resp.value)
 
   if (unaccountedSegments.length > 0) {
     let errorMsg = `Some segments from [${type}] and values [${values}] were not blacklisted/unblacklisted.`
     errorMsg += `\nNumber of Segments: ${unaccountedSegments.length}`
     errorMsg += `\nSegments: [${unaccountedSegments.toString()}]`
     throw new Error(errorMsg)
+  }
+
+  // If the type is TRACK, we also need to check the stream route
+  if (type === 'TRACK') {
+    // Batch requests
+    let creatorNodeTrackResponses = []
+    const checkTrackDelistStatusRequests = values.map(trackId => checkIsTrackBlacklisted(trackId))
+    for (let i = 0; i < values.length; i += REQUEST_CONCURRENCY_LIMIT) {
+      const creatorNodeTrackResponsesSlice = await Promise.all(checkTrackDelistStatusRequests.slice(i, i + REQUEST_CONCURRENCY_LIMIT))
+      creatorNodeTrackResponses = creatorNodeTrackResponses.concat(creatorNodeTrackResponsesSlice)
+    }
+
+    // Segments that were not accounted for during blacklisting/unblacklisting
+    const unaccountedTracks = creatorNodeTrackResponses
+      .filter(resp => filterFn(resp.blacklisted))
+      .map(resp => resp.value)
+
+    Logger.debug('creatorNodeTrackResponses', creatorNodeTrackResponses)
+    if (unaccountedTracks.length > 0) {
+      let errorMsg = `Tracks with ids [${values}] were not delisted/undelisted.`
+      errorMsg += `\nNumber of Tracks: ${unaccountedTracks.length}`
+      errorMsg += `\nSegments: [${unaccountedTracks.toString()}]`
+      throw new Error(errorMsg)
+    }
   }
 
   return allSegments
@@ -415,11 +436,28 @@ async function checkIsBlacklisted (segment) {
     }
 
     // CID was not found on node, would not have been served either way, return success
-    if (e.response.status === 404) return { segment, blacklisted: true }
+    if (e.response.status === 404) return { type: 'CID', value: segment, blacklisted: true }
 
     Logger.error(`Failed to check for segment [${segment}]: ${e}`)
   }
-  return { segment, blacklisted: false }
+  return { type: 'CID', value: segment, blacklisted: false }
+}
+
+async function checkIsTrackBlacklisted (id) {
+  try {
+    const encodedId = hashIds.encode(id)
+    await axios.head(`${CREATOR_NODE_ENDPOINT}/track/stream/${encodedId}`)
+  } catch (e) {
+    if (e.response && e.response.status && e.response.status === 403) {
+      return { value: id, blacklisted: true }
+    }
+
+    // CID was not found on node, would not have been served either way, return success
+    if (e.response.status === 404) return { type: 'TRACK', value: id, blacklisted: true }
+
+    Logger.error(`Failed to check for track [${id}]: ${e}`)
+  }
+  return { type: 'TRACK', value: id, blacklisted: false }
 }
 
 /**
