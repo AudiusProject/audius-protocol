@@ -324,6 +324,19 @@ class App {
     return [listenCountLimiter, listenCountIPLimiter]
   }
 
+  // Create a rate limiter for listens exclusively based on IP
+  _createDailyRateLimitForListenCountIP () {
+    return getRateLimiter({
+      prefix: `listenCountLimiter:::${interval}-ip-exclusive:::`,
+      expiry: ONE_HOUR_IN_SECONDS * 24,
+      max: config.get(`rateLimitingListensExclusivelyPerIPPerDay`), // max requests per day
+      keyGenerator: function (req) {
+        const { ip } = getIP(req)
+        return `${ip}`
+      }
+    })
+  }
+
   setRateLimiters () {
     const requestRateLimiter = getRateLimiter({ prefix: 'reqLimiter', max: config.get('rateLimitingReqLimit') })
     this.express.use(requestRateLimiter)
@@ -344,6 +357,7 @@ class App {
     const [listenCountHourlyLimiter, listenCountHourlyIPLimiter] = this._createRateLimitsForListenCounts('Hour', ONE_HOUR_IN_SECONDS)
     const [listenCountDailyLimiter, listenCountDailyIPLimiter] = this._createRateLimitsForListenCounts('Day', ONE_HOUR_IN_SECONDS * 24)
     const [listenCountWeeklyLimiter, listenCountWeeklyIPLimiter] = this._createRateLimitsForListenCounts('Week', ONE_HOUR_IN_SECONDS * 24 * 7)
+    const listenCountDailyExclusiveIPLimiter = this._createDailyRateLimitForListenCountIP()
 
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use(
@@ -353,7 +367,8 @@ class App {
       listenCountDailyIPLimiter,
       listenCountDailyLimiter,
       listenCountHourlyIPLimiter,
-      listenCountHourlyLimiter
+      listenCountHourlyLimiter,
+      listenCountDailyExclusiveIPLimiter
     )
 
     // Eth relay rate limits

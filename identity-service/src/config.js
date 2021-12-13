@@ -216,6 +216,12 @@ const config = convict({
     env: 'rateLimitingListensPerIPPerDay',
     default: null
   },
+  rateLimitingListensExclusivelyPerIPPerDay: {
+    doc: 'Listens per IP per Day',
+    format: 'nat',
+    env: 'rateLimitingListensExclusivelyPerIPPerDay',
+    default: null
+  },
   rateLimitingEthRelaysPerIPPerDay: {
     doc: 'Eth relay operations per IP per day',
     format: 'nat',
