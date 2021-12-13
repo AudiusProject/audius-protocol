@@ -31,7 +31,7 @@ class TranscodingQueue {
           removeOnFail: true
         }
       })
-    this.logStatus('Successfully initialized TranscodingQueue')
+    this.logStatus('Initialized TranscodingQueue')
 
     // NOTE: Specifying max concurrency here dictates the max concurrency for
     // *any* process fn below

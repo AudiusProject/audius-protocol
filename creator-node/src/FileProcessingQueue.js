@@ -33,7 +33,7 @@ class FileProcessingQueue {
         }
       }
     )
-    this.logStatus('Successfully initialized FileProcessingQueue')
+    this.logStatus('Initialized FileProcessingQueue')
 
     this.queue.process(PROCESS_NAMES.transcode, MAX_CONCURRENCY, async (job, done) => {
       const { transcodeParams } = job.data
@@ -92,7 +92,7 @@ class FileProcessingQueue {
       await redisClient.set(redisKey, JSON.stringify(state), 'EX', EXPIRATION)
     } catch (e) {
       state = { status: PROCESS_STATES.FAILED, resp: e.message }
-      this.logError(logContext, `Error with ${taskType}, uuid=${uuid}, resp=${JSON.stringify(e.message)}`)
+      this.logError(`Error with ${taskType}, uuid=${uuid}, resp=${JSON.stringify(e.message)}`, logContext)
       await redisClient.set(redisKey, JSON.stringify(state), 'EX', EXPIRATION)
       throw e
     }
