@@ -183,7 +183,7 @@ async function verifyWithBlacklist ({ type, values, action }) {
     if (unaccountedTracks.length > 0) {
       let errorMsg = `Tracks with ids [${values}] were not delisted/undelisted.`
       errorMsg += `\nNumber of Tracks: ${unaccountedTracks.length}`
-      errorMsg += `\nSegments: [${unaccountedTracks.toString()}]`
+      errorMsg += `\Tracks: [${unaccountedTracks.toString()}]`
       throw new Error(errorMsg)
     }
   }
@@ -315,7 +315,7 @@ async function checkIsSegmentBlacklisted (segment) {
 async function checkIsTrackBlacklisted (id) {
   try {
     const encodedId = hashIds.encode(id)
-    await axios.head(`${CREATOR_NODE_ENDPOINT}/track/stream/${encodedId}`)
+    await axios.head(`${CREATOR_NODE_ENDPOINT}/tracks/stream/${encodedId}`)
   } catch (e) {
     if (e.response && e.response.status && e.response.status === 403) {
       return { value: id, blacklisted: true }
