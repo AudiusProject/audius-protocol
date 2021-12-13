@@ -74,22 +74,24 @@ function setFieldsInChildLogger (req, options = {}) {
   return req.logger.child(childOptions)
 }
 
-const getDuration = (req) => {
-  const endTime = process.hrtime(req.startTime)
-  const duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
+function getDuration (req) {
+  let duration
+  if (req.startTime) {
+    const endTime = process.hrtime(req.startTime)
+    duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
+  }
 
   return duration
 }
 
-function setDurationInLogger (req, useChildLogger = false) {
+function logInfoWithDuration (req, msg) {
   const duration = getDuration(req)
 
-  if (useChildLogger) {
-    return setFieldsInChildLogger(req, { duration })
+  if (duration) {
+    req.logger.info(`${msg} duration=${duration}`)
+  } else {
+    req.logger.info(msg)
   }
-
-  req.logger.fields.duration = duration
-  return req.logger
 }
 
 module.exports = {
@@ -99,5 +101,5 @@ module.exports = {
   getRequestLoggingContext,
   getDuration,
   setFieldsInChildLogger,
-  setDurationInLogger
+  logInfoWithDuration
 }
