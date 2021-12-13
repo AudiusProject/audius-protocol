@@ -618,12 +618,6 @@ const config = convict({
     env: 'discoveryProviderWhitelist',
     default: ''
   },
-  clusterForkProcessCount: {
-    doc: 'The number of express server processes to initialize in the this app "cluster"',
-    format: Number,
-    env: 'clusterForkProcessCount',
-    default: 1
-  },
   minSolanaNotificationSlot: {
     doc: 'The slot number to start indexing if not slots defined"',
     format: Number,

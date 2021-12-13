@@ -2,18 +2,19 @@ const EthereumWallet = require('ethereumjs-wallet')
 const EthereumTx = require('ethereumjs-tx')
 const axios = require('axios')
 const config = require('../config')
+const ethRelayerConfigs = config.get('ethRelayerWallets')
 const { ethWeb3 } = require('../web3')
 const { logger } = require('../logging')
-const { Lock } = require('../redis')
 
 const ENVIRONMENT = config.get('environment')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
 const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 
 // L1 relayer wallets
-const ethRelayerWallets = config.get('ethRelayerWallets') // { publicKey, privateKey }
-
-const generateETHWalletLockKey = (publicKey) => `ETH_RELAYER_WALLET:${publicKey}`
+let ethRelayerWallets = [...ethRelayerConfigs] // will be array of { locked, publicKey, privateKey }
+ethRelayerWallets.forEach(wallet => {
+  wallet.locked = false
+})
 
 async function delay (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -39,14 +40,13 @@ const getEthRelayerFunds = async (walletPublicKey) => {
 const selectEthWallet = async (walletPublicKey, reqLogger) => {
   reqLogger.info(`L1 txRelay - Acquiring lock for ${walletPublicKey}`)
   let ethWalletIndex = getEthRelayerWalletIndex(walletPublicKey)
-  const selectedRelayerWallet = ethRelayerWallets[ethWalletIndex]
-
-  while ((await Lock.setLock(generateETHWalletLockKey(selectedRelayerWallet.publicKey))) !== true) {
+  while (ethRelayerWallets[ethWalletIndex].locked) {
     await delay(200)
   }
-  reqLogger.info(`L1 txRelay - Locking ${selectedRelayerWallet.publicKey}, index=${ethWalletIndex}}`)
+  ethRelayerWallets[ethWalletIndex].locked = true
+  reqLogger.info(`L1 txRelay - Locking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
   return {
-    selectedEthRelayerWallet: selectedRelayerWallet,
+    selectedEthRelayerWallet: ethRelayerWallets[ethWalletIndex],
     ethWalletIndex
   }
 }
@@ -90,7 +90,7 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
   } finally {
     req.logger.info(`L1 txRelay - Unlocking ${ethRelayerWallets[ethWalletIndex].publicKey}, index=${ethWalletIndex}}`)
     // Unlock wallet
-    await Lock.clearLock(generateETHWalletLockKey(ethRelayerWallets[ethWalletIndex].publicKey))
+    ethRelayerWallets[ethWalletIndex].locked = false
   }
 
   req.logger.info(`L1 txRelay - success, req:${reqBodySHA}, sender:${senderAddress}`)
@@ -209,6 +209,5 @@ module.exports = {
   sendEthTransaction,
   queryEthRelayerWallet,
   getEthRelayerFunds,
-  getProdGasInfo,
-  generateETHWalletLockKey
+  getProdGasInfo
 }

@@ -4,14 +4,13 @@ const EthereumTx = require('ethereumjs-tx')
 const models = require('../models')
 const config = require('../config')
 const { logger } = require('../logging')
-const { Lock } = require('../redis')
 
 const { AudiusABIDecoder } = require('@audius/libs')
 
 const { primaryWeb3, secondaryWeb3 } = require('../web3')
 
 // L2 relayerWallets
-const relayerWallets = config.get('relayerWallets') // { publicKey, privateKey }
+const relayerConfigs = config.get('relayerWallets')
 
 const ENVIRONMENT = config.get('environment')
 const MIN_GAS_PRICE = config.get('minGasPrice')
@@ -19,11 +18,14 @@ const HIGH_GAS_PRICE = config.get('highGasPrice')
 const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
 
+let relayerWallets = [...relayerConfigs] // will be array of { locked, publicKey, privateKey }
+relayerWallets.forEach(wallet => {
+  wallet.locked = false
+})
+
 async function delay (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
-
-const generateWalletLockKey = (publicKey) => `POA_RELAYER_WALLET:${publicKey}`
 
 async function getGasPrice (logger, web3) {
   let gasPrice = parseInt(await web3.eth.getGasPrice())
@@ -88,12 +90,12 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   // will be set later. necessary for code outside scope of try block
   let txReceipt
   let redisLogParams
-  let wallet = await selectWallet()
+  let wallet = selectWallet()
 
   // If all wallets are currently in use, keep iterating until a wallet is freed up
   while (!wallet) {
     await delay(200)
-    wallet = await selectWallet()
+    wallet = selectWallet()
   }
 
   try {
@@ -118,7 +120,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     await redis.zadd('relayTxFailures', Math.floor(Date.now() / 1000), JSON.stringify(redisLogParams))
     throw e
   } finally {
-    await Lock.clearLock(generateWalletLockKey(wallet.publicKey))
+    wallet.locked = false
   }
 
   req.logger.info(`L2 - txRelay - success, req ${reqBodySHA}`)
@@ -144,17 +146,18 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
  * in the order 2, 3, 4, 0, 1, and use const count to iterate through
  * all the available number of wallets
  */
-const selectWallet = async () => {
+const selectWallet = () => {
+  let selectedWallet
   let i = Math.floor(Math.random() * relayerWallets.length) // random offset
   let count = 0 // num wallets to iterate through
 
   while (count++ < relayerWallets.length) {
     const wallet = relayerWallets[i++ % relayerWallets.length]
-    try {
-      const locked = await Lock.setLock(generateWalletLockKey(wallet.publicKey))
-      if (locked) return wallet
-    } catch (e) {
-      logger.error('Error selecting POA wallet for txRelay, reselecting', e)
+
+    if (!wallet.locked) {
+      wallet.locked = true
+      selectedWallet = wallet
+      return selectedWallet
     }
   }
 }
@@ -237,6 +240,5 @@ module.exports = {
   selectWallet,
   sendTransaction,
   getRelayerFunds,
-  fundRelayerIfEmpty,
-  generateWalletLockKey
+  fundRelayerIfEmpty
 }
