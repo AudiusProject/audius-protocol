@@ -59,8 +59,11 @@ class App {
   }
 
   async init () {
+    logger.info(`app.js - init`)
+
     let server
     await this.getAudiusAnnouncements()
+    logger.info(`app.js - got announcements`)
 
     /**
      * From the cluster docs - https://nodejs.org/docs/latest-v14.x/api/cluster.html#cluster_cluster
@@ -78,32 +81,43 @@ class App {
       // attempts to wait until the db is accepting connections
       await new Promise(resolve => setTimeout(resolve, 2000))
       await this.runMigrations()
+      logger.info(`app.js - run migrations`)
 
       // clear POA & ETH relayer keys
       await Lock.clearAllLocks(generateWalletLockKey('*'))
       await Lock.clearAllLocks(generateETHWalletLockKey('*'))
+      logger.info(`app.js - clearing locks`)
 
       // if it's a non test run
       // 1. start notifications processing
       // 2. fork web server worker processes
       if (!config.get('isTestRun')) {
-        await this.configureAudiusInstance()
+        const audiusInstance = await this.configureAudiusInstance()
+        logger.info(`app.js - init libs`)
 
-        // cluster.fork({ 'WORKER_TYPE': 'notifications' })
+        await this.notificationProcessor.init(
+          audiusInstance,
+          this.express,
+          this.redisClient
+        )
+        logger.info(`app.js - notifications processing`)
 
         // Fork extra web server workers
         // note - we can't have more than 1 worker at the moment because POA and ETH relays
         // use in memory wallet locks
         for (let i = 0; i < config.get('clusterForkProcessCount'); i++) {
-          cluster.fork({ 'WORKER_TYPE': 'web_server' })
+          cluster.fork()
         }
+        logger.info(`app.js - forked process`)
 
         cluster.on('exit', (worker, code, signal) => {
           logger.info(`Cluster: Worker ${worker.process.pid} died, forking another worker`)
-          cluster.fork(worker.process.env)
+          cluster.fork()
         })
       } else {
         // if it's a test run only start the server
+        logger.info(`app.js - starting web server`)
+
         await new Promise(resolve => {
           server = this.express.listen(this.port, resolve)
         })
@@ -132,28 +146,19 @@ class App {
       return { app: this.express, server }
     } else {
       // if it's not the master worker in the cluster
-      const audiusInstance = await this.configureAudiusInstance()
+      await this.configureAudiusInstance()
+      await new Promise(resolve => {
+        server = this.express.listen(this.port, resolve)
+      })
+      server.setTimeout(config.get('setTimeout'))
+      server.timeout = config.get('timeout')
+      server.keepAliveTimeout = config.get('keepAliveTimeout')
+      server.headersTimeout = config.get('headersTimeout')
 
-      if (process.env['WORKER_TYPE'] === 'notifications') {
-        await this.notificationProcessor.init(
-          audiusInstance,
-          this.express,
-          this.redisClient
-        )
-      } else {
-        await new Promise(resolve => {
-          server = this.express.listen(this.port, resolve)
-        })
-        server.setTimeout(config.get('setTimeout'))
-        server.timeout = config.get('timeout')
-        server.keepAliveTimeout = config.get('keepAliveTimeout')
-        server.headersTimeout = config.get('headersTimeout')
+      this.express.set('redis', this.redisClient)
 
-        this.express.set('redis', this.redisClient)
-
-        logger.info(`Listening on port ${this.port}...`)
-        return { app: this.express, server }
-      }
+      logger.info(`Listening on port ${this.port}...`)
+      return { app: this.express, server }
     }
   }
 
