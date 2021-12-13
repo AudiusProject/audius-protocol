@@ -89,7 +89,7 @@ class App {
       if (!config.get('isTestRun')) {
         await this.configureAudiusInstance()
 
-        cluster.fork({ 'WORKER_TYPE': 'notifications' })
+        // cluster.fork({ 'WORKER_TYPE': 'notifications' })
 
         // Fork extra web server workers
         // note - we can't have more than 1 worker at the moment because POA and ETH relays
