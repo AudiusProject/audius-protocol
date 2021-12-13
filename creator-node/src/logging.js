@@ -63,6 +63,12 @@ function loggingMiddleware (req, res, next) {
   next()
 }
 
+/**
+ * Add fields to a child logger instance
+ * @param {*} req
+ * @param {Object} options fields to add to child logger
+ * @returns a logger instance
+ */
 function setFieldsInChildLogger (req, options = {}) {
   const fields = Object.keys(options)
 
@@ -74,21 +80,31 @@ function setFieldsInChildLogger (req, options = {}) {
   return req.logger.child(childOptions)
 }
 
+/**
+ * Pulls the start time of the req object to calculate the duration of the fn
+ * @param {*} req
+ * @returns the duration of the fn call in ms
+ */
 function getDuration (req) {
-  let duration
+  let durationMs
   if (req.startTime) {
     const endTime = process.hrtime(req.startTime)
-    duration = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
+    durationMs = Math.round(endTime[0] * 1e3 + endTime[1] * 1e-6)
   }
 
-  return duration
+  return durationMs
 }
 
+/**
+ * Prints the log message with the duration
+ * @param {*} req
+ * @param {string} msg the message to print
+ */
 function logInfoWithDuration (req, msg) {
-  const duration = getDuration(req)
+  const durationMs = getDuration(req)
 
-  if (duration) {
-    req.logger.info(`${msg} duration=${duration}`)
+  if (durationMs) {
+    req.logger.info(`${msg} duration=${durationMs}`)
   } else {
     req.logger.info(msg)
   }
