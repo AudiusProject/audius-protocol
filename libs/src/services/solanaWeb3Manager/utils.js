@@ -103,7 +103,7 @@ class SolanaUtils {
    * @returns {Promise<[PublicKey, number]>}
    */
   static async findProgramAddressFromPubkey (programId, pubkey, seed) {
-    let seedsArr = [pubkey.toBytes().slice(0, 32)]
+    const seedsArr = [pubkey.toBytes().slice(0, 32)]
     if (seed) {
       seedsArr.push(seed)
     }
