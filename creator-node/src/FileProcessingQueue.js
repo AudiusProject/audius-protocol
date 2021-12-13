@@ -21,8 +21,6 @@ function constructProcessKey (taskType, uuid) {
 
 class FileProcessingQueue {
   constructor () {
-    const { logContext } = {}
-    this.logStatus(logContext, `Connecting to Redis`)
     this.queue = new Bull(
       'fileProcessing', {
         redis: {
@@ -35,7 +33,7 @@ class FileProcessingQueue {
         }
       }
     )
-    this.logStatus(logContext, `Connected to Redis`)
+    this.logStatus('Successfully initialized FileProcessingQueue')
 
     this.queue.process(PROCESS_NAMES.transcode, MAX_CONCURRENCY, async (job, done) => {
       const { transcodeParams } = job.data
@@ -52,13 +50,13 @@ class FileProcessingQueue {
     this.getFileProcessingQueueJobs = this.getFileProcessingQueueJobs.bind(this)
   }
 
-  async logStatus (logContext, message) {
+  async logStatus (message, logContext = {}) {
     const logger = genericLogger.child(logContext)
     const { waiting, active, completed, failed, delayed } = await this.queue.getJobCounts()
     logger.info(`FileProcessing Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`)
   }
 
-  async logError (logContext, message) {
+  async logError (message, logContext = {}) {
     const logger = genericLogger.child(logContext)
     const { waiting, active, completed, failed, delayed } = await this.queue.getJobCounts()
     logger.error(`FileProcessingQueue error: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed}`)
@@ -67,13 +65,13 @@ class FileProcessingQueue {
   // TODO: Will make this job a background process
   async addTranscodeTask (transcodeParams) {
     const { logContext } = transcodeParams
-    this.logStatus(logContext, `Adding ${PROCESS_NAMES.transcode} task, uuid=${logContext.requestID}`)
+    this.logStatus(`Adding ${PROCESS_NAMES.transcode} task, uuid=${logContext.requestID}`, logContext)
 
     const job = await this.queue.add(
       PROCESS_NAMES.transcode,
       { transcodeParams }
     )
-    this.logStatus(logContext, `Added ${PROCESS_NAMES.transcode} task, uuid=${logContext.requestID}`)
+    this.logStatus(`Added ${PROCESS_NAMES.transcode} task, uuid=${logContext.requestID}`, logContext)
 
     return job
   }
@@ -83,14 +81,14 @@ class FileProcessingQueue {
     const redisKey = constructProcessKey(taskType, uuid)
 
     let state = { status: PROCESS_STATES.IN_PROGRESS }
-    this.logStatus(logContext, `Starting ${taskType}, uuid=${uuid}`)
+    this.logStatus(`Starting ${taskType}, uuid=${uuid}`, logContext)
     await redisClient.set(redisKey, JSON.stringify(state), 'EX', EXPIRATION)
 
     let response
     try {
       response = await func({ logContext }, req)
       state = { status: PROCESS_STATES.DONE, resp: response }
-      this.logStatus(logContext, `Successful ${taskType}, uuid=${uuid}`)
+      this.logStatus(`Successful ${taskType}, uuid=${uuid}`, logContext)
       await redisClient.set(redisKey, JSON.stringify(state), 'EX', EXPIRATION)
     } catch (e) {
       state = { status: PROCESS_STATES.FAILED, resp: e.message }
