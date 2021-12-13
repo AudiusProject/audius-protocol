@@ -305,7 +305,7 @@ async function checkIsSegmentBlacklisted (segment) {
     }
 
     // CID was not found on node, would not have been served either way, return success
-    if (e.response.status === 404) return { type: 'CID', value: segment, blacklisted: true }
+    if (e.response && e.response.status && e.response.status === 404) return { type: 'CID', value: segment, blacklisted: true }
 
     Logger.error(`Failed to check for segment [${segment}]: ${e}`)
   }

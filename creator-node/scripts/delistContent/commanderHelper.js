@@ -97,9 +97,9 @@ class Commander {
     return { action, values, type, verbose: this.program.verbose }
   }
 
-  runParser ({ CREATOR_NODE_ENDPOINT, PRIVATE_KEY, DISCOVERY_PROVIDER_ENDPOINT }) {
+  runParser ({ CREATOR_NODE_ENDPOINT, PRIVATE_KEY, DISCOVERY_PROVIDER_ENDPOINT, hashIds }) {
     try {
-      return this.parseEnvVarsAndArgs({ CREATOR_NODE_ENDPOINT, PRIVATE_KEY, DISCOVERY_PROVIDER_ENDPOINT })
+      return this.parseEnvVarsAndArgs({ CREATOR_NODE_ENDPOINT, PRIVATE_KEY, DISCOVERY_PROVIDER_ENDPOINT, hashIds })
     } catch (e) {
       throw new Error(`
         Incorrect script usage: ${e.message}
