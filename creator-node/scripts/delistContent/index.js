@@ -1,146 +1,28 @@
 const axios = require('axios')
-const { Command } = require('commander')
-const Hashids = require('hashids/cjs')
+const HashIds = require('./hashIds')
+const Commander = require('./commanderHelper')
+const { generateTimestampAndSignature } = require('./apiSigning')
 
-const { generateTimestampAndSignature } = require('../src/apiSigning')
-
+// required env variables
 const PRIVATE_KEY = process.env.delegatePrivateKey
 const CREATOR_NODE_ENDPOINT = process.env.creatorNodeEndpoint
 const DISCOVERY_PROVIDER_ENDPOINT = process.env.discoveryProviderEndpoint
-
-// Available action types
-const ACTION_ARR = ['ADD', 'REMOVE']
-const ACTION_SET = new Set(ACTION_ARR)
-const TYPES_ARR = ['USER', 'TRACK', 'CID', 'TRACK_HASH_ID']
-const TYPES_SET = new Set(TYPES_ARR)
 
 const REQUEST_CONCURRENCY_LIMIT = 20
 const MAX_LIMIT = 500
 const VALUES_BATCH_SIZE = 10
 
-let VERBOSE = false
-const COMMANDER_HELP_STRING =
-`-a [action] -t [type] -l [ids or cids] -v [verbose (optional)]
-
-// Example usage:
-// node updateContentBlacklist.js -a add -l 1,3,7 -t user
-// node updateContentBlacklist.js -a add -l 1,3,7 -t track
-// node updateContentBlacklist.js -a add -l 7eP5n,ML51L -t track-hash-id
-// node updateContentBlacklist.js -a add -l Qm..., Qm..., -t cid
-
-// node updateContentBlacklist.js -a remove -l 1,3,7 -t user
-// node updateContentBlacklist.js -a remove -l 1,3,7 -t track
-// node updateContentBlacklist.js -a remove -l 7eP5n,ML51L -t track-hash-id
-// node updateContentBlacklist.js -a remove -l Qm..., Qm..., -t cid
-`
-
-class HashIds {
-  constructor () {
-    this.HASH_SALT = 'azowernasdfoia'
-    this.MIN_LENGTH = 5
-    this.hashids = new Hashids(this.HASH_SALT, this.MIN_LENGTH)
-  }
-  encode (id) {
-    return this.hashids.encode([id])
-  }
-
-  decode (id) {
-    const ids = this.hashids.decode(id)
-    if (!ids.length) return null
-    return ids[0]
-  }
-}
+// this is a global flag that will be modified to true if verbose mode flag enabled by caller
+let VERBOSE_MODE = false
 
 // create a global instance of HashIds
 const hashIds = new HashIds()
 
-class Commander {
-  constructor () {
-    this.program = new Command()
-    this.program
-      .usage(COMMANDER_HELP_STRING)
-      .requiredOption('-t, --type <type>', `Type of id - either 'track', 'track-hash-id', 'user' or 'cid'.\n'track-hash-id' is an encoded version of a track id commonly found in URLs with this pattern 'https://contentnode.domain.com/tracks/stream/7eP5n'. In this case the 'track-hash-id' is '7eP5n'.`)
-      .requiredOption('-l, --list <list>', 'comma separated list of ids or cids', ids => ids.split(','))
-      .requiredOption('-a, --act <action>', '`add` to set of delisted content or `remove` from set of delisted content')
-      .option('-v, --verbose', 'verbose mode to print out debug logs', VERBOSE)
-      .exitOverride(err => {
-        if (err.code === 'commander.missingMandatoryOptionValue') this.program.help()
-      })
-  }
-
-  /**
- * Parses the environment variables and command line args
- */
-  parseEnvVarsAndArgs () {
-    this.program.parse(process.argv)
-
-    // Parse env vars
-    if (!CREATOR_NODE_ENDPOINT || !PRIVATE_KEY || !DISCOVERY_PROVIDER_ENDPOINT) {
-      let errorMsg = `Creator node endpoint [${CREATOR_NODE_ENDPOINT}], private key [${PRIVATE_KEY}]`
-      errorMsg += ` or discovery provider endpoint [${DISCOVERY_PROVIDER_ENDPOINT}] have not been exported.`
-      throw new Error(errorMsg)
-    }
-
-    // Parse CLI args
-    const action = this.program.act.toUpperCase()
-    // this is a let because TRACK_HASH_ID switches to type TRACK once the ids have been decoded
-    let type = this.program.type.toUpperCase().replace(/-/g, '_')
-
-    if (!ACTION_SET.has(action) || !TYPES_SET.has(type)) {
-      throw new Error(`Improper action (${action}) for type (${type}).`)
-    }
-
-    // Check if ids or CIDs are passed in
-    let values = this.program.list
-    if (!values || values.length === 0) throw new Error('Please pass in a comma separated list of ids and/or cids.')
-
-    // Parse ids into ints greater than 0
-    if (type === 'USER' || type === 'TRACK') {
-      const originalNumIds = values.length
-      values = values.filter(id => !isNaN(id)).map(id => parseInt(id)).filter(id => id >= 0)
-      if (values.length === 0) throw new Error('List of ids is not proper.')
-      if (originalNumIds !== values.length) {
-        console.warn(`Filtered out non-numeric ids from input. Please only pass integers!`)
-      }
-    } else if (type === 'TRACK_HASH_ID') {
-      const originalNumIds = values.length
-      values = values.map(value => {
-        const decodedId = hashIds.decode(value)
-        if (decodedId) return decodedId
-      }).filter(Boolean)
-      type = 'TRACK'
-      if (values.length === 0) throw new Error('List of track hash ids is not proper.')
-      if (originalNumIds !== values.length) {
-        console.warn(`Filtered out invalid ids from input. Please only valid track hash ids!`)
-      }
-    } else { // else will be CID
-      // Parse cids and ensure they follow the pattern Qm...
-      const orignalNumCIDs = values.length
-      const cidRegex = new RegExp('^Qm[a-zA-Z0-9]{44}$')
-      values = values.filter(cid => cidRegex.test(cid))
-      if (values.length === 0) throw new Error('List of cids is not proper.')
-      if (orignalNumCIDs !== values.length) {
-        console.warn(`Filtered out improper cids from input. Please only pass valid CIDs!`)
-      }
-    }
-
-    if (this.program.verbose) VERBOSE = this.program.verbose
-    return { action, values, type, verbose: this.program.verbose }
-  }
-}
-
-class Logger {
-  static debug (...msgs) {
-    if (VERBOSE) console.log(...msgs)
-  }
-
-  static info (...msgs) {
-    console.log(...msgs)
-  }
-
-  static error (...msgs) {
-    console.error(...msgs)
-  }
+// simple logger to
+const Logger = {
+  debug: (...msgs) => { if (VERBOSE_MODE) console.log(...msgs) },
+  info: (...msgs) => { console.log(...msgs) },
+  error: (...msgs) => { console.error('Error: ', ...msgs) }
 }
 
 /**
@@ -148,20 +30,12 @@ class Logger {
  */
 async function run () {
   let args
-  try {
-    const commander = new Commander()
-    args = commander.parseEnvVarsAndArgs()
-  } catch (e) {
-    throw new Error(`
-      Incorrect script usage: ${e.message}
-      - action: [${ACTION_ARR.toString()}]
-      - type: [${TYPES_ARR.toString()}]
-      - ids: [list of ids (or cids for CID type)]
-    `)
-  }
+  const commander = new Commander()
+  args = commander.runParser({ CREATOR_NODE_ENDPOINT, PRIVATE_KEY, DISCOVERY_PROVIDER_ENDPOINT, hashIds })
 
   const { action, type, values, verbose } = args
-  Logger.info(`Updating Content Blacklist for ${CREATOR_NODE_ENDPOINT} for values: [${values}]`)
+  if (verbose) VERBOSE_MODE = true
+  Logger.info(`Updating Content Blacklist for ${CREATOR_NODE_ENDPOINT} for values: [${values}]...`)
 
   for (let i = 0; i < values.length; i += VALUES_BATCH_SIZE) {
     const valuesSliced = values.slice(i, i + VALUES_BATCH_SIZE)
@@ -176,8 +50,7 @@ async function run () {
           break
         }
         default: {
-          Logger.error('Invalid action, please choose either `add` and `remove`')
-          return
+          throw new Error(`Invalid action type: ${action}`)
         }
       }
     } catch (e) {
@@ -185,23 +58,13 @@ async function run () {
       return
     }
 
-    Logger.info(`Verifying content against blacklist for ${CREATOR_NODE_ENDPOINT}...\n`)
+    Logger.debug(`Verifying content against blacklist for ${CREATOR_NODE_ENDPOINT}...\n`)
     try {
       const segments = await verifyWithBlacklist({ type, values: valuesSliced, action })
 
-      let successMsg =
-      `
-        Successfully performed [${action}] for type [${type}]!
-        Values: [${valuesSliced}]
-      `
-      if (verbose) {
-        successMsg +=
-        `
-        Number of Segments: ${segments.length}
-        Segments: ${segments}
-        `
-      }
-      Logger.info(successMsg)
+      Logger.info(`Successfully performed [${action}] for type [${type}]! Values: [${valuesSliced}]`)
+      Logger.debug(`Number of Segments: ${segments.length}
+Segments: ${segments}`)
     } catch (e) {
       Logger.error(`Verification check failed: ${e}`)
     }
@@ -272,11 +135,11 @@ async function verifyWithBlacklist ({ type, values, action }) {
   let checkFn, filterFn
   switch (action) {
     case 'ADD':
-      checkFn = checkIsBlacklisted
+      checkFn = checkIsSegmentBlacklisted
       filterFn = status => !status
       break
     case 'REMOVE':
-      checkFn = checkIsNotBlacklisted
+      checkFn = checkIsSegmentNotBlacklisted
       filterFn = status => status
       break
   }
@@ -427,7 +290,7 @@ async function fetchUserToNumTracksMap (userIds) {
  * Check if segment is blacklisted via /ipfs/:CID route
  * @param {string} segment
  */
-async function checkIsBlacklisted (segment) {
+async function checkIsSegmentBlacklisted (segment) {
   try {
     await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`)
   } catch (e) {
@@ -464,7 +327,7 @@ async function checkIsTrackBlacklisted (id) {
  * Check if segment is not blacklisted via /ipfs/:CID route
  * @param {string} segment
  */
-async function checkIsNotBlacklisted (segment) {
+async function checkIsSegmentNotBlacklisted (segment) {
   try {
     await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`)
   } catch (e) {
