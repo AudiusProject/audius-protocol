@@ -131,9 +131,9 @@ class App {
 
       return { app: this.express, server }
     } else {
+      // if it's not the master worker in the cluster
       const audiusInstance = await this.configureAudiusInstance()
 
-      // if it's not the master worker in the cluster
       if (process.env['WORKER_TYPE'] === 'notifications') {
         await this.notificationProcessor.init(
           audiusInstance,
