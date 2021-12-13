@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  ruby: circleci/ruby@0.2.1
+  ruby: circleci/ruby@1.2.0
 
 jobs:
   init:
@@ -122,7 +122,7 @@ jobs:
   upload-staging-ios:
     working_directory: ~/react-native-wrapper
     macos: # Run on osx so app can be created and signed.
-      xcode: '12.2.0'
+      xcode: '13.1.0'
     environment:
       FL_OUTPUT_DIR: output
       FASTLANE_LANE: bounce
@@ -134,9 +134,7 @@ jobs:
       - run:
           name: Move Staging build
           command: mkdir -p web-app/Web.bundle/build && mv ./audius-client/build-mobile-staging/* web-app/Web.bundle/build
-      - run:
-          name: Set Ruby Version
-          command: echo 'chruby ruby-2.6' >> ~/.bash_profile
+      
       - run:
           name: update cocoapods
           command: sudo gem install cocoapods
@@ -147,6 +145,9 @@ jobs:
       - run:
           name: install pods
           command: cd ios && pod install
+      - run:
+          name: update bundler
+          command: gem install bundler:1.17.3
       - restore_cache:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
       - run: cd ios && (bundle check || bundle install --path vendor/bundle)
@@ -169,7 +170,7 @@ jobs:
   upload-ios:
     working_directory: ~/react-native-wrapper
     macos: # Run on osx so app can be created and signed.
-      xcode: '12.2.0'
+      xcode: '13.1.0'
     environment:
       FL_OUTPUT_DIR: output
       FASTLANE_LANE: beta
@@ -181,9 +182,7 @@ jobs:
       - run:
           name: Move production build
           command: mkdir -p web-app/Web.bundle/build && mv ./audius-client/build-mobile-production/* web-app/Web.bundle/build
-      - run:
-          name: Set Ruby Version
-          command: echo 'chruby ruby-2.6' >> ~/.bash_profile
+      
       - run:
           name: update cocoapods
           command: sudo gem install cocoapods
@@ -194,6 +193,9 @@ jobs:
       - run:
           name: install pods
           command: cd ios && pod install
+      - run:
+          name: update bundler
+          command: gem install bundler:1.17.3
       - restore_cache:
           key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
       - run: cd ios && (bundle check || bundle install --path vendor/bundle)
@@ -221,9 +223,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./
-      - run:
-          name: Set Ruby Version
-          command: echo 'chruby ruby-2.6' >> ~/.bash_profile
+      
       - run:
           name: Move Staging build
           command: mkdir -p web-app/Web.bundle/build && mv ./audius-client/build-mobile-staging/* web-app/Web.bundle/build
@@ -231,6 +231,9 @@ jobs:
           name: migrate support libraries for androidX packages
           command: |
             npm run jetifier
+      - run:
+          name: update bundler
+          command: gem install bundler:1.17.3
       - restore_cache:
           key: 1-gems-{{ checksum "android/Gemfile.lock" }}
       - run: cd android && (bundle check || bundle install --path vendor/bundle)
@@ -270,9 +273,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./
-      - run:
-          name: Set Ruby Version
-          command: echo 'chruby ruby-2.6' >> ~/.bash_profile
+      
       - run:
           name: Move production build
           command: mkdir -p web-app/Web.bundle/build && mv ./audius-client/build-mobile-production/* web-app/Web.bundle/build
@@ -280,6 +281,9 @@ jobs:
           name: migrate support libraries for androidX packages
           command: |
             npm run jetifier
+      - run:
+          name: update bundler
+          command: gem install bundler:1.17.3
       - restore_cache:
           key: 1-gems-{{ checksum "android/Gemfile.lock" }}
       - run: cd android && (bundle check || bundle install --path vendor/bundle)
