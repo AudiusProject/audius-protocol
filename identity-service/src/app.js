@@ -96,8 +96,7 @@ class App {
       // 1. start notifications processing
       // 2. fork web server worker processes
       if (!config.get('isTestRun')) {
-        await this.configureAudiusInstance()
-
+        const audiusInstance = await this.configureAudiusInstance()
         cluster.fork({ 'WORKER_TYPE': 'notifications' })
 
         await this.configureRewardsAttester(audiusInstance)
