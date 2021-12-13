@@ -23,15 +23,15 @@ const COMMANDER_HELP_STRING =
 `-a [action] -t [type] -l [ids or cids] -v [verbose (optional)]
 
 // Example usage:
-// node delistContent.js -a add -l 1,3,7 -t user
-// node delistContent.js -a add -l 1,3,7 -t track
-// node delistContent.js -a add -l 7eP5n,ML51L -t track-hash-id
-// node delistContent.js -a add -l Qm..., Qm..., -t cid
+// node updateContentBlacklist.js -a add -l 1,3,7 -t user
+// node updateContentBlacklist.js -a add -l 1,3,7 -t track
+// node updateContentBlacklist.js -a add -l 7eP5n,ML51L -t track-hash-id
+// node updateContentBlacklist.js -a add -l Qm..., Qm..., -t cid
 
-// node delistContent.js -a remove -l 1,3,7 -t user
-// node delistContent.js -a remove -l 1,3,7 -t track
-// node delistContent.js -a remove -l 7eP5n,ML51L -t track-hash-id
-// node delistContent.js -a remove -l Qm..., Qm..., -t cid
+// node updateContentBlacklist.js -a remove -l 1,3,7 -t user
+// node updateContentBlacklist.js -a remove -l 1,3,7 -t track
+// node updateContentBlacklist.js -a remove -l 7eP5n,ML51L -t track-hash-id
+// node updateContentBlacklist.js -a remove -l Qm..., Qm..., -t cid
 `
 
 class HashIds {
@@ -282,15 +282,15 @@ async function verifyWithBlacklist ({ type, values, action }) {
   }
 
   // Batch requests
-  let creatorNodeCODResponses = []
+  let creatorNodeCIDResponses = []
   const checkCIDDelistStatusRequests = allSegments.map(segment => checkFn(segment))
   for (let i = 0; i < allSegments.length; i += REQUEST_CONCURRENCY_LIMIT) {
-    const creatorNodeCODResponsesSlice = await Promise.all(checkCIDDelistStatusRequests.slice(i, i + REQUEST_CONCURRENCY_LIMIT))
-    creatorNodeCODResponses = creatorNodeCODResponses.concat(creatorNodeCODResponsesSlice)
+    const creatorNodeCIDResponsesSlice = await Promise.all(checkCIDDelistStatusRequests.slice(i, i + REQUEST_CONCURRENCY_LIMIT))
+    creatorNodeCIDResponses = creatorNodeCIDResponses.concat(creatorNodeCIDResponsesSlice)
   }
 
   // Segments that were not accounted for during blacklisting/unblacklisting
-  const unaccountedSegments = creatorNodeCODResponses
+  const unaccountedSegments = creatorNodeCIDResponses
     .filter(resp => filterFn(resp.blacklisted))
     .map(resp => resp.value)
 
