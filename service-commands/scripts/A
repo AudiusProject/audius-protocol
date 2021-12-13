@@ -39,19 +39,19 @@ def setup(provider, service, user, config, fast, protocol_git_ref, client_git_re
     ])
 
 
-def setup_js(args):
+def setup_js(options):
     subprocess.run([
         "node",
         f"{PROTOCOL_DIR}/service-commands/scripts/setup.js",
-        *sys.argv[1:],
+        *options,
     ])
 
 
-def seed(args):
+def seed(options):
     subprocess.run([
         "node",
         f"{PROTOCOL_DIR}/service-commands/scripts/seed.js",
-        *sys.argv[1:],
+        *options,
     ])
 
 
@@ -169,9 +169,11 @@ def main():
             )
     except argparse.ArgumentError:
         if sys.argv[1] == "seed":
-            seed(sys.argv[2:])
+            options = sys.argv[2:]
+            seed(options)
         else:
-            setup_js(sys.argv[1:])
+            options = sys.argv[1:]
+            setup_js(options)
 
 
 if __name__ == "__main__":
