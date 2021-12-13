@@ -120,12 +120,11 @@ const getProgressCallback = () => {
   return progressCallback
 }
 
-const getUserProvidedOrRandomTrackMetadata = (userProvidedMetadataInput, seedSession) => {
+const getUserProvidedOrRandomTrackMetadata = (userProvidedMetadata, seedSession) => {
   const { userId } = seedSession.cache.getActiveUser()
   let metadataObj = getRandomTrackMetadata(userId)
-  if (userProvidedMetadataInput !== 'random') {
-    const userProvidedMetadata = parseMetadataIntoObject(userProvidedMetadataInput)
-    metadataObj = Object.assign(metadataObj, userProvidedMetadata, { })
+  if (userProvidedMetadata) {
+    metadataObj = Object.assign(metadataObj, userProvidedMetadata)
   }
   return metadataObj
 }
