@@ -18,7 +18,7 @@ let VERBOSE_MODE = false
 // create a global instance of HashIds
 const hashIds = new HashIds()
 
-// simple logger to
+// simple logger to wrap console to control debug logging behavior
 const Logger = {
   debug: (...msgs) => { if (VERBOSE_MODE) console.log(...msgs) },
   info: (...msgs) => { console.log(...msgs) },
@@ -191,6 +191,12 @@ async function verifyWithBlacklist ({ type, values, action }) {
   return allSegments
 }
 
+/**
+ * For resources of a valid type, get all the segments for the passed in id values
+ * @param {String} type 'USER' or 'TRACK'
+ * @param {(number[])} values ids for associated type
+ * @returns
+ */
 async function getSegments (type, values) {
   if (type === 'CID') return values
 
