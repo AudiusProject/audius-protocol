@@ -92,7 +92,7 @@ platform :ios do
       build_number: app_store_build_number(
         app_identifier: "co.audius.audiusmusic",
         initial_build_number: 1,
-        version: versionNumber,
+        version: versionNumber.to_s,
         live: false
       ) + 1,
     )
@@ -187,7 +187,7 @@ platform :ios do
       build_number: app_store_build_number(
         app_identifier: "co.audius.audiusmusic.bounce",
         initial_build_number: 1,
-        version: versionNumber,
+        version: versionNumber.to_s,
         live: false
       ) + 1,
     )
