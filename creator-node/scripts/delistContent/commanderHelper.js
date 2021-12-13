@@ -9,15 +9,15 @@ const COMMANDER_HELP_STRING =
 `-a [action] -t [type] -l [ids or cids] -v [verbose (optional)]
 
 // Example usage:
-// node updateContentBlacklist.js -a add -l 1,3,7 -t user
-// node updateContentBlacklist.js -a add -l 1,3,7 -t track
-// node updateContentBlacklist.js -a add -l 7eP5n,ML51L -t track-hash-id
-// node updateContentBlacklist.js -a add -l Qm..., Qm..., -t cid
+// node delistContent/index.js -a add -l 1,3,7 -t user
+// node delistContent/index.js -a add -l 1,3,7 -t track
+// node delistContent/index.js -a add -l 7eP5n,ML51L -t track-hash-id
+// node delistContent/index.js -a add -l Qm..., Qm..., -t cid
 
-// node updateContentBlacklist.js -a remove -l 1,3,7 -t user
-// node updateContentBlacklist.js -a remove -l 1,3,7 -t track
-// node updateContentBlacklist.js -a remove -l 7eP5n,ML51L -t track-hash-id
-// node updateContentBlacklist.js -a remove -l Qm..., Qm..., -t cid
+// node delistContent/index.js -a remove -l 1,3,7 -t user
+// node delistContent/index.js -a remove -l 1,3,7 -t track
+// node delistContent/index.js -a remove -l 7eP5n,ML51L -t track-hash-id
+// node delistContent/index.js -a remove -l Qm..., Qm..., -t cid
 `
 
 module.exports = {
