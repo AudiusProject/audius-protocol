@@ -116,7 +116,6 @@ class App {
         })
       } else {
         // if it's a test run only start the server
-        logger.info(`app.js - starting web server`)
 
         await new Promise(resolve => {
           server = this.express.listen(this.port, resolve)
@@ -146,6 +145,8 @@ class App {
       return { app: this.express, server }
     } else {
       // if it's not the master worker in the cluster
+      logger.info(`app.js - starting web server`)
+
       await this.configureAudiusInstance()
       await new Promise(resolve => {
         server = this.express.listen(this.port, resolve)
