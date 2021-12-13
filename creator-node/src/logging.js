@@ -104,7 +104,7 @@ function logInfoWithDuration (req, msg) {
   const durationMs = getDuration(req)
 
   if (durationMs) {
-    req.logger.info(`${msg} duration=${durationMs}`)
+    req.logger.info({ duration: durationMs }, msg)
   } else {
     req.logger.info(msg)
   }
