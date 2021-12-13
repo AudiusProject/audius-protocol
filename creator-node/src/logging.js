@@ -81,9 +81,15 @@ const getDuration = (req) => {
   return duration
 }
 
-function setDurationInLogger (req) {
+function setDurationInLogger (req, useChildLogger = false) {
   const duration = getDuration(req)
-  return setFieldsInChildLogger(req, { duration })
+
+  if (useChildLogger) {
+    return setFieldsInChildLogger(req, { duration })
+  }
+
+  req.logger.fields.duration = duration
+  return req.logger
 }
 
 module.exports = {
