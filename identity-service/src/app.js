@@ -327,7 +327,7 @@ class App {
   // Create a rate limiter for listens exclusively based on IP
   _createDailyRateLimitForListenCountIP () {
     return getRateLimiter({
-      prefix: `listenCountLimiter:::${interval}-ip-exclusive:::`,
+      prefix: `listenCountLimiter:::ip:::`,
       expiry: ONE_HOUR_IN_SECONDS * 24,
       max: config.get(`rateLimitingListensExclusivelyPerIPPerDay`), // max requests per day
       keyGenerator: function (req) {
