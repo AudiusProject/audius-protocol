@@ -4,7 +4,8 @@ import { initialLineupState } from 'store/lineup/reducer'
 
 const initialState = {
   ...initialLineupState,
-  prefix: PREFIX
+  prefix: PREFIX,
+  containsDeleted: false
 }
 
 const actionsMap = {
