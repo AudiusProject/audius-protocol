@@ -4,8 +4,9 @@ import * as Sentry from '@sentry/browser'
 import cn from 'classnames'
 import 'url-search-params-polyfill'
 
+import { StringKeys } from 'common/services/remote-config'
 import { RequestInstagramAuthMessage } from 'services/native-mobile-interface/oauth'
-import { getRemoteVar, StringKeys } from 'services/remote-config'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
 const NATIVE_MOBILE = process.env.REACT_APP_NATIVE_MOBILE
 const HOSTNAME = process.env.REACT_APP_PUBLIC_HOSTNAME
@@ -90,8 +91,9 @@ const InstagramAuth = ({
           return onFailure(new Error('Unable to fetch information'))
         }
         const profileEndpoint =
-          getRemoteVar(StringKeys.INSTAGRAM_API_PROFILE_URL) ||
-          'https://instagram.com/$USERNAME$/?__a=1'
+          remoteConfigInstance.getRemoteVar(
+            StringKeys.INSTAGRAM_API_PROFILE_URL
+          ) || 'https://instagram.com/$USERNAME$/?__a=1'
         const fetchIGUserUrl = getIGUserUrl(
           profileEndpoint,
           profileRespJson.username

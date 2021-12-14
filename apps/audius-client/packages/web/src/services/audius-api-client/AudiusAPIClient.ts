@@ -1,6 +1,7 @@
 import { ID } from 'common/models/Identifiers'
 import TimeRange from 'common/models/TimeRange'
 import { StemTrackMetadata } from 'common/models/Track'
+import { IntKeys, StringKeys } from 'common/services/remote-config'
 import { Nullable, removeNullable } from 'common/utils/typeUtils'
 import { SearchKind } from 'containers/search-page/store/types'
 import AudiusBackend from 'services/AudiusBackend'
@@ -8,9 +9,8 @@ import {
   getEagerDiscprov,
   waitForLibsInit
 } from 'services/audius-backend/eagerLoadUtils'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { decodeHashId, encodeHashId } from 'utils/route/hashIds'
-
-import { getRemoteVar, IntKeys, StringKeys } from '../remote-config'
 
 import * as adapter from './ResponseAdapter'
 import { processSearchResults } from './helper'
@@ -389,7 +389,9 @@ class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined,
       genre: genre || undefined
     }
-    const experiment = getRemoteVar(StringKeys.TRENDING_EXPERIMENT)
+    const experiment = remoteConfigInstance.getRemoteVar(
+      StringKeys.TRENDING_EXPERIMENT
+    )
     const trendingResponse: Nullable<APIResponse<
       APITrack[]
     >> = await this._getResponse(FULL_ENDPOINT_MAP.trending(experiment), params)
@@ -414,7 +416,9 @@ class AudiusAPIClient {
       offset,
       user_id: encodedCurrentUserId
     }
-    const experiment = getRemoteVar(StringKeys.UNDERGROUND_TRENDING_EXPERIMENT)
+    const experiment = remoteConfigInstance.getRemoteVar(
+      StringKeys.UNDERGROUND_TRENDING_EXPERIMENT
+    )
     const trendingResponse: Nullable<APIResponse<
       APITrack[]
     >> = await this._getResponse(
@@ -436,7 +440,9 @@ class AudiusAPIClient {
       limit,
       genre: genre || undefined
     }
-    const experiment = getRemoteVar(StringKeys.TRENDING_EXPERIMENT)
+    const experiment = remoteConfigInstance.getRemoteVar(
+      StringKeys.TRENDING_EXPERIMENT
+    )
     const trendingIdsResponse: Nullable<APIResponse<
       TrendingIdsResponse
     >> = await this._getResponse(
@@ -477,7 +483,7 @@ class AudiusAPIClient {
     const encodedCurrentUserId = encodeHashId(currentUserId)
     const params = {
       genre,
-      limit: getRemoteVar(IntKeys.AUTOPLAY_LIMIT) || 10,
+      limit: remoteConfigInstance.getRemoteVar(IntKeys.AUTOPLAY_LIMIT) || 10,
       exclusion_list:
         exclusionList.length > 0 ? exclusionList.map(String) : undefined,
       user_id: encodedCurrentUserId || undefined
@@ -1103,7 +1109,9 @@ class AudiusAPIClient {
       time
     }
 
-    const experiment = getRemoteVar(StringKeys.PLAYLIST_TRENDING_EXPERIMENT)
+    const experiment = remoteConfigInstance.getRemoteVar(
+      StringKeys.PLAYLIST_TRENDING_EXPERIMENT
+    )
     const response: Nullable<APIResponse<
       APIPlaylist[]
     >> = await this._getResponse(

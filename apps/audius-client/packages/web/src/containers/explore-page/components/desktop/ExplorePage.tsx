@@ -9,6 +9,7 @@ import {
 } from 'common/models/Collection'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
+import { FeatureFlags } from 'common/services/remote-config'
 import CollectionArtCard from 'components/card/desktop/CollectionArtCard'
 import UserArtCard from 'components/card/desktop/UserArtCard'
 import Page from 'components/general/Page'
@@ -29,7 +30,6 @@ import {
   INTIMATE_PLAYLISTS
 } from 'containers/explore-page/collections'
 import { ExploreCollectionsVariant } from 'containers/explore-page/store/types'
-import { useFlag } from 'containers/remote-config/hooks'
 import {
   HEAVY_ROTATION,
   BEST_NEW_RELEASES,
@@ -39,7 +39,7 @@ import {
   FEELING_LUCKY
 } from 'containers/smart-collection/smartCollections'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
-import { FeatureFlags } from 'services/remote-config'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { BASE_URL, EXPLORE_PAGE, stripBaseUrl } from 'utils/route'
 
 import styles from './ExplorePage.module.css'

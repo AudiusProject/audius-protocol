@@ -2,7 +2,7 @@ import { push as pushRoute } from 'connected-react-router'
 import moment from 'moment'
 import { fork, call, put, select, takeEvery } from 'redux-saga/effects'
 
-import TimeRange from 'common/models/TimeRange'
+import { StringKeys } from 'common/services/remote-config'
 import * as trackCacheActions from 'common/store/cache/tracks/actions'
 import { getTrack as getCachedTrack } from 'common/store/cache/tracks/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
@@ -10,11 +10,7 @@ import { retrieveTrackByHandleAndSlug } from 'common/store/cache/tracks/utils/re
 import { getUsers } from 'common/store/cache/users/selectors'
 import tracksSagas from 'containers/track-page/store/lineups/tracks/sagas'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { StringKeys } from 'services/remote-config'
-import {
-  getRemoteVar,
-  waitForRemoteConfig
-} from 'services/remote-config/Provider'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { getIsReachable } from 'store/reachability/selectors'
 import { NOT_FOUND_PAGE, trackRemixesPage } from 'utils/route'
@@ -30,8 +26,10 @@ function* watchTrackBadge() {
   yield takeEvery(trackPageActions.GET_TRACK_RANKS, function* (action) {
     try {
       yield call(waitForBackendSetup)
-      yield call(waitForRemoteConfig)
-      const TF = new Set(getRemoteVar(StringKeys.TF)?.split(',') ?? [])
+      yield call(remoteConfigInstance.waitForRemoteConfig)
+      const TF = new Set(
+        remoteConfigInstance.getRemoteVar(StringKeys.TF)?.split(',') ?? []
+      )
       let trendingTrackRanks = yield select(getTrendingTrackRanks)
       if (!trendingTrackRanks) {
         const trendingRanks = yield apiClient.getTrendingIds({

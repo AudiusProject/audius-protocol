@@ -33,6 +33,7 @@ import { ReactComponent as IconGradientCollectibles } from 'assets/img/iconGradi
 import useInstanceVar from 'common/hooks/useInstanceVar'
 import { useModalState } from 'common/hooks/useModalState'
 import { Collectible, CollectiblesMetadata } from 'common/models/Collectible'
+import { FeatureFlags } from 'common/services/remote-config/feature-flags'
 import { getCollectible } from 'common/store/ui/collectible-details/selectors'
 import { setCollectible } from 'common/store/ui/collectible-details/slice'
 import Drawer from 'components/drawer/Drawer'
@@ -47,9 +48,8 @@ import {
 import styles from 'containers/collectibles/components/CollectiblesPage.module.css'
 import EmbedFrame from 'containers/embed-modal/components/EmbedFrame'
 import { ProfileUser } from 'containers/profile-page/store/types'
-import { useFlag } from 'containers/remote-config/hooks'
 import UserBadges from 'containers/user-badges/UserBadges'
-import { FeatureFlags } from 'services/remote-config/FeatureFlags'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import {
   BASE_GA_URL,

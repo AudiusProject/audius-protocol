@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/browser'
-import { takeEvery, put, call } from 'redux-saga/effects'
+import { takeEvery } from 'redux-saga/effects'
 
-import * as signOnActions from 'containers/sign-on/store/actions'
+import { StringKeys } from 'common/services/remote-config'
 import {
   formatInstagramProfile,
   formatTwitterProfile
@@ -14,7 +14,7 @@ import {
   RequestTwitterAuthMessage,
   RequestTwitterAuthSuccessMessage
 } from 'services/native-mobile-interface/oauth'
-import { getRemoteVar, StringKeys } from 'services/remote-config'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import * as oauthActions from 'store/oauth/actions'
 
 import mobileSagas from './mobileSagas'
@@ -205,7 +205,7 @@ const getProfile = async (
       return onFailure('Unable to fetch information')
     }
     const profileEndpoint =
-      getRemoteVar(StringKeys.INSTAGRAM_API_PROFILE_URL) ||
+      remoteConfigInstance.getRemoteVar(StringKeys.INSTAGRAM_API_PROFILE_URL) ||
       'https://instagram.com/$USERNAME$/?__a=1'
     const fetchIGUserUrl = getIGUserUrl(
       profileEndpoint,

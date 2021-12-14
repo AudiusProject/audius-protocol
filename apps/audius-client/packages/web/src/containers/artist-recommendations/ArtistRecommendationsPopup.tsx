@@ -1,20 +1,14 @@
-import React, {
-  MutableRefObject,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo
-} from 'react'
+import React, { MutableRefObject, useContext } from 'react'
 
 import { Popup, PopupPosition } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
 import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
+import { FeatureFlags } from 'common/services/remote-config'
 import { getUser } from 'common/store/cache/users/selectors'
 import { MainContentContext } from 'containers/MainContentContext'
-import { useFlag } from 'containers/remote-config/hooks'
-import { FeatureFlags } from 'services/remote-config'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import zIndex from 'utils/zIndex'
 

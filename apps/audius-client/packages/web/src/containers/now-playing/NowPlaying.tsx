@@ -15,6 +15,7 @@ import {
 } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import { SquareSizes } from 'common/models/ImageSizes'
+import { FeatureFlags } from 'common/services/remote-config'
 import { getUserId } from 'common/store/account/selectors'
 import {
   saveTrack,
@@ -37,12 +38,11 @@ import PreviousButtonProvider from 'components/play-bar/previous-button/Previous
 import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import { PlayButtonStatus } from 'components/play-bar/types'
-import { useFlag } from 'containers/remote-config/hooks'
 import { getCastMethod } from 'containers/settings-page/store/selectors'
 import UserBadges from 'containers/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useImageSize'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { HapticFeedbackMessage } from 'services/native-mobile-interface/haptics'
-import { FeatureFlags } from 'services/remote-config'
 import { useRecord, make } from 'store/analytics/actions'
 import { getAverageColorByTrack } from 'store/application/ui/average-color/slice'
 import {
