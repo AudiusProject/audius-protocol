@@ -50,6 +50,9 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['error', { args: 'none' }], // We should turn this one on soon
     '@typescript-eslint/no-this-alias': 'off',
 
+    'no-redeclare': 'off',
+    '@typescript-eslint/no-redeclare': ['error'],
+
     'no-use-before-define': 'off',
     'no-bitwise': 'off',
     camelcase: 'off',
