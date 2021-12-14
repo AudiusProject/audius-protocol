@@ -1,31 +1,31 @@
+from contextlib import contextmanager
 import json
 import secrets
+import pytest
 import ipfshttpclient
 from chance import chance
 from src.models.models import Block, Track, User
-from src.utils.db_session import get_db
+from src.queries.get_skipped_transactions import get_indexing_error
 import src.utils.multihash
 from src.utils.helpers import remove_test_file
+from src.utils.indexing_errors import IndexingError
+from src.utils.redis_connection import get_redis
 from tests.utils import to_bytes
 
+redis = get_redis()
 
-def test_index_operations(app, celery_app, contracts):
-    """Confirm indexing of creator operations results in expected state change"""
-    with app.app_context():
-        db = get_db()
+test_file = "tests/res/test_audio_file.mp3"
+track_metadata_json_file = "tests/res/test_track_metadata.json"
 
-    test_file = "tests/res/test_audio_file.mp3"
-    track_metadata_json_file = "tests/res/test_track_metadata.json"
-
+def seed_contract_data(task, contracts, web3):
     user_factory_contract = contracts["user_factory_contract"]
     track_factory_contract = contracts["track_factory_contract"]
 
-    ipfs_peer_host = app.config["ipfs"]["host"]
-    ipfs_peer_port = app.config["ipfs"]["port"]
+    ipfs_peer_host = task.shared_config["ipfs"]["host"]
+    ipfs_peer_port = task.shared_config["ipfs"]["port"]
     ipfs = ipfshttpclient.connect(f"/dns/{ipfs_peer_host}/tcp/{ipfs_peer_port}/http")
 
     # Retrieve web3 instance from fixture
-    web3 = contracts["web3"]
     chain_id = web3.net.version
 
     # Give the user some randomness so repeat tests can succeed
@@ -108,7 +108,6 @@ def test_index_operations(app, celery_app, contracts):
     # get track metadata multihash
     metadata_decoded = src.utils.multihash.from_b58_string(metadata_hash)
     metadata_decoded_multihash = src.utils.multihash.decode(metadata_decoded)
-    print(metadata_decoded_multihash)
 
     new_track_nonce = '0x' + secrets.token_hex(32)
     new_track_multihash_digest = '0x' + metadata_decoded_multihash['digest'].hex()
@@ -162,9 +161,28 @@ def test_index_operations(app, celery_app, contracts):
         new_track_signature
     ).transact()
 
-    # Run update discovery provider task
-    celery_app.celery.autodiscover_tasks(["src.tasks"], "index", True)
-    celery_app.celery.finalize()
+    return {
+        "new_user_handle": new_user_handle,
+        "new_user_id": user_id_from_event
+    }
+
+@pytest.fixture(autouse=True)
+def cleanup():
+    yield
+    remove_test_file(track_metadata_json_file)
+
+
+def test_index_operations(celery_app, celery_app_contracts):
+    """
+    Confirm indexing of user operations results in expected state change
+    """
+    task = celery_app.celery.tasks["update_discovery_provider"]
+    db = task.db
+    web3 = celery_app_contracts["web3"]
+
+    seed_data = seed_contract_data(task, celery_app_contracts, web3)
+    new_user_handle = seed_data["new_user_handle"]
+    new_user_id = seed_data["new_user_id"]
 
     with db.scoped_session() as session:
         # Catch up the indexer
@@ -173,7 +191,7 @@ def test_index_operations(app, celery_app, contracts):
         latest_block = web3.eth.getBlock("latest", True)
         while current_block < latest_block.number:
             # Process a bunch of blocks to make sure we covered everything
-            celery_app.celery.tasks["update_discovery_provider"].run()
+            task.run()
             current_block_query = session.query(Block).filter_by(is_current=True).all()
             current_block = current_block_query[0].number if len(current_block_query) > 0 else 0
 
@@ -185,12 +203,95 @@ def test_index_operations(app, celery_app, contracts):
         )
         tracks = (
             session.query(Track)
-            .filter(Track.owner_id == user_id_from_event)
+            .filter(Track.owner_id == new_user_id)
             .all()
         )
 
         assert len(users) > 0
         assert len(tracks) > 0
 
-    # clean up state
-    remove_test_file(track_metadata_json_file)
+
+def test_index_operations_indexing_error(celery_app, celery_app_contracts, monkeypatch):
+    """
+    Confirm indexer throws IndexingError when the parser throws an error
+    """
+    task = celery_app.celery.tasks["update_discovery_provider"]
+    db = task.db
+    web3 = celery_app_contracts["web3"]
+
+    # Monkeypatch parse track event to raise an exception
+    def parse_track_event(*_):
+        raise Exception("Broken parser")
+    monkeypatch.setattr(src.tasks.tracks, "parse_track_event", parse_track_event)
+
+    seed_contract_data(task, celery_app_contracts, web3)
+
+    try:
+        with db.scoped_session() as session:
+            # Catch up the indexer
+            current_block_query = session.query(Block).filter_by(is_current=True).all()
+            current_block = current_block_query[0].number if len(current_block_query) > 0 else 0
+            latest_block = web3.eth.getBlock("latest", True)
+            while current_block < latest_block.number:
+                # Process a bunch of blocks to make sure we covered everything
+                task.run()
+                current_block_query = session.query(Block).filter_by(is_current=True).all()
+                current_block = current_block_query[0].number if len(current_block_query) > 0 else 0
+        assert False
+    except IndexingError:
+        error = get_indexing_error(redis)
+        assert error["message"] == "Broken parser"
+        assert error["count"] == 1
+
+
+def test_index_operations_indexing_error_on_commit(celery_app, celery_app_contracts, monkeypatch):
+    """
+    Confirm indexer throws IndexingError when db session "commit" throws an error
+    """
+    task = celery_app.celery.tasks["update_discovery_provider"]
+    db = task.db
+    web3 = celery_app_contracts["web3"]
+
+    seed_contract_data(task, celery_app_contracts, web3)
+
+    # Mock out the session manager so we can trick session.commit
+    # into throwing when manually called
+    @contextmanager
+    def mock_scoped_session(db):
+        session = db._session_factory()
+        # Don't mock out the implicit commit
+        # at the end of a `with db.scoped_session as session` context.
+        implicit_commit = session.commit
+        def _raise():
+            raise Exception('Broken session.commit')
+        session.commit = _raise
+        try:
+            yield session
+            implicit_commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
+    monkeypatch.setattr(
+        src.utils.session_manager.SessionManager,
+        "scoped_session",
+        mock_scoped_session
+    )
+
+    try:
+        with db.scoped_session() as session:
+            # Catch up the indexer
+            current_block_query = session.query(Block).filter_by(is_current=True).all()
+            current_block = current_block_query[0].number if len(current_block_query) > 0 else 0
+            latest_block = web3.eth.getBlock("latest", True)
+            while current_block < latest_block.number:
+                # Process a bunch of blocks to make sure we covered everything
+                task.run()
+                current_block_query = session.query(Block).filter_by(is_current=True).all()
+                current_block = current_block_query[0].number if len(current_block_query) > 0 else 0
+        assert False
+    except IndexingError:
+        error = get_indexing_error(redis)
+        assert error["message"] == "Broken session.commit"
+        assert error["txhash"] == "commit"

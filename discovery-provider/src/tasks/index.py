@@ -618,8 +618,9 @@ def index_blocks(self, db, blocks_list):
                     # Use 'commit' as the tx hash here.
                     # We're at a point where the whole block can't be added to the database, so
                     # we should skip it in favor of making progress
+                    blockhash = update_task.web3.toHex(block_hash)
                     raise IndexingError(
-                        "session.commit", block_number, block_hash, "commit", str(e)
+                        "session.commit", block_number, blockhash, "commit", str(e)
                     ) from e
                 logger.info(
                     f"index.py | session commmited to db for block=${block_number}"

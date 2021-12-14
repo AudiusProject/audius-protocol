@@ -17,8 +17,7 @@ const Registry = artifacts.require('Registry')
 const truffle_dev_config = artifacts.options['_values']['networks']['development']
 
 const AudiusLibs = 'libs'
-const AudiusSharedLibs = 'audius-shared-libs'
-const AudiusDiscoveryProvider = 'discovery-provider'
+const AudiusDiscoveryNode = 'discovery-provider'
 const AudiusIdentityService = 'identity-service'
 const AudiusCreatorNode = 'creator-node'
 
@@ -39,14 +38,6 @@ const getDirectoryRoot = (dirName) => {
     throw new Error(`Couldn't find expected path ${traversePath}`)
   }
   return traversePath
-}
-
-/** Print expected usage */
-const printUsageAndThrow = () => {
-  console.log('\nIncorrect usage. Please use the following format:')
-  console.log('truffle exec _contractsLocalSetup.js -run')
-  console.log('')
-  throw new Error('Incorrect usage')
 }
 
 /** Copies the contents of build/contracts to the outputPath */
@@ -117,7 +108,6 @@ const outputFlaskConfigFile = async (outputPath) => {
     configFileContents += '\n'
 
     let outputFlaskConfigFile = outputPath
-    console.log(outputFlaskConfigFile)
     console.log(`Target Output Flask Config File: ${outputFlaskConfigFile}`)
     console.log(`Contents: \n ${configFileContents}`)
 
@@ -135,87 +125,53 @@ const outputFlaskConfigFile = async (outputPath) => {
 
 
 module.exports = async callback => {
-  // Populate deployed ganache instance with various objects
-  // Used to test components that require content
-  if (process.argv.length < 5) {
-    printUsageAndThrow()
-  }
-
-  if (process.argv[4] === '-run'){
-    try {
-      let discProvOutputPath = path.join(getDirectoryRoot(AudiusDiscoveryProvider), 'build', 'contracts')
-
-      // Copy build directory
-      await copyBuildDirectory(discProvOutputPath)
-
-      let flaskConfigPath = path.join(
-        getDirectoryRoot(AudiusDiscoveryProvider),
-        'contract_config.ini'
-      )
-      console.log(flaskConfigPath)
-      // Write updated flask config file
-      outputFlaskConfigFile(flaskConfigPath)
-    } catch (e) {
-      console.log(e)
-    }
-  }
-  else if (process.argv[4] === '-run-shared-lib'){
-    let defaultDiscprovEndpoint = 'http://localhost:5000'
-    let sharedLibOutputPath = path.join(getDirectoryRoot(AudiusSharedLibs), 'contract_abi')
-    await copyBuildDirectory(sharedLibOutputPath)
-    let sharedLibSignatureSchemaOutputPath = path.join(getDirectoryRoot(AudiusSharedLibs), 'signature_schemas')
-    copySignatureSchemas(sharedLibSignatureSchemaOutputPath)
-
-    // Uncomment if necessary
-    outputJsonConfigFile(getDirectoryRoot(AudiusSharedLibs) + '/config.json')
-    try {
-      outputJsonConfigFile(getDirectoryRoot(AudiusIdentityService) + '/contract-config.json')
-    }
-    catch(e){
-      console.log("Identity service doesn't exist, probably running via E2E setup scripts")
-    }
-
-    // special case for ~/.audius/config.json used by front end
-    const dappOutput = os.homedir() + '/.audius'
-    if (!fs.existsSync(dappOutput)) {
-      fs.mkdirSync(dappOutput, { recursive: true })
-    }
-    outputJsonConfigFile(dappOutput + '/config.json')
-  }
-  /** Replace contracts artifacts in libs with new ABIs, signature schemas and config */
-  else if (process.argv[4] === '-run-audlib'){
+  try {
     const libsDirRoot = path.join(getDirectoryRoot(AudiusLibs), 'data-contracts')
     fs.removeSync(libsDirRoot)
 
     await copyBuildDirectory(path.join(libsDirRoot, '/ABIs'))
     copySignatureSchemas(path.join(libsDirRoot, '/signatureSchemas.js'))
     outputJsonConfigFile(path.join(libsDirRoot, '/config.json'))
-
-    // output to Identity Service
-    try {
-      outputJsonConfigFile(getDirectoryRoot(AudiusIdentityService) + '/contract-config.json')
-    }
-    catch(e){
-      console.log("Identity service doesn't exist, probably running via E2E setup scripts")
-    }
-
-    // output to Creator Node
-    try {
-      outputJsonConfigFile(getDirectoryRoot(AudiusCreatorNode) + '/contract-config.json')
-    } catch (e) {
-      console.log("Creator node dir doesn't exist, probably running via E2E setup scripts")
-    }
-
-    // special case for ~/.audius/config.json used by front end
-    const dappOutput = os.homedir() + '/.audius'
-    if (!fs.existsSync(dappOutput)) {
-      fs.mkdirSync(dappOutput, { recursive: true })
-    }
-    outputJsonConfigFile(dappOutput + '/config.json')
-  }
-  else{
-    printUsageAndThrow()
+  } catch (e) {
+    console.log("Libs doesn't exist", e)
   }
 
-  console.log('end')
+  // output to Identity Service
+  try {
+    outputJsonConfigFile(getDirectoryRoot(AudiusIdentityService) + '/contract-config.json')
+  }
+  catch(e){
+    console.log("Identity service doesn't exist", e)
+  }
+
+  // output to Creator Node
+  try {
+    outputJsonConfigFile(getDirectoryRoot(AudiusCreatorNode) + '/contract-config.json')
+  } catch (e) {
+    console.log("Creator node dir doesn't exist", e)
+  }
+
+  // output to Discovery Node
+  try {
+    let discProvOutputPath = path.join(getDirectoryRoot(AudiusDiscoveryNode), 'build', 'contracts')
+
+    // Copy build directory
+    await copyBuildDirectory(discProvOutputPath)
+
+    let flaskConfigPath = path.join(
+      getDirectoryRoot(AudiusDiscoveryNode),
+      'contract_config.ini'
+    )
+    // Write updated flask config file
+    outputFlaskConfigFile(flaskConfigPath)
+  } catch (e) {
+    console.log("Discovery node doesn't exist", e)
+  }
+
+  // special case for ~/.audius/config.json used by front end
+  const dappOutput = os.homedir() + '/.audius'
+  if (!fs.existsSync(dappOutput)) {
+    fs.mkdirSync(dappOutput, { recursive: true })
+  }
+  outputJsonConfigFile(dappOutput + '/config.json')
 }
