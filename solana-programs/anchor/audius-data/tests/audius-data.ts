@@ -1,34 +1,12 @@
 import * as anchor from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
 import { AudiusData } from '../target/types/audius_data';
-import BN from 'bn.js';
 import * as secp256k1 from 'secp256k1';
 import ethWeb3 from 'web3';
-const { randomBytes } = require('crypto')
+import { randomBytes } from 'crypto';
+import { ethAddressToArray, getRandomPrivateKey, signBytes, randomCID, findDerivedPair } from './utils';
 
-// import * as keccak256 from "keccak256";
-
-import keccak256 from 'keccak256';
 const { SystemProgram, PublicKey, Transaction, Secp256k1Program } = anchor.web3;
-
-const signBytes = (bytes: any, ethPrivateKey: WithImplicitCoercion<string> | { [Symbol.toPrimitive](hint: "string"): string; }) => {
-  const ethPrivateKeyArr = Buffer.from(ethPrivateKey, 'hex')
-  const msgHash = keccak256(bytes)
-  const signatureObj = secp256k1.ecdsaSign(
-    Uint8Array.from(msgHash),
-    ethPrivateKeyArr
-  )
-  const signature = Buffer.from(signatureObj.signature)
-  return {
-    signature,
-    recoveryId: signatureObj.recid
-  }
-}
-
-const ethAddressToArray = (ethAddress: any) => {
-  const strippedEthAddress = ethAddress.replace('0x', '')
-  return Uint8Array.of(...new BN(strippedEthAddress, 'hex').toArray('be'))
-}
 
 describe('audius-data', () => {
   const provider = anchor.Provider.local(
@@ -49,22 +27,6 @@ describe('audius-data', () => {
 
   let adminKeypair = anchor.web3.Keypair.generate()
   let adminStgKeypair = anchor.web3.Keypair.generate()
-
-  const getRandomPrivateKey = () => {
-    const msg = randomBytes(32)
-    let privKey: Uint8Array
-    do {
-      privKey = randomBytes(32)
-    } while (!secp256k1.privateKeyVerify(privKey))
-    return privKey
-  }
-
-  const findProgramAddress = (programId, pubkey) => {
-    return PublicKey.findProgramAddress(
-      [pubkey.toBytes().slice(0, 32)],
-      programId
-    )
-  }
 
   const getTransaction = async (tx: string) => {
     let info = await provider.connection.getTransaction(tx)
@@ -116,9 +78,9 @@ describe('audius-data', () => {
       }
     )
 
-    let userDataFromChain = await program.account.user.fetch(userStgAccount)
-    let returnedHex = EthWeb3.utils.bytesToHex(userDataFromChain.ethAddress)
-    let returnedSolFromChain = userDataFromChain.authority
+    const userDataFromChain = await program.account.user.fetch(userStgAccount)
+    const returnedHex = EthWeb3.utils.bytesToHex(userDataFromChain.ethAddress)
+    const returnedSolFromChain = userDataFromChain.authority
 
     if (testEthAddr.toLowerCase() != returnedHex) {
       throw new Error(`Invalid eth address returned from chain`)
@@ -138,7 +100,7 @@ describe('audius-data', () => {
     newUserKey,
     newUserAcctPDA
   }) => {
-    let signedBytes = signBytes(Buffer.from(message), pkString)
+    const signedBytes = signBytes(Buffer.from(message), pkString)
     const { signature, recoveryId } = signedBytes
 
     // Get the public key in a compressed format
@@ -178,72 +140,78 @@ describe('audius-data', () => {
     }
   }
 
-  // Finds a 'derived' address by finding a programAddress with
-  // seeds array  as first 32 bytes of base + seeds
-  const findDerivedAddress = async (programId: anchor.web3.PublicKey, base: anchor.web3.PublicKey, seed: any) => {
-    let finalSeed = [base.toBytes().slice(0, 32), seed]
-    let result = await PublicKey.findProgramAddress(
-      finalSeed,
-      programId
-    )
-    return {
-      seed: finalSeed,
-      result
-    }
-  }
-
-  const findDerivedPair = async (programId, adminAccount, seed) => {
-    // Finds the rewardManagerAuthority account by generating
-    // a PDA with the rewardsMnager as a seed
-    const [baseAuthorityAccount] = await findProgramAddress(
-      programId,
-      adminAccount
-    )
-    const derivedAddresInfo = await findDerivedAddress(
-      programId,
-      baseAuthorityAccount,
-      seed
+  const testCreateTrack = async ({
+    trackMetadata,
+    newTrackKeypair,
+    userAuthorityKey,
+    trackOwnerPDA
+  }) => {
+    let tx = await program.rpc.createTrack(
+      trackMetadata,
+      {
+        accounts: {
+          track: newTrackKeypair.publicKey,
+          user: trackOwnerPDA,
+          authority: userAuthorityKey.publicKey,
+          payer: provider.wallet.publicKey,
+          systemProgram: SystemProgram.programId
+        },
+        signers: [userAuthorityKey, newTrackKeypair]
+      }
     )
 
-    const derivedAddress = derivedAddresInfo.result[0]
-    const bumpSeed = derivedAddresInfo.result[1]
-
-    return  {baseAuthorityAccount, derivedAddress, bumpSeed }
+    await confirmLogInTransaction(tx, trackMetadata)
   }
 
-  const randomString = (size) => {
-    if (size === 0) {
-     throw new Error('Zero-length randomString is useless.');
+  const testDeleteTrack = async ({
+    trackKeypair,
+    trackOwnerPDA,
+    userAuthorityKey
+  }) => {
+
+    const initialTrackAcctBalance = await provider.connection.getBalance(trackKeypair.publicKey)
+    const initialPayerBalance = await provider.connection.getBalance(provider.wallet.publicKey)
+
+    await program.rpc.deleteTrack({
+      accounts: {
+        track: trackKeypair.publicKey,
+        user: trackOwnerPDA,
+        authority: userAuthorityKey.publicKey,
+        payer: provider.wallet.publicKey,
+      },
+      signers: [userAuthorityKey]
+    })
+
+    // Confirm that the account is zero'd out
+    // Note that there appears to be a delay in the propagation, hence the retries
+    let trackAcctBalance = initialTrackAcctBalance
+    let payerBalance = initialPayerBalance
+    let retries = 20
+    while (trackAcctBalance > 0 || retries > 0) {
+      trackAcctBalance = await provider.connection.getBalance(trackKeypair.publicKey)
+      payerBalance = await provider.connection.getBalance(provider.wallet.publicKey)
+      retries--
     }
 
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + 'abcdefghijklmnopqrstuvwxyz' + '0123456789';
-    let objectId = '';
-    const bytes = randomBytes(size)
-
-    for (let i = 0; i < bytes.length; ++i) {
-     objectId += chars[bytes.readUInt8(i) % chars.length];
+    if (trackAcctBalance > 0) {
+      throw new Error('Failed to deallocate track')
     }
 
-    return objectId;
-  }
-
-  const randomCID = () => {
-    let randomSuffix = randomString(44)
-    let cid = `Qm${randomSuffix}`
-    return cid
+    console.log(`Track acct lamports ${initialTrackAcctBalance} -> ${trackAcctBalance}`)
+    console.log(`Payer acct lamports ${initialPayerBalance} -> ${payerBalance}`)
   }
 
   const initTestConstants = () => {
-    let privKey = getRandomPrivateKey()
-    let pkString = Buffer.from(privKey).toString('hex')
-    let pubKey = EthWeb3.eth.accounts.privateKeyToAccount(pkString)
-    let testEthAddr = pubKey.address
-    let testEthAddrBytes = ethAddressToArray(testEthAddr)
-    let handle = randomBytes(20).toString('hex');
-    let handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle))
-    let handleBytesArray = Array.from({...handleBytes, length: 16})
-    let metadata = randomCID()
-    let values = {
+    const privKey = getRandomPrivateKey()
+    const pkString = Buffer.from(privKey).toString('hex')
+    const pubKey = EthWeb3.eth.accounts.privateKeyToAccount(pkString)
+    const testEthAddr = pubKey.address
+    const testEthAddrBytes = ethAddressToArray(testEthAddr)
+    const handle = randomBytes(20).toString('hex');
+    const handleBytes = Buffer.from(anchor.utils.bytes.utf8.encode(handle))
+    const handleBytesArray = Array.from({...handleBytes, length: 16})
+    const metadata = randomCID()
+    const values = {
       privKey,
       pkString,
       pubKey,
@@ -405,7 +373,7 @@ describe('audius-data', () => {
     await confirmLogInTransaction(tx, updatedCID)
   });
 
-  it('Initializing + claiming user + creating track', async () => {
+  it('Initializing + claiming user, creating + updating track', async () => {
     let {
       privKey,
       pkString,
@@ -450,39 +418,25 @@ describe('audius-data', () => {
     // TODO: Abstract track creation function
     let newTrackKeypair = anchor.web3.Keypair.generate()
     let trackMetadata = randomCID()
-    let tx = await program.rpc.createTrack(
-      trackMetadata,
-      {
-        accounts: {
-          track: newTrackKeypair.publicKey,
-          user: newUserAcctPDA,
-          authority: newUserKey.publicKey,
-          payer: provider.wallet.publicKey,
-          systemProgram: SystemProgram.programId
-        },
-        signers: [newUserKey, newTrackKeypair]
-      }
-    )
 
-    await confirmLogInTransaction(tx, trackMetadata)
+    await testCreateTrack({
+      trackMetadata,
+      newTrackKeypair,
+      userAuthorityKey: newUserKey,
+      trackOwnerPDA: newUserAcctPDA
+    })
+
+    // Expected signature validation failure
     let newTrackKeypair2 = anchor.web3.Keypair.generate()
     let wrongUserKey = anchor.web3.Keypair.generate()
-    console.log(`Expecting error...`)
-    // Expected signature validation failure
+    console.log(`Expecting error with public key ${wrongUserKey.publicKey}`)
     try {
-      await program.rpc.createTrack(
+      await testCreateTrack({
         trackMetadata,
-        {
-          accounts: {
-            track: newTrackKeypair2.publicKey,
-            user: newUserAcctPDA,
-            authority: newUserKey.publicKey,
-            payer: provider.wallet.publicKey,
-            systemProgram: SystemProgram.programId
-          },
-          signers: [wrongUserKey, newTrackKeypair]
-        }
-      )
+        newTrackKeypair : newTrackKeypair2,
+        userAuthorityKey: wrongUserKey,
+        trackOwnerPDA: newUserAcctPDA
+      })
     } catch(e) {
       console.log(`ERROR FOUND AS EXPECTED ${e}`)
     }
@@ -503,26 +457,64 @@ describe('audius-data', () => {
     )
     await confirmLogInTransaction(tx3, updatedTrackMetadata)
   })
-});
 
-/*
+  it('creating + deleting a track', async () => {
+    let {
+      privKey,
+      pkString,
+      testEthAddr,
+      testEthAddrBytes,
+      handleBytesArray,
+      metadata
+    }  = initTestConstants()
 
-    let tx = await program.rpc.initUser(
+    let { baseAuthorityAccount, bumpSeed, derivedAddress }  = await findDerivedPair(
+      program.programId,
+      adminStgKeypair.publicKey,
+      Buffer.from(handleBytesArray)
+    )
+    let newUserAcctPDA = derivedAddress
+
+    await testInitUser(
       baseAuthorityAccount,
-      Array.from(testEthAddrBytes),
+      testEthAddr,
+      testEthAddrBytes,
       handleBytesArray,
       bumpSeed,
       metadata,
-      {
-        accounts: {
-          admin: adminStgKeypair.publicKey,
-          payer: provider.wallet.publicKey,
-          user: userStgAccount,
-          authority: adminKeypair.publicKey,
-          systemProgram: SystemProgram.programId
-        },
-        signers: [adminKeypair]
-      }
+      newUserAcctPDA
     )
 
-    */
+    // New sol key that will be used to permission user updates
+    let newUserKey = anchor.web3.Keypair.generate()
+
+    // Generate signed SECP instruction
+    // Message as the incoming public key
+    let message = newUserKey.publicKey.toString()
+
+    await testInitUserSolPubkey({
+      message,
+      pkString,
+      privKey,
+      newUserKey,
+      newUserAcctPDA
+    })
+
+    let newTrackKeypair = anchor.web3.Keypair.generate()
+
+    let trackMetadata = randomCID()
+    await testCreateTrack({
+      trackMetadata,
+      newTrackKeypair,
+      userAuthorityKey: newUserKey,
+      trackOwnerPDA: newUserAcctPDA
+    })
+
+    await testDeleteTrack({
+      trackKeypair: newTrackKeypair,
+      trackOwnerPDA: newUserAcctPDA,
+      userAuthorityKey: newUserKey
+    })
+
+  })
+});

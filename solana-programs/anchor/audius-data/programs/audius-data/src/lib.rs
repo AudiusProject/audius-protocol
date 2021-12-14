@@ -6,6 +6,7 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
 #[program]
 pub mod audius_data {
+    use std::str::FromStr;
     use anchor_lang::solana_program::sysvar;
     use anchor_lang::solana_program::secp256k1_program;
 
@@ -131,6 +132,20 @@ pub mod audius_data {
     }
 
     // pub fn delete_track
+    pub fn delete_track(ctx: Context<DeleteTrack>) -> ProgramResult {
+        msg!("Audius::DeleteTrack");
+        if ctx.accounts.user.key() != ctx.accounts.track.owner.key() {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        if ctx.accounts.authority.key() != ctx.accounts.user.authority {
+            return Err(ErrorCode::Unauthorized.into());
+        }
+        // Manually overwrite owner field
+        // Refer to context here - https://docs.solana.com/developing/programming-model/transactions#multiple-instructions-in-a-single-transaction
+        let dummy_owner_field = Pubkey::from_str("11111111111111111111111111111111").unwrap();
+        ctx.accounts.track.owner = dummy_owner_field;
+        Ok(())
+    }
 }
 
 // Instructions
@@ -213,6 +228,21 @@ pub struct CreateTrack<'info> {
 #[derive(Accounts)]
 pub struct UpdateTrack<'info> {
     #[account()]
+    pub track: Account<'info, Track>,
+    #[account(mut)]
+    pub user: Account<'info, User>,
+    #[account(mut)]
+    pub authority: Signer<'info>,
+    #[account(mut)]
+    pub payer: Signer<'info>,
+}
+
+/// Instruction container for track deletes
+/// Removes track storage account entirely
+#[derive(Accounts)]
+pub struct DeleteTrack<'info> {
+    // Return funds to the payer of this transaction
+    #[account(mut, close = payer)]
     pub track: Account<'info, Track>,
     #[account(mut)]
     pub user: Account<'info, User>,
