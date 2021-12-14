@@ -67,6 +67,13 @@ def populate_tracks(db):
                 "created_at": datetime(2018, 5, 21),
                 "is_delete": True,
             },
+            {
+                "track_id": 11,
+                "owner_id": 1287289,
+                "release_date": "Fri Dec 19 2019 12:00:00 GMT-0800",
+                "created_at": datetime(2018, 5, 17),
+                "is_unlisted": True
+            },
         ],
         "track_routes": [
             {"slug": "track-1", "owner_id": 1287289},
@@ -123,6 +130,37 @@ def test_get_tracks_by_date(app):
 
         assert tracks[0]["permalink"] == "/some-test-user/track-1"
         assert tracks[4]["permalink"] == "/some-test-user/track-2"
+
+
+def test_get_tracks_by_date_authed(app):
+    """
+    Test getting tracks ordering by date with an authed user.
+    This test should produce unlisted tracks.
+    """
+
+    with app.app_context():
+        db = get_db()
+
+    populate_tracks(db)
+
+    with db.scoped_session() as session:
+        tracks = _get_tracks(
+            session, {
+                "user_id": 1287289,
+                "authed_user_id": 1287289,
+                "offset": 0,
+                "limit": 10,
+                "sort": "date"
+            }
+        )
+
+        assert len(tracks) == 6
+        assert tracks[0]["track_id"] == 1
+        assert tracks[1]["track_id"] == 11
+        assert tracks[2]["track_id"] == 3
+        assert tracks[3]["track_id"] == 5
+        assert tracks[4]["track_id"] == 4
+        assert tracks[5]["track_id"] == 2
 
 
 def test_get_track_by_route(app):
