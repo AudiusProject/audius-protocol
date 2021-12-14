@@ -17,8 +17,8 @@ pub mod audius_data {
     use super::*;
     /// Initialize an instance of Audius with admin keypair.
     /// The notion of admin here may be expanded to other functionality as well
-    pub fn initialize_admin(ctx: Context<Initialize>, authority: Pubkey) -> ProgramResult {
-        msg!("Audius::InitializeAdmin");
+    pub fn init_admin(ctx: Context<Initialize>, authority: Pubkey) -> ProgramResult {
+        msg!("Audius::InitAdmin");
         let audius_admin = &mut ctx.accounts.admin;
         audius_admin.authority = authority;
         Ok(())
@@ -148,11 +148,18 @@ pub mod audius_data {
     }
 }
 
-// Instructions
+/// Size of admin account, 8 bytes (anchor prefix) + 32 (PublicKey)
+pub const ADMIN_ACCOUNT_SIZE: usize = 8 + 32;
+
+/// Size of user account
+/// 8 bytes (anchor prefix) + 32 (PublicKey) + 20 (Ethereum PublicKey Bytes)
+pub const USER_ACCOUNT_SIZE: usize = 8 + 32 + 20;
+
+/// Instructions
 #[derive(Accounts)]
 /// Instruction container to initialize an instance of Audius, with the incoming admin keypair
 pub struct Initialize<'info> {
-    #[account(init, payer = payer, space = 8 + 32)]
+    #[account(init, payer = payer, space = ADMIN_ACCOUNT_SIZE)]
     pub admin: Account<'info, AudiusAdmin>,
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -175,7 +182,7 @@ pub struct InitializeUser<'info> {
         payer = payer,
         seeds = [&base.to_bytes()[..32], handle_seed.as_ref()],
         bump = user_bump,
-        space = 8 + 32 + 20
+        space = USER_ACCOUNT_SIZE
     )]
     pub user: Account<'info, User>,
     #[account(mut)]

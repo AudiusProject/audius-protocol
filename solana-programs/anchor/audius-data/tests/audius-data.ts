@@ -83,7 +83,7 @@ describe('audius-data', () => {
     const returnedSolFromChain = userDataFromChain.authority
 
     if (testEthAddr.toLowerCase() != returnedHex) {
-      throw new Error(`Invalid eth address returned from chain`)
+      throw new Error(`Invalid eth address - expected ${testEthAddr.toLowerCase()}, found ${returnedHex}`)
     }
 
     if (!DefaultPubkey.equals(returnedSolFromChain)) {
@@ -227,7 +227,7 @@ describe('audius-data', () => {
 
   it('Initializing admin account!', async () => {
     // Add your test here.
-    const tx = await program.rpc.initializeAdmin(
+    const tx = await program.rpc.initAdmin(
       adminKeypair.publicKey,
       {
         accounts: {
