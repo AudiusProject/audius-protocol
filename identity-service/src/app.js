@@ -316,10 +316,10 @@ class App {
       }
     })
 
-    const listenCountIPLimiter = getRateLimiter({
-      prefix: `listenCountLimiter:::${interval}-ip:::`,
+    const listenCountIPTrackLimiter = getRateLimiter({
+      prefix: `listenCountLimiter:::${interval}-ip-track:::`,
       expiry: timeInSeconds,
-      max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
+      max: config.get(`rateLimitingListensPerIPTrackPer${interval}`), // max requests per interval
       keyGenerator: function (req) {
         const trackId = req.params.id
         const { ip } = getIP(req)
@@ -327,18 +327,18 @@ class App {
       }
     })
 
-    // Create a rate limiter for listens exclusively based on IP
-    const listenCountExclusivelyPerIPLimiter = getRateLimiter({
+    // Create a rate limiter for listens  based on IP
+    const listenCountIPRequestLimiter = getRateLimiter({
       prefix: `listenCountLimiter:::${interval}-ip-exclusive:::`,
       expiry: interval,
-      max: config.get(`rateLimitingListensExclusivelyPerIPPerDay`), // max requests per interval
+      max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
       keyGenerator: function (req) {
         const { ip } = getIP(req)
         return `${ip}`
       }
     })
 
-    return [listenCountLimiter, listenCountIPLimiter, listenCountExclusivelyPerIPLimiter]
+    return [listenCountLimiter, listenCountIPTrackLimiter, listenCountIPRequestLimiter]
   }
 
   setRateLimiters () {
@@ -358,20 +358,20 @@ class App {
     this.express.use('/tiktok/', tikTokRequestRateLimiter)
 
     const ONE_HOUR_IN_SECONDS = 60 * 60
-    const [listenCountHourlyLimiter, listenCountHourlyIPLimiter] = this._createRateLimitsForListenCounts('Hour', ONE_HOUR_IN_SECONDS)
-    const [listenCountDailyLimiter, listenCountDailyIPLimiter, listenCountDailyExclusiveIPLimiter] = this._createRateLimitsForListenCounts('Day', ONE_HOUR_IN_SECONDS * 24)
-    const [listenCountWeeklyLimiter, listenCountWeeklyIPLimiter] = this._createRateLimitsForListenCounts('Week', ONE_HOUR_IN_SECONDS * 24 * 7)
+    const [listenCountHourlyLimiter, listenCountHourlyIPTrackLimiter] = this._createRateLimitsForListenCounts('Hour', ONE_HOUR_IN_SECONDS)
+    const [listenCountDailyLimiter, listenCountDailyIPTrackLimiter, listenCountDailyIPLimiter] = this._createRateLimitsForListenCounts('Day', ONE_HOUR_IN_SECONDS * 24)
+    const [listenCountWeeklyLimiter, listenCountWeeklyIPTrackLimiter] = this._createRateLimitsForListenCounts('Week', ONE_HOUR_IN_SECONDS * 24 * 7)
 
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use(
       '/tracks/:id/listen',
-      listenCountWeeklyIPLimiter,
+      listenCountWeeklyIPTrackLimiter,
       listenCountWeeklyLimiter,
-      listenCountDailyIPLimiter,
+      listenCountDailyIPTrackLimiter,
       listenCountDailyLimiter,
-      listenCountHourlyIPLimiter,
+      listenCountHourlyIPTrackLimiter,
       listenCountHourlyLimiter,
-      listenCountDailyExclusiveIPLimiter
+      listenCountDailyIPLimiter
     )
 
     // Eth relay rate limits

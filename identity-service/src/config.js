@@ -198,10 +198,10 @@ const config = convict({
     env: 'rateLimitingListensPerTrackPerHour',
     default: null
   },
-  rateLimitingListensPerIPPerHour: {
+  rateLimitingListensPerIPTrackPerHour: {
     doc: 'Listens per track per IP per Hour',
     format: 'nat',
-    env: 'rateLimitingListensPerIPPerHour',
+    env: 'rateLimitingListensPerIPTrackPerHour',
     default: null
   },
   rateLimitingListensPerTrackPerDay: {
@@ -210,28 +210,28 @@ const config = convict({
     env: 'rateLimitingListensPerTrackPerDay',
     default: null
   },
-  rateLimitingListensPerIPPerDay: {
+  rateLimitingListensPerIPTrackPerDay: {
     doc: 'Listens per track per IP per Day',
+    format: 'nat',
+    env: 'rateLimitingListensPerIPTrackPerDay',
+    default: null
+  },
+  rateLimitingListensPerIPPerHour: {
+    doc: 'Listens per IP per Hour',
+    format: 'nat',
+    env: 'rateLimitingListensPerIPPerHour',
+    default: null
+  },
+  rateLimitingListensPerIPPerDay: {
+    doc: 'Listens per IP per Day',
     format: 'nat',
     env: 'rateLimitingListensPerIPPerDay',
     default: null
   },
-  rateLimitingListensExclusivelyPerIPPerHour: {
-    doc: 'Listens per IP per Hour',
-    format: 'nat',
-    env: 'rateLimitingListensExclusivelyPerIPPerHour',
-    default: null
-  },
-  rateLimitingListensExclusivelyPerIPPerDay: {
-    doc: 'Listens per IP per Day',
-    format: 'nat',
-    env: 'rateLimitingListensExclusivelyPerIPPerDay',
-    default: null
-  },
-  rateLimitingListensExclusivelyPerIPPerWeek: {
+  rateLimitingListensPerIPPerWeek: {
     doc: 'Listens per IP per Week',
     format: 'nat',
-    env: 'rateLimitingListensExclusivelyPerIPPerWeek',
+    env: 'rateLimitingListensPerIPPerWeek',
     default: null
   },
   rateLimitingEthRelaysPerIPPerDay: {
@@ -252,10 +252,10 @@ const config = convict({
     env: 'rateLimitingListensPerTrackPerWeek',
     default: null
   },
-  rateLimitingListensPerIPPerWeek: {
+  rateLimitingListensPerIPTrackPerWeek: {
     doc: 'Listens per track per IP per Week',
     format: 'nat',
-    env: 'rateLimitingListensPerIPPerWeek',
+    env: 'rateLimitingListensPerIPTrackPerWeek',
     default: null
   },
   rateLimitingListensIPWhitelist: {
