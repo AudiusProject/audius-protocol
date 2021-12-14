@@ -181,7 +181,6 @@ def get_tracks(args: GetTrackArgs):
                 and not "sort" in args
                 and not "user_id" in args
             )
-            can_use_shared_cache = False
 
             if can_use_shared_cache:
                 should_filter_deleted = args.get("filter_deleted", False)

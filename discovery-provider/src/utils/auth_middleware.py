@@ -15,8 +15,6 @@ def auth_middleware(**kwargs):
     Should decorate a route and be used to supply an authed user to
     the query behind a route.
 
-    Arguments:
-
     Example:
 
     @auth_middleware
@@ -37,7 +35,6 @@ def auth_middleware(**kwargs):
             authed_user_id = None
             if message and signature:
                 web3 = web3_provider.get_web3()
-                # to_recover_hash = Web3.keccak(text=message).hex()
                 encoded_to_recover = encode_defunct(text=message)
                 wallet = web3.eth.account.recover_message(
                     encoded_to_recover,
