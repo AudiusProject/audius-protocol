@@ -1,5 +1,5 @@
 import logging  # pylint: disable=C0302
-from typing import List, TypedDict
+from typing import List, TypedDict, Optional
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.sql.functions import coalesce
@@ -31,6 +31,7 @@ class GetTrackArgs(TypedDict):
     handle: str
     id: int
     current_user_id: int
+    authed_user_id: Optional[int]
     min_block_number: int
     sort: str
     filter_deleted: bool
@@ -59,8 +60,16 @@ def _get_tracks(session, args):
             )
         base_query = base_query.filter(or_(*filter_cond))
     else:
-        # Only return unlisted tracks if routes are present
-        base_query = base_query.filter(Track.is_unlisted == False)
+        # Only return unlisted tracks if either
+        # - above case, routes are present (direct links to hidden tracks)
+        # - the user is authenticated as the owner
+        is_authed_user = (
+            "user_id" in args and \
+            "authed_user_id" in args and \
+            args.get("user_id") == args.get("authed_user_id")
+        )
+        if not is_authed_user:
+            base_query = base_query.filter(Track.is_unlisted == False)
 
     # Conditionally process an array of tracks
     if "id" in args:
@@ -136,12 +145,12 @@ def get_tracks(args: GetTrackArgs):
         def get_tracks_and_ids():
             if "handle" in args:
                 handle = args.get("handle")
-                user_id = (
+                user = (
                     session.query(User.user_id)
                     .filter(User.handle_lc == handle.lower())
                     .first()
                 )
-                args["user_id"] = user_id
+                args["user_id"] = user.user_id
 
             if "routes" in args:
                 # Convert the handles to user_ids
@@ -172,6 +181,7 @@ def get_tracks(args: GetTrackArgs):
                 and not "sort" in args
                 and not "user_id" in args
             )
+            can_use_shared_cache = False
 
             if can_use_shared_cache:
                 should_filter_deleted = args.get("filter_deleted", False)
