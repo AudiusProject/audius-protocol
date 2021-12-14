@@ -2,6 +2,7 @@ import { call, put, take, fork, select, takeEvery } from 'redux-saga/effects'
 
 import Kind from 'common/models/Kind'
 import Status from 'common/models/Status'
+import { FeatureFlags } from 'common/services/remote-config'
 import * as accountActions from 'common/store/account/reducer'
 import {
   getUserId,
@@ -38,8 +39,7 @@ import {
   clearAudiusAccountUser
 } from 'services/LocalStorage'
 import { SignedIn } from 'services/native-mobile-interface/lifecycle'
-import { FeatureFlags } from 'services/remote-config'
-import { getFeatureEnabled, setUserId } from 'services/remote-config/Provider'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { setSentryUser } from 'services/sentry'
 import { identify } from 'store/analytics/actions'
 import { confirmTransferAudioToWAudio } from 'store/audio-manager/slice'
@@ -114,7 +114,11 @@ function* requestTransferAudioToWAudio() {
 }
 
 function* initAudioChecks() {
-  if (getFeatureEnabled(FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD)) {
+  if (
+    remoteConfigInstance.getFeatureEnabled(
+      FeatureFlags.TRANSFER_AUDIO_TO_WAUDIO_ON_LOAD
+    )
+  ) {
     try {
       const audiusManager = new AudioManager({
         requestTransferAudioToWAudio
@@ -208,7 +212,7 @@ export function* fetchAccountAsync(action) {
   }
 
   // Set account ID in remote-config provider
-  setUserId(account.user_id)
+  remoteConfigInstance.setUserId(account.user_id)
 
   // Cache the account and fire the onFetch callback. We're done.
   yield call(cacheAccount, account)

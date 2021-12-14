@@ -85,5 +85,3 @@ export const flagCohortType: {
   [FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES]:
     FeatureFlagCohortType.SESSION_ID
 }
-
-export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId'

@@ -1,8 +1,7 @@
 import React from 'react'
 
-import { FeatureFlags } from 'services/remote-config'
-
-import { useFlag } from './hooks'
+import { FeatureFlags } from 'common/services/remote-config'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 type FeatureFlagProps = {
   /* The feature to enable/disable. */

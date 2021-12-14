@@ -17,6 +17,10 @@ import usersSagas from 'common/store/cache/users/sagas'
 import { UsersCacheState } from 'common/store/cache/users/types'
 import audioRewardsSlice from 'common/store/pages/audio-rewards/slice'
 import tokenDashboardSlice from 'common/store/pages/token-dashboard/slice'
+import remoteConfigSagas from 'common/store/remote-config/sagas'
+import remoteConfig, {
+  RemoteConfigState
+} from 'common/store/remote-config/slice'
 import addToPlaylistReducer, {
   AddToPlaylistState
 } from 'common/store/ui/add-to-playlist/reducer'
@@ -73,7 +77,10 @@ export const reducers = {
   pages: combineReducers({
     audioRewards: audioRewardsSlice.reducer,
     tokenDashboard: tokenDashboardSlice.reducer
-  })
+  }),
+
+  // Remote config/flags
+  remoteConfig
 }
 
 export const sagas = {
@@ -81,7 +88,8 @@ export const sagas = {
   collectionsError: collectionsErrorSagas,
   collections: collectionsSagas,
   tracks: tracksSagas,
-  users: usersSagas
+  users: usersSagas,
+  remoteConfig: remoteConfigSagas
 
   // TODO: pull in the following from audius-client
   // once AudiusBackend and dependencies are migrated
@@ -121,4 +129,6 @@ export type CommonState = {
     audioRewards: ReturnType<typeof audioRewardsSlice.reducer>
     tokenDashboard: ReturnType<typeof tokenDashboardSlice.reducer>
   }
+
+  remoteConfig: RemoteConfigState
 }

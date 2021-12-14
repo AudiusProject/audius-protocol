@@ -2,6 +2,7 @@ import React, { useContext, useEffect } from 'react'
 
 import { useDispatch } from 'react-redux'
 
+import { FeatureFlags } from 'common/services/remote-config'
 import { preloadWalletProviders } from 'common/store/pages/token-dashboard/slice'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import Page from 'components/general/Page'
@@ -11,10 +12,9 @@ import NavContext, {
   LeftPreset,
   RightPreset
 } from 'containers/nav/store/context'
-import { useFlag } from 'containers/remote-config/hooks'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { FeatureFlags } from 'services/remote-config'
 import { isMobile } from 'utils/clientUtil'
 import { AUDIO_PAGE, BASE_URL, TRENDING_PAGE } from 'utils/route'
 

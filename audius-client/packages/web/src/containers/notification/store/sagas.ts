@@ -14,14 +14,15 @@ import { Name } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
 import Status from 'common/models/Status'
 import { Track } from 'common/models/Track'
+import { IntKeys } from 'common/services/remote-config'
+import { remoteConfigIntDefaults } from 'common/services/remote-config/defaults'
 import { getUserId, getHasAccount } from 'common/store/account/selectors'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import AudiusBackend from 'services/AudiusBackend'
 import { ResetNotificationsBadgeCount } from 'services/native-mobile-interface/notifications'
-import { getRemoteVar, IntKeys } from 'services/remote-config'
-import { remoteConfigIntDefaults } from 'services/remote-config/defaults'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { make } from 'store/analytics/actions'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { getIsReachable } from 'store/reachability/selectors'
@@ -51,7 +52,9 @@ export const USER_INITIAL_LOAD_COUNT = 9
 
 // Gets the polling interval from remoteconfig
 const getPollingIntervalMs = () => {
-  const pollingInterval = getRemoteVar(IntKeys.NOTIFICATION_POLLING_FREQ_MS)
+  const pollingInterval = remoteConfigInstance.getRemoteVar(
+    IntKeys.NOTIFICATION_POLLING_FREQ_MS
+  )
   return (
     pollingInterval ??
     (remoteConfigIntDefaults[IntKeys.NOTIFICATION_POLLING_FREQ_MS] as number)

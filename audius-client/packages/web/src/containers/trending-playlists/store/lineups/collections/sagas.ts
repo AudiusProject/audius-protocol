@@ -1,19 +1,21 @@
 import { call, select } from 'redux-saga/effects'
 
 import { Collection, UserCollectionMetadata } from 'common/models/Collection'
+import { StringKeys } from 'common/services/remote-config'
 import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { getRemoteVar, StringKeys } from 'services/remote-config'
-import { waitForRemoteConfig } from 'services/remote-config/Provider'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { LineupSagas } from 'store/lineup/sagas'
 
 import { PREFIX, trendingPlaylistLineupActions } from './actions'
 import { getLineup } from './selectors'
 
 function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
-  yield call(waitForRemoteConfig)
-  const TF = new Set(getRemoteVar(StringKeys.TPF)?.split(',') ?? [])
+  yield call(remoteConfigInstance.waitForRemoteConfig)
+  const TF = new Set(
+    remoteConfigInstance.getRemoteVar(StringKeys.TPF)?.split(',') ?? []
+  )
 
   const time = 'week' as const
   const currentUserId: ReturnType<typeof getUserId> = yield select(getUserId)
@@ -35,9 +37,11 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
 
   // Omit playlists owned by Audius
   const userIdsToOmit = new Set(
-    (getRemoteVar(StringKeys.TRENDING_PLAYLIST_OMITTED_USER_IDS) || '').split(
-      ','
-    )
+    (
+      remoteConfigInstance.getRemoteVar(
+        StringKeys.TRENDING_PLAYLIST_OMITTED_USER_IDS
+      ) || ''
+    ).split(',')
   )
   const trendingPlaylists = playlists.filter(
     playlist => !userIdsToOmit.has(`${playlist.playlist_owner_id}`)

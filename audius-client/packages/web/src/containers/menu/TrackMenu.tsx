@@ -12,6 +12,7 @@ import {
   CreatePlaylistSource
 } from 'common/models/Analytics'
 import { ID, PlayableType } from 'common/models/Identifiers'
+import { FeatureFlags } from 'common/services/remote-config'
 import { getAccountOwnedPlaylists } from 'common/store/account/selectors'
 import {
   createPlaylist,
@@ -30,7 +31,7 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { getCollectionId } from 'containers/collection-page/store/selectors'
 import * as embedModalActions from 'containers/embed-modal/store/actions'
 import { newCollectionMetadata } from 'schemas'
-import { FeatureFlags, getFeatureEnabled } from 'services/remote-config'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
 import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import { AppState } from 'store/types'
@@ -234,7 +235,9 @@ const TrackMenu = (props: TrackMenuProps) => {
     }
     if (
       includeShareToTikTok &&
-      getFeatureEnabled(FeatureFlags.SHARE_SOUND_TO_TIKTOK) &&
+      remoteConfigInstance.getFeatureEnabled(
+        FeatureFlags.SHARE_SOUND_TO_TIKTOK
+      ) &&
       trackId &&
       isOwner &&
       !isDeleted

@@ -1,10 +1,10 @@
+import { BooleanKeys } from 'common/services/remote-config'
 import { Nullable } from 'common/utils/typeUtils'
 import {
   SetAnalyticsUser,
   TrackAnalyticsEvent
 } from 'services/native-mobile-interface/analytics'
-import { BooleanKeys, getRemoteVar } from 'services/remote-config'
-import { waitForRemoteConfig } from 'services/remote-config/Provider'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
 import { version } from '../../../../package.json'
 
@@ -23,8 +23,10 @@ const didInit = new Promise((resolve, reject) => {
 
 export const init = async () => {
   try {
-    await waitForRemoteConfig()
-    const useAmplitude = getRemoteVar(BooleanKeys.USE_AMPLITUDE)
+    await remoteConfigInstance.waitForRemoteConfig()
+    const useAmplitude = remoteConfigInstance.getRemoteVar(
+      BooleanKeys.USE_AMPLITUDE
+    )
     if (useAmplitude) {
       await amplitude.init()
     } else {
@@ -51,7 +53,9 @@ export const track = async (
   callback?: () => void
 ) => {
   try {
-    const useAmplitude = getRemoteVar(BooleanKeys.USE_AMPLITUDE)
+    const useAmplitude = remoteConfigInstance.getRemoteVar(
+      BooleanKeys.USE_AMPLITUDE
+    )
 
     if (!IS_PRODUCTION_BUILD) {
       console.info(
@@ -90,7 +94,9 @@ export const identify = async (
   callback?: () => void
 ) => {
   try {
-    const useAmplitude = getRemoteVar(BooleanKeys.USE_AMPLITUDE)
+    const useAmplitude = remoteConfigInstance.getRemoteVar(
+      BooleanKeys.USE_AMPLITUDE
+    )
 
     if (!IS_PRODUCTION_BUILD) {
       console.info(

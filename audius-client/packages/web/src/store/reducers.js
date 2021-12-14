@@ -25,7 +25,6 @@ import passwordReset from 'containers/password-reset/store/reducer'
 import profile from 'containers/profile-page/store/reducer'
 import remixSettingsModal from 'containers/remix-settings-modal/store/slice'
 import remixes from 'containers/remixes-page/store/slice'
-import remoteConfig from 'containers/remote-config/slice'
 import reposts from 'containers/reposts-page/store/reducers'
 import saved from 'containers/saved-page/store/reducer'
 import searchBar from 'containers/search-bar/store/reducer'
@@ -100,9 +99,6 @@ const createRootReducer = routeHistory =>
     // Playback
     queue,
     player,
-
-    // Remote config/flags
-    remoteConfig,
 
     // Wallet
     audioManager,

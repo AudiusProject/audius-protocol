@@ -3,6 +3,7 @@ import { call, put, select } from 'redux-saga/effects'
 import { ID } from 'common/models/Identifiers'
 import TimeRange from 'common/models/TimeRange'
 import { Track, UserTrackMetadata } from 'common/models/Track'
+import { StringKeys } from 'common/services/remote-config'
 import { getTracks } from 'common/store/cache/tracks/selectors'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { Nullable } from 'common/utils/typeUtils'
@@ -13,8 +14,7 @@ import {
   getTrendingGenre
 } from 'containers/trending-page/store/selectors'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { getRemoteVar, StringKeys } from 'services/remote-config'
-import { waitForRemoteConfig } from 'services/remote-config/Provider'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { AppState } from 'store/types'
 
 type RetrieveTrendingArgs = {
@@ -32,8 +32,10 @@ export function* retrieveTrending({
   limit,
   currentUserId
 }: RetrieveTrendingArgs): Generator<any, Track[], any> {
-  yield call(waitForRemoteConfig)
-  const TF = new Set(getRemoteVar(StringKeys.TF)?.split(',') ?? [])
+  yield call(remoteConfigInstance.waitForRemoteConfig)
+  const TF = new Set(
+    remoteConfigInstance.getRemoteVar(StringKeys.TF)?.split(',') ?? []
+  )
 
   const cachedTracks: ReturnType<ReturnType<
     typeof getTrendingEntries

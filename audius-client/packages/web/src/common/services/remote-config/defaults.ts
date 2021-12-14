@@ -1,4 +1,4 @@
-import { IntKeys, StringKeys, DoubleKeys, BooleanKeys } from './RemoteConfig'
+import { IntKeys, StringKeys, DoubleKeys, BooleanKeys } from './types'
 
 const ETH_PROVIDER_URLS = process.env.REACT_APP_ETH_PROVIDER_URL || ''
 

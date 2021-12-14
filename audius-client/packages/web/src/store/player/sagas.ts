@@ -2,12 +2,13 @@ import { delay, eventChannel, END } from 'redux-saga'
 import { select, take, call, put, spawn, takeLatest } from 'redux-saga/effects'
 
 import Kind from 'common/models/Kind'
+import { StringKeys } from 'common/services/remote-config'
 import * as cacheActions from 'common/store/cache/actions'
 import { getTrack } from 'common/store/cache/tracks/selectors'
 import { getUser } from 'common/store/cache/users/selectors'
 import { recordListen } from 'common/store/social/tracks/actions'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { getRemoteVar, StringKeys } from 'services/remote-config'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import {
   getAudio,
   getTrackId,
@@ -64,7 +65,11 @@ export function* watchPlay() {
 
     if (!FORCE_MP3_STREAM_TRACK_IDS) {
       FORCE_MP3_STREAM_TRACK_IDS = new Set(
-        (getRemoteVar(StringKeys.FORCE_MP3_STREAM_TRACK_IDS) || '').split(',')
+        (
+          remoteConfigInstance.getRemoteVar(
+            StringKeys.FORCE_MP3_STREAM_TRACK_IDS
+          ) || ''
+        ).split(',')
       )
     }
 

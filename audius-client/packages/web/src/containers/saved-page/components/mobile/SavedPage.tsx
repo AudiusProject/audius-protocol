@@ -20,12 +20,12 @@ import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import CardLineup from 'containers/lineup/CardLineup'
 import { useMainPageHeader } from 'containers/nav/store/context'
-import { useArePlaylistUpdatesEnabled } from 'containers/remote-config/hooks'
 import {
   Tabs,
   SavedPageTrack,
   SavedPageCollection
 } from 'containers/saved-page/store/types'
+import { useArePlaylistUpdatesEnabled } from 'hooks/useRemoteConfig'
 import useTabs from 'hooks/useTabs/useTabs'
 import { Lineup } from 'models/common/Lineup'
 import { make, useRecord } from 'store/analytics/actions'

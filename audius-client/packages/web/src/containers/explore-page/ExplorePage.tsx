@@ -2,7 +2,7 @@ import React from 'react'
 
 import { connect, useSelector } from 'react-redux'
 
-import { isRemoteConfigLoaded } from 'containers/remote-config/selectors'
+import { isRemoteConfigLoaded } from 'common/store/remote-config/selectors'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 

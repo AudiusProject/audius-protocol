@@ -21,6 +21,7 @@ import {
 } from 'common/models/Collection'
 import Status from 'common/models/Status'
 import { User } from 'common/models/User'
+import { FeatureFlags } from 'common/services/remote-config'
 import Card from 'components/card/mobile/Card'
 import MobilePageContainer from 'components/general/MobilePageContainer'
 import Header from 'components/general/header/mobile/Header'
@@ -42,10 +43,9 @@ import {
 } from 'containers/explore-page/store/types'
 import CardLineup from 'containers/lineup/CardLineup'
 import { useMainPageHeader } from 'containers/nav/store/context'
-import { useFlag } from 'containers/remote-config/hooks'
 import { REMIXABLES } from 'containers/smart-collection/smartCollections'
+import { useFlag } from 'hooks/useRemoteConfig'
 import useTabs from 'hooks/useTabs/useTabs'
-import { FeatureFlags } from 'services/remote-config'
 import {
   playlistPage,
   albumPage,

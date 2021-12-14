@@ -5,6 +5,7 @@ import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
 import errorSagas from 'common/store/errors/sagas'
+import remoteConfigSagas from 'common/store/remote-config/sagas'
 import addToPlaylistSagas from 'containers/add-to-playlist/store/sagas'
 import dashboardSagas from 'containers/artist-dashboard-page/store/sagas'
 import artistRecommendationsSagas from 'containers/artist-recommendations/store/sagas'
@@ -27,7 +28,6 @@ import passwordResetSagas from 'containers/password-reset/store/sagas'
 import profileSagas from 'containers/profile-page/store/sagas'
 import remixSettingsModalSagas from 'containers/remix-settings-modal/store/sagas'
 import remixesSagas from 'containers/remixes-page/store/sagas'
-import remoteConfigSagas from 'containers/remote-config/sagas'
 import repostPageSagas from 'containers/reposts-page/store/sagas'
 import savedSagas from 'containers/saved-page/store/sagas'
 import searchBarSagas from 'containers/search-bar/store/sagas'
@@ -43,6 +43,7 @@ import trendingPlaylistSagas from 'containers/trending-playlists/store/sagas'
 import trendingUndergroundSagas from 'containers/trending-underground/store/sagas'
 import uploadSagas from 'containers/upload-page/store/sagas'
 import { initInterface } from 'services/native-mobile-interface/helpers'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import accountSagas from 'store/account/sagas'
 import analyticsSagas from 'store/analytics/sagas'
 import cookieBannerSagas from 'store/application/ui/cookieBanner/sagas'
@@ -140,7 +141,7 @@ export default function* rootSaga() {
     oauthSagas(),
 
     // Remote config
-    remoteConfigSagas(),
+    remoteConfigSagas(remoteConfigInstance),
 
     // Error
     errorSagas()

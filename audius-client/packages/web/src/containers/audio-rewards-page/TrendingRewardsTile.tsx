@@ -3,9 +3,9 @@ import React, { ReactNode } from 'react'
 import { useDispatch } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
-import { useRemoteVar } from 'containers/remote-config/hooks'
+import { StringKeys } from 'common/services/remote-config'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { StringKeys } from 'services/remote-config'
 
 import { TrendingRewardID } from '../../common/models/AudioRewards'
 import { setTrendingRewardsModalType } from '../../common/store/pages/audio-rewards/slice'

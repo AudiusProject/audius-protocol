@@ -17,3 +17,5 @@ const slice = createSlice({
 export const { setDidLoad } = slice.actions
 
 export default slice.reducer
+
+export type RemoteConfigState = typeof initialState
