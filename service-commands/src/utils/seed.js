@@ -12,7 +12,15 @@ const {
   DATA_CONTRACTS_PROVIDER_ENDPOINTS,
   USER_METADATA_ENDPOINT,
   IDENTITY_SERVICE_ENDPOINT,
-  ETH_PROVIDER_ENDPOINT
+  ETH_PROVIDER_ENDPOINT,
+  SOLANA_ENDPOINT,
+  SOLANA_MINT_ADDRESS,
+  SOLANA_TOKEN_ADDRESS,
+  SOLANA_CLAIMABLE_TOKEN_PROGRAM_ADDRESS,
+  SOLANA_REWARDS_MANAGER_PROGRAM_ID,
+  SOLANA_REWARDS_MANAGER_PROGRAM_PDA,
+  SOLANA_REWARDS_MANAGER_TOKEN_PDA,
+  SOLANA_FEE_PAYER_SECRET_KEY,
 } = require('./constants')
 
 const {
@@ -46,6 +54,17 @@ const getLibsConfig = overrideConfig => {
       IDENTITY_SERVICE_ENDPOINT,
       useHedgehogLocalStorage
     ),
+    solanaWeb3Config: AudiusLibs.configSolanaWeb3({
+      solanaClusterEndpoint: SOLANA_ENDPOINT,
+      mintAddress: SOLANA_MINT_ADDRESS,
+      solanaTokenAddress: SOLANA_TOKEN_ADDRESS,
+      claimableTokenProgramAddress: SOLANA_CLAIMABLE_TOKEN_PROGRAM_ADDRESS,
+      rewardsManagerProgramId: SOLANA_REWARDS_MANAGER_PROGRAM_ID,
+      rewardsManagerProgramPDA: SOLANA_REWARDS_MANAGER_PROGRAM_PDA,
+      rewardsManagerTokenPDA: SOLANA_REWARDS_MANAGER_TOKEN_PDA,
+      useRelay: false,
+      feePayerSecretKey: SOLANA_FEE_PAYER_SECRET_KEY,
+    }),
     isServer: true,
     enableUserReplicaSetManagerContract: true,
     useTrackContentPolling: true
@@ -101,12 +120,11 @@ const getProgressCallback = () => {
   return progressCallback
 }
 
-const getUserProvidedOrRandomTrackMetadata = (userProvidedMetadataInput, seedSession) => {
+const getUserProvidedOrRandomTrackMetadata = (userProvidedMetadata, seedSession) => {
   const { userId } = seedSession.cache.getActiveUser()
   let metadataObj = getRandomTrackMetadata(userId)
-  if (userProvidedMetadataInput !== 'random') {
-    const userProvidedMetadata = parseMetadataIntoObject(userProvidedMetadataInput)
-    metadataObj = Object.assign(metadataObj, userProvidedMetadata, { })
+  if (userProvidedMetadata) {
+    metadataObj = Object.assign(metadataObj, userProvidedMetadata)
   }
   return metadataObj
 }

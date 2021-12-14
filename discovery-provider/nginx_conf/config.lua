@@ -2,7 +2,7 @@ local resty_rsa = require "resty.rsa"
 
 local utils = require "utils"
 
-local rate_limit = os.getenv("audius_openresty_rate_limit") or "1000"
+local limit_to_rps = os.getenv("audius_openresty_rps") or "1000"
 local public_url = os.getenv("audius_openresty_public_url") or ""
 local redirect_targets = os.getenv("audius_openresty_redirect_targets") or ""
 local accept_redirect_from = os.getenv("audius_openresty_accept_redirect_from") or ""
@@ -28,7 +28,7 @@ if not private_key then
 end
 
 local _M = {}
-_M.rate_limit = tonumber(rate_limit)
+_M.limit_to_rps = tonumber(limit_to_rps)
 _M.public_url = public_url
 _M.redirect_targets = utils.split_on_comma(redirect_targets)
 _M.accept_redirect_from = utils.toset(utils.split_on_comma(accept_redirect_from))

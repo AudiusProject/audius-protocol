@@ -16,11 +16,14 @@ from src.challenges.trending_challenge import (
 from src.challenges.challenge_event_bus import ChallengeEventBus, ChallengeEvent
 from src.utils.config import shared_config
 from src.tasks.calculate_trending_challenges import enqueue_trending_challenges
+from src.tasks.index_aggregate_plays import _update_aggregate_plays
+from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from tests.utils import populate_mock_db
 
 REDIS_URL = shared_config["redis"]["url"]
 logger = logging.getLogger(__name__)
 
+trending_strategy_factory = TrendingStrategyFactory()
 
 def test_trending_challenge_should_update(app):
     with app.app_context():
@@ -266,7 +269,21 @@ def test_trending_challenge_job(app):
     trending_date = date.fromisoformat("2021-08-20")
 
     with db.scoped_session() as session:
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+        _update_aggregate_plays(session)
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
+        session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
+        session.execute("REFRESH MATERIALIZED VIEW trending_params")
+        trending_track_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.TRACKS
+        ).keys()
+
+        for version in trending_track_versions:
+            strategy = trending_strategy_factory.get_strategy(
+                TrendingType.TRACKS, version
+            )
+            if strategy.use_mat_view:
+                strategy.update_track_score_query(session)
+
         session.commit()
 
     enqueue_trending_challenges(db, redis_conn, bus, trending_date)

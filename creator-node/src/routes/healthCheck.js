@@ -1,6 +1,8 @@
 const { handleResponse, successResponse, errorResponseServerError } = require('../apiHelpers')
 const config = require('../config.js')
-const versionInfo = require('../../.version.json')
+const path = require('path')
+const versionInfo = require(path.join(process.cwd(), '.version.json'))
+
 const {
   getMonitors,
   MONITORS

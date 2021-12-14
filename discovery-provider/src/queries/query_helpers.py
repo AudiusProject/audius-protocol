@@ -959,6 +959,23 @@ def get_track_play_counts(db, track_ids):
     return track_listen_counts
 
 
+def get_sum_aggregate_plays(db):
+    """Gets the sum of all aggregate plays
+    Args:
+        db: sqlalchemy db session instance
+
+    Returns:
+        int of total play count
+    """
+
+    plays = (
+        db.query(func.sum(AggregatePlays.count))
+        .scalar()
+    )
+
+    return int(plays)
+
+
 def get_pagination_vars():
     limit = min(
         max(request.args.get("limit", default=defaultLimit, type=int), minLimit),

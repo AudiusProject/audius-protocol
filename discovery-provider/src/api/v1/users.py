@@ -1,6 +1,7 @@
 import logging
 from src.queries.get_top_users import get_top_users
 from src.queries.get_related_artists import get_related_artists
+from src.utils.auth_middleware import auth_middleware
 from src.utils.helpers import encode_int_id
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.api.v1.playlists import get_tracks_for_playlist
@@ -160,8 +161,9 @@ class TrackList(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @ns.marshal_with(tracks_response)
+    @auth_middleware()
     @cache(ttl_sec=5)
-    def get(self, user_id):
+    def get(self, user_id, authed_user_id=None):
         """Fetch a list of tracks for a user."""
         decoded_id = decode_with_abort(user_id, ns)
         args = user_tracks_route_parser.parse_args()
@@ -174,6 +176,7 @@ class TrackList(Resource):
 
         args = {
             "user_id": decoded_id,
+            "authed_user_id": authed_user_id,
             "current_user_id": current_user_id,
             "with_users": True,
             "filter_deleted": True,
@@ -205,8 +208,9 @@ class FullTrackList(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(full_tracks_response)
+    @auth_middleware()
     @cache(ttl_sec=5)
-    def get(self, user_id):
+    def get(self, user_id, authed_user_id=None):
         """Fetch a list of tracks for a user."""
         decoded_id = decode_with_abort(user_id, ns)
         args = user_tracks_route_parser.parse_args()
@@ -220,6 +224,7 @@ class FullTrackList(Resource):
         args = {
             "user_id": decoded_id,
             "current_user_id": current_user_id,
+            "authed_user_id": authed_user_id,
             "with_users": True,
             "filter_deleted": True,
             "sort": sort,
@@ -245,8 +250,9 @@ class HandleFullTrackList(Resource):
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
     )
     @full_ns.marshal_with(full_tracks_response)
+    @auth_middleware()
     @cache(ttl_sec=5)
-    def get(self, handle):
+    def get(self, handle, authed_user_id=None):
         """Fetch a list of tracks for a user."""
         args = user_tracks_route_parser.parse_args()
 
@@ -259,6 +265,7 @@ class HandleFullTrackList(Resource):
         args = {
             "handle": handle,
             "current_user_id": current_user_id,
+            "authed_user_id": authed_user_id,
             "with_users": True,
             "filter_deleted": True,
             "sort": sort,
@@ -517,7 +524,7 @@ class TrackHistoryFull(Resource):
     @cache(ttl_sec=5)
     def get(self, user_id):
         """Fetch played tracks history for a user."""
-        args = favorite_route_parser.parse_args()
+        args = history_route_parser.parse_args()
         decoded_id = decode_with_abort(user_id, ns)
         current_user_id = get_current_user_id(args)
 

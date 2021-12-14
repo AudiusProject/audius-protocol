@@ -305,7 +305,8 @@ class ServiceRegistry {
       identityServiceConfig: identityService ? AudiusLibs.configIdentityService(identityService) : undefined,
       isDebug: config.get('creatorNodeIsDebug'),
       isServer: true,
-      enableUserReplicaSetManagerContract: true
+      preferHigherPatchForPrimary: true,
+      preferHigherPatchForSecondaries: true
     })
 
     await audiusLibs.init()

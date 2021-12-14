@@ -1,7 +1,7 @@
 const axios = require('axios')
 const semver = require('semver')
 
-const Utils = require('../utils')
+const Utils = require('./utils.js')
 const promiseFight = require('./promiseFight')
 
 /**
@@ -30,46 +30,45 @@ async function timeRequest (request, timeout = null) {
 }
 
 /**
- * Fetches multiple urls and times each request and returns the results sorted by
- * lowest-latency.
- * @param {Array<Object>} requests [{id, url}, {id, url}]
- * @param {number?} timeout ms applied to each individual request
- * @returns { Array<{url, response, millis}> }
- */
-async function timeRequests (requests, timeout = null) {
-  let timings = await Promise.all(requests.map(async request =>
-    timeRequest(request, timeout)
-  ))
-
-  return timings
-    .filter(timing => timing.response !== null)
-    .sort((a, b) => a.millis - b.millis)
-}
-
-/**
- * Fetches multiple urls and times each request and returns the results sorted
- * first by version and then by lowest-latency.
- * @param {Array<Object>} requests [{id, url}, {id, url}]
- * @param {number? | null} timeout ms applied to each individual request
+ * Custom sort for `serviceTimings`, the response from `timeRequest()` function above
+ * @param {Array<Object>} serviceTimings array of objects { request, response, millis }
+ * @param {Boolean} sortByVersion whether or not to sort by version
+ * @param {string | null} currentVersion current on-chain service version - only required if `sortByVersion` = false
  * @param {number? | null} equivalencyDelta
  *  the number of milliseconds at which we consider services to be equally as fast
  *  and pick randomly between them. Default of null implies that the faster service
  *  (even if by 1ms) will be picked always.
  * @returns { Array<{url, response, millis}> }
  */
-async function timeRequestsAndSortByVersion (requests, timeout = null, equivalencyDelta = null) {
-  let timings = await Promise.all(requests.map(async request =>
-    timeRequest(request, timeout)
-  ))
-
-  return timings.sort((a, b) => {
+function sortServiceTimings ({
+  serviceTimings,
+  sortByVersion,
+  currentVersion = null, // only required if `sortByVersion` = false
+  equivalencyDelta = null
+}) {
+  return serviceTimings.sort((a, b) => {
     // If health check failed, send to back of timings
     if (!a.response) return 1
     if (!b.response) return -1
 
-    // Sort by highest version
-    if (semver.gt(a.response.data.data.version, b.response.data.data.version)) return -1
-    if (semver.lt(a.response.data.data.version, b.response.data.data.version)) return 1
+    const aVersion = a.response.data.data.version
+    const bVersion = b.response.data.data.version
+
+    if (sortByVersion) {
+      // Always sort by version desc
+      if (semver.gt(aVersion, bVersion)) return -1
+      if (semver.lt(aVersion, bVersion)) return 1
+    } else {
+      // Only sort by version if behind current on-chain version
+      if (semver.gt(currentVersion, aVersion) && semver.gt(currentVersion, bVersion)) {
+        if (semver.gt(aVersion, bVersion)) return -1
+        if (semver.lt(aVersion, bVersion)) return 1
+      } else if (semver.gt(currentVersion, aVersion)) {
+        return 1
+      } else if (semver.gt(currentVersion, bVersion)) {
+        return -1
+      }
+    }
 
     // If same version and transcode queue load, do a tie breaker on the response time
     // If the requests are near eachother (delta < equivalencyDelta), pick randomly
@@ -81,7 +80,44 @@ async function timeRequestsAndSortByVersion (requests, timeout = null, equivalen
   })
 }
 
-// Races requests for file content
+/**
+ * Fetches multiple urls and times each request and returns the results sorted
+ * first by version and then by lowest-latency.
+ * @param {Array<Object>} requests [{id, url}, {id, url}]
+ * @param {Boolean} sortByVersion whether or not to sort by version
+ * @param {Boolean} filterNonResponsive whether or not to filter out nonresponsive services
+ * @param {string | null} currentVersion current on-chain service version - only required if `sortByVersion` = false
+ * @param {number? | null} timeout ms applied to each individual request
+ * @param {number? | null} equivalencyDelta
+ *  the number of milliseconds at which we consider services to be equally as fast
+ *  and pick randomly between them. Default of null implies that the faster service
+ *  (even if by 1ms) will be picked always.
+ * @returns { Array<{url, response, millis}> }
+ */
+async function timeRequests ({
+  requests,
+  sortByVersion,
+  currentVersion = null, // only required if `sortByVersion` = false
+  filterNonResponsive = false,
+  timeout = null,
+  equivalencyDelta = null
+}) {
+  let serviceTimings = await Promise.all(requests.map(async request =>
+    timeRequest(request, timeout)
+  ))
+
+  if (filterNonResponsive) {
+    serviceTimings = serviceTimings.filter(timing => timing.response !== null)
+  }
+
+  return sortServiceTimings({
+    serviceTimings,
+    currentVersion,
+    sortByVersion,
+    equivalencyDelta
+  })
+}
+
 /**
  * Races multiple requests
  * @param {*} urls
@@ -210,5 +246,5 @@ module.exports = {
   timeRequests,
   raceRequests,
   allRequests,
-  timeRequestsAndSortByVersion
+  sortServiceTimings
 }

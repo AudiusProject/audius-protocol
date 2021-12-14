@@ -214,7 +214,7 @@ jobs:
             cd /home/circleci/project/service-commands/scripts/
             sudo "$(which node)" hosts.js add
             sudo curl -L "https://github.com/docker/compose/releases/download/1.29.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            "$(which node)" setup.js up -nc 4 --no-parallel --verbose
+            "$(which node)" setup.js up -nc 4 --verbose
             cd /home/circleci/project/mad-dog/
             docker ps
             export ipfsHost="localhost"
@@ -656,7 +656,7 @@ jobs:
           name: Docker build << parameters.repo >>
           command: |
             cd << parameters.repo >>
-            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) .
+            docker build -t audius/<< parameters.repo >>:$IMAGE_TAG -t audius/<< parameters.repo>>:$(git rev-parse HEAD) --build-arg git_sha=$(git rev-parse HEAD) --build-arg audius_loggly_disable=$audius_loggly_disable --build-arg audius_loggly_token=$audius_loggly_token --build-arg audius_loggly_tags=$audius_loggly_tags .
       - run:
           name: Docker push << parameters.repo >>
           command: |

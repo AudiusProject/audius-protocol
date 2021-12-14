@@ -3,13 +3,10 @@ from datetime import datetime, timedelta
 
 from src.models import TrackTrendingScore, TrendingParam, AggregateIntervalPlay
 from src.utils.db_session import get_db
-from src.tasks.generate_trending import generate_trending
 from src.trending_strategies.aSPET_trending_tracks_strategy import (
     TrendingTracksStrategyaSPET,
 )
-from src.trending_strategies.ePWJD_trending_tracks_strategy import (
-    TrendingTracksStrategyePWJD,
-)
+from src.tasks.index_aggregate_plays import _update_aggregate_plays
 from tests.utils import populate_mock_db
 
 logger = logging.getLogger(__name__)
@@ -290,7 +287,7 @@ def test_update_trending_params(app):
 
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+        _update_aggregate_plays(session)
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         session.execute("REFRESH MATERIALIZED VIEW trending_params")
         trending_params = session.query(TrendingParam).all()
@@ -333,12 +330,11 @@ def test_update_track_score_query(app):
 
     # setup
     setup_trending(db)
-    prev_strategy = TrendingTracksStrategyePWJD()
     udpated_strategy = TrendingTracksStrategyaSPET()
 
     with db.scoped_session() as session:
         session.execute("REFRESH MATERIALIZED VIEW aggregate_track")
-        session.execute("REFRESH MATERIALIZED VIEW aggregate_plays")
+        _update_aggregate_plays(session)
         session.execute("REFRESH MATERIALIZED VIEW aggregate_interval_plays")
         session.execute("REFRESH MATERIALIZED VIEW trending_params")
         udpated_strategy.update_track_score_query(session)
@@ -371,39 +367,3 @@ def test_update_track_score_query(app):
         for score in scores:
             assert score.type == udpated_strategy.trending_type.name
             assert score.version == udpated_strategy.version.name
-
-        def get_old_trending(time_range):
-            genre = None
-            old_trending_params = generate_trending(
-                session, time_range, genre, 10, 0, prev_strategy
-            )
-            track_scores = [
-                prev_strategy.get_track_score(time_range, track)
-                for track in old_trending_params["listen_counts"]
-            ]
-            # Re apply the limit just in case we did decide to include more tracks in the scoring than the limit
-            sorted_track_scores = sorted(
-                track_scores, key=lambda k: (k["score"], k["track_id"]), reverse=True
-            )
-            return sorted_track_scores
-
-        previous_week_trending = get_old_trending("week")
-        for idx, updated_score in enumerate(week_scores):
-            assert previous_week_trending[idx]["track_id"] == updated_score.track_id
-            assert round(previous_week_trending[idx]["score"], 2) == round(
-                updated_score.score, 2
-            )
-
-        previous_month_trending = get_old_trending("month")
-        for idx, updated_score in enumerate(month_scores):
-            assert previous_month_trending[idx]["track_id"] == updated_score.track_id
-            assert round(previous_month_trending[idx]["score"], 2) == round(
-                updated_score.score, 2
-            )
-
-        previous_year_trending = get_old_trending("year")
-        for idx, updated_score in enumerate(year_scores):
-            assert previous_year_trending[idx]["track_id"] == updated_score.track_id
-            assert round(previous_year_trending[idx]["score"], 2) == round(
-                updated_score.score, 2
-            )

@@ -3,7 +3,7 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "start": "nodemon src/index.js | ./node_modules/.bin/bunyan || exit 0",
+    "start": "nodemon --config nodemon.json src/index.ts | ./node_modules/.bin/bunyan || exit 0",
     "test": "./scripts/run-tests.sh standalone_creator",
     "test:debug": "./scripts/run-tests.sh -d standalone_creator",
     "test:ci": "./scripts/run-tests.sh",
@@ -12,14 +12,14 @@
     "test:unit": "./scripts/run-tests.sh unit_test",
     "coverage": "nyc npm run test",
     "report": "nyc report --reporter=html",
-    "lint": "./node_modules/.bin/standard",
-    "lint-fix": "./node_modules/.bin/standard --fix"
+    "lint": "./node_modules/.bin/standard src/",
+    "lint-fix": "./node_modules/.bin/standard sr/ --fix"
   },
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "@audius/libs": "1.2.31",
+    "@audius/libs": "1.2.37",
     "JSONStream": "^1.3.5",
     "axios": "^0.19.2",
     "base64-url": "^2.3.3",
@@ -60,6 +60,7 @@
     "shortid": "^2.2.16",
     "sockstat": "^1.0.1",
     "systeminformation": "^5.7.6",
+    "ts-node": "^10.4.0",
     "tus-node-server": "^0.3.2",
     "umzug": "^2.3.0",
     "uuid": "3.3.2",
@@ -73,8 +74,9 @@
     "proxyquire": "^2.1.3",
     "sequelize-cli": "^5.3.0",
     "sinon": "^7.0.0",
-    "standard": "^12.0.1",
-    "supertest": "^3.3.0"
+    "standard": "12.0.1",
+    "supertest": "^3.3.0",
+    "typescript": "^4.4.4"
   },
   "//": {
     "dependenciesComments": {

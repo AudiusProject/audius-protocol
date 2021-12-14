@@ -329,6 +329,14 @@ class IdentityService {
     })
   }
 
+  async solanaRelayRaw (transactionData) {
+    return this._makeRequest({
+      url: '/solana/relay/raw',
+      method: 'post',
+      data: transactionData
+    })
+  }
+
   async getMinimumDelegationAmount (wallet) {
     return this._makeRequest({
       url: `/protocol/${wallet}/delegation/minimum`,

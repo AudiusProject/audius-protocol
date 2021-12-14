@@ -88,6 +88,13 @@ COPY --from=contracts /usr/src/app/build/contracts/ ./build/contracts/
 RUN bash scripts/init-db.sh
 
 ARG git_sha
+ARG audius_loggly_disable
+ARG audius_loggly_token
+ARG audius_loggly_tags
+
 ENV GIT_SHA=$git_sha
+ENV audius_loggly_disable=$audius_loggly_disable
+ENV audius_loggly_token=$audius_loggly_token
+ENV audius_loggly_tags=$audius_loggly_tags
 
 CMD ["bash", "scripts/start.sh"]
