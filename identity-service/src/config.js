@@ -216,10 +216,22 @@ const config = convict({
     env: 'rateLimitingListensPerIPPerDay',
     default: null
   },
+  rateLimitingListensExclusivelyPerIPPerHour: {
+    doc: 'Listens per IP per Hour',
+    format: 'nat',
+    env: 'rateLimitingListensExclusivelyPerIPPerHour',
+    default: null
+  },
   rateLimitingListensExclusivelyPerIPPerDay: {
     doc: 'Listens per IP per Day',
     format: 'nat',
     env: 'rateLimitingListensExclusivelyPerIPPerDay',
+    default: null
+  },
+  rateLimitingListensExclusivelyPerIPPerWeek: {
+    doc: 'Listens per IP per Week',
+    format: 'nat',
+    env: 'rateLimitingListensExclusivelyPerIPPerWeek',
     default: null
   },
   rateLimitingEthRelaysPerIPPerDay: {
