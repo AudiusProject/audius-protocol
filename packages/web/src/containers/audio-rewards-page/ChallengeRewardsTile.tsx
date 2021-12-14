@@ -5,14 +5,14 @@ import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
+import { StringKeys } from 'common/services/remote-config'
 import {
   getUserChallenges,
   getUserChallengesLoading
 } from 'common/store/pages/audio-rewards/selectors'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { useRemoteVar } from 'containers/remote-config/hooks'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
-import { StringKeys } from 'services/remote-config'
 import fillString from 'utils/fillString'
 
 import { ChallengeRewardID } from '../../common/models/AudioRewards'

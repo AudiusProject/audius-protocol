@@ -1,8 +1,8 @@
 import { Name } from 'common/models/Analytics'
 import { MonitorPayload, ServiceMonitorType } from 'common/models/Services'
+import { IntKeys } from 'common/services/remote-config'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { track } from 'store/analytics/providers'
-
-import { getRemoteVar, IntKeys } from './remote-config'
 
 /**
  * Given an integer-percent value (e.g. 45), whether or not based on random chance,
@@ -15,7 +15,9 @@ const shouldRecord = (percent: number) => {
 
 const healthCheck = (payload: MonitorPayload, type: ServiceMonitorType) => {
   const sampleRate =
-    getRemoteVar(IntKeys.SERVICE_MONITOR_HEALTH_CHECK_SAMPLE_RATE) || 0
+    remoteConfigInstance.getRemoteVar(
+      IntKeys.SERVICE_MONITOR_HEALTH_CHECK_SAMPLE_RATE
+    ) || 0
   if (shouldRecord(sampleRate)) {
     payload.type = type
     track(Name.SERVICE_MONITOR_HEALTH_CHECK, payload)
@@ -24,7 +26,9 @@ const healthCheck = (payload: MonitorPayload, type: ServiceMonitorType) => {
 
 const request = (payload: MonitorPayload, type: ServiceMonitorType) => {
   const sampleRate =
-    getRemoteVar(IntKeys.SERVICE_MONITOR_REQUEST_SAMPLE_RATE) || 0
+    remoteConfigInstance.getRemoteVar(
+      IntKeys.SERVICE_MONITOR_REQUEST_SAMPLE_RATE
+    ) || 0
   if (shouldRecord(sampleRate)) {
     payload.type = type
     track(Name.SERVICE_MONITOR_REQUEST, payload)

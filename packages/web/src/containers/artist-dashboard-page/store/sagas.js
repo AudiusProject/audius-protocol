@@ -2,13 +2,14 @@ import { each } from 'lodash'
 import moment from 'moment'
 import { all, call, put, take, takeEvery } from 'redux-saga/effects'
 
+import { IntKeys } from 'common/services/remote-config'
 import { getAccountUser } from 'common/store/account/selectors'
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { getBalance } from 'common/store/wallet/slice'
 import { formatUrlName } from 'common/utils/formatUtil'
 import { retrieveUserTracks } from 'containers/profile-page/store/lineups/tracks/retrieveUserTracks'
 import AudiusBackend from 'services/AudiusBackend'
-import { getRemoteVar, IntKeys } from 'services/remote-config'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import { DASHBOARD_PAGE } from 'utils/route'
 import { doEvery, requiresAccount, waitForValue } from 'utils/sagaHelpers'
@@ -132,7 +133,7 @@ function* fetchDashboardListenDataAsync(action) {
 }
 
 function* pollForBalance() {
-  const pollingFreq = getRemoteVar(
+  const pollingFreq = remoteConfigInstance.getRemoteVar(
     IntKeys.DASHBOARD_WALLET_BALANCE_POLLING_FREQ_MS
   )
   const chan = yield call(doEvery, pollingFreq, function* () {

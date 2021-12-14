@@ -6,6 +6,7 @@ import { Dispatch } from 'redux'
 
 import { FavoriteSource, RepostSource } from 'common/models/Analytics'
 import { ID } from 'common/models/Identifiers'
+import { FeatureFlags } from 'common/services/remote-config'
 import { getUserId } from 'common/store/account/selectors'
 import { getUserFromTrack } from 'common/store/cache/users/selectors'
 import {
@@ -19,8 +20,7 @@ import {
   OverflowAction,
   OverflowSource
 } from 'common/store/ui/mobile-overflow-menu/types'
-import { useFlag } from 'containers/remote-config/hooks'
-import { FeatureFlags } from 'services/remote-config'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 
 import TrackListItem, { TrackListItemProps } from './TrackListItem'

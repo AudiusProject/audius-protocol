@@ -12,6 +12,7 @@ import {
 
 import { DefaultSizes } from 'common/models/ImageSizes'
 import Kind from 'common/models/Kind'
+import { DoubleKeys, FeatureFlags } from 'common/services/remote-config'
 import { getUserId } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
 import {
@@ -30,12 +31,7 @@ import AudiusBackend, { fetchCID } from 'services/AudiusBackend'
 import { setAudiusAccountUser } from 'services/LocalStorage'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
 import OpenSeaClient from 'services/opensea-client/OpenSeaClient'
-import { DoubleKeys, FeatureFlags } from 'services/remote-config'
-import {
-  getRemoteVar,
-  getFeatureEnabled,
-  waitForRemoteConfig
-} from 'services/remote-config/Provider'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import SolanaClient from 'services/solana-client/SolanaClient'
 import { waitForBackendSetup } from 'store/backend/sagas'
 import * as confirmerActions from 'store/confirmer/actions'
@@ -52,6 +48,12 @@ import {
   getProfileUser
 } from './selectors'
 import { FollowType } from './types'
+
+const {
+  getRemoteVar,
+  getFeatureEnabled,
+  waitForRemoteConfig
+} = remoteConfigInstance
 
 function* watchFetchProfile() {
   yield takeLatest(profileActions.FETCH_PROFILE, fetchProfileAsync)

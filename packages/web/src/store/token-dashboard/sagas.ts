@@ -6,6 +6,7 @@ import { Chain } from 'common/models/Chain'
 import { ID } from 'common/models/Identifiers'
 import Kind from 'common/models/Kind'
 import { BNWei, WalletAddress } from 'common/models/Wallet'
+import { BooleanKeys } from 'common/services/remote-config'
 import { fetchAccountSucceeded } from 'common/store/account/reducer'
 import { getUserId, getAccountUser } from 'common/store/account/selectors'
 import * as cacheActions from 'common/store/cache/actions'
@@ -55,7 +56,7 @@ import AudiusBackend from 'services/AudiusBackend'
 import apiClient, {
   AssociatedWalletsResponse
 } from 'services/audius-api-client/AudiusAPIClient'
-import { BooleanKeys, getRemoteVar } from 'services/remote-config'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import walletClient from 'services/wallet-client/WalletClient'
 import connectWeb3Wallet, {
   loadWalletLink,
@@ -242,16 +243,16 @@ function* disconnectWeb3(web3Instance: any) {
 function* connectWallet() {
   let web3Instance: any
   try {
-    const isBitSkiEnabled = getRemoteVar(
+    const isBitSkiEnabled = remoteConfigInstance.getRemoteVar(
       BooleanKeys.DISPLAY_WEB3_PROVIDER_BITSKI
     ) as boolean
-    const isWalletConnectEnabled = getRemoteVar(
+    const isWalletConnectEnabled = remoteConfigInstance.getRemoteVar(
       BooleanKeys.DISPLAY_WEB3_PROVIDER_WALLET_CONNECT
     ) as boolean
-    const isWalletLinkEnabled = getRemoteVar(
+    const isWalletLinkEnabled = remoteConfigInstance.getRemoteVar(
       BooleanKeys.DISPLAY_WEB3_PROVIDER_WALLET_LINK
     ) as boolean
-    const isPhantomEnabled = getRemoteVar(
+    const isPhantomEnabled = remoteConfigInstance.getRemoteVar(
       BooleanKeys.DISPLAY_SOLANA_WEB3_PROVIDER_PHANTOM
     ) as boolean
 

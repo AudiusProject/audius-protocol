@@ -12,6 +12,7 @@ import {
   FlowUICloseEvent,
   FlowUIOpenEvent
 } from 'common/models/AudioRewards'
+import { IntKeys, StringKeys } from 'common/services/remote-config'
 import { getAccountUser, getUserHandle } from 'common/store/account/selectors'
 import { getHCaptchaStatus } from 'common/store/pages/audio-rewards/selectors'
 import {
@@ -21,10 +22,9 @@ import {
   setClaimStatus,
   setCognitoFlowStatus
 } from 'common/store/pages/audio-rewards/slice'
-import { useRemoteVar } from 'containers/remote-config/hooks'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useScript } from 'hooks/useScript'
 import AudiusBackend from 'services/AudiusBackend'
-import { IntKeys, StringKeys } from 'services/remote-config'
 import { COGNITO_SCRIPT_URL } from 'utils/constants'
 import { encodeHashId } from 'utils/route/hashIds'
 

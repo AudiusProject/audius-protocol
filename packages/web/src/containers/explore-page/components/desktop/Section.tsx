@@ -3,8 +3,8 @@ import React, { useState, useCallback, ReactNode } from 'react'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
-import { useFlag } from 'containers/remote-config/hooks'
-import { FeatureFlags } from 'services/remote-config'
+import { FeatureFlags } from 'common/services/remote-config'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './Section.module.css'
 

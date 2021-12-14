@@ -6,17 +6,17 @@ import { useDispatch } from 'react-redux'
 import { TwitterTweetEmbed } from 'react-twitter-embed'
 
 import { useModalState } from 'common/hooks/useModalState'
+import { StringKeys } from 'common/services/remote-config'
 import { getTrendingRewardsModalType } from 'common/store/pages/audio-rewards/selectors'
 import {
   TrendingRewardsModalType,
   setTrendingRewardsModalType
 } from 'common/store/pages/audio-rewards/slice'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import { useRemoteVar } from 'containers/remote-config/hooks'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import Theme from 'models/Theme'
-import { StringKeys } from 'services/remote-config'
 import { isMobile } from 'utils/clientUtil'
 import { useSelector } from 'utils/reducer'
 import {

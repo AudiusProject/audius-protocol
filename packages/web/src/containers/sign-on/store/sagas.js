@@ -14,6 +14,7 @@ import {
 } from 'redux-saga/effects'
 
 import { FavoriteSource, Name } from 'common/models/Analytics'
+import { IntKeys, StringKeys } from 'common/services/remote-config'
 import * as accountActions from 'common/store/account/reducer'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
@@ -25,7 +26,7 @@ import { getIGUserUrl } from 'components/general/InstagramAuth'
 import AudiusBackend from 'services/AudiusBackend'
 import { getCityAndRegion } from 'services/Location'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { getRemoteVar, IntKeys, StringKeys } from 'services/remote-config'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { fetchAccountAsync, reCacheAccount } from 'store/account/sagas'
 import { identify, make } from 'store/analytics/actions'
 import * as backendActions from 'store/backend/actions'
@@ -149,9 +150,12 @@ const isHandleCharacterCompliant = handle => /^[a-zA-Z0-9_]*$/.test(handle)
 async function getInstagramUser(handle) {
   try {
     const profileEndpoint =
-      getRemoteVar(StringKeys.INSTAGRAM_API_PROFILE_URL) ||
+      remoteConfigInstance.getRemoteVar(StringKeys.INSTAGRAM_API_PROFILE_URL) ||
       'https://instagram.com/$USERNAME$/?__a=1'
-    const timeout = getRemoteVar(IntKeys.INSTAGRAM_HANDLE_CHECK_TIMEOUT) || 4000
+    const timeout =
+      remoteConfigInstance.getRemoteVar(
+        IntKeys.INSTAGRAM_HANDLE_CHECK_TIMEOUT
+      ) || 4000
     const fetchIGUserUrl = getIGUserUrl(profileEndpoint, handle)
     const igProfile = await withTimeout(fetch(fetchIGUserUrl), timeout)
     if (!igProfile.ok) return null

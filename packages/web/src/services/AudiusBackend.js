@@ -11,17 +11,16 @@ import placeholderProfilePicture from 'assets/img/imageProfilePicEmpty2X.png'
 import { Name } from 'common/models/Analytics'
 import FeedFilter from 'common/models/FeedFilter'
 import { DefaultSizes } from 'common/models/ImageSizes'
-import CIDCache from 'common/store/cache/CIDCache'
-import { Nullable } from 'common/utils/typeUtils'
-import { uuid } from 'common/utils/uid'
-import * as schemas from 'schemas'
 import {
   IntKeys,
-  getRemoteVar,
   StringKeys,
   BooleanKeys,
   FeatureFlags
-} from 'services/remote-config'
+} from 'common/services/remote-config'
+import CIDCache from 'common/store/cache/CIDCache'
+import { uuid } from 'common/utils/uid'
+import * as schemas from 'schemas'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { IS_MOBILE_USER_KEY } from 'store/account/mobileSagas'
 import { track } from 'store/analytics/providers/amplitude'
 import { isElectron } from 'utils/clientUtil'
@@ -33,11 +32,9 @@ import {
   withEagerOption,
   LIBS_INITTED_EVENT
 } from './audius-backend/eagerLoadUtils'
-import {
-  getFeatureEnabled,
-  waitForRemoteConfig
-} from './remote-config/Provider'
 import { monitoringCallbacks } from './serviceMonitoring'
+
+const { getRemoteVar, waitForRemoteConfig } = remoteConfigInstance
 
 export const IDENTITY_SERVICE = process.env.REACT_APP_IDENTITY_SERVICE
 export const USER_NODE = process.env.REACT_APP_USER_NODE
@@ -465,16 +462,16 @@ class AudiusBackend {
           ? undefined
           : { siteKey: RECAPTCHA_SITE_KEY },
         isServer: false,
-        useTrackContentPolling: getFeatureEnabled(
+        useTrackContentPolling: remoteConfigInstance.getFeatureEnabled(
           FeatureFlags.USE_TRACK_CONTENT_POLLING
         ),
-        useResumableTrackUpload: getFeatureEnabled(
+        useResumableTrackUpload: remoteConfigInstance.getFeatureEnabled(
           FeatureFlags.USE_RESUMABLE_TRACK_UPLOAD
         ),
-        preferHigherPatchForPrimary: getFeatureEnabled(
+        preferHigherPatchForPrimary: remoteConfigInstance.getFeatureEnabled(
           FeatureFlags.PREFER_HIGHER_PATCH_FOR_PRIMARY
         ),
-        preferHigherPatchForSecondaries: getFeatureEnabled(
+        preferHigherPatchForSecondaries: remoteConfigInstance.getFeatureEnabled(
           FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES
         )
       })
@@ -913,7 +910,9 @@ class AudiusBackend {
       const listen = await audiusLibs.Track.logTrackListen(
         trackId,
         unauthenticatedUuid,
-        getFeatureEnabled(FeatureFlags.SOLANA_LISTEN_ENABLED)
+        remoteConfigInstance.getFeatureEnabled(
+          FeatureFlags.SOLANA_LISTEN_ENABLED
+        )
       )
       return listen
     } catch (err) {
@@ -1738,7 +1737,9 @@ class AudiusBackend {
       formFields.coverPhoto,
       hasWallet,
       AudiusBackend._getHostUrl(),
-      getFeatureEnabled(FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP)
+      remoteConfigInstance.getFeatureEnabled(
+        FeatureFlags.CREATE_WAUDIO_USER_BANK_ON_SIGN_UP
+      )
     )
   }
 
@@ -2394,7 +2395,12 @@ class AudiusBackend {
    * @param {playlistId} playlistId playlist id or folder id
    */
   static async updatePlaylistLastViewedAt(playlistId) {
-    if (!getFeatureEnabled(FeatureFlags.PLAYLIST_UPDATES_ENABLED)) return
+    if (
+      !remoteConfigInstance.getFeatureEnabled(
+        FeatureFlags.PLAYLIST_UPDATES_ENABLED
+      )
+    )
+      return
 
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()

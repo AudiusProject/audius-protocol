@@ -4,10 +4,11 @@ import { call, put, select, takeEvery } from 'redux-saga/effects'
 
 import { ID } from 'common/models/Identifiers'
 import { User } from 'common/models/User'
+import { DoubleKeys } from 'common/services/remote-config'
 import { getUserId } from 'common/store/account/selectors'
 import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import apiClient from 'services/audius-api-client/AudiusAPIClient'
-import { DoubleKeys, getRemoteVar } from 'services/remote-config'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 
 import * as artistRecommendationsActions from './slice'
 
@@ -26,8 +27,9 @@ export function* fetchRelatedArtists(action: Action) {
       .slice(0, 5)
     if (filteredArtists.length === 0) {
       const showTopArtistRecommendationsPercent =
-        getRemoteVar(DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_FALLBACK_PERCENT) ||
-        0
+        remoteConfigInstance.getRemoteVar(
+          DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_FALLBACK_PERCENT
+        ) || 0
       const showTopArtists = Math.random() < showTopArtistRecommendationsPercent
       if (showTopArtists) {
         filteredArtists = yield fetchTopArtists()
