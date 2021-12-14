@@ -66,6 +66,14 @@ contract_addresses: Dict[str, Any] = defaultdict()
 logger = logging.getLogger(__name__)
 
 
+def get_contract_addresses():
+    return contract_addresses
+
+
+def get_eth_abi_values():
+    return eth_abi_values
+
+
 def init_contracts():
     registry_address = web3.toChecksumAddress(shared_config["contracts"]["registry"])
     registry_instance = web3.eth.contract(

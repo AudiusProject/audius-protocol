@@ -3,7 +3,7 @@ import concurrent.futures
 import logging
 from sqlalchemy import func
 
-from src.app import contract_addresses
+from src.app import get_contract_addresses
 from src.utils import helpers, multihash
 from src.tasks.ipld_blacklist import is_blacklisted_ipld
 from src.challenges.challenge_event_bus import ChallengeEventBus
@@ -69,7 +69,7 @@ MAX_SKIPPED_TX = 100
 
 
 def get_contract_info_if_exists(self, address):
-    for contract_name, contract_address in contract_addresses.items():
+    for contract_name, contract_address in get_contract_addresses().items():
         if update_task.web3.toChecksumAddress(contract_address) == address:
             return (contract_name, contract_address)
     return None
@@ -218,12 +218,12 @@ def fetch_ipfs_metadata(
 ):
     track_abi = update_task.abi_values["TrackFactory"]["abi"]
     track_contract = update_task.web3.eth.contract(
-        address=contract_addresses["track_factory"], abi=track_abi
+        address=get_contract_addresses()["track_factory"], abi=track_abi
     )
 
     user_abi = update_task.abi_values["UserFactory"]["abi"]
     user_contract = update_task.web3.eth.contract(
-        address=contract_addresses["user_factory"], abi=user_abi
+        address=get_contract_addresses()["user_factory"], abi=user_abi
     )
 
     blacklisted_cids = set()
@@ -307,7 +307,7 @@ def update_ursm_address(self):
     web3 = update_task.web3
     shared_config = update_task.shared_config
     abi_values = update_task.abi_values
-    user_replica_set_manager_address = contract_addresses["user_replica_set_manager"]
+    user_replica_set_manager_address = get_contract_addresses()["user_replica_set_manager"]
     if user_replica_set_manager_address == zero_address:
         logger.info(
             f"index.py | update_ursm_address, found {user_replica_set_manager_address}"
@@ -322,7 +322,7 @@ def update_ursm_address(self):
             bytes("UserReplicaSetManager", "utf-8")
         ).call()
         if user_replica_set_manager_address != zero_address:
-            contract_addresses["user_replica_set_manager"] = web3.toChecksumAddress(
+            get_contract_addresses()["user_replica_set_manager"] = web3.toChecksumAddress(
                 user_replica_set_manager_address
             )
             logger.info(
@@ -424,7 +424,7 @@ def index_blocks(self, db, blocks_list):
                     continue
 
                 # Handle user operations
-                if tx_target_contract_address == contract_addresses["user_factory"]:
+                if tx_target_contract_address == get_contract_addresses()["user_factory"]:
                     logger.info(
                         f"index.py | UserFactory contract addr: {tx_target_contract_address}"
                         f" tx from block - {tx}, receipt - {tx_receipt}, adding to user_factory_txs to process in bulk"
@@ -432,7 +432,7 @@ def index_blocks(self, db, blocks_list):
                     user_factory_txs.append(tx_receipt)
 
                 # Handle track operations
-                if tx_target_contract_address == contract_addresses["track_factory"]:
+                if tx_target_contract_address == get_contract_addresses()["track_factory"]:
                     logger.info(
                         f"index.py | TrackFactory contract addr: {tx_target_contract_address}"
                         f" tx from block - {tx}, receipt - {tx_receipt}"
@@ -443,7 +443,7 @@ def index_blocks(self, db, blocks_list):
                 # Handle social operations
                 if (
                     tx_target_contract_address
-                    == contract_addresses["social_feature_factory"]
+                    == get_contract_addresses()["social_feature_factory"]
                 ):
                     logger.info(
                         f"index.py | Social feature contract addr: {tx_target_contract_address}"
@@ -452,7 +452,7 @@ def index_blocks(self, db, blocks_list):
                     social_feature_factory_txs.append(tx_receipt)
 
                 # Handle repost operations
-                if tx_target_contract_address == contract_addresses["playlist_factory"]:
+                if tx_target_contract_address == get_contract_addresses()["playlist_factory"]:
                     logger.info(
                         f"index.py | Playlist contract addr: {tx_target_contract_address}"
                         f"tx from block - {tx}, receipt - {tx_receipt}"
@@ -462,7 +462,7 @@ def index_blocks(self, db, blocks_list):
                 # Handle User Library operations
                 if (
                     tx_target_contract_address
-                    == contract_addresses["user_library_factory"]
+                    == get_contract_addresses()["user_library_factory"]
                 ):
                     logger.info(
                         f"index.py | User Library contract addr: {tx_target_contract_address}"
@@ -473,7 +473,7 @@ def index_blocks(self, db, blocks_list):
                 # Handle UserReplicaSetManager operations
                 if (
                     tx_target_contract_address
-                    == contract_addresses["user_replica_set_manager"]
+                    == get_contract_addresses()["user_replica_set_manager"]
                 ):
                     logger.info(
                         f"index.py | User Replica Set Manager contract addr: {tx_target_contract_address}"
