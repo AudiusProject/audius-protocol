@@ -1,7 +1,7 @@
 const path = require('path')
 
 const config = require('../../config.js')
-const { logger: genericLogger } = require('../../logging')
+const { logger: genericLogger, logInfoWithDuration, getStartTime } = require('../../logging')
 const { getSegmentsDuration } = require('../../segmentDuration')
 const TranscodingQueue = require('../../TranscodingQueue')
 const models = require('../../models')
@@ -11,6 +11,7 @@ const fileManager = require('../../fileManager')
 const SaveFileToIPFSConcurrencyLimit = 10
 
 const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
+
 /**
  * Upload track segment files and make avail - will later be associated with Audius track
  *
@@ -25,7 +26,7 @@ const ENABLE_IPFS_ADD_TRACKS = config.get('enableIPFSAddTracks')
 const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   const logger = genericLogger.child(logContext)
 
-  const routeTimeStart = Date.now()
+  const routeTimeStart = getStartTime()
   let codeBlockTimeStart
   const cnodeUserUUID = requestProps.session.cnodeUserUUID
 
@@ -33,7 +34,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   let transcodedFilePath
   let segmentFilePaths
   try {
-    codeBlockTimeStart = Date.now()
+    codeBlockTimeStart = getStartTime()
 
     const transcode = await Promise.all([
       TranscodingQueue.segment(requestProps.fileDir, requestProps.fileName, { logContext }),
@@ -42,7 +43,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
     segmentFilePaths = transcode[0].filePaths
     transcodedFilePath = transcode[1].filePath
 
-    logger.info(`Time taken in /track_content_async to re-encode track file: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
+    logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully re-encoded track file=${requestProps.fileName}`)
   } catch (err) {
     // Prune upload artifacts
     fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
@@ -51,7 +52,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   }
 
   // Save transcode and segment files (in parallel) to ipfs and retrieve multihashes
-  codeBlockTimeStart = Date.now()
+  codeBlockTimeStart = getStartTime()
   const transcodeFileIPFSResp = await fileManager.saveFileToIPFSFromFS(
     { logContext: requestProps.logContext },
     requestProps.session.cnodeUserUUID,
@@ -76,12 +77,12 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
 
     segmentFileIPFSResps = segmentFileIPFSResps.concat(sliceResps)
   }
-  logger.info(`Time taken in /track_content_async for saving transcode + segment files to IPFS: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
+  logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully saved transcode and segment files to IPFS for file=${requestProps.fileName}`)
 
   // Retrieve all segment durations as map(segment srcFilePath => segment duration)
-  codeBlockTimeStart = Date.now()
+  codeBlockTimeStart = getStartTime()
   const segmentDurations = await getSegmentsDuration(requestProps.fileName, requestProps.fileDestination)
-  logger.info(`Time taken in /track_content_async to get segment duration: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
+  logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully retrieved segment duration for file=${requestProps.fileName}`)
 
   // For all segments, build array of (segment multihash, segment duration)
   let trackSegments = segmentFileIPFSResps.map((segmentFileIPFSResp) => {
@@ -103,7 +104,7 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
   }
 
   // Record entries for transcode and segment files in DB
-  codeBlockTimeStart = Date.now()
+  codeBlockTimeStart = getStartTime()
   const transaction = await models.sequelize.transaction()
   let transcodeFileUUID
   try {
@@ -138,12 +139,12 @@ const handleTrackContentRoute = async ({ logContext }, requestProps) => {
 
     throw new Error(e.toString())
   }
-  logger.info(`Time taken in /track_content_async for DB updates: ${Date.now() - codeBlockTimeStart}ms for file ${requestProps.fileName}`)
+  logInfoWithDuration({ logger, startTime: codeBlockTimeStart }, `Successfully updated DB for file=${requestProps.fileName}`)
 
   // Prune upload artifacts after success
   fileManager.removeTrackFolder({ logContext }, requestProps.fileDir)
 
-  logger.info(`Time taken in /track_content_async for full route: ${Date.now() - routeTimeStart}ms for file ${requestProps.fileName}`)
+  logInfoWithDuration({ logger, startTime: routeTimeStart }, `Successfully handled track content for file=${requestProps.fileName}`)
   return {
     transcodedTrackCID: transcodeFileIPFSResp.multihash,
     transcodedTrackUUID: transcodeFileUUID,
