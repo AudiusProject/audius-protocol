@@ -40,7 +40,7 @@ function update_redirect_target_weights (premature)
     httpc:close()
 
     for index, redirect_target in ipairs(config.redirect_targets) do
-        if redirect_target_weights[redirect_target] != 0 then
+        if redirect_target_weights[redirect_target] ~= 0 then
             redirect_target_weights[redirect_target] = (2 * maximum_request_count) - redirect_target_weights[redirect_target]
         end
     end
