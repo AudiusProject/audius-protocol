@@ -210,4 +210,3 @@ def test_index_aggregate_plays_no_plays(app):
             assert False, "test_index_aggregate_plays [test_index_aggregate_plays_no_plays] failed"
         except NoResultFound:
             assert True
-
