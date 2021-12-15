@@ -140,6 +140,8 @@ case "$service" in
 		wait_for_instance $provider $user $name
         reboot_instance $provider $name
 
+		copy_file_to_remote $provider $user $name '~/.gitconfig' '~/.gitconfig'
+
 		configure_etc_hosts
 
 		set_ssh_serveralive
