@@ -198,10 +198,10 @@ const config = convict({
     env: 'rateLimitingListensPerTrackPerHour',
     default: null
   },
-  rateLimitingListensPerIPPerHour: {
+  rateLimitingListensPerIPTrackPerHour: {
     doc: 'Listens per track per IP per Hour',
     format: 'nat',
-    env: 'rateLimitingListensPerIPPerHour',
+    env: 'rateLimitingListensPerIPTrackPerHour',
     default: null
   },
   rateLimitingListensPerTrackPerDay: {
@@ -210,10 +210,28 @@ const config = convict({
     env: 'rateLimitingListensPerTrackPerDay',
     default: null
   },
-  rateLimitingListensPerIPPerDay: {
+  rateLimitingListensPerIPTrackPerDay: {
     doc: 'Listens per track per IP per Day',
     format: 'nat',
+    env: 'rateLimitingListensPerIPTrackPerDay',
+    default: null
+  },
+  rateLimitingListensPerIPPerHour: {
+    doc: 'Listens per IP per Hour',
+    format: 'nat',
+    env: 'rateLimitingListensPerIPPerHour',
+    default: null
+  },
+  rateLimitingListensPerIPPerDay: {
+    doc: 'Listens per IP per Day',
+    format: 'nat',
     env: 'rateLimitingListensPerIPPerDay',
+    default: null
+  },
+  rateLimitingListensPerIPPerWeek: {
+    doc: 'Listens per IP per Week',
+    format: 'nat',
+    env: 'rateLimitingListensPerIPPerWeek',
     default: null
   },
   rateLimitingEthRelaysPerIPPerDay: {
@@ -234,10 +252,10 @@ const config = convict({
     env: 'rateLimitingListensPerTrackPerWeek',
     default: null
   },
-  rateLimitingListensPerIPPerWeek: {
+  rateLimitingListensPerIPTrackPerWeek: {
     doc: 'Listens per track per IP per Week',
     format: 'nat',
-    env: 'rateLimitingListensPerIPPerWeek',
+    env: 'rateLimitingListensPerIPTrackPerWeek',
     default: null
   },
   rateLimitingListensIPWhitelist: {
@@ -679,10 +697,16 @@ const config = convict({
     default: 1
   },
   minSolanaNotificationSlot: {
-    doc: 'The slot number to start indexing if not slots defined"',
+    doc: 'The slot number to start indexing if no slots defined',
     format: Number,
     env: 'minSolanaNotificationSlot',
     default: 105400000
+  },
+  rewardsReporterSlackUrl: {
+    doc: 'The slack url to post messages for the rewards reporter',
+    format: String,
+    env: 'rewardsReporterSlackUrl',
+    default: ''
   }
 })
 
