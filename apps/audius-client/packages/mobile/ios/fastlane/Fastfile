@@ -25,117 +25,37 @@ platform :ios do
   before_all do
     setup_circle_ci
   end
-  desc "Push a new beta build to TestFlight"
-  lane :beta do
-    match(
-      type: "appstore",
-      readonly: is_ci
-    )
+  desc "Build the app"
+  lane :build do |options|
 
-    settings_to_override = {
-      :BUNDLE_IDENTIFIER => MY_APP_ID,
-      :PROVISIONING_PROFILE_SPECIFIER => MY_PROFILE,
-      :DEVELOPMENT_TEAM => MY_TEAM
-    }
-
-    if ENV["IS_PRODUCTION"] == "true"
-      api_environment = "production"
-      ENV["ENVFILE"]=".env.#{api_environment}"
-      puts "IS_PRODUCTION: #{ENV['IS_PRODUCTION']}"
-      puts "ENVFILE: #{ENV['ENVFILE']}"
+    if options[:bundle_id] === 'co.audius.audiusmusic'  
+      appId = MY_APP_ID
+      provisioningProfile = MY_PROFILE
+      environment = 'production'
+      scheme = 'AudiusReactNative'
+      configuration = 'Release'
+    else
+      appId = MY_STAGING_APP_ID
+      provisioningProfile = MY_STAGING_PROFILE
+      environment = 'staging'
+      scheme = 'Bounce'
+      configuration = 'Bounce.Release'
     end
 
-    # Increment version
-
-    # Version number (e.g. 1.0.100) will be incremented by a patch version
-    # from the currently live version in the app store. If a higher version number
-    # is specified in Info.plist, that one will be used
-
-    previousVersionNumberString = get_app_store_version_number(
-      bundle_id: 'co.audius.audiusmusic'
-    )
-
-    previousVersionNumber = Gem::Version.new previousVersionNumberString
-    versionNumber = Gem::Version.new get_version_number_from_plist(
-      scheme: 'AudiusReactNative'
-    )
-
-    # If the version specified in project is greater than
-    # the previous version number, there is no need to modify version number in the project
-    if versionNumber <= previousVersionNumber
-      # Increment the patch version
-      # This is necessary because the same version number cannot be used twice on the app store
-      patchRegex = /\d+.\d+.(\d+)/
-      previousPatch = previousVersionNumberString[patchRegex, 1]
-      previousVersionNumberString[patchRegex, 1] = (previousPatch.to_i + 1).to_s
-      versionNumber = previousVersionNumberString
-
-      increment_version_number_in_plist(
-        version_number: versionNumber,
-        scheme: 'AudiusReactNative'
-      )
-
-      increment_version_number_in_xcodeproj(
-        version_number: versionNumber,
-        scheme: 'AudiusReactNative'
-      )
-    end
-
-    # Increment build
-
-    # Build number (e.g. 12) needs to be unique for the given version number
-    # Increment using the updated version number so that for each version number
-    # build numbers start at 1
-
-    app_store_connect_api_key
-    increment_build_number(
-      build_number: app_store_build_number(
-        app_identifier: "co.audius.audiusmusic",
-        initial_build_number: 1,
-        version: versionNumber.to_s,
-        live: false
-      ) + 1,
-    )
-
-    # Build ios
-    gym(
-      workspace: "AudiusReactNative.xcworkspace",
-      codesigning_identity: "iPhone Distribution",
-      scheme: "AudiusReactNative",
-      xcargs: settings_to_override,
-      export_method: "app-store",
-      export_options: {
-          provisioningProfiles: {
-              MY_APP_ID => MY_PROFILE
-          }
-      }
-    )
-
-    # Upload to test flight
-    pilot(
-      skip_waiting_for_build_processing: true,
-      apple_id: "1491270519",
-      # Don't actually distribute, just upload
-      skip_submission: true
-    )
-  end
-  desc "Push a new bounce build to TestFlight"
-  lane :bounce do
     match(
       type: "appstore",
       readonly: is_ci,
-      app_identifier: "co.audius.audiusmusic.bounce"
+      app_identifier: options[:bundle_id]
     )
 
     settings_to_override = {
-      :BUNDLE_IDENTIFIER => MY_STAGING_APP_ID,
-      :PROVISIONING_PROFILE_SPECIFIER => MY_STAGING_PROFILE,
+      :BUNDLE_IDENTIFIER => appId,
+      :PROVISIONING_PROFILE_SPECIFIER => provisioningProfile,
       :DEVELOPMENT_TEAM => MY_TEAM
     }
 
     if ENV["IS_PRODUCTION"] == "true"
-      api_environment = "staging"
-      ENV["ENVFILE"]=".env.#{api_environment}"
+      ENV["ENVFILE"]=".env.#{environment}"
       puts "IS_PRODUCTION: #{ENV['IS_PRODUCTION']}"
       puts "ENVFILE: #{ENV['ENVFILE']}"
     end
@@ -152,7 +72,7 @@ platform :ios do
 
     previousVersionNumber = Gem::Version.new previousVersionNumberString
     versionNumber = Gem::Version.new get_version_number_from_plist(
-      scheme: 'Bounce'
+      scheme: scheme
     )
 
     # If the version specified in project is greater than
@@ -167,12 +87,12 @@ platform :ios do
 
       increment_version_number_in_plist(
         version_number: versionNumber,
-        scheme: 'Bounce'
+        scheme: scheme
       )
 
       increment_version_number_in_xcodeproj(
         version_number: versionNumber,
-        scheme: 'Bounce'
+        scheme: scheme
       )
     end
 
@@ -185,7 +105,7 @@ platform :ios do
     app_store_connect_api_key
     increment_build_number(
       build_number: app_store_build_number(
-        app_identifier: "co.audius.audiusmusic.bounce",
+        app_identifier: options[:bundle_id],
         initial_build_number: 1,
         version: versionNumber.to_s,
         live: false
@@ -196,24 +116,38 @@ platform :ios do
     gym(
       workspace: "AudiusReactNative.xcworkspace",
       codesigning_identity: "iPhone Distribution",
-      scheme: "Bounce",
-      configuration: "Bounce.Release",
+      scheme: scheme,
+      configuration: configuration,
       xcargs: settings_to_override,
       export_method: "app-store",
       export_options: {
           provisioningProfiles: {
-              MY_STAGING_APP_ID => MY_STAGING_PROFILE
+              appId => provisioningProfile
           }
       }
     )
+  end
 
+  desc "Push a build to TestFlight"
+  lane :upload do |options|
+
+    if (options[:bundle_id] === 'co.audius.audiusmusic') 
+      appleId = "1491270519"
+      ipa = './output/gym/Audius Music.ipa'
+    else
+      appleId = "1510764836"
+      ipa = './output/gym/Audius Bounce Music.ipa'
+    end
+   
     # Upload to test flight
     pilot(
       skip_waiting_for_build_processing: true,
-      apple_id: "1510764836",
-      app_identifier: "co.audius.audiusmusic.bounce",
+      apple_id: appleId,
+      app_identifier: options[:bundle_id],
+      ipa: ipa,
       # Don't actually distribute, just upload
       skip_submission: true
     )
   end
+
 end
