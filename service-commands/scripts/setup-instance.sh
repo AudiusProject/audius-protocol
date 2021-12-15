@@ -81,6 +81,42 @@ if ! instance_exists $provider $name; then
 	fi
 fi
 
+
+configure_etc_hosts() {
+	read -p "Configure local /etc/hosts? [y/N] " -n 1 -r && echo
+	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+		IP=$(get_ip_addr $provider $name)
+		echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
+		sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
+	fi
+}
+
+set_ssh_serveralive() {
+	if [[ ! -f "/etc/ssh/ssh_config.d/60-audius.conf" ]]; then
+		read -p "Set SSH ServerAliveInterval to 60? [y/N] " -n 1 -r && echo
+		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+			echo "ServerAliveInterval 60" | sudo tee -a /etc/ssh/ssh_config.d/60-audius.conf
+		fi
+	fi
+}
+
+setup_zsh() {
+	read -p "Setup zsh? [y/N] " -n 1 -r && echo
+	if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+		execute_with_ssh $provider $user $name 'sudo chsh -s /bin/zsh $USER'
+
+		cp ~/.zshenv ~/.zshenv.tmp
+		echo "export PROTOCOL_DIR=$HOME/audius-protocol" >> ~/.zshenv.tmp
+		copy_file_to_remote $provider $user $name '~/.zshenv.tmp' '~/.zshenv'
+		rm ~/.zshenv.tmp
+
+		copy_file_to_remote $provider $user $name '~/.zshrc' '~/.zshrc'
+		if [[ -f "~/.p10k.zsh" ]]; then
+			copy_file_to_remote $provider $user $name '~/.p10k.zsh' '~/.p10k.zsh'
+		fi
+	fi
+}
+
 # Setup service
 case "$service" in
 	creator-node)
@@ -104,31 +140,10 @@ case "$service" in
 		wait_for_instance $provider $user $name
         reboot_instance $provider $name
 
-		read -p "Configure local /etc/hosts? [y/N] " -n 1 -r && echo
-		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-			IP=$(get_ip_addr $provider $name)
-			echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
-			sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
-		fi
+		configure_etc_hosts
 
-		read -p "Set SSH ServerAliveInterval to 60? [y/N] " -n 1 -r && echo
-		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-			echo "ServerAliveInterval 60" | sudo tee -a /etc/ssh/ssh_config.d/60-audius.conf
-		fi
+		set_ssh_serveralive
 
-		read -p "Setup zsh? [y/N] " -n 1 -r && echo
-		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-			execute_with_ssh $provider $user $name 'sudo chsh -s /bin/zsh $USER'
-
-			cp ~/.zshenv ~/.zshenv.tmp
-			echo "export PROTOCOL_DIR=$HOME/audius-protocol" >> ~/.zshenv.tmp
-			copy_file_to_remote $provider $user $name '~/.zshenv.tmp' '~/.zshenv'
-			rm ~/.zshenv.tmp
-
-			copy_file_to_remote $provider $user $name '~/.zshrc' '~/.zshrc'
-			if [[ -f "~/.p10k.zsh" ]]; then
-				copy_file_to_remote $provider $user $name '~/.p10k.zsh' '~/.p10k.zsh'
-			fi
-		fi
+		setup_zsh
 		;;
 esac

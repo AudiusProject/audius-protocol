@@ -33,7 +33,7 @@ echo "TCPKeepAlive yes" | sudo tee -a /etc/ssh/sshd_config.d/60-audius.conf
 echo "ClientAliveCountMax 10" | sudo tee -a /etc/ssh/sshd_config.d/60-audius.conf
 sudo /etc/init.d/ssh restart
 
-# allow VSCode to monitor multiple files for changes
+# allow VSCode to monitor multiple files on remote machines for changes
 cat /proc/sys/fs/inotify/max_user_watches
 echo "fs.inotify.max_user_watches=524288" | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
