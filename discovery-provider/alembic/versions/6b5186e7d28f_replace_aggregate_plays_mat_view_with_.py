@@ -47,7 +47,11 @@ def upgrade():
                         count(*) as count
                     FROM
                         plays
-                    WHERE plays.id <= (SELECT last_checkpoint FROM indexing_checkpoints WHERE tablename = 'aggregate_plays')
+                    WHERE plays.id <= (
+                        SELECT last_checkpoint
+                        FROM indexing_checkpoints
+                        WHERE tablename = 'aggregate_plays'
+                    )
                     GROUP BY plays.play_item_id
                 );
 
