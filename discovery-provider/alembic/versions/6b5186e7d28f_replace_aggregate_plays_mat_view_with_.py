@@ -33,8 +33,8 @@ def upgrade():
                 )
                 INSERT INTO indexing_checkpoints (tablename, last_checkpoint)
                 VALUES(
-                'aggregate_plays',
-                (COALESCE((SELECT id FROM latest_play_id), 0))
+                    'aggregate_plays',
+                    (COALESCE((SELECT id FROM latest_play_id), 0))
                 )
                 ON CONFLICT (tablename)
                 DO UPDATE SET last_checkpoint = EXCLUDED.last_checkpoint;
