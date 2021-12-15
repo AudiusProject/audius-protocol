@@ -22,8 +22,7 @@ try {
   const solConfigFile = require(path.join(homeDir, AUDIUS_SOL_CONFIG))
 
   const REACT_APP_ENVIRONMENT = 'development'
-  const REACT_APP_EAGER_DISCOVERY_NODES =
-    'http://audius-disc-prov_web-server_1:5000'
+  const REACT_APP_EAGER_DISCOVERY_NODES = 'http://dn1_web-server_1:5000'
   const REACT_APP_IDENTITY_SERVICE = `http://${HOST}:7000`
   const REACT_APP_USER_NODE = 'http://cn-um_creator-node_1:4099'
 
