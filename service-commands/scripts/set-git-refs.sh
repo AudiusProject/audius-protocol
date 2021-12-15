@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+set -ex
 
 cd $PROTOCOL_DIR
 git fetch origin
