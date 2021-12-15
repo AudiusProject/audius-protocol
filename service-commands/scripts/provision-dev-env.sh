@@ -19,7 +19,25 @@ sudo apt install -y \
     git-secrets \
     jq \
     wget \
-    libpq-dev
+    libpq-dev \
+    neovim \
+    net-tools \
+    sift \
+    zsh
+
+sudo apt autoremove
+
+# configure ssh timeouts
+echo "ClientAliveInterval 600" | sudo tee -a /etc/ssh/sshd_config.d/60-audius.conf
+echo "TCPKeepAlive yes" | sudo tee -a /etc/ssh/sshd_config.d/60-audius.conf
+echo "ClientAliveCountMax 10" | sudo tee -a /etc/ssh/sshd_config.d/60-audius.conf
+sudo /etc/init.d/ssh restart
+
+# allow VSCode to monitor multiple files for changes
+cat /proc/sys/fs/inotify/max_user_watches
+echo "fs.inotify.max_user_watches=524288" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+cat /proc/sys/fs/inotify/max_user_watches
 
 # install postgres
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
@@ -73,8 +91,14 @@ source ~/.bashrc
 # audius repos setup
 cd $PROTOCOL_DIR/service-commands
 npm install
+npm link @audius/libs
 node scripts/hosts.js add
 node scripts/setup.js run init-repos up
+sh scripts/init-repos.sh
+
+cd ~/audius-protocol/libs
+npm link
+npm link @audius/libs
 
 cd ~
 git clone https://github.com/AudiusProject/audius-client.git

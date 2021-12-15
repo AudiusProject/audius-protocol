@@ -106,8 +106,29 @@ case "$service" in
 
 		read -p "Configure local /etc/hosts? [y/N] " -n 1 -r && echo
 		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
-			sudo -E AUDIUS_REMOTE_DEV_HOST=$(get_ip_addr $provider $name) node $PROTOCOL_DIR/service-commands/scripts/hosts.js
-			exit 1
+			IP=$(get_ip_addr $provider $name)
+			echo "export AUDIUS_REMOTE_DEV_HOST=${IP}" >> ~/.zshenv
+			sudo -E AUDIUS_REMOTE_DEV_HOST=${IP} node $PROTOCOL_DIR/service-commands/scripts/hosts.js add-remote-host
+		fi
+
+		read -p "Set SSH ServerAliveInterval to 60? [y/N] " -n 1 -r && echo
+		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+			echo "ServerAliveInterval 60" | sudo tee -a /etc/ssh/ssh_config.d/60-audius.conf
+		fi
+
+		read -p "Setup zsh? [y/N] " -n 1 -r && echo
+		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+			execute_with_ssh $provider $user $name "sudo chsh -s /bin/zsh \"$USER\""
+
+			cp ~/.zshenv ~/.zshenv.tmp
+			echo "export PROTOCOL_DIR=$HOME/audius-protocol" >> ~/.zshenv.tmp
+			copy_file_to_remote $provider $user $name '~/.zshenv.tmp' '~/.zshenv'
+			rm ~/.zshenv.tmp
+
+			copy_file_to_remote $provider $user $name '~/.zshrc' '~/.zshrc'
+			if [[ -f "~/.p10k.zsh" ]]; then
+				copy_file_to_remote $provider $user $name '~/.p10k.zsh' '~/.p10k.zsh'
+			fi
 		fi
 		;;
 esac
