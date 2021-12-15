@@ -95,7 +95,7 @@ class Wormhole {
    * Sends `amount` tokens to `solanaAccount` by way of the wormhole
    * @param {string} ethTxReceipt The tx receipt
    * @param {function} [customSignTransaction] Optional custom sign transaction parameter
-   * 
+   *
    * else will attempt to relay
    * @returns {Promise} Promise object of {
         transactionSignature: string,
@@ -131,7 +131,6 @@ class Wormhole {
       if (customSignTransaction) {
         signTransaction = customSignTransaction
       } else {
-
         signTransaction = async (transaction) => {
           const { blockhash } = await connection.getRecentBlockhash()
           // Must call serialize message to set the correct signatures on the transaction
@@ -145,8 +144,6 @@ class Wormhole {
             }))
           }
 
-
-
           const { transactionSignature } = await this.identityService.solanaRelayRaw(transactionData)
           logs.push(`Relay sol tx for postVAA with signature ${transactionSignature}`)
           return {
@@ -155,7 +152,6 @@ class Wormhole {
         }
         connection.sendRawTransaction = async () => ''
         connection.confirmTransaction = async () => ''
-
       }
       phase = phases.POST_VAA_SOLANA
       await this.wormholeSDK.postVaaSolana(
@@ -182,7 +178,6 @@ class Wormhole {
         const signedTransaction = await signTransaction(transaction)
         const txid = await connection.sendRawTransaction(signedTransaction.serialize())
         finalTxSignature = txid
-
 
         await connection.confirmTransaction(txid)
       } else {
@@ -385,7 +380,7 @@ class Wormhole {
    * @param {string} solanaAccount The solana token account
    * @param {string} relayer The eth relayer to permission to aprrove and transfer
    */
-   async transferTokensToEthWormhole (fromAccount, amount, solanaAccount, relayer) {
+  async transferTokensToEthWormhole (fromAccount, amount, solanaAccount, relayer) {
     const {
       chainId,
       deadline,
@@ -426,7 +421,6 @@ class Wormhole {
       signedDigest.s
     )
     return method
-
   }
 }
 

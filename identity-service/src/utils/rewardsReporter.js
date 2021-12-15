@@ -9,25 +9,23 @@ class SlackReporter {
     this.childLogger = childLogger
   }
 
-  getJsonSlackMessage = (obj) => {
-    return   `\`\`\`
+  getJsonSlackMessage (obj) {
+    return `\`\`\`
 Source: Identity
 ${Object.entries(obj).map(([key, value]) => `${key}: ${value}`).join('\n')}
 \`\`\``
   }
 
-  postToSlack = async ({
+  async postToSlack ({
     message
-  }) => {
-    console.log(this.slackUrl)
+  }) {
     if (!this.slackUrl) return
     await axios.post(this.slackUrl, { text: message })
   }
 }
 
 class RewardsReporter extends SlackReporter {
-
-  reportSuccess = async ({ userId, challengeId, amount }) => {
+  async reportSuccess ({ userId, challengeId, amount }) {
     const slackMessage = this.getJsonSlackMessage({
       status: 'success',
       userId,
@@ -38,7 +36,7 @@ class RewardsReporter extends SlackReporter {
     this.childLogger.info({ status: 'success', userId, challengeId, amount: amount.toString() }, `Rewards Reporter`)
   }
 
-  reportFailure = async ({ userId, challengeId, amount, error, phase }) => {
+  async reportFailure ({ userId, challengeId, amount, error, phase }) {
     const slackMessage = this.getJsonSlackMessage({
       status: 'failure',
       userId,
@@ -51,7 +49,7 @@ class RewardsReporter extends SlackReporter {
     this.childLogger.info({ status: 'failure', userId, challengeId, amount: amount.toString(), error, phase }, `Rewards Reporter`)
   }
 
-  reportAAORejection = async ({ userId, challengeId, amount, error }) => {
+  async reportAAORejection ({ userId, challengeId, amount, error }) {
     const slackMessage = this.getJsonSlackMessage({
       status: 'rejection',
       userId,

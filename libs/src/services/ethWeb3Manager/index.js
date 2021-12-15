@@ -195,7 +195,6 @@ class EthWeb3Manager {
       gasLimit
     }
   }
-
 }
 
 module.exports = EthWeb3Manager
