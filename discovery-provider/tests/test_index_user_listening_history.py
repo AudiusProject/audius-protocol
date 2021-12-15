@@ -2,7 +2,10 @@ import logging
 from datetime import datetime, timedelta
 from typing import List
 from src.models.models import IndexingCheckpoints, UserListeningHistory
-from src.tasks.user_listening_history.index_user_listening_history import _index_user_listening_history, USER_LISTENING_HISTORY_TABLE_NAME
+from src.tasks.user_listening_history.index_user_listening_history import (
+    _index_user_listening_history,
+    USER_LISTENING_HISTORY_TABLE_NAME,
+)
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from .utils import populate_mock_db
