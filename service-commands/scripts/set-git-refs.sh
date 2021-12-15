@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 cd $PROTOCOL_DIR
 git fetch origin
 git checkout $1
