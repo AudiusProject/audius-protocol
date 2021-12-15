@@ -2,17 +2,18 @@ import logging
 import time
 from typing import DefaultDict
 import sqlalchemy as sa
+from src.tasks.user_listening_history.listen_history import ListenHistory
 from src.models.models import UserListeningHistory
 from src.tasks.celery_app import celery
 from src.models import IndexingCheckpoints, Play
-from src.utils.helpers import UPDATE_INDEXING_CHECKPOINTS_QUERY
+from src.utils.update_indexing_checkpoints import UPDATE_INDEXING_CHECKPOINTS_QUERY
 
 logger = logging.getLogger(__name__)
 
 USER_LISTENING_HISTORY_TABLE_NAME = "user_listening_history"
 BATCH_SIZE = 100000 # index 100k plays at most at a time
 
-def sort_listening_history(deduped_history_dict, limit = 100):
+def sort_listening_history(deduped_history_dict, limit = 1000):
     # sorts listening history and places a limit
     deduped_history = []
     for track_id, timestamp in deduped_history_dict.items():
@@ -57,11 +58,12 @@ def _index_user_listening_history(session):
     insert_user_listening_history_dict = DefaultDict(list)
     update_user_listening_history_dict = DefaultDict(list)
     for new_play in reversed(new_plays):
-        listen_obj ={"track_id": new_play.play_item_id, "timestamp": str(new_play.created_at)}
+        listen_history = ListenHistory(new_play.play_item_id, new_play.created_at).to_dict()
+
         if new_play.user_id in existing_users:
-            update_user_listening_history_dict[new_play.user_id].append(listen_obj)
+            update_user_listening_history_dict[new_play.user_id].append(listen_history)
         else:
-            insert_user_listening_history_dict[new_play.user_id].append(listen_obj)
+            insert_user_listening_history_dict[new_play.user_id].append(listen_history)
 
     # make updates to existing users
     for i, user_history in enumerate(existing_user_listening_history):

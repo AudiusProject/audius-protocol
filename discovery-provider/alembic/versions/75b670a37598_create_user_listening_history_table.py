@@ -24,6 +24,11 @@ def upgrade():
         sa.Column(
             "listening_history", postgresql.JSONB, nullable=False
         ),
+        # listening_history JSON schema
+        # [
+        #   {"track_id": 1, "timestamp": "2011-01-01 00:00:00"},
+        #   {"track_id": 2, "timestamp": "2012-02-02 00:00:00"}
+        # ]
     )
 
 

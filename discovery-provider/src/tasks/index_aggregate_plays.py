@@ -3,7 +3,7 @@ import time
 import sqlalchemy as sa
 from src.tasks.celery_app import celery
 from src.models import IndexingCheckpoints, Play
-from src.utils.helpers import UPDATE_INDEXING_CHECKPOINTS_QUERY
+from src.utils.update_indexing_checkpoints import UPDATE_INDEXING_CHECKPOINTS_QUERY
 
 logger = logging.getLogger(__name__)
 

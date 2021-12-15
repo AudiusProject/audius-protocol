@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import List
 from src.models.models import IndexingCheckpoints, UserListeningHistory
-from src.tasks.index_user_listening_history import _index_user_listening_history, USER_LISTENING_HISTORY_TABLE_NAME
+from src.tasks.user_listening_history.index_user_listening_history import _index_user_listening_history, USER_LISTENING_HISTORY_TABLE_NAME
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from .utils import populate_mock_db
@@ -154,7 +154,7 @@ def test_index_user_listening_history_update(app):
 
         ] + [
             # new user listens to many tracks
-            {"item_id": i+1, "user_id":4, "created_at": TIMESTAMP_4 + timedelta(hours=i)} for i in range(200)
+            {"item_id": i+1, "user_id":4, "created_at": TIMESTAMP_4 + timedelta(hours=i)} for i in range(2000)
         ],
 
         "indexing_checkpoints": [
@@ -200,12 +200,12 @@ def test_index_user_listening_history_update(app):
         assert results[2].listening_history[2]["timestamp"] == str(TIMESTAMP_1)
 
         assert results[3].user_id == 4
-        assert len(results[3].listening_history) == 100
-        for i in range(100):
-            assert results[3].listening_history[i]["track_id"] == 200 - i
+        assert len(results[3].listening_history) == 1000
+        for i in range(1000):
+            assert results[3].listening_history[i]["track_id"] == 2000 - i
             assert (
                 results[3].listening_history[i]["timestamp"] ==
-                str(datetime.fromisoformat("2014-04-12 07:00:00") - timedelta(hours=i))
+                str(datetime.fromisoformat("2014-06-26 07:00:00") - timedelta(hours=i))
             )
 
         new_checkpoint: IndexingCheckpoints = (
@@ -214,7 +214,7 @@ def test_index_user_listening_history_update(app):
             .scalar()
         )
 
-        assert new_checkpoint == 208
+        assert new_checkpoint == 2008
 
 
 # Tests
