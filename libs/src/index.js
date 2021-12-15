@@ -213,7 +213,7 @@ class AudiusLibs {
     if (typeof rpcHosts === 'string') {
       rpcHostList = rpcHosts.split(',')
     } else if (Array.isArray(rpcHosts)) {
-      rpcHostList = providers
+      rpcHostList = rpcHosts
     } else {
       throw new Error('rpcHosts must be of type string or Array')
     }

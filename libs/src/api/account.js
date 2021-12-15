@@ -439,7 +439,7 @@ class Account extends Base {
    * Sends Eth `amount` tokens to `solanaAccount` on the identity service
    * by way of the wormhole.
    */
-   async proxySendTokensFromEthToSol (amount, solanaAccount) {
+  async proxySendTokensFromEthToSol (amount, solanaAccount) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const myWalletAddress = this.web3Manager.getWalletAddress()
     const wormholeAddress = this.ethContracts.WormholeClient.contractAddress
@@ -525,21 +525,21 @@ class Account extends Base {
    * Permits `relayerAddress` to send `amount` on behalf of the current user, `owner`
    */
   async getPermitProxySendTokensMethod (owner, relayerAddress, amount) {
-      const {
-        result,
-        deadline
-      } = await this._getPermitProxySendTokensParams(owner, relayerAddress, amount)
-      const contractMethod = this.ethContracts.AudiusTokenClient.AudiusTokenContract.methods.permit(
-        owner,
-        relayerAddress,
-        amount,
-        deadline,
-        result.v,
-        result.r,
-        result.s
-      )
-      return contractMethod
-    }
+    const {
+      result,
+      deadline
+    } = await this._getPermitProxySendTokensParams(owner, relayerAddress, amount)
+    const contractMethod = this.ethContracts.AudiusTokenClient.AudiusTokenContract.methods.permit(
+      owner,
+      relayerAddress,
+      amount,
+      deadline,
+      result.v,
+      result.r,
+      result.s
+    )
+    return contractMethod
+  }
 
   /**
    * Sends `amount` tokens to `address` from `owner`

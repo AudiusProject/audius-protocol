@@ -743,7 +743,7 @@ const config = convict({
     format: String,
     env: 'ethTokenBridgeAddress',
     default: ''
-  },
+  }
 })
 
 // if you wanted to load a file
