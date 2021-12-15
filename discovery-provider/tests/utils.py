@@ -78,6 +78,7 @@ def populate_mock_db(db, entities, block_offset=0):
         plays = entities.get("plays", [])
         aggregate_plays = entities.get("aggregate_plays", [])
         indexing_checkpoints = entities.get("indexing_checkpoints", [])
+        user_listening_history = entities.get("user_listening_history", [])
 
         num_blocks = max(len(tracks), len(users), len(follows), len(saves))
         for i in range(block_offset, block_offset + num_blocks):
@@ -214,6 +215,16 @@ def populate_mock_db(db, entities, block_offset=0):
                 count=aggregate_play_meta.get("count", 0),
             )
             session.add(aggregate_play)
+
+        for i, user_listening_history_meta in enumerate(user_listening_history):
+            user_listening_history = models.UserListeningHistory(
+                user_id=user_listening_history_meta.get("user_id", i + 1),
+                listening_history=user_listening_history_meta.get(
+                    "listening_history",
+                    None
+                )
+            )
+            session.add(user_listening_history)
 
         for i, indexing_checkpoint_meta in enumerate(indexing_checkpoints):
             indexing_checkpoint = models.IndexingCheckpoints(
