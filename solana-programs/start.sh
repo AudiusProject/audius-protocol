@@ -55,7 +55,7 @@
     owner_wallet_pubkey=$(solana-keygen pubkey)
 
     # Deploy wAUDIO token
-    token=$(spl-token create-token | cat | head -n 1 | cut -d' ' -f3)
+    token=$(spl-token create-token --decimals 8 | cat | head -n 1 | cut -d' ' -f3)
     token_account=$(spl-token create-account $token | cat | head -n 1 | cut -d' ' -f3)
 
     # Mint 100,000,000 Tokens

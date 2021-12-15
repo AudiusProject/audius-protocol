@@ -97,11 +97,7 @@ class App {
       // 2. fork web server worker processes
       if (!config.get('isTestRun')) {
         const audiusInstance = await this.configureAudiusInstance()
-        await this.notificationProcessor.init(
-          audiusInstance,
-          this.express,
-          this.redisClient
-        )
+        cluster.fork({ 'WORKER_TYPE': 'notifications' })
 
         await this.configureRewardsAttester(audiusInstance)
 
@@ -109,12 +105,12 @@ class App {
         // note - we can't have more than 1 worker at the moment because POA and ETH relays
         // use in memory wallet locks
         for (let i = 0; i < config.get('clusterForkProcessCount'); i++) {
-          cluster.fork()
+          cluster.fork({ 'WORKER_TYPE': 'web_server' })
         }
 
         cluster.on('exit', (worker, code, signal) => {
           logger.info(`Cluster: Worker ${worker.process.pid} died, forking another worker`)
-          cluster.fork()
+          cluster.fork(worker.process.env)
         })
       } else {
         // if it's a test run only start the server
@@ -146,19 +142,28 @@ class App {
       return { app: this.express, server }
     } else {
       // if it's not the master worker in the cluster
-      await this.configureAudiusInstance()
-      await new Promise(resolve => {
-        server = this.express.listen(this.port, resolve)
-      })
-      server.setTimeout(config.get('setTimeout'))
-      server.timeout = config.get('timeout')
-      server.keepAliveTimeout = config.get('keepAliveTimeout')
-      server.headersTimeout = config.get('headersTimeout')
+      const audiusInstance = await this.configureAudiusInstance()
 
-      this.express.set('redis', this.redisClient)
+      if (process.env['WORKER_TYPE'] === 'notifications') {
+        await this.notificationProcessor.init(
+          audiusInstance,
+          this.express,
+          this.redisClient
+        )
+      } else {
+        await new Promise(resolve => {
+          server = this.express.listen(this.port, resolve)
+        })
+        server.setTimeout(config.get('setTimeout'))
+        server.timeout = config.get('timeout')
+        server.keepAliveTimeout = config.get('keepAliveTimeout')
+        server.headersTimeout = config.get('headersTimeout')
 
-      logger.info(`Listening on port ${this.port}...`)
-      return { app: this.express, server }
+        this.express.set('redis', this.redisClient)
+
+        logger.info(`Listening on port ${this.port}...`)
+        return { app: this.express, server }
+      }
     }
   }
 
@@ -311,17 +316,29 @@ class App {
       }
     })
 
-    const listenCountIPLimiter = getRateLimiter({
-      prefix: `listenCountLimiter:::${interval}-ip:::`,
+    const listenCountIPTrackLimiter = getRateLimiter({
+      prefix: `listenCountLimiter:::${interval}-ip-track:::`,
       expiry: timeInSeconds,
-      max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
+      max: config.get(`rateLimitingListensPerIPTrackPer${interval}`), // max requests per interval
       keyGenerator: function (req) {
         const trackId = req.params.id
         const { ip } = getIP(req)
         return `${ip}:::${trackId}`
       }
     })
-    return [listenCountLimiter, listenCountIPLimiter]
+
+    // Create a rate limiter for listens  based on IP
+    const listenCountIPRequestLimiter = getRateLimiter({
+      prefix: `listenCountLimiter:::${interval}-ip-exclusive:::`,
+      expiry: interval,
+      max: config.get(`rateLimitingListensPerIPPer${interval}`), // max requests per interval
+      keyGenerator: function (req) {
+        const { ip } = getIP(req)
+        return `${ip}`
+      }
+    })
+
+    return [listenCountLimiter, listenCountIPTrackLimiter, listenCountIPRequestLimiter]
   }
 
   setRateLimiters () {
@@ -341,19 +358,20 @@ class App {
     this.express.use('/tiktok/', tikTokRequestRateLimiter)
 
     const ONE_HOUR_IN_SECONDS = 60 * 60
-    const [listenCountHourlyLimiter, listenCountHourlyIPLimiter] = this._createRateLimitsForListenCounts('Hour', ONE_HOUR_IN_SECONDS)
-    const [listenCountDailyLimiter, listenCountDailyIPLimiter] = this._createRateLimitsForListenCounts('Day', ONE_HOUR_IN_SECONDS * 24)
-    const [listenCountWeeklyLimiter, listenCountWeeklyIPLimiter] = this._createRateLimitsForListenCounts('Week', ONE_HOUR_IN_SECONDS * 24 * 7)
+    const [listenCountHourlyLimiter, listenCountHourlyIPTrackLimiter] = this._createRateLimitsForListenCounts('Hour', ONE_HOUR_IN_SECONDS)
+    const [listenCountDailyLimiter, listenCountDailyIPTrackLimiter, listenCountDailyIPLimiter] = this._createRateLimitsForListenCounts('Day', ONE_HOUR_IN_SECONDS * 24)
+    const [listenCountWeeklyLimiter, listenCountWeeklyIPTrackLimiter] = this._createRateLimitsForListenCounts('Week', ONE_HOUR_IN_SECONDS * 24 * 7)
 
     // This limiter double dips with the reqLimiter. The 5 requests every hour are also counted here
     this.express.use(
       '/tracks/:id/listen',
-      listenCountWeeklyIPLimiter,
+      listenCountWeeklyIPTrackLimiter,
       listenCountWeeklyLimiter,
-      listenCountDailyIPLimiter,
+      listenCountDailyIPTrackLimiter,
       listenCountDailyLimiter,
-      listenCountHourlyIPLimiter,
-      listenCountHourlyLimiter
+      listenCountHourlyIPTrackLimiter,
+      listenCountHourlyLimiter,
+      listenCountDailyIPLimiter
     )
 
     // Eth relay rate limits

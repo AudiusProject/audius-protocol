@@ -103,7 +103,7 @@ case "$service" in
 
 		wait_for_instance $provider $user $name
 
-		execute_with_ssh $provider $user $name "bash ~/audius-protocol/service-commands/scripts/set-git-refs $audius_protocol_git_ref $audius_client_git_ref"
+        execute_with_ssh $provider $user $name "bash ~/audius-protocol/service-commands/scripts/set-git-refs.sh $audius_protocol_git_ref $audius_client_git_ref"
 
 		read -p "Configure local /etc/hosts? [y/N] " -n 1 -r && echo
 		if [[ "$REPLY" =~ ^[Yy]$ ]]; then
