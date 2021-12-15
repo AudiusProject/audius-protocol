@@ -99,8 +99,14 @@ npm link
 
 cd $PROTOCOL_DIR/service-commands
 npm link @audius/libs
+npm link
 
 cd ~
 git clone https://github.com/AudiusProject/audius-client.git
 cd audius-client
 npm link @audius/libs
+npm install
+
+cd $PROTOCOL_DIR/mad-dog
+npm install
+npm link @audius/service-commands
