@@ -97,6 +97,18 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
   return resp
 }
 
+const estimateEthTransactionGas = async (senderAddress, to, data) => {
+  let ethWalletIndex = getEthRelayerWalletIndex(senderAddress)
+  const selectedRelayerWallet = ethRelayerWallets[ethWalletIndex]
+  const toChecksumAddress = ethWeb3.utils.toChecksumAddress
+  const estimatedGas = await ethWeb3.eth.estimateGas({
+    from: toChecksumAddress(selectedRelayerWallet.publicKey),
+    to: toChecksumAddress(to),
+    data
+  })
+  return estimatedGas
+}
+
 const createAndSendEthTransaction = async (sender, receiverAddress, value, web3, logger, gasPrice, gasLimit = null, data = null) => {
   const privateKeyBuffer = Buffer.from(sender.privateKey, 'hex')
   const walletAddress = EthereumWallet.fromPrivateKey(privateKeyBuffer)
@@ -205,6 +217,7 @@ const fundEthRelayerIfEmpty = async () => {
 }
 
 module.exports = {
+  estimateEthTransactionGas,
   fundEthRelayerIfEmpty,
   sendEthTransaction,
   queryEthRelayerWallet,
