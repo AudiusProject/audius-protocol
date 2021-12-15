@@ -26,7 +26,7 @@ const Logger = {
 }
 
 /**
- * Process command line args and either add or remove an entry in/to ContentBlacklist table
+ * Process command line args and either add or remove an entry from DB table
  */
 async function run () {
   let args
@@ -35,18 +35,18 @@ async function run () {
 
   const { action, type, values, verbose } = args
   if (verbose) VERBOSE_MODE = true
-  Logger.info(`Updating Content Blacklist for ${CREATOR_NODE_ENDPOINT} for values: [${values}]...`)
+  Logger.info(`Updating set of delisted content for ${CREATOR_NODE_ENDPOINT} for values: [${values}]...`)
 
   for (let i = 0; i < values.length; i += VALUES_BATCH_SIZE) {
     const valuesSliced = values.slice(i, i + VALUES_BATCH_SIZE)
     try {
       switch (action) {
         case 'ADD': {
-          await addToContentBlacklist(type, valuesSliced)
+          await delistContent(type, valuesSliced)
           break
         }
         case 'REMOVE': {
-          await removeFromContentBlacklist(type, valuesSliced)
+          await undelistContent(type, valuesSliced)
           break
         }
         default: {
@@ -58,13 +58,13 @@ async function run () {
       return
     }
 
-    Logger.debug(`Verifying content against blacklist for ${CREATOR_NODE_ENDPOINT}...\n`)
+    Logger.debug(`Verifying content against set of delisted content for ${CREATOR_NODE_ENDPOINT}...\n`)
     try {
-      const segments = await verifyWithBlacklist({ type, values: valuesSliced, action })
+      const CIDs = await verifyDelistedContent({ type, values: valuesSliced, action })
 
       Logger.info(`Successfully performed [${action}] for type [${type}]! Values: [${valuesSliced}]`)
-      Logger.debug(`Number of Segments: ${segments.length}
-Segments: ${segments}`)
+      Logger.debug(`Number of CIDs: ${CIDs.length}
+CIDs: ${CIDs}`)
     } catch (e) {
       Logger.error(`Verification check failed: ${e}`)
     }
@@ -73,11 +73,11 @@ Segments: ${segments}`)
 
 /**
  * 1. Signs the data {type, values, timestamp} with PRIVATE_KEY specified in this script
- * 2. Sends axios request to add entry to content blacklist of type and values
+ * 2. Sends axios request to add entry to node for type and values
  * @param {string} type
  * @param {number[]|string[]} values
  */
-async function addToContentBlacklist (type, values) {
+async function delistContent (type, values) {
   const { timestamp, signature } = generateTimestampAndSignature({ type, values }, PRIVATE_KEY)
 
   let resp
@@ -91,7 +91,7 @@ async function addToContentBlacklist (type, values) {
     Logger.debug(`About to send axios request to ${reqObj.url} for values`, values)
     resp = await axios(reqObj)
   } catch (e) {
-    throw new Error(`Error with adding type [${type}] and values [${values}] to ContentBlacklist: ${e}`)
+    throw new Error(`Error with adding type [${type}] and values [${values}] to url: ${CREATOR_NODE_ENDPOINT}: ${e}`)
   }
 
   return resp.data
@@ -99,11 +99,11 @@ async function addToContentBlacklist (type, values) {
 
 /**
  * 1. Signs the data {type, values, timestamp} with PRIVATE_KEY specified in this script
- * 2. Sends axios request to remove entry from content blacklist of type and id
+ * 2. Sends axios request to remove entry from node for type and id
  * @param {string} type
  * @param {number[]|string[]} values
  */
-async function removeFromContentBlacklist (type, values) {
+async function undelistContent (type, values) {
   const { timestamp, signature } = generateTimestampAndSignature({ type, values }, PRIVATE_KEY)
 
   let resp
@@ -115,52 +115,52 @@ async function removeFromContentBlacklist (type, values) {
       responseType: 'json'
     })
   } catch (e) {
-    throw new Error(`Error with removing type [${type}] and values [${values}] from ContentBlacklist: ${e}`)
+    throw new Error(`Error with removing type [${type}] and values [${values}] to url: ${CREATOR_NODE_ENDPOINT}: ${e}`)
   }
 
   return resp.data
 }
 
 /**
- * 1. Get all blacklisted content
+ * 1. Get all delisted content
  * 2. Iterate through passed in CLI args against fetched content
  * @param {string} type
  * @param {(number[]|string[])} values cids or ids
- * @returns {string[]} all segments associated with input
+ * @returns {string[]} all CIDs associated with input
  */
-async function verifyWithBlacklist ({ type, values, action }) {
-  let allSegments = await getSegments(type, values)
+async function verifyDelistedContent ({ type, values, action }) {
+  let allCIDs = await getCIDs(type, values)
 
-  // Hit creator node /ipfs/:CID route to see if segment is blacklisted
+  // Hit creator node /ipfs/:CID route to see if cid is delisted
   let checkFn, filterFn
   switch (action) {
     case 'ADD':
-      checkFn = checkIsSegmentBlacklisted
+      checkFn = checkIsCIDDelisted
       filterFn = status => !status
       break
     case 'REMOVE':
-      checkFn = checkIsSegmentNotBlacklisted
+      checkFn = checkIsCIDNotDelisted
       filterFn = status => status
       break
   }
 
   // Batch requests
   let creatorNodeCIDResponses = []
-  const checkCIDDelistStatusRequests = allSegments.map(segment => checkFn(segment))
-  for (let i = 0; i < allSegments.length; i += REQUEST_CONCURRENCY_LIMIT) {
+  const checkCIDDelistStatusRequests = allCIDs.map(cid => checkFn(cid))
+  for (let i = 0; i < allCIDs.length; i += REQUEST_CONCURRENCY_LIMIT) {
     const creatorNodeCIDResponsesSlice = await Promise.all(checkCIDDelistStatusRequests.slice(i, i + REQUEST_CONCURRENCY_LIMIT))
     creatorNodeCIDResponses = creatorNodeCIDResponses.concat(creatorNodeCIDResponsesSlice)
   }
 
-  // Segments that were not accounted for during blacklisting/unblacklisting
-  const unaccountedSegments = creatorNodeCIDResponses
-    .filter(resp => filterFn(resp.blacklisted))
+  // CIDs that were not accounted for during delist/undelist
+  const unaccountedCIDs = creatorNodeCIDResponses
+    .filter(resp => filterFn(resp.delisted))
     .map(resp => resp.value)
 
-  if (unaccountedSegments.length > 0) {
-    let errorMsg = `Some segments from [${type}] and values [${values}] were not blacklisted/unblacklisted.`
-    errorMsg += `\nNumber of Segments: ${unaccountedSegments.length}`
-    errorMsg += `\nSegments: [${unaccountedSegments.toString()}]`
+  if (unaccountedCIDs.length > 0) {
+    let errorMsg = `Some CIDs from [${type}] and values [${values}] were not delisted/undelisted.`
+    errorMsg += `\nNumber of CIDs: ${unaccountedCIDs.length}`
+    errorMsg += `\nCIDs: [${unaccountedCIDs.toString()}]`
     throw new Error(errorMsg)
   }
 
@@ -168,42 +168,42 @@ async function verifyWithBlacklist ({ type, values, action }) {
   if (type === 'TRACK') {
     // Batch requests
     let creatorNodeTrackResponses = []
-    const checkTrackDelistStatusRequests = values.map(trackId => checkIsTrackBlacklisted(trackId))
+    const checkTrackDelistStatusRequests = values.map(trackId => checkIsTrackDelisted(trackId))
     for (let i = 0; i < values.length; i += REQUEST_CONCURRENCY_LIMIT) {
       const creatorNodeTrackResponsesSlice = await Promise.all(checkTrackDelistStatusRequests.slice(i, i + REQUEST_CONCURRENCY_LIMIT))
       creatorNodeTrackResponses = creatorNodeTrackResponses.concat(creatorNodeTrackResponsesSlice)
     }
 
-    // Segments that were not accounted for during blacklisting/unblacklisting
+    // CIDs that were not accounted for during delist/undelist
     const unaccountedTracks = creatorNodeTrackResponses
-      .filter(resp => filterFn(resp.blacklisted))
+      .filter(resp => filterFn(resp.delisted))
       .map(resp => resp.value)
 
     Logger.debug('creatorNodeTrackResponses', creatorNodeTrackResponses)
     if (unaccountedTracks.length > 0) {
       let errorMsg = `Tracks with ids [${values}] were not delisted/undelisted.`
       errorMsg += `\nNumber of Tracks: ${unaccountedTracks.length}`
-      errorMsg += `\Tracks: [${unaccountedTracks.toString()}]`
+      errorMsg += `\nTracks: [${unaccountedTracks.toString()}]`
       throw new Error(errorMsg)
     }
   }
 
-  return allSegments
+  return allCIDs
 }
 
 /**
- * For resources of a valid type, get all the segments for the passed in id values
+ * For resources of a valid type, get all the CIDs for the passed in id values
  * @param {String} type 'USER' or 'TRACK'
  * @param {(number[])} values ids for associated type
  * @returns
  */
-async function getSegments (type, values) {
+async function getCIDs (type, values) {
   if (type === 'CID') return values
 
   let discProvRequests
-  let allSegments
+  let allCIDs
   try {
-    // Fetch all the segments via disc prov
+    // Fetch all the CIDs via disc prov
     switch (type) {
       case 'USER': {
         const map = await fetchUserToNumTracksMap(values)
@@ -259,18 +259,18 @@ async function getSegments (type, values) {
       discProvResps = discProvResps.concat(discProvResponsesSlice)
     }
 
-    // Iterate through disc prov responses and grab all the track segments
-    let allSegmentObjs = []
+    // Iterate through disc prov responses and grab all the track CIDs
+    let allCIDsObj = []
     for (const resp of discProvResps) {
       for (const track of resp.data.data) {
-        allSegmentObjs = allSegmentObjs.concat(track.track_segments)
+        allCIDsObj = allCIDsObj.concat(track.track_segments)
       }
     }
-    allSegments = allSegmentObjs.map(segmentObj => segmentObj.multihash)
+    allCIDs = allCIDsObj.map(CIDObj => CIDObj.multihash)
   } catch (e) {
-    throw new Error(`Error with fetching segments for verification: ${e}`)
+    throw new Error(`Error with fetching CIDs for verification: ${e}`)
   }
-  return allSegments
+  return allCIDs
 }
 
 /**
@@ -293,54 +293,54 @@ async function fetchUserToNumTracksMap (userIds) {
 }
 
 /**
- * Check if segment is blacklisted via /ipfs/:CID route
- * @param {string} segment
+ * Check if cid is delisted via /ipfs/:CID route
+ * @param {string} cid
  */
-async function checkIsSegmentBlacklisted (segment) {
+async function checkIsCIDDelisted (cid) {
   try {
-    await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`)
+    await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${cid}`)
   } catch (e) {
     if (e.response && e.response.status && e.response.status === 403) {
-      return { segment, blacklisted: true }
+      return { cid, delisted: true }
     }
 
     // CID was not found on node, would not have been served either way, return success
-    if (e.response && e.response.status && e.response.status === 404) return { type: 'CID', value: segment, blacklisted: true }
+    if (e.response && e.response.status && e.response.status === 404) return { type: 'CID', value: cid, delisted: true }
 
-    Logger.error(`Failed to check for segment [${segment}]: ${e}`)
+    Logger.error(`Failed to check for cid [${cid}]: ${e}`)
   }
-  return { type: 'CID', value: segment, blacklisted: false }
+  return { type: 'CID', value: cid, delisted: false }
 }
 
-async function checkIsTrackBlacklisted (id) {
+async function checkIsTrackDelisted (id) {
   try {
     const encodedId = hashIds.encode(id)
     await axios.head(`${CREATOR_NODE_ENDPOINT}/tracks/stream/${encodedId}`)
   } catch (e) {
     if (e.response && e.response.status && e.response.status === 403) {
-      return { value: id, blacklisted: true }
+      return { value: id, delisted: true }
     }
 
     // CID was not found on node, would not have been served either way, return success
-    if (e.response.status === 404) return { type: 'TRACK', value: id, blacklisted: true }
+    if (e.response.status === 404) return { type: 'TRACK', value: id, delisted: true }
 
     Logger.error(`Failed to check for track [${id}]: ${e}`)
   }
-  return { type: 'TRACK', value: id, blacklisted: false }
+  return { type: 'TRACK', value: id, delisted: false }
 }
 
 /**
- * Check if segment is not blacklisted via /ipfs/:CID route
- * @param {string} segment
+ * Check if cid is not delisted via /ipfs/:CID route
+ * @param {string} cid
  */
-async function checkIsSegmentNotBlacklisted (segment) {
+async function checkIsCIDNotDelisted (cid) {
   try {
-    await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${segment}`)
+    await axios.head(`${CREATOR_NODE_ENDPOINT}/ipfs/${cid}`)
   } catch (e) {
-    Logger.error(`Failed to check for segment [${segment}]: ${e}`)
-    return { segment, blacklisted: true }
+    Logger.error(`Failed to check for cid [${cid}]: ${e}`)
+    return { cid, delisted: true }
   }
-  return { segment, blacklisted: false }
+  return { cid, delisted: false }
 }
 
 run()

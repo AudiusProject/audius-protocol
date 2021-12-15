@@ -6,6 +6,7 @@ class HashIds {
     this.MIN_LENGTH = 5
     this.hashids = new Hashids(this.HASH_SALT, this.MIN_LENGTH)
   }
+
   encode (id) {
     return this.hashids.encode([id])
   }
