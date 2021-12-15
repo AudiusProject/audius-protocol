@@ -82,38 +82,38 @@ def test_index_aggregate_plays_update(app):
     # run
     entities = {
         "tracks": [
-            {"track_id": 0, "title": "track 0"},
             {"track_id": 1, "title": "track 1"},
             {"track_id": 2, "title": "track 2"},
             {"track_id": 3, "title": "track 3"},
+            {"track_id": 4, "title": "track 4"},
         ],
         "aggregate_plays" : [
             # Current Plays
-            {"play_item_id": 0, "count": 3},
             {"play_item_id": 1, "count": 3},
             {"play_item_id": 2, "count": 3},
+            {"play_item_id": 3, "count": 3},
         ],
         "indexing_checkpoints" : [
             {"tablename": "aggregate_plays", "last_checkpoint": 9}
         ],
         "plays" : [
             # Current Plays
-            {"item_id": 0},
-            {"item_id": 0},
-            {"item_id": 0},
             {"item_id": 1},
             {"item_id": 1},
             {"item_id": 1},
             {"item_id": 2},
             {"item_id": 2},
             {"item_id": 2},
+            {"item_id": 3},
+            {"item_id": 3},
+            {"item_id": 3},
 
             # New plays
-            {"item_id": 0},
-            {"item_id": 0},
             {"item_id": 1},
-            {"item_id": 3},
-            {"item_id": 3},
+            {"item_id": 1},
+            {"item_id": 2},
+            {"item_id": 4},
+            {"item_id": 4},
         ]
 
     }
@@ -130,13 +130,13 @@ def test_index_aggregate_plays_update(app):
         )
 
         assert len(results) == 4
-        assert results[0].play_item_id == 0
+        assert results[0].play_item_id == 1
         assert results[0].count == 5
-        assert results[1].play_item_id == 1
+        assert results[1].play_item_id == 2
         assert results[1].count == 4
-        assert results[2].play_item_id == 2
+        assert results[2].play_item_id == 3
         assert results[2].count == 3
-        assert results[3].play_item_id == 3
+        assert results[3].play_item_id == 4
         assert results[3].count == 2
 
 def test_index_aggregate_plays_same_checkpoint(app):
@@ -148,31 +148,31 @@ def test_index_aggregate_plays_same_checkpoint(app):
     # run
     entities = {
         "tracks": [
-            {"track_id": 0, "title": "track 0"},
             {"track_id": 1, "title": "track 1"},
             {"track_id": 2, "title": "track 2"},
             {"track_id": 3, "title": "track 3"},
+            {"track_id": 4, "title": "track 4"},
         ],
         "aggregate_plays" : [
             # Current Plays
-            {"play_item_id": 0, "count": 3},
             {"play_item_id": 1, "count": 3},
             {"play_item_id": 2, "count": 3},
+            {"play_item_id": 3, "count": 3},
         ],
         "indexing_checkpoints" : [
             {"tablename": "aggregate_plays", "last_checkpoint": 9}
         ],
         "plays" : [
             # Current Plays
-            {"item_id": 0},
-            {"item_id": 0},
-            {"item_id": 0},
             {"item_id": 1},
             {"item_id": 1},
             {"item_id": 1},
             {"item_id": 2},
             {"item_id": 2},
             {"item_id": 2},
+            {"item_id": 3},
+            {"item_id": 3},
+            {"item_id": 3},
         ]
 
     }
@@ -210,3 +210,4 @@ def test_index_aggregate_plays_no_plays(app):
             assert False, "test_index_aggregate_plays [test_index_aggregate_plays_no_plays] failed"
         except NoResultFound:
             assert True
+
