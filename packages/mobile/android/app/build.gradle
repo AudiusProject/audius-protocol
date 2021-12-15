@@ -148,7 +148,7 @@ android {
 
         // versionCode is automatically incremented in CI
         versionCode 1
-        versionName "1.0.113"
+        versionName "1.1.0"
         resValue "string", "build_config_package", "co.audius.app"
     }
     productFlavors {

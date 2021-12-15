@@ -3,9 +3,178 @@ version: 2.1
 orbs:
   ruby: circleci/ruby@1.2.0
 
+commands:
+  # Build the audius-client to be bundled with the mobile client
+  build-web-app:
+    parameters:
+      build-type:
+        default: 'mobile-prod'
+        type: string
+      build-directory:
+        default: 'build-mobile-production'
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: copy-audius-client
+          # client is copied outside of project to avoid npm install conflicts
+          command: cp -R ./node_modules/audius-client ../audius-client
+
+      - restore_cache:
+          keys:
+            - dependency-cache-{{ checksum "../audius-client/package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - dependency-cache-
+      - run: cd ../audius-client && npm install
+
+      - save_cache:
+          key: dependency-cache-{{ checksum "../audius-client/package.json" }}
+          paths:
+            - ../audius-client/node_modules
+
+      - run:
+          name: build
+          command: cd ../audius-client && npm run build:<<parameters.build-type>>
+      - persist_to_workspace:
+          root: ../
+          paths:
+            - audius-client/<<parameters.build-directory>>
+
+  # Build the ios app
+  build-ios:
+    parameters:
+      build-directory:
+        default: 'build-mobile-production'
+        type: string
+      bundle-id:
+        default: 'co.audius.audiusmusic'
+        type: string
+      env:
+        default: '.env.prod'
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Move Web App build
+          command: mkdir -p web-app/Web.bundle/build && mv ./audius-client/<<parameters.build-directory>>/* web-app/Web.bundle/build
+      - run:
+          name: update cocoapods
+          command: sudo gem install cocoapods
+      - run:
+          name: copy bundle
+          command: npm run bundle:ios
+      - run:
+          name: install pods
+          command: cd ios && pod install
+      - run:
+          name: update bundler
+          command: gem install bundler:1.17.3
+      - restore_cache:
+          key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
+      - run: cd ios && (bundle check || bundle install --path vendor/bundle)
+      - save_cache:
+          key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
+          paths:
+            - ios/vendor/bundle
+      - run:
+          name: update fastlane
+          command: cd ios && bundle update fastlane
+      - run:
+          name: fastlane build
+          command: cp <<parameters.env>> ios/ && cd ios && bundle exec fastlane build bundle_id:<<parameters.bundle-id>>
+      - store_artifacts:
+          path: output
+      - store_test_results:
+          path: output/scan
+
+  # Upload the ios app to the App Store
+  upload-ios:
+    parameters:
+      bundle-id:
+        default: 'co.audius.audiusmusic'
+        type: string
+    steps:
+      - run:
+          name: fastlane upload
+          command: cd ios && bundle exec fastlane upload bundle_id:<<parameters.bundle-id>>
+
+  # Build the android app
+  build-android:
+    parameters:
+      build-directory:
+        default: 'build-mobile-production'
+        type: string
+      build-type:
+        default: 'bundleRelease'
+        type: string
+      bundle-id:
+        default: 'co.audius.app'
+        type: string
+      track:
+        default: 'beta'
+        type: string
+      remote-directory:
+        default: 'audius-mobile'
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Move Web App build
+          command: mkdir -p web-app/Web.bundle/build && mv ./audius-client/<<parameters.build-directory>>/* web-app/Web.bundle/build
+      - run:
+          name: migrate support libraries for androidX packages
+          command: |
+            npm run jetifier
+      - run:
+          name: update bundler
+          command: gem install bundler:1.17.3
+      - restore_cache:
+          key: 1-gems-{{ checksum "android/Gemfile.lock" }}
+      - run: cd android && (bundle check || bundle install --path vendor/bundle)
+      - save_cache:
+          key: 1-gems-{{ checksum "android/Gemfile.lock" }}
+          paths:
+            - android/vendor/bundle
+      - run:
+          name: fetch app fastlane json config to upload to play store
+          command: |
+            echo "$FASTLANE_PLAYSTORE_JSON" > android/app/api.txt
+            base64 --decode android/app/api.txt > android/app/api.json
+      - run:
+          name: increment version code
+          command: |
+            cd android
+            bundle exec fastlane incrementVersionCode package_name:<<parameters.bundle-id>> track:<<parameters.track>>
+            bundle exec fastlane incrementVersionName package_name:<<parameters.bundle-id>> track:<<parameters.track>>
+      - run:
+          name: generating the release apk & bundle
+          command: |
+            echo "yes" | sdkmanager "platforms;android-30" && cd android && ./gradlew <<parameters.build-type>>
+      - run:
+          name: install-awscli
+          command: sudo pip install awscli
+      - run: aws s3 sync ~/audius-mobile-client/android/app/build/outputs s3://<<parameters.remote-directory>>/android --delete
+
+  # Upload the android app to the Google Play Store
+  upload-android:
+    parameters:
+      upload-type:
+        default: 'prod'
+        type: string
+    steps:
+      - run:
+          name: Upload to Play Store
+          command: cd android && bundle exec fastlane <<parameters.upload-type>>
+
 jobs:
   init:
-    working_directory: ~/react-native-wrapper
+    working_directory: ~/audius-mobile-client
     docker:
       - image: circleci/node:14.18
     steps:
@@ -51,268 +220,105 @@ jobs:
             - .env.stage
             - .env.prod
 
-  build-web-app:
-    working_directory: ~/react-native-wrapper
+  build-production-web-app:
+    working_directory: ~/audius-mobile-client
     docker:
       - image: circleci/node:14.18
     resource_class: large
     steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run:
-          name: copy-audius-client
-          # client is copied outside of project to avoid npm install conflicts
-          command: cp -R ./node_modules/audius-client ../audius-client
-
-      - restore_cache:
-          keys:
-            - dependency-cache-{{ checksum "../audius-client/package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - dependency-cache-
-      - run: cd ../audius-client && npm install
-
-      - save_cache:
-          key: dependency-cache-{{ checksum "../audius-client/package.json" }}
-          paths:
-            - ../audius-client/node_modules
-
-      - run:
-          name: build-production-web-app
-          command: cd ../audius-client && npm run build:mobile-prod
-      - persist_to_workspace:
-          root: ../
-          paths:
-            - audius-client/build-mobile-production
+      - build-web-app:
+          build-type: 'mobile-prod'
+          build-directory: 'build-mobile-production'
 
   build-staging-web-app:
-    working_directory: ~/react-native-wrapper
+    working_directory: ~/audius-mobile-client
     docker:
       - image: circleci/node:14.18
     resource_class: large
     steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run:
-          name: copy-audius-client
-          # client is copied outside of project to avoid npm install conflicts
-          command: cp -R ./node_modules/audius-client ../audius-client
+      - build-web-app:
+          build-type: 'mobile-stage'
+          build-directory: 'build-mobile-staging'
 
-      - restore_cache:
-          keys:
-            - dependency-cache-{{ checksum "../audius-client/package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - dependency-cache-
-      - run: cd ../audius-client && npm install
-
-      - save_cache:
-          key: dependency-cache-{{ checksum "../audius-client/package.json" }}
-          paths:
-            - ../audius-client/node_modules
-
-      - run:
-          name: build-staging-web-app
-          command: cd ../audius-client && npm run build:mobile-stage
-      - persist_to_workspace:
-          root: ../
-          paths:
-            - audius-client/build-mobile-staging
-
-  upload-staging-ios:
-    working_directory: ~/react-native-wrapper
+  build-upload-staging-ios:
+    working_directory: ~/audius-mobile-client
     macos: # Run on osx so app can be created and signed.
       xcode: '13.1.0'
     environment:
       FL_OUTPUT_DIR: output
-      FASTLANE_LANE: bounce
     shell: /bin/bash --login -o pipefail
     steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run:
-          name: Move Staging build
-          command: mkdir -p web-app/Web.bundle/build && mv ./audius-client/build-mobile-staging/* web-app/Web.bundle/build
-      
-      - run:
-          name: update cocoapods
-          command: sudo gem install cocoapods
-      - run:
-          name: copy bundle
-          command: npm run bundle:ios
+      - build-ios:
+          build-directory: 'build-mobile-staging'
+          bundle-id: 'co.audius.audiusmusic.bounce'
+          env: '.env.stage'
+      - when:
+          condition:
+            matches:
+              { pattern: '^release.*$', value: << pipeline.git.branch >> }
+          steps:
+            - upload-ios:
+                bundle-id: 'co.audius.audiusmusic.bounce'
 
-      - run:
-          name: install pods
-          command: cd ios && pod install
-      - run:
-          name: update bundler
-          command: gem install bundler:1.17.3
-      - restore_cache:
-          key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
-      - run: cd ios && (bundle check || bundle install --path vendor/bundle)
-      - save_cache:
-          key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
-          paths:
-            - ios/vendor/bundle
-
-      - run:
-          name: update fastlane
-          command: cd ios && bundle update fastlane
-      - run:
-          name: fastlane
-          command: cp .env.stage ios/ && cd ios && bundle exec fastlane $FASTLANE_LANE
-      - store_artifacts:
-          path: output
-      - store_test_results:
-          path: output/scan
-
-  upload-ios:
-    working_directory: ~/react-native-wrapper
+  build-upload-production-ios:
+    working_directory: ~/audius-mobile-client
     macos: # Run on osx so app can be created and signed.
       xcode: '13.1.0'
     environment:
       FL_OUTPUT_DIR: output
-      FASTLANE_LANE: beta
     shell: /bin/bash --login -o pipefail
     steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      - run:
-          name: Move production build
-          command: mkdir -p web-app/Web.bundle/build && mv ./audius-client/build-mobile-production/* web-app/Web.bundle/build
-      
-      - run:
-          name: update cocoapods
-          command: sudo gem install cocoapods
-      - run:
-          name: copy bundle
-          command: npm run bundle:ios
+      - build-ios:
+          build-directory: 'build-mobile-production'
+          bundle-id: 'co.audius.audiusmusic'
+          env: '.env.prod'
+      - when:
+          condition:
+            matches:
+              { pattern: '^release.*$', value: << pipeline.git.branch >> }
+          steps:
+            - upload-ios:
+                bundle-id: 'co.audius.audiusmusic'
 
-      - run:
-          name: install pods
-          command: cd ios && pod install
-      - run:
-          name: update bundler
-          command: gem install bundler:1.17.3
-      - restore_cache:
-          key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
-      - run: cd ios && (bundle check || bundle install --path vendor/bundle)
-      - save_cache:
-          key: 1-gems-{{ checksum "ios/Gemfile.lock" }}
-          paths:
-            - ios/vendor/bundle
-
-      - run:
-          name: update fastlane
-          command: cd ios && bundle update fastlane
-      - run:
-          name: fastlane
-          command: cp .env.prod ios/ && cd ios && bundle exec fastlane $FASTLANE_LANE
-      - store_artifacts:
-          path: output
-      - store_test_results:
-          path: output/scan
-
-  upload-staging-android:
-    working_directory: ~/react-native-wrapper
-    docker:
-      - image: circleci/android:api-30-node
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      
-      - run:
-          name: Move Staging build
-          command: mkdir -p web-app/Web.bundle/build && mv ./audius-client/build-mobile-staging/* web-app/Web.bundle/build
-      - run:
-          name: migrate support libraries for androidX packages
-          command: |
-            npm run jetifier
-      - run:
-          name: update bundler
-          command: gem install bundler:1.17.3
-      - restore_cache:
-          key: 1-gems-{{ checksum "android/Gemfile.lock" }}
-      - run: cd android && (bundle check || bundle install --path vendor/bundle)
-      - save_cache:
-          key: 1-gems-{{ checksum "android/Gemfile.lock" }}
-          paths:
-            - android/vendor/bundle
-      - run:
-          name: fetch app fastlane json config to upload to play store
-          command: |
-            echo "$FASTLANE_PLAYSTORE_JSON" > android/app/api.txt
-            base64 --decode android/app/api.txt > android/app/api.json
-      - run:
-          name: increment version code
-          command: |
-            cd android
-            bundle exec fastlane incrementVersionCode package_name:co.audius.app.bounce track:alpha
-            bundle exec fastlane incrementVersionName package_name:co.audius.app.bounce track:alpha
-      - run:
-          name: generating the staging release apk & bundle
-          command: |
-            echo "yes" | sdkmanager "platforms;android-30" && cd android && ./gradlew bundleBounceRelease
-      - run:
-          name: install-awscli
-          command: sudo pip install awscli
-      - run: aws s3 sync ~/react-native-wrapper/android/app/build/outputs s3://audius-mobile-staging/android --delete
-      - run:
-          name: Upload to Play Store
-          command: cd android && bundle exec fastlane bounce
-
-  upload-android:
+  build-upload-staging-android:
+    working_directory: ~/audius-mobile-client
     resource_class: large
-    working_directory: ~/react-native-wrapper
     docker:
       - image: circleci/android:api-30-node
     steps:
-      - checkout
-      - attach_workspace:
-          at: ./
-      
-      - run:
-          name: Move production build
-          command: mkdir -p web-app/Web.bundle/build && mv ./audius-client/build-mobile-production/* web-app/Web.bundle/build
-      - run:
-          name: migrate support libraries for androidX packages
-          command: |
-            npm run jetifier
-      - run:
-          name: update bundler
-          command: gem install bundler:1.17.3
-      - restore_cache:
-          key: 1-gems-{{ checksum "android/Gemfile.lock" }}
-      - run: cd android && (bundle check || bundle install --path vendor/bundle)
-      - save_cache:
-          key: 1-gems-{{ checksum "android/Gemfile.lock" }}
-          paths:
-            - android/vendor/bundle
-      - run:
-          name: fetch app fastlane json config to upload to play store
-          command: |
-            echo "$FASTLANE_PLAYSTORE_JSON" > android/app/api.txt
-            base64 --decode android/app/api.txt > android/app/api.json
-      - run:
-          name: increment version code
-          command: |
-            cd android
-            bundle exec fastlane incrementVersionCode package_name:co.audius.app track:alpha
-            bundle exec fastlane incrementVersionName package_name:co.audius.app track:alpha
-      - run:
-          name: generating the release apk & bundle
-          command: |
-            echo "yes" | sdkmanager "platforms;android-30" && cd android && ./gradlew bundleRelease
-      - run:
-          name: install-awscli
-          command: sudo pip install awscli
-      - run: aws s3 sync ~/react-native-wrapper/android/app/build/outputs s3://audius-mobile/android --delete
-      - run:
-          name: Upload to Play Store
-          command: cd android && bundle exec fastlane alpha
+      - build-android:
+          build-directory: 'build-mobile-staging'
+          build-type: 'bundleBounceRelease'
+          bundle-id: 'co.audius.app.bounce'
+          track: 'alpha'
+          remote-directory: 'audius-mobile-staging'
+      - when:
+          condition:
+            matches:
+              { pattern: '^release.*$', value: << pipeline.git.branch >> }
+          steps:
+            - upload-android:
+                upload-type: 'bounce'
+
+  build-upload-production-android:
+    working_directory: ~/audius-mobile-client
+    resource_class: large
+    docker:
+      - image: circleci/android:api-30-node
+    steps:
+      - build-android:
+          build-directory: 'build-mobile-production'
+          build-type: 'bundleRelease'
+          bundle-id: 'co.audius.app'
+          track: 'alpha'
+          remote-directory: 'audius-mobile'
+      - when:
+          condition:
+            matches:
+              { pattern: '^release.*$', value: << pipeline.git.branch >> }
+          steps:
+            - upload-android:
+                upload-type: 'alpha'
 
 workflows:
   version: 2
@@ -321,50 +327,32 @@ workflows:
       - init:
           context: Audius Mobile Client
 
-      - build-web-app:
+      - build-production-web-app:
           context: Audius Mobile Client
           requires:
             - init
-          filters:
-            branches:
-              only: /(^release.*)$/
 
       - build-staging-web-app:
           context: Audius Mobile Client
           requires:
             - init
-          filters:
-            branches:
-              only: /(^release.*)$/
 
-      - upload-staging-ios:
+      - build-upload-staging-ios:
           context: Audius Mobile Client
           requires:
             - build-staging-web-app
-          filters:
-            branches:
-              only: /(^release.*)$/
 
-      - upload-staging-android:
+      - build-upload-staging-android:
           context: Audius Mobile Client
           requires:
             - build-staging-web-app
-          filters:
-            branches:
-              only: /(^release.*)$/
 
-      - upload-ios:
+      - build-upload-production-ios:
           context: Audius Mobile Client
           requires:
-            - build-web-app
-          filters:
-            branches:
-              only: /(^release.*)$/
+            - build-production-web-app
 
-      - upload-android:
+      - build-upload-production-android:
           context: Audius Mobile Client
           requires:
-            - build-web-app
-          filters:
-            branches:
-              only: /(^release.*)$/
+            - build-production-web-app

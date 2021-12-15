@@ -104,8 +104,8 @@ platform :android do
         s[re, 1] = previousVersionNameString
         f = File.new(path, 'w')
         f.write(s)
+        f.close
       end
 
-      f.close
   end
 end
